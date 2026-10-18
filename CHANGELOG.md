@@ -20,6 +20,48 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Project-budget snapshot and land-use publication, source candidates:**
+`20261017000019_project_budget_complete_inputs.sql` supplies the caller-scoped
+complete budget snapshot. `20261017030608_land_use_plan_publication_transaction.sql`
+saves a publication packet and its pointer within one transaction. Operators must
+apply each migration before deploying its dependent application code, after the
+installation's migration and recovery checks are accepted. This source correction
+does not apply either migration or establish native, hosted or release acceptance.
+See the [budget source record](docs/reviews/2026-10-16-project-budget-classification-joined/STATUS.md)
+and [publication source record](docs/reviews/2026-10-16-land-use-publication-transaction/REPORT.md)
+for their separate evidence limits.
+
+**Public designation viewport correction, source candidate:** wrapped map views
+retain both longitude intervals, unreadable views clear earlier shapes, and
+blank coordinates refuse instead of becoming zero. The loader uses one dedicated
+viewport RPC and rejects incomplete or duplicate replies. Additive migration
+`20261017052401_public_designation_query_viewport.sql` is unapplied. Source review
+and focused checks pass; native SQL/RLS, performance and identified-build browser
+acceptance remain open. Do not deploy this code before its migration and relevant
+checks are accepted. See the [source checkpoint](docs/reviews/2026-10-17-viewport-reviewed-root-integration/STATUS.md).
+
+**Land-use saved geography, unchecked source candidate:** the candidate PATCH
+guard directs study-area changes through the existing context editor. Additive
+migration `20261017014010_land_use_plan_context_geography.sql` guards retained
+context/geography agreement across table writers. The CLI-generated filename is
+allocated; the migration is unapplied and focused checks remain pending. Deploy
+the app only with the migration installed and the relevant checks accepted.
+Historical context and frozen snapshots are not backfilled. See the
+[preparation record](docs/reviews/2026-10-16-land-use-context-geography-correction/STATUS.md).
+
+**Engagement invoice-summary completeness, source candidate:** candidate migration
+`20261017000020_engagement_billed_summaries.sql` adds a caller-scoped stable
+snapshot of gross sent/paid subtotals and separate draft subtotals. Dashboard
+engagement totals no longer depend on the 500-row register. Invoice warnings
+and PDF/evidence assembly use the same reader and disclose an unavailable or
+pending source without inventing zero totals. Authorized draft creation stays
+warn-only. Aggregate currency and legacy agreement terms remain unassessed.
+SQL20 is unapplied and unreleased. Native role/RLS, raw SDK precision,
+upgrade/recovery, atomicity and identified-build browser/PDF proof remain open.
+It adds one source migration after the existing 422-file history; it does not
+change the existing SQL19 native controller's source binding. See the
+[candidate record](docs/reviews/2026-10-16-engagement-summary-completeness/STATUS.md).
+
 **Planner Agent CLI and usage-limit candidates:** the configured connector's
 `install-check` command offers inspected, version-pinned npm guidance without
 running an update. Structured Codex usage-limit failures retain a scoped receipt

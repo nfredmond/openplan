@@ -1,0 +1,46 @@
+{
+  "disposition": "approve-conditional-OP-proposal",
+  "manifestSelfHash": "Git binds this file; no self hash.",
+  "nativeOperationGranted": false,
+  "privateReviewRoot": "/home/nathaniel/.local/state/openplan/budget-observe-combined-operation-independent-20261016",
+  "publicFiles": {
+    "EVIDENCE_SEAL.json": {
+      "bytes": 6260,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "f80330d32dfec031423c74242373bb2a7e8d225dfb5ab5aaac507c4120c5af21",
+      "uid": 1000
+    },
+    "FOOTPRINT.json": {
+      "bytes": 16574,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "f206f434f740f0289126f3ac34c7a6e5305aeacabbbe37b112e65b049b27b50e",
+      "uid": 1000
+    },
+    "REPORT.md": {
+      "bytes": 21760,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "9ab458301e34340bc8d6c1be1fb90bb2e73c924710adaa1a873a17cedb8005bd",
+      "uid": 1000
+    },
+    "SOURCE_PINS.sha256": {
+      "bytes": 22817,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "060580191eecde46099fca258b774e28cc63e667eb12e714856213ec99ad66a8",
+      "uid": 1000
+    },
+    "VALIDATION.md": {
+      "bytes": 7388,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "1c12608ccaba1ca565b265ec2f7c3efe114f9e2d73e205d8be5d93a452eea6e1",
+      "uid": 1000
+    }
+  },
+  "schema": 1,
+  "status": "FINAL_SOURCE_METADATA_REVIEW_ONLY",
+  "successorGranted": false
+}

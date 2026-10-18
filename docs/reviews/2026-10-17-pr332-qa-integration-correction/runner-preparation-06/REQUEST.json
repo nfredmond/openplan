@@ -1,0 +1,1631 @@
+{
+  "actualOuterArgvAvailability": "UNAVAILABLE: NEW06 has no REQUEST.json, ROOT_GRANT.json, epoch or TEST04 output directory; no invocation authorized.",
+  "baseAppTree": "fa58f935d012d01da7738cc3a3351c51d2804bab",
+  "baseCommit": "3d6255870f9f17131f38e661fd5c11a29ee846e2",
+  "budget": {
+    "cleanupReserveSeconds": 15,
+    "costFit": "UNMEASURED_STOP_ON_LIMIT_NO_RETRY",
+    "cpuPercent": 50,
+    "memoryBytes": 1073741824,
+    "overallSeconds": 480,
+    "swapBytes": 0,
+    "tasks": 64,
+    "workers": 1
+  },
+  "budgetAliasDisposition": {
+    "bytes": 1943,
+    "ctime_ns": 1792232365708594539,
+    "device": 66308,
+    "gid": 1000,
+    "inode": 134261393,
+    "mode": 384,
+    "mtime_ns": 1792232365708594539,
+    "nonsymlink": true,
+    "path": "/home/nathaniel/.local/state/openplan/pr332-qa-gate-3d62558-20261017-root-review/source-review-01/ROOT_BUDGET_ALIAS_DISPOSITION_02.json",
+    "sha256": "386d21e2eecaad5be80899e1346b05a3a6b4fb34b62cb6c5c0510a36e0aa3c41",
+    "type": "regular",
+    "uid": 1000
+  },
+  "bwrapArgvSourceAudit": {
+    "bytes": 37500,
+    "ctime_ns": 1792235652567709678,
+    "device": 66308,
+    "gid": 1000,
+    "inode": 148286003,
+    "mode": 384,
+    "mtime_ns": 1792235652567709678,
+    "nonsymlink": true,
+    "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/BWRAP_ARGV_SOURCE_AUDIT.json",
+    "sha256": "e683c178d1f11a7f04ae448af6ea0e630c6b879f358ce28bd9b303de793c9122",
+    "type": "regular",
+    "uid": 1000
+  },
+  "ciRetryGranted": false,
+  "donor": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/node_modules",
+  "environment": {
+    "ANTHROPIC_API_KEY": "ci-placeholder-anthropic-key",
+    "CI": "true",
+    "HOME": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/home",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "ci-placeholder-anon-key",
+    "NEXT_PUBLIC_SUPABASE_URL": "https://example.supabase.co",
+    "NODE_ENV": "test",
+    "NODE_OPTIONS": "--max-old-space-size=512",
+    "NO_COLOR": "1",
+    "NPM_CONFIG_AUDIT": "false",
+    "NPM_CONFIG_CACHE": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/cache/npm",
+    "NPM_CONFIG_FUND": "false",
+    "NPM_CONFIG_GLOBALCONFIG": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/config/npm-global.conf",
+    "NPM_CONFIG_LOGS_DIR": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/cache/npm/logs",
+    "NPM_CONFIG_UPDATE_NOTIFIER": "false",
+    "NPM_CONFIG_USERCONFIG": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/config/npm-user.conf",
+    "PATH": "/usr/bin:/bin",
+    "SUPABASE_SERVICE_ROLE_KEY": "ci-placeholder-service-role",
+    "TEMP": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tmp",
+    "TMP": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tmp",
+    "TMPDIR": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tmp",
+    "XDG_CACHE_HOME": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/cache",
+    "XDG_CONFIG_HOME": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/config",
+    "XDG_DATA_HOME": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/data",
+    "XDG_STATE_HOME": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/state"
+  },
+  "epoch": null,
+  "finalRequestPrepared": false,
+  "futurePaths": {
+    "epoch": "NOT_CREATED_ROOT_MUST_SUPPLY_FRESH",
+    "output": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04",
+    "privateGrant": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/ROOT_GRANT.json",
+    "publicRequest": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-06/REQUEST.json",
+    "unit": "openplan-pr332-qa-pure-20261017-04"
+  },
+  "guardOutcomeAcceptance": {
+    "bytes": 12149,
+    "ctime_ns": 1792234139810400871,
+    "device": 66308,
+    "gid": 1000,
+    "inode": 138849035,
+    "mode": 384,
+    "mtime_ns": 1792234139810400871,
+    "nonsymlink": true,
+    "path": "/home/nathaniel/.local/state/openplan/pr332-qa-gate-3d62558-20261017-root-review/guard-window-04/ROOT_GUARD_OUTCOME_ACCEPTANCE_04.json",
+    "sha256": "12240a2f51081a06ae7717247f3452d35ac9987fa2bfe15eab45176417fde555",
+    "type": "regular",
+    "uid": 1000
+  },
+  "guardRequestProposal": {
+    "bytes": 15940,
+    "ctime_ns": 1792233923034183335,
+    "device": 66308,
+    "gid": 1000,
+    "inode": 188357109,
+    "mode": 384,
+    "mtime_ns": 1792233923034183335,
+    "nonsymlink": true,
+    "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/GUARD_REQUEST.proposal.json",
+    "sha256": "9d098b82bdfe46646ef92dd742b662d385f0ca7431034333e83963082104b8b3",
+    "type": "regular",
+    "uid": 1000
+  },
+  "guardSensitivityPlan": {
+    "bytes": 7572,
+    "ctime_ns": 1792233744215075312,
+    "device": 66308,
+    "gid": 1000,
+    "inode": 188357107,
+    "mode": 436,
+    "mtime_ns": 1792233744215075312,
+    "nonsymlink": true,
+    "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/GUARD_SENSITIVITY_SOURCE_PLAN.md",
+    "sha256": "1b72c2fb6821700d9ab8d6cae67a1adaf44c429481d0bc3588123181caa5fbbb",
+    "type": "regular",
+    "uid": 1000
+  },
+  "guardSourceManifest": {
+    "bytes": 33837,
+    "ctime_ns": 1792233923033195340,
+    "device": 66308,
+    "gid": 1000,
+    "inode": 188357105,
+    "mode": 384,
+    "mtime_ns": 1792233923033195340,
+    "nonsymlink": true,
+    "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/GUARD_SOURCE.json",
+    "sha256": "44c3e50263764f3318548bfe1654a4a15c9e9226e71ef049459217a00e7ccc59",
+    "type": "regular",
+    "uid": 1000
+  },
+  "guardWindowComposition": {
+    "acceptedOutcomePath": "/home/nathaniel/.local/state/openplan/pr332-qa-gate-3d62558-20261017-root-review/guard-window-04/ROOT_GUARD_OUTCOME_ACCEPTANCE_04.json",
+    "repeatGuard26": false,
+    "reuseBoundary": "Only exact unchanged control bodies and narrow actual26 outcomes; actual kernel guard caps/InvocationID were not captured."
+  },
+  "innerRootAliasInputs": [
+    {
+      "bytes": 10,
+      "ctime_ns": 1781923307723185455,
+      "device": 66308,
+      "gid": 0,
+      "inode": 33685912,
+      "mode": 511,
+      "mtime_ns": 1774086400000000000,
+      "path": "/usr/bin/python3",
+      "resolved": "/usr/bin/python3.14",
+      "target": "python3.14",
+      "type": "symlink",
+      "uid": 0
+    }
+  ],
+  "innerRootRegularInputs": [
+    {
+      "bytes": 126816376,
+      "ctime_ns": 1792000250962081887,
+      "device": 66308,
+      "gid": 0,
+      "inode": 33691679,
+      "mode": 493,
+      "mtime_ns": 1791963171000000000,
+      "nonsymlink": true,
+      "path": "/usr/bin/node",
+      "sha256": "67ca5783febb8bf85736c79fcdd92c8d6d465a0eb2a082672bcdfa76a506751c",
+      "type": "regular",
+      "uid": 0
+    },
+    {
+      "bytes": 7477160,
+      "ctime_ns": 1788959937885658192,
+      "device": 66308,
+      "gid": 0,
+      "inode": 33691152,
+      "mode": 493,
+      "mtime_ns": 1787222518000000000,
+      "nonsymlink": true,
+      "path": "/usr/bin/python3.14",
+      "sha256": "52e0a13e60a981d8c4b6478be2ba5176f69da07948a056bf49cf6f077e30cb41",
+      "type": "regular",
+      "uid": 0
+    },
+    {
+      "bytes": 80424,
+      "ctime_ns": 1789737082983687674,
+      "device": 66308,
+      "gid": 0,
+      "inode": 33698291,
+      "mode": 493,
+      "mtime_ns": 1789675933000000000,
+      "nonsymlink": true,
+      "path": "/usr/bin/bwrap",
+      "sha256": "523da3e7399044be5163aee6f57a77a6bef7454376e28f0a0627920bae1b76b6",
+      "type": "regular",
+      "uid": 0
+    },
+    {
+      "bytes": 97272,
+      "ctime_ns": 1786388981856465932,
+      "device": 66308,
+      "gid": 0,
+      "inode": 33712481,
+      "mode": 493,
+      "mtime_ns": 1785185042000000000,
+      "nonsymlink": true,
+      "path": "/usr/bin/systemd-run",
+      "sha256": "03a68bafb0ebc0f5eff41cbdf3cbbdf126a3bb87e21140f9147bf78edce36d88",
+      "type": "regular",
+      "uid": 0
+    },
+    {
+      "bytes": 302112,
+      "ctime_ns": 1786388981847465833,
+      "device": 66308,
+      "gid": 0,
+      "inode": 33696754,
+      "mode": 493,
+      "mtime_ns": 1785185042000000000,
+      "nonsymlink": true,
+      "path": "/usr/bin/systemctl",
+      "sha256": "6394f5e8df92878184de9d4dfb7ac242471cb09daf89d23be4e81ae17e9c03b2",
+      "type": "regular",
+      "uid": 0
+    },
+    {
+      "bytes": 4247,
+      "ctime_ns": 1792000250987167241,
+      "device": 66308,
+      "gid": 0,
+      "inode": 35522518,
+      "mode": 420,
+      "mtime_ns": 1791962873000000000,
+      "nonsymlink": true,
+      "path": "/usr/include/node/node_version.h",
+      "sha256": "97f7761b7242f8a86b5909b145827e68d85c7c321d20d761a465531c2d698fda",
+      "type": "regular",
+      "uid": 0
+    }
+  ],
+  "inputIndex": {
+    "bytes": 34989918,
+    "ctime_ns": 1792235897423579748,
+    "device": 66308,
+    "gid": 1000,
+    "inode": 148286056,
+    "mode": 384,
+    "mtime_ns": 1792235897423579748,
+    "nonsymlink": true,
+    "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/COMPLETE_INPUT_INDEX.final.json",
+    "sha256": "c2b142b57b329ad198e0a2f6fbca0c81977731e11e7a2376befaffdb54610ab3",
+    "type": "regular",
+    "uid": 1000
+  },
+  "managerArgv": [
+    "/usr/bin/systemd-run",
+    "--user",
+    "--unit=openplan-pr332-qa-pure-20261017-04",
+    "--wait",
+    "--pipe",
+    "--service-type=exec",
+    "--property=MemoryMax=1073741824",
+    "--property=MemorySwapMax=0",
+    "--property=CPUQuota=50%",
+    "--property=CPUQuotaPeriodSec=100ms",
+    "--property=TasksMax=64",
+    "--property=RuntimeMaxSec=465s",
+    "--property=KillMode=control-group",
+    "--property=TimeoutStopSec=5s"
+  ],
+  "mutable": [
+    {
+      "id": "registry",
+      "relative": "workers/planner_agent_connector/tested-cli-versions.mjs",
+      "seed": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/seed/workers/planner_agent_connector/tested-cli-versions.mjs",
+      "sha256": "ee78a9e01e4adeeec47c5626ee919d8ae88992a67c387e8c86af7b001b5f2868",
+      "target": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/workers/planner_agent_connector/tested-cli-versions.mjs"
+    },
+    {
+      "id": "budget",
+      "relative": "openplan/src/lib/projects/budget-queries.ts",
+      "seed": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/seed/openplan/src/lib/projects/budget-queries.ts",
+      "sha256": "8fc81b230ce6f14aa8cabb311683db076fcb710ea3f499bb5dddfe4d264c6c08",
+      "target": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/lib/projects/budget-queries.ts"
+    },
+    {
+      "id": "changelog",
+      "relative": "CHANGELOG.md",
+      "seed": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/seed/CHANGELOG.md",
+      "sha256": "cbea9a767a611179abdd0862c9f890fb56859a1e5ca98ed430c40d5d27af351d",
+      "target": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/CHANGELOG.md"
+    }
+  ],
+  "namedDonor": "/home/nathaniel/code/openplan/openplan/node_modules",
+  "namespaceArgv": [
+    "/usr/bin/bwrap",
+    "--die-with-parent",
+    "--unshare-user",
+    "--uid",
+    "1000",
+    "--gid",
+    "1000",
+    "--unshare-pid",
+    "--unshare-net",
+    "--unshare-ipc",
+    "--unshare-uts",
+    "--ro-bind",
+    "/",
+    "/",
+    "--proc",
+    "/proc",
+    "--dev",
+    "/dev",
+    "--tmpfs",
+    "/tmp",
+    "--bind",
+    "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04",
+    "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04",
+    "--ro-bind",
+    "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/seed",
+    "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree",
+    "--bind",
+    "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/mutable/registry",
+    "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/workers/planner_agent_connector/tested-cli-versions.mjs",
+    "--bind",
+    "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/mutable/budget",
+    "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/lib/projects/budget-queries.ts",
+    "--bind",
+    "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/mutable/changelog",
+    "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/CHANGELOG.md",
+    "--ro-bind",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-06/vitest.config.mts",
+    "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/.pr332-vitest.config.mts",
+    "--ro-bind",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-06/vitest-reporter.mjs",
+    "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/.pr332-vitest-reporter.mjs",
+    "--ro-bind",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-06/node-reporter.mjs",
+    "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/.pr332-node-reporter.mjs",
+    "--ro-bind",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-06/report-io.mjs",
+    "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/.pr332-report-io.mjs",
+    "--ro-bind",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-06/report-io.mjs",
+    "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/.pr332-report-io.mjs",
+    "--ro-bind",
+    "/home/nathaniel/code/openplan/openplan/node_modules",
+    "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/node_modules",
+    "--clearenv",
+    "--setenv",
+    "PATH",
+    "/usr/bin:/bin",
+    "--setenv",
+    "HOME",
+    "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/home",
+    "--setenv",
+    "TMPDIR",
+    "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tmp",
+    "--setenv",
+    "TMP",
+    "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tmp",
+    "--setenv",
+    "TEMP",
+    "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tmp",
+    "--setenv",
+    "XDG_CACHE_HOME",
+    "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/cache",
+    "--setenv",
+    "XDG_CONFIG_HOME",
+    "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/config",
+    "--setenv",
+    "XDG_DATA_HOME",
+    "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/data",
+    "--setenv",
+    "XDG_STATE_HOME",
+    "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/state",
+    "--setenv",
+    "NODE_OPTIONS",
+    "--max-old-space-size=512",
+    "--setenv",
+    "NODE_ENV",
+    "test",
+    "--setenv",
+    "CI",
+    "true",
+    "--setenv",
+    "NO_COLOR",
+    "1",
+    "--setenv",
+    "NPM_CONFIG_USERCONFIG",
+    "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/config/npm-user.conf",
+    "--setenv",
+    "NPM_CONFIG_GLOBALCONFIG",
+    "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/config/npm-global.conf",
+    "--setenv",
+    "NPM_CONFIG_CACHE",
+    "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/cache/npm",
+    "--setenv",
+    "NPM_CONFIG_LOGS_DIR",
+    "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/cache/npm/logs",
+    "--setenv",
+    "NPM_CONFIG_UPDATE_NOTIFIER",
+    "false",
+    "--setenv",
+    "NPM_CONFIG_AUDIT",
+    "false",
+    "--setenv",
+    "NPM_CONFIG_FUND",
+    "false",
+    "--setenv",
+    "NEXT_PUBLIC_SUPABASE_URL",
+    "https://example.supabase.co",
+    "--setenv",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+    "ci-placeholder-anon-key",
+    "--setenv",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "ci-placeholder-service-role",
+    "--setenv",
+    "ANTHROPIC_API_KEY",
+    "ci-placeholder-anthropic-key",
+    "--chdir",
+    "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan",
+    "/usr/bin/python3",
+    "-B",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-06/runner.py",
+    "campaign"
+  ],
+  "namespaceMetadataBoundary": {
+    "bytes": 3367,
+    "ctime_ns": 1792233592473276327,
+    "device": 66308,
+    "gid": 1000,
+    "inode": 188357106,
+    "mode": 436,
+    "mtime_ns": 1792233592473276327,
+    "nonsymlink": true,
+    "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/NAMESPACE_METADATA_BOUNDARY.md",
+    "sha256": "0845b6e52092593781d88b1cd7797cdef48f5e526bf87c3044d2d72fb315af43",
+    "type": "regular",
+    "uid": 1000
+  },
+  "namespacePolicy": {
+    "actualOwnerAndMapRecording": "inner-input-view.json only during future grant",
+    "generalFollowing": false,
+    "host": "complete original descriptors at outer preflight, entry and independent terminal postflight",
+    "innerStrict": "all1000 regular files and62 donor aliases complete exact",
+    "innerSystemAliasPath": "/usr/bin/python3",
+    "innerSystemNonOwnerFields": "exact all; full actual metadata stability within each read",
+    "innerSystemRegularPaths": [
+      "/usr/bin/node",
+      "/usr/bin/python3.14",
+      "/usr/bin/bwrap",
+      "/usr/bin/systemd-run",
+      "/usr/bin/systemctl",
+      "/usr/include/node/node_version.h"
+    ],
+    "systemOwnerParity": "UNPROVED"
+  },
+  "namespacePolicyDisposition": {
+    "bytes": 4523,
+    "ctime_ns": 1792233062415967369,
+    "device": 66308,
+    "gid": 1000,
+    "inode": 137014022,
+    "mode": 384,
+    "mtime_ns": 1792233062415967369,
+    "nonsymlink": true,
+    "path": "/home/nathaniel/.local/state/openplan/pr332-qa-gate-3d62558-20261017-root-review/source-review-03/ROOT_SOURCE_DISPOSITION_03.json",
+    "sha256": "5275b929e3457166d5c02ead0fe2754dd3de524a488f9e26d18a818d2f60ba4b",
+    "type": "regular",
+    "uid": 1000
+  },
+  "nativeGranted": false,
+  "oneShot": true,
+  "phases": [
+    {
+      "commands": [
+        {
+          "argv": [
+            "/usr/bin/node",
+            "--test",
+            "--test-concurrency=1",
+            "--test-reporter=/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/.pr332-node-reporter.mjs",
+            "--test-name-pattern=^(?:registry\\ retains\\ exact\\ historical\\ contracts\\ and\\ hashes\\ existing\\ evidence|parser\\ refuses\\ malformed\\ and\\ duplicate\\ registry\\ data|parser\\ refuses\\ wrong\\ providers\\ and\\ crossed\\ provider\\ proof|parser\\ refuses\\ unproven\\ acceptance\\ and\\ invented\\ recording\\ or\\ native\\ dates|copied\\ proof\\ cannot\\ bless\\ another\\ version\\ and\\ exact\\ output\\ still\\ matters|Node\\ registry\\ loading\\ stays\\ module\\-relative\\ and\\ refuses\\ changed\\ or\\ absent\\ bytes)$",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/workers/planner_agent_connector/test/tested-cli-versions.test.mjs",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/workers/planner_agent_connector/test/registry-loading.test.mjs"
+          ],
+          "cwd": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree",
+          "environment": {
+            "PR332_REPORT": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/H00-harmless-first-node.ndjson"
+          },
+          "excludedNames": [
+            "real codex launcher consumes registry and refuses before profile access",
+            "real claude launcher consumes registry and refuses before profile access",
+            "real opencode launcher consumes registry and refuses before profile access"
+          ],
+          "id": "H00-harmless-first-node",
+          "modulePaths": [
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/workers/planner_agent_connector/test/tested-cli-versions.test.mjs",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/workers/planner_agent_connector/test/registry-loading.test.mjs"
+          ],
+          "report": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/H00-harmless-first-node.ndjson",
+          "runner": "node",
+          "seconds": 20,
+          "selectedNames": [
+            "registry retains exact historical contracts and hashes existing evidence",
+            "parser refuses malformed and duplicate registry data",
+            "parser refuses wrong providers and crossed provider proof",
+            "parser refuses unproven acceptance and invented recording or native dates",
+            "copied proof cannot bless another version and exact output still matters",
+            "Node registry loading stays module-relative and refuses changed or absent bytes"
+          ]
+        },
+        {
+          "argv": [
+            "/usr/bin/node",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan",
+            "--config",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/.pr332-vitest.config.mts",
+            "--configLoader",
+            "runner",
+            "--maxWorkers=1",
+            "--no-file-parallelism",
+            "--includeTaskLocation",
+            "--reporter",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/.pr332-vitest-reporter.mjs",
+            "src/test/tested-cli-registry-vite-compatibility.test.ts",
+            "src/test/project-budget-source-error-classification.test.ts",
+            "src/test/project-budget-queries.test.ts",
+            "src/test/project-budget-complete-inputs-corrections.test.ts",
+            "src/test/project-budget-stated-budget-isolation.test.ts",
+            "src/test/one-pending-schema-classifier.test.ts",
+            "src/test/migrations/release-ordering.test.ts"
+          ],
+          "cwd": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan",
+          "environment": {
+            "PR332_REPORT": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/H00-harmless-first-core.ndjson",
+            "PR332_VITE_CACHE": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/cache/H00-harmless-first-core"
+          },
+          "id": "H00-harmless-first-core",
+          "modulePaths": [
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/tested-cli-registry-vite-compatibility.test.ts",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/project-budget-source-error-classification.test.ts",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/project-budget-queries.test.ts",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/project-budget-complete-inputs-corrections.test.ts",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/project-budget-stated-budget-isolation.test.ts",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/one-pending-schema-classifier.test.ts",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/migrations/release-ordering.test.ts"
+          ],
+          "report": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/H00-harmless-first-core.ndjson",
+          "runner": "vitest",
+          "seconds": 40
+        }
+      ],
+      "id": "H00-harmless-first",
+      "kind": "harmless",
+      "mutations": [
+        {
+          "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/faults/H00-budget.ts",
+          "sha256": "aa224cfe5c2711183aca5477b7bfef788b53d1225a84b2073bc92c88ad4eb5d9",
+          "target": "budget"
+        },
+        {
+          "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/faults/H00-changelog.md",
+          "sha256": "a97ab4f1c863f7c10f589c6487bb99e9a5975bbb08f8067e045d045464c8d14b",
+          "target": "changelog"
+        },
+        {
+          "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/faults/H00-registry.mjs",
+          "sha256": "31d60f79448128304b8cdda9be2e515b886dce02051601c0aea8b82cd7cdc89b",
+          "target": "registry"
+        }
+      ]
+    },
+    {
+      "commands": [
+        {
+          "argv": [
+            "/usr/bin/node",
+            "--test",
+            "--test-concurrency=1",
+            "--test-reporter=/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/.pr332-node-reporter.mjs",
+            "--test-name-pattern=^(?:registry\\ retains\\ exact\\ historical\\ contracts\\ and\\ hashes\\ existing\\ evidence|parser\\ refuses\\ malformed\\ and\\ duplicate\\ registry\\ data|parser\\ refuses\\ wrong\\ providers\\ and\\ crossed\\ provider\\ proof|parser\\ refuses\\ unproven\\ acceptance\\ and\\ invented\\ recording\\ or\\ native\\ dates|copied\\ proof\\ cannot\\ bless\\ another\\ version\\ and\\ exact\\ output\\ still\\ matters|Node\\ registry\\ loading\\ stays\\ module\\-relative\\ and\\ refuses\\ changed\\ or\\ absent\\ bytes)$",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/workers/planner_agent_connector/test/tested-cli-versions.test.mjs",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/workers/planner_agent_connector/test/registry-loading.test.mjs"
+          ],
+          "cwd": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree",
+          "environment": {
+            "PR332_REPORT": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/B00-baseline-node.ndjson"
+          },
+          "excludedNames": [
+            "real codex launcher consumes registry and refuses before profile access",
+            "real claude launcher consumes registry and refuses before profile access",
+            "real opencode launcher consumes registry and refuses before profile access"
+          ],
+          "id": "B00-baseline-node",
+          "modulePaths": [
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/workers/planner_agent_connector/test/tested-cli-versions.test.mjs",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/workers/planner_agent_connector/test/registry-loading.test.mjs"
+          ],
+          "report": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/B00-baseline-node.ndjson",
+          "runner": "node",
+          "seconds": 20,
+          "selectedNames": [
+            "registry retains exact historical contracts and hashes existing evidence",
+            "parser refuses malformed and duplicate registry data",
+            "parser refuses wrong providers and crossed provider proof",
+            "parser refuses unproven acceptance and invented recording or native dates",
+            "copied proof cannot bless another version and exact output still matters",
+            "Node registry loading stays module-relative and refuses changed or absent bytes"
+          ]
+        },
+        {
+          "argv": [
+            "/usr/bin/node",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan",
+            "--config",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/.pr332-vitest.config.mts",
+            "--configLoader",
+            "runner",
+            "--maxWorkers=1",
+            "--no-file-parallelism",
+            "--includeTaskLocation",
+            "--reporter",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/.pr332-vitest-reporter.mjs",
+            "src/test/tested-cli-registry-vite-compatibility.test.ts",
+            "src/test/project-budget-source-error-classification.test.ts",
+            "src/test/project-budget-queries.test.ts",
+            "src/test/project-budget-complete-inputs-corrections.test.ts",
+            "src/test/project-budget-stated-budget-isolation.test.ts",
+            "src/test/one-pending-schema-classifier.test.ts",
+            "src/test/migrations/release-ordering.test.ts"
+          ],
+          "cwd": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan",
+          "environment": {
+            "PR332_REPORT": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/B00-baseline-core.ndjson",
+            "PR332_VITE_CACHE": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/cache/B00-baseline-core"
+          },
+          "id": "B00-baseline-core",
+          "modulePaths": [
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/tested-cli-registry-vite-compatibility.test.ts",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/project-budget-source-error-classification.test.ts",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/project-budget-queries.test.ts",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/project-budget-complete-inputs-corrections.test.ts",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/project-budget-stated-budget-isolation.test.ts",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/one-pending-schema-classifier.test.ts",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/migrations/release-ordering.test.ts"
+          ],
+          "report": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/B00-baseline-core.ndjson",
+          "runner": "vitest",
+          "seconds": 40
+        }
+      ],
+      "id": "B00-baseline",
+      "kind": "baseline",
+      "mutations": []
+    },
+    {
+      "commands": [
+        {
+          "argv": [
+            "/usr/bin/node",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan",
+            "--config",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/.pr332-vitest.config.mts",
+            "--configLoader",
+            "runner",
+            "--maxWorkers=1",
+            "--no-file-parallelism",
+            "--includeTaskLocation",
+            "--reporter",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/.pr332-vitest-reporter.mjs",
+            "--testNamePattern",
+            "loads every real launcher with the same exact frozen manifest",
+            "src/test/tested-cli-registry-vite-compatibility.test.ts"
+          ],
+          "cwd": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan",
+          "environment": {
+            "PR332_REPORT": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/F01-old-url-vite.ndjson",
+            "PR332_VITE_CACHE": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/cache/F01-old-url-vite"
+          },
+          "id": "F01-old-url-vite",
+          "modulePaths": [
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/tested-cli-registry-vite-compatibility.test.ts"
+          ],
+          "oracle": {
+            "file": "tested-cli-registry-vite-compatibility.test.ts",
+            "line": 16,
+            "names": [
+              "strict registry through the application Vite loader > loads every real launcher with the same exact frozen manifest"
+            ],
+            "tokens": [
+              "real registry and launcher imports must load through Vite",
+              "ERR_INVALID_URL_SCHEME"
+            ]
+          },
+          "report": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/F01-old-url-vite.ndjson",
+          "runner": "vitest",
+          "seconds": 15,
+          "selectedFullNames": [
+            "strict registry through the application Vite loader > loads every real launcher with the same exact frozen manifest"
+          ]
+        }
+      ],
+      "id": "F01-old-url",
+      "kind": "fault",
+      "mutations": [
+        {
+          "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/faults/F01-old-url.mjs",
+          "sha256": "40caab68cd4d3f912a51e869e30379c3e62e5d041eba8699b3265219027d8c7b",
+          "target": "registry"
+        }
+      ]
+    },
+    {
+      "commands": [
+        {
+          "argv": [
+            "/usr/bin/node",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan",
+            "--config",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/.pr332-vitest.config.mts",
+            "--configLoader",
+            "runner",
+            "--maxWorkers=1",
+            "--no-file-parallelism",
+            "--includeTaskLocation",
+            "--reporter",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/.pr332-vitest-reporter.mjs",
+            "--testNamePattern",
+            "still rejects byte changes that preserve the parsed manifest",
+            "src/test/tested-cli-registry-vite-compatibility.test.ts"
+          ],
+          "cwd": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan",
+          "environment": {
+            "PR332_REPORT": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/F02-no-byte-pin-vite.ndjson",
+            "PR332_VITE_CACHE": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/cache/F02-no-byte-pin-vite"
+          },
+          "id": "F02-no-byte-pin-vite",
+          "modulePaths": [
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/tested-cli-registry-vite-compatibility.test.ts"
+          ],
+          "oracle": {
+            "file": "tested-cli-registry-vite-compatibility.test.ts",
+            "line": 50,
+            "names": [
+              "strict registry through the application Vite loader > still rejects byte changes that preserve the parsed manifest"
+            ],
+            "tokens": [
+              "native_cli_registry_unreviewed"
+            ]
+          },
+          "report": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/F02-no-byte-pin-vite.ndjson",
+          "runner": "vitest",
+          "seconds": 15,
+          "selectedFullNames": [
+            "strict registry through the application Vite loader > still rejects byte changes that preserve the parsed manifest"
+          ]
+        },
+        {
+          "argv": [
+            "/usr/bin/node",
+            "--test",
+            "--test-concurrency=1",
+            "--test-reporter=/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/.pr332-node-reporter.mjs",
+            "--test-name-pattern=^(?:Node\\ registry\\ loading\\ stays\\ module\\-relative\\ and\\ refuses\\ changed\\ or\\ absent\\ bytes)$",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/workers/planner_agent_connector/test/registry-loading.test.mjs"
+          ],
+          "cwd": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree",
+          "environment": {
+            "PR332_REPORT": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/F02-no-byte-pin-node.ndjson"
+          },
+          "excludedNames": [],
+          "id": "F02-no-byte-pin-node",
+          "modulePaths": [
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/workers/planner_agent_connector/test/registry-loading.test.mjs"
+          ],
+          "oracle": {
+            "actual": 0,
+            "expected": 1,
+            "file": "registry-loading.test.mjs",
+            "line": 53,
+            "names": [
+              "Node registry loading stays module-relative and refuses changed or absent bytes"
+            ]
+          },
+          "report": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/F02-no-byte-pin-node.ndjson",
+          "runner": "node",
+          "seconds": 20,
+          "selectedNames": [
+            "Node registry loading stays module-relative and refuses changed or absent bytes"
+          ]
+        }
+      ],
+      "id": "F02-no-byte-pin",
+      "kind": "fault",
+      "mutations": [
+        {
+          "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/faults/F02-no-byte-pin.mjs",
+          "sha256": "8bb53ddf75107f517e160ed58a8058eaea973d72c5fcb3ef33c91bed3d208cd1",
+          "target": "registry"
+        }
+      ]
+    },
+    {
+      "commands": [
+        {
+          "argv": [
+            "/usr/bin/node",
+            "--test",
+            "--test-concurrency=1",
+            "--test-reporter=/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/.pr332-node-reporter.mjs",
+            "--test-name-pattern=^(?:Node\\ registry\\ loading\\ stays\\ module\\-relative\\ and\\ refuses\\ changed\\ or\\ absent\\ bytes)$",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/workers/planner_agent_connector/test/registry-loading.test.mjs"
+          ],
+          "cwd": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree",
+          "environment": {
+            "PR332_REPORT": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/F03-ambient-cwd-node.ndjson"
+          },
+          "excludedNames": [],
+          "id": "F03-ambient-cwd-node",
+          "modulePaths": [
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/workers/planner_agent_connector/test/registry-loading.test.mjs"
+          ],
+          "oracle": {
+            "actual": 1,
+            "expected": 0,
+            "file": "registry-loading.test.mjs",
+            "line": 46,
+            "names": [
+              "Node registry loading stays module-relative and refuses changed or absent bytes"
+            ]
+          },
+          "report": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/F03-ambient-cwd-node.ndjson",
+          "runner": "node",
+          "seconds": 20,
+          "selectedNames": [
+            "Node registry loading stays module-relative and refuses changed or absent bytes"
+          ]
+        }
+      ],
+      "id": "F03-ambient-cwd",
+      "kind": "fault",
+      "mutations": [
+        {
+          "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/faults/F03-ambient-cwd.mjs",
+          "sha256": "c762db1c3c13e09b00523d8b2f13a9823874e052a908eabccaea1663edbff8a7",
+          "target": "registry"
+        }
+      ]
+    },
+    {
+      "commands": [
+        {
+          "argv": [
+            "/usr/bin/node",
+            "--test",
+            "--test-concurrency=1",
+            "--test-reporter=/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/.pr332-node-reporter.mjs",
+            "--test-name-pattern=^(?:Node\\ registry\\ loading\\ stays\\ module\\-relative\\ and\\ refuses\\ changed\\ or\\ absent\\ bytes)$",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/workers/planner_agent_connector/test/registry-loading.test.mjs"
+          ],
+          "cwd": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree",
+          "environment": {
+            "PR332_REPORT": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/F04-ambient-fallback-node.ndjson"
+          },
+          "excludedNames": [],
+          "id": "F04-ambient-fallback-node",
+          "modulePaths": [
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/workers/planner_agent_connector/test/registry-loading.test.mjs"
+          ],
+          "oracle": {
+            "actual": 0,
+            "expected": 1,
+            "file": "registry-loading.test.mjs",
+            "line": 61,
+            "names": [
+              "Node registry loading stays module-relative and refuses changed or absent bytes"
+            ]
+          },
+          "report": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/F04-ambient-fallback-node.ndjson",
+          "runner": "node",
+          "seconds": 20,
+          "selectedNames": [
+            "Node registry loading stays module-relative and refuses changed or absent bytes"
+          ]
+        }
+      ],
+      "id": "F04-ambient-fallback",
+      "kind": "fault",
+      "mutations": [
+        {
+          "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/faults/F04-ambient-fallback.mjs",
+          "sha256": "fe06da3c0bee8b4d8d4fab242a3ecb6aebb0c57d86b65c3369e8dd52752feea5",
+          "target": "registry"
+        }
+      ]
+    },
+    {
+      "commands": [
+        {
+          "argv": [
+            "/usr/bin/node",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan",
+            "--config",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/.pr332-vitest.config.mts",
+            "--configLoader",
+            "runner",
+            "--maxWorkers=1",
+            "--no-file-parallelism",
+            "--includeTaskLocation",
+            "--reporter",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/.pr332-vitest-reporter.mjs",
+            "--testNamePattern",
+            "preserves deliverable code and source identity",
+            "src/test/project-budget-source-error-classification.test.ts"
+          ],
+          "cwd": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan",
+          "environment": {
+            "PR332_REPORT": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/F05-no-deliverable-code-vite.ndjson",
+            "PR332_VITE_CACHE": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/cache/F05-no-deliverable-code-vite"
+          },
+          "id": "F05-no-deliverable-code-vite",
+          "modulePaths": [
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/project-budget-source-error-classification.test.ts"
+          ],
+          "oracle": {
+            "actual": "true",
+            "expected": "false",
+            "file": "project-budget-source-error-classification.test.ts",
+            "line": 66,
+            "names": [
+              "deliverable source error classification > preserves deliverable code and source identity ['D04-code-absent']"
+            ]
+          },
+          "report": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/F05-no-deliverable-code-vite.ndjson",
+          "runner": "vitest",
+          "seconds": 15,
+          "selectedFullNames": [
+            "deliverable source error classification > preserves deliverable code and source identity ['D01-public-absent']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D02-unqualified-absent']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D03-terminal-LF']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D04-code-absent']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D05-code-permission']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D06-code-internal']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D07-private-relation']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D08-deliverable-helper']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D09-other-relation']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D10-column-error']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D11-cache-unavailable']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D12-permission-denied']"
+          ]
+        }
+      ],
+      "id": "F05-no-deliverable-code",
+      "kind": "fault",
+      "mutations": [
+        {
+          "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/faults/F05-no-deliverable-code.ts",
+          "sha256": "0675ef07cf7f1cf696589b1b2b865fd4484979348691475473404cf24fc1d38f",
+          "target": "budget"
+        }
+      ]
+    },
+    {
+      "commands": [
+        {
+          "argv": [
+            "/usr/bin/node",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan",
+            "--config",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/.pr332-vitest.config.mts",
+            "--configLoader",
+            "runner",
+            "--maxWorkers=1",
+            "--no-file-parallelism",
+            "--includeTaskLocation",
+            "--reporter",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/.pr332-vitest-reporter.mjs",
+            "--testNamePattern",
+            "preserves deliverable code and source identity",
+            "src/test/project-budget-source-error-classification.test.ts"
+          ],
+          "cwd": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan",
+          "environment": {
+            "PR332_REPORT": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/F06-generic-relations-vite.ndjson",
+            "PR332_VITE_CACHE": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/cache/F06-generic-relations-vite"
+          },
+          "id": "F06-generic-relations-vite",
+          "modulePaths": [
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/project-budget-source-error-classification.test.ts"
+          ],
+          "oracle": {
+            "actual": "true",
+            "expected": "false",
+            "file": "project-budget-source-error-classification.test.ts",
+            "line": 66,
+            "names": [
+              "deliverable source error classification > preserves deliverable code and source identity ['D03-terminal-LF']",
+              "deliverable source error classification > preserves deliverable code and source identity ['D07-private-relation']",
+              "deliverable source error classification > preserves deliverable code and source identity ['D08-deliverable-helper']",
+              "deliverable source error classification > preserves deliverable code and source identity ['D09-other-relation']"
+            ]
+          },
+          "report": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/F06-generic-relations-vite.ndjson",
+          "runner": "vitest",
+          "seconds": 15,
+          "selectedFullNames": [
+            "deliverable source error classification > preserves deliverable code and source identity ['D01-public-absent']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D02-unqualified-absent']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D03-terminal-LF']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D04-code-absent']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D05-code-permission']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D06-code-internal']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D07-private-relation']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D08-deliverable-helper']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D09-other-relation']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D10-column-error']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D11-cache-unavailable']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D12-permission-denied']"
+          ]
+        }
+      ],
+      "id": "F06-generic-relations",
+      "kind": "fault",
+      "mutations": [
+        {
+          "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/faults/F06-generic-relations.ts",
+          "sha256": "ad513b6778d82a099910470b4fe65c28fd45ec428836f32fa158eb5a4cc563c5",
+          "target": "budget"
+        }
+      ]
+    },
+    {
+      "commands": [
+        {
+          "argv": [
+            "/usr/bin/node",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan",
+            "--config",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/.pr332-vitest.config.mts",
+            "--configLoader",
+            "runner",
+            "--maxWorkers=1",
+            "--no-file-parallelism",
+            "--includeTaskLocation",
+            "--reporter",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/.pr332-vitest-reporter.mjs",
+            "--testNamePattern",
+            "preserves deliverable code and source identity",
+            "src/test/project-budget-source-error-classification.test.ts"
+          ],
+          "cwd": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan",
+          "environment": {
+            "PR332_REPORT": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/F07-no-deliverable-pending-vite.ndjson",
+            "PR332_VITE_CACHE": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/cache/F07-no-deliverable-pending-vite"
+          },
+          "id": "F07-no-deliverable-pending-vite",
+          "modulePaths": [
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/project-budget-source-error-classification.test.ts"
+          ],
+          "oracle": {
+            "actual": "false",
+            "expected": "true",
+            "file": "project-budget-source-error-classification.test.ts",
+            "line": 66,
+            "names": [
+              "deliverable source error classification > preserves deliverable code and source identity ['D01-public-absent']",
+              "deliverable source error classification > preserves deliverable code and source identity ['D02-unqualified-absent']"
+            ]
+          },
+          "report": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/F07-no-deliverable-pending-vite.ndjson",
+          "runner": "vitest",
+          "seconds": 15,
+          "selectedFullNames": [
+            "deliverable source error classification > preserves deliverable code and source identity ['D01-public-absent']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D02-unqualified-absent']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D03-terminal-LF']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D04-code-absent']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D05-code-permission']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D06-code-internal']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D07-private-relation']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D08-deliverable-helper']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D09-other-relation']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D10-column-error']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D11-cache-unavailable']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D12-permission-denied']"
+          ]
+        }
+      ],
+      "id": "F07-no-deliverable-pending",
+      "kind": "fault",
+      "mutations": [
+        {
+          "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/faults/F07-no-deliverable-pending.ts",
+          "sha256": "c6ea2d0efda7bf557a41b375d2c455c42747b88281b175b00d1587ef38636cc5",
+          "target": "budget"
+        }
+      ]
+    },
+    {
+      "commands": [
+        {
+          "argv": [
+            "/usr/bin/node",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan",
+            "--config",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/.pr332-vitest.config.mts",
+            "--configLoader",
+            "runner",
+            "--maxWorkers=1",
+            "--no-file-parallelism",
+            "--includeTaskLocation",
+            "--reporter",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/.pr332-vitest-reporter.mjs",
+            "--testNamePattern",
+            "preserves deliverable code and source identity",
+            "src/test/project-budget-source-error-classification.test.ts"
+          ],
+          "cwd": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan",
+          "environment": {
+            "PR332_REPORT": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/F08-drop-source-code-vite.ndjson",
+            "PR332_VITE_CACHE": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/cache/F08-drop-source-code-vite"
+          },
+          "id": "F08-drop-source-code-vite",
+          "modulePaths": [
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/project-budget-source-error-classification.test.ts"
+          ],
+          "oracle": {
+            "file": "project-budget-source-error-classification.test.ts",
+            "line": 68,
+            "names": [
+              "deliverable source error classification > preserves deliverable code and source identity ['D03-terminal-LF']",
+              "deliverable source error classification > preserves deliverable code and source identity ['D05-code-permission']",
+              "deliverable source error classification > preserves deliverable code and source identity ['D06-code-internal']",
+              "deliverable source error classification > preserves deliverable code and source identity ['D07-private-relation']",
+              "deliverable source error classification > preserves deliverable code and source identity ['D08-deliverable-helper']",
+              "deliverable source error classification > preserves deliverable code and source identity ['D09-other-relation']",
+              "deliverable source error classification > preserves deliverable code and source identity ['D10-column-error']",
+              "deliverable source error classification > preserves deliverable code and source identity ['D11-cache-unavailable']",
+              "deliverable source error classification > preserves deliverable code and source identity ['D12-permission-denied']"
+            ],
+            "tokens": [
+              "code"
+            ]
+          },
+          "report": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/F08-drop-source-code-vite.ndjson",
+          "runner": "vitest",
+          "seconds": 15,
+          "selectedFullNames": [
+            "deliverable source error classification > preserves deliverable code and source identity ['D01-public-absent']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D02-unqualified-absent']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D03-terminal-LF']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D04-code-absent']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D05-code-permission']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D06-code-internal']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D07-private-relation']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D08-deliverable-helper']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D09-other-relation']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D10-column-error']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D11-cache-unavailable']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D12-permission-denied']"
+          ]
+        }
+      ],
+      "id": "F08-drop-source-code",
+      "kind": "fault",
+      "mutations": [
+        {
+          "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/faults/F08-drop-source-code.ts",
+          "sha256": "076d5a2ec5f7507e26700761997af0a688ac17c13e67a937ee2a401fd43c697b",
+          "target": "budget"
+        }
+      ]
+    },
+    {
+      "commands": [
+        {
+          "argv": [
+            "/usr/bin/node",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan",
+            "--config",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/.pr332-vitest.config.mts",
+            "--configLoader",
+            "runner",
+            "--maxWorkers=1",
+            "--no-file-parallelism",
+            "--includeTaskLocation",
+            "--reporter",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/.pr332-vitest-reporter.mjs",
+            "--testNamePattern",
+            "no inline pending-schema regex.*adds no new file",
+            "src/test/one-pending-schema-classifier.test.ts"
+          ],
+          "cwd": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan",
+          "environment": {
+            "PR332_REPORT": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/F09-inline-regex-vite.ndjson",
+            "PR332_VITE_CACHE": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/cache/F09-inline-regex-vite"
+          },
+          "id": "F09-inline-regex-vite",
+          "modulePaths": [
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/one-pending-schema-classifier.test.ts"
+          ],
+          "oracle": {
+            "file": "one-pending-schema-classifier.test.ts",
+            "line": 298,
+            "names": [
+              "one pending-schema classifier \u2014 no inline pending-schema regex > adds no new file"
+            ],
+            "tokens": [
+              "src/lib/projects/budget-queries.ts"
+            ]
+          },
+          "report": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/F09-inline-regex-vite.ndjson",
+          "runner": "vitest",
+          "seconds": 15,
+          "selectedFullNames": [
+            "one pending-schema classifier \u2014 no inline pending-schema regex > adds no new file"
+          ]
+        }
+      ],
+      "id": "F09-inline-regex",
+      "kind": "fault",
+      "mutations": [
+        {
+          "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/faults/F09-inline-regex.ts",
+          "sha256": "efaebde19933030ed11a54a200b97b87677198f67690cbaa3a3a323e40a57c0f",
+          "target": "budget"
+        }
+      ]
+    },
+    {
+      "commands": [
+        {
+          "argv": [
+            "/usr/bin/node",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan",
+            "--config",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/.pr332-vitest.config.mts",
+            "--configLoader",
+            "runner",
+            "--maxWorkers=1",
+            "--no-file-parallelism",
+            "--includeTaskLocation",
+            "--reporter",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/.pr332-vitest-reporter.mjs",
+            "--testNamePattern",
+            "the CHANGELOG.s Unreleased section names every migration landed since the newest tag",
+            "src/test/migrations/release-ordering.test.ts"
+          ],
+          "cwd": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan",
+          "environment": {
+            "PR332_REPORT": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/F10-no-budget-migration-name-vite.ndjson",
+            "PR332_VITE_CACHE": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/cache/F10-no-budget-migration-name-vite"
+          },
+          "id": "F10-no-budget-migration-name-vite",
+          "modulePaths": [
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/migrations/release-ordering.test.ts"
+          ],
+          "oracle": {
+            "file": "release-ordering.test.ts",
+            "line": 612,
+            "names": [
+              "released migration ordering > the CHANGELOG's Unreleased section names every migration landed since the newest tag"
+            ],
+            "tokens": [
+              "20261017000019_project_budget_complete_inputs.sql"
+            ]
+          },
+          "report": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/F10-no-budget-migration-name-vite.ndjson",
+          "runner": "vitest",
+          "seconds": 15,
+          "selectedFullNames": [
+            "released migration ordering > the CHANGELOG's Unreleased section names every migration landed since the newest tag"
+          ]
+        }
+      ],
+      "id": "F10-no-budget-migration-name",
+      "kind": "fault",
+      "mutations": [
+        {
+          "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/faults/F10-no-budget-migration-name.md",
+          "sha256": "d20e8e8d46ed79b9ff9e670b9a76082c5bd9568873f62189c7350857c8389598",
+          "target": "changelog"
+        }
+      ]
+    },
+    {
+      "commands": [
+        {
+          "argv": [
+            "/usr/bin/node",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan",
+            "--config",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/.pr332-vitest.config.mts",
+            "--configLoader",
+            "runner",
+            "--maxWorkers=1",
+            "--no-file-parallelism",
+            "--includeTaskLocation",
+            "--reporter",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/.pr332-vitest-reporter.mjs",
+            "--testNamePattern",
+            "the CHANGELOG.s Unreleased section names every migration landed since the newest tag",
+            "src/test/migrations/release-ordering.test.ts"
+          ],
+          "cwd": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan",
+          "environment": {
+            "PR332_REPORT": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/F11-no-publication-migration-name-vite.ndjson",
+            "PR332_VITE_CACHE": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/cache/F11-no-publication-migration-name-vite"
+          },
+          "id": "F11-no-publication-migration-name-vite",
+          "modulePaths": [
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/migrations/release-ordering.test.ts"
+          ],
+          "oracle": {
+            "file": "release-ordering.test.ts",
+            "line": 612,
+            "names": [
+              "released migration ordering > the CHANGELOG's Unreleased section names every migration landed since the newest tag"
+            ],
+            "tokens": [
+              "20261017030608_land_use_plan_publication_transaction.sql"
+            ]
+          },
+          "report": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/F11-no-publication-migration-name-vite.ndjson",
+          "runner": "vitest",
+          "seconds": 15,
+          "selectedFullNames": [
+            "released migration ordering > the CHANGELOG's Unreleased section names every migration landed since the newest tag"
+          ]
+        }
+      ],
+      "id": "F11-no-publication-migration-name",
+      "kind": "fault",
+      "mutations": [
+        {
+          "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/faults/F11-no-publication-migration-name.md",
+          "sha256": "eb83d1fe869ed335162bbb4d887d39f9655619ce009b3bc62252a0d200a2e81a",
+          "target": "changelog"
+        }
+      ]
+    },
+    {
+      "commands": [
+        {
+          "argv": [
+            "/usr/bin/node",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan",
+            "--config",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/.pr332-vitest.config.mts",
+            "--configLoader",
+            "runner",
+            "--maxWorkers=1",
+            "--no-file-parallelism",
+            "--includeTaskLocation",
+            "--reporter",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/.pr332-vitest-reporter.mjs",
+            "--testNamePattern",
+            "preserves deliverable code and source identity",
+            "src/test/project-budget-source-error-classification.test.ts"
+          ],
+          "cwd": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan",
+          "environment": {
+            "PR332_REPORT": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/F12-terminal-LF-accepted-vite.ndjson",
+            "PR332_VITE_CACHE": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/cache/F12-terminal-LF-accepted-vite"
+          },
+          "id": "F12-terminal-LF-accepted-vite",
+          "modulePaths": [
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/project-budget-source-error-classification.test.ts"
+          ],
+          "oracle": {
+            "actual": "true",
+            "expected": "false",
+            "file": "project-budget-source-error-classification.test.ts",
+            "line": 66,
+            "names": [
+              "deliverable source error classification > preserves deliverable code and source identity ['D03-terminal-LF']"
+            ]
+          },
+          "report": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/F12-terminal-LF-accepted-vite.ndjson",
+          "runner": "vitest",
+          "seconds": 20,
+          "selectedFullNames": [
+            "deliverable source error classification > preserves deliverable code and source identity ['D01-public-absent']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D02-unqualified-absent']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D03-terminal-LF']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D04-code-absent']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D05-code-permission']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D06-code-internal']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D07-private-relation']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D08-deliverable-helper']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D09-other-relation']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D10-column-error']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D11-cache-unavailable']",
+            "deliverable source error classification > preserves deliverable code and source identity ['D12-permission-denied']"
+          ]
+        }
+      ],
+      "id": "F12-terminal-LF-accepted",
+      "kind": "fault",
+      "mutations": [
+        {
+          "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/faults/F12-terminal-LF-accepted.ts",
+          "sha256": "a4948e37c0451209f61eb82b49a932d2cfcfb5eee62e045d00ed1d7bbbf73818",
+          "target": "budget"
+        }
+      ]
+    },
+    {
+      "commands": [
+        {
+          "argv": [
+            "/usr/bin/node",
+            "--test",
+            "--test-concurrency=1",
+            "--test-reporter=/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/.pr332-node-reporter.mjs",
+            "--test-name-pattern=^(?:registry\\ retains\\ exact\\ historical\\ contracts\\ and\\ hashes\\ existing\\ evidence|parser\\ refuses\\ malformed\\ and\\ duplicate\\ registry\\ data|parser\\ refuses\\ wrong\\ providers\\ and\\ crossed\\ provider\\ proof|parser\\ refuses\\ unproven\\ acceptance\\ and\\ invented\\ recording\\ or\\ native\\ dates|copied\\ proof\\ cannot\\ bless\\ another\\ version\\ and\\ exact\\ output\\ still\\ matters|Node\\ registry\\ loading\\ stays\\ module\\-relative\\ and\\ refuses\\ changed\\ or\\ absent\\ bytes)$",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/workers/planner_agent_connector/test/tested-cli-versions.test.mjs",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/workers/planner_agent_connector/test/registry-loading.test.mjs"
+          ],
+          "cwd": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree",
+          "environment": {
+            "PR332_REPORT": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/R00-final-restored-node.ndjson"
+          },
+          "excludedNames": [
+            "real codex launcher consumes registry and refuses before profile access",
+            "real claude launcher consumes registry and refuses before profile access",
+            "real opencode launcher consumes registry and refuses before profile access"
+          ],
+          "id": "R00-final-restored-node",
+          "modulePaths": [
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/workers/planner_agent_connector/test/tested-cli-versions.test.mjs",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/workers/planner_agent_connector/test/registry-loading.test.mjs"
+          ],
+          "report": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/R00-final-restored-node.ndjson",
+          "runner": "node",
+          "seconds": 20,
+          "selectedNames": [
+            "registry retains exact historical contracts and hashes existing evidence",
+            "parser refuses malformed and duplicate registry data",
+            "parser refuses wrong providers and crossed provider proof",
+            "parser refuses unproven acceptance and invented recording or native dates",
+            "copied proof cannot bless another version and exact output still matters",
+            "Node registry loading stays module-relative and refuses changed or absent bytes"
+          ]
+        },
+        {
+          "argv": [
+            "/usr/bin/node",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan",
+            "--config",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/.pr332-vitest.config.mts",
+            "--configLoader",
+            "runner",
+            "--maxWorkers=1",
+            "--no-file-parallelism",
+            "--includeTaskLocation",
+            "--reporter",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/.pr332-vitest-reporter.mjs",
+            "src/test/tested-cli-registry-vite-compatibility.test.ts",
+            "src/test/project-budget-source-error-classification.test.ts",
+            "src/test/project-budget-queries.test.ts",
+            "src/test/project-budget-complete-inputs-corrections.test.ts",
+            "src/test/project-budget-stated-budget-isolation.test.ts",
+            "src/test/one-pending-schema-classifier.test.ts",
+            "src/test/migrations/release-ordering.test.ts"
+          ],
+          "cwd": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan",
+          "environment": {
+            "PR332_REPORT": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/R00-final-restored-core.ndjson",
+            "PR332_VITE_CACHE": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/cache/R00-final-restored-core"
+          },
+          "id": "R00-final-restored-core",
+          "modulePaths": [
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/tested-cli-registry-vite-compatibility.test.ts",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/project-budget-source-error-classification.test.ts",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/project-budget-queries.test.ts",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/project-budget-complete-inputs-corrections.test.ts",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/project-budget-stated-budget-isolation.test.ts",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/one-pending-schema-classifier.test.ts",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/migrations/release-ordering.test.ts"
+          ],
+          "report": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/R00-final-restored-core.ndjson",
+          "runner": "vitest",
+          "seconds": 40
+        }
+      ],
+      "id": "R00-final-restored",
+      "kind": "restored",
+      "mutations": []
+    },
+    {
+      "commands": [
+        {
+          "argv": [
+            "/usr/bin/node",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan",
+            "--config",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/.pr332-vitest.config.mts",
+            "--configLoader",
+            "runner",
+            "--maxWorkers=1",
+            "--no-file-parallelism",
+            "--includeTaskLocation",
+            "--reporter",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/.pr332-vitest-reporter.mjs",
+            "src/test/data-hub-page.test.tsx",
+            "src/test/gtfs-feed-detail-route.test.ts",
+            "src/test/gtfs-feeds-route.test.ts",
+            "src/test/gtfs-staged-upload-routes.test.ts",
+            "src/test/the-refresh-route-refuses-a-widened-agent-request.test.ts"
+          ],
+          "cwd": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan",
+          "environment": {
+            "PR332_REPORT": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/I00-original-five-intact.ndjson",
+            "PR332_VITE_CACHE": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/cache/I00-original-five-intact"
+          },
+          "id": "I00-original-five-intact",
+          "modulePaths": [
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/data-hub-page.test.tsx",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/gtfs-feed-detail-route.test.ts",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/gtfs-feeds-route.test.ts",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/gtfs-staged-upload-routes.test.ts",
+            "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree/openplan/src/test/the-refresh-route-refuses-a-widened-agent-request.test.ts"
+          ],
+          "report": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/reports/I00-original-five-intact.ndjson",
+          "runner": "vitest",
+          "seconds": 40
+        }
+      ],
+      "id": "I00-original-five-intact",
+      "kind": "integration",
+      "mutations": []
+    }
+  ],
+  "preparationRevisionNotes": [
+    "Only unsupported bwrap --preserve-fds,1 pair is removed from the mechanically rebound namespace argv.",
+    "Runner functions, FD3 inheritance/acquisition/inode guard, subject tests/readers/assertions and all phase/oracle/limit data remain unchanged.",
+    "NEW04 physical4490-file seed equals original03 seed in every relative path and SHA; no donor/proof corpus copy.",
+    "Original03 REQUEST/grant/epoch/attempt and all failed setup receipts remain in place; NEW04 contains proposals only."
+  ],
+  "priorSubjectSetupFailure": {
+    "bytes": 6199,
+    "ctime_ns": 1792234239733240411,
+    "device": 66308,
+    "gid": 1000,
+    "inode": 140815116,
+    "mode": 384,
+    "mtime_ns": 1792234239733240411,
+    "nonsymlink": true,
+    "path": "/home/nathaniel/.local/state/openplan/pr332-qa-gate-3d62558-20261017-root-review/subject-window-05/ROOT_SETUP_FAILURE_AUDIT_05.json",
+    "sha256": "ce65d11b95c885b9650f3662ca8017b423af05c65c8e826a5f7a033ddc92e2b4",
+    "type": "regular",
+    "uid": 1000
+  },
+  "proposedFutureOuterArgv": [
+    "/usr/bin/python3",
+    "-B",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-06/runner.py",
+    "outer"
+  ],
+  "runtimeGranted": false,
+  "sourceDelta": {
+    "bytes": 12796,
+    "ctime_ns": 1792235577751644693,
+    "device": 66308,
+    "gid": 1000,
+    "inode": 148286349,
+    "mode": 384,
+    "mtime_ns": 1792235577751644693,
+    "nonsymlink": true,
+    "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/SOURCE_DELTA.json",
+    "sha256": "8c63e4c1a1915b6ce3a4b7d6694da2fa49d79ff2b0cc4db809be0eabaad944a9",
+    "type": "regular",
+    "uid": 1000
+  },
+  "subjectExecution": false,
+  "tier": "SOURCE_ONLY_TEST04_PROPOSAL_AFTER_PERMANENT_TEST01_SETUP_FAILURE",
+  "tree": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-06/TEST04/tree",
+  "unresolvedBoundaries": [
+    "ROOT exact NEW06 source/metadata reread and separate fresh TEST04 grant required.",
+    "Default inherited FD continuity is source-supported only, not yet observed in this subject namespace.",
+    "Full19-call cost fit remains unmeasured; no skip, automatic retry or CI regrade."
+  ]
+}

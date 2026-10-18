@@ -1,0 +1,14 @@
+{
+  "argv": [
+    "/bin/bash",
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/run-pure-window.sh"
+  ],
+  "grantSHA256": "d8d8f503e950f37faa6010fe38509365377858f0fc8147d830c8300f9af2996f",
+  "noLegacyNativeEntryPoint": true,
+  "parentDeadlineSeconds": 145,
+  "perStreamLimit": 1048576,
+  "requestSHA256": "e7ed74156793d8cc04dcaca5facb3ce78891ef4d56f38c2a99fcf84ebabfd1c4",
+  "retry": "FORBIDDEN",
+  "rootParentRecorderSourceSHA256": "05bc862604ebc65bf52ae5f58565cf30f765080d8df5bc14b142ba481d8066cc",
+  "unitName": "openplan-budget-settings-v2-pure-20261016"
+}

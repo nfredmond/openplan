@@ -1,0 +1,164 @@
+{
+  "bounds": {
+    "cleanupSeconds": 2,
+    "cpuPercent": 50,
+    "cpuPeriodMicros": 100000,
+    "innerSeconds": 25,
+    "kernelArtifactQuota": false,
+    "memoryBytes": 536870912,
+    "metadataWriteBytes": 1048576,
+    "parentSeconds": 40,
+    "parentStreamBytesEach": 1048576,
+    "privateArtifactAuditBytes": 8388608,
+    "swapBytes": 0,
+    "tasksMax": 64,
+    "unitSeconds": 30
+  },
+  "counts": {
+    "callerInvocations": 15,
+    "chunkChecks": 2,
+    "dynamicSubjectDefinitions": 25,
+    "newWrapperGuardEntries": 15,
+    "newWrapperGuardFunctionCalls": 30,
+    "newWrapperGuardProjectionNamespaces": 9,
+    "oldRoot6OrResource3Replay": false,
+    "operationObservations": 17,
+    "readerCalls": 6,
+    "subjectObservations": 23
+  },
+  "currentSource": {
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/DISABLED_GRANT_SCHEMA.json": {
+      "bytes": 2014,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "b21b2cdb169d8cc6cd72a6b68347796da3585c6c31c0963bb5289180712fe645",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/FINAL_STATIC_AUDIT.json": {
+      "bytes": 1021,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "9aeda22fcb3c1540fcd55591e5691a10e4c141d4e84d075c9cb1d75b5b6beefa",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/GUARD_MAP.json": {
+      "bytes": 11061,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "8e663b9a59fc87c88cf6f09989db20bef62150591bdb5e6b55cd94d9802ae1c7",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/INPUT_PATH_MAPPING.json": {
+      "bytes": 10298,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "5df5578e1dad8c1167c9bf1cfc18dfe6d41ce6ee86b304862f0679953d8a3e9e",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/PREPARED_CONFIG.json": {
+      "bytes": 5983,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "95a2dc11313d70e80e658c6af3ca968ea325e2f749ed75a9437ece2f2b9d22ba",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/PURE_REQUEST.json": {
+      "bytes": 8038,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "9093bda164146861ea12b6051af2c6ae639115aff418cf7a4bab46f58c791f5e",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/RUNTIME_MANIFEST.json": {
+      "bytes": 288499,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "f7a53f48563b1ddeba0e2abd88d8cd1fb9a66c3f98da09279dfece6c9e1a8e4d",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/SOURCE_DELTA.json": {
+      "bytes": 2349,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "f140f01bbbff7f17d1cbedbd35897f401a7e4ac5bbc341b4e695e57704f9f2d2",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/SOURCE_INPUTS.json": {
+      "bytes": 7861,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "8737a87445f85492a21db7f6d8e8b4dd9ce43d4924f71e043abeeca48fa3f7dc",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/STATIC_PATH_TRACES.json": {
+      "bytes": 2698,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "447fb58ca208a36e59a75e6194095ea2cb360cefedfab8c20881de6ead9e557e",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/guard_controls.py": {
+      "bytes": 7315,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "10cf97996820104dbb038d47de86003a5238bb87fb7aa51054a26859aee100dc",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/pure_main.py": {
+      "bytes": 7953,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "2ba697f2056b39f8e9b940b7be2c4878918c772eefa8098a50d160381df3c063",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/pure_window.py": {
+      "bytes": 25096,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "c56314b63c6798e2d91b9aefbff5a3ef8b704aa0c739151bed52b8c2c21a402a",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/window_primitives.py": {
+      "bytes": 7836,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "bdf564f514b6c28e9c5baaf2b7a63f6185836adcd3bfe035e4c4ea8c68867edc",
+      "uid": 1000
+    }
+  },
+  "frozenControlSeal": {
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/HARNESS_SOURCE_PINS.json": {
+      "bytes": 15503,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "533899d42c93ecad790af3b9a8d49ec066135fd8da6ec4c3f19ff1afe36ccfe1",
+      "uid": 1000
+    }
+  },
+  "history": "UNASSESSED",
+  "nativeArchiveToolClosure": "UNASSIGNED_NOT_ADMITTED",
+  "noCommit": true,
+  "privateSeal": {
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/SOURCE_PINS.json": {
+      "bytes": 35591,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "2432fe699bf5d4288d72a479235a380c7945cc9c9248dbe724beddd1682b5b3a",
+      "uid": 1000
+    }
+  },
+  "productionApproval": null,
+  "publicReport": {
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-m1-history-capture-operation-preparation/PURE_WINDOW_PREPARATION.md": {
+      "bytes": 13338,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "5027b2917149d0bad6a3307ea1132c639608fec7b5fd0930d1537f6e7ae6893d",
+      "uid": 1000
+    }
+  },
+  "rootSelectedPythonDispositionSHA256": "db6c8a9a72e8a4be88b9eac89a0983fa8c12a914d8976f19dacc3285f7ef6f0b",
+  "runtimeGranted": false,
+  "sourceExecution": false,
+  "tier": "NEW_PURE_WINDOW_SOURCE_PREPARATION_ONLY"
+}

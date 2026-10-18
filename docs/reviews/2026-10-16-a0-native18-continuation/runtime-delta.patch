@@ -1,0 +1,160 @@
+--- immutable5ad/controller.py
++++ new-native18/controller.py
+@@ -18,9 +18,10 @@
+ import journal as j
+ import policy as p
+ import literal_history as lh
++import continuation as co
+ 
+ HERE = Path(__file__).resolve().parent
+-ROOT = Path('/home/nathaniel/.local/state/openplan/a0-predecessor-map-correction-20261016')
++ROOT = Path('/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016')
+ EXTERNAL = Path('/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6')
+ BINDINGS = ROOT/'bindings'
+ REPO = Path('/home/nathaniel/.t3/worktrees/openplan/t3-ac91cc52')
+@@ -30,7 +31,7 @@
+ PREFIX = ['/usr/bin/docker','exec','-i',p.CONTAINER]
+ BASE_STAGES = ['observe','allocate','restore419','apply17','apply18','fixture']
+ RACES = [kind+'-'+order for kind in ['cancel','revoke','membership','project'] for order in ['finish-first','change-first']]
+-STAGES = ['apply17']  # No new observe, allocation, restore, SQL18 or fixture admission.
++STAGES = ['apply18']  # Only SQL18; no new allocation, restore, fixture or successor.
+ SQL18 = 'openplan/supabase/migrations/20261017000018_assistant_usage_limit_receipts.sql'
+ SQL17 = 'openplan/supabase/migrations/20261017000017_portfolio_skip_invalid_classifications.sql'
+ BOUNDS = "SET LOCAL statement_timeout='15s'; SET LOCAL lock_timeout='3s'; SET LOCAL idle_in_transaction_session_timeout='20s'; SET LOCAL work_mem='16MB';"
+@@ -74,9 +75,6 @@
+ 
+ 
+ 
+-SNAPSHOT_PIN = {'sha256':'936054d47550fa7003177ddbf877fb1fd1b3c529e10536637bfbb1d85118d3db','bytes':41476}
+-
+-
+ def typed_equal(expected, actual):
+     """Compare the complete retained JSON map without bool/int coercion."""
+     if type(expected) is not type(actual): return False
+@@ -85,18 +83,6 @@
+     if type(expected) is list:
+         return len(expected) == len(actual) and all(typed_equal(a,b) for a,b in zip(expected,actual))
+     return expected == actual
+-
+-
+-def retained_snapshot():
+-    """Read only the allowlisted, original external R6 restore snapshot bytes."""
+-    path=EXTERNAL/'stages/restore419/snapshot.json'
+-    descriptor=read(BINDINGS/'external-predecessor.json')['files'].get(str(path))
+-    selected={key:descriptor.get(key) for key in SNAPSHOT_PIN} if type(descriptor) is dict else None
+-    p.same(SNAPSHOT_PIN,selected,'retained-snapshot-admitted-pin')
+-    private(path)
+-    raw=path.read_bytes()
+-    p.same(SNAPSHOT_PIN,{'sha256':hashlib.sha256(raw).hexdigest(),'bytes':len(raw)},'retained-snapshot-bytes')
+-    return json.loads(raw)
+ 
+ 
+ def predecessor(stage):
+@@ -138,14 +124,17 @@
+     p.same(j.sha(ROOT/'plan.json'),j.sha(EXTERNAL/'plan.json'),'external-plan-equality')
+     for name in ['stages/apply17','admissions/apply17.json']:
+         p.require(not os.path.lexists(EXTERNAL/name),'external-already-continued')
+-    predecessor_sha = binding['completeSHA256']
++    continued = co.verify_predecessor(BINDINGS, private, typed_equal)
++    predecessor_sha = continued['completeSHA256']
+     admission_path = ROOT/'admissions'/(stage+'.json')
+     p.require(admission_path.is_file(), 'MISSING_ROOT_ADMISSION:'+stage)
+     private(ROOT/'admissions', True)
+     private(admission_path)
+     admission = read(admission_path)
+     p.admission(admission,stage,seal,j.sha(ROOT/'plan.json'),predecessor_sha)
+-    p.same(binding,admission.get('continuedPredecessor'),'admission-external-predecessor')
++    p.same(binding,admission.get('originalR6Predecessor'),'admission-original-r6-predecessor')
++    p.same(continued,admission.get('continuedPredecessor'),'admission-external-map17-predecessor')
++    p.same(read(BINDINGS/'expected-post-functions.json'),admission.get('expectedPostFunctions'),'admission-post-functions')
+     p.same(read(BINDINGS/'prior-function-pins.json'),admission.get('priorFunctionPins'),'admission-prior-function-pins')
+     return plan, admission
+ 
+@@ -171,7 +160,7 @@
+         'packageSHA256':j.sha(BINDINGS/'package-pins.json'),'planSHA256':j.sha(ROOT/'plan.json')})
+     manager=j.begin(path,'manager',{'stage':stage,'kind':'manager request namespace; no child completion implied'})
+     transport = j.Transport(manager)
+-    argv = ['/usr/bin/systemd-run','--user','--wait','--pipe','--unit=openplan-a0-map-'+stage.lower(),
++    argv = ['/usr/bin/systemd-run','--user','--wait','--pipe','--unit=openplan-a0-native18-'+stage.lower(),
+         '-p','MemoryMax=1G','-p','MemorySwapMax=0','-p','CPUQuota=50%','-p','UMask=0077','-p','RuntimeMaxSec=450','-p','TasksMax=64',
+         '/usr/bin/python3','-B',str(HERE/'controller.py'),'--run',stage]
+     transport.run(argv,timeout=480,manager=True)
+@@ -244,6 +233,11 @@
+         names=[p.FINISH,p.VALIDATOR]
+         # Include actual definitions, owners, full proconfig and expanded ACL.
+         text="SELECT json_object_agg(oid::pg_catalog.regprocedure::pg_catalog.text,json_build_object('sha256',encode(extensions.digest(convert_to(pg_get_functiondef(oid),'UTF8'),'sha256'),'hex'),'definition',pg_get_functiondef(oid),'owner',pg_get_userbyid(proowner),'definer',prosecdef,'volatility',provolatile,'config',proconfig,'acl',(SELECT json_agg(json_build_object('grantor',grantor,'grantee',grantee,'privilege',privilege_type,'grantable',is_grantable) ORDER BY grantor,grantee,privilege_type) FROM aclexplode(coalesce(proacl,acldefault('f',proowner)))))) FROM pg_proc WHERE oid IN ("+','.join('to_regprocedure('+f.literal(x)+')' for x in names)+");"
++        return json.loads(self.sql(text))
++
++    def post_definitions(self):
++        # Independent source-body oracle plus full config/raw ACL/owner capture.
++        text="SELECT json_object_agg(oid::pg_catalog.regprocedure::pg_catalog.text,json_build_object('body',prosrc,'language',(SELECT lanname FROM pg_language WHERE oid=prolang),'result',pg_get_function_result(oid),'sha256',encode(extensions.digest(convert_to(pg_get_functiondef(oid),'UTF8'),'sha256'),'hex'),'definition',pg_get_functiondef(oid),'owner',pg_get_userbyid(proowner),'definer',prosecdef,'volatility',provolatile,'config',proconfig,'acl',(SELECT json_agg(json_build_object('grantor',grantor,'grantee',grantee,'privilege',privilege_type,'grantable',is_grantable) ORDER BY grantor,grantee,privilege_type) FROM aclexplode(coalesce(proacl,acldefault('f',proowner)))))) FROM pg_proc WHERE oid IN ("+','.join('to_regprocedure('+f.literal(x)+')' for x in [p.FINISH,p.VALIDATOR])+");"
+         return json.loads(self.sql(text))
+ 
+     def snapshot(self):
+@@ -304,16 +298,16 @@
+         self.original_scope()
+ 
+     def apply(self, number):
+-        p.same(17,number,'continuation-only17')
++        p.same(18,number,'continuation-only18')
+         self.native(); self.original_scope()
+-        expected=self.plan['sourceVersions']
++        expected=self.plan['sourceVersions']+['20261017000017']
+         h=self.history(); p.history(h,expected)
+         p.installed(self.definitions(),self.admission['priorFunctionPins'])
+-        p.same(read(EXTERNAL/'stages/restore419/history.json')['digest'],h['digest'],'migration-prior-history')
+-        raw=lh.source_bytes(REPO/SQL17)
++        p.same(co.retained_history(BINDINGS)['digest'],h['digest'],'migration-prior-history')
++        raw=lh.source_bytes(REPO/SQL18)
+         before=self.snapshot()
+-        p.require(typed_equal(retained_snapshot(),before),'retained-predecessor-map')
+-        j.record(self.path/'predecessor-map.json',{'retainedSnapshotSHA256':SNAPSHOT_PIN['sha256'],'snapshot':before})
++        p.require(typed_equal(co.retained_snapshot(BINDINGS,private,typed_equal),before),'retained-post17-map')
++        j.record(self.path/'predecessor-map.json',{'retainedPost17SHA256':co.SNAPSHOT_SHA,'snapshot':before})
+         lh.execute(self,raw,h['digest'],BOUNDS)
+         # A fresh connection reads the committed row, independently of the send.
+         exact=json.loads(self.sql(lh.readback_sql()))
+@@ -323,8 +317,8 @@
+         after=self.snapshot()
+         p.unchanged({k:v for k,v in before.items() if k!='supabase_migrations.schema_migrations'}, {k:v for k,v in after.items() if k!='supabase_migrations.schema_migrations'})
+         j.record(self.path/'history.json',after_h)
+-        definitions=self.definitions()
+-        p.installed(definitions,self.admission['priorFunctionPins'])
++        definitions=self.post_definitions()
++        co.post_functions(definitions,self.admission['expectedPostFunctions'],typed_equal)
+         j.record(self.path/'definitions.json',definitions)
+         self.original_scope()
+ 
+--- immutable5ad/literal_history.py
++++ new-native18/literal_history.py
+@@ -10,9 +10,9 @@
+ import journal as j
+ import policy as p
+ 
+-VERSION = '20261017000017'
+-NAME = 'portfolio_skip_invalid_classifications'
+-SOURCE_SHA = 'b129f80e37aa9be71069683acd42df3fb6fdb94078ed0458f20b6e9c5155a41b'
++VERSION = '20261017000018'
++NAME = 'assistant_usage_limit_receipts'
++SOURCE_SHA = '655e625878b3e62f332a7f17d6e126879813cc2bf881ca745593978d8eed6559'
+ 
+ 
+ def text_value(raw):
+@@ -120,7 +120,7 @@
+ 
+ def readback_sql():
+     return """SELECT pg_catalog.json_build_object('priorDigest',
+-(SELECT md5(coalesce(string_agg(md5(to_jsonb(p)::pg_catalog.text),'' ORDER BY md5(to_jsonb(p)::pg_catalog.text)),'')) FROM supabase_migrations.schema_migrations p WHERE version<>'20261017000017'),
++(SELECT md5(coalesce(string_agg(md5(to_jsonb(p)::pg_catalog.text),'' ORDER BY md5(to_jsonb(p)::pg_catalog.text)),'')) FROM supabase_migrations.schema_migrations p WHERE version<>'20261017000018'),
+ 'rows',coalesce(pg_catalog.json_agg(
+ pg_catalog.json_build_object('version',version,'name',name,
+ 'cardinality',pg_catalog.cardinality(statements),'statements',statements,
+@@ -129,7 +129,7 @@
+ 'byteLength',pg_catalog.octet_length(pg_catalog.convert_to(statements[1],'UTF8')),
+ 'utf8hex',pg_catalog.encode(pg_catalog.convert_to(statements[1],'UTF8'),'hex'),
+ 'sha256',pg_catalog.encode(pg_catalog.sha256(pg_catalog.convert_to(statements[1],'UTF8')),'hex'))), '[]'::pg_catalog.json))
+-FROM supabase_migrations.schema_migrations WHERE version='20261017000017';"""
++FROM supabase_migrations.schema_migrations WHERE version='20261017000018';"""
+ 
+ 
+ def exact_history(value, raw, prior_digest):

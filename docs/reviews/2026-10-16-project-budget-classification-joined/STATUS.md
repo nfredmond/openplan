@@ -1,0 +1,13 @@
+# Reviewed budget source corrections pass the joined checks
+
+October 16, 2026. Source checkpoint `d0d12c406df8b8fd29bd2611a9cb29d8c3168ab8` joins the narrow source-error correction with the reviewed exact-money, decimal-scale and stated-budget isolation changes. Its application tree is `44e638d6d79378042343bf5b18408f09ee991d57`. The four changed classifier source/test files and unchanged shared reader match independent review `5685550274a5a3682eafc45cfe549e58da394ed6`. The original staged three files remain untouched.
+
+Internal dependency errors retain their original messages and supplied SQLSTATE. They no longer become missing-source status through a broad text classifier. Explicit known missing-source forms retain compatibility. Ambiguous aliases remain unreadable because the current RPC lacks catalog-established error origin. This conservative boundary does not establish complete native pending-schema compatibility.
+
+The joined run passes 309 tests across 14 selected files, an 18-entry scoped TypeScript project, changed-source lint and product direction. Unit `op-budget-classification-joined-checks01` reaches terminal success in 68.830 seconds. Its actual memory cap is 1 GiB, swap is zero and CPU is 50 percent. Recorded peak is 564,486,144 bytes; all memory events are zero. The single-worker run uses read-only donor dependencies, a private environment/cache and an unshared network. The compiler lock is released. No source changes follow the run.
+
+This mechanical join adds no guard or test assertion. The retained author controls exercise one harmless survivor and 16 named faults. The independent review exercises its separate 564-case matrix, harmless survivor and seven named faults, with exact restoration. This join does not rerun those completed campaigns. Their full reports and failed earlier harness trials remain available.
+
+The separate native-budget preparation review `02c7c6d6756dcafcb22f5aee91ff1a36cadb924d` is preserved beside this report. Its PREP-1 blocks the original generated fixture: invoice lines follow issued parents, contrary to the retained lifecycle trigger. It also identifies missing caller-visible foreign delivery/spend sentinels. A separate new preparation packet addresses those findings. Passing emitted-text checks does not admit SQL or establish an application defect.
+
+Native SQL19, raw JSON and actual Supabase parsing, financial reconstruction, ACL/RLS, MVCC, representative upgrade/restore, browser journeys and usable artifacts remain open. This is not a full application compile, full suite, build, M11 or v1 acceptance. No main merge, hosted operation or release follows from this checkpoint. GitHub CI must be inspected separately from the push.

@@ -1,0 +1,63 @@
+{
+  "packageSHA256": "a8c583e5a73dec9602b7329e3c646e77e99677033c4229e20d38c173dabf3141",
+  "planSHA256": "f8b8a36f4439703964cd5d66d9e6408d37bc984215c6c07a5909a728af7db4e5",
+  "selectedOldPins": 1126,
+  "selectedBeforeSHA256": "eae895dc70eb6107fed0aefde3cbddcc4c8a449ea1d37881d03fcdc14fa43438",
+  "selectedAfterSHA256": "eae895dc70eb6107fed0aefde3cbddcc4c8a449ea1d37881d03fcdc14fa43438",
+  "selectedUnchanged": true,
+  "runtimeFiles": 9,
+  "bindingFiles": 5,
+  "precedingHelpers": 7,
+  "sourcePins": 1126,
+  "migrationPins": 421,
+  "SQLRebuilds": 56,
+  "oldIdentityRebuilds": 56,
+  "sourceSyntaxFiles": 12,
+  "sequenceTrials": 12,
+  "continuityProbes": 12,
+  "smallControls": {
+    "runner": [
+      {
+        "trial": "baseline",
+        "outcome": "PASS"
+      },
+      {
+        "trial": "harmless",
+        "outcome": "SURVIVED"
+      },
+      {
+        "trial": "guard-omitted",
+        "outcome": "KILLED"
+      },
+      {
+        "trial": "restored",
+        "outcome": "PASS"
+      }
+    ],
+    "diagnostic": [
+      {
+        "trial": "harmless-comment",
+        "outcome": "SURVIVED"
+      },
+      {
+        "trial": "sequence-write",
+        "outcome": "KILLED"
+      },
+      {
+        "trial": "table-write",
+        "outcome": "KILLED"
+      },
+      {
+        "trial": "restored",
+        "outcome": "PASS"
+      }
+    ],
+    "blind": "Pure value guard and finite SQL source scan only; not a SQL parser, live transaction or native permissions proof."
+  },
+  "nativeDispatches": 0,
+  "admissionsAbsent": true,
+  "stagesAbsent": true,
+  "failedR5TargetExcluded": "openplan_a0_limit_c2e1f4598374c1bf439baa3b",
+  "freshReview": "REQUIRED; root-owned",
+  "claim": "Pure/source custody only; no R6 restoration or diagnostic acceptance"
+}

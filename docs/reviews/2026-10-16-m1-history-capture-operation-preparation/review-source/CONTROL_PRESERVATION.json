@@ -1,0 +1,240 @@
+{
+  "tier": "FIRST_PREPARATION_AND_ORIGINAL_REFERENCE_DESCRIPTORS_IN_PLACE",
+  "files": {
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/history_stream_capture.py": {
+      "bytes": 6674,
+      "sha256": "9d15d5edd87eb3cd578ed80fb8e21660262bbbef0e134572f4dfbd889992f53f",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/history_core.py": {
+      "bytes": 7777,
+      "sha256": "f030a173c7bddcb7ed2bb0ec1d57e2adb09cd7e9118137552f7b611c04fad26d",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/history_capture_integration.py": {
+      "bytes": 2652,
+      "sha256": "66259c0d5c920c0e6dc821fac157091661b53be230bd70e623219e9bfa783d65",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/empty-root-toc-consumer-preparation-r2/archive_checks.py": {
+      "bytes": 2724,
+      "sha256": "43e1d48440a8b59dd7735577c2be88a10d41e9956d70a8ce6a6f5f6fc5ff748b",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/empty-root-toc-consumer-preparation-r2/ARCHIVE_EXPECTATIONS.json": {
+      "bytes": 2416,
+      "sha256": "c470d0b12b89d09d527431647ca88f4d4d996f8857f8464a1fba671ce24d7878",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/empty-root-toc-consumer-preparation-r2/TOOL_EVIDENCE_PINS.json": {
+      "bytes": 1559,
+      "sha256": "e92bcbfd53810b91a4424c2d8aee4c28b5f3efcc897870c37a44422be9597565",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/artifact-request-r1/ELF_CLOSURE.json": {
+      "bytes": 23977,
+      "sha256": "90fe257e476d035b40a4d3ba64018041b09c099e238162a3a30fe6bbe64d07f2",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/empty-root-toc-consumer-preparation-r2/INPUT_PATH_MAPPING.json": {
+      "bytes": 996715,
+      "sha256": "304b3d009100cc79fd36ea0de04da6f4d81d871c5289459888b775da6c021e5d",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/saved-data-result-01/SOURCE_PINS.json": {
+      "bytes": 121644,
+      "sha256": "7e57b79380bd62069c704af1b684c90505ac077895a8bc9484cd0297a93c3381",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/HARNESS_SOURCE_PINS.json": {
+      "bytes": 60445,
+      "sha256": "9b8034b7de6c9044eeaaa13a43fd3ac02b91a05ded6a973d537af21acee203e8",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-pure-root-decision-20261016/ACCEPTANCE.json": {
+      "bytes": 990,
+      "sha256": "8189760a680a101d11618d44d3c66a34bf031088a8c2f5a1182a257926aeeea8",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-ac2008c1/docs/reviews/2026-10-16-m1-capture-cleanup-independent/REPORT.md": {
+      "bytes": 30120,
+      "sha256": "25c99ca2969348bdddae96beb0f2bfb6906b9cef7bf0138ebc345b0abde96470",
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-ac2008c1/docs/reviews/2026-10-16-m1-capture-cleanup-independent/EVIDENCE_PINS.json": {
+      "bytes": 169879,
+      "sha256": "cec50794e92bc1b7f5681ffd9487287845be14f1f42c1d8c051a89c1f5cd9098",
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-ac2008c1/docs/reviews/2026-10-16-m1-capture-cleanup-independent/REVIEW_BRIEF.md": {
+      "bytes": 10588,
+      "sha256": "502362177fa9f0adbf2a2aa4fd4c935d7d2955da9d41672e067cbc239838f80c",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-independent-20261016/CHECKPOINT.json": {
+      "bytes": 3972,
+      "sha256": "edb6f314820654d43f9cae92c5020d96f8aa8a40d00002dd72c85ebea9952548",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/reviewed-history.list": {
+      "bytes": 146,
+      "sha256": "1d734465ad89f4d6cbdac4392bef29d748ae2e2e71c004440496869a131c52ab",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/operation_caller.initial-source.py": {
+      "bytes": 8267,
+      "sha256": "1126726e21e3566264d321504350585a0c3b5a40aa48b0846ea1a1e29e714827",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/history_stream_capture.py": {
+      "bytes": 6674,
+      "sha256": "9d15d5edd87eb3cd578ed80fb8e21660262bbbef0e134572f4dfbd889992f53f",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/history_core.py": {
+      "bytes": 7777,
+      "sha256": "f030a173c7bddcb7ed2bb0ec1d57e2adb09cd7e9118137552f7b611c04fad26d",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/PROTOCOL.json": {
+      "bytes": 5375,
+      "sha256": "c745f4b944dbef03d2a006581c20d5ec0cbfd0cf661cad2b75020c94c928fa75",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/STATIC_SOURCE_AUDIT.json": {
+      "bytes": 1725,
+      "sha256": "262c73712141d1f45876ce853c1e4b42da37ad83287717f6cd61672e215201d1",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/INPUT_MAPPING.json": {
+      "bytes": 9263,
+      "sha256": "adaa0593e64b6c0b138e6a5e78c463c0ae9f4f5cc432e3d47e4a0eafad5fd515",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/COPY_LINEAGE.json": {
+      "bytes": 2199,
+      "sha256": "7607bef7b85cf0a5049014709153b68089330b91f26ae7f5c9539448018da8d8",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/SOURCE_DELTA.patch": {
+      "bytes": 10957,
+      "sha256": "cc6cb0afecd89fa402d6925b5391ebc99626650aecd7512198588053b42926c1",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/PRESERVATION_REFERENCES.json": {
+      "bytes": 4842,
+      "sha256": "4be54077d9f02a1feac95c354ab34e7fe4bf763944a6ea4d31f26b71733d7bcd",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/archive_checks.py": {
+      "bytes": 2724,
+      "sha256": "43e1d48440a8b59dd7735577c2be88a10d41e9956d70a8ce6a6f5f6fc5ff748b",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/operation_caller.py": {
+      "bytes": 8102,
+      "sha256": "e32a8baa5c675d20547d52a8e5198d2bfdf91dd9acaadd357c13fc567e1fd6d1",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-m1-history-capture-operation-preparation/EVIDENCE_PINS.json": {
+      "bytes": 9586,
+      "sha256": "bc6f518271efd9a99d223077aafdfc09a8f26ac2804f9b6428d7a13d93eab266",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-m1-history-capture-operation-preparation/PROTOCOL.json": {
+      "bytes": 5375,
+      "sha256": "c745f4b944dbef03d2a006581c20d5ec0cbfd0cf661cad2b75020c94c928fa75",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-m1-history-capture-operation-preparation/CONTROL_PLAN.md": {
+      "bytes": 5917,
+      "sha256": "47ddfc069a4206903c919aad02d7a30916d45b5d99737075fafb6ecad57b9792",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-m1-history-capture-operation-preparation/SOURCE_CONTRACT.md": {
+      "bytes": 14524,
+      "sha256": "d270e27615429db304c0e77a84c476dff5099bb9d4b41d6699019f0cddd94a01",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/SOURCE_PINS.json": {
+      "bytes": 9789,
+      "sha256": "8d77294b873950b5e9e26175775d5b474352e754989824aec124c95f5979a758",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/ROOT_SOURCE_DISPOSITION_01.json": {
+      "bytes": 1039,
+      "sha256": "a5468e7c8f2ddf940bec3e8aaec5d5678dd2150126e27cac4f3a9e78089f56f4",
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    }
+  },
+  "firstSealDescriptorCount": 31,
+  "rootIndependentInputComparisons": 30,
+  "copyOldCorpus": false,
+  "runtime": false
+}

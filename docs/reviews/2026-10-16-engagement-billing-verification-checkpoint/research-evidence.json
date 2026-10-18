@@ -1,0 +1,204 @@
+{
+  "pure01": {
+    "classification": "HARNESS_SETUP_FAILURE",
+    "subjectExecuted": false,
+    "dependencyLoaded": false,
+    "defectReproduced": false,
+    "directionExecuted": false,
+    "originalArtifacts": {
+      "probe.cjs": "35c82394100c5631033682d9bdde8d854b8a729326ac19ab94bfb4b7d5498b77",
+      "entry.sh": "66bea781ca7be2aee62e916de766a4bfe3a571976af18995deb1c1b7229bce6b",
+      "inside.sh": "dffcb0d51b9cf48590ace98336487b9a556f309f00db317cce5b003f1396fca5",
+      "dispatch.py": "b8191750863eef0c3e8b3980d6c2e59c987c2007f8924085175bcf900ded335e",
+      "dispatch-intent.json": "e8ca02d1106cecf9fba4633f395d0c7da0fe5a134033ea560262eab445ec193a",
+      "manager-entry.txt": "dd622fd980155011201f8496e93ef67140e7d1670024f20809fcf9a320ff41e6",
+      "stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr.txt": "85bf1a36d649186d1e7747a01aba0b27cd4fca5286e55d061ecdae5b732390a0",
+      "terminal.json": "ee2ae2bde2e92c5a9b7fb9d6c12960c49d1720d060b3df385139118f5a82d3ff"
+    },
+    "pinsReadback": {
+      "/home/nathaniel/.local/state/openplan/engagement-billed-precision-probe-20261016/probe.cjs": true,
+      "/home/nathaniel/.local/state/openplan/engagement-billed-precision-probe-20261016/entry.sh": true,
+      "/home/nathaniel/.local/state/openplan/engagement-billed-precision-probe-20261016/inside.sh": true,
+      "/home/nathaniel/.local/state/openplan/engagement-billed-precision-probe-20261016/dispatch.py": true,
+      "/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb/openplan/src/lib/invoicing/receivables.ts": true,
+      "/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb/openplan/src/lib/invoicing/invoice-records.ts": true,
+      "/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb/openplan/src/lib/work/deadlines.ts": true,
+      "/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb/openplan/supabase/migrations/20260727000010_receivable_invoicing.sql": true,
+      "/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb/openplan/supabase/migrations/20261017000005_money_integrity_corrections.sql": true
+    }
+  },
+  "pure02Preparation": {
+    "status": "PREPARED_NOT_EXECUTED_NEW_ROOT_WINDOW_REQUIRED",
+    "harnessChanges": {
+      "probe.cjs": {
+        "before": "35c82394100c5631033682d9bdde8d854b8a729326ac19ab94bfb4b7d5498b77",
+        "after": "308c4cf19ad39eb02242e6ba4d70aa34b19c9b0243d4c8901844815e3bb318af"
+      },
+      "inside.sh": {
+        "before": "dffcb0d51b9cf48590ace98336487b9a556f309f00db317cce5b003f1396fca5",
+        "after": "3fd2cdffd134ea4023071c03d1f34610c4e5c48890fd764da92d37dbd6eba26b"
+      },
+      "entry.sh": {
+        "before": "66bea781ca7be2aee62e916de766a4bfe3a571976af18995deb1c1b7229bce6b",
+        "after": "2389840fb441e37382ddddb53f14b8bbfaab89c268199fa43fec732aed80c7cd"
+      },
+      "dispatch.py": {
+        "before": "b8191750863eef0c3e8b3980d6c2e59c987c2007f8924085175bcf900ded335e",
+        "after": "60bd718bf524c962821be52cbe8741e2137f62eb11e3ab7c36718d66ca4b0c9b"
+      }
+    },
+    "sourcePins": {
+      "/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb/openplan/src/lib/invoicing/receivables.ts": "996c31054043f5f0f04e4949dbc2846912fde3c09bc8e5572c3791f237c2361b",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb/openplan/src/lib/invoicing/invoice-records.ts": "83b672fa2602872f8c864abba6f8b1f44c839c7f413d455bc162c38fc22c08d8",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb/openplan/src/lib/work/deadlines.ts": "01ac1a36552f199c1ed3e9dbea0e129cf12c0168e64cc31a4f80c6e7d5463ce0",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb/openplan/supabase/migrations/20260727000010_receivable_invoicing.sql": "d007c5dc5cdd54a81f605990bdfec72b57242527966c2a6f574d227340ba20f3",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb/openplan/supabase/migrations/20261017000005_money_integrity_corrections.sql": "82374309f11d7c270f1defa18d70d1f719882296f2f662f80ad74d3214410066",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb/openplan/src/lib/time/workspace-calendar.ts": "da6793ab7fe2fb0bae1ef36707542fa533d1146478b8ebc36a941c3b2a2d1fdf"
+    },
+    "assertionsUnchanged": true,
+    "mountpointReceipt": "/home/nathaniel/.local/state/openplan/engagement-billed-precision-probe-20261016/mountpoint-preparation.json"
+  },
+  "mountpoint": {
+    "path": "/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb/openplan/node_modules",
+    "before": {
+      "exists": false,
+      "symlink": false
+    },
+    "after": {
+      "isDirectory": true,
+      "isSymlink": false,
+      "entries": []
+    },
+    "donorWrites": false,
+    "onlyCreatedEmptyMountpoint": true
+  },
+  "pure02": {
+    "classification": "SUBJECT_ARITHMETIC_REPRODUCED_DIRECTION_FAILURE",
+    "entireUnitExit": 1,
+    "terminal": {
+      "exit": 1,
+      "timeNs": 1792184274612526042,
+      "clientPid": 49503,
+      "lockReleasedByTerminalExit": true
+    },
+    "runtime": {
+      "pid": 49507,
+      "cgroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/op-m11-billed-precision-pure02.service",
+      "resource": {
+        "memory.max": "536870912",
+        "memory.swap.max": "0",
+        "cpu.max": "50000 100000",
+        "pids.max": "32",
+        "memory.peak": "16371712",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+      },
+      "netNamespace": "net:[4026533038]",
+      "node": "v24.22.0",
+      "argv": [
+        "/usr/bin/node",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-precision-probe-20261016/pure02/probe.cjs"
+      ],
+      "envKeys": [
+        "HOME",
+        "LANG",
+        "OLDPWD",
+        "PATH",
+        "PWD",
+        "PYTHONDONTWRITEBYTECODE",
+        "TMPDIR",
+        "XDG_CACHE_HOME",
+        "XDG_CONFIG_HOME",
+        "XDG_DATA_HOME"
+      ],
+      "sourceHashes": {
+        "lib/invoicing/receivables.ts": "996c31054043f5f0f04e4949dbc2846912fde3c09bc8e5572c3791f237c2361b",
+        "lib/invoicing/invoice-records.ts": "83b672fa2602872f8c864abba6f8b1f44c839c7f413d455bc162c38fc22c08d8",
+        "lib/work/deadlines.ts": "01ac1a36552f199c1ed3e9dbea0e129cf12c0168e64cc31a4f80c6e7d5463ce0",
+        "lib/time/workspace-calendar.ts": "da6793ab7fe2fb0bae1ef36707542fa533d1146478b8ebc36a941c3b2a2d1fdf"
+      }
+    },
+    "grantHashes": {
+      "harness": {
+        "probe.cjs": "308c4cf19ad39eb02242e6ba4d70aa34b19c9b0243d4c8901844815e3bb318af",
+        "inside.sh": "3fd2cdffd134ea4023071c03d1f34610c4e5c48890fd764da92d37dbd6eba26b",
+        "entry.sh": "2389840fb441e37382ddddb53f14b8bbfaab89c268199fa43fec732aed80c7cd",
+        "dispatch.py": "60bd718bf524c962821be52cbe8741e2137f62eb11e3ab7c36718d66ca4b0c9b"
+      },
+      "match": true
+    },
+    "sourceSchemaFileCount": 6,
+    "namedMounts": [
+      {
+        "path": "/",
+        "flags": "ro,nosuid,nodev,relatime"
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/engagement-billed-precision-probe-20261016/pure02",
+        "flags": "rw,nosuid,nodev,relatime"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb",
+        "flags": "ro,nosuid,nodev,relatime"
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016",
+        "flags": "ro,nosuid,nodev,relatime"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-0f743997/openplan/node_modules",
+        "flags": "ro,nosuid,nodev,relatime"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb/openplan/node_modules",
+        "flags": "ro,nosuid,nodev,relatime"
+      }
+    ],
+    "inheritedWritableMountCount": 225,
+    "hostWideOnlyPrivateWritableEstablished": false,
+    "postTerminalPinnedFileReadback": {
+      "/home/nathaniel/.local/state/openplan/engagement-billed-precision-probe-20261016/pure02/probe.cjs": {
+        "sha256": "308c4cf19ad39eb02242e6ba4d70aa34b19c9b0243d4c8901844815e3bb318af",
+        "matches": true
+      },
+      "/home/nathaniel/.local/state/openplan/engagement-billed-precision-probe-20261016/pure02/entry.sh": {
+        "sha256": "2389840fb441e37382ddddb53f14b8bbfaab89c268199fa43fec732aed80c7cd",
+        "matches": true
+      },
+      "/home/nathaniel/.local/state/openplan/engagement-billed-precision-probe-20261016/pure02/inside.sh": {
+        "sha256": "3fd2cdffd134ea4023071c03d1f34610c4e5c48890fd764da92d37dbd6eba26b",
+        "matches": true
+      },
+      "/home/nathaniel/.local/state/openplan/engagement-billed-precision-probe-20261016/pure02/dispatch.py": {
+        "sha256": "60bd718bf524c962821be52cbe8741e2137f62eb11e3ab7c36718d66ca4b0c9b",
+        "matches": true
+      },
+      "/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb/openplan/src/lib/invoicing/receivables.ts": {
+        "sha256": "996c31054043f5f0f04e4949dbc2846912fde3c09bc8e5572c3791f237c2361b",
+        "matches": true
+      },
+      "/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb/openplan/src/lib/invoicing/invoice-records.ts": {
+        "sha256": "83b672fa2602872f8c864abba6f8b1f44c839c7f413d455bc162c38fc22c08d8",
+        "matches": true
+      },
+      "/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb/openplan/src/lib/work/deadlines.ts": {
+        "sha256": "01ac1a36552f199c1ed3e9dbea0e129cf12c0168e64cc31a4f80c6e7d5463ce0",
+        "matches": true
+      },
+      "/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb/openplan/src/lib/time/workspace-calendar.ts": {
+        "sha256": "da6793ab7fe2fb0bae1ef36707542fa533d1146478b8ebc36a941c3b2a2d1fdf",
+        "matches": true
+      },
+      "/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb/openplan/supabase/migrations/20260727000010_receivable_invoicing.sql": {
+        "sha256": "d007c5dc5cdd54a81f605990bdfec72b57242527966c2a6f574d227340ba20f3",
+        "matches": true
+      },
+      "/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb/openplan/supabase/migrations/20261017000005_money_integrity_corrections.sql": {
+        "sha256": "82374309f11d7c270f1defa18d70d1f719882296f2f662f80ad74d3214410066",
+        "matches": true
+      }
+    },
+    "directionFailure": "reviewed_commit is not available: 380aad49770d856a9c4b577ccc9793baf39d3ddf",
+    "noFurtherTests": true
+  }
+}

@@ -70,7 +70,7 @@ describe("historical report map read", () => {
     expect(JSON.stringify(body)).not.toContain("PRIVATE");
     expect(response.headers.get("cache-control")).toBe("private, no-store");
     expect(mocks.service).not.toHaveBeenCalled();
-    expect(mocks.rpc).toHaveBeenCalledWith("workspace_gis_features_in_bbox", { p_version_id: gisVersionId, p_west: -122, p_south: 38, p_east: -121, p_north: 39, p_limit: WORKSPACE_GIS_BBOX_DRAW_LIMIT });
+    expect(mocks.rpc).toHaveBeenCalledExactlyOnceWith("workspace_gis_features_in_query_viewport", { p_version_id: gisVersionId, p_west: -122, p_south: 38, p_east: -121, p_north: 39, p_limit: WORKSPACE_GIS_BBOX_DRAW_LIMIT });
     expect(queries.find(q => q.table === "workspace_members")).toEqual({ table: "workspace_members", projection: "workspace_id, role", filters: [["workspace_id", workspaceId], ["user_id", actorId]] });
     expect(queries.find(q => q.table === "land_use_plan_versions")).toEqual({ table: "land_use_plan_versions", projection: "id, workspace_id, plan_id, version_number, state, content_hash, published_report_id", filters: [["id", versionId], ["plan_id", planId], ["workspace_id", workspaceId]] });
     expect(queries.find(q => q.table === "workspace_gis_layer_versions")).toEqual({ table: "workspace_gis_layer_versions", projection: "id, workspace_id, feature_hash, ingest_status", filters: [["id", gisVersionId], ["ingest_status", "ready"], ["workspace_id", workspaceId]] });
@@ -117,7 +117,7 @@ describe("historical report map read", () => {
     expect((await request(undefined, { reportId: "invalid", designationId })).status).toBe(404);
     expect(mocks.create).not.toHaveBeenCalled();
   });
-  it.each(["", "10,,12,35", "-181,0,-170,5", "0,0,0,1", "170,-10,-170,10"])("refuses malformed or unsupported viewport %s", async bounds => {
+  it.each(["", "10,,12,35", "-181,0,-170,5", "0,0,0,1", "180,-10,-180,10"])("refuses malformed or unsupported viewport %s", async bounds => {
     expect((await request(bounds)).status).toBe(400); expect(mocks.create).not.toHaveBeenCalled();
   });
   it("distinguishes a feature read failure from an empty map", async () => {
@@ -146,6 +146,95 @@ describe("historical report map read", () => {
   it("retains the public reader's default client and field allowlist", async () => {
     const result = await loadPublicDesignationMap(frozen, designationId, [-122, 38, -121, 39]);
     expect(result.ok).toBe(true); expect(mocks.service).toHaveBeenCalledOnce();
+    expect(JSON.stringify(result)).not.toContain("PRIVATE");
+  });
+});
+
+describe("designation query viewport loader contract", () => {
+  it.each([
+    { bounds: "170,-10,-170,10", west: 170, east: -170 },
+    { bounds: "-180,-10,180,10", west: -180, east: 180 },
+    { bounds: "180,-10,-170,10", west: -180, east: -170 },
+    { bounds: "170,-10,-180,10", west: 170, east: 180 },
+  ])("uses one union RPC for retained report query $bounds", async ({ bounds, west, east }) => {
+    const response = await request(bounds); expect(response.status).toBe(200);
+    expect(mocks.rpc).toHaveBeenCalledExactlyOnceWith("workspace_gis_features_in_query_viewport", {
+      p_version_id: gisVersionId, p_west: west, p_south: -10, p_east: east, p_north: 10,
+      p_limit: WORKSPACE_GIS_BBOX_DRAW_LIMIT,
+    });
+    expect(mocks.service).not.toHaveBeenCalled();
+    expect(queries.find(query => query.table === "workspace_gis_layer_versions")).toEqual({
+      table: "workspace_gis_layer_versions", projection: "id, workspace_id, feature_hash, ingest_status",
+      filters: [["id", gisVersionId], ["ingest_status", "ready"], ["workspace_id", workspaceId]],
+    });
+    const body = await response.json();
+    expect(body).toMatchObject({ reportId, versionId, contentHash: metadata.contentHash, matchedCount: 1, returnedCount: 1 });
+    expect(JSON.stringify(body)).not.toContain("PRIVATE");
+    expect(response.headers.get("cache-control")).toBe("private, no-store");
+  });
+
+  it("refuses duplicate feature IDs rather than drawing a counted duplicate", async () => {
+    featureRows = [{ ...featureRows![0], matched_count: 2 }, { ...featureRows![0], matched_count: 2 }];
+    expect((await request("170,-10,-170,10")).status).toBe(503);
+    expect(mocks.rpc).toHaveBeenCalledOnce();
+  });
+
+  it("draws every distinct feature at the cap without deduplicating equal geometry", async () => {
+    featureRows = Array.from({ length: WORKSPACE_GIS_BBOX_DRAW_LIMIT }, (_, index) => ({
+      ...featureRows![0], id: id(index + 100), feature_index: index, matched_count: WORKSPACE_GIS_BBOX_DRAW_LIMIT,
+    }));
+    const response = await request("170,-10,-170,10"); expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body).toMatchObject({ matchedCount: WORKSPACE_GIS_BBOX_DRAW_LIMIT, returnedCount: WORKSPACE_GIS_BBOX_DRAW_LIMIT, tooDenseToDraw: false });
+    expect(body.features.map((feature: { id: string }) => feature.id)).toEqual(featureRows.map(row => row.id));
+    expect(mocks.rpc).toHaveBeenCalledOnce();
+    expect(JSON.stringify(body)).not.toContain("PRIVATE");
+  });
+
+  it.each([
+    { name: "zero sentinel", data: [{ id: null, matched_count: "0" }], count: 0, dense: false },
+    { name: "above-cap sentinel", data: [{ id: null, matched_count: WORKSPACE_GIS_BBOX_DRAW_LIMIT + 1 }], count: WORKSPACE_GIS_BBOX_DRAW_LIMIT + 1, dense: true },
+  ])("retains $name for a wrapped query", async ({ data, count, dense }) => {
+    featureRows = data;
+    const response = await request("170,-10,-170,10"); expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      features: [], matchedCount: count, returnedCount: 0, tooDenseToDraw: dense,
+      coverageNotes: dense
+        ? [`${count.toLocaleString("en-US")} feature bounds overlap this view. Nothing is drawn until you zoom in; OpenPlan never shows a misleading subset.`]
+        : [],
+    });
+    expect(mocks.rpc).toHaveBeenCalledOnce();
+  });
+
+  it.each([
+    { name: "short reply", data: [{ id: id(9), geometry_geojson: { type: "Point", coordinates: [0, 0] }, matched_count: 2 }] },
+    { name: "missing count row", data: [] },
+    { name: "unsafe count", data: [{ id: null, matched_count: "9007199254740992" }] },
+    { name: "inconsistent counts", data: [{ id: null, matched_count: 0 }, { id: null, matched_count: 1 }] },
+  ])("refuses $name for a wrapped query", async ({ data }) => {
+    featureRows = data;
+    expect((await request("170,-10,-170,10")).status).toBe(503);
+    expect(mocks.rpc).toHaveBeenCalledOnce();
+  });
+
+  it.each(["workspace_id", "feature_hash", "ingest_status"])("keeps retained %s checks before the union RPC", async field => {
+    rows.workspace_gis_layer_versions![field] = "SYNTHETIC changed";
+    expect((await request("170,-10,-170,10")).status).toBe(503);
+    expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+
+  it("validates direct loader coordinates before creating a client", async () => {
+    const result = await loadPublicDesignationMap(frozen, designationId, [190, -10, 210, 10]);
+    expect(result).toEqual({ ok: false, reason: "incomplete" });
+    expect(mocks.service).not.toHaveBeenCalled(); expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+
+  it("keeps the default public service client and allowlist with one wrapped read", async () => {
+    const result = await loadPublicDesignationMap(frozen, designationId, [170, -10, -170, 10]);
+    expect(result.ok).toBe(true); expect(mocks.service).toHaveBeenCalledOnce();
+    expect(mocks.rpc).toHaveBeenCalledExactlyOnceWith("workspace_gis_features_in_query_viewport", {
+      p_version_id: gisVersionId, p_west: 170, p_south: -10, p_east: -170, p_north: 10, p_limit: WORKSPACE_GIS_BBOX_DRAW_LIMIT,
+    });
     expect(JSON.stringify(result)).not.toContain("PRIVATE");
   });
 });

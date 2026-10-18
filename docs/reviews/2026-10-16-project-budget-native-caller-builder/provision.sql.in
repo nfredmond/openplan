@@ -1,0 +1,88 @@
+-- PREPARATION ONLY. Run only after a separate verified read-only identity/catalog receipt.
+-- External runner durably records intent before BEGIN, stops on first SQL error.
+BEGIN;
+SET LOCAL statement_timeout='10s';
+SET LOCAL lock_timeout='3s';
+SET LOCAL idle_in_transaction_session_timeout='30s';
+DO $guard$
+BEGIN
+ IF current_database() IS DISTINCT FROM @@DATABASE@@
+ OR (SELECT oid FROM pg_database WHERE datname=current_database()) IS DISTINCT FROM @@DATABASE_OID@@::oid
+ OR (SELECT system_identifier::text FROM pg_control_system()) IS DISTINCT FROM @@SYSTEM_ID@@
+ OR (SELECT oid FROM pg_roles WHERE rolname=session_user) IS DISTINCT FROM @@ADMIN_SESSION_OID@@::oid
+ OR (SELECT oid FROM pg_roles WHERE rolname=current_user) IS DISTINCT FROM @@ADMIN_EFFECTIVE_OID@@::oid
+ THEN RAISE EXCEPTION 'budget-target-system-oid-actor' USING ERRCODE='22023'; END IF;
+ IF current_setting('openplan.budget_lease',true) IS DISTINCT FROM @@LEASE@@
+ OR current_setting('openplan.budget_root_sha',true) IS DISTINCT FROM @@ROOT_SHA@@
+ OR current_setting('openplan.budget_history_sha',true) IS DISTINCT FROM @@HISTORY_SHA@@
+ OR current_setting('openplan.budget_catalog_sha',true) IS DISTINCT FROM @@CATALOG_SHA@@
+ THEN RAISE EXCEPTION 'budget-external-prerequisite-bindings' USING ERRCODE='22023'; END IF;
+ IF current_setting('session_replication_role') <> 'origin'
+ OR NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgrelid='auth.users'::regclass
+   AND tgname='on_auth_user_created' AND tgenabled='O'
+   AND tgfoid='public.handle_new_user()'::regprocedure)
+ OR NOT EXISTS (SELECT 1 FROM pg_proc WHERE oid='public.handle_new_user()'::regprocedure AND prosecdef)
+ THEN RAISE EXCEPTION 'budget-signup-trigger-active' USING ERRCODE='22023'; END IF;
+ IF (SELECT count(*) FROM public.workspaces)>4096 OR (SELECT count(*) FROM public.workspace_members)>4096
+ OR (SELECT count(*) FROM public.contract_source_changes)>4096
+ OR (SELECT count(*) FROM public.contract_source_deletions)>4096
+ THEN RAISE EXCEPTION 'budget-census-bound-refusal' USING ERRCODE='54000'; END IF;
+ IF EXISTS(SELECT 1 FROM auth.users WHERE id=ANY(ARRAY[@@USER_IDS@@]))
+ OR EXISTS(SELECT 1 FROM public.workspace_members WHERE user_id=ANY(ARRAY[@@USER_IDS@@]))
+ OR EXISTS(SELECT 1 FROM public.workspaces WHERE id IN (@@A@@::uuid,@@B@@::uuid)
+   OR slug IN ('synthetic-budget-a-9c47bd610f2a49e8a35c706d','synthetic-budget-b-9c47bd610f2a49e8a35c706d'))
+ THEN RAISE EXCEPTION 'budget-fresh-identities-required' USING ERRCODE='22023'; END IF;
+ IF EXISTS(SELECT 1 FROM public.contract_baselines WHERE workspace_id IN (@@A@@::uuid,@@B@@::uuid))
+ THEN RAISE EXCEPTION 'budget-baseline-absence-required' USING ERRCODE='22023'; END IF;
+END $guard$;
+-- Full public rows, ordered, before writes. No auth password/token columns are selected.
+SELECT 'before_workspaces' AS receipt,to_jsonb(w) AS row FROM public.workspaces w ORDER BY id;
+SELECT 'before_members' AS receipt,to_jsonb(m) AS row FROM public.workspace_members m ORDER BY workspace_id,user_id;
+SELECT 'before_cutoff_changes' AS receipt,to_jsonb(c) AS row FROM public.contract_source_changes c ORDER BY id;
+SELECT 'before_cutoff_deletions' AS receipt,to_jsonb(c) AS row FROM public.contract_source_deletions c ORDER BY id;
+SELECT 'before_baselines' AS receipt,to_jsonb(b) AS row FROM public.contract_baselines b
+ WHERE b.workspace_id IN (@@A@@::uuid,@@B@@::uuid) ORDER BY id;
+SELECT 'before_users' AS receipt,id,aud,role,email,raw_app_meta_data,raw_user_meta_data,created_at,updated_at
+ FROM auth.users WHERE id=ANY(ARRAY[@@USER_IDS@@]) ORDER BY id;
+INSERT INTO auth.users(id,aud,role,email,raw_app_meta_data,raw_user_meta_data,created_at,updated_at)
+SELECT id::uuid,'authenticated','authenticated',email,'{}'::jsonb,meta::jsonb,now(),now()
+FROM (VALUES
+@@USERS@@
+) AS v(id,email,meta)
+RETURNING id,aud,role,email,raw_app_meta_data,raw_user_meta_data,created_at,updated_at;
+-- Each auth insert fires handle_new_user. Capture the actual random workspace IDs now.
+SELECT 'automatic_workspaces' AS receipt,m.user_id,to_jsonb(w) AS workspace,to_jsonb(m) AS membership
+ FROM public.workspace_members m JOIN public.workspaces w ON w.id=m.workspace_id
+ WHERE m.user_id=ANY(ARRAY[@@USER_IDS@@]) ORDER BY m.user_id,w.id;
+DO $auto$
+BEGIN
+ IF (SELECT count(*) FROM public.workspace_members WHERE user_id=ANY(ARRAY[@@USER_IDS@@]))<>9
+ OR EXISTS(SELECT 1 FROM unnest(ARRAY[@@USER_IDS@@]) u(id)
+   LEFT JOIN public.workspace_members m ON m.user_id=u.id GROUP BY u.id HAVING count(m.workspace_id)<>1)
+ OR EXISTS(SELECT 1 FROM public.workspace_members m JOIN public.workspaces w ON w.id=m.workspace_id
+   JOIN auth.users u ON u.id=m.user_id WHERE m.user_id=ANY(ARRAY[@@USER_IDS@@])
+   AND (m.role<>'owner' OR w.name IS DISTINCT FROM u.raw_user_meta_data->>'org_name'
+   OR w.slug IS DISTINCT FROM regexp_replace(regexp_replace(lower(w.name),'[^a-z0-9]+','-','g'),'(^-|-$)','','g')||'-'||substring(u.id::text,1,8)))
+ THEN RAISE EXCEPTION 'budget-automatic-owner-rows' USING ERRCODE='22023'; END IF;
+ IF EXISTS(SELECT 1 FROM public.contract_baselines WHERE workspace_id IN
+   (SELECT workspace_id FROM public.workspace_members WHERE user_id=ANY(ARRAY[@@USER_IDS@@])))
+ THEN RAISE EXCEPTION 'budget-baseline-absence-required' USING ERRCODE='22023'; END IF;
+END $auto$;
+INSERT INTO public.workspaces(id,name,slug) VALUES
+ (@@A@@,'SYNTHETIC budget A','synthetic-budget-a-9c47bd610f2a49e8a35c706d'),
+ (@@B@@,'SYNTHETIC budget B','synthetic-budget-b-9c47bd610f2a49e8a35c706d') RETURNING *;
+INSERT INTO public.workspace_members(workspace_id,user_id,role) VALUES
+@@MEMBERS@@
+RETURNING *;
+-- Compare the complete selected final row sets, not just these quantities.
+SELECT 'after_workspaces' AS receipt,to_jsonb(w) AS row FROM public.workspaces w ORDER BY id;
+SELECT 'after_members' AS receipt,to_jsonb(m) AS row FROM public.workspace_members m ORDER BY workspace_id,user_id;
+SELECT 'after_cutoff_changes' AS receipt,to_jsonb(c) AS row FROM public.contract_source_changes c ORDER BY id;
+SELECT 'after_cutoff_deletions' AS receipt,to_jsonb(c) AS row FROM public.contract_source_deletions c ORDER BY id;
+SELECT 'after_baselines' AS receipt,to_jsonb(b) AS row FROM public.contract_baselines b
+ WHERE b.workspace_id IN (SELECT workspace_id FROM public.workspace_members WHERE user_id=ANY(ARRAY[@@USER_IDS@@])) ORDER BY id;
+SELECT 'after_users' AS receipt,id,aud,role,email,raw_app_meta_data,raw_user_meta_data,created_at,updated_at
+ FROM auth.users WHERE id=ANY(ARRAY[@@USER_IDS@@]) ORDER BY id;
+SELECT txid_current() AS prerequisite_transaction,pg_backend_pid() AS writer_pid;
+COMMIT;
+-- No follow-on operation. Independent new connection readback remains mandatory.

@@ -1,0 +1,140 @@
+{
+  "scope": "SOURCE_METADATA_ONLY",
+  "disposition": "SCOPED_NO_FINDING_CONDITIONAL_ROOT_CONSIDERATION",
+  "newP1": 0,
+  "newP2": 0,
+  "comparisons": [
+    {
+      "label": "runtime",
+      "entries": 9,
+      "mismatches": 0
+    },
+    {
+      "label": "bindings",
+      "entries": 5,
+      "mismatches": 0
+    },
+    {
+      "label": "sources",
+      "entries": 1126,
+      "mismatches": 0
+    },
+    {
+      "label": "helpers",
+      "entries": 7,
+      "mismatches": 0
+    },
+    {
+      "label": "public",
+      "entries": 32,
+      "mismatches": 0
+    },
+    {
+      "label": "packet",
+      "entries": 73,
+      "mismatches": 0
+    },
+    {
+      "label": "selected-correction",
+      "entries": 9,
+      "mismatches": 0
+    },
+    {
+      "label": "native-observe",
+      "entries": 89,
+      "mismatches": 0
+    },
+    {
+      "label": "root-prepublication",
+      "entries": 1155,
+      "mismatches": 0
+    },
+    {
+      "label": "packetManifest",
+      "entries": 1,
+      "mismatches": 0
+    },
+    {
+      "label": "privateManifest",
+      "entries": 1,
+      "mismatches": 0
+    },
+    {
+      "label": "git:b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "entries": 33,
+      "mismatches": 0
+    },
+    {
+      "label": "git:688c783586fbdccad8d685656786e9fb85536d7d",
+      "entries": 4,
+      "mismatches": 0
+    },
+    {
+      "label": "git:71456da158df2f2dc660fa239eb67dab37e218cc",
+      "entries": 4,
+      "mismatches": 0
+    },
+    {
+      "label": "outer-diff",
+      "entries": 1,
+      "mismatches": 0
+    }
+  ],
+  "uniqueSelectedBeforeAfter": {
+    "changed": [],
+    "entries": 1354
+  },
+  "historical": {
+    "failedProofEntries": 145,
+    "failedProofMismatches": [],
+    "r3Absent": {
+      "observed": true,
+      "complete": true,
+      "manager-terminal": true
+    }
+  },
+  "proposalMismatches": [],
+  "actualR6Observe": {
+    "controllerRequests": 12,
+    "managerRequests": 1,
+    "requestErrors": [],
+    "scopeDatabases": 615,
+    "containerMatches": true,
+    "nativeMatches": true,
+    "scopeMatches": true,
+    "completionAndManagerPresent": true,
+    "actualAllocation": false
+  },
+  "namespaces": {
+    "admissions": [
+      "observe.json"
+    ],
+    "stages": [
+      "observe"
+    ]
+  },
+  "allocationPathsAbsent": {
+    "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/admissions/allocate.json": true,
+    "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/stages/allocate": true,
+    "/home/nathaniel/.local/state/openplan/a0-native-wrapper-r6-allocate-parent-operation-20261016": true
+  },
+  "testsRun": false,
+  "subjectModulesImported": false,
+  "subjectCodeMutated": false,
+  "admissionPublished": false,
+  "launcherInvoked": false,
+  "nativeContact": false,
+  "managerContact": false,
+  "flockContact": false,
+  "nestedAgents": false,
+  "blindCategories": [
+    "retained selected file identity excludes transient effects and hostile same-user changes",
+    "catalog/global digests exclude protected row content",
+    "source ordering and argv exclude current availability or actual creation",
+    "inert sequence and case controls exclude native semantics",
+    "wrapper caps exclude database-container resources",
+    "outer terminal or timeout excludes proof of inner/backend cancellation",
+    "creation owner/locale argv excludes native owner/locale readback",
+    "this review grants no future admission or successor"
+  ]
+}

@@ -1,0 +1,305 @@
+{
+  "controllerCampaign": {
+    "nativeParserAccepted": false,
+    "oldCampaignRerun": false,
+    "sourceVariants": 10,
+    "trials": [
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "matching",
+        "source": "baseline"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "map-history",
+        "source": "baseline"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "map-ordinary",
+        "source": "baseline"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "map-type",
+        "source": "baseline"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "history-digest",
+        "source": "baseline"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "receipt:matching",
+        "source": "baseline"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "receipt:root",
+        "source": "baseline"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "receipt:manager",
+        "source": "baseline"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "receipt:custody",
+        "source": "baseline"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "off",
+        "source": "baseline"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "unknown",
+        "source": "baseline"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "corrupt",
+        "source": "baseline"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "postbody",
+        "source": "baseline"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "postconfig",
+        "source": "baseline"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "postacl",
+        "source": "baseline"
+      },
+      {
+        "failure": null,
+        "outcome": "survived",
+        "scenario": "matching",
+        "source": "harmless"
+      },
+      {
+        "failure": "AssertionError:predecessor-drift-accepted:map-history",
+        "outcome": "named-failure",
+        "scenario": "map-history",
+        "source": "map-removed"
+      },
+      {
+        "failure": "AssertionError:predecessor-drift-accepted:map-ordinary",
+        "outcome": "named-failure",
+        "scenario": "map-ordinary",
+        "source": "map-removed"
+      },
+      {
+        "failure": "AssertionError:predecessor-drift-accepted:map-type",
+        "outcome": "named-failure",
+        "scenario": "map-type",
+        "source": "map-removed"
+      },
+      {
+        "failure": "AssertionError:new-receipt-refusal:root",
+        "outcome": "named-failure",
+        "scenario": "receipt:root",
+        "source": "root-removed"
+      },
+      {
+        "failure": "AssertionError:new-receipt-refusal:manager",
+        "outcome": "named-failure",
+        "scenario": "receipt:manager",
+        "source": "manager-removed"
+      },
+      {
+        "failure": "AssertionError:new-receipt-refusal:custody",
+        "outcome": "named-failure",
+        "scenario": "receipt:custody",
+        "source": "custody-removed"
+      },
+      {
+        "failure": "AssertionError:history-encoding-bytes",
+        "outcome": "named-failure",
+        "scenario": "matching",
+        "source": "send-altered"
+      },
+      {
+        "failure": "AssertionError:fresh-physical-line",
+        "outcome": "named-failure",
+        "scenario": "matching",
+        "source": "line-collapsed"
+      },
+      {
+        "failure": "AssertionError:new-post-refusal:postbody",
+        "outcome": "named-failure",
+        "scenario": "postbody",
+        "source": "postbody-removed"
+      },
+      {
+        "failure": "AssertionError:new-post-refusal:postconfig",
+        "outcome": "named-failure",
+        "scenario": "postconfig",
+        "source": "postbody-removed"
+      },
+      {
+        "failure": "AssertionError:new-post-refusal:postacl",
+        "outcome": "named-failure",
+        "scenario": "postacl",
+        "source": "postbody-removed"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "matching",
+        "source": "restored"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "receipt:matching",
+        "source": "restored"
+      }
+    ]
+  },
+  "finiteFinalChecks": {
+    "admissionsAbsent": true,
+    "nativeDispatches": 0,
+    "nativeParserAccepted": false,
+    "realRefusal": "MISSING_ROOT_ADMISSION:apply18",
+    "retainedSnapshot": {
+      "bytes": 44914,
+      "labels": 383,
+      "sha256": "b63c569f70e77dc6f01ff206967f69af1c17de9c3b9271b10fabed74228b73e7"
+    },
+    "selectedExternalUnchanged": 701,
+    "sourceMigrations": 421,
+    "stagesAbsent": true,
+    "syntax": [
+      "controls.py",
+      "final_checks.py",
+      "prepare.py",
+      "runtime/cases.py",
+      "runtime/continuation.py",
+      "runtime/controller.py",
+      "runtime/fixture.py",
+      "runtime/journal.py",
+      "runtime/literal_history.py",
+      "runtime/policy.py",
+      "window.py"
+    ],
+    "unchangedR6Runtime": [
+      "cases.py",
+      "fixture.py",
+      "journal.py",
+      "policy.py",
+      "run_stage.sh",
+      "sql/assertions.sql",
+      "sql/post_rollback.sql",
+      "sql/shadows.sql"
+    ],
+    "windowGuardControls": [
+      {
+        "outcome": "pass",
+        "trial": "baseline"
+      },
+      {
+        "outcome": "survived",
+        "trial": "harmless"
+      },
+      {
+        "outcome": "named-failure",
+        "trial": "resource-omitted"
+      },
+      {
+        "outcome": "pass",
+        "trial": "restored"
+      }
+    ]
+  },
+  "grantSHA256": "1ff9510cc62de69bbe2102fe50b077bda52213596e5c15b4abb3b865e3e193e9",
+  "independentFinalReview": "REQUIRED_ROOT_OWNED",
+  "native18Executed": false,
+  "nativeParserAccepted": false,
+  "outerExit": {
+    "retry": "forbidden; terminal exit releases this invocation lock if reached; no native claim",
+    "returncode": 0,
+    "seconds": 14.540765753015876,
+    "stderrSHA256": "1bd09f959ef5cf456c8ba8ab3e4ab3727ec53434be566735d789500238a8e886",
+    "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "preparedPinsSHA256": "ba06c2ca84b82bd5f79ff6ad27c21740dbdbcf3558e777f79df5280652282bf2",
+  "preparedSourceUnchanged": true,
+  "pureTerminal": {
+    "nativeDispatches": 0,
+    "status": "complete",
+    "steps": [
+      {
+        "returncode": 0,
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdoutSHA256": "65fc60a0b00d5be9ead6d3fa2b969aa9b51ad56a8cc9064b718add0ffd0c21ea",
+        "step": 1
+      },
+      {
+        "returncode": 0,
+        "stderrSHA256": "f68445367cddf2dc482988cce2c102768990039ee4d491468a145718612a4640",
+        "stdoutSHA256": "2d21f390f2609c705836afd80f7e9059cb7633f9b87fe51c3e19eed02579d912",
+        "step": 2
+      },
+      {
+        "returncode": 0,
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdoutSHA256": "d0f380fbdf4283aa062889ef9ddbb0adaef1e417063c59148798ef930c06dc45",
+        "step": 3
+      },
+      {
+        "returncode": 0,
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdoutSHA256": "fdb8b9e795892195134ae53420685b81fa9a1c0d6075b1fc515fd530b0554d98",
+        "step": 4
+      }
+    ]
+  },
+  "readerControls": [
+    {
+      "failure": null,
+      "outcome": "pass",
+      "trial": "baseline"
+    },
+    {
+      "failure": null,
+      "outcome": "survived",
+      "trial": "harmless"
+    },
+    {
+      "failure": "AssertionError:reader-wrong-refusal-rejected",
+      "outcome": "named-failure",
+      "trial": "substring-fault"
+    },
+    {
+      "failure": null,
+      "outcome": "pass",
+      "trial": "restored"
+    }
+  ],
+  "requestSHA256": "2c258357e103c34de446f3f94de96251b597cf4d815280b9cc7e0d6005acd1d2",
+  "status": "PURE_COMPOSITION_PASSED_NO_NATIVE18"
+}

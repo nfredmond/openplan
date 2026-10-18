@@ -1,0 +1,152 @@
+{
+  "custodyMismatches": [],
+  "custodyPrivateBeforeTail": 661,
+  "custodyPublicBeforeFinalEvidence": 31,
+  "finalExternalRecheckMismatches": [],
+  "fixtureLaunchable": false,
+  "independentComparisons": 2346,
+  "independentDistinctFiles": 1037,
+  "inheritedNamedKills": 15,
+  "inheritedPrefixTier": "root-accepted SOURCE-CONTROLFLOW plus actual retained harmless/15 named outcomes",
+  "intentionalAssertionInterruptions": 5,
+  "limits": [
+    "source and saved-data review only",
+    "not PostgreSQL parser/planner/evaluator/deparser or byte prediction proof",
+    "not native trigger capture or installed closure",
+    "not hostwide confinement, capacity, backend death, RLS/Auth/provider or browser proof",
+    "no new pure or native request; root owns later separate operation proposal/review/admission"
+  ],
+  "model": "gpt-6.1-sol",
+  "newNamedKills": 5,
+  "newSubjectFiles": 32,
+  "oldNativeAfter": "UNASSESSED",
+  "oldNativeBackendDeath": "UNASSESSED",
+  "operatingApproval": false,
+  "original01Status": "PERMANENT_FAILED1",
+  "preparedInputDescriptors": 714,
+  "preparedSourceDescriptors": 12,
+  "privateEvidence": {
+    "additional-saved-data.json": {
+      "bytes": 13990,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "5fc9468a68cf06c34b3ca30bb6a0bd0477973e40ee9771b10390d9b83769ef47",
+      "uid": 1000
+    },
+    "final-external-recheck.json": {
+      "bytes": 102,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "cd92c4466fa102133894397f3a1a391dbeab2b96c65cbbd3d28b49784cdc179d",
+      "uid": 1000
+    },
+    "initial-review-checkout.txt": {
+      "bytes": 0,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 1000
+    },
+    "read_saved_metadata.py": {
+      "bytes": 12371,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "55aba82218eec13716bfacbbd4a0d34817a90a4f7ff39ca79b9061f6cab5788b",
+      "uid": 1000
+    },
+    "reader-notes.txt": {
+      "bytes": 688,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "1ae907788981066ccdce7034579c5dec8ed43346302ba81cad2017e14bc44da7",
+      "uid": 1000
+    },
+    "saved-data-readback.json": {
+      "bytes": 858882,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "b47bf45650bc30a6307456e3633f03b7c2f56bd42d3101239cd4e6da90b36b5c",
+      "uid": 1000
+    },
+    "subject-32-files.json": {
+      "bytes": 15064,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "d782ae554d7acead21e2fad1700f14088987e809d4b0434d49303c3c56eba31a",
+      "uid": 1000
+    },
+    "subject-exact.diff": {
+      "bytes": 282803,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "40d7bc060e3fee9a521a3ba160bd31890e0eedcd880fda015d73c5cede67a209",
+      "uid": 1000
+    },
+    "subject-status.txt": {
+      "bytes": 0,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 1000
+    },
+    "t3-binding.json": {
+      "bytes": 3608,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "dec43eb8470cc076f3c839b421ba82703d4541c885845a0f5d999386ed5f3d5a",
+      "uid": 1000
+    }
+  },
+  "privateRoot": "/home/nathaniel/.local/state/openplan/a0-trigger-completeness-independent-20261016",
+  "provider": "codex",
+  "reasoningEffort": "high",
+  "reasoningEvidence": "harness runtime; T3 thread confirms provider/model/worktree, catalogue defaults do not measure run effort",
+  "report": {
+    "bytes": 26911,
+    "gid": 1000,
+    "mode": 436,
+    "sha256": "88e9167af288f647f23327903ed0638423c5bc1967bfcc64e466cbafe7988ce0",
+    "uid": 1000
+  },
+  "reviewBaseHEAD": "05dd3e8da4a4572437f06e771b0a2477873e681f",
+  "reviewBranch": "t3/a0-trigger-completeness-independent-review",
+  "reviewCheckout": "/home/nathaniel/.t3/worktrees/openplan/t3-834e2ee9",
+  "reviewDate": "2026-10-16",
+  "reviewerOperations": {
+    "HTTPAuthHelperBrowser": 0,
+    "compile": 0,
+    "dependencies": 0,
+    "direction": 0,
+    "flock": 0,
+    "join": 0,
+    "manager": 0,
+    "native": 0,
+    "nestedAgents": 0,
+    "push": 0,
+    "release": 0,
+    "subjectImports": 0,
+    "tests": 0
+  },
+  "runtime": {
+    "catalogue.py": "2ef99693ce6c464a9c3b8d85302b0559b12bbc16221050c32562e45643c56cb9",
+    "catalogue_policy.py": "a753bb7735933a6bda8b9eef532e48611e090e59e1cdd26bf0a24f54e01941da",
+    "catalogue_transport.py": "5eda399672d026f31bcb5ca7d6178676b1b6e8940b5f538409e043a7e4c8fe0a"
+  },
+  "schema": 1,
+  "sourceClosureComplete": false,
+  "subjectCheckout": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee",
+  "subjectCommit": "4fbb39cbe4fe5668e848dcf2e02b2eb248f97575",
+  "subjectFileMismatches": [],
+  "subjectParent": "219d7b04e11d06c4a66481da059529a1c7144171",
+  "successorGranted": false,
+  "suppliedTerminalZero": 27,
+  "suppliedTerminals": 32,
+  "test02Tier": "ACTUAL_RETAINED_PURE_UNIT_WITH_SUPPLIED_SUBJECT_PROCESSES",
+  "unresolvedFindings": {
+    "P1": 0,
+    "P2": 0,
+    "P3": 0,
+    "PREP": 0
+  },
+  "verdict": "SOURCE_APPROVED_BOUNDED_PROSPECTIVE_EXACT_SOURCE_NO_OPERATION"
+}

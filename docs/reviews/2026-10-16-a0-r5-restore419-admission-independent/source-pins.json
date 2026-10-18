@@ -1,0 +1,109 @@
+{
+  "SQL18SHA256": "655e625878b3e62f332a7f17d6e126879813cc2bf881ca745593978d8eed6559",
+  "actualProofManifests": {
+    "allocate": "1f0d565adec7f5fe3a1561c03392d4e6c747d7f0b05c1c630bccaecbc00681d8",
+    "observe": "ddbe84e537078042ee9fb2451baf9c8bd314d18983ea1d335b518fd71f35131c"
+  },
+  "appTree": "d577a9cd955018b3253f42b3d9af2a96a9a10b53",
+  "connectorTree": "228ce912b1cf63dba408445422dc6e2b690d91f4",
+  "dump": {
+    "bytes": 16232305,
+    "sha256": "181caa01d5ebe66b50da9dcba1242b225e75cfdc8bd0fe03e3c4a9ae86e4d398"
+  },
+  "packageSHA256": "d60ec17464613f7dcc36532480cf7524ab7d34dc072b236c8913a583279aafc2",
+  "planSHA256": "2a2b4ede1913f2f8fa6a5dde9afe97af926651653fb68704b158ba611ffec19a",
+  "priorReports": [
+    {
+      "bytes": 13527,
+      "commit": "d20e58787072ca05b7414c26fe16355f20056d49",
+      "path": "docs/reviews/2026-10-16-a0-usage-limit-native-wrapper/STATUS.md",
+      "sha256": "f85d97271a8ffaf52f39d86510dae2a26273b05d3013c946f682991401ab08b5"
+    },
+    {
+      "bytes": 12248,
+      "commit": "332925ed4c9763300d846101293f60a6e0156448",
+      "path": "docs/reviews/2026-10-16-a0-usage-limit-native-wrapper-independent/REVIEW.md",
+      "sha256": "5618c06a15780145593add11b024a0e5e2aa0cf520e727b53b2062c6006bb919"
+    },
+    {
+      "bytes": 10007,
+      "commit": "3c79ca18f344adcceaaca61c20ec367feb94b513",
+      "path": "docs/reviews/2026-10-16-a0-native-wrapper-corrections/STATUS.md",
+      "sha256": "1c5d1adfddffd9a5d49aa699dbcc0a2be1de4f5e2339a3717fdf15687b468a22"
+    },
+    {
+      "bytes": 13690,
+      "commit": "857453290c6c490beede5f328079243e0fb091fd",
+      "path": "docs/reviews/2026-10-16-a0-native-wrapper-r2-independent/REVIEW.md",
+      "sha256": "15b87d2da1523102fedfcf097ec27b7b68a528171eb629591866c444e03c916c"
+    },
+    {
+      "bytes": 10386,
+      "commit": "53e17b03b48e07a564346487adb55aadd93c2632",
+      "path": "docs/reviews/2026-10-16-a0-native-wrapper-bus-correction/STATUS.md",
+      "sha256": "f7ba4e233d576d29984aaea5ee7bc0b9168ee0fcc6e3e22fb222d8d1dc84c7c7"
+    },
+    {
+      "bytes": 11731,
+      "commit": "7468c58b8c84c860dbaf3a484d7c7e274a480e48",
+      "path": "docs/reviews/2026-10-16-a0-native-wrapper-r3-independent/REVIEW.md",
+      "sha256": "8c64007b2b758777c48261f2a7ba929ca360bbc01854fb8083f33c333e56c626"
+    },
+    {
+      "bytes": 12702,
+      "commit": "e71352b8c4d8befcb5ec370ce6130db4e76879c5",
+      "path": "docs/reviews/2026-10-16-a0-native-oid-correction-preparation/STATUS.md",
+      "sha256": "b24d676dcb6782f49d2ec4d267b8c677ead63019f17fa70f2ae62d72f0c83b12"
+    },
+    {
+      "bytes": 13937,
+      "commit": "6c12e7efc7c5682d551f6d845c55a7ce23f4f4f8",
+      "path": "docs/reviews/2026-10-16-a0-native-oid-r4-independent/REVIEW.md",
+      "sha256": "4e1268da23011df31c5e6616b2212207246a90e204ddfc4da51be1c8c1e7ad2c"
+    },
+    {
+      "bytes": 15148,
+      "commit": "133e1957e188382fbf57df10ca6590e2d41aa52c",
+      "path": "docs/reviews/2026-10-16-a0-case-temp-oid-r5-independent/REVIEW.md",
+      "sha256": "3b4bc006137f360fb6065306eddeca7d5135d891e2bcd72b5d8c621f1de99287"
+    },
+    {
+      "bytes": 15986,
+      "commit": "ebfcb6ca413d85fb8bd43df449f9b0f8ec325518",
+      "path": "docs/reviews/2026-10-16-a0-r5-observe-admission-independent/REVIEW.md",
+      "sha256": "d47ba1272938c29d0d2226d83b6bb38459b2023ba7d336ea8ce5758c34e23012"
+    },
+    {
+      "bytes": 17911,
+      "commit": "646e66321f1bbd04595fe8d53761a3ee88343741",
+      "path": "docs/reviews/2026-10-16-a0-r5-allocate-admission-independent/REVIEW.md",
+      "sha256": "5279ba12cc32a79092fe23d3182a0e49451de8e294983598fb25c684616855ae"
+    }
+  ],
+  "proposalBindings": {
+    "appTree": "d577a9cd955018b3253f42b3d9af2a96a9a10b53",
+    "cpuPercent": 50,
+    "functionPins": null,
+    "independentReviewSHA256": "3b4bc006137f360fb6065306eddeca7d5135d891e2bcd72b5d8c621f1de99287",
+    "memoryBytes": 1073741824,
+    "observedSHA256": "411dec3ec7121c759aece1dbc5fbc72d39e453a1ebd099d263d7f286a910128d",
+    "packageSHA256": "d60ec17464613f7dcc36532480cf7524ab7d34dc072b236c8913a583279aafc2",
+    "planSHA256": "2a2b4ede1913f2f8fa6a5dde9afe97af926651653fb68704b158ba611ffec19a",
+    "predecessorSHA256": "43a1cc485381aed6bf783f43929f257ac62fa5e9e4be21f972e5a3c6f0ae855f",
+    "priorFunctionPins": null,
+    "sourceCommit": "f8a571bb0a18b8b6501870acb5ef1e760d487e1c",
+    "stage": "restore419",
+    "swapBytes": 0,
+    "systemIdentifier": "7683856985084612646"
+  },
+  "reviewBaseCommit": "05dd3e8da4a4572437f06e771b0a2477873e681f",
+  "runtimeCandidate": "1b21ef6dbc3c9a75872ad6d36e6b7d369c6fda9a",
+  "sourceCommit": "f8a571bb0a18b8b6501870acb5ef1e760d487e1c",
+  "target": {
+    "database": "openplan_a0_limit_c2e1f4598374c1bf439baa3b",
+    "oid": 6212363,
+    "ownerLocaleReadbackClaimed": false,
+    "systemIdentifier": "7683856985084612646",
+    "targetSHA256": "d2ccd700d93f098f70d5356b1c49c923a762475baf27770f1447be525dc32eb9"
+  }
+}

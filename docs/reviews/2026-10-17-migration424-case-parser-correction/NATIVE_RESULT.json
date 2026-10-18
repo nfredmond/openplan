@@ -1,0 +1,81 @@
+{
+  "state": "ROOT_ACCEPTED_NATIVE_COMPILATION_ONLY",
+  "actualUnit": "openplan-m424-case-compiler-test04-20261017",
+  "invocationId": "e938a6e146ee4dcc83decc298c6755e0",
+  "controllerPID": 3675018,
+  "containerId": "8bbfdee97e0f27aee1b5613236a9cf5003286dc2ffda8a56dc3d86f47eaee53b",
+  "image": "sha256:ca7871b587ca2c401ac0f325df6249c9aa0d25647ded34631158efc51176767f",
+  "parentSeconds": 1.7226818959461525,
+  "serviceReportedSeconds": 1.697,
+  "serviceReportedCPUms": 129,
+  "serviceReportedRoundedPeak": "18.8M",
+  "serviceReportedSwap": "0B",
+  "serviceActualCaps": {
+    "memory.max": "536870912",
+    "memory.swap.max": "0",
+    "cpu.max": "50000 100000",
+    "pids.max": "64"
+  },
+  "containerActualCaps": {
+    "Memory": 536870912,
+    "MemorySwap": 536870912,
+    "NanoCpus": 500000000,
+    "PidsLimit": 64,
+    "NetworkMode": "none",
+    "ReadonlyRootfs": true,
+    "ShmSize": 33554432
+  },
+  "cases": [
+    "M424 CASE 01-harmless EXPECTED ZP001 OBSERVED ZP001 MESSAGE M424 rollback compiled DDL",
+    "M424 CASE 02-fixed EXPECTED ZP001 OBSERVED ZP001 MESSAGE M424 rollback compiled DDL",
+    "M424 CASE 03-original EXPECTED 42601 OBSERVED 42601 MESSAGE syntax error at end of input",
+    "M424 CASE 04-restored EXPECTED ZP001 OBSERVED ZP001 MESSAGE M424 rollback compiled DDL"
+  ],
+  "completeAndRollbackNoticeCount": 1,
+  "sourcePinsChecked": 17,
+  "sourcePinMismatches": [],
+  "nativeStdout": {
+    "bytes": 1014,
+    "sha256": "8b1f215013771cdcc688c1e9211b81c9381547532f870fbd13462fc71376ef3c"
+  },
+  "nativeStderr": {
+    "bytes": 9916,
+    "sha256": "f2029a95718b86d96b87abb57515bf308bfdf630d30dcd9ea2604c3b8c667baf"
+  },
+  "ownedRemoval": 0,
+  "lockRelease": "Normal completed controller exits its shared compiler-file context; no further holder probe or ownership claim.",
+  "limits": [
+    "Each service and container has separate512MiB cap, not one combined cap; Docker daemon/runtime overhead outside both.",
+    "Exact container peak and aggregate memory not captured.",
+    "Synthetic table/roles and compilation only; no predecessor423restore, row guard/RLS/Auth/browser/hosted acceptance.",
+    "No hard parent stream byte cap; native attach streams capped1MiB each.",
+    "Single-user implicit superuser semantics do not establish production authorization.",
+    "No arbitrary storage durability or universal timeout signal proof.",
+    "Container kernel cgroup enforcement was not independently read; saved Docker HostConfig supplies configured container limits."
+  ],
+  "previousFailures": [
+    "TEST01 unsupported docker start option, zeroPostgres;permanentfailed1",
+    "TEST02 unsupportedBusyBoxlongoptions, zeroPostgres;permanentfailed1",
+    "TEST03 PostgreSQL0 but missingcaseNOTICEevidence;permanentfailed1/unassessedcaseoutcomes"
+  ],
+  "privateAudit": {
+    "path": "/home/nathaniel/.local/state/openplan/pr332-ci-restore-drill-root-review-20261017/NATIVE_TEST04_ROOT_AUDIT.json",
+    "bytes": 8593,
+    "sha256": "8f9096b1d0f56dda8ba641d6eafd4c9d8b8adb812a0bd65738bb8bd462f1f2ee"
+  },
+  "failedTrialSeals": {
+    "1": {
+      "sha256": "170a170140fef7a98153af4040794dbbec37581084652dccc80510ee3f8be0c1",
+      "bytes": 6828
+    },
+    "2": {
+      "sha256": "c7a75a8363251e06cab5792bcaf9c9b38fcc58011ab53219ae68645322e720e4",
+      "bytes": 6515
+    },
+    "3": {
+      "sha256": "a95e856d7db9db5b6a0102fe781bd2addec9d72cae70baf91cb8f3c0707bc167",
+      "bytes": 5405
+    }
+  },
+  "containerCapsEvidence": "Saved Docker inspect HostConfig from the exact owned container. Container kernel cgroup files were not independently read. serviceActualCaps comes from direct controller cgroup reads."
+}

@@ -1,0 +1,252 @@
+{
+  "review": "NEW_INDEPENDENT_EXACT_SOURCE_REVIEW",
+  "verdict": "BOUNDED_SOURCE_APPROVAL",
+  "blockingP1P2Findings": [],
+  "reviewer": {
+    "model": "gpt-6.1-sol",
+    "reasoning": "high",
+    "nestedAgents": false
+  },
+  "candidate": "4031e31460cfc6cb32f9ba836dd09e72f440c8d1",
+  "parent": "ec0fd7f49c9db24a4516c3c60f4d1b5201357b6a",
+  "applicationTree": "7483792458e9ce8601c5beaafceb23297f2e2776",
+  "candidateTree": "635a003727c1457e544a68fadaa8d67a45739709",
+  "reviewCheckout": "/home/nathaniel/.t3/worktrees/openplan/t3-67e536c6",
+  "reviewBranch": "t3/review-designation-map-extent",
+  "reviewStartingHead": "05dd3e8da4a4572437f06e771b0a2477873e681f",
+  "authorCheckout": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016",
+  "authorHead": "4031e31460cfc6cb32f9ba836dd09e72f440c8d1",
+  "authorCleanAtReview": true,
+  "sourcePins": {
+    "openplan/src/components/land-use-plans/public-designation-map.tsx": {
+      "candidateBlob": "20d52c8e2606fbd527ccf4f42bb91741e7880ff2",
+      "sha256": "e7b0f5d06443470d706437251e4e930ac7cebbd62e1d0ece37e34afd45db336d",
+      "bytes": 6752,
+      "matchesAuthorReceipt": true,
+      "currentAuthorBytesMatch": true
+    },
+    "openplan/src/test/public-designation-map-extent.test.tsx": {
+      "candidateBlob": "de8cfd04e85861e5784646d2cb4216fc892415d4",
+      "sha256": "db1d65c6a2f464470b97e4e88006b5fc5ecf00f6fb443c5a8b562b6e471f4528",
+      "bytes": 4913,
+      "matchesAuthorReceipt": true,
+      "currentAuthorBytesMatch": true
+    },
+    "openplan/src/test/land-use-designation-map-recovery.test.tsx": {
+      "candidateBlob": "78aa1fdc877e486eaf21e29e43cb579b2681d645",
+      "sha256": "8c18751bf60270a9daa9558513faabe79209750a62a4ca6c66f6f2ecd96292b4",
+      "bytes": 4797,
+      "matchesAuthorReceipt": true,
+      "currentAuthorBytesMatch": true
+    },
+    "openplan/src/test/wgs84-bounds.test.ts": {
+      "candidateBlob": "62b7e6f1923bd6dc98ed7793ce9324304240ad25",
+      "sha256": "f8b3cc82a9e7cf28a4361d1f52c51b21bb4e91e30a3457b3902a41c0e7c0f871",
+      "bytes": 5071,
+      "matchesAuthorReceipt": true,
+      "currentAuthorBytesMatch": true
+    },
+    "openplan/src/lib/geo/wgs84-bounds.ts": {
+      "candidateBlob": "38280e993e1cd1360fa066f9d8e74b05023c2ef8",
+      "sha256": "ee95eec456ac0ff92a6e1becb0002b64cdc7aaebbdeb869af42a2d775a7a3719",
+      "bytes": 4041,
+      "matchesAuthorReceipt": true,
+      "currentAuthorBytesMatch": true
+    },
+    "openplan/src/test/setup.ts": {
+      "candidateBlob": "2cfd429099786ef486405e463d49722b01fb5372",
+      "sha256": "70d7fbd3e6d08caa4ca508bb6bdca213deb4a58da22a840ff646a5862c05067a",
+      "bytes": 283,
+      "matchesAuthorReceipt": true,
+      "currentAuthorBytesMatch": true
+    },
+    "openplan/src/test/guided-flow-jsdom-dialog-shim.ts": {
+      "candidateBlob": "76c3ff5cd7bbc3678ef6c273bd8f622bfee55823",
+      "sha256": "d6f84fa247152ded90a7b63e97e6385e2def6169618e4163da99b4ed2359566b",
+      "bytes": 3140,
+      "matchesAuthorReceipt": true,
+      "currentAuthorBytesMatch": true
+    },
+    "openplan/tsconfig.json": {
+      "candidateBlob": "4236e8a2b4e8a4f04ced0e77c3c986a6e1ba994e",
+      "sha256": "cb3404493257250c77d7145c9825ed31f79246b640eb30a59b8069d39091bf29",
+      "bytes": 735,
+      "matchesAuthorReceipt": true,
+      "currentAuthorBytesMatch": true
+    }
+  },
+  "authorManifestReadback": {
+    "sha256": "12c29ff7030c8f69900d478a63d0e44be8efa113d4a2b690e8f99f3aafb00415",
+    "matchesCommittedEvidence": true,
+    "files": 2529,
+    "mismatches": [],
+    "missing": []
+  },
+  "trial02SealReadback": {
+    "files": 26,
+    "mismatches": []
+  },
+  "contextComparisons": {
+    "source-pins.json": true,
+    "mutations.json": true,
+    "tsconfig.focused.json": true,
+    "normalizedConfig": true
+  },
+  "additionalComparisons": {
+    "identicalSelectedAssertionNames": true,
+    "productionHelperUnchangedFromParent": true
+  },
+  "retainedReports": {
+    "trial02/harmless": {
+      "exit": 0,
+      "suites": 3,
+      "suiteMessages": [],
+      "assertions": 40,
+      "passed": 40,
+      "failed": 0
+    },
+    "trial02/baseline": {
+      "exit": 0,
+      "suites": 3,
+      "suiteMessages": [],
+      "assertions": 40,
+      "passed": 40,
+      "failed": 0
+    },
+    "trial03/type-only-reader": {
+      "exit": 1,
+      "suites": 1,
+      "suiteMessages": [],
+      "assertions": 23,
+      "passed": 14,
+      "failed": 9
+    },
+    "trial03/missing-disclosure": {
+      "exit": 1,
+      "suites": 1,
+      "suiteMessages": [],
+      "assertions": 23,
+      "passed": 8,
+      "failed": 15
+    },
+    "trial03/drop-valid-extents": {
+      "exit": 1,
+      "suites": 1,
+      "suiteMessages": [],
+      "assertions": 23,
+      "passed": 15,
+      "failed": 8
+    },
+    "trial03/restored": {
+      "exit": 0,
+      "suites": 3,
+      "suiteMessages": [],
+      "assertions": 40,
+      "passed": 40,
+      "failed": 0
+    }
+  },
+  "mutations": {
+    "harmless": "SURVIVED_IN_RETAINED_TRIAL02",
+    "type-only-reader": {
+      "failed": 9,
+      "namedFailure": "NaN fallback camera AssertionError"
+    },
+    "missing-disclosure": {
+      "failed": 15,
+      "namedFailure": "empty-response disclosure AssertionError"
+    },
+    "drop-valid-extents": {
+      "failed": 8,
+      "namedFailure": "invalid-to-valid teardown AssertionError; valid camera assertions also fail"
+    }
+  },
+  "retainedFailures": [
+    "trial01 permanent startup configuration failure; no test",
+    "trial02 permanent ambiguous-oracle harness reader failure; accepted harmless40/baseline40; no broken mutant dispatched"
+  ],
+  "trial03Entry": {
+    "pid": 2,
+    "invocation": "320d08ceb62643a88c7735a19e48f855",
+    "limits": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "cpu.max": "50000 100000",
+      "pids.max": "64"
+    },
+    "mounts": [
+      {
+        "path": "/",
+        "mount": "/",
+        "options": "ro,nosuid,nodev,relatime"
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan",
+        "mount": "/",
+        "options": "ro,nosuid,nodev,relatime"
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules",
+        "mount": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules",
+        "options": "ro,nosuid,nodev,relatime"
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/designation-map-extent-correction-20261016/trial03",
+        "mount": "/home/nathaniel/.local/state/openplan/designation-map-extent-correction-20261016/trial03",
+        "options": "rw,nosuid,nodev,relatime"
+      }
+    ],
+    "netns": "net:[4026534423]",
+    "hostwideOnlyPrivateWritable": false,
+    "sourceCount": 8
+  },
+  "trial03Resources": {
+    "memory.peak": "338092032",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.swap.current": "0",
+    "pids.peak": "43",
+    "pids.events": "max 0"
+  },
+  "serviceTimingIndependentlyObserved": false,
+  "directionRecord": "retained exit0 with expired registry/matrix, version and intervening-change reminders",
+  "privateMetadata": [
+    {
+      "path": "/home/nathaniel/.local/state/openplan/designation-map-extent-independent-20261016/METADATA_REVIEW.json",
+      "sha256": "085595f60571654236c78ffe94fd490939805900f5000590cc299cd840f51651",
+      "bytes": 57230
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/designation-map-extent-independent-20261016/ADDITIONAL_METADATA.json",
+      "sha256": "25acb90436c817a9d730bd503221e627ca749954bab670ac00300a4ccdf01c0c",
+      "bytes": 93
+    }
+  ],
+  "privateSealPath": "/home/nathaniel/.local/state/openplan/designation-map-extent-independent-20261016/SEAL.json",
+  "reviewExecution": {
+    "sourceAndMetadataOnly": true,
+    "subjectImports": false,
+    "tests": false,
+    "compilers": false,
+    "direction": false,
+    "flock": false,
+    "serviceManager": false,
+    "Docker": false,
+    "browser": false,
+    "SQL": false,
+    "HTTP": false
+  },
+  "acceptance": {
+    "visibleWorkflow": false,
+    "identifiedBuild": false,
+    "desktop390": false,
+    "native": false,
+    "antimeridianQueriesFixed": false,
+    "worldCopyQueriesFixed": false,
+    "completeKI025": false,
+    "M1": false,
+    "fullV1": false,
+    "release": false,
+    "integration": false
+  },
+  "scopeNote": "Approval covers dense retained JSON extent validation and selected assertion evidence. Sparse JavaScript array rejection remains an inherited shared-reader boundary. No production correction requested."
+}

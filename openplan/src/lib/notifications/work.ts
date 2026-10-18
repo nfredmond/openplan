@@ -1673,6 +1673,8 @@ async function loadSweepCalendars(
         const id = asString(row.id);
         if (id) todays.set(id, todayIn(resolveWorkspaceTimeZone(row).timeZone, now));
       }
+      // An omitted workspace is still an unavailable calendar, even without an error.
+      if (batch.some((id) => !todays.has(id))) unavailable = true;
     } catch {
       unavailable = true;
     }

@@ -1,0 +1,29 @@
+{
+  "combinedApplicationTreeUnchanged": "42fc0315070f31269325acb264f0260723dbd56b",
+  "newNativeOrReleaseAcceptance": false,
+  "noteSHA256": "5b0695ef92be8d4f47e403a59eb9fb9ed0ee21bcdc9af9847330bbb4279f52bb",
+  "postTerminalTestsRepeated": false,
+  "references": [
+    {
+      "bytes": 8676,
+      "path": "/home/nathaniel/.local/state/openplan/a0-parent-root-preflight-20261016-03/FAILED_TRIAL03_AUDIT.json",
+      "sha256": "b6950f5cc9d995048ec42a2cfbd575144c23497cb81b0a6382582bc4e0582a1b"
+    },
+    {
+      "bytes": 21461,
+      "path": "/home/nathaniel/.local/state/openplan/a0-parent-root-preflight-20261016-03/FULL_RUNTIME_INVENTORY.json",
+      "sha256": "59acd38a93879c4ff8695ae24278c98eea7c768b172c2b9596cbc6e483a7a96f"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/environment-assessment/HANDOFF.json",
+      "bytes": 13750,
+      "sha256": "e28b7373a5ad428295f3c9597b7c1b89fbbc902bf7368afe4b6b17d1f3d26d24"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/a0-parent-root-preflight-20261016-03/ENVIRONMENT_SOURCE_DISPOSITION_03.json",
+      "bytes": 1502,
+      "sha256": "3d5af9d9cdbedb94200ad61b45346c7c27d929735df43419581736e6e211c890"
+    }
+  ],
+  "tier": "DATED_EXACT_EVIDENCE_WITH_LIMITS"
+}

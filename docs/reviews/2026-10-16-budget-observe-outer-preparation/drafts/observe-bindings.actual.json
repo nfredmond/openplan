@@ -1,0 +1,23 @@
+{
+  "status": "DRAFT_FALSE_AUTHORITY_BINDINGS_NOT_NATIVE_APPROVAL",
+  "independentReviewCommit": "7d9875a25ea513fadc231fd402bb82caaf0d87da",
+  "metadataResponseCommit": "91fbccd5e52abad57713843d7477c8e4772bd749",
+  "sourceReviewCommit": "366f315e1fbec1f4a3150bd9656f522c2c2e88b4",
+  "captureOperationReviewCommit": "f5184ccd6d9bf250c651a37538033b6922a784a0",
+  "observeProposalCommit": "a97f479bc9294870ca0fcb38f2329c9f801b626d",
+  "reviewKind": "DRAFT_ROOT_PREPARATION_PENDING_FINAL_SOURCE_READING_NOT_OPERATION_REVIEW",
+  "nativeOperationGranted": false,
+  "catalogSHA256": "2e4ef8a7287ac532d6f546e3939d2ffbe4d1ad27ca846126585c82b4109fc2aa",
+  "scopeSHA256": "6b662207002833fc5b9dee820cc628d0313689810d42f1f977e731a4f2435c65",
+  "captureManagerAckSHA256": "757422de49bbcfffc27f229fc70ee5df0b2ca1537f326eaea71b2acb4f3c73a1",
+  "captureCollectedSHA256": "0b999332cea61652b95055ff733fcca6fdf1fb1e1d7f7daeb34189a3f35b56f1",
+  "captureCompleteSHA256": "62152a732385a9499e27f0c913d55d801ae7482d3e50e22c6dc175efacf85a08",
+  "captureManagerTerminalSHA256": "0dc22041b96cf4896aadc1d5041da8419caf3975bc0edce4d1875acfa760f94e",
+  "captureOuterTerminalSHA256": "1324255e4505af526a7de912cd366bfd9c1922b60029d7c381f66d48776992d5",
+  "inputSHA256": "1a31911a7072d2c2b8684f34e68dff464118deededa31df54798b0ab0b8469ca",
+  "packageSHA256": "b9c0e7c418df4a295f44f1374a539e6e33dbd242a210c2840dd07831a6b1a35c",
+  "planSHA256": "d0ad2a5fc8e738d0b0f2c696199a7509009aa273c724dfc1217853459383e33d",
+  "reviewSHA256": "30e3bdff7dab51a33321ce8885ba180bbcc518743a054128527511a33739db19",
+  "windowSHA256": "683d4b383908370bbb4654a8ba4f4e15df5be6cb66fc51434020502a3d50ac68",
+  "publicationSHA256": "de74fa5f27159671b48986dd89ef723e325817a5f853f590641ba9f09634dba2"
+}

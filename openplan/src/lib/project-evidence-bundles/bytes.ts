@@ -3,7 +3,8 @@ import { downloadEngagementReview } from "@/lib/engagement/review-export-downloa
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { buildEngagementBilledSummary } from "@/lib/invoicing/receivables";
+import type { EngagementBilledSummary } from "@/lib/invoicing/receivables";
+import { engagementSummaryFor, loadEngagementBilledSummaries } from "@/lib/invoicing/engagement-summary-queries";
 import {
   buildClientInvoiceHtml,
   type ClientInvoicePdfClient,
@@ -235,30 +236,23 @@ export async function resolveInvoicePdfBytes(
   }
 
   let engagement: ClientInvoicePdfEngagement = null;
-  let engagementBilled = null;
+  let engagementBilled: EngagementBilledSummary | null = null;
   if (invoice.engagement_id) {
     const engagementRead = await caller
       .from("invoicing_engagements")
       .select("id, title, reference_code, not_to_exceed_amount")
       .eq("id", invoice.engagement_id)
+      .eq("workspace_id", invoice.workspace_id)
       .single();
     if (engagementRead.error || !engagementRead.data) {
       throw new ProjectEvidenceBundleError("missing_evidence", "The invoice engagement could not be read.");
     }
     engagement = engagementRead.data as ClientInvoicePdfEngagement;
-    const nte = (engagementRead.data as { not_to_exceed_amount?: unknown }).not_to_exceed_amount;
-    if (nte !== null && nte !== undefined) {
-      const invoicesRead = await caller
-        .from("client_invoices")
-        .select("id, status, engagement_id, subtotal_amount, retention_percent, retention_amount, total_amount")
-        .eq("engagement_id", invoice.engagement_id);
-      if (!invoicesRead.error) {
-        engagementBilled = buildEngagementBilledSummary(
-          engagementRead.data as Parameters<typeof buildEngagementBilledSummary>[0],
-          (invoicesRead.data ?? []) as Parameters<typeof buildEngagementBilledSummary>[1]
-        );
-      }
-    }
+    const positionRead = await loadEngagementBilledSummaries(caller, {
+      workspaceId: invoice.workspace_id, engagementId: invoice.engagement_id,
+    });
+    engagementBilled = engagementSummaryFor(positionRead, { id: invoice.engagement_id,
+      not_to_exceed_amount: engagement?.not_to_exceed_amount });
   }
 
   const html = buildClientInvoiceHtml({

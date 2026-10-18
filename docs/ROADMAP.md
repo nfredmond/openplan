@@ -47,6 +47,19 @@ actions. It changed no status. The [disposition record](reviews/2026-10-15-t3-ro
 gives each decision and its review state; [MILESTONES.md](product/MILESTONES.md#october-15-2026-amendment-operating-patterns-from-the-t3-code-review)
 holds scope and proof.
 
+The October 17 M1 evidence update below links the held-caller source review and
+retained-context proof prerequisites. It changes no milestone status or
+direction-review binding.
+
+The [October 17 wrapped viewport source checkpoint](reviews/2026-10-17-viewport-reviewed-root-integration/STATUS.md)
+adds an independently reviewed M1 correction. Migration 426, native seam/count/RLS
+checks and identified desktop/390px map journeys remain open. It changes no
+milestone status or direction-review binding.
+
+The October 17 A0 capture record preserves a protected-scope refusal and its
+saved-data explanation. A reviewed scope disposition precedes another native
+proposal; this changes no milestone status or direction-review binding.
+
 ## Destination
 
 OpenPlan v1 is a free, open-source operating system for core planning work in
@@ -71,7 +84,7 @@ record. "PR" means a pull request open on October 12. KI-001 means
 | ID | Plain name | Status | Last evidence | Next action |
 |---|---|---|---|---|
 | M0 | Trustworthy releases and documents | In progress | [Oct 12 audit](reviews/2026-10-12-two-month-review/reports/docs-audit.md) | Finish the A3 documents pass |
-| M1 | Plan geography and legal authority | In progress, partial | [Oct 7](reviews/2026-10-07-land-use-authority/IMPLEMENTATION_REPORT_RECOVERY_2026-10-07.md) | Fix KI-025; cross-state, MPO and tribal cases (C6) |
+| M1 | Plan geography and legal authority | In progress, partial | [Oct 7](reviews/2026-10-07-land-use-authority/IMPLEMENTATION_REPORT_RECOVERY_2026-10-07.md); [Oct 17 held-caller source review](reviews/2026-10-17-m1-operation-caller-independent/REPORT.md); [424 compiler correction](reviews/2026-10-17-migration424-case-parser-correction/STATUS.md) | Confirm full restore CI after the parser correction. Establish selected-history custody and a complete authenticated migration423 predecessor before exact424 native retained-context/original-command proof for KI-025. Cross-state, MPO and tribal cases remain required (C6). |
 | M2 | One planning case through handoff | Later | Audit | Choose a cross-module case |
 | M2a | Work-plan templates | Later | Audit | Grow 24 templates into a taxonomy |
 | M2b | File library and document writing | Later (C10) | Audit | Drafting and review |
@@ -96,7 +109,7 @@ record. "PR" means a pull request open on October 12. KI-001 means
 | M9c | Beat Social Pinpoint, shown with people | Later | Audit | Comparative trial |
 | M9d | Statutory hearing record | Later | Audit | Not started |
 | M10 | Capital projects (M10a–d, a.1–d.2) | Later (C3) | Audit | California bridge case |
-| M11 | Contract budgets and forecasts | In progress, mostly done | [Sep 9](reviews/2026-09-09-v047-release/VERIFICATION.md) | Fix KI-005 to 007 (PR 252) |
+| M11 | Contract budgets and forecasts | In progress, mostly done | [Sep 9](reviews/2026-09-09-v047-release/VERIFICATION.md); [Oct 16 complete summary readers](reviews/2026-10-16-engagement-summary-root-integration/STATUS.md); [current full configured types](reviews/2026-10-16-publication-reviewed-full-types/STATUS.md) | Verify complete budget and billing snapshots through native caller/SDK, financial reconstruction and identified browser/artifact journeys. Agency accounting fit, human usefulness and reminder delivery remain open. |
 | M12 | RTP update from the adopted plan | Later (C1) | Audit | Prior-RTP intake without a paid key |
 | M13 | Local tax and grant administration | Next (B5) | Audit | Recipient city role |
 | M13e | Grant discovery and applications | Next (B4) | Audit | ATP scoring on screen |
@@ -111,7 +124,7 @@ record. "PR" means a pull request open on October 12. KI-001 means
 | S3 | Untouched nationwide validation | Later | Audit | Successor preregistration |
 | G1 | Every state and organization type | Later | Audit | Confirm state order (decision 6) |
 | G1a | National local-assistance procedures | Later | [Sep 4](reviews/2026-09-04-pre-handoff/NATIONAL_LOCAL_ASSISTANCE_COMPARISON.md) | Read priority state manuals |
-| A0 | Planner Agent provider choice | In progress, mostly done | [Sep 12](reviews/2026-09-12-api-project-ui/VERIFICATION.md); [Oct 16 reviewed source candidates](reviews/2026-10-16-a0-corrections-and-install-check-independent/REVIEW.md) | Tested CLI versions and honest usage limits for the proven project task (A0b); current generic Codex resets stay unknown until a reviewed causal binding exists. Native SQL/RLS, provider recordings and browser proof remain open. Broad chat later (C8) |
+| A0 | Planner Agent provider choice | In progress, mostly done | [Sep 12](reviews/2026-09-12-api-project-ui/VERIFICATION.md); [Oct 16 reviewed source candidates](reviews/2026-10-16-a0-corrections-and-install-check-independent/REVIEW.md); [Oct 17 capture refusal](reviews/2026-10-17-a0-multiset-native-capture-result/STATUS.md) | Review the preserved catalogue scope refusal before another native proposal. Tested CLI versions and honest usage limits remain required for the proven project task (A0b); current generic Codex resets stay unknown until a reviewed causal binding exists. Native SQL/RLS, provider recordings and browser proof remain open. Broad chat later (C8) |
 | A1a | Truthful, scoped agent actions | Later, partial | [Sep 10](reviews/2026-09-10-agent-submittal-receipts/VERIFICATION.md) | Recovery for remaining writes; declare caller authority for every agent-reachable read and proposal before any MCP surface |
 | A1b | One durable agent assignment | Later (C8) | Audit | Not started; design Stop, recovery and visible waits on PR 327 once verified |
 | A1c | Agent jobs across modules | Later | Audit | Waits on A1b |
@@ -125,9 +138,12 @@ direction review.]
 
 ## Next three, October 15, 2026
 
-The October 12 list is kept in the evidence log. Current next actions use main
-`1b2fefe0f0e98f99700fc77e99146fe697b43ee7`; the dated issue register is evidence,
-not a fresh deployment audit.
+The October 12 list is kept in the evidence log. The original October 15 list
+uses main `1b2fefe0f0e98f99700fc77e99146fe697b43ee7`. An October 16 main-ref
+read still names `ced6aced9ddc6bf839891fb8e44d67c2d1dfe053`, which includes
+PRs 327, 328 and 329. The [October 15 delivery record](reviews/2026-10-15-main329-delivery-readback/DELIVERY_VERIFIED.md)
+releases that commit's sequential CI/delivery hold. This factual queue update
+does not reassess current hosted configuration or renew the direction reviews.
 
 1. **Close Stage A operations (A1).** Main includes PR 326's protected deep
    health, migration-drift check and optional error reports. Finish their
@@ -135,14 +151,15 @@ not a fresh deployment audit.
    they are enabled. Retain cron failure alerts, signup bot protection and
    operator run-cap follow-ups. Shared-key AI metering already refuses when
    metering fails; verify its configured production behavior rather than
-   reopening the old universal fail-open claim. Two separate unmerged
-   candidates remain: [PR 327](https://github.com/nfredmond/openplan/pull/327)
-   (Node worker process observations; migration 20261017000015 goes first under
-   the coordination file) and [PR 328](https://github.com/nfredmond/openplan/pull/328)
-   (previous integration secret for rotation). Finish each through its own
-   verification and the existing merge rules. A process observation does not
-   establish job completion. Keep Nathaniel's deferred operator actions and
-   required authorizations visible; this amendment sets no production values.
+   reopening the old universal fail-open claim. [PR 327](https://github.com/nfredmond/openplan/pull/327)
+   (Node worker process observations) and [PR 328](https://github.com/nfredmond/openplan/pull/328)
+   (previous integration secret for rotation) are merged. Their retained
+   exact-main delivery record keeps null per-process SHAs, unassessed job
+   completion and database-check limits explicit. It does not establish secret
+   rotation or complete Stage A operation. Each future main merge needs its own
+   applicable CI and identified delivery. Keep Nathaniel's deferred operator
+   actions and required authorizations visible; this update sets no production
+   values.
 2. **Finish the twelve first-week journeys against current main (A3).** In
    progress; retain partial and failed attempts, inspected artifacts and the
    identified build. Report Stage A outcomes, remaining operator actions and

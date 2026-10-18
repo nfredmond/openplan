@@ -1,0 +1,179 @@
+{
+  "DockerSQLNative": 0,
+  "HTTPAuthHelperBrowser": 0,
+  "a0Authority": {
+    "app": "d577a9cd955018b3253f42b3d9af2a96a9a10b53",
+    "connector": "228ce912b1cf63dba408445422dc6e2b690d91f4",
+    "migrations": 421,
+    "oid": 6227945,
+    "source": "f8a571bb0a18b8b6501870acb5ef1e760d487e1c",
+    "systemIdentifier": "7683856985084612646",
+    "target": "openplan_a0_limit_c730358675ac8bb47ac15fdd"
+  },
+  "compile": 0,
+  "dependencies": 0,
+  "descriptorMismatches": [],
+  "direction": 0,
+  "effortEvidence": "harness runtime, live catalogue defaults do not independently measure run effort",
+  "finalReadbackMismatches": [],
+  "fixtureLaunchable": false,
+  "flock": 0,
+  "fullHistoricalSourceLedgerRehash": false,
+  "independentComparisons": 1408,
+  "independentDistinctFiles": 490,
+  "join": 0,
+  "limits": [
+    "source and saved file/Git/T3 metadata only",
+    "not actual operation approval, native acceptance or replay",
+    "not current capacity, backend death, installed closure, PostgreSQL rendering or byte prediction",
+    "root owns actual risk, publication, fresh preflight, admission and raw audit",
+    "fullV1 fixture RLS Auth providers science installation browser practitioner remain open"
+  ],
+  "liveDiagnostics": 0,
+  "localCommit": "Actual checkpoint and clean status are recorded privately after the one authorized docs-only commit; no push.",
+  "manager": 0,
+  "managerArgvMechanicalMatch": true,
+  "model": "gpt-6.1-sol",
+  "nativeOperationGranted": false,
+  "nestedAgents": 0,
+  "oldBackendDeath": "UNASSESSED",
+  "oldFinalAfter": "UNASSESSED",
+  "oldMissingPathsStillAbsent": {
+    "/home/nathaniel/.local/state/openplan/a0-post18-catalogue-namespace-correction-20261016/catalogue-attempt/complete.json": true,
+    "/home/nathaniel/.local/state/openplan/a0-post18-catalogue-namespace-correction-20261016/catalogue-attempt/request-006": true,
+    "/home/nathaniel/.local/state/openplan/a0-post18-catalogue-namespace-correction-20261016/catalogue-attempt/request-007": true
+  },
+  "oldNativeFence": "FENCED_NO_REPLAY",
+  "oldParent": "UNKNOWN_STOP_ROOT_DECISION",
+  "onlyFourParentAssignmentsChange": true,
+  "operatingApproval": false,
+  "operatingPathsAbsent": {
+    "/home/nathaniel/.local/state/openplan/a0-catalogue-trigger-completeness-correction-20261016/catalogue-admission.json": true,
+    "/home/nathaniel/.local/state/openplan/a0-catalogue-trigger-completeness-correction-20261016/catalogue-attempt": true,
+    "/home/nathaniel/.local/state/openplan/a0-catalogue-trigger-completeness-correction-20261016/operation-review.md": true,
+    "/home/nathaniel/.local/state/openplan/a0-catalogue-trigger-completeness-correction-20261016/source-review.md": true,
+    "/home/nathaniel/.local/state/openplan/a0-trigger-catalogue-operation-proposal-20261016/catalogue-parent-attempt": true,
+    "/home/nathaniel/.local/state/openplan/a0-trigger-catalogue-operation-proposal-20261016/root-operation-intent.json": true,
+    "/home/nathaniel/.local/state/openplan/a0-trigger-catalogue-operation-proposal-20261016/root-preflight.json": true,
+    "/home/nathaniel/.local/state/openplan/a0-trigger-catalogue-operation-proposal-20261016/root-pure-window-grant.json": true
+  },
+  "operationSourcePins": {
+    "bytes": 219497,
+    "descriptors": 482,
+    "sha256": "38eed31ae147f88b2ff906caa0b5bc1d8d8adf77d38385484ec64c1535271653"
+  },
+  "postFailureAuthority": "Trusted root must evaluate and bind fresh decision/evidence at publication. Parent hashes full preflight but does not validate nested risk semantics.",
+  "preparationSealSHA256": "c9fab59caea86973ae3b17f71b127a1d9042f002c971a7e091f4e3011061a77f",
+  "privateEvidence": {
+    "assigned-brief.txt": {
+      "bytes": 13867,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "295200f6a70827a62f48f26f0b92f43ae1547f44f917eef4101925219585362c",
+      "uid": 1000
+    },
+    "final-external-readback.json": {
+      "bytes": 2110,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "ea1be4f75d90483e94c9ede190bb65ef152cda1ec3088124b228fd9b4c00bd91",
+      "uid": 1000
+    },
+    "metadata-readback.json": {
+      "bytes": 459703,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "e7c9fc80a57ec947cd5cef67008ce96c453b0c3122d6274c06f557b3ded61e85",
+      "uid": 1000
+    },
+    "read_metadata.py": {
+      "bytes": 7120,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "02e2f2f623d87b73d265d0f322ba1fd2719313a5c7deb85241347d43fb083b68",
+      "uid": 1000
+    },
+    "reader-notes.txt": {
+      "bytes": 1305,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "5dedd8b175a7e9a777c00009a26a0163deb3deaf20e649f99a67837388eff65f",
+      "uid": 1000
+    },
+    "saved-failure-readback.json": {
+      "bytes": 13456,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "93e593ac1e98df1d9b001bd8bc3753b4cc9e720b48aac7111c0269f29f8c9e51",
+      "uid": 1000
+    },
+    "subject-exact.diff": {
+      "bytes": 79214,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "48df6f9cf78b6ae8ff29d4dc59ce7bfc3989f72b0a1500ac9d281a8fa3f889c4",
+      "uid": 1000
+    },
+    "t3-binding.json": {
+      "bytes": 3260,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "2bf49e7b98f438533ad67eacf90a3de1429f012a48d70b47ad8ac7eb80d5b503",
+      "uid": 1000
+    }
+  },
+  "privateRoot": "/home/nathaniel/.local/state/openplan/a0-trigger-operation-independent-20261016",
+  "privateRootMode": 448,
+  "provider": "codex",
+  "push": 0,
+  "reasoningEffort": "high",
+  "release": 0,
+  "report": {
+    "bytes": 32780,
+    "gid": 1000,
+    "mode": 436,
+    "sha256": "5612ac848116bea43b1edf390c8a6e2ca52249923f23a271ac29565e09a9b21b",
+    "uid": 1000
+  },
+  "reviewApplicationTree": "1e0b6522002b2485d37086790808c0217ff77cfe",
+  "reviewBaseHEAD": "05dd3e8da4a4572437f06e771b0a2477873e681f",
+  "reviewBranch": "t3/a0-trigger-operation-independent-review",
+  "reviewCheckout": "/home/nathaniel/.t3/worktrees/openplan/t3-4602f9ae",
+  "reviewDate": "2026-10-16",
+  "runtimeExactGit": {
+    "catalogue.py": {
+      "bytes": 12581,
+      "gitSHA256": "2ef99693ce6c464a9c3b8d85302b0559b12bbc16221050c32562e45643c56cb9",
+      "privateMatchesGit": true
+    },
+    "catalogue_policy.py": {
+      "bytes": 48291,
+      "gitSHA256": "a753bb7735933a6bda8b9eef532e48611e090e59e1cdd26bf0a24f54e01941da",
+      "privateMatchesGit": true
+    },
+    "catalogue_transport.py": {
+      "bytes": 13302,
+      "gitSHA256": "5eda399672d026f31bcb5ca7d6178676b1b6e8940b5f538409e043a7e4c8fe0a",
+      "privateMatchesGit": true
+    }
+  },
+  "schema": 1,
+  "sevenRequestsMechanicalMatch": true,
+  "sourceClosureComplete": false,
+  "subjectApplicationTree": "3e85cdc3916a81260bebc96c86ced4fd2c76b168",
+  "subjectCommit": "c20c51fcbb76d8ad394dfa7eedf8b0de2368aa50",
+  "subjectExecution": 0,
+  "subjectFiles": 11,
+  "subjectGitMismatches": [],
+  "subjectImports": 0,
+  "subjectParent": "4fbb39cbe4fe5668e848dcf2e02b2eb248f97575",
+  "successorGranted": false,
+  "tests": 0,
+  "unresolvedFindings": {
+    "P1": 0,
+    "P2": 0,
+    "P3": 0,
+    "PREP": 0
+  },
+  "verdict": "OPERATION_PROPOSAL_ACCEPTED_CONDITIONAL_FRESH_ROOT_POST_FAILURE_RISK_PREFLIGHT_AND_ADMISSION"
+}

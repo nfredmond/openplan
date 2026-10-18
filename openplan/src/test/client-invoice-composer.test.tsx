@@ -54,13 +54,13 @@ const unbilledEntries = [
   { id: "te-3", staff_id: "staff-2", labor_category: "GIS Analyst", hours: 4, billable: true, billed_line_item_id: null },
 ];
 
-function stubFetch({ nteWarning }: { nteWarning?: { billedToDate: number; notToExceed: number; overBy: number } } = {}) {
+function stubFetch({ nteWarning, ntePositionSource }: { nteWarning?: import("@/lib/invoicing/receivables").EngagementNteWarning; ntePositionSource?: { state: "complete" | "pending" | "unavailable" } } = {}) {
   const fetchMock = vi.fn(async (url: string, init?: { method?: string }) => {
     if (!init?.method || init.method === "GET") {
       expect(url).toContain("/api/invoicing/time-entries?");
       return { ok: true, json: async () => ({ timeEntries: unbilledEntries, hasMore: false }) };
     }
-    return { ok: true, json: async () => ({ invoice: { id: "inv-1" }, lineItems: [], nteWarning }) };
+    return { ok: true, json: async () => ({ invoice: { id: "inv-1" }, lineItems: [], nteWarning, ntePositionSource }) };
   });
   vi.stubGlobal("fetch", fetchMock);
   return fetchMock;
@@ -79,6 +79,22 @@ async function pullUnbilledTime() {
 }
 
 describe("ClientInvoiceComposer", () => {
+  it.each(["pending", "unavailable"] as const)("ESComplete shows %s summary after a successful authorized draft", async (state) => {
+    stubFetch({ ntePositionSource: { state } });
+    render(<ClientInvoiceComposer {...baseProps} />);
+    fillRequiredHeader();
+    fireEvent.change(screen.getByLabelText("Engagement"), { target: { value: ENGAGEMENT_ID } });
+    fireEvent.change(screen.getByLabelText(/Description \(line 1\)/), { target: { value: "New work" } });
+    fireEvent.change(screen.getByLabelText("Quantity"), { target: { value: "1" } });
+    fireEvent.change(screen.getByLabelText("Unit rate"), { target: { value: "1" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save client invoice" }));
+    await waitFor(() => expect(screen.getByText("Client invoice saved as draft.")).toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByText(/Prior and projected gross billing are unknown/) !== null).toBe(true));
+    const notice = screen.getByText(/Prior and projected gross billing are unknown/);
+    expect(notice).toHaveTextContent(state === "pending" ? "pending schema upgrade" : "source unavailable");
+    expect(notice).toHaveTextContent("no ceiling comparison is available");
+    expect(refreshMock).toHaveBeenCalled();
+  });
   beforeEach(() => {
     refreshMock.mockReset();
   });
@@ -211,21 +227,36 @@ describe("ClientInvoiceComposer", () => {
     expect(refreshMock).toHaveBeenCalled();
   });
 
-  it("renders the server's not-to-exceed overrun as a warning, never a block", async () => {
-    stubFetch({ nteWarning: { billedToDate: 61000, notToExceed: 50000, overBy: 11000 } });
+  it.each([
+    ["EUR", "€1.01"],
+    ["JPY", "¥1"],
+  ])("keeps %s invoice currency separate from exact unassessed warning context", async (currencyCode, invoiceAmount) => {
+    // A stray currency field must not override the context's unassessed currency.
+    const warning = { basis: "legacy_terms_unassessed" as const, billedToDate: 60000, projectedBilledToDate: "90999999999999.09", notToExceed: "50000.01", overBy: "90999999949999.08", currencyCode };
+    const fetchMock = stubFetch({ nteWarning: warning });
     render(<ClientInvoiceComposer {...baseProps} />);
     fillRequiredHeader();
-    await pullUnbilledTime();
-
-    fireEvent.change(screen.getByPlaceholderText("Required — no rate found"), { target: { value: "400" } });
+    fireEvent.change(screen.getByLabelText("Invoice currency code"), { target: { value: currencyCode } });
+    fireEvent.change(screen.getByLabelText("Engagement"), { target: { value: ENGAGEMENT_ID } });
+    fireEvent.change(screen.getByLabelText(/Description \(line 1\)/), { target: { value: "Known invoice amount" } });
+    fireEvent.change(screen.getByLabelText("Quantity"), { target: { value: "1" } });
+    fireEvent.change(screen.getByLabelText("Unit rate"), { target: { value: "1.01" } });
+    const totals = within(screen.getByText("Invoice totals").closest("aside") as HTMLElement);
+    expect(totals.getAllByText(invoiceAmount)).toHaveLength(2);
+    expect(screen.getByText(/carries a 50000.00 \(currency unassessed\) not-to-exceed/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Save client invoice" }));
-
-    await waitFor(() =>
-      expect(
-        screen.getByText(/\$61,000\.00 billed against its \$50,000\.00 not-to-exceed — \$11,000\.00 over\. Recorded as a warning; nothing was blocked\./)
-      ).toBeInTheDocument()
-    );
-    // The save still succeeded alongside the warning.
-    expect(screen.getByText("Client invoice saved as draft.")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText("Client invoice saved as draft.")).toBeInTheDocument());
+    const notice = screen.getByText(/This invoice takes the engagement to/).textContent!;
+    expect(notice).toContain("90999999999999.09 (currency unassessed) projected gross billing");
+    expect(notice).toContain("50000.01 (currency unassessed) legacy not-to-exceed");
+    expect(notice).toContain("90999999949999.08 (currency unassessed) over");
+    expect(notice).toContain("Aggregate currency, legacy ceiling currency and currency agreement across invoices are unassessed.");
+    expect(notice).toContain("This is a numerical comparison only; agreement terms are unassessed.");
+    expect(notice).toContain("Recorded as a warning; nothing was blocked.");
+    expect(notice).not.toContain("60000");
+    expect(notice).not.toMatch(/[€¥$]/);
+    const postCall = fetchMock.mock.calls.find(([, init]) => init?.method === "POST") as unknown as [string, { body: string }];
+    expect(JSON.parse(postCall[1].body)).toMatchObject({ currencyCode, lineItems: [{ unitAmount: 1.01 }] });
+    expect(refreshMock).toHaveBeenCalled();
   });
 });

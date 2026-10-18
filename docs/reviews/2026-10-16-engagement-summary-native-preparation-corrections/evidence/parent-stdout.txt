@@ -1,0 +1,16 @@
+/usr/bin/python3: OK
+/bin/bash: OK
+/usr/bin/systemd-run: OK
+/usr/bin/bwrap: OK
+/usr/bin/flock: OK
+/usr/bin/readlink: OK
+/usr/bin/env: OK
+/usr/bin/sha256sum: OK
+/usr/bin/mkdir: OK
+/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py: OK
+/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/run.sh: OK
+/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/allocation.TEXT_ONLY.json: OK
+/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/subject/emit_fixture.py: OK
+/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/subject/oracles.json: OK
+/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/subject/readback.py: OK
+/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/subject/selections.sql: OK

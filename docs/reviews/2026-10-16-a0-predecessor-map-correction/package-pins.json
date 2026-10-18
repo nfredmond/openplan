@@ -1,0 +1,22 @@
+{
+  "bindings": {
+    "external-predecessor.json": "ef4bd64e74f670c4eb8fa805b7d7bf1fc2f5720df2c1aaab9110612d98654b03",
+    "preceding-helper-pins.json": "fee5abc4381212e0125f1400d91601f87f7bfdbcdfaac93489348bd91fd8b057",
+    "prior-function-pins.json": "08b5773311198f492c4fb21a9974c2178887ec00ff80bd8962f3ccf5bf578ac9",
+    "review-pins.json": "27d8961c5a8aaeb7968cf74c07c53c733c3fae97ca56847e843dcf348d379077",
+    "source-pins.json": "b374b14a2b2fa10eb694fbb8d9de887bdd6879fbe68d20f1af717ceadd20d7ec"
+  },
+  "files": {
+    "cases.py": "d75049fd4a2cb6b92bf447e1292c1ffdb864c5aab3478a77f11ecd4c354bbbf9",
+    "controller.py": "a63b9e0dd46efcc95f770ad02ba62cebae5a28b78ff54d87cf6e1252e386ae36",
+    "fixture.py": "c6259f3a51679e75aab940262f0f42e25c8d3b4d456881d85e1141653c610289",
+    "journal.py": "8a133c526070cdd70543a2c7cb1f6fff23c295b1d7214fee928d53eb1607a61e",
+    "literal_history.py": "a1e84629e61aa29070c517d65352c1c1901cd1049b2f417bba3ebf342b699c90",
+    "policy.py": "825aa4c501eb625eaa657bd987fc974b8980a9fbbd423ba6ce25012c927b7af6",
+    "run_stage.sh": "f8d028579cc85b9128923ba03101ee7b47f9197fc381efd3d603a34d1f9e0c67",
+    "sql/assertions.sql": "5df8ae78027e030a97cd259c5dc3f4ffcb72cb7cd28f707c4e9b5d8a78e80eef",
+    "sql/post_rollback.sql": "bf2611abdfb29ca54e45114f246c24d5952a893f8d5ee78db26f9572b165ff50",
+    "sql/shadows.sql": "a6f239b4e172e40c613d4d624c6ff8cbfb701005b7f33330f401a9141337be14"
+  },
+  "notice": "NEW predecessor-map capsule. External actual R6 executions remain external; no admission."
+}

@@ -1,0 +1,4 @@
+ee43c84154afb357a048b3035eb7d09939cd75c38b024c30700f574853d393e7  /home/nathaniel/.t3/worktrees/openplan/t3-c02aa002/openplan/supabase/migrations/20261017000020_engagement_billed_summaries.sql
+b7fccf002dfad9c211f12fed0f955e4be3345056c490949f9110ae402b2f6dac  /home/nathaniel/.t3/worktrees/openplan/t3-c02aa002/openplan/src/lib/invoicing/engagement-summary-queries.ts
+92655e20c29a14b072536074154473abcd5dc6393953e8d9eeada16b4d7b1389  /home/nathaniel/.t3/worktrees/openplan/t3-c02aa002/openplan/supabase/migrations/20260313000011_projects_module.sql
+82374309f11d7c270f1defa18d70d1f719882296f2f662f80ad74d3214410066  /home/nathaniel/.t3/worktrees/openplan/t3-c02aa002/openplan/supabase/migrations/20261017000005_money_integrity_corrections.sql

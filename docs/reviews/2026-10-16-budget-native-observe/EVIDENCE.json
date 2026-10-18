@@ -1,0 +1,81 @@
+{
+  "acceptanceSHA256": "e0d4ddca724b345873a61294386d80d3f2bb01010c4577e7ec70c9a433439f48",
+  "actualProofFileCount": 103,
+  "databaseNamesCount": 616,
+  "exactFinalBytePeak": "UNASSESSED",
+  "invocation": "e54c6ad30d95449cbff3e5b66856f82b",
+  "managerTerminalSHA256": "37c124019f6ac1d15abea440b1188db825878b37d829ab89f1f17df62445b63d",
+  "migrationSources": 422,
+  "nativeAndSourceTierLimits": [
+    "Privilege observation is maintenance supabase_admin, not ordinary RLS/Auth acceptance",
+    "Database server/backends outside wrapper resource cap",
+    "MD5 collision/guessing and independent settings matrix unproved",
+    "No backend death/rollback/cancellation/containment inference",
+    "No allocation/history/native financial/scalar/browser/scientific/V1 acceptance"
+  ],
+  "nativeRequests": 14,
+  "nextStageGranted": false,
+  "operatingApp": "44e638d6d79378042343bf5b18408f09ee991d57",
+  "operatingSource": "3f3639f54243f40dfe7ff093dbb7f4e982a18cbc",
+  "privatePins": {
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-root-decision-20261016/acceptance.json": {
+      "bytes": 2562,
+      "sha256": "e0d4ddca724b345873a61294386d80d3f2bb01010c4577e7ec70c9a433439f48"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-root-decision-20261016/audit.json": {
+      "bytes": 26514,
+      "sha256": "1e67040803386a2d87e44d79562bbbd748ae4e05efb9612328ac8258328731d6"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-root-decision-20261016/conditional-review-acceptance.json": {
+      "bytes": 2057,
+      "sha256": "3be877a637593a95337b1814746d1cc3d37eb3412737ee3bd61993b466b66240"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-root-decision-20261016/metadata-reader-error-01.json": {
+      "bytes": 515,
+      "sha256": "c47fd3ddc3355a11565971d9de22b74e90696306a2cc8f3aff054425708e91d9"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-root-decision-20261016/native-proof-manifest.json": {
+      "bytes": 27778,
+      "sha256": "ad3af10cb6b5a6a9dcf530dfb597b59eddee997dd8217cb4c5c08059d40d553c"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-root-decision-20261016/parent-01/root-intent-before-popen.json": {
+      "bytes": 587,
+      "sha256": "d785a0ce6fbedf3ae7437e932ea058b09e160962500fde1f5f44f6479228ed99"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-root-decision-20261016/parent-01/terminal.json": {
+      "bytes": 482,
+      "sha256": "8e683c0ebc40d91c31d82d7cf8b9bf2222dae573dde8bd7e6e02241831011987"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-root-decision-20261016/preflight-acceptance.json": {
+      "bytes": 1488,
+      "sha256": "f7fef8caf2007aea8414675902f21dc0386b3ae49be33e80b003fdcb44b57b32"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-root-decision-20261016/preflight-intent.json": {
+      "bytes": 1719,
+      "sha256": "14c722b13066c793cb66c2e7479b42409d5fedb66b97822f05534056cbdaa5bc"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-root-decision-20261016/publication-receipt.json": {
+      "bytes": 1363,
+      "sha256": "d9351c98a90375f6ce5daa0864d9e07e8478195a7e41160e6a2a7c0b9b9693b1"
+    }
+  },
+  "schema": 1,
+  "scopeSHA256": "6b662207002833fc5b9dee820cc628d0313689810d42f1f977e731a4f2435c65",
+  "sourcePackets": [
+    [
+      "59105b0ac8b87276f674ee493c13cf091ef9e410",
+      "docs/reviews/2026-10-16-budget-observe-outer-preparation"
+    ],
+    [
+      "a97f479bc9294870ca0fcb38f2329c9f801b626d",
+      "docs/reviews/2026-10-16-budget-settings-observe-proposal"
+    ],
+    [
+      "5024fe381ea1da0416307bbacab0721edb8eb7d5",
+      "docs/reviews/2026-10-16-budget-observe-combined-operation-independent"
+    ]
+  ],
+  "stageCompleteSHA256": "dfeb54f9a476a952d7e7e1f662a47faecc5d7cd3b000504c4080602ce53e8ea8",
+  "status": "ACCEPTED_NARROW_NATIVE_OBSERVE_ONLY",
+  "targetAllocated": false
+}

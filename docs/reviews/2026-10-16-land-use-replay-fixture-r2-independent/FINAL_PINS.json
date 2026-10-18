@@ -1,0 +1,40 @@
+{
+  "subject": "cd9f210ce50a38125fac9b42a2a9d28ca0eeed45",
+  "subjectApplicationTree": "88ba8fdeec9326b2f2253ddbe9e49c67a8269ee8",
+  "disposition": "BOUNDED_SOURCE_APPROVED; original P2 corrected; no remaining P1/P2 within review scope; all native/browser/human holds retained",
+  "executionByThisReview": "None; metadata and source reading only",
+  "files": {
+    "/home/nathaniel/.t3/worktrees/openplan/t3-a9bc021e/docs/reviews/2026-10-16-land-use-replay-fixture-r2-independent/REPORT.md": {
+      "sha256": "5a8b9e4528e3958411acc5cf6977ba0b1f4d71a2601cd3ee0316ee2db4e8097c",
+      "bytes": 14541,
+      "mode": "0644"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-a9bc021e/docs/reviews/2026-10-16-land-use-replay-fixture-r2-independent/SOURCE_PINS.json": {
+      "sha256": "7cb3f4efe62e93a1dab5e8bb1c2696ba8b98f0698e23bda574c6eab988ca8668",
+      "bytes": 31021,
+      "mode": "0644"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-a9bc021e/docs/reviews/2026-10-16-land-use-replay-fixture-r2-independent/fixture.diff": {
+      "sha256": "02e8d3724eb7e75223b533bf9482f042317dae24c9873a34e08c81c1dce00de4",
+      "bytes": 1074,
+      "mode": "0644"
+    }
+  },
+  "privateMetadata": {
+    "/home/nathaniel/.local/state/openplan/land-use-replay-fixture-r2-independent-20261016/candidate-delta.txt": {
+      "sha256": "1aab5e97847994fb3f37758ecce2e8e7e84bef99d9b584044e0d64b495e62b2e",
+      "bytes": 488,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-replay-fixture-r2-independent-20261016/metadata-readback.json": {
+      "sha256": "7cb3f4efe62e93a1dab5e8bb1c2696ba8b98f0698e23bda574c6eab988ca8668",
+      "bytes": 31021,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-replay-fixture-r2-independent-20261016/t3-binding.json": {
+      "sha256": "5f5135a6e892f95eb189c0fb5c3c2fb505e2378f4049d999058d4ffa519eb58b",
+      "bytes": 4593,
+      "mode": "0664"
+    }
+  }
+}

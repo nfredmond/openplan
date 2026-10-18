@@ -1,0 +1,5 @@
+Review reminder: jurisdiction readiness registry review expired on 2026-09-28
+Review reminder: capability matrix review expired on 2026-10-05
+Review reminder: capability registry review expired on 2026-10-05
+Review reminder: latest review covers v0.66.0; package is v0.68.0
+Review reminder: latest direction review predates substantive changes: .gitattributes, .github/workflows/ci.yml, .github/workflows/integration-secret-rotation.yml, .github/workflows/node-queue-observation.yml, .github/workflows/odm-worker-regression.yml, .github/workflows/production-health.yml, .github/workflows/research-collector.yml, .github/workflows/restore-drill.yml

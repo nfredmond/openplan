@@ -1,3 +1,4 @@
+import { projectBudgetSnapshotFixture } from "./helpers/project-budget-snapshot";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -62,12 +63,8 @@ const DELIVERABLE_ROWS = [
 
 type Recorded = { table: string; columns: string };
 
-/**
- * A stand-in for the untyped Supabase client that answers the four reads
- * loadProjectBudgetInputs performs, recording each projection string. It does
- * NOT filter by the requested columns — that is exactly why the projection is
- * asserted directly below rather than inferred from the rendered output.
- */
+/** Budget-control transport fixture with the historical assignee column pending.
+ * It does not exercise reassignment or native SQL projections. */
 function makeSupabase(recorded: Recorded[]): ProjectBudgetQuerySupabaseLike {
   const resultForTable = (table: string): { data: unknown[] | null; error: null } | { data: unknown; error: null } => {
     switch (table) {
@@ -83,22 +80,15 @@ function makeSupabase(recorded: Recorded[]): ProjectBudgetQuerySupabaseLike {
   };
 
   return {
-    from(table: string) {
-      const result = resultForTable(table);
-      const builder = {
-        select(columns: string) {
-          recorded.push({ table, columns });
-          return builder;
-        },
-        eq: () => builder,
-        in: () => builder,
-        order: () => builder,
-        limit: () => Promise.resolve(result),
-        maybeSingle: () => Promise.resolve(result),
-      };
-      return builder as unknown as ReturnType<ProjectBudgetQuerySupabaseLike["from"]>;
+    rpc: async (name, args) => {
+      recorded.push({ table: name, columns: args.p_project_id });
+      return { data: projectBudgetSnapshotFixture({
+        project_deliverables: resultForTable("project_deliverables"), projects: resultForTable("projects"),
+        project_spend_entries: resultForTable("project_spend_entries"),
+      }, { assignee: true, budget: false }, args.p_project_id), error: null };
     },
-  } as unknown as ProjectBudgetQuerySupabaseLike;
+  };
+
 }
 
 const PROJECT: ProjectRow = {
@@ -205,16 +195,10 @@ describe("the deliverable update control is reachable from the delivery board", 
     vi.stubGlobal("fetch", fetchMock);
   });
 
-  it("asks the database for the budget columns the control prefills from", async () => {
+  it("requests the project-scoped complete snapshot that supplies the budget control", async () => {
     const { recorded } = await renderBoardFromRealBuilders();
-
-    const deliverableSelect = recorded.find((entry) => entry.table === "project_deliverables");
-    expect(deliverableSelect).toBeDefined();
-    // Prefilling the two editable numeric fields is only possible if they were
-    // projected. A mocked client answers any projection, so assert the string.
-    expect(deliverableSelect?.columns).toContain("budget_amount");
-    expect(deliverableSelect?.columns).toContain("percent_complete");
-    expect(deliverableSelect?.columns).toContain("status");
+    expect(recorded).toEqual([{ table: "project_budget_inputs_v1", columns: PROJECT_ID }]);
+    // Actual SQL projections are checked in project-budget-snapshot-migration.test.ts.
   });
 
   it("renders a status control and budget/progress fields on every deliverable row", async () => {
@@ -367,4 +351,10 @@ describe("the deliverable update control is reachable from the delivery board", 
     expect(within(row).queryByText(/saved\./i)).not.toBeInTheDocument();
     expect(refreshMock).not.toHaveBeenCalled();
   });
+});
+
+it("labels the direct-cost chip as direct spending", async () => {
+  await renderBoardFromRealBuilders();
+  expect(screen.queryByText("Direct spending $2,000.00")).not.toBeNull();
+  expect(screen.queryByText(/Billed \+ spend/)).not.toBeInTheDocument();
 });

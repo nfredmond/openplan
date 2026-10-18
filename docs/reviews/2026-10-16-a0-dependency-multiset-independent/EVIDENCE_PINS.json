@@ -1,0 +1,357 @@
+{
+  "authorAppTree": "3e85cdc3916a81260bebc96c86ced4fd2c76b168",
+  "authorCommit": "310bfb2cc617fdc210f52cc9b1e6d1c3e3f2e205",
+  "authorParent": "c20c51fcbb76d8ad394dfa7eedf8b0de2368aa50",
+  "automaticSuccessorGranted": false,
+  "commitSeal": "Private local-commit.json is written after the docs-only local checkpoint; it is outside this noncircular public seal.",
+  "disposition": "SOURCE_APPROVED_BOUNDED_EXACT_COMMIT_NO_OPERATION",
+  "findings": {
+    "P1": [],
+    "P2": [],
+    "P3": [],
+    "PREP": []
+  },
+  "fixtureLaunchable": false,
+  "independentReceipts": {
+    "binding-and-subject-pins.json": {
+      "bytes": 9951,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "88bdc95fb97ba8041f4e48bf98c75192d3d5236cc5e24609ef19d760c4bb96a9",
+      "uid": 1000
+    },
+    "read_saved_data.py": {
+      "bytes": 12508,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "2f2dbb2a710d6c1efdc12dcc8417c56884309cb3b4e9a0716f0636401e4d349c",
+      "uid": 1000
+    },
+    "read_supplement.py": {
+      "bytes": 6580,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "3a6688af1e237105f5e83a3f8cf7afa657d061c1a6d918a01044917fe3fa40f1",
+      "uid": 1000
+    },
+    "readback-initial-reader-errors.json": {
+      "bytes": 7742,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "fd4d068067f36d5b41e601542b3e9ea8e20506f15e4008302d84ab705657d0ad",
+      "uid": 1000
+    },
+    "readback.json": {
+      "bytes": 5471,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "a6c32bbb73195ac851ac134e5f630ba36539ad7b4db6ba3c0ca6907ee6e8059d",
+      "uid": 1000
+    },
+    "reader-notes.json": {
+      "bytes": 650,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "52a1e3e3f95d7d5fea22c732f5a2f4f1dec92cad5ba50c79a8bc7d3910f0e3fc",
+      "uid": 1000
+    },
+    "request-joins.json": {
+      "bytes": 119019,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "91fda9d7b2fb8211c56c617051e551181d0f4a3c8db6890a3c3571cb0a197d9b",
+      "uid": 1000
+    },
+    "selected-file-pins-final.json": {
+      "bytes": 1045434,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "5aceacad576a80a3916cf1218f33f557270489eb1ea92d7a16643b556f343820",
+      "uid": 1000
+    },
+    "supplement.json": {
+      "bytes": 11805,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "3636f618c8aecedceedf4205828e258ffa5ebc37b4fbef739a3abf46ec84721e",
+      "uid": 1000
+    }
+  },
+  "nativeOperationGranted": false,
+  "oldNativeFencesUnchanged": true,
+  "parentExecutableImplemented": false,
+  "privateRoot": "/home/nathaniel/.local/state/openplan/a0-dependency-multiset-independent-20261016",
+  "reports": {
+    "REPORT.md": {
+      "bytes": 22716,
+      "gid": 1000,
+      "mode": 420,
+      "sha256": "07c48ac38c866357cc24d2448ada87eaea489a8411906bd6af66ff4630c86a57",
+      "uid": 1000
+    },
+    "VALIDATION.md": {
+      "bytes": 15457,
+      "gid": 1000,
+      "mode": 420,
+      "sha256": "0a3d3a4e680da48ca594c860a72eaecab04ca99c7766add1070670583b14c728",
+      "uid": 1000
+    }
+  },
+  "reviewerAppTree": "1e0b6522002b2485d37086790808c0217ff77cfe",
+  "reviewerBase": "05dd3e8da4a4572437f06e771b0a2477873e681f",
+  "schema": 1,
+  "sourceClosureComplete": false,
+  "stage": "INDEPENDENT_EXACT_COMMIT_SOURCE_AND_SAVED_DATA_REVIEW",
+  "subjectFiles": {
+    "docs/reviews/2026-10-16-a0-catalogue-dependency-multiplicity-preparation/ASSESSMENT.md": {
+      "bytes": 12290,
+      "currentEqualsGit": true,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "8e5b0c102ba4b2985b666dbb106605a64a4fffb9acfdf360bb2a811118d4f37c",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-catalogue-dependency-multiplicity-preparation/EVIDENCE_PINS.json": {
+      "bytes": 3578,
+      "currentEqualsGit": true,
+      "gid": 1000,
+      "mode": 420,
+      "sha256": "c660b57bf5735fb2b2389bc485974df6105439c4da599d7496521833df8e8e27",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-catalogue-dependency-multiplicity-preparation/PROTOCOL_OPTIONS.md": {
+      "bytes": 8467,
+      "currentEqualsGit": true,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "aee3ad0f9d555ac3f003adbd69abd8ddfa5becd940e8699b6b6f54b6a7cea753",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-catalogue-dependency-multiplicity-preparation/SOURCES.md": {
+      "bytes": 4371,
+      "currentEqualsGit": true,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "9849805ca78aebcd5564f8ee100b344728d6e42f1f69fecfe01871001a6b6b61",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-catalogue-dependency-multiplicity-preparation/STATUS.md": {
+      "bytes": 2025,
+      "currentEqualsGit": true,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "caab8ef4339335d3b22029e8a8466a8af8b863d7ac56218bbc542fa9daebffe2",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-catalogue-dependency-multiset-correction/CHECKPOINT_PINS.json": {
+      "bytes": 11650,
+      "currentEqualsGit": true,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "9f308506bbf955517ef4a30941e09d38a31fd5ce461e7a974583771ab9be7124",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-catalogue-dependency-multiset-correction/CONTROL_CORRECTION.md": {
+      "bytes": 2357,
+      "currentEqualsGit": true,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "de712ba4bef25be5e607dbb5e99761021ac0f807ff664d651ebb8eef8e73fa40",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-catalogue-dependency-multiset-correction/CONTROL_PLAN.md": {
+      "bytes": 5515,
+      "currentEqualsGit": true,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "398691664992fc1ae8e51702829b8e0c4806335d863d23d0fe585a2feb68ca0f",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-catalogue-dependency-multiset-correction/EVIDENCE_PINS.json": {
+      "bytes": 6207,
+      "currentEqualsGit": true,
+      "gid": 1000,
+      "mode": 420,
+      "sha256": "76fad6a22fc64330de6cc04c1cf4bffc03da324ee9b70da4b2a54d77bc4e2016",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-catalogue-dependency-multiset-correction/FAULT_MAP.md": {
+      "bytes": 2200,
+      "currentEqualsGit": true,
+      "gid": 1000,
+      "mode": 420,
+      "sha256": "d5775fb317863250b799c3ef724d6578efde896018e8c50947f5467704bb1830",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-catalogue-dependency-multiset-correction/PARENT_CORRELATION_DESIGN.md": {
+      "bytes": 6057,
+      "currentEqualsGit": true,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "6df49d214bf13632cc57fffc1d400d11ab923fae4dc8a4cb974439f4032c5e37",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-catalogue-dependency-multiset-correction/PARENT_CORRELATION_DISPOSITION.md": {
+      "bytes": 3266,
+      "currentEqualsGit": true,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "f5814f49020df2525b190297d808da0ae8a67d5d0d8bb1c1c7412dad25c471c1",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-catalogue-dependency-multiset-correction/PARENT_RECIPE.md": {
+      "bytes": 4006,
+      "currentEqualsGit": true,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "4d66955bbc6284575a5ecdb0e766f1e766c5f2ab1791dfc85ef5a1c3bf1877cb",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-catalogue-dependency-multiset-correction/PREPARATION_STATUS.md": {
+      "bytes": 2209,
+      "currentEqualsGit": true,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "e7a613018bba2cfd030d95ba0322364339ad40c62bc12ba3e780e6f87d37680b",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-catalogue-dependency-multiset-correction/REPORT.md": {
+      "bytes": 16812,
+      "currentEqualsGit": true,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "02e372042cc34af2f9ff4033bda8caa9664c8438cca42a024ce2f36390ec0182",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-catalogue-dependency-multiset-correction/RUNNER_EVIDENCE_PINS.json": {
+      "bytes": 1665,
+      "currentEqualsGit": true,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "044c227476a1baf0e55bff0f77264223a51a7edfc603cf582acda3ab9c23b484",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-catalogue-dependency-multiset-correction/RUNNER_PREPARATION.md": {
+      "bytes": 3334,
+      "currentEqualsGit": true,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "e7875a8a6be572321e507907bc9e6db436350dffca3bb89c2678704f1265bcd5",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-catalogue-dependency-multiset-correction/SOURCE_DELTA.md": {
+      "bytes": 2322,
+      "currentEqualsGit": true,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "466fc8a306115dd4c73424a9ffa0a5752c68a30fff8cf75dd57582704945c93a",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-catalogue-dependency-multiset-correction/STATIC_OUTCOME_TRACE.md": {
+      "bytes": 4929,
+      "currentEqualsGit": true,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "d1b2b33b66353018e067cb89bddc097d560a187ae00fc1141c05780b039eba21",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-catalogue-dependency-multiset-correction/VALIDATION.md": {
+      "bytes": 9349,
+      "currentEqualsGit": true,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "1ea7fa1aaf246781b717c54f3c4903d79450a03eb302d5dd3ef45f47f0847324",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-catalogue-dependency-multiset-correction/WIRE_CONTRACT.md": {
+      "bytes": 4776,
+      "currentEqualsGit": true,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "c502669cdb585bf2c7d064a29a0259b9984eab2958443fbef42f361743f534c0",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-catalogue-dependency-multiset-correction/control-correction.delta.patch": {
+      "bytes": 1736,
+      "currentEqualsGit": true,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "be02fdfd51833d67d21239e377f73762d76e1582c1bbbf9bee14de057534a288",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-catalogue-dependency-multiset-correction/controls.py": {
+      "bytes": 24344,
+      "currentEqualsGit": true,
+      "gid": 1000,
+      "mode": 420,
+      "sha256": "37ece165ec4cbf70a6d1cd6dc53bfa12032b7a79a307571de01059c4aff7a74b",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-catalogue-dependency-multiset-correction/final_checks.py": {
+      "bytes": 7613,
+      "currentEqualsGit": true,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "4bad0c9b44f06caca148f757b52e4f38395e43996c34cbfaeefe6c1b2c158b39",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-catalogue-dependency-multiset-correction/mutation-plan.json": {
+      "bytes": 9282,
+      "currentEqualsGit": true,
+      "gid": 1000,
+      "mode": 420,
+      "sha256": "adb53e88a02505e69be207a39bd0c1ed70c39903c691155400fd6d5f79f7f3fe",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-catalogue-dependency-multiset-correction/prepare.py": {
+      "bytes": 1892,
+      "currentEqualsGit": true,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "54c16f3b64231529720a5ecbb73c3a2437990d6c9d0fd25c8030cc5ee92f5959",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-catalogue-dependency-multiset-correction/runtime.delta.patch": {
+      "bytes": 11639,
+      "currentEqualsGit": true,
+      "gid": 1000,
+      "mode": 420,
+      "sha256": "664ff3f5d64e69d4b2d9f4e449f0be9c61e881681964380f140cfe5d900e13af",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-catalogue-dependency-multiset-correction/runtime/catalogue.py": {
+      "bytes": 12581,
+      "currentEqualsGit": true,
+      "gid": 1000,
+      "mode": 420,
+      "sha256": "2ef99693ce6c464a9c3b8d85302b0559b12bbc16221050c32562e45643c56cb9",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-catalogue-dependency-multiset-correction/runtime/catalogue_policy.py": {
+      "bytes": 54123,
+      "currentEqualsGit": true,
+      "gid": 1000,
+      "mode": 420,
+      "sha256": "bd5f8ec3d0ba929a47ce4fc990c16be03a55f766d89ecb64c7ecd3a341fcb2f3",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-catalogue-dependency-multiset-correction/runtime/catalogue_transport.py": {
+      "bytes": 13302,
+      "currentEqualsGit": true,
+      "gid": 1000,
+      "mode": 420,
+      "sha256": "5eda399672d026f31bcb5ca7d6178676b1b6e8940b5f538409e043a7e4c8fe0a",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-catalogue-dependency-multiset-correction/window.py": {
+      "bytes": 10525,
+      "currentEqualsGit": true,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "6a430185136f5fe40523deb72002859509c019d91fe475ef30d9b8444fade5e9",
+      "uid": 1000
+    }
+  },
+  "subjectOrControlExecution": false,
+  "uniqueSelectedFilesFinal": 3026
+}

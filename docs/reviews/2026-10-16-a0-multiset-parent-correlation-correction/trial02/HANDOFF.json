@@ -1,0 +1,101 @@
+{
+  "actualOutcomes": null,
+  "config": {
+    "bytes": 402962,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "6478efe791a329b6a1c34ba9f97b93d8eb23f45e76b4b0c731b6ec83916e9193",
+    "uid": 1000
+  },
+  "nativeGranted": false,
+  "prepared": {
+    "bytes": 307770,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "149edbdf34a9284a82489880300ee78c349f3316c1ce52e463c4339258ab95ca",
+    "uid": 1000
+  },
+  "privateHandoff": "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/HANDOFF.json",
+  "privateHandoffPin": {
+    "bytes": 8022,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "f6a361cc46d7a9690c5713642aaf97311b0fbad0ec7ef480ed34935192e0b7dc",
+    "uid": 1000
+  },
+  "request": {
+    "bytes": 2266,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "325f0aeb4951015ddfde9fb960db1e2ce11a589d1af23a6d3800622d66d9d52f",
+    "uid": 1000
+  },
+  "runtimeHeld": true,
+  "sourceFiles": {
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/CONFINEMENT_PLAN.md": {
+      "bytes": 2861,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "7cf9d985f96d32fa4f2d12657ee1dba4e8b78ee14369629c6116cc10b50a67cf",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/CONTROL_PLAN.md": {
+      "bytes": 1814,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "94bfc416dcfbf524f2433c8edeb81a3c6775b5c6e7bf0f8c6ec91117daccf5ac",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/PARENT_RECIPE.md": {
+      "bytes": 3669,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "dd54dde9f1ad43c5b1a4ebc0ce77995c2c1588514dbc72efe8973f93f5adec97",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/PREPARATION_STATUS.md": {
+      "bytes": 1540,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "6950ffed53529b11f62c4c617d3ae801ca9316f7f0cafba5dd3b21d993fab143",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/SOURCE_DELTA.md": {
+      "bytes": 2751,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "6875654e126b1bf703fd0939848693a930bfdf3034c8bcad013faf3579cf0cc3",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/final_checks.py": {
+      "bytes": 2719,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "d5644c618c0d801495c2850861eab2c8c0ffe9f51dcb89d8cb229421d0221ff2",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/prepare.py": {
+      "bytes": 2992,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "52afcd6f99b53c139d337adc1129d3873be0634fe7eda0ae0c9ee65888fd147e",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/source.delta.patch": {
+      "bytes": 4621,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "a21c92fad4af717bec732832f7dfbba1192d93e391b769b0ad9b1d64a1141821",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/window.py": {
+      "bytes": 24943,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "a4975a7ab5b788a1499eff97e649c43bec2d59cc836dcb0fd3b3c22efbfdee9f",
+      "uid": 1000
+    }
+  },
+  "stage": "FINAL_FROZEN_TRIAL02_SOURCE_ONLY_HANDOFF_RUNTIME_HELD",
+  "trial01PermanentFailed": true
+}

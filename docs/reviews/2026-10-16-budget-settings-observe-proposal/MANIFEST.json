@@ -1,0 +1,87 @@
+{
+  "schema": 1,
+  "status": "SEALED_SOURCE_METADATA_ONLY_OBSERVE_PROPOSAL_HELD",
+  "baseCommit": "b394a9314bef6d997cb29e378069adad37010290",
+  "sourceSubjectCommit": "e894f895c7f0e4a1a328a80d4ea8abeb5a8be9a9",
+  "files": {
+    "REPORT.md": {
+      "sha256": "26d2dcb3ca0baddda21322a5fe9da17c2579016ab57f70a991d633b5b0954a47",
+      "bytes": 13985,
+      "mode": "0600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    "VALIDATION.md": {
+      "sha256": "1ebfb7045726980382c6a33f48ee800fbf26053057b5956c94b0b2a0fcbde484",
+      "bytes": 4975,
+      "mode": "0600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    "PROPOSAL.json": {
+      "sha256": "3c4be2dd6a09037cbbfd3996f4bca399025001118be85c9e188e289aa2761ff1",
+      "bytes": 27261,
+      "mode": "0600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    "BINDINGS.json": {
+      "sha256": "7c3b25b1dd27a0abebfbbca536dd5839e4744ef7614d91f6ecdd6923623a8eee",
+      "bytes": 25880,
+      "mode": "0600",
+      "uid": 1000,
+      "gid": 1000
+    }
+  },
+  "privateMetadataReceipt": {
+    "path": "/home/nathaniel/.local/state/openplan/budget-settings-observe-proposal-20261016/metadata-readback.json",
+    "sha256": "cf0210cb78b68d4bd66f4e3a85081d237081f43ed910842687e9484fcef37182",
+    "bytes": 28405,
+    "mode": "0600",
+    "uid": 1000,
+    "gid": 1000
+  },
+  "preservation": {
+    "records": 3918,
+    "allMatch": true,
+    "originalPublic72": true,
+    "originalPrivate3300": true,
+    "rootPreflight529": true,
+    "retainedNativeAudit45": true,
+    "originalNativeFailure19": true,
+    "selectedOldOriginalReceipts36": true,
+    "actualReceipts": 64,
+    "metadataReaderCorrection": "METADATA_READER_EMPTY_FILE_TYPE_PREDICATE"
+  },
+  "actualCapture": {
+    "catalogSHA256": "2e4ef8a7287ac532d6f546e3939d2ffbe4d1ad27ca846126585c82b4109fc2aa",
+    "originalScopeSHA256": "6b662207002833fc5b9dee820cc628d0313689810d42f1f977e731a4f2435c65",
+    "invocation": "534cf1fcd8cd4914ba76d3e1dae81939",
+    "status": "ACCEPTED_NARROW_SCHEMA2_CATALOG_CAPTURE_ONLY"
+  },
+  "controls": "No subject/guard/wrapper/SQL change and no new campaign. Root's retained audit harmless+18 exact fault cases and earlier pure evidence are referenced only.",
+  "metadataSemantics": {
+    "all77SubjectGitBlobsMatch": true,
+    "all10ReviewGitBlobsMatch": true,
+    "intendedObserveJournalRequests": 14,
+    "sourceManagerRuntimeSeconds": 300,
+    "proposedRootRecorderSeconds": 335,
+    "proposedRootToolSeconds": 365,
+    "builderImports": 0,
+    "nativeExecutions": 0,
+    "operatingPathsCreated": 0,
+    "proposedAuthorityFlags": false
+  },
+  "holds": [
+    "Root-chosen concrete false-authority builder input records and separately sealed finite PURE/source preparation grant",
+    "Root-owned exact OBSERVE wrapper/recorder parameterization source and independent review",
+    "NEW independent OBSERVE operation review, fresh capacity/exclusive scope and final true-authority records/admission"
+  ],
+  "noAutomaticNextAction": true,
+  "nativeOperationGranted": false,
+  "exclusive": false,
+  "publicationEnabled": false,
+  "successorGranted": false,
+  "selfReference": "This manifest excludes its own hash. Local Git object binds it.",
+  "checkpoint": "Five NEW public files only. Hooks/signing disabled; no push/PR/join/main/release."
+}

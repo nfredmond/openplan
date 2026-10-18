@@ -1,0 +1,33 @@
+{
+  "files": {
+    "REPORT.md": {
+      "bytes": 22164,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "ee856805b2a288c00d9bdf249057174964b22ffa27cbcfcc62655f2074ceb75c",
+      "uid": 1000
+    },
+    "VALIDATION.md": {
+      "bytes": 8922,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "78d84634e48c01df088911e2623d47f70b2ebfb19b30df472a5076992925c5ef",
+      "uid": 1000
+    },
+    "evidence-pins.json": {
+      "bytes": 4735,
+      "gid": 1000,
+      "mode": 420,
+      "sha256": "c830324ccf9746a50e9321d984952a68a2d076ec316be0036c742cc5ec0a07a3",
+      "uid": 1000
+    },
+    "source-pins.json": {
+      "bytes": 12147,
+      "gid": 1000,
+      "mode": 420,
+      "sha256": "f44dc8de4960e178bc54be1331f6926199369e345976e4ba30e94cedcf0c3497",
+      "uid": 1000
+    }
+  },
+  "notice": "Exact new independent public review, excluding this seal. No operation or admission follows."
+}

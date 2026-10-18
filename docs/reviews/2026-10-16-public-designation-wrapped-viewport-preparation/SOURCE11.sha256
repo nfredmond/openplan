@@ -1,0 +1,11 @@
+bc0b411c7b9afa9d8dfff93c16ed571ce1d486ed7f0e25473e43ad33b964e942  openplan/src/lib/geo/wgs84-query-viewport.ts
+7e47ef07af182cfdb8db0502ae568039c5f3694449c3059152a29441d9443bdc  openplan/src/components/land-use-plans/public-designation-map.tsx
+a0ded9ab67a7c1f023191842bc278e04449d48693fb51302155996f4b2982264  openplan/src/lib/land-use-plans/public-map.ts
+075c624a77ed15bf0e8399f1b055ee9316bbf690d64f1be7542b284fdbbbfaa9  openplan/src/app/api/public/land-use-plans/[planId]/map/[designationId]/route.ts
+e5798f39d662681effb30e05a05d7c45e4822950f858fdb60bf5fc3af7b5169b  openplan/src/app/api/public/land-use-plan-reviews/[shareToken]/map/[designationId]/route.ts
+657d49db2ce55ed93036a2e013303f834b1a9b60babd78577b244f8054c76e92  openplan/src/app/api/reports/[reportId]/land-use-map/[designationId]/route.ts
+0c436557e975aa690e84b8ff933b6f83e4c5e751f2fb367f631ac9ada6076f6d  openplan/src/test/wgs84-query-viewport.test.ts
+c1d14a87785b5124083b4d70fd9e3fff03cbbae18cc70f97fe9c52ae1e6e282b  openplan/src/test/public-designation-map-viewport.test.tsx
+0639521dc7119fcb95a7a36662c31843a04fdb66cc3f720887d210be61cb8c50  openplan/src/test/land-use-plan-map-viewport-routes.test.ts
+5fb08ee4e637505a33823549adfb0c133bd5a76f23ea05df1d7e656b0e6fa2f0  openplan/src/test/land-use-plan-report-map.test.tsx
+ceaba34c98472c086e8f8e56d758d73a9200c60f0e3a926c398f73ea387c960c  openplan/supabase/migrations/20261017052401_public_designation_query_viewport.sql

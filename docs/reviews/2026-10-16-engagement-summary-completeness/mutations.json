@@ -1,0 +1,153 @@
+[
+  {
+    "name": "harmless-comment",
+    "file": "src/lib/invoicing/engagement-summary-queries.ts",
+    "find": "/** No fallback to a capped register.",
+    "replace": "/** Complete snapshots never fall back to a capped register.",
+    "survivor": true
+  },
+  {
+    "name": "reader-workspace-echo-ignored",
+    "file": "src/lib/invoicing/engagement-summary-queries.ts",
+    "find": "parsed.data.workspace_id !== scope.workspaceId",
+    "replace": "false",
+    "pattern": "refuses workspace snapshots",
+    "test": "src/test/engagement-summary-completeness.test.tsx",
+    "expectedFailed": 1
+  },
+  {
+    "name": "reader-excluded-echo-ignored",
+    "file": "src/lib/invoicing/engagement-summary-queries.ts",
+    "find": "parsed.data.exclude_invoice_id !== (scope.excludeInvoiceId ?? null)",
+    "replace": "false",
+    "pattern": "refuses exclude snapshots",
+    "test": "src/test/engagement-summary-completeness.test.tsx",
+    "expectedFailed": 1
+  },
+  {
+    "name": "reader-duplicate-accepted",
+    "file": "src/lib/invoicing/engagement-summary-queries.ts",
+    "find": "summaries.has(entry.engagement_id) ||",
+    "replace": "false ||",
+    "pattern": "refuses duplicate snapshots",
+    "test": "src/test/engagement-summary-completeness.test.tsx",
+    "expectedFailed": 1
+  },
+  {
+    "name": "reader-number-rounds-aggregate",
+    "file": "src/lib/invoicing/engagement-summary-queries.ts",
+    "find": "parseOptionalMoney(value.amount)",
+    "replace": "parseOptionalMoney(Number(value.amount))",
+    "pattern": "retains aggregate text for",
+    "test": "src/test/engagement-summary-completeness.test.tsx",
+    "expectedFailed": 2
+  },
+  {
+    "name": "reader-missing-becomes-zero",
+    "file": "src/lib/invoicing/engagement-summary-queries.ts",
+    "find": "if (BigInt(value.missing) > BigInt(0)) return { amount: null, unavailable: \"missing\" };",
+    "replace": "if (BigInt(value.missing) > BigInt(0)) return { amount: 0 };",
+    "pattern": "isolates missing and malformed",
+    "test": "src/test/engagement-summary-completeness.test.tsx",
+    "expectedFailed": 2
+  },
+  {
+    "name": "reader-permissions-pending",
+    "file": "src/lib/invoicing/engagement-summary-queries.ts",
+    "find": "state: missingRpc(error) ? \"pending\" : \"unavailable\"",
+    "replace": "state: true ? \"pending\" : \"unavailable\"",
+    "pattern": "preserves original 42501 source failure",
+    "test": "src/test/engagement-summary-completeness.test.tsx",
+    "expectedFailed": 1
+  },
+  {
+    "name": "reader-incomplete-accepted",
+    "file": "src/lib/invoicing/engagement-summary-queries.ts",
+    "find": "if (!parsed.data.complete) return { state: \"unavailable\"",
+    "replace": "if (!parsed.data.complete) return { state: \"complete\"",
+    "pattern": "preserves incomplete envelope error",
+    "test": "src/test/engagement-summary-completeness.test.tsx",
+    "expectedFailed": 1
+  },
+  {
+    "name": "sql-definer-bypass",
+    "file": "supabase/migrations/20261017000020_engagement_billed_summaries.sql",
+    "find": "STABLE SECURITY INVOKER",
+    "replace": "STABLE SECURITY DEFINER",
+    "pattern": "retains stable scalar invoker security",
+    "test": "src/test/engagement-summary-completeness.test.tsx",
+    "expectedFailed": 1
+  },
+  {
+    "name": "sql-gross-replaced-with-cash",
+    "file": "supabase/migrations/20261017000020_engagement_billed_summaries.sql",
+    "find": "coalesce(sum(i.subtotal_amount) FILTER (WHERE i.status IN ('sent', 'paid')), 0) AS billed",
+    "replace": "coalesce(sum(i.total_amount) FILTER (WHERE i.status IN ('sent', 'paid')), 0) AS billed",
+    "pattern": "aggregates scoped gross text",
+    "test": "src/test/engagement-summary-completeness.test.tsx",
+    "expectedFailed": 1
+  },
+  {
+    "name": "sql-workspace-filter-removed",
+    "file": "supabase/migrations/20261017000020_engagement_billed_summaries.sql",
+    "find": "WHERE i.engagement_id = e.id AND i.workspace_id = p_workspace_id",
+    "replace": "WHERE i.engagement_id = e.id",
+    "pattern": "aggregates scoped gross text",
+    "test": "src/test/engagement-summary-completeness.test.tsx",
+    "expectedFailed": 1
+  },
+  {
+    "name": "sql-excluded-invoice-counted",
+    "file": "supabase/migrations/20261017000020_engagement_billed_summaries.sql",
+    "find": "WHERE i.engagement_id = e.id AND i.workspace_id = p_workspace_id\n      AND (p_exclude_invoice_id IS NULL OR i.id <> p_exclude_invoice_id)",
+    "replace": "WHERE i.engagement_id = e.id AND i.workspace_id = p_workspace_id",
+    "pattern": "aggregates scoped gross text",
+    "test": "src/test/engagement-summary-completeness.test.tsx",
+    "expectedFailed": 1
+  },
+  {
+    "name": "dashboard-discards-snapshot",
+    "file": "src/app/(app)/invoicing/_components/receivables-lane.tsx",
+    "find": "engagementSummaryFor(engagementSummaries, engagement)",
+    "replace": "engagementSummaryFor({ ...engagementSummaries, summaries: new Map() }, engagement)",
+    "pattern": "uses the workspace snapshot independently",
+    "test": "src/test/engagement-summary-dashboard.test.tsx",
+    "expectedFailed": 1
+  },
+  {
+    "name": "route-foreign-workspace-args",
+    "file": "src/app/api/invoicing/client-invoices/route.ts",
+    "find": "workspaceId: parsed.data.workspaceId, engagementId: engagement.id,",
+    "replace": "workspaceId: \"foreign\", engagementId: engagement.id,",
+    "pattern": "warns without blocking when the invoice pushes",
+    "test": "src/test/receivable-invoicing-routes.test.ts",
+    "expectedFailed": 1
+  },
+  {
+    "name": "route-hides-failed-position",
+    "file": "src/app/api/invoicing/client-invoices/route.ts",
+    "find": "ntePositionSource = { state: positionRead.state };",
+    "replace": "ntePositionSource = { state: \"complete\" };",
+    "pattern": "ESComplete preserves",
+    "test": "src/test/receivable-invoicing-routes.test.ts",
+    "expectedFailed": 3
+  },
+  {
+    "name": "pdf-hides-source-unavailable",
+    "file": "src/lib/invoicing/invoice-pdf.ts",
+    "find": "if (billed?.source && billed.source.state !== \"complete\")",
+    "replace": "if (false)",
+    "pattern": "ESComplete discloses",
+    "test": "src/test/client-invoice-pdf.test.ts",
+    "expectedFailed": 2
+  },
+  {
+    "name": "composer-hides-source-unavailable",
+    "file": "src/components/invoicing/client-invoice-composer.tsx",
+    "find": "if (payload.ntePositionSource && payload.ntePositionSource.state !== \"complete\")",
+    "replace": "if (false)",
+    "pattern": "ESComplete shows",
+    "test": "src/test/client-invoice-composer.test.tsx",
+    "expectedFailed": 2
+  }
+]

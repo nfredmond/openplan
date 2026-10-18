@@ -1,0 +1,826 @@
+{
+  "schema": 1,
+  "status": "SOURCE_ONLY_PROPOSAL_NOT_ADMITTED",
+  "subjectCommit": "e894f895c7f0e4a1a328a80d4ea8abeb5a8be9a9",
+  "subjectDirectory": "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-catalog-settings-correction",
+  "packageSHA256": "b9c0e7c418df4a295f44f1374a539e6e33dbd242a210c2840dd07831a6b1a35c",
+  "captureRequestSHA256": "9d98505c0569d764e11e6137d9d213b7d5ebb0d39e4215bcd9e6b8e094fb0979",
+  "publicFiles": {
+    "DELTA.md": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 10802,
+      "type": "regular file",
+      "sha256": "d1ef00fbae6f2fdbd972c0ac3dc1bb1549a29b68fd03a0bf0466502a80e6d2cd",
+      "gitBlob": "682031bfc8f2e70497cec8a3da1472c28b15cd4c"
+    },
+    "FINAL_EVIDENCE_SEAL.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 27598,
+      "type": "regular file",
+      "sha256": "0e2e8e5dd9998d104f3a98a32a074dcf4fb3ed2917591eb7a89e4f527b501d90",
+      "gitBlob": "eea014ca78d33e6b264abd35bfe5ecfc77a32075"
+    },
+    "FINAL_REPORT.md": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 8476,
+      "type": "regular file",
+      "sha256": "03e4ab5e515e0457a1bd93363c053d3da5c1a981655646e02772ae9ff97fdd79",
+      "gitBlob": "2da9da252e5a0f048c02d7be276b50d2988eb6a3"
+    },
+    "FINAL_VALIDATION.md": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 6395,
+      "type": "regular file",
+      "sha256": "08208cc8d4883c7e57719059d1d359b93e3172e51fd17ff5711505d80dd0fb31",
+      "gitBlob": "3e6d4a8f4c81c1b494366623f2093dd798ca92da"
+    },
+    "MANIFEST.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 3574,
+      "type": "regular file",
+      "sha256": "4c3c01df8c4a7cb5ba8c0bc5fc65bbca7edfc9f2bf485513feef093fc7be258c",
+      "gitBlob": "06b228416b86e9c07d693d8a3a0a874cbeb1eed6"
+    },
+    "ORACLES.md": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 2701,
+      "type": "regular file",
+      "sha256": "efc44218d4142b4cff106fe8111c7d19799f08194104a9d32b3aeffffce63fc1",
+      "gitBlob": "e472449c3054f8b2b4d20f74de0c0ae91b370af0"
+    },
+    "REPORT.md": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 7190,
+      "type": "regular file",
+      "sha256": "8e016621f2ffe46726f85262bfe75302a5e281470c0a0260d7af55a4753e0d33",
+      "gitBlob": "19cd8ef4378ca99fcd3c89b2db8012aea299aab0"
+    },
+    "SOURCE_MANIFEST.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 25248,
+      "type": "regular file",
+      "sha256": "af76b8d7c32a82fc64a4c99b4e815ca5d233715d9a728b5edaa08e978d4f14a8",
+      "gitBlob": "67f59807ab8bfc0a01ed5eb3dc49e1e8467e553b"
+    },
+    "SOURCE_PREPARATION.md": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 9308,
+      "type": "regular file",
+      "sha256": "d390495eb4abf7aaf3b67d07033766dcce8ae5ac2c033e75d462fd8db9e6a4a3",
+      "gitBlob": "9a691e3527166d00ac207ccb4a9811e62ff702de"
+    },
+    "TRIAL02_READER.diff": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 14978,
+      "type": "regular file",
+      "sha256": "779c62149a058015d6de59dc87837600b2edea645a8722a30399bc911e682ad3",
+      "gitBlob": "189c777043e837de4f9ef27e95ffb491d92213c2"
+    },
+    "TRIAL02_REQUEST.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 619885,
+      "type": "regular file",
+      "sha256": "972e3e88479b88b6f4e8b0d2503e87caf7dd3a7b1b2dbb511e13c3831a7e0648",
+      "gitBlob": "931f118253df992dc56b2d3963a3d5d4aaae92a7"
+    },
+    "TRIAL02_REUSE_PINS.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 12095,
+      "type": "regular file",
+      "sha256": "d803de8762ed7b6694b0e1b6b67e7074965ed7504341eace7504a6cf94a4f161",
+      "gitBlob": "91a4fcddde3b0c670d5e9f1cad090c0a0ab96dde"
+    },
+    "TRIAL02_SOURCE_RESPONSE.md": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 5607,
+      "type": "regular file",
+      "sha256": "488f3b45e9980a61cb4a7ecfcab71cdba05cdcac327779eba99852a5a42c1d39",
+      "gitBlob": "3507b46c68d245f6704543bb006eac049a41eb17"
+    },
+    "build_observe_proposal.py": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 7000,
+      "type": "regular file",
+      "sha256": "65297e44c70366d6adaab3a8085e67f32a3747133ee696d1f94463eb9d894338",
+      "gitBlob": "a4bdcff6457f3ecd0fbbf0168f036f02ead593b2"
+    },
+    "capture_catalog.py": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 7811,
+      "type": "regular file",
+      "sha256": "32e3c7de6844b4b76eb592975cf02b79edb9a00668d0a8a9d702ffe1410c832c",
+      "gitBlob": "a83adb567226f02b439545d8b692053b316067a8"
+    },
+    "catalog-capture-request.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 2518,
+      "type": "regular file",
+      "sha256": "9d98505c0569d764e11e6137d9d213b7d5ebb0d39e4215bcd9e6b8e094fb0979",
+      "gitBlob": "95d14b16ee680240a5e681a974e7a8e929c2b741"
+    },
+    "catalog-capture.sql": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 2334,
+      "type": "regular file",
+      "sha256": "f5ed533bd42136ff7b7f5a1feb071d01004fc50bc712ca1ba83d41db7438a582",
+      "gitBlob": "507d75dc8f11d1257d6a092104809db0e1357f35"
+    },
+    "collector.py": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 13769,
+      "type": "regular file",
+      "sha256": "aeff4a9f7a5420cbd0c47b99af379ae03e1b0c16258ea64e6504addb90e935a5",
+      "gitBlob": "78e331600787bbc18dad20e9516066799f85d1ce"
+    },
+    "controls.py": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 26594,
+      "type": "regular file",
+      "sha256": "42eefe91d6d8c37d7d54c9205acfab736884515b7a6da69c9618731039d44ca1",
+      "gitBlob": "3c7da4e5dcc4895974e5a0e4638fc9dbb3409ce7"
+    },
+    "evidence/prior-native-failure/failed-native-attempt-disposition.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 1455,
+      "type": "regular file",
+      "sha256": "4f7058be943512af95fbb5cf0b270c2766bb09a25b5c5cd4a959f57b4a15f75d",
+      "gitBlob": "8d603969720591871450ef6a1adba39f72fd6a00"
+    },
+    "evidence/prior-native-failure/failed-native-attempt-seal.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 5330,
+      "type": "regular file",
+      "sha256": "03af0418d965e06b23d72f095bb043b064f841beb93adf35ec4c9a26a1ad1f47",
+      "gitBlob": "65a786dbf46954b519077c95f275e23fd7db6bcb"
+    },
+    "evidence/prior-native-failure/query-stderr.bin": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 55,
+      "type": "regular file",
+      "sha256": "88cb46494b3249cb7cc354338357ec6718eae891e2a2bbf86715ce129869ecff",
+      "gitBlob": "35e70365356f9cf25d51ce2a1124dcf4ee4117f0"
+    },
+    "evidence/prior-native-failure/query-stdout.bin": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 72,
+      "type": "regular file",
+      "sha256": "501c829fca9556b1fc82b4517243d8422b0526784a66083a26ab62aab352dd31",
+      "gitBlob": "42fba59dfbcf63232f51a60e4d3f40b7f35be847"
+    },
+    "evidence/prior-native-failure/query-terminal.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 325,
+      "type": "regular file",
+      "sha256": "6eaaecca347c82c4d79bb98608a10d98f07093363a2f5d241f7078c6effd8907",
+      "gitBlob": "0c633c7331ea528bb69be5c04fa7f1d8166c9f3c"
+    },
+    "evidence/trial01/failed-pure-disposition.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 983,
+      "type": "regular file",
+      "sha256": "0df0f982ef97e9f046ff2357d70e64b516d35cd9104430634d983856f44443b1",
+      "gitBlob": "f3dc4132ab79f5470bd1a3c15b8fb7dad232fbd0"
+    },
+    "evidence/trial01/failed-terminal-seal.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 2600,
+      "type": "regular file",
+      "sha256": "f70283a0c8fb1aa87d44c7436d9fb1216bebd35849d33689428a670aae583ebf",
+      "gitBlob": "27ba4cf8d506e6205b28e106badfb3f7e3e2aa5b"
+    },
+    "evidence/trial01/parent/intent.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 567,
+      "type": "regular file",
+      "sha256": "6979416c6ddbd8f191a02b672dadfd844becc55a202630deb7e1c51bf0532e85",
+      "gitBlob": "4c493a37551720d44d9851359ff48b4187085708"
+    },
+    "evidence/trial01/parent/returned-process.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 73,
+      "type": "regular file",
+      "sha256": "e2f3658631c85b86c4a78b78f6bdcfb349fe898bc1e22eb47d50bfe31302e81a",
+      "gitBlob": "75eff11e4115e1f32c8d70945367cfd6169a28df"
+    },
+    "evidence/trial01/parent/source-final-readback.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 19,
+      "type": "regular file",
+      "sha256": "7b1091156e395cfd14143e1422db96bdd4af83edae5ef286f4f90f2a49480c8f",
+      "gitBlob": "61aadcf4cf413e40ffae14a3b52a4ade6fab5cab"
+    },
+    "evidence/trial01/parent/stderr.bin": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 2402,
+      "type": "regular file",
+      "sha256": "d9fab0ad0bb17fe986fb04b2320d6ad82db41c5a9d65516cea86474cee6b978d",
+      "gitBlob": "951c82730f0b3352154143f9cc9b3231277d75b8"
+    },
+    "evidence/trial01/parent/stdout.bin": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 337,
+      "type": "regular file",
+      "sha256": "3303b4f262ada6e1eaae9a422eba964c65d6214f40d1258a260c81a94ffe7490",
+      "gitBlob": "64e6789202193551b51a77338029a36d34c2f437"
+    },
+    "evidence/trial01/parent/terminal.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 494,
+      "type": "regular file",
+      "sha256": "e4203351d343e67c662b85ebd95d5d86355dead1d6e8ec53efeac681be3d706d",
+      "gitBlob": "7cda3921639c640db7aebb0ef502411bbfe50fb6"
+    },
+    "evidence/trial01/pure-attempt/controls.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 407,
+      "type": "regular file",
+      "sha256": "41fc80e1d5b33e7c0a724e0c4c1c0170a9880aa3648185efaf7b16af74f640dd",
+      "gitBlob": "a32b6179aba001855fca43056991c6e9bff47eb9"
+    },
+    "evidence/trial01/pure-attempt/intent.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 370,
+      "type": "regular file",
+      "sha256": "3d597392f32b2a818ac43bf87ecbfc3b79d134cefdeca4f319ad49c62994fdaf",
+      "gitBlob": "82fd878f59143ad39c68b8eb8eec630a0fb1651a"
+    },
+    "evidence/trial01/pure-attempt/post-custody.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 10337,
+      "type": "regular file",
+      "sha256": "863a7af500909f3199c92c958f71eb4ca22be07c8060d57b56c77809dcb50f68",
+      "gitBlob": "406380ff98cf157221b80c95dc172282a76815e4"
+    },
+    "evidence/trial01/pure-attempt/resources-before.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 948,
+      "type": "regular file",
+      "sha256": "ebc069a00b48ee33d5991f3fecd3ba67e1bf8793b1d325c683030a60e2977d0b",
+      "gitBlob": "dea1243c085da13c5e109d1ab2c2a169fbdd18d6"
+    },
+    "evidence/trial01/pure-grant.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 634,
+      "type": "regular file",
+      "sha256": "d8d8f503e950f37faa6010fe38509365377858f0fc8147d830c8300f9af2996f",
+      "gitBlob": "fca3b5bfee75fc2ace117c911c70a0f37f60d09f"
+    },
+    "evidence/trial01/root-outer-intent.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 600,
+      "type": "regular file",
+      "sha256": "9038a409b24787356465f3250ff4a4289abdb9075084cf82c990324151c369d0",
+      "gitBlob": "2ad7251e81268ebb958a5e3fa457a43f1b4f29fc"
+    },
+    "evidence/trial02/actual-result-readback.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 6080,
+      "type": "regular file",
+      "sha256": "3954ceff7b70b0275f7977794eef7b21ff7ab2d029558d3f0a02ba42750f5717",
+      "gitBlob": "75ce03b4cd1e53e2342edbd166c9e9214ab87008"
+    },
+    "evidence/trial02/grant-record.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 402,
+      "type": "regular file",
+      "sha256": "da1fc5c874200c8bc0a9568d9b1fbe34d218a3d69fef2e25f12f5a12fccf7391",
+      "gitBlob": "5a09f8e7c07a9e36ac6e4f4e5ac81cc2c0ed6f6c"
+    },
+    "evidence/trial02/parent/intent.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 575,
+      "type": "regular file",
+      "sha256": "a7c6bd9f82676b21af37e2c8252e3832b9289ddc4816e829686b5da206cb856b",
+      "gitBlob": "dcc00c707df3e61545d52aa56d9d007c703c8f5b"
+    },
+    "evidence/trial02/parent/returned-process.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 73,
+      "type": "regular file",
+      "sha256": "650a67cc21ae44c167bb68093525f7b864828c9ad3364463f26225208f863304",
+      "gitBlob": "5281af514261e9e0a0f0839c9f8b4a1a3344524a"
+    },
+    "evidence/trial02/parent/source-final-readback.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 25,
+      "type": "regular file",
+      "sha256": "9a256c78e0a76b7f1a3b6560354062d81c3e78cc9b7e382b4773fc5fd017ea83",
+      "gitBlob": "3636e2b19472b5605b39590142ac260420f845e2"
+    },
+    "evidence/trial02/parent/stderr.bin": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 298,
+      "type": "regular file",
+      "sha256": "8c65eff4a02774b54e6e73444225539429a4a58069cd0a42ddb6782264744c7e",
+      "gitBlob": "a7b7a23ede3ffb2b6dc38663f335515ba1e0a7dd"
+    },
+    "evidence/trial02/parent/stdout.bin": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 330,
+      "type": "regular file",
+      "sha256": "6b3645b4b1f0b4fc1ba8a8d4c323b509f631d1d8918c3e74da8555143fb94797",
+      "gitBlob": "46a17bca9ffd7e8cb14a57412b4e5772834dc9a8"
+    },
+    "evidence/trial02/parent/terminal.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 489,
+      "type": "regular file",
+      "sha256": "e19078e02ef0fd8622b71fd4ae247fed337277da7b3f925d5a4eec8cd99313d2",
+      "gitBlob": "a6e0030d687a775766628f9aafcf987c2f7ca673"
+    },
+    "evidence/trial02/pre-dispatch-review.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 853,
+      "type": "regular file",
+      "sha256": "f8c8fd7db1f970c31deb1349b5162ef657363cb222e06557b007147ccb77d318",
+      "gitBlob": "4223c4198e2d5b99c9cd634f95ad3dff61aaa07c"
+    },
+    "evidence/trial02/pure-attempt/complete.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 232,
+      "type": "regular file",
+      "sha256": "ee57e4bf61d53eb5de75bf6e0785653092e3eb244c6610003b28fe7276baa9fb",
+      "gitBlob": "3032b777ff8fee2ebbb909390be34651f2051d28"
+    },
+    "evidence/trial02/pure-attempt/controls.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 2309,
+      "type": "regular file",
+      "sha256": "a61d6e98d16e6cf88bc9ae45f016461ae9a178e8a247e53982ffe9fda86e9929",
+      "gitBlob": "91c736100577593925bb1aea53b8c6c56fc92825"
+    },
+    "evidence/trial02/pure-attempt/intent.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 370,
+      "type": "regular file",
+      "sha256": "8ac2c7a36508c280cb087adf584e2be41b600397e3e16a67e8b68d8538ec5d7e",
+      "gitBlob": "dcf3cc3ce11986beb7cf76761eb25778c75026d6"
+    },
+    "evidence/trial02/pure-attempt/post-custody.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 304017,
+      "type": "regular file",
+      "sha256": "9b77d93f685bc61f7cf2c665b97da786829adfe02574ac8d12cfb2c613a882c4",
+      "gitBlob": "405121a3fadf6deccb5107d3a7f4ac2e89c1bcc2"
+    },
+    "evidence/trial02/pure-attempt/resources-before.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 1182,
+      "type": "regular file",
+      "sha256": "c94f8a9b298d6f36c011666b76230ba4a8cdc8bc4d52555f220428b57b59efd5",
+      "gitBlob": "5fbc14c1959ba7d1bb0c49d7bcb3fa745bd3a81a"
+    },
+    "evidence/trial02/pure-grant.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 335,
+      "type": "regular file",
+      "sha256": "28b43036ec39a9d92116c60a0c77d11b8b6d48703dd8cd4a0be06d1aaa40d016",
+      "gitBlob": "f6ee508c512989ab3cb299c4c83ff6e4951eddf2"
+    },
+    "evidence/trial02/root-outer-intent.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 429,
+      "type": "regular file",
+      "sha256": "a4b091b2faf9fe3a8e9a17b9e924da4a68aa3ccde72286668b0e07ea6d27dd3d",
+      "gitBlob": "875a224664f7b7ace960d0d34fd8c8ae02c73a12"
+    },
+    "evidence/trial02/root-reader-error-01.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 611,
+      "type": "regular file",
+      "sha256": "83439fe82b7be6dbd03d350f9f4bdbbbed87b62e44d9430c2b7fa103c76cd26a",
+      "gitBlob": "b81590b087ce3a954ef1a31c82c9474a47c286e1"
+    },
+    "in-unit.sh": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 1057,
+      "type": "regular file",
+      "sha256": "38d6c7565c5439d81d8c974a8008ec5cd4cfc756938ecdd06b9f8b81b1e019ed",
+      "gitBlob": "4cd574f2eb7a32de74d6caede88d10c5ce02ddf8"
+    },
+    "mutations.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 4735,
+      "type": "regular file",
+      "sha256": "a179119758d31d794f8a6dcc981f24026b10bfca9f719c6dbddbc30dfbe89594",
+      "gitBlob": "6a544e37a1105445284a35428c6cb3fd9b9da4d0"
+    },
+    "observe-bindings.required.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 648,
+      "type": "regular file",
+      "sha256": "921e33efa84eb6a3e90a2cc75e614f3bcfa4760ddbf65db9b2b350b82adcc8e8",
+      "gitBlob": "4add1c2e2a093f7d7f22acca336f17365ede060c"
+    },
+    "observe-input.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 175,
+      "type": "regular file",
+      "sha256": "1a31911a7072d2c2b8684f34e68dff464118deededa31df54798b0ab0b8469ca",
+      "gitBlob": "b59c31a14928d30a19ad96dac94b19439d58ead6"
+    },
+    "plan.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 54907,
+      "type": "regular file",
+      "sha256": "d0ad2a5fc8e738d0b0f2c696199a7509009aa273c724dfc1217853459383e33d",
+      "gitBlob": "02aae3aa06d75f83b8a7d83ad7b371f1a78f2e21"
+    },
+    "preserved-pins.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 16041,
+      "type": "regular file",
+      "sha256": "f400245c28cbec1f349b78d1d2cb2ed3191ea168f5c6b5961e2951d0a3e0ac3a",
+      "gitBlob": "89d0e12999e30cd309157a4b13ee66ea36bdf7de"
+    },
+    "pure-window-request.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 30480,
+      "type": "regular file",
+      "sha256": "e7ed74156793d8cc04dcaca5facb3ce78891ef4d56f38c2a99fcf84ebabfd1c4",
+      "gitBlob": "14575d62f41eb72ee47b5896f5877bc3a851e12f"
+    },
+    "pure_runner.py": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 5462,
+      "type": "regular file",
+      "sha256": "082b12b01b6679d8528ae77542d22a82627fc8cb55905ff960edfb25210bad76",
+      "gitBlob": "fa74d929dd2e77fda029080acf060558de9944f8"
+    },
+    "run-capture-window.sh": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 1090,
+      "type": "regular file",
+      "sha256": "30fa369b5978763754fca929343582f81c8cf843f676bb9497d6e221fcf3166b",
+      "gitBlob": "8bb31f93fb1635a58834a0a349f222254e8f8490"
+    },
+    "run-pure-window.sh": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 956,
+      "type": "regular file",
+      "sha256": "61412ac0215dc7eac1ca23a52298f6cae1d385ee5d529f2123f4201e50634cee",
+      "gitBlob": "e50fb70fac5857c8bae56bafe8e55e71cc4ee39d"
+    },
+    "runtime/controller.py": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 24313,
+      "type": "regular file",
+      "sha256": "328b1f84a12925345f95aa6d52996f0b1d980bd7ac84de6571f44d8eb6e6788e",
+      "gitBlob": "8b80c9509cb8afc20b60742af4a699c376633754"
+    },
+    "runtime/journal.py": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 11349,
+      "type": "regular file",
+      "sha256": "18ea275bf28c931979af1ef774ab5e40ec8aca2277308f77695a6c9883905eb6",
+      "gitBlob": "eedba72929f91b94cca67c4cb2a661d66b0f1876"
+    },
+    "runtime/policy.py": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 11394,
+      "type": "regular file",
+      "sha256": "87918149e6a20accac0fc5d7be2decbe7a75929c5ca7deb74a1f2caf4b4d2d4c",
+      "gitBlob": "fbfa540275e9f501cef4ee2158b8241e82057b64"
+    },
+    "runtime/sql.py": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 18278,
+      "type": "regular file",
+      "sha256": "f9f612ed9f411f4347566b0d0d0d442049e89be0af81882f5014c1e04352df90",
+      "gitBlob": "0ffe8a9eee07cb79659956b72a9a99588842a422"
+    },
+    "source-delta.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 2219,
+      "type": "regular file",
+      "sha256": "830c6a12164b8a6fc69b16a764838812b68b761d2a4703803670ab8688fc5bce",
+      "gitBlob": "feade075d3b6247d51daef68c0ea9793da999ba7"
+    },
+    "source-pins.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 104868,
+      "type": "regular file",
+      "sha256": "b9c0e7c418df4a295f44f1374a539e6e33dbd242a210c2840dd07831a6b1a35c",
+      "gitBlob": "e0e6cdce6ab3c7c4c4231b6169afe4e18fd60dab"
+    },
+    "static-source-review.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 9240,
+      "type": "regular file",
+      "sha256": "8d5cfe5329e11dcc11fdc681e499e80ae55f3f667ae3f3eec77ddaff766ea311",
+      "gitBlob": "3e9a4706d2f665043da0a5c32f9699795fec3da1"
+    }
+  },
+  "privateOperatingSources": {
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/outer-v2/collector.py": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 13769,
+      "type": "regular file",
+      "sha256": "aeff4a9f7a5420cbd0c47b99af379ae03e1b0c16258ea64e6504addb90e935a5"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/catalog-capture.sql": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 2334,
+      "type": "regular file",
+      "sha256": "f5ed533bd42136ff7b7f5a1feb071d01004fc50bc712ca1ba83d41db7438a582"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/catalog-capture-request.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 2518,
+      "type": "regular file",
+      "sha256": "9d98505c0569d764e11e6137d9d213b7d5ebb0d39e4215bcd9e6b8e094fb0979"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture_catalog.py": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 7811,
+      "type": "regular file",
+      "sha256": "32e3c7de6844b4b76eb592975cf02b79edb9a00668d0a8a9d702ffe1410c832c"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/observe-input.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 175,
+      "type": "regular file",
+      "sha256": "1a31911a7072d2c2b8684f34e68dff464118deededa31df54798b0ab0b8469ca"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/build_observe_proposal.py": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 7000,
+      "type": "regular file",
+      "sha256": "65297e44c70366d6adaab3a8085e67f32a3747133ee696d1f94463eb9d894338"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/run-capture-window.sh": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 1090,
+      "type": "regular file",
+      "sha256": "30fa369b5978763754fca929343582f81c8cf843f676bb9497d6e221fcf3166b"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/observe-bindings.required.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 648,
+      "type": "regular file",
+      "sha256": "921e33efa84eb6a3e90a2cc75e614f3bcfa4760ddbf65db9b2b350b82adcc8e8"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/sql.py": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 18278,
+      "type": "regular file",
+      "sha256": "f9f612ed9f411f4347566b0d0d0d442049e89be0af81882f5014c1e04352df90"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/plan.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 54907,
+      "type": "regular file",
+      "sha256": "d0ad2a5fc8e738d0b0f2c696199a7509009aa273c724dfc1217853459383e33d"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/source-pins.json": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 104868,
+      "type": "regular file",
+      "sha256": "b9c0e7c418df4a295f44f1374a539e6e33dbd242a210c2840dd07831a6b1a35c"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/policy.py": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 11394,
+      "type": "regular file",
+      "sha256": "87918149e6a20accac0fc5d7be2decbe7a75929c5ca7deb74a1f2caf4b4d2d4c"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/journal.py": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 11349,
+      "type": "regular file",
+      "sha256": "18ea275bf28c931979af1ef774ab5e40ec8aca2277308f77695a6c9883905eb6"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/controller.py": {
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 24313,
+      "type": "regular file",
+      "sha256": "328b1f84a12925345f95aa6d52996f0b1d980bd7ac84de6571f44d8eb6e6788e"
+    }
+  },
+  "privateInventoryReferences": {
+    "original-private": {
+      "path": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/final-metadata/original-private-inventory.json",
+      "sha256": "4c672cdc38dcf5e89c01959e1fb48b0e9ddfb0d20ea7a4fa5738adcba5a7dc2e",
+      "files": 1966
+    },
+    "trial02-private": {
+      "path": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/final-metadata/trial02-private-inventory.json",
+      "sha256": "acfb4a9de8c06c96fde99db335c8e8d1890b275063cfcc55e2984774bc4cc750",
+      "files": 1334
+    }
+  },
+  "independentReview": {
+    "hashes": "060d372886f948e3073cceb7bba2af4da5580e750a96569562720d426eb1e49e  /home/nathaniel/.t3/worktrees/openplan/t3-c93f6f08/docs/reviews/2026-10-16-budget-catalog-settings-independent/EVIDENCE_SEAL.json\n2a23742948648e479763bda6b29f1ab4a6d1abcaa7a78473adc47db45e96e7ed  /home/nathaniel/.t3/worktrees/openplan/t3-c93f6f08/docs/reviews/2026-10-16-budget-catalog-settings-independent/REPORT.md\ne4442def1fb464491a6046e6c1ea2fa377a14ea235415a9d3da255a0fbb92710  /home/nathaniel/.t3/worktrees/openplan/t3-c93f6f08/docs/reviews/2026-10-16-budget-catalog-settings-independent/REVIEW_MANIFEST.json\nf96ed403b6eab9ab34e973d8cb988b8d7cf75f29e6860753a60dec91c25717cb  /home/nathaniel/.t3/worktrees/openplan/t3-c93f6f08/docs/reviews/2026-10-16-budget-catalog-settings-independent/SOURCE_PINS.sha256\nd9ce5d30777d8756c3d766eb2aea0f1ed09d75826cd3aa35c0d8c1edb784c226  /home/nathaniel/.t3/worktrees/openplan/t3-c93f6f08/docs/reviews/2026-10-16-budget-catalog-settings-independent/VALIDATION.md\n",
+    "stat": "664\t1000\t1000\t29051\tregular file\t/home/nathaniel/.t3/worktrees/openplan/t3-c93f6f08/docs/reviews/2026-10-16-budget-catalog-settings-independent/EVIDENCE_SEAL.json\n664\t1000\t1000\t16170\tregular file\t/home/nathaniel/.t3/worktrees/openplan/t3-c93f6f08/docs/reviews/2026-10-16-budget-catalog-settings-independent/REPORT.md\n664\t1000\t1000\t864\tregular file\t/home/nathaniel/.t3/worktrees/openplan/t3-c93f6f08/docs/reviews/2026-10-16-budget-catalog-settings-independent/REVIEW_MANIFEST.json\n664\t1000\t1000\t14926\tregular file\t/home/nathaniel/.t3/worktrees/openplan/t3-c93f6f08/docs/reviews/2026-10-16-budget-catalog-settings-independent/SOURCE_PINS.sha256\n664\t1000\t1000\t9857\tregular file\t/home/nathaniel/.t3/worktrees/openplan/t3-c93f6f08/docs/reviews/2026-10-16-budget-catalog-settings-independent/VALIDATION.md\n",
+    "gitTree": "100644 blob 96984685c61d5d581ac897fb0e657151aa676dd6\tdocs/reviews/2026-10-16-budget-catalog-settings-independent/EVIDENCE_SEAL.json\n100644 blob dfad5836c9dfe92806c5c89709ecfbfd57952015\tdocs/reviews/2026-10-16-budget-catalog-settings-independent/REPORT.md\n100644 blob 68183cd73a38fa1e513c39c69bb520cae9032923\tdocs/reviews/2026-10-16-budget-catalog-settings-independent/REVIEW_MANIFEST.json\n100644 blob 3a895e8d954f5b3b3f6f9ef9994ee0b762ae846e\tdocs/reviews/2026-10-16-budget-catalog-settings-independent/SOURCE_PINS.sha256\n100644 blob d3a1382b0b480c9c4979d802793006d6b72a08d1\tdocs/reviews/2026-10-16-budget-catalog-settings-independent/VALIDATION.md\n",
+    "commit": "366f315e1fbec1f4a3150bd9656f522c2c2e88b4",
+    "all5GitBlobsMatch": true,
+    "directory": "/home/nathaniel/.t3/worktrees/openplan/t3-c93f6f08/docs/reviews/2026-10-16-budget-catalog-settings-independent",
+    "disposition": "SCOPED_SOURCE_APPROVAL_NO_OPERATING_APPROVAL",
+    "newActionableP1P2P3": false,
+    "prep1": "RESOLVED_METADATA_ONLY"
+  },
+  "donor": {
+    "repo": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74",
+    "source": "3f3639f54243f40dfe7ff093dbb7f4e982a18cbc",
+    "app": "44e638d6d79378042343bf5b18408f09ee991d57",
+    "migrations": 422,
+    "pinnedFiles": 435,
+    "sourcePinsFile": "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-catalog-settings-correction/source-pins.json",
+    "allCurrentPinsMatch": true
+  },
+  "rootContext": {
+    "source": "3e1d563326c653f7f6e8cd813ca7ad645ef2963e",
+    "app": "2b1916349d7379c96bf97b1708b3e4016d37384d",
+    "migrations": 423,
+    "claim": "User/review context only; not rebound or probed.",
+    "m11SourcePrefix": "64add",
+    "m11ReviewPrefix": "6de",
+    "a0": "Separate active catalogue lane; no grant supplied here."
+  },
+  "checks": {
+    "records": 3807,
+    "privateFiles": 3300,
+    "publicFiles": 72,
+    "donorFiles": 435,
+    "allMatched": true
+  },
+  "nativeOperationGranted": false,
+  "exclusive": false,
+  "publicationEnabled": false,
+  "subjectImported": false,
+  "testsRun": false,
+  "nativeCalls": 0
+}

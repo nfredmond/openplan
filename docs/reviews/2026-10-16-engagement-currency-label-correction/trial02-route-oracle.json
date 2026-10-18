@@ -1,0 +1,49 @@
+{
+  "mutationName": "route-current-invoice-currency-inheritance",
+  "expectedCaseCount": 6,
+  "expectedFile": "/home/nathaniel/.t3/worktrees/openplan/t3-9a9c35f8/openplan/src/test/receivable-invoicing-routes.test.ts",
+  "cases": {
+    "POST /api/invoicing/client-invoices warns without blocking when the invoice pushes the engagement over its not-to-exceed": {
+      "firstLine": "AssertionError: expected { \u2026(6) } to deeply equal { \u2026(5) }",
+      "assertionLocationLine": "    at /home/nathaniel/.t3/worktrees/openplan/t3-9a9c35f8/openplan/src/test/receivable-invoicing-routes.test.ts:816:29",
+      "file": "/home/nathaniel/.t3/worktrees/openplan/t3-9a9c35f8/openplan/src/test/receivable-invoicing-routes.test.ts",
+      "messageCount": 1
+    },
+    "POST /api/invoicing/client-invoices serializes exact projected warning cents from 45 legitimate rows": {
+      "firstLine": "AssertionError: expected { \u2026(6) } to not have property \"currencyCode\"",
+      "assertionLocationLine": "    at /home/nathaniel/.t3/worktrees/openplan/t3-9a9c35f8/openplan/src/test/receivable-invoicing-routes.test.ts:839:35",
+      "file": "/home/nathaniel/.t3/worktrees/openplan/t3-9a9c35f8/openplan/src/test/receivable-invoicing-routes.test.ts",
+      "messageCount": 1
+    },
+    "POST /api/invoicing/client-invoices serializes exact projected warning cents from 91 legitimate rows": {
+      "firstLine": "AssertionError: expected { \u2026(6) } to not have property \"currencyCode\"",
+      "assertionLocationLine": "    at /home/nathaniel/.t3/worktrees/openplan/t3-9a9c35f8/openplan/src/test/receivable-invoicing-routes.test.ts:839:35",
+      "file": "/home/nathaniel/.t3/worktrees/openplan/t3-9a9c35f8/openplan/src/test/receivable-invoicing-routes.test.ts",
+      "messageCount": 1
+    },
+    "POST /api/invoicing/client-invoices serializes exact projected warning cents from 100 legitimate rows": {
+      "firstLine": "AssertionError: expected { \u2026(6) } to not have property \"currencyCode\"",
+      "assertionLocationLine": "    at /home/nathaniel/.t3/worktrees/openplan/t3-9a9c35f8/openplan/src/test/receivable-invoicing-routes.test.ts:839:35",
+      "file": "/home/nathaniel/.t3/worktrees/openplan/t3-9a9c35f8/openplan/src/test/receivable-invoicing-routes.test.ts",
+      "messageCount": 1
+    },
+    "POST /api/invoicing/client-invoices keeps EUR on the invoice without asserting a warning currency": {
+      "firstLine": "AssertionError: expected { \u2026(6) } to deeply equal { \u2026(5) }",
+      "assertionLocationLine": "    at /home/nathaniel/.t3/worktrees/openplan/t3-9a9c35f8/openplan/src/test/receivable-invoicing-routes.test.ts:852:48",
+      "file": "/home/nathaniel/.t3/worktrees/openplan/t3-9a9c35f8/openplan/src/test/receivable-invoicing-routes.test.ts",
+      "messageCount": 1
+    },
+    "POST /api/invoicing/client-invoices keeps JPY on the invoice without asserting a warning currency": {
+      "firstLine": "AssertionError: expected { \u2026(6) } to deeply equal { \u2026(5) }",
+      "assertionLocationLine": "    at /home/nathaniel/.t3/worktrees/openplan/t3-9a9c35f8/openplan/src/test/receivable-invoicing-routes.test.ts:852:48",
+      "file": "/home/nathaniel/.t3/worktrees/openplan/t3-9a9c35f8/openplan/src/test/receivable-invoicing-routes.test.ts",
+      "messageCount": 1
+    }
+  },
+  "requiredTransform": {
+    "name": "route-current-invoice-currency-inheritance",
+    "file": "src/app/api/invoicing/client-invoices/route.ts",
+    "find": "overBy: subtractMoney(projected, notToExceed),",
+    "replace": "overBy: subtractMoney(projected, notToExceed), currencyCode: parsed.data.currencyCode ?? null,"
+  }
+}

@@ -105,11 +105,22 @@ BEGIN
   INSERT INTO public.land_use_plan_content_nodes(id,workspace_id,version_id,node_kind,title) VALUES(node,workspace,version,'policy','SYNTHETIC retained');
   INSERT INTO public.land_use_plan_implementation_actions(id,workspace_id,version_id,title) VALUES(action,workspace,version,'SYNTHETIC retained');
   SET LOCAL ROLE service_role;
-  PERFORM pg_temp.revision_exec(version,format('UPDATE public.land_use_plans SET plan_context=%L WHERE id=%L','{"schemaVersion":1,"place":{},"assessment":{"authorities":[{}]},"savedBy":"synthetic","savedAt":"synthetic"}',plan),'saved plan context');
-  -- Context payload is a shallow SQL fixture, not accepted application data.
-  UPDATE public.land_use_plans SET plan_context=NULL WHERE id=plan;
+  -- A context-bearing write supplies its matching study area atomically.
+  PERFORM pg_temp.revision_exec(version,format('UPDATE public.land_use_plans SET plan_context=%L,geography_label=%L,geography_geojson=%L WHERE id=%L',
+    jsonb_build_object('schemaVersion',1,'place',jsonb_build_object('source','uploaded_file','kind',NULL,'ref',NULL,
+      'label','SYNTHETIC revision area','countryCode',NULL,'subdivisionCode',NULL,
+      'bbox',jsonb_build_object('minLon',0,'minLat',0,'maxLon',1,'maxLat',1),
+      'geometry','{"type":"Polygon","coordinates":[[[0,0],[1,0],[1,1],[0,0]]]}'::jsonb),
+      'assessment',jsonb_build_object('authorities',jsonb_build_array(jsonb_build_object('id',actor,'label','SYNTHETIC body',
+        'role','unassessed','kind','unassessed','jurisdiction',NULL,'sourceUrls','[]'::jsonb)),
+        'applicability',jsonb_build_object('status','unresolved','explanation','SYNTHETIC revision test')),
+      'savedBy',actor,'savedAt','2026-10-16T00:00:00Z'),
+    'SYNTHETIC revision area','{"type":"Polygon","coordinates":[[[0,0],[1,0],[1,1],[0,0]]]}',plan),'saved plan context');
+  PERFORM pg_temp.revision_refuses(format('UPDATE public.land_use_plans SET plan_context=NULL WHERE id=%L',plan),'PT409','retained context cannot become legacy');
   SELECT draft_revision INTO before_revision FROM public.land_use_plan_versions WHERE id=version;
-  UPDATE public.land_use_plan_versions SET state='public_review',content_hash=repeat('f',64),frozen_snapshot='{}',frozen_at=now(),frozen_by=actor WHERE id=version;
+  UPDATE public.land_use_plan_versions SET state='public_review',content_hash=repeat('f',64),
+    frozen_snapshot=jsonb_build_object('planContext',(SELECT plan_context FROM public.land_use_plans WHERE id=plan)),
+    frozen_at=now(),frozen_by=actor WHERE id=version;
   PERFORM pg_temp.revision_assert((SELECT draft_revision=before_revision FROM public.land_use_plan_versions WHERE id=version),'freeze preserves final revision');
   PERFORM pg_temp.revision_refuses(format('UPDATE public.land_use_plan_content_nodes SET body=%L WHERE id=%L','Changed frozen',node),'P0001','frozen content update refused');
   PERFORM pg_temp.revision_refuses(format('UPDATE public.land_use_plan_content_nodes SET version_id=%L WHERE id=%L',other_version,node),'42501','move out of frozen content refused');

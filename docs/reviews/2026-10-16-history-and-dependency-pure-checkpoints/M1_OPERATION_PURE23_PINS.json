@@ -1,0 +1,14 @@
+{
+  "combinedApplicationTreeUnchanged": "42fc0315070f31269325acb264f0260723dbd56b",
+  "newNativeOrReleaseAcceptance": false,
+  "noteSHA256": "7baa6d8632f2edfc223dbdc649eaa05014d82a60c034b40c7fd4c73e80f95be3",
+  "postTerminalTestsRepeated": false,
+  "references": [
+    {
+      "bytes": 63111,
+      "path": "/home/nathaniel/.local/state/openplan/m1-history-operation-pure-root-decision-20261016/ACCEPTANCE.json",
+      "sha256": "f1df49d991d2a5eae2e969ca0bfe1e0b53f4504c96c82ba8bb97984b33d09536"
+    }
+  ],
+  "tier": "DATED_EXACT_EVIDENCE_WITH_LIMITS"
+}

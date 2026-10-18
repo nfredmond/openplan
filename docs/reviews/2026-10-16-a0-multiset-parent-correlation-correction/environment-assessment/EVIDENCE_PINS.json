@@ -1,0 +1,52 @@
+{
+  "actualDifference": "NOT_CAPTURED",
+  "fixtureLaunchable": false,
+  "handoffPin": {
+    "bytes": 13750,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "e28b7373a5ad428295f3c9597b7c1b89fbbc902bf7368afe4b6b17d1f3d26d24",
+    "uid": 1000
+  },
+  "noTrial04PreparationOrGrant": true,
+  "privateHandoff": "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/environment-assessment/HANDOFF.json",
+  "publicSource": {
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/environment-assessment/ASSESSMENT.md": {
+      "bytes": 8652,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "88895fadc207e713909c5d2cda377685276ebe012a07d53d766225b375249aae",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/environment-assessment/MINIMAL_DELTA_PROPOSAL.patch": {
+      "bytes": 557,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "c4c5ad523a1b781134af07524d99262be91351ffb3cae0f9b2dff1044c0531bf",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/environment-assessment/PROPAGATION.md": {
+      "bytes": 3439,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "54b50d0c180847da513742855d8255b71a49ea982f4117a5fbc749639778a2df",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/environment-assessment/SOURCES.md": {
+      "bytes": 3890,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "27bb7258aeb1e9c2dad9162582848354560d15c4a3c19093cce85d5b664965ae",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/environment-assessment/STATUS.md": {
+      "bytes": 1775,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "2e8a48357971575257fa469cadf321d663d3b5e1d4d7c6cec3643995beaee7c1",
+      "uid": 1000
+    }
+  },
+  "sourceClosureComplete": false,
+  "stage": "SOURCE_DATA_ENVIRONMENT_ASSESSMENT_ROOT_DISPOSITION_REQUIRED_NO_TRIAL04_PREPARATION"
+}

@@ -1,0 +1,353 @@
+{
+  "schema": 1,
+  "status": "PROPOSED_READ_ONLY_CATALOG_CAPTURE_REQUIRES_NEW_OPERATION_REVIEW",
+  "nativeOperationGranted": false,
+  "exclusive": false,
+  "publicationEnabled": false,
+  "successorGranted": false,
+  "targetStatus": "UNALLOCATED_UNADMITTED_UNKNOWN_CURRENT_NATIVE_STATE",
+  "subjectCommit": "e894f895c7f0e4a1a328a80d4ea8abeb5a8be9a9",
+  "independentSourceReviewCommit": "366f315e1fbec1f4a3150bd9656f522c2c2e88b4",
+  "packageSHA256": "b9c0e7c418df4a295f44f1374a539e6e33dbd242a210c2840dd07831a6b1a35c",
+  "captureRequestSHA256": "9d98505c0569d764e11e6137d9d213b7d5ebb0d39e4215bcd9e6b8e094fb0979",
+  "unchangedSources": "BINDINGS.json supplies all 72 Git objects and 14 private operating source records. No executable or request change.",
+  "collectorEntry": {
+    "argv": [
+      "/usr/bin/python3",
+      "-B",
+      "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/outer-v2/collector.py",
+      "--collect-once"
+    ],
+    "sourceSHA256": "aeff4a9f7a5420cbd0c47b99af379ae03e1b0c16258ea64e6504addb90e935a5",
+    "sourceBytes": 13769,
+    "requiredPath": "main -> ready -> collect -> correlate",
+    "genericCollectAloneAuthorized": false,
+    "environment": {
+      "PATH": "/usr/bin:/bin",
+      "HOME": "/home/nathaniel",
+      "LANG": "C.UTF-8",
+      "XDG_RUNTIME_DIR": "/run/user/1000",
+      "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/user/1000/bus"
+    },
+    "uidRule": "Root must establish actual caller UID=1000 before admission. Source derives manager paths from os.getuid().",
+    "stdin": "DEVNULL at wrapped capture process",
+    "deadlineSeconds": 115,
+    "stdoutLimit": 1048576,
+    "stderrLimit": 65536,
+    "stderrRule": "Retain normal manager progress stderr; correlate fixed start/wait with independent ACK.",
+    "nativeCaptureParent": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/outer-v2/native-capture-parent",
+    "noReplay": true
+  },
+  "wrapper": {
+    "argv": [
+      "/bin/bash",
+      "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/run-capture-window.sh"
+    ],
+    "sha256": "30fa369b5978763754fca929343582f81c8cf843f676bb9497d6e221fcf3166b",
+    "bytes": 1090,
+    "unitName": "openplan-budget-catalog-settings-v2-20261016",
+    "lock": {
+      "path": "/home/nathaniel/.local/state/openplan/compiler-repair-checks-20261015.lock",
+      "mode": "ONE nonblocking EXCLUSIVE flock -n -x 9",
+      "lifetime": "FD9 remains held across systemd-run --wait --pipe and one fixed systemctl show; wrapper terminal closes its owned FD9."
+    },
+    "managerArgv": [
+      "/usr/bin/systemd-run",
+      "--user",
+      "--wait",
+      "--pipe",
+      "--unit=openplan-budget-catalog-settings-v2-20261016",
+      "-p",
+      "RuntimeMaxSec=90",
+      "-p",
+      "MemoryMax=512M",
+      "-p",
+      "MemorySwapMax=0",
+      "-p",
+      "CPUQuota=50%",
+      "-p",
+      "TasksMax=64",
+      "-p",
+      "UMask=0077",
+      "/usr/bin/python3",
+      "-B",
+      "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture_catalog.py",
+      "--capture-once"
+    ],
+    "postShowArgv": [
+      "/usr/bin/systemctl",
+      "--user",
+      "show",
+      "openplan-budget-catalog-settings-v2-20261016.service",
+      "--no-pager",
+      "--property=Id,InvocationID,Result,ExecMainCode,ExecMainStatus,ActiveState,SubState,MemoryPeak,MemorySwapPeak,CPUUsageNSec,RuntimeMaxUSec,MemoryMax,MemorySwapMax,CPUQuotaPerSecUSec,TasksMax"
+    ],
+    "postShow": "Raw retained; unloaded/default fields remain UNBOUND. No extra query, --collect/JSON assumption, retained-unit or cleanup workaround."
+  },
+  "parentRecorder": {
+    "status": "ROOT_MUST_BIND_ACTUAL_SOURCE_AND_TOOL_CUSTODY_IN_NEW_OPERATION_REVIEW",
+    "proposedReceiptRoot": "/home/nathaniel/.local/state/openplan/budget-settings-native-capture-proposal-20261016/parent",
+    "directoryCreated": false,
+    "maximumDeadlineSeconds": 145,
+    "maximumBytesPerStream": 1048576,
+    "beforePopen": "Durable exact proposal/review/grant/collector authorization/argv/environment/source pins/intent; record actual root parent PID.",
+    "returned": "Actual tool/chunk/session and collector PID; collector separately returns wrapper PID.",
+    "terminal": "Both raw streams; observed/retained bytes and SHA-256; actual exit/deadline/overflow; UNKNOWN_NO_REPLAY on uncertain result; no child/backend-death claim.",
+    "automaticSuccessor": false
+  },
+  "capture": {
+    "entryArgv": [
+      "/usr/bin/python3",
+      "-B",
+      "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture_catalog.py",
+      "--capture-once"
+    ],
+    "attempt": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture-attempt",
+    "directoryCreated": false,
+    "limits": {
+      "RuntimeMaxSec": 90,
+      "MemoryMax": 536870912,
+      "MemorySwapMax": 0,
+      "CPUQuota": "50%",
+      "TasksMax": 64,
+      "UMask": "0077"
+    },
+    "steps": [
+      {
+        "index": 1,
+        "purpose": "manager-self",
+        "argv": [
+          "/usr/bin/systemctl",
+          "--user",
+          "show",
+          "openplan-budget-catalog-settings-v2-20261016.service",
+          "--no-pager",
+          "--property=Id,InvocationID,MainPID,ControlGroup,ActiveState,SubState,RuntimeMaxUSec,MemoryMax,MemorySwapMax,CPUQuotaPerSecUSec,TasksMax"
+        ],
+        "timeoutSeconds": 5,
+        "streamLimit": 16384,
+        "requireZeroStderr": true
+      },
+      {
+        "index": 2,
+        "purpose": "native",
+        "kind": "fixed selective Docker inspect before",
+        "timeoutSeconds": 10,
+        "streamLimit": 65536,
+        "argv": [
+          "/usr/bin/docker",
+          "inspect",
+          "--format",
+          "{\"Id\":{{json .Id}},\"Image\":{{json .Image}},\"Name\":{{json .Name}},\"Project\":{{json (index .Config.Labels \"com.supabase.cli.project\")}},\"NetworkID\":{{json (index .NetworkSettings.Networks \"supabase_network_openplan-restore-target-2026091050\" ).NetworkID}},\"Running\":{{json .State.Running}},\"Paused\":{{json .State.Paused}},\"Restarting\":{{json .State.Restarting}}}",
+          "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce"
+        ]
+      },
+      {
+        "index": 3,
+        "purpose": "native",
+        "argv": [
+          "/usr/bin/docker",
+          "exec",
+          "-i",
+          "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce",
+          "/usr/bin/env",
+          "-i",
+          "PATH=/usr/bin:/bin",
+          "LANG=C.UTF-8",
+          "/usr/bin/find",
+          "-P",
+          "/",
+          "-mindepth",
+          "1",
+          "-maxdepth",
+          "1",
+          "-name",
+          "nonexistent",
+          "-print"
+        ],
+        "timeoutSeconds": 5,
+        "streamLimit": 4096,
+        "requiredResult": "exit0/empty stdout/empty stderr"
+      },
+      {
+        "index": 4,
+        "purpose": "native",
+        "argv": [
+          "/usr/bin/docker",
+          "exec",
+          "-i",
+          "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce",
+          "/usr/bin/env",
+          "-i",
+          "PATH=/usr/bin:/bin",
+          "LANG=C.UTF-8",
+          "HOME=/nonexistent",
+          "PGPASSFILE=/nonexistent/openplan-budget-catalog-v2-20261016.pgpass",
+          "PGSERVICEFILE=/nonexistent/openplan-budget-catalog-v2-20261016.pg_service.conf",
+          "PGCONNECT_TIMEOUT=5",
+          "psql",
+          "-XqAt",
+          "-h",
+          "/var/run/postgresql",
+          "-p",
+          "5432",
+          "-w",
+          "-U",
+          "supabase_admin",
+          "-d",
+          "postgres",
+          "-v",
+          "ON_ERROR_STOP=1"
+        ],
+        "inputFile": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/catalog-capture.sql",
+        "inputSHA256": "f5ed533bd42136ff7b7f5a1feb071d01004fc50bc712ca1ba83d41db7438a582",
+        "inputBytes": 2334,
+        "timeoutSeconds": 30,
+        "streamLimit": 1048576
+      },
+      {
+        "index": 5,
+        "purpose": "native",
+        "kind": "identical fixed selective Docker inspect after",
+        "timeoutSeconds": 10,
+        "streamLimit": 65536,
+        "argv": [
+          "/usr/bin/docker",
+          "inspect",
+          "--format",
+          "{\"Id\":{{json .Id}},\"Image\":{{json .Image}},\"Name\":{{json .Name}},\"Project\":{{json (index .Config.Labels \"com.supabase.cli.project\")}},\"NetworkID\":{{json (index .NetworkSettings.Networks \"supabase_network_openplan-restore-target-2026091050\" ).NetworkID}},\"Running\":{{json .State.Running}},\"Paused\":{{json .State.Paused}},\"Restarting\":{{json .State.Restarting}}}",
+          "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce"
+        ]
+      }
+    ],
+    "nativeHostEnvironment": {
+      "PATH": "/usr/bin:/bin",
+      "HOME": "/nonexistent",
+      "LANG": "C.UTF-8"
+    },
+    "nativeStderr": "Any byte refuses. No known-warning exception.",
+    "SQL": "Fixed maintenance postgres only; BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY; search_path pg_catalog; ROLLBACK. 15s statement,3s lock,10s idle,16MB work_mem.",
+    "outputs": "catalog.json and complete typed original-scope.json plus manager ACK and raw request custody; never raw settings/config values.",
+    "settingsSummary": "Each included database retains name/OID/owner/ACL and count plus ordered full-row MD5. Payload hashes server-side to_jsonb(full row), pg_typeof(setconfig), array_dims(setconfig), ordered by setrole. Shared SCOPE/PROPERTIES expression; complete typed schema2 equality, no subset/default/oldscope conversion. MD5 provides change detection with collision and dictionary-guessing limits, not secrecy.",
+    "resourceLimitBoundary": "Wrapper entry and CLI helpers only. Existing Docker-owned database server is outside these cgroup caps; its native resources remain unassessed and uncapped by this wrapper. No backend-death or adversarial race claim."
+  },
+  "identity": {
+    "container": "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce",
+    "containerName": "/supabase_db_openplan-restore-target-2026091050",
+    "project": "openplan-restore-target-2026091050",
+    "image": "sha256:ca7871b587ca2c401ac0f325df6249c9aa0d25647ded34631158efc51176767f",
+    "network": "supabase_network_openplan-restore-target-2026091050",
+    "networkID": "a095943e3f3c26f3c41fb1df0054bf455c210eafc17a5f650e48e35b2bd2b154",
+    "serverVersionNum": "170006",
+    "database": "postgres",
+    "sessionRole": "supabase_admin",
+    "currentRole": "supabase_admin",
+    "adminSuperuser": true,
+    "postgresSuperuser": false,
+    "actualFields": "systemIdentifier,oid,pid,sessionOid,currentOid,postgresOid remain MISSING until actual accepted catalog. No old role/ACL identity copied.",
+    "protectedSourceDatabaseOID": 6072103,
+    "a0R6DatabaseOID": 6227945,
+    "plannedBudgetName": "openplan_budget_native_9c47bd610f2a49e8a35c706d",
+    "targetOID": "MISSING_NOT_INFERRED"
+  },
+  "futureRootFiles": {
+    "directoryRules": "Existing capture-v2/outer-v2 stay0700 UID1000; root-authored future files0600 UID1000 regular/non-symlink/O_EXCL. Native root means lead-owned, not UID0.",
+    "creationNow": false,
+    "captureReview": {
+      "path": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture-review.md",
+      "required": "Nonempty NEW actual operation disposition binding this proposal seal, source review, package/request/query/runtime/wrapper/collector pins, actual recorder source, fresh capacity/exclusive ownership, protected scopes and noReplay. Source review alone insufficient."
+    },
+    "captureWindow": {
+      "path": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture-window.json",
+      "requiredFields": [
+        "schema",
+        "stage",
+        "packageSHA256",
+        "requestSHA256",
+        "unitName",
+        "uid",
+        "exclusive",
+        "nativeOperationGranted",
+        "notBefore",
+        "notAfter"
+      ],
+      "facts": "schema2/stage catalog-capture-v2/exact package+request/unit/actual UID1000. Root alone may set authority booleans true after review.",
+      "timeDecision": "ABSENT; root chooses actual integers only at admission, interval >0 and <=600 seconds, fresh at both ready calls."
+    },
+    "captureGrant": {
+      "path": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture-grant.json",
+      "requiredFields": [
+        "schema",
+        "stage",
+        "packageSHA256",
+        "requestSHA256",
+        "unitName",
+        "uid",
+        "exclusive",
+        "nativeOperationGranted",
+        "notBefore",
+        "notAfter",
+        "reviewSHA256",
+        "windowSHA256"
+      ],
+      "hashJoin": "Hash actual capture-review.md and capture-window.json. All window shared fields exactly agree."
+    },
+    "collectorAuthorization": {
+      "path": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/outer-v2/collector-authorization.json",
+      "requiredFields": [
+        "captureGrantSHA256",
+        "captureReviewSHA256",
+        "captureWindowSHA256",
+        "requestSHA256",
+        "collectorSHA256",
+        "nativeOperationGranted",
+        "exclusive",
+        "uid",
+        "notBefore",
+        "notAfter"
+      ],
+      "hashJoin": "Hash actual capture files and exact collector. True authority only after new root admission. Times exactly equal capture grant."
+    },
+    "outerIntent": {
+      "path": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/outer-v2/root-outer-intent.json",
+      "requiredFields": [
+        "captureGrantSHA256",
+        "captureReviewSHA256",
+        "captureWindowSHA256",
+        "requestSHA256",
+        "collectorSHA256",
+        "collectorAuthorizationSHA256",
+        "argv",
+        "unitName",
+        "retry",
+        "deadlineSeconds",
+        "stdoutLimit",
+        "stderrLimit"
+      ],
+      "facts": "Exact capture wrapper argv; fixed unit; retry FORBIDDEN;115/1048576/65536; hashes of actual root files. Durable BEFORE native collector main/Popen."
+    },
+    "rootTerminalReceipts": {
+      "paths": [
+        "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture-manager-terminal.json",
+        "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture-outer-terminal.json"
+      ],
+      "requiredByLaterBuilder": [
+        "status",
+        "invocation",
+        "unitName",
+        "requestSHA256",
+        "returncode"
+      ],
+      "futureSuccessFacts": "Only actual correlated terminal-success/ACK-bound invocation/fixed unit+request/exit0 may populate. Retain raw source receipt hashes, returned actual IDs and stream custody. A fabricated success receipt cannot cure missing ACK or uncertain terminal."
+    }
+  },
+  "stoppingRule": "Any input drift, unexpected NEW operating path/authority presence, denial, missing tool, nonzero/stderr, deadline/overflow, source/custody/identity mismatch or uncertain terminal stops. Preserve all partial namespaces; no retry/alternate/cleanup/successor.",
+  "observe": {
+    "status": "HELD_SEPARATE_FUTURE_PROPOSAL_REVIEW_PUBLICATION_ADMISSION",
+    "builderRunNow": false,
+    "publicationEnabled": false,
+    "requiredActualCaptureFields": "Catalog+scope+ACK+intent+complete+collector complete+outer terminal and root manager/outer receipts, all matching hashes. Exact full schema2 scope only; fixed7d/91 provenance retained.",
+    "targetUnknown": true
+  },
+  "noExecution": true
+}

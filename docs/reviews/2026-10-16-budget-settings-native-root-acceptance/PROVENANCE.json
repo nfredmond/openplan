@@ -1,0 +1,252 @@
+{
+  "actual": {
+    "allNativeExit0Stderr0": true,
+    "at": "2026-10-17T01:25:37.638044+00:00",
+    "backendDeath": "UNASSESSED",
+    "captureGrantSHA256": "22960230990406a8d0329d10fe8b7466c685453e5ae8c6df6a8ebb9b8147920c",
+    "captureRequestSHA256": "9d98505c0569d764e11e6137d9d213b7d5ebb0d39e4215bcd9e6b8e094fb0979",
+    "catalogIdentity": {
+      "adminSuperuser": true,
+      "applicationName": "budget-target-history",
+      "currentOid": 10,
+      "currentRole": "supabase_admin",
+      "database": "postgres",
+      "oid": 5,
+      "pid": 1506338,
+      "postgresOid": 16384,
+      "postgresSuperuser": false,
+      "sessionOid": 10,
+      "sessionRole": "supabase_admin",
+      "systemIdentifier": "7683856985084612646",
+      "version": "170006"
+    },
+    "catalogSHA256": "2e4ef8a7287ac532d6f546e3939d2ffbe4d1ad27ca846126585c82b4109fc2aa",
+    "collectorPID": 3010851,
+    "controllerPID": 3010855,
+    "databaseMetadataRows": 616,
+    "databasesWithSettings": 1,
+    "entry": {
+      "controlGroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-budget-catalog-settings-v2-20261016.service",
+      "invocation": "534cf1fcd8cd4914ba76d3e1dae81939",
+      "pid": 3010855,
+      "resources": {
+        "cpuMax": "50000 100000",
+        "memoryMax": 536870912,
+        "swapMax": 0,
+        "tasksMax": 64
+      },
+      "uid": 1000,
+      "uids": [
+        1000,
+        1000,
+        1000,
+        1000
+      ]
+    },
+    "invocation": "534cf1fcd8cd4914ba76d3e1dae81939",
+    "managerWait": "409ms CPU135ms roundedpeak32.3M swap0, raw startINV agrees with ACK",
+    "nativeRequests": 5,
+    "observeGranted": false,
+    "originalScopeSHA256": "6b662207002833fc5b9dee820cc628d0313689810d42f1f977e731a4f2435c65",
+    "parentPID": 3010850,
+    "parentToolChunk": "79a016",
+    "perProcessSourceSHA": "NOT_INFERRED; exact path/source and raw input custody separate",
+    "protectedScopeBoundary": "catalogue metadata only; does not inventory all database row contents",
+    "rootAuditCases": {
+      "harmless": "SURVIVED",
+      "namedMutants": 18,
+      "restoration": true
+    },
+    "rootAuditSHA256": "aa60e50f2514de990e51c017556600394311b7df7c703ced28792b31921d68e1",
+    "rootAuditToolChunk": "6542b7",
+    "rootManagerReceiptSHA256": "0dc22041b96cf4896aadc1d5041da8419caf3975bc0edce4d1875acfa760f94e",
+    "rootOuterReceiptSHA256": "1324255e4505af526a7de912cd366bfd9c1922b60029d7c381f66d48776992d5",
+    "serverResources": "outside wrappercgroup, unassessed",
+    "settingsNativeFixtureMatrix": "UNPROVED NULL/order/type/dimension against independent nativefixture",
+    "status": "ACCEPTED_NARROW_SCHEMA2_CATALOG_CAPTURE",
+    "successorGranted": false,
+    "targetStatus": "UNALLOCATED_UNADMITTED",
+    "wrapperPID": 3010852
+  },
+  "captureRequestClassification": "Five captured requests total: one manager-self and four native helpers. Private nativeRequests=5 is total captured request count, not five SQL calls.",
+  "futureNativeGranted": false,
+  "independentOperationReview": "f5184ccd6d9bf250c651a37538033b6922a784a0",
+  "privateDescriptors": {
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture-attempt/catalog.json": {
+      "bytes": 310,
+      "sha256": "2e4ef8a7287ac532d6f546e3939d2ffbe4d1ad27ca846126585c82b4109fc2aa"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture-attempt/complete.json": {
+      "bytes": 1097,
+      "sha256": "62152a732385a9499e27f0c913d55d801ae7482d3e50e22c6dc175efacf85a08"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture-attempt/manager-ack.json": {
+      "bytes": 1355,
+      "sha256": "757422de49bbcfffc27f229fc70ee5df0b2ca1537f326eaea71b2acb4f3c73a1"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture-attempt/original-scope.json": {
+      "bytes": 105375,
+      "sha256": "6b662207002833fc5b9dee820cc628d0313689810d42f1f977e731a4f2435c65"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture-manager-terminal.json": {
+      "bytes": 992,
+      "sha256": "0dc22041b96cf4896aadc1d5041da8419caf3975bc0edce4d1875acfa760f94e"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture-outer-terminal.json": {
+      "bytes": 1075,
+      "sha256": "1324255e4505af526a7de912cd366bfd9c1922b60029d7c381f66d48776992d5"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/outer-v2/native-capture-parent/complete.json": {
+      "bytes": 1546,
+      "sha256": "0b999332cea61652b95055ff733fcca6fdf1fb1e1d7f7daeb34189a3f35b56f1"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/outer-v2/native-capture-parent/terminal.json": {
+      "bytes": 489,
+      "sha256": "be5bf113073a5109936091b6ff51d9e9dbc78f74fca184c708952e797e5b5052"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-settings-native-capture-proposal-20261016/parent/intent.json": {
+      "bytes": 136688,
+      "sha256": "8cee76b8fcade3733c18f337da920249e088b69fc51168db7dd9fe0519addeb0"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-settings-native-capture-proposal-20261016/parent/returned-process.json": {
+      "bytes": 73,
+      "sha256": "3858ff908011f685f397a00347c6db41a53783cc1c7f3321f905fbefbf806b9d"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-settings-native-capture-proposal-20261016/parent/terminal.json": {
+      "bytes": 483,
+      "sha256": "fae7fb6da0042b20ba916301b2d59b304ad375bc468f2e23d01e5c6899bac63f"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-settings-native-capture-root-decision-20261016/acceptance.json": {
+      "bytes": 2617,
+      "sha256": "1358666689e0346bb888d5b55631d194c737e79245258a8ab3b64b34e29bc2a7"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-settings-native-capture-root-decision-20261016/audit01/audit.py": {
+      "bytes": 14162,
+      "sha256": "9cbd9028cc2823aa7637844c7c8e228053c7eacbca939ba764a16ec9def47de1"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-settings-native-capture-root-decision-20261016/audit01/result.json": {
+      "bytes": 14737,
+      "sha256": "aa60e50f2514de990e51c017556600394311b7df7c703ced28792b31921d68e1"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-settings-native-capture-root-decision-20261016/audit01/terminal.json": {
+      "bytes": 488,
+      "sha256": "dc37c7e36eeb310547632bc5e0b578cb4fc5bb3ff1f3f64b2997f567e202fe9b"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-settings-native-capture-root-decision-20261016/preflight.json": {
+      "bytes": 164238,
+      "sha256": "f5c036c3743e976eab55ddd4abb6dc58f2958ad446341f9a9358d30de4fdf783"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-settings-native-capture-root-decision-20261016/publication.json": {
+      "bytes": 1184,
+      "sha256": "dab05d6b0a6f857960dfb740079a457fc00273c55d3e8796b13fc1483791ee5a"
+    }
+  },
+  "retainedAudit": {
+    "blind": [
+      "PostgreSQL digest correctness against independent known rows",
+      "NULL/type/dimension fixture coverage",
+      "MD5 collisions or dictionary guessing",
+      "external database server containment or death",
+      "hostile same-user races",
+      "target absence and all later operations"
+    ],
+    "harmless": "SURVIVED",
+    "inputsUnchanged": true,
+    "namedFaults": [
+      {
+        "failure": "AssertionError:outer-terminal",
+        "mutation": "outer-terminal",
+        "outcome": "KILLED"
+      },
+      {
+        "failure": "AssertionError:pid-chain",
+        "mutation": "pid-chain",
+        "outcome": "KILLED"
+      },
+      {
+        "failure": "AssertionError:invocation-chain",
+        "mutation": "invocation-chain",
+        "outcome": "KILLED"
+      },
+      {
+        "failure": "AssertionError:entry-resources",
+        "mutation": "entry-resources",
+        "outcome": "KILLED"
+      },
+      {
+        "failure": "AssertionError:raw-manager-binding",
+        "mutation": "raw-manager-binding",
+        "outcome": "KILLED"
+      },
+      {
+        "failure": "AssertionError:request-terminal",
+        "mutation": "request-terminal",
+        "outcome": "KILLED"
+      },
+      {
+        "failure": "AssertionError:native-stderr",
+        "mutation": "native-stderr",
+        "outcome": "KILLED"
+      },
+      {
+        "failure": "AssertionError:request-input-hash",
+        "mutation": "request-input-hash",
+        "outcome": "KILLED"
+      },
+      {
+        "failure": "AssertionError:request-pid",
+        "mutation": "request-pid",
+        "outcome": "KILLED"
+      },
+      {
+        "failure": "AssertionError:grant-request-binding",
+        "mutation": "grant-request-binding",
+        "outcome": "KILLED"
+      },
+      {
+        "failure": "AssertionError:completion-hash-binding",
+        "mutation": "completion-hash-binding",
+        "outcome": "KILLED"
+      },
+      {
+        "failure": "AssertionError:ack-custody-hash",
+        "mutation": "ack-custody-hash",
+        "outcome": "KILLED"
+      },
+      {
+        "failure": "AssertionError:native-identity",
+        "mutation": "native-identity",
+        "outcome": "KILLED"
+      },
+      {
+        "failure": "AssertionError:scope-schema",
+        "mutation": "scope-schema",
+        "outcome": "KILLED"
+      },
+      {
+        "failure": "AssertionError:settings-count",
+        "mutation": "settings-count",
+        "outcome": "KILLED"
+      },
+      {
+        "failure": "AssertionError:settings-count",
+        "mutation": "settings-count",
+        "outcome": "KILLED"
+      },
+      {
+        "failure": "AssertionError:settings-digest",
+        "mutation": "settings-digest",
+        "outcome": "KILLED"
+      },
+      {
+        "failure": "AssertionError:scope-database-set",
+        "mutation": "scope-database-set",
+        "outcome": "KILLED"
+      }
+    ],
+    "nativeCalls": 0
+  },
+  "scope": "ONE_READ_ONLY_SCHEMA2_CATALOG_CAPTURE_ACCEPTED_NO_SUCCESSOR",
+  "scopeDataPublic": false,
+  "sourceProposal": "b394a9314bef6d997cb29e378069adad37010290"
+}

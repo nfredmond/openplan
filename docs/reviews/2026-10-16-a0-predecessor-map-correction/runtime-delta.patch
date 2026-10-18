@@ -1,0 +1,62 @@
+--- 34e/runtime/controller.py
++++ new/runtime/controller.py
+@@ -20,7 +20,7 @@
+ import literal_history as lh
+ 
+ HERE = Path(__file__).resolve().parent
+-ROOT = Path('/home/nathaniel/.local/state/openplan/a0-migration-history-literal-correction-20261016')
++ROOT = Path('/home/nathaniel/.local/state/openplan/a0-predecessor-map-correction-20261016')
+ EXTERNAL = Path('/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6')
+ BINDINGS = ROOT/'bindings'
+ REPO = Path('/home/nathaniel/.t3/worktrees/openplan/t3-ac91cc52')
+@@ -71,6 +71,32 @@
+         p.require(path.is_file() and not path.is_symlink(),'review-regular')
+         p.same(expected['sha256'],j.sha(path),'review-pin')
+     return j.sha(BINDINGS/'package-pins.json')
++
++
++
++SNAPSHOT_PIN = {'sha256':'936054d47550fa7003177ddbf877fb1fd1b3c529e10536637bfbb1d85118d3db','bytes':41476}
++
++
++def typed_equal(expected, actual):
++    """Compare the complete retained JSON map without bool/int coercion."""
++    if type(expected) is not type(actual): return False
++    if type(expected) is dict:
++        return expected.keys() == actual.keys() and all(typed_equal(expected[key],actual[key]) for key in expected)
++    if type(expected) is list:
++        return len(expected) == len(actual) and all(typed_equal(a,b) for a,b in zip(expected,actual))
++    return expected == actual
++
++
++def retained_snapshot():
++    """Read only the allowlisted, original external R6 restore snapshot bytes."""
++    path=EXTERNAL/'stages/restore419/snapshot.json'
++    descriptor=read(BINDINGS/'external-predecessor.json')['files'].get(str(path))
++    selected={key:descriptor.get(key) for key in SNAPSHOT_PIN} if type(descriptor) is dict else None
++    p.same(SNAPSHOT_PIN,selected,'retained-snapshot-admitted-pin')
++    private(path)
++    raw=path.read_bytes()
++    p.same(SNAPSHOT_PIN,{'sha256':hashlib.sha256(raw).hexdigest(),'bytes':len(raw)},'retained-snapshot-bytes')
++    return json.loads(raw)
+ 
+ 
+ def predecessor(stage):
+@@ -145,7 +171,7 @@
+         'packageSHA256':j.sha(BINDINGS/'package-pins.json'),'planSHA256':j.sha(ROOT/'plan.json')})
+     manager=j.begin(path,'manager',{'stage':stage,'kind':'manager request namespace; no child completion implied'})
+     transport = j.Transport(manager)
+-    argv = ['/usr/bin/systemd-run','--user','--wait','--pipe','--unit=openplan-a0-literal-'+stage.lower(),
++    argv = ['/usr/bin/systemd-run','--user','--wait','--pipe','--unit=openplan-a0-map-'+stage.lower(),
+         '-p','MemoryMax=1G','-p','MemorySwapMax=0','-p','CPUQuota=50%','-p','UMask=0077','-p','RuntimeMaxSec=450','-p','TasksMax=64',
+         '/usr/bin/python3','-B',str(HERE/'controller.py'),'--run',stage]
+     transport.run(argv,timeout=480,manager=True)
+@@ -286,6 +312,8 @@
+         p.same(read(EXTERNAL/'stages/restore419/history.json')['digest'],h['digest'],'migration-prior-history')
+         raw=lh.source_bytes(REPO/SQL17)
+         before=self.snapshot()
++        p.require(typed_equal(retained_snapshot(),before),'retained-predecessor-map')
++        j.record(self.path/'predecessor-map.json',{'retainedSnapshotSHA256':SNAPSHOT_PIN['sha256'],'snapshot':before})
+         lh.execute(self,raw,h['digest'],BOUNDS)
+         # A fresh connection reads the committed row, independently of the send.
+         exact=json.loads(self.sql(lh.readback_sql()))

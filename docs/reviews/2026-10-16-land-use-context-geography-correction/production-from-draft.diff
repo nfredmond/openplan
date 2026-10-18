@@ -1,0 +1,7 @@
+--- docs/reviews/2026-10-16-land-use-context-geography-correction/geography-guard.draft.sql	2026-10-16 18:33:30.981717244 -0700
++++ openplan/supabase/migrations/20261017014010_land_use_plan_context_geography.sql	2026-10-16 18:41:34.245446318 -0700
+@@ -1,4 +1,3 @@
+--- SOURCE DRAFT ONLY. Root must allocate a CLI-generated migration filename.
+ -- Preserve retained context and geography together without backfilling history.
+ CREATE FUNCTION public.guard_land_use_plan_context_geography()
+ RETURNS trigger LANGUAGE plpgsql SECURITY INVOKER

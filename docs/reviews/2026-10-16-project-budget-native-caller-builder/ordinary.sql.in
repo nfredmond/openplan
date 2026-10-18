@@ -1,0 +1,51 @@
+-- PREPARATION ONLY. One fresh actual authenticated context per actor.
+-- No SET ROLE, claims fabrication or admin connection in this reader.
+BEGIN READ ONLY;
+SET LOCAL statement_timeout='10s';
+SET LOCAL lock_timeout='3s';
+DO $caller$
+BEGIN
+ IF current_database() IS DISTINCT FROM @@DATABASE@@
+ OR (SELECT oid FROM pg_database WHERE datname=current_database()) IS DISTINCT FROM @@DATABASE_OID@@::oid
+ OR (SELECT oid FROM pg_roles WHERE rolname=current_user) IS DISTINCT FROM @@AUTHENTICATED_OID@@::oid
+ OR current_user <> 'authenticated'
+ OR (SELECT oid FROM pg_roles WHERE rolname=session_user) IS DISTINCT FROM @@ORDINARY_SESSION_OID@@::oid
+ OR EXISTS(SELECT 1 FROM pg_roles WHERE rolname IN (current_user,session_user) AND (rolsuper OR rolbypassrls))
+ OR current_setting('row_security') <> 'on'
+ OR auth.uid() IS NULL OR NOT auth.uid()=ANY(ARRAY[@@USER_IDS@@])
+ THEN RAISE EXCEPTION 'budget-ordinary-actor-context' USING ERRCODE='42501'; END IF;
+ IF EXISTS(SELECT 1 FROM pg_class WHERE oid IN
+ ('public.workspaces'::regclass,'public.workspace_members'::regclass,'public.projects'::regclass,
+  'public.project_deliverables'::regclass,'public.project_spend_entries'::regclass,
+  'public.invoicing_clients'::regclass,'public.client_invoices'::regclass,'public.client_invoice_line_items'::regclass)
+ AND (NOT relrowsecurity OR relowner=@@AUTHENTICATED_OID@@::oid))
+ THEN RAISE EXCEPTION 'budget-effective-rls-required' USING ERRCODE='42501'; END IF;
+END $caller$;
+SELECT current_database(),session_user,current_user,auth.uid(),pg_backend_pid(),current_setting('row_security');
+-- Own automatic membership must remain visible even to the A/B outsider.
+SELECT workspace_id,user_id,role,joined_at FROM public.workspace_members ORDER BY workspace_id,user_id;
+SELECT id,name,slug FROM public.workspaces ORDER BY id;
+-- This is policy eligibility, not proof of table/column INSERT privilege.
+SELECT w.id,public.workspace_member_can_write(w.id) AS writer_eligible
+ FROM public.workspaces w WHERE w.id IN (@@A@@::uuid,@@B@@::uuid) ORDER BY w.id;
+SELECT c.oid::regclass::text,c.relrowsecurity,c.relforcerowsecurity,c.relowner,c.relacl,
+ has_table_privilege(current_user,c.oid,'SELECT') AS table_select,
+ has_table_privilege(current_user,c.oid,'INSERT') AS table_insert,
+ has_table_privilege(current_user,c.oid,'UPDATE') AS table_update,
+ has_table_privilege(current_user,c.oid,'DELETE') AS table_delete,
+ a.attname,a.attisdropped,a.attacl,
+ has_column_privilege(current_user,c.oid,a.attnum,'SELECT') AS column_select,
+ has_column_privilege(current_user,c.oid,a.attnum,'INSERT') AS column_insert,
+ has_column_privilege(current_user,c.oid,a.attnum,'UPDATE') AS column_update
+ FROM pg_class c JOIN pg_attribute a ON a.attrelid=c.oid AND a.attnum>0 AND NOT a.attisdropped
+ WHERE c.oid IN ('public.workspace_members'::regclass,'public.workspaces'::regclass,'public.projects'::regclass,
+ 'public.project_deliverables'::regclass,'public.project_spend_entries'::regclass,'public.invoicing_clients'::regclass,
+ 'public.client_invoices'::regclass,'public.client_invoice_line_items'::regclass) ORDER BY 1,a.attnum;
+SELECT p.oid::regprocedure::text,p.proacl,p.proowner,p.prosecdef,p.provolatile,
+ has_function_privilege(current_user,p.oid,'EXECUTE') AS effective_execute,
+ x.grantee,x.grantor,x.privilege_type,x.is_grantable
+ FROM pg_proc p CROSS JOIN LATERAL aclexplode(coalesce(p.proacl,acldefault('f',p.proowner))) x
+ WHERE p.oid IN ('public.project_budget_inputs_v1(uuid)'::regprocedure,
+ 'public.workspace_member_can_write(uuid)'::regprocedure,'public.workspace_role_rank(text)'::regprocedure)
+ ORDER BY 1,x.grantee,x.privilege_type;
+COMMIT;

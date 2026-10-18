@@ -1,0 +1,229 @@
+{
+  "acceptedFaults": [
+    {
+      "name": "settings-raw-output",
+      "observations": [
+        {
+          "reason": "scope-no-setting-values-on-wire",
+          "result": "KILLED"
+        }
+      ]
+    },
+    {
+      "name": "scope-subset-comparison",
+      "observations": [
+        {
+          "reason": "scope-full-v2-equality",
+          "result": "KILLED"
+        }
+      ]
+    },
+    {
+      "name": "manager-self-binding-bypass",
+      "observations": [
+        {
+          "reason": "manager-ack-independent-identity",
+          "result": "KILLED"
+        }
+      ]
+    },
+    {
+      "name": "manager-ack-hash-bypass",
+      "observations": [
+        {
+          "reason": "manager-ack-hash-bound-to-complete",
+          "result": "KILLED"
+        },
+        {
+          "reason": "proposal-manager-ack-hash-bound",
+          "result": "KILLED"
+        }
+      ]
+    },
+    {
+      "name": "catalog-read-only-omission",
+      "observations": [
+        {
+          "reason": "catalog-read-only-intent",
+          "result": "KILLED"
+        }
+      ]
+    },
+    {
+      "name": "foreign-database-argv",
+      "observations": [
+        {
+          "reason": "scope-fixed-maintenance",
+          "result": "KILLED"
+        }
+      ]
+    },
+    {
+      "name": "proposal-terminal-correlation",
+      "observations": [
+        {
+          "reason": "proposal-manager-terminal-correlated",
+          "result": "KILLED"
+        },
+        {
+          "reason": "proposal-outer-terminal-correlated",
+          "result": "KILLED"
+        }
+      ]
+    }
+  ],
+  "actualInnerEnvironmentInvocationID": "7c3ddccf798b482b8df6baf89afefddb",
+  "all2067PostPinsExact": true,
+  "blindCategories": [
+    "native PostgreSQL parser/digest semantics",
+    "find executable availability",
+    "native capture/roles/SDK/Auth/RLS",
+    "backend death",
+    "inherited writable submounts",
+    "manager start header lacks invocation suffix; postshow defaults unbound"
+  ],
+  "currentApplicationTree": "2b1916349d7379c96bf97b1708b3e4016d37384d",
+  "direction": {
+    "elapsedSeconds": 1.9792953740106896,
+    "exitCode": 0,
+    "managerRoundedPeak": "120.3M",
+    "managerStartInvocationID": "ABSENT",
+    "managerWait": "success/status0",
+    "receiptPath": "/home/nathaniel/.local/state/openplan/budget-settings-root-publication-20261016/direction01/terminal.json",
+    "receiptSHA256": "cac131e338ec03a5d1abc5ce95134c05839085c57b1cf8c222bd0a0cc568e5d9",
+    "reviewReminders": "retained, no review date/commit changed",
+    "scope": "new factual root evidence record, documentation index link checked separately",
+    "unit": "openplan-budget-settings-root-direction-20261016-01"
+  },
+  "elapsedSeconds": 5.977016371907666,
+  "exactRestoration": true,
+  "freshIndependentFinalReview": "PENDING",
+  "grantSHA256": "28b43036ec39a9d92116c60a0c77d11b8b6d48703dd8cd4a0be06d1aaa40d016",
+  "limits": {
+    "CPUQuota": "50%",
+    "MemoryMax": 536870912,
+    "MemorySwapMax": 0,
+    "RuntimeMaxSec": 120,
+    "TasksMax": 64
+  },
+  "managerInnerIdentityCorrelation": "UNPROVED_BY_START_HEADER_OR_POSTSHOW",
+  "managerStartInvocationID": "ABSENT",
+  "nativeOperationGranted": false,
+  "oldTrial01Status": "FAILED_UNCHANGED_INCOMPLETE",
+  "parentPID": 2609611,
+  "postShow": "RAW_RETAINED_UNBOUND_DEFAULTS",
+  "records": [
+    {
+      "bytes": 6080,
+      "path": "/home/nathaniel/.local/state/openplan/budget-settings-trial02-root-decision-20261016/actual-result-readback.json",
+      "sha256": "3954ceff7b70b0275f7977794eef7b21ff7ab2d029558d3f0a02ba42750f5717"
+    },
+    {
+      "bytes": 1766,
+      "path": "/home/nathaniel/.local/state/openplan/budget-settings-trial02-root-decision-20261016/terminal-seal.json",
+      "sha256": "f8c8ad4d9c03fdfc33ad7b4c2ae7e354e03adb54c2e2dcab69a99d8c318de6e8"
+    },
+    {
+      "bytes": 611,
+      "path": "/home/nathaniel/.local/state/openplan/budget-settings-trial02-root-decision-20261016/root-reader-error-01.json",
+      "sha256": "83439fe82b7be6dbd03d350f9f4bdbbbed87b62e44d9430c2b7fa103c76cd26a"
+    },
+    {
+      "bytes": 575,
+      "path": "/home/nathaniel/.local/state/openplan/budget-settings-trial02-root-decision-20261016/parent/intent.json",
+      "sha256": "a7c6bd9f82676b21af37e2c8252e3832b9289ddc4816e829686b5da206cb856b"
+    },
+    {
+      "bytes": 73,
+      "path": "/home/nathaniel/.local/state/openplan/budget-settings-trial02-root-decision-20261016/parent/returned-process.json",
+      "sha256": "650a67cc21ae44c167bb68093525f7b864828c9ad3364463f26225208f863304"
+    },
+    {
+      "bytes": 489,
+      "path": "/home/nathaniel/.local/state/openplan/budget-settings-trial02-root-decision-20261016/parent/terminal.json",
+      "sha256": "e19078e02ef0fd8622b71fd4ae247fed337277da7b3f925d5a4eec8cd99313d2"
+    },
+    {
+      "bytes": 330,
+      "path": "/home/nathaniel/.local/state/openplan/budget-settings-trial02-root-decision-20261016/parent/stdout.bin",
+      "sha256": "6b3645b4b1f0b4fc1ba8a8d4c323b509f631d1d8918c3e74da8555143fb94797"
+    },
+    {
+      "bytes": 298,
+      "path": "/home/nathaniel/.local/state/openplan/budget-settings-trial02-root-decision-20261016/parent/stderr.bin",
+      "sha256": "8c65eff4a02774b54e6e73444225539429a4a58069cd0a42ddb6782264744c7e"
+    },
+    {
+      "bytes": 619885,
+      "path": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/trial02/pure-window-request.json",
+      "sha256": "972e3e88479b88b6f4e8b0d2503e87caf7dd3a7b1b2dbb511e13c3831a7e0648"
+    },
+    {
+      "bytes": 335,
+      "path": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/trial02/pure-grant.json",
+      "sha256": "28b43036ec39a9d92116c60a0c77d11b8b6d48703dd8cd4a0be06d1aaa40d016"
+    },
+    {
+      "bytes": 429,
+      "path": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/trial02/root-outer-intent.json",
+      "sha256": "a4b091b2faf9fe3a8e9a17b9e924da4a68aa3ccde72286668b0e07ea6d27dd3d"
+    },
+    {
+      "bytes": 370,
+      "path": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/trial02/pure-attempt/intent.json",
+      "sha256": "8ac2c7a36508c280cb087adf584e2be41b600397e3e16a67e8b68d8538ec5d7e"
+    },
+    {
+      "bytes": 2309,
+      "path": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/trial02/pure-attempt/controls.json",
+      "sha256": "a61d6e98d16e6cf88bc9ae45f016461ae9a178e8a247e53982ffe9fda86e9929"
+    },
+    {
+      "bytes": 232,
+      "path": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/trial02/pure-attempt/complete.json",
+      "sha256": "ee57e4bf61d53eb5de75bf6e0785653092e3eb244c6610003b28fe7276baa9fb"
+    },
+    {
+      "bytes": 1182,
+      "path": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/trial02/pure-attempt/resources-before.json",
+      "sha256": "c94f8a9b298d6f36c011666b76230ba4a8cdc8bc4d52555f220428b57b59efd5"
+    },
+    {
+      "bytes": 304017,
+      "path": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/trial02/pure-attempt/post-custody.json",
+      "sha256": "9b77d93f685bc61f7cf2c665b97da786829adfe02574ac8d12cfb2c613a882c4"
+    }
+  ],
+  "requestSHA256": "972e3e88479b88b6f4e8b0d2503e87caf7dd3a7b1b2dbb511e13c3831a7e0648",
+  "restoredBaseline": "PASS",
+  "reusedPriorEvidence": {
+    "baseline": "REUSED_PURE01_PASS",
+    "faults": [
+      {
+        "name": "credential-absence-bypass",
+        "observations": [
+          {
+            "reason": "credential-present-stops-before-query",
+            "result": "KILLED"
+          }
+        ]
+      },
+      {
+        "name": "settings-row-omission",
+        "observations": [
+          {
+            "reason": "scope-all-setting-rows-covered",
+            "result": "KILLED"
+          }
+        ]
+      }
+    ],
+    "harmless": "REUSED_PURE01_SURVIVED"
+  },
+  "sourceExact": true,
+  "sourcePackageSHA256": "b9c0e7c418df4a295f44f1374a539e6e33dbd242a210c2840dd07831a6b1a35c",
+  "status": "ACCEPTED_SELECTED_INERT_REMAINDER_ONLY",
+  "subjectApplicationTree": "44e638d6d79378042343bf5b18408f09ee991d57",
+  "successorGranted": false,
+  "wrapperPID": 2609707
+}

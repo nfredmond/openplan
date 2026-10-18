@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/window_runner.py", line 64, in main
+    controls.main()
+    ~~~~~~~~~~~~~^^
+  File "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/controls.py", line 466, in main
+    check(original.count(old.encode())==1,'mutation-unique-anchor:'+str(index))
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/controls.py", line 26, in check
+    raise AssertionError(name)
+AssertionError: mutation-unique-anchor:5

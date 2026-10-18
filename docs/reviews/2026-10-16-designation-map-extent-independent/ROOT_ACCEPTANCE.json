@@ -1,0 +1,42 @@
+{
+  "status": "BOUNDED_SOURCE_ACCEPTANCE",
+  "candidate": "4031e31460cfc6cb32f9ba836dd09e72f440c8d1",
+  "applicationTree": "7483792458e9ce8601c5beaafceb23297f2e2776",
+  "independentReviewCommit": "7794643719b10028b35d58ba973a70aa4cfbf6ed",
+  "reviewFilesImportedUnchanged": {
+    "REPORT.md": {
+      "bytes": 11358,
+      "sha256": "d85f1387a62216b11cf5ff1bece5619a407bc40d5707a57263a5c3f872c02c96"
+    },
+    "EVIDENCE.json": {
+      "bytes": 8657,
+      "sha256": "9e449ac016649bfa07067e24d7271c5b0625c4b2a2c6bb64dfbe51eb7b7556b8"
+    }
+  },
+  "rootMetadataReadback": {
+    "reviewPrivateSealEntriesMatched": 125,
+    "sourceFilesCurrentAndCandidateGitMatched": 8,
+    "reviewDocumentsCurrentAndCommittedMatched": 2
+  },
+  "acceptedClaims": [
+    "Dense retained JSON extent validation before camera construction",
+    "Unavailable retained extent disclosure independent of fetch notice",
+    "Selected mocked component and unchanged helper evidence"
+  ],
+  "requiredProductionCorrection": null,
+  "blockingP1P2": [],
+  "preservedLimits": [
+    "No identified-build browser, desktop or 390px journey",
+    "No actual map engine, WebGL, tile, viewport service or artifact acceptance",
+    "Wrapped and world-copy viewport queries unchanged",
+    "Sparse JavaScript arrays remain an inherited shared-reader boundary",
+    "Publication races, creation source assumptions and native saved-context proof remain open",
+    "Scoped checks do not establish whole current application types or build"
+  ],
+  "KI025Closed": false,
+  "M1Complete": false,
+  "V1Complete": false,
+  "nativeAccepted": false,
+  "releaseAccepted": false,
+  "testsRerunByRootInThisReview": false
+}

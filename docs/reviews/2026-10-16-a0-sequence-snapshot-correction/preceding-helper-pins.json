@@ -1,0 +1,37 @@
+{
+  "/home/nathaniel/.local/state/openplan/pr330-final-source-preview-20261016/templates/helper.py": {
+    "bytes": 37762,
+    "mode": "0o600",
+    "sha256": "675825911ad6a361e8d1917da3946894a207f4bebe61136c498824e756e441e6"
+  },
+  "/home/nathaniel/.local/state/openplan/pr330-final-source-preview-20261016/templates/policy.py": {
+    "bytes": 11385,
+    "mode": "0o600",
+    "sha256": "bc0ae32d2fd5b5994a8fecd7650fc2f04addf234130c7779ea30ff197cfe594b"
+  },
+  "/home/nathaniel/.local/state/openplan/pr330-final-source-preview-20261016/templates/journal.py": {
+    "bytes": 6115,
+    "mode": "0o600",
+    "sha256": "8371e40bb282d49dc2b72bb6ffd2953f2efd77c0a442730fb894545071eab955"
+  },
+  "/home/nathaniel/.local/state/openplan/pr330-final-source-preview-20261016/templates/run_stage.sh": {
+    "bytes": 3399,
+    "mode": "0o600",
+    "sha256": "40f19693f7428da10036e62e92e2fbb4b70463e00e76988a9c5a253cd83367f0"
+  },
+  "/home/nathaniel/.local/state/openplan/pr330-final-source-preview-20261016/templates/protected-databases.json": {
+    "bytes": 353,
+    "mode": "0o600",
+    "sha256": "adcfb1ca89e60fa29c11ea07ee488247a6795fc63fe91d82534990cfca8c9954"
+  },
+  "/home/nathaniel/.local/state/openplan/pr330-final-source-preview-20261016/templates/source-binding-private.json": {
+    "bytes": 63224,
+    "mode": "0o600",
+    "sha256": "830556658900e5cf65645114a8643663951a689d0ac98c6d86fee4f2b8b4f084"
+  },
+  "/home/nathaniel/.local/state/openplan/pr330-final-source-preview-20261016/templates/upgrade-expectations.json": {
+    "bytes": 38605,
+    "mode": "0o600",
+    "sha256": "de05023d891fe804161d089fc57adaba3b5d29cd0dd3defdca5718682e94b9f8"
+  }
+}

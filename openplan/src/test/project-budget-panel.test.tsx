@@ -98,6 +98,8 @@ describe("ProjectBudgetPanel", () => {
     expect(screen.getByText(/Deliverable budgets are not shown/i)).toBeInTheDocument();
     expect(screen.getByText(/Project spending is not shown/i)).toBeInTheDocument();
     expect(screen.getByText(/Billed client invoice lines are not shown/i)).toBeInTheDocument();
+    expect(screen.queryByText("$0.00")).not.toBeInTheDocument();
+    expect(screen.queryByText(/No deliverables recorded yet/)).not.toBeInTheDocument();
     // Each migration is still named, behind the operator disclosure.
     for (const operatorLine of [
       /Deliverable budget fields appear after/i,
@@ -107,4 +109,34 @@ describe("ProjectBudgetPanel", () => {
       expect(screen.getByText(operatorLine).closest("details")).not.toBeNull();
     }
   });
+});
+
+
+it("withholds financial numbers and pace when any snapshot source fails", () => {
+  const snapshot = buildProjectBudgetSnapshot({ project: null, deliverables: [], spendEntries: [], billedLines: [] });
+  render(<ProjectBudgetPanel projectId={PROJECT_ID} snapshot={snapshot} pendingSchema={NO_PENDING}
+    inputsUnavailable deliverableOptions={[]} />);
+  expect(screen.getByRole("status")).toHaveTextContent(/Budget totals and pace are unavailable/);
+  expect(screen.queryByText("$0.00")).not.toBeInTheDocument();
+  expect(screen.queryByText("Not entered")).not.toBeInTheDocument();
+  expect(screen.queryByText(/No deliverables recorded yet/)).not.toBeInTheDocument();
+  expect(screen.queryByTestId("project-spend-entry-form")).not.toBeInTheDocument();
+});
+
+it("identifies the snapshot migration instead of prescribing old source migrations", () => {
+  const snapshot = buildProjectBudgetSnapshot({ project: null, deliverables: [] });
+  render(<ProjectBudgetPanel projectId={PROJECT_ID} snapshot={snapshot}
+    pendingSchema={{ ...NO_PENDING, snapshot: true }} deliverableOptions={[]} />);
+  expect(screen.getByText(/Apply the project budget complete-inputs migration/)).toBeInTheDocument();
+  expect(screen.queryByText(/client invoicing migration/)).not.toBeInTheDocument();
+  expect(screen.queryByText("$0.00")).not.toBeInTheDocument();
+});
+
+
+it("keeps financial totals available when only the assignee column is pending", () => {
+  const snapshot = buildProjectBudgetSnapshot({ project: null, deliverables: [] });
+  const pending = { ...NO_PENDING, deliverableAssigneeColumn: true };
+  render(<ProjectBudgetPanel projectId={PROJECT_ID} snapshot={snapshot} pendingSchema={pending} deliverableOptions={[]} />);
+  expect(screen.queryByText(/Budget totals and pace are unavailable/)).not.toBeInTheDocument();
+  expect(screen.getAllByText("$0.00")).toHaveLength(3);
 });

@@ -1,0 +1,883 @@
+{
+  "actualTrial03EnvironmentDiff": "NOT_CAPTURED",
+  "authorApplicationTree": "3e85cdc3916a81260bebc96c86ced4fd2c76b168",
+  "earlierFailedTrialsInPlace": {
+    "/home/nathaniel/.local/state/openplan/a0-parent-root-preflight-20261016-01/FAILED_TRIAL01_AUDIT.json": {
+      "bytes": 2878,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "2005a2a88e5a0606f656c232b221622a142c77ddb58492e66af828418af864bf",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-parent-root-preflight-20261016-02/FAILED_TRIAL02_AUDIT.json": {
+      "bytes": 2868,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "15228066a33ee46fbab62062a4fe086ee55940a582087647b7b67d51ba71574c",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-parent-root-preflight-20261016-03/FAILED_TRIAL03_AUDIT.json": {
+      "bytes": 8676,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "b6950f5cc9d995048ec42a2cfbd575144c23497cb81b0a6382582bc4e0582a1b",
+      "uid": 1000
+    }
+  },
+  "evidenceTier": "EXACT_SUPPLIED_PARENT90_PLUS_WRAPPER4_ONLY",
+  "expectedGitParent": "310bfb2cc617fdc210f52cc9b1e6d1c3e3f2e205",
+  "fixtureLaunchable": false,
+  "inPlaceRuntimeBytes": 79625786,
+  "inPlaceRuntimeFiles": 4530,
+  "nativeOperationGranted": false,
+  "originalPublic83Unchanged": true,
+  "postCommitReceipt": "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/final-saved-data-audit/local-commit.json",
+  "privateAuditFiles": {
+    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/final-saved-data-audit/ABSENT_OPERATION_AUTHORITY.json": {
+      "bytes": 1343,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "a5b8bbb43d62b222a3575ba940682ecf75c9c7cce72d21b5943e8f437109a2e7",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/final-saved-data-audit/AUTHOR_READER_ERROR01.json": {
+      "bytes": 1024,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "497f6f374552a740ac38534b37b069e4a0c21564d35afaa713d7a5accde358e3",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/final-saved-data-audit/PRE_REPORT_PRESERVATION.json": {
+      "bytes": 35056,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "2e1ee188be1164e823b54509fe13bc0d9f9c3c2d024928c7fb4fc598645e745c",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/final-saved-data-audit/PRE_REPORT_SCOPED_WHITESPACE.json": {
+      "bytes": 1073,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "a7cafa39a861779f5b877e4c162cda316be0de5288295a09dfef1b8a841ecad8",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/final-saved-data-audit/PRE_REPORT_WHITESPACE.json": {
+      "bytes": 326,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "c3ae7633e0d2e13eb4c4f512b3168812698c04c8277f8488b9da370ba319d993",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/final-saved-data-audit/PRE_REPORT_WHITESPACE.stderr": {
+      "bytes": 0,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/final-saved-data-audit/PRE_REPORT_WHITESPACE.stdout": {
+      "bytes": 4368,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "078a846be00ffb7679b35834a2968a62042ebab9bbb733f666de7ef45285c17b",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/final-saved-data-audit/PRIVATE_IN_PLACE_PINS.json": {
+      "bytes": 1778661,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "c834cdd127f99e7206de90877d0ca93c3a033875c16a16e8608836ebe1156476",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/final-saved-data-audit/SAVED_DATA_AUDIT.json": {
+      "bytes": 28209,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "0d4af41c162ac02a44458305bd1c9988b2cda25823c6882b194ba4c417452c69",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/final-saved-data-audit/SEAL_INPUTS.json": {
+      "bytes": 2926,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "94d265b5d50d18b6eaa5d44a6dbcf5eaa7419496fd7168aa7895169c30200c48",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/final-saved-data-audit/SOURCE_AUTHORITY_METADATA_RECHECK.json": {
+      "bytes": 472,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "3e3ac0703e0b56e0b5eb8402516d348fcefcc72529743f807d8c2837c0b7792a",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/final-saved-data-audit/SOURCE_AUTHORITY_METADATA_RECHECK_FULL.json": {
+      "bytes": 6014,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "0040fe068fa8080e202e7767836f45517ec604e08fb381de7b9019a088488399",
+      "uid": 1000
+    }
+  },
+  "privateInPlaceManifest": {
+    "path": "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/final-saved-data-audit/PRIVATE_IN_PLACE_PINS.json",
+    "pin": {
+      "bytes": 1778661,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "c834cdd127f99e7206de90877d0ca93c3a033875c16a16e8608836ebe1156476",
+      "uid": 1000
+    }
+  },
+  "privateRoot": "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016",
+  "publicFilesCountExcludingThisSeal": 85,
+  "publicFilesExcludingThisSeal": {
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/ADAPTER_CONTRACT.md": {
+      "bytes": 4659,
+      "gid": 1000,
+      "gitBlobSHA1": "a8c7dc19153e06f3c43fad1c7c50a26bd5067657",
+      "mode": 436,
+      "sha256": "e58c7dde80a7797b44ce83e8fab9fc766273f53ac97eda48ba7c29af0692b7a0",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/CONFINEMENT_PLAN.md": {
+      "bytes": 3286,
+      "gid": 1000,
+      "gitBlobSHA1": "dd9861816f15c8b17a477ec09a074ac211bc17ba",
+      "mode": 436,
+      "sha256": "3bcf7e2386822e630b199cecd4d7dee417fd25d8ee2a6ca2c2fc5c1826364e60",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/CONTROL_PLAN.md": {
+      "bytes": 7703,
+      "gid": 1000,
+      "gitBlobSHA1": "c9750a421606600b3f11e2345d7633b8451db04b",
+      "mode": 436,
+      "sha256": "af45412e53e812ca99594b7aca30f19279ebcf31c882c796796aa9a31da728ec",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/CONTROL_PREPARATION.md": {
+      "bytes": 4191,
+      "gid": 1000,
+      "gitBlobSHA1": "3dab05333b36aa8961def0f0031cc950e61ef0e7",
+      "mode": 436,
+      "sha256": "9482d092e398207148123b92a65cad44400e59f8aef2074884fb8e2067d83309",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/CONTROL_PREPARATION_PINS.json": {
+      "bytes": 1436,
+      "gid": 1000,
+      "gitBlobSHA1": "d68eff190fe956f4b897d806d8e0303f449a6221",
+      "mode": 384,
+      "sha256": "798cf760507de275792d50df5e38d1762a29403528a1cf792e5aa0cfbe2627a8",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/CONTROL_SOURCE_MAP.md": {
+      "bytes": 5236,
+      "gid": 1000,
+      "gitBlobSHA1": "2fb341503a95a3b7cd887ff8611fa359d5356dff",
+      "mode": 436,
+      "sha256": "c801f6d793b8b6997df82c482cd7af3bda5512eeef34863c8d00001c9711f732",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/EVIDENCE_PINS.json": {
+      "bytes": 5389,
+      "gid": 1000,
+      "gitBlobSHA1": "1baba5e228edefdd9e77192cd718d6084bf24f6b",
+      "mode": 384,
+      "sha256": "07e8325482f254eed717f58617f42c3deff9a83ce7b51543e81c4ba374e52092",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/FAULT_MAP.md": {
+      "bytes": 4329,
+      "gid": 1000,
+      "gitBlobSHA1": "cc423b387c47c66bb963241fb88b9c4d31d4f848",
+      "mode": 436,
+      "sha256": "8fab123b6e08efa9f4df894b293ef93c4020cd1667bb688788774770bff55bd7",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/FIXED_JOIN_MAP.md": {
+      "bytes": 6478,
+      "gid": 1000,
+      "gitBlobSHA1": "fe8ca6c6a4a183c2d7087ca66dcde8244914424c",
+      "mode": 436,
+      "sha256": "546a82e749909f0fb1992467aece6dbf902f3b74745e437acf988176d3bc1f05",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/PARENT_CONTRACT.md": {
+      "bytes": 9739,
+      "gid": 1000,
+      "gitBlobSHA1": "c46670ce1e4eb43e4904d37bf98134a92c4b448a",
+      "mode": 436,
+      "sha256": "2cd7049e4359341063aebf92f3c961a889bace95ad74abb721d055a46e8c8740",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/REPORT.md": {
+      "bytes": 22906,
+      "gid": 1000,
+      "gitBlobSHA1": "563e8bbc1f3a58872b14292b4cf6f084f7d14f14",
+      "mode": 436,
+      "sha256": "d777d29fec892c3a6472a27679015f11578cbcac991b07f520c8cf4628c7d87f",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/RUNNER_HANDOFF.json": {
+      "bytes": 1451,
+      "gid": 1000,
+      "gitBlobSHA1": "2cd03452f7efc9cb5d736f9c3306ee4cd75e314d",
+      "mode": 384,
+      "sha256": "b8f39295581b5f7b26d07a062c0bbd0be2dbb0ad06e94e53c634f35e506d4849",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/RUNNER_PARENT_RECIPE.md": {
+      "bytes": 3358,
+      "gid": 1000,
+      "gitBlobSHA1": "dd068374c0b276c4509c60a8c2fec72df9658f6e",
+      "mode": 436,
+      "sha256": "d9cebcd484ee13bf1b93828f1955a5e6a23a4b67410794b4e9c19de835430855",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/SOURCE_DELTA.md": {
+      "bytes": 8237,
+      "gid": 1000,
+      "gitBlobSHA1": "b54252c49973905941d21115ba33573d3a48050e",
+      "mode": 436,
+      "sha256": "1590e9f617ca26493efcd6fdc033b2ea5ce95bad39e855131ab8b35eea6ae2c6",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/STATIC_OUTCOME_TRACES.md": {
+      "bytes": 12338,
+      "gid": 1000,
+      "gitBlobSHA1": "0f744c1748bb8e651d198b620c287ac0c3f8082c",
+      "mode": 436,
+      "sha256": "e3eeac07d66450f2c06a03ba163eebcd44421ffe8297bbcab4e72ada06bef295",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/STATUS.md": {
+      "bytes": 4234,
+      "gid": 1000,
+      "gitBlobSHA1": "2b134b767c0f0373c3b92d0c651dd5358af92970",
+      "mode": 436,
+      "sha256": "58d34689995cf7b87b5316e52c4eec69f437886f73ea8d39156aed347c30449a",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/VALIDATION.md": {
+      "bytes": 12260,
+      "gid": 1000,
+      "gitBlobSHA1": "5d9fe4ce42185dd8c3f508a360d07b838c702ae2",
+      "mode": 436,
+      "sha256": "88f489e4f8a5b581b472a802df13fed0e0ebd7331b1cb4d914532d1522f642bd",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/WRAPPER_DESIGN.md": {
+      "bytes": 6455,
+      "gid": 1000,
+      "gitBlobSHA1": "4d8ffee283af4628abed7a912e7cc092c5731c38",
+      "mode": 436,
+      "sha256": "0612b724c155efa73d35cedf07a87d0fb2817d49c9e8f81634135c80b43460e6",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/collector.delta.patch": {
+      "bytes": 11000,
+      "gid": 1000,
+      "gitBlobSHA1": "c5decdc64b21421aab30f474754785335b2a6236",
+      "mode": 420,
+      "sha256": "375dec230a6d261505f8b81338a9d1f943f20b2088568be8583c1928a01c38a0",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/collector.py": {
+      "bytes": 6662,
+      "gid": 1000,
+      "gitBlobSHA1": "985e273787dce268ab3df87a33ecc43dc4a8c427",
+      "mode": 436,
+      "sha256": "7e99a7bfa036c8b35c477eb034d4adc9d409b54d2304a21f591a655dfe866040",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/control-cases.json": {
+      "bytes": 33158,
+      "gid": 1000,
+      "gitBlobSHA1": "52f01ec68c9135275ed4c64fc7899c97b3970994",
+      "mode": 436,
+      "sha256": "b1a8b73862f4aaddca04f540d2f2c55d5846d4e27f06bc7ce29ff2556d841f3e",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/control-input-allowlist.json": {
+      "bytes": 10192,
+      "gid": 1000,
+      "gitBlobSHA1": "da804b9cbfd109b6c5826569d741f5b47cccb84d",
+      "mode": 436,
+      "sha256": "0152d1c37604474e468ac3beec59f7039fb01957adabe8722e7e4dcfde5c7c1b",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/control-static-traces.json": {
+      "bytes": 17829,
+      "gid": 1000,
+      "gitBlobSHA1": "0a3dd9a9ecc9d57f6febd779217ca492dd1e9b9c",
+      "mode": 436,
+      "sha256": "1f52cdf56b958e3d8df361065c9480ca60d7ca80cdfc1ad4f1eed6b7c5034938",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/control_entry.py": {
+      "bytes": 2247,
+      "gid": 1000,
+      "gitBlobSHA1": "fca4e6e2ce63c37f3f0a8ce93991f5ac4cc1c730",
+      "mode": 436,
+      "sha256": "e59c13c9471c65351e26abc2de5a30265db4de89d6c6019fdb76af928ddd0766",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/controls.py": {
+      "bytes": 11812,
+      "gid": 1000,
+      "gitBlobSHA1": "8aeadfafe3806cd4b6bd057502ff1b3da76b12ba",
+      "mode": 436,
+      "sha256": "e17ce0021bb5b2ade897377a3a331ad8297140a2a3bbc5e34f56c1bc72daf32b",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/custody.py": {
+      "bytes": 24907,
+      "gid": 1000,
+      "gitBlobSHA1": "31adb56da239fae20a71aa33286c26aa06654e3c",
+      "mode": 436,
+      "sha256": "d2d1f17f9e0abba8af5f47a551af9c9131fda1d09c736e6b58f5db38b66b7fd2",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/elf-closure-assessment/ADDED_FILES.tsv": {
+      "bytes": 3643,
+      "gid": 1000,
+      "gitBlobSHA1": "66a69c057b4689fc4a99accfcea50a8912a5652c",
+      "mode": 436,
+      "sha256": "b7c747a1f01231cc67638070e1949731a698e5c68f8b51394c58f824f8aa50a1",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/elf-closure-assessment/ADDED_SYMLINKS.tsv": {
+      "bytes": 1728,
+      "gid": 1000,
+      "gitBlobSHA1": "9014adc663434a543f32ad481528d2c3287526d7",
+      "mode": 436,
+      "sha256": "86e65689ceb91c01b4502fa2de6bcabba5cc1a3a4960f0b0489158495142aeca",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/elf-closure-assessment/ASSESSMENT.md": {
+      "bytes": 9031,
+      "gid": 1000,
+      "gitBlobSHA1": "51dd6decff7c9f8f674796d91f646055f7a5ad52",
+      "mode": 436,
+      "sha256": "95caa35292e495a8941751f98e642c5e5a0ff5b04b476f357744d342a13b9680",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/elf-closure-assessment/EVIDENCE_PINS.json": {
+      "bytes": 3535,
+      "gid": 1000,
+      "gitBlobSHA1": "bfb89b8d528df12c0892f8d085b1c5ffc8902ef7",
+      "mode": 384,
+      "sha256": "8f58822bb10585f2aa47d05e4f735371ecf797635da22b41f33da2a43c7679a6",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/elf-closure-assessment/FOOTPRINT.md": {
+      "bytes": 1911,
+      "gid": 1000,
+      "gitBlobSHA1": "9d34abda41c4b4a2212d2bb0b6a22746e7cfe6ce",
+      "mode": 436,
+      "sha256": "e5cba0ca869af6d0648cc5941f5af1d5e0f126d6fddf0598012bc418d9589564",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/elf-closure-assessment/ROOT_COMPARISON.md": {
+      "bytes": 2645,
+      "gid": 1000,
+      "gitBlobSHA1": "e129c696909654e1a83d3f998ec8fdab47c8d7d1",
+      "mode": 436,
+      "sha256": "5a60c5b735c9978bc4627f8c76889d2db99646d1c308e838b637f443accf0e97",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/elf-closure-assessment/STATUS.md": {
+      "bytes": 1417,
+      "gid": 1000,
+      "gitBlobSHA1": "8080608a7753c2e7abe1dfcd42da533a95bd96cb",
+      "mode": 436,
+      "sha256": "4ec8cc4b3a637e4dfdbc51a8486d38bd9b672e0a1478c6cb31f5576ff6552ea3",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/elf-closure-assessment/inspect_elf_data.py": {
+      "bytes": 17720,
+      "gid": 1000,
+      "gitBlobSHA1": "b846672a7df4532d9a6ac35b27c51c7d3527a0ac",
+      "mode": 436,
+      "sha256": "5c70e8efa2d8e5a48c0737b66a2e1c353260c9c12e86f2f5727aab6ef77c99c7",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/elf-closure-assessment/inspect_elf_data_v02.py": {
+      "bytes": 18014,
+      "gid": 1000,
+      "gitBlobSHA1": "b131da69f6371aba6c46f1176fb086875d547216",
+      "mode": 436,
+      "sha256": "eeab4a3a8c93eec6fd8b03882c9e01da40ac39f6f790d80827e115e041b7d289",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/elf-closure-assessment/parser02.delta.patch": {
+      "bytes": 1378,
+      "gid": 1000,
+      "gitBlobSHA1": "72c7ab00dafcfea01149e45034ab953ad88615aa",
+      "mode": 436,
+      "sha256": "e023d5b2cf3504afbde2eaabaca37609351cf2a0e4cd19a19085cab5a2201551",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/environment-assessment/ASSESSMENT.md": {
+      "bytes": 8652,
+      "gid": 1000,
+      "gitBlobSHA1": "5b16ea1828cc36ffa3f3f318201758d9c6d79f18",
+      "mode": 436,
+      "sha256": "88895fadc207e713909c5d2cda377685276ebe012a07d53d766225b375249aae",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/environment-assessment/EVIDENCE_PINS.json": {
+      "bytes": 2252,
+      "gid": 1000,
+      "gitBlobSHA1": "420669d77bd4e399090ff6ffb66f81d663077a99",
+      "mode": 384,
+      "sha256": "c08d768adc7a6bd5c999a4241938b7ccd7145eacfe7493a175e1d1d1717805c2",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/environment-assessment/MINIMAL_DELTA_PROPOSAL.patch": {
+      "bytes": 557,
+      "gid": 1000,
+      "gitBlobSHA1": "94179c12e6421486db33807aa272cce65a0aeb50",
+      "mode": 436,
+      "sha256": "c4c5ad523a1b781134af07524d99262be91351ffb3cae0f9b2dff1044c0531bf",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/environment-assessment/PROPAGATION.md": {
+      "bytes": 3439,
+      "gid": 1000,
+      "gitBlobSHA1": "e2ff8680910e2dbb498fc3c76c089760255054e4",
+      "mode": 436,
+      "sha256": "54b50d0c180847da513742855d8255b71a49ea982f4117a5fbc749639778a2df",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/environment-assessment/SOURCES.md": {
+      "bytes": 3890,
+      "gid": 1000,
+      "gitBlobSHA1": "be5649cdabca2a6d6559b22934a3ccff638b803e",
+      "mode": 436,
+      "sha256": "27bb7258aeb1e9c2dad9162582848354560d15c4a3c19093cce85d5b664965ae",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/environment-assessment/STATUS.md": {
+      "bytes": 1775,
+      "gid": 1000,
+      "gitBlobSHA1": "30c98f16319281e57528db2f61699de936ad59d2",
+      "mode": 436,
+      "sha256": "2e8a48357971575257fa469cadf321d663d3b5e1d4d7c6cec3643995beaee7c1",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/fault-map.json": {
+      "bytes": 15220,
+      "gid": 1000,
+      "gitBlobSHA1": "3eb265939cfdb68daa91f59a1f1558f4b1b72699",
+      "mode": 420,
+      "sha256": "193f25844b2ae953399a2826e499f4c43eda2ce612027b3ae729bc6c783af121",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/final_checks.py": {
+      "bytes": 2715,
+      "gid": 1000,
+      "gitBlobSHA1": "094bf0f061f3eb3c460d350ec540044ec08bd448",
+      "mode": 436,
+      "sha256": "4caef7d02db3a23221fca1f9dcdccfd71203f51a88e679b0895c874f04892bb0",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/fixed-contract.json": {
+      "bytes": 13678,
+      "gid": 1000,
+      "gitBlobSHA1": "0dc8998a0ec8b07bb24496730c5f15b248e4ee01",
+      "mode": 384,
+      "sha256": "91292e69956500428851f467a2966ee6c65b88a7d2385c41648f73d17fa57bd1",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/inert_adapter.py": {
+      "bytes": 13611,
+      "gid": 1000,
+      "gitBlobSHA1": "c843605175c46e22d74fb887218a0dc870a7cc56",
+      "mode": 436,
+      "sha256": "2151cb7ecd5e8a3814c4bd1f581c4b412f527a68a842fd4f72c1dd24683e1529",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/inert_fixture.py": {
+      "bytes": 17726,
+      "gid": 1000,
+      "gitBlobSHA1": "9104c5000d359f1b844c5524fc5de0a041bb429b",
+      "mode": 436,
+      "sha256": "08baaccf577ab56004de560e931f003d7634ea6fb45915f800bfd24fbfa7e005",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/outer.delta.patch": {
+      "bytes": 19222,
+      "gid": 1000,
+      "gitBlobSHA1": "fdf4d9b4506033c05de478f3a6066ef8c7583864",
+      "mode": 420,
+      "sha256": "ded6c54162f8d8057fd13f2604a6c1473a34320102a600a2106df0a2c314240d",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/outer.py": {
+      "bytes": 9961,
+      "gid": 1000,
+      "gitBlobSHA1": "d37addd80b2ac193c049299f0592edb1884ac1c0",
+      "mode": 436,
+      "sha256": "34a7102ddaec30825bdc160374f6a36f1c23f63e046bf886121bfe7998c64cf0",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/prepare.py": {
+      "bytes": 2992,
+      "gid": 1000,
+      "gitBlobSHA1": "329f0e8a6f2456485d0a4c9cd68398f690f732f9",
+      "mode": 436,
+      "sha256": "52afcd6f99b53c139d337adc1129d3873be0634fe7eda0ae0c9ee65888fd147e",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/CONFINEMENT_PLAN.md": {
+      "bytes": 2861,
+      "gid": 1000,
+      "gitBlobSHA1": "2574f0f3c70ab9b9bda9f7560a98f2214d7b387f",
+      "mode": 436,
+      "sha256": "7cf9d985f96d32fa4f2d12657ee1dba4e8b78ee14369629c6116cc10b50a67cf",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/CONTROL_PLAN.md": {
+      "bytes": 1814,
+      "gid": 1000,
+      "gitBlobSHA1": "2d463a77d2ed57a6c517b116e7ca5a422f856602",
+      "mode": 436,
+      "sha256": "94bfc416dcfbf524f2433c8edeb81a3c6775b5c6e7bf0f8c6ec91117daccf5ac",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/HANDOFF.json": {
+      "bytes": 3900,
+      "gid": 1000,
+      "gitBlobSHA1": "5efdac4439e8b5d779b0797c018f0778d0a6b988",
+      "mode": 384,
+      "sha256": "158e4a047d6c0760b8cd797fa253afb5b774179a5361b1ce799a14f25a3403a3",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/PARENT_RECIPE.md": {
+      "bytes": 3669,
+      "gid": 1000,
+      "gitBlobSHA1": "f2a1dc896a59de5110d8e183f6f2304cdfdbc72c",
+      "mode": 436,
+      "sha256": "dd54dde9f1ad43c5b1a4ebc0ce77995c2c1588514dbc72efe8973f93f5adec97",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/PREPARATION_STATUS.md": {
+      "bytes": 1540,
+      "gid": 1000,
+      "gitBlobSHA1": "b3125427efbb8393c329a6dea6f7773e2733580c",
+      "mode": 436,
+      "sha256": "6950ffed53529b11f62c4c617d3ae801ca9316f7f0cafba5dd3b21d993fab143",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/SOURCE_DELTA.md": {
+      "bytes": 2751,
+      "gid": 1000,
+      "gitBlobSHA1": "265b33df32cee407dbb317316c8ed639a4e4be1d",
+      "mode": 436,
+      "sha256": "6875654e126b1bf703fd0939848693a930bfdf3034c8bcad013faf3579cf0cc3",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/final_checks.py": {
+      "bytes": 2719,
+      "gid": 1000,
+      "gitBlobSHA1": "d319e3f693a4a817bc9ef0785033208b7c212604",
+      "mode": 436,
+      "sha256": "d5644c618c0d801495c2850861eab2c8c0ffe9f51dcb89d8cb229421d0221ff2",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/prepare.py": {
+      "bytes": 2992,
+      "gid": 1000,
+      "gitBlobSHA1": "329f0e8a6f2456485d0a4c9cd68398f690f732f9",
+      "mode": 436,
+      "sha256": "52afcd6f99b53c139d337adc1129d3873be0634fe7eda0ae0c9ee65888fd147e",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/source.delta.patch": {
+      "bytes": 4621,
+      "gid": 1000,
+      "gitBlobSHA1": "f36c43b375f2771ddd3dacff518997113996776f",
+      "mode": 436,
+      "sha256": "a21c92fad4af717bec732832f7dfbba1192d93e391b769b0ad9b1d64a1141821",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/window.py": {
+      "bytes": 24943,
+      "gid": 1000,
+      "gitBlobSHA1": "ff8d665a109360134ba555c0f186c981ef00e14f",
+      "mode": 436,
+      "sha256": "a4975a7ab5b788a1499eff97e649c43bec2d59cc836dcb0fd3b3c22efbfdee9f",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial03/CONFIG.delta.patch": {
+      "bytes": 38038,
+      "gid": 1000,
+      "gitBlobSHA1": "092ce70fff9ccf6ed16bcc37335a4ef1ec0ec8a4",
+      "mode": 436,
+      "sha256": "223f797d750e8e4eb82c68f0e394af37814ff9a872b61243a9dfdbc74463cd85",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial03/CONFINEMENT_PLAN.md": {
+      "bytes": 3862,
+      "gid": 1000,
+      "gitBlobSHA1": "78ecda467c7142c47b6ee898fb1dfd9067321b5c",
+      "mode": 436,
+      "sha256": "09f3b1ae4450b774c40d99845b150e6a4ebcf4a865e088083b35a5fc8c083e64",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial03/CONTROL_PLAN.md": {
+      "bytes": 1766,
+      "gid": 1000,
+      "gitBlobSHA1": "168f457681137f398cd9fb3697086f5a835c263b",
+      "mode": 436,
+      "sha256": "829a7dace08b2bb2cceba44962c92b380617cd1b8abb5101c7e3ee79ab090933",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial03/HANDOFF.json": {
+      "bytes": 4247,
+      "gid": 1000,
+      "gitBlobSHA1": "2fdde2eb60a76bd41f2d3603be9745d59108da7a",
+      "mode": 384,
+      "sha256": "fe60acd157cc89c3f6b170405fbf589be7f46f4cb5b7bbcd4cec51c64b3c7d32",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial03/PARENT_RECIPE.md": {
+      "bytes": 3899,
+      "gid": 1000,
+      "gitBlobSHA1": "272b994449e884a7fe9e3419585b43a3a158a396",
+      "mode": 436,
+      "sha256": "bed33168cea6bb0bb21a51a7f8063913bfa8c4491ea2cdcbea1d742d67b32752",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial03/PREPARATION_STATUS.md": {
+      "bytes": 1827,
+      "gid": 1000,
+      "gitBlobSHA1": "38a21400c21f8bab21364cd1ba31cd4cdcf8dfab",
+      "mode": 436,
+      "sha256": "d1755fe43a64989ab45f1795cd34c072dd39194beaf803563b82242744d08859",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial03/SOURCE_DELTA.md": {
+      "bytes": 3019,
+      "gid": 1000,
+      "gitBlobSHA1": "dc075fdaab007c2fe64d0419344b141d47a53681",
+      "mode": 436,
+      "sha256": "fb38a8590f78f7b24ae05f885343ce409afe16dfedfed5c6ece75a9341e265f2",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial03/final_checks.py": {
+      "bytes": 2719,
+      "gid": 1000,
+      "gitBlobSHA1": "d319e3f693a4a817bc9ef0785033208b7c212604",
+      "mode": 436,
+      "sha256": "d5644c618c0d801495c2850861eab2c8c0ffe9f51dcb89d8cb229421d0221ff2",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial03/prepare.py": {
+      "bytes": 2992,
+      "gid": 1000,
+      "gitBlobSHA1": "329f0e8a6f2456485d0a4c9cd68398f690f732f9",
+      "mode": 436,
+      "sha256": "52afcd6f99b53c139d337adc1129d3873be0634fe7eda0ae0c9ee65888fd147e",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial03/source.delta.patch": {
+      "bytes": 1077,
+      "gid": 1000,
+      "gitBlobSHA1": "3b5b47caf97d28005df4e98bc688d927f0124031",
+      "mode": 436,
+      "sha256": "66bd6363b48fbd5c1d00e799fea88f70964156110aa7dff746270241b438fcad",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial03/window.py": {
+      "bytes": 24943,
+      "gid": 1000,
+      "gitBlobSHA1": "0d7fd8fe07cc24980268643071d786d1366398b2",
+      "mode": 436,
+      "sha256": "af04305425a59053484427d739693dadbc2433b81b7b60d05b3f56dff6b77775",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial04/CONFIG.delta.patch": {
+      "bytes": 32306,
+      "gid": 1000,
+      "gitBlobSHA1": "68c0df5d0f65602773459af98b5a37abc3480427",
+      "mode": 436,
+      "sha256": "d080a7c17b44237312ac8d04042a93ebd9b2fc6a9da6ff77c5ba50d9b880d815",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial04/CONFINEMENT_PLAN.md": {
+      "bytes": 3605,
+      "gid": 1000,
+      "gitBlobSHA1": "4a0077eebc867e43ba258455af41240475f8acc0",
+      "mode": 436,
+      "sha256": "71dbbf8002d54a9b8088a4323e8de4c2778032d02cc547f24527eddc243af57f",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial04/CONTROL_PLAN.md": {
+      "bytes": 1790,
+      "gid": 1000,
+      "gitBlobSHA1": "d72285b19eea870c630e480d874a1fa82395cc18",
+      "mode": 436,
+      "sha256": "07d05b15f08ed9da4423e78012272dc41c919b84806fe72ef4c7c61c6d897ac5",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial04/HANDOFF.json": {
+      "bytes": 4286,
+      "gid": 1000,
+      "gitBlobSHA1": "cee8ec56a5e60f52fe9bf6cca440aede9d86daeb",
+      "mode": 384,
+      "sha256": "ecf3a657781f4d6236517f22fbdc49c4583b384435355cf64634c7497c511da5",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial04/PARENT_RECIPE.md": {
+      "bytes": 3895,
+      "gid": 1000,
+      "gitBlobSHA1": "64f8a13fc9a5fdafacca3a4453521155e9818fd1",
+      "mode": 436,
+      "sha256": "46c007a0cd5338d27d8f637eaa86885c47366f6d69687ade2650e0f5f0ad3d26",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial04/PREPARATION_STATUS.md": {
+      "bytes": 1695,
+      "gid": 1000,
+      "gitBlobSHA1": "3b2266632a537c80e746cf7a9b7569d49a2c662f",
+      "mode": 436,
+      "sha256": "8dc4433f7aac23774d7703d497707230bb0f64d357e439b7560ca05215ab5986",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial04/SOURCE_DELTA.md": {
+      "bytes": 2887,
+      "gid": 1000,
+      "gitBlobSHA1": "a0ca80a9262179329681ab203d9598c8f9b7261f",
+      "mode": 436,
+      "sha256": "fd60695c61505b50de326eb878d09db5048a72c6c01fcf00a91ce2e394832836",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial04/final_checks.py": {
+      "bytes": 2719,
+      "gid": 1000,
+      "gitBlobSHA1": "d319e3f693a4a817bc9ef0785033208b7c212604",
+      "mode": 436,
+      "sha256": "d5644c618c0d801495c2850861eab2c8c0ffe9f51dcb89d8cb229421d0221ff2",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial04/prepare.py": {
+      "bytes": 2992,
+      "gid": 1000,
+      "gitBlobSHA1": "329f0e8a6f2456485d0a4c9cd68398f690f732f9",
+      "mode": 436,
+      "sha256": "52afcd6f99b53c139d337adc1129d3873be0634fe7eda0ae0c9ee65888fd147e",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial04/source.delta.patch": {
+      "bytes": 1548,
+      "gid": 1000,
+      "gitBlobSHA1": "ef72bd64f7a50f615cfd1f2989a9f915e04e9001",
+      "mode": 436,
+      "sha256": "34a527ebf44d3f5ee52daeb009184e5972fb667ceccdae45a8646c54ad245a12",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial04/window.py": {
+      "bytes": 24962,
+      "gid": 1000,
+      "gitBlobSHA1": "4b44b517bb9f25eedc62084264d452835335ad36",
+      "mode": 436,
+      "sha256": "3a197381129bcfa877ec8f274aac07eefc2e7bed6cfc6711dee831b17c277ace",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/window.py": {
+      "bytes": 24893,
+      "gid": 1000,
+      "gitBlobSHA1": "6392dc60c761246e34f6d4ed632b401185c33740",
+      "mode": 436,
+      "sha256": "0c3790904184b8713f95ffe42fdeb0b598178791cbd4c53a3e90de4ca6e4ddc5",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/wrapper-stream-draft-delta.patch": {
+      "bytes": 3164,
+      "gid": 1000,
+      "gitBlobSHA1": "0c4745ad22bcdeb4d6da513ca9461e5f397aefe7",
+      "mode": 436,
+      "sha256": "407196dc0d933715fd34f2e1411f0f9bbb867ab392421b4251e2e04aa3ff9315",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/wrapper.delta.patch": {
+      "bytes": 41114,
+      "gid": 1000,
+      "gitBlobSHA1": "449780461930435ca0e5c2173aaf71dad86536aa",
+      "mode": 436,
+      "sha256": "2612b49ce6164aaa7b0b8b7098f8fa0f12979db884c942b789998f1e6b7dd134",
+      "uid": 1000
+    }
+  },
+  "rootEvidence": {
+    "/home/nathaniel/.local/state/openplan/a0-parent-root-preflight-20261017-04/ACCEPTANCE.json": {
+      "bytes": 1708738,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "f8968a5b7e2d7f8c7130441bb823bbb5408c5c39e7add640404c5865b829d844",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-parent-root-preflight-20261017-04/DISPATCH_INTENT.json": {
+      "bytes": 562,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "f5959b307a7646f34c27a5c556ef71acd4cf685e9d2483a8f312e66ce2996e2f",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-parent-root-preflight-20261017-04/EXEC_SESSION_TERMINAL.json": {
+      "bytes": 216,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "7019af4dd7cb4f3a8fd7eb1159eb25d0ec54aa7fd925880d16ac179b1d5d1312",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-parent-root-preflight-20261017-04/GRANT.json": {
+      "bytes": 1296,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "33ee400416f88a24765fab15533208c94fc2e7df9bec34c5e1a45d393ade81d2",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-parent-root-preflight-20261017-04/PREFLIGHT.json": {
+      "bytes": 2072,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "06457ee561a5948f9274c7afd75c6bfbf6dc4fb5f898df248efab94aed04beb8",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-parent-root-preflight-20261017-04/READER_ERROR01.json": {
+      "bytes": 570,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "abe1e39dc9e00d30269196d7f30f863440568e739e8d9c9f3d3f12516868de48",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-parent-root-preflight-20261017-04/audit.py": {
+      "bytes": 10255,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "36c0d1d84bad63f6a152583343173cc90785873d504aea2f0fd1ceb55e663019",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-parent-root-preflight-20261017-04/audit.v02.py": {
+      "bytes": 10535,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "01e873b0e628da9317b14ca5f32a4bbe226aca1fd9baae84092636751015c1e2",
+      "uid": 1000
+    }
+  },
+  "runtimeInventoryReference": "/home/nathaniel/.local/state/openplan/a0-parent-root-preflight-20261017-04/ACCEPTANCE.json#runtimeInventory",
+  "schema": "A0_PARENT_CORRELATION_FINAL_SAVED_DATA_SEAL_V1",
+  "selfReferencePolicy": "Seal excludes itself; private post-commit receipt binds its SHA and commit; no public commit-id cycle",
+  "sourceClosureComplete": false,
+  "successorGranted": false,
+  "whitespace": {
+    "finalCheckReceipt": "Private post-commit receipt; raw diagnostics must remain identical",
+    "fullStagedCheck": "EXIT2_37_DIAGNOSTICS_7_IMMUTABLE_RAW_PATCH_FILES",
+    "preReportNonPatchFiles72": "EXIT0"
+  }
+}

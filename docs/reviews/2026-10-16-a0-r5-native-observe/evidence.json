@@ -1,0 +1,40 @@
+{
+  "at": "2026-10-16T20:21:16.402937+00:00",
+  "stage": "observe",
+  "actualChildRequests": 12,
+  "childExitCodes": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "managerExitCode": 0,
+  "parentExitCode": 0,
+  "completionAndManagerAcknowledgement": true,
+  "observedSHA256": "411dec3ec7121c759aece1dbc5fbc72d39e453a1ebd099d263d7f286a910128d",
+  "completeSHA256": "716ffd49c825e30154781fd8dc9692a804482b5f18f3fc600259d4ab7334698f",
+  "managerTerminalSHA256": "5b31fdfea607e975715b1cf63969ead77cb8fa0baff53b4ae9672d63492cf7a5",
+  "databaseOID": 5,
+  "numericOIDTypeVerified": true,
+  "systemIdentifier": "7683856985084612646",
+  "role": "supabase_admin",
+  "sourceCommit": "f8a571bb0a18b8b6501870acb5ef1e760d487e1c",
+  "appTree": "d577a9cd955018b3253f42b3d9af2a96a9a10b53",
+  "successorDispatched": false,
+  "targetAvailabilityConfirmed": false,
+  "nativeSQL19Acceptance": false,
+  "claim": "Only fixed retainedcluster catalog observation; no allocation/migrations/fixtures/provider ormilestone acceptance",
+  "privateProofManifest": {
+    "path": "/home/nathaniel/.local/state/openplan/a0-r5-observe-root-decision-20261016/actual-proof-pins.json",
+    "sha256": "ddbe84e537078042ee9fb2451baf9c8bd314d18983ea1d335b518fd71f35131c",
+    "entries": 95
+  }
+}

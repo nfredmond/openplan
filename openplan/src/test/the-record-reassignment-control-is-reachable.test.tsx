@@ -1,3 +1,4 @@
+import { projectBudgetSnapshotFixture } from "./helpers/project-budget-snapshot";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -144,7 +145,8 @@ type ClientOptions = {
 };
 
 /**
- * A Supabase double that APPLIES the projection: a column the loader did not
+ * Direct record reads apply the projection; deliverables use an RPC fixture.
+ * For the direct reads, a column the loader did not
  * ask for is genuinely absent from the row it hands back, exactly as PostgREST
  * behaves. Without that, a `.select()` missing `assignee_user_id` would still
  * render an assignee and every assertion below would pass over a broken page.
@@ -153,6 +155,16 @@ function makeClient(options: ClientOptions = {}) {
   const projections: Record<string, string> = {};
 
   const client = {
+    async rpc(name: string, args: { p_project_id: string }) {
+      projections.project_deliverables = `${name}:${args.p_project_id}`;
+      const row = { ...RAW_ROWS.project_deliverables[0] };
+      const assignee = options.pendingColumn?.table === "project_deliverables" && options.pendingColumn.column === "assignee_user_id";
+      if (assignee) delete row.assignee_user_id;
+      return { data: projectBudgetSnapshotFixture({
+        project_deliverables: { data: [row], error: null },
+        projects: { data: RAW_ROWS.projects[0], error: null },
+      }, { assignee, budget: false }, args.p_project_id), error: null };
+    },
     from(table: string) {
       return {
         select(columns: string) {
@@ -394,12 +406,12 @@ describe("reassigning an existing project record", () => {
 
   it("asks the database for the assignee column each picker is bound to", async () => {
     const { projections } = await renderProjectRecordSurfaces();
+    expect(projections.project_deliverables).toBe(`project_budget_inputs_v1:${PROJECT_ID}`);
 
     // A mocked client answers any projection, so the projection string itself
     // is the assertion — a column dropped from one of these would render the
     // picker at "Unassigned" over a real assignment.
     for (const table of [
-      "project_deliverables",
       "project_milestones",
       "project_submittals",
       "project_issues",

@@ -1,0 +1,6 @@
+Running as unit: openplan-budget-settings-v2-pure-20261016-02.service
+          Finished with result: success
+Main processes terminated with: code=exited, status=0/SUCCESS
+               Service runtime: 5.941s
+             CPU time consumed: 982ms
+                   Memory peak: 36.9M (swap: 0B)

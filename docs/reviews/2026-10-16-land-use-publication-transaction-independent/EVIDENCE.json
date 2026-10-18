@@ -1,0 +1,220 @@
+{
+  "verdict": "REQUEST_CHANGES_TWO_P2_SOURCE_FINDINGS",
+  "candidate": "3ce1a92e017e96c8d0c15230b2ab8d1836969f7f",
+  "parent": "b1f4aaa5fa6874af45afb75d9172b5ac6f7486e9",
+  "appTree": "a3f50878dfeccfaa2c5526dd3f8ff04a8df86cd8",
+  "reviewerInitialHEAD": "05dd3e8da4a4572437f06e771b0a2477873e681f",
+  "reviewerBranch": "t3/review-land-use-publication-transaction",
+  "candidateChangedFiles": [
+    {
+      "path": "docs/reviews/2026-10-16-land-use-publication-transaction/DESIGN.md",
+      "blob": "2f49f09800180f60c0dff0fa80489ffaa028508f",
+      "sha256": "1efba0b53dcd2de6012a40ea732252a3f7ff2b98212fda830887cfcaa83a0834",
+      "bytes": 5312
+    },
+    {
+      "path": "docs/reviews/2026-10-16-land-use-publication-transaction/EVIDENCE.json",
+      "blob": "5fd2b9fdb0ca2c3d48977aa00f1dadd15f897ec4",
+      "sha256": "39ec495055bc14e5d7b41638b0118460be2939844987fa18d3f8a18ab83d57dd",
+      "bytes": 10636
+    },
+    {
+      "path": "docs/reviews/2026-10-16-land-use-publication-transaction/REPORT.md",
+      "blob": "bc2e35423af1d71d1b63a7ec99e7a9d710a927d8",
+      "sha256": "b740640d5799407cd9d0ec497398a870dcb612d2d2b9eaa5eadd7b7dde0eb1d8",
+      "bytes": 6011
+    },
+    {
+      "path": "openplan/src/app/api/land-use-plans/[planId]/decisions/route.ts",
+      "blob": "2c303f3bfa9d800e433a37b8da5ae2612039c097",
+      "sha256": "81a161a2f399130f05ba1e10cec537d352f46e7bb1d7b23a9fa626f0112e22ca",
+      "bytes": 13030
+    },
+    {
+      "path": "openplan/src/lib/land-use-plans/publication.ts",
+      "blob": "c4fb379392e75c9d22ca01cc8a8c2b1bb8eb40c0",
+      "sha256": "b6cbf6830b652d7cd17580384797010f5c03903c1b00ca1fcc6b41389a5887bb",
+      "bytes": 2757
+    },
+    {
+      "path": "openplan/src/test/land-use-publication-transaction.test.ts",
+      "blob": "bb5070254be90984b20b8da7de096381a20b164b",
+      "sha256": "9a3b413fe982fd587913c3c6f3e392cbccba4f6624aa0419ef337f9429883a6b",
+      "bytes": 11034
+    },
+    {
+      "path": "openplan/supabase/migrations/20261017030608_land_use_plan_publication_transaction.sql",
+      "blob": "984ae491af00f763af0ae5cdda9fc215c0e343a8",
+      "sha256": "15d1904db83f83d7ac93bc7aa7910de042f2e94ac256c4579906d48a036d2272",
+      "bytes": 8353
+    }
+  ],
+  "findings": [
+    {
+      "id": 1,
+      "priority": "P2",
+      "path": "openplan/supabase/migrations/20261017030608_land_use_plan_publication_transaction.sql",
+      "lines": [
+        76,
+        86
+      ],
+      "issue": "Existing-packet verifier selects HTML while edition readers select latest any-kind artifact; reader-disqualifying metadata.kind also unchecked",
+      "tier": "SOURCE_INFERENCE_NO_EXECUTION"
+    },
+    {
+      "id": 2,
+      "priority": "P2",
+      "path": "openplan/supabase/migrations/20261017030608_land_use_plan_publication_transaction.sql",
+      "lines": [
+        58,
+        65
+      ],
+      "issue": "Hashed/scoped retained adoption manifest can lack the typed decision required by edition adoption reader",
+      "tier": "SOURCE_INFERENCE_NO_EXECUTION"
+    }
+  ],
+  "report": {
+    "path": "docs/reviews/2026-10-16-land-use-publication-transaction-independent/REPORT.md",
+    "sha256": "34bf1a4a237c30c511876b4a46c37ddc1c78c268febbbb10e1df95183cffdcec",
+    "bytes": 25379
+  },
+  "retainedEvidence": {
+    "path": "/home/nathaniel/.local/state/openplan/land-use-publication-transaction-correction-20261016",
+    "manifestInspection": {
+      "manifestSHA256": "3473de431240c2b3b9f94e9d06ad10de5dbe30a62d9288aa2cc9bb07c50c4ce8",
+      "count": 3119,
+      "mismatches": []
+    },
+    "sourcePins": [
+      {
+        "path": "openplan/src/lib/land-use-plans/publication.ts",
+        "sha256": "b6cbf6830b652d7cd17580384797010f5c03903c1b00ca1fcc6b41389a5887bb",
+        "bytes": 2757,
+        "matches": true
+      },
+      {
+        "path": "openplan/src/app/api/land-use-plans/[planId]/decisions/route.ts",
+        "sha256": "81a161a2f399130f05ba1e10cec537d352f46e7bb1d7b23a9fa626f0112e22ca",
+        "bytes": 13030,
+        "matches": true
+      },
+      {
+        "path": "openplan/supabase/migrations/20261017030608_land_use_plan_publication_transaction.sql",
+        "sha256": "15d1904db83f83d7ac93bc7aa7910de042f2e94ac256c4579906d48a036d2272",
+        "bytes": 8353,
+        "matches": true
+      },
+      {
+        "path": "openplan/src/test/land-use-publication-transaction.test.ts",
+        "sha256": "9a3b413fe982fd587913c3c6f3e392cbccba4f6624aa0419ef337f9429883a6b",
+        "bytes": 11034,
+        "matches": true
+      },
+      {
+        "path": "openplan/src/test/land-use-plan-frozen-rules-integration.test.ts",
+        "sha256": "32786d886395ea0547b56d409641e6d85805eb33059f2c170a94d1e3d46ce80e",
+        "bytes": 35072,
+        "matches": true
+      },
+      {
+        "path": "openplan/src/test/setup.ts",
+        "sha256": "70d7fbd3e6d08caa4ca508bb6bdca213deb4a58da22a840ff646a5862c05067a",
+        "bytes": 283,
+        "matches": true
+      },
+      {
+        "path": "openplan/src/test/guided-flow-jsdom-dialog-shim.ts",
+        "sha256": "d6f84fa247152ded90a7b63e97e6385e2def6169618e4163da99b4ed2359566b",
+        "bytes": 3140,
+        "matches": true
+      },
+      {
+        "path": "openplan/tsconfig.json",
+        "sha256": "cb3404493257250c77d7145c9825ed31f79246b640eb30a59b8069d39091bf29",
+        "bytes": 735,
+        "matches": true
+      }
+    ],
+    "stages": [
+      {
+        "id": "harmless",
+        "success": true,
+        "passed": 25,
+        "pending": 82,
+        "failed": 0,
+        "suiteMessages": []
+      },
+      {
+        "id": "baseline",
+        "success": true,
+        "passed": 25,
+        "pending": 82,
+        "failed": 0,
+        "suiteMessages": []
+      },
+      {
+        "id": "restored",
+        "success": true,
+        "passed": 25,
+        "pending": 82,
+        "failed": 0,
+        "suiteMessages": []
+      }
+    ],
+    "baselineNamesEqual": true,
+    "namedFaults": 16,
+    "everyNamedResultHashMatches": true,
+    "everySQLInputMatchesExpected": true,
+    "everyModuleAppliedReceiptMatches": true,
+    "failedSealFileCount": 47,
+    "failedSealMismatches": [],
+    "oldInventoryCount": 424,
+    "oldInventoryMatchesGeneration": true,
+    "checks01RemainsExit1": true,
+    "checks02TerminalExit": 0,
+    "checks02InvocationFromEntry": "7f50ce8fd29f483f9b0966b409eacb88",
+    "checks02ManagerAnnouncementContainsInvocation": false,
+    "typesLintDirectionExit": [
+      0,
+      0,
+      0
+    ],
+    "nativeSQLExecuted": false
+  },
+  "privateReviewEvidence": {
+    "path": "/home/nathaniel/.local/state/openplan/land-use-publication-transaction-independent-20261016",
+    "mode": "0700",
+    "manifestSHA256": "920b336ffd971d05fc14494b60a1cc8eb50e40046ee2773d91256e304123f928",
+    "files": 532
+  },
+  "reasoningBindingLimit": "Harness declares gpt-6.1-sol high; live thread confirms model/provider/worktree. Catalog composer reasoning currentValue is low; live active-run reasoning is not exposed.",
+  "reviewerExecuted": {
+    "metadataAndGitReads": true,
+    "sourceOnlyPrivateOverlay": true,
+    "primaryWebDocumentationReads": true,
+    "newTests": false,
+    "dependenciesOrImports": false,
+    "nativeSQLOrDocker": false,
+    "browserOrAppHTTP": false,
+    "providerOrSDK": false,
+    "nestedAgents": false
+  },
+  "acceptance": {
+    "native425": false,
+    "build": false,
+    "browserDesktop390": false,
+    "actualArtifact": false,
+    "practitioner": false,
+    "KI025Closed": false,
+    "M1Complete": false,
+    "V1Complete": false,
+    "releaseAccepted": false
+  },
+  "primaryReferences": [
+    "https://www.postgresql.org/docs/17/explicit-locking.html",
+    "https://www.postgresql.org/docs/17/sql-select.html#SQL-FOR-UPDATE-SHARE",
+    "https://www.postgresql.org/docs/17/plpgsql-control-structures.html#PLPGSQL-ERROR-TRAPPING",
+    "https://supabase.com/docs/guides/database/functions#security-definer-vs-invoker",
+    "https://supabase.com/changelog"
+  ]
+}

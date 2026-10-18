@@ -1,0 +1,164 @@
+{
+  "date": "2026-10-16",
+  "reviewDisposition": "No new critical, P1/high or P2 finding within stated-budget isolation; P2-R2-1 corrected at source/synthetic boundary only. Separate aggregate-cent finding and its implementation review remain open.",
+  "candidateAppTree": "f520e01ef084e78f1bde90cbe4d6941facd2dae2",
+  "sourceArchiveCommit": "5b9397968b276ab57121cca2bdc14d832b3b11f4",
+  "patchSHA256": "404acef304a567807dc2ef2dda3292bc2e83eb0baaba9cce56d7567fe13af35c",
+  "briefSHA256": "fec0a69c7042856f9219e745d4a06b92a02698231398263b78853d3ec017280e",
+  "privateRoot": "/home/nathaniel/.local/state/openplan/project-budget-stated-budget-independent-20261016",
+  "privateManifest": {
+    "path": "/home/nathaniel/.local/state/openplan/project-budget-stated-budget-independent-20261016/private-evidence-manifest.json",
+    "sha256": "32d91b11efbd28eed09dbc6447903b6378c22cc423c2b6831760b1f19deaf6f5",
+    "bytes": 24751,
+    "entries": 147
+  },
+  "independentSummary": {
+    "path": "/home/nathaniel/.local/state/openplan/project-budget-stated-budget-independent-20261016/validation-summary.json",
+    "sha256": "f3528b136c3690154b0691c6d3113fa22003b4189d1837d31231d88004779014",
+    "bytes": 97886
+  },
+  "terminalWindow": {
+    "exit": 0,
+    "unit": "openplan-stated-isolation-independent-test-3492303",
+    "finishedAt": 1792180550.615204,
+    "elapsedSeconds": 109.59555244445801,
+    "logSHA256": "d9fb0ba07549536802419231fa18d1f306045880b6a8d4fb1a1d3f0e78410c44",
+    "receipt": {
+      "path": "/home/nathaniel/.local/state/openplan/project-budget-stated-budget-independent-20261016/window-exit.json",
+      "sha256": "2361b01b574717981035b295a3d2669af9f67a0c6267c2e27830a31945b03fce",
+      "bytes": 237
+    }
+  },
+  "lockReleaseObservation": {
+    "path": "/home/nathaniel/.local/state/openplan/project-budget-stated-budget-independent-20261016/lock-release-observation.json",
+    "sha256": "e51b3512ada08879cc0cfdc97c3074102f932e8aad22faf68584806383f4d563",
+    "bytes": 233
+  },
+  "parentCustodyAfter": {
+    "path": "/home/nathaniel/.local/state/openplan/project-budget-stated-budget-independent-20261016/custody-after.json",
+    "sha256": "0c3204ea72ae56247de3014b39942b2bfcb62aa974648b6855290212231f3cdc",
+    "bytes": 1466
+  },
+  "authorInputManifest": {
+    "path": "/home/nathaniel/.local/state/openplan/project-budget-stated-budget-isolation-20261016/report-private-input-manifest.json",
+    "sha256": "861d14e86a43f09210239739c1d84a78af1ef164a1f8298041009ef0aede4403",
+    "entries": 2469,
+    "regularFileMismatchesBefore": 0,
+    "regularFileMismatchesAfter": 0,
+    "linkTargetVerifiedAtFinalInspection": true,
+    "beforeLinkTargetCompared": false
+  },
+  "publicInputSeals": {
+    "path": "/home/nathaniel/.local/state/openplan/project-budget-stated-budget-independent-20261016/public-input-seals.json",
+    "sha256": "2b07b0119ec95ad75d2027e8e16744f8cbb4b8ef5b0797a45009cae98a846763",
+    "bytes": 4667
+  },
+  "priorPrivateInputSeals": {
+    "path": "/home/nathaniel/.local/state/openplan/project-budget-stated-budget-independent-20261016/prior-private-input-seals.json",
+    "sha256": "ec9580898e00b892b5b3251dad139450bb99b168958ca904e1441a71a2db7119",
+    "bytes": 1420
+  },
+  "independentTests": [
+    {
+      "tag": "existing-baseline",
+      "exit": 0,
+      "passed": 16,
+      "failed": 0,
+      "excluded": 84,
+      "expectedFailure": null
+    },
+    {
+      "tag": "independent-baseline",
+      "exit": 0,
+      "passed": 26,
+      "failed": 0,
+      "excluded": 84,
+      "expectedFailure": null
+    },
+    {
+      "tag": "harmless",
+      "exit": 0,
+      "passed": 26,
+      "failed": 0,
+      "excluded": 84,
+      "expectedFailure": null
+    },
+    {
+      "tag": "remove-isolation",
+      "exit": 1,
+      "passed": 12,
+      "failed": 14,
+      "excluded": 84,
+      "expectedFailure": "retains other sources when the stated lane shape is invalid",
+      "beforeSHA256": "30c5133a27cfb723c9ea1fdbe45cf6a19a5fb9c156d0804565105ba14b9b63ab",
+      "mutatedSHA256": "465c8d8b2c6422891ecd59c5fff0037b525f0ffd4ee4ea101bcef64fe4e4eb99",
+      "restoredSHA256": "30c5133a27cfb723c9ea1fdbe45cf6a19a5fb9c156d0804565105ba14b9b63ab"
+    },
+    {
+      "tag": "invent-source-success",
+      "exit": 1,
+      "passed": 12,
+      "failed": 14,
+      "excluded": 84,
+      "expectedFailure": "isolates malformed stated-budget money",
+      "beforeSHA256": "30c5133a27cfb723c9ea1fdbe45cf6a19a5fb9c156d0804565105ba14b9b63ab",
+      "mutatedSHA256": "3e85d5dbe0aa9254e9e534efa606b8119c0b02040faabd2007c78414911ebb26",
+      "restoredSHA256": "30c5133a27cfb723c9ea1fdbe45cf6a19a5fb9c156d0804565105ba14b9b63ab"
+    },
+    {
+      "tag": "accept-foreign-project",
+      "exit": 1,
+      "passed": 25,
+      "failed": 1,
+      "excluded": 84,
+      "expectedFailure": "refuses an invalid outer identity (1)",
+      "beforeSHA256": "30c5133a27cfb723c9ea1fdbe45cf6a19a5fb9c156d0804565105ba14b9b63ab",
+      "mutatedSHA256": "cd6d68723cdbdd7363251efea088ddd1228bdc968912bdb0fce318e1d296bf5f",
+      "restoredSHA256": "30c5133a27cfb723c9ea1fdbe45cf6a19a5fb9c156d0804565105ba14b9b63ab"
+    },
+    {
+      "tag": "disconnect-panel-failure",
+      "exit": 1,
+      "passed": 24,
+      "failed": 2,
+      "excluded": 84,
+      "expectedFailure": "independent stated-budget funding disclosure",
+      "beforeSHA256": "2d3cb3b451c96926a0ffab5aabe387294b462fbd7c0631b2b6903b81c11efbf5",
+      "mutatedSHA256": "a723774cee402e6dbe4ba38f96d5106acc4bffce94fbcd9600490d3534f62807",
+      "restoredSHA256": "2d3cb3b451c96926a0ffab5aabe387294b462fbd7c0631b2b6903b81c11efbf5"
+    },
+    {
+      "tag": "invent-unavailable",
+      "exit": 1,
+      "passed": 25,
+      "failed": 1,
+      "excluded": 84,
+      "expectedFailure": "independent stated-budget funding success control",
+      "beforeSHA256": "2d3cb3b451c96926a0ffab5aabe387294b462fbd7c0631b2b6903b81c11efbf5",
+      "mutatedSHA256": "e2eea73e970f330add591a2c5f2447e395ae6b43f7a18a0fee48b15edfadc351",
+      "restoredSHA256": "2d3cb3b451c96926a0ffab5aabe387294b462fbd7c0631b2b6903b81c11efbf5"
+    },
+    {
+      "tag": "lose-budget-prefill",
+      "exit": 1,
+      "passed": 24,
+      "failed": 2,
+      "excluded": 84,
+      "expectedFailure": "retains delivery work when the stated-budget source fails",
+      "beforeSHA256": "430adcaa588db46b850553e6e635f560053559b0c310cac4c03dc838020a8972",
+      "mutatedSHA256": "195c2f054f24218d05d787a95eb611dd4cfdce1b3ca42575d132b81327947ccf",
+      "restoredSHA256": "430adcaa588db46b850553e6e635f560053559b0c310cac4c03dc838020a8972"
+    },
+    {
+      "tag": "restored",
+      "exit": 0,
+      "passed": 26,
+      "failed": 0,
+      "excluded": 84,
+      "expectedFailure": null
+    }
+  ],
+  "unitPeakBytes": 692748288,
+  "restoredPrivateSourcePaths": 5,
+  "nativeBrowserHostedMilestoneAcceptance": false
+}

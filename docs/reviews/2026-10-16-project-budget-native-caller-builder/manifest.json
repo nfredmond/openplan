@@ -1,0 +1,30 @@
+{
+  "status": "UNALLOCATED_NOT_AVAILABLE_UNADMITTED",
+  "database": "openplan_budget_native_9c47bd610f2a49e8a35c706d",
+  "workspaceA": "5dcfd625-1d54-483b-b918-8490deab63f1",
+  "workspaceB": "b207943e-6853-49de-9b9d-205481a69c0c",
+  "actors": {
+    "a_owner": "f174c91a-36e5-4477-90a5-5017b188f314",
+    "a_owner2": "fc66d23b-981a-49cc-9cb9-a7822d405fa3",
+    "a_admin": "dec579c4-fc71-44cc-b377-953309df0446",
+    "a_member": "cf41d6a7-dc13-4c6b-a330-d7debe344d94",
+    "a_viewer": "a786239d-a557-4145-ab6e-30a93c155ba2",
+    "b_only": "465906f8-7d27-4794-8db2-1cb517652a32",
+    "dual": "a86c371d-d014-4c43-a09b-f91823b8ad4c",
+    "outsider": "91c0f81f-46d0-48de-9652-59229cc7da91",
+    "revocable": "d3194ec6-df7c-4917-b747-2e090a2c78fb"
+  },
+  "memberships": [
+    ["A", "a_owner", "owner"], ["A", "a_owner2", "owner"],
+    ["A", "a_admin", "admin"], ["A", "a_member", "member"],
+    ["A", "a_viewer", "viewer"], ["A", "dual", "admin"],
+    ["A", "revocable", "member"], ["B", "b_only", "owner"],
+    ["B", "dual", "admin"]
+  ],
+  "seedWriter": "dual",
+  "generatorAliases": {"owner": "dual", "assignee": "a_member"},
+  "aliasMeaning": "owner is the R2 created_by input name; dual is admin in A and B, not an owner. assignee is an A member.",
+  "automaticWorkspaceIds": null,
+  "credentials": null,
+  "nativeAdmission": null
+}

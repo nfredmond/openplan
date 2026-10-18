@@ -1,0 +1,915 @@
+{
+  "schema": "PUBLIC_DESIGNATION_WRAPPED_VIEWPORT_FOCUSED_EVIDENCE_V1",
+  "date": "2026-10-17",
+  "tier": "ROOT_ACCEPTED_FOCUSED_PURE_MOCKED_SOURCE_ONLY",
+  "base": {
+    "head": "d264d69149ae2f9d589840e5a543b798ae4718ec",
+    "appTree": "42fc0315070f31269325acb264f0260723dbd56b",
+    "originalMigrations": 425,
+    "candidateMigrations": 426
+  },
+  "sourceSHA256": {
+    "openplan/src/lib/geo/wgs84-query-viewport.ts": "bc0b411c7b9afa9d8dfff93c16ed571ce1d486ed7f0e25473e43ad33b964e942",
+    "openplan/src/components/land-use-plans/public-designation-map.tsx": "7e47ef07af182cfdb8db0502ae568039c5f3694449c3059152a29441d9443bdc",
+    "openplan/src/lib/land-use-plans/public-map.ts": "a0ded9ab67a7c1f023191842bc278e04449d48693fb51302155996f4b2982264",
+    "openplan/src/app/api/public/land-use-plans/[planId]/map/[designationId]/route.ts": "075c624a77ed15bf0e8399f1b055ee9316bbf690d64f1be7542b284fdbbbfaa9",
+    "openplan/src/app/api/public/land-use-plan-reviews/[shareToken]/map/[designationId]/route.ts": "e5798f39d662681effb30e05a05d7c45e4822950f858fdb60bf5fc3af7b5169b",
+    "openplan/src/app/api/reports/[reportId]/land-use-map/[designationId]/route.ts": "657d49db2ce55ed93036a2e013303f834b1a9b60babd78577b244f8054c76e92",
+    "openplan/src/test/wgs84-query-viewport.test.ts": "0c436557e975aa690e84b8ff933b6f83e4c5e751f2fb367f631ac9ada6076f6d",
+    "openplan/src/test/public-designation-map-viewport.test.tsx": "c1d14a87785b5124083b4d70fd9e3fff03cbbae18cc70f97fe9c52ae1e6e282b",
+    "openplan/src/test/land-use-plan-map-viewport-routes.test.ts": "0639521dc7119fcb95a7a36662c31843a04fdb66cc3f720887d210be61cb8c50",
+    "openplan/src/test/land-use-plan-report-map.test.tsx": "5fb08ee4e637505a33823549adfb0c133bd5a76f23ea05df1d7e656b0e6fa2f0",
+    "openplan/supabase/migrations/20261017052401_public_designation_query_viewport.sql": "ceaba34c98472c086e8f8e56d758d73a9200c60f0e3a926c398f73ea387c960c"
+  },
+  "acceptance": {
+    "sha256": "387eb31746b10b05f0d649e317ce4af612ae17e94909e453962f19b9738b4658",
+    "path": "/home/nathaniel/.local/state/openplan/viewport-focused-root-preflight-20261017-16/ACCEPTANCE.json",
+    "auditSha256": "103bb98ba8d55b3c509f665469231b18338695b5dc2b4f610535c3ff4ebadae8",
+    "auditBytes": 1128294,
+    "auditPath": "/home/nathaniel/.local/state/openplan/viewport-focused-root-preflight-20261017-16/WINDOW06_SAVED_DATA_AUDIT_FINAL.json",
+    "sourceDisposition16": "/home/nathaniel/.local/state/openplan/viewport-focused-root-preflight-20261017-13/source-review-16/SOURCE_DISPOSITION_16.json",
+    "authorityAvailability": "Machine-local private receipts remain in place. This public summary does not publish their complete bodies."
+  },
+  "actualWindow": {
+    "unit": "openplan-designation-viewport-focused-20261016-06",
+    "invocationId": "84739bb6237a491eb9facca0d4e4d85c",
+    "outerExecSession": 74826,
+    "outerExit": 0,
+    "grantSHA256": "f54c2576c9025fab2f38ba3d6ff7f453b99cdfa4e569a946e06cc884f447f7e0",
+    "managerClientPID": 3812693,
+    "entryPID": 3812694,
+    "workerInnerPID": 2,
+    "managerElapsedSeconds": 74.07133011508267,
+    "serviceSeconds": 74.043,
+    "cpuSeconds": 36.923,
+    "reportedPeak": "510.2M",
+    "reportedSwap": "0B",
+    "sampledWorkerFinalMemoryPeakBytes": 535064576,
+    "sampledWorkerFinalPIDPeak": 37,
+    "events": 0,
+    "independentlyObservedFinalExactUnitPeak": false,
+    "outputFiles": 2470,
+    "outputBytes": 12634410
+  },
+  "results": {
+    "inProcess": {
+      "retainedValidator": 11,
+      "retainedReader": 4,
+      "newFiniteAndAmendment": 23,
+      "total": 38
+    },
+    "namedMutants": 13,
+    "assertionFailureObservations": 36,
+    "finalNodeCommands": 7,
+    "newNodeProcesses": 20,
+    "ledgerRows": 24,
+    "sqlByteControls": 4,
+    "finalVitest": [
+      {
+        "selection": "helper",
+        "numPassedTests": 75,
+        "numFailedTests": 0,
+        "numPendingTests": 0,
+        "numTotalTests": 75
+      },
+      {
+        "selection": "component",
+        "numPassedTests": 13,
+        "numFailedTests": 0,
+        "numPendingTests": 0,
+        "numTotalTests": 13
+      },
+      {
+        "selection": "routes",
+        "numPassedTests": 74,
+        "numFailedTests": 0,
+        "numPendingTests": 0,
+        "numTotalTests": 74
+      },
+      {
+        "selection": "loader",
+        "numPassedTests": 25,
+        "numFailedTests": 0,
+        "numPendingTests": 41,
+        "numTotalTests": 66
+      }
+    ],
+    "typesExit": 0,
+    "lintExit": 0,
+    "directionExit": 0,
+    "directionReminderSHA256": "f68445367cddf2dc482988cce2c102768990039ee4d491468a145718612a4640"
+  },
+  "namedMutantResults": [
+    {
+      "command": 1,
+      "case": "strict-wrap-published",
+      "selection": "route-published",
+      "returnedPID": 3,
+      "exitCode": 1,
+      "counts": {
+        "passed": 20,
+        "failed": 3,
+        "skipped": 51,
+        "total": 74
+      },
+      "checks": {
+        "singleOutputReconstruction": true,
+        "actual3Argv": true,
+        "exit": true,
+        "returnedPID": true,
+        "identity": true,
+        "captureNoFailures": true,
+        "uniqueNames": true,
+        "rawStatuses": true,
+        "counters": true,
+        "exactUniverse": true,
+        "exactVector": true,
+        "namedAssertionClass": true
+      },
+      "failedNames": [
+        "'published' designation viewport route passes canonical query '170,-10,-170,10' through its retained access path",
+        "'published' designation viewport route retains map loader 'not_found' status",
+        "'published' designation viewport route retains map loader 'incomplete' status"
+      ]
+    },
+    {
+      "command": 2,
+      "case": "blank-coercion-published",
+      "selection": "route-published",
+      "returnedPID": 37,
+      "exitCode": 1,
+      "counts": {
+        "passed": 21,
+        "failed": 2,
+        "skipped": 51,
+        "total": 74
+      },
+      "checks": {
+        "singleOutputReconstruction": true,
+        "actual3Argv": true,
+        "exit": true,
+        "returnedPID": true,
+        "identity": true,
+        "captureNoFailures": true,
+        "uniqueNames": true,
+        "rawStatuses": true,
+        "counters": true,
+        "exactUniverse": true,
+        "exactVector": true,
+        "namedAssertionClass": true
+      },
+      "failedNames": [
+        "'published' designation viewport route refuses query 10,,12,35 before access or data work",
+        "'published' designation viewport route refuses query 10, ,12,35 before access or data work"
+      ]
+    },
+    {
+      "command": 3,
+      "case": "strict-wrap-review",
+      "selection": "route-review",
+      "returnedPID": 71,
+      "exitCode": 1,
+      "counts": {
+        "passed": 20,
+        "failed": 3,
+        "skipped": 51,
+        "total": 74
+      },
+      "checks": {
+        "singleOutputReconstruction": true,
+        "actual3Argv": true,
+        "exit": true,
+        "returnedPID": true,
+        "identity": true,
+        "captureNoFailures": true,
+        "uniqueNames": true,
+        "rawStatuses": true,
+        "counters": true,
+        "exactUniverse": true,
+        "exactVector": true,
+        "namedAssertionClass": true
+      },
+      "failedNames": [
+        "'review' designation viewport route passes canonical query '170,-10,-170,10' through its retained access path",
+        "'review' designation viewport route retains map loader 'not_found' status",
+        "'review' designation viewport route retains map loader 'incomplete' status"
+      ]
+    },
+    {
+      "command": 4,
+      "case": "blank-coercion-review",
+      "selection": "route-review",
+      "returnedPID": 105,
+      "exitCode": 1,
+      "counts": {
+        "passed": 21,
+        "failed": 2,
+        "skipped": 51,
+        "total": 74
+      },
+      "checks": {
+        "singleOutputReconstruction": true,
+        "actual3Argv": true,
+        "exit": true,
+        "returnedPID": true,
+        "identity": true,
+        "captureNoFailures": true,
+        "uniqueNames": true,
+        "rawStatuses": true,
+        "counters": true,
+        "exactUniverse": true,
+        "exactVector": true,
+        "namedAssertionClass": true
+      },
+      "failedNames": [
+        "'review' designation viewport route refuses query 10,,12,35 before access or data work",
+        "'review' designation viewport route refuses query 10, ,12,35 before access or data work"
+      ]
+    },
+    {
+      "command": 5,
+      "case": "strict-wrap-report",
+      "selection": "route-report",
+      "returnedPID": 139,
+      "exitCode": 1,
+      "counts": {
+        "passed": 20,
+        "failed": 3,
+        "skipped": 51,
+        "total": 74
+      },
+      "checks": {
+        "singleOutputReconstruction": true,
+        "actual3Argv": true,
+        "exit": true,
+        "returnedPID": true,
+        "identity": true,
+        "captureNoFailures": true,
+        "uniqueNames": true,
+        "rawStatuses": true,
+        "counters": true,
+        "exactUniverse": true,
+        "exactVector": true,
+        "namedAssertionClass": true
+      },
+      "failedNames": [
+        "'report' designation viewport route passes canonical query '170,-10,-170,10' through its retained access path",
+        "'report' designation viewport route retains map loader 'not_found' status",
+        "'report' designation viewport route retains map loader 'incomplete' status"
+      ]
+    },
+    {
+      "command": 6,
+      "case": "blank-coercion-report",
+      "selection": "route-report",
+      "returnedPID": 174,
+      "exitCode": 1,
+      "counts": {
+        "passed": 21,
+        "failed": 2,
+        "skipped": 51,
+        "total": 74
+      },
+      "checks": {
+        "singleOutputReconstruction": true,
+        "actual3Argv": true,
+        "exit": true,
+        "returnedPID": true,
+        "identity": true,
+        "captureNoFailures": true,
+        "uniqueNames": true,
+        "rawStatuses": true,
+        "counters": true,
+        "exactUniverse": true,
+        "exactVector": true,
+        "namedAssertionClass": true
+      },
+      "failedNames": [
+        "'report' designation viewport route refuses query 10,,12,35 before access or data work",
+        "'report' designation viewport route refuses query 10, ,12,35 before access or data work"
+      ]
+    },
+    {
+      "command": 7,
+      "case": "drop-scoped-report-client",
+      "selection": "route-report-scope",
+      "returnedPID": 209,
+      "exitCode": 1,
+      "counts": {
+        "passed": 0,
+        "failed": 5,
+        "skipped": 69,
+        "total": 74
+      },
+      "checks": {
+        "singleOutputReconstruction": true,
+        "actual3Argv": true,
+        "exit": true,
+        "returnedPID": true,
+        "identity": true,
+        "captureNoFailures": true,
+        "uniqueNames": true,
+        "rawStatuses": true,
+        "counters": true,
+        "exactUniverse": true,
+        "exactVector": true,
+        "namedAssertionClass": true
+      },
+      "failedNames": [
+        "'report' designation viewport route passes canonical query '-20,-10,30,10' through its retained access path",
+        "'report' designation viewport route passes canonical query '170,-10,-170,10' through its retained access path",
+        "'report' designation viewport route passes canonical query '-180,-90,180,90' through its retained access path",
+        "'report' designation viewport route passes canonical query '180,-10,-170,10' through its retained access path",
+        "'report' designation viewport route passes canonical query '170,-10,-180,10' through its retained access path"
+      ]
+    },
+    {
+      "command": 8,
+      "case": "old-rpc-name",
+      "selection": "loader-rpc",
+      "returnedPID": 243,
+      "exitCode": 1,
+      "counts": {
+        "passed": 12,
+        "failed": 5,
+        "skipped": 49,
+        "total": 66
+      },
+      "checks": {
+        "singleOutputReconstruction": true,
+        "actual3Argv": true,
+        "exit": true,
+        "returnedPID": true,
+        "identity": true,
+        "captureNoFailures": true,
+        "uniqueNames": true,
+        "rawStatuses": true,
+        "counters": true,
+        "exactUniverse": true,
+        "exactVector": true,
+        "namedAssertionClass": true
+      },
+      "failedNames": [
+        "designation query viewport loader contract uses one union RPC for retained report query '170,-10,-170,10'",
+        "designation query viewport loader contract uses one union RPC for retained report query '-180,-10,180,10'",
+        "designation query viewport loader contract uses one union RPC for retained report query '180,-10,-170,10'",
+        "designation query viewport loader contract uses one union RPC for retained report query '170,-10,-180,10'",
+        "designation query viewport loader contract keeps the default public service client and allowlist with one wrapped read"
+      ]
+    },
+    {
+      "command": 9,
+      "case": "two-rpc-calls",
+      "selection": "loader-onecall",
+      "returnedPID": 278,
+      "exitCode": 1,
+      "counts": {
+        "passed": 0,
+        "failed": 4,
+        "skipped": 62,
+        "total": 66
+      },
+      "checks": {
+        "singleOutputReconstruction": true,
+        "actual3Argv": true,
+        "exit": true,
+        "returnedPID": true,
+        "identity": true,
+        "captureNoFailures": true,
+        "uniqueNames": true,
+        "rawStatuses": true,
+        "counters": true,
+        "exactUniverse": true,
+        "exactVector": true,
+        "namedAssertionClass": true
+      },
+      "failedNames": [
+        "designation query viewport loader contract uses one union RPC for retained report query '170,-10,-170,10'",
+        "designation query viewport loader contract uses one union RPC for retained report query '-180,-10,180,10'",
+        "designation query viewport loader contract uses one union RPC for retained report query '180,-10,-170,10'",
+        "designation query viewport loader contract uses one union RPC for retained report query '170,-10,-180,10'"
+      ]
+    },
+    {
+      "command": 10,
+      "case": "accept-duplicate-id",
+      "selection": "loader-duplicates",
+      "returnedPID": 313,
+      "exitCode": 1,
+      "counts": {
+        "passed": 0,
+        "failed": 1,
+        "skipped": 65,
+        "total": 66
+      },
+      "checks": {
+        "singleOutputReconstruction": true,
+        "actual3Argv": true,
+        "exit": true,
+        "returnedPID": true,
+        "identity": true,
+        "captureNoFailures": true,
+        "uniqueNames": true,
+        "rawStatuses": true,
+        "counters": true,
+        "exactUniverse": true,
+        "exactVector": true,
+        "namedAssertionClass": true
+      },
+      "failedNames": [
+        "designation query viewport loader contract refuses duplicate feature IDs rather than drawing a counted duplicate"
+      ]
+    },
+    {
+      "command": 11,
+      "case": "accept-short-reply",
+      "selection": "loader-short",
+      "returnedPID": 348,
+      "exitCode": 1,
+      "counts": {
+        "passed": 0,
+        "failed": 1,
+        "skipped": 65,
+        "total": 66
+      },
+      "checks": {
+        "singleOutputReconstruction": true,
+        "actual3Argv": true,
+        "exit": true,
+        "returnedPID": true,
+        "identity": true,
+        "captureNoFailures": true,
+        "uniqueNames": true,
+        "rawStatuses": true,
+        "counters": true,
+        "exactUniverse": true,
+        "exactVector": true,
+        "namedAssertionClass": true
+      },
+      "failedNames": [
+        "designation query viewport loader contract refuses 'short reply' for a wrapped query"
+      ]
+    },
+    {
+      "command": 12,
+      "case": "drop-workspace-projection",
+      "selection": "loader-projection",
+      "returnedPID": 384,
+      "exitCode": 1,
+      "counts": {
+        "passed": 0,
+        "failed": 4,
+        "skipped": 62,
+        "total": 66
+      },
+      "checks": {
+        "singleOutputReconstruction": true,
+        "actual3Argv": true,
+        "exit": true,
+        "returnedPID": true,
+        "identity": true,
+        "captureNoFailures": true,
+        "uniqueNames": true,
+        "rawStatuses": true,
+        "counters": true,
+        "exactUniverse": true,
+        "exactVector": true,
+        "namedAssertionClass": true
+      },
+      "failedNames": [
+        "designation query viewport loader contract uses one union RPC for retained report query '170,-10,-170,10'",
+        "designation query viewport loader contract uses one union RPC for retained report query '-180,-10,180,10'",
+        "designation query viewport loader contract uses one union RPC for retained report query '180,-10,-170,10'",
+        "designation query viewport loader contract uses one union RPC for retained report query '170,-10,-180,10'"
+      ]
+    },
+    {
+      "command": 13,
+      "case": "geometry-intersection-copy",
+      "selection": "loader-density-copy",
+      "returnedPID": 420,
+      "exitCode": 1,
+      "counts": {
+        "passed": 0,
+        "failed": 1,
+        "skipped": 65,
+        "total": 66
+      },
+      "checks": {
+        "singleOutputReconstruction": true,
+        "actual3Argv": true,
+        "exit": true,
+        "returnedPID": true,
+        "identity": true,
+        "captureNoFailures": true,
+        "uniqueNames": true,
+        "rawStatuses": true,
+        "counters": true,
+        "exactUniverse": true,
+        "exactVector": true,
+        "namedAssertionClass": true
+      },
+      "failedNames": [
+        "designation query viewport loader contract retains 'above-cap sentinel' for a wrapped query"
+      ]
+    }
+  ],
+  "finite23": [
+    {
+      "group": "footprint",
+      "label": "finite-01-harmless-first",
+      "fault": null,
+      "guardOmitted": false,
+      "sourceSha256": "65e19082533fae2aa301c0212dcd0579535950a609f2547325c4fe271485335e",
+      "expectedClass": null,
+      "expectedMessage": null,
+      "observed": {
+        "class": null,
+        "message": null,
+        "valid": true
+      },
+      "primaryFailure": null
+    },
+    {
+      "group": "footprint",
+      "label": "finite-02-original-valid",
+      "fault": null,
+      "guardOmitted": false,
+      "sourceSha256": "62292f9ce46697b21038d14540806ed2b457fc6ad326da2f9b50a760fe176017",
+      "expectedClass": null,
+      "expectedMessage": null,
+      "observed": {
+        "class": null,
+        "message": null,
+        "valid": true
+      },
+      "primaryFailure": null
+    },
+    {
+      "group": "footprint",
+      "label": "finite-03-missing-failure-refused",
+      "fault": "missing-failure",
+      "guardOmitted": false,
+      "sourceSha256": "62292f9ce46697b21038d14540806ed2b457fc6ad326da2f9b50a760fe176017",
+      "expectedClass": "builtins.RuntimeError",
+      "expectedMessage": "finite assertion outcome vector differs",
+      "observed": {
+        "class": "builtins.RuntimeError",
+        "message": "finite assertion outcome vector differs",
+        "valid": false,
+        "suffixWrongReasonGenericAccepted": [
+          false,
+          false,
+          false
+        ]
+      },
+      "primaryFailure": null
+    },
+    {
+      "group": "footprint",
+      "label": "finite-04-vector-guard-omitted",
+      "fault": "missing-failure",
+      "guardOmitted": true,
+      "sourceSha256": "06da78988ee7aed338116c6192183109523728ea0fa2e4628b6406a0376478da",
+      "expectedClass": "builtins.AssertionError",
+      "expectedMessage": "FINITE_MISSING_EXPECTED_FAILURE_ACCEPTED",
+      "observed": {
+        "class": "builtins.AssertionError",
+        "message": "FINITE_MISSING_EXPECTED_FAILURE_ACCEPTED",
+        "valid": false
+      },
+      "primaryFailure": null
+    },
+    {
+      "group": "footprint",
+      "label": "finite-05-restored-valid",
+      "fault": null,
+      "guardOmitted": false,
+      "sourceSha256": "62292f9ce46697b21038d14540806ed2b457fc6ad326da2f9b50a760fe176017",
+      "expectedClass": null,
+      "expectedMessage": null,
+      "observed": {
+        "class": null,
+        "message": null,
+        "valid": true
+      },
+      "primaryFailure": null
+    },
+    {
+      "group": "footprint",
+      "label": "finite-06-unknown-name",
+      "fault": "unknown-name",
+      "guardOmitted": false,
+      "sourceSha256": "62292f9ce46697b21038d14540806ed2b457fc6ad326da2f9b50a760fe176017",
+      "expectedClass": "builtins.RuntimeError",
+      "expectedMessage": "finite assertion name universe differs",
+      "observed": {
+        "class": "builtins.RuntimeError",
+        "message": "finite assertion name universe differs",
+        "valid": false
+      },
+      "primaryFailure": null
+    },
+    {
+      "group": "footprint",
+      "label": "finite-07-extra-name",
+      "fault": "extra-name",
+      "guardOmitted": false,
+      "sourceSha256": "62292f9ce46697b21038d14540806ed2b457fc6ad326da2f9b50a760fe176017",
+      "expectedClass": "builtins.RuntimeError",
+      "expectedMessage": "finite assertion name universe differs",
+      "observed": {
+        "class": "builtins.RuntimeError",
+        "message": "finite assertion name universe differs",
+        "valid": false
+      },
+      "primaryFailure": null
+    },
+    {
+      "group": "footprint",
+      "label": "finite-08-duplicate-name",
+      "fault": "duplicate-name",
+      "guardOmitted": false,
+      "sourceSha256": "62292f9ce46697b21038d14540806ed2b457fc6ad326da2f9b50a760fe176017",
+      "expectedClass": "builtins.RuntimeError",
+      "expectedMessage": "finite assertion name universe differs",
+      "observed": {
+        "class": "builtins.RuntimeError",
+        "message": "finite assertion name universe differs",
+        "valid": false
+      },
+      "primaryFailure": null
+    },
+    {
+      "group": "footprint",
+      "label": "finite-09-missing-name",
+      "fault": "missing-name",
+      "guardOmitted": false,
+      "sourceSha256": "62292f9ce46697b21038d14540806ed2b457fc6ad326da2f9b50a760fe176017",
+      "expectedClass": "builtins.RuntimeError",
+      "expectedMessage": "finite assertion name universe differs",
+      "observed": {
+        "class": "builtins.RuntimeError",
+        "message": "finite assertion name universe differs",
+        "valid": false
+      },
+      "primaryFailure": null
+    },
+    {
+      "group": "footprint",
+      "label": "finite-10-unexpected-failure",
+      "fault": "unexpected-failure",
+      "guardOmitted": false,
+      "sourceSha256": "62292f9ce46697b21038d14540806ed2b457fc6ad326da2f9b50a760fe176017",
+      "expectedClass": "builtins.RuntimeError",
+      "expectedMessage": "finite assertion outcome vector differs",
+      "observed": {
+        "class": "builtins.RuntimeError",
+        "message": "finite assertion outcome vector differs",
+        "valid": false
+      },
+      "primaryFailure": null
+    },
+    {
+      "group": "footprint",
+      "label": "finite-11-selected-skipped",
+      "fault": "selected-skipped",
+      "guardOmitted": false,
+      "sourceSha256": "62292f9ce46697b21038d14540806ed2b457fc6ad326da2f9b50a760fe176017",
+      "expectedClass": "builtins.RuntimeError",
+      "expectedMessage": "finite assertion outcome vector differs",
+      "observed": {
+        "class": "builtins.RuntimeError",
+        "message": "finite assertion outcome vector differs",
+        "valid": false
+      },
+      "primaryFailure": null
+    },
+    {
+      "group": "footprint",
+      "label": "finite-12-outside-executed",
+      "fault": "outside-executed",
+      "guardOmitted": false,
+      "sourceSha256": "62292f9ce46697b21038d14540806ed2b457fc6ad326da2f9b50a760fe176017",
+      "expectedClass": "builtins.RuntimeError",
+      "expectedMessage": "finite assertion outcome vector differs",
+      "observed": {
+        "class": "builtins.RuntimeError",
+        "message": "finite assertion outcome vector differs",
+        "valid": false
+      },
+      "primaryFailure": null
+    },
+    {
+      "group": "footprint",
+      "label": "finite-13-invalid-status",
+      "fault": "invalid-status",
+      "guardOmitted": false,
+      "sourceSha256": "62292f9ce46697b21038d14540806ed2b457fc6ad326da2f9b50a760fe176017",
+      "expectedClass": "builtins.RuntimeError",
+      "expectedMessage": "finite assertion status differs",
+      "observed": {
+        "class": "builtins.RuntimeError",
+        "message": "finite assertion status differs",
+        "valid": false
+      },
+      "primaryFailure": null
+    },
+    {
+      "group": "footprint",
+      "label": "finite-14-status-type",
+      "fault": "status-type",
+      "guardOmitted": false,
+      "sourceSha256": "62292f9ce46697b21038d14540806ed2b457fc6ad326da2f9b50a760fe176017",
+      "expectedClass": "builtins.RuntimeError",
+      "expectedMessage": "finite assertion field type differs",
+      "observed": {
+        "class": "builtins.RuntimeError",
+        "message": "finite assertion field type differs",
+        "valid": false
+      },
+      "primaryFailure": null
+    },
+    {
+      "group": "footprint",
+      "label": "finite-15-counter-bool",
+      "fault": "counter-bool",
+      "guardOmitted": false,
+      "sourceSha256": "62292f9ce46697b21038d14540806ed2b457fc6ad326da2f9b50a760fe176017",
+      "expectedClass": "builtins.RuntimeError",
+      "expectedMessage": "finite report counter type differs",
+      "observed": {
+        "class": "builtins.RuntimeError",
+        "message": "finite report counter type differs",
+        "valid": false
+      },
+      "primaryFailure": null
+    },
+    {
+      "group": "footprint",
+      "label": "finite-16-counter-float",
+      "fault": "counter-float",
+      "guardOmitted": false,
+      "sourceSha256": "62292f9ce46697b21038d14540806ed2b457fc6ad326da2f9b50a760fe176017",
+      "expectedClass": "builtins.RuntimeError",
+      "expectedMessage": "finite report counter type differs",
+      "observed": {
+        "class": "builtins.RuntimeError",
+        "message": "finite report counter type differs",
+        "valid": false
+      },
+      "primaryFailure": null
+    },
+    {
+      "group": "footprint",
+      "label": "finite-17-counter-wrong",
+      "fault": "counter-wrong",
+      "guardOmitted": false,
+      "sourceSha256": "62292f9ce46697b21038d14540806ed2b457fc6ad326da2f9b50a760fe176017",
+      "expectedClass": "builtins.RuntimeError",
+      "expectedMessage": "finite report counters differ",
+      "observed": {
+        "class": "builtins.RuntimeError",
+        "message": "finite report counters differ",
+        "valid": false
+      },
+      "primaryFailure": null
+    },
+    {
+      "group": "amendment",
+      "label": "amend-01-harmless-first",
+      "fault": null,
+      "guardOmitted": false,
+      "sourceSha256": "22f4c27cda3eeeb3f5afc0bad5468c3a6670cbdcd9a80471050ec72dff4ea536",
+      "expectedClass": null,
+      "expectedMessage": null,
+      "observed": {
+        "class": null,
+        "message": null,
+        "valid": true
+      },
+      "primaryFailure": null
+    },
+    {
+      "group": "amendment",
+      "label": "amend-02-original-valid",
+      "fault": null,
+      "guardOmitted": false,
+      "sourceSha256": "782737f657fde81a470a8a9367dfc885e97d603cf81b79bb99d3cb2c0e4f26dc",
+      "expectedClass": null,
+      "expectedMessage": null,
+      "observed": {
+        "class": null,
+        "message": null,
+        "valid": true
+      },
+      "primaryFailure": null
+    },
+    {
+      "group": "amendment",
+      "label": "amend-03-unauthorized-oracle",
+      "fault": "unauthorized-oracle",
+      "guardOmitted": false,
+      "sourceSha256": "782737f657fde81a470a8a9367dfc885e97d603cf81b79bb99d3cb2c0e4f26dc",
+      "expectedClass": "builtins.RuntimeError",
+      "expectedMessage": "oracle amendment exceeds exact three fields",
+      "observed": {
+        "class": "builtins.RuntimeError",
+        "message": "oracle amendment exceeds exact three fields",
+        "valid": false
+      },
+      "primaryFailure": null
+    },
+    {
+      "group": "amendment",
+      "label": "amend-04-guard-omitted",
+      "fault": "unauthorized-oracle",
+      "guardOmitted": true,
+      "sourceSha256": "8dfb56d54fef3ec25ceaabf56fcd137b5d066ec24c839119d20620d96f40a21a",
+      "expectedClass": "builtins.AssertionError",
+      "expectedMessage": "FINITE_UNAUTHORIZED_ORACLE_ACCEPTED",
+      "observed": {
+        "class": "builtins.AssertionError",
+        "message": "FINITE_UNAUTHORIZED_ORACLE_ACCEPTED",
+        "valid": false
+      },
+      "primaryFailure": null
+    },
+    {
+      "group": "amendment",
+      "label": "amend-05-restored-valid",
+      "fault": null,
+      "guardOmitted": false,
+      "sourceSha256": "782737f657fde81a470a8a9367dfc885e97d603cf81b79bb99d3cb2c0e4f26dc",
+      "expectedClass": null,
+      "expectedMessage": null,
+      "observed": {
+        "class": null,
+        "message": null,
+        "valid": true
+      },
+      "primaryFailure": null
+    },
+    {
+      "group": "amendment",
+      "label": "amend-06-unauthorized-field",
+      "fault": "unauthorized-field",
+      "guardOmitted": false,
+      "sourceSha256": "782737f657fde81a470a8a9367dfc885e97d603cf81b79bb99d3cb2c0e4f26dc",
+      "expectedClass": "builtins.RuntimeError",
+      "expectedMessage": "oracle amendment exceeds exact three fields",
+      "observed": {
+        "class": "builtins.RuntimeError",
+        "message": "oracle amendment exceeds exact three fields",
+        "valid": false
+      },
+      "primaryFailure": null
+    }
+  ],
+  "restoration": {
+    "source11AndSevenOverlays": true,
+    "rootAuditedDonorEntries": 52201,
+    "rootAuditedVisibilityEntries": 20069,
+    "rootAuditedUniquePreservationBodies": 1783,
+    "authorSavedRecordsRehashed": 2470,
+    "authorSavedRecordDescriptorMismatches": 0,
+    "original425Unchanged": true,
+    "candidate426Unchanged": true
+  },
+  "history": {
+    "oldUnit05": "PERMANENT_FAILED1_NEW_ACCEPTED0_FIRST_NODE_NOT_ADOPTED",
+    "old03Accepted18": "HISTORICAL_ONLY_NOT_REPLAYED",
+    "old19": "REJECTED_ZERO_ASSERTION_EXTRA_PHYSICAL_INVOCATION",
+    "earlierSetupFailures": "Preserved; successful06 does not regrade them"
+  },
+  "readerCorrection": {
+    "rootInitialAudit": "WINDOW06_SAVED_DATA_AUDIT.json",
+    "rootInitialSHA256": "63597be73943d9dd207e43d8572e94c7958e21ad566d9351b78978963a44ad22",
+    "rootCorrectionSHA256": "8c2b98fe7a57228193a3c6273a9d8e5be232034419ba08b1f5d0c96856f74685",
+    "cause": "ROOT appended a duplicate expected outputFile to an already complete planned argv.",
+    "correctedRule": "Independently reconstruct selection argv plus exactly one outputFile, then compare directly with the frozen complete plan and actual intent/process/exit argv.",
+    "initialAuditRetainedAs": "METADATA_ONLY_HOLD",
+    "subjectFailureOrReplay": false,
+    "authorReaderFacts": "A metadata argument-list limit and a JSON object-key order comparison HOLD are retained privately. Bounded descriptor reads and typed field equality corrected only the readers; all saved bytes remain exact."
+  },
+  "semanticBoundary": {
+    "oldParentPredicateBytes": 453,
+    "oldParentPredicateInspectsFinite23": false,
+    "finite23Acceptance": "ROOT independent full row-by-row saved-DATA audit",
+    "noAutomaticAcceptanceFromOld15": true
+  },
+  "limits": [
+    "No nativeSQL424/425/426, parser/planner/SQL geometry/performance/RLS, real Auth/HTTP/browser/build/hosted/practitioner/release proof.",
+    "SQL4 ledger is byte equality and pinned control-flow evidence only.",
+    "No separate per-case raw mutated source-byte capture exists; mutation source derives from pinned worker/source and actual execution path.",
+    "Old Unit05 stays permanently failed; its first command is not adopted. Old accepted18 stays historical, not rerun.",
+    "Captured worker final memory.peak is a sampled kernel value, not an independently read final exact unit peak.",
+    "No namespace owner equivalence, hard artifact quota, arbitrary durability or hostwide confinement claim.",
+    "Old453 predicate cannot inspect finite23; this independent row-by-row audit supplies that declared acceptance boundary.",
+    "Inherited direction review expiry/version reminders remain unchanged."
+  ],
+  "successorAuthorized": false,
+  "releaseAuthorized": false,
+  "nativeSQLAuthorized": false,
+  "browserAuthorized": false
+}

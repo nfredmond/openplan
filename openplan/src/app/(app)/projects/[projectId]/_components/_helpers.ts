@@ -29,15 +29,9 @@ export function fmtDateTime(value: string | null | undefined): string {
   return parsed.toLocaleString("en-US");
 }
 
-/**
- * The project delivery board restates invoice records the invoicing register
- * also shows, so it writes them to the cent — the two screens must agree
- * digit for digit. An unreadable amount reads $0 here, as it always has.
- */
+/** Project money retains exact decimal strings and uses the shared absent-value contract. */
 export function fmtCurrency(value: number | string | null | undefined): string {
-  const parsed = typeof value === "number" ? value : Number.parseFloat(value ?? "0");
-  const safeValue = Number.isFinite(parsed) ? parsed : 0;
-  return formatMoney(safeValue, { precision: "cents" });
+  return formatMoney(value, { precision: "cents" });
 }
 
 export function buildProjectControlHref(targetId: string, targetRowId?: string | null): string {

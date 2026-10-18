@@ -1,0 +1,162 @@
+diff --git a/openplan/src/app/api/invoicing/client-invoices/route.ts b/openplan/src/app/api/invoicing/client-invoices/route.ts
+index 73f37270d..ab98c2c46 100644
+--- a/openplan/src/app/api/invoicing/client-invoices/route.ts
++++ b/openplan/src/app/api/invoicing/client-invoices/route.ts
+@@ -586 +585,0 @@ export async function POST(request: NextRequest) {
+-            currencyCode: parsed.data.currencyCode ?? null,
+diff --git a/openplan/src/components/invoicing/client-invoice-composer.tsx b/openplan/src/components/invoicing/client-invoice-composer.tsx
+index c18edb0c4..47a726680 100644
+--- a/openplan/src/components/invoicing/client-invoice-composer.tsx
++++ b/openplan/src/components/invoicing/client-invoice-composer.tsx
+@@ -22 +22 @@ import { formatMoney } from "@/lib/money/format";
+-import { formatInvoiceMoney } from "@/lib/invoicing/invoice-currency";
++import { ENGAGEMENT_CURRENCY_DISCLOSURE, formatEngagementMoney, formatInvoiceMoney } from "@/lib/invoicing/invoice-currency";
+@@ -379 +379 @@ export function ClientInvoiceComposer({
+-          `This invoice takes the engagement to ${formatInvoiceMoney(payload.nteWarning.projectedBilledToDate, payload.nteWarning.currencyCode)} projected gross billing against its ${formatInvoiceMoney(payload.nteWarning.notToExceed, payload.nteWarning.currencyCode)} legacy not-to-exceed, ${formatInvoiceMoney(payload.nteWarning.overBy, payload.nteWarning.currencyCode)} over. Agreement terms unassessed. Recorded as a warning; nothing was blocked.`
++          `This invoice takes the engagement to ${formatEngagementMoney(payload.nteWarning.projectedBilledToDate)} projected gross billing against its ${formatEngagementMoney(payload.nteWarning.notToExceed)} legacy not-to-exceed, ${formatEngagementMoney(payload.nteWarning.overBy)} over. ${ENGAGEMENT_CURRENCY_DISCLOSURE} Recorded as a warning; nothing was blocked.`
+diff --git a/openplan/src/lib/invoicing/invoice-currency.ts b/openplan/src/lib/invoicing/invoice-currency.ts
+index 081f1cecf..e07efb768 100644
+--- a/openplan/src/lib/invoicing/invoice-currency.ts
++++ b/openplan/src/lib/invoicing/invoice-currency.ts
+@@ -3,0 +4,7 @@ import { moneyCents } from "@/lib/money/optional-amount";
++export const ENGAGEMENT_CURRENCY_DISCLOSURE = "Aggregate currency, legacy ceiling currency and currency agreement across invoices are unassessed. This is a numerical comparison only; agreement terms are unassessed.";
++
++/** Legacy engagement context has no assessed currency, regardless of the current invoice. */
++export function formatEngagementMoney(amount: number | string | null | undefined): string {
++  return formatInvoiceMoney(amount, null);
++}
++
+diff --git a/openplan/src/lib/invoicing/invoice-pdf.ts b/openplan/src/lib/invoicing/invoice-pdf.ts
+index f885ad532..3482af541 100644
+--- a/openplan/src/lib/invoicing/invoice-pdf.ts
++++ b/openplan/src/lib/invoicing/invoice-pdf.ts
+@@ -25 +25 @@ import type { EngagementBilledSummary } from "./receivables";
+-import { formatInvoiceMoney } from "./invoice-currency";
++import { ENGAGEMENT_CURRENCY_DISCLOSURE, formatEngagementMoney, formatInvoiceMoney } from "./invoice-currency";
+@@ -183 +183 @@ export function buildClientInvoiceHtml(data: ClientInvoicePdfData): string {
+-      ntePart = `<p>Not-to-exceed ${formatAmount(billed?.notToExceed ?? nte, currency)}; agreement terms unassessed.</p>`;
++      ntePart = `<p>Not-to-exceed ${esc(formatEngagementMoney(billed?.notToExceed ?? nte))}; agreement terms unassessed.</p>`;
+@@ -188 +188 @@ export function buildClientInvoiceHtml(data: ClientInvoicePdfData): string {
+-        : `billed to date ${formatAmount(billed.billedToDate, currency)} gross before retention`;
++        : `billed to date ${esc(formatEngagementMoney(billed.billedToDate))} gross before retention`;
+@@ -191 +191 @@ export function buildClientInvoiceHtml(data: ClientInvoicePdfData): string {
+-        : `, remaining ${formatAmount(billed.remaining, currency)}`;
++        : `, remaining ${esc(formatEngagementMoney(billed.remaining))}`;
+@@ -194 +194 @@ export function buildClientInvoiceHtml(data: ClientInvoicePdfData): string {
+-        : `; gross draft ${formatAmount(billed.draftedUnbilled, currency)}`;
++        : `; gross draft ${esc(formatEngagementMoney(billed.draftedUnbilled))}`;
+@@ -200,0 +201 @@ export function buildClientInvoiceHtml(data: ClientInvoicePdfData): string {
++      <p>${esc(ENGAGEMENT_CURRENCY_DISCLOSURE)}</p>
+diff --git a/openplan/src/lib/invoicing/receivables.ts b/openplan/src/lib/invoicing/receivables.ts
+index bc54fc179..db45d8ade 100644
+--- a/openplan/src/lib/invoicing/receivables.ts
++++ b/openplan/src/lib/invoicing/receivables.ts
+@@ -127 +126,0 @@ export type EngagementNteWarning = {
+-  currencyCode: string | null;
+diff --git a/openplan/src/test/client-invoice-composer.test.tsx b/openplan/src/test/client-invoice-composer.test.tsx
+index 27a829e43..6f2875468 100644
+--- a/openplan/src/test/client-invoice-composer.test.tsx
++++ b/openplan/src/test/client-invoice-composer.test.tsx
+@@ -214,2 +214,7 @@ describe("ClientInvoiceComposer", () => {
+-  it("renders the server's not-to-exceed overrun as a warning, never a block", async () => {
+-    stubFetch({ nteWarning: { basis: "legacy_terms_unassessed", billedToDate: 60000, projectedBilledToDate: "44999999999999.55", notToExceed: 50000, overBy: "44999999949999.55", currencyCode: "EUR" } });
++  it.each([
++    ["EUR", "€1.01"],
++    ["JPY", "¥1"],
++  ])("keeps %s invoice currency separate from exact unassessed warning context", async (currencyCode, invoiceAmount) => {
++    // A stray currency field must not override the context's unassessed currency.
++    const warning = { basis: "legacy_terms_unassessed" as const, billedToDate: 60000, projectedBilledToDate: "90999999999999.09", notToExceed: "50000.01", overBy: "90999999949999.08", currencyCode };
++    const fetchMock = stubFetch({ nteWarning: warning });
+@@ -218,3 +223,8 @@ describe("ClientInvoiceComposer", () => {
+-    await pullUnbilledTime();
+-
+-    fireEvent.change(screen.getByPlaceholderText("Required — no rate found"), { target: { value: "400" } });
++    fireEvent.change(screen.getByLabelText("Invoice currency code"), { target: { value: currencyCode } });
++    fireEvent.change(screen.getByLabelText("Engagement"), { target: { value: ENGAGEMENT_ID } });
++    fireEvent.change(screen.getByLabelText(/Description \(line 1\)/), { target: { value: "Known invoice amount" } });
++    fireEvent.change(screen.getByLabelText("Quantity"), { target: { value: "1" } });
++    fireEvent.change(screen.getByLabelText("Unit rate"), { target: { value: "1.01" } });
++    const totals = within(screen.getByText("Invoice totals").closest("aside") as HTMLElement);
++    expect(totals.getAllByText(invoiceAmount)).toHaveLength(2);
++    expect(screen.getByText(/carries a 50000.00 \(currency unassessed\) not-to-exceed/)).toBeInTheDocument();
+@@ -222,8 +232,13 @@ describe("ClientInvoiceComposer", () => {
+-
+-    await waitFor(() =>
+-      expect(
+-        screen.getByText(/€44,999,999,999,999\.55 projected gross billing against its €50,000\.00 legacy not-to-exceed, €44,999,999,949,999\.55 over\. Agreement terms unassessed\. Recorded as a warning; nothing was blocked\./)
+-      ).toBeInTheDocument()
+-    );
+-    // The save still succeeded alongside the warning.
+-    expect(screen.getByText("Client invoice saved as draft.")).toBeInTheDocument();
++    await waitFor(() => expect(screen.getByText("Client invoice saved as draft.")).toBeInTheDocument());
++    const notice = screen.getByText(/This invoice takes the engagement to/).textContent!;
++    expect(notice).toContain("90999999999999.09 (currency unassessed) projected gross billing");
++    expect(notice).toContain("50000.01 (currency unassessed) legacy not-to-exceed");
++    expect(notice).toContain("90999999949999.08 (currency unassessed) over");
++    expect(notice).toContain("Aggregate currency, legacy ceiling currency and currency agreement across invoices are unassessed.");
++    expect(notice).toContain("This is a numerical comparison only; agreement terms are unassessed.");
++    expect(notice).toContain("Recorded as a warning; nothing was blocked.");
++    expect(notice).not.toContain("60000");
++    expect(notice).not.toMatch(/[€¥$]/);
++    const postCall = fetchMock.mock.calls.find(([, init]) => init?.method === "POST") as unknown as [string, { body: string }];
++    expect(JSON.parse(postCall[1].body)).toMatchObject({ currencyCode, lineItems: [{ unitAmount: 1.01 }] });
++    expect(refreshMock).toHaveBeenCalled();
+diff --git a/openplan/src/test/client-invoice-pdf.test.ts b/openplan/src/test/client-invoice-pdf.test.ts
+index 2d0921ef4..f93df77a6 100644
+--- a/openplan/src/test/client-invoice-pdf.test.ts
++++ b/openplan/src/test/client-invoice-pdf.test.ts
+@@ -183,3 +183,25 @@ describe("buildClientInvoiceHtml", () => {
+-    expect(html).toContain("Not-to-exceed $50,000.00");
+-    expect(html).toContain("billed to date $18,000.00");
+-    expect(html).toContain("remaining $32,000.00");
++    expect(html).toContain("Not-to-exceed 50000.00 (currency unassessed)");
++    expect(html).toContain("billed to date 18000.00 (currency unassessed)");
++    expect(html).toContain("remaining 32000.00 (currency unassessed)");
++  });
++
++  it.each([
++    ["EUR", "€5,000.00", "€3,000.00"],
++    ["JPY", "¥5,000", "¥3,000"],
++  ])("keeps %s invoice amounts separate from exact unassessed PDF context", (currencyCode, invoiceTotal, lineAmount) => {
++    const html = buildClientInvoiceHtml({
++      ...baseHtmlData,
++      invoice: { ...baseHtmlData.invoice, currency_code: currencyCode },
++      engagement: { title: "Legacy context", not_to_exceed_amount: "50000.01" },
++      engagementBilled: { billedToDate: "90999999999999.09", draftedUnbilled: "91999999999999.08", notToExceed: "50000.01", remaining: "-90999999949999.08", isOverNte: true },
++    });
++    const context = html.match(/<div class="engagement-context">([\s\S]*?)<\/div>/)![1];
++    expect(context).toContain("Not-to-exceed 50000.01 (currency unassessed)");
++    expect(context).toContain("billed to date 90999999999999.09 (currency unassessed) gross before retention");
++    expect(context).toContain("remaining -90999999949999.08 (currency unassessed)");
++    expect(context).toContain("gross draft 91999999999999.08 (currency unassessed)");
++    expect(context).toContain("Aggregate currency, legacy ceiling currency and currency agreement across invoices are unassessed.");
++    expect(context).toContain("This is a numerical comparison only; agreement terms are unassessed.");
++    expect(context).not.toMatch(/[€¥$]/);
++    expect(html).toContain(invoiceTotal);
++    expect(html).toContain(lineAmount);
+diff --git a/openplan/src/test/receivable-invoicing-routes.test.ts b/openplan/src/test/receivable-invoicing-routes.test.ts
+index 0768b9cb6..e937b3223 100644
+--- a/openplan/src/test/receivable-invoicing-routes.test.ts
++++ b/openplan/src/test/receivable-invoicing-routes.test.ts
+@@ -780 +780 @@ describe("POST /api/invoicing/client-invoices", () => {
+-  it("warns — and does not block — when the invoice pushes the engagement over its not-to-exceed", async () => {
++  it("warns without blocking when the invoice pushes the engagement over its not-to-exceed", async () => {
+@@ -816 +816 @@ describe("POST /api/invoicing/client-invoices", () => {
+-    expect(body.nteWarning).toEqual({ basis: "legacy_terms_unassessed", billedToDate: 8000, projectedBilledToDate: 13000, notToExceed: 10000, overBy: 3000, currencyCode: null });
++    expect(body.nteWarning).toEqual({ basis: "legacy_terms_unassessed", billedToDate: 8000, projectedBilledToDate: 13000, notToExceed: 10000, overBy: 3000 });
+@@ -839 +839 @@ describe("POST /api/invoicing/client-invoices", () => {
+-      expect(body.nteWarning.currencyCode).toBe("EUR");
++      expect(body.nteWarning).not.toHaveProperty("currencyCode");
+@@ -846,0 +847,12 @@ describe("POST /api/invoicing/client-invoices", () => {
++  it.each(["EUR", "JPY"])("keeps %s on the invoice without asserting a warning currency", async (currencyCode) => {
++    engagementSingleMock.mockResolvedValueOnce({ data: { id: ENGAGEMENT, workspace_id: WORKSPACE, client_id: CLIENT, project_id: null, not_to_exceed_amount: "10.00" }, error: null });
++    invoiceListResultMock.mockReturnValueOnce({ data: [{ engagement_id: ENGAGEMENT, status: "sent", subtotal_amount: "10.01" }], error: null });
++    const response = await postClientInvoice(jsonRequest("http://localhost/api/invoicing/client-invoices", "POST", { ...invoicePayload, currencyCode, lineItems: [{ description: "New work", amount: 1.01 }] }));
++    expect(response.status).toBe(201);
++    expect((await response.json()).nteWarning).toEqual({ basis: "legacy_terms_unassessed", billedToDate: 10.01, projectedBilledToDate: 11.02, notToExceed: 10, overBy: 1.02 });
++    expect(invoiceInsertMock).toHaveBeenCalledWith(expect.objectContaining({ currency_code: currencyCode }));
++    expect(invoiceSelectMock).toHaveBeenCalledWith("id, status, engagement_id, subtotal_amount, retention_percent, retention_amount, total_amount");
++    expect(invoiceQueryChain.eq).toHaveBeenCalledWith("engagement_id", ENGAGEMENT);
++    expect(engagementSelectMock).toHaveBeenCalledWith("id, workspace_id, client_id, project_id, not_to_exceed_amount");
++  });
++

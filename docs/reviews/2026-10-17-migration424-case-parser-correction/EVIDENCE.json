@@ -1,0 +1,62 @@
+{
+  "baseCommit": "0895af82f4bf23c327d50e7c17e98b445580807e",
+  "migration": "20261017014010_land_use_plan_context_geography.sql",
+  "ordinal": 424,
+  "originalSHA256": "b083241e879913afe93e848f4bb81191acf5439569c8226a86e14852bf3ee002",
+  "correctedSHA256": "1c0e7cf422b0668d8ebcb9ef29df87a88f3ee6e69498b9c88012bdaf90c42947",
+  "originalBytes": 6500,
+  "correctedBytes": 6502,
+  "change": "Enclose the existing SQL CASE expression in two parentheses. No expression, limit, role, grant, trigger or data update changes.",
+  "nativeCompilerResult": "ROOT_ACCEPTED_NATIVE_COMPILATION_ONLY_TEST04",
+  "independentReview": "Source accepted for the reported parser defect; original reviewer did not execute tests.",
+  "fullRestoreResult": "Original0895 CI failed; corrected full restore still pending.",
+  "hostedApplied": false,
+  "actualInvocationId": "e938a6e146ee4dcc83decc298c6755e0",
+  "nativeCaseCount": 4,
+  "failedHarnessAttemptsPreserved": 3,
+  "caseInputs": {
+    "01-harmless.sql": {
+      "bytes": 6499,
+      "sha256": "6107a1bdeb5c3f9aa32726b8f3704391ed4d8316b965064e84c5028088f021a9"
+    },
+    "02-fixed.sql": {
+      "bytes": 6502,
+      "sha256": "1c0e7cf422b0668d8ebcb9ef29df87a88f3ee6e69498b9c88012bdaf90c42947"
+    },
+    "03-original.sql": {
+      "bytes": 6500,
+      "sha256": "b083241e879913afe93e848f4bb81191acf5439569c8226a86e14852bf3ee002"
+    },
+    "04-restored.sql": {
+      "bytes": 6502,
+      "sha256": "1c0e7cf422b0668d8ebcb9ef29df87a88f3ee6e69498b9c88012bdaf90c42947"
+    },
+    "compiler.sql": {
+      "bytes": 3073,
+      "sha256": "49e2082d428ca7f379bd971970e39ff8e384c6edf2289c9bd088fc8dbc665ee0"
+    },
+    "container-compile.sh": {
+      "bytes": 794,
+      "sha256": "f8208d5e1bc7de1bac2b1893926de3ac1249145893a60495d530b016ed4f55ab"
+    }
+  },
+  "publicArtifacts": {
+    "INDEPENDENT_SOURCE_REVIEW.md": {
+      "bytes": 4377,
+      "sha256": "987aa3371520ccc34dbf3a3b1ee6aedc75c46210abbd7fdbfb6330932bdfe151"
+    },
+    "NATIVE_RESULT.json": {
+      "bytes": 3633,
+      "sha256": "2f1a960a466c1750b90cd11395af226a737543a6b653dd474806c7e8c6dcc8c8"
+    },
+    "container-compile.sh": {
+      "bytes": 794,
+      "sha256": "f8208d5e1bc7de1bac2b1893926de3ac1249145893a60495d530b016ed4f55ab"
+    },
+    "compiler-input.json": {
+      "bytes": 3438,
+      "sha256": "d8ef56d6a60b728bc11c34b6863d6dd0768f4b8b9df3842c14bc81b002fa8684"
+    }
+  },
+  "compilerInputRepresentation": "JSON text decodes to exact3073-byte executed compiler.sql, including final single-user command delimiter."
+}

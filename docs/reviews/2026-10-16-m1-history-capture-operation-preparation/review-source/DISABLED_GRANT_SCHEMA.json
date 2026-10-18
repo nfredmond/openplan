@@ -1,0 +1,48 @@
+{
+  "kind": "SCHEMA_ONLY_NOT_GRANT_INSTANCE",
+  "noAuthorityValuesOrEpochAllocated": true,
+  "operatingAuthority": false,
+  "requiredFields": [
+    "requestSHA256",
+    "sourceInputsSHA256",
+    "runtimeManifestSHA256",
+    "runtimeReviewReceiptSHA256",
+    "subjectSysArgv",
+    "managerArgv",
+    "executionModel",
+    "unit",
+    "limits",
+    "issuedUnixNs",
+    "expiresUnixNs",
+    "lockDeviceInode",
+    "native",
+    "archive",
+    "retry"
+  ],
+  "requiredStatus": "GRANTED_ONE_M1_HISTORY_OPERATION_PURE23_WINDOW",
+  "rootExclusiveCreation": true,
+  "rootSourceReviewAndExternalParentSupervisorStillRequired": true,
+  "runtimeManifestFixedFuturePath": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/RUNTIME_MANIFEST.json",
+  "runtimeReviewReceiptFixedFuturePath": "/home/nathaniel/.local/state/openplan/a0-python-elf-root-static-audit-20261016/ROOT_SOURCE_DISPOSITION_02.json",
+  "sameProcessEntryRequiredFields": [
+    "requestSHA256",
+    "sameProcessPID",
+    "sourceInputsSHA256",
+    "executionModel"
+  ],
+  "sourceOnlyBlockingRuntimeClosure": {
+    "automaticLibraryAdditionAllowed": false,
+    "dynamicABIProved": false,
+    "fullInterpreterAndAllSelectedExtensionELFNeededAndAliasesReviewed": true,
+    "implicitDropOfExtensionsAllowed": false,
+    "manifestPath": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/RUNTIME_MANIFEST.json",
+    "manifestSHA256": "f7a53f48563b1ddeba0e2abd88d8cd1fb9a66c3f98da09279dfece6c9e1a8e4d",
+    "reviewReceiptPath": "/home/nathaniel/.local/state/openplan/a0-python-elf-root-static-audit-20261016/ROOT_SOURCE_DISPOSITION_02.json",
+    "reviewReceiptSHA256": "db6c8a9a72e8a4be88b9eac89a0983fa8c12a914d8976f19dacc3285f7ef6f0b",
+    "selectedAliasCount": 32,
+    "selectedRuntimeFileCount": 1247,
+    "sourceClosureComplete": false,
+    "status": "ROOT_ACCEPTED_SELECTED_STATIC_PYTHON_FOOTPRINT",
+    "wholeUsrBind": false
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "claim": "Conditional source/metadata review only. No stage permission, publication or native acceptance.",
+  "privateEntries": 21,
+  "privateManifest": {
+    "bytes": 4061,
+    "gid": 1000,
+    "mode": "0o600",
+    "path": "/home/nathaniel/.local/state/openplan/a0-r6-restore419-admission-independent-20261016/review-private-pins.json",
+    "sha256": "a93f30f6af5f86a018a13b974de84479aae926011590bc15c16956ac34b51ee5",
+    "uid": 1000
+  },
+  "public": {
+    "REVIEW.md": {
+      "bytes": 21648,
+      "gid": 1000,
+      "mode": "0o664",
+      "sha256": "f3cdc9bece92ab5caf000d4aed3a72e3c1473ae4190de366204cea71c6bfe3c5",
+      "uid": 1000
+    },
+    "checks.json": {
+      "bytes": 2896,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "12cfdb282a0290629713a524cfd23c03f7d1b881ebce628d272253b7eeb2844e",
+      "uid": 1000
+    },
+    "source-pins.json": {
+      "bytes": 6227,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "cb6c4863e11fdeaf981c1194e804e075b819fe58640ccee778010da511b6f234",
+      "uid": 1000
+    }
+  }
+}

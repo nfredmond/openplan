@@ -1,0 +1,1975 @@
+{
+  "app": "44e638d6d79378042343bf5b18408f09ee991d57",
+  "baselineHistoryDigest": "0ee645e79fb8431bb116c30a673f8775",
+  "baselineReference": {
+    "path": "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/plan.json",
+    "pin": {
+      "bytes": 61975,
+      "mode": "0o600",
+      "sha256": "f8b8a36f4439703964cd5d66d9e6408d37bc984215c6c07a5909a728af7db4e5",
+      "uid": 1000
+    },
+    "use": "Selected historical source expectations only. No A0 operational identity or proof is adopted."
+  },
+  "baselineSequencesCensus": "d906d887079dd69d2b018752258ca3b5",
+  "baselineTables": {
+    "_realtime.extensions": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "_realtime.feature_flags": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "_realtime.schema_migrations": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "_realtime.tenants": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "auth.audit_log_entries": {
+      "count": 79,
+      "digest": "1753b1ab44a8f4b2d6395a66ab2eb95f"
+    },
+    "auth.custom_oauth_providers": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "auth.flow_state": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "auth.identities": {
+      "count": 5,
+      "digest": "9eee1ae656bbbed168d5d5b42c169ea6"
+    },
+    "auth.instances": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "auth.mfa_amr_claims": {
+      "count": 31,
+      "digest": "0fe69d79900fad9140eb02f0a6053fe2"
+    },
+    "auth.mfa_challenges": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "auth.mfa_factors": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "auth.oauth_authorizations": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "auth.oauth_client_states": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "auth.oauth_clients": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "auth.oauth_consents": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "auth.one_time_tokens": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "auth.refresh_tokens": {
+      "count": 43,
+      "digest": "65ffed6cba9a0c450955b2ff20e265a3"
+    },
+    "auth.saml_providers": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "auth.saml_relay_states": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "auth.schema_migrations": {
+      "count": 77,
+      "digest": "2431d64ed800ea362346c374f29bb3d3"
+    },
+    "auth.sessions": {
+      "count": 31,
+      "digest": "a1f18c6c2ba907383b436c51f4f1b7b6"
+    },
+    "auth.sso_domains": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "auth.sso_providers": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "auth.users": {
+      "count": 15,
+      "digest": "a040d99199778d7615b51eeb9e442c73"
+    },
+    "auth.webauthn_challenges": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "auth.webauthn_credentials": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "net._http_response": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "net.http_request_queue": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "openplan_gtfs.adoption_receipts": {
+      "count": 4,
+      "digest": "f02c65e1af4004400aa72b41917ff425"
+    },
+    "openplan_gtfs.batch_receipts": {
+      "count": 1239,
+      "digest": "1c21258482684e347fbfd357a1b2e689"
+    },
+    "openplan_gtfs.claims": {
+      "count": 13,
+      "digest": "eb7e3775891ca7d1341a874823539899"
+    },
+    "openplan_gtfs.completion_receipts": {
+      "count": 10,
+      "digest": "65d5ad685417460359bb1dc686d7ec0b"
+    },
+    "openplan_gtfs.executions": {
+      "count": 13,
+      "digest": "8dedffc6a9415879679bb7aa44ba422e"
+    },
+    "openplan_gtfs.prepare_receipts": {
+      "count": 10,
+      "digest": "c16f228314e18d0d90e9aa75f859b9be"
+    },
+    "openplan_gtfs.request_cancellations": {
+      "count": 2,
+      "digest": "a131ed5a6a090d53111f79cc47dd105f"
+    },
+    "openplan_gtfs.retired_archives": {
+      "count": 6,
+      "digest": "030e9654fd0cd5b3a52ed5b9ddae1208"
+    },
+    "openplan_gtfs.submissions": {
+      "count": 13,
+      "digest": "e10c51150722bd7b12ebfdbe51e17010"
+    },
+    "openplan_gtfs.terminal_receipts": {
+      "count": 3,
+      "digest": "f40b4bac33e8eb8d2c9d2fd6f388de84"
+    },
+    "openplan_gtfs.tract_receipts": {
+      "count": 10,
+      "digest": "cdb08325a5f1465f8648c66cdb28e461"
+    },
+    "openplan_gtfs.write_context": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "openplan_odm_private.original_dispatches": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.access_request_review_events": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.access_requests": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.aerial_artifact_custody": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.aerial_evidence_packages": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.aerial_flight_plans": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.aerial_imagery": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.aerial_missions": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.aerial_processing_callbacks": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.aerial_processing_jobs": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.aerial_project_posture": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.agencies": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.analyses": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.assistant_action_approvals": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.assistant_action_executions": {
+      "count": 2,
+      "digest": "f4193c018ff5a24acb35b97f1bcae670"
+    },
+    "public.assistant_provider_connections": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.assistant_provider_turns": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.billing_events": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.billing_invoice_records": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.billing_webhook_receipts": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.calendar": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.calendar_dates": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.census_tracts": {
+      "count": 255,
+      "digest": "b08e38702c158f1fd898a7eebe37b725"
+    },
+    "public.client_invoice_line_items": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.client_invoices": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.contract_access_versions": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.contract_accounting_imports": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.contract_accounting_reviews": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.contract_actual_versions": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.contract_baselines": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.contract_billing_sources": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.contract_calculation_jobs": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.contract_capacity_versions": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.contract_closeouts": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.contract_commands": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.contract_deliverable_events": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.contract_estimates": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.contract_forecasts": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.contract_imports": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.contract_management_responses": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.contract_master_terms": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.contract_order_periods": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.contract_rates": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.contract_received_files": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.contract_received_invoices": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.contract_response_applications": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.contract_schedules": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.contract_settlement_events": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.contract_snapshots": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.contract_source_changes": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.contract_source_deletions": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.contract_source_observations": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.contract_task_assignments": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.contract_tasks": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.contract_work_updates": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.county_run_artifacts": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.county_runs": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.cron_job_heartbeats": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.data_connectors": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.data_dataset_project_links": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.data_datasets": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.data_refresh_jobs": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.document_narrative_drafts": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_campaign_projects": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_campaigns": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_categories": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_closeloop_entries": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_configuration_versions": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_content_translations": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_context_layers": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_decision_request_resolutions": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_email_outbox": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_item_demographics": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_item_history": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_item_votes": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_items": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_notifications": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_public_translation_requests": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_report_jobs": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_response_broadcast_messages": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_response_broadcasts": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_response_decision_links": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_response_history": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_response_write_receipts": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_subscriptions": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_survey_answers": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_survey_question_options": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_survey_questions": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_survey_response_drafts": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_survey_response_sessions": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_survey_review_history": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_synthesis_approval_events": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_synthesis_context_attempt_inputs": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_synthesis_context_frames": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_synthesis_context_requests": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_synthesis_execution_queue": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_synthesis_generation_attempts": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_synthesis_generation_authorizations": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_synthesis_generation_cancellations": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_synthesis_generation_dispatches": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_synthesis_generation_outputs": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_synthesis_generation_plan_seals": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_synthesis_generation_plan_tasks": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_synthesis_generation_plans": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_synthesis_generation_requests": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_synthesis_generation_selections": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_synthesis_preparation_attempts": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_synthesis_preparation_jobs": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_synthesis_response_events": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_synthesis_response_members": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_synthesis_review_revisions": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_synthesis_reviews": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_synthesis_sources": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_synthesis_thematic_attempt_inputs": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_synthesis_thematic_choices": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_synthesis_thematic_frames": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_synthesis_thematic_input_seals": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_synthesis_thematic_inputs": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_synthesis_thematic_requests": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_translation_generation_fields": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_translation_generation_outputs": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_translation_generation_requests": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_translation_generation_resolutions": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_translation_history": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.engagement_translation_write_receipts": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.equity_tract_designations": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.funding_awards": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.funding_opportunities": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.funding_opportunity_application_exports": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.funding_opportunity_application_sections": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.funding_opportunity_attachments": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.funding_opportunity_narrative_drafts": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.funding_opportunity_section_drafts": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.gtfs_feed_versions": {
+      "count": 18,
+      "digest": "be77eb383a914e94205170eb850f94c7"
+    },
+    "public.gtfs_feeds": {
+      "count": 10,
+      "digest": "8b67d57b5fec3aeba87597c5e94f016f"
+    },
+    "public.gtfs_ingest_storage_cleanup": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.gtfs_route_service_levels": {
+      "count": 3458,
+      "digest": "0100f1bd84286c5de7d0973d78827c96"
+    },
+    "public.gtfs_stop_service_levels": {
+      "count": 119530,
+      "digest": "fb6161629eb19601691169a9c470ee87"
+    },
+    "public.gtfs_tract_service": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.invoicing_clients": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.invoicing_engagements": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.invoicing_rate_entries": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.invoicing_rate_tables": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.invoicing_staff": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.invoicing_time_entries": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.kb_document_chunks": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.kb_document_extractions": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.kb_documents": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.kb_ocr_job_callbacks": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.kb_ocr_jobs": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.land_use_plan_consultation_records": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.land_use_plan_content_nodes": {
+      "count": 2,
+      "digest": "dd063dbd8a17aa27ab4a52d282013152"
+    },
+    "public.land_use_plan_context_commands": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.land_use_plan_creation_cancellations": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.land_use_plan_creation_commands": {
+      "count": 1,
+      "digest": "dfc5ef4bb0ab4a0c3301b08736861145"
+    },
+    "public.land_use_plan_decisions": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.land_use_plan_designation_policy_links": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.land_use_plan_designations": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.land_use_plan_freeze_commands": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.land_use_plan_implementation_actions": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.land_use_plan_implementation_report_commands": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.land_use_plan_implementation_reports": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.land_use_plan_process_records": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.land_use_plan_relationships": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.land_use_plan_review_events": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.land_use_plan_review_releases": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.land_use_plan_rule_reconciliation_commands": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.land_use_plan_versions": {
+      "count": 1,
+      "digest": "067e2c77684bce38a4359f55a403f717"
+    },
+    "public.land_use_plans": {
+      "count": 1,
+      "digest": "c83d4102da44e8dd36c57ddd0488f7e1"
+    },
+    "public.lodes_od": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.measure_allocation_rules": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.measure_allocations": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.measure_claim_documents": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.measure_claims": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.measure_fund_periods": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.measure_funds": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.measure_moe_records": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.measure_period_off_the_top": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.measure_period_reserve": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.measure_recipient_basis_values": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.measure_recipients": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.model_artifact_write_context": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.model_artifact_write_receipts": {
+      "count": 61,
+      "digest": "ba7837782909374b3bc2dcaaf55d3b83"
+    },
+    "public.model_assessment_command_receipts": {
+      "count": 1,
+      "digest": "99ceac180f552b082e277cb0b6aed8ba"
+    },
+    "public.model_attempt_instrument_custody": {
+      "count": 8,
+      "digest": "3380d3b064c635fdd92cc297bb82f396"
+    },
+    "public.model_attempt_instrument_receipts": {
+      "count": 8,
+      "digest": "3cd9a471c0bd9ca053e807892969f745"
+    },
+    "public.model_execution_custody_enrollment": {
+      "count": 111,
+      "digest": "adf4c382cd3ab686d563d5bb57eeeee8"
+    },
+    "public.model_kpi_write_context": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.model_kpi_write_receipts": {
+      "count": 18,
+      "digest": "3286cf145760e309e4f6bde4abed5ab3"
+    },
+    "public.model_legacy_artifact_receipts": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.model_legacy_kpi_receipts": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.model_links": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.model_run_artifacts": {
+      "count": 243,
+      "digest": "f168d4e02f4a033e2535a7bbde13a28a"
+    },
+    "public.model_run_kpis": {
+      "count": 20,
+      "digest": "de6bb80a468ed8edff94e26f96083e8c"
+    },
+    "public.model_run_recovery_receipts": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.model_run_relaunch_receipts": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.model_run_stages": {
+      "count": 52,
+      "digest": "d01e60992419a48487664129875a69ba"
+    },
+    "public.model_run_write_context": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.model_runs": {
+      "count": 111,
+      "digest": "7ef809b3e6055d5cc461dbe04ddabae0"
+    },
+    "public.model_stage_attempts": {
+      "count": 13,
+      "digest": "a8a5cae9091210f436b03545e571b789"
+    },
+    "public.model_stage_claim_receipts": {
+      "count": 13,
+      "digest": "9f0ad623fd4b04311af15bc4878552af"
+    },
+    "public.model_stage_execution_starts": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.model_stage_skip_receipts": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.model_stage_write_context": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.model_stage_write_receipts": {
+      "count": 11,
+      "digest": "1b0f46dda12ed8ca839109ad2b44efa0"
+    },
+    "public.modeling_claim_decisions": {
+      "count": 59,
+      "digest": "e31dc3de7f7f4e17fe16af1ef9bffb3a"
+    },
+    "public.modeling_distributed_work_loading_custody": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.modeling_source_manifests": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.modeling_structural_demand_diagnosis_custody": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.modeling_validation_assessments": {
+      "count": 45,
+      "digest": "f8e735603dfa7587724b1561e83d7c7c"
+    },
+    "public.modeling_validation_instrument_v2_custody": {
+      "count": 1,
+      "digest": "4d389a45035381e0972d75616646cab3"
+    },
+    "public.modeling_validation_results": {
+      "count": 19,
+      "digest": "cf75ef1a9ec2a036e4f780ac3681254c"
+    },
+    "public.modeling_validation_structural_diagnoses": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.modeling_worker_heartbeats": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.models": {
+      "count": 2,
+      "digest": "d3468a132b6a1deea8b170b897910865"
+    },
+    "public.network_connectors": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.network_corridors": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.network_package_versions": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.network_packages": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.network_zones": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.node_queue_process_observations": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.plan_links": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.plans": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.program_links": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.program_work_program_events": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.program_work_program_extractions": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.program_work_program_packets": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.program_work_program_reviews": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.program_work_program_revisions": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.program_work_program_sources": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.program_work_program_workflow": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.programs": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.project_bca_screenings": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.project_bca_versions": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.project_corridors": {
+      "count": 2,
+      "digest": "0a2041f8ecd7527d536e9e990d22f3a4"
+    },
+    "public.project_decision_package_decisions": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.project_decision_package_submissions": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.project_decisions": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.project_deliverables": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.project_evidence_bundles": {
+      "count": 2,
+      "digest": "95103a7945cbf3e89f7c626f96610f89"
+    },
+    "public.project_funding_profiles": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.project_issues": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.project_map_package_files": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.project_map_packages": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.project_meetings": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.project_milestones": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.project_portfolio_import_batches": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.project_portfolio_import_rows": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.project_risks": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.project_rtp_cycle_links": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.project_spend_entries": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.project_submittals": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.projects": {
+      "count": 8,
+      "digest": "f020d36cf4ee65779f88ad93130861ce"
+    },
+    "public.report_artifacts": {
+      "count": 2,
+      "digest": "4487b78403472325a58e0dd858260e75"
+    },
+    "public.report_runs": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.report_sections": {
+      "count": 7,
+      "digest": "8f42112a2e89ae75d8bc2b2bac2d9c19"
+    },
+    "public.reports": {
+      "count": 1,
+      "digest": "6cbed7480cc20ef28c88472871a5f1f8"
+    },
+    "public.routes": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.rtp_cycle_chapters": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.rtp_cycles": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.rtp_extraction_candidates": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.rtp_extraction_runs": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.rtp_financial_assumptions": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.rtp_horizon_bands": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.rtp_performance_measures": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.runs": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.safety_crash_ingests": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.safety_crash_parties": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.safety_crashes": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.safety_road_context_features": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.scenario_assumption_sets": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.scenario_comparison_indicator_deltas": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.scenario_comparison_model_run_links": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.scenario_comparison_snapshots": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.scenario_data_packages": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.scenario_entries": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.scenario_indicator_snapshots": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.scenario_sets": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.shapes": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.spatial_ref_sys": {
+      "count": 8500,
+      "digest": "77de68fa557f47decc7f208eccf388d7"
+    },
+    "public.stage_gate_decisions": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.stop_times": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.stops": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.subscriptions": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.title_vi_policies": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.trips": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.usage_events": {
+      "count": 3,
+      "digest": "74d261984e8c9a3cacf026c729e17421"
+    },
+    "public.vmt_significance_screenings": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.work_notifications": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.work_program_actual_allocations": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.work_program_actual_versions": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.work_program_closeout_records": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.work_program_cost_rates": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.work_program_period_closures": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.work_program_period_reports": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.work_program_reimbursement_claims": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.work_program_reimbursement_events": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.work_program_reimbursement_sources": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.work_program_reporting_commands": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.work_program_reporting_periods": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.workspace_gis_features": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.workspace_gis_layer_references": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.workspace_gis_layer_versions": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.workspace_gis_layers": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.workspace_integration_keys": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.workspace_invitations": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.workspace_members": {
+      "count": 25,
+      "digest": "f4f48523ad90a972677bf7fd23ab4483"
+    },
+    "public.workspace_provider_api_connections": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.workspace_provider_api_credentials": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.workspace_provider_api_revisions": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.workspace_reminder_preferences": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "public.workspaces": {
+      "count": 21,
+      "digest": "88c9dd9acb0d521fd6e131d2ca7555f5"
+    },
+    "realtime.messages": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "realtime.messages_2026_09_27": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "realtime.messages_2026_09_28": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "realtime.messages_2026_09_29": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "realtime.messages_2026_09_30": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "realtime.messages_2026_10_01": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "realtime.messages_2026_10_02": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "realtime.schema_migrations": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "realtime.subscription": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "storage.buckets": {
+      "count": 11,
+      "digest": "9d740d9192cc4e0f8778ac8e7f7b1fa8"
+    },
+    "storage.buckets_analytics": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "storage.buckets_vectors": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "storage.iceberg_namespaces": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "storage.iceberg_tables": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "storage.migrations": {
+      "count": 61,
+      "digest": "38318de5e7262708166ca6831201172e"
+    },
+    "storage.objects": {
+      "count": 13,
+      "digest": "366bf6701dc63daf5bf79928a550927e"
+    },
+    "storage.s3_multipart_uploads": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "storage.s3_multipart_uploads_parts": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "storage.vector_indexes": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "supabase_functions.hooks": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "supabase_functions.migrations": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "supabase_migrations.schema_migrations": {
+      "count": 419,
+      "digest": "0ee645e79fb8431bb116c30a673f8775"
+    },
+    "vault.secrets": {
+      "count": 0,
+      "digest": "d41d8cd98f00b204e9800998ecf8427e"
+    }
+  },
+  "independentInitialExplicitSequenceMap": null,
+  "migrations": {
+    "17": {
+      "filename": "20261017000017_portfolio_skip_invalid_classifications.sql",
+      "name": "portfolio_skip_invalid_classifications",
+      "ordinal": 420,
+      "sha256": "b129f80e37aa9be71069683acd42df3fb6fdb94078ed0458f20b6e9c5155a41b"
+    },
+    "18": {
+      "filename": "20261017000018_assistant_usage_limit_receipts.sql",
+      "name": "assistant_usage_limit_receipts",
+      "ordinal": 421,
+      "sha256": "655e625878b3e62f332a7f17d6e126879813cc2bf881ca745593978d8eed6559"
+    },
+    "19": {
+      "filename": "20261017000019_project_budget_complete_inputs.sql",
+      "name": "project_budget_complete_inputs",
+      "ordinal": 422,
+      "sha256": "ed2784b2b1623eb34340480d84dc72e5ce8d226c70532a5062495a1565df181d"
+    }
+  },
+  "proposalStatus": "UNALLOCATED_NOT_AVAILABLE_UNADMITTED",
+  "schema": 2,
+  "source": "3f3639f54243f40dfe7ff093dbb7f4e982a18cbc",
+  "target": "openplan_budget_native_9c47bd610f2a49e8a35c706d",
+  "versions": [
+    "20260219000001",
+    "20260219000002",
+    "20260219000003",
+    "20260219000004",
+    "20260219000005",
+    "20260219000006",
+    "20260224000001",
+    "20260224000002",
+    "20260225000003",
+    "20260225000004",
+    "20260226000005",
+    "20260226000006",
+    "20260226000007",
+    "20260226000008",
+    "20260305000009",
+    "20260306000010",
+    "20260313000011",
+    "20260313000012",
+    "20260313000013",
+    "20260313000014",
+    "20260313000015",
+    "20260313000016",
+    "20260313000017",
+    "20260314000018",
+    "20260314000019",
+    "20260314000020",
+    "20260315000021",
+    "20260315000022",
+    "20260315000023",
+    "20260316000024",
+    "20260317000025",
+    "20260318000026",
+    "20260318000027",
+    "20260318000028",
+    "20260318000029",
+    "20260318000030",
+    "20260318000031",
+    "20260321000032",
+    "20260321000033",
+    "20260324000134",
+    "20260409000035",
+    "20260409000036",
+    "20260409000037",
+    "20260409000038",
+    "20260409000039",
+    "20260409000040",
+    "20260410000041",
+    "20260410000042",
+    "20260410000043",
+    "20260410000044",
+    "20260410000045",
+    "20260410000046",
+    "20260410000047",
+    "20260415000048",
+    "20260416000049",
+    "20260416000050",
+    "20260416000051",
+    "20260416000052",
+    "20260416000053",
+    "20260416000054",
+    "20260416000055",
+    "20260418000056",
+    "20260418000057",
+    "20260418000058",
+    "20260419000059",
+    "20260420000060",
+    "20260420000061",
+    "20260420000062",
+    "20260420000063",
+    "20260420000064",
+    "20260421000065",
+    "20260421000066",
+    "20260422000067",
+    "20260422000068",
+    "20260424000069",
+    "20260424000070",
+    "20260424000071",
+    "20260424000072",
+    "20260424000073",
+    "20260424000074",
+    "20260424000075",
+    "20260424000076",
+    "20260424000077",
+    "20260427000078",
+    "20260508000079",
+    "20260519000080",
+    "20260519000081",
+    "20260717000082",
+    "20260717000083",
+    "20260717000084",
+    "20260717000085",
+    "20260718000086",
+    "20260718000087",
+    "20260718000088",
+    "20260718000089",
+    "20260719000090",
+    "20260719000091",
+    "20260719000092",
+    "20260719000093",
+    "20260719000094",
+    "20260719000095",
+    "20260719000096",
+    "20260720000097",
+    "20260720000098",
+    "20260720000099",
+    "20260721000001",
+    "20260721000002",
+    "20260722000001",
+    "20260722000002",
+    "20260722000003",
+    "20260722000004",
+    "20260722000005",
+    "20260722000006",
+    "20260722000007",
+    "20260722000008",
+    "20260722000009",
+    "20260723000001",
+    "20260723000002",
+    "20260723000003",
+    "20260723000004",
+    "20260723000005",
+    "20260724000001",
+    "20260727000003",
+    "20260727000004",
+    "20260727000005",
+    "20260727000006",
+    "20260727000007",
+    "20260727000008",
+    "20260727000009",
+    "20260727000010",
+    "20260727000011",
+    "20260727000012",
+    "20260727000013",
+    "20260727000014",
+    "20260727000015",
+    "20260727000016",
+    "20260728000001",
+    "20260728000002",
+    "20260728000003",
+    "20260728000004",
+    "20260728000005",
+    "20260728000006",
+    "20260728000007",
+    "20260728000008",
+    "20260728000009",
+    "20260728000010",
+    "20260728000011",
+    "20260728000012",
+    "20260729000001",
+    "20260729000002",
+    "20260729000003",
+    "20260729000004",
+    "20260730000001",
+    "20260730000002",
+    "20260730000003",
+    "20260730000004",
+    "20260730000005",
+    "20260730000006",
+    "20260730000007",
+    "20260730000008",
+    "20260730000009",
+    "20260730000010",
+    "20260730000011",
+    "20260804000001",
+    "20260804000002",
+    "20260805000001",
+    "20260805000002",
+    "20260805000003",
+    "20260805000004",
+    "20260805000005",
+    "20260805000006",
+    "20260805000007",
+    "20260805000008",
+    "20260805000009",
+    "20260805000010",
+    "20260805000011",
+    "20260810000001",
+    "20260810000002",
+    "20260810000003",
+    "20260811000001",
+    "20260811000002",
+    "20260811000003",
+    "20260811000004",
+    "20260811000005",
+    "20260811000006",
+    "20260811000007",
+    "20260811000008",
+    "20260811000009",
+    "20260811000010",
+    "20260811000011",
+    "20260812000001",
+    "20260812000002",
+    "20260812000003",
+    "20260812000010",
+    "20260812000011",
+    "20260812000012",
+    "20260812000013",
+    "20260812000014",
+    "20260812000015",
+    "20260812000016",
+    "20260812000018",
+    "20260812000019",
+    "20260816000001",
+    "20260817000001",
+    "20260817000002",
+    "20260820000001",
+    "20260821000001",
+    "20260822000001",
+    "20260823000001",
+    "20260823000002",
+    "20260823000003",
+    "20260823000004",
+    "20260823000005",
+    "20260823000006",
+    "20260823000007",
+    "20260824000001",
+    "20260824000002",
+    "20260824000003",
+    "20260824000004",
+    "20260824000005",
+    "20260824000006",
+    "20260825000001",
+    "20260825000002",
+    "20260825000003",
+    "20260825000004",
+    "20260826000001",
+    "20260826000002",
+    "20260826000003",
+    "20260826000004",
+    "20260826000005",
+    "20260826000006",
+    "20260826000007",
+    "20260827000001",
+    "20260827000002",
+    "20260827000003",
+    "20260828000001",
+    "20260828000002",
+    "20260828000003",
+    "20260828000004",
+    "20260828000005",
+    "20260831000001",
+    "20260831000002",
+    "20260904000001",
+    "20260905000001",
+    "20260905000002",
+    "20260905000003",
+    "20260906000001",
+    "20260906000002",
+    "20260906000003",
+    "20260907000001",
+    "20260907000002",
+    "20260907000003",
+    "20260907000004",
+    "20260907000005",
+    "20260907000006",
+    "20260908000001",
+    "20260908000002",
+    "20260908000003",
+    "20260908000004",
+    "20260908000005",
+    "20260908000006",
+    "20260908000007",
+    "20260908000008",
+    "20260908000009",
+    "20260908000010",
+    "20260908000011",
+    "20260909000001",
+    "20260909000002",
+    "20260910000001",
+    "20260910000002",
+    "20260910000003",
+    "20260911000001",
+    "20260911000002",
+    "20260911000003",
+    "20260911000004",
+    "20260911000005",
+    "20260911000006",
+    "20260911000007",
+    "20260911000008",
+    "20260912000001",
+    "20260912000002",
+    "20260912000003",
+    "20260912000004",
+    "20260912000005",
+    "20260913000001",
+    "20260914000001",
+    "20260915000001",
+    "20260915000002",
+    "20260915000003",
+    "20260916000001",
+    "20260917000001",
+    "20260918000001",
+    "20260919000001",
+    "20260920000001",
+    "20260921000001",
+    "20260922000001",
+    "20260923000001",
+    "20260924000001",
+    "20260925000001",
+    "20260926000001",
+    "20260927000001",
+    "20260928000001",
+    "20260929000001",
+    "20260930000001",
+    "20261001000001",
+    "20261002000001",
+    "20261003000001",
+    "20261004000001",
+    "20261005000001",
+    "20261006000001",
+    "20261007000001",
+    "20261008000001",
+    "20261009000001",
+    "20261010000001",
+    "20261011000001",
+    "20261011000002",
+    "20261012000001",
+    "20261012000002",
+    "20261013000001",
+    "20261014000001",
+    "20261014000002",
+    "20261014000003",
+    "20261014000004",
+    "20261014000005",
+    "20261014000006",
+    "20261014000007",
+    "20261014000008",
+    "20261014000009",
+    "20261014000010",
+    "20261014000011",
+    "20261014000012",
+    "20261014000013",
+    "20261014000014",
+    "20261014000015",
+    "20261014000016",
+    "20261014000017",
+    "20261014000018",
+    "20261014000019",
+    "20261014000020",
+    "20261014000021",
+    "20261014000022",
+    "20261014000023",
+    "20261014000024",
+    "20261014000025",
+    "20261014000026",
+    "20261014000027",
+    "20261014000028",
+    "20261014000029",
+    "20261014000030",
+    "20261014000031",
+    "20261014000032",
+    "20261014000033",
+    "20261014000034",
+    "20261014000035",
+    "20261014000036",
+    "20261014000037",
+    "20261014000038",
+    "20261014000039",
+    "20261015000001",
+    "20261015000002",
+    "20261015000003",
+    "20261015000004",
+    "20261015000005",
+    "20261015000006",
+    "20261015000007",
+    "20261015000008",
+    "20261015000009",
+    "20261015000010",
+    "20261015000011",
+    "20261015000012",
+    "20261015000013",
+    "20261015000014",
+    "20261016000001",
+    "20261016000002",
+    "20261016000003",
+    "20261016000004",
+    "20261016000005",
+    "20261016000006",
+    "20261016000007",
+    "20261016000008",
+    "20261016000009",
+    "20261016000010",
+    "20261016000011",
+    "20261016000012",
+    "20261016000013",
+    "20261016000014",
+    "20261016000015",
+    "20261016000016",
+    "20261016000017",
+    "20261016000018",
+    "20261016000019",
+    "20261016000020",
+    "20261016000021",
+    "20261016000022",
+    "20261016000023",
+    "20261016000024",
+    "20261016000025",
+    "20261016000026",
+    "20261016000027",
+    "20261016000028",
+    "20261016000029",
+    "20261016000030",
+    "20261016000031",
+    "20261016000032",
+    "20261017000001",
+    "20261017000002",
+    "20261017000003",
+    "20261017000005",
+    "20261017000006",
+    "20261017000007",
+    "20261017000008",
+    "20261017000009",
+    "20261017000010",
+    "20261017000011",
+    "20261017000012",
+    "20261017000013",
+    "20261017000014",
+    "20261017000015",
+    "20261017000016",
+    "20261017000017",
+    "20261017000018",
+    "20261017000019"
+  ],
+  "scopeSchema": "budget-protected-catalog-v2",
+  "launchableStages": [
+    "observe"
+  ],
+  "otherStages": "HELD_FOR_SEPARATE_SOURCE_AND_OPERATION_ASSESSMENT"
+}

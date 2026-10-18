@@ -1,0 +1,19 @@
+{
+  "at": "2026-10-16T23:09:40.280212+00:00",
+  "originalSource": "fcf21c6861cd4a9478defa29cb8cc6292ddd02a5",
+  "metadataResponse": "91fbccd5e52abad57713843d7477c8e4772bd749",
+  "independentReview": "7d9875a25ea513fadc231fd402bb82caaf0d87da",
+  "rootPacketJoin": "e084b11c4deac5f11cef1916b7dfbcac0c12131a",
+  "rootResponseJoin": "b1773eb759a83e315412b51f4ff1cfca29a741a2",
+  "rootReviewJoin": "9a48ba0aa9a65cc0c54551c382ca2c11d12287dd",
+  "exactFinalPacketGitFiles": 60,
+  "appUnchanged": "3e85cdc3916a81260bebc96c86ced4fd2c76b168",
+  "currentInventorySHA256": "f8b01ec9d619d7bfce59bd33c865037ad9584bd892a5a715c0528b338e1b704a",
+  "originalInventorySHA256": "0c382dd008ca26d65f4f66018f3945014e7f7b32cb84bb9278b4f32913812610",
+  "exactGrantedRequestSHA256": "20526f8b4e4343791d71a3f72133e964a170fd4489b1f47750492fdf3cddb4c9",
+  "pureTrial01": "retained HARNESS_FAILURE1",
+  "nativeOperation": false,
+  "target": "UNALLOCATED_NOT_AVAILABLE_UNADMITTED",
+  "newTestsRun": false,
+  "modeBoundary": "Git copies preserve bytes and executable mode only; original author/private inventory modes remain separately bound"
+}

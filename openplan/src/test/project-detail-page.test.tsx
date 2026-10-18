@@ -1,3 +1,4 @@
+import { projectBudgetSnapshotFixture, type BudgetAnswer } from "./helpers/project-budget-snapshot";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { isValidElement, type ComponentPropsWithoutRef, type ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -169,13 +170,28 @@ const spendEntriesOrderMock = vi.fn(() => ({ limit: spendEntriesLimitMock }));
 const spendEntriesEqMock = vi.fn(() => ({ order: spendEntriesOrderMock }));
 const spendEntriesSelectMock = vi.fn(() => ({ eq: spendEntriesEqMock }));
 
-// client_invoices serves TWO lanes off the same first `.eq()`: the budget
-// loader continues `.in(status sent/paid).limit()`, the documents lane's
-// library read continues `.eq(project).order().limit()`.
+// Keep the invoice source fixture separate from the documents library lane.
+// The complete budget RPC fixture consumes clientInvoicesLimitMock directly.
 const clientInvoicesLimitMock = vi.fn();
 const clientInvoicesInMock = vi.fn(() => ({ limit: clientInvoicesLimitMock }));
 const clientInvoicesEqMock = vi.fn(() => ({ in: clientInvoicesInMock, eq: clientInvoicesLibraryEqMock }));
 const clientInvoicesSelectMock = vi.fn(() => ({ eq: clientInvoicesEqMock }));
+
+
+// RPC transport fixture preserves independently failed source lanes. SQL/RLS
+// and projections are checked separately, never inferred from these fake rows.
+const budgetRpcMock = vi.fn(async (_name: string, args: { p_project_id: string }) => {
+  const deliverables = await deliverablesLimitMock() as BudgetAnswer;
+  if (Array.isArray(deliverables.data)) {
+    deliverables.data = deliverables.data.map((row: Record<string, unknown>) => ({ assignee_user_id: null, ...row }));
+  }
+  return { data: projectBudgetSnapshotFixture({
+    project_deliverables: deliverables,
+    projects: await projectBudgetMaybeSingleMock(),
+    project_spend_entries: await spendEntriesLimitMock(),
+    client_invoices: await clientInvoicesLimitMock(),
+  }, undefined, args.p_project_id), error: null };
+});
 
 const risksLimitMock = vi.fn();
 const risksOrderMock = vi.fn(() => ({ limit: risksLimitMock }));
@@ -984,6 +1000,7 @@ describe("ProjectDetailPage", () => {
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
       from: fromMock,
+      rpc: budgetRpcMock,
     });
   });
 
@@ -2202,6 +2219,9 @@ describe("ProjectDetailPage", () => {
         screen.getByText(/could not read client invoices billed to this project/i)
       ).toBeInTheDocument();
       expect(screen.getByText(/permission denied for table client_invoices/i)).toBeInTheDocument();
+      const panel = document.getElementById("project-budget-pace") as HTMLElement;
+      expect(within(panel).queryAllByText("$0.00")).toHaveLength(0);
+      expect(within(panel).getByRole("status")).toHaveTextContent(/Budget totals and pace are unavailable/);
       // And it is NOT dressed up as a migration somebody could apply.
       expect(
         screen.queryByText(/Billed client-invoice lines appear after the client invoicing migration/i)
@@ -2242,6 +2262,59 @@ describe("ProjectDetailPage", () => {
 
       expect(screen.getByText(/could not read this project's stated budget/i)).toBeInTheDocument();
       expect(screen.getByText(/permission denied for table projects/i)).toBeInTheDocument();
+    });
+
+    it.each([
+      { label: "read failure", answer: { data: null, error: { message: "spend read failed" } } },
+      { label: "invalid required amount", answer: { data: [{ id: "s", deliverable_id: "d1", entry_date: "2026-10-16",
+        amount: null, description: "Invalid source amount", vendor_label: null, created_at: "2026-10-16" }], error: null } },
+    ])("withholds delivery pace when the direct-spend source cannot be read ($label)", async ({ answer }) => {
+      deliverablesLimitMock.mockResolvedValue({ data: [{
+        id: "d1", title: "Budgeted deliverable", summary: null, owner_label: null, due_date: null,
+        status: "in_progress", created_at: "2026-10-16", budget_amount: 1000, percent_complete: 0,
+        assignee_user_id: null,
+      }], error: null });
+      spendEntriesLimitMock.mockResolvedValue(answer);
+      await renderPage("delivery");
+      const board = document.getElementById("project-deliverables") as HTMLElement;
+      expect(within(board).getByText("Budgeted deliverable")).toBeInTheDocument();
+      expect(within(board).getByLabelText("Budget (not to exceed)")).toHaveValue(1000);
+      expect(within(board).getByLabelText("Percent complete")).toHaveValue(0);
+      expect(within(board).queryByText("On pace")).not.toBeInTheDocument();
+      expect(within(board).queryByText(/Spending below recorded progress/)).not.toBeInTheDocument();
+    });
+
+    it.each([
+      { label: "invalid stated money", answer: { data: { budget_amount: "9".repeat(400) }, error: null } },
+      { label: "permission failure", answer: { data: null, error: { code: "42501", message: "permission denied for table projects" } } },
+    ])("retains delivery work when the stated-budget source fails ($label)", async ({ answer }) => {
+      deliverablesLimitMock.mockResolvedValue({ data: [{
+        id: "d1", title: "Retained delivery work", summary: null, owner_label: null, due_date: null,
+        status: "in_progress", created_at: "2026-10-16", budget_amount: "1250.25", percent_complete: 0,
+        assignee_user_id: null,
+      }], error: null });
+      projectBudgetMaybeSingleMock.mockResolvedValue(answer);
+      await renderPage("delivery");
+      const board = document.getElementById("project-deliverables") as HTMLElement;
+      expect(within(board).getByText("Retained delivery work")).toBeInTheDocument();
+      expect(within(board).getByLabelText("Budget (not to exceed)")).toHaveValue(1250.25);
+      expect(within(board).getByLabelText("Percent complete")).toHaveValue(0);
+      expect(within(board).queryByText("No deliverables yet")).not.toBeInTheDocument();
+      expect(within(board).queryByText("On pace")).not.toBeInTheDocument();
+      expect(within(board).queryByText(/Budget \$/)).not.toBeInTheDocument();
+    });
+
+    it("retains nonzero budget and progress prefills when other financial sources are readable", async () => {
+      deliverablesLimitMock.mockResolvedValue({ data: [{
+        id: "d1", title: "Readable values", summary: null, owner_label: null, due_date: null,
+        status: "in_progress", created_at: "2026-10-16", budget_amount: "1250.25", percent_complete: "12.50",
+        assignee_user_id: null,
+      }], error: null });
+      await renderPage("delivery");
+      const board = document.getElementById("project-deliverables") as HTMLElement;
+      expect(within(board).getByLabelText("Budget (not to exceed)")).toHaveValue(1250.25);
+      expect(within(board).getByLabelText("Percent complete")).toHaveValue(12.5);
+      expect(within(board).getByText("Spending below recorded progress")).toBeInTheDocument();
     });
 
     it("discloses nothing about the budget when all four reads answer", async () => {
@@ -2406,17 +2479,17 @@ describe("ProjectDetailPage", () => {
       created_at: "2026-08-01T00:00:00.000Z",
     };
 
-    it("asks the database for assignee_user_id everywhere it renders one", async () => {
+    it("requests assignees through scoped snapshot and direct record projections", async () => {
       // A mocked Supabase client answers whatever columns it was asked for, so
       // a projection that stopped requesting the column would render every row
       // as unassigned with every assertion below still green. The projection
       // string itself is the only thing that can be checked here.
       await renderPage();
+      expect(budgetRpcMock).toHaveBeenCalledWith("project_budget_inputs_v1", { p_project_id: "project-1" });
 
       for (const [name, mock] of [
         ["milestones", milestonesSelectMock],
         ["submittals", submittalsSelectMock],
-        ["deliverables", deliverablesSelectMock],
         ["issues", issuesSelectMock],
       ] as const) {
         // The select mocks are declared with no parameters (they only build the

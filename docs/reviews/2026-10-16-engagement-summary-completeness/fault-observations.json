@@ -1,0 +1,334 @@
+[
+  {
+    "name": "reader-workspace-echo-ignored",
+    "outcome": "KILLED_EXPECTED_ASSERTION",
+    "failed": 1,
+    "failures": [
+      {
+        "file": "/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/engagement-summary-completeness.test.tsx",
+        "name": "ESComplete snapshot reader refuses workspace snapshots as unknown money",
+        "messages": [
+          "AssertionError: expected 'complete' to be 'unavailable' // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/engagement-summary-completeness.test.tsx:104:26\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ],
+        "assertionLocations": [
+          "src/test/engagement-summary-completeness.test.tsx:104:26"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "reader-excluded-echo-ignored",
+    "outcome": "KILLED_EXPECTED_ASSERTION",
+    "failed": 1,
+    "failures": [
+      {
+        "file": "/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/engagement-summary-completeness.test.tsx",
+        "name": "ESComplete snapshot reader refuses exclude snapshots as unknown money",
+        "messages": [
+          "AssertionError: expected 'complete' to be 'unavailable' // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/engagement-summary-completeness.test.tsx:104:26\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ],
+        "assertionLocations": [
+          "src/test/engagement-summary-completeness.test.tsx:104:26"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "reader-duplicate-accepted",
+    "outcome": "KILLED_EXPECTED_ASSERTION",
+    "failed": 1,
+    "failures": [
+      {
+        "file": "/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/engagement-summary-completeness.test.tsx",
+        "name": "ESComplete snapshot reader refuses duplicate snapshots as unknown money",
+        "messages": [
+          "AssertionError: expected 'complete' to be 'unavailable' // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/engagement-summary-completeness.test.tsx:104:26\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ],
+        "assertionLocations": [
+          "src/test/engagement-summary-completeness.test.tsx:104:26"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "reader-number-rounds-aggregate",
+    "outcome": "KILLED_EXPECTED_ASSERTION",
+    "failed": 2,
+    "failures": [
+      {
+        "file": "/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/engagement-summary-completeness.test.tsx",
+        "name": "ESComplete snapshot reader retains aggregate text for 501 legal NUMERIC(14,2) contributors beyond safe aggregate cents",
+        "messages": [
+          "AssertionError: expected 500999999999995 to be '500999999999994.99' // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/engagement-summary-completeness.test.tsx:43:36\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ],
+        "assertionLocations": [
+          "src/test/engagement-summary-completeness.test.tsx:43:36"
+        ]
+      },
+      {
+        "file": "/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/engagement-summary-completeness.test.tsx",
+        "name": "ESComplete snapshot reader retains aggregate text for 1201 legal NUMERIC(14,2) contributors beyond safe aggregate cents",
+        "messages": [
+          "AssertionError: expected 1200999999999988 to be '1200999999999987.99' // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/engagement-summary-completeness.test.tsx:43:36\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ],
+        "assertionLocations": [
+          "src/test/engagement-summary-completeness.test.tsx:43:36"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "reader-missing-becomes-zero",
+    "outcome": "KILLED_EXPECTED_ASSERTION",
+    "failed": 2,
+    "failures": [
+      {
+        "file": "/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/engagement-summary-completeness.test.tsx",
+        "name": "ESComplete snapshot reader isolates missing and malformed billed buckets",
+        "messages": [
+          "AssertionError: expected +0 to be null // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/engagement-summary-completeness.test.tsx:66:36\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ],
+        "assertionLocations": [
+          "src/test/engagement-summary-completeness.test.tsx:66:36"
+        ]
+      },
+      {
+        "file": "/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/engagement-summary-completeness.test.tsx",
+        "name": "ESComplete snapshot reader isolates missing and malformed draft buckets",
+        "messages": [
+          "AssertionError: expected +0 to be null // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/engagement-summary-completeness.test.tsx:67:39\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ],
+        "assertionLocations": [
+          "src/test/engagement-summary-completeness.test.tsx:67:39"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "reader-permissions-pending",
+    "outcome": "KILLED_EXPECTED_ASSERTION",
+    "failed": 1,
+    "failures": [
+      {
+        "file": "/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/engagement-summary-completeness.test.tsx",
+        "name": "ESComplete snapshot reader preserves original 42501 source failure and classifies Could not find the function public.engagement_billed_summaries_v1 in the schema cache",
+        "messages": [
+          "AssertionError: expected { state: 'pending', …(2) } to deeply equal { state: 'unavailable', …(2) }\n    at /home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/engagement-summary-completeness.test.tsx:80:20\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ],
+        "assertionLocations": [
+          "src/test/engagement-summary-completeness.test.tsx:80:20"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "reader-incomplete-accepted",
+    "outcome": "KILLED_EXPECTED_ASSERTION",
+    "failed": 1,
+    "failures": [
+      {
+        "file": "/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/engagement-summary-completeness.test.tsx",
+        "name": "ESComplete snapshot reader preserves incomplete envelope error without treating an internal missing function as pending",
+        "messages": [
+          "AssertionError: expected { state: 'complete', …(2) } to deeply equal { state: 'unavailable', …(2) }\n    at /home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/engagement-summary-completeness.test.tsx:93:20\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ],
+        "assertionLocations": [
+          "src/test/engagement-summary-completeness.test.tsx:93:20"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "sql-definer-bypass",
+    "outcome": "KILLED_EXPECTED_ASSERTION",
+    "failed": 1,
+    "failures": [
+      {
+        "file": "/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/engagement-summary-completeness.test.tsx",
+        "name": "ESComplete SQL source intent retains stable scalar invoker security and explicit caller ACL",
+        "messages": [
+          "AssertionError: expected 'BEGIN;\\n\\n-- One scalar bypasses API …' to match /RETURNS jsonb LANGUAGE plpgsql STABLE…/\n    at /home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/engagement-summary-completeness.test.tsx:118:17\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+        ],
+        "assertionLocations": [
+          "src/test/engagement-summary-completeness.test.tsx:118:17"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "sql-gross-replaced-with-cash",
+    "outcome": "KILLED_EXPECTED_ASSERTION",
+    "failed": 1,
+    "failures": [
+      {
+        "file": "/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/engagement-summary-completeness.test.tsx",
+        "name": "ESComplete SQL source intent aggregates scoped gross text before row caps, separately from drafts and cash",
+        "messages": [
+          "AssertionError: expected 'BEGIN;\\n\\n-- One scalar bypasses API …' to contain 'coalesce(sum(i.subtotal_amount) FILTE…'\n    at /home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/engagement-summary-completeness.test.tsx:125:17\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+        ],
+        "assertionLocations": [
+          "src/test/engagement-summary-completeness.test.tsx:125:17"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "sql-workspace-filter-removed",
+    "outcome": "KILLED_EXPECTED_ASSERTION",
+    "failed": 1,
+    "failures": [
+      {
+        "file": "/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/engagement-summary-completeness.test.tsx",
+        "name": "ESComplete SQL source intent aggregates scoped gross text before row caps, separately from drafts and cash",
+        "messages": [
+          "AssertionError: expected 'BEGIN;\\n\\n-- One scalar bypasses API …' to contain 'i.engagement_id = e.id AND i.workspac…'\n    at /home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/engagement-summary-completeness.test.tsx:128:17\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+        ],
+        "assertionLocations": [
+          "src/test/engagement-summary-completeness.test.tsx:128:17"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "sql-excluded-invoice-counted",
+    "outcome": "KILLED_EXPECTED_ASSERTION",
+    "failed": 1,
+    "failures": [
+      {
+        "file": "/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/engagement-summary-completeness.test.tsx",
+        "name": "ESComplete SQL source intent aggregates scoped gross text before row caps, separately from drafts and cash",
+        "messages": [
+          "AssertionError: expected 'BEGIN;\\n\\n-- One scalar bypasses API …' to contain 'WHERE i.engagement_id = e.id AND i.wo…'\n    at /home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/engagement-summary-completeness.test.tsx:132:17\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+        ],
+        "assertionLocations": [
+          "src/test/engagement-summary-completeness.test.tsx:132:17"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "dashboard-discards-snapshot",
+    "outcome": "KILLED_EXPECTED_ASSERTION",
+    "failed": 1,
+    "failures": [
+      {
+        "file": "/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/engagement-summary-dashboard.test.tsx",
+        "name": "ESComplete dashboard caller uses the workspace snapshot independently of its 500-row register and asserts actual list projection",
+        "messages": [
+          "AssertionError: expected [ { billedToDate: null, …(5) } ] to deeply equal [ ObjectContaining{…} ]\n    at /home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/engagement-summary-dashboard.test.tsx:40:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ],
+        "assertionLocations": [
+          "src/test/engagement-summary-dashboard.test.tsx:40:29"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "route-foreign-workspace-args",
+    "outcome": "KILLED_EXPECTED_ASSERTION",
+    "failed": 1,
+    "failures": [
+      {
+        "file": "/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/receivable-invoicing-routes.test.ts",
+        "name": "POST /api/invoicing/client-invoices warns without blocking when the invoice pushes the engagement over its not-to-exceed",
+        "messages": [
+          "AssertionError: expected undefined to deeply equal { …(5) }\n    at /home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/receivable-invoicing-routes.test.ts:811:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ],
+        "assertionLocations": [
+          "src/test/receivable-invoicing-routes.test.ts:811:29"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "route-hides-failed-position",
+    "outcome": "KILLED_EXPECTED_ASSERTION",
+    "failed": 3,
+    "failures": [
+      {
+        "file": "/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/receivable-invoicing-routes.test.ts",
+        "name": "POST /api/invoicing/client-invoices ESComplete preserves PGRST202 failure while creating an authorized draft",
+        "messages": [
+          "AssertionError: expected { state: 'complete' } to deeply equal { state: 'pending' }\n    at /home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/receivable-invoicing-routes.test.ts:885:36\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ],
+        "assertionLocations": [
+          "src/test/receivable-invoicing-routes.test.ts:885:36"
+        ]
+      },
+      {
+        "file": "/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/receivable-invoicing-routes.test.ts",
+        "name": "POST /api/invoicing/client-invoices ESComplete preserves 42501 failure while creating an authorized draft",
+        "messages": [
+          "AssertionError: expected { state: 'complete' } to deeply equal { state: 'unavailable' }\n    at /home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/receivable-invoicing-routes.test.ts:885:36\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ],
+        "assertionLocations": [
+          "src/test/receivable-invoicing-routes.test.ts:885:36"
+        ]
+      },
+      {
+        "file": "/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/receivable-invoicing-routes.test.ts",
+        "name": "POST /api/invoicing/client-invoices ESComplete preserves XX000 failure while creating an authorized draft",
+        "messages": [
+          "AssertionError: expected { state: 'complete' } to deeply equal { state: 'unavailable' }\n    at /home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/receivable-invoicing-routes.test.ts:885:36\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ],
+        "assertionLocations": [
+          "src/test/receivable-invoicing-routes.test.ts:885:36"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "pdf-hides-source-unavailable",
+    "outcome": "KILLED_EXPECTED_ASSERTION",
+    "failed": 2,
+    "failures": [
+      {
+        "file": "/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/client-invoice-pdf.test.ts",
+        "name": "GET /api/invoicing/client-invoices/[invoiceId]/pdf ESComplete discloses pending snapshot without suppressing the invoice PDF",
+        "messages": [
+          "AssertionError: expected '<!doctype html>\\n<html lang=\"en\">\\n  …' to contain 'pending schema upgrade'\n    at /home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/client-invoice-pdf.test.ts:387:18\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ],
+        "assertionLocations": [
+          "src/test/client-invoice-pdf.test.ts:387:18"
+        ]
+      },
+      {
+        "file": "/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/client-invoice-pdf.test.ts",
+        "name": "GET /api/invoicing/client-invoices/[invoiceId]/pdf ESComplete discloses unavailable snapshot without suppressing the invoice PDF",
+        "messages": [
+          "AssertionError: expected '<!doctype html>\\n<html lang=\"en\">\\n  …' to contain 'source unavailable'\n    at /home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/client-invoice-pdf.test.ts:387:18\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ],
+        "assertionLocations": [
+          "src/test/client-invoice-pdf.test.ts:387:18"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "composer-hides-source-unavailable",
+    "outcome": "KILLED_EXPECTED_ASSERTION",
+    "failed": 2,
+    "failures": [
+      {
+        "file": "/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/client-invoice-composer.test.tsx",
+        "name": "ClientInvoiceComposer ESComplete shows pending summary after a successful authorized draft",
+        "messages": [
+          "AssertionError: expected false to be true // Object.is equality\n\nIgnored nodes: comments, script, style\n\u001b[36m<html>\u001b[39m\n  \u001b[36m<head />\u001b[39m\n  \u001b[36m<body>\u001b[39m\n    \u001b[36m<div>\u001b[39m\n      \u001b[36m<article\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"border border-border/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.74),rgba(246,248,244,0.96))] px-5 py-5 shadow-[0_18px_40px_rgba(15,23,42,0.04)] dark:bg-[linear-gradient(180deg,rgba(15,23,32,0.86),rgba(11,18,26,0.96))]\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<div\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"grid gap-5 xl:grid-cols-[minmax(0,1fr)_280px]\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<div>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-start gap-3 border-b border-border/60 pb-4\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<span\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"mt-0.5 flex h-10 w-10 items-center justify-center border border-emerald-300/40 bg-emerald-500/10 text-emerald-700 dark:border-emerald-700/30 dark:text-emerald-300\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<svg\u001b[39m\n                  \u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"lucide lucide-file-spreadsheet h-5 w-5\"\u001b[39m\n                  \u001b[33mfill\u001b[39m=\u001b[32m\"none\"\u001b[39m\n                  \u001b[33mheight\u001b[39m=\u001b[32m\"24\"\u001b[39m\n                  \u001b[33mstroke\u001b[39m=\u001b[32m\"currentColor\"\u001b[39m\n                  \u001b[33mstroke-linecap\u001b[39m=\u001b[32m\"round\"\u001b[39m\n                  \u001b[33mstroke-linejoin\u001b[39m=\u001b[32m\"round\"\u001b[39m\n                  \u001b[33mstroke-width\u001b[39m=\u001b[32m\"2\"\u001b[39m\n                  \u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 24\"\u001b[39m\n                  \u001b[33mwidth\u001b[39m=\u001b[32m\"24\"\u001b[39m\n                  \u001b[33mxmlns\u001b[39m=\u001b[32m\"http://www.w3.org/2000/svg\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<path\u001b[39m\n                    \u001b[33md\u001b[39m=\u001b[32m\"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z\"\u001b[39m\n                  \u001b[36m/>\u001b[39m\n                  \u001b[36m<path\u001b[39m\n                    \u001b[33md\u001b[39m=\u001b[32m\"M14 2v5a1 1 0 0 0 1 1h5\"\u001b[39m\n                  \u001b[36m/>\u001b[39m\n                  \u001b[36m<path\u001b[39m\n                    \u001b[33md\u001b[39m=\u001b[32m\"M8 13h2\"\u001b[39m\n                  \u001b[36m/>\u001b[39m\n                  \u001b[36m<path\u001b[39m\n                    \u001b[33md\u001b[39m=\u001b[32m\"M14 13h2\"\u001b[39m\n                  \u001b[36m/>\u001b[39m\n                  \u001b[36m<path\u001b[39m\n                    \u001b[33md\u001b[39m=\u001b[32m\"M8 17h2\"\u001b[39m\n                  \u001b[36m/>\u001b[39m\n                  \u001b[36m<path\u001b[39m\n                    \u001b[33md\u001b[39m=\u001b[32m\"M14 17h2\"\u001b[39m\n                  \u001b[36m/>\u001b[39m\n                \u001b[36m</svg>\u001b[39m\n              \u001b[36m</span>\u001b[39m\n              \u001b[36m<div>\u001b[39m\n                \u001b[36m<p\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"text-label font-semibold text-muted-foreground\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0mClient invoice\u001b[0m\n                \u001b[36m</p>\u001b[39m\n                \u001b[36m<h2\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"text-lg font-semibold tracking-tight text-foreground\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0mCompose a client invoice\u001b[0m\n                \u001b[36m</h2>\u001b[39m\n              \u001b[36m</div>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n            \u001b[36m<p\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"mt-4 text-sm text-muted-foreground\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0mDraft an invoice to one of this workspace's clients — line by line, or pulled from the engagement's unbilled time ledger.\u001b[0m\n            \u001b[36m</p>\u001b[39m\n            \u001b[36m<form\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"mt-5 space-y-5\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"grid gap-4 md:grid-cols-3\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-2\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<label\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm font-medium\"\u001b[39m\n                    \u001b[33mfor\u001b[39m=\u001b[32m\"client-invoice-client\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0mClient\u001b[0m\n                  \u001b[36m</label>\u001b[39m\n                  \u001b[36m<select\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"module-select\"\u001b[39m\n                    \u001b[33mid\u001b[39m=\u001b[32m\"client-invoice-client\"\u001b[39m\n                    \u001b[33mrequired\u001b[39m=\u001b[32m\"\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[36m<option\u001b[39m\n                      \u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                      \u001b[0mChoose a client\u001b[0m\n                    \u001b[36m</option>\u001b[39m\n                    \u001b[36m<option\u001b[39m\n                      \u001b[33mvalue\u001b[39m=\u001b[32m\"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                      \u001b[0mRiver City\u001b[0m\n                    \u001b[36m</option>\u001b[39m\n                  \u001b[36m</select>\u001b[39m\n                \u001b[36m</div>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-2\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<label\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm font-medium\"\u001b[39m\n                    \u001b[33mfor\u001b[39m=\u001b[32m\"client-invoice-engagement\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0mEngagement\u001b[0m\n                  \u001b[36m</label>\u001b[39m\n                  \u001b[36m<select\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"module-select\"\u001b[39m\n                    \u001b[33mid\u001b[39m=\u001b[32m\"client-invoice-engagement\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[36m<option\u001b[39m\n                      \u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                      \u001b[0mNo linked engagement\u001b[0m\n                    \u001b[36m</option>\u001b[39m\n                    \u001b[36m<option\u001b[39m\n                      \u001b[33mvalue\u001b[39m=\u001b[32m\"cccccccc-cccc-4ccc-8ccc-cccccccccccc\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                      \u001b[0mCorridor study on-call\u001b[0m\n                    \u001b[36m</option>\u001b[39m\n                  \u001b[36m</select>\u001b[39m\n                \u001b[36m</div>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-2\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<label\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm font-medium\"\u001b[39m\n                    \u001b[33mfor\u001b[39m=\u001b[32m\"client-invoice-project\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0mProject link\u001b[0m\n                  \u001b[36m</label>\u001b[39m\n                  \u001b[36m<select\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"module-select\"\u001b[39m\n                    \u001b[33mid\u001b[39m=\u001b[32m\"client-invoice-project\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[36m<option\u001b[39m\n                      \u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                      \u001b[0mNo linked project\u001b[0m\n                    \u001b[36m</option>\u001b[39m\n                  \u001b[36m</select>\u001b[39m\n                \u001b[36m</div>\u001b[39m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-2\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<label\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"text...\n    at /home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/client-invoice-composer.test.tsx:92:110\n    at runWithExpensiveErrorDiagnosticsDisabled (/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@testing-library/dom/dist/config.js:47:12)\n    at checkCallback (/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@testing-library/dom/dist/wait-for.js:124:77)\n    at Timeout.checkRealTimersCallback (/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@testing-library/dom/dist/wait-for.js:118:16)\n    at listOnTimeout (node:internal/timers:685:17)\n    at processTimers (node:internal/timers:618:7)"
+        ],
+        "assertionLocations": [
+          "src/test/client-invoice-composer.test.tsx:92:110"
+        ]
+      },
+      {
+        "file": "/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/client-invoice-composer.test.tsx",
+        "name": "ClientInvoiceComposer ESComplete shows unavailable summary after a successful authorized draft",
+        "messages": [
+          "AssertionError: expected false to be true // Object.is equality\n\nIgnored nodes: comments, script, style\n\u001b[36m<html>\u001b[39m\n  \u001b[36m<head />\u001b[39m\n  \u001b[36m<body>\u001b[39m\n    \u001b[36m<div>\u001b[39m\n      \u001b[36m<article\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"border border-border/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.74),rgba(246,248,244,0.96))] px-5 py-5 shadow-[0_18px_40px_rgba(15,23,42,0.04)] dark:bg-[linear-gradient(180deg,rgba(15,23,32,0.86),rgba(11,18,26,0.96))]\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<div\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"grid gap-5 xl:grid-cols-[minmax(0,1fr)_280px]\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<div>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-start gap-3 border-b border-border/60 pb-4\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<span\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"mt-0.5 flex h-10 w-10 items-center justify-center border border-emerald-300/40 bg-emerald-500/10 text-emerald-700 dark:border-emerald-700/30 dark:text-emerald-300\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<svg\u001b[39m\n                  \u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"lucide lucide-file-spreadsheet h-5 w-5\"\u001b[39m\n                  \u001b[33mfill\u001b[39m=\u001b[32m\"none\"\u001b[39m\n                  \u001b[33mheight\u001b[39m=\u001b[32m\"24\"\u001b[39m\n                  \u001b[33mstroke\u001b[39m=\u001b[32m\"currentColor\"\u001b[39m\n                  \u001b[33mstroke-linecap\u001b[39m=\u001b[32m\"round\"\u001b[39m\n                  \u001b[33mstroke-linejoin\u001b[39m=\u001b[32m\"round\"\u001b[39m\n                  \u001b[33mstroke-width\u001b[39m=\u001b[32m\"2\"\u001b[39m\n                  \u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 24\"\u001b[39m\n                  \u001b[33mwidth\u001b[39m=\u001b[32m\"24\"\u001b[39m\n                  \u001b[33mxmlns\u001b[39m=\u001b[32m\"http://www.w3.org/2000/svg\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<path\u001b[39m\n                    \u001b[33md\u001b[39m=\u001b[32m\"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z\"\u001b[39m\n                  \u001b[36m/>\u001b[39m\n                  \u001b[36m<path\u001b[39m\n                    \u001b[33md\u001b[39m=\u001b[32m\"M14 2v5a1 1 0 0 0 1 1h5\"\u001b[39m\n                  \u001b[36m/>\u001b[39m\n                  \u001b[36m<path\u001b[39m\n                    \u001b[33md\u001b[39m=\u001b[32m\"M8 13h2\"\u001b[39m\n                  \u001b[36m/>\u001b[39m\n                  \u001b[36m<path\u001b[39m\n                    \u001b[33md\u001b[39m=\u001b[32m\"M14 13h2\"\u001b[39m\n                  \u001b[36m/>\u001b[39m\n                  \u001b[36m<path\u001b[39m\n                    \u001b[33md\u001b[39m=\u001b[32m\"M8 17h2\"\u001b[39m\n                  \u001b[36m/>\u001b[39m\n                  \u001b[36m<path\u001b[39m\n                    \u001b[33md\u001b[39m=\u001b[32m\"M14 17h2\"\u001b[39m\n                  \u001b[36m/>\u001b[39m\n                \u001b[36m</svg>\u001b[39m\n              \u001b[36m</span>\u001b[39m\n              \u001b[36m<div>\u001b[39m\n                \u001b[36m<p\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"text-label font-semibold text-muted-foreground\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0mClient invoice\u001b[0m\n                \u001b[36m</p>\u001b[39m\n                \u001b[36m<h2\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"text-lg font-semibold tracking-tight text-foreground\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0mCompose a client invoice\u001b[0m\n                \u001b[36m</h2>\u001b[39m\n              \u001b[36m</div>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n            \u001b[36m<p\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"mt-4 text-sm text-muted-foreground\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0mDraft an invoice to one of this workspace's clients — line by line, or pulled from the engagement's unbilled time ledger.\u001b[0m\n            \u001b[36m</p>\u001b[39m\n            \u001b[36m<form\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"mt-5 space-y-5\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"grid gap-4 md:grid-cols-3\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-2\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<label\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm font-medium\"\u001b[39m\n                    \u001b[33mfor\u001b[39m=\u001b[32m\"client-invoice-client\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0mClient\u001b[0m\n                  \u001b[36m</label>\u001b[39m\n                  \u001b[36m<select\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"module-select\"\u001b[39m\n                    \u001b[33mid\u001b[39m=\u001b[32m\"client-invoice-client\"\u001b[39m\n                    \u001b[33mrequired\u001b[39m=\u001b[32m\"\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[36m<option\u001b[39m\n                      \u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                      \u001b[0mChoose a client\u001b[0m\n                    \u001b[36m</option>\u001b[39m\n                    \u001b[36m<option\u001b[39m\n                      \u001b[33mvalue\u001b[39m=\u001b[32m\"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                      \u001b[0mRiver City\u001b[0m\n                    \u001b[36m</option>\u001b[39m\n                  \u001b[36m</select>\u001b[39m\n                \u001b[36m</div>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-2\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<label\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm font-medium\"\u001b[39m\n                    \u001b[33mfor\u001b[39m=\u001b[32m\"client-invoice-engagement\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0mEngagement\u001b[0m\n                  \u001b[36m</label>\u001b[39m\n                  \u001b[36m<select\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"module-select\"\u001b[39m\n                    \u001b[33mid\u001b[39m=\u001b[32m\"client-invoice-engagement\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[36m<option\u001b[39m\n                      \u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                      \u001b[0mNo linked engagement\u001b[0m\n                    \u001b[36m</option>\u001b[39m\n                    \u001b[36m<option\u001b[39m\n                      \u001b[33mvalue\u001b[39m=\u001b[32m\"cccccccc-cccc-4ccc-8ccc-cccccccccccc\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                      \u001b[0mCorridor study on-call\u001b[0m\n                    \u001b[36m</option>\u001b[39m\n                  \u001b[36m</select>\u001b[39m\n                \u001b[36m</div>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-2\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<label\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm font-medium\"\u001b[39m\n                    \u001b[33mfor\u001b[39m=\u001b[32m\"client-invoice-project\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0mProject link\u001b[0m\n                  \u001b[36m</label>\u001b[39m\n                  \u001b[36m<select\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"module-select\"\u001b[39m\n                    \u001b[33mid\u001b[39m=\u001b[32m\"client-invoice-project\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[36m<option\u001b[39m\n                      \u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                      \u001b[0mNo linked project\u001b[0m\n                    \u001b[36m</option>\u001b[39m\n                  \u001b[36m</select>\u001b[39m\n                \u001b[36m</div>\u001b[39m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-2\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<label\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"text...\n    at /home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/src/test/client-invoice-composer.test.tsx:92:110\n    at runWithExpensiveErrorDiagnosticsDisabled (/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@testing-library/dom/dist/config.js:47:12)\n    at checkCallback (/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@testing-library/dom/dist/wait-for.js:124:77)\n    at Timeout.checkRealTimersCallback (/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/@testing-library/dom/dist/wait-for.js:118:16)\n    at listOnTimeout (node:internal/timers:685:17)\n    at processTimers (node:internal/timers:618:7)"
+        ],
+        "assertionLocations": [
+          "src/test/client-invoice-composer.test.tsx:92:110"
+        ]
+      }
+    ]
+  }
+]

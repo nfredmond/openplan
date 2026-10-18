@@ -1,0 +1,175 @@
+{
+  "subjectCommit": "7c07549714f5b2afdd5816557fedd697bf743adc",
+  "subjectEvidence": {
+    "sha256": "ba84ef6ee24c0661ec94d62099a7cd72bf13005a0666ab4c8945b26f5a3b1293",
+    "bytes": 6488
+  },
+  "matchedPacketPins": 10,
+  "matchedPrivatePins": 33,
+  "matchedAllPinnedFrozenAndMoneyFiles": true,
+  "privateRoot": "/home/nathaniel/.local/state/openplan/project-budget-native-preparation-independent-20261016",
+  "privateSeals": {
+    "sha256": "efcd0be95e46d7102fe9114fdec781321be54c3664b7856a0fa2d471ddcb1b67",
+    "bytes": 3963
+  },
+  "privateFiles": {
+    "admission.json": {
+      "sha256": "ba56cd8a7efa54bba98ad6632ee9931fb88efeb97252476bcf4f195fb29b788c",
+      "bytes": 530
+    },
+    "controller.py": {
+      "sha256": "eae262b8e7a38c1cf9409ca1fae17c15aed01adc49d463c25c1cc97dfdfee7c2",
+      "bytes": 1198
+    },
+    "final-metadata.json": {
+      "sha256": "2bdbbfd8cef8d3747cfdd51c3b0ae3dfffcd2636eceb13a345ac8ed1e65933b6",
+      "bytes": 1876
+    },
+    "generated/max-1001.json": {
+      "sha256": "f4b6286318fc88c599e37f2f35d3d03b3a46b4f0bca1365d23b3397c08acebba",
+      "bytes": 255371
+    },
+    "generated/max-1001.sql": {
+      "sha256": "c2edfba9d215b571811713b7aa5560095d3ce0e27c36126a5dcdf1453b219a83",
+      "bytes": 810154
+    },
+    "generated/max-101.json": {
+      "sha256": "a5fdad45794fbe0a5b24e40f8628bb35e44b0200daf354bc5c75cd72c7049b1f",
+      "bytes": 26764
+    },
+    "generated/max-101.sql": {
+      "sha256": "1469ff43fc287f04d034c6544a9584c13b3f773c32d4eccf65988250cf389293",
+      "bytes": 82850
+    },
+    "generated/max-33.json": {
+      "sha256": "1e6b99b51363600effa3640573b98cfaf01a3a2c9372f83a1b1c6bb1271a8062",
+      "bytes": 9485
+    },
+    "generated/max-33.sql": {
+      "sha256": "c725c829d306530f81eb28b50bce3c535441e4b3ebeccf1019faffd6eefc99b5",
+      "bytes": 28006
+    },
+    "generated/max-79.json": {
+      "sha256": "7189834dafa2d21b5cc2fe0d5cbf2cf2b4d5ffea33ed18fa59038a78c4dc0ebe",
+      "bytes": 21169
+    },
+    "generated/max-79.sql": {
+      "sha256": "02711854123b2f8b68fd0bb4492c95b6e1bd934166ffc6e7b042a14a672bafe7",
+      "bytes": 65036
+    },
+    "generated/max-89.json": {
+      "sha256": "b6ecc43cc96ebb61935e167c66307ce747479fca484974ee410bcabe0981bb0c",
+      "bytes": 23709
+    },
+    "generated/max-89.sql": {
+      "sha256": "28508d68f3df95295b9142d75810fa1b0baeab9f66b5387a5d2aa7fe2645fee7",
+      "bytes": 73086
+    },
+    "generated/max-90.json": {
+      "sha256": "0f614ec3b7b99fe7c1382849821c6573fccaf12b4ea6e284e144bba1dd89365a",
+      "bytes": 23963
+    },
+    "generated/max-90.sql": {
+      "sha256": "f758baa3cb688edd736a3b56b76ba41078fa06a16bfd10a8df9ce810b4620211",
+      "bytes": 73891
+    },
+    "generated/ordinary.json": {
+      "sha256": "f96e1abd892f5215c3a3f6e57ee92c1b204f314ced8b66f6b1d0c5546a83d5ad",
+      "bytes": 366699
+    },
+    "generated/ordinary.sql": {
+      "sha256": "4b1b4e4aba705b35e72160526ca15c99ab9dd4fe1b468b34002196625b873073",
+      "bytes": 1092944
+    },
+    "independent_controls.py": {
+      "sha256": "e22ac78759b0c0253c55c0360156b6e3ed2841f6de3456e2d83d252596ff5f92",
+      "bytes": 12603
+    },
+    "lock-release.json": {
+      "sha256": "dc60033715ac486a604d4f15ab672412cf36e00aa646974c173e0e13b664e1ca",
+      "bytes": 72
+    },
+    "manager-stream.txt": {
+      "sha256": "893382c9bfe88bf71ef78713d9116398ea3131e2eb6f3af308b91557813b43a4",
+      "bytes": 806
+    },
+    "manager-terminal.txt": {
+      "sha256": "985c3867e695cbd7899293ae24e6fbc2ea1f3231ca2e2f9ec6bbdad87f699f69",
+      "bytes": 67
+    },
+    "metadata.json": {
+      "sha256": "205d34e74d1229ee8fbe5f9121f96f16bc0ae9fb6bdfbc49f01278bb71f892a5",
+      "bytes": 27266
+    },
+    "resources-after.json": {
+      "sha256": "ce91c1487c68552a9b96e4d494e89aeb241c3e5d9dcdb9bf5c9f15b7d1e67357",
+      "bytes": 993
+    },
+    "resources-before.json": {
+      "sha256": "af5c388f913d122f05a2f50b30b9db06969849449034a3cdeb7e441ee08394f2",
+      "bytes": 676
+    },
+    "results.json": {
+      "sha256": "defbaf586d7ed2daa0a1e2d93971622974eb249fe624bf735de2949c82efc794",
+      "bytes": 5721
+    },
+    "run.sh": {
+      "sha256": "fc0973898097c0e5e797a416e082b2f3ff720d8b402d529c69e5a1dd976b046b",
+      "bytes": 670
+    },
+    "subject/controls.py": {
+      "sha256": "02aa709e533920bf826d54f85187ff0cf2984bf1cf0a84d58e73ebf374214869",
+      "bytes": 2376
+    },
+    "subject/generate.py": {
+      "sha256": "949935ec497751192ae55ae558bdfcb01ed20ba5585dfa5d34560e280a2863c9",
+      "bytes": 9166
+    },
+    "working.json": {
+      "sha256": "f96e1abd892f5215c3a3f6e57ee92c1b204f314ced8b66f6b1d0c5546a83d5ad",
+      "bytes": 366699
+    },
+    "working.sql": {
+      "sha256": "4b1b4e4aba705b35e72160526ca15c99ab9dd4fe1b468b34002196625b873073",
+      "bytes": 1092944
+    }
+  },
+  "independentSourceReads": {
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-isolation-20261016/openplan/supabase/migrations/20261017000005_money_integrity_corrections.sql": {
+      "sha256": "82374309f11d7c270f1defa18d70d1f719882296f2f662f80ad74d3214410066",
+      "bytes": 64341
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-isolation-20261016/openplan/supabase/migrations/20260911000002_contract_billing.sql": {
+      "sha256": "520f5e50c37ac1c71276751bb13aaf90c2de454dd20cb5a2ab184b606449c32a",
+      "bytes": 8727
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-isolation-20261016/openplan/supabase/migrations/20260728000004_workspace_owner_floor.sql": {
+      "sha256": "5c6f50a2bff31c7b86ef388f91df18d90518b191bf001a289a4ec828c1ecb07f",
+      "bytes": 3895
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-isolation-20261016/openplan/supabase/migrations/20260728000006_workspace_write_role_gate.sql": {
+      "sha256": "02dffba9d0365d29a6fe686eb8910ed8764278aa29c37b321e0a68d16f6c9e57",
+      "bytes": 8777
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-isolation-20261016/openplan/supabase/migrations/20260728000007_workspace_write_role_gate_children.sql": {
+      "sha256": "ddf0820b8f2f3f126eb892e8e2db0b8740215d1b448a9e6177aa2aedd72dc795",
+      "bytes": 7582
+    }
+  },
+  "reportFiles": {
+    "REPORT.md": {
+      "sha256": "ad05213347682de779efb6ca53b656ce4744ffdff7aac9602cbd8e08b04aa8c0",
+      "bytes": 10394
+    },
+    "VALIDATION.md": {
+      "sha256": "85a2122e2f931241532f9d2145b59afdae707493d3b3038e2df3e97faed603bc",
+      "bytes": 5294
+    },
+    "independent_controls.py": {
+      "sha256": "e22ac78759b0c0253c55c0360156b6e3ed2841f6de3456e2d83d252596ff5f92",
+      "bytes": 12603
+    }
+  },
+  "claim": "PURE_TEXT_ONLY_PREP_1_OPEN_NO_NATIVE_ACCEPTANCE",
+  "noAutomaticNextOperation": true
+}

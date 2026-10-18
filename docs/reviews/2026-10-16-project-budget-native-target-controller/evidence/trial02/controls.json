@@ -1,0 +1,211 @@
+{
+  "scope": "INERT process and FD responder only; resume5-23",
+  "reusedTrial01": {
+    "controlsResultPath": "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/controls.json",
+    "acceptedTrials": [
+      {
+        "mutation": "harmless-comment",
+        "outcome": "SURVIVED"
+      },
+      {
+        "mutation": 0,
+        "file": "policy.py",
+        "outcome": "KILLED",
+        "assertion": "wrong-oid-rejected"
+      },
+      {
+        "mutation": 1,
+        "file": "policy.py",
+        "outcome": "KILLED",
+        "assertion": "boolean-oid-rejected"
+      },
+      {
+        "mutation": 2,
+        "file": "policy.py",
+        "outcome": "KILLED",
+        "assertion": "missing-history-fields-rejected"
+      },
+      {
+        "mutation": 3,
+        "file": "journal.py",
+        "outcome": "KILLED",
+        "assertion": "stage-replay-rejected"
+      },
+      {
+        "mutation": 4,
+        "file": "journal.py",
+        "outcome": "KILLED",
+        "assertion": "exclusive-clobber-rejected"
+      }
+    ],
+    "baseline": {
+      "wrong-oid": "pass",
+      "boolean-oid": "pass",
+      "missing-history": "pass",
+      "no-replay": "pass",
+      "clobber": "pass",
+      "custody": "pass",
+      "late-ack": "pass",
+      "output-bound": "pass",
+      "missing-definition": "pass",
+      "wanted-missing": "pass",
+      "restore-composition": "pass",
+      "migration-atomicity": "pass",
+      "history-hex": "pass",
+      "journey": {
+        "requests": 20,
+        "nativePIDs": [
+          8006,
+          8010
+        ],
+        "commitACK": true
+      },
+      "statement-sha": "pass",
+      "statement-cardinality": "pass"
+    },
+    "executionRepeated": false
+  },
+  "trials": [
+    {
+      "mutation": 5,
+      "file": "journal.py",
+      "outcome": "KILLED",
+      "assertion": "durable-file-and-directory"
+    },
+    {
+      "mutation": 6,
+      "file": "journal.py",
+      "outcome": "KILLED",
+      "assertion": "durable-file-and-directory"
+    },
+    {
+      "mutation": 7,
+      "file": "journal.py",
+      "outcome": "KILLED",
+      "assertion": "late-ack-rejected"
+    },
+    {
+      "mutation": 8,
+      "file": "journal.py",
+      "outcome": "KILLED",
+      "assertion": "overbound-output-rejected"
+    },
+    {
+      "mutation": 9,
+      "file": "controller.py",
+      "outcome": "KILLED",
+      "assertion": "missing-definition-rejected"
+    },
+    {
+      "mutation": 10,
+      "file": "controller.py",
+      "outcome": "KILLED",
+      "assertion": "missing-wanted-attribute-rejected"
+    },
+    {
+      "mutation": 11,
+      "file": "sql.py",
+      "outcome": "KILLED",
+      "assertion": "atomic-top-level-boundary"
+    },
+    {
+      "mutation": 12,
+      "file": "sql.py",
+      "outcome": "KILLED",
+      "assertion": "sequence-explicit-fields"
+    },
+    {
+      "mutation": 13,
+      "file": "sql.py",
+      "outcome": "KILLED",
+      "assertion": "locked-real-body-history-order"
+    },
+    {
+      "mutation": 14,
+      "file": "controller.py",
+      "outcome": "KILLED",
+      "assertion": "upgrade-preserves-explicit-sequence-state"
+    },
+    {
+      "mutation": 15,
+      "file": "sql.py",
+      "outcome": "KILLED",
+      "assertion": "restore-same-backend-empty-guard"
+    },
+    {
+      "mutation": 16,
+      "file": "sql.py",
+      "outcome": "KILLED",
+      "assertion": "history-setting-independent-hex"
+    },
+    {
+      "mutation": 17,
+      "file": "sql.py",
+      "outcome": "KILLED",
+      "assertion": "same-backend-before-parse-string-semantics"
+    },
+    {
+      "mutation": 18,
+      "file": "controller.py",
+      "outcome": "KILLED",
+      "assertion": "actual-statement-sha-rejected"
+    },
+    {
+      "mutation": 19,
+      "file": "controller.py",
+      "outcome": "KILLED",
+      "assertion": "actual-statement-cardinality-rejected"
+    },
+    {
+      "mutation": 20,
+      "file": "sql.py",
+      "outcome": "KILLED",
+      "assertion": "same-backend-before-parse-string-semantics"
+    },
+    {
+      "mutation": 21,
+      "file": "sql.py",
+      "outcome": "KILLED",
+      "assertion": "actual-history-cardinality-sha-projection"
+    },
+    {
+      "mutation": 22,
+      "file": "sql.py",
+      "outcome": "KILLED",
+      "assertion": "actual-history-cardinality-sha-projection"
+    },
+    {
+      "mutation": 23,
+      "file": "sql.py",
+      "outcome": "KILLED",
+      "assertion": "migration-fresh-physical-lines"
+    }
+  ],
+  "finalRestoredBaseline": {
+    "wrong-oid": "pass",
+    "boolean-oid": "pass",
+    "missing-history": "pass",
+    "no-replay": "pass",
+    "clobber": "pass",
+    "custody": "pass",
+    "late-ack": "pass",
+    "output-bound": "pass",
+    "missing-definition": "pass",
+    "wanted-missing": "pass",
+    "restore-composition": "pass",
+    "migration-atomicity": "pass",
+    "history-hex": "pass",
+    "journey": {
+      "requests": 20,
+      "nativePIDs": [
+        8006,
+        8010
+      ],
+      "commitACK": true
+    },
+    "statement-sha": "pass",
+    "statement-cardinality": "pass"
+  },
+  "restored": true,
+  "sourceUnchanged": true
+}

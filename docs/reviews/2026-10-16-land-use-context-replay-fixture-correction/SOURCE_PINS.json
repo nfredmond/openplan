@@ -1,0 +1,49 @@
+{
+  "parent": "8d292caf864a3f66409bef6868fde82ef7a4f82e",
+  "parentApplicationTree": "64a2c31e768d26c0978a3e0b945d2e1f41de9510",
+  "reviewCommit": "bb2bf7f9839902976679a493bd09c60e5820b7e8",
+  "reviewFinding": "One accepted P2 fixture replay defect, no P1 or additional production defect",
+  "scope": "Only final post-freeze fixture replay line plus new correction documents/evidence",
+  "soleLastOccurrenceReplacement": true,
+  "earlierIdenticalReplayUnchanged": true,
+  "oldEvidenceRewritten": false,
+  "runtimeExecuted": false,
+  "commit": "HOLD pending ROOT pure outcome",
+  "files": {
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/openplan/src/test/fixtures/land-use-plans/context-persistence.sql": {
+      "sha256": "5af2e37ba342e8b8bdf3cb84c6e9044cd2fcfb62d9d70bf4ce9671587934292e",
+      "bytes": 18289,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-5c638c79/docs/reviews/2026-10-16-land-use-context-geography-independent/REPORT.md": {
+      "sha256": "caca9b2ff5a11f5a79c07a648c874a28961199cdd26019a803849e67010e41e9",
+      "bytes": 17627,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-replay-fixture-correction-20261016/context-persistence.before.sql": {
+      "sha256": "1093f5a175882095b3892520654e1121f98fee05fa70f48924526145a0aff354",
+      "bytes": 18341,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-replay-fixture-correction-20261016/source-read-path-correction.txt": {
+      "sha256": "8dae5015fee85128c75b023d0de0dcac0bef7eccb5978cf792879032720e1345",
+      "bytes": 413,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-replay-fixture-correction-20261016/fixture.diff": {
+      "sha256": "02e8d3724eb7e75223b533bf9482f042317dae24c9873a34e08c81c1dce00de4",
+      "bytes": 1074,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-replay-fixture-correction/fixture.diff": {
+      "sha256": "02e8d3724eb7e75223b533bf9482f042317dae24c9873a34e08c81c1dce00de4",
+      "bytes": 1074,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-replay-fixture-correction/REPORT.md": {
+      "sha256": "8d8846e8c0939cadc3d7b06f3ac75d99d21f6d207693ba17cb5a1cd8d455d66f",
+      "bytes": 5148,
+      "mode": "0664"
+    }
+  }
+}

@@ -1,0 +1,187 @@
+{
+  "blindCategories": [
+    "actual namespace/resource/ABI behavior",
+    "other compound runtime-condition variants",
+    "actual socket calls",
+    "whole outer setup/cancellation/storage failure matrix"
+  ],
+  "guardFunctionCalls": 30,
+  "oldRootCohortsReplayed": false,
+  "overlap": "whole mount-policy omission targets unexpected-RW refusal; two additional statement omissions isolate named-readonly and owned-writable branches. No assertion of whole-wrapper bypass.",
+  "projectionNamespaces": 9,
+  "projectionSHA256": "be1e5f2446748c09d3ebb4d10c1e066293a41f101c3db664f46531290028f8d9",
+  "rows": [
+    {
+      "name": "harmless-first",
+      "outcome": "SURVIVED"
+    },
+    {
+      "name": "baseline",
+      "outcome": "PASS"
+    },
+    {
+      "dataAuthority": "SUPPLIED_GUARD_DATA_ONLY_NOT_ROOT_AUTHORITY",
+      "fullClass": "builtins.RuntimeError",
+      "location": "File \"SUPPLIED_NEW_GUARD::baseline\", line 3,",
+      "message": "pure-write-budget",
+      "name": "intact:budget_policy",
+      "suffix": "RuntimeError: pure-write-budget",
+      "tracePrefix": "Traceback "
+    },
+    {
+      "fullClass": "builtins.AssertionError",
+      "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/guard_controls.py\", line 88,",
+      "message": "pure-guard-control:missing-refusal:budget",
+      "mutantProjectionSHA256": "0f403bc655c41d745c394ed16782313440d44b9e5afc203a400d75aec6e3c782",
+      "name": "omitted:budget_policy",
+      "suffix": "AssertionError: pure-guard-control:missing-refusal:budget",
+      "tracePrefix": "Traceback "
+    },
+    {
+      "dataAuthority": "SUPPLIED_GUARD_DATA_ONLY_NOT_ROOT_AUTHORITY",
+      "fullClass": "builtins.RuntimeError",
+      "location": "File \"SUPPLIED_NEW_GUARD::baseline\", line 3,",
+      "message": "pure-runtime-closure-unresolved",
+      "name": "intact:runtime_policy",
+      "suffix": "RuntimeError: pure-runtime-closure-unresolved",
+      "tracePrefix": "Traceback "
+    },
+    {
+      "fullClass": "builtins.AssertionError",
+      "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/guard_controls.py\", line 88,",
+      "message": "pure-guard-control:missing-refusal:runtime",
+      "mutantProjectionSHA256": "e9cadf2e3cd5ade12985353b04e9dfc6be7ab7c67a26367b950f67291293bb4b",
+      "name": "omitted:runtime_policy",
+      "suffix": "AssertionError: pure-guard-control:missing-refusal:runtime",
+      "tracePrefix": "Traceback "
+    },
+    {
+      "dataAuthority": "SUPPLIED_GUARD_DATA_ONLY_NOT_ROOT_AUTHORITY",
+      "fullClass": "builtins.RuntimeError",
+      "location": "File \"SUPPLIED_NEW_GUARD::baseline\", line 3,",
+      "message": "pure-unexpected-rw-mount",
+      "name": "intact:mount_policy",
+      "suffix": "RuntimeError: pure-unexpected-rw-mount",
+      "tracePrefix": "Traceback "
+    },
+    {
+      "fullClass": "builtins.AssertionError",
+      "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/guard_controls.py\", line 88,",
+      "message": "pure-guard-control:missing-refusal:mount",
+      "mutantProjectionSHA256": "3b1fb06a5378b08d5cf3c68824fa45bd073dcfcd382f964fc39f579f21fc4325",
+      "name": "omitted:mount_policy",
+      "suffix": "AssertionError: pure-guard-control:missing-refusal:mount",
+      "tracePrefix": "Traceback "
+    },
+    {
+      "dataAuthority": "SUPPLIED_GUARD_DATA_ONLY_NOT_ROOT_AUTHORITY",
+      "fullClass": "builtins.RuntimeError",
+      "location": "File \"SUPPLIED_NEW_GUARD::baseline\", line 3,",
+      "message": "pure-null-target-before-root-ro",
+      "name": "intact:null_setup_policy",
+      "suffix": "RuntimeError: pure-null-target-before-root-ro",
+      "tracePrefix": "Traceback "
+    },
+    {
+      "fullClass": "builtins.AssertionError",
+      "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/guard_controls.py\", line 88,",
+      "message": "pure-guard-control:missing-refusal:null",
+      "mutantProjectionSHA256": "b48051b572f4890ff0efd9fd258afd1c49cc9f948e952a9d0e3c2891174cfb03",
+      "name": "omitted:null_setup_policy",
+      "suffix": "AssertionError: pure-guard-control:missing-refusal:null",
+      "tracePrefix": "Traceback "
+    },
+    {
+      "dataAuthority": "SUPPLIED_GUARD_DATA_ONLY_NOT_ROOT_AUTHORITY",
+      "fullClass": "builtins.RuntimeError",
+      "location": "File \"SUPPLIED_NEW_GUARD::baseline\", line 3,",
+      "message": "pure-named-readonly",
+      "name": "intact:named_readonly",
+      "suffix": "RuntimeError: pure-named-readonly",
+      "tracePrefix": "Traceback "
+    },
+    {
+      "fullClass": "builtins.AssertionError",
+      "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/guard_controls.py\", line 88,",
+      "message": "pure-guard-control:missing-refusal:named-readonly",
+      "mutantProjectionSHA256": "5069f8224a9c4e4ffb6f0d37e5ef948ae4abbcec475bd99a7016aa436e79cb8b",
+      "name": "omitted:named_readonly",
+      "suffix": "AssertionError: pure-guard-control:missing-refusal:named-readonly",
+      "tracePrefix": "Traceback "
+    },
+    {
+      "dataAuthority": "SUPPLIED_GUARD_DATA_ONLY_NOT_ROOT_AUTHORITY",
+      "fullClass": "builtins.RuntimeError",
+      "location": "File \"SUPPLIED_NEW_GUARD::baseline\", line 3,",
+      "message": "pure-owned-writable",
+      "name": "intact:owned_writable",
+      "suffix": "RuntimeError: pure-owned-writable",
+      "tracePrefix": "Traceback "
+    },
+    {
+      "fullClass": "builtins.AssertionError",
+      "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/guard_controls.py\", line 88,",
+      "message": "pure-guard-control:missing-refusal:owned-writable",
+      "mutantProjectionSHA256": "a566ffdc37322b6ccef8572223a7450a0a8d9e7ad8351cf3f7a9c053bb964490",
+      "name": "omitted:owned_writable",
+      "suffix": "AssertionError: pure-guard-control:missing-refusal:owned-writable",
+      "tracePrefix": "Traceback "
+    },
+    {
+      "name": "restored",
+      "outcome": "PASS"
+    }
+  ],
+  "sourceAnchors": {
+    "budget_policy": {
+      "anchor": "def budget_policy(used, size, maximum):\n    need(type(used) is int and type(size) is int and 0 <= size <= 1048576\n         and used >= 0 and used + size <= maximum, 'pure-write-budget')\n\n\n",
+      "anchorSHA256": "743bdf5d5f9eea172583a612723ae65d6341b94f21093ba588ce4221a1a7c4eb",
+      "mutantProjectionSHA256": "0f403bc655c41d745c394ed16782313440d44b9e5afc203a400d75aec6e3c782",
+      "replacement": "def budget_policy(used, size, maximum):\n    return None\n\n\n",
+      "testedFunction": "budget_policy",
+      "uniqueOccurrences": 1
+    },
+    "mount_policy": {
+      "anchor": "def mount_policy(mounts, rw_paths, ro_paths):\n    need(all('ro' in row['options'] or row['path'] in rw_paths for row in mounts), 'pure-unexpected-rw-mount')\n    for name in ro_paths:\n        candidates = [row for row in mounts if name == row['path'] or name.startswith(row['path'].rstrip('/') + '/')]\n        need(candidates and 'ro' in max(candidates, key=lambda row: len(row['path']))['options'], 'pure-named-readonly')\n    need(all(any(row['path'] == name and 'rw' in row['options'] for row in mounts) for name in rw_paths), 'pure-owned-writable')\n\n\n",
+      "anchorSHA256": "cf87daa394146d7f2783212fb51c38d8162fe05530515e91d1f0899384eae890",
+      "mutantProjectionSHA256": "3b1fb06a5378b08d5cf3c68824fa45bd073dcfcd382f964fc39f579f21fc4325",
+      "replacement": "def mount_policy(mounts, rw_paths, ro_paths):\n    return None\n\n\n",
+      "testedFunction": "mount_policy",
+      "uniqueOccurrences": 1
+    },
+    "named_readonly": {
+      "anchor": "        need(candidates and 'ro' in max(candidates, key=lambda row: len(row['path']))['options'], 'pure-named-readonly')\n",
+      "anchorSHA256": "3f95646ddd557c9653090391c5b97fbf61c7bbd4cd9cec62eedb38fe1e33c969",
+      "mutantProjectionSHA256": "5069f8224a9c4e4ffb6f0d37e5ef948ae4abbcec475bd99a7016aa436e79cb8b",
+      "replacement": "        pass\n",
+      "testedFunction": "mount_policy",
+      "uniqueOccurrences": 1
+    },
+    "null_setup_policy": {
+      "anchor": "def null_setup_policy(argv):\n    initial = [i for i in range(len(argv) - 2) if argv[i:i + 3] == ['--ro-bind', '/dev/null', '/dev/null']]\n    final = [i for i in range(len(argv) - 2) if argv[i:i + 3] == ['--dev-bind', '/dev/null', '/dev/null']]\n    root_ro = [i for i in range(len(argv) - 1) if argv[i:i + 2] == ['--remount-ro', '/']]\n    need(len(initial) == len(final) == len(root_ro) == 1 and argv.count('--clearenv') == 1\n         and initial[0] < root_ro[0] < final[0] < argv.index('--clearenv'), 'pure-null-target-before-root-ro')\n\n\n",
+      "anchorSHA256": "bd40197c6e0ad9593a81309a8abb29800823335da823c7c2d9c192c287a81049",
+      "mutantProjectionSHA256": "b48051b572f4890ff0efd9fd258afd1c49cc9f948e952a9d0e3c2891174cfb03",
+      "replacement": "def null_setup_policy(argv):\n    return None\n\n\n",
+      "testedFunction": "null_setup_policy",
+      "uniqueOccurrences": 1
+    },
+    "owned_writable": {
+      "anchor": "    need(all(any(row['path'] == name and 'rw' in row['options'] for row in mounts) for name in rw_paths), 'pure-owned-writable')\n",
+      "anchorSHA256": "9f4e9e0386713adc02415721ee9e29c1da065afeaacfa64a37dcdacf1caed13f",
+      "mutantProjectionSHA256": "a566ffdc37322b6ccef8572223a7450a0a8d9e7ad8351cf3f7a9c053bb964490",
+      "replacement": "    pass\n",
+      "testedFunction": "mount_policy",
+      "uniqueOccurrences": 1
+    },
+    "runtime_policy": {
+      "anchor": "def runtime_policy(requested, manifest, receipt):\n    need(requested['status'] == 'ROOT_ACCEPTED_SELECTED_STATIC_PYTHON_FOOTPRINT'\n         and requested['manifestSHA256'] is not None and requested['reviewReceiptSHA256'] is not None\n         and receipt['decision'] == 'ACCEPT_EXACT_STATIC_FOOTPRINT_FOR_SOURCE_ONLY_TRIAL03_PREPARATION'\n         and receipt['runtimeExecuted'] is False and receipt['sourceClosureComplete'] is False\n         and manifest['wholeUsrBind'] is False and manifest['selectedStaticNeededAliasPathsReviewed'] is True\n         and manifest['dynamicABIProved'] is False\n         and manifest['unresolvedNeeded'] == [] and manifest['unresolvedAliases'] == []\n         and len(manifest['files']) > 0, 'pure-runtime-closure-unresolved')\n\n\n",
+      "anchorSHA256": "bd31b46304da75445a88ee70a95fcb4637d7e3c2554aafc5d26240bebbcf7e11",
+      "mutantProjectionSHA256": "e9cadf2e3cd5ade12985353b04e9dfc6be7ab7c67a26367b950f67291293bb4b",
+      "replacement": "def runtime_policy(requested, manifest, receipt):\n    return None\n\n\n",
+      "testedFunction": "runtime_policy",
+      "uniqueOccurrences": 1
+    }
+  },
+  "subject23And25Unchanged": true,
+  "tier": "LITERAL_SUPPLIED_EXPECTATIONS_NOT_OBSERVED"
+}

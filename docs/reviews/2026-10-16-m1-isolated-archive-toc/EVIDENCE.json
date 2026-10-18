@@ -1,0 +1,46 @@
+{
+  "status": "ACCEPTED_ONE_BOUNDED_OPAQUE_TOC_CAPTURE",
+  "requestSHA256": "91ad810c5c63c95d7d5825edffef7af9b1e1d24a9b75d31aaa4c1c6cf0db51d0",
+  "managerInvocationID": "9bf1ef73350b406d9c7b9bbd0ad3e2b1",
+  "tocBytes": 706854,
+  "tocSHA256": "802b17ac728118d4245b5aa61ca6ccf92045157a12a508f0eb46e8be08e0d9a1",
+  "rawTOCPublic": false,
+  "references": {
+    "CUSTODY_MANIFEST.json": {
+      "path": "/home/nathaniel/.local/state/openplan/m1-empty-root-toc-root-decision-20261016/CUSTODY_MANIFEST.json",
+      "bytes": 21496,
+      "sha256": "5f3a7f51c9cebed6f85722d9b362a08506cf5b1ee79d6820dc0666d51a9d5751"
+    },
+    "FAILED_PREFLIGHT_01.json": {
+      "path": "/home/nathaniel/.local/state/openplan/m1-empty-root-toc-root-decision-20261016/FAILED_PREFLIGHT_01.json",
+      "bytes": 384,
+      "sha256": "a4745a9c2382b4d78a8e9b91ef1c0dd405e72a45667cb9780c68678b88138d4b"
+    },
+    "GRANT.json": {
+      "path": "/home/nathaniel/.local/state/openplan/m1-empty-root-toc-root-decision-20261016/GRANT.json",
+      "bytes": 2003,
+      "sha256": "1ce200ca8afae085e672a487f8e7907091c8ccf703a8956ada5df69453ea7557"
+    },
+    "PREFLIGHT_02.json": {
+      "path": "/home/nathaniel/.local/state/openplan/m1-empty-root-toc-root-decision-20261016/PREFLIGHT_02.json",
+      "bytes": 491170,
+      "sha256": "9876ee40e7219f7968cf534a327fb7782ace75b0ea438b92b8499b86b032094a"
+    },
+    "ROOT_DISPATCH_INTENT.json": {
+      "path": "/home/nathaniel/.local/state/openplan/m1-empty-root-toc-root-decision-20261016/ROOT_DISPATCH_INTENT.json",
+      "bytes": 726,
+      "sha256": "a7c00babd43a66136fe34d082413aa50c238b7ddb1f616ec098790d9f4140398"
+    },
+    "TOC_CAPTURE_ACCEPTANCE.json": {
+      "path": "/home/nathaniel/.local/state/openplan/m1-empty-root-toc-root-decision-20261016/TOC_CAPTURE_ACCEPTANCE.json",
+      "bytes": 2755,
+      "sha256": "de697a512952e9ff29e2d294a1acac359f56dc1472633dbb558d4332c1a173ce"
+    }
+  },
+  "statusSHA256": "51f0757236f86f3b5dce669e634c9d5efc5bc46d1edd93730b78b5a4739a38cb",
+  "nativeDBAccepted": false,
+  "historyAccepted": false,
+  "restoreAccepted": false,
+  "M1Accepted": false,
+  "successorGranted": false
+}

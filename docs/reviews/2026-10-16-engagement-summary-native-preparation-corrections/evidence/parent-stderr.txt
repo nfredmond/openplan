@@ -1,0 +1,6 @@
+Running as unit: openplan-engagement-prep-corrections-text01.service; invocation ID: 8c2c826692b54e9b9444c3c33dcfde23
+          Finished with result: success
+Main processes terminated with: code=exited, status=0/SUCCESS
+               Service runtime: 2.994s
+             CPU time consumed: 1.497s
+                   Memory peak: 31.2M (swap: 0B)

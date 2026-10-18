@@ -1,0 +1,38 @@
+{
+  "public": {
+    "REVIEW.md": {
+      "sha256": "74d11bdf7ad0c77b7c6d10514fef761cd0a0ee766b30fe0e2214432941fcb745",
+      "bytes": 22152,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    "checks.json": {
+      "sha256": "1bce32107f8e33549787aabf346a483b44c2820e8fd4a124644d362583d20ab8",
+      "bytes": 3446,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    "source-pins.json": {
+      "sha256": "c97e03a3d7cfb45d45170db108483291afdc3f822992e1c5657b620948277ccb",
+      "bytes": 4270,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000
+    }
+  },
+  "privateRoot": "/home/nathaniel/.local/state/openplan/a0-r6-allocate-admission-independent-20261016",
+  "privateManifest": {
+    "path": "private-pins.json",
+    "sha256": "05b96b360a78c2d5e426c11f859f7077de96c07d211a6109accbb2d4e363909b",
+    "bytes": 1667,
+    "mode": "0o600",
+    "uid": 1000,
+    "gid": 1000,
+    "entries": 9
+  },
+  "runtimeAcceptance": false,
+  "allocationAdmitted": false,
+  "claim": "Exact source/metadata review only; root owns fresh publication decision and operation."
+}

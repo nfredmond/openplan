@@ -1,0 +1,135 @@
+{
+  "faults": [
+    {
+      "name": "route-current-invoice-currency-inheritance",
+      "failed": 6,
+      "expectedFailed": 6,
+      "zeroPassed": true,
+      "noRuntimeErrors": true,
+      "namesMatch": true,
+      "namesAreBaseline": true,
+      "appliedTransformMatches": true,
+      "assertionErrors": true
+    },
+    {
+      "name": "composer-current-invoice-currency-inheritance",
+      "failed": 2,
+      "expectedFailed": 2,
+      "zeroPassed": true,
+      "noRuntimeErrors": true,
+      "namesMatch": true,
+      "namesAreBaseline": true,
+      "appliedTransformMatches": true,
+      "assertionErrors": true
+    },
+    {
+      "name": "pdf-current-invoice-draft-currency-inheritance",
+      "failed": 2,
+      "expectedFailed": 2,
+      "zeroPassed": true,
+      "noRuntimeErrors": true,
+      "namesMatch": true,
+      "namesAreBaseline": true,
+      "appliedTransformMatches": true,
+      "assertionErrors": true
+    },
+    {
+      "name": "context-number-conversion-drops-cents",
+      "failed": 2,
+      "expectedFailed": 2,
+      "zeroPassed": true,
+      "noRuntimeErrors": true,
+      "namesMatch": true,
+      "namesAreBaseline": true,
+      "appliedTransformMatches": true,
+      "assertionErrors": true
+    },
+    {
+      "name": "context-zero-decimal-inference-drops-cents",
+      "failed": 3,
+      "expectedFailed": 3,
+      "zeroPassed": true,
+      "noRuntimeErrors": true,
+      "namesMatch": true,
+      "namesAreBaseline": true,
+      "appliedTransformMatches": true,
+      "assertionErrors": true
+    },
+    {
+      "name": "context-currency-disclosure-removed",
+      "failed": 4,
+      "expectedFailed": 4,
+      "zeroPassed": true,
+      "noRuntimeErrors": true,
+      "namesMatch": true,
+      "namesAreBaseline": true,
+      "appliedTransformMatches": true,
+      "assertionErrors": true
+    },
+    {
+      "name": "composer-prior-for-projected",
+      "failed": 2,
+      "expectedFailed": 2,
+      "zeroPassed": true,
+      "noRuntimeErrors": true,
+      "namesMatch": true,
+      "namesAreBaseline": true,
+      "appliedTransformMatches": true,
+      "assertionErrors": true
+    }
+  ],
+  "setupPins": {
+    "/home/nathaniel/.t3/worktrees/openplan/t3-9a9c35f8/openplan/src/test/setup.ts": {
+      "expected": "70d7fbd3e6d08caa4ca508bb6bdca213deb4a58da22a840ff646a5862c05067a",
+      "actual": "70d7fbd3e6d08caa4ca508bb6bdca213deb4a58da22a840ff646a5862c05067a"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-9a9c35f8/openplan/src/test/guided-flow-jsdom-dialog-shim.ts": {
+      "expected": "d6f84fa247152ded90a7b63e97e6385e2def6169618e4163da99b4ed2359566b",
+      "actual": "d6f84fa247152ded90a7b63e97e6385e2def6169618e4163da99b4ed2359566b"
+    }
+  },
+  "sourcePinsEqualAcrossTrials": true,
+  "selectionEqualAcrossTrials": true,
+  "typeConfigOnlyActualSetupAddition": true,
+  "claimTier": "independent source review and inspection of saved execution evidence",
+  "reviewerSubjectDependencyExecutions": 0,
+  "reviewerRuntimeDispatches": 0,
+  "priorP2Disposition": "RESOLVED_BY_SOURCE_AND_SAVED_BOUNDED_EVIDENCE",
+  "newP1P2Findings": 0,
+  "authorReportSha256": "dbdade468c6738923181d24b2cb2efae30b663419edb6985f9c489c3172e248e",
+  "authorPostcommitHandoff": {
+    "path": "/home/nathaniel/.local/state/openplan/engagement-currency-label-correction-20261016/final-handoff.json",
+    "sha256": "b9a74c7370f630fe9aef718accb31f4cb92dad5c20c8480af72023609e756169",
+    "outside1223Manifest": true
+  },
+  "savedTrials": [
+    {
+      "trial": 1,
+      "invocation": "a22df8a436694d8880bb961f5b60d108",
+      "wholeExit": 1,
+      "accepted": "baseline15 and harmless15",
+      "classification": "HARNESS_READER_FAILURE"
+    },
+    {
+      "trial": 2,
+      "invocation": "5018744807be4615b63d15eecc3d35bf",
+      "wholeExit": 1,
+      "accepted": "seven fault controls and restored15",
+      "classification": "HARNESS_TYPE_CLOSURE_FAILURE"
+    },
+    {
+      "trial": 3,
+      "invocation": "b1ded742eb9943aab3020d6d41fd1e39",
+      "wholeExit": 0,
+      "accepted": "focused types/lint/raw Git/direction only",
+      "noTestsOrMutations": true
+    }
+  ],
+  "originalProbe": {
+    "observations": 52,
+    "differences": 24,
+    "observedFlagDifferences": 0,
+    "repeated": false
+  },
+  "metadataCaveat": "Author evidence.json top-level runtimeGranted:false and dependenciesExecuted:0 retain preparation-era values. Nested trial records and actual saved receipts describe execution; no zero-execution claim is accepted for author."
+}

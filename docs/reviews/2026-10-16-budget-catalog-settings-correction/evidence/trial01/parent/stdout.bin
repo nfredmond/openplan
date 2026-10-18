@@ -1,0 +1,15 @@
+Id=openplan-budget-settings-v2-pure-20261016.service
+ActiveState=failed
+SubState=failed
+InvocationID=cf41198ca3e943f699417db9a20804fb
+RuntimeMaxUSec=2min
+Result=exit-code
+ExecMainCode=1
+ExecMainStatus=1
+MemoryPeak=49213440
+MemorySwapPeak=0
+CPUUsageNSec=1108797000
+CPUQuotaPerSecUSec=500ms
+MemoryMax=536870912
+MemorySwapMax=0
+TasksMax=64

@@ -10,6 +10,7 @@ import { ActionFeedback } from "@/components/ui/action-feedback";
 import {
   computeLineItemAmount,
   summarizeClientInvoiceTotals,
+  type EngagementNteWarning,
 } from "@/lib/invoicing/receivables";
 import {
   groupUnbilledTime,
@@ -18,7 +19,7 @@ import {
   type TimeEntryLike,
 } from "@/lib/invoicing/time-billing";
 import { formatMoney } from "@/lib/money/format";
-import { formatInvoiceMoney } from "@/lib/invoicing/invoice-currency";
+import { ENGAGEMENT_CURRENCY_DISCLOSURE, formatEngagementMoney, formatInvoiceMoney } from "@/lib/invoicing/invoice-currency";
 
 export type InvoiceClientOption = { id: string; name: string };
 export type InvoiceEngagementOption = {
@@ -26,7 +27,7 @@ export type InvoiceEngagementOption = {
   clientId: string;
   projectId: string | null;
   title: string;
-  notToExceedAmount: number | null;
+  notToExceedAmount: number | string | null;
 };
 export type InvoiceProjectOption = { id: string; name: string };
 export type InvoiceDeliverableOption = { id: string; projectId: string; title: string };
@@ -367,15 +368,18 @@ export function ClientInvoiceComposer({
       const payload = (await response.json()) as {
         error?: string;
         details?: string;
-        nteWarning?: { billedToDate: number; notToExceed: number; overBy: number };
+        nteWarning?: EngagementNteWarning;
+        ntePositionSource?: { state: "complete" | "pending" | "unavailable" };
       };
       if (!response.ok) {
         throw new Error(payload.details || payload.error || "Failed to save client invoice");
       }
 
-      if (payload.nteWarning) {
+      if (payload.ntePositionSource && payload.ntePositionSource.state !== "complete") {
+        setNteNotice(`Client invoice saved. Engagement invoice summary ${payload.ntePositionSource.state === "pending" ? "pending schema upgrade" : "source unavailable"}. Prior and projected gross billing are unknown; no ceiling comparison is available.`);
+      } else if (payload.nteWarning) {
         setNteNotice(
-          `This invoice takes the engagement to ${formatMoney(payload.nteWarning.billedToDate, { precision: "cents" })} billed against its ${formatMoney(payload.nteWarning.notToExceed, { precision: "cents" })} not-to-exceed — ${formatMoney(payload.nteWarning.overBy, { precision: "cents" })} over. Recorded as a warning; nothing was blocked.`
+          `This invoice takes the engagement to ${formatEngagementMoney(payload.nteWarning.projectedBilledToDate)} projected gross billing against its ${formatEngagementMoney(payload.nteWarning.notToExceed)} legacy not-to-exceed, ${formatEngagementMoney(payload.nteWarning.overBy)} over. ${ENGAGEMENT_CURRENCY_DISCLOSURE} Recorded as a warning; nothing was blocked.`
         );
       }
 
@@ -768,7 +772,7 @@ export function ClientInvoiceComposer({
           </dl>
           {selectedEngagement?.notToExceedAmount != null ? (
             <p className="mt-5 border-l-2 border-[color:var(--pine)] bg-[color:var(--pine)]/6 px-3 py-3 text-sm text-foreground">
-              {selectedEngagement.title} carries a {formatMoney(selectedEngagement.notToExceedAmount, { precision: "cents" })} not-to-exceed.
+              {selectedEngagement.title} carries a {formatInvoiceMoney(selectedEngagement.notToExceedAmount, null)} not-to-exceed.
               Billing past it records a warning on save — it never blocks.
             </p>
           ) : null}

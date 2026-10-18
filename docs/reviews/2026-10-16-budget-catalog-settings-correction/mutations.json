@@ -1,0 +1,159 @@
+[
+  {
+    "name": "credential-absence-bypass",
+    "edits": [
+      {
+        "file": "runtime/journal.py",
+        "old": "    p.same(b'', raw, 'credential-directory-must-be-absent')",
+        "new": "    pass  # Intended fault: omit credential entry refusal."
+      }
+    ],
+    "tests": [
+      {
+        "mode": "credential-present",
+        "reason": "credential-present-stops-before-query"
+      }
+    ]
+  },
+  {
+    "name": "settings-row-omission",
+    "edits": [
+      {
+        "file": "runtime/sql.py",
+        "old": "FROM pg_catalog.pg_db_role_setting s WHERE s.setdatabase=d.oid",
+        "new": "FROM pg_catalog.pg_db_role_setting s WHERE s.setdatabase=d.oid AND s.setrole<>0"
+      }
+    ],
+    "tests": [
+      {
+        "mode": "baseline",
+        "reason": "scope-all-setting-rows-covered"
+      }
+    ]
+  },
+  {
+    "name": "settings-raw-output",
+    "edits": [
+      {
+        "file": "runtime/sql.py",
+        "old": "SETTINGS_SUMMARY = \"\"\"SELECT pg_catalog.jsonb_build_object(\n 'rows',pg_catalog.count(*)::int8,\n 'digest',pg_catalog.md5(coalesce(pg_catalog.string_agg(\n pg_catalog.md5(pg_catalog.jsonb_build_object('row',pg_catalog.to_jsonb(s),\n 'setconfigType',pg_catalog.pg_typeof(s.setconfig)::text,\n 'setconfigDimensions',pg_catalog.array_dims(s.setconfig))::text),\n '' ORDER BY s.setrole),'')))\n FROM pg_catalog.pg_db_role_setting s WHERE s.setdatabase=d.oid\"\"\"",
+        "new": "SETTINGS_SUMMARY = \"\"\"SELECT jsonb_agg(to_jsonb(s) ORDER BY setrole) FROM pg_db_role_setting s WHERE s.setdatabase=d.oid\"\"\""
+      }
+    ],
+    "tests": [
+      {
+        "mode": "baseline",
+        "reason": "scope-no-setting-values-on-wire"
+      }
+    ]
+  },
+  {
+    "name": "scope-subset-comparison",
+    "edits": [
+      {
+        "file": "runtime/policy.py",
+        "old": "    scope(expected)\n    scope(actual)\n    same(expected, actual, reason)",
+        "new": "    scope(expected)\n    scope(actual)\n    same(expected['roles'], actual['roles'], reason)"
+      }
+    ],
+    "tests": [
+      {
+        "mode": "scope-equality",
+        "reason": "scope-full-v2-equality"
+      }
+    ]
+  },
+  {
+    "name": "manager-self-binding-bypass",
+    "edits": [
+      {
+        "file": "runtime/policy.py",
+        "old": "    same(entry['pid'], properties.get('MainPID'), 'manager-main-pid')",
+        "new": "    pass  # Intended fault: omit actual entry PID correlation."
+      }
+    ],
+    "tests": [
+      {
+        "mode": "manager-pid",
+        "reason": "manager-ack-independent-identity"
+      }
+    ]
+  },
+  {
+    "name": "manager-ack-hash-bypass",
+    "edits": [
+      {
+        "file": "collector.py",
+        "old": "    need(complete.get('managerAckSHA256') == sha(ack_path), 'capture-manager-ack-hash')",
+        "new": "    pass  # Intended fault: omit collector ACK hash correlation."
+      },
+      {
+        "file": "build_observe_proposal.py",
+        "old": "    p.same(bindings['captureManagerAckSHA256'], capture.get('managerAckSHA256'), 'capture-ack-hash')",
+        "new": "    pass  # Intended fault: omit proposal ACK hash correlation."
+      }
+    ],
+    "tests": [
+      {
+        "mode": "collector-ackhash",
+        "reason": "manager-ack-hash-bound-to-complete"
+      },
+      {
+        "mode": "builder-ackhash",
+        "reason": "proposal-manager-ack-hash-bound"
+      }
+    ]
+  },
+  {
+    "name": "catalog-read-only-omission",
+    "edits": [
+      {
+        "file": "runtime/sql.py",
+        "old": "BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY;\nSET LOCAL search_path=pg_catalog;",
+        "new": "BEGIN ISOLATION LEVEL REPEATABLE READ;\nSET LOCAL search_path=pg_catalog;"
+      }
+    ],
+    "tests": [
+      {
+        "mode": "baseline",
+        "reason": "catalog-read-only-intent"
+      }
+    ]
+  },
+  {
+    "name": "foreign-database-argv",
+    "edits": [
+      {
+        "file": "runtime/policy.py",
+        "old": "    require(kind == 'sql' and database == 'postgres', 'HELD_NON_CATALOG_COMMAND')",
+        "new": "    require(kind == 'sql', 'HELD_NON_CATALOG_COMMAND')"
+      }
+    ],
+    "tests": [
+      {
+        "mode": "baseline",
+        "reason": "scope-fixed-maintenance"
+      }
+    ]
+  },
+  {
+    "name": "proposal-terminal-correlation",
+    "edits": [
+      {
+        "file": "build_observe_proposal.py",
+        "old": "        p.same('terminal-success', receipt.get('status'), 'capture-parent-terminal')",
+        "new": "        pass  # Intended fault: omit required parent terminal status."
+      }
+    ],
+    "tests": [
+      {
+        "mode": "builder-manager",
+        "reason": "proposal-manager-terminal-correlated"
+      },
+      {
+        "mode": "builder-outer",
+        "reason": "proposal-outer-terminal-correlated"
+      }
+    ]
+  }
+]
