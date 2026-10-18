@@ -98,3 +98,12 @@ Safety road-match timing and source persistence, duplicate PDF picker labels,
 land-use review links and vague validation messages remain open. PRs 330, 331
 and 332 are now merged. Final combined hosted acceptance and the Stage A tag
 remain pending. Human feedback follows v1.
+
+The PR334 full-suite check finds three integration failures missed by the focused
+selection. Generation now uses the shared zero-row result helpers, removes six
+retired unverified-write inventory entries, and updates the RTP lifecycle mock
+to enforce the revision predicate and artifact receipt projections. The source
+inventory still rejects a new unobservable write. Its parser and thresholds are
+unchanged. All 251 related tests pass with CI seed `266519`, including both
+write guards and the RTP lifecycle. Mocked lifecycle checks do not establish
+native RLS or concurrency.

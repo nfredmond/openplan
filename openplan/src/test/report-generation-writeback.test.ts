@@ -22,6 +22,23 @@ function fixture() {
 }
 
 describe("report generation writeback", () => {
+  it("classifies explicit zero rows as a generation conflict, not a database error", async () => {
+    const f = fixture();
+    f.reportRead.mockResolvedValue({ data: null, error: { code: "PGRST116", message: "No row", details: "The result contains 0 rows" } });
+    expect(await finishReportGeneration(f.input)).toMatchObject({ status: 409, error: { code: "report_changed_during_generation" } });
+    expect(f.artifact.update).not.toHaveBeenCalled();
+  });
+  it("refuses an explicitly unmatched artifact receipt without claiming a saved writeback", async () => {
+    const f = fixture();
+    f.receiptRead.mockResolvedValue({ data: null, error: { code: "PGRST116", message: "No row", details: "The result contains 0 rows" } });
+    expect(await finishReportGeneration(f.input)).toMatchObject({ status: 500, error: { message: expect.stringContaining("matched no artifact rows") } });
+  });
+  it("retains a multirow cardinality error as a database failure", async () => {
+    const f = fixture(); const error = { code: "PGRST116", message: "More than one row", details: "The result contains 2 rows" };
+    f.reportRead.mockResolvedValue({ data: null, error });
+    expect(await finishReportGeneration(f.input)).toEqual({ status: 500, error });
+    expect(f.artifact.update).not.toHaveBeenCalled();
+  });
   it("pins the report read and records the actual returned writeback on only its artifact", async () => {
     const f = fixture();
     expect(await finishReportGeneration(f.input)).toEqual({ error: null, status: 200 });
