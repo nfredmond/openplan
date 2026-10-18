@@ -1,3 +1,6 @@
+import { buildProjectJurisdictionReadinessExportPayload } from "@/lib/jurisdiction-readiness/payload";
+import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
+import { PROJECT_JURISDICTION_COLUMNS } from "@/lib/projects/project-jurisdiction";
 import { render, screen } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -303,6 +306,32 @@ describe("ReportsPage", () => {
       auth: { getUser: authGetUserMock },
       from: fromMock,
     });
+  });
+
+  it("flags a retained jurisdiction snapshot after the live context changes", async () => {
+    const oldProject = { id: "project-1", jurisdiction_context: null, place_country_code: "US" };
+    const snapshot = buildProjectJurisdictionReadinessExportPayload(oldProject, jurisdictionReadinessRegistrySha256());
+    projectsOrderMock.mockResolvedValueOnce({ data: [{ ...oldProject, name: "Downtown Mobility Plan", place_country_code: "CA" }], error: null });
+    reportArtifactsOrderMock.mockResolvedValueOnce({ data: [{ report_id: "report-1", generated_at: "2026-10-18T00:00:00Z", metadata_json: { sourceContext: { jurisdictionReadiness: snapshot } } }], error: null });
+    render(await ReportsPage({ searchParams: Promise.resolve({}) }));
+    expect(projectsSelectMock).toHaveBeenCalledWith(expect.stringContaining(PROJECT_JURISDICTION_COLUMNS));
+    expect(screen.getAllByText(/Project jurisdiction context or registry inputs changed/).length).toBeGreaterThan(0);
+  });
+
+  it("keeps a failed artifact comparison unavailable instead of current", async () => {
+    const generatedAt = "2026-10-18T00:00:00Z";
+    reportsOrderMock.mockResolvedValueOnce({ data: [{
+      id: "report-1", workspace_id: "workspace-1", project_id: "project-1",
+      rtp_cycle_id: null, title: "Artifact-backed report", report_type: "project_status",
+      status: "generated", summary: "Saved packet", generated_at: generatedAt,
+      latest_artifact_kind: "pdf", updated_at: generatedAt, created_at: generatedAt,
+      projects: { id: "project-1", name: "Downtown Mobility Plan" }, rtp_cycles: null,
+    }], error: null });
+    reportArtifactsOrderMock.mockResolvedValueOnce({ data: null, error: { message: "Artifact read failed" } });
+    await renderPage();
+    expect(reportArtifactsSelectMock).toHaveBeenCalledWith("report_id, generated_at, metadata_json");
+    expect(screen.getAllByText(/jurisdiction assessment could not be checked/).length).toBeGreaterThan(0);
+    expect(screen.queryByText("Current / ready")).not.toBeInTheDocument();
   });
 
   it("shows project crash evidence added after generation as a packet refresh", async () => {

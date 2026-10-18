@@ -107,3 +107,45 @@ inventory still rejects a new unobservable write. Its parser and thresholds are
 unchanged. All 251 related tests pass with CI seed `266519`, including both
 write guards and the RTP lifecycle. Mocked lifecycle checks do not establish
 native RLS or concurrency.
+
+## Merged-main project handoff
+
+Journey 02 reaches its outcome on merged main `ae9c263`. Its PDF, standalone
+readiness JSON and frozen bundle agree. A separate saved-file readback verifies
+all eleven packaged checksums. Latest outcomes across the recent identified
+builds are nine reached and three partial. Safety, corridor/model comparison
+and model-validation evidence remain partial; this is not full v1 acceptance.
+
+The rerun also finds two bounded defects. A date-only October 22 deliverable
+appears as October 21 at 5 p.m. in the report. Preserve date-only values as
+calendar dates without a clock. A jurisdiction change also leaves an earlier
+packet marked current. Compare the retained v4 assessment's canonical hash with
+current jurisdiction and registry inputs in project overview, Reports and report
+detail. Distinguish changed inputs from an unavailable check, and preserve old
+snapshot formats. Report creation still does not invalidate its own snapshot.
+No migration is required. All 351 related tests pass with shuffled seed `266519`,
+plus changed-file lint and affected TypeScript closure. Harmless controls survive;
+seven targeted date, snapshot and caller faults fail as intended, with source
+restored. Browser verification on `fddc4aa82` changes a saved jurisdiction through
+the editor and observes the refresh warning in all three surfaces. Removing the
+synthetic declaration and regenerating returns the packet to current. The actual
+downloaded PDF shows October 22 without a clock, and retains the current
+jurisdiction hash. Desktop and 390-pixel DOM checks show no horizontal overflow.
+The rendered PDF date is readable. The T3 screenshot limitation above still
+applies; bounded console readback does not establish an exhaustive clean console.
+Raw captures and the original run remain private and unchanged.
+
+PR review also finds an artifact-query error discarded by the Reports registry.
+Preserve that outcome, disclose the failed read, and treat the jurisdiction
+comparison as unavailable. A regression uses a generated packet whose timestamps
+would otherwise appear current. A harmless comment survives; discarding the
+error fails the expected assertion. All 77 affected tests pass again with seed
+`266519`, plus lint and the affected TypeScript check. This covers the mocked
+read failure, not a native outage or database permission test.
+
+The PR335 shuffled run also exposes two source-guard integration failures. Remove
+the retired Reports read-error debt entry and spell out both project column
+lists so the existing projection scanner checks them. The parser and thresholds
+stay unchanged. All 115 affected tests pass with the failing CI seed `95014`,
+plus lint and affected types. A harmless comment survives; a discarded error
+and nonexistent column fail the intended guards, with source restored.

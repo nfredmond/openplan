@@ -1,4 +1,4 @@
-import { getReportPacketFreshness, resolveReportPacketSourceUpdatedAt } from "./catalog";
+import { getReportPacketFreshness, resolveReportPacketSourceUpdatedAt, type ReportJurisdictionState } from "./catalog";
 import { PACKET_FRESHNESS_LABELS } from "./packet-labels";
 import type { ReportDriftSummary } from "./source-review-posture";
 
@@ -105,11 +105,12 @@ export function resolveTrackedReportSourceUpdatedAt(input: {
 export function resolveReportPacketRowFreshness(
   report: { latest_artifact_kind: string | null; generated_at: string | null; updated_at: string },
   artifact: { generated_at: string; metadata_json: Record<string, unknown> | null } | null | undefined,
+  jurisdictionState?: ReportJurisdictionState,
 ) {
   const generatedAt = artifact?.generated_at ?? report.generated_at;
   const writebackCurrent = artifactGenerationWritebackIsCurrent(artifact?.metadata_json, report.updated_at);
   return getReportPacketFreshness({ latestArtifactKind: report.latest_artifact_kind, generatedAt,
-    generationWritebackCurrent: writebackCurrent,
+    generationWritebackCurrent: writebackCurrent, jurisdictionState,
     updatedAt: writebackCurrent === undefined ? report.updated_at : resolveTrackedReportSourceUpdatedAt({ generatedAt, reportUpdatedAt: report.updated_at,
       cycleUpdatedAt: null, artifactMetadata: artifact?.metadata_json ?? null }),
   });

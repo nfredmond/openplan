@@ -20,6 +20,12 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Report handoff consistency:** date-only deliverable deadlines keep their
+calendar day in report previews and exports. New v4 jurisdiction snapshots are
+checked against current jurisdiction and registry inputs; a change requests a
+refresh, and an unreadable assessment is disclosed separately. Historical
+snapshots retain their existing treatment. No migration is required.
+
 **Report generation and jurisdiction handoff:** completed report generation now
 records its exact writeback revision. A later report edit or interrupted
 writeback still requires a refresh. The external jurisdiction-readiness payload

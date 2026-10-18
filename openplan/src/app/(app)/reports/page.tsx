@@ -1,3 +1,4 @@
+import { reportJurisdictionState } from "@/lib/reports/jurisdiction-freshness";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -177,7 +178,7 @@ export default async function ReportsPage({
       // out of its own picker for multi-workspace members (2026-08-03 review).
       supabase
         .from("projects")
-        .select("id, workspace_id, name")
+        .select("workspace_id, name, id, updated_at, jurisdiction_context, place_label, place_country_code, place_subdivision_code")
         .eq("workspace_id", membership.workspace_id)
         .order("updated_at", { ascending: false }),
       supabase
@@ -262,13 +263,15 @@ export default async function ReportsPage({
   }
 
   const reportIds = ((reportsData ?? []) as ReportRow[]).map((report) => report.id);
-  const { data: artifactsData } = reportIds.length
+  const artifactsRead = reportIds.length
     ? await supabase
         .from("report_artifacts")
         .select("report_id, generated_at, metadata_json")
         .in("report_id", reportIds)
         .order("generated_at", { ascending: false })
-    : { data: [] };
+    : { data: [], error: null };
+  const artifactsReadFailed = reads.check("report artifacts used for packet freshness", artifactsRead);
+  const artifactsData = artifactsRead.data;
 
   const latestArtifactByReportId = new Map<string, ReportArtifactRow>();
   for (const artifact of (artifactsData ?? []) as ReportArtifactRow[]) {
@@ -338,6 +341,8 @@ export default async function ReportsPage({
         : null;
       const computedPacketFreshness = getReportPacketFreshness({
         latestArtifactKind: report.latest_artifact_kind,
+        jurisdictionState: artifactsReadFailed ? "unavailable" : reportJurisdictionState(latestArtifact?.metadata_json,
+          (projectsData ?? []).find((project) => project.id === report.project_id)),
         generationWritebackCurrent: artifactGenerationWritebackIsCurrent(latestArtifact?.metadata_json, report.updated_at),
         generatedAt: packetGeneratedAt,
         updatedAt: resolveTrackedReportSourceUpdatedAt({
@@ -928,6 +933,7 @@ export default async function ReportsPage({
                         <h3 className="module-record-title transition group-hover:text-primary">{report.title}</h3>
                         <p className="module-record-stamp shrink-0">Updated {formatDateTime(report.updated_at)}</p>
                       </div>
+                      <p className="text-sm text-muted-foreground">{report.packetFreshness.detail}</p>
                       <p className="module-record-summary line-clamp-2">
                         {report.summary || "No summary provided."}
                       </p>
