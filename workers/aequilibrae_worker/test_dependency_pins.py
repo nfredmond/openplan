@@ -24,6 +24,7 @@ WORKER_REQUIREMENTS = os.path.join(HERE, "requirements.txt")
 COUNTY_REQUIREMENTS = os.path.join(REPO, "scripts", "modeling", "requirements.txt")
 HOSTED_DOCKERFILE = os.path.join(REPO, "workers", "hosted-models", "Dockerfile")
 COUNTY_DOCKERFILE = os.path.join(REPO, "workers", "county_onramp_worker", "Dockerfile")
+ASSIGNMENT_DOCKERFILE = os.path.join(HERE, "Dockerfile")
 
 # The packages whose versions decide graph compression and the compiled path
 # engine. Each must read identically in both files.
@@ -97,6 +98,35 @@ def test_the_hosted_image_installs_the_worker_list_and_runs_the_probe():
 
 def test_the_county_image_installs_the_county_list_and_runs_the_probe():
     _install_then_probe(COUNTY_DOCKERFILE, "COPY scripts/modeling/requirements.txt")
+
+
+def test_assignment_images_use_the_reviewed_python_abi():
+    for path in (ASSIGNMENT_DOCKERFILE, HOSTED_DOCKERFILE):
+        bases = re.findall(r"^FROM (.+)$", _read(path), flags=re.MULTILINE)
+        assert bases == ["python:3.11-slim"], (
+            f"{os.path.relpath(path, REPO)} must retain the reviewed cp311 runtime"
+        )
+
+
+def _adapter_after_sources(path: str, copy: str, command: str) -> None:
+    lines = _read(path).splitlines()
+    assert lines.count(command) == 1, (
+        f"{os.path.relpath(path, REPO)} must run the exact adapter identity check"
+    )
+    assert copy in lines and lines.index(copy) < lines.index(command), (
+        f"{os.path.relpath(path, REPO)} must check the adapter after copying its sources"
+    )
+
+
+def test_standalone_image_checks_the_adapter_after_copying_sources():
+    _adapter_after_sources(ASSIGNMENT_DOCKERFILE, 'COPY *.py .',
+        'RUN python -c "from model_assignment_graph_adapter import supported_engine; supported_engine()"')
+
+
+def test_hosted_image_checks_the_adapter_in_its_own_environment():
+    _adapter_after_sources(HOSTED_DOCKERFILE,
+        'COPY workers/aequilibrae_worker ./workers/aequilibrae_worker',
+        'RUN cd /app/workers/aequilibrae_worker && /opt/aequilibrae/bin/python -c "from model_assignment_graph_adapter import supported_engine; supported_engine()"')
 
 
 if __name__ == "__main__":

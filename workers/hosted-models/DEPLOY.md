@@ -7,6 +7,13 @@ ActivitySim keeps `requirements-exec.txt` numerical pins. AequilibraE retains
 its existing requirements; record the installed engine versions with evidence.
 Neither a successful install nor an executed run establishes scientific validity.
 
+Both assignment image definitions use Python 3.11. After copying the worker,
+each build runs its adapter's exact engine/source/binary identity check in the
+AequilibraE environment. The accepted extension is the reviewed CPython 3.11
+Linux x86_64 wheel of AequilibraE 1.6.2. A different wheel or platform refuses
+the build; the version number alone does not establish compatibility. These
+source checks do not establish that an image has built or run successfully.
+
 Both pollers need the same private persistent filesystem. Their existing
 handoffs retain registered `local://` bytes, verify run identity and producing
 stage ownership, and compare hashes before use. Separate services with separate
