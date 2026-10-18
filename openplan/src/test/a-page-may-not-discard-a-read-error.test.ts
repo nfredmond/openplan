@@ -166,7 +166,6 @@ function pageFiles(): string[] {
  */
 const KNOWN_DISCARDED: ReadonlyArray<readonly [string, number]> = [
   ["src/app/(app)/grants/page.tsx", 3],
-  ["src/app/(app)/reports/page.tsx", 1],
 ];
 
 describe("a page may not discard a read error", () => {

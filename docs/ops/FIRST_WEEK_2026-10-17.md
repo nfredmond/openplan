@@ -142,3 +142,10 @@ would otherwise appear current. A harmless comment survives; discarding the
 error fails the expected assertion. All 77 affected tests pass again with seed
 `266519`, plus lint and the affected TypeScript check. This covers the mocked
 read failure, not a native outage or database permission test.
+
+The PR335 shuffled run also exposes two source-guard integration failures. Remove
+the retired Reports read-error debt entry and spell out both project column
+lists so the existing projection scanner checks them. The parser and thresholds
+stay unchanged. All 115 affected tests pass with the failing CI seed `95014`,
+plus lint and affected types. A harmless comment survives; a discarded error
+and nonexistent column fail the intended guards, with source restored.

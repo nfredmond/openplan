@@ -1,5 +1,4 @@
 import { reportJurisdictionState } from "@/lib/reports/jurisdiction-freshness";
-import { PROJECT_JURISDICTION_COLUMNS } from "@/lib/projects/project-jurisdiction";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -179,7 +178,7 @@ export default async function ReportsPage({
       // out of its own picker for multi-workspace members (2026-08-03 review).
       supabase
         .from("projects")
-        .select(`workspace_id, name, ${PROJECT_JURISDICTION_COLUMNS}`)
+        .select("workspace_id, name, id, updated_at, jurisdiction_context, place_label, place_country_code, place_subdivision_code")
         .eq("workspace_id", membership.workspace_id)
         .order("updated_at", { ascending: false }),
       supabase

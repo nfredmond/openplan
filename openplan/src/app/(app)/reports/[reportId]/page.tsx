@@ -1,5 +1,4 @@
 import { reportJurisdictionState } from "@/lib/reports/jurisdiction-freshness";
-import { PROJECT_JURISDICTION_COLUMNS } from "@/lib/projects/project-jurisdiction";
 import { getReportPacketFreshness } from "@/lib/reports/catalog";
 import { artifactGenerationWritebackIsCurrent } from "@/lib/reports/report-registry-freshness";
 import { notFound, redirect } from "next/navigation";
@@ -153,7 +152,7 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
     supabase
       .from("projects")
         .select(
-          `workspace_id, name, summary, status, plan_type, delivery_phase, ${PROJECT_JURISDICTION_COLUMNS}`
+          "workspace_id, name, summary, status, plan_type, delivery_phase, id, updated_at, jurisdiction_context, place_label, place_country_code, place_subdivision_code"
         )
         .eq("id", report.project_id)
         .maybeSingle(),
