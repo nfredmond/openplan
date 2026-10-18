@@ -20,6 +20,12 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Evidence bundle file selection:** report candidates show their file format,
+generation time and artifact ID, including in checkbox labels. Files with the
+same report title can be distinguished before freezing a bundle. A missing
+generation time stays unavailable; generation order does not establish source
+freshness. No migration is required.
+
 **Report handoff consistency:** date-only deliverable deadlines keep their
 calendar day in report previews and exports. New v4 jurisdiction snapshots are
 checked against current jurisdiction and registry inputs; a change requests a

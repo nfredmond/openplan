@@ -28,6 +28,17 @@ function formatDate(value: string): string {
   return Number.isNaN(date.getTime()) ? value : date.toLocaleString("en-US");
 }
 
+/** Identify the retained file without treating generation order as source freshness. */
+function reportFileDetails(candidate: ProjectEvidenceCandidate): string | null {
+  if (candidate.sourceId !== "report_artifacts") return null;
+  const format = candidate.sourceKind === "pdf" ? "PDF" : candidate.sourceKind === "html" ? "HTML" : "Report file";
+  const date = candidate.createdAt ? new Date(candidate.createdAt) : null;
+  const generated = date && !Number.isNaN(date.getTime())
+    ? `Generated ${date.toISOString().replace("T", " ").replace("Z", " UTC")}`
+    : "Generation time unavailable";
+  return `${format} · ${generated} · Artifact ${candidate.recordId}`;
+}
+
 function ManifestHash({ value }: { value: string }) {
   const [copied, setCopied] = useState(false);
   useEffect(() => {
@@ -245,7 +256,11 @@ function BundleReviewDialog({
             {grouped.map(([label, candidates]) => (
               <fieldset key={label} className="space-y-2">
                 <legend className="module-section-label">{label}</legend>
+                {candidates.some((candidate) => candidate.sourceId === "report_artifacts") ? (
+                  <p className="text-xs text-muted-foreground">Generation time identifies the file; it does not confirm that its sources are current.</p>
+                ) : null}
                 {candidates.map((candidate) => {
+                  const fileDetails = reportFileDetails(candidate);
                   const tooLarge =
                     candidate.byteSize !== null && candidate.byteSize > inventory.limits.perFileBytes;
                   const disabled = candidate.required || !candidate.selectable || tooLarge || progress !== "idle";
@@ -268,13 +283,14 @@ function BundleReviewDialog({
                           });
                           setConfirmed(false);
                         }}
-                        aria-label={`Include ${candidate.title}`}
+                        aria-label={`Include ${candidate.title}${fileDetails ? ` · ${fileDetails}` : ""}`}
                       />
                       <span className="min-w-0 flex-1">
                         <span className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-medium">
                           <span className="break-words">{candidate.title}</span>
                           {candidate.required ? <span className="text-xs text-muted-foreground">Required</span> : null}
                         </span>
+                        {fileDetails ? <span className="mt-1 block break-words text-xs text-muted-foreground">{fileDetails}</span> : null}
                         <span className="mt-1 block text-xs text-muted-foreground">
                           {formatBytes(candidate.byteSize)} · {candidate.custodyState.replaceAll("_", " ")} · {candidate.retrievalState.replaceAll("_", " ")}
                         </span>

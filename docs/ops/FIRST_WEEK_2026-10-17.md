@@ -149,3 +149,34 @@ lists so the existing projection scanner checks them. The parser and thresholds
 stay unchanged. All 115 affected tests pass with the failing CI seed `95014`,
 plus lint and affected types. A harmless comment survives; a discarded error
 and nonexistent column fail the intended guards, with source restored.
+
+## Report file selection
+
+Journeys 02, 09 and 10 find indistinguishable PDF choices in the evidence bundle
+picker. The picker now shows format, UTC generation time and artifact ID in each
+report row and its checkbox name. A missing time stays unavailable. These details
+identify the retained file; they do not label its sources current or change
+default selection, revision tokens, frozen manifests or governed submission.
+All 45 related tests pass with seed `95014`, including duplicate titles and
+timestamps, HTML/PDF distinction, missing dates and the exact selection payload.
+A harmless comment survives, and six deliberate label, format, missing-time and
+selection faults fail the intended checks, with source restored. Lint, affected
+types and product direction pass; existing direction reminders remain.
+
+Chrome verification on `af1a8441d` follows Dashboard, Projects, the project and
+its Evidence tab. Twelve actual report candidates have distinct accessible
+names. Screenshots show readable format, UTC time and ID at desktop and 390
+pixels, with no horizontal overflow or observed console errors. Toggling a
+specific file changes that checkbox and restores correctly. No bundle is frozen
+in this check. The first attempt targeted the closed tab, whose loading effects
+were suspended; that navigation error stays in the private capture. This does
+not establish hosted behavior or new artifact-byte validation. Raw captures stay
+private.
+
+The full QA run finds two GeoPackage disclosure tests still using the old report
+checkbox name. Update both to the exact format, date and artifact label. Their
+required-map, selected-report and automatic-location warnings remain enforced.
+All 47 related tests pass with seed `95014`, plus lint. A harmless comment
+survives; removing the default report selection or geographic-record warning
+fails the intended assertions. Source is restored. Production code is unchanged
+by this test correction.
