@@ -12,6 +12,10 @@
 #
 # Usage:
 #   bash scripts/run-local-modeling.sh [--calibrate]
+#   OPENPLAN_AEQUILIBRAE_PYTHON="/absolute/path with spaces/bin/python" bash scripts/run-local-modeling.sh
+#
+#   OPENPLAN_AEQUILIBRAE_PYTHON selects an external interpreter for AequilibraE.
+#   An explicit selection must pass preflight; it never falls back to a venv.
 #
 #   --calibrate  Opt into COUNT calibration of the AequilibraE screening demand
 #                (AEQ_CALIBRATE=1 + COUNT_AUTO_INGEST=1). Where local observed
@@ -53,21 +57,38 @@ for arg in "$@"; do
       CAL_MODE="ON — calibrated_to_counts where local counts exist (Caltrans=CA), else screening"
       ;;
     -h|--help)
-      sed -n '2,26p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+      sed -n '2,/^set -/p' "$0" | sed '$d; s/^# \{0,1\}//'; exit 0 ;;
     *)
       echo "Unknown argument: $arg (use --help)" >&2; exit 2 ;;
   esac
 done
 
-# --- AequilibraE worker interpreter (must import aequilibrae) ---
+# --- AequilibraE interpreter: requirements first, imports second ---
+AEQ_PREFLIGHT="workers/aequilibrae_worker/check_local_dependencies.py"
 AEQ_PY=""
-for py in workers/aequilibrae_worker/.venv311/bin/python workers/aequilibrae_worker/.venv/bin/python; do
-  if [ -x "$py" ] && "$py" -c "import aequilibrae" >/dev/null 2>&1; then AEQ_PY="$py"; break; fi
-done
+if [ "${OPENPLAN_AEQUILIBRAE_PYTHON+x}" = x ]; then
+  AEQ_PY="$OPENPLAN_AEQUILIBRAE_PYTHON"
+  if [[ "$AEQ_PY" != /* ]] || [ ! -x "$AEQ_PY" ]; then
+    echo "ERROR: OPENPLAN_AEQUILIBRAE_PYTHON must name an executable absolute interpreter path: $AEQ_PY" >&2
+    exit 1
+  fi
+  if ! "$AEQ_PY" -B "$AEQ_PREFLIGHT"; then
+    echo "ERROR: explicitly selected AequilibraE interpreter failed preflight; no fallback: $AEQ_PY" >&2
+    exit 1
+  fi
+else
+  for py in workers/aequilibrae_worker/.venv311/bin/python workers/aequilibrae_worker/.venv/bin/python; do
+    if [ -x "$py" ]; then
+      if "$py" -B "$AEQ_PREFLIGHT"; then AEQ_PY="$py"; break; fi
+      echo "NOTE: rejecting incompatible AequilibraE interpreter: $py" >&2
+    fi
+  done
+fi
 if [ -z "$AEQ_PY" ]; then
-  echo "ERROR: no AequilibraE venv with deps found. Build one:" >&2
+  echo "ERROR: no AequilibraE interpreter satisfies workers/aequilibrae_worker/requirements.txt. Build one:" >&2
   echo "  python3 -m venv workers/aequilibrae_worker/.venv311" >&2
   echo "  workers/aequilibrae_worker/.venv311/bin/pip install -r workers/aequilibrae_worker/requirements.txt" >&2
+  echo "Or set OPENPLAN_AEQUILIBRAE_PYTHON to a compatible external interpreter's absolute path." >&2
   exit 1
 fi
 

@@ -183,6 +183,21 @@ which starts the county-onramp service. The launchers discover existing Python
 environments; they do not install a complete execution environment. Follow the
 [AequilibraE guide](../../workers/aequilibrae_worker/DEPLOY.md) and
 [ActivitySim guide](../../workers/activitysim_worker/DEPLOY.md).
+Both local AequilibraE launchers check installed AequilibraE, NumPy and pandas
+versions against `workers/aequilibrae_worker/requirements.txt`, then check imports.
+The preflight uses `packaging`, included in that requirements file. Automatic
+selection tries `.venv311`, then `.venv`, and reports rejected candidates. To bind
+an existing external environment, set an absolute interpreter path, quoted when
+it contains spaces:
+
+```bash
+OPENPLAN_AEQUILIBRAE_PYTHON="/path to execution env/bin/python" npm run modeling:local
+```
+
+The same variable works with `npm run worker:aequilibrae`. An explicitly selected
+missing, nonexecutable or incompatible interpreter stops the launcher without
+fallback. The check does not install or modify an environment. Dependency
+adherence and imports do not establish numerical behavior or scientific validity.
 ActivitySim explicitly falls back to preflight-only when its execution
 environment is missing. A running poller therefore does not establish that
 ActivitySim executed, and an executed model does not establish scientific validity.
