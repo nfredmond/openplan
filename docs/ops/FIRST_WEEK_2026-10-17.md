@@ -277,3 +277,19 @@ imagery, styled HTML and non-Latin text are outside that renderer's capability.
 The synthetic project has no geography or scientific evidence, and its packet
 discloses those gaps. This is not public signup-email, live road-provider,
 scientific or full Stage A acceptance. Raw captures remain private.
+
+## Safety map follow-up, October 18
+
+On `d6ced0c05`, real navigation through Projects into Safety shows crash markers
+before and after scrolling the source panel, switching sidebar tabs, and leaving
+and returning. All five desktop map captures are byte-identical. Markers also
+remain visible at 390 pixels. The source panel retains 390 reported and mappable
+records, with 109 matching the active filters. No page error, failed HTTP response
+or horizontal overflow is observed. Console review retains GPU readback and font
+preload warnings. The earlier screenshots do not establish marker loss, and this
+follow-up requires no map code change. It does not prove every style lifecycle.
+
+The readiness registry now pins the reviewed FARS and CCRS adapter bytes. Their
+only change declares the existing TIGER road-context provider; crash coverage,
+severity, fetching and persistence stay unchanged. The registry version advances
+without changing review dates, jurisdiction statuses or acceptance limits.

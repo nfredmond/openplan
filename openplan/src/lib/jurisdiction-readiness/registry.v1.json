@@ -1,6 +1,6 @@
 {
   "schema": "openplan.jurisdiction-readiness.v1",
-  "registryVersion": "2026-10-11.1",
+  "registryVersion": "2026-10-18.1",
   "releaseVersion": "0.44.0",
   "reviewedAt": "2026-08-28",
   "reviewBy": "2026-09-28",
@@ -89,12 +89,12 @@
     {
       "id": "fars-source-adapter",
       "path": "openplan/src/lib/safety/sources/fars.ts",
-      "sha256": "fa6fc3c807e4cabc7eb3941f64964fdaa54505256344889492ef7bf80bec000e"
+      "sha256": "4d320b3d367958e1dcb19a33b9e713c110ed1cfff15df6dccb2029036feeb784"
     },
     {
       "id": "ccrs-source-adapter",
       "path": "openplan/src/lib/safety/sources/ccrs.ts",
-      "sha256": "f1294bf77bff997b325203dcb26ff66dbf528e58c043fed119cfc1745b4f8bed"
+      "sha256": "366ec452b89aca3d4748207125012fea94f427402bfd766374f8e35946e2476a"
     },
     {
       "id": "grant-program-registry",
