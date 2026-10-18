@@ -109,3 +109,9 @@ payload construction, concurrent sessions, browser layout, exported files or
 scientific effectiveness. Those checks remain separate. Raw results and final
 readback stay private under `v1-ss4a-native-20261018/`; the original failed outer
 137 remains unchanged. The new live suite joins the existing CI RLS command.
+
+Populated upgrade workflow 39172087250 passes on native-suite source
+3d2e438e52cf. It preserves the previous-release sample data through migration
+000002. The current branch adds the date-editor parent and its bounded browser
+note, with no further SS4A runtime or migration change. The full ordinary
+generator-to-preview-to-application browser journey remains pending.
