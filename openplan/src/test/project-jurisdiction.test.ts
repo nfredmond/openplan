@@ -70,7 +70,8 @@ describe("independent project jurisdiction", () => {
     const before = buildJurisdictionReadinessEvidenceFile(row, hash);
     const payload = buildProjectJurisdictionReadinessExportPayload(row, hash);
     expect(JSON.parse(before.bytes.toString()), "Frozen JSON uses shared external canonical contract").toEqual(payload);
-    expect(payload.projectRevision).toBe(revision);
+    expect(payload.revisionScope).toBe("jurisdiction_context_and_registry");
+    expect(payload).not.toHaveProperty("projectRevision");
     const { payloadSha256, ...material } = payload;
     expect(payloadSha256).toBe(createHash("sha256").update(canonicalizeActionPayload(material)).digest("hex"));
     const oldBytes = Buffer.from(before.bytes);

@@ -783,10 +783,12 @@ export function getReportPacketFreshness({
   latestArtifactKind,
   generatedAt,
   updatedAt,
+  generationWritebackCurrent,
 }: {
   latestArtifactKind: string | null | undefined;
   generatedAt: string | null | undefined;
   updatedAt: string | null | undefined;
+  generationWritebackCurrent?: boolean;
 }): ReportPacketFreshness {
   if (!latestArtifactKind || !generatedAt) {
     return {
@@ -794,6 +796,11 @@ export function getReportPacketFreshness({
       tone: "warning",
       detail: PACKET_FRESHNESS_DETAIL.NO_PACKET,
     };
+  }
+
+  if (generationWritebackCurrent === false) {
+    return { label: PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED, tone: "warning",
+      detail: "The report revision does not match a completed generation writeback. Review the changed report or interrupted generation before using this packet." };
   }
 
   const generatedAtMs = new Date(generatedAt).getTime();

@@ -1,3 +1,4 @@
+import { resolveReportPacketRowFreshness } from "@/lib/reports/report-registry-freshness";
 import { notFound, redirect } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -23,7 +24,6 @@ import {
   describeComparisonSnapshotAggregate,
   describeEvidenceChainSummary,
   getReportNavigationHref,
-  getReportPacketFreshness,
   getReportPacketPriority,
   parseStoredComparisonSnapshotAggregate,
   parseStoredEvidenceChainSummary,
@@ -884,11 +884,8 @@ export default async function ProjectDetailPage({
 
       return {
         ...report,
-        packetFreshness: getReportPacketFreshness({
-          latestArtifactKind: report.latest_artifact_kind,
-          generatedAt: latestArtifactByReportId.get(report.id)?.generated_at ?? report.generated_at,
-          updatedAt: report.updated_at,
-        }),
+        packetFreshness: resolveReportPacketRowFreshness(report, latestArtifactByReportId.get(report.id)),
+
         comparisonAggregate,
         comparisonDigest,
         evidenceChainSummary,

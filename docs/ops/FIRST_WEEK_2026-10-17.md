@@ -62,3 +62,33 @@ The eight stack migrations are applied to the authorized hosted installation.
 PRs 330 and 331 are merged; PR332 waits for serial deployment confirmation.
 The current assessment covers local workflows, not an authenticated hosted
 acceptance run. Human feedback follows v1 under Nathaniel’s October 17 direction.
+
+## Focused rerun and report correction
+
+Five sessions finish against `ab8a373`: both setup journeys and land-use reach
+their outcomes; project handoff and safety remain partial. Latest outcomes across
+the two identified builds are eight reached and four partial. This is not a
+single-build twelve-journey pass. The isolated installation now has its existing
+Census key, workspace home geography and tract coverage. It still has no new
+model-validation acceptance.
+
+The report correction distinguishes an automatic generation writeback from a
+real edit. It records the returned database revision on the newly created
+artifact and refuses concurrent report changes. Explicit incomplete receipts
+stay non-current. Legacy artifact treatment stays unchanged. The jurisdiction
+export now hashes jurisdiction and registry inputs under schema v4; the global
+project revision and bundle freshness checks remain in place. The PDF retains
+the precise assessment snapshot used at generation.
+
+Focused regression checks cover completed, concurrent, failed and incomplete
+writebacks, later edits, legacy artifacts, source projections and assessment
+hash stability. Harmless changes survive. Removing revision, receipt, schema or
+input-scope protections produces the expected assertion failures, with source
+restored afterward. These tests do not establish live database permissions,
+transaction-wide source atomicity or PDF layout. Browser verification follows
+on the identified correction build. Raw captures stay private.
+
+Safety road-match timing and source persistence, duplicate PDF picker labels,
+land-use review links and vague validation messages remain open. PRs 330, 331
+and 332 are now merged. Final combined hosted acceptance and the Stage A tag
+remain pending. Human feedback follows v1.

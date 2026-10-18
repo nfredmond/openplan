@@ -1,3 +1,4 @@
+import { finishReportGeneration } from "@/lib/reports/generation-writeback";
 import {
   loadSafetyCrashEvidence,
   readSafetyCrashEvidenceIngest,
@@ -583,7 +584,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     let reportLookupResult = await supabase
       .from("reports")
-      .select("id, workspace_id, project_id, rtp_cycle_id, engagement_campaign_id, modeling_county_run_id, title, summary, report_type, status, created_at, generated_at, metadata_json")
+      .select("id, workspace_id, project_id, rtp_cycle_id, engagement_campaign_id, modeling_county_run_id, title, summary, report_type, status, created_at, updated_at, generated_at, metadata_json")
       .eq("id", parsedParams.data.reportId)
       .maybeSingle();
 
@@ -592,7 +593,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       // retry without it before falling back to the oldest column set.
       reportLookupResult = await supabase
         .from("reports")
-        .select("id, workspace_id, project_id, rtp_cycle_id, modeling_county_run_id, title, summary, report_type, status, created_at, generated_at, metadata_json")
+        .select("id, workspace_id, project_id, rtp_cycle_id, modeling_county_run_id, title, summary, report_type, status, created_at, updated_at, generated_at, metadata_json")
         .eq("id", parsedParams.data.reportId)
         .maybeSingle();
     }
@@ -600,7 +601,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if (reportLookupResult.error && looksLikePendingSchema(reportLookupResult.error.message)) {
       reportLookupResult = await supabase
         .from("reports")
-        .select("id, workspace_id, project_id, rtp_cycle_id, title, summary, report_type, status, created_at, generated_at")
+        .select("id, workspace_id, project_id, rtp_cycle_id, title, summary, report_type, status, created_at, updated_at, generated_at")
         .eq("id", parsedParams.data.reportId)
         .maybeSingle();
     }
@@ -822,6 +823,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         rtpPdfStoragePath = storagePath;
       }
       const artifactMetadata = {
+      generationWriteback: null,
         htmlContent: html,
         generatedAt,
         // Which typesetting tier produced the stored file, so the record can
@@ -911,42 +913,21 @@ export async function POST(request: NextRequest, context: RouteContext) {
         },
       };
 
-      let reportUpdateResult = await supabase
-        .from("reports")
-        .update({
-          status: "generated",
-          generated_at: generatedAt,
-          latest_artifact_kind: format,
-          latest_artifact_url: latestArtifactUrl,
+      const reportUpdateResult = await finishReportGeneration({
+        client: supabase, reportId: report.id, reportUpdatedAt: report.updated_at,
+        artifactId: artifact.id, artifactMetadata,
+        update: {
+          status: "generated", generated_at: generatedAt,
+          latest_artifact_kind: format, latest_artifact_url: latestArtifactUrl,
           metadata_json: nextMetadataJson,
-          rtp_basis_stale: false,
-          rtp_basis_stale_reason: null,
-          rtp_basis_stale_run_id: null,
-          rtp_basis_stale_marked_at: null,
-        })
-        .eq("id", report.id);
-
-      if (reportUpdateResult.error && looksLikePendingSchema(reportUpdateResult.error.message)) {
-        reportUpdateResult = await supabase
-          .from("reports")
-          .update({
-            status: "generated",
-            generated_at: generatedAt,
-            latest_artifact_kind: format,
-            latest_artifact_url: latestArtifactUrl,
-          })
-          .eq("id", report.id);
-      }
-
+          rtp_basis_stale: false, rtp_basis_stale_reason: null, rtp_basis_stale_run_id: null, rtp_basis_stale_marked_at: null,
+        },
+        legacyUpdate: { status: "generated", generated_at: generatedAt, latest_artifact_kind: format, latest_artifact_url: latestArtifactUrl },
+      });
       const { error: reportUpdateError } = reportUpdateResult;
-
       if (reportUpdateError) {
-        audit.error("report_update_failed", {
-          reportId: report.id,
-          message: reportUpdateError.message,
-          code: reportUpdateError.code ?? null,
-        });
-        return NextResponse.json({ error: "Failed to update report generation status" }, { status: 500 });
+        audit.error("report_update_failed", { reportId: report.id, message: reportUpdateError.message, code: reportUpdateError.code ?? null });
+        return NextResponse.json({ error: reportUpdateResult.status === 409 ? reportUpdateError.message : "Failed to update report generation status" }, { status: reportUpdateResult.status });
       }
 
       audit.info("rtp_report_generated", {
@@ -1285,6 +1266,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       }
 
       const artifactMetadata = {
+      generationWriteback: null,
         metadata_schema_version: "2026-04",
         htmlContent: html,
         generatedAt,
@@ -1380,38 +1362,20 @@ export async function POST(request: NextRequest, context: RouteContext) {
         },
       };
 
-      let reportUpdateResult = await supabase
-        .from("reports")
-        .update({
-          status: "generated",
-          generated_at: generatedAt,
-          latest_artifact_kind: format,
-          latest_artifact_url: latestArtifactUrl,
+      const reportUpdateResult = await finishReportGeneration({
+        client: supabase, reportId: report.id, reportUpdatedAt: report.updated_at,
+        artifactId: artifact.id, artifactMetadata,
+        update: {
+          status: "generated", generated_at: generatedAt,
+          latest_artifact_kind: format, latest_artifact_url: latestArtifactUrl,
           metadata_json: nextMetadataJson,
-        })
-        .eq("id", report.id);
-
-      if (reportUpdateResult.error && looksLikePendingSchema(reportUpdateResult.error.message)) {
-        reportUpdateResult = await supabase
-          .from("reports")
-          .update({
-            status: "generated",
-            generated_at: generatedAt,
-            latest_artifact_kind: format,
-            latest_artifact_url: latestArtifactUrl,
-          })
-          .eq("id", report.id);
-      }
-
+        },
+        legacyUpdate: { status: "generated", generated_at: generatedAt, latest_artifact_kind: format, latest_artifact_url: latestArtifactUrl },
+      });
       const { error: reportUpdateError } = reportUpdateResult;
-
       if (reportUpdateError) {
-        audit.error("report_update_failed", {
-          reportId: report.id,
-          message: reportUpdateError.message,
-          code: reportUpdateError.code ?? null,
-        });
-        return NextResponse.json({ error: "Failed to update report generation status" }, { status: 500 });
+        audit.error("report_update_failed", { reportId: report.id, message: reportUpdateError.message, code: reportUpdateError.code ?? null });
+        return NextResponse.json({ error: reportUpdateResult.status === 409 ? reportUpdateError.message : "Failed to update report generation status" }, { status: reportUpdateResult.status });
       }
 
       audit.info("campaign_report_generated", {
@@ -2705,6 +2669,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       artifactStoragePath = storagePath;
     }
     const artifactMetadata = {
+      generationWriteback: null,
       metadata_schema_version: "2026-04",
       htmlContent: html,
       generatedAt,
@@ -2849,42 +2814,21 @@ export async function POST(request: NextRequest, context: RouteContext) {
       },
     };
 
-    let reportUpdateResult = await supabase
-      .from("reports")
-      .update({
-        status: "generated",
-        generated_at: generatedAt,
-        latest_artifact_kind: format,
-        latest_artifact_url: latestArtifactUrl,
+    const reportUpdateResult = await finishReportGeneration({
+      client: supabase, reportId: report.id, reportUpdatedAt: report.updated_at,
+      artifactId: artifact.id, artifactMetadata,
+      update: {
+        status: "generated", generated_at: generatedAt,
+        latest_artifact_kind: format, latest_artifact_url: latestArtifactUrl,
         metadata_json: nextMetadataJson,
-        rtp_basis_stale: false,
-        rtp_basis_stale_reason: null,
-        rtp_basis_stale_run_id: null,
-        rtp_basis_stale_marked_at: null,
-      })
-      .eq("id", report.id);
-
-    if (reportUpdateResult.error && looksLikePendingSchema(reportUpdateResult.error.message)) {
-      reportUpdateResult = await supabase
-        .from("reports")
-        .update({
-          status: "generated",
-          generated_at: generatedAt,
-          latest_artifact_kind: format,
-          latest_artifact_url: latestArtifactUrl,
-        })
-        .eq("id", report.id);
-    }
-
+        rtp_basis_stale: false, rtp_basis_stale_reason: null, rtp_basis_stale_run_id: null, rtp_basis_stale_marked_at: null,
+      },
+      legacyUpdate: { status: "generated", generated_at: generatedAt, latest_artifact_kind: format, latest_artifact_url: latestArtifactUrl },
+    });
     const { error: reportUpdateError } = reportUpdateResult;
-
     if (reportUpdateError) {
-      audit.error("report_update_failed", {
-        reportId: report.id,
-        message: reportUpdateError.message,
-        code: reportUpdateError.code ?? null,
-      });
-      return NextResponse.json({ error: "Failed to update report generation status" }, { status: 500 });
+      audit.error("report_update_failed", { reportId: report.id, message: reportUpdateError.message, code: reportUpdateError.code ?? null });
+      return NextResponse.json({ error: reportUpdateResult.status === 409 ? reportUpdateError.message : "Failed to update report generation status" }, { status: reportUpdateResult.status });
     }
 
     audit.info("report_generated", {

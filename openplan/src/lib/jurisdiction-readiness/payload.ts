@@ -72,11 +72,11 @@ export function buildProjectJurisdictionReadinessExportPayload(project: ProjectJ
     entries: internal.context.entries,
   };
   const payload = {
-    schema: "openplan.project-jurisdiction-readiness-export.v3" as const,
+    schema: "openplan.project-jurisdiction-readiness-export.v4" as const,
+    revisionScope: "jurisdiction_context_and_registry" as const,
     scope: "external_handoff" as const,
     attribution: "Recorded time and source attribution retained; internal actor identifier omitted." as const,
     projectId: internal.projectId,
-    projectRevision: internal.projectRevision,
     registryVersion: JURISDICTION_READINESS_REGISTRY.registryVersion,
     registrySha256: internal.registrySha256,
     context,
@@ -86,3 +86,9 @@ export function buildProjectJurisdictionReadinessExportPayload(project: ProjectJ
   };
   return { ...payload, payloadSha256: createHash("sha256").update(canonicalizeActionPayload(payload)).digest("hex") };
 }
+
+/** Old artifacts keep their original schema and full-project revision. */
+export type LegacyProjectJurisdictionReadinessExportPayload = Omit<ProjectJurisdictionReadinessExportPayload, "schema" | "revisionScope"> & {
+  schema: "openplan.project-jurisdiction-readiness-export.v3";
+  projectRevision: string | null;
+};
