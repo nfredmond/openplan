@@ -83,25 +83,25 @@ export function SafetyPlanSeedPanel({ opportunityId, onApplied }: {
     <h3 className="font-semibold">Seed from Safety plan</h3>
     <p className="text-sm text-muted-foreground">{SAFETY_SEED_CAVEAT}</p>
     <label className="block space-y-1 text-sm">
-      <span>Exact project report artifact</span>
+      <span>Exact project Safety report</span>
       <select className="w-full min-w-0 rounded border bg-background p-2" value={artifactId} disabled={busy}
         onChange={(event) => { setArtifactId(event.target.value); setPreview(null); setMessage(null); setError(null); }}>
-        <option value="">Select a generated artifact</option>
+        <option value="">Select a generated report</option>
         {artifacts.map((artifact) => <option key={artifact.id} value={artifact.id}>
           {artifact.reportTitle} · {artifact.generatedAt ?? "Date not recorded"} · {artifact.id}
         </option>)}
       </select>
     </label>
-    {loadingSources ? <p className="text-sm">Loading linked-project Safety artifacts.</p> : null}
+    {loadingSources ? <p className="text-sm">Loading linked-project Safety reports.</p> : null}
     {sourceError ? <p role="alert" className="text-sm text-destructive">{sourceError}</p> : null}
-    {!loadingSources && !sourceError && !artifacts.length ? <p className="text-sm">{requiresProject ? "Link this opportunity to the Safety report project first." : "No Safety artifacts are listed for this project. Generate a Safety report for the selected acquisition first."}</p> : null}
+    {!loadingSources && !sourceError && !artifacts.length ? <p className="text-sm">{requiresProject ? "Link this opportunity to the Safety report project first." : "No Safety reports are listed for this project. Generate a Safety report for the selected acquisition first."}</p> : null}
     <div className="flex flex-wrap gap-2">
       <Button type="button" variant="outline" disabled={busy || loadingSources} onClick={() => { setArtifactId(""); setPreview(null); void loadSources(null); }}>Refresh Safety sources</Button>
-      {nextCursor ? <Button type="button" variant="outline" disabled={busy || loadingSources} onClick={() => void loadSources(nextCursor)}>Load more Safety artifacts</Button> : null}
+      {nextCursor ? <Button type="button" variant="outline" disabled={busy || loadingSources} onClick={() => void loadSources(nextCursor)}>Load more Safety reports</Button> : null}
     </div>
     <Button type="button" variant="outline" disabled={!artifactId || busy} onClick={() => void operate("preview")}>Preview Safety seed</Button>
     {preview ? <div className="space-y-3">
-      <p className="break-all text-xs">Artifact {preview.artifactId}. Snapshot SHA-256 {preview.snapshotHash}.</p>
+      <p className="break-all text-xs">Report source {preview.artifactId}. Snapshot SHA-256 {preview.snapshotHash}.</p>
       <p className="text-sm">Review all six working drafts. Apply appends history and keeps existing final text.</p>
       {preview.sections.map((section) => <details key={section.section_key} className="rounded border p-2">
         <summary>{section.section_key}</summary>

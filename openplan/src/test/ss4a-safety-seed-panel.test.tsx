@@ -58,7 +58,7 @@ describe("explicit Safety artifact preview and apply UI", () => {
     sourcesMock.mockResolvedValueOnce(response({ artifacts, nextCursor: rows.artifact.id, requiresProject: false }))
       .mockResolvedValueOnce(response({ artifacts: [{ ...artifacts[0], id: rows.report.id, reportTitle: "Older Safety report" }], nextCursor: null, requiresProject: false }));
     render(<SafetyPlanSeedPanel opportunityId={rows.opportunity.id} onApplied={vi.fn()} />);
-    fireEvent.click(await screen.findByRole("button", { name: "Load more Safety artifacts" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Load more Safety reports" }));
     await screen.findByRole("option", { name: /Older Safety report/ });
     expect(screen.getAllByRole("option")).toHaveLength(3);
     expect(sourcesMock.mock.calls[0][0]).toBe(`/api/funding-opportunities/${rows.opportunity.id}/application/safety-seed`);
@@ -69,11 +69,11 @@ describe("explicit Safety artifact preview and apply UI", () => {
     let release!: (value: unknown) => void;
     sourcesMock.mockReturnValueOnce(new Promise((resolve) => { release = resolve; }));
     render(<SafetyPlanSeedPanel opportunityId={rows.opportunity.id} onApplied={vi.fn()} />);
-    expect(screen.getByText("Loading linked-project Safety artifacts.")).toBeTruthy();
-    expect(screen.queryByText(/No Safety artifacts/)).toBeNull();
+    expect(screen.getByText("Loading linked-project Safety reports.")).toBeTruthy();
+    expect(screen.queryByText(/No Safety reports/)).toBeNull();
     release(response({ error: "Sources unavailable" }, 500));
     await screen.findByText("Sources unavailable");
-    expect(screen.queryByText(/No Safety artifacts/)).toBeNull();
+    expect(screen.queryByText(/No Safety reports/)).toBeNull();
     sourcesMock.mockResolvedValueOnce(response({ artifacts: [], nextCursor: null, requiresProject: true }));
     fireEvent.click(screen.getByRole("button", { name: "Refresh Safety sources" }));
     await screen.findByText("Link this opportunity to the Safety report project first.");
@@ -83,7 +83,7 @@ describe("explicit Safety artifact preview and apply UI", () => {
     sourcesMock.mockResolvedValueOnce(response({ artifacts: [{ id: "bad" }], nextCursor: null, requiresProject: false }));
     const view = render(<SafetyPlanSeedPanel opportunityId={rows.opportunity.id} onApplied={vi.fn()} />);
     await screen.findByText("Safety source response is unavailable");
-    expect(screen.queryByText(/No Safety artifacts/)).toBeNull();
+    expect(screen.queryByText(/No Safety reports/)).toBeNull();
     sourcesMock.mockReturnValueOnce(new Promise(() => {}));
     fireEvent.click(screen.getByRole("button", { name: "Refresh Safety sources" }));
     const signal = sourcesMock.mock.calls.at(-1)![1].signal as AbortSignal;
