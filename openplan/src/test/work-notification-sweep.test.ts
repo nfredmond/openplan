@@ -27,7 +27,7 @@ const EMPTY_LEDGER: AwardDrawdownLedger = (() => {
 
 import {
   FakeWorkDb,
-  migrationDeclaresNotNullDueOn,
+  migrationRequiresReminderDueOn,
   migrationExists,
   migrationKindVocabulary,
   workNotificationUniqueKey,
@@ -420,19 +420,17 @@ describe("the daily deadline sweep", () => {
     // 13:00 UTC with nobody watching. Derived from the migration rather than
     // retyped here, so the assertion cannot agree with a stale list.
     expect(migrationKindVocabulary().sort()).toEqual([...WORK_NOTIFICATION_KINDS].sort());
-    // Every kind is actually produced by a source — a vocabulary entry nothing
-    // emits is a capability that looks shipped and is not.
+    // Reminder kinds come from the sweep. Change notices come from the atomic
+    // opportunity trigger, without entering an email digest.
     expect(WORK_SWEEP_SOURCES.map((source) => source.kind).sort()).toEqual(
-      [...WORK_NOTIFICATION_KINDS].sort()
+      WORK_NOTIFICATION_KINDS.filter((kind) => kind !== "grant_deadline_changed").sort()
     );
   });
 
-  it("keeps due_on NOT NULL, or the unique index would guarantee nothing", () => {
-    // NULLs are DISTINCT in a unique index. A nullable `due_on` would leave the
-    // constraint in place and silently stop de-duplicating, which is the worst
-    // shape of this defect: the guard above still finds an index, and the digest
-    // goes out every day.
-    expect(migrationDeclaresNotNullDueOn()).toBe(true);
+  it("requires due_on for reminder rows, keeping null dates exclusive to change events", () => {
+    // NULLs are distinct in a unique index. Reminder dates remain required;
+    // only journal-backed change notices may have a null due date.
+    expect(migrationRequiresReminderDueOn()).toBe(true);
   });
 
   it("writes one reminder per person per record, in the workspace the record belongs to", async () => {
