@@ -390,6 +390,7 @@ export default async function SafetyPage({
         workspaceId={workspaceId}
         latestIngest={latestIngest}
         ingestsReadFailed={ingestsReadFailed}
+        currentIngestReadFailed={currentIngestReadFailed}
         studyArea={{
           corridorText: studyArea.corridorText,
           place: studyArea.place,
