@@ -159,7 +159,7 @@ export function GrantsProgramCatalogSection({
 
           return (
             <div key={program.key} className="flex flex-wrap items-start justify-between gap-3 px-4 py-3.5">
-              <div className="min-w-0 flex-1 space-y-1.5">
+              <div className="min-w-0 flex-1 basis-full space-y-1.5 sm:basis-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="text-sm font-semibold text-foreground">{program.name}</p>
                   <StatusBadge tone={program.level === "federal" ? "info" : "success"}>
