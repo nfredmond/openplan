@@ -1,3 +1,5 @@
+import { persistSafetyPlanGeneration } from "@/lib/reports/safety-plan-persistence";
+import { buildSafetyPlanSnapshot, type SafetyPlanSnapshot } from "@/lib/reports/safety-plan-snapshot";
 import { finishReportGeneration } from "@/lib/reports/generation-writeback";
 import {
   loadSafetyCrashEvidence,
@@ -2473,6 +2475,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
      * reported as stale rather than printed.
      */
     const savedSafetyActionPlan = readReportSafetyActionPlan(report.metadata_json);
+    let safetyPlanSnapshotV1: SafetyPlanSnapshot | null = null;
     let safetyActionPlan: SafetyActionPlanSectionDraft | { kind: "stale_acquisition" } | null = null;
     if (savedSafetyActionPlan) {
       if (!selectedSafetyIngestIds.includes(savedSafetyActionPlan.ingestId)) {
@@ -2501,6 +2504,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
           evidence: planEvidence,
           network,
         });
+        if (planEvidence?.status === "ready" && planIngestRow && typeof planIngestRow === "object") {
+          safetyPlanSnapshotV1 = buildSafetyPlanSnapshot({
+            artifactId, reportId: report.id, workspaceId: report.workspace_id,
+            projectId: projectRow.id, generatedAt, reportUpdatedAt: report.updated_at,
+            projectUpdatedAt: projectRow.updated_at,
+            acquisition: planIngestRow as Record<string, unknown>, selection: savedSafetyActionPlan, draft: safetyActionPlan,
+          });
+        }
       }
     }
 
@@ -2663,6 +2674,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       artifactStoragePath = storagePath;
     }
     const artifactMetadata = {
+      safetyPlanSnapshotV1,
       generationWriteback: null,
       metadata_schema_version: "2026-04",
       htmlContent: html,
@@ -2762,19 +2774,17 @@ export async function POST(request: NextRequest, context: RouteContext) {
       generationMode: format === "pdf" ? "structured_pdf_packet" : "structured_html_packet",
     };
 
-    const { data: artifact, error: artifactError } = await supabase
-      .from("report_artifacts")
-      .insert({
-        id: artifactId,
-        report_id: report.id,
-        artifact_kind: format,
-        storage_path: artifactStoragePath,
-        generated_by: user.id,
-        generated_at: generatedAt,
-        metadata_json: artifactMetadata,
-      })
-      .select("id, report_id, artifact_kind, generated_at, metadata_json")
-      .single();
+    const artifactInsert = {
+      id: artifactId, report_id: report.id, artifact_kind: format,
+      storage_path: artifactStoragePath, generated_by: user.id, generated_at: generatedAt,
+      metadata_json: artifactMetadata,
+    };
+    // Safety insertion waits for the atomic persistence RPC below. Other report
+    // branches retain their existing caller-scoped insertion and writeback.
+    const { data: artifact, error: artifactError } = safetyPlanSnapshotV1
+      ? { data: artifactInsert, error: null }
+      : await supabase.from("report_artifacts").insert(artifactInsert)
+          .select("id, report_id, artifact_kind, generated_at, metadata_json").single();
 
     if (artifactError || !artifact) {
       audit.error("artifact_insert_failed", {
@@ -2808,17 +2818,23 @@ export async function POST(request: NextRequest, context: RouteContext) {
       },
     };
 
-    const reportUpdateResult = await finishReportGeneration({
-      client: supabase, reportId: report.id, reportUpdatedAt: report.updated_at,
-      artifactId: artifact.id, artifactMetadata,
-      update: {
-        status: "generated", generated_at: generatedAt,
-        latest_artifact_kind: format, latest_artifact_url: latestArtifactUrl,
-        metadata_json: nextMetadataJson,
-        rtp_basis_stale: false, rtp_basis_stale_reason: null, rtp_basis_stale_run_id: null, rtp_basis_stale_marked_at: null,
-      },
-      legacyUpdate: { status: "generated", generated_at: generatedAt, latest_artifact_kind: format, latest_artifact_url: latestArtifactUrl },
-    });
+    const reportUpdate = {
+      status: "generated" as const, generated_at: generatedAt,
+      latest_artifact_kind: format, latest_artifact_url: latestArtifactUrl,
+      metadata_json: nextMetadataJson,
+      rtp_basis_stale: false as const, rtp_basis_stale_reason: null,
+      rtp_basis_stale_run_id: null, rtp_basis_stale_marked_at: null,
+    };
+    const reportUpdateResult = safetyPlanSnapshotV1
+      ? await persistSafetyPlanGeneration({
+          client: createServiceRoleClient(), actorId: user.id, snapshot: safetyPlanSnapshotV1,
+          artifact: artifactInsert, reportUpdate,
+        })
+      : await finishReportGeneration({
+          client: supabase, reportId: report.id, reportUpdatedAt: report.updated_at,
+          artifactId: artifact.id, artifactMetadata, update: reportUpdate,
+          legacyUpdate: { status: "generated", generated_at: generatedAt, latest_artifact_kind: format, latest_artifact_url: latestArtifactUrl },
+        });
     const { error: reportUpdateError } = reportUpdateResult;
     if (reportUpdateError) {
       audit.error("report_update_failed", { reportId: report.id, message: reportUpdateError.message, code: reportUpdateError.code ?? null });

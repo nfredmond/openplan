@@ -27,6 +27,14 @@ needed. Decision and application reminders can coexist. These notices describe
 OpenPlan edits, not verified changes to a funder's official notice. Apply
 `20261018000001_grant_deadline_changes.sql` before deploying this capability.
 
+**Safety plan seeds, source candidate:** the existing SS4A application workspace
+can preview six code-built working drafts from an exact same-project Safety
+artifact. Source snapshots, draft origin and export caveats stay attached;
+final text, prior drafts and checklist states remain. Migration
+`20261018000002_ss4a_safety_seed` must precede dependent code. Native transaction,
+RLS and browser verification remain pending. The local check campaign retains
+an outer wrapper failure; see the [source status](docs/reviews/2026-10-18-ss4a-safety-seed/STATUS.md).
+
 **Grant catalog search:** find programs by name, administering agency, project
 type or displayed catalog details. Results show a count, a clear control and an
 empty state. Jurisdiction coverage remains visible while filtering. A search
