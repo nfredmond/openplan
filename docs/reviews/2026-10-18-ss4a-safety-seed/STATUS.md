@@ -145,3 +145,53 @@ clean status false. The owned preview stops with wrapper terminal0 and lock
 release; source stays unchanged. Private receipts remain under
 v1-ss4a-browser-20261018/. Hosted migration, new-head CI, simultaneous-session
 behavior and the full Safety/first-week journey remain separate.
+
+## October 18 picker and refused-upload correction
+
+The Safety picker now reads paged artifacts from the opportunity's linked
+project, separately from the workspace attachment list. Loading, unavailable,
+unlinked and empty sources stay distinct. Confirmed PostgreSQL persistence
+refusals remove the newly uploaded file. Lost responses and invalid success
+receipts retain it because commit status is unknown. Cleanup errors preserve
+the original refusal and expose a separate failure flag; this is not a durable
+cleanup queue.
+
+Local harmless and final cohorts pass 148 tests, including all 113 report-route
+cases. Five query faults reach their intended assertions in the second window;
+six remaining cleanup, pagination and abort fault families do so in the third.
+Scoped lint passes and all temporary edits restore exact bytes and modes. The
+first two controllers fail on diagnostic formatting and remain failed. Their
+raw logs and the final results stay private under
+`v1-ss4a-picker-storage-correction-20261018/`. These are mocked API/DOM/helper
+checks. New native Storage, project-query and identified browser checks remain
+open. No migration changes or hosted rollout follow from this correction.
+
+The bounded picker review finds an unsupported route value export and a JSON-null
+filter gap. The projection is now module-private, and its test requires the
+independent literal inner-join fields. Text extraction excludes missing and JSON
+null snapshots before the page limit. Seventeen affected route checks, scoped
+lint and three intended faults pass with exact restoration. A first private
+controller stops on an abbreviated diagnostic and remains failed. Generated
+Next route types, native query semantics and the new picker browser read remain
+separate from these mocked checks.
+
+The caller-scoped source GET now returns the existing Safety HTML from the linked
+project. On identified d1b1e234c, the installed-Chrome journey reaches it through
+Home, Dashboard and Grants, selects it, and refreshes without appending drafts.
+Desktop1440 and 390px captures and layout controls pass. Two aborted background
+requests keep strict whole-run clean false. A prior exact-label driver times out
+and remains failed; the corrected driver uses the panel's one native select.
+No generation, apply or export effect is repeated. The preview exits normally.
+
+The joined branch also uses plain report wording in the picker and lowers the
+workspace copy ratchet from136 to135. All63 affected route, DOM and source
+inventory checks pass before and after three intended faults; scoped lint and
+exact restoration pass. No jargon ceiling rises. Existing failed diagnostic
+attempts and source-only review objections remain private and unchanged.
+
+The final plain-worded build6113d0388 repeats the read-only picker journey at
+desktop1440 and390px. Selection, refresh, intended overflow detection and exact
+style restoration pass; all captures are inspected. The two background aborts
+remain explicit. Both browser and preview exit0, with the compiler released and
+owned environment removed. No source, generation, apply or export changes occur
+during this journey. Raw captures stay private. Hosted migration remains held.

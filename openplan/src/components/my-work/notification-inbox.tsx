@@ -220,7 +220,7 @@ export function WorkNotificationInboxPanel({ inbox, sweepFreshness, advanceDays 
         </div>
       ) : null}
       <p className="module-note">
-        Deadline reminders cover work due within {advanceDays} {advanceDays === 1 ? "day" : "days"} and overdue work.
+        Deadline reminders arrive after the daily check for work due within {advanceDays} {advanceDays === 1 ? "day" : "days"} and overdue work.
         Recorded grant deadline changes arrive when an edit is saved, including cleared dates.
         Marking a notice read removes it from here; it does not change the record itself.
       </p>

@@ -13,7 +13,7 @@ export const GRANT_DEADLINE_FIELDS = [
 /** Read the browser's declared zone without a jurisdiction or UTC fallback. */
 export function browserDeadlineTimeZone(): string | null {
   try {
-    return validTimeZone(Intl.DateTimeFormat().resolvedOptions().timeZone);
+    return validTimeZone(Intl.DateTimeFormat("en-US").resolvedOptions().timeZone);
   } catch {
     return null;
   }
