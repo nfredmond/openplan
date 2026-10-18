@@ -210,3 +210,42 @@ fixture budget. Separate controlled 4.25-second fetch and draft replies fail
 with an input-stage timeout when their respective bounds stay at four seconds.
 Both complete and replay without new effects at 15 seconds. Production source
 and the exact fault oracles remain unchanged.
+
+## Safety source restoration, October 18
+
+Current-area coverage now has its own workspace, project and bounding-extent
+query. The recent eight-import history remains separate. Coordinate comparisons
+retain the shared round-trip tolerance. A failed current lookup is disclosed and
+suppresses the fallback crash read; a history-only failure still permits the
+verified current acquisition to load. No migration is required.
+
+All 141 related tests pass, plus changed-file lint and affected TypeScript checks.
+A harmless comment survives. Reintroducing the history cutoff, removing extent
+filtering, ignoring a lookup error or permitting its fallback request fails the
+intended assertions. Source restores exactly. The query tests model database
+predicates and projections; they do not establish native PostgREST behavior.
+
+An agent browser run uses main `231f4fba` plus the three pinned Safety edits.
+The path through Projects into Safety retains the same source panel after leaving
+and returning. Desktop and 390-pixel captures show the CCRS attribution, 390
+reported and mappable records, and the unknown exact publication cutoff. The
+filtered read returns 109 of 109 matching records. No page error, failed HTTP
+response or horizontal overflow is observed. An earlier exact-text locator
+timeout remains recorded privately; the count paragraph also carries a caveat.
+
+Road-enrichment timing and bare `/safety` context remain open. This correction
+does not close the Safety journey or establish hosted behavior. Separate hosted
+checks reach Dashboard, Projects and Reports in an empty synthetic workspace;
+populated hosted artifacts and public signup-email delivery remain unassessed.
+Raw captures stay private, and human feedback remains post-v1.
+
+### Safety lookup message correction, October 18
+
+The current-area acquisition failure now names that lookup separately from
+readable recent history. The failed lookup still withholds unverified map
+results. A history-only failure retains its own message.
+
+Twenty-nine focused tests and changed-file lint pass. A harmless comment survives;
+removing the current-query state or restoring the mislabeled branch fails the
+intended text assertion. Both source files restore exactly. These are source and
+rendered-component checks, not a newly captured browser failure or hosted result.

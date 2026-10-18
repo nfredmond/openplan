@@ -11,6 +11,7 @@ import {
 import { placeOfRecordFromProject } from "@/lib/projects/project-place";
 import {
   resolveStudyArea,
+  STUDY_AREA_BBOX_TOLERANCE,
   studyAreaBboxesMatch,
   summarizeCorridorText,
 } from "@/lib/models/study-area";
@@ -32,6 +33,8 @@ import type {
 import { moduleMetadata } from "@/lib/ui/page-title";
 
 export const metadata = moduleMetadata("Safety");
+
+const INGEST_SUMMARY_COLUMNS = "id,project_id,source_label,attribution,coverage_state,severity_completeness,status,crash_count,geocoded_count,truncated,years_requested,published_through,published_through_provenance,fetch_error,created_at,min_lon,min_lat,max_lon,max_lat,county_code";
 
 /**
  * `?projectId=` is how this page is TOLD which project it was opened for.
@@ -193,23 +196,40 @@ export default async function SafetyPage({
             ? `${projectRow.name ?? "That project"} has no study area of its own yet, so nothing could be inherited from it. Set one on the project record and this page will open on it.`
             : null;
 
-  // Recent acquisitions drive the coverage banner (newest row) and the
-  // acquisition-history list, with the project each run was attached to. A
-  // missing table (schema not applied yet) is treated the same as "nothing
-  // retrieved" rather than failing the page. Projects power the attach-on-
-  // ingest selector — the same workspace projects list other modules offer.
-  // Named results, not `{ data }`: a crash-ingest read that failed must not
-  // render as "no crash data has been imported", which on this page reads as a
-  // statement about the agency's safety record rather than about the query.
-  const [ingestsResult, projectsResult, reportsResult] = await Promise.all([
+  // Keep recent history separate from current-area coverage. Failed reads are
+  // disclosed, rather than described as an agency with no crash acquisitions.
+  const currentStudyAreaBbox = summarizeCorridorText(studyArea.corridorText).bbox;
+  // Select current coverage before limiting the display history. Unrelated
+  // acquisitions must not push this area's retained source out of its banner.
+  let currentIngestQuery = supabase
+    .from("safety_crash_ingests")
+    .select(INGEST_SUMMARY_COLUMNS)
+    .eq("workspace_id", workspaceId);
+  currentIngestQuery = requestedProjectId
+    ? currentIngestQuery.eq("project_id", requestedProjectId)
+    : currentIngestQuery.is("project_id", null);
+  if (currentStudyAreaBbox) {
+    for (const [column, bound] of [
+      ["min_lon", currentStudyAreaBbox.minLon],
+      ["min_lat", currentStudyAreaBbox.minLat],
+      ["max_lon", currentStudyAreaBbox.maxLon],
+      ["max_lat", currentStudyAreaBbox.maxLat],
+    ] as const) {
+      currentIngestQuery = currentIngestQuery
+        .gte(column, bound - STUDY_AREA_BBOX_TOLERANCE)
+        .lte(column, bound + STUDY_AREA_BBOX_TOLERANCE);
+    }
+  }
+  const [ingestsResult, currentIngestResult, projectsResult, reportsResult] = await Promise.all([
     supabase
       .from("safety_crash_ingests")
-      .select(
-        "id,project_id,source_label,attribution,coverage_state,severity_completeness,status,crash_count,geocoded_count,truncated,years_requested,published_through,published_through_provenance,fetch_error,created_at,min_lon,min_lat,max_lon,max_lat,county_code"
-      )
+      .select(INGEST_SUMMARY_COLUMNS)
       .eq("workspace_id", workspaceId)
       .order("created_at", { ascending: false })
       .limit(8),
+    currentStudyAreaBbox
+      ? currentIngestQuery.order("created_at", { ascending: false }).limit(1)
+      : Promise.resolve({ data: [], error: null }),
     supabase
       .from("projects")
       .select("id, name, status")
@@ -227,7 +247,9 @@ export default async function SafetyPage({
       : Promise.resolve({ data: [], error: null }),
   ]);
 
-  const ingestsReadFailed = reads.check("this workspace's crash imports", ingestsResult);
+  const historyReadFailed = reads.check("this workspace's crash imports", ingestsResult);
+  const currentIngestReadFailed = reads.check("this study area's crash acquisition", currentIngestResult);
+  const ingestsReadFailed = historyReadFailed || currentIngestReadFailed;
   reads.check("this workspace's projects", projectsResult);
   reads.check("this project's reports", reportsResult);
   const ingestRows = ingestsResult.data;
@@ -249,8 +271,7 @@ export default async function SafetyPage({
   // is not enough: a project's area can change, and an unattached acquisition
   // can belong to an older workspace home. Only an acquisition whose recorded
   // extent matches the area currently on screen may become the banner.
-  const currentStudyAreaBbox = summarizeCorridorText(studyArea.corridorText).bbox;
-  const ingestRow = ((ingestRows ?? []) as Array<Record<string, unknown>>).find((row) => {
+  const ingestRow = currentIngestReadFailed ? null : ((currentIngestResult.data ?? []) as Array<Record<string, unknown>>).find((row) => {
     const contextMatches = requestedProjectId
       ? row.project_id === requestedProjectId
       : row.project_id === null;
@@ -369,6 +390,7 @@ export default async function SafetyPage({
         workspaceId={workspaceId}
         latestIngest={latestIngest}
         ingestsReadFailed={ingestsReadFailed}
+        currentIngestReadFailed={currentIngestReadFailed}
         studyArea={{
           corridorText: studyArea.corridorText,
           place: studyArea.place,
