@@ -18,3 +18,5 @@ pandas==2.3.3
 shapely>=2.0
 requests>=2.31
 python-dotenv>=1.0.0
+# Local launcher preflight parses the numerical constraints with PEP 440 semantics.
+packaging>=23.2

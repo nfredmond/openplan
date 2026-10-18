@@ -20,6 +20,15 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Local model interpreter checks:** AequilibraE launchers check the repository's
+numerical dependency requirements before worker entry. Import success alone no
+longer admits an incompatible environment. `OPENPLAN_AEQUILIBRAE_PYTHON` binds an
+external absolute interpreter path, including paths with spaces; an invalid
+explicit selection stops without fallback. Install the updated worker
+requirements, which include `packaging` for version parsing. ActivitySim retains
+its existing execution and preflight-only selection. These checks do not prove
+model behavior or scientific validity. No migration is required.
+
 **Safety road context:** the crash view and report generation use the retained
 acquisition's registered source capability to select road context, including for
 uploaded or drawn study areas without a Census place. Missing provenance does

@@ -153,16 +153,21 @@ const nextConfig: NextConfig = {
     webpackMemoryOptimizations: true,
   },
   // Published evidence lives beside the application package. Trace from the
-  // repository root and retain only the four frozen studies on their readers.
+  // repository root and retain the frozen studies and fixed disclosure metadata.
   outputFileTracingRoot: path.join(__dirname, ".."),
   outputFileTracingIncludes: {
     "/models": [
+      "../scripts/modeling/development/california_distributed_work_loading_study.v1.json",
       "../data/modeling/distributed-work-loading-study-2026-08-31/**/*",
       "../data/modeling/comparable-observation-study-2026-08-28/**/*",
       "../data/modeling/structural-demand-diagnosis-study-2026-08-28/**/*",
       "../data/modeling/model-validation-structural-diagnosis-2026-08-28/**/*",
     ],
+    "/models/*": [
+      "../scripts/modeling/development/california_distributed_work_loading_study.v1.json",
+    ],
     "/api/models/distributed-work-loading/*": [
+      "../scripts/modeling/development/california_distributed_work_loading_study.v1.json",
       "../data/modeling/distributed-work-loading-study-2026-08-31/**/*",
     ],
     "/api/models/comparable-observation-study/*": [
