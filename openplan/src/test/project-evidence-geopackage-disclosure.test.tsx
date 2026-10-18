@@ -10,6 +10,7 @@ const PROJECT = {
   name: "Exercise project",
   updated_at: "2026-09-06T00:00:00Z",
 };
+const REPORT_CHOICE = "Include Exercise report · PDF · Generated 2026-09-06 00:00:00.000 UTC · Artifact report-pdf";
 
 // Only source reads are substituted. The inventory, required candidate,
 // revision tokens, selection dialog, and disclosure rendering are real.
@@ -57,13 +58,13 @@ describe("required GeoPackage disclosure before confirmation", () => {
     const required = dialog.getByRole("checkbox", { name: "Include Exercise project GeoPackage" });
     expect(required).toBeChecked();
     expect(required).toBeDisabled();
-    expect(dialog.getByRole("checkbox", { name: "Include Exercise report" })).toBeChecked();
+    expect(dialog.getByRole("checkbox", { name: REPORT_CHOICE })).toBeChecked();
     expect(dialog.getByRole("button", { name: "Freeze evidence bundle" })).toBeDisabled();
   });
 
   it("names automatically included locations and preserves the warning when optional files are excluded", async () => {
     const dialog = await openActualInventory();
-    const report = dialog.getByRole("checkbox", { name: "Include Exercise report" });
+    const report = dialog.getByRole("checkbox", { name: REPORT_CHOICE });
     fireEvent.click(report);
     expect(report).not.toBeChecked();
     expect(dialog.getByText(/automatically includes fatal and serious-injury crash locations from the latest ready project acquisition/)).toBeVisible();

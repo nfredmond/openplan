@@ -172,3 +172,11 @@ in this check. The first attempt targeted the closed tab, whose loading effects
 were suspended; that navigation error stays in the private capture. This does
 not establish hosted behavior or new artifact-byte validation. Raw captures stay
 private.
+
+The full QA run finds two GeoPackage disclosure tests still using the old report
+checkbox name. Update both to the exact format, date and artifact label. Their
+required-map, selected-report and automatic-location warnings remain enforced.
+All 47 related tests pass with seed `95014`, plus lint. A harmless comment
+survives; removing the default report selection or geographic-record warning
+fails the intended assertions. Source is restored. Production code is unchanged
+by this test correction.
