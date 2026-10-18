@@ -1,3 +1,5 @@
+import { reportJurisdictionState } from "@/lib/reports/jurisdiction-freshness";
+import { PROJECT_JURISDICTION_COLUMNS } from "@/lib/projects/project-jurisdiction";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -177,7 +179,7 @@ export default async function ReportsPage({
       // out of its own picker for multi-workspace members (2026-08-03 review).
       supabase
         .from("projects")
-        .select("id, workspace_id, name")
+        .select(`workspace_id, name, ${PROJECT_JURISDICTION_COLUMNS}`)
         .eq("workspace_id", membership.workspace_id)
         .order("updated_at", { ascending: false }),
       supabase
@@ -338,6 +340,8 @@ export default async function ReportsPage({
         : null;
       const computedPacketFreshness = getReportPacketFreshness({
         latestArtifactKind: report.latest_artifact_kind,
+        jurisdictionState: reportJurisdictionState(latestArtifact?.metadata_json,
+          (projectsData ?? []).find((project) => project.id === report.project_id)),
         generationWritebackCurrent: artifactGenerationWritebackIsCurrent(latestArtifact?.metadata_json, report.updated_at),
         generatedAt: packetGeneratedAt,
         updatedAt: resolveTrackedReportSourceUpdatedAt({
@@ -928,6 +932,7 @@ export default async function ReportsPage({
                         <h3 className="module-record-title transition group-hover:text-primary">{report.title}</h3>
                         <p className="module-record-stamp shrink-0">Updated {formatDateTime(report.updated_at)}</p>
                       </div>
+                      <p className="text-sm text-muted-foreground">{report.packetFreshness.detail}</p>
                       <p className="module-record-summary line-clamp-2">
                         {report.summary || "No summary provided."}
                       </p>

@@ -1,3 +1,4 @@
+import { reportJurisdictionState } from "@/lib/reports/jurisdiction-freshness";
 import { resolveReportPacketRowFreshness } from "@/lib/reports/report-registry-freshness";
 import { notFound, redirect } from "next/navigation";
 import { ArrowRight } from "lucide-react";
@@ -884,7 +885,8 @@ export default async function ProjectDetailPage({
 
       return {
         ...report,
-        packetFreshness: resolveReportPacketRowFreshness(report, latestArtifactByReportId.get(report.id)),
+        packetFreshness: resolveReportPacketRowFreshness(report, latestArtifactByReportId.get(report.id),
+          reportJurisdictionState(latestArtifactByReportId.get(report.id)?.metadata_json, project)),
 
         comparisonAggregate,
         comparisonDigest,

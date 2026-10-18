@@ -107,3 +107,24 @@ inventory still rejects a new unobservable write. Its parser and thresholds are
 unchanged. All 251 related tests pass with CI seed `266519`, including both
 write guards and the RTP lifecycle. Mocked lifecycle checks do not establish
 native RLS or concurrency.
+
+## Merged-main project handoff
+
+Journey 02 reaches its outcome on merged main `ae9c263`. Its PDF, standalone
+readiness JSON and frozen bundle agree. A separate saved-file readback verifies
+all eleven packaged checksums. Latest outcomes across the recent identified
+builds are nine reached and three partial. Safety, corridor/model comparison
+and model-validation evidence remain partial; this is not full v1 acceptance.
+
+The rerun also finds two bounded defects. A date-only October 22 deliverable
+appears as October 21 at 5 p.m. in the report. Preserve date-only values as
+calendar dates without a clock. A jurisdiction change also leaves an earlier
+packet marked current. Compare the retained v4 assessment's canonical hash with
+current jurisdiction and registry inputs in project overview, Reports and report
+detail. Distinguish changed inputs from an unavailable check, and preserve old
+snapshot formats. Report creation still does not invalidate its own snapshot.
+No migration is required. All351 related tests pass with shuffled seed266519,
+plus changed-file lint and affected TypeScript closure. Harmless controls survive;
+seven targeted date, snapshot and caller faults fail as intended, with source
+restored. Identified-build browser verification follows. Raw captures and the
+original run remain private and unchanged.

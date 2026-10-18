@@ -1,3 +1,4 @@
+import { isDateOnly } from "@/lib/time/workspace-calendar";
 import { type EvidenceChainSummary } from "@/lib/reports/evidence-chain";
 import {
   PACKET_FRESHNESS_DETAIL,
@@ -34,6 +35,8 @@ export type ReportStatusTone =
   | "warning"
   | "danger"
   | "neutral";
+
+export type ReportJurisdictionState = "untracked" | "current" | "changed" | "unavailable";
 
 export type ReportPacketFreshness = {
   label: string;
@@ -784,11 +787,13 @@ export function getReportPacketFreshness({
   generatedAt,
   updatedAt,
   generationWritebackCurrent,
+  jurisdictionState,
 }: {
   latestArtifactKind: string | null | undefined;
   generatedAt: string | null | undefined;
   updatedAt: string | null | undefined;
   generationWritebackCurrent?: boolean;
+  jurisdictionState?: ReportJurisdictionState;
 }): ReportPacketFreshness {
   if (!latestArtifactKind || !generatedAt) {
     return {
@@ -796,6 +801,13 @@ export function getReportPacketFreshness({
       tone: "warning",
       detail: PACKET_FRESHNESS_DETAIL.NO_PACKET,
     };
+  }
+
+  if (jurisdictionState === "changed" || jurisdictionState === "unavailable") {
+    return { label: PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED, tone: "warning",
+      detail: jurisdictionState === "changed"
+        ? "Project jurisdiction context or registry inputs changed since this packet was generated. Regenerate it before handoff."
+        : "The packet's jurisdiction assessment could not be checked against current inputs. Review the jurisdiction context before handoff." };
   }
 
   if (generationWritebackCurrent === false) {
@@ -1253,5 +1265,11 @@ export function describeFundingSnapshot(
 export function formatDateTime(value: string | null | undefined): string {
   if (!value) return "Unknown";
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString("en-US");
+  if (Number.isNaN(parsed.getTime())) return value;
+  if (isDateOnly(value)) {
+    return parsed.toISOString().startsWith(value.trim())
+      ? parsed.toLocaleDateString("en-US", { timeZone: "UTC" })
+      : value;
+  }
+  return parsed.toLocaleString("en-US");
 }
