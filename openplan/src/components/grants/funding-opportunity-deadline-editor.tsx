@@ -119,13 +119,13 @@ function DeadlineForm({ opportunityId, workspaceId, closesAt, decisionDueAt, onB
   const changed = GRANT_DEADLINE_FIELDS.some(({ name }) => draft[name] !== initial.draft[name]);
   return (
     <div className="mt-3 space-y-3 rounded-[0.5rem] border border-border p-4">
-      <p className="text-sm text-muted-foreground">These are recorded OpenPlan dates, not verified funder amendments. Check the official notice before relying on them.</p>
-      <p className="text-sm">Browser time zone: {initial.zone ?? "unavailable"}. Enter local times to the minute. Unchanged fields keep their recorded precision. When clocks repeat an hour, edits use its first occurrence.</p>
+      <p className="text-sm text-muted-foreground">These dates are saved in OpenPlan. They do not confirm that the funder amended its notice. Check the official notice before relying on them.</p>
+      <p className="text-sm">Browser time zone: {initial.zone ?? "unavailable"}. Enter local times to the minute. Unchanged dates keep their original precision. When clocks repeat an hour, edits use its first occurrence.</p>
       <dl className="space-y-1 text-sm">
-        <div><dt className="font-semibold">Recorded application closing</dt><dd className="break-all">{closesAt ?? "Not recorded"}</dd></div>
-        <div><dt className="font-semibold">Recorded pursue-or-skip decision</dt><dd className="break-all">{decisionDueAt ?? "Not recorded"}</dd></div>
+        <div><dt className="font-semibold">Saved application closing</dt><dd className="break-all">{closesAt ?? "Not recorded"}</dd></div>
+        <div><dt className="font-semibold">Saved pursue-or-skip decision</dt><dd className="break-all">{decisionDueAt ?? "Not recorded"}</dd></div>
       </dl>
-      {access === "checking" ? <p role="status">Checking workspace permissions.</p> : null}
+      {access === "checking" ? <p role="status">Checking your permission to edit dates.</p> : null}
       {access === "readOnly" ? <p role="status">Your current access does not allow date changes.</p> : null}
       <div className="grid gap-3 md:grid-cols-2">
         {GRANT_DEADLINE_FIELDS.map(({ name, label }) => (
