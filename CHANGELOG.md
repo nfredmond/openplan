@@ -20,6 +20,11 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Linked estimate sources:** the project estimate editor opens its exact saved
+supporting document, including one older than the recent-document list. Read
+failures, unavailable originals and missing price years stay visible. The link
+uses the existing authorized document download route. No migration is required.
+
 **Recorded grant deadline changes:** My Work retains notices when an opportunity's
 application or decision deadline is added, changed or cleared in OpenPlan. Each
 notice preserves the old and new dates and identifies an unknown actor when
