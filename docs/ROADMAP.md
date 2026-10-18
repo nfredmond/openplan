@@ -60,6 +60,12 @@ The October 17 A0 capture record preserves a protected-scope refusal and its
 saved-data explanation. A reviewed scope disposition precedes another native
 proposal; this changes no milestone status or direction-review binding.
 
+The October 18 M13e update records source implementation of catalog search in
+[draft PR 341](https://github.com/nfredmond/openplan/pull/341), with focused
+checks and browser acceptance pending. SS4A seeding, retained deadline-change
+alerts and award-condition handoff remain open. This moves the row from next
+to in progress; it does not close the milestone or change the review binding.
+
 ## Destination
 
 OpenPlan v1 is a free, open-source operating system for core planning work in
@@ -114,7 +120,7 @@ record. "PR" means a pull request open on October 12. KI-001 means
 | M11 | Contract budgets and forecasts | In progress, mostly done | [Sep 9](reviews/2026-09-09-v047-release/VERIFICATION.md); [Oct 16 complete summary readers](reviews/2026-10-16-engagement-summary-root-integration/STATUS.md); [current full configured types](reviews/2026-10-16-publication-reviewed-full-types/STATUS.md) | Verify complete budget and billing snapshots through native caller/SDK, financial reconstruction and identified browser/artifact journeys. Agency accounting fit, human usefulness and reminder delivery remain open. |
 | M12 | RTP update from the adopted plan | Later (C1) | Audit | Prior-RTP intake without a paid key |
 | M13 | Local tax and grant administration | Next (B5) | Audit | Recipient city role |
-| M13e | Grant discovery and applications | Next (B4) | Audit | ATP scoring on screen |
+| M13e | Grant discovery and applications | In progress, partial (B4) | [Oct 18 catalog search candidate](https://github.com/nfredmond/openplan/pull/341) | Verify ATP packet and catalog search; complete SS4A seeding, retained deadline-change alerts and award-condition handoff |
 | M13f | Agency audits | Later | Audit | Not started |
 | M14 | Procurement, both sides | Later (C4) | Audit | Agency RFP issue and receipt |
 | M15a | Hosted production recipe | In progress, mostly done | [Oct 11](ops/HOSTED_LIVE_2026-10-11.md) | Health checks (A1, PR 254) |
