@@ -39,9 +39,9 @@ import { fundingAwardObligationReview } from "@/lib/programs/catalog";
  *
  * ====================================================== IDEMPOTENCY, EXACTLY
  *
- * The insert names the unique index from 20260811000007 as its ON CONFLICT
- * target and asks for only the rows that were actually created. Those rows —
- * not the candidate list — are what the email is built from. So a second run on
+ * The service-only batch RPC uses targetless ON CONFLICT DO NOTHING and
+ * classifies every request. Only rows actually inserted form the digest.
+ * The email uses those rows, rather than the candidate list. A second run on
  * the same day inserts nothing and sends nothing, and the guarantee is a
  * database constraint rather than a timestamp comparison somebody has to keep
  * getting right. {@link WORK_NOTIFICATION_IDEMPOTENCY_COLUMNS} is pinned
@@ -162,9 +162,9 @@ export type WorkNotificationKind = (typeof WORK_NOTIFICATION_KINDS)[number];
 export type WorkReminderKind = Exclude<WorkNotificationKind, "grant_deadline_changed">;
 
 /**
- * The unique index that makes the sweep idempotent. Named here because the
- * insert has to send it as its ON CONFLICT target, and asserted against the
- * migration so the two can never drift.
+ * The full reminder identity enforced after activation. The batch RPC handles
+ * both indexes without choosing an arbiter. An opposite kind suppressed by the
+ * old key is explicitly deferred; a same-kind duplicate is already present.
  */
 export const WORK_NOTIFICATION_IDEMPOTENCY_COLUMNS = [
   "subject_table",
@@ -198,6 +198,54 @@ export type WorkNotificationRow = {
   body: string;
 };
 
+export const WORK_NOTIFICATION_WRITE_COLUMNS =
+  "workspace_id, recipient_user_id, kind, subject_table, subject_id, project_id, due_on, title, body, classification, blocking_kind";
+
+type ReminderWriteOutcome = WorkNotificationRow & {
+  classification: "inserted" | "duplicate" | "deferred_old_key";
+  blocking_kind: WorkReminderKind | null;
+};
+
+export type DeferredWorkReminder = Pick<WorkNotificationRow,
+  "workspace_id" | "recipient_user_id" | "kind" | "subject_table" | "subject_id" | "due_on"
+> & { blockingKind: WorkReminderKind };
+
+function reminderIdentity(row: WorkNotificationRow): string {
+  return JSON.stringify([row.workspace_id, row.subject_table, row.subject_id, row.recipient_user_id, row.due_on, row.kind]);
+}
+
+/** Refuse incomplete, duplicated, foreign or altered response rows before counting or sending. */
+function readReminderWriteOutcomes(data: unknown, requested: readonly WorkNotificationRow[]): ReminderWriteOutcome[] {
+  const expected = new Map(requested.map((row) => [reminderIdentity(row), row]));
+  if (expected.size !== requested.length || !Array.isArray(data) || data.length !== requested.length) {
+    throw new Error("The reminder write returned an incomplete or ambiguous batch classification.");
+  }
+  const fields = WORK_NOTIFICATION_WRITE_COLUMNS.split(", ");
+  const seen = new Set<string>();
+  return data.map((value: unknown) => {
+    if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("The reminder write returned an invalid row.");
+    const row = value as Record<string, unknown>;
+    if (Object.keys(row).length !== fields.length || fields.some((field) => !Object.hasOwn(row, field))) {
+      throw new Error("The reminder write returned an invalid projection.");
+    }
+    const original = expected.get(JSON.stringify([row.workspace_id, row.subject_table, row.subject_id, row.recipient_user_id, row.due_on, row.kind]));
+    if (!original || seen.has(reminderIdentity(original)) ||
+      (Object.keys(original) as Array<keyof WorkNotificationRow>).some((field) => row[field] !== original[field])) {
+      throw new Error("The reminder write returned a duplicate, foreign or altered identity or fact.");
+    }
+    const classification = row.classification;
+    const blocker = WORK_NOTIFICATION_KINDS.find((kind): kind is WorkReminderKind => kind !== "grant_deadline_changed" && kind === row.blocking_kind);
+    if (classification !== "inserted" && classification !== "duplicate" && classification !== "deferred_old_key") {
+      throw new Error("The reminder write returned an invalid conflict classification.");
+    }
+    if (classification === "deferred_old_key" ? !blocker || blocker === original.kind : row.blocking_kind !== null) {
+      throw new Error("The reminder write returned an invalid conflict classification.");
+    }
+    seen.add(reminderIdentity(original));
+    return { ...original, classification, blocking_kind: blocker ?? null };
+  });
+}
+
 /**
  * A candidate before the roster has been consulted. `needsReview` marks a
  * closed award whose obligation deadline a person must check: it is listed for
@@ -210,7 +258,7 @@ export type WorkSweepSourceOutcome = {
   scanned: number;
   /** Of those, rows that became a notification candidate. */
   candidates: number;
-  /** The deployment is behind 20260811000007 or an earlier migration. */
+  /** The source needs a migration or the separate reminder-kind activation. */
   pending: boolean;
   failed: boolean;
   message: string | null;
@@ -234,6 +282,9 @@ export type WorkSweepResult = {
   perSource: Record<WorkReminderKind, WorkSweepSourceOutcome>;
   /** Notification rows the database actually created (duplicates are not counted). */
   notificationsCreated: number;
+  notificationsAlreadyPresent: number;
+  /** Exact suppressed identities, never counted as inserted or delivered. */
+  deferredByOldKey: DeferredWorkReminder[];
   /** Digest emails composed — one per recipient with at least one new notification. */
   digestsComposed: number;
   emailsDelivered: number;
@@ -246,7 +297,7 @@ export type WorkSweepResult = {
   departedRecipients: number;
   /** Workspaces skipped because no roster read succeeded — named, never silent. */
   workspacesWithoutRoster: string[];
-  /** The insert's own failure, if the database refused it. */
+  /** A refused write or untrusted response; no inserted count or digest is claimed. */
   writeError: string | null;
   /**
    * The digest names the workspace it is about. True when that read failed, so
@@ -1205,12 +1256,12 @@ type SweepQuery = PromiseLike<SweepReadResult> & {
  * convention, and visible where it happens.
  */
 export type WorkSweepClient = {
+  rpc(name: "work_notification_kind_activation"): PromiseLike<SweepReadResult>;
+  rpc(name: "insert_work_notification_reminders", args: { p_rows: readonly WorkNotificationRow[] }): {
+    select(columns: string): PromiseLike<SweepReadResult>;
+  };
   from(table: string): {
     select(columns: string): SweepQuery;
-    upsert(
-      rows: readonly WorkNotificationRow[],
-      options: { onConflict: string; ignoreDuplicates: boolean }
-    ): { select(columns: string): PromiseLike<SweepReadResult> };
   };
   auth: RosterServiceClient["auth"];
 };
@@ -1408,6 +1459,30 @@ export async function sweepWorkDeadlines(
     context: SweepSourceContext;
   }> = [];
   for (const source of WORK_SWEEP_SOURCES) {
+    if (source.kind === "grant_application_due") {
+      const outcome = emptyOutcome();
+      try {
+        const activation = await client.rpc("work_notification_kind_activation");
+        if (activation.error) {
+          outcome.message = activation.error.message ?? "The reminder activation read failed.";
+          outcome.pending = looksLikePendingSchema(outcome.message);
+          outcome.failed = !outcome.pending;
+        } else if (activation.data === false) {
+          outcome.pending = true;
+          outcome.message = "Application reminders await the separate reminder-kind activation after older sweep writers retire.";
+        } else if (activation.data !== true) {
+          outcome.failed = true;
+          outcome.message = "The reminder activation read returned an invalid value.";
+        }
+      } catch (error) {
+        outcome.failed = true;
+        outcome.message = error instanceof Error ? error.message : "The reminder activation read threw.";
+      }
+      if (outcome.pending || outcome.failed) {
+        reads.push({ source, rows: [], outcome, context: EMPTY_SWEEP_CONTEXT });
+        continue;
+      }
+    }
     const { rows, outcome } = await readSource(client, source, now, horizonDays, limit);
     // The second read, when a source declares one, and only when the first
     // found something: a failure here costs the reminder its figure, never the
@@ -1446,6 +1521,8 @@ export async function sweepWorkDeadlines(
     horizonDays,
     perSource,
     notificationsCreated: 0,
+    notificationsAlreadyPresent: 0,
+    deferredByOldKey: [],
     digestsComposed: 0,
     emailsDelivered: 0,
     emailsSkipped: 0,
@@ -1491,22 +1568,31 @@ export async function sweepWorkDeadlines(
 
   if (eligible.length === 0) return result;
 
-  // ── the write. ON CONFLICT DO NOTHING against the migration's unique index,
-  // returning ONLY what was created — which is what the digest is built from.
-  let created: Array<Record<string, unknown>> = [];
+  // Classify the complete batch before trusting any inserted count or digest.
+  let created: ReminderWriteOutcome[] = [];
   try {
+    const requested = eligible.map(({ isOverdue: _isOverdue, needsReview: _needsReview, ...row }) => row);
+    if (new Set(requested.map(reminderIdentity)).size !== requested.length) {
+      throw new Error("The reminder request contains duplicate identities.");
+    }
     const write = await client
-      .from("work_notifications")
-      .upsert(
-        eligible.map(({ isOverdue: _isOverdue, needsReview: _needsReview, ...row }) => row),
-        { onConflict: WORK_NOTIFICATION_IDEMPOTENCY_COLUMNS.join(","), ignoreDuplicates: true }
-      )
-      .select("subject_table, subject_id, recipient_user_id, due_on, workspace_id, kind");
+      .rpc("insert_work_notification_reminders", { p_rows: requested })
+      .select(WORK_NOTIFICATION_WRITE_COLUMNS);
     if (write.error) {
       result.writeError = write.error.message ?? "the database returned no reason";
       return result;
     }
-    created = (write.data ?? []) as Array<Record<string, unknown>>;
+    const outcomes = readReminderWriteOutcomes(write.data, requested);
+    created = outcomes.filter((row) => row.classification === "inserted");
+    result.notificationsAlreadyPresent = outcomes.filter((row) => row.classification === "duplicate").length;
+    result.deferredByOldKey = outcomes.flatMap((row) => row.classification === "deferred_old_key" && row.blocking_kind ? [{
+      workspace_id: row.workspace_id, recipient_user_id: row.recipient_user_id, kind: row.kind,
+      subject_table: row.subject_table, subject_id: row.subject_id, due_on: row.due_on, blockingKind: row.blocking_kind,
+    }] : []);
+    for (const kind of new Set(result.deferredByOldKey.map((row) => row.kind))) {
+      result.perSource[kind].pending = true;
+      result.perSource[kind].message = "Reminders blocked by an existing opposite kind await the separate reminder-kind activation.";
+    }
   } catch (error) {
     result.writeError = error instanceof Error ? error.message : "the reminder write threw";
     return result;

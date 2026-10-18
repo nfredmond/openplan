@@ -50,15 +50,161 @@ ALTER TABLE public.work_notifications ADD CONSTRAINT work_notifications_kind_che
   'grant_decision_due', 'grant_application_due', 'grant_deadline_changed',
   'award_obligation_due', 'award_expenditure_due', 'measure_claim_review_due'
 ));
--- A decision and application can be due on the same day for the same subject.
-DROP INDEX public.ux_work_notifications_subject_recipient;
-CREATE UNIQUE INDEX ux_work_notifications_subject_recipient
+-- Stage one preserves the four-column arbiter used by the running build.
+-- This additional key remains before and after activation. The batch RPC
+-- handles conflicts with either key without naming an arbiter.
+-- Application reminders stay pending until a later release removes the old
+-- index and activates them together, after every four-column writer retires.
+CREATE UNIQUE INDEX ux_work_notifications_subject_recipient_kind
   ON public.work_notifications (subject_table, subject_id, recipient_user_id, due_on, kind);
 CREATE UNIQUE INDEX ux_work_notifications_deadline_change_recipient
   ON public.work_notifications (deadline_change_id, recipient_user_id)
   WHERE deadline_change_id IS NOT NULL;
 CREATE INDEX idx_work_notifications_recipient_newest_unread
   ON public.work_notifications (recipient_user_id, created_at DESC) WHERE is_read = false;
+
+CREATE FUNCTION public.work_notification_kind_activation()
+RETURNS boolean LANGUAGE sql STABLE SECURITY INVOKER SET search_path = '' AS $$
+  SELECT false;
+$$;
+REVOKE ALL ON FUNCTION public.work_notification_kind_activation() FROM PUBLIC, anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.work_notification_kind_activation() TO service_role;
+
+-- One batch and one targetless insert work with either uniqueness stage.
+-- VOLATILE gives the classification queries a fresh READ COMMITTED snapshot
+-- after an insert waits for a concurrent conflicting writer. Missing evidence
+-- raises and rolls the whole RPC back. Row locks retain classification evidence
+-- until commit; the table lock prevents activation between insert and classify.
+CREATE FUNCTION public.insert_work_notification_reminders(p_rows jsonb)
+RETURNS TABLE (
+  workspace_id uuid, recipient_user_id uuid, kind text, subject_table text,
+  subject_id uuid, project_id uuid, due_on date, title text, body text,
+  classification text, blocking_kind text
+)
+LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path = '' AS $$
+DECLARE
+  requested record;
+  actual record;
+  inserted_rows jsonb;
+  requested_rows jsonb;
+  identity_key text;
+  legacy_key boolean;
+  outcome text;
+  blocker text;
+BEGIN
+  IF p_rows IS NULL OR pg_catalog.jsonb_typeof(p_rows) <> 'array' THEN
+    RAISE EXCEPTION 'work_reminder_batch_invalid' USING ERRCODE = '23514';
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_catalog.jsonb_array_elements(p_rows) AS e(value)
+    WHERE pg_catalog.jsonb_typeof(e.value) <> 'object'
+      OR NOT (e.value ?& ARRAY['workspace_id','recipient_user_id','kind','subject_table','subject_id','project_id','due_on','title','body'])
+      OR (SELECT count(*) FROM pg_catalog.jsonb_object_keys(e.value)) <> 9
+      OR EXISTS (SELECT 1 FROM pg_catalog.jsonb_each(e.value) AS f(key,value)
+        WHERE (f.key <> 'project_id' AND pg_catalog.jsonb_typeof(f.value) <> 'string')
+          OR (f.key = 'project_id' AND pg_catalog.jsonb_typeof(f.value) NOT IN ('string','null')))
+      OR (e.value->>'due_on') !~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$') THEN
+    RAISE EXCEPTION 'work_reminder_row_shape_invalid' USING ERRCODE = '23514';
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_catalog.jsonb_to_recordset(p_rows) AS r(
+    workspace_id uuid, recipient_user_id uuid, kind text, subject_table text,
+    subject_id uuid, project_id uuid, due_on date, title text, body text)
+    WHERE r.workspace_id IS NULL OR r.recipient_user_id IS NULL OR r.subject_id IS NULL
+      OR r.due_on IS NULL OR r.title IS NULL OR r.body IS NULL OR r.subject_table = ''
+      OR r.kind NOT IN ('deliverable_due','milestone_due','submittal_due','invoice_due',
+        'grant_decision_due','grant_application_due','award_obligation_due',
+        'award_expenditure_due','measure_claim_review_due'))
+    OR (SELECT count(DISTINCT (r.workspace_id,r.subject_table,r.subject_id,r.recipient_user_id,r.due_on,r.kind))
+      FROM pg_catalog.jsonb_to_recordset(p_rows) AS r(
+        workspace_id uuid, recipient_user_id uuid, kind text, subject_table text,
+        subject_id uuid, project_id uuid, due_on date, title text, body text)) <> pg_catalog.jsonb_array_length(p_rows) THEN
+    RAISE EXCEPTION 'work_reminder_values_or_identity_invalid' USING ERRCODE = '23514';
+  END IF;
+  SELECT COALESCE(pg_catalog.jsonb_object_agg(
+    pg_catalog.jsonb_build_array(r.workspace_id,r.subject_table,r.subject_id,r.recipient_user_id,r.due_on,r.kind)::text,
+    pg_catalog.to_jsonb(r)), '{}'::jsonb) INTO requested_rows
+  FROM pg_catalog.jsonb_to_recordset(p_rows) AS r(
+    workspace_id uuid, recipient_user_id uuid, kind text, subject_table text,
+    subject_id uuid, project_id uuid, due_on date, title text, body text);
+
+  LOCK TABLE public.work_notifications IN ROW EXCLUSIVE MODE;
+  IF NOT EXISTS (SELECT 1 FROM pg_catalog.pg_index i
+    WHERE i.indexrelid = pg_catalog.to_regclass('public.ux_work_notifications_subject_recipient_kind')
+      AND i.indrelid = 'public.work_notifications'::regclass
+      AND i.indisunique AND i.indisvalid AND i.indisready AND i.indimmediate
+      AND i.indpred IS NULL AND i.indexprs IS NULL AND i.indnkeyatts = 5
+      AND ARRAY(SELECT pg_catalog.pg_get_indexdef(i.indexrelid,n,true)
+        FROM pg_catalog.generate_series(1,5) AS n)
+        = ARRAY['subject_table','subject_id','recipient_user_id','due_on','kind']) THEN
+    RAISE EXCEPTION 'work_reminder_kind_key_missing' USING ERRCODE = '23514';
+  END IF;
+  SELECT EXISTS (SELECT 1 FROM pg_catalog.pg_index i
+    WHERE i.indexrelid = pg_catalog.to_regclass('public.ux_work_notifications_subject_recipient')
+      AND i.indrelid = 'public.work_notifications'::regclass
+      AND i.indisunique AND i.indisvalid AND i.indisready AND i.indimmediate
+      AND i.indpred IS NULL AND i.indexprs IS NULL AND i.indnkeyatts = 4
+      AND ARRAY(SELECT pg_catalog.pg_get_indexdef(i.indexrelid,n,true)
+        FROM pg_catalog.generate_series(1,4) AS n)
+        = ARRAY['subject_table','subject_id','recipient_user_id','due_on']) INTO legacy_key;
+
+  WITH inserted AS (
+    INSERT INTO public.work_notifications AS n
+      (workspace_id,recipient_user_id,kind,subject_table,subject_id,project_id,due_on,title,body)
+    SELECT r.workspace_id,r.recipient_user_id,r.kind,r.subject_table,r.subject_id,r.project_id,r.due_on,r.title,r.body
+    FROM pg_catalog.jsonb_to_recordset(p_rows) AS r(
+      workspace_id uuid, recipient_user_id uuid, kind text, subject_table text,
+      subject_id uuid, project_id uuid, due_on date, title text, body text)
+    ON CONFLICT DO NOTHING
+    RETURNING n.workspace_id,n.recipient_user_id,n.kind,n.subject_table,n.subject_id,n.project_id,n.due_on,n.title,n.body
+  ) SELECT COALESCE(pg_catalog.jsonb_object_agg(
+    pg_catalog.jsonb_build_array(inserted.workspace_id,inserted.subject_table,inserted.subject_id,inserted.recipient_user_id,inserted.due_on,inserted.kind)::text,
+    pg_catalog.to_jsonb(inserted)), '{}'::jsonb) INTO inserted_rows FROM inserted;
+
+  IF EXISTS (SELECT 1 FROM pg_catalog.jsonb_each(inserted_rows) AS a(key,value)
+    WHERE (requested_rows->a.key) IS DISTINCT FROM a.value) THEN
+    RAISE EXCEPTION 'work_reminder_inserted_facts_changed' USING ERRCODE = '23514';
+  END IF;
+
+  FOR requested IN SELECT * FROM pg_catalog.jsonb_to_recordset(p_rows) AS r(
+    workspace_id uuid, recipient_user_id uuid, kind text, subject_table text,
+    subject_id uuid, project_id uuid, due_on date, title text, body text)
+  LOOP
+    identity_key := pg_catalog.jsonb_build_array(requested.workspace_id,requested.subject_table,
+      requested.subject_id,requested.recipient_user_id,requested.due_on,requested.kind)::text;
+    IF inserted_rows ? identity_key THEN
+      SELECT x.* INTO actual FROM pg_catalog.jsonb_to_record(inserted_rows->identity_key) AS x(
+        workspace_id uuid, recipient_user_id uuid, kind text, subject_table text,
+        subject_id uuid, project_id uuid, due_on date, title text, body text);
+      RETURN QUERY SELECT actual.workspace_id,actual.recipient_user_id,actual.kind,actual.subject_table,
+        actual.subject_id,actual.project_id,actual.due_on,actual.title,actual.body,'inserted'::text,NULL::text;
+      CONTINUE;
+    END IF;
+
+    outcome := NULL;
+    blocker := NULL;
+    SELECT n.kind INTO blocker FROM public.work_notifications n
+      WHERE n.workspace_id=requested.workspace_id AND n.subject_table=requested.subject_table
+        AND n.subject_id=requested.subject_id AND n.recipient_user_id=requested.recipient_user_id
+        AND n.due_on=requested.due_on AND n.kind=requested.kind FOR SHARE;
+    IF FOUND THEN
+      outcome := 'duplicate';
+      blocker := NULL;
+    ELSIF legacy_key THEN
+      SELECT n.kind INTO blocker FROM public.work_notifications n
+        WHERE n.workspace_id=requested.workspace_id AND n.subject_table=requested.subject_table
+          AND n.subject_id=requested.subject_id AND n.recipient_user_id=requested.recipient_user_id
+          AND n.due_on=requested.due_on AND n.kind<>requested.kind FOR SHARE;
+      IF FOUND THEN outcome := 'deferred_old_key'; END IF;
+    END IF;
+    IF outcome IS NULL THEN
+      RAISE EXCEPTION 'work_reminder_classification_missing' USING ERRCODE = '23514';
+    END IF;
+    RETURN QUERY SELECT requested.workspace_id,requested.recipient_user_id,requested.kind,requested.subject_table,
+      requested.subject_id,requested.project_id,requested.due_on,requested.title,requested.body,outcome,blocker;
+  END LOOP;
+END;
+$$;
+REVOKE ALL ON FUNCTION public.insert_work_notification_reminders(jsonb) FROM PUBLIC, anon, authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.insert_work_notification_reminders(jsonb) TO service_role;
 
 -- No direct journal writes, even with the service role. The trigger needs
 -- definer privileges solely to append journal/notice rows and check membership.

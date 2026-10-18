@@ -8,6 +8,7 @@ import {
   WORK_NOTIFICATION_KINDS,
   WORK_NOTIFICATION_IDEMPOTENCY_COLUMNS,
   WORK_NOTIFICATION_INBOX_COLUMNS,
+  WORK_NOTIFICATION_WRITE_COLUMNS,
   WORK_SWEEP_SOURCES,
   type WorkSweepClient,
 } from "@/lib/notifications/work";
@@ -408,9 +409,8 @@ afterEach(() => {
 describe("the daily deadline sweep", () => {
   it("is backed by a migration whose unique index is what makes it idempotent", () => {
     expect(migrationExists()).toBe(true);
-    // The code names these columns as its ON CONFLICT target; the database
-    // enforces them. Pinning the two together is what stops a rename in one
-    // place from turning the guarantee off in the other.
+    // The full identity remains kind-aware. The RPC handles both uniqueness
+    // stages with targetless insertion; the database still enforces this key.
     expect(workNotificationUniqueKey()).toEqual([...WORK_NOTIFICATION_IDEMPOTENCY_COLUMNS]);
   });
 
@@ -524,9 +524,10 @@ describe("the daily deadline sweep", () => {
 
     // And it did TRY — the idempotency is the database's, not a pre-read that
     // could get out of step with it.
-    expect(db.upsertCalls).toHaveLength(2);
-    expect(db.upsertCalls[1].ignoreDuplicates).toBe(true);
-    expect(db.upsertCalls[1].onConflict).toBe(WORK_NOTIFICATION_IDEMPOTENCY_COLUMNS.join(","));
+    expect(db.reminderWriteCalls).toHaveLength(2);
+    expect(db.upsertCalls).toHaveLength(0);
+    expect(db.reminderWriteCalls[1].select).toBe(WORK_NOTIFICATION_WRITE_COLUMNS);
+    expect(second.notificationsAlreadyPresent).toBe(10);
   });
 
   it("mails a second digest that contains ONLY what is genuinely new", async () => {
