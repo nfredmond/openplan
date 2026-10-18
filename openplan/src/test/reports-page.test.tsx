@@ -318,6 +318,22 @@ describe("ReportsPage", () => {
     expect(screen.getAllByText(/Project jurisdiction context or registry inputs changed/).length).toBeGreaterThan(0);
   });
 
+  it("keeps a failed artifact comparison unavailable instead of current", async () => {
+    const generatedAt = "2026-10-18T00:00:00Z";
+    reportsOrderMock.mockResolvedValueOnce({ data: [{
+      id: "report-1", workspace_id: "workspace-1", project_id: "project-1",
+      rtp_cycle_id: null, title: "Artifact-backed report", report_type: "project_status",
+      status: "generated", summary: "Saved packet", generated_at: generatedAt,
+      latest_artifact_kind: "pdf", updated_at: generatedAt, created_at: generatedAt,
+      projects: { id: "project-1", name: "Downtown Mobility Plan" }, rtp_cycles: null,
+    }], error: null });
+    reportArtifactsOrderMock.mockResolvedValueOnce({ data: null, error: { message: "Artifact read failed" } });
+    await renderPage();
+    expect(reportArtifactsSelectMock).toHaveBeenCalledWith("report_id, generated_at, metadata_json");
+    expect(screen.getAllByText(/jurisdiction assessment could not be checked/).length).toBeGreaterThan(0);
+    expect(screen.queryByText("Current / ready")).not.toBeInTheDocument();
+  });
+
   it("shows project crash evidence added after generation as a packet refresh", async () => {
     reportsOrderMock.mockResolvedValueOnce({
       data: [

@@ -123,8 +123,22 @@ packet marked current. Compare the retained v4 assessment's canonical hash with
 current jurisdiction and registry inputs in project overview, Reports and report
 detail. Distinguish changed inputs from an unavailable check, and preserve old
 snapshot formats. Report creation still does not invalidate its own snapshot.
-No migration is required. All351 related tests pass with shuffled seed266519,
+No migration is required. All 351 related tests pass with shuffled seed `266519`,
 plus changed-file lint and affected TypeScript closure. Harmless controls survive;
 seven targeted date, snapshot and caller faults fail as intended, with source
-restored. Identified-build browser verification follows. Raw captures and the
-original run remain private and unchanged.
+restored. Browser verification on `fddc4aa82` changes a saved jurisdiction through
+the editor and observes the refresh warning in all three surfaces. Removing the
+synthetic declaration and regenerating returns the packet to current. The actual
+downloaded PDF shows October 22 without a clock, and retains the current
+jurisdiction hash. Desktop and 390-pixel DOM checks show no horizontal overflow.
+The rendered PDF date is readable. The T3 screenshot limitation above still
+applies; bounded console readback does not establish an exhaustive clean console.
+Raw captures and the original run remain private and unchanged.
+
+PR review also finds an artifact-query error discarded by the Reports registry.
+Preserve that outcome, disclose the failed read, and treat the jurisdiction
+comparison as unavailable. A regression uses a generated packet whose timestamps
+would otherwise appear current. A harmless comment survives; discarding the
+error fails the expected assertion. All 77 affected tests pass again with seed
+`266519`, plus lint and the affected TypeScript check. This covers the mocked
+read failure, not a native outage or database permission test.

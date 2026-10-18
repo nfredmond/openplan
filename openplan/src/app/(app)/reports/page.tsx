@@ -264,13 +264,15 @@ export default async function ReportsPage({
   }
 
   const reportIds = ((reportsData ?? []) as ReportRow[]).map((report) => report.id);
-  const { data: artifactsData } = reportIds.length
+  const artifactsRead = reportIds.length
     ? await supabase
         .from("report_artifacts")
         .select("report_id, generated_at, metadata_json")
         .in("report_id", reportIds)
         .order("generated_at", { ascending: false })
-    : { data: [] };
+    : { data: [], error: null };
+  const artifactsReadFailed = reads.check("report artifacts used for packet freshness", artifactsRead);
+  const artifactsData = artifactsRead.data;
 
   const latestArtifactByReportId = new Map<string, ReportArtifactRow>();
   for (const artifact of (artifactsData ?? []) as ReportArtifactRow[]) {
@@ -340,7 +342,7 @@ export default async function ReportsPage({
         : null;
       const computedPacketFreshness = getReportPacketFreshness({
         latestArtifactKind: report.latest_artifact_kind,
-        jurisdictionState: reportJurisdictionState(latestArtifact?.metadata_json,
+        jurisdictionState: artifactsReadFailed ? "unavailable" : reportJurisdictionState(latestArtifact?.metadata_json,
           (projectsData ?? []).find((project) => project.id === report.project_id)),
         generationWritebackCurrent: artifactGenerationWritebackIsCurrent(latestArtifact?.metadata_json, report.updated_at),
         generatedAt: packetGeneratedAt,
