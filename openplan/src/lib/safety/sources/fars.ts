@@ -412,6 +412,7 @@ export const farsAdapter: CrashSourceAdapter = {
   dimensions: CRASH_LEVEL_ONLY_DIMENSION_SUPPORT,
   earliestYear: FARS_EARLIEST_YEAR,
   persistable: true,
+  roadContextProvider: "us-census-tiger-line",
   covers: coversFarsGeography,
   fetch: fetchFarsCrashes,
 };

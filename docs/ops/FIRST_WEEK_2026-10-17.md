@@ -239,6 +239,61 @@ checks reach Dashboard, Projects and Reports in an empty synthetic workspace;
 populated hosted artifacts and public signup-email delivery remain unassessed.
 Raw captures stay private, and human feedback remains post-v1.
 
+## Road-provider consistency and hosted handoff, October 18
+
+Safety and report generation now share road-provider selection from exact
+retained acquisition IDs, source identity, recorded scope and declared source
+capability. Uploaded or drawn geometry no longer needs a client country hint
+to attempt eligible road loading. Missing or incompatible provenance withholds
+selection. This does not identify the geometry's country or legal jurisdiction.
+Failed cache reads stay unavailable; failed report cache writes still withhold
+road facts. No migration is required.
+
+All 243 focused tests pass, with lint and affected TypeScript checks. Two
+harmless controls survive and 18 intended source defects fail their assertions.
+One redundant coercion probe survives because another finite-number guard still
+refuses it; an invented-scope defect supplies the effective check. Source restores
+exactly. A local browser run on `46986d421` plus the pinned road-provider edits
+loads retained Safety evidence and cached named roads without a country hint,
+with stable navigation, no observed browser errors and no 390-pixel overflow.
+Fresh provider responses remain outside this browser check; tests supply them.
+Review also catches a cache-error path with unusable model rows. Three new
+regressions protect that refusal, discard partial data returned with an error,
+and retain valid independent model-road context. Console review retains four
+GPU readback performance warnings and no console errors. These source-header
+captures do not establish crash-marker visibility after panel navigation.
+
+On hosted build `bd541e5e67c2`, a labelled synthetic account creates a project,
+an October 22 deliverable and a report through the interface. PDF, HTML and
+evidence-bundle generation and downloads succeed. Both artifact labels expose
+format, time and exact ID. All nine packaged checksums pass, the PDF and HTML
+match their direct downloads, and the readiness hash agrees across those files,
+direct JSON and the bundle. Generation leaves the packet current. Desktop and
+390-pixel views show no horizontal overflow; bounded runtime logs show successful
+report requests without error-level records.
+
+The PDF preserves October 22 and uses the disclosed text-only fallback; visual
+imagery, styled HTML and non-Latin text are outside that renderer's capability.
+The synthetic project has no geography or scientific evidence, and its packet
+discloses those gaps. This is not public signup-email, live road-provider,
+scientific or full Stage A acceptance. Raw captures remain private.
+
+## Safety map follow-up, October 18
+
+On `d6ced0c05`, real navigation through Projects into Safety shows crash markers
+before and after scrolling the source panel, switching sidebar tabs, and leaving
+and returning. All five desktop map captures are byte-identical. Markers also
+remain visible at 390 pixels. The source panel retains 390 reported and mappable
+records, with 109 matching the active filters. No page error, failed HTTP response
+or horizontal overflow is observed. Console review retains GPU readback and font
+preload warnings. The earlier screenshots do not establish marker loss, and this
+follow-up requires no map code change. It does not prove every style lifecycle.
+
+The readiness registry now pins the reviewed FARS and CCRS adapter bytes. Their
+only change declares the existing TIGER road-context provider; crash coverage,
+severity, fetching and persistence stay unchanged. The registry version advances
+without changing review dates, jurisdiction statuses or acceptance limits.
+
 ### Safety lookup message correction, October 18
 
 The current-area acquisition failure now names that lookup separately from

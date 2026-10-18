@@ -529,6 +529,7 @@ export const ccrsAdapter: CrashSourceAdapter = {
   dimensions: CCRS_DIMENSION_SUPPORT,
   earliestYear: CCRS_EARLIEST_YEAR,
   persistable: true,
+  roadContextProvider: "us-census-tiger-line",
   // California only — a national backstop's records in state 06 are redundant
   // with CCRS and must be dropped when the two are merged.
   coversStateFips: ["06"],

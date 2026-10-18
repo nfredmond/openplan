@@ -20,6 +20,12 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Safety road context:** the crash view and report generation use the retained
+acquisition's registered source capability to select road context, including for
+uploaded or drawn study areas without a Census place. Missing provenance does
+not become a country claim. Failed cache reads stay unavailable, and reports
+still exclude road facts whose cache write fails. No migration is required.
+
 **Safety source restoration:** the current study area's retained crash acquisition
 loads independently of the eight most recent workspace imports. Newer pulls for
 other projects or extents no longer hide its source and coverage. A failed current
