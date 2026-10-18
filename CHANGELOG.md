@@ -20,6 +20,13 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Recorded grant deadline changes:** My Work retains notices when an opportunity's
+application or decision deadline is added, changed or cleared in OpenPlan. Each
+notice preserves the old and new dates and identifies an unknown actor when
+needed. Decision and application reminders can coexist. These notices describe
+OpenPlan edits, not verified changes to a funder's official notice. Apply
+`20261018000001_grant_deadline_changes.sql` before deploying this capability.
+
 **Grant catalog search:** find programs by name, administering agency, project
 type or displayed catalog details. Results show a count, a clear control and an
 empty state. Jurisdiction coverage remains visible while filtering. A search
