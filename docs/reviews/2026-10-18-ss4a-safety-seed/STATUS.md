@@ -115,3 +115,33 @@ Populated upgrade workflow 39172087250 passes on native-suite source
 000002. The current branch adds the date-editor parent and its bounded browser
 note, with no further SS4A runtime or migration change. The full ordinary
 generator-to-preview-to-application browser journey remains pending.
+
+## Root local application journey
+
+Identified build 3b4afc301329 exercises the ordinary SS4A catalog scaffold,
+project Safety screen and existing report. It saves the actual retained
+acquisition 89883624, preserving its recorded S Orchard Ave candidates, and
+generates a new HTML artifact through the real builder and persistence RPC.
+Selecting that exact artifact previews six qualified working drafts; apply
+returns six draft IDs. A later application read shows Operator review. Root
+inspects desktop and 390px captures. Harmless layout annotation survives, a
+forced-width fault fails and the original style restores.
+
+Export creates one four-page DRAFT PDF, retrieved through the Documents library.
+All four rendered pages are inspected. It retains zero finalized sections, two
+missing required attachments, exact source identities/hash and source caveats.
+The built-in writer discloses missing styled/media and non-Latin support. Its
+16,271 bytes hash to
+07515643a944c721eda99a75770579de42fd18835bc0a25365c4c2f704d4573e.
+No finalization, submission, adoption or eligibility is inferred.
+
+Earlier browser drivers stop on an acquisition ID from another saved run, an
+exact-label assumption, HTTP200 versus the route's HTTP201, and a guessed
+Documents pathname. Those failures remain retained; initialization, report
+generation, seed apply and export are each performed once. Later steps reuse
+those actual records. Accepted cohorts have no page/console/HTTP errors, but
+background and browser-download handoff cancellations keep strict whole-run
+clean status false. The owned preview stops with wrapper terminal0 and lock
+release; source stays unchanged. Private receipts remain under
+v1-ss4a-browser-20261018/. Hosted migration, new-head CI, simultaneous-session
+behavior and the full Safety/first-week journey remain separate.
