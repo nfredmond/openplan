@@ -27,6 +27,7 @@ import {
   readCachedUsRoadContext,
   type SafetyRoadContextFeature,
 } from "@/lib/safety/road-context";
+import { retainedCrashRoadProvider } from "@/lib/safety/road-provider";
 import { loadUsTigerRoadContext } from "@/lib/safety/us-road-context-adapter";
 import {
   hasCompleteCrashCustody,
@@ -369,21 +370,20 @@ export async function GET(request: NextRequest) {
         // blocks crash evidence; the response below discloses the missing road identity.
       }
     }
-    let roadContext = roadContextResult.error && networkRoadRows.length === 0
+    const usableRoadContext = readCachedUsRoadContext([
+      ...(roadContextResult.error ? [] : roadContextResult.data ?? []).map((row) => ({
+        id: row.id,
+        name: row.road_name,
+        geometry_geojson: row.geometry_geojson,
+        source: row.source_id,
+        vintage: row.source_vintage,
+        cached_at: row.cached_at,
+      })),
+      ...networkRoadRows,
+    ]);
+    let roadContext = roadContextResult.error && usableRoadContext.length === 0
       ? null
-      : readCachedUsRoadContext(
-          [
-            ...(roadContextResult.data ?? []).map((row) => ({
-              id: row.id,
-              name: row.road_name,
-              geometry_geojson: row.geometry_geojson,
-              source: row.source_id,
-              vintage: row.source_vintage,
-              cached_at: row.cached_at,
-            })),
-            ...networkRoadRows,
-          ]
-        );
+      : usableRoadContext;
     // The network ranks only the project's frozen Safety road lines, the same
     // ones a report reads back, so a segment saved here is found there. Model
     // network corridors stay road-name context only.
@@ -495,10 +495,11 @@ export async function GET(request: NextRequest) {
       ? null
       : readSafetyKsiConcentrations(concentrationResult.data);
     if (
-      query.roadContextCountry === "US"
+      retainedCrashRoadProvider([acquisition], [activeIngestId]) === "us-census-tiger-line"
       && parsedKsiConcentrations
       && parsedKsiConcentrations.length > 0
-      && (!roadContext || roadContext.length === 0)
+      && roadContext !== null
+      && roadContext.length === 0
     ) {
       const tigerContext = await loadUsTigerRoadContext(parsedKsiConcentrations);
       roadContext = tigerContext.roads;

@@ -26,6 +26,15 @@ vi.mock("@/lib/workspaces/storage-quota", async (importOriginal) => ({
     checkWorkspaceStorageRoomMock(...args) ?? Promise.resolve({ status: "room", usedBytes: 0, quotaBytes: 5 * 1024 ** 3 }),
 }));
 
+const tigerRoadsMock = vi.hoisted(() => vi.fn());
+vi.mock("@/lib/safety/us-road-context-adapter", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/safety/us-road-context-adapter")>()),
+  loadUsTigerRoadContext: (...args: unknown[]) => tigerRoadsMock(...args),
+}));
+const safetyRoadReadMock = vi.fn();
+const safetyRoadWriteMock = vi.fn();
+const safetyRoadSelectMock = vi.fn((_projection: string) => ({ eq: () => ({ eq: () => ({ limit: safetyRoadReadMock }) }) }));
+
 const createClientMock = vi.fn();
 const createServiceRoleClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
@@ -576,6 +585,8 @@ const fromMock = vi.fn((table: string) => {
     };
   }
 
+  if (table === "safety_road_context_features") return { select: safetyRoadSelectMock };
+
   if (table === "safety_crash_ingests") {
     return { select: safetyIngestSelectMock };
   }
@@ -692,6 +703,9 @@ function reportNamesCountyRun(overrides: Record<string, unknown> = {}) {
 describe("POST /api/reports/[reportId]/generate", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    safetyRoadReadMock.mockReset().mockResolvedValue({ data: [], error: null });
+    safetyRoadWriteMock.mockReset().mockResolvedValue({ error: null });
+    tigerRoadsMock.mockReset().mockResolvedValue({ roads: [], coverageLimit: "No source road fixture", sourceVintage: null });
     engagementItemsPaging.reset();
     executionInsertMock.mockReset().mockResolvedValue({ error: null });
 
@@ -1049,6 +1063,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
     });
     createServiceRoleClientMock.mockReturnValue({
       from: vi.fn((table: string) => {
+        if (table === "safety_road_context_features") return { upsert: safetyRoadWriteMock };
         if (table === "assistant_action_executions") {
           return {
             insert: executionInsertMock,
@@ -1631,6 +1646,60 @@ describe("POST /api/reports/[reportId]/generate", () => {
         rtp_basis_stale_marked_at: null,
       })
     );
+  });
+
+  it.each([
+    ["known source", "ccrs-ca", false, false, false, true, true],
+    ["cache failure", "ccrs-ca", true, false, false, true, false],
+    ["cache throws", "ccrs-ca", true, false, false, true, false],
+    ["road read failure", "ccrs-ca", false, true, false, false, false],
+    ["unknown source", "unknown", false, false, false, false, false],
+    ["missing source", null, false, false, false, false, false],
+    ["missing selection", "ccrs-ca", false, false, true, false, false],
+  ])("selects retained road evidence for an imported packet: %s", async (label, sourceId, cacheFailure, roadReadFailure, missingSelection, fetchExpected, roadExpected) => {
+    reportNamesCountyRun({ metadata_json: { safetyIngestSelections: [
+      { ingestId: missingSelection ? "missing" : "ingest-roads" },
+    ] } });
+    sectionsOrderMock.mockResolvedValueOnce({ data: [{ id: "section-safety", section_key: "project_safety_evidence",
+      title: "Reported collisions", enabled: true, sort_order: 0, config_json: {} }], error: null });
+    safetyIngestOrderMock.mockResolvedValueOnce({ data: [{ id: "ingest-roads", source_id: sourceId,
+      project_id: "44444444-4444-4444-8444-444444444444", status: "ready",
+      min_lon: -121.2, min_lat: 39.1, max_lon: -120.8, max_lat: 39.5,
+      source_label: "Retained source", severity_completeness: "kabco_full", crash_count: 4,
+      geocoded_count: 4, years_requested: [2024], truncated: false,
+    }], error: null });
+    safetyRoadReadMock.mockResolvedValue({ data: roadReadFailure ? null : [], error: roadReadFailure ? { message: "read failed" } : null });
+    safetyRoadWriteMock.mockResolvedValue({ error: cacheFailure ? { message: "write failed" } : null });
+    if (label === "cache throws") safetyRoadWriteMock.mockRejectedValueOnce(new Error("write failed"));
+    tigerRoadsMock.mockResolvedValue({ roads: [{ id: "tiger-road", name: "Source Road",
+      sourceId: "us-census-tiger-line-cache", sourceLabel: "U.S. Census TIGER/Line roads", vintage: "2025-01-01",
+      geometry: { type: "LineString", coordinates: [[-121.061, 39.218], [-121.061, 39.220]] },
+    }], coverageLimit: "Nearest source line within 150 meters", sourceVintage: "2025-01-01" });
+    rpcMock.mockImplementation((name: string) => Promise.resolve({ data:
+      name === "safety_ksi_concentrations_for_ingests" ? [{ rank: 1, longitude: -121.061, latitude: 39.219,
+        crash_count: 4, fatal_crash_count: 1, serious_injury_crash_count: 3, radius_meters: 150 }]
+      : name === "safety_crash_evidence_counts" ? [
+        { ingest_id: "ingest-roads", dimension: "severity", value: "fatal", record_count: 1 },
+        { ingest_id: "ingest-roads", dimension: "severity", value: "severe_injury", record_count: 3 },
+      ] : [], error: null }));
+    const response = await postGenerate(new NextRequest("http://localhost/api/reports/1/generate", {
+      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ format: "html" }),
+    }), { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) });
+    expect(response.status).toBe(200);
+    expect(safetyIngestSelectMock).toHaveBeenCalledWith(expect.stringContaining("source_id"));
+    expect(safetyRoadSelectMock).toHaveBeenCalledWith("id, road_name, geometry_geojson, source_id, source_vintage");
+    expect(tigerRoadsMock).toHaveBeenCalledTimes(fetchExpected ? 1 : 0);
+    expect(safetyRoadWriteMock).toHaveBeenCalledTimes(fetchExpected ? 1 : 0);
+    if (fetchExpected) {
+      expect(tigerRoadsMock).toHaveBeenCalledWith([expect.objectContaining({ longitude: -121.061, latitude: 39.219 })]);
+      expect(safetyRoadWriteMock).toHaveBeenCalledWith([expect.objectContaining({
+        workspace_id: "33333333-3333-4333-8333-333333333333", project_id: "44444444-4444-4444-8444-444444444444",
+        country_code: "US", source_id: "us-census-tiger-line-cache", source_vintage: "2025-01-01", source_feature_id: "tiger-road",
+      })], { onConflict: "workspace_id,project_id,source_id,source_vintage,source_feature_id" });
+    }
+    const html = artifactsInsertMock.mock.calls.at(-1)?.[0]?.metadata_json?.htmlContent;
+    if (roadExpected) expect(html).toContain("Source Road");
+    else expect(html).not.toContain("Source Road");
   });
 
   it("carries project-linked KSI concentration ranks into the generated packet", async () => {

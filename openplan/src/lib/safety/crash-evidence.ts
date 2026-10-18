@@ -42,6 +42,7 @@
  * object rather than a wrong one.
  */
 
+import type { StudyAreaBbox } from "@/lib/models/study-area";
 import {
   CRASH_DIMENSION_COLUMNS,
   CRASH_PARTY_ROLES,
@@ -78,6 +79,9 @@ export type SafetyCrashEvidenceIngest = {
   id: string;
   projectId: string | null;
   status: string;
+  /** Older in-memory evidence may lack source provenance; readers must not infer it. */
+  sourceId?: string | null;
+  scopeBounds?: StudyAreaBbox | null;
   sourceLabel: string | null;
   attribution: string | null;
   severityCompleteness: string;
@@ -359,6 +363,7 @@ export const SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION = [
   "max_lon",
   "max_lat",
   "status",
+  "source_id",
   "source_label",
   "attribution",
   "severity_completeness",
@@ -378,6 +383,19 @@ export const SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION = [
 
 /** The name of the grouped-count RPC. One spelling, so a caller cannot typo it into a silent empty. */
 export const SAFETY_CRASH_EVIDENCE_COUNTS_RPC = "safety_crash_evidence_counts";
+
+/** Read retained acquisition bounds without coercing missing coordinates to zero. */
+function readAcquisitionScopeBounds(row: Readonly<Record<string, unknown>>): StudyAreaBbox | null {
+  const { min_lon: minLon, min_lat: minLat, max_lon: maxLon, max_lat: maxLat } = row;
+  if (
+    typeof minLon !== "number" || typeof minLat !== "number" ||
+    typeof maxLon !== "number" || typeof maxLat !== "number" ||
+    ![minLon, minLat, maxLon, maxLat].every(Number.isFinite) ||
+    minLon < -180 || maxLon > 180 || minLat < -90 || maxLat > 90 ||
+    minLon >= maxLon || minLat >= maxLat
+  ) return null;
+  return { minLon, minLat, maxLon, maxLat };
+}
 
 /**
  * Read one ingest row (as PostgREST hands it over, untyped) into the boundary type.
@@ -400,6 +418,8 @@ export function readSafetyCrashEvidenceIngest(
     id,
     projectId: typeof row.project_id === "string" ? row.project_id : null,
     status: typeof row.status === "string" ? row.status : "",
+    sourceId: typeof row.source_id === "string" && row.source_id.trim().length > 0 ? row.source_id : null,
+    scopeBounds: readAcquisitionScopeBounds(row),
     sourceLabel: typeof row.source_label === "string" ? row.source_label : null,
     attribution: typeof row.attribution === "string" ? row.attribution : null,
     severityCompleteness: typeof row.severity_completeness === "string" ? row.severity_completeness : "",

@@ -266,6 +266,11 @@ export type CrashSourceAdapter = {
   coverageState: SafetyCoverageState;
   severityCompleteness: CrashSeverityCompleteness;
   /**
+   * Road provider suitable for this source's records, not a country or legal
+   * jurisdiction claim about the acquisition geometry. Missing means unassessed.
+   */
+  roadContextProvider?: string;
+  /**
    * What this source can say about each neutral dimension.
    *
    * REQUIRED, not optional, and that is the mechanism that keeps a facet honest

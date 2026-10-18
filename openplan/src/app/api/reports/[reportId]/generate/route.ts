@@ -19,7 +19,7 @@ import {
   type SafetyRoadContextFeature,
 } from "@/lib/safety/road-context";
 import { loadUsTigerRoadContext, roadContextForFrozenPacket } from "@/lib/safety/us-road-context-adapter";
-import { resolveCrashSources } from "@/lib/safety/sources/registry";
+import { retainedCrashRoadProvider } from "@/lib/safety/road-provider";
 import { readReportSafetyIngestSelections } from "@/lib/reports/safety-evidence-selection";
 import {
   buildSafetyActionPlanSection,
@@ -30,7 +30,6 @@ import {
   buildHighInjuryNetworkForIngest,
   type HighInjuryNetworkSupabaseLike,
 } from "@/lib/safety/high-injury-network-loader";
-import type { StudyAreaBbox } from "@/lib/models/study-area";
 import { ACS_YEAR } from "@/lib/data-sources/census";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -2313,7 +2312,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     let safetyKsiConcentrations: SafetyKsiConcentration[] | null = [];
     let safetyKsiEquityTracts: SafetyKsiEquityTract[] | null = [];
     let safetyIngestRowsForConcentrations: unknown[] = [];
-    let safetyConcentrationBounds: StudyAreaBbox | null = null;
+    let safetyRoadProvider: string | null = null;
     try {
       const safetyIngestResult = selectedSafetyIngestIds.length > 0
         ? await supabase
@@ -2334,6 +2333,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         const ingests = (safetyIngestRows ?? [])
           .map((row) => readSafetyCrashEvidenceIngest(row as unknown as Record<string, unknown>))
           .filter((ingest): ingest is NonNullable<typeof ingest> => ingest !== null);
+        safetyRoadProvider = retainedCrashRoadProvider(ingests, selectedSafetyIngestIds);
         const evidenceByIngest = await loadSafetyCrashEvidence(
           supabase as unknown as SafetyCrashEvidenceSupabaseLike,
           report.workspace_id,
@@ -2347,7 +2347,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     try {
       const concentrationBounds = readSafetyKsiBounds(safetyIngestRowsForConcentrations);
-      safetyConcentrationBounds = concentrationBounds;
       if (concentrationBounds && safetyIngestRowsForConcentrations.length > 0) {
         const concentrationResult = await supabase.rpc("safety_ksi_concentrations_for_ingests", {
           p_workspace_id: report.workspace_id,
@@ -2429,12 +2428,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       && safetyRoadContext.length === 0
       && safetyKsiConcentrations
       && safetyKsiConcentrations.length > 0
-      // Uploaded project geometry can predate the project's ISO country stamp.
-      // The crash-source registry already resolved this exact acquisition area;
-      // use that source evidence instead of guessing from coordinates or
-      // silently inheriting the workspace's country for a cross-border project.
-      && safetyConcentrationBounds
-      && resolveCrashSources(safetyConcentrationBounds, "read_only").kind === "resolved"
+      && safetyRoadProvider === "us-census-tiger-line"
     ) {
       const tigerContext = await loadUsTigerRoadContext(safetyKsiConcentrations);
       if (tigerContext.roads.length > 0) {
