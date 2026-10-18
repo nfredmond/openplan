@@ -41,3 +41,27 @@ jobs:
             env OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 \
             NUMEXPR_NUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 \
             "$python_path" -B workers/aequilibrae_worker/native_tests/run_compact_graph.py
+
+  assignment-images:
+    name: assignment image (${{ matrix.image }})
+    needs: compact-graph-native
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: standalone
+            dockerfile: workers/aequilibrae_worker/Dockerfile
+            context: workers/aequilibrae_worker
+          - image: shared-models
+            dockerfile: workers/hosted-models/Dockerfile
+            context: .
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build image and execute its compatibility checks
+        run: >-
+          docker build --platform linux/amd64
+          --file "${{ matrix.dockerfile }}"
+          --tag "openplan-assignment-check:${{ matrix.image }}-${{ github.sha }}"
+          "${{ matrix.context }}"
