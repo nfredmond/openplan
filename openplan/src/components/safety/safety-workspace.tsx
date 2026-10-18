@@ -289,12 +289,10 @@ const EMPTY_STUDY_AREA_SEED: SafetyStudyAreaSeed = {
 type SafetyWorkspaceProps = {
   workspaceId: string;
   latestIngest: SafetyIngestSummary | null;
-  /**
-   * True when the crash-import history could not be READ. Distinct from "no
-   * import exists": one is a fact about this workspace, the other is a fact
-   * about the query, and only the first belongs in a sentence about crashes.
-   */
+  /** Failed history or current-area reads withhold an unverified map fallback. */
   ingestsReadFailed?: boolean;
+  /** Identify a failed current-area lookup without mislabeling readable history. */
+  currentIngestReadFailed?: boolean;
   /**
    * Where the picker STARTS, resolved on the server. Absent (or `origin: "none"`)
    * keeps the original behavior: nothing is preselected and nothing is fetched
@@ -353,6 +351,7 @@ export function SafetyWorkspace({
   workspaceId,
   latestIngest,
   ingestsReadFailed = false,
+  currentIngestReadFailed = false,
   studyArea = EMPTY_STUDY_AREA_SEED,
   openedForProject = null,
   projects = [],
@@ -1655,9 +1654,11 @@ export function SafetyWorkspace({
           </div>
         ) : bbox ? (
           <p className="text-muted-foreground">
-            {ingestsReadFailed
-              ? "This workspace's crash-import history could not be read, so nothing is shown on the map. That is a failed lookup, not a finding — imports may exist."
-              : "No crash data has been retrieved for this study area yet. Nothing is shown on the map — that is not evidence that no crashes occurred."}
+            {currentIngestReadFailed
+              ? "This study area's current crash acquisition could not be read, so nothing is shown on the map. That is a failed lookup, not a finding. Imports may exist."
+              : ingestsReadFailed
+                ? "This workspace's crash-import history could not be read, so nothing is shown on the map. That is a failed lookup, not a finding. Imports may exist."
+                : "No crash data has been retrieved for this study area yet. Nothing is shown on the map. That is not evidence that no crashes occurred."}
           </p>
         ) : (
           /* NO JURISDICTION IS NAMED HERE. This sentence used to say crash

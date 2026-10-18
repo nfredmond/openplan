@@ -448,7 +448,7 @@ describe("Safety opens on the right study area", () => {
    */
   it("says the crash-import history could not be read, rather than that none exists", async () => {
     mountSupabase({
-      ingestsResult: { data: null, error: { message: "permission denied for table safety_crash_ingests" } },
+      historyIngestError: "permission denied for table safety_crash_ingests",
     });
     await renderSafety();
 
@@ -523,8 +523,11 @@ describe("Safety opens on the right study area", () => {
     mountSupabase({ projectPlace: { data: projectPlaceRow(), error: null }, ingests: [retainedAcquisition()], currentIngestError: "acquisition lookup unavailable" });
     await renderSafety({ projectId: PROJECT_ID });
     const coverage = screen.getByLabelText("Crash data coverage");
+    expect(within(coverage).getByText(/current crash acquisition could not be read/i)).toBeInTheDocument();
     expect(within(coverage).getByText(/failed lookup, not a finding/i)).toBeInTheDocument();
+    expect(within(coverage).queryByText(/crash-import history could not be read/i)).toBeNull();
     expect(within(coverage).queryByText("Retained corridor source")).toBeNull();
+    expect(screen.getByText("Retained corridor source")).toBeInTheDocument();
     expect(within(coverage).queryByText(/No crash data has been retrieved/i)).toBeNull();
     expect(fetchMock.mock.calls.some(([url]) => String(url).startsWith("/api/safety/crashes?"))).toBe(false);
   });

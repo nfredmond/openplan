@@ -60,6 +60,20 @@ The October 17 A0 capture record preserves a protected-scope refusal and its
 saved-data explanation. A reviewed scope disposition precedes another native
 proposal; this changes no milestone status or direction-review binding.
 
+The October 18 M13e update records source implementation of catalog search in
+[draft PR 341](https://github.com/nfredmond/openplan/pull/341), with focused
+checks and browser acceptance pending. SS4A seeding, retained deadline-change
+alerts and award-condition handoff remain open. This moves the row from next
+to in progress; it does not close the milestone or change the review binding.
+
+October 18 delivery sequencing records Nathaniel's October 17 instruction to
+pause the bespoke A0 database captures, M1 history captures and viewport database
+proof expansion. They remain deferred while current CI, first-week journeys and
+ordinary product corrections proceed. Their failed and partial records stay
+unchanged. This does not waive migration safety, isolated RLS, independent model
+validation or any v1 requirement. The proven provider-choice task remains an
+early product responsibility; the deferred captures do not block other lanes.
+
 ## Destination
 
 OpenPlan v1 is a free, open-source operating system for core planning work in
@@ -86,7 +100,7 @@ record. "PR" means a pull request open on October 12. KI-001 means
 | ID | Plain name | Status | Last evidence | Next action |
 |---|---|---|---|---|
 | M0 | Trustworthy releases and documents | In progress | [Oct 12 audit](reviews/2026-10-12-two-month-review/reports/docs-audit.md) | Finish the A3 documents pass |
-| M1 | Plan geography and legal authority | In progress, partial | [Oct 7](reviews/2026-10-07-land-use-authority/IMPLEMENTATION_REPORT_RECOVERY_2026-10-07.md); [Oct 17 held-caller source review](reviews/2026-10-17-m1-operation-caller-independent/REPORT.md); [424 compiler correction](reviews/2026-10-17-migration424-case-parser-correction/STATUS.md) | Confirm full restore CI after the parser correction. Establish selected-history custody and a complete authenticated migration423 predecessor before exact424 native retained-context/original-command proof for KI-025. Cross-state, MPO and tribal cases remain required (C6). |
+| M1 | Plan geography and legal authority | In progress, partial | [Oct 7](reviews/2026-10-07-land-use-authority/IMPLEMENTATION_REPORT_RECOVERY_2026-10-07.md); [Oct 17 held-caller source review](reviews/2026-10-17-m1-operation-caller-independent/REPORT.md); [424 compiler correction](reviews/2026-10-17-migration424-case-parser-correction/STATUS.md) | Confirm current restore/upgrade and isolated RLS CI after the parser correction. Bespoke selected-history and retained-context captures are deferred under the October 17 delivery instruction; their KI-025 proof remains open. Cross-state, MPO and tribal cases remain required (C6). |
 | M2 | One planning case through handoff | Later | Audit | Choose a cross-module case |
 | M2a | Work-plan templates | Later | Audit | Grow 24 templates into a taxonomy |
 | M2b | File library and document writing | Later (C10) | Audit | Drafting and review |
@@ -114,7 +128,7 @@ record. "PR" means a pull request open on October 12. KI-001 means
 | M11 | Contract budgets and forecasts | In progress, mostly done | [Sep 9](reviews/2026-09-09-v047-release/VERIFICATION.md); [Oct 16 complete summary readers](reviews/2026-10-16-engagement-summary-root-integration/STATUS.md); [current full configured types](reviews/2026-10-16-publication-reviewed-full-types/STATUS.md) | Verify complete budget and billing snapshots through native caller/SDK, financial reconstruction and identified browser/artifact journeys. Agency accounting fit, human usefulness and reminder delivery remain open. |
 | M12 | RTP update from the adopted plan | Later (C1) | Audit | Prior-RTP intake without a paid key |
 | M13 | Local tax and grant administration | Next (B5) | Audit | Recipient city role |
-| M13e | Grant discovery and applications | Next (B4) | Audit | ATP scoring on screen |
+| M13e | Grant discovery and applications | In progress, partial (B4) | [Oct 18 catalog search candidate](https://github.com/nfredmond/openplan/pull/341) | Verify ATP packet and catalog search; complete SS4A seeding, retained deadline-change alerts and award-condition handoff |
 | M13f | Agency audits | Later | Audit | Not started |
 | M14 | Procurement, both sides | Later (C4) | Audit | Agency RFP issue and receipt |
 | M15a | Hosted production recipe | In progress, mostly done | [Oct 11](ops/HOSTED_LIVE_2026-10-11.md) | Health checks (A1, PR 254) |
@@ -126,7 +140,7 @@ record. "PR" means a pull request open on October 12. KI-001 means
 | S3 | Untouched nationwide validation | Later | Audit | Successor preregistration |
 | G1 | Every state and organization type | Later | Audit | Confirm state order (decision 6) |
 | G1a | National local-assistance procedures | Later | [Sep 4](reviews/2026-09-04-pre-handoff/NATIONAL_LOCAL_ASSISTANCE_COMPARISON.md) | Read priority state manuals |
-| A0 | Planner Agent provider choice | In progress, mostly done | [Sep 12](reviews/2026-09-12-api-project-ui/VERIFICATION.md); [Oct 16 reviewed source candidates](reviews/2026-10-16-a0-corrections-and-install-check-independent/REVIEW.md); [Oct 17 capture refusal](reviews/2026-10-17-a0-multiset-native-capture-result/STATUS.md) | Review the preserved catalogue scope refusal before another native proposal. Tested CLI versions and honest usage limits remain required for the proven project task (A0b); current generic Codex resets stay unknown until a reviewed causal binding exists. Native SQL/RLS, provider recordings and browser proof remain open. Broad chat later (C8) |
+| A0 | Planner Agent provider choice | In progress, mostly done | [Sep 12](reviews/2026-09-12-api-project-ui/VERIFICATION.md); [Oct 16 reviewed source candidates](reviews/2026-10-16-a0-corrections-and-install-check-independent/REVIEW.md); [Oct 17 capture refusal](reviews/2026-10-17-a0-multiset-native-capture-result/STATUS.md) | Bespoke catalogue captures are deferred under the October 17 delivery instruction. Keep tested CLI versions, honest usage limits and the proven project task usable through ordinary CI and relevant UI checks. Generic Codex resets remain unknown without a reviewed causal binding. Native SQL/RLS, provider recordings and browser proof remain open. Broad chat later (C8) |
 | A1a | Truthful, scoped agent actions | Later, partial | [Sep 10](reviews/2026-09-10-agent-submittal-receipts/VERIFICATION.md) | Recovery for remaining writes; declare caller authority for every agent-reachable read and proposal before any MCP surface |
 | A1b | One durable agent assignment | Later (C8) | Audit | Not started; design Stop, recovery and visible waits on PR 327 once verified |
 | A1c | Agent jobs across modules | Later | Audit | Waits on A1b |

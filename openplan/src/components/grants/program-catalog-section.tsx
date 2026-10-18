@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BookMarked, Check, ExternalLink, Loader2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { filterGrantProgramCatalog } from "@/lib/grants/program-catalog-search";
 import {
   describeGrantProgramCoverage,
   isGrantProgramTracked,
@@ -31,6 +33,10 @@ export function GrantsProgramCatalogSection({
   const [pendingKey, setPendingKey] = useState<string | null>(null);
   const [locallyTrackedKeys, setLocallyTrackedKeys] = useState<readonly string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchId = useId();
+  const searchInput = useRef<HTMLInputElement>(null);
+  const visiblePrograms = filterGrantProgramCatalog(coverage.programs, searchQuery);
 
   async function handleTrack(program: GrantProgramCatalogEntry) {
     setPendingKey(program.key);
@@ -101,10 +107,51 @@ export function GrantsProgramCatalogSection({
         </div>
       ) : null}
 
+      <div className="mt-5 space-y-2">
+        <label htmlFor={searchId} className="text-sm font-semibold text-foreground">
+          Search program catalog
+        </label>
+        <div className="flex max-w-2xl flex-col gap-2 sm:flex-row sm:items-center">
+          <Input
+            ref={searchInput}
+            id={searchId}
+            type="search"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            aria-describedby={`${searchId}-help`}
+            aria-controls={`${searchId}-results`}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            className="shrink-0"
+            disabled={searchQuery.length === 0}
+            onClick={() => {
+              setSearchQuery("");
+              searchInput.current?.focus();
+            }}
+          >
+            Clear search
+          </Button>
+        </div>
+        <p id={`${searchId}-help`} className="text-sm text-muted-foreground">
+          Search program names, agencies, project types, and catalog details in any word order.
+          Matches do not confirm eligibility or an open call.
+        </p>
+        <p role="status" aria-live="polite" aria-atomic="true" className="text-sm text-muted-foreground">
+          Showing {visiblePrograms.length} of {coverage.programs.length} programs
+        </p>
+      </div>
+
       {error ? <p role="alert" className="mt-4 text-sm text-destructive">{error}</p> : null}
 
-      <div className="mt-5 divide-y divide-border/60 rounded-2xl border border-border/60 bg-background/70">
-        {coverage.programs.map(({ program, bundle }) => {
+      <div id={`${searchId}-results`} className="mt-5 divide-y divide-border/60 rounded-2xl border border-border/60 bg-background/70">
+        {visiblePrograms.length === 0 ? (
+          <p className="px-4 py-3.5 text-sm text-muted-foreground">
+            No catalog programs match your search. Try fewer words or clear the search.
+          </p>
+        ) : null}
+        {visiblePrograms.map(({ program, bundle }) => {
           const isTracked =
             isGrantProgramTracked(program, trackedTitles) ||
             locallyTrackedKeys.includes(program.key);
@@ -112,7 +159,7 @@ export function GrantsProgramCatalogSection({
 
           return (
             <div key={program.key} className="flex flex-wrap items-start justify-between gap-3 px-4 py-3.5">
-              <div className="min-w-0 flex-1 space-y-1.5">
+              <div className="min-w-0 flex-1 basis-full space-y-1.5 sm:basis-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="text-sm font-semibold text-foreground">{program.name}</p>
                   <StatusBadge tone={program.level === "federal" ? "info" : "success"}>

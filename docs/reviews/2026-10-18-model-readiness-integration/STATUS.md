@@ -43,3 +43,24 @@ the disclosure display and selected download, not a wholly clean journey.
 All 42 method artifacts, deployed tracing and scientific acceptance remain
 outside this browser check. The app runs below a 3 GiB cgroup cap; its final
 observed peak is 1,981,493,248 bytes. The earlier failed attempts remain intact.
+
+## CI wording correction
+
+The QA and shuffled runs on `cb73e2e61` fail the same two existing copy checks.
+The card introduces internal vocabulary and raises the recorded term counts.
+This correction says what the saved study file establishes in plain language.
+It preserves null caps, demand policies, holdout history, legacy-input context,
+separate methods and every scientific prohibition. Copy guards and their
+baselines remain unchanged.
+
+All 15 focused disclosure and copy checks pass, including shuffled seed 188937
+from the failed CI run. Scoped ESLint and whitespace checks pass. A harmless
+comment survives. Removing the accuracy caveat, reversing the holdout statement
+and reintroducing operator vocabulary each fails its intended assertion. Source
+bytes restore exactly. An initial stale text expectation fails before correction
+and remains in the private record.
+
+This is a wording and source-test correction. The earlier identified browser
+and download evidence retains its own build and limits; the revised text has
+not received a new browser run. Full new-head CI remains pending. No model,
+scientific, deployment or release acceptance follows.

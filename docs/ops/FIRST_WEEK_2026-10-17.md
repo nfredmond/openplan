@@ -293,3 +293,14 @@ The readiness registry now pins the reviewed FARS and CCRS adapter bytes. Their
 only change declares the existing TIGER road-context provider; crash coverage,
 severity, fetching and persistence stay unchanged. The registry version advances
 without changing review dates, jurisdiction statuses or acceptance limits.
+
+### Safety lookup message correction, October 18
+
+The current-area acquisition failure now names that lookup separately from
+readable recent history. The failed lookup still withholds unverified map
+results. A history-only failure retains its own message.
+
+Twenty-nine focused tests and changed-file lint pass. A harmless comment survives;
+removing the current-query state or restoring the mislabeled branch fails the
+intended text assertion. Both source files restore exactly. These are source and
+rendered-component checks, not a newly captured browser failure or hosted result.

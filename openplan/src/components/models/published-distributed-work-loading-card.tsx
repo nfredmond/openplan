@@ -37,18 +37,18 @@ export function PublishedDistributedWorkLoadingCard({ study }: { study: Publishe
         <div><span className="font-semibold">Method treatment</span><span className="mt-1 block text-muted-foreground">AequilibraE and ActivitySim stay separate. No average or national rescue.</span></div>
         <div><span className="font-semibold">Rollout</span><span className="mt-1 block text-muted-foreground">{study.candidateAdvanced ? "Development gate met; defaults still unchanged" : "Candidate retained and retired"}</span></div>
       </div>
-      <section className="mt-4 space-y-3 rounded border border-border/70 p-3 text-sm" aria-label="Recorded study configuration and custody">
-        <h3 className="font-semibold">Recorded configuration and custody</h3>
-        <p>These disclosures come from the hash- and length-verified study registry. They describe the recorded development setup, not independent scientific acceptance or measured accuracy.</p>
+      <section className="mt-4 space-y-3 rounded border border-border/70 p-3 text-sm" aria-label="Saved study configuration and evidence">
+        <h3 className="font-semibold">Saved configuration and evidence</h3>
+        <p>These disclosures come from the study file, verified by its file hash and size. They describe the saved development setup, not independent scientific acceptance or measured accuracy.</p>
         <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div><dt className="font-semibold">Arbitrary point cap</dt><dd>{configuration.arbitraryPointCap === null ? "None recorded (null)" : String(configuration.arbitraryPointCap)}</dd></div>
           <div><dt className="font-semibold">Arbitrary gateway cap</dt><dd>{configuration.arbitraryGatewayCap === null ? "None recorded (null)" : String(configuration.arbitraryGatewayCap)}</dd></div>
           <div><dt className="font-semibold">Aggregation rule</dt><dd>{configuration.aggregateOnlySameRoutableNode ? "Aggregate only at the same routable node." : "Unavailable"}</dd></div>
           <div><dt className="font-semibold">Demand policy</dt><dd>{configuration.preserveMethodWorkTotals && configuration.nonWorkUnchanged ? "Preserve each method's work total. Non-work trips keep their prior centroid loading." : "Unavailable"}</dd></div>
-          <div><dt className="font-semibold">Acceptance holdout opened</dt><dd>{configuration.acceptanceHoldoutOpened === false ? "No, according to recorded custody." : "Unavailable"}</dd></div>
+          <div><dt className="font-semibold">Acceptance holdout opened</dt><dd>{configuration.acceptanceHoldoutOpened === false ? "No, according to the saved evidence." : "Unavailable"}</dd></div>
         </dl>
         <p>{configuration.legacyPathNote}</p>
-        <p>Study, audit and comparison records also report no holdout access. A development gate does not establish calibration, validation, statewide completeness or nationwide accuracy.</p>
+        <p>Study, audit and comparison files also report no holdout access. A development gate does not establish calibration, validation, statewide completeness or nationwide accuracy.</p>
         <OperatorDetail summary="Disclosure registry fingerprint">
           <p className="break-all font-mono text-xs">{configuration.registryPath}</p>
           <p className="mt-1 break-all font-mono text-xs">{configuration.registrySha256}</p>
