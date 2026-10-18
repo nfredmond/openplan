@@ -188,3 +188,10 @@ workspace copy ratchet from136 to135. All63 affected route, DOM and source
 inventory checks pass before and after three intended faults; scoped lint and
 exact restoration pass. No jargon ceiling rises. Existing failed diagnostic
 attempts and source-only review objections remain private and unchanged.
+
+The final plain-worded build6113d0388 repeats the read-only picker journey at
+desktop1440 and390px. Selection, refresh, intended overflow detection and exact
+style restoration pass; all captures are inspected. The two background aborts
+remain explicit. Both browser and preview exit0, with the compiler released and
+owned environment removed. No source, generation, apply or export changes occur
+during this journey. Raw captures stay private. Hosted migration remains held.
