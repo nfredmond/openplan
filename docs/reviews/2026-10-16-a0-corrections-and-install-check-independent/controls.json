@@ -1,0 +1,433 @@
+{
+  "independentlyExecuted": true,
+  "mutationSubjects": "new private exact-object copies only; no subject/donor mutations",
+  "A": {
+    "command": [
+      "node",
+      "--test",
+      "--test-concurrency=1",
+      "--test-reporter=tap",
+      "workers/planner_agent_connector/test/usage-limit.test.mjs",
+      "workers/planner_agent_connector/test/usage-limit-source.test.mjs",
+      "workers/planner_agent_connector/test/codex-session.test.mjs"
+    ],
+    "environment": {
+      "OPENPLAN_USAGE_TEST_TMP": "unset except restored-override",
+      "TMPDIR": "/home/nathaniel/.local/state/openplan/a0-corrections-and-install-check-independent-20261016",
+      "NODE_OPTIONS": "--max-old-space-size=256"
+    },
+    "trials": [
+      {
+        "label": "baseline",
+        "exitCode": 0,
+        "logSHA256": "21d98f8de1a01e3d793719a2fc4b8dda967f68396d0f5bdc056b65b81d3f76f4",
+        "leakedOwnedDirectories": 0,
+        "command": [
+          "node",
+          "--test",
+          "--test-concurrency=1",
+          "--test-reporter=tap",
+          "workers/planner_agent_connector/test/usage-limit.test.mjs",
+          "workers/planner_agent_connector/test/usage-limit-source.test.mjs",
+          "workers/planner_agent_connector/test/codex-session.test.mjs"
+        ],
+        "cwd": "/home/nathaniel/.local/state/openplan/a0-corrections-and-install-check-independent-20261016/A",
+        "OPENPLAN_USAGE_TEST_TMP": "unset",
+        "TMPDIR": "/home/nathaniel/.local/state/openplan/a0-corrections-and-install-check-independent-20261016"
+      },
+      {
+        "label": "harmless-tracker",
+        "exitCode": 0,
+        "logSHA256": "17673f905a1963f010e6828c7b7fe75c80a2b5e4605f4abc7a0262444d952d09",
+        "leakedOwnedDirectories": 0,
+        "command": [
+          "node",
+          "--test",
+          "--test-concurrency=1",
+          "--test-reporter=tap",
+          "workers/planner_agent_connector/test/usage-limit.test.mjs",
+          "workers/planner_agent_connector/test/usage-limit-source.test.mjs",
+          "workers/planner_agent_connector/test/codex-session.test.mjs"
+        ],
+        "cwd": "/home/nathaniel/.local/state/openplan/a0-corrections-and-install-check-independent-20261016/A",
+        "OPENPLAN_USAGE_TEST_TMP": "unset",
+        "TMPDIR": "/home/nathaniel/.local/state/openplan/a0-corrections-and-install-check-independent-20261016",
+        "restoredSHA256": "94e4336553940d2fc33778082d2bf6036b94c6acf5ecf155a1bd3769192ee57f"
+      },
+      {
+        "label": "harmless-sql",
+        "exitCode": 0,
+        "logSHA256": "670c62b37de81d2140ceb3abdc04fff45c5d7ba9474f56b141fa4cd2641b0107",
+        "leakedOwnedDirectories": 0,
+        "command": [
+          "node",
+          "--test",
+          "--test-concurrency=1",
+          "--test-reporter=tap",
+          "workers/planner_agent_connector/test/usage-limit.test.mjs",
+          "workers/planner_agent_connector/test/usage-limit-source.test.mjs",
+          "workers/planner_agent_connector/test/codex-session.test.mjs"
+        ],
+        "cwd": "/home/nathaniel/.local/state/openplan/a0-corrections-and-install-check-independent-20261016/A",
+        "OPENPLAN_USAGE_TEST_TMP": "unset",
+        "TMPDIR": "/home/nathaniel/.local/state/openplan/a0-corrections-and-install-check-independent-20261016",
+        "restoredSHA256": "655e625878b3e62f332a7f17d6e126879813cc2bf881ca745593978d8eed6559"
+      },
+      {
+        "label": "restore-environment-prerequisite",
+        "exitCode": 1,
+        "logSHA256": "da07e6fe4404d34ec82f57f3d00c49de29fe721b365ad7408456a83970d340c4",
+        "leakedOwnedDirectories": 0,
+        "command": [
+          "node",
+          "--test",
+          "--test-concurrency=1",
+          "--test-reporter=tap",
+          "workers/planner_agent_connector/test/usage-limit.test.mjs",
+          "workers/planner_agent_connector/test/usage-limit-source.test.mjs",
+          "workers/planner_agent_connector/test/codex-session.test.mjs"
+        ],
+        "cwd": "/home/nathaniel/.local/state/openplan/a0-corrections-and-install-check-independent-20261016/A",
+        "OPENPLAN_USAGE_TEST_TMP": "unset",
+        "TMPDIR": "/home/nathaniel/.local/state/openplan/a0-corrections-and-install-check-independent-20261016",
+        "restoredSHA256": "5d854eda799fdf5ce236afaa5b6ae679cd4ac376bed6f147dd68642b9142531c"
+      },
+      {
+        "label": "remove-cleanup",
+        "exitCode": 0,
+        "logSHA256": "0d34e0f3c1245139277c06e3cc2a97e24a1147043c06f0be370b5ad88b91ac87",
+        "leakedOwnedDirectories": 1,
+        "command": [
+          "node",
+          "--test",
+          "--test-concurrency=1",
+          "--test-reporter=tap",
+          "workers/planner_agent_connector/test/usage-limit.test.mjs",
+          "workers/planner_agent_connector/test/usage-limit-source.test.mjs",
+          "workers/planner_agent_connector/test/codex-session.test.mjs"
+        ],
+        "cwd": "/home/nathaniel/.local/state/openplan/a0-corrections-and-install-check-independent-20261016/A",
+        "OPENPLAN_USAGE_TEST_TMP": "unset",
+        "TMPDIR": "/home/nathaniel/.local/state/openplan/a0-corrections-and-install-check-independent-20261016",
+        "testProcessPassed": true,
+        "externalCleanupOracleRejected": true,
+        "restoredSHA256": "5d854eda799fdf5ce236afaa5b6ae679cd4ac376bed6f147dd68642b9142531c"
+      },
+      {
+        "label": "unbound-default-reset",
+        "exitCode": 1,
+        "logSHA256": "fdc603b7a23a0524b370808ec1c792b29ad4e2733ac9eeb2711f4ca9b0e2be83",
+        "leakedOwnedDirectories": 0,
+        "command": [
+          "node",
+          "--test",
+          "--test-concurrency=1",
+          "--test-reporter=tap",
+          "workers/planner_agent_connector/test/usage-limit.test.mjs",
+          "workers/planner_agent_connector/test/usage-limit-source.test.mjs",
+          "workers/planner_agent_connector/test/codex-session.test.mjs"
+        ],
+        "cwd": "/home/nathaniel/.local/state/openplan/a0-corrections-and-install-check-independent-20261016/A",
+        "OPENPLAN_USAGE_TEST_TMP": "unset",
+        "TMPDIR": "/home/nathaniel/.local/state/openplan/a0-corrections-and-install-check-independent-20261016",
+        "intendedAssertion": "Generic error borrowed an unbound default reset",
+        "restoredSHA256": "94e4336553940d2fc33778082d2bf6036b94c6acf5ecf155a1bd3769192ee57f"
+      },
+      {
+        "label": "sparse-observation",
+        "exitCode": 1,
+        "logSHA256": "10b19adabb09a512139bbdeae43b84886447e113f4a97bba9c5961cb96c205f1",
+        "leakedOwnedDirectories": 0,
+        "command": [
+          "node",
+          "--test",
+          "--test-concurrency=1",
+          "--test-reporter=tap",
+          "workers/planner_agent_connector/test/usage-limit.test.mjs",
+          "workers/planner_agent_connector/test/usage-limit-source.test.mjs",
+          "workers/planner_agent_connector/test/codex-session.test.mjs"
+        ],
+        "cwd": "/home/nathaniel/.local/state/openplan/a0-corrections-and-install-check-independent-20261016/A",
+        "OPENPLAN_USAGE_TEST_TMP": "unset",
+        "TMPDIR": "/home/nathaniel/.local/state/openplan/a0-corrections-and-install-check-independent-20261016",
+        "intendedAssertion": "Sparse update cleared a qualified observation",
+        "restoredSHA256": "94e4336553940d2fc33778082d2bf6036b94c6acf5ecf155a1bd3769192ee57f"
+      },
+      {
+        "label": "observation-bounds",
+        "exitCode": 1,
+        "logSHA256": "c60439164f08f1ac2852c1b0e86ce67d02fb8499af0bb76eacd5cf1fba3db84e",
+        "leakedOwnedDirectories": 0,
+        "command": [
+          "node",
+          "--test",
+          "--test-concurrency=1",
+          "--test-reporter=tap",
+          "workers/planner_agent_connector/test/usage-limit.test.mjs",
+          "workers/planner_agent_connector/test/usage-limit-source.test.mjs",
+          "workers/planner_agent_connector/test/codex-session.test.mjs"
+        ],
+        "cwd": "/home/nathaniel/.local/state/openplan/a0-corrections-and-install-check-independent-20261016/A",
+        "OPENPLAN_USAGE_TEST_TMP": "unset",
+        "TMPDIR": "/home/nathaniel/.local/state/openplan/a0-corrections-and-install-check-independent-20261016",
+        "intendedAssertion": "Invalid observation reset -1",
+        "restoredSHA256": "94e4336553940d2fc33778082d2bf6036b94c6acf5ecf155a1bd3769192ee57f"
+      },
+      {
+        "label": "observation-copy",
+        "exitCode": 1,
+        "logSHA256": "7e57177fa548e64a28687148cd3bae1b7a879922f15239157f0133b308e708ba",
+        "leakedOwnedDirectories": 0,
+        "command": [
+          "node",
+          "--test",
+          "--test-concurrency=1",
+          "--test-reporter=tap",
+          "workers/planner_agent_connector/test/usage-limit.test.mjs",
+          "workers/planner_agent_connector/test/usage-limit-source.test.mjs",
+          "workers/planner_agent_connector/test/codex-session.test.mjs"
+        ],
+        "cwd": "/home/nathaniel/.local/state/openplan/a0-corrections-and-install-check-independent-20261016/A",
+        "OPENPLAN_USAGE_TEST_TMP": "unset",
+        "TMPDIR": "/home/nathaniel/.local/state/openplan/a0-corrections-and-install-check-independent-20261016",
+        "intendedAssertion": "Observed copy changed session state",
+        "restoredSHA256": "94e4336553940d2fc33778082d2bf6036b94c6acf5ecf155a1bd3769192ee57f"
+      },
+      {
+        "label": "finish-explicit-temp",
+        "exitCode": 1,
+        "logSHA256": "ffc3dd29a7485a402ad52ea561ca47ad374db3561fa025a20da34c20912a832e",
+        "leakedOwnedDirectories": 0,
+        "command": [
+          "node",
+          "--test",
+          "--test-concurrency=1",
+          "--test-reporter=tap",
+          "workers/planner_agent_connector/test/usage-limit.test.mjs",
+          "workers/planner_agent_connector/test/usage-limit-source.test.mjs",
+          "workers/planner_agent_connector/test/codex-session.test.mjs"
+        ],
+        "cwd": "/home/nathaniel/.local/state/openplan/a0-corrections-and-install-check-independent-20261016/A",
+        "OPENPLAN_USAGE_TEST_TMP": "unset",
+        "TMPDIR": "/home/nathaniel/.local/state/openplan/a0-corrections-and-install-check-independent-20261016",
+        "intendedAssertion": "Finish must preserve explicit pg_temp last",
+        "restoredSHA256": "655e625878b3e62f332a7f17d6e126879813cc2bf881ca745593978d8eed6559"
+      },
+      {
+        "label": "validator-explicit-temp",
+        "exitCode": 1,
+        "logSHA256": "2216ed5e698a9310baaa58d9274ee48fc2d33632b1664f82c41da3ac95f8cfe4",
+        "leakedOwnedDirectories": 0,
+        "command": [
+          "node",
+          "--test",
+          "--test-concurrency=1",
+          "--test-reporter=tap",
+          "workers/planner_agent_connector/test/usage-limit.test.mjs",
+          "workers/planner_agent_connector/test/usage-limit-source.test.mjs",
+          "workers/planner_agent_connector/test/codex-session.test.mjs"
+        ],
+        "cwd": "/home/nathaniel/.local/state/openplan/a0-corrections-and-install-check-independent-20261016/A",
+        "OPENPLAN_USAGE_TEST_TMP": "unset",
+        "TMPDIR": "/home/nathaniel/.local/state/openplan/a0-corrections-and-install-check-independent-20261016",
+        "intendedAssertion": "Validator must keep explicit pg_temp last",
+        "restoredSHA256": "655e625878b3e62f332a7f17d6e126879813cc2bf881ca745593978d8eed6559"
+      },
+      {
+        "label": "restored",
+        "exitCode": 0,
+        "logSHA256": "9b4ebe800e007dee1fe26da8658dbe20fbf99a2764fc8b7db5fd2e9432008358",
+        "leakedOwnedDirectories": 0,
+        "command": [
+          "node",
+          "--test",
+          "--test-concurrency=1",
+          "--test-reporter=tap",
+          "workers/planner_agent_connector/test/usage-limit.test.mjs",
+          "workers/planner_agent_connector/test/usage-limit-source.test.mjs",
+          "workers/planner_agent_connector/test/codex-session.test.mjs"
+        ],
+        "cwd": "/home/nathaniel/.local/state/openplan/a0-corrections-and-install-check-independent-20261016/A",
+        "OPENPLAN_USAGE_TEST_TMP": "unset",
+        "TMPDIR": "/home/nathaniel/.local/state/openplan/a0-corrections-and-install-check-independent-20261016"
+      },
+      {
+        "label": "restored-override",
+        "exitCode": 0,
+        "logSHA256": "056ae895cd284cd305b584192e337606f06ee726500206442ee24fd5273f9e2f",
+        "leakedOwnedDirectories": 0,
+        "command": [
+          "node",
+          "--test",
+          "--test-concurrency=1",
+          "--test-reporter=tap",
+          "workers/planner_agent_connector/test/usage-limit.test.mjs",
+          "workers/planner_agent_connector/test/usage-limit-source.test.mjs",
+          "workers/planner_agent_connector/test/codex-session.test.mjs"
+        ],
+        "cwd": "/home/nathaniel/.local/state/openplan/a0-corrections-and-install-check-independent-20261016/A",
+        "OPENPLAN_USAGE_TEST_TMP": "/home/nathaniel/.local/state/openplan/a0-corrections-and-install-check-independent-20261016",
+        "TMPDIR": "/home/nathaniel/.local/state/openplan/a0-corrections-and-install-check-independent-20261016"
+      }
+    ],
+    "counts": {
+      "trials": 13,
+      "baselinePass18": 1,
+      "harmlessPass18": 2,
+      "intendedTestProcessFailures": 7,
+      "cleanupRejectionsWithNodeExitZero": 1,
+      "restoredPass18": 2
+    },
+    "cleanup": "One deliberate owned leak detected and removed; not a Node assertion kill.",
+    "sourceAndTestBytesRestored": true
+  },
+  "B": {
+    "driverAdaptation": {
+      "subject": "B",
+      "replacement": {
+        "before": "PRIVATE = Path('/home/nathaniel/.local/state/openplan/a0-installer-cli-integration-20261016/controls-01')",
+        "after": "PRIVATE = Path('/home/nathaniel/.local/state/openplan/a0-corrections-and-install-check-independent-20261016/B-controls')"
+      },
+      "onlyChange": "private output path; REPO resolves to owned exact-object copy"
+    },
+    "driverOriginalSHA256": "b9d64c322c9a6dc1ca1e743699cd51c89715725bdc46eb467ff11f4c4af2125e",
+    "driverAdaptedSHA256": "e375e208e3242c63cab88257ca395b036a266ca5a4bf949fc5c2d284ad2d4d17",
+    "replay": {
+      "complete": true,
+      "trials": [
+        {
+          "label": "baseline",
+          "exitCode": 0,
+          "logSHA256": "4ceffb5da998197810eb3d16c48cea0fab5fcda2b25f48ea53dfee74dcb0e537",
+          "allThreePass": true,
+          "intendedAssertion": false
+        },
+        {
+          "label": "harmless-comment",
+          "exitCode": 0,
+          "logSHA256": "9a583e060a2bd109e562e219b745fae2fb8afed477dd8f1f0439f660fa6a2bcf",
+          "allThreePass": true,
+          "intendedAssertion": false
+        },
+        {
+          "label": "command-enrollment",
+          "exitCode": 1,
+          "logSHA256": "007740e844d061d8993145aa4ff33c1f2ab41935a5d8420991830176e7b3b3d9",
+          "allThreePass": false,
+          "intendedAssertion": true
+        },
+        {
+          "label": "installer-is-literal",
+          "exitCode": 1,
+          "logSHA256": "d4ff0a9f63d1b7a0f00d0cc8b08a4cd8953f0bddb4e522c4bddcfa5199e4ef71",
+          "allThreePass": false,
+          "intendedAssertion": true
+        },
+        {
+          "label": "saved-provider",
+          "exitCode": 1,
+          "logSHA256": "8050833e4c6d95ca5be7440992f05190399d1ff6a58ffe000181d1e9267b8982",
+          "allThreePass": false,
+          "intendedAssertion": true
+        },
+        {
+          "label": "connection-disclosure",
+          "exitCode": 1,
+          "logSHA256": "5e4bcb43d2c5c8c985131a7305c35bcbb5d8d9ad28acf15a989028a407668779",
+          "allThreePass": false,
+          "intendedAssertion": true
+        },
+        {
+          "label": "infer-installer",
+          "exitCode": 1,
+          "logSHA256": "32b972bcc6948e8553100f251bb41254c8ddddac89cae7b25389bda7f4a647e7",
+          "allThreePass": false,
+          "intendedAssertion": true
+        },
+        {
+          "label": "paired-declaration",
+          "exitCode": 1,
+          "logSHA256": "a5cfff2d2fde84e68b308a064326e3452e1f3c0d1c797c1b8fe01f7b42ee7581",
+          "allThreePass": false,
+          "intendedAssertion": true
+        },
+        {
+          "label": "unsupported-declaration",
+          "exitCode": 1,
+          "logSHA256": "f4e94d9c20896ba334d2d0dd6c3ce98a680a1ae11534327978f121b3e38ebd89",
+          "allThreePass": false,
+          "intendedAssertion": true
+        },
+        {
+          "label": "unknown-write-flag",
+          "exitCode": 1,
+          "logSHA256": "ecfe43da3e292b3557a71a8efb6984b78f8e55265aabfd069b26a650072096f3",
+          "allThreePass": false,
+          "intendedAssertion": true
+        },
+        {
+          "label": "duplicate-declaration",
+          "exitCode": 1,
+          "logSHA256": "cc447b6693e9e2375da67d5feb1fa5614e33243c374c44c6b437056cd607142a",
+          "allThreePass": false,
+          "intendedAssertion": true
+        },
+        {
+          "label": "unexpected-directory",
+          "exitCode": 1,
+          "logSHA256": "c805d4995b2fa3fe9834cfdb5192cd9d565db8e7b098fd11d22bc4c69c9ef0f7",
+          "allThreePass": false,
+          "intendedAssertion": true
+        },
+        {
+          "label": "help-disclosure",
+          "exitCode": 1,
+          "logSHA256": "7d037ea7a312aa8c57af479924435a93e2604975d9e02a3c077d2d6660d66fa9",
+          "allThreePass": false,
+          "intendedAssertion": true
+        },
+        {
+          "label": "restored",
+          "exitCode": 0,
+          "logSHA256": "dda8045913da6f8d5287465877e7e64ac144d14932672607f91c77ce2d8a8f8e",
+          "allThreePass": true,
+          "intendedAssertion": false
+        }
+      ],
+      "restored": true,
+      "sourceSHA256": "12917da60441f0a8fe25c613e6da536cb9f78acc93cc156b750451d339f4e8c9",
+      "testSHA256": "a2847e2753c7369c471aa01726b626669618eafd38fa8ea7e61c24dea6399bbd",
+      "blindCategories": [
+        "native binary compatibility and provider/account operation",
+        "authenticating an operator installer declaration",
+        "executing an update",
+        "browser UI",
+        "concurrent hostile filesystem changes",
+        "kernel-level observation of every file read or network syscall"
+      ]
+    },
+    "focused": {
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=tap",
+        "workers/planner_agent_connector/test/connector-installer-guidance.test.mjs",
+        "workers/planner_agent_connector/test/installer-guidance.test.mjs"
+      ],
+      "pass": 11,
+      "fail": 0,
+      "skip": 0,
+      "exitCode": 0,
+      "logSHA256": "3fb5f0657d8149fbc0d61e5ed408ff4cd022a812d3bc6897b717e6c14ab21413"
+    },
+    "existingFourCLICasesRerun": false
+  },
+  "blindCategories": [
+    "source regex cannot establish PostgreSQL semantics, installed proconfig/ACL/RLS, locks or native route/database behavior",
+    "synthetic frames cannot authenticate provider, causal bucket, account entitlement or CLI compatibility",
+    "shape and scope do not seal a journal against its local owner",
+    "synthetic inventories do not establish kernel-level every-read/every-network-syscall or transient/external filesystem effects",
+    "no browser navigation, desktop/390px, accessibility or practicing-planner acceptance"
+  ]
+}

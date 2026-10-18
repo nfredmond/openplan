@@ -5,6 +5,8 @@ import { randomUUID } from "node:crypto";
 import { once } from "node:events";
 import { connectorRequest, checkedConnectorJob, ConnectorError, readPrivateJson } from "./connector-client.mjs";
 import { connectorProviderAdapter } from "./native-provider.mjs";
+import { NativeProviderError } from "./codex-session.mjs";
+import { usageLimitReceipt, validUsageLimitDelivery } from "./usage-limit-receipt.mjs";
 
 export async function privateConnectorDirectory(path) {
   if (!isAbsolute(path)) throw new ConnectorError("connector_path_invalid");
@@ -116,13 +118,16 @@ export async function connectorCycle(config, directory, options = {}) {
         receipt: { schemaVersion: 1, provider: adapter.provider, model: generated.model, authMode: generated.authMode,
           planType: generated.planType, threadId: generated.threadId, turnId: generated.turnId } };
     } catch (error) {
-      delivery = { operation: "finish", turnId: job.id, attemptId: job.attemptId, answer: null, receipt: null,
+      const receipt = !runningSignal.aborted && error instanceof NativeProviderError && error.code === "native_usage_limit"
+        ? usageLimitReceipt(job, config.setup, error.usageLimit) : null;
+      delivery = { operation: "finish", turnId: job.id, attemptId: job.attemptId, answer: null, receipt,
         failureCode: runningSignal.aborted ? "native_connector_interrupted" : failureCode(error) };
     } finally { stopWatching = true; if (timer) clearTimeout(timer); }
     pending = { ...pending, phase: "completed", delivery };
     await writeConnectorJournal(directory, pending);
   }
   if (pending.delivery?.turnId !== pending.job.id || pending.delivery?.attemptId !== pending.job.attemptId || pending.delivery?.operation !== "finish") throw new ConnectorError("connector_journal_mismatch");
+  if (pending.delivery?.receipt?.schemaVersion === 2 && !validUsageLimitDelivery(pending.delivery, pending.job, config.setup)) throw new ConnectorError("connector_journal_mismatch");
   report("delivering");
   let saved;
   try { saved = await request(config.setup, pending.delivery, { signal }); }

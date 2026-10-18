@@ -1,0 +1,8 @@
+{
+  "originalSHA256": "26477776394737be6d8857a73a1fc685ee342ba8f207d14037b11c9093d9bbf9",
+  "adaptedSHA256": "719f1d7aa0d8bc67351f4bbb4cf4b632a3c3aefd1ea6336d6733b83d3025c468",
+  "onlyChange": {
+    "before": "PRIVATE = Path('/home/nathaniel/.local/state/openplan/a0-installer-guidance-20261016/controls-02')",
+    "after": "PRIVATE = Path('/home/nathaniel/.local/state/openplan/a0-installer-guidance-independent-20261016/controls')"
+  }
+}

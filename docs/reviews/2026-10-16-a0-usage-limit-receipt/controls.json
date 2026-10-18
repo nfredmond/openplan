@@ -1,0 +1,155 @@
+[
+  {
+    "label": "survivor-node",
+    "expected": "survived",
+    "exitCode": 0,
+    "expectedAssertion": "",
+    "observedAsExpected": true,
+    "source": "workers/planner_agent_connector/codex-usage-limit.mjs",
+    "restoredSHA256": "431041d3f382a14893e50a3d5636e1e97e3ce9003ef179d9b4e1cfd926470866"
+  },
+  {
+    "label": "survivor-app",
+    "expected": "survived",
+    "exitCode": 0,
+    "expectedAssertion": "",
+    "observedAsExpected": true,
+    "source": "openplan/src/lib/assistant/provider-usage-limit.ts",
+    "restoredSHA256": "c1d88308dbfeaf216c396e5529e1a99740884739114d746a37f04564695dda14"
+  },
+  {
+    "label": "final-event-freeze",
+    "expected": "failed",
+    "exitCode": 1,
+    "expectedAssertion": "Final-event reset changed or invented",
+    "observedAsExpected": true,
+    "source": "workers/planner_agent_connector/codex-session.mjs",
+    "restoredSHA256": "07d6a9fc0aa86f5dee531aa3857e33a9039588c6fae8827808dbab53c7ececf8"
+  },
+  {
+    "label": "sparse-merge",
+    "expected": "failed",
+    "exitCode": 1,
+    "expectedAssertion": "Final-event reset changed or invented",
+    "observedAsExpected": true,
+    "source": "workers/planner_agent_connector/codex-usage-limit.mjs",
+    "restoredSHA256": "431041d3f382a14893e50a3d5636e1e97e3ce9003ef179d9b4e1cfd926470866"
+  },
+  {
+    "label": "reset-bounds",
+    "expected": "failed",
+    "exitCode": 1,
+    "expectedAssertion": "Invalid reset -1",
+    "observedAsExpected": true,
+    "source": "workers/planner_agent_connector/codex-usage-limit.mjs",
+    "restoredSHA256": "431041d3f382a14893e50a3d5636e1e97e3ce9003ef179d9b4e1cfd926470866"
+  },
+  {
+    "label": "structured-classification",
+    "expected": "failed",
+    "exitCode": 1,
+    "expectedAssertion": "native_usage_limit",
+    "observedAsExpected": true,
+    "source": "workers/planner_agent_connector/codex-provider.mjs",
+    "restoredSHA256": "48d21d52a71400e15a7c9f494d45051817135840bbd1719b3b6d2616a1105140"
+  },
+  {
+    "label": "journal-retention",
+    "expected": "failed",
+    "exitCode": 1,
+    "expectedAssertion": "schemaVersion",
+    "observedAsExpected": true,
+    "source": "workers/planner_agent_connector/connector-worker.mjs",
+    "restoredSHA256": "38f5a3d6d3f72d693ead71a5e34d49831423cc8fe3a215d2981b19f4d5fd4ed9"
+  },
+  {
+    "label": "journal-custody",
+    "expected": "failed",
+    "exitCode": 1,
+    "expectedAssertion": "Changed scoped journal was delivered",
+    "observedAsExpected": true,
+    "source": "workers/planner_agent_connector/connector-worker.mjs",
+    "restoredSHA256": "38f5a3d6d3f72d693ead71a5e34d49831423cc8fe3a215d2981b19f4d5fd4ed9"
+  },
+  {
+    "label": "attempt-initial-read",
+    "expected": "failed",
+    "exitCode": 1,
+    "expectedAssertion": "real Codex adapter reads",
+    "observedAsExpected": true,
+    "source": "workers/planner_agent_connector/codex-provider.mjs",
+    "restoredSHA256": "48d21d52a71400e15a7c9f494d45051817135840bbd1719b3b6d2616a1105140"
+  },
+  {
+    "label": "route-custody",
+    "expected": "failed",
+    "exitCode": 1,
+    "expectedAssertion": "native delivery rejects every changed custody field",
+    "observedAsExpected": true,
+    "source": "openplan/src/app/api/assistant/providers/native/route.ts",
+    "restoredSHA256": "4a1d9930b8dad2e323177b149115ac7fef8015aed036b12437d9cb73ee5975b5"
+  },
+  {
+    "label": "failure-receipt-refusal",
+    "expected": "failed",
+    "exitCode": 1,
+    "expectedAssertion": "native delivery refuses arbitrary failure receipts",
+    "observedAsExpected": true,
+    "source": "openplan/src/app/api/assistant/providers/native/route.ts",
+    "restoredSHA256": "4a1d9930b8dad2e323177b149115ac7fef8015aed036b12437d9cb73ee5975b5"
+  },
+  {
+    "label": "reader-custody",
+    "expected": "failed",
+    "exitCode": 1,
+    "expectedAssertion": "typed retained reader accepts exact reports",
+    "observedAsExpected": true,
+    "source": "openplan/src/lib/assistant/provider-server.ts",
+    "restoredSHA256": "e2d4fc56add4837ccc3fcb294582f37f6b0a591d34f8f6eda1259b0c12f67bd7"
+  },
+  {
+    "label": "app-reset-bounds",
+    "expected": "failed",
+    "exitCode": 1,
+    "expectedAssertion": "native delivery refuses arbitrary failure receipts",
+    "observedAsExpected": true,
+    "source": "openplan/src/lib/assistant/provider-usage-limit.ts",
+    "restoredSHA256": "c1d88308dbfeaf216c396e5529e1a99740884739114d746a37f04564695dda14"
+  },
+  {
+    "label": "limited-state",
+    "expected": "failed",
+    "exitCode": 1,
+    "expectedAssertion": "panel discloses reported reset",
+    "observedAsExpected": true,
+    "source": "openplan/src/components/assistant/project-provider-panel.tsx",
+    "restoredSHA256": "6084457baeac20756ee076d8d5faffdb2568aad6b83af11eb7fa1245b58512c5"
+  },
+  {
+    "label": "unknown-reset",
+    "expected": "failed",
+    "exitCode": 1,
+    "expectedAssertion": "panel keeps unreported reset distinct",
+    "observedAsExpected": true,
+    "source": "openplan/src/components/assistant/project-provider-panel.tsx",
+    "restoredSHA256": "6084457baeac20756ee076d8d5faffdb2568aad6b83af11eb7fa1245b58512c5"
+  },
+  {
+    "label": "unknown-tokens-cost",
+    "expected": "failed",
+    "exitCode": 1,
+    "expectedAssertion": "panel discloses reported reset",
+    "observedAsExpected": true,
+    "source": "openplan/src/components/assistant/project-provider-panel.tsx",
+    "restoredSHA256": "6084457baeac20756ee076d8d5faffdb2568aad6b83af11eb7fa1245b58512c5"
+  },
+  {
+    "label": "cancellation-code",
+    "expected": "failed",
+    "exitCode": 1,
+    "expectedAssertion": "native_connector_interrupted",
+    "observedAsExpected": true,
+    "source": "workers/planner_agent_connector/connector-worker.mjs",
+    "restoredSHA256": "38f5a3d6d3f72d693ead71a5e34d49831423cc8fe3a215d2981b19f4d5fd4ed9"
+  }
+]

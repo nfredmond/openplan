@@ -566,3 +566,19 @@ changes and no behavior is claimed implemented.
 | CORE-GEO-01, CORE-US-PROCEDURES-01 | T11, T7 | Visible rule provenance; source-currency watches under G1a. |
 | CORE-HOST-01, CORE-SERVICES-01 | T8, T10, T13, T15 | License notices, redacted triage, upgrade preflight and usage records. Separate-host restore stays open. |
 | CORE-PLATFORM-01 | T12 | Effective-permission visibility under M4. |
+
+## October 16, 2026: reviewed A0 source candidates
+
+CORE-AGENT-01 remains mapped to A0b and T1, T14 and T15. The
+[independent source review](../reviews/2026-10-16-a0-corrections-and-install-check-independent/REVIEW.md)
+accepts structured Codex limits with scoped retained receipts and the configured
+installation inspector. Generic failures retain unknown resets because the
+current protocol has no causal bucket binding. The existing reported-reset
+contract branch does not establish provider authenticity. Tokens, cost and
+recovery remain unknown when unreported.
+
+These source candidates do not close T1 or T15. SQL18, native/RLS behavior,
+consented provider recordings and identified-build desktop/390px journeys
+remain open. Claude/OpenCode structured limits and broader provider tasks remain
+open. No requirement grade or nationwide, territory, tribal or independent
+installation requirement changes.

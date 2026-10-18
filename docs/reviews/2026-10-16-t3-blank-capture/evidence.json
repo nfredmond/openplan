@@ -1,0 +1,16 @@
+{
+  "privateRoot": "/home/nathaniel/.local/state/openplan/t3-raster-diagnostic-20261016-01",
+  "files": {
+    "observations.json": {
+      "bytes": 2590,
+      "mode": "0o600",
+      "sha256": "8411b23d88cbddd28fd778652e79f96695abc57ec8c9851a3fc6d7d307cb4e06"
+    },
+    "terminal-observation.json": {
+      "bytes": 789,
+      "mode": "0o600",
+      "sha256": "d89edeece9b3be5ee0a0b0f7f2f517b1ad2c620f82c147ad1d3ae019ddc1aa93"
+    }
+  },
+  "scope": "Owned blank diagnostic only; no screenshot or OpenPlan journey acceptance; close outcome not established."
+}

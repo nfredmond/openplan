@@ -1,0 +1,114 @@
+{
+  "complete": true,
+  "trials": [
+    {
+      "label": "baseline",
+      "exitCode": 0,
+      "logSHA256": "0ee3cd118ad19b53018ba9112290d5c4d88459ca0879b1a7e761f92ac2b4c4a1",
+      "allThreePass": true,
+      "intendedAssertion": false
+    },
+    {
+      "label": "harmless-comment",
+      "exitCode": 0,
+      "logSHA256": "d3b178a01bb12988e4656d4f46fb873580f68e6338590acebed86949cc6e2f42",
+      "allThreePass": true,
+      "intendedAssertion": false
+    },
+    {
+      "label": "command-enrollment",
+      "exitCode": 1,
+      "logSHA256": "f4fbe5a3e3e975c1eb6fb3948fe646242dcb66fb360dffe0ef77d095bff6b99a",
+      "allThreePass": false,
+      "intendedAssertion": true
+    },
+    {
+      "label": "installer-is-literal",
+      "exitCode": 1,
+      "logSHA256": "1aa27450b27c568c0248a2472afe18d30d2e6df3b7dad5cf542bad89693f0662",
+      "allThreePass": false,
+      "intendedAssertion": true
+    },
+    {
+      "label": "saved-provider",
+      "exitCode": 1,
+      "logSHA256": "177dd8f9bf669bc79ec7a1674aefa84ec3c79c2097c8362aa3a9dfef3a977ff2",
+      "allThreePass": false,
+      "intendedAssertion": true
+    },
+    {
+      "label": "connection-disclosure",
+      "exitCode": 1,
+      "logSHA256": "d1c5ee68998e7fcdd7d5ccd905833ab31bd6122daa04b0301cf9c988e3e79904",
+      "allThreePass": false,
+      "intendedAssertion": true
+    },
+    {
+      "label": "infer-installer",
+      "exitCode": 1,
+      "logSHA256": "925d57f2e3427829042065dbd3553d7b1c5255aedd90c90e250973bc3a95f33f",
+      "allThreePass": false,
+      "intendedAssertion": true
+    },
+    {
+      "label": "paired-declaration",
+      "exitCode": 1,
+      "logSHA256": "d5a83ca6101a2a8e0c2fb3dfba40764c9a65be25d192a4e26ccd5a5276d69084",
+      "allThreePass": false,
+      "intendedAssertion": true
+    },
+    {
+      "label": "unsupported-declaration",
+      "exitCode": 1,
+      "logSHA256": "c5ee93933e11f4684bf8e101cd1814a23ad8109c50a718c7ff34086c1f416421",
+      "allThreePass": false,
+      "intendedAssertion": true
+    },
+    {
+      "label": "unknown-write-flag",
+      "exitCode": 1,
+      "logSHA256": "82662b3131f0c259eb8018b0bf095f458fa28cb07be061dda6f1540c2b633633",
+      "allThreePass": false,
+      "intendedAssertion": true
+    },
+    {
+      "label": "duplicate-declaration",
+      "exitCode": 1,
+      "logSHA256": "a772d1e9adc5a798f999b3248d60a4a8f6c4139a5d28d6306e4c4a970c243004",
+      "allThreePass": false,
+      "intendedAssertion": true
+    },
+    {
+      "label": "unexpected-directory",
+      "exitCode": 1,
+      "logSHA256": "e904ae424bf5cddc201dcbe32a9a2ae9a5475bf8a60be912c0062d9b9ee82d88",
+      "allThreePass": false,
+      "intendedAssertion": true
+    },
+    {
+      "label": "help-disclosure",
+      "exitCode": 1,
+      "logSHA256": "a7ee97f58659b16bea7bd1eb8e7d6cc614ddc897512921141af4f3353d491775",
+      "allThreePass": false,
+      "intendedAssertion": true
+    },
+    {
+      "label": "restored",
+      "exitCode": 0,
+      "logSHA256": "42e47e2b579c5da496d27aa474d51f25e95411451b4820ed74d54d4b824f9a97",
+      "allThreePass": true,
+      "intendedAssertion": false
+    }
+  ],
+  "restored": true,
+  "sourceSHA256": "12917da60441f0a8fe25c613e6da536cb9f78acc93cc156b750451d339f4e8c9",
+  "testSHA256": "a2847e2753c7369c471aa01726b626669618eafd38fa8ea7e61c24dea6399bbd",
+  "blindCategories": [
+    "native binary compatibility and provider/account operation",
+    "authenticating an operator installer declaration",
+    "executing an update",
+    "browser UI",
+    "concurrent hostile filesystem changes",
+    "kernel-level observation of every file read or network syscall"
+  ]
+}

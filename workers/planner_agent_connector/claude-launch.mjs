@@ -2,8 +2,9 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { realpath, readdir, lstat, mkdir, writeFile } from "node:fs/promises";
 import { join, isAbsolute, parse } from "node:path";
+import { assertTestedCliVersion, testedCliRecord } from "./tested-cli-versions.mjs";
 
-export const CLAUDE_PROTOCOL_VERSION = "2.1.263";
+export const CLAUDE_PROTOCOL_VERSION = testedCliRecord("claude").version;
 
 // Native Claude owns credential reads and atomic refresh. Other profile entries
 // are masked inside the child; the user's settings, skills and history stay put.
@@ -28,7 +29,7 @@ export async function claudeLaunch({ binaryPath, providerHome, scratchPath, mode
   const version = await promisify(execFile)(binary, ["--version"], {
     timeout: 5000, maxBuffer: 8192, env: { PATH: "/usr/bin:/bin" },
   }).catch(() => { throw new Error("native_version_unavailable"); });
-  if (version.stdout.trim() !== `${CLAUDE_PROTOCOL_VERSION} (Claude Code)`) throw new Error("native_version_unsupported");
+  assertTestedCliVersion("claude", version.stdout);
   const profile = await realpath(providerHome), scratch = await realpath(scratchPath);
   if (profile === parse(profile).root || scratch === parse(scratch).root || scratch === profile || scratch.startsWith(`${profile}/`) || profile.startsWith(`${scratch}/`)) {
     throw new Error("native_path_invalid");

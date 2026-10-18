@@ -8,10 +8,12 @@ import { checkedConnectorSetup, ConnectorError, readConnectorConfig } from "./co
 import { acquireConnectorLock, connectorCycle, privateConnectorDirectory } from "./connector-worker.mjs";
 import { connectorProviderAdapter } from "./native-provider.mjs";
 import { defaultMapRunsRoot, mapPackageCycle, mapRunCheck } from "./map-package-run.mjs";
+import { installerGuidance } from "./installer-guidance.mjs";
 
 const usage = `OpenPlan project connector (Linux, Codex 0.154.0, Claude Code 2.1.263 or OpenCode 1.18.30)
 configure --config /private/directory/connection.json --setup /download/connection.json --binary /installed/bin/provider --profile /native/profile
 models --config /private/directory/connection.json
+install-check --config /private/directory/connection.json [--installer npm --npm-root /absolute/global/node_modules]
 run --config /private/directory/connection.json [--once]
 maps-check --config /private/directory/connection.json
 maps --config /private/directory/connection.json [--once] [--runs /folder/for/map/packages]
@@ -19,6 +21,9 @@ maps --config /private/directory/connection.json [--once] [--runs /folder/for/ma
 maps builds map packages with Claude Code and Claude Fable 5.1 on this computer,
 one at a time, in a folder per package (default ~/OpenPlan Map Packages). A run
 can take hours. maps-check confirms this computer is ready without calling a model.
+install-check reads installation metadata without running the provider or an
+update. Declare npm only when it owns this installation; otherwise the installer
+stays unknown. Any returned command is for you to review and run yourself.
 
 Download a project connection from Planner Agent first. Native sign-in remains in
 the selected native application. API keys and browser sessions are not accepted by this connector. The
@@ -31,6 +36,7 @@ export async function connectorMain(argv) {
   const [command, ...args] = argv;
   if (!command || command === "--help") { process.stdout.write(usage); return; }
   const allowed = command === "configure" ? ["config", "setup", "binary", "profile"] : command === "run" ? ["config", "once"]
+    : command === "install-check" ? ["config", "installer", "npm-root"]
     : command === "models" || command === "maps-check" ? ["config"] : command === "maps" ? ["config", "once", "runs"] : [];
   if (!allowed.length) throw new ConnectorError("connector_command_invalid");
   const flags = {};
@@ -41,10 +47,12 @@ export async function connectorMain(argv) {
     else {
       const value = args[++index];
       if (!value || value.startsWith("--")) throw new ConnectorError("connector_arguments_invalid");
-      flags[key] = resolve(value);
+      flags[key] = key === "installer" ? value : resolve(value);
     }
   }
   if (!flags.config) throw new ConnectorError("connector_config_required");
+  if (command === "install-check" && (Boolean(flags.installer) !== Boolean(flags["npm-root"]) ||
+      flags.installer && flags.installer !== "npm")) throw new ConnectorError("connector_arguments_invalid");
   if (command === "configure") {
     if (!flags.setup || !flags.binary || !flags.profile) throw new ConnectorError("connector_arguments_invalid");
     const input = await lstat(flags.setup);
@@ -61,6 +69,12 @@ export async function connectorMain(argv) {
     return;
   }
   const config = await readConnectorConfig(flags.config);
+  if (command === "install-check") {
+    const guidance = await installerGuidance({ provider: config.setup.provider ?? "codex", binaryPath: config.binaryPath,
+      installer: flags.installer ?? null, npmGlobalRoot: flags["npm-root"] ?? null });
+    process.stdout.write(`${JSON.stringify(guidance, null, 2)}\n`);
+    return;
+  }
   const directory = join(dirname(flags.config), `connector-${config.setup.connectionId}`);
   if (command === "maps-check") {
     const checks = await mapRunCheck(config);

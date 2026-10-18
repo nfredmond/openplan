@@ -20,6 +20,17 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Planner Agent CLI and usage-limit candidates:** the configured connector's
+`install-check` command offers inspected, version-pinned npm guidance without
+running an update. Structured Codex usage-limit failures retain a scoped receipt
+and appear as limited. A generic failure has no reported reset because the
+current protocol cannot bind its quota bucket. Tokens, cost and recovery stay
+unknown when unreported. Candidate migration
+`20261017000018_assistant_usage_limit_receipts.sql` preserves service-only
+execution and the effective temporary-schema ordering. It remains unapplied in
+this lane. Native SQL/RLS, consented provider recordings and identified-build
+browser acceptance remain open. See the [source review](docs/reviews/2026-10-16-a0-corrections-and-install-check-independent/REVIEW.md).
+
 **Portfolio import skip correction, candidate:** migration
 `20261017000017_portfolio_skip_invalid_classifications.sql` lets skipped rows
 retain invalid source status and delivery phase in immutable audit records.

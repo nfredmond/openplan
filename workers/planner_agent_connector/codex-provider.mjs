@@ -6,6 +6,12 @@ async function initialize(session) {
   session.notify("initialized");
 }
 
+export function codexTurnFailure(final, session) {
+  const limit = final.turn.status === "failed" ? session.usageLimit(final.turn.error?.codexErrorInfo, final) : null;
+  return limit ? new NativeProviderError("native_usage_limit", { ...limit,
+    nativeThreadId: final.threadId, nativeTurnId: final.turn.id }) : new NativeProviderError("native_turn_failed");
+}
+
 // Only the native runtime reads or refreshes credentials. Return the mode and
 // plan, never account identifiers, email addresses, tokens or provider key data.
 async function accountSummary(session) {
@@ -51,6 +57,10 @@ export async function runCodexProjectTurn(options) {
     const account = await accountSummary(session);
     if (account.status !== "connected") throw new NativeProviderError(`native_${account.status}`);
     if (account.authMode !== expectedAuthMode) throw new NativeProviderError("native_auth_mode_changed");
+    // This attempt's initial snapshot precedes generation. Unavailable metadata
+    // cannot authorize work, infer restored availability or cause a second turn.
+    try { await session.request("account/rateLimits/read", {}); }
+    catch (error) { if (error.code !== "native_request_failed") throw error; }
     const started = await session.request("thread/start", codexThreadParams({ model, instructions }));
     if (started?.model !== model || typeof started?.thread?.id !== "string") throw new NativeProviderError("native_model_changed");
     const threadId = started.thread.id;
@@ -59,9 +69,7 @@ export async function runCodexProjectTurn(options) {
     const turnId = startedTurn.turn.id;
     const final = await session.waitFor("turn/completed", (event) => event.threadId === threadId && event.turn?.id === turnId);
     if (final.turn.status !== "completed" || final.turn.error) {
-      const info = final.turn.error?.codexErrorInfo;
-      const code = typeof info === "string" ? info : info && typeof info === "object" ? Object.keys(info)[0] : "";
-      throw new NativeProviderError(code === "usageLimitExceeded" ? "native_usage_limit" : "native_turn_failed");
+      throw codexTurnFailure(final, session);
     }
     if (!Array.isArray(final.turn.items)) throw new NativeProviderError("native_protocol_invalid");
     const messages = final.turn.items.filter((item) => item.type === "agentMessage" && typeof item.text === "string" && item.phase !== "commentary");
