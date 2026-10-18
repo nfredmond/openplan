@@ -4,9 +4,13 @@ import copy
 import logging
 from pathlib import Path
 import sqlite3
+import sys
 from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
+
+WORKER = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(WORKER))
 
 import numpy as np
 import pandas as pd
@@ -54,6 +58,17 @@ def paths(graph):
 
 
 class RealCompressorTests(unittest.TestCase):
+    def test_native_lane_refuses_missing_or_changed_dependencies(self):
+        import importlib.metadata
+        import run_compact_graph as runner
+        versions = runner.declared_versions()
+        with self.assertRaisesRegex(RuntimeError, 'dependency differs: numpy'):
+            runner.verify_environment(lambda name: 'unknown' if name == 'numpy' else versions[name])
+        def missing(name):
+            raise importlib.metadata.PackageNotFoundError(name)
+        with self.assertRaisesRegex(RuntimeError, 'Missing native graph dependency'):
+            runner.verify_environment(missing)
+
     def test_coherent_chains_and_native_aggregation(self):
         for directions in ((0, 0), (1, 1), (0, 1)):
             with self.subTest(directions=directions):
@@ -124,16 +139,16 @@ class RealCompressorTests(unittest.TestCase):
         self.assertEqual(len(graph.omissions[0]['signed_source_directions']), 4)
         # The proof itself must refuse even if native pruning would hide the escape.
         with self.assertRaisesRegex(ValueError, 'interior centroid'):
-            adapter.prove_omission(net, 1, 4, {1, 2, 4, 5, 6})
+            adapter.prove_omission(adapter._physical(net), 1, 4, {1, 2, 4, 5, 6})
         extra = pd.concat([net, frame((2,), (8,), (1,), ids=(27,))])
         with self.assertRaisesRegex(ValueError, 'branch'):
-            adapter.prove_omission(extra, 1, 4, {1, 4, 5, 6})
+            adapter.prove_omission(adapter._physical(extra), 1, 4, {1, 4, 5, 6})
         loop = pd.concat([net, frame((2,), (2,), (0,), ids=(28,))])
         with self.assertRaisesRegex(ValueError, 'branch'):
-            adapter.prove_omission(loop, 1, 4, {1, 4, 5, 6})
+            adapter.prove_omission(adapter._physical(loop), 1, 4, {1, 4, 5, 6})
         self.assertEqual(build(loop, (5, 6, 1, 4)).omissions, [])
         with self.assertRaisesRegex(ValueError, 'endpoint traversal'):
-            adapter.prove_omission(frame(), 1, 3, {1, 3})
+            adapter.prove_omission(adapter._physical(frame()), 1, 3, {1, 3})
 
     def test_parallel_cycle_and_ambiguous_marker(self):
         net = frame((1, 2, 1, 4), (2, 3, 4, 3), (0, 0, 0, 0))
@@ -147,7 +162,7 @@ class RealCompressorTests(unittest.TestCase):
         self.assertEqual(graph.omissions, [])
         self.assertEqual(compact.verify(graph)['status'], 'matched')
         with self.assertRaisesRegex(ValueError, 'endpoints coincide'):
-            adapter.prove_omission(cycle, 1, 1, {5, 6})
+            adapter.prove_omission(adapter._physical(cycle), 1, 1, {5, 6})
 
     def test_dense_indices_reprepare_cache_and_fresh_costs(self):
         graph = build(sink_net(), (4, 5, 1, 3))
@@ -205,6 +220,44 @@ class RealCompressorTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'native crosswalk differs'):
             parallel._verify_prepared()
 
+    def test_incidence_indexes_are_immutable_and_scale_with_source_rows(self):
+        original = adapter._physical
+        observations = []
+        for chains in (8, 32):
+            a = []; b = []; directions = []; centroids = []
+            for i in range(chains):
+                start = i * 3 + 1
+                a.extend((start, start + 1)); b.extend((start + 1, start + 2))
+                directions.extend((1, -1)); centroids.extend((start, start + 2))
+            anchor = chains * 3 + 1
+            a.append(anchor); b.append(anchor + 1); directions.append(0)
+            centroids = (anchor, anchor + 1, *centroids)
+            net = frame(a, b, directions)
+            indexes = []; indexed_rows = []
+            def construct(source):
+                indexed_rows.append(len(source))
+                index = original(source); indexes.append(index)
+                return index
+            with patch.object(adapter, '_physical', side_effect=construct):
+                graph = build(net, centroids)
+                self.assertEqual(len(graph.omissions), chains)
+                self.assertEqual(len(graph.exclusion_proof['newly_proved_exclusions']), 2 * chains)
+                self.assertEqual(len(indexes), 2, 'one full and one reduced incidence index per preparation')
+                frozen = indexes[0].rows[1]
+                with self.assertRaises(TypeError): indexes[0].rows[1] = (99, 99, 99)
+                with self.assertRaises(TypeError): indexes[0].incidence[1] = (99,)
+                graph.network.loc[graph.network.link_id == 2, 'direction'] = 1
+                graph.prepare_graph(np.array(centroids)); graph.set_blocked_centroid_flows(True)
+                self.assertEqual(len(graph.omissions), chains - 1)
+                self.assertEqual(len(graph.exclusion_proof['newly_proved_exclusions']), 2 * (chains - 1))
+                self.assertEqual(len(indexes), 4, 're-preparation rebuilds exactly two fresh indexes')
+                self.assertEqual(indexes[0].rows[1], frozen)
+                self.assertEqual(indexes[0].rows[2][2], -1)
+                self.assertEqual(indexes[2].rows[2][2], 1)
+                self.assertEqual(sum(indexed_rows), 4 * len(net), 'rows indexed depend on source size, not compact rows')
+                observations.append(sum(indexed_rows))
+        self.assertLess(observations[1], observations[0] * 4)
+
     def test_unknown_directions_identity_and_callshape_refuse(self):
         for directions in ((-999, 1), (257, 1), (True, False), (1., 0.), (0.5, 0.), ('1', '0')):
             net = frame(); net['direction'] = list(directions)
@@ -258,7 +311,7 @@ class RealCompressorTests(unittest.TestCase):
         conn.close()
 
     def test_early_guard_precedes_spy_skimmer_and_later_guard_remains(self):
-        tree = ast.parse(Path(__file__).with_name('main.py').read_text())
+        tree = ast.parse((WORKER / 'main.py').read_text())
         stage = next(node for node in tree.body if isinstance(node, ast.FunctionDef) and node.name == 'stage_assignment')
         scope = next(node for node in ast.walk(stage) if isinstance(node, ast.With) and any(isinstance(x.context_expr, ast.Call) and isinstance(x.context_expr.func,ast.Name) and x.context_expr.func.id=='project_scope' for x in node.items))
         selected = []
@@ -281,12 +334,12 @@ class RealCompressorTests(unittest.TestCase):
         events.clear(); env['verify_before_skimming']=lambda *_: (_ for _ in ()).throw(ValueError('early refusal'))
         with self.assertRaisesRegex(ValueError,'early refusal'):exec(code,env)
         self.assertEqual(events,[])
-        retained=ast.parse(Path(__file__).with_name('model_assignment_input_snapshot.py').read_text())
+        retained=ast.parse((WORKER / 'model_assignment_input_snapshot.py').read_text())
         function=next(n for n in retained.body if isinstance(n,ast.FunctionDef) and n.name=='retain_and_execute')
         guard=next(n for n in ast.walk(function) if isinstance(n,ast.Call) and isinstance(n.func,ast.Name) and n.func.id=='verify_network_graph')
         execute=next(n for n in ast.walk(function) if isinstance(n,ast.Call) and isinstance(n.func,ast.Attribute) and n.func.attr=='execute')
         self.assertLess(guard.lineno,execute.lineno)
-        graph_source=Path(__file__).with_name('model_assignment_network_graph.py').read_text()
+        graph_source=(WORKER / 'model_assignment_network_graph.py').read_text()
         self.assertIn("'compact_paths':verify_compact(record['graph'])",graph_source)
 
 

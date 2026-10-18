@@ -1,0 +1,42 @@
+name: Native compact graph controls
+on:
+  push:
+    branches: [main]
+  pull_request: {}
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  compact-graph-native:
+    name: compact graph (tested cp311 Linux binary)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      NUMEXPR_NUM_THREADS: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11.15"
+      # Installation is confined to this native job. Unknown binary hashes fail
+      # in the adapter; this does not accept all wheels named AequilibraE 1.6.2.
+      - name: Install exact native control dependencies
+        run: python -m pip install --only-binary=:all: -r workers/aequilibrae_worker/native_tests/requirements.txt
+      - name: Graph preparation and aggregation only
+        shell: bash
+        run: |
+          set -euo pipefail
+          python_path="$(command -v python)"
+          cpu="$(python -c 'import os; print(min(os.sched_getaffinity(0)))')"
+          sudo systemd-run --quiet --wait --pipe --working-directory="$GITHUB_WORKSPACE" \
+            -p MemoryMax=768M -p MemorySwapMax=0 -p TasksMax=1 \
+            -p RuntimeMaxSec=60s -p CPUAffinity="$cpu" \
+            env OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+            NUMEXPR_NUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 \
+            "$python_path" -B workers/aequilibrae_worker/native_tests/run_compact_graph.py

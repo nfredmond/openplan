@@ -7,6 +7,9 @@ import hashlib
 import importlib.metadata
 import inspect
 import json
+from dataclasses import dataclass
+from types import MappingProxyType
+from typing import Mapping
 from pathlib import Path
 
 import numpy as np
@@ -17,6 +20,7 @@ from aequilibrae.paths.cython import graph_building
 from aequilibrae.project.network import network as native_network
 
 
+# Reviewed cp311 manylinux x86_64 bytes, not blanket acceptance of 1.6.2 builds.
 SOURCE_PINS = {
     'graph.py': '516494488f953c330dfa749a7c75bbb8162f87253741e4fdc1d6ed9eedb291c3',
     'graph_building.pyx': '12d9a465e2b244e0555f34c041a1a63e33192169f092005965a5110302a13f8e',
@@ -49,7 +53,14 @@ def _topology(frame, nodes=None):
                    int(r.b_node) if nodes is None else int(nodes[r.b_node])) for r in frame.itertuples())
 
 
+@dataclass(frozen=True)
+class PhysicalIndex:
+    rows: Mapping[int, tuple[int, int, int]]
+    incidence: Mapping[int, tuple[int, ...]]
+
+
 def _physical(frame):
+    """Freeze one incidence snapshot for reuse throughout native preparation."""
     rows = {}; incidence = {}
     for row in frame.itertuples():
         link, a, b, direction = map(int, (row.link_id, row.a_node, row.b_node, row.direction))
@@ -58,16 +69,17 @@ def _physical(frame):
         rows[link] = (a, b, direction)
         incidence.setdefault(a, []).append(link)
         incidence.setdefault(b, []).append(link)
-    return rows, incidence
+    return PhysicalIndex(MappingProxyType(rows), MappingProxyType(
+        {node: tuple(links) for node, links in incidence.items()}))
 
 
-def _physical_chains(frame, start, end, centroids):
+def _physical_chains(index, start, end, centroids):
     """Enumerate maximal degree-two chains using complete supplied incidence.
 
     Every interior incidence must be consumed by the chain. Full eligible source
     incidence is mandatory for omission proof, even where native dead ends burn.
     """
-    rows, incidence = _physical(frame)
+    rows, incidence = index.rows, index.incidence
     candidates = []; failures = []
     if start == end:
         raise ValueError('physical chain endpoints coincide (cycle)')
@@ -96,8 +108,8 @@ def _physical_chains(frame, start, end, centroids):
     return candidates, failures
 
 
-def physical_chain(frame, start, end, centroids):
-    candidates, failures = _physical_chains(frame, start, end, centroids)
+def physical_chain(index, start, end, centroids):
+    candidates, failures = _physical_chains(index, start, end, centroids)
     if len(candidates) != 1:
         raise ValueError('unprovable/ambiguous physical chain: ' + json.dumps(
             {'endpoints': [start, end], 'candidates': len(candidates), 'failures': failures[:20]}))
@@ -105,8 +117,8 @@ def physical_chain(frame, start, end, centroids):
     return path, interior
 
 
-def prove_omission(frame, start, end, centroids):
-    path, interior = physical_chain(frame, start, end, centroids)
+def prove_omission(index, start, end, centroids):
+    path, interior = physical_chain(index, start, end, centroids)
     forward = all(direction in (0, sign) for _, sign, direction in path)
     reverse = all(direction in (0, -sign) for _, sign, direction in path)
     if len(path) < 2 or forward or reverse:
@@ -170,9 +182,15 @@ class AssignmentGraph(Graph):
         if list(network.columns) != ['id', 'link_id', 'a_node', 'b_node', 'direction']:
             raise ValueError('Assignment graph unexpected generated columns')
         _directions(network, (-999, -1, 0, 1), 'generated')
-        source_rows, _ = _physical(self._source)
+        source_rows = MappingProxyType({int(row.link_id): (int(row.a_node), int(row.b_node), int(row.direction))
+                                        for row in self._source.itertuples()})
+        if len(source_rows) != len(self._source):
+            raise ValueError('Assignment graph duplicate physical link identity')
         eligible = self._source[self._source.modes.str.contains('c')]
         reduced = eligible[~eligible.link_id.isin(self.dead_end_links) & (eligible.a_node != eligible.b_node)]
+        full_index = _physical(eligible)
+        reduced_index = _physical(reduced)
+        centroid_set = frozenset(map(int, centroids))
         universe = {(link, direction) for link, direction, _, _ in self._original_topology}
         baseline_retained = set(); expected = {}; omitted = set(); synthetic = {}
         for row in network.itertuples():
@@ -187,7 +205,7 @@ class AssignmentGraph(Graph):
                 key = (min(start, end), max(start, end))
                 oriented = direction if start == key[0] or direction in (0, -999) else -direction
                 synthetic.setdefault(key, []).append(oriented)
-                candidates, _ = _physical_chains(reduced, start, end, set(map(int, centroids)))
+                candidates, _ = _physical_chains(reduced_index, start, end, centroid_set)
                 paths = [candidate[0] for candidate in candidates if len(candidate[0]) > 1]
                 def signature(candidate):
                     ab = all(d in (0, sign) for _, sign, d in candidate)
@@ -201,7 +219,7 @@ class AssignmentGraph(Graph):
                 paths = [path]
             if direction == -999:
                 try:
-                    proof = prove_omission(eligible, start, end, set(map(int, centroids)))
+                    proof = prove_omission(full_index, start, end, centroid_set)
                 except ValueError as exc:
                     raise ValueError(f'pre-expansion marker=-999 link={link} endpoints={[start,end]} proof failed: {exc}') from exc
                 if proof['ordered_chain'] != [[lid, sign] for lid, sign, _ in path]:
@@ -223,7 +241,7 @@ class AssignmentGraph(Graph):
                 if direction != -999:
                     expected[(link, orientation)] = alternatives
         for (start, end), signatures in synthetic.items():
-            candidates, _ = _physical_chains(reduced, start, end, set(map(int, centroids)))
+            candidates, _ = _physical_chains(reduced_index, start, end, centroid_set)
             if sorted(signature(path) for path, _ in candidates if len(path) > 1) != sorted(signatures):
                 raise ValueError(f'Assignment graph generated chain inventory differs from physical topology endpoints={[start,end]} generated={signatures} physical={[signature(path) for path,_ in candidates if len(path)>1]}')
         self._baseline_excluded = universe - baseline_retained
