@@ -46,3 +46,40 @@ Root next reviews access, migration, money and publication independently, then
 runs ordinary semantic CI, isolated native concurrency/retry/RLS checks and an
 identified desktop/390px/artifact journey. No service, native DB, browser, build,
 install, AI call, push, PR, merge, release or deployment ran in this lane.
+
+Independent review of `c31a0161a404dfdce6d57bf7196bc7cff0fcfed2` requests changes
+for P1: inherited report/artifact writes advance the aggregate project revision
+and invalidate the snapshot's P0. A correction is prepared, uncommitted and
+unexecuted. A Safety-only persistence RPC locks and checks P0, performs the three
+known writes with inherited triggers intact, then records resulting P3 in a
+separate immutable custody row. Preview/apply require that bound custody and
+current P3; a later source edit still refuses, including microsecond changes.
+Generation-to-preview composition, custody projection/filter and SQL-source
+controls are ready for the next ordinary serialized check window. No result
+above validates this correction. The original commit and outer `137` history
+remain unchanged; root owns independent second review and later native/UI checks.
+
+
+A separate ordinary correction window returned actual terminal `0` in 60.312
+seconds, with one nonblocking lock acquisition, no PTY, CPU affinity `[0]`, one
+worker and a 768 MiB Node heap. Harmless and restored batches each pass 268 tests
+in 12 files, including the full report-generation suite. Nine targeted faults
+assertion-fail with exact byte/mode restoration; scoped lint passes. Logs remain
+private under `ss4a-seed-correction-20261018/checks/`. Before commit, source
+inspection identified the custody `FOR SHARE` privilege requirement. A minimal
+`UPDATE (artifact_id)` service-role grant and source assertion are prepared;
+the immutable-row trigger still rejects actual updates. This final source delta
+has not run. It needs a short serialized check before the local correction
+commit. No native privilege or transaction acceptance follows from unit checks.
+
+The final SQL-source window returns actual terminal `0` in 8.501 seconds, with
+one nonblocking compiler-lock acquisition, no PTY, CPU `[0]`, one worker and a
+768 MiB Node heap. Harmless and restored runs each pass all six affected checks.
+Removing the column grant, removing the immutable trigger and adding a broad
+UPDATE grant each assertion-fail for the intended boundary; exact bytes and
+modes are restored before lock release. Scoped test lint passes. Private logs
+remain under `ss4a-seed-correction-20261018/checks-lock-grant/`. The correction
+retains authenticated SELECT-only access, service-role column UPDATE privilege
+for the lock and the immutable update trigger. Native service-role lock and
+update-refusal tests, transactions, RLS and UI acceptance remain unproved. The
+original outer `137` and the separate prior terminal `0` results remain intact.

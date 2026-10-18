@@ -1,3 +1,4 @@
+import { safetyPlanPersistenceSchema, sameSafetyRevision, type SafetyPlanPersistence } from "@/lib/reports/safety-plan-persistence";
 import { identifySeededCatalogKey } from "./atp-packet";
 import { GRANT_PROGRAM_CATALOG } from "./program-catalog";
 import { readSafetyPlanSnapshot, safetySeedHash, type SafetyPlanSnapshot } from "@/lib/reports/safety-plan-snapshot";
@@ -18,6 +19,7 @@ export type SeedSourceRows = {
   report: { id: string; workspace_id: string; project_id: string; updated_at: string; metadata_json: Record<string, unknown> };
   artifact: { id: string; report_id: string; generated_at: string; metadata_json: Record<string, unknown> };
   acquisition: Record<string, unknown>;
+  persistence: SafetyPlanPersistence;
   sections: SeedSection[];
   drafts: { id: string; section_id: string }[];
 };
@@ -31,9 +33,14 @@ export function validateSafetySeedSource(rows: SeedSourceRows): SafetyPlanSnapsh
   if (!o.project_id || p.id !== o.project_id || p.workspace_id !== o.workspace_id || r.workspace_id !== o.workspace_id || r.project_id !== p.id || a.report_id !== r.id || acquisition.project_id !== p.id || acquisition.status !== "ready" || sections.some((s) => s.workspace_id !== o.workspace_id || s.opportunity_id !== o.id)) throw new SafetySeedRefusal("Safety source must belong to this workspace and this application's exact project, with a ready acquisition.");
   const snapshot = readSafetyPlanSnapshot(a.metadata_json.safetyPlanSnapshotV1);
   if (!snapshot) throw new SafetySeedRefusal("This artifact has no valid versioned Safety snapshot. Regenerate the Safety report, then select the new artifact. HTML cannot be used.");
+  const parsedPersistence = safetyPlanPersistenceSchema.safeParse(rows.persistence);
+  const persistence = parsedPersistence.success ? parsedPersistence.data : null;
+  if (!persistence || persistence.artifact_id !== a.id || persistence.report_id !== r.id || persistence.project_id !== p.id || persistence.workspace_id !== o.workspace_id || persistence.snapshot_hash !== snapshot.hash || !sameSafetyRevision(persistence.source_project_updated_at, snapshot.projectUpdatedAt) || !sameSafetyRevision(persistence.source_report_updated_at, snapshot.reportUpdatedAt) || !sameSafetyRevision(persistence.persisted_project_updated_at, p.updated_at)) {
+    throw new SafetySeedRefusal("Safety generation custody is missing, mismatched or stale. Regenerate the report and preview its new artifact.");
+  }
   const receipt = a.metadata_json.generationWriteback as Record<string, unknown> | null;
   const plan = readReportSafetyActionPlan(r.metadata_json);
-  if (snapshot.artifactId !== a.id || snapshot.reportId !== r.id || snapshot.workspaceId !== o.workspace_id || snapshot.projectId !== p.id || Date.parse(snapshot.generatedAt) !== Date.parse(a.generated_at) || Date.parse(snapshot.projectUpdatedAt) !== Date.parse(p.updated_at) || !receipt || receipt.schema !== "openplan.report-generation-writeback.v1" || Date.parse(String(receipt.reportUpdatedAt)) !== Date.parse(r.updated_at) || snapshot.acquisition.id !== acquisition.id || safetySeedHash(snapshot.acquisition) !== safetySeedHash(acquisition) || !plan || safetySeedHash(plan) !== safetySeedHash(snapshot.selection) || plan.ingestId !== acquisition.id || !readReportSafetyIngestSelections(r.metadata_json).some((s) => s.ingestId === acquisition.id)) throw new SafetySeedRefusal("Safety source changed or generation did not finish. Regenerate the report and preview the new artifact.");
+  if (snapshot.artifactId !== a.id || snapshot.reportId !== r.id || snapshot.workspaceId !== o.workspace_id || snapshot.projectId !== p.id || Date.parse(snapshot.generatedAt) !== Date.parse(a.generated_at) || !receipt || receipt.schema !== "openplan.report-generation-writeback.v1" || !sameSafetyRevision(receipt.reportUpdatedAt, r.updated_at) || !sameSafetyRevision(persistence.report_updated_at, r.updated_at) || snapshot.acquisition.id !== acquisition.id || safetySeedHash(snapshot.acquisition) !== safetySeedHash(acquisition) || !plan || safetySeedHash(plan) !== safetySeedHash(snapshot.selection) || plan.ingestId !== acquisition.id || !readReportSafetyIngestSelections(r.metadata_json).some((s) => s.ingestId === acquisition.id)) throw new SafetySeedRefusal("Safety source changed or generation did not finish. Regenerate the report and preview the new artifact.");
   return snapshot;
 }
 

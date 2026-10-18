@@ -1,3 +1,5 @@
+import { buildSafetySeedPreview } from "@/lib/grants/ss4a-safety-seed";
+import { SAFETY_PLAN_PERSISTENCE_VERSION, type SafetyPlanPersistence } from "@/lib/reports/safety-plan-persistence";
 import { safetySeedFixture } from "./fixtures/grants/safety-seed";
 import { readSafetyPlanSnapshot } from "@/lib/reports/safety-plan-snapshot";
 import * as safetyPlanBuilder from "@/lib/reports/safety-action-plan";
@@ -1321,7 +1323,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
     );
   });
 
-  it("freezes the exact typed Safety builder result and source identity on a new generated artifact", async () => {
+  it("freezes the exact typed Safety builder result and composes generation's own revisions into seed preview", async () => {
     const fixture = safetySeedFixture();
     const projectId = "44444444-4444-4444-8444-444444444444";
     const reportId = "11111111-1111-4111-8111-111111111111";
@@ -1331,23 +1333,49 @@ describe("POST /api/reports/[reportId]/generate", () => {
       report_type: "project_status", status: "draft", created_at: "2026-03-14T00:00:00.000Z", generated_at: null,
       metadata_json: fixture.report.metadata_json };
     reportMaybeSingleMock.mockResolvedValueOnce({ data: report, error: null });
-    safetyIngestOrderMock.mockResolvedValueOnce({ data: [{ ...fixture.acquisition, project_id: projectId }], error: null });
+    const acquisition = { ...fixture.acquisition, project_id: projectId };
+    safetyIngestOrderMock.mockResolvedValueOnce({ data: [acquisition], error: null });
+    const effects: string[] = [];
+    const persisted: Array<{ artifact: { id: string; report_id: string; generated_at: string; metadata_json: Record<string, unknown> }; reportUpdatedAt: string; projectUpdatedAt: string; persistence: SafetyPlanPersistence }> = [];
+    const service = createServiceRoleClientMock.getMockImplementation()!();
+    const persistenceRpc = vi.fn(async (_name: string, args: { p_actor: string; p_artifact: { id: string; report_id: string; generated_at: string; metadata_json: Record<string, unknown> }; p_report_update: Record<string, unknown> }) => {
+      const snapshot = readSafetyPlanSnapshot(args.p_artifact.metadata_json.safetyPlanSnapshotV1)!;
+      // Model the inherited AFTER ROW effects. Native trigger execution remains unproved.
+      effects.push("artifact insert: P1", "report writeback: P2", "artifact receipt: P3");
+      const projectUpdatedAt = "2026-10-18T12:00:03.000003+00:00";
+      const reportUpdatedAt = "2026-10-18T12:00:02.000002+00:00";
+      const persistence: SafetyPlanPersistence = { artifact_id: snapshot.artifactId, report_id: reportId, project_id: projectId, workspace_id: workspaceId,
+        schema_version: SAFETY_PLAN_PERSISTENCE_VERSION, snapshot_hash: snapshot.hash,
+        source_project_updated_at: snapshot.projectUpdatedAt, persisted_project_updated_at: projectUpdatedAt,
+        source_report_updated_at: snapshot.reportUpdatedAt, report_updated_at: reportUpdatedAt };
+      persisted.push({ artifact: { ...args.p_artifact, metadata_json: { ...args.p_artifact.metadata_json,
+        generationWriteback: { schema: "openplan.report-generation-writeback.v1", reportUpdatedAt } } }, reportUpdatedAt, projectUpdatedAt, persistence });
+      return { data: persistence, error: null };
+    });
+    createServiceRoleClientMock.mockReturnValue({ ...service, rpc: persistenceRpc });
     const builder = vi.spyOn(safetyPlanBuilder, "buildSafetyActionPlanSection");
     try {
       const response = await postGenerate(new NextRequest("http://localhost/api/reports/1/generate", {
         method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ format: "html" }),
       }), { params: Promise.resolve({ reportId }) });
       expect(response.status).toBe(200);
-      const inserted = artifactsInsertMock.mock.calls.at(-1)![0];
-      const snapshot = readSafetyPlanSnapshot(inserted.metadata_json.safetyPlanSnapshotV1);
-      expect(snapshot).not.toBeNull();
-      expect(snapshot!.draft).toEqual(builder.mock.results.at(-1)!.value);
-      expect(snapshot!.selection).toEqual(fixture.report.metadata_json.safetyActionPlan);
-      expect(snapshot).toMatchObject({ artifactId: inserted.id, reportId, projectId, workspaceId,
-        acquisition: { id: fixture.acquisition.id, project_id: projectId } });
+      expect(persistenceRpc).toHaveBeenCalledWith("persist_safety_plan_generation", expect.objectContaining({ p_actor: "22222222-2222-4222-8222-222222222222" }));
+      const result = persisted.at(-1)!;
+      const snapshot = readSafetyPlanSnapshot(result.artifact.metadata_json.safetyPlanSnapshotV1)!;
+      expect(snapshot).not.toBeNull(); expect(snapshot.draft).toEqual(builder.mock.results.at(-1)!.value);
+      expect(snapshot.selection).toEqual(fixture.report.metadata_json.safetyActionPlan);
+      expect(effects).toEqual(["artifact insert: P1", "report writeback: P2", "artifact receipt: P3"]);
+      const rows = { ...fixture, opportunity: { ...fixture.opportunity, project_id: projectId, workspace_id: workspaceId },
+        project: { ...fixture.project, id: projectId, workspace_id: workspaceId, updated_at: result.projectUpdatedAt },
+        report: { ...fixture.report, id: reportId, project_id: projectId, workspace_id: workspaceId, updated_at: result.reportUpdatedAt },
+        artifact: result.artifact, acquisition, persistence: result.persistence,
+        sections: fixture.sections.map((section) => ({ ...section, workspace_id: workspaceId })) };
+      expect(buildSafetySeedPreview(rows).sections).toHaveLength(6);
+      rows.project.updated_at = "2026-10-18T12:00:03.000004+00:00";
+      rows.project.name = "Genuine later source edit";
+      expect(() => buildSafetySeedPreview(rows)).toThrow(/custody.*stale/);
+      expect(artifactsInsertMock).not.toHaveBeenCalled(); expect(artifactWritebackUpdateMock).not.toHaveBeenCalled();
       expect(safetyIngestSelectMock).toHaveBeenCalledWith(expect.stringContaining("published_through_provenance"));
-      expect(createServiceRoleClientMock.mock.results.at(-1)!.value.from).toHaveBeenCalledWith("report_artifacts");
-      expect(artifactWritebackUpdateMock).toHaveBeenCalledWith(expect.objectContaining({ metadata_json: expect.objectContaining({ safetyPlanSnapshotV1: snapshot }) }));
     } finally { builder.mockRestore(); }
   });
 

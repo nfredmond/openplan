@@ -47,6 +47,45 @@ describe("SS4A seed SQL source boundaries", () => {
     expect(sql).toContain("ROW(NEW.id, NEW.report_id, NEW.generated_at, NEW.generated_by, NEW.artifact_kind, NEW.storage_path)");
     expect(sql).toContain("NEW.metadata_json->'htmlContent' IS DISTINCT FROM OLD.metadata_json->'htmlContent'");
     expect(sql).toContain("NEW.metadata_json->'generationWriteback' IS DISTINCT FROM OLD.metadata_json->'generationWriteback'");
-    expect(sql).not.toContain("UPDATE public.report_artifacts");
+    const guard = sql.slice(sql.indexOf("CREATE FUNCTION public.guard_report_safety_snapshot"));
+    expect(guard).not.toContain("UPDATE public.report_artifacts");
+  });
+});
+
+
+describe("Safety generation source-to-persistence boundary", () => {
+  const persist = sql.slice(sql.indexOf("CREATE FUNCTION public.persist_safety_plan_generation"), sql.indexOf("REVOKE ALL ON FUNCTION public.persist_safety_plan_generation"));
+  const inherited = readFileSync("supabase/migrations/20260827000003_evidence_dependency_freshness.sql", "utf8");
+  it("accounts for inherited artifact/report/receipt effects without suppressing those triggers", () => {
+    expect(inherited).toContain("'reports'");
+    expect(inherited).toContain("AFTER INSERT OR UPDATE OR DELETE ON public.report_artifacts");
+    expect(inherited).toContain("OLD.updated_at + interval '1 microsecond'");
+    expect(sql).not.toMatch(/DISABLE TRIGGER|session_replication_role|CREATE OR REPLACE FUNCTION public\.(?:touch_project_evidence_revision|bump_project_revision_from|set_projects_updated_at)/);
+    expect(persist).toContain("FOR UPDATE");
+    const sourceCheck = persist.indexOf("v_project.updated_at IS DISTINCT FROM (v_snapshot->>'projectUpdatedAt')::timestamptz");
+    const insert = persist.indexOf("INSERT INTO public.report_artifacts");
+    const report = persist.indexOf("UPDATE public.reports");
+    const receipt = persist.indexOf("UPDATE public.report_artifacts");
+    const finalRevision = persist.indexOf("SELECT updated_at INTO STRICT v_project_updated_at");
+    const custody = persist.indexOf("INSERT INTO public.report_safety_snapshot_persistence");
+    expect(sourceCheck).toBeGreaterThan(0); expect(sourceCheck).toBeLessThan(insert);
+    expect(insert).toBeLessThan(report); expect(report).toBeLessThan(receipt);
+    expect(receipt).toBeLessThan(finalRevision); expect(finalRevision).toBeLessThan(custody);
+    expect(persist).toContain("v_project.updated_at, v_project_updated_at, v_report.updated_at, v_report_updated_at");
+    expect(persist).not.toMatch(/EXCEPTION WHEN|COMMIT/);
+  });
+  it("binds immutable custody to source P0, resulting P3, the snapshot hash and current apply rows", () => {
+    expect(sql).toContain("CHECK (persisted_project_updated_at > source_project_updated_at)");
+    expect(sql).toContain("REVOKE ALL ON public.report_safety_snapshot_persistence FROM PUBLIC, anon, authenticated, service_role");
+    expect(sql).toContain("GRANT SELECT, INSERT ON public.report_safety_snapshot_persistence TO service_role");
+    expect(sql).toContain("GRANT UPDATE (artifact_id) ON public.report_safety_snapshot_persistence TO service_role");
+    expect(sql).not.toContain("GRANT UPDATE ON public.report_safety_snapshot_persistence");
+    expect(sql).toContain("CREATE TRIGGER guard_safety_snapshot_persistence BEFORE UPDATE");
+    expect(sql).toContain("REVOKE ALL ON FUNCTION public.persist_safety_plan_generation(uuid, jsonb, jsonb) FROM PUBLIC, anon, authenticated");
+    expect(sql).toContain("GRANT EXECUTE ON FUNCTION public.persist_safety_plan_generation(uuid, jsonb, jsonb) TO service_role");
+    expect(persist).toContain("v_report.updated_at IS DISTINCT FROM (v_snapshot->>'reportUpdatedAt')::timestamptz");
+    expect(persist).toContain("user_id = p_actor AND role IN ('owner','admin','member') FOR SHARE");
+    expect(apply).toContain("FROM public.report_safety_snapshot_persistence c");
+    expect(apply).toContain("jsonb_each(p_rows->'persistence')");
   });
 });

@@ -38,6 +38,114 @@ REVOKE ALL ON FUNCTION public.guard_safety_seed_draft_origin() FROM PUBLIC, anon
 CREATE TRIGGER guard_safety_seed_draft_origin BEFORE INSERT OR UPDATE ON public.funding_opportunity_section_drafts
   FOR EACH ROW EXECUTE FUNCTION public.guard_safety_seed_draft_origin();
 
+-- A separate immutable custody row is written after all three known persistence
+-- effects. It has no aggregate-project touch trigger, so recording P3 cannot make
+-- P4. Existing evidence triggers remain enabled and unchanged.
+CREATE TABLE public.report_safety_snapshot_persistence (
+  artifact_id uuid PRIMARY KEY REFERENCES public.report_artifacts(id) ON DELETE CASCADE,
+  workspace_id uuid NOT NULL REFERENCES public.workspaces(id) ON DELETE CASCADE,
+  project_id uuid NOT NULL REFERENCES public.projects(id) ON DELETE CASCADE,
+  report_id uuid NOT NULL REFERENCES public.reports(id) ON DELETE CASCADE,
+  schema_version text NOT NULL DEFAULT 'openplan.safety-plan-persistence.v1'
+    CHECK (schema_version = 'openplan.safety-plan-persistence.v1'),
+  snapshot_hash text NOT NULL CHECK (snapshot_hash ~ '^[a-f0-9]{64}$'),
+  source_project_updated_at timestamptz NOT NULL,
+  persisted_project_updated_at timestamptz NOT NULL,
+  source_report_updated_at timestamptz NOT NULL,
+  report_updated_at timestamptz NOT NULL,
+  CHECK (persisted_project_updated_at > source_project_updated_at)
+);
+CREATE INDEX report_safety_snapshot_persistence_workspace_idx ON public.report_safety_snapshot_persistence(workspace_id);
+ALTER TABLE public.report_safety_snapshot_persistence ENABLE ROW LEVEL SECURITY;
+CREATE POLICY report_safety_snapshot_persistence_member_read ON public.report_safety_snapshot_persistence FOR SELECT TO authenticated
+  USING (EXISTS (SELECT 1 FROM public.workspace_members m WHERE m.workspace_id = report_safety_snapshot_persistence.workspace_id AND m.user_id = (SELECT auth.uid())));
+REVOKE ALL ON public.report_safety_snapshot_persistence FROM PUBLIC, anon, authenticated, service_role;
+GRANT SELECT ON public.report_safety_snapshot_persistence TO authenticated;
+GRANT SELECT, INSERT ON public.report_safety_snapshot_persistence TO service_role;
+-- PostgreSQL requires UPDATE privilege on at least one column for FOR SHARE.
+-- This column grant permits the lock; the immutable trigger still rejects every
+-- actual custody-row update, including a service-role update.
+GRANT UPDATE (artifact_id) ON public.report_safety_snapshot_persistence TO service_role;
+
+CREATE FUNCTION public.guard_safety_snapshot_persistence() RETURNS trigger
+LANGUAGE plpgsql SECURITY INVOKER SET search_path = '' AS $$
+BEGIN
+  RAISE EXCEPTION 'Safety generation custody is immutable; regenerate a new artifact' USING ERRCODE = '23514';
+END;
+$$;
+REVOKE ALL ON FUNCTION public.guard_safety_snapshot_persistence() FROM PUBLIC, anon, authenticated;
+CREATE TRIGGER guard_safety_snapshot_persistence BEFORE UPDATE ON public.report_safety_snapshot_persistence
+  FOR EACH ROW EXECUTE FUNCTION public.guard_safety_snapshot_persistence();
+
+-- Lock and compare P0 BEFORE any own write, then keep the lock until the custody
+-- row records P3. A genuine source edit before persistence refuses P0; a later
+-- edit advances beyond P3. No caller-supplied current revision can authorize it.
+CREATE FUNCTION public.persist_safety_plan_generation(p_actor uuid, p_artifact jsonb, p_report_update jsonb)
+RETURNS jsonb LANGUAGE plpgsql SECURITY INVOKER SET search_path = '' AS $$
+DECLARE
+  v_snapshot jsonb := p_artifact->'metadata_json'->'safetyPlanSnapshotV1';
+  v_project public.projects%ROWTYPE;
+  v_report public.reports%ROWTYPE;
+  v_receipt public.report_safety_snapshot_persistence%ROWTYPE;
+  v_report_updated_at timestamptz;
+  v_project_updated_at timestamptz;
+  v_report_id uuid := (v_snapshot->>'reportId')::uuid;
+  v_artifact_id uuid := (v_snapshot->>'artifactId')::uuid;
+BEGIN
+  IF current_user NOT IN ('service_role', 'postgres') OR p_actor IS NULL THEN
+    RAISE EXCEPTION 'Authorized generation server actor required' USING ERRCODE = '42501';
+  END IF;
+  IF v_snapshot IS NULL OR v_snapshot->>'version' IS DISTINCT FROM 'openplan.safety-plan-snapshot.v1'
+    OR v_snapshot->>'hash' IS NULL OR v_snapshot->>'hash' !~ '^[a-f0-9]{64}$'
+    OR p_artifact->>'id' IS DISTINCT FROM v_artifact_id::text
+    OR p_artifact->>'report_id' IS DISTINCT FROM v_report_id::text
+    OR p_artifact->>'generated_by' IS DISTINCT FROM p_actor::text
+    OR p_artifact->>'artifact_kind' NOT IN ('html','pdf')
+    OR (p_artifact->>'generated_at')::timestamptz IS DISTINCT FROM (v_snapshot->>'generatedAt')::timestamptz
+    OR p_artifact->'metadata_json'->'generationWriteback' IS DISTINCT FROM 'null'::jsonb
+    OR NOT (p_report_update ?& ARRAY['status','generated_at','latest_artifact_kind','latest_artifact_url','metadata_json','rtp_basis_stale','rtp_basis_stale_reason','rtp_basis_stale_run_id','rtp_basis_stale_marked_at'])
+    OR p_report_update - ARRAY['status','generated_at','latest_artifact_kind','latest_artifact_url','metadata_json','rtp_basis_stale','rtp_basis_stale_reason','rtp_basis_stale_run_id','rtp_basis_stale_marked_at'] <> '{}'::jsonb
+    OR p_report_update->>'status' IS DISTINCT FROM 'generated'
+    OR p_report_update->>'latest_artifact_kind' IS DISTINCT FROM p_artifact->>'artifact_kind'
+    OR (p_report_update->>'generated_at')::timestamptz IS DISTINCT FROM (v_snapshot->>'generatedAt')::timestamptz THEN
+    RAISE EXCEPTION 'Safety generation payload does not match the frozen snapshot' USING ERRCODE = '23514';
+  END IF;
+  SELECT * INTO STRICT v_project FROM public.projects
+    WHERE id = (v_snapshot->>'projectId')::uuid AND workspace_id = (v_snapshot->>'workspaceId')::uuid FOR UPDATE;
+  PERFORM 1 FROM public.workspace_members WHERE workspace_id = v_project.workspace_id
+    AND user_id = p_actor AND role IN ('owner','admin','member') FOR SHARE;
+  IF NOT FOUND THEN RAISE EXCEPTION 'Current generation writer required' USING ERRCODE = '42501'; END IF;
+  IF v_project.updated_at IS DISTINCT FROM (v_snapshot->>'projectUpdatedAt')::timestamptz THEN
+    RAISE EXCEPTION 'Project source changed before Safety persistence' USING ERRCODE = '40001';
+  END IF;
+  SELECT * INTO STRICT v_report FROM public.reports WHERE id = v_report_id
+    AND project_id = v_project.id AND workspace_id = v_project.workspace_id FOR UPDATE;
+  IF v_report.updated_at IS DISTINCT FROM (v_snapshot->>'reportUpdatedAt')::timestamptz THEN
+    RAISE EXCEPTION 'Report source changed before Safety persistence' USING ERRCODE = '40001';
+  END IF;
+  INSERT INTO public.report_artifacts(id, report_id, artifact_kind, storage_path, generated_by, generated_at, metadata_json)
+    VALUES (v_artifact_id, v_report_id, p_artifact->>'artifact_kind', p_artifact->>'storage_path', p_actor,
+      (p_artifact->>'generated_at')::timestamptz, p_artifact->'metadata_json');
+  UPDATE public.reports SET status = 'generated', generated_at = (p_report_update->>'generated_at')::timestamptz,
+    latest_artifact_kind = p_report_update->>'latest_artifact_kind', latest_artifact_url = p_report_update->>'latest_artifact_url',
+    metadata_json = p_report_update->'metadata_json', rtp_basis_stale = false,
+    rtp_basis_stale_reason = NULL, rtp_basis_stale_run_id = NULL, rtp_basis_stale_marked_at = NULL
+    WHERE id = v_report_id RETURNING updated_at INTO STRICT v_report_updated_at;
+  UPDATE public.report_artifacts SET metadata_json = jsonb_set(p_artifact->'metadata_json', '{generationWriteback}',
+    jsonb_build_object('schema','openplan.report-generation-writeback.v1','reportUpdatedAt',v_report_updated_at))
+    WHERE id = v_artifact_id AND report_id = v_report_id;
+  -- All inherited AFTER ROW trigger effects have completed before this read.
+  SELECT updated_at INTO STRICT v_project_updated_at FROM public.projects WHERE id = v_project.id;
+  INSERT INTO public.report_safety_snapshot_persistence(artifact_id, workspace_id, project_id, report_id, snapshot_hash,
+    source_project_updated_at, persisted_project_updated_at, source_report_updated_at, report_updated_at)
+    VALUES (v_artifact_id, v_project.workspace_id, v_project.id, v_report_id, v_snapshot->>'hash',
+      v_project.updated_at, v_project_updated_at, v_report.updated_at, v_report_updated_at) RETURNING * INTO v_receipt;
+  RETURN to_jsonb(v_receipt);
+END;
+$$;
+REVOKE ALL ON FUNCTION public.persist_safety_plan_generation(uuid, jsonb, jsonb) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.persist_safety_plan_generation(uuid, jsonb, jsonb) TO service_role;
+
 -- Service-only and SECURITY INVOKER: the route validates and code-builds the payload;
 -- this transaction rechecks current attributed membership, sources and revisions.
 CREATE FUNCTION public.apply_ss4a_safety_seed(p_actor uuid, p_rows jsonb, p_preview_hash text, p_sections jsonb)
@@ -88,6 +196,13 @@ BEGIN
     AND a.report_id = (p_rows->'report'->>'id')::uuid FOR SHARE;
   IF NOT FOUND OR EXISTS (SELECT FROM jsonb_each(p_rows->'artifact') e WHERE v_current->e.key IS DISTINCT FROM e.value) THEN
     RAISE EXCEPTION 'Artifact changed' USING ERRCODE = '40001';
+  END IF;
+  SELECT to_jsonb(c) INTO v_current FROM public.report_safety_snapshot_persistence c
+    WHERE c.artifact_id = (p_rows->'artifact'->>'id')::uuid
+      AND c.report_id = (p_rows->'report'->>'id')::uuid
+      AND c.project_id = v_opportunity.project_id AND c.workspace_id = v_opportunity.workspace_id FOR SHARE;
+  IF NOT FOUND OR EXISTS (SELECT FROM jsonb_each(p_rows->'persistence') e WHERE v_current->e.key IS DISTINCT FROM e.value) THEN
+    RAISE EXCEPTION 'Safety persistence custody changed' USING ERRCODE = '40001';
   END IF;
   SELECT to_jsonb(a) INTO v_current FROM public.safety_crash_ingests a WHERE a.id = (p_rows->'acquisition'->>'id')::uuid
     AND a.project_id = v_opportunity.project_id AND a.workspace_id = v_opportunity.workspace_id AND a.status = 'ready' FOR SHARE;

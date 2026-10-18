@@ -1,3 +1,4 @@
+import { SAFETY_PLAN_PERSISTENCE_SELECT } from "@/lib/reports/safety-plan-persistence";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
@@ -59,15 +60,18 @@ export async function POST(request: NextRequest, context: Context) {
     if (!opportunity.data || !project.data || !artifact.data || !sections.data) throw new SafetySeedRefusal("The selected source is unavailable in this workspace and project.");
     const snapshot = readSafetyPlanSnapshot(artifact.data.metadata_json?.safetyPlanSnapshotV1);
     if (!snapshot) throw new SafetySeedRefusal("Legacy or malformed Safety snapshot. Regenerate the Safety report and select the new artifact. HTML cannot be used.");
-    const [report, acquisition, drafts] = await Promise.all([
+    const [report, acquisition, drafts, persistence] = await Promise.all([
       client.from("reports").select(SS4A_REPORT_PROJECTION).eq("id", artifact.data.report_id).eq("workspace_id", o.workspace_id).eq("project_id", o.project_id).maybeSingle(),
       client.from("safety_crash_ingests").select(SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION).eq("id", snapshot.acquisition.id).eq("workspace_id", o.workspace_id).eq("project_id", o.project_id).maybeSingle(),
       client.from("funding_opportunity_section_drafts").select("id, section_id", { count: "exact" }).eq("opportunity_id", o.id).eq("workspace_id", o.workspace_id).order("id").limit(1001),
+      client.from("report_safety_snapshot_persistence").select(SAFETY_PLAN_PERSISTENCE_SELECT)
+        .eq("artifact_id", parsed.data.artifactId).eq("report_id", artifact.data.report_id)
+        .eq("workspace_id", o.workspace_id).eq("project_id", o.project_id).maybeSingle(),
     ]);
-    if ([report, acquisition, drafts].some((result) => result.error)) throw new Error("Failed to read Safety provenance or draft history");
-    if (!report.data || !acquisition.data || !drafts.data || drafts.count === null || drafts.count !== drafts.data.length || drafts.data.length > 1000) throw new SafetySeedRefusal("Safety provenance is unavailable or draft history exceeds this seed's review window.");
+    if ([report, acquisition, drafts, persistence].some((result) => result.error)) throw new Error("Failed to read Safety provenance or draft history");
+    if (!report.data || !acquisition.data || !persistence.data || !drafts.data || drafts.count === null || drafts.count !== drafts.data.length || drafts.data.length > 1000) throw new SafetySeedRefusal("Safety provenance is unavailable or draft history exceeds this seed's review window.");
     // Supabase's dynamic select strings are untyped. The validator checks source identity and snapshot shape.
-    const rows = { opportunity: opportunity.data, project: project.data, artifact: artifact.data, sections: sections.data, report: report.data, acquisition: acquisition.data, drafts: drafts.data } as unknown as SeedSourceRows;
+    const rows = { opportunity: opportunity.data, project: project.data, artifact: artifact.data, sections: sections.data, report: report.data, acquisition: acquisition.data, drafts: drafts.data, persistence: persistence.data } as unknown as SeedSourceRows;
     const preview = buildSafetySeedPreview(rows);
     if (parsed.data.operation === "preview") return NextResponse.json({ preview });
     if (preview.previewHash !== parsed.data.previewHash) return NextResponse.json({ error: "Preview is stale. Sources or application work changed. Preview again before applying." }, { status: 409 });

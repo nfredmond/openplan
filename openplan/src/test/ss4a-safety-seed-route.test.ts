@@ -1,3 +1,4 @@
+import { SAFETY_PLAN_PERSISTENCE_SELECT } from "@/lib/reports/safety-plan-persistence";
 /** These mocked route controls cannot prove database privileges, locking, rollback or RLS. */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
@@ -27,7 +28,7 @@ const call = (body: unknown, assistant = false) => POST(new NextRequest("http://
 function install() {
   tables = Object.fromEntries(Object.entries({ funding_opportunities: rows.opportunity, projects: rows.project, report_artifacts: rows.artifact,
     funding_opportunity_application_sections: rows.sections, reports: rows.report, safety_crash_ingests: rows.acquisition,
-    funding_opportunity_section_drafts: rows.drafts, funding_opportunity_safety_seeds: null }).map(([table, data]) => [table, chain({ data, count: Array.isArray(data) ? data.length : null, error: null })]));
+    funding_opportunity_section_drafts: rows.drafts, funding_opportunity_safety_seeds: null, report_safety_snapshot_persistence: rows.persistence }).map(([table, data]) => [table, chain({ data, count: Array.isArray(data) ? data.length : null, error: null })]));
   from = vi.fn((table: string) => { if (!tables[table]) throw new Error(`Unexpected table ${table}`); return tables[table]; });
   mocks.create.mockResolvedValue({ auth: { getUser: async () => ({ data: { user: { id: seedId(99) } } }) }, from });
   mocks.service.mockReturnValue({ rpc: mocks.rpc });
@@ -42,13 +43,21 @@ describe("Safety seed preview and atomic apply dispatch", () => {
     expect(response.status).toBe(200);
     const payload = await response.json(); expect(payload.preview.sections).toHaveLength(6);
     expect(mocks.rpc).not.toHaveBeenCalled(); expect(mocks.service).not.toHaveBeenCalled();
-    for (const [table, projection] of Object.entries({ projects: SS4A_PROJECT_PROJECTION, reports: SS4A_REPORT_PROJECTION, report_artifacts: SS4A_ARTIFACT_PROJECTION, funding_opportunity_application_sections: SS4A_SECTION_PROJECTION, safety_crash_ingests: SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION })) expect(tables[table].select).toHaveBeenCalledWith(projection);
+    for (const [table, projection] of Object.entries({ projects: SS4A_PROJECT_PROJECTION, reports: SS4A_REPORT_PROJECTION, report_artifacts: SS4A_ARTIFACT_PROJECTION, funding_opportunity_application_sections: SS4A_SECTION_PROJECTION, safety_crash_ingests: SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION, report_safety_snapshot_persistence: SAFETY_PLAN_PERSISTENCE_SELECT })) expect(tables[table].select).toHaveBeenCalledWith(projection);
     expect(tables.report_artifacts.eq).toHaveBeenCalledWith("id", rows.artifact.id);
-    for (const table of ["projects", "reports", "safety_crash_ingests", "funding_opportunity_application_sections", "funding_opportunity_section_drafts"]) expect(tables[table].eq).toHaveBeenCalledWith("workspace_id", rows.opportunity.workspace_id);
-    for (const table of ["reports", "safety_crash_ingests"]) expect(tables[table].eq).toHaveBeenCalledWith("project_id", rows.project.id);
+    expect(tables.report_safety_snapshot_persistence.select).toHaveBeenCalledWith("artifact_id, workspace_id, project_id, report_id, schema_version, snapshot_hash, source_project_updated_at, persisted_project_updated_at, source_report_updated_at, report_updated_at");
+    expect(tables.report_safety_snapshot_persistence.eq).toHaveBeenCalledWith("artifact_id", rows.artifact.id);
+    expect(tables.report_safety_snapshot_persistence.eq).toHaveBeenCalledWith("report_id", rows.report.id);
+    for (const table of ["projects", "reports", "safety_crash_ingests", "funding_opportunity_application_sections", "funding_opportunity_section_drafts", "report_safety_snapshot_persistence"]) expect(tables[table].eq).toHaveBeenCalledWith("workspace_id", rows.opportunity.workspace_id);
+    for (const table of ["reports", "safety_crash_ingests", "report_safety_snapshot_persistence"]) expect(tables[table].eq).toHaveBeenCalledWith("project_id", rows.project.id);
     expect(tables.funding_opportunity_section_drafts.select).toHaveBeenCalledWith("id, section_id", { count: "exact" });
     expect(tables.funding_opportunity_section_drafts.limit).toHaveBeenCalledWith(1001);
     expect(mocks.access).toHaveBeenCalledWith(expect.anything(), rows.opportunity.id, seedId(99), "programs.write");
+  });
+  it("refuses custody for another snapshot rather than trusting returned query rows", async () => {
+    tables.report_safety_snapshot_persistence = chain({ data: { ...rows.persistence, snapshot_hash: "0".repeat(64) }, error: null });
+    expect((await call({ operation: "preview", artifactId: rows.artifact.id })).status).toBe(422);
+    expect(mocks.rpc).not.toHaveBeenCalled();
   });
   it("dispatches all six drafts in one RPC, retaining source and final-text expectations", async () => {
     const preview = buildSafetySeedPreview(rows);
@@ -87,8 +96,8 @@ describe("Safety seed preview and atomic apply dispatch", () => {
     const response = await call({ operation: "apply", artifactId: rows.artifact.id, previewHash });
     expect(response.status).toBe(500); expect(await response.json()).not.toHaveProperty("applied");
   });
-  it.each(["artifact", "acquisition", "drafts", "project", "report"])("fails closed on %s read failure", async (which) => {
-    const table = { artifact: "report_artifacts", acquisition: "safety_crash_ingests", drafts: "funding_opportunity_section_drafts", project: "projects", report: "reports" }[which]!;
+  it.each(["artifact", "acquisition", "drafts", "project", "report", "persistence"])("fails closed on %s read failure", async (which) => {
+    const table = { artifact: "report_artifacts", acquisition: "safety_crash_ingests", drafts: "funding_opportunity_section_drafts", project: "projects", report: "reports", persistence: "report_safety_snapshot_persistence" }[which]!;
     tables[table] = chain({ data: null, error: { message: "read failed" } });
     expect((await call({ operation: "preview", artifactId: rows.artifact.id })).status).toBe(500); expect(mocks.rpc).not.toHaveBeenCalled();
   });
