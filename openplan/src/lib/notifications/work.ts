@@ -143,7 +143,7 @@ import {
 /**
  * The `kind` vocabulary, matching the CHECK constraint as the migration corpus
  * leaves it — 20260811000007 created six, 20260812000010 added the seventh,
- * 20260812000013 the eighth.
+ * 20260812000013 the eighth; 20261018000001 adds application reminders and recorded changes.
  */
 export const WORK_NOTIFICATION_KINDS = [
   "deliverable_due",
@@ -151,12 +151,15 @@ export const WORK_NOTIFICATION_KINDS = [
   "submittal_due",
   "invoice_due",
   "grant_decision_due",
+  "grant_application_due",
+  "grant_deadline_changed",
   "award_obligation_due",
   "award_expenditure_due",
   "measure_claim_review_due",
 ] as const;
 
 export type WorkNotificationKind = (typeof WORK_NOTIFICATION_KINDS)[number];
+export type WorkReminderKind = Exclude<WorkNotificationKind, "grant_deadline_changed">;
 
 /**
  * The unique index that makes the sweep idempotent. Named here because the
@@ -168,6 +171,7 @@ export const WORK_NOTIFICATION_IDEMPOTENCY_COLUMNS = [
   "subject_id",
   "recipient_user_id",
   "due_on",
+  "kind",
 ] as const;
 
 /** How far ahead a reminder looks. Everything already overdue is included regardless. */
@@ -185,7 +189,7 @@ export const WORK_SWEEP_SOURCE_LIMIT = 2000;
 export type WorkNotificationRow = {
   workspace_id: string;
   recipient_user_id: string;
-  kind: WorkNotificationKind;
+  kind: WorkReminderKind;
   subject_table: string;
   subject_id: string;
   project_id: string | null;
@@ -227,7 +231,7 @@ export type WorkSweepResult = {
   /** When the sweep considered itself to be running. */
   now: string;
   horizonDays: number;
-  perSource: Record<WorkNotificationKind, WorkSweepSourceOutcome>;
+  perSource: Record<WorkReminderKind, WorkSweepSourceOutcome>;
   /** Notification rows the database actually created (duplicates are not counted). */
   notificationsCreated: number;
   /** Digest emails composed — one per recipient with at least one new notification. */
@@ -264,6 +268,7 @@ export type WorkSweepResult = {
 // ── the seven sources ───────────────────────────────────────────────────────
 
 type StaticFilter =
+  | { kind: "eq"; column: string; value: string }
   | { kind: "neq"; column: string; value: string }
   | { kind: "notIn"; column: string; values: readonly string[] };
 
@@ -318,7 +323,7 @@ const EMPTY_SWEEP_CONTEXT: SweepSourceContext = {
 };
 
 type SweepSource = {
-  kind: WorkNotificationKind;
+  kind: WorkReminderKind;
   table: string;
   select: string;
   /** The column holding the deadline. */
@@ -352,7 +357,8 @@ type SweepSource = {
     rows: Array<Record<string, unknown>>,
     now: Date,
     context: SweepSourceContext,
-    todayFor: WorkspaceToday
+    todayFor: WorkspaceToday,
+    timeZoneFor?: (workspaceId: string) => string
   ) => Candidate[];
 };
 
@@ -589,6 +595,41 @@ const grantDecisionsSource: SweepSource = {
         },
       ];
     }),
+};
+
+/** The existing live My Work pursuit semantics, with creator-only reminders. */
+const grantApplicationsSource: SweepSource = {
+  kind: "grant_application_due",
+  table: "funding_opportunities",
+  select: "id, workspace_id, project_id, title, opportunity_status, decision_state, closes_at, agency_name, created_by",
+  dateColumn: "closes_at",
+  dateColumnKind: "timestamptz",
+  recipientColumn: "created_by",
+  staticFilters: [
+    { kind: "eq", column: "decision_state", value: "pursue" },
+    { kind: "notIn", column: "opportunity_status", values: ["archived", "awarded"] },
+  ],
+  toCandidates: (rows, now, _context, _todayFor, timeZoneFor = () => "UTC") => rows.flatMap((row) => {
+    if (row.decision_state !== "pursue" || ["archived", "awarded"].includes(String(row.opportunity_status))) return [];
+    const workspaceId = asString(row.workspace_id);
+    const closesAt = asString(row.closes_at);
+    const recipient = asString(row.created_by);
+    if (!workspaceId || !closesAt || !recipient || !Number.isFinite(Date.parse(closesAt))) return [];
+    const dueOn = todayIn(timeZoneFor(workspaceId), new Date(closesAt));
+    const isOverdue = isDeadlinePast(closesAt, now);
+    return [{
+      workspace_id: workspaceId,
+      recipient_user_id: recipient,
+      kind: "grant_application_due" as const,
+      subject_table: "funding_opportunities",
+      subject_id: String(row.id),
+      project_id: asString(row.project_id),
+      due_on: dueOn,
+      title: asString(row.title) ?? "(untitled opportunity)",
+      body: `Application closing deadline recorded in OpenPlan: ${closesAt}. ${isOverdue ? "The call has closed. Set the decision to Under review if it went in, or Skip." : "Check the official notice before submitting."} You recorded this opportunity; grant deadlines carry no assignee.`,
+      isOverdue,
+    }];
+  }),
 };
 
 const awardObligationsSource: SweepSource = {
@@ -1134,6 +1175,7 @@ export const WORK_SWEEP_SOURCES: readonly SweepSource[] = [
   milestonesSource,
   submittalsSource,
   grantDecisionsSource,
+  grantApplicationsSource,
   awardObligationsSource,
   awardExpendituresSource,
   invoiceWindowsSource,
@@ -1213,9 +1255,11 @@ async function readSource(
 
     for (const filter of source.staticFilters) {
       query =
-        filter.kind === "neq"
-          ? query.neq(filter.column, filter.value)
-          : query.not(filter.column, "in", `(${filter.values.join(",")})`);
+        filter.kind === "eq"
+          ? query.eq(filter.column, filter.value)
+          : filter.kind === "neq"
+            ? query.neq(filter.column, filter.value)
+            : query.not(filter.column, "in", `(${filter.values.join(",")})`);
     }
 
     const result = await query.order(source.dateColumn, { ascending: true }).limit(limit);
@@ -1355,7 +1399,7 @@ export async function sweepWorkDeadlines(
 
   const perSource = Object.fromEntries(
     WORK_SWEEP_SOURCES.map((source) => [source.kind, emptyOutcome()])
-  ) as Record<WorkNotificationKind, WorkSweepSourceOutcome>;
+  ) as Record<WorkReminderKind, WorkSweepSourceOutcome>;
 
   const reads: Array<{
     source: SweepSource;
@@ -1384,7 +1428,7 @@ export async function sweepWorkDeadlines(
 
   const candidates: Candidate[] = [];
   for (const { source, rows, outcome, context } of reads) {
-    const produced = source.toCandidates(rows, now, context, calendars.todayFor);
+    const produced = source.toCandidates(rows, now, context, calendars.todayFor, calendars.timeZoneFor);
     const filtered = produced.filter((candidate) => {
       if (candidate.isOverdue) return true;
       const preference = preferences.get(candidate.workspace_id);
@@ -1457,7 +1501,7 @@ export async function sweepWorkDeadlines(
         eligible.map(({ isOverdue: _isOverdue, needsReview: _needsReview, ...row }) => row),
         { onConflict: WORK_NOTIFICATION_IDEMPOTENCY_COLUMNS.join(","), ignoreDuplicates: true }
       )
-      .select("subject_table, subject_id, recipient_user_id, due_on, workspace_id");
+      .select("subject_table, subject_id, recipient_user_id, due_on, workspace_id, kind");
     if (write.error) {
       result.writeError = write.error.message ?? "the database returned no reason";
       return result;
@@ -1475,12 +1519,12 @@ export async function sweepWorkDeadlines(
   const createdKeys = new Set(
     created.map(
       (row) =>
-        `${asString(row.subject_table)}::${asString(row.subject_id)}::${asString(row.recipient_user_id)}`
+        `${asString(row.subject_table)}::${asString(row.subject_id)}::${asString(row.recipient_user_id)}::${asString(row.kind)}::${asString(row.due_on)}`
     )
   );
   const newlyNotified = eligible.filter((candidate) =>
     createdKeys.has(
-      `${candidate.subject_table}::${candidate.subject_id}::${candidate.recipient_user_id}`
+      `${candidate.subject_table}::${candidate.subject_id}::${candidate.recipient_user_id}::${candidate.kind}::${candidate.due_on}`
     )
   );
 
@@ -1554,13 +1598,15 @@ export async function sweepWorkDeadlines(
  */
 export type WorkNotificationInboxRow = {
   id: string;
-  kind: WorkNotificationKind | string;
   title: string;
   body: string;
-  dueOn: string;
+  opportunity?: { id: string; workspaceId: string };
   projectId: string | null;
   createdAt: string | null;
-};
+} & (
+  | { kind: "grant_deadline_changed"; dueOn: null; eventId: string }
+  | { kind: WorkReminderKind | "unknown"; dueOn: string }
+);
 
 export type WorkNotificationInbox =
   | { ok: true; rows: WorkNotificationInboxRow[]; truncated: boolean }
@@ -1573,7 +1619,7 @@ export type WorkNotificationInbox =
 
 /** The columns the panel renders — asserted as a projection by its test. */
 export const WORK_NOTIFICATION_INBOX_COLUMNS =
-  "id, kind, title, body, due_on, project_id, created_at";
+  "id, kind, title, body, due_on, project_id, created_at, subject_table, subject_id, workspace_id, deadline_change_id";
 
 export const WORK_NOTIFICATION_INBOX_LIMIT = 50;
 
@@ -1588,7 +1634,7 @@ type InboxQuery = PromiseLike<SweepReadResult> & {
 };
 
 /**
- * This person's UNREAD reminders, soonest deadline first.
+ * This person's UNREAD notices, newest first so cleared dates stay visible.
  *
  * Unread only, deliberately: the queue on the same page already lists every
  * deadline that exists, so a reminder that has been read has nothing left to
@@ -1610,7 +1656,7 @@ export async function loadWorkNotifications(
       // on its own terms does not depend on a policy staying written.
       .eq("recipient_user_id", recipientUserId)
       .eq("is_read", false)
-      .order("due_on", { ascending: true })
+      .order("created_at", { ascending: false })
       .limit(limit);
 
     if (result.error) {
@@ -1618,15 +1664,27 @@ export async function loadWorkNotifications(
       return { ok: false, pending: looksLikePendingSchema(message), message };
     }
 
-    const rows = ((result.data ?? []) as Array<Record<string, unknown>>).map((row) => ({
-      id: String(row.id),
-      kind: asString(row.kind) ?? "deliverable_due",
-      title: asString(row.title) ?? "(untitled reminder)",
-      body: asString(row.body) ?? "",
-      dueOn: asString(row.due_on) ?? "",
-      projectId: asString(row.project_id),
-      createdAt: asString(row.created_at),
-    }));
+    const rows = ((result.data ?? []) as Array<Record<string, unknown>>).map((row): WorkNotificationInboxRow => {
+      const kind = asString(row.kind);
+      const dueOn = asString(row.due_on);
+      const common = {
+        id: String(row.id),
+        title: asString(row.title) ?? "(untitled reminder)",
+        body: asString(row.body) ?? "",
+        ...(row.subject_table === "funding_opportunities" && asString(row.subject_id) && asString(row.workspace_id)
+          ? { opportunity: { id: String(row.subject_id), workspaceId: String(row.workspace_id) } } : {}),
+        projectId: asString(row.project_id),
+        createdAt: asString(row.created_at),
+      };
+      if (kind === "grant_deadline_changed") {
+        const eventId = asString(row.deadline_change_id);
+        if (row.due_on !== null || !eventId) throw new Error("Recorded deadline change has invalid event identity or due date.");
+        return { ...common, kind, dueOn: null, eventId };
+      }
+      if (!dueOn) throw new Error("Deadline reminder has no recorded due date.");
+      const reminderKind = WORK_NOTIFICATION_KINDS.find((value): value is WorkReminderKind => value !== "grant_deadline_changed" && value === kind) ?? "unknown";
+      return { ...common, kind: reminderKind, dueOn };
+    });
 
     return { ok: true, rows, truncated: rows.length >= limit };
   } catch (error) {
@@ -1654,8 +1712,9 @@ async function loadSweepCalendars(
   client: WorkSweepClient,
   workspaceIds: readonly string[],
   now: Date
-): Promise<{ todayFor: WorkspaceToday; unavailable: boolean }> {
+): Promise<{ todayFor: WorkspaceToday; timeZoneFor: (workspaceId: string) => string; unavailable: boolean }> {
   const todays = new Map<string, string>();
+  const zones = new Map<string, string>();
   let unavailable = false;
   for (let start = 0; start < workspaceIds.length; start += CALENDAR_READ_BATCH) {
     const batch = workspaceIds.slice(start, start + CALENDAR_READ_BATCH);
@@ -1671,7 +1730,11 @@ async function loadSweepCalendars(
       }
       for (const row of (data ?? []) as Array<Record<string, unknown>>) {
         const id = asString(row.id);
-        if (id) todays.set(id, todayIn(resolveWorkspaceTimeZone(row).timeZone, now));
+        if (id) {
+          const zone = resolveWorkspaceTimeZone(row).timeZone;
+          zones.set(id, zone);
+          todays.set(id, todayIn(zone, now));
+        }
       }
       // An omitted workspace is still an unavailable calendar, even without an error.
       if (batch.some((id) => !todays.has(id))) unavailable = true;
@@ -1680,7 +1743,7 @@ async function loadSweepCalendars(
     }
   }
   const utcToday = todayIn("UTC", now);
-  return { todayFor: (workspaceId) => todays.get(workspaceId) ?? utcToday, unavailable };
+  return { todayFor: (workspaceId) => todays.get(workspaceId) ?? utcToday, timeZoneFor: (workspaceId) => zones.get(workspaceId) ?? "UTC", unavailable };
 }
 
 /**

@@ -32,15 +32,14 @@ export const WORK_NOTIFICATIONS_MIGRATION = "20260811000007_work_notifications.s
  * mutation visible rather than absorbed.
  */
 export function workNotificationUniqueKey(): string[] {
-  const sql = blankComments(readMigration(WORK_NOTIFICATIONS_MIGRATION));
-  const match = sql.match(
-    /CREATE\s+UNIQUE\s+INDEX(?:\s+IF\s+NOT\s+EXISTS)?\s+[A-Za-z0-9_]+\s+ON\s+(?:public\.)?work_notifications\s*\(([^)]*)\)/i
-  );
-  if (!match) return [];
-  return match[1]
-    .split(",")
-    .map((column) => column.trim())
-    .filter(Boolean);
+  let key: string[] = [];
+  for (const file of migrationFiles()) {
+    const sql = blankComments(readMigration(file));
+    if (/DROP\s+INDEX\s+(?:public\.)?ux_work_notifications_subject_recipient\b/i.test(sql)) key = [];
+    const match = sql.match(/CREATE\s+UNIQUE\s+INDEX(?:\s+IF\s+NOT\s+EXISTS)?\s+ux_work_notifications_subject_recipient\s+ON\s+(?:public\.)?work_notifications\s*\(([^)]*)\)/i);
+    if (match) key = match[1].split(",").map((column) => column.trim());
+  }
+  return key;
 }
 
 /**
@@ -92,10 +91,10 @@ export function migrationKindVocabulary(): string[] {
     .filter(Boolean);
 }
 
-/** Whether `due_on` is declared NOT NULL — see the test that asks. */
-export function migrationDeclaresNotNullDueOn(): boolean {
-  const sql = blankComments(readMigration(WORK_NOTIFICATIONS_MIGRATION));
-  return /\bdue_on\s+date\s+NOT\s+NULL\b/i.test(sql);
+/** Reminder dates remain required; recorded changes have a separate event key. */
+export function migrationRequiresReminderDueOn(): boolean {
+  const sql = blankComments(readMigration("20261018000001_grant_deadline_changes.sql"));
+  return /kind <> 'grant_deadline_changed' AND deadline_change_id IS NULL AND due_on IS NOT NULL/.test(sql);
 }
 
 /** Every migration file, so a test can assert this one is actually present. */
@@ -191,7 +190,8 @@ export class FakeWorkDb {
       upsert: (rows: Row[], options: { onConflict: string; ignoreDuplicates: boolean }) => {
         this.upsertCalls.push({ rows, ...options });
         return {
-          select: async (_columns: string) => {
+          // Stored rows stay complete; callers receive the flat columns they requested.
+          select: async (columns: string) => {
             if (this.errors[table]) return { data: null, error: this.errors[table] };
             const created: Row[] = [];
             for (const row of rows) {
@@ -204,9 +204,11 @@ export class FakeWorkDb {
                   (existing) => this.uniqueKey.map((column) => String(existing[column])).join("::") === key
                 );
               if (exists && options.ignoreDuplicates) continue;
-              const stored = { id: `notification-${this.notifications.length + 1}`, ...row };
+              const stored: Row = { id: `notification-${this.notifications.length + 1}`, ...row };
               this.notifications.push(stored);
-              created.push(stored);
+              created.push(columns.trim() === "*" ? { ...stored } : Object.fromEntries(
+                columns.split(",").map((column) => column.trim()).map((column) => [column, stored[column]])
+              ));
             }
             return { data: created, error: null };
           },

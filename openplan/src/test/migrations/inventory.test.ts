@@ -493,12 +493,13 @@ const EXPECTED = {
   // policy and no write policy (writes go through its functions). Disposable
   // catalog openplan-map-packages-stack: 761 policies, 510 permissive, 251
   // restrictive, 229 tables with policies.
-  policies: 761,
-  permissive: 510,
+  // 20261018000001 adds one member-readable, trigger-only deadline journal.
+  policies: 762,
+  permissive: 511,
   restrictive: 251,
   permissiveWrites: 278,
   expanded: 286,
-  tablesWithPolicies: 229,
+  tablesWithPolicies: 230,
   // 20261014000013 adds three generation custody tables with RLS and no client policies.
   // Installed isolated catalog confirms all three; no application view or policy is added.
   // Migration 20 adds the private public-translation mapping table, RLS and no policies.
@@ -561,10 +562,10 @@ const EXPECTED = {
   // PostGIS's spatial_ref_sys) and 14 application views (16 with PostGIS's two).
   // 20261017000015 adds one deployment-global service-only process table.
   // Candidate native SQL applies RLS without adding a client policy or view.
-  relations: 324,
-  tables: 310,
+  relations: 325,
+  tables: 311,
   views: 14,
-  rlsEnabledTables: 310,
+  rlsEnabledTables: 311,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */
