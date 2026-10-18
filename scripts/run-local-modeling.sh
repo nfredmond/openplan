@@ -101,8 +101,8 @@ if [ -x "$EXEC_PY" ] && "$EXEC_PY" -c "import activitysim, requests, dotenv" >/d
   export ACTIVITYSIM_CLI="$PWD/workers/activitysim_worker/.venv-exec/bin/activitysim"
   AS_MODE="EXECUTION (real ActivitySim — uncalibrated/starter)"
 else
-  for py in workers/aequilibrae_worker/.venv311/bin/python python3; do
-    if command -v "${py%% *}" >/dev/null 2>&1 && "$py" -c "import requests, dotenv" >/dev/null 2>&1; then AS_PY="$py"; break; fi
+  for py in workers/aequilibrae_worker/.venv311/bin/python python3 "$AEQ_PY"; do
+    if command -v "$py" >/dev/null 2>&1 && "$py" -c "import requests, dotenv" >/dev/null 2>&1; then AS_PY="$py"; break; fi
   done
   echo "NOTE: ActivitySim exec venv not found → the ActivitySim stage runs PREFLIGHT-ONLY."
   echo "      For real runs, build it (see the header of this script)."
