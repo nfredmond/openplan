@@ -526,7 +526,8 @@ describe("the daily deadline sweep", () => {
     // could get out of step with it.
     expect(db.reminderWriteCalls).toHaveLength(2);
     expect(db.upsertCalls).toHaveLength(0);
-    expect(db.reminderWriteCalls[1].select).toBe(WORK_NOTIFICATION_WRITE_COLUMNS);
+    expect(Object.keys((db.reminderWriteResponses[1] as { outcomes: object[] }).outcomes[0]).sort())
+      .toEqual(WORK_NOTIFICATION_WRITE_COLUMNS.split(", ").sort());
     expect(second.notificationsAlreadyPresent).toBe(10);
   });
 

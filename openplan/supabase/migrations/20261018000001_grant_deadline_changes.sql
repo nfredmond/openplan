@@ -76,11 +76,7 @@ GRANT EXECUTE ON FUNCTION public.work_notification_kind_activation() TO service_
 -- raises and rolls the whole RPC back. Row locks retain classification evidence
 -- until commit; the table lock prevents activation between insert and classify.
 CREATE FUNCTION public.insert_work_notification_reminders(p_rows jsonb)
-RETURNS TABLE (
-  workspace_id uuid, recipient_user_id uuid, kind text, subject_table text,
-  subject_id uuid, project_id uuid, due_on date, title text, body text,
-  classification text, blocking_kind text
-)
+RETURNS jsonb
 LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path = '' AS $$
 DECLARE
   requested record;
@@ -91,6 +87,10 @@ DECLARE
   legacy_key boolean;
   outcome text;
   blocker text;
+  outcome_rows jsonb[] := ARRAY[]::jsonb[];
+  inserted_count integer := 0;
+  duplicate_count integer := 0;
+  deferred_count integer := 0;
 BEGIN
   IF p_rows IS NULL OR pg_catalog.jsonb_typeof(p_rows) <> 'array' THEN
     RAISE EXCEPTION 'work_reminder_batch_invalid' USING ERRCODE = '23514';
@@ -174,8 +174,9 @@ BEGIN
       SELECT x.* INTO actual FROM pg_catalog.jsonb_to_record(inserted_rows->identity_key) AS x(
         workspace_id uuid, recipient_user_id uuid, kind text, subject_table text,
         subject_id uuid, project_id uuid, due_on date, title text, body text);
-      RETURN QUERY SELECT actual.workspace_id,actual.recipient_user_id,actual.kind,actual.subject_table,
-        actual.subject_id,actual.project_id,actual.due_on,actual.title,actual.body,'inserted'::text,NULL::text;
+      outcome_rows := pg_catalog.array_append(outcome_rows, pg_catalog.to_jsonb(actual) ||
+        pg_catalog.jsonb_build_object('classification','inserted','blocking_kind',NULL));
+      inserted_count := inserted_count + 1;
       CONTINUE;
     END IF;
 
@@ -198,9 +199,20 @@ BEGIN
     IF outcome IS NULL THEN
       RAISE EXCEPTION 'work_reminder_classification_missing' USING ERRCODE = '23514';
     END IF;
-    RETURN QUERY SELECT requested.workspace_id,requested.recipient_user_id,requested.kind,requested.subject_table,
-      requested.subject_id,requested.project_id,requested.due_on,requested.title,requested.body,outcome,blocker;
+    outcome_rows := pg_catalog.array_append(outcome_rows, pg_catalog.to_jsonb(requested) ||
+      pg_catalog.jsonb_build_object('classification',outcome,'blocking_kind',blocker));
+    IF outcome = 'duplicate' THEN duplicate_count := duplicate_count + 1;
+    ELSE deferred_count := deferred_count + 1; END IF;
   END LOOP;
+  IF pg_catalog.cardinality(outcome_rows) <> pg_catalog.jsonb_array_length(p_rows)
+    OR inserted_count + duplicate_count + deferred_count <> pg_catalog.jsonb_array_length(p_rows) THEN
+    RAISE EXCEPTION 'work_reminder_envelope_counts_invalid' USING ERRCODE = '23514';
+  END IF;
+  -- A scalar envelope is one API value. max_rows does not page its nested array.
+  RETURN pg_catalog.jsonb_build_object('protocol','work_reminder_batch_v1',
+    'requested_count',pg_catalog.jsonb_array_length(p_rows),'inserted_count',inserted_count,
+    'duplicate_count',duplicate_count,'deferred_count',deferred_count,
+    'outcomes',pg_catalog.to_jsonb(outcome_rows));
 END;
 $$;
 REVOKE ALL ON FUNCTION public.insert_work_notification_reminders(jsonb) FROM PUBLIC, anon, authenticated, service_role;

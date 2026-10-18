@@ -108,6 +108,11 @@ export function migrationExists(): boolean {
 
 type Row = Record<string, unknown>;
 
+/** Model only the relational row cap, not byte limits or real HTTP behavior. */
+export function capWorkRpcRows(data: unknown, maxRows: number): unknown {
+  return Array.isArray(data) ? data.slice(0, maxRows) : data;
+}
+
 type Filter =
   | { kind: "eq"; column: string; value: unknown }
   | { kind: "neq"; column: string; value: unknown }
@@ -158,8 +163,9 @@ export type FakeWorkDbOptions = {
   /** The corpus installs bridge. Active models the separate proposed migration. */
   reminderStage?: "bridge" | "active";
   activationResult?: { data: unknown; error: { message: string } | null };
-  reminderWriteResult?: (rows: Row[]) => unknown;
+  reminderWriteResult?: (envelope: Row) => unknown;
   activateBeforeWrite?: boolean;
+  rpcMaxRows?: number;
 };
 
 export class FakeWorkDb {
@@ -169,14 +175,16 @@ export class FakeWorkDb {
   /** Every upsert attempt, whether or not it created anything. */
   readonly upsertCalls: Array<{ rows: Row[]; onConflict: string; ignoreDuplicates: boolean }> = [];
   readonly rpcCalls: string[] = [];
-  readonly reminderWriteCalls: Array<{ rows: readonly Row[]; select: string }> = [];
+  readonly reminderWriteCalls: Array<{ rows: readonly Row[] }> = [];
+  readonly reminderWriteResponses: unknown[] = [];
 
   private readonly tables: Record<string, Row[]>;
   private readonly errors: Record<string, { message: string }>;
   private readonly uniqueKeys: string[][];
   private readonly activationResult: { data: unknown; error: { message: string } | null };
-  private readonly reminderWriteResult?: (rows: Row[]) => unknown;
+  private readonly reminderWriteResult?: (envelope: Row) => unknown;
   private readonly activateBeforeWrite: boolean;
+  private readonly rpcMaxRows: number;
   private outboxSequence = 0;
 
   constructor(options: FakeWorkDbOptions) {
@@ -189,44 +197,48 @@ export class FakeWorkDb {
     this.activationResult = options.activationResult ?? { data: options.reminderStage === "active", error: null };
     this.reminderWriteResult = options.reminderWriteResult;
     this.activateBeforeWrite = options.activateBeforeWrite ?? false;
+    this.rpcMaxRows = options.rpcMaxRows ?? 1000;
   }
 
-  rpc(name: string, args?: { p_rows: readonly Row[] }) {
+  async rpc(name: string, args?: { p_rows: readonly Row[] }) {
     this.rpcCalls.push(name);
-    if (name === "work_notification_kind_activation") return Promise.resolve(this.activationResult);
+    if (name === "work_notification_kind_activation") return this.activationResult;
     if (name !== "insert_work_notification_reminders" || !args) throw new Error(`Unexpected RPC: ${name}`);
-    return { select: async (columns: string) => {
-      this.reminderWriteCalls.push({ rows: args.p_rows, select: columns });
-      if (this.errors.work_notifications) return { data: null, error: this.errors.work_notifications };
-      const keys = this.activateBeforeWrite ? [workNotificationUniqueKey()] : this.uniqueKeys;
-      if (!keys.some((key) => key.length === 5 && key.includes("kind"))) {
-        return { data: null, error: { message: "work_reminder_kind_key_missing" } };
-      }
-      const staged: Row[] = [];
-      const inserted = new Set<Row>();
-      const equal = (left: Row, right: Row, key: readonly string[]) => key.length > 0 && key.every((field) =>
-        left[field] !== null && left[field] !== undefined && left[field] === right[field]);
-      // One targetless insert, then a separate classification read of current rows.
-      for (const row of args.p_rows) {
-        if ([...this.notifications, ...staged].some((existing) => keys.some((key) => equal(row, existing, key)))) continue;
-        staged.push({ id: `notification-${this.notifications.length + staged.length + 1}`, ...row });
-        inserted.add(row);
-      }
-      const outcomes: Row[] = [];
-      const full = ["workspace_id", "subject_table", "subject_id", "recipient_user_id", "due_on", "kind"];
-      const legacy = keys.find((key) => key.length === 4 && !key.includes("kind"));
-      for (const row of args.p_rows) {
-        const current = [...this.notifications, ...staged];
-        const same = current.find((stored) => equal(row, stored, full));
-        const opposite = legacy && current.find((stored) => stored.workspace_id === row.workspace_id && stored.kind !== row.kind && equal(row, stored, legacy));
-        const classification = inserted.has(row) ? "inserted" : same ? "duplicate" : opposite ? "deferred_old_key" : null;
-        if (!classification) return { data: null, error: { message: "work_reminder_classification_missing" } };
-        outcomes.push({ ...row, classification, blocking_kind: classification === "deferred_old_key" && opposite ? opposite.kind : null });
-      }
-      this.notifications.push(...staged);
-      const projected = outcomes.map((row) => Object.fromEntries(columns.split(",").map((field) => field.trim()).map((field) => [field, row[field]])));
-      return { data: this.reminderWriteResult ? this.reminderWriteResult(projected) : projected, error: null };
-    } };
+    this.reminderWriteCalls.push({ rows: args.p_rows });
+    if (this.errors.work_notifications) return { data: null, error: this.errors.work_notifications };
+    const keys = this.activateBeforeWrite ? [workNotificationUniqueKey()] : this.uniqueKeys;
+    if (!keys.some((key) => key.length === 5 && key.includes("kind"))) {
+      return { data: null, error: { message: "work_reminder_kind_key_missing" } };
+    }
+    const staged: Row[] = [];
+    const inserted = new Set<Row>();
+    const equal = (left: Row, right: Row, key: readonly string[]) => key.length > 0 && key.every((field) =>
+      left[field] !== null && left[field] !== undefined && left[field] === right[field]);
+    // One targetless insert, then a separate classification read of current rows.
+    for (const row of args.p_rows) {
+      if ([...this.notifications, ...staged].some((existing) => keys.some((key) => equal(row, existing, key)))) continue;
+      staged.push({ id: `notification-${this.notifications.length + staged.length + 1}`, ...row });
+      inserted.add(row);
+    }
+    const outcomes: Row[] = [];
+    const full = ["workspace_id", "subject_table", "subject_id", "recipient_user_id", "due_on", "kind"];
+    const legacy = keys.find((key) => key.length === 4 && !key.includes("kind"));
+    for (const row of args.p_rows) {
+      const current = [...this.notifications, ...staged];
+      const same = current.find((stored) => equal(row, stored, full));
+      const opposite = legacy && current.find((stored) => stored.workspace_id === row.workspace_id && stored.kind !== row.kind && equal(row, stored, legacy));
+      const classification = inserted.has(row) ? "inserted" : same ? "duplicate" : opposite ? "deferred_old_key" : null;
+      if (!classification) return { data: null, error: { message: "work_reminder_classification_missing" } };
+      outcomes.push({ ...row, classification, blocking_kind: classification === "deferred_old_key" && opposite ? opposite.kind : null });
+    }
+    this.notifications.push(...staged);
+    const envelope = { protocol: "work_reminder_batch_v1", requested_count: args.p_rows.length,
+      inserted_count: outcomes.filter((row) => row.classification === "inserted").length,
+      duplicate_count: outcomes.filter((row) => row.classification === "duplicate").length,
+      deferred_count: outcomes.filter((row) => row.classification === "deferred_old_key").length, outcomes };
+    const data = capWorkRpcRows(this.reminderWriteResult ? this.reminderWriteResult(envelope) : envelope, this.rpcMaxRows);
+    this.reminderWriteResponses.push(data);
+    return { data, error: null };
   }
 
   /** The auth-admin surface the real roster helper resolves emails through. */

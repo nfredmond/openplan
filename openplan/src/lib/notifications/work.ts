@@ -198,8 +198,10 @@ export type WorkNotificationRow = {
   body: string;
 };
 
+/** Exact nested outcome fields; the scalar RPC has no table projection. */
 export const WORK_NOTIFICATION_WRITE_COLUMNS =
   "workspace_id, recipient_user_id, kind, subject_table, subject_id, project_id, due_on, title, body, classification, blocking_kind";
+export const WORK_NOTIFICATION_WRITE_PROTOCOL = "work_reminder_batch_v1";
 
 type ReminderWriteOutcome = WorkNotificationRow & {
   classification: "inserted" | "duplicate" | "deferred_old_key";
@@ -216,13 +218,30 @@ function reminderIdentity(row: WorkNotificationRow): string {
 
 /** Refuse incomplete, duplicated, foreign or altered response rows before counting or sending. */
 function readReminderWriteOutcomes(data: unknown, requested: readonly WorkNotificationRow[]): ReminderWriteOutcome[] {
+  if (!data || typeof data !== "object" || Array.isArray(data)) throw new Error("The reminder write returned an invalid scalar envelope.");
+  const envelope = data as Record<string, unknown>;
+  const envelopeFields = ["protocol", "requested_count", "inserted_count", "duplicate_count", "deferred_count", "outcomes"];
+  const countFields = ["requested_count", "inserted_count", "duplicate_count", "deferred_count"] as const;
+  if (Object.keys(envelope).length !== envelopeFields.length || envelopeFields.some((field) => !Object.hasOwn(envelope, field)) ||
+    envelope.protocol !== WORK_NOTIFICATION_WRITE_PROTOCOL || countFields.some((field) =>
+      typeof envelope[field] !== "number" || !Number.isSafeInteger(envelope[field]) || (envelope[field] as number) < 0)) {
+    throw new Error("The reminder write returned an invalid envelope protocol or count.");
+  }
+  const counts = {
+    requested: envelope.requested_count as number, inserted: envelope.inserted_count as number,
+    duplicate: envelope.duplicate_count as number, deferred: envelope.deferred_count as number,
+  };
+  if (counts.requested !== requested.length || counts.inserted + counts.duplicate + counts.deferred !== counts.requested) {
+    throw new Error("The reminder write returned inconsistent envelope counts.");
+  }
+  const rows = envelope.outcomes;
   const expected = new Map(requested.map((row) => [reminderIdentity(row), row]));
-  if (expected.size !== requested.length || !Array.isArray(data) || data.length !== requested.length) {
+  if (expected.size !== requested.length || !Array.isArray(rows) || rows.length !== requested.length) {
     throw new Error("The reminder write returned an incomplete or ambiguous batch classification.");
   }
   const fields = WORK_NOTIFICATION_WRITE_COLUMNS.split(", ");
   const seen = new Set<string>();
-  return data.map((value: unknown) => {
+  const outcomes = rows.map((value: unknown): ReminderWriteOutcome => {
     if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("The reminder write returned an invalid row.");
     const row = value as Record<string, unknown>;
     if (Object.keys(row).length !== fields.length || fields.some((field) => !Object.hasOwn(row, field))) {
@@ -244,6 +263,12 @@ function readReminderWriteOutcomes(data: unknown, requested: readonly WorkNotifi
     seen.add(reminderIdentity(original));
     return { ...original, classification, blocking_kind: blocker ?? null };
   });
+  if (outcomes.filter((row) => row.classification === "inserted").length !== counts.inserted ||
+    outcomes.filter((row) => row.classification === "duplicate").length !== counts.duplicate ||
+    outcomes.filter((row) => row.classification === "deferred_old_key").length !== counts.deferred) {
+    throw new Error("The reminder write returned counts that disagree with its outcomes.");
+  }
+  return outcomes;
 }
 
 /**
@@ -1257,9 +1282,7 @@ type SweepQuery = PromiseLike<SweepReadResult> & {
  */
 export type WorkSweepClient = {
   rpc(name: "work_notification_kind_activation"): PromiseLike<SweepReadResult>;
-  rpc(name: "insert_work_notification_reminders", args: { p_rows: readonly WorkNotificationRow[] }): {
-    select(columns: string): PromiseLike<SweepReadResult>;
-  };
+  rpc(name: "insert_work_notification_reminders", args: { p_rows: readonly WorkNotificationRow[] }): PromiseLike<SweepReadResult>;
   from(table: string): {
     select(columns: string): SweepQuery;
   };
@@ -1575,9 +1598,7 @@ export async function sweepWorkDeadlines(
     if (new Set(requested.map(reminderIdentity)).size !== requested.length) {
       throw new Error("The reminder request contains duplicate identities.");
     }
-    const write = await client
-      .rpc("insert_work_notification_reminders", { p_rows: requested })
-      .select(WORK_NOTIFICATION_WRITE_COLUMNS);
+    const write = await client.rpc("insert_work_notification_reminders", { p_rows: requested });
     if (write.error) {
       result.writeError = write.error.message ?? "the database returned no reason";
       return result;

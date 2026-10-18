@@ -118,3 +118,8 @@ prove PostgreSQL execution, locks, roles, concurrency or activation. New live
 cases are included in the existing RLS CI suite. Independent r3 review remains
 pending, so the PR stays draft and hosted migration remains held. Raw results
 remain private under v1-deadline-rollout-compatibility-20261018/root-checks-02.
+
+
+October 18, r4 source successor: the reminder RPC now returns one exact scalar JSONB envelope with complete nested outcomes. The r3 table-return cap finding remains accepted and its receipts remain historical. R4 ordinary checks, independent review and actual API/native rollout remain pending. Initial staged application reminders remain pending until a separate reviewed activation after old writers retire.
+
+October 18, r4 checks: one finite ordinary unit exited 0 after 54.667 seconds. Harmless and restored batches each pass 118 tests. Seven targeted failures cover protocol, envelope shape, request coverage, classification counts, nested projection, table-return regression and scalar SQL declaration; source bytes/modes restore exactly and scoped lint passes. Independent r4 source review finds no concrete P1/P2. The API cap cases are models, not installed HTTP evidence. Native/API/upgrade, hosted migration and later activation remain pending. All rejected r2/r3 evidence stays historical.

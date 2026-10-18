@@ -1,8 +1,8 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { loadWorkNotifications, sweepWorkDeadlines, WORK_NOTIFICATION_WRITE_COLUMNS, WORK_SWEEP_SOURCES, type WorkSweepClient } from "@/lib/notifications/work";
-import { FakeWorkDb, workNotificationUniqueKey, type FakeWorkDbOptions } from "./helpers/fake-work-notification-tables";
+import { loadWorkNotifications, sweepWorkDeadlines, WORK_NOTIFICATION_WRITE_COLUMNS, WORK_NOTIFICATION_WRITE_PROTOCOL, WORK_SWEEP_SOURCES, type WorkSweepClient } from "@/lib/notifications/work";
+import { capWorkRpcRows, FakeWorkDb, workNotificationUniqueKey, type FakeWorkDbOptions } from "./helpers/fake-work-notification-tables";
 import { blankComments, migrationFiles, readMigration } from "./migrations/read-migrations";
 import { loadSchemaInventory } from "./migrations/schema-inventory";
 import { loadGrantInventory } from "./migrations/grant-inventory";
@@ -51,6 +51,12 @@ describe("recorded grant deadline notifications", () => {
     const writer = source.slice(source.indexOf("CREATE FUNCTION public.insert_work_notification_reminders(p_rows jsonb)"),
       source.indexOf("CREATE FUNCTION public.record_funding_opportunity_deadline_changes()"));
     expect(writer).toMatch(/LANGUAGE plpgsql VOLATILE SECURITY INVOKER SET search_path = ''/);
+    expect(writer).toMatch(/insert_work_notification_reminders\(p_rows jsonb\)\s+RETURNS jsonb\s+LANGUAGE/);
+    expect(writer).not.toMatch(/RETURNS TABLE|RETURNS SETOF|RETURN QUERY|RETURN NEXT/);
+    expect(writer).toContain("'protocol','work_reminder_batch_v1'");
+    for (const field of ["requested_count", "inserted_count", "duplicate_count", "deferred_count", "outcomes"]) {
+      expect(writer).toContain(`'${field}'`);
+    }
     expect(writer).toContain("ON CONFLICT DO NOTHING");
     expect(writer).not.toMatch(/ON CONFLICT\s*\(|(?:^|\n)\s*EXECUTE\b|SECURITY DEFINER|EXCEPTION\s+WHEN|UPDATE public|DELETE FROM/i);
     expect(writer).toContain("FOR SHARE");
@@ -113,7 +119,8 @@ describe("recorded grant deadline notifications", () => {
     expect(db.notifications.map((row) => row.kind)).toEqual(["grant_decision_due", "grant_decision_due"]);
     expect((await sweepWorkDeadlines(db as unknown as WorkSweepClient, options)).notificationsCreated).toBe(0);
     expect(db.upsertCalls).toHaveLength(0);
-    expect(db.reminderWriteCalls[0].select).toBe(WORK_NOTIFICATION_WRITE_COLUMNS);
+    expect(Object.keys((db.reminderWriteResponses[0] as { outcomes: object[] }).outcomes[0]).sort())
+      .toEqual(WORK_NOTIFICATION_WRITE_COLUMNS.split(", ").sort());
   });
 
   it.each([null, "true", {}, 0])("keeps invalid activation %j failed rather than treating it as active", async (data) => {
@@ -220,7 +227,8 @@ describe("recorded grant deadline notifications", () => {
     expect(repeated.notificationsCreated).toBe(0);
     expect(repeated.digestsComposed).toBe(0);
     expect(secondDb.upsertCalls).toHaveLength(0);
-    expect(secondDb.reminderWriteCalls[0].select).toBe(WORK_NOTIFICATION_WRITE_COLUMNS);
+    expect(Object.keys((secondDb.reminderWriteResponses[0] as { outcomes: object[] }).outcomes[0]).sort())
+      .toEqual(WORK_NOTIFICATION_WRITE_COLUMNS.split(", ").sort());
   });
 
   it("keeps separate same-day notices, null due dates, exact change text and original opportunity links", async () => {
@@ -371,12 +379,12 @@ describe("rollout batch classification across existing award kinds", () => {
     "null", "missing_row", "duplicate_row", "missing_kind", "missing_due", "missing_classification", "extra_field",
     "foreign_subject", "changed_date", "changed_kind", "changed_body", "unknown_classification", "missing_blocker", "same_blocker",
   ])("refuses malformed batch return %s before claiming an inserted row or composing a digest", async (fault) => {
-    const { db, run } = batch({ reminderWriteResult: (rows) => {
-      const changed = rows.map((row) => ({ ...row }));
+    const { db, run } = batch({ reminderWriteResult: (envelope) => {
+      const changed = (envelope.outcomes as Array<Record<string, unknown>>).map((row) => ({ ...row }));
       const deferred = changed.find((row) => row.classification === "deferred_old_key");
       if (fault === "null") return null;
-      if (fault === "missing_row") return changed.slice(1);
-      if (fault === "duplicate_row") return changed.map(() => changed[0]);
+      if (fault === "missing_row") return { ...envelope, outcomes: changed.slice(1) };
+      if (fault === "duplicate_row") return { ...envelope, outcomes: changed.map(() => changed[0]) };
       if (fault === "missing_kind") delete changed[0].kind;
       if (fault === "missing_due") delete changed[0].due_on;
       if (fault === "missing_classification") delete changed[0].classification;
@@ -388,11 +396,78 @@ describe("rollout batch classification across existing award kinds", () => {
       if (fault === "unknown_classification") changed[0].classification = "delivered";
       if (fault === "missing_blocker" && deferred) deferred.blocking_kind = null;
       if (fault === "same_blocker" && deferred) deferred.blocking_kind = deferred.kind;
-      return changed;
+      return { ...envelope, outcomes: changed };
     } });
     const result = await run();
     expect(result.writeError).not.toBeNull();
     expect(result).toMatchObject({ notificationsCreated: 0, notificationsAlreadyPresent: 0, deferredByOldKey: [], digestsComposed: 0 });
     expect(db.outbox).toHaveLength(0);
+  });
+
+  it.each([
+    "array", "missing_protocol", "wrong_protocol", "extra_field", "missing_count", "string_count", "negative_count",
+    "fraction_count", "unsafe_count", "nan_count", "wrong_requested_count", "wrong_sum", "wrong_status_counts", "missing_outcomes",
+  ])("refuses scalar envelope fault %s before any counts or mail", async (fault) => {
+    const { db, run } = batch({ reminderWriteResult: (response) => {
+      const envelope = { ...response };
+      if (fault === "array") return envelope.outcomes;
+      if (fault === "missing_protocol") delete envelope.protocol;
+      if (fault === "wrong_protocol") envelope.protocol = "unknown";
+      if (fault === "extra_field") envelope.extra = true;
+      if (fault === "missing_count") delete envelope.inserted_count;
+      if (fault === "string_count") envelope.inserted_count = "2";
+      if (fault === "negative_count") envelope.inserted_count = -1;
+      if (fault === "fraction_count") envelope.inserted_count = 0.5;
+      if (fault === "unsafe_count") envelope.inserted_count = Number.MAX_SAFE_INTEGER + 1;
+      if (fault === "nan_count") envelope.inserted_count = Number.NaN;
+      if (fault === "wrong_requested_count") envelope.requested_count = 4;
+      if (fault === "wrong_sum") envelope.inserted_count = 3;
+      if (fault === "wrong_status_counts") { envelope.inserted_count = 1; envelope.duplicate_count = 1; }
+      if (fault === "missing_outcomes") delete envelope.outcomes;
+      return envelope;
+    } });
+    const result = await run();
+    expect(result.writeError).not.toBeNull();
+    expect(result).toMatchObject({ notificationsCreated: 0, notificationsAlreadyPresent: 0, deferredByOldKey: [], digestsComposed: 0 });
+    expect(db.outbox).toHaveLength(0);
+  });
+
+  it.each([
+    ["bridge", 1000], ["active", 1000], ["bridge", 100], ["active", 100],
+  ] as const)("retains 1001 nested outcomes under the RPC row-cap model, stage=%s max_rows=%s", async (reminderStage, rpcMaxRows) => {
+    const id = (n: number) => `00000000-0000-4000-8000-${n.toString(16).padStart(12, "0")}`;
+    const projects = { id: project, workspace_id: workspace, name: "Cap fixture" };
+    const common = { project_id: project, assignee_user_id: creator, status: "in_progress", projects };
+    const deliverables = Array.from({ length: 600 }, (_, i) => ({ ...common, id: id(i + 1), title: `Deliverable ${i}`, due_date: "2026-10-19" }));
+    const milestones = Array.from({ length: 400 }, (_, i) => ({ ...common, id: id(i + 601), title: `Milestone ${i}`, target_date: "2026-10-19" }));
+    const submittal = { ...common, id: id(1001), title: "Only new submittal", status: "draft", due_date: "2026-10-19" };
+    const db = new FakeWorkDb({ reminderStage, rpcMaxRows, tables: {
+      project_deliverables: deliverables, project_milestones: milestones, project_submittals: [submittal],
+      workspaces: [{ id: workspace, time_zone: "UTC", name: "Cap fixture" }],
+    } });
+    db.notifications.push(...[...deliverables, ...milestones].map((row, i) => ({ workspace_id: workspace, recipient_user_id: creator,
+      subject_table: i < 600 ? "project_deliverables" : "project_milestones", subject_id: row.id,
+      kind: i < 600 ? "deliverable_due" : "milestone_due", due_on: "2026-10-19", project_id: project, title: "Retained title", body: "Retained body" })));
+    const before = db.notifications.map((row) => ({ ...row }));
+    expect(capWorkRpcRows(before, rpcMaxRows)).toHaveLength(rpcMaxRows);
+    const run = () => sweepWorkDeadlines(db as unknown as WorkSweepClient, { now, horizonDays: 7,
+      loadRoster: async () => ({ ok: true as const, members: [{ userId: creator, email: "cap@example.test", role: "member" }] }),
+    });
+    const result = await run();
+    expect(result).toMatchObject({ writeError: null, notificationsCreated: 1, notificationsAlreadyPresent: 1000, deferredByOldKey: [], digestsComposed: 1 });
+    expect(db.reminderWriteCalls).toHaveLength(1);
+    expect(db.reminderWriteCalls[0].rows).toHaveLength(1001);
+    expect(db.reminderWriteResponses[0]).toMatchObject({ protocol: WORK_NOTIFICATION_WRITE_PROTOCOL, requested_count: 1001,
+      inserted_count: 1, duplicate_count: 1000, deferred_count: 0, outcomes: expect.any(Array) });
+    expect((db.reminderWriteResponses[0] as { outcomes: unknown[] }).outcomes).toHaveLength(1001);
+    expect(db.outbox).toHaveLength(1);
+    expect(db.outbox[0].payload_json).toMatchObject({ itemCount: 1 });
+    expect(db.outbox[0].body).toContain("Only new submittal");
+    expect(db.outbox[0].body).not.toContain("Deliverable 0");
+    expect(db.notifications.slice(0, 1000)).toEqual(before);
+    const repeat = await run();
+    expect(repeat).toMatchObject({ writeError: null, notificationsCreated: 0, notificationsAlreadyPresent: 1001, digestsComposed: 0 });
+    expect(db.reminderWriteCalls).toHaveLength(2);
+    expect(db.outbox).toHaveLength(1);
   });
 });
