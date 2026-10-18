@@ -149,3 +149,14 @@ lists so the existing projection scanner checks them. The parser and thresholds
 stay unchanged. All 115 affected tests pass with the failing CI seed `95014`,
 plus lint and affected types. A harmless comment survives; a discarded error
 and nonexistent column fail the intended guards, with source restored.
+
+## Report file selection
+
+Journeys 02, 09 and 10 find indistinguishable PDF choices in the evidence bundle
+picker. The picker now shows format, UTC generation time and artifact ID in each
+report row and its checkbox name. A missing time stays unavailable. These details
+identify the retained file; they do not label its sources current or change
+default selection, revision tokens, frozen manifests or governed submission.
+All 45 related tests pass with seed `95014`, including duplicate titles and
+timestamps, HTML/PDF distinction, missing dates and the exact selection payload.
+Browser verification follows. Raw captures stay private.
