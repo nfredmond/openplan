@@ -33,9 +33,22 @@ const authGetUserMock = vi.fn();
 const executionInsertMock = vi.fn();
 
 const reportMaybeSingleMock = vi.fn();
-const reportEqMock = vi.fn(() => ({ maybeSingle: reportMaybeSingleMock }));
-const reportSelectMock = vi.fn(() => ({ eq: reportEqMock }));
-const reportUpdateEqMock = vi.fn().mockResolvedValue({ error: null });
+// Existing scenarios share the newly selected report revision; their explicit
+// report fields and all original scenario assertions remain unchanged.
+const reportEqMock = vi.fn(() => ({ maybeSingle: async () => {
+  const result = await reportMaybeSingleMock();
+  return result?.data ? { ...result, data: { updated_at: "2026-03-14T00:00:00.000Z", ...result.data } } : result;
+} }));
+const reportSelectMock = vi.fn((_columns: string) => ({ eq: reportEqMock }));
+const reportWritebackSingleMock = vi.fn().mockResolvedValue({ data: { updated_at: "2026-03-14T02:00:01.000Z" }, error: null });
+const reportWritebackSelectMock = vi.fn(() => ({ maybeSingle: reportWritebackSingleMock }));
+const reportWritebackQuery = { eq: vi.fn(), select: reportWritebackSelectMock };
+const reportUpdateEqMock = reportWritebackQuery.eq.mockReturnValue(reportWritebackQuery);
+const artifactWritebackSingleMock = vi.fn().mockResolvedValue({ data: { id: "artifact" }, error: null });
+const artifactWritebackSelectMock = vi.fn(() => ({ maybeSingle: artifactWritebackSingleMock }));
+const artifactWritebackQuery = { eq: vi.fn(), select: artifactWritebackSelectMock };
+const artifactWritebackEqMock = artifactWritebackQuery.eq.mockReturnValue(artifactWritebackQuery);
+const artifactWritebackUpdateMock = vi.fn(() => ({ eq: artifactWritebackEqMock }));
 const reportUpdateMock = vi.fn(() => ({ eq: reportUpdateEqMock }));
 
 const membershipMaybeSingleMock = vi.fn();
@@ -570,6 +583,7 @@ const fromMock = vi.fn((table: string) => {
   if (table === "report_artifacts") {
     return {
       insert: artifactsInsertMock,
+      update: artifactWritebackUpdateMock,
       select: agreementArtifactsSelectMock,
     };
   }
@@ -1044,6 +1058,21 @@ describe("POST /api/reports/[reportId]/generate", () => {
       }),
       storage: { from: serviceStorageFromMock },
     });
+  });
+
+  it("reads the report revision and joins completed writeback to the generated artifact", async () => {
+    const response = await postGenerate(new NextRequest("http://localhost/api/reports/1/generate", {
+      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ format: "html" }),
+    }), { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) });
+    expect(response.status).toBe(200);
+    expect(reportSelectMock.mock.calls[0][0].split(", ")).toContain("updated_at");
+    expect(reportUpdateEqMock).toHaveBeenCalledWith("updated_at", "2026-03-14T00:00:00.000Z");
+    expect(reportWritebackSelectMock).toHaveBeenCalledWith("updated_at");
+    expect(artifactWritebackEqMock.mock.calls).toEqual([["id", "artifact-1"], ["report_id", "11111111-1111-4111-8111-111111111111"]]);
+    expect(artifactWritebackUpdateMock).toHaveBeenCalledWith({ metadata_json: expect.objectContaining({
+      generationWriteback: { schema: "openplan.report-generation-writeback.v1", reportUpdatedAt: "2026-03-14T02:00:01.000Z" },
+    }) });
+    expect(artifactsInsertMock.mock.calls[0][0].metadata_json?.generationWriteback).toBeNull();
   });
 
   for (const target of ["project", "rtp", "campaign"] as const) {
@@ -1558,7 +1587,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
           sourceContext: expect.objectContaining({
             linkedRunCount: 1,
             jurisdictionReadiness: expect.objectContaining({
-              schema: "openplan.project-jurisdiction-readiness-export.v3",
+              schema: "openplan.project-jurisdiction-readiness-export.v4",
               contextSource: "legacy_study_place",
               payloadSha256: expect.stringMatching(/^[a-f0-9]{64}$/),
               entries: expect.arrayContaining([expect.objectContaining({
@@ -4441,7 +4470,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expect((await generatePendingSchemaReport()).status).toBe(200);
     const { readiness, source } = generatedPendingSchemaOutput();
     expect(projectSelectMock.mock.calls.at(-1)![0], "Place fallback still selects jurisdiction").toContain("jurisdiction_context");
-    expect(readiness.schema, "Readable jurisdiction retains strict external contract").toBe("openplan.project-jurisdiction-readiness-export.v3");
+    expect(readiness.schema, "Readable jurisdiction retains strict external contract").toBe("openplan.project-jurisdiction-readiness-export.v4");
     expect(readiness.contextSource, "Readable jurisdiction stays a declaration").toBe("project_declaration");
     expect(source.projectGeographyReadState).toBe("schema_pending");
   });

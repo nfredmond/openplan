@@ -291,7 +291,7 @@ const UNVERIFIED_CALLER_WRITES: Record<string, number> = {
   // projection on purpose: a DELETE returns the caller no record, and asking
   // for the financial columns would 503 every delete on a deployment that has
   // not run 20260805000003.
-  "src/app/api/reports/[reportId]/generate/route.ts": 6,
+  // 6 -> 0: generation-writeback observes all returned revisions and handles zero rows.
   "src/app/api/reports/[reportId]/route.ts": 4,
   "src/app/api/rtp-cycles/[rtpCycleId]/public-share/route.ts": 1,
   "src/app/api/rtp-cycles/packet-presets/route.ts": 2,

@@ -63,6 +63,7 @@ import {
   artifactSafetyEvidenceReadFailed,
   buildReportRegistryDriftSummary,
   resolveTrackedReportSourceUpdatedAt,
+  artifactGenerationWritebackIsCurrent,
 } from "@/lib/reports/report-registry-freshness";
 import { resolveRtpFundingFollowThrough } from "@/lib/operations/grants-links";
 import {
@@ -337,6 +338,7 @@ export default async function ReportsPage({
         : null;
       const computedPacketFreshness = getReportPacketFreshness({
         latestArtifactKind: report.latest_artifact_kind,
+        generationWritebackCurrent: artifactGenerationWritebackIsCurrent(latestArtifact?.metadata_json, report.updated_at),
         generatedAt: packetGeneratedAt,
         updatedAt: resolveTrackedReportSourceUpdatedAt({
           generatedAt: packetGeneratedAt,

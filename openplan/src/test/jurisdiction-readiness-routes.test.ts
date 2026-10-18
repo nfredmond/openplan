@@ -100,7 +100,7 @@ describe("jurisdiction readiness APIs", () => {
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(body.schema, "Download selects external v3").toBe("openplan.project-jurisdiction-readiness-export.v3");
+    expect(body.schema, "Download selects external v4").toBe("openplan.project-jurisdiction-readiness-export.v4");
     expect(selectMock).toHaveBeenCalledWith("projects", "id, updated_at, jurisdiction_context, place_label, place_country_code, place_subdivision_code");
     expect(body.entries[0].assessment.jurisdiction.id).toBe("US-PR");
     expect(body.entries[0].assessment.reports.find((report: { job: { id: string } }) => report.job.id === "land-use-plan"))

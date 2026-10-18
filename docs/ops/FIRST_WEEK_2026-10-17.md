@@ -62,3 +62,48 @@ The eight stack migrations are applied to the authorized hosted installation.
 PRs 330 and 331 are merged; PR332 waits for serial deployment confirmation.
 The current assessment covers local workflows, not an authenticated hosted
 acceptance run. Human feedback follows v1 under Nathaniel’s October 17 direction.
+
+## Focused rerun and report correction
+
+Five sessions finish against `ab8a373`: both setup journeys and land-use reach
+their outcomes; project handoff and safety remain partial. Latest outcomes across
+the two identified builds are eight reached and four partial. This is not a
+single-build twelve-journey pass. The isolated installation now has its existing
+Census key, workspace home geography and tract coverage. It still has no new
+model-validation acceptance.
+
+The report correction distinguishes an automatic generation writeback from a
+real edit. It records the returned database revision on the newly created
+artifact and refuses concurrent report changes. Explicit incomplete receipts
+stay non-current. Legacy artifact treatment stays unchanged. The jurisdiction
+export now hashes jurisdiction and registry inputs under schema v4; the global
+project revision and bundle freshness checks remain in place. The PDF retains
+the precise assessment snapshot used at generation.
+
+Focused regression checks cover completed, concurrent, failed and incomplete
+writebacks, later edits, legacy artifacts, source projections and assessment
+hash stability. Harmless changes survive. Removing revision, receipt, schema or
+input-scope protections produces the expected assertion failures, with source
+restored afterward. These tests do not establish live database permissions,
+transaction-wide source atomicity. Browser verification at `9a9d81f1b` generates
+and downloads a real PDF through the isolated app. The project remains current
+after generation, a real title edit immediately requests a refresh, and the
+PDF's readiness hash matches direct JSON before and after generation. Desktop
+and 390-pixel DOM checks show no horizontal overflow. The relevant PDF pages
+are readable; the existing long summary and assessment cross page boundaries.
+The T3 screenshot capture duplicates the narrow frame, so it does not establish
+pixel-level layout fidelity. Raw captures stay private.
+
+Safety road-match timing and source persistence, duplicate PDF picker labels,
+land-use review links and vague validation messages remain open. PRs 330, 331
+and 332 are now merged. Final combined hosted acceptance and the Stage A tag
+remain pending. Human feedback follows v1.
+
+The PR334 full-suite check finds three integration failures missed by the focused
+selection. Generation now uses the shared zero-row result helpers, removes six
+retired unverified-write inventory entries, and updates the RTP lifecycle mock
+to enforce the revision predicate and artifact receipt projections. The source
+inventory still rejects a new unobservable write. Its parser and thresholds are
+unchanged. All 251 related tests pass with CI seed `266519`, including both
+write guards and the RTP lifecycle. Mocked lifecycle checks do not establish
+native RLS or concurrency.

@@ -19,14 +19,14 @@ it("hashes a versioned external representation after strict internal validation"
   expect(internal.context?.recordedBy, "Internal actor custody retained").toBe(actor);
   expect(JSON.stringify(external), "External canonical material excludes internal actor UUID").not.toContain(actor);
   expect(external.context, "External attribution keeps time and source").toEqual({ schema: "openplan.project-jurisdiction-context-export.v1", state: "declared", recordedAt: declaration.recordedAt, entries: declaration.entries });
-  expect(external.schema, "External schema is explicit").toBe("openplan.project-jurisdiction-readiness-export.v3");
+  expect(external.schema, "External schema is explicit").toBe("openplan.project-jurisdiction-readiness-export.v4");
   expect(external.scope, "External scope is explicit").toBe("external_handoff");
   expect(external.registryVersion, "Registry identity retained").toBe(JURISDICTION_READINESS_REGISTRY.registryVersion);
   const { payloadSha256, ...canonical } = external;
   expect(payloadSha256, "External hash covers its actual canonical bytes").toBe(createHash("sha256").update(canonicalizeActionPayload(canonical)).digest("hex"));
   expect(payloadSha256, "Internal and external bytes have distinct hashes").not.toBe(internal.payloadSha256);
   expect(() => buildProjectJurisdictionReadinessExportPayload({ ...project, jurisdiction_context: { ...declaration, recordedBy: undefined } }, registry), "Export cannot bypass strict internal authorship validation").toThrow("Saved project jurisdiction is invalid");
-  expect(buildProjectJurisdictionReadinessExportPayload({ ...project, updated_at: "new-revision" }, registry).payloadSha256, "Revision changes canonical hash").not.toBe(payloadSha256);
+  expect(buildProjectJurisdictionReadinessExportPayload({ ...project, updated_at: "new-revision" }, registry).payloadSha256, "Output-only project revision does not change jurisdiction inputs").toBe(payloadSha256);
   expect(buildProjectJurisdictionReadinessExportPayload(project, "a".repeat(64)).payloadSha256, "Registry changes canonical hash").not.toBe(payloadSha256);
 });
 it("carries minimized same-revision canonical material through real generated files and SQLite at different clocks", async () => {

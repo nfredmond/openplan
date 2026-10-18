@@ -56,7 +56,7 @@ import { scoreValueForPresentation } from "@/lib/analysis/score-presentation";
 import { presentRunSummary } from "@/lib/analysis/run-summary-presentation";
 import type { FrozenReportAerialOrthoSnapshotV1 } from "@/lib/reports/aerial-ortho-evidence";
 import { buildEvidenceDescriptor, type EvidenceDescriptorV1 } from "@/lib/evidence/evidence-descriptor";
-import type { JurisdictionReadinessPayload, ProjectJurisdictionReadinessPayload, ProjectJurisdictionReadinessExportPayload } from "@/lib/jurisdiction-readiness/payload";
+import type { JurisdictionReadinessPayload, ProjectJurisdictionReadinessPayload, ProjectJurisdictionReadinessExportPayload, LegacyProjectJurisdictionReadinessExportPayload } from "@/lib/jurisdiction-readiness/payload";
 import type { ReportProjectJurisdictionSchemaPendingPayload } from "./project-jurisdiction";
 
 /**
@@ -229,7 +229,7 @@ export type ReportGenerationData = {
   modelingEvidence: ReportModelingEvidence[];
   evidenceDescriptors?: EvidenceDescriptorV1[];
   /** The exact sparse registry reading frozen into this packet. */
-  jurisdictionReadiness?: JurisdictionReadinessPayload | ProjectJurisdictionReadinessPayload | ProjectJurisdictionReadinessExportPayload | ReportProjectJurisdictionSchemaPendingPayload;
+  jurisdictionReadiness?: JurisdictionReadinessPayload | ProjectJurisdictionReadinessPayload | ProjectJurisdictionReadinessExportPayload | LegacyProjectJurisdictionReadinessExportPayload | ReportProjectJurisdictionSchemaPendingPayload;
   /**
    * The crash evidence attached to this project, or null when the read FAILED.
    * Optional so existing callers keep working — but `undefined` and `null` mean
@@ -382,10 +382,10 @@ function jurisdictionReadinessMarkup(payload: ReportGenerationData["jurisdiction
       <p>Payload schema: ${esc(payload.schema)}. Scope: ${esc(payload.scope)}. Registry SHA-256: ${esc(payload.registrySha256)}. Study geography read state: ${esc(payload.studyAreaReadState)}.</p></section>`;
   }
 
-  if (payload.schema === "openplan.project-jurisdiction-readiness-response.v2" || payload.schema === "openplan.project-jurisdiction-readiness-export.v3") {
+  if (payload.schema === "openplan.project-jurisdiction-readiness-response.v2" || payload.schema === "openplan.project-jurisdiction-readiness-export.v3" || payload.schema === "openplan.project-jurisdiction-readiness-export.v4") {
     return `<section id="project-jurisdiction-context"><h2>Project jurisdiction context</h2><p>${esc(payload.disclosure)}</p>
-      <p>Project revision: ${esc(payload.projectRevision ?? "Unavailable")}. Readiness payload SHA-256: ${esc(payload.payloadSha256)}. Study geometry retains its own identity and coordinates.</p>
-      ${payload.schema === "openplan.project-jurisdiction-readiness-export.v3" ? `<p>Payload schema: ${esc(payload.schema)}. Scope: ${esc(payload.scope)}. Registry: ${esc(payload.registryVersion)}; SHA-256: ${esc(payload.registrySha256)}. ${esc(payload.attribution)} Recorded at: ${esc(payload.context?.recordedAt ?? "No separate declaration")}.</p>` : ""}
+      <p>${"projectRevision" in payload ? `Project revision: ${esc(payload.projectRevision ?? "Unavailable")}.` : "Jurisdiction context and registry inputs; project evidence revision is recorded separately."} Readiness payload SHA-256: ${esc(payload.payloadSha256)}. Study geometry retains its own identity and coordinates.</p>
+      ${(payload.schema === "openplan.project-jurisdiction-readiness-export.v3" || payload.schema === "openplan.project-jurisdiction-readiness-export.v4") ? `<p>Payload schema: ${esc(payload.schema)}. Scope: ${esc(payload.scope)}. Registry: ${esc(payload.registryVersion)}; SHA-256: ${esc(payload.registrySha256)}. ${esc(payload.attribution)} Recorded at: ${esc(payload.context?.recordedAt ?? "No separate declaration")}.</p>` : ""}
       ${payload.entries.length ? payload.entries.map(entry => `<article><h3>${esc(entry.declaration?.label ?? "Legacy study-place context")}</h3><p>${esc(entry.assessmentScope)}</p>
         ${entry.declaration ? `<p>Kind: ${esc(entry.declaration.kind)}. Source reference: ${esc(entry.declaration.reference ?? "None")}. Identity: ${esc(entry.declaration.identity === "staff_declared" ? "Unverified staff declaration" : "Server-resolved identity")}.</p><p>Declared country: ${esc(entry.declaration.countryCode ?? "Unspecified")}; subdivision: ${esc(entry.declaration.subdivisionCode ?? "Unspecified")}; scope: ${esc(entry.declaration.scope)}.</p>` : ""}
         ${jurisdictionReadinessMarkup(entry.assessment)}
@@ -1833,7 +1833,7 @@ function sectionMarkup(sectionKey: string, data: ReportGenerationData): string {
       <strong>Auditability posture</strong>
       <p>${hasEvidence
         ? "This report is a structured packet assembled from current OpenPlan evidence. Reviewers should treat its cited records as evidence-backed output, not freeform narrative copy."
-        : "This report has a structured evidence-chain record, but every supported evidence count is zero. It is a draft shell, not evidence-backed or release-ready output."}</p>
+        : "This packet contains structured planning context, but no linked evidence is counted in its evidence chain. Use it as a briefing draft, not an evidence-backed recommendation or a release-ready decision packet."}</p>
       <p>Generated on ${esc(formatDateTime(new Date().toISOString()))}. Project last updated ${esc(formatDateTime(data.project.updated_at))}. Review run-level transparency notes before external release.</p>
       ${data.scenarioSetLinks.length > 0 ? `<p>Scenario basis at generation: ${data.scenarioSetLinks.length} linked set${data.scenarioSetLinks.length === 1 ? "" : "s"} • ${scenarioSpineAggregate.pendingCount > 0 ? `${scenarioSpineAggregate.pendingCount} shared-spine pending` : `${scenarioSpineAggregate.assumptionSetCount} assumption set${scenarioSpineAggregate.assumptionSetCount === 1 ? "" : "s"} • ${scenarioSpineAggregate.dataPackageCount} data package${scenarioSpineAggregate.dataPackageCount === 1 ? "" : "s"} • ${scenarioSpineAggregate.indicatorSnapshotCount} indicator snapshot${scenarioSpineAggregate.indicatorSnapshotCount === 1 ? "" : "s"}`}</p>` : ""}
       ${(scenarioSpineAggregate.latestAssumptionSetUpdatedAt || scenarioSpineAggregate.latestDataPackageUpdatedAt || scenarioSpineAggregate.latestIndicatorSnapshotAt) ? `<p>Latest scenario spine timing: ${scenarioSpineAggregate.latestAssumptionSetUpdatedAt ? `assumptions ${esc(formatDateTime(scenarioSpineAggregate.latestAssumptionSetUpdatedAt))}` : "assumptions unavailable"}${scenarioSpineAggregate.latestDataPackageUpdatedAt ? ` • packages ${esc(formatDateTime(scenarioSpineAggregate.latestDataPackageUpdatedAt))}` : ""}${scenarioSpineAggregate.latestIndicatorSnapshotAt ? ` • indicators ${esc(formatDateTime(scenarioSpineAggregate.latestIndicatorSnapshotAt))}` : ""}</p>` : ""}

@@ -20,6 +20,14 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Report generation and jurisdiction handoff:** completed report generation now
+records its exact writeback revision. A later report edit or interrupted
+writeback still requires a refresh. The external jurisdiction-readiness payload
+uses schema v4 and fingerprints jurisdiction context and registry inputs, so
+creating a PDF no longer changes that assessment hash. Full project revisions
+and evidence-bundle freshness checks remain separate. No migration is required;
+existing v3 artifacts retain their original bytes and schema.
+
 **Project-budget snapshot and land-use publication, source candidates:**
 `20261017000019_project_budget_complete_inputs.sql` supplies the caller-scoped
 complete budget snapshot. `20261017030608_land_use_plan_publication_transaction.sql`
