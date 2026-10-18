@@ -19,6 +19,7 @@ export function PublishedDistributedWorkLoadingCard({ study }: { study: Publishe
       <p className="module-section-description mt-3">The published work-trip loading checkpoint could not be read and verified. Its results are unavailable, not zero. Reload this page to retry. If the problem continues, ask your administrator to check the installed study files. No model accuracy conclusion follows.</p>
     </section>
   );
+  const configuration = study.recordedConfiguration;
   return (
     <section aria-label="Distributed work loading development checkpoint" className="module-section-surface mb-6" data-testid="published-distributed-work-loading">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -29,13 +30,30 @@ export function PublishedDistributedWorkLoadingCard({ study }: { study: Publishe
         <StatusBadge tone="warning">{study.scientificOutcome}</StatusBadge>
       </div>
       <p className="module-section-description mt-3 max-w-[64rem]">
-        Census LODES8 places covered work-trip endpoints at block-supported road access points. Non-work trips keep their prior centroid loading. Missing, zero, unavailable, suppressed, unmapped, and unroutable states stay separate. This checkpoint does not change model defaults or claim calibration or validation.
+        {configuration.sourceRelease} ({configuration.sourceYear}) supplies endpoint weights for existing modeled work demand at block-supported road access points. {configuration.sourceLimitation} These weights are not observed vehicle or all-purpose trip counts. Missing, zero, unavailable, suppressed, unmapped, and unroutable states stay separate. This checkpoint does not change model defaults or claim calibration or validation.
       </p>
       <div className="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
         <div><span className="font-semibold">Coverage</span><span className="mt-1 block text-muted-foreground">{geographies.length} counties · {records.length} separate method results</span></div>
         <div><span className="font-semibold">Method treatment</span><span className="mt-1 block text-muted-foreground">AequilibraE and ActivitySim stay separate. No average or national rescue.</span></div>
         <div><span className="font-semibold">Rollout</span><span className="mt-1 block text-muted-foreground">{study.candidateAdvanced ? "Development gate met; defaults still unchanged" : "Candidate retained and retired"}</span></div>
       </div>
+      <section className="mt-4 space-y-3 rounded border border-border/70 p-3 text-sm" aria-label="Recorded study configuration and custody">
+        <h3 className="font-semibold">Recorded configuration and custody</h3>
+        <p>These disclosures come from the hash- and length-verified study registry. They describe the recorded development setup, not independent scientific acceptance or measured accuracy.</p>
+        <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div><dt className="font-semibold">Arbitrary point cap</dt><dd>{configuration.arbitraryPointCap === null ? "None recorded (null)" : String(configuration.arbitraryPointCap)}</dd></div>
+          <div><dt className="font-semibold">Arbitrary gateway cap</dt><dd>{configuration.arbitraryGatewayCap === null ? "None recorded (null)" : String(configuration.arbitraryGatewayCap)}</dd></div>
+          <div><dt className="font-semibold">Aggregation rule</dt><dd>{configuration.aggregateOnlySameRoutableNode ? "Aggregate only at the same routable node." : "Unavailable"}</dd></div>
+          <div><dt className="font-semibold">Demand policy</dt><dd>{configuration.preserveMethodWorkTotals && configuration.nonWorkUnchanged ? "Preserve each method's work total. Non-work trips keep their prior centroid loading." : "Unavailable"}</dd></div>
+          <div><dt className="font-semibold">Acceptance holdout opened</dt><dd>{configuration.acceptanceHoldoutOpened === false ? "No, according to recorded custody." : "Unavailable"}</dd></div>
+        </dl>
+        <p>{configuration.legacyPathNote}</p>
+        <p>Study, audit and comparison records also report no holdout access. A development gate does not establish calibration, validation, statewide completeness or nationwide accuracy.</p>
+        <OperatorDetail summary="Disclosure registry fingerprint">
+          <p className="break-all font-mono text-xs">{configuration.registryPath}</p>
+          <p className="mt-1 break-all font-mono text-xs">{configuration.registrySha256}</p>
+        </OperatorDetail>
+      </section>
       <div className="mt-4 flex flex-wrap gap-3 text-sm font-semibold">
         <a download className="underline underline-offset-2" href="/api/models/distributed-work-loading/study-result.json">Download exact study result</a>
         <a download className="underline underline-offset-2" href="/api/models/distributed-work-loading/study-report.md">Download study report</a>
