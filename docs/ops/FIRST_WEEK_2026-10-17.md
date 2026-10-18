@@ -85,8 +85,14 @@ writebacks, later edits, legacy artifacts, source projections and assessment
 hash stability. Harmless changes survive. Removing revision, receipt, schema or
 input-scope protections produces the expected assertion failures, with source
 restored afterward. These tests do not establish live database permissions,
-transaction-wide source atomicity or PDF layout. Browser verification follows
-on the identified correction build. Raw captures stay private.
+transaction-wide source atomicity. Browser verification at `9a9d81f1b` generates
+and downloads a real PDF through the isolated app. The project remains current
+after generation, a real title edit immediately requests a refresh, and the
+PDF's readiness hash matches direct JSON before and after generation. Desktop
+and 390-pixel DOM checks show no horizontal overflow. The relevant PDF pages
+are readable; the existing long summary and assessment cross page boundaries.
+The T3 screenshot capture duplicates the narrow frame, so it does not establish
+pixel-level layout fidelity. Raw captures stay private.
 
 Safety road-match timing and source persistence, duplicate PDF picker labels,
 land-use review links and vague validation messages remain open. PRs 330, 331
