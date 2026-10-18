@@ -1,5 +1,6 @@
 import {
   DRAWN_PLACE_SOURCE,
+  UPLOADED_PLACE_SOURCE,
   placeHasResolvableIdentity,
   type PlaceOfRecord,
 } from "@/lib/geographies/place-of-record";
@@ -68,6 +69,8 @@ export type ProjectSpineCrosslinkInput = {
     label: string | null;
     /** True when the area was hand-drawn, so it carries no resolvable identity. */
     isDrawn: boolean;
+    /** A file supplies an extent without resolving an authority or place identity. */
+    isUploaded?: boolean;
     /** Set when the place resolves to something downstream lanes can re-derive. */
     hasResolvableIdentity: boolean;
     /** The workspace home geography's name, when this project has no area of its own. */
@@ -169,6 +172,7 @@ export function geographyLaneInput(
   return {
     label: place.label,
     isDrawn: place.source === DRAWN_PLACE_SOURCE,
+    isUploaded: place.source === UPLOADED_PLACE_SOURCE,
     hasResolvableIdentity: placeHasResolvableIdentity(place),
     workspaceFallbackLabel,
   };
@@ -449,7 +453,7 @@ export function buildProjectSpineCrosslinkSummary(
    */
   const geographyReadiness: ProjectSpineCrosslinkReadiness = input.geography.hasResolvableIdentity
     ? "ready"
-    : input.geography.isDrawn
+    : input.geography.isDrawn || input.geography.isUploaded
       ? "attention"
       : "missing";
 
@@ -467,7 +471,7 @@ export function buildProjectSpineCrosslinkSummary(
         geographyReadiness === "ready"
           ? "Area of record set"
           : geographyReadiness === "attention"
-            ? "Drawn area only"
+            ? input.geography.isUploaded ? "Uploaded study area" : "Drawn area only"
             : "No study area",
       headline:
         geographyReadiness === "ready"
@@ -478,7 +482,9 @@ export function buildProjectSpineCrosslinkSummary(
           // version where model validation had to be opened for it by hand.
           ? `${geographyPlaceName} is this project's area of record. A model run opened from this project starts from it, the safety row opens crash retrieval for this project, and this row opens model validation for this project, so the study area does not have to be re-entered there.`
           : geographyReadiness === "attention"
-            ? `${geographyPlaceName} was drawn by hand, so it has an extent but no place identity.`
+            ? input.geography.isUploaded
+              ? `${geographyPlaceName} is saved from an uploaded file. It has an extent but no resolved place identity.`
+              : `${geographyPlaceName} was drawn by hand, so it has an extent but no place identity.`
             : input.geography.workspaceFallbackLabel
               ? `No study area is set, so anything that needs one falls back to the workspace's home geography, ${input.geography.workspaceFallbackLabel}.`
               : "No study area is set, and the workspace has no home geography either, so every module will ask for a place each time.",
@@ -486,7 +492,9 @@ export function buildProjectSpineCrosslinkSummary(
         geographyReadiness === "ready"
           ? "Resolved place — downstream lanes can re-derive the boundary, the county filter and the jurisdiction from it."
           : geographyReadiness === "attention"
-            ? "Drawn shape — no boundary to re-resolve, so no county filter or jurisdiction rule can be derived downstream."
+            ? input.geography.isUploaded
+              ? "Uploaded shape. Its geometry can scope work, but does not establish a county filter, jurisdiction or adopting authority."
+              : "Drawn shape — no boundary to re-resolve, so no county filter or jurisdiction rule can be derived downstream."
             : "Unset — each module will ask for a place separately, and two of them may be answered differently.",
       evidence:
         "A study area states WHERE this project is, not what is true there. It scopes what other lanes fetch; it is not itself a finding about the place.",

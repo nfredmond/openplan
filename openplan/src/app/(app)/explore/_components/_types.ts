@@ -70,9 +70,9 @@ export type AnalysisResult = {
     totalFatalities?: number | null;
     crashesPerSquareMile?: number | null;
     crashPointCount?: number;
-    jobsPerResident?: number;
+    jobsPerResident?: number | null;
     stopsPerSquareMile?: number;
-    walkBikeAccessTier?: string;
+    walkBikeAccessTier?: string | null;
     dataQuality?: {
       censusAvailable?: boolean;
       crashDataAvailable?: boolean;

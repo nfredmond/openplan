@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildProjectSpineCrosslinkSummary } from "@/lib/projects/project-spine-crosslinks";
+import { geographyLaneInput, buildProjectSpineCrosslinkSummary } from "@/lib/projects/project-spine-crosslinks";
 
 const baseInput = {
   projectId: "project-1",
@@ -70,6 +70,21 @@ const emptySafety = {
 };
 
 describe("buildProjectSpineCrosslinkSummary", () => {
+  it("recognizes an uploaded study area without inventing resolved identity", () => {
+    const geography = geographyLaneInput({
+      source: "uploaded_file", kind: "boundary", ref: null, label: "Uploaded project boundary",
+      countryCode: null, subdivisionCode: null, bbox: null, geometry: null,
+    }, null);
+    expect(geography.isUploaded).toBe(true);
+    expect(geography.hasResolvableIdentity).toBe(false);
+    const row = buildProjectSpineCrosslinkSummary({ ...baseInput, geography }).rows.find(row => row.id === "geography");
+    expect(row?.readiness).toBe("attention");
+    expect(row?.statusLabel).toBe("Uploaded study area");
+    expect(row?.headline).toContain("saved from an uploaded file");
+    expect(row?.detail).toContain("does not establish a county filter, jurisdiction or adopting authority");
+    expect(row?.href).toBe("#project-identity");
+  });
+
   it("orders attention rows ahead of ready crosslinks", () => {
     const summary = buildProjectSpineCrosslinkSummary({
       ...baseInput,

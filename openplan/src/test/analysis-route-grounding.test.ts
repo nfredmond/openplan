@@ -349,6 +349,63 @@ describe("/api/analysis grounding provenance contract", () => {
     generateGrantInterpretationMock.mockResolvedValue(INTERPRETATION_RESULT);
   });
 
+  it("withholds ACS employment estimates and walk/bike tiers when their inputs are absent", async () => {
+    fetchCensusForCorridorMock.mockResolvedValue({ ...CENSUS_FIXTURE,
+      totalPopulation: 0, totalCommuters: 0, pctWalk: 0, pctBike: 0, pctZeroVehicle: 0,
+      measured: { tracts: false, population: false, commuteMode: false, vehicleAccess: false, income: false },
+    });
+    fetchLODESForCorridorMock.mockResolvedValue({ ...LODES_FIXTURE, totalJobs: 0, jobsPerResident: 0 });
+    const response = await postAnalysis(analysisRequest(VALID_BODY));
+    expect(response.status).toBe(200);
+    const { metrics } = await response.json();
+    expect(metrics.totalJobs).toBeNull();
+    expect(metrics.jobsPerResident).toBeNull();
+    expect(metrics.walkBikeAccessTier).toBeNull();
+    expect(metrics.walkBikeAccessScoreBoost).toBeNull();
+    expect(classifyWalkBikeAccessMock).not.toHaveBeenCalled();
+    const stored = runsInsertMock.mock.calls[0][0];
+    expect(stored.metrics).toEqual(metrics);
+    expect(stored.summary_text).toContain("**Employment:** Not measured.");
+    expect(stored.summary_text).toContain("**Walk/Bike Access (baseline):** Not measured.");
+    expect(stored.summary_text).not.toContain("0 jobs");
+    expect(stored.summary_text).not.toContain("Tier low");
+  });
+
+  it.each(["commuteMode", "vehicleAccess"] as const)("withholds a walk/bike tier when only %s is missing", async (universe) => {
+    fetchCensusForCorridorMock.mockResolvedValue({ ...CENSUS_FIXTURE,
+      measured: { ...CENSUS_FIXTURE.measured, [universe]: false },
+    });
+    const response = await postAnalysis(analysisRequest(VALID_BODY));
+    expect(response.status).toBe(200);
+    expect((await response.json()).metrics.walkBikeAccessTier).toBeNull();
+    expect(classifyWalkBikeAccessMock).not.toHaveBeenCalled();
+  });
+
+  it("keeps real employment counts but withholds a ratio without population", async () => {
+    fetchCensusForCorridorMock.mockResolvedValue({ ...CENSUS_FIXTURE,
+      totalPopulation: 0, measured: { ...CENSUS_FIXTURE.measured, population: false },
+    });
+    fetchLODESForCorridorMock.mockResolvedValue({ ...LODES_FIXTURE, source: "lodes-wac" });
+    const response = await postAnalysis(analysisRequest(VALID_BODY));
+    expect(response.status).toBe(200);
+    const { metrics } = await response.json();
+    expect(metrics.totalJobs).toBe(1000);
+    expect(metrics.jobsPerResident).toBeNull();
+    expect(runsInsertMock.mock.calls[0][0].summary_text).toContain("Jobs per resident not measured.");
+  });
+
+  it("retains measured zero employment and observed zero proxy inputs", async () => {
+    fetchLODESForCorridorMock.mockResolvedValue({ ...LODES_FIXTURE, totalJobs: 0, jobsPerResident: 0 });
+    fetchCensusForCorridorMock.mockResolvedValue({ ...CENSUS_FIXTURE, pctWalk: 0, pctBike: 0, pctZeroVehicle: 0 });
+    const response = await postAnalysis(analysisRequest(VALID_BODY));
+    expect(response.status).toBe(200);
+    const { metrics } = await response.json();
+    expect(metrics.totalJobs).toBe(0);
+    expect(metrics.jobsPerResident).toBe(0);
+    expect(metrics.walkBikeAccessTier).toBe(WALK_BIKE_FIXTURE.tier);
+    expect(classifyWalkBikeAccessMock).toHaveBeenCalledWith(expect.objectContaining({ pctWalk: 0, pctBike: 0, pctZeroVehicle: 0 }));
+  });
+
   it("stores the raw [fact:N] narrative, responds stripped, and discloses dropped sentences", async () => {
     const response = await postAnalysis(analysisRequest(VALID_BODY));
 
