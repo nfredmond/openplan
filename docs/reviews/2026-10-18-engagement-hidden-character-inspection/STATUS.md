@@ -1,0 +1,11 @@
+# Engagement text inspection
+
+October 18, 2026. The existing comment, restricted history, survey and saved synthesis-source views now offer a separate hidden-character inspection. Readable saved text stays unchanged. The optional view reports code points, counts and escaped markers. It does not write records, call a provider, infer participant language, assign a moderation outcome or establish injection resistance.
+
+The helper observes direction controls, tags, joiners, selected boundaries and variation selectors, host-recognized default-ignorables and unusual C0/C1 controls. Tabs and newlines stay readable. Explicit language/script context is used when supplied; selected script letters do not identify a language. JSON views label their counts as observations of the serialized representation.
+
+Root's final ordinary check exits 0. Harmless and restored batches each pass 22 tests. Four targeted changes fail the intended assertions: suppressing tail controls, normalizing original text, truncating the saved comment and replacing the joiner explanation. Bytes and modes restore exactly; scoped lint passes. The first run retains a JSX syntax failure and an ambiguous retained-text query. The second retains an assertion that selected a nested code label instead of its explanation row. Both are corrected; neither failed run is called passing. Private logs remain outside the repository under v1-engagement-hidden-character-inspection-20261018.
+
+No query, permission, schema, action authority, provider input, canonical record, retained revision, frame or hash implementation changes. Existing moderation trimming/caps remain outside this patch. Thematic protocols remain unchanged. Broader shared-AI-context integration remains later T5 work.
+
+Identified desktop/390px navigation, console, keyboard and layout checks remain pending. Unit DOM tests do not establish those outcomes. Full compiler, CI and release checks also remain pending. Other limits include runtime Unicode versions, exhaustive script/control coverage, semantic sequence validity, fonts, language accuracy, malformed transport before JavaScript decoding, hostile intent, live privacy/RLS and provider behavior. No milestone or full-v1 acceptance closes here.
