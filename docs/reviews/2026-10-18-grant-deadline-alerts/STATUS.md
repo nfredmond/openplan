@@ -73,3 +73,24 @@ returns actual 0 before compiler-lock release. Backend, migration and prior
 independent-review pins stay unchanged. Private logs remain in
 `grant-deadline-editor-focused-20261018-01/`. Browser date widgets, normal
 navigation and the resulting My Work notices remain to be checked.
+
+## Root integrated database and browser checks
+
+Migration 000001 passes four isolated transaction/access cases, a harmless run,
+four intended database faults and the restored cases. Populated upgrade run
+39169753517 passes on d2562c9c5. Hosted migration remains pending.
+
+Identified local build f27566af458c exercises Dashboard to Grants, amendment,
+cancel, phone-width clear and My Work. PATCH requests contain only deliberately
+changed fields. The unchanged date retains its value; the cleared date stays
+empty after the notice opens its exact opportunity. Desktop and 390px captures
+show the editor and recorded old/new/actor notice without horizontal overflow.
+A harmless annotation survives, a forced-width layout fault fails and restores.
+There are no page errors, console errors or failed HTTP responses in the accepted
+cohort. Background request cancellations remain recorded, so strict whole-run
+clean status is false. An earlier 3 GiB preview restarts before completion. Two
+notice drivers click before page JavaScript loads and time out; a separate fully
+loaded-page run completes the exact link and retained-clear check. Those failed
+attempts remain failed. This is agent-run local workflow evidence, not hosted,
+full Stage A, simultaneous-session or official-notice verification. Private
+receipts stay in v1-grant-combined-browser-20261018/preview03/browser04/.
