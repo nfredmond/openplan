@@ -1,4 +1,4 @@
-"""Check actual SDK health cancellation with strict diagnostics."""
+"""Check schema census and SQL-read accounting with strict diagnostics."""
 import argparse,copy,hashlib,json,os,re,subprocess
 from pathlib import Path
 
@@ -34,9 +34,13 @@ def run(repo,out):
         return text.replace(before,after,1)
     def change(before,after):return lambda text:swap(text,before,after)
     entry=next(line for line in columns.read_text().splitlines(keepends=True) if 'column: "node_queue_process_observations.build_sha"' in line)
+    def expected_count(field):
+        values=re.findall(r'^  '+re.escape(field)+r': (\d+),$',original[test].decode(),re.M)
+        if len(values)!=1:raise ValueError('Schema expectation must be a unique literal: '+field)
+        return int(values[0])
     cases=[
-        ('unaccounted-table',route,'reads every relation the migrations declare',lambda text:text+'\nCREATE TABLE public.node_queue_unaccounted_probe (probe text);\n','have a length of 324'),
-        ('disabled-rls',route,'reads every relation the migrations declare',change('ENABLE ROW LEVEL SECURITY','DISABLE ROW LEVEL SECURITY'),'have a length of 310'),
+        ('unaccounted-table',route,'reads every relation the migrations declare',lambda text:text+'\nCREATE TABLE public.node_queue_unaccounted_probe (probe text);\n','have a length of '+str(expected_count('relations'))),
+        ('disabled-rls',route,'reads every relation the migrations declare',change('ENABLE ROW LEVEL SECURITY','DISABLE ROW LEVEL SECURITY'),'have a length of '+str(expected_count('rlsEnabledTables'))),
         ('unaccounted-build',columns,'finds no unread column that is not accounted for',change(entry,''),'these columns exist and nothing in the application ever names them'),
     ]
     def restore():
@@ -55,7 +59,19 @@ def run(repo,out):
     records=[]
     def positive(label):
         code,data,failed=execute(label)
-        if code or not data['success'] or failed or data['numPassedTests']!=37:raise AssertionError(label+' positive differs')
+        suites=data['testResults'];assertions=[row for suite in suites for row in suite['assertionResults']]
+        identities={(Path(suite['name']).resolve(),row['title']) for suite in suites for row in suite['assertionResults']}
+        required={(test.resolve(),'reads every relation the migrations declare'),
+                  (columns.resolve(),'finds no unread column that is not accounted for'),
+                  (columns.resolve(),'keeps name collisions tied to existing columns and actual source names')}
+        if (code or not data['success'] or failed or data['numPassedTests']!=37 or len(assertions)!=37
+            or any(row['status']!='passed' for row in assertions)
+            or {Path(suite['name']).resolve() for suite in suites}!={test.resolve(),columns.resolve()}
+            or not required.issubset(identities)):
+            raise AssertionError(label+' positive differs: '+json.dumps({'exitCode':code,'success':data.get('success'),
+                'numPassedTests':data.get('numPassedTests'),'numFailedTests':data.get('numFailedTests'),
+                'failed':failed,'missingRequiredTests':sorted((str(path),title) for path,title in required-identities),
+                'report':str(out/(label+'.json')),'log':str(out/(label+'.log'))}))
         records.append({'control':label,'outcome':'survived','cases':37});print(label+' survived',flush=True)
     try:
         positive('baseline')
