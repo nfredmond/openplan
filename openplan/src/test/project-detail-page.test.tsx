@@ -293,6 +293,10 @@ const kbLibraryLimitMock = vi.fn<() => Promise<ProjectReadResult>>(async () => (
 const kbLibraryOrderMock = vi.fn(() => ({ limit: kbLibraryLimitMock }));
 const kbLibraryProjectEqMock = vi.fn((_column: string, _value: string) => ({ order: kbLibraryOrderMock }));
 const kbLibraryWorkspaceEqMock = vi.fn((_column: string, _value: string) => ({ eq: kbLibraryProjectEqMock }));
+const kbEstimateSingleMock = vi.fn<() => Promise<{ data: Record<string, unknown> | null; error: null }>>();
+const kbEstimateProjectEqMock = vi.fn((_column: string, _value: string) => ({ maybeSingle: kbEstimateSingleMock }));
+const kbEstimateWorkspaceEqMock = vi.fn((_column: string, _value: string) => ({ eq: kbEstimateProjectEqMock }));
+const kbEstimateIdEqMock = vi.fn((_column: string, _value: string) => ({ eq: kbEstimateWorkspaceEqMock }));
 const reportArtifactsLibraryLimitMock = vi.fn<() => Promise<ProjectReadResult>>(async () => ({ data: [], error: null }));
 // report_artifacts' first `.eq()` off select belongs to the library (the packet
 // enrichment goes `.in()`), so the continuation is eq(project)→order→limit.
@@ -350,7 +354,11 @@ const fromMock = vi.fn((table: string) => {
     // (select→eq(workspace)→eq(project)→order→limit).
     return {
       select: vi.fn((_columns: string, options?: { head?: boolean }) =>
-        options?.head ? { eq: kbHeadCountEqMock } : { eq: kbLibraryWorkspaceEqMock }
+        options?.head ? { eq: kbHeadCountEqMock } : {
+          eq: (column: string, value: string) => column === "id"
+            ? kbEstimateIdEqMock(column, value)
+            : kbLibraryWorkspaceEqMock(column, value),
+        }
       ),
     };
   }
@@ -681,6 +689,7 @@ function expectLinkByHref(name: RegExp, href: string) {
 describe("ProjectDetailPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    kbEstimateSingleMock.mockResolvedValue({ data: null, error: null });
 
     authGetUserMock.mockResolvedValue({
       data: {
@@ -1004,6 +1013,38 @@ describe("ProjectDetailPage", () => {
     });
   });
 
+
+  it("threads the saved estimate source through the page and real documents loader", async () => {
+    const sourceId = "22222222-2222-4222-8222-222222222222";
+    projectSingleMock.mockResolvedValueOnce({ data: {
+      id: "project-1", workspace_id: "workspace-1", name: "Estimate source case", status: "active",
+      jurisdiction_context: null, plan_type: "corridor_plan", delivery_phase: "analysis",
+      created_at: "2026-10-18", updated_at: "2026-10-18",
+      estimated_cost_amount: "4200000", estimated_cost_currency: "USD",
+      estimated_cost_basis_year: null, estimated_cost_source_document_id: sourceId,
+    }, error: null });
+    kbLibraryLimitMock.mockResolvedValueOnce({ data: Array.from({ length: 20 }, (_, index) => ({
+      id: `recent-${index}`, project_id: "project-1", title: `Recent ${index}`, status: "ready",
+    })), error: null });
+    kbEstimateSingleMock.mockResolvedValueOnce({ data: {
+      id: sourceId, project_id: "project-1", title: "Saved supporting estimate.csv", status: "ready",
+      storage_ref: `storage://kb-documents/workspace-1/${sourceId}/estimate.csv`,
+    }, error: null });
+
+    const page = await ProjectDetailPage({ params: Promise.resolve({ projectId: "project-1" }) });
+    const props = pagePropsFor(page, ProjectEstimatedCostEditor);
+    expect(props.estimateSource, "saved estimate source reaches editor through actual page and loader").toMatchObject({
+      status: "readable", entry: {
+        id: sourceId, projectId: "project-1", title: "Saved supporting estimate.csv",
+        downloadHref: `/api/knowledge-base/documents/${sourceId}/download`,
+      },
+    });
+    expect(props.documents).toHaveLength(20);
+    expect(props.documents).not.toContainEqual(expect.objectContaining({ id: sourceId }));
+    expect(kbEstimateIdEqMock).toHaveBeenCalledExactlyOnceWith("id", sourceId);
+    expect(kbEstimateWorkspaceEqMock).toHaveBeenCalledExactlyOnceWith("workspace_id", "workspace-1");
+    expect(kbEstimateProjectEqMock).toHaveBeenCalledExactlyOnceWith("project_id", "project-1");
+  });
 
   describe("project workspace permission props", () => {
     it.each([
