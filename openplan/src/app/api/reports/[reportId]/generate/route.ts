@@ -1,3 +1,4 @@
+import { buildSafetyPlanSnapshot, type SafetyPlanSnapshot } from "@/lib/reports/safety-plan-snapshot";
 import { finishReportGeneration } from "@/lib/reports/generation-writeback";
 import {
   loadSafetyCrashEvidence,
@@ -2473,6 +2474,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
      * reported as stale rather than printed.
      */
     const savedSafetyActionPlan = readReportSafetyActionPlan(report.metadata_json);
+    let safetyPlanSnapshotV1: SafetyPlanSnapshot | null = null;
     let safetyActionPlan: SafetyActionPlanSectionDraft | { kind: "stale_acquisition" } | null = null;
     if (savedSafetyActionPlan) {
       if (!selectedSafetyIngestIds.includes(savedSafetyActionPlan.ingestId)) {
@@ -2501,6 +2503,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
           evidence: planEvidence,
           network,
         });
+        if (planEvidence?.status === "ready" && planIngestRow && typeof planIngestRow === "object") {
+          safetyPlanSnapshotV1 = buildSafetyPlanSnapshot({
+            artifactId, reportId: report.id, workspaceId: report.workspace_id,
+            projectId: projectRow.id, generatedAt, reportUpdatedAt: report.updated_at,
+            projectUpdatedAt: projectRow.updated_at,
+            acquisition: planIngestRow as Record<string, unknown>, selection: savedSafetyActionPlan, draft: safetyActionPlan,
+          });
+        }
       }
     }
 
@@ -2663,6 +2673,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       artifactStoragePath = storagePath;
     }
     const artifactMetadata = {
+      safetyPlanSnapshotV1,
       generationWriteback: null,
       metadata_schema_version: "2026-04",
       htmlContent: html,
@@ -2762,7 +2773,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
       generationMode: format === "pdf" ? "structured_pdf_packet" : "structured_html_packet",
     };
 
-    const { data: artifact, error: artifactError } = await supabase
+    const artifactWriter = safetyPlanSnapshotV1 ? createServiceRoleClient() : supabase;
+    const { data: artifact, error: artifactError } = await artifactWriter
       .from("report_artifacts")
       .insert({
         id: artifactId,

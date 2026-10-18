@@ -1,3 +1,6 @@
+import { safetySeedFixture } from "./fixtures/grants/safety-seed";
+import { readSafetyPlanSnapshot } from "@/lib/reports/safety-plan-snapshot";
+import * as safetyPlanBuilder from "@/lib/reports/safety-action-plan";
 import { PROJECT_PLACE_COLUMN_NAMES } from "@/lib/projects/project-place";
 import { collectSupabaseSelectSites } from "./supabase-call-sites";
 import Database from "better-sqlite3";
@@ -1063,6 +1066,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
     });
     createServiceRoleClientMock.mockReturnValue({
       from: vi.fn((table: string) => {
+        if (table === "report_artifacts") return { insert: artifactsInsertMock };
         if (table === "safety_road_context_features") return { upsert: safetyRoadWriteMock };
         if (table === "assistant_action_executions") {
           return {
@@ -1315,6 +1319,36 @@ describe("POST /api/reports/[reportId]/generate", () => {
         metadata_json: expect.objectContaining({ pdfEngine: "builtin" }),
       })
     );
+  });
+
+  it("freezes the exact typed Safety builder result and source identity on a new generated artifact", async () => {
+    const fixture = safetySeedFixture();
+    const projectId = "44444444-4444-4444-8444-444444444444";
+    const reportId = "11111111-1111-4111-8111-111111111111";
+    const workspaceId = "33333333-3333-4333-8333-333333333333";
+    const report = { id: reportId, workspace_id: workspaceId, project_id: projectId,
+      rtp_cycle_id: null, modeling_county_run_id: null, title: "Safety packet", summary: null,
+      report_type: "project_status", status: "draft", created_at: "2026-03-14T00:00:00.000Z", generated_at: null,
+      metadata_json: fixture.report.metadata_json };
+    reportMaybeSingleMock.mockResolvedValueOnce({ data: report, error: null });
+    safetyIngestOrderMock.mockResolvedValueOnce({ data: [{ ...fixture.acquisition, project_id: projectId }], error: null });
+    const builder = vi.spyOn(safetyPlanBuilder, "buildSafetyActionPlanSection");
+    try {
+      const response = await postGenerate(new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ format: "html" }),
+      }), { params: Promise.resolve({ reportId }) });
+      expect(response.status).toBe(200);
+      const inserted = artifactsInsertMock.mock.calls.at(-1)![0];
+      const snapshot = readSafetyPlanSnapshot(inserted.metadata_json.safetyPlanSnapshotV1);
+      expect(snapshot).not.toBeNull();
+      expect(snapshot!.draft).toEqual(builder.mock.results.at(-1)!.value);
+      expect(snapshot!.selection).toEqual(fixture.report.metadata_json.safetyActionPlan);
+      expect(snapshot).toMatchObject({ artifactId: inserted.id, reportId, projectId, workspaceId,
+        acquisition: { id: fixture.acquisition.id, project_id: projectId } });
+      expect(safetyIngestSelectMock).toHaveBeenCalledWith(expect.stringContaining("published_through_provenance"));
+      expect(createServiceRoleClientMock.mock.results.at(-1)!.value.from).toHaveBeenCalledWith("report_artifacts");
+      expect(artifactWritebackUpdateMock).toHaveBeenCalledWith(expect.objectContaining({ metadata_json: expect.objectContaining({ safetyPlanSnapshotV1: snapshot }) }));
+    } finally { builder.mockRestore(); }
   });
 
   it("prints a safety action plan saved against another acquisition as a stale notice, and no plan section without one", async () => {
