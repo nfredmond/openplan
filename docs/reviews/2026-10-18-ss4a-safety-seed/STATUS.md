@@ -83,3 +83,29 @@ retains authenticated SELECT-only access, service-role column UPDATE privilege
 for the lock and the immutable update trigger. Native service-role lock and
 update-refusal tests, transactions, RLS and UI acceptance remain unproved. The
 original outer `137` and the separate prior terminal `0` results remain intact.
+
+Root integration, October 18: fresh independent review accepts the generation
+freshness correction at `f0ca5f0`, with no further concrete P1/P2 finding. On the
+separate first-week test database, migration `20261018000002` installs successfully
+through the existing migration runner, bringing that isolated stack to 428
+migrations. This supersedes the earlier unapplied status for that stack only.
+Hosted migration and release acceptance remain open.
+
+Seven live database cases pass under the actual service/authenticated/anonymous
+roles and inherited revision triggers. They cover the narrow column privilege
+needed for locking, immutable custody, stale-source refusal, tenant reads,
+transaction rollback and exact seed-receipt replay. A harmless seven-case run
+survives. Ten targeted database changes each fail the intended assertion:
+missing column grant, disabled immutability, broad UPDATE, missing source P0,
+swallowed custody failure, open tenant policy, exposed persistence execution,
+changed replay receipt, missing later-source guard and swallowed draft failure.
+The restored seven-case run passes. Each fixture and injected change rolls back;
+function/policy/trigger/privilege fingerprints and relevant row counts match
+before and after. Source bytes match, temporary trial code is removed, and the
+finite non-PTY control wrapper returns actual exit 0 before lock release.
+
+The SQL fixture is synthetic. These results do not prove the report builder, HTTP
+payload construction, concurrent sessions, browser layout, exported files or
+scientific effectiveness. Those checks remain separate. Raw results and final
+readback stay private under `v1-ss4a-native-20261018/`; the original failed outer
+137 remains unchanged. The new live suite joins the existing CI RLS command.
