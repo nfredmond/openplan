@@ -16,7 +16,7 @@ const bodySchema = z.discriminatedUnion("operation", [
 ]);
 type Context = { params: Promise<{ opportunityId: string }> };
 
-export const SAFETY_ARTIFACT_OPTION_SELECT = "id, artifact_kind, generated_at, reports!inner(id, title)";
+const SAFETY_ARTIFACT_OPTION_SELECT = "id, artifact_kind, generated_at, reports!inner(id, title)";
 const artifactOptionRow = z.object({
   id: z.string().uuid(), artifact_kind: z.enum(["html", "pdf"]),
   generated_at: z.string().datetime({ offset: true }).nullable(),
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest, context: Context) {
     if (!opportunity.project_id) return NextResponse.json({ artifacts: [], nextCursor: null, requiresProject: true });
     let query = client.from("report_artifacts").select(SAFETY_ARTIFACT_OPTION_SELECT)
       .eq("reports.workspace_id", opportunity.workspace_id).eq("reports.project_id", opportunity.project_id)
-      .not("metadata_json->safetyPlanSnapshotV1", "is", null)
+      .not("metadata_json->>safetyPlanSnapshotV1", "is", null)
       .order("id", { ascending: false }).limit(51);
     if (before) query = query.lt("id", before);
     const result = await query;

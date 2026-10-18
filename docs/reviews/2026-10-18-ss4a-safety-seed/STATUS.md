@@ -165,3 +165,12 @@ raw logs and the final results stay private under
 `v1-ss4a-picker-storage-correction-20261018/`. These are mocked API/DOM/helper
 checks. New native Storage, project-query and identified browser checks remain
 open. No migration changes or hosted rollout follow from this correction.
+
+The bounded picker review finds an unsupported route value export and a JSON-null
+filter gap. The projection is now module-private, and its test requires the
+independent literal inner-join fields. Text extraction excludes missing and JSON
+null snapshots before the page limit. Seventeen affected route checks, scoped
+lint and three intended faults pass with exact restoration. A first private
+controller stops on an abbreviated diagnostic and remains failed. Generated
+Next route types, native query semantics and the new picker browser read remain
+separate from these mocked checks.

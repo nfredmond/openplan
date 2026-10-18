@@ -11,7 +11,9 @@ vi.mock("@/lib/supabase/server", () => ({ createClient: mocks.create, createServ
 vi.mock("@/lib/programs/api", () => ({ loadFundingOpportunityAccess: mocks.access }));
 vi.mock("@/lib/observability/audit", () => ({ createApiAuditLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() }) }));
 vi.mock("@/lib/assistant/action-approval-server", () => ({ readAssistantExecutionSource: (request: NextRequest) => request.headers.get("x-openplan-assistant-execution-source") === "planner_agent_quick_link" ? "planner_agent_quick_link" : "manual" }));
-import { GET, POST, SAFETY_ARTIFACT_OPTION_SELECT } from "@/app/api/funding-opportunities/[opportunityId]/application/safety-seed/route";
+import * as safetySeedRoute from "@/app/api/funding-opportunities/[opportunityId]/application/safety-seed/route";
+
+const { GET, POST } = safetySeedRoute;
 
 type Result = { count?: number | null; data: unknown; error: { message: string; code?: string } | null };
 function chain(result: Result) {
@@ -38,6 +40,9 @@ function install() {
 beforeEach(() => { vi.clearAllMocks(); rows = safetySeedFixture(); install(); });
 
 describe("linked-project Safety artifact pages", () => {
+  it("exports only supported route handlers", () => {
+    expect(Object.keys(safetySeedRoute).sort()).toEqual(["GET", "POST"]);
+  });
   const get = (suffix = "") => GET(new NextRequest(`http://localhost/api/source${suffix}`), context());
   it("filters before the page bound and reaches older project artifacts with a stable cursor", async () => {
     const artifacts = Array.from({ length: 51 }, (_, index) => ({ id: seedId(200 - index), artifact_kind: "html", generated_at: rows.artifact.generated_at,
@@ -46,10 +51,10 @@ describe("linked-project Safety artifact pages", () => {
     const result = await get(); expect(result.status).toBe(200);
     const page = await result.json(); expect(page.artifacts).toHaveLength(50); expect(page.nextCursor).toBe(artifacts[49].id);
     const q = tables.report_artifacts;
-    expect(q.select).toHaveBeenCalledWith(SAFETY_ARTIFACT_OPTION_SELECT);
+    expect(q.select).toHaveBeenCalledWith("id, artifact_kind, generated_at, reports!inner(id, title)");
     expect(q.eq).toHaveBeenCalledWith("reports.workspace_id", rows.opportunity.workspace_id);
     expect(q.eq).toHaveBeenCalledWith("reports.project_id", rows.project.id);
-    expect(q.not).toHaveBeenCalledWith("metadata_json->safetyPlanSnapshotV1", "is", null);
+    expect(q.not).toHaveBeenCalledWith("metadata_json->>safetyPlanSnapshotV1", "is", null);
     expect(q.order).toHaveBeenCalledWith("id", { ascending: false }); expect(q.limit).toHaveBeenCalledWith(51);
     expect(from).not.toHaveBeenCalledWith("reports");
     expect(page.artifacts[0]).toEqual({ id: artifacts[0].id, reportTitle: "Older linked project report", artifactKind: "html", generatedAt: rows.artifact.generated_at });
