@@ -351,9 +351,10 @@ const aerialCustodyEqMock = vi.fn(() => ({ eq: aerialCustodyEqMock, maybeSingle:
 const aerialCustodySelectMock = vi.fn(() => ({ eq: aerialCustodyEqMock }));
 const serviceStorageDownloadMock = vi.fn();
 const serviceStorageUploadMock = vi.fn();
+const serviceStorageRemoveMock = vi.fn();
 const serviceStorageFromMock = vi.fn((bucket: string) => bucket === "aerial-artifacts"
   ? { download: serviceStorageDownloadMock, upload: serviceStorageUploadMock }
-  : { download: serviceStorageDownloadMock, upload: serviceStorageUploadMock });
+  : { download: serviceStorageDownloadMock, upload: serviceStorageUploadMock, remove: serviceStorageRemoveMock });
 const renderReportPdfMock = vi.fn();
 
 const mockAudit = {
@@ -1053,6 +1054,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
     memberStorageUploadMock.mockResolvedValue({ error: { message: "new row violates row-level security policy" } });
     checkWorkspaceStorageRoomMock.mockReset();
     serviceStorageUploadMock.mockResolvedValue({ error: null });
+    serviceStorageRemoveMock.mockReset().mockResolvedValue({ error: null });
     renderReportPdfMock.mockResolvedValue({
       bytes: new Uint8Array([37, 80, 68, 70]),
       engine: "chrome",
@@ -1377,6 +1379,38 @@ describe("POST /api/reports/[reportId]/generate", () => {
       expect(artifactsInsertMock).not.toHaveBeenCalled(); expect(artifactWritebackUpdateMock).not.toHaveBeenCalled();
       expect(safetyIngestSelectMock).toHaveBeenCalledWith(expect.stringContaining("published_through_provenance"));
     } finally { builder.mockRestore(); }
+  });
+
+  it.each([
+    ["html", "40001", 409, true, "ok"], ["pdf", "40001", 409, true, "ok"],
+    ["html", "42501", 500, true, "ok"], ["html", "23514", 500, true, "ok"],
+    ["html", "08006", 500, false, "ok"], ["html", "invalid-receipt", 500, false, "ok"],
+    ["html", "40001", 409, true, "error"], ["html", "40001", 409, true, "throw"],
+  ] as const)("handles uploaded Safety %s after %s refusal and cleanup %s/%s/%s", async (format, code, status, remove, cleanup) => {
+    const fixture = safetySeedFixture();
+    const projectId = "44444444-4444-4444-8444-444444444444";
+    const reportId = "11111111-1111-4111-8111-111111111111";
+    const workspaceId = "33333333-3333-4333-8333-333333333333";
+    reportMaybeSingleMock.mockResolvedValueOnce({ data: { id: reportId, workspace_id: workspaceId, project_id: projectId,
+      rtp_cycle_id: null, modeling_county_run_id: null, title: "Safety packet", summary: null,
+      report_type: "project_status", status: "draft", created_at: "2026-03-14T00:00:00.000Z", generated_at: null,
+      metadata_json: fixture.report.metadata_json }, error: null });
+    safetyIngestOrderMock.mockResolvedValueOnce({ data: [{ ...fixture.acquisition, project_id: projectId }], error: null });
+    const service = createServiceRoleClientMock.getMockImplementation()!();
+    const persistenceRpc = vi.fn().mockResolvedValue({ data: null, error: code === "invalid-receipt" ? null : { code, message: "Safety persistence refused" } });
+    createServiceRoleClientMock.mockReturnValue({ ...service, rpc: persistenceRpc });
+    if (cleanup === "error") serviceStorageRemoveMock.mockResolvedValueOnce({ error: { message: "Storage unavailable" } });
+    if (cleanup === "throw") serviceStorageRemoveMock.mockRejectedValueOnce(new Error("Storage response lost"));
+    const response = await postGenerate(new NextRequest("http://localhost/api/reports/1/generate", {
+      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ format }),
+    }), { params: Promise.resolve({ reportId }) });
+    expect(response.status).toBe(status);
+    expect(persistenceRpc).toHaveBeenCalledTimes(1);
+    expect(serviceStorageUploadMock).toHaveBeenCalledTimes(1);
+    if (remove) expect(serviceStorageRemoveMock).toHaveBeenCalledWith([serviceStorageUploadMock.mock.calls[0][0]]);
+    else expect(serviceStorageRemoveMock).not.toHaveBeenCalled();
+    expect(artifactsInsertMock).not.toHaveBeenCalled();
+    expect((await response.json()).cleanupPending).toBe(cleanup === "ok" ? undefined : true);
   });
 
   it("prints a safety action plan saved against another acquisition as a stale notice, and no plan section without one", async () => {

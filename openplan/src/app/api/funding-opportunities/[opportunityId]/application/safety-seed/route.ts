@@ -16,6 +16,51 @@ const bodySchema = z.discriminatedUnion("operation", [
 ]);
 type Context = { params: Promise<{ opportunityId: string }> };
 
+export const SAFETY_ARTIFACT_OPTION_SELECT = "id, artifact_kind, generated_at, reports!inner(id, title)";
+const artifactOptionRow = z.object({
+  id: z.string().uuid(), artifact_kind: z.enum(["html", "pdf"]),
+  generated_at: z.string().datetime({ offset: true }).nullable(),
+  reports: z.object({ id: z.string().uuid(), title: z.string() }),
+});
+
+/** Page exact-project sources independently of the workspace attachment picker. */
+export async function GET(request: NextRequest, context: Context) {
+  const audit = createApiAuditLogger("funding-opportunities.application.safety-artifacts", request);
+  try {
+    const { opportunityId } = await context.params;
+    const before = request.nextUrl.searchParams.get("before");
+    if (!z.string().uuid().safeParse(opportunityId).success || (before !== null && !z.string().uuid().safeParse(before).success)) {
+      return NextResponse.json({ error: "Invalid Safety artifact page" }, { status: 400 });
+    }
+    const client = await createClient();
+    const { data: { user } } = await client.auth.getUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const access = await loadFundingOpportunityAccess(client, opportunityId, user.id, "programs.read");
+    if (access.error) throw new Error("Opportunity access read failed");
+    if (!access.opportunity) return NextResponse.json({ error: "Opportunity not found" }, { status: 404 });
+    if (!access.membership || !access.allowed) return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
+    const opportunity = access.opportunity;
+    if (!opportunity.project_id) return NextResponse.json({ artifacts: [], nextCursor: null, requiresProject: true });
+    let query = client.from("report_artifacts").select(SAFETY_ARTIFACT_OPTION_SELECT)
+      .eq("reports.workspace_id", opportunity.workspace_id).eq("reports.project_id", opportunity.project_id)
+      .not("metadata_json->safetyPlanSnapshotV1", "is", null)
+      .order("id", { ascending: false }).limit(51);
+    if (before) query = query.lt("id", before);
+    const result = await query;
+    if (result.error) throw new Error("Safety artifact source read failed");
+    const parsed = z.array(artifactOptionRow).max(51).safeParse(result.data);
+    if (!parsed.success) throw new Error("Safety artifact source shape differs");
+    const rows = parsed.data.slice(0, 50);
+    return NextResponse.json({
+      artifacts: rows.map((row) => ({ id: row.id, reportTitle: row.reports.title, artifactKind: row.artifact_kind, generatedAt: row.generated_at })),
+      nextCursor: parsed.data.length > 50 ? rows.at(-1)!.id : null, requiresProject: false,
+    });
+  } catch {
+    audit.error("safety_artifact_options_failed");
+    return NextResponse.json({ error: "Safety report artifacts could not be loaded. Refresh the source list." }, { status: 500 });
+  }
+}
+
 /** Human-operated only until this workflow has a registered, approved agent action. */
 export async function POST(request: NextRequest, context: Context) {
   const audit = createApiAuditLogger("funding-opportunities.application.safety-seed", request);

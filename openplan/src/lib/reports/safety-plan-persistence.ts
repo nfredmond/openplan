@@ -40,20 +40,25 @@ type PersistenceClient = { rpc: (name: string, args: Record<string, unknown>) =>
 export async function persistSafetyPlanGeneration(input: {
   client: PersistenceClient; actorId: string; snapshot: SafetyPlanSnapshot;
   artifact: SafetyArtifactInsert; reportUpdate: SafetyReportWriteback;
-}): Promise<{ error: { message: string; code?: string } | null; status: number }> {
+}): Promise<{ error: { message: string; code?: string } | null; status: number; storageDisposition: "remove_unpersisted" | "retain" }> {
   const { snapshot, artifact } = input;
   const retained = readSafetyPlanSnapshot(artifact.metadata_json.safetyPlanSnapshotV1);
   if (!retained || retained.hash !== snapshot.hash || artifact.id !== snapshot.artifactId || artifact.report_id !== snapshot.reportId || artifact.generated_by !== input.actorId) {
-    return { error: { message: "Safety persistence payload does not match the frozen source" }, status: 422 };
+    return { error: { message: "Safety persistence payload does not match the frozen source" }, status: 422, storageDisposition: "remove_unpersisted" };
   }
   const result = await input.client.rpc("persist_safety_plan_generation", {
     p_actor: input.actorId, p_artifact: artifact, p_report_update: input.reportUpdate,
   });
-  if (result.error) return { error: result.error, status: result.error.code === "40001" ? 409 : 500 };
+  if (result.error) return {
+    error: result.error, status: result.error.code === "40001" ? 409 : 500,
+    // These PostgreSQL responses abort this RPC transaction. A transport error
+    // or an invalid success receipt cannot establish whether it committed.
+    storageDisposition: ["40001", "42501", "23514"].includes(result.error.code ?? "") ? "remove_unpersisted" : "retain",
+  };
   const parsed = safetyPlanPersistenceSchema.safeParse(result.data);
   const receipt = parsed.success ? parsed.data : null;
   if (!receipt || receipt.artifact_id !== snapshot.artifactId || receipt.report_id !== snapshot.reportId || receipt.project_id !== snapshot.projectId || receipt.workspace_id !== snapshot.workspaceId || receipt.snapshot_hash !== snapshot.hash || !sameSafetyRevision(receipt.source_project_updated_at, snapshot.projectUpdatedAt) || !sameSafetyRevision(receipt.source_report_updated_at, snapshot.reportUpdatedAt)) {
-    return { error: { message: "Safety generation did not return its exact source custody receipt" }, status: 500 };
+    return { error: { message: "Safety generation did not return its exact source custody receipt" }, status: 500, storageDisposition: "retain" };
   }
-  return { error: null, status: 200 };
+  return { error: null, status: 200, storageDisposition: "retain" };
 }

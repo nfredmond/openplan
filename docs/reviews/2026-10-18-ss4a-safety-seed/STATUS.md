@@ -145,3 +145,23 @@ clean status false. The owned preview stops with wrapper terminal0 and lock
 release; source stays unchanged. Private receipts remain under
 v1-ss4a-browser-20261018/. Hosted migration, new-head CI, simultaneous-session
 behavior and the full Safety/first-week journey remain separate.
+
+## October 18 picker and refused-upload correction
+
+The Safety picker now reads paged artifacts from the opportunity's linked
+project, separately from the workspace attachment list. Loading, unavailable,
+unlinked and empty sources stay distinct. Confirmed PostgreSQL persistence
+refusals remove the newly uploaded file. Lost responses and invalid success
+receipts retain it because commit status is unknown. Cleanup errors preserve
+the original refusal and expose a separate failure flag; this is not a durable
+cleanup queue.
+
+Local harmless and final cohorts pass 148 tests, including all 113 report-route
+cases. Five query faults reach their intended assertions in the second window;
+six remaining cleanup, pagination and abort fault families do so in the third.
+Scoped lint passes and all temporary edits restore exact bytes and modes. The
+first two controllers fail on diagnostic formatting and remain failed. Their
+raw logs and the final results stay private under
+`v1-ss4a-picker-storage-correction-20261018/`. These are mocked API/DOM/helper
+checks. New native Storage, project-query and identified browser checks remain
+open. No migration changes or hosted rollout follow from this correction.
