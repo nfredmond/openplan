@@ -159,4 +159,16 @@ identify the retained file; they do not label its sources current or change
 default selection, revision tokens, frozen manifests or governed submission.
 All 45 related tests pass with seed `95014`, including duplicate titles and
 timestamps, HTML/PDF distinction, missing dates and the exact selection payload.
-Browser verification follows. Raw captures stay private.
+A harmless comment survives, and six deliberate label, format, missing-time and
+selection faults fail the intended checks, with source restored. Lint, affected
+types and product direction pass; existing direction reminders remain.
+
+Chrome verification on `af1a8441d` follows Dashboard, Projects, the project and
+its Evidence tab. Twelve actual report candidates have distinct accessible
+names. Screenshots show readable format, UTC time and ID at desktop and 390
+pixels, with no horizontal overflow or observed console errors. Toggling a
+specific file changes that checkbox and restores correctly. No bundle is frozen
+in this check. The first attempt targeted the closed tab, whose loading effects
+were suspended; that navigation error stays in the private capture. This does
+not establish hosted behavior or new artifact-byte validation. Raw captures stay
+private.
