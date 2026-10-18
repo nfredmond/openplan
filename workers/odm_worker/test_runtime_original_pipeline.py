@@ -42,6 +42,8 @@ class Checks(unittest.TestCase):
         self.f=fixtures.Checks();self.f.setUp();self.addCleanup(self.f.tearDown)
         self.f.f.custody.timeout=FIXTURE_TIMEOUT_SECONDS
         self.f.f.reader.timeout=FIXTURE_TIMEOUT_SECONDS
+        self.f.intake.timeout=FIXTURE_TIMEOUT_SECONDS
+        self.f.draft.timeout=FIXTURE_TIMEOUT_SECONDS
         self.runtime=self.f.runtime;self.request=self.f.request['requestId'];self.callbacks=[];self.commits=[]
         self.status=40;self.allowed=True;self.commit_lost=False;self.callback_lost=False;self.network=[]
         image=tags.build_geotiff();buffer=io.BytesIO()

@@ -203,3 +203,10 @@ survives; input reentry, recommit and incomplete setup each fail the intended
 assertion. Source restores exactly. These checks use supplied application
 replies, loopback HTTP and synthetic raster data. They do not establish live
 photogrammetry or hosted behavior. Product direction and whitespace checks pass.
+
+PR review identifies two remaining four-second bounds in the inherited input
+fixture: URL intake and draft transport. Both now use the same 15-second
+fixture budget. Separate controlled 4.25-second fetch and draft replies fail
+with an input-stage timeout when their respective bounds stay at four seconds.
+Both complete and replay without new effects at 15 seconds. Production source
+and the exact fault oracles remain unchanged.
