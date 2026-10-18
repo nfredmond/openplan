@@ -4,7 +4,6 @@ import { join, isAbsolute } from "node:path";
 import { randomUUID } from "node:crypto";
 import { once } from "node:events";
 import { connectorRequest, checkedConnectorJob, ConnectorError, readPrivateJson } from "./connector-client.mjs";
-import { connectorProviderAdapter } from "./native-provider.mjs";
 import { NativeProviderError } from "./codex-session.mjs";
 import { usageLimitReceipt, validUsageLimitDelivery } from "./usage-limit-receipt.mjs";
 
@@ -57,6 +56,8 @@ async function pendingJournal(directory) {
 // and result. A crash during generation becomes an interruption, never a second
 // model call whose cost or duplicate answer the planner did not choose.
 export async function connectorCycle(config, directory, options = {}) {
+  // Server readers reuse journal/lock helpers without loading installed CLIs.
+  const { connectorProviderAdapter } = await import("./native-provider.mjs");
   const request = options.request ?? connectorRequest;
   const adapter = connectorProviderAdapter(config.setup);
   const inspect = options.inspect ?? adapter.inspect;

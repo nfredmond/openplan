@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { copyFile, mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { copyFile, cp, mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -60,6 +60,36 @@ test("Node registry loading stays module-relative and refuses changed or absent 
     assert.equal(absent.error, undefined);
     assert.equal(absent.status, 1);
     assert.match(absent.stderr, /Cannot find module '\.\/tested-cli-versions\.json'/);
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});
+
+// The application uses journal helpers without operating an installed provider.
+test("journal imports do not load CLI adapters, while connector cycles retain registry validation", async () => {
+  const root = await mkdtemp(join(tmpdir(), "registry-journal-"));
+  try {
+    const connector = join(root, "connector");
+    await cp(new URL("../", import.meta.url), connector, {
+      recursive: true,
+      filter: (source) => !source.split(/[\\/]/).includes("test"),
+    });
+    const manifest = join(connector, "tested-cli-versions.json");
+    await writeFile(manifest, "{}\n");
+    const script = `
+      import assert from 'node:assert/strict';
+      const worker = await import(${JSON.stringify(pathToFileURL(join(connector, "connector-worker.mjs")).href)});
+      assert.equal(typeof worker.writeConnectorJournal, 'function');
+      assert.equal(typeof worker.acquireConnectorLock, 'function');
+      await assert.rejects(worker.connectorCycle({}, ${JSON.stringify(root)}), { message: 'native_cli_registry_invalid' });
+      process.stdout.write('journal import independent; provider registry still checked');
+    `;
+    const result = spawnSync(process.execPath, ["--input-type=module", "-e", script], {
+      cwd: root, encoding: "utf8", timeout: 5_000, maxBuffer: 16_384,
+    });
+    assert.equal(result.error, undefined);
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.stdout, "journal import independent; provider registry still checked");
   } finally {
     await rm(root, { recursive: true, force: true });
   }
