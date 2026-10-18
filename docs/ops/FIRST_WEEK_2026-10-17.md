@@ -180,3 +180,33 @@ All 47 related tests pass with seed `95014`, plus lint. A harmless comment
 survives; removing the default report selection or geographic-record warning
 fails the intended assertions. Source is restored. Production code is unchanged
 by this test correction.
+
+## Aerial CI replay setup
+
+Main `bd541e5` passes QA, shuffled tests and live RLS. The separate aerial
+workflow fails in its `terminal-replay-recommit` fault check. Its replay setup
+has not reached a saved terminal command, so an input trap fires before the
+intended recommit trap. The original run does not retain the setup's failure
+cause and remains failed.
+
+The correction changes the test fixture only. Its stage bounds and nested
+reader/custody bounds allow 15 seconds, and replay setup must retain its initial
+acknowledgement before traps are armed. A failure now names the retained stage
+and error type. Production deadlines and the existing exact diagnostic oracle
+remain unchanged. A controlled 4.25-second loopback reply fails the old
+four-second fixture and passes the new one; this demonstrates scheduling room,
+not the unrecorded cause of the CI failure. The first outer-only timeout trial
+still hits the nested reader clamp and remains recorded privately.
+
+All 25 pipeline tests pass on Python 3.11.15 and 3.14.4. A harmless comment
+survives; input reentry, recommit and incomplete setup each fail the intended
+assertion. Source restores exactly. These checks use supplied application
+replies, loopback HTTP and synthetic raster data. They do not establish live
+photogrammetry or hosted behavior. Product direction and whitespace checks pass.
+
+PR review identifies two remaining four-second bounds in the inherited input
+fixture: URL intake and draft transport. Both now use the same 15-second
+fixture budget. Separate controlled 4.25-second fetch and draft replies fail
+with an input-stage timeout when their respective bounds stay at four seconds.
+Both complete and replay without new effects at 15 seconds. Production source
+and the exact fault oracles remain unchanged.

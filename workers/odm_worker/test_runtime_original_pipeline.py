@@ -32,9 +32,18 @@ import test_application_draft_authority as fixtures
 import test_georef as tags
 
 
+# Journal fsync and loopback HTTP can exceed four seconds on shared CI runners.
+# These tests check custody and replay, not four-second throughput.
+FIXTURE_TIMEOUT_SECONDS = 15
+
+
 class Checks(unittest.TestCase):
     def setUp(self):
         self.f=fixtures.Checks();self.f.setUp();self.addCleanup(self.f.tearDown)
+        self.f.f.custody.timeout=FIXTURE_TIMEOUT_SECONDS
+        self.f.f.reader.timeout=FIXTURE_TIMEOUT_SECONDS
+        self.f.intake.timeout=FIXTURE_TIMEOUT_SECONDS
+        self.f.draft.timeout=FIXTURE_TIMEOUT_SECONDS
         self.runtime=self.f.runtime;self.request=self.f.request['requestId'];self.callbacks=[];self.commits=[]
         self.status=40;self.allowed=True;self.commit_lost=False;self.callback_lost=False;self.network=[]
         image=tags.build_geotiff();buffer=io.BytesIO()
@@ -58,10 +67,10 @@ class Checks(unittest.TestCase):
         self.f.engine['endpoint']='http://127.0.0.1:'+str(self.server.server_port)
         # The original URL supplier captures this dictionary before preparation.
         self.f.authority.engine=copy.deepcopy(self.f.engine)
-        self.observer=Observer(self.f.f.reader,lambda reference:None,self.f.attest,timeout=4)
+        self.observer=Observer(self.f.f.reader,lambda reference:None,self.f.attest,timeout=FIXTURE_TIMEOUT_SECONDS)
         self.plan=ArtifactPlan(Inspection(Products(Intake(self.observer,max_archive_bytes=16384,max_expanded_bytes=16384,
-            max_entries=10,max_directory_bytes=4096,timeout=4),timeout=4),timeout=4),timeout=4)
-        self.access=ArtifactAccess(self.plan,lambda *a,**k:self.allowed,timeout=4,clock=lambda:1000)
+            max_entries=10,max_directory_bytes=4096,timeout=FIXTURE_TIMEOUT_SECONDS),timeout=FIXTURE_TIMEOUT_SECONDS),timeout=FIXTURE_TIMEOUT_SECONDS),timeout=FIXTURE_TIMEOUT_SECONDS)
+        self.access=ArtifactAccess(self.plan,lambda *a,**k:self.allowed,timeout=FIXTURE_TIMEOUT_SECONDS,clock=lambda:1000)
         def authority(arguments,deadline,*,owned):
             original=self.f.f.custody.load(self.request,deadline=deadline)
             self.assertEqual(arguments['p_request'],self.request,'Delivery authority keeps original request')
@@ -70,13 +79,13 @@ class Checks(unittest.TestCase):
                 'targetId':arguments['p_target'],'operation':arguments['p_operation'],'applicationJob':original['applicationJob'],
                 'payloadSha256':original['payloadSha256'],'authorizedNow':self.allowed,
                 'authorityObservedAt':'2026-10-14T18:00:00Z','engineTransportPermission':False})
-        self.delivery=Delivery(self.observer,Authority(self.f.f.custody,authority,timeout=4),self.send_callback,
-            'synthetic-original-callback',access=self.access,timeout=4)
+        self.delivery=Delivery(self.observer,Authority(self.f.f.custody,authority,timeout=FIXTURE_TIMEOUT_SECONDS),self.send_callback,
+            'synthetic-original-callback',access=self.access,timeout=FIXTURE_TIMEOUT_SECONDS)
         self.coordinator=Coordinator(self.observer,self.plan,self.access,self.delivery,
-            public_base_url='https://worker.example',lease_seconds=100,clock=lambda:1000,timeout=4)
-        preparation=Preparation(self.runtime,lambda entry:self.f.draft._inputs(entry,__import__('time').monotonic()+4),timeout=4)
-        draft=Draft(preparation,self.f.authority,self.f.send,timeout=4,authorize_with_deadline=True)
-        self.commit=Commit(draft,CommitAuthority(self.f.f.reader,self.f.engine,self.f.attest),self.send_commit,timeout=4)
+            public_base_url='https://worker.example',lease_seconds=100,clock=lambda:1000,timeout=FIXTURE_TIMEOUT_SECONDS)
+        preparation=Preparation(self.runtime,lambda entry:self.f.draft._inputs(entry,__import__('time').monotonic()+FIXTURE_TIMEOUT_SECONDS),timeout=FIXTURE_TIMEOUT_SECONDS)
+        draft=Draft(preparation,self.f.authority,self.f.send,timeout=FIXTURE_TIMEOUT_SECONDS,authorize_with_deadline=True)
+        self.commit=Commit(draft,CommitAuthority(self.f.f.reader,self.f.engine,self.f.attest),self.send_commit,timeout=FIXTURE_TIMEOUT_SECONDS)
         self.pipeline=module.Pipeline(self.f.pipeline,self.commit,self.coordinator)
     def close(self):self.server.shutdown();self.server.server_close();self.thread.join(timeout=2)
     def send_commit(self,plan,deadline,*,owned):
@@ -105,7 +114,12 @@ class Checks(unittest.TestCase):
         self.assertEqual(len(self.network),2,'One original metadata and archive GET')
         for k,v in module.LIMITS.items():self.assertEqual(result[k],v,'Pipeline cannot promote '+k)
     def test_terminal_retry_skips_input_commit_and_engine_reads(self):
-        self.through_drafts();self.advance();before=list(self.network)
+        self.through_drafts();initial=self.advance();before=list(self.network)
+        failure=initial.get('localFailure') or initial.get('coordination') or {}
+        if failure.get('failureSha256'):
+            failure=json.loads(next(self.runtime.root.glob(f"local-stage-failures-*/{failure['failureSha256']}.json")).read_text())
+        self.assertEqual(initial['state'],'acknowledged',
+            f"Replay setup failed: state={initial['state']} stage={failure.get('stage')} error={failure.get('errorType')}")
         with patch.object(self.f.pipeline,'advance',side_effect=AssertionError('Terminal replay cannot reenter inputs')),patch.object(self.commit,'advance',side_effect=AssertionError('Terminal replay cannot recommit')):
             result=self.advance()
         self.assertEqual(result['state'],'acknowledged','Saved terminal replay recovers exact acknowledgement')
