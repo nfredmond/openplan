@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { execFileSync } from "node:child_process";
-import { isAbsolute } from "node:path";
+import { readFileSync } from "node:fs";
+import { isAbsolute, join } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import { LIVE_RLS } from "./local-supabase-env";
 import { resolveLocalDbContainer } from "./helpers/live-catalog";
@@ -18,7 +19,7 @@ live("grant deadline changes, atomic retention and access (20261018000001)", () 
   });
 
   function exercise(body: string) {
-    const ids = Object.fromEntries(["creator", "outsider", "viewer", "opportunity", "unknown", "departed"].map((key) => [key, randomUUID()]));
+    const ids = Object.fromEntries(["creator", "outsider", "viewer", "opportunity", "unknown", "departed", "project", "award", "deliverable"].map((key) => [key, randomUUID()]));
     const sql = `BEGIN;
       INSERT INTO auth.users(id,email) VALUES
         ('@creator','@creator@example.test'), ('@outsider','@outsider@example.test'), ('@viewer','@viewer@example.test');
@@ -35,13 +36,259 @@ live("grant deadline changes, atomic retention and access (20261018000001)", () 
           '2026-10-18T18:00:00.123456Z','2026-10-18T17:00:00Z');
       ${body}
       SELECT 'GRANT_DEADLINE_ASSERTIONS_REACHED'; ROLLBACK;`.replace(
-      /@(creator|outsider|viewer|opportunity|unknown|departed)/g, (_, key: string) => ids[key],
+      /@(creator|outsider|viewer|opportunity|unknown|departed|project|award|deliverable)/g, (_, key: string) => ids[key],
     );
     const output = execFileSync("docker", ["exec", "-i", container, "psql", "-X", "-U", "postgres", "-d", "postgres", "-v", "ON_ERROR_STOP=1", "-At"], {
       input: sql, encoding: "utf8", stdio: ["pipe", "pipe", "pipe"],
     });
     expect(output).toContain("GRANT_DEADLINE_ASSERTIONS_REACHED");
   }
+
+  const awardFixture = `
+    INSERT INTO public.projects(id,workspace_id,name) VALUES('@project',pg_temp.grant_workspace(),'Synthetic rollout project');
+    INSERT INTO public.project_deliverables(id,project_id,title,due_date,status,assignee_user_id)
+      VALUES('@deliverable','@project','Unrelated deliverable','2026-10-19','in_progress','@creator');
+    INSERT INTO public.funding_awards(id,workspace_id,project_id,title,created_by,spending_status,obligation_due_at,expenditure_deadline_at)
+      VALUES('@award',pg_temp.grant_workspace(),'@project','Same award','@creator','active','2026-10-19T01:30:00Z','2026-10-19T01:30:00Z');
+    CREATE FUNCTION pg_temp.reminder_batch() RETURNS jsonb LANGUAGE sql AS $f$
+      SELECT jsonb_agg(jsonb_build_object('workspace_id',pg_temp.grant_workspace(),'recipient_user_id','@creator',
+        'kind',v.kind,'subject_table',v.subject_table,'subject_id',v.subject_id,'project_id','@project',
+        'due_on','2026-10-19','title',v.title,'body','Synthetic '||v.kind))
+      FROM (VALUES ('deliverable_due','project_deliverables','@deliverable','Unrelated deliverable'),
+        ('award_obligation_due','funding_awards','@award','Same award'),
+        ('award_expenditure_due','funding_awards','@award','Same award')) AS v(kind,subject_table,subject_id,title);
+    $f$;`;
+
+  function activationProposal() {
+    return readFileSync(join(process.cwd(), "..", "docs/reviews/2026-10-18-grant-deadline-alerts/20261018000004_work_notification_kind_activation.sql"), "utf8")
+      .replace(/^BEGIN;|^COMMIT;/gm, "");
+  }
+
+  it.each([[false, 1000], [true, 1000], [false, 100], [true, 100]] as const)(
+    "keeps the whole scalar envelope under the REST relational row-cap model, active=%s cap=%s", (active, cap) => exercise(`
+      INSERT INTO public.projects(id,workspace_id,name) VALUES('@project',pg_temp.grant_workspace(),'Scalar cap fixture');
+      ${active ? activationProposal() : ""}
+      SET LOCAL ROLE service_role;
+      DO $$ DECLARE request_rows jsonb; envelope jsonb; new_row jsonb; BEGIN
+        PERFORM pg_temp.assert_grant((SELECT NOT p.proretset AND p.prorettype='jsonb'::regtype
+          FROM pg_proc p WHERE p.oid='public.insert_work_notification_reminders(jsonb)'::regprocedure),'RPC is a capped rowset instead of scalar jsonb');
+        SELECT jsonb_agg(jsonb_build_object('workspace_id',pg_temp.grant_workspace(),'recipient_user_id','@creator',
+          'kind',CASE WHEN n<=600 THEN 'deliverable_due' WHEN n<=1000 THEN 'milestone_due' ELSE 'submittal_due' END,
+          'subject_table',CASE WHEN n<=600 THEN 'project_deliverables' WHEN n<=1000 THEN 'project_milestones' ELSE 'project_submittals' END,
+          'subject_id',gen_random_uuid(),'project_id','@project','due_on','2026-10-19','title','Cap row '||n,'body','Cap body '||n))
+          INTO request_rows FROM generate_series(1,1001) n;
+        -- Model max_rows on the outer response relation, never on nested JSON.
+        SELECT value INTO envelope FROM (SELECT public.insert_work_notification_reminders(request_rows) AS value) scalar_response LIMIT ${cap};
+        PERFORM pg_temp.assert_grant(envelope->>'protocol'='work_reminder_batch_v1'
+          AND (SELECT count(*)=6 FROM jsonb_object_keys(envelope)) AND jsonb_array_length(envelope->'outcomes')=1001
+          AND (envelope->>'requested_count')::int=1001 AND (envelope->>'inserted_count')::int=1001
+          AND (envelope->>'duplicate_count')::int=0 AND (envelope->>'deferred_count')::int=0,'Initial 1001 scalar outcomes lost');
+        PERFORM pg_temp.assert_grant((SELECT count(*)=${cap} FROM (SELECT value FROM jsonb_array_elements(envelope->'outcomes') LIMIT ${cap}) capped),
+          'Relational cap control did not truncate the old rowset shape');
+        PERFORM pg_temp.assert_grant((SELECT count(*)=1001 FROM jsonb_array_elements(request_rows) i
+          JOIN jsonb_array_elements(envelope->'outcomes') o ON o.value-ARRAY['classification','blocking_kind']=i.value
+          WHERE o.value->>'classification'='inserted' AND o.value->'blocking_kind'='null'::jsonb),'Initial facts or inserted statuses changed');
+        SELECT value INTO envelope FROM (SELECT public.insert_work_notification_reminders(request_rows) AS value) scalar_response LIMIT ${cap};
+        PERFORM pg_temp.assert_grant(jsonb_array_length(envelope->'outcomes')=1001 AND (envelope->>'requested_count')::int=1001
+          AND (envelope->>'inserted_count')::int=0 AND (envelope->>'duplicate_count')::int=1001
+          AND (envelope->>'deferred_count')::int=0,'Repeated 1001 scalar outcomes incomplete');
+        new_row := jsonb_build_object('workspace_id',pg_temp.grant_workspace(),'recipient_user_id','@creator',
+          'kind','submittal_due','subject_table','project_submittals','subject_id',gen_random_uuid(),'project_id','@project',
+          'due_on','2026-10-19','title','Only new submittal','body','Only new body');
+        request_rows := request_rows || jsonb_build_array(new_row);
+        SELECT value INTO envelope FROM (SELECT public.insert_work_notification_reminders(request_rows) AS value) scalar_response LIMIT ${cap};
+        PERFORM pg_temp.assert_grant(jsonb_array_length(envelope->'outcomes')=1002 AND (envelope->>'requested_count')::int=1002
+          AND (envelope->>'inserted_count')::int=1 AND (envelope->>'duplicate_count')::int=1001
+          AND (envelope->>'deferred_count')::int=0,'Retained duplicates hid the new scalar outcome');
+        PERFORM pg_temp.assert_grant((SELECT count(*)=1002 FROM jsonb_array_elements(request_rows) i
+          JOIN jsonb_array_elements(envelope->'outcomes') o ON o.value-ARRAY['classification','blocking_kind']=i.value),'Mixed full-fact bijection incomplete');
+        PERFORM pg_temp.assert_grant((SELECT count(*)=1 AND bool_and(r.value-ARRAY['classification','blocking_kind']=new_row)
+          FROM jsonb_array_elements(envelope->'outcomes') r WHERE r.value->>'classification'='inserted'),'Inserted identity includes a retained duplicate');
+        SELECT value INTO envelope FROM (SELECT public.insert_work_notification_reminders(request_rows) AS value) scalar_response LIMIT ${cap};
+        PERFORM pg_temp.assert_grant(jsonb_array_length(envelope->'outcomes')=1002 AND (envelope->>'requested_count')::int=1002
+          AND (envelope->>'inserted_count')::int=0 AND (envelope->>'duplicate_count')::int=1002
+          AND (envelope->>'deferred_count')::int=0,'Mixed repeat not fully duplicate');
+        PERFORM pg_temp.assert_grant((SELECT count(*)=1002 FROM public.work_notifications WHERE project_id='@project'), 'Batch replay changed stored count');
+      END $$;
+      RESET ROLE;`),
+  );
+
+  it.each([
+    [false, null], [false, "award_obligation_due"], [false, "award_expenditure_due"],
+    [true, null], [true, "award_obligation_due"], [true, "award_expenditure_due"],
+  ] as const)("classifies every same-award kind and unrelated deliverable, active=%s retained=%s", (active, retainedKind) => exercise(`
+    ${awardFixture}
+    DO $$ BEGIN
+      IF ${retainedKind ? `'${retainedKind}'` : "NULL"} IS NOT NULL THEN
+        INSERT INTO public.work_notifications(workspace_id,recipient_user_id,kind,subject_table,subject_id,project_id,due_on,title,body)
+          VALUES(pg_temp.grant_workspace(),'@creator',${retainedKind ? `'${retainedKind}'` : "NULL"},'funding_awards','@award','@project','2026-10-19','Old title','Old body')
+          ON CONFLICT(subject_table,subject_id,recipient_user_id,due_on) DO NOTHING;
+      END IF;
+    END $$;
+    ${active ? activationProposal() : ""}
+    SET LOCAL ROLE service_role;
+    DO $$ DECLARE envelope jsonb; outcomes jsonb; repeated jsonb; BEGIN
+      envelope := public.insert_work_notification_reminders(pg_temp.reminder_batch());
+      outcomes := envelope->'outcomes';
+      PERFORM pg_temp.assert_grant((SELECT count(*)=6 FROM jsonb_object_keys(envelope))
+        AND envelope->>'protocol'='work_reminder_batch_v1' AND (envelope->>'requested_count')::integer=3
+        AND (envelope->>'inserted_count')::integer=${active ? (retainedKind ? 2 : 3) : (retainedKind ? 1 : 2)}
+        AND (envelope->>'duplicate_count')::integer=${retainedKind ? 1 : 0}
+        AND (envelope->>'deferred_count')::integer=${active ? 0 : 1},'Wrong scalar envelope or counts');
+      PERFORM pg_temp.assert_grant(jsonb_array_length(outcomes)=3,'Incomplete batch classification');
+      PERFORM pg_temp.assert_grant((SELECT count(*)=3 FROM jsonb_array_elements(pg_temp.reminder_batch()) i
+        JOIN jsonb_array_elements(outcomes) o ON o.value-ARRAY['classification','blocking_kind']=i.value),'Kinds, dates or request facts changed');
+      PERFORM pg_temp.assert_grant((SELECT count(*)=${active ? (retainedKind ? 2 : 3) : (retainedKind ? 1 : 2)} FROM jsonb_array_elements(outcomes) r WHERE r->>'classification'='inserted'),'Wrong inserted count');
+      PERFORM pg_temp.assert_grant((SELECT count(*)=${retainedKind ? 1 : 0} FROM jsonb_array_elements(outcomes) r WHERE r->>'classification'='duplicate'),'Same-kind duplicate misclassified');
+      PERFORM pg_temp.assert_grant((SELECT count(*)=${active ? 0 : 1} FROM jsonb_array_elements(outcomes) r WHERE r->>'classification'='deferred_old_key'),'Opposite kind silently lost');
+      PERFORM pg_temp.assert_grant(NOT EXISTS(SELECT 1 FROM jsonb_array_elements(outcomes) r
+        WHERE r->>'classification'='deferred_old_key' AND (r->>'subject_id'<>'@award' OR r->>'blocking_kind'=r->>'kind' OR r->>'blocking_kind' IS NULL)),'Deferred identity or blocker wrong');
+      PERFORM pg_temp.assert_grant(EXISTS(SELECT 1 FROM public.work_notifications WHERE subject_id='@deliverable' AND kind='deliverable_due'),'Award collision aborted unrelated deliverable');
+      PERFORM pg_temp.assert_grant((SELECT count(*)=${active ? 2 : 1} FROM public.work_notifications WHERE subject_id='@award'),'Wrong retained award kinds');
+      repeated := public.insert_work_notification_reminders(pg_temp.reminder_batch())->'outcomes';
+      PERFORM pg_temp.assert_grant((SELECT count(*)=0 FROM jsonb_array_elements(repeated) r WHERE r->>'classification'='inserted'),'Retry inserts duplicates');
+      PERFORM pg_temp.assert_grant((SELECT count(*)=${active ? 3 : 2} FROM jsonb_array_elements(repeated) r WHERE r->>'classification'='duplicate'),'Retry loses same-kind identity');
+      PERFORM pg_temp.assert_grant((SELECT count(*)=${active ? 0 : 1} FROM jsonb_array_elements(repeated) r WHERE r->>'classification'='deferred_old_key'),'Retry hides deferral');
+      PERFORM pg_temp.assert_grant((SELECT obligation_due_at='2026-10-19T01:30:00Z' AND expenditure_deadline_at=obligation_due_at AND spending_status='active' FROM public.funding_awards WHERE id='@award'),'Raw award deadlines changed');
+      IF ${retainedKind ? `'${retainedKind}'` : "NULL"} IS NOT NULL THEN
+        PERFORM pg_temp.assert_grant(EXISTS(SELECT 1 FROM public.work_notifications WHERE subject_id='@award'
+          AND kind=${retainedKind ? `'${retainedKind}'` : "NULL"} AND title='Old title' AND body='Old body' AND due_on='2026-10-19'),'Old row rewritten');
+      END IF;
+    END $$;
+    RESET ROLE;`));
+
+  it("refuses invalid typed rows and rolls back unrelated inserts when classification evidence is missing", () => exercise(`
+    ${awardFixture}
+    CREATE FUNCTION pg_temp.suppress_rollout_expenditure() RETURNS trigger LANGUAGE plpgsql AS $f$
+      BEGIN IF NEW.kind='award_expenditure_due' THEN RETURN NULL; END IF; RETURN NEW; END;
+    $f$;
+    CREATE TRIGGER test_rollout_suppression BEFORE INSERT ON public.work_notifications
+      FOR EACH ROW EXECUTE FUNCTION pg_temp.suppress_rollout_expenditure();
+    SET LOCAL ROLE service_role;
+    DO $$ DECLARE valid jsonb; invalid jsonb; BEGIN
+      SELECT jsonb_agg(r.value) INTO valid FROM jsonb_array_elements(pg_temp.reminder_batch()) r WHERE r.value->>'kind'<>'award_obligation_due';
+      BEGIN
+        PERFORM public.insert_work_notification_reminders(valid);
+        RAISE EXCEPTION 'Missing classification accepted';
+      EXCEPTION WHEN check_violation THEN
+        PERFORM pg_temp.assert_grant(SQLERRM='work_reminder_classification_missing','Wrong classification refusal');
+      END;
+      PERFORM pg_temp.assert_grant(NOT EXISTS(SELECT 1 FROM public.work_notifications WHERE subject_id IN ('@award','@deliverable')),'Unrelated row committed after refusal');
+      FOREACH invalid IN ARRAY ARRAY[
+        jsonb_build_array((valid->0)-'kind'),
+        jsonb_build_array(jsonb_set(valid->0,'{due_on}','null')),
+        jsonb_build_array(jsonb_set(valid->0,'{due_on}','"2026-10-19T00:00:00Z"')),
+        jsonb_build_array(jsonb_set(valid->0,'{kind}','"grant_deadline_changed"')),
+        jsonb_build_array(jsonb_set(valid->0,'{body}','false')),
+        jsonb_build_array(jsonb_set(valid->0,'{project_id}','42')),
+        jsonb_build_array((valid->0)||jsonb_build_object('deadline_change_id','@opportunity')),
+        jsonb_build_array(valid->0,valid->0)
+      ] LOOP
+        BEGIN PERFORM public.insert_work_notification_reminders(invalid); RAISE EXCEPTION 'Invalid row accepted';
+        EXCEPTION WHEN check_violation THEN NULL; END;
+      END LOOP;
+      BEGIN
+        PERFORM public.insert_work_notification_reminders(jsonb_build_array(jsonb_set(valid->0,'{subject_id}','"not-a-uuid"')));
+        RAISE EXCEPTION 'Invalid UUID accepted';
+      EXCEPTION WHEN invalid_text_representation THEN NULL; END;
+    END $$;
+    RESET ROLE;
+    DROP TRIGGER test_rollout_suppression ON public.work_notifications;`));
+
+  it("rolls back the full batch if an insert trigger changes a requested fact or the kind key is missing", () => exercise(`
+    ${awardFixture}
+    CREATE FUNCTION pg_temp.rewrite_rollout_body() RETURNS trigger LANGUAGE plpgsql AS $f$
+      BEGIN NEW.body := 'Rewritten fact'; RETURN NEW; END;
+    $f$;
+    CREATE TRIGGER test_rollout_rewrite BEFORE INSERT ON public.work_notifications
+      FOR EACH ROW EXECUTE FUNCTION pg_temp.rewrite_rollout_body();
+    DO $$ BEGIN
+      BEGIN PERFORM public.insert_work_notification_reminders(pg_temp.reminder_batch());
+        RAISE EXCEPTION 'Changed inserted fact accepted';
+      EXCEPTION WHEN check_violation THEN
+        PERFORM pg_temp.assert_grant(SQLERRM='work_reminder_inserted_facts_changed','Wrong fact-change refusal');
+      END;
+      PERFORM pg_temp.assert_grant(NOT EXISTS(SELECT 1 FROM public.work_notifications WHERE subject_id IN ('@award','@deliverable')),'Fact-change refusal left rows');
+    END $$;
+    DROP TRIGGER test_rollout_rewrite ON public.work_notifications;
+    DROP INDEX public.ux_work_notifications_subject_recipient_kind;
+    DO $$ BEGIN
+      BEGIN PERFORM public.insert_work_notification_reminders(pg_temp.reminder_batch());
+        RAISE EXCEPTION 'Missing kind key accepted';
+      EXCEPTION WHEN check_violation THEN
+        PERFORM pg_temp.assert_grant(SQLERRM='work_reminder_kind_key_missing','Wrong missing-key refusal');
+      END;
+      PERFORM pg_temp.assert_grant(NOT EXISTS(SELECT 1 FROM public.work_notifications WHERE subject_id IN ('@award','@deliverable')),'Missing-key refusal left rows');
+    END $$;`));
+
+  it("keeps old and targeted writers idempotent after stage one without 42P10", () => exercise(`
+    SET LOCAL ROLE service_role;
+    DO $$ DECLARE conflict_columns text; BEGIN
+      PERFORM pg_temp.assert_grant(public.work_notification_kind_activation()=false,'Stage one activated application reminders');
+      FOREACH conflict_columns IN ARRAY ARRAY[
+        'subject_table,subject_id,recipient_user_id,due_on',
+        'subject_table,subject_id,recipient_user_id,due_on,kind',
+        'subject_table,subject_id,recipient_user_id,due_on'
+      ] LOOP
+        EXECUTE 'INSERT INTO public.work_notifications
+          (workspace_id,recipient_user_id,kind,subject_table,subject_id,due_on,title,body)
+          VALUES (pg_temp.grant_workspace(),''@creator'',''grant_decision_due'',
+            ''funding_opportunities'',''@opportunity'',''2026-10-18'',''Synthetic old writer'',''Retained reminder'')
+          ON CONFLICT (' || conflict_columns || ') DO NOTHING';
+      END LOOP;
+      PERFORM pg_temp.assert_grant((SELECT count(*)=1 FROM public.work_notifications WHERE subject_id='@opportunity' AND due_on IS NOT NULL),'Old/bridge retries duplicated or lost reminders');
+      PERFORM pg_temp.assert_grant((SELECT count(*)=2 FROM public.work_notifications WHERE subject_id='@opportunity' AND due_on IS NULL),'Old writer damaged event notices');
+      PERFORM pg_temp.assert_grant((SELECT count(*)=1 AND bool_and(r.value->>'classification'='duplicate' AND r.value->'project_id'='null'::jsonb)
+        FROM jsonb_array_elements(public.insert_work_notification_reminders(jsonb_build_array(jsonb_build_object(
+          'workspace_id',pg_temp.grant_workspace(),'recipient_user_id','@creator','kind','grant_decision_due',
+          'subject_table','funding_opportunities','subject_id','@opportunity','project_id',NULL,
+          'due_on','2026-10-18','title','Synthetic old writer','body','Retained reminder')))->'outcomes') r(value)),'Bridge lost old nullable-project duplicate');
+      BEGIN
+        INSERT INTO public.work_notifications(workspace_id,recipient_user_id,kind,subject_table,subject_id,due_on,title,body)
+          VALUES(pg_temp.grant_workspace(),'@creator','grant_application_due','funding_opportunities','@opportunity','2026-10-18','Synthetic application','Same instant');
+        RAISE EXCEPTION 'Stage one unexpectedly permits distinct-kind duplicate dates';
+      EXCEPTION WHEN unique_violation THEN NULL; END;
+    END $$;
+    RESET ROLE;`));
+
+  it("activates distinct same-instant kinds without breaking the bridge and records the old-writer rollback limit", () => {
+    // Exercise the exact proposal inside this rollback-only fixture. It remains
+    // outside migration up and does not write migration history.
+    const proposal = activationProposal();
+    exercise(`
+      DO $$ BEGIN
+        PERFORM pg_temp.assert_grant(public.work_notification_kind_activation()=false,'Expected stage one before proposal');
+      END $$;
+      INSERT INTO public.work_notifications(workspace_id,recipient_user_id,kind,subject_table,subject_id,due_on,title,body)
+        VALUES(pg_temp.grant_workspace(),'@creator','grant_decision_due','funding_opportunities','@opportunity','2026-10-18','Synthetic decision','Retained decision')
+        ON CONFLICT(subject_table,subject_id,recipient_user_id,due_on,kind) DO NOTHING;
+      ${proposal}
+      UPDATE public.funding_opportunities SET decision_due_at=closes_at WHERE id='@opportunity';
+      DO $$ DECLARE attempt integer; BEGIN
+        PERFORM pg_temp.assert_grant(public.work_notification_kind_activation()=true,'Proposal did not activate');
+        PERFORM pg_temp.assert_grant((SELECT closes_at=decision_due_at FROM public.funding_opportunities WHERE id='@opportunity'),'Due instants differ');
+        FOR attempt IN 1..2 LOOP
+          INSERT INTO public.work_notifications(workspace_id,recipient_user_id,kind,subject_table,subject_id,due_on,title,body)
+            VALUES(pg_temp.grant_workspace(),'@creator','grant_decision_due','funding_opportunities','@opportunity','2026-10-18','Synthetic decision','Retained decision'),
+              (pg_temp.grant_workspace(),'@creator','grant_application_due','funding_opportunities','@opportunity','2026-10-18','Synthetic application','Same instant')
+            ON CONFLICT(subject_table,subject_id,recipient_user_id,due_on,kind) DO NOTHING;
+        END LOOP;
+        PERFORM pg_temp.assert_grant((SELECT count(*)=2 AND count(DISTINCT kind)=2 AND count(DISTINCT due_on)=1 FROM public.work_notifications WHERE subject_id='@opportunity' AND due_on IS NOT NULL),'Active kinds collapsed or retries duplicated');
+        PERFORM pg_temp.assert_grant((SELECT count(*)=3 FROM public.work_notifications WHERE subject_id='@opportunity' AND due_on IS NULL),'Activation damaged event notices');
+        BEGIN
+          INSERT INTO public.work_notifications(workspace_id,recipient_user_id,kind,subject_table,subject_id,due_on,title,body)
+            VALUES(pg_temp.grant_workspace(),'@creator','grant_decision_due','funding_opportunities','@opportunity','2026-10-18','Unsupported old build','Old writer')
+            ON CONFLICT(subject_table,subject_id,recipient_user_id,due_on) DO NOTHING;
+          RAISE EXCEPTION 'Old writer unexpectedly supported after activation';
+        EXCEPTION WHEN SQLSTATE '42P10' THEN NULL; END;
+        BEGIN
+          CREATE UNIQUE INDEX ux_work_notifications_subject_recipient
+            ON public.work_notifications(subject_table,subject_id,recipient_user_id,due_on);
+          RAISE EXCEPTION 'Four-column rollback unexpectedly preserves both kinds';
+        EXCEPTION WHEN unique_violation THEN NULL; END;
+        PERFORM pg_temp.assert_grant((SELECT count(*)=2 FROM public.work_notifications WHERE subject_id='@opportunity' AND due_on IS NOT NULL),'Rollback probe removed reminders');
+      END $$;`);
+  });
 
   it("retains initial, same-day, repeated, cleared and re-added facts without rewriting prior instants", () => exercise(`
     DO $$ BEGIN
@@ -118,6 +365,15 @@ live("grant deadline changes, atomic retention and access (20261018000001)", () 
         BEGIN DELETE FROM public.funding_opportunity_deadline_changes WHERE opportunity_id='@opportunity';
           RAISE EXCEPTION 'Direct journal delete accepted'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
         PERFORM pg_temp.assert_grant(NOT has_function_privilege(current_user,'public.record_funding_opportunity_deadline_changes()','EXECUTE'),'Capture function exposed');
+        PERFORM pg_temp.assert_grant(has_function_privilege(current_user,'public.work_notification_kind_activation()','EXECUTE')=(writer='service_role'),'Activation read privilege wrong');
+        PERFORM pg_temp.assert_grant(has_function_privilege(current_user,'public.insert_work_notification_reminders(jsonb)','EXECUTE')=(writer='service_role'),'Batch RPC privilege wrong');
+        IF writer='service_role' THEN
+          PERFORM pg_temp.assert_grant(public.insert_work_notification_reminders('[]'::jsonb)=jsonb_build_object(
+            'protocol','work_reminder_batch_v1','requested_count',0,'inserted_count',0,'duplicate_count',0,'deferred_count',0,'outcomes','[]'::jsonb),'Empty scalar batch wrong');
+        ELSE
+          BEGIN PERFORM public.insert_work_notification_reminders('[]'::jsonb);
+            RAISE EXCEPTION 'Batch RPC client execution accepted'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+        END IF;
         RESET ROLE;
       END LOOP;
       SET LOCAL ROLE anon;
