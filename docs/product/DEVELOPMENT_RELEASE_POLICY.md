@@ -69,6 +69,13 @@ unmeasured field outcomes; they are not development or release gates. Optional
 user feedback can inform later improvements. Engineering evidence must still
 state what was tested and must not claim an unobserved outcome.
 
+Nathaniel's October 17, 2026 clarification extends this policy to milestone
+closure and v1 acceptance. Agent-run planner and public-participant workflows
+can satisfy those requirements. Human feedback belongs after v1. Do not ask
+Nathaniel to recruit reviewers or provide human feedback before shipping.
+Retain the full technical, scientific, geographic and workflow requirements,
+and label agent-run evidence accurately.
+
 This release rule does not change permissions or approval records within agency
 workflows. Software release approval and an agency's authorization to spend,
 adopt a plan or submit a reimbursement claim are separate actions.

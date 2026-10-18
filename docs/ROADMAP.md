@@ -76,8 +76,10 @@ Statuses follow the two-month review's
 [documentation audit](reviews/2026-10-12-two-month-review/reports/docs-audit.md)
 and [plan](reviews/2026-10-12-two-month-review/PLAN.md). "Next" means Stage A
 or B; "later" means Stage C or D. "Partial" and "mostly done" are the audit's
-engineering verdicts. No milestone is done, because every Done line needs
-observed planners or public participants. "Audit" means the audit is the latest
+engineering verdicts. No milestone is currently marked done. Nathaniel's October
+17, 2026 direction permits agent-run workflow checks to close milestones and v1;
+human feedback is post-v1. Existing statuses still need their required evidence
+and do not change automatically. "Audit" means the audit is the latest
 record. "PR" means a pull request open on October 12. KI-001 means
 [known issue](ops/KNOWN_ISSUES.md) KI-2026-10-12-001.
 
@@ -193,7 +195,7 @@ stages. Its version numbers are indicative.
   contract drawdown, land-use authority, aerial work, agent providers, data
   intake and documents.
 - **Stage D, proof for v1.0 (section 8).** All 50 states and DC, untouched
-  model validation, observed planners and the public, WCAG 2.2 AA, and every
+  model validation, agent-run planner and public-participant journeys, WCAG 2.2 AA, and every
   capability cell proven on one commit.
 
 **October 15, 2026 amendment.** For the items this paragraph names, this dated
