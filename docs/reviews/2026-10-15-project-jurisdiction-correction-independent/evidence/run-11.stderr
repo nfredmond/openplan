@@ -1,0 +1,9 @@
+{
+  "mode": "hashbytes",
+  "result": "AssertionError",
+  "diagnostic": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'e2247e2d0a18ae64dddde4817edc2667df1a8edc117b95edbe27cd640cd7d64f'\n- 'ef7de4958a21746ddc2657bce0b1329bce458a01e1da50ed3f07519dd8c9e0f9'\n",
+  "checked": [
+    "minimized external actor with internal custody",
+    "strict storage parse before external conversion"
+  ]
+}

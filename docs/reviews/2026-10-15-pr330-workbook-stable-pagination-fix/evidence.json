@@ -1,0 +1,397 @@
+{
+  "base": "401c44a0f7bfe4b54740e2c3d07e30f8ed36f169",
+  "evidenceTier": "Synthetic in-process handler and actual XLSX bytes; mocked database access",
+  "direction": {
+    "command": "npm run product:direction:check",
+    "cwd": "openplan/",
+    "exitCode": 0,
+    "invocationId": "aff3b8e31c614061a32d8e452f6b4a41",
+    "remindersRetained": true
+  },
+  "originalReproduction": {
+    "reportSha256": "49ceba7f49d58d683180e37385d4a680f4f5ac377f9403b514c94e288d32b722",
+    "success": false,
+    "passed": 0,
+    "failed": 1,
+    "suites": [
+      {
+        "file": "project-workbook-export-pagination.test.ts",
+        "status": "failed",
+        "activeTests": 1
+      }
+    ]
+  },
+  "initialNodeCohort": {
+    "reportSha256": "e0a1d364a92ed58830f150346ce23c87a0de3f506239125fb66110596f6ed926",
+    "success": false,
+    "passed": 23,
+    "failed": 1,
+    "suites": [
+      {
+        "file": "portfolio-workbook-export.test.ts",
+        "status": "failed",
+        "activeTests": 7
+      },
+      {
+        "file": "project-portfolio-export-route.test.ts",
+        "status": "passed",
+        "activeTests": 6
+      },
+      {
+        "file": "project-workbook-export-pagination.test.ts",
+        "status": "passed",
+        "activeTests": 11
+      }
+    ]
+  },
+  "correctedDomCohort": {
+    "reportSha256": "909c90e69a93ebc1d715d9c0e3011ba995dec2bbd78368ec3d9f7150bf8a701b",
+    "success": true,
+    "passed": 24,
+    "failed": 0,
+    "suites": [
+      {
+        "file": "portfolio-workbook-export.test.ts",
+        "status": "passed",
+        "activeTests": 7
+      },
+      {
+        "file": "project-portfolio-export-route.test.ts",
+        "status": "passed",
+        "activeTests": 6
+      },
+      {
+        "file": "project-workbook-export-pagination.test.ts",
+        "status": "passed",
+        "activeTests": 11
+      }
+    ]
+  },
+  "restoredCohort": {
+    "reportSha256": "c2c7058e169a0621e77b02bfc37643f362d021bae57c03d097ecee00427be716",
+    "success": true,
+    "passed": 24,
+    "failed": 0,
+    "suites": [
+      {
+        "file": "portfolio-workbook-export.test.ts",
+        "status": "passed",
+        "activeTests": 7
+      },
+      {
+        "file": "project-portfolio-export-route.test.ts",
+        "status": "passed",
+        "activeTests": 6
+      },
+      {
+        "file": "project-workbook-export-pagination.test.ts",
+        "status": "passed",
+        "activeTests": 11
+      }
+    ]
+  },
+  "controls": {
+    "trials": [
+      {
+        "trial": "harmless-cohort",
+        "classification": "SURVIVED",
+        "exitCode": 0,
+        "activeTests": 17,
+        "assertion": null,
+        "reportSha256": "5befc7828359deed0db668f9b0b8b40c0b47cda73c4fbfbcddbf0d76304d8036"
+      },
+      {
+        "trial": "complete",
+        "classification": "KILLED",
+        "exitCode": 1,
+        "activeTests": 1,
+        "assertion": "complete workbook must preserve all original rows and literal metadata",
+        "reportSha256": "1ba4ea7833fa4c7afd0978fbd2b376382a3267465f5fdcd7e4e594a686ebc1de"
+      },
+      {
+        "trial": "projection",
+        "classification": "KILLED",
+        "exitCode": 1,
+        "activeTests": 1,
+        "assertion": "every page must retain workspace projection ID cursor and bounded limit",
+        "reportSha256": "8f955564b68dba06b26d4cf82745dd4e580fbce17f2952079ffaee1c0363a8c5"
+      },
+      {
+        "trial": "workspace",
+        "classification": "KILLED",
+        "exitCode": 1,
+        "activeTests": 1,
+        "assertion": "every page must retain workspace projection ID cursor and bounded limit",
+        "reportSha256": "8155098e818558513687941ac381a86473d2c2929398ac7895abe66a61d4f8b8"
+      },
+      {
+        "trial": "cursor-column",
+        "classification": "KILLED",
+        "exitCode": 1,
+        "activeTests": 1,
+        "assertion": "every page must retain workspace projection ID cursor and bounded limit",
+        "reportSha256": "c001880405fe65c2f74e3252ee08cbe513949188db18e3da0c40e037db2a152f"
+      },
+      {
+        "trial": "cursor-order",
+        "classification": "KILLED",
+        "exitCode": 1,
+        "activeTests": 1,
+        "assertion": "every page must retain workspace projection ID cursor and bounded limit",
+        "reportSha256": "714f1e7f444c4c9c7e0a0c0df94ffc755307d199095476f1e63a96fe1079a9e9"
+      },
+      {
+        "trial": "plus-one",
+        "classification": "KILLED",
+        "exitCode": 1,
+        "activeTests": 1,
+        "assertion": "every page must retain workspace projection ID cursor and bounded limit",
+        "reportSha256": "591d9cecbd97c4831a510ba585a6f18d161cd075e32c90515547b4c23bd70e8c"
+      },
+      {
+        "trial": "short-page",
+        "classification": "KILLED",
+        "exitCode": 1,
+        "activeTests": 1,
+        "assertion": "short server pages must not truncate the workbook",
+        "reportSha256": "85af256baf5b9143f468008248c0afa3e8eaf9ee613825dcc745c5de245a780c"
+      },
+      {
+        "trial": "over-limit",
+        "classification": "KILLED",
+        "exitCode": 1,
+        "activeTests": 1,
+        "assertion": "over-limit portfolio must refuse before creating a workbook",
+        "reportSha256": "5337a63820d509b05d889f889a495746804d7a767d766d93dc2af0bc26d25da8"
+      },
+      {
+        "trial": "late-error",
+        "classification": "KILLED",
+        "exitCode": 1,
+        "activeTests": 1,
+        "assertion": "later page read failure must not export a partial workbook",
+        "reportSha256": "223453165ac89562999202372e78b9b81bf78ff5b9dec8bef1393f6fc316c9f4"
+      },
+      {
+        "trial": "unavailable",
+        "classification": "KILLED",
+        "exitCode": 1,
+        "activeTests": 1,
+        "assertion": "unavailable data must not become a successful empty page",
+        "reportSha256": "2796271bce0353348f13308dffedf4bb3cc5a4ad2d995903da5f58e6eff0fde1"
+      },
+      {
+        "trial": "empty",
+        "classification": "KILLED",
+        "exitCode": 1,
+        "activeTests": 1,
+        "assertion": "empty successful read must still export the workbook",
+        "reportSha256": "0c1e83797923a2abe19f4653c2fec23fabed6e0a3c79852a678ffcd72965bf07"
+      },
+      {
+        "trial": "anonymous",
+        "classification": "KILLED",
+        "exitCode": 1,
+        "activeTests": 1,
+        "assertion": "anonymous caller must stop before portfolio access",
+        "reportSha256": "ec537502168388ed15b26638809b0b7a39ba80b7b721d11db4b82b27d9416b39"
+      },
+      {
+        "trial": "membership",
+        "classification": "KILLED",
+        "exitCode": 1,
+        "activeTests": 1,
+        "assertion": "missing membership must stop before portfolio access",
+        "reportSha256": "bcb76935bb3af372d404e60f0eec3e2ffa817c9e56dc757062cc184b5ca326a9"
+      },
+      {
+        "trial": "old-offset",
+        "classification": "KILLED",
+        "exitCode": 1,
+        "activeTests": 1,
+        "assertion": "mutable update must not omit or duplicate a project",
+        "reportSha256": "cb9204c65837297122a30e839a0fc4c19a3c583000d8fa19b78dfaa24377f6fa"
+      },
+      {
+        "trial": "presentation",
+        "classification": "KILLED",
+        "exitCode": 1,
+        "activeTests": 1,
+        "assertion": "presentation must use descending instants and ascending IDs for ties",
+        "reportSha256": "2274ff1800bc89b0d9e4e5c06927672c1b6d595898a8b54d3873d79be346587d"
+      },
+      {
+        "trial": "microseconds",
+        "classification": "KILLED",
+        "exitCode": 1,
+        "activeTests": 1,
+        "assertion": "presentation must use descending instants and ascending IDs for ties",
+        "reportSha256": "0cd7285357ad48f63876c0fe565fac6c65d22304316448838b090b6c0c61a1b6"
+      },
+      {
+        "trial": "legacy-query",
+        "classification": "KILLED",
+        "exitCode": 1,
+        "activeTests": 1,
+        "assertion": "every legacy read must preserve projection scope ID cursor and limit",
+        "reportSha256": "1e0b1150b06ff02036c2477fd542599fb829d3ecf7ce61bccfb692367e16209a"
+      },
+      {
+        "trial": "legacy-async",
+        "classification": "KILLED",
+        "exitCode": 1,
+        "activeTests": 1,
+        "assertion": "async formatting failure is handled",
+        "reportSha256": "a307f65e59940e9fc3fea7b725c882a5dc5a8588980866113c6d42d8ef52f6a8"
+      },
+      {
+        "trial": "legacy-membership",
+        "classification": "KILLED",
+        "exitCode": 1,
+        "activeTests": 1,
+        "assertion": "missing workspace must stop before reads",
+        "reportSha256": "0a0ef002fc73faeb76b568b51557209928445fd7d9a50e856801eff9281e56c5"
+      },
+      {
+        "trial": "legacy-limit",
+        "classification": "KILLED",
+        "exitCode": 1,
+        "activeTests": 1,
+        "assertion": "legacy over-limit export must refuse without a workbook",
+        "reportSha256": "aeb51a60611f74d6489939ac32879ca3211602d9c1ebbf117a244b034ddede99"
+      },
+      {
+        "trial": "legacy-year",
+        "classification": "KILLED",
+        "exitCode": 1,
+        "activeTests": 1,
+        "assertion": "legacy round trip must preserve an unknown price year",
+        "reportSha256": "a94ffcce392ccfee98331d8030d71883eab600e866d8704eb99cd27f81ffa1c8"
+      },
+      {
+        "trial": "legacy-read-error",
+        "classification": "KILLED",
+        "exitCode": 1,
+        "activeTests": 1,
+        "assertion": "denied project read must fail without a workbook",
+        "reportSha256": "058bf885f686c49c114c28d3ef0e6eeee9ab710a86fcf5b540dc333911f71078"
+      },
+      {
+        "trial": "fake-cursor-corrected-diagnostic",
+        "classification": "KILLED",
+        "exitCode": 1,
+        "activeTests": 1,
+        "assertion": "expected 409 to be 200",
+        "reportSha256": "bf4a66513f15d914b3dabc6c50af78fe079376a46e95b9b1e1cc8f48cb489582"
+      },
+      {
+        "trial": "legacy-fake-cursor",
+        "classification": "KILLED",
+        "exitCode": 1,
+        "activeTests": 1,
+        "assertion": "viewer export must remain successful",
+        "reportSha256": "27739795b46e57acaf954c9ad9df972c68514a6d29f275ee6baf68a688f293e3"
+      },
+      {
+        "trial": "restored-cohort",
+        "classification": "SURVIVED",
+        "exitCode": 0,
+        "activeTests": 24,
+        "assertion": null,
+        "reportSha256": "c2c7058e169a0621e77b02bfc37643f362d021bae57c03d097ecee00427be716"
+      }
+    ],
+    "classifierRefusals": [
+      {
+        "case": "runtime",
+        "classification": "REFUSED",
+        "reason": "runtime or unhandled error"
+      },
+      {
+        "case": "suite-error",
+        "classification": "REFUSED",
+        "reason": "missing suite or suite error"
+      },
+      {
+        "case": "empty",
+        "classification": "REFUSED",
+        "reason": "missing suite or suite error"
+      },
+      {
+        "case": "wrong-test",
+        "classification": "REFUSED",
+        "reason": "wrong test identity or count"
+      },
+      {
+        "case": "wrong-file",
+        "classification": "REFUSED",
+        "reason": "wrong test identity or count"
+      },
+      {
+        "case": "wrong-assertion",
+        "classification": "REFUSED",
+        "reason": "wrong assertion diagnostic"
+      },
+      {
+        "case": "wrong-code",
+        "classification": "REFUSED",
+        "reason": "not one assertion failure"
+      },
+      {
+        "case": "extra-failure",
+        "classification": "REFUSED",
+        "reason": "not one assertion failure"
+      }
+    ]
+  },
+  "rejectedTrial": {
+    "file": "fake-cursor.json",
+    "reportSha256": "629f0b5091d5191c3a165a4cc53228935f7f05d4b870aa9734773401791a4de5",
+    "classification": "REFUSED",
+    "reason": "Expected ID assertion, received earlier HTTP 409 versus 200 assertion; not counted as kill; rerun with corrected diagnostic"
+  },
+  "restoration": {
+    "openplan/src/app/api/projects/export/workbook/route.ts": {
+      "sha256": "05d66697f949a34058c36fd3598ba2ce0e5bb1ce5876d3ed8028d8201b485045",
+      "restored": true
+    },
+    "openplan/src/test/project-workbook-export-pagination.test.ts": {
+      "sha256": "007220959d6e123b3196a34ebf5848892cbffc0d511168002e788fd22d51c918",
+      "restored": true
+    },
+    "openplan/src/test/project-portfolio-export-route.test.ts": {
+      "sha256": "440bd068450e0075138438d556ad86adf6786856cab4fe47556abe409762aeed",
+      "restored": true
+    }
+  },
+  "resourceSnapshots": {
+    "initial-control-resources.json": {
+      "memory.max": "1610612736",
+      "memory.swap.max": "0",
+      "memory.peak": "459497472",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+    },
+    "control-resources.json": {
+      "memory.max": "1610612736",
+      "memory.swap.max": "0",
+      "memory.peak": "548782080",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+    }
+  },
+  "blindCategories": {
+    "queryAssertions": "No live PostgREST transport, UUID order, RLS enforcement or membership freshness",
+    "identityRegression": "Fixed identities during updated_at edits; no atomic contents, insert/delete, identity rewrite or visibility-change guarantee",
+    "workbookChecks": "No native spreadsheet use, browser download custody, accessibility, capacity or planner acceptance"
+  },
+  "nativeFollowup": "Prepared in STATUS.md; no database transport performed",
+  "lint": {
+    "eslintExitCode": 0,
+    "controllerSyntax": "parsed",
+    "resources": {
+      "memory.max": "1610612736",
+      "memory.swap.max": "0",
+      "memory.peak": "276897792",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+    }
+  }
+}

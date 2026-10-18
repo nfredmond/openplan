@@ -1,0 +1,174 @@
+{
+  "reviewedCommit": "536d4ccbd6e1028a3632e85b41ae7c655fcac21a",
+  "candidateBase": "1b2fefe0f0e98f99700fc77e99146fe697b43ee7",
+  "reviewCheckoutBase": "b259d73e56d22d4935ef2789874cf69901786b33",
+  "verdict": "bounded-source-acceptance-no-new-P1-P2",
+  "privateRoot": "/tmp/portfolio-independent-nbihok5d",
+  "independentControls": {
+    "trials": [
+      {
+        "label": "baseline-final",
+        "classification": "SURVIVED",
+        "exitCode": 0,
+        "expectedAssertion": null
+      },
+      {
+        "label": "harmless",
+        "classification": "SURVIVED",
+        "exitCode": 0,
+        "expectedAssertion": null
+      },
+      {
+        "label": "premature-short-page",
+        "classification": "KILLED",
+        "exitCode": 1,
+        "expectedAssertion": "short pages retain the normalized tail and exclude other workspaces"
+      },
+      {
+        "label": "skip-short-page-gap",
+        "classification": "KILLED",
+        "exitCode": 1,
+        "expectedAssertion": "page offsets advance by returned rows until empty"
+      },
+      {
+        "label": "missing-workspace-filter",
+        "classification": "KILLED",
+        "exitCode": 1,
+        "expectedAssertion": "short pages retain the normalized tail and exclude other workspaces"
+      },
+      {
+        "label": "missing-source-filter",
+        "classification": "KILLED",
+        "exitCode": 1,
+        "expectedAssertion": "retry filters repeat on every page"
+      },
+      {
+        "label": "missing-outcome-filter",
+        "classification": "KILLED",
+        "exitCode": 1,
+        "expectedAssertion": "retry filters repeat on every page"
+      },
+      {
+        "label": "suppress-page-error",
+        "classification": "KILLED",
+        "exitCode": 1,
+        "expectedAssertion": "later errors on either collection refuse partial review"
+      },
+      {
+        "label": "accept-stale-preview",
+        "classification": "KILLED",
+        "exitCode": 1,
+        "expectedAssertion": "mapping change invalidates the actual approved preview hash"
+      },
+      {
+        "label": "restored",
+        "classification": "SURVIVED",
+        "exitCode": 0,
+        "expectedAssertion": null
+      }
+    ],
+    "routeRestored": true,
+    "sha256": "15a244fb60d281da3d880a14f8c44881576b900539b255a2b8d4d3027079715f",
+    "resources": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "memory.peak": "159236096"
+    }
+  },
+  "independentCandidateActiveCases": [
+    "POST /api/projects/import reports an unconfirmed commit and rechecks prior creations before retrying",
+    "POST /api/projects/import checks project name matches beyond the database row cap",
+    "POST /api/projects/import locks every previously created source row beyond the database row cap",
+    "POST /api/projects/import stops the review when a later duplicate page fails"
+  ],
+  "independentCandidateSuccess": true,
+  "candidateEvidenceAudit": {
+    "trackedBindingsMatched": {
+      "AGENTS.md": "dbdf9a39ee662e2b32833970067d306c9fb74c3fde1b6f31402960501e3159a6",
+      "docs/product/V1_PRODUCT_CONTRACT.md": "304094a6bf6d8813a0f31b905d4959bfa11defb9a22275d4963ea4fede7356be",
+      "docs/ROADMAP.md": "0a02ff11515ebd86825bb8b6a914343d49644152d001eb6fff891f87da08d921",
+      "docs/product/CORE_REQUIREMENTS_LEDGER.md": "5fe6d34924483052291801d3c1b2ec5623833d0c5d3cbbf73858a2e16a79f078",
+      "docs/product/US_PLANNING_CAPABILITY_MATRIX.md": "adff647cacbd6ce12b4ca51bf2f5e25ba3da95a22f3dd831ae2b3e6552843105",
+      "docs/reviews/product-direction/2026-10-06-integration-review.md": "9934058a60139e3e917becdb4c468fa750b15fce154676a9d3fce37d850e428c",
+      "docs/ops/KNOWN_ISSUES.md": "995823d3f38236b164ebce55f77be047fe81b1c1484ce15a75be4ec09cdde05f",
+      "docs/ARCHITECTURE.md": "f050b327f919cc86311e82995dd5666c6affee482ad4fe705e124997a60d41bf",
+      "openplan/supabase/config.toml": "a91e2c6282775296f9470066696530618d8768ca0adc21fad8a9b4b3e7bf105e",
+      "openplan/src/components/projects/project-portfolio-importer.tsx": "e12b0daff968c7d13adad01a4ccb0765da0ca1b48136d04ebd4e14039cfaada2",
+      "openplan/src/lib/projects/portfolio-import.ts": "23d6ac5a56d6f5fa4eb63167e80c8ac910677c06b73ae1bee365993db68999c6",
+      "openplan/src/lib/projects/portfolio-workbook.ts": "beb55521add02d4ca6a0ddc8788fa5094fbbd0528cac96a79d672442be178e89",
+      "openplan/src/app/api/projects/import/route.ts": "15a244fb60d281da3d880a14f8c44881576b900539b255a2b8d4d3027079715f",
+      "openplan/src/test/project-portfolio-import-route.test.ts": "ff4013413247de110edbd83c90e5470be893c6d1cf3e04bbc28eb90fec71972d",
+      "openplan/src/test/project-portfolio-importer.test.tsx": "56aa6f41458c9ac341147b3fd67b6b3b4fcdd8de2d4f046eb56c8100b49f6b37",
+      "openplan/src/test/portfolio-import-review.test.ts": "5abff7fa30d3ea297ef4adfd874dafaa75e49e39b9cc2e8f93c02ac0aadda639",
+      "openplan/src/test/portfolio-workbook-import.test.ts": "413735efb7e72dfad96f12e7e3a7d3fa8c37d87f32ff711885ea667d346dd2a6",
+      "openplan/src/test/refused-project-portfolio-import-action.test.ts": "e7f61f705cc431c42ee0704fe1709ce4f82d94a798f60251fadca6bd82415ac8",
+      "openplan/src/app/(app)/projects/page.tsx": "7d546e39c93aab0c9bb511048b5d440dd0a0e02844a0933e6aa9b179ac00d6bb",
+      "openplan/src/app/api/knowledge-base/documents/route.ts": "4bc4f605bd105a672c4c35047b0b20de5b299f345423e966402225e2c0742a52",
+      "openplan/src/app/api/knowledge-base/documents/[documentId]/download/route.ts": "465f27019087b4275ecea32e2c5f54e183eaf69874868ba9758509e0e1578c76",
+      "openplan/src/app/api/projects/export/workbook/route.ts": "110a5bb8181b18ebd1d13307c6d38427d4f0b07fab6f7f47438f161891659cb7",
+      "openplan/src/lib/projects/portfolio-round-trip-contract.ts": "ad012e38746d24039fbc0d7da7206e5254088e83958410baeeb03349de89d7ec",
+      "openplan/supabase/migrations/20260905000001_portfolio_unknown_price_year.sql": "b49ba27f9a5635e6cdab325aab9155057f697ce55ff1f066939cc9460bda1d63",
+      "openplan/supabase/migrations/20260825000002_direct_workbook_portfolio_import.sql": "ce5b61363df29cfde4a6852061a11ce01fb65efc7a49e01869f09564fc9bc566",
+      "docs/reviews/2026-10-15-project-portfolio-intake/verify_controls.py": "319c4c7afea1f8c6dd531a6f04eb0a858de95cc7565200161ae710acd51d27d8"
+    },
+    "privateGeneratedConfigVerified": false,
+    "recordedFocusedPasses": 49,
+    "trialsChecked": 34,
+    "intendedFaultsChecked": 10,
+    "refusals": [
+      {
+        "case": "startup",
+        "result": "REFUSED",
+        "reason": "wrong test identity or count"
+      },
+      {
+        "case": "wrong-name",
+        "result": "REFUSED",
+        "reason": "wrong test identity or count"
+      },
+      {
+        "case": "wrong-assertion",
+        "result": "REFUSED",
+        "reason": "wrong assertion diagnostic"
+      },
+      {
+        "case": "extra-failure",
+        "result": "REFUSED",
+        "reason": "not exactly one assertion failure"
+      }
+    ],
+    "freshFullControllerRun": false
+  },
+  "firstTrialRefusal": {
+    "fault": "skip-short-page-gap",
+    "expectedDiagnostic": "short pages retain the normalized tail and exclude other workspaces",
+    "actualDiagnostic": "page offsets advance by returned rows until empty",
+    "countedAsKill": false
+  },
+  "privateArtifactSha256": {
+    "openplan/src/test/private-independent.test.ts": "53c2dda2457868d0fd3a1e127995ffe4fe14f4696adb16e6c4db523c7e8b8570",
+    "openplan/private.config.mts": "f3079a2a2df99ad4a6e3133a7aa257f422c4f0d74b11371564e1b3d1109fd8e1",
+    "run_controls_final.py": "3d32b4c4c54d57af004a675c740c063d0f1323f01e65ee7d42c8cf7b976d7a38",
+    "evidence/first-controls.json": "fd9ed2c46388ac1387b3d56b69cdb61140eb86e7101ae36e445b02b2818aabb5",
+    "evidence/skip-short-page-gap.json": "65bcc09c80f41689bd68ddc02eae2f690ef3912b694f5f5e678bd5915fbb4978",
+    "evidence/candidate-selected.json": "2a8fdd62317d3c629665ba97022b84be173a892f4282e71c12474759e0a6ff0f",
+    "evidence/final/accept-stale-preview.json": "45b14fdc3019027925d3635846a396ded753dce395bb03b7cc4bf7e6f9968cf8",
+    "evidence/final/baseline-final.json": "37a23819fcd7a34fd5a7f7b82df30674897d5e9be2bd2908f1afabfa51451547",
+    "evidence/final/harmless.json": "5e511536d2259cb07f75510087b4a9dcebebde68eb47f2ca55edf40b09bf6926",
+    "evidence/final/independent-controls.json": "30ac67df463c793266060c60244f3e0a5e2288bc7c034627a2e4a4a8de720031",
+    "evidence/final/missing-outcome-filter.json": "8736cc53eb49aef7a4241ec506abe90cc2c2f0a7a446cc6409353dde13099782",
+    "evidence/final/missing-source-filter.json": "49181297c500d6fe70f244fb2443ebe8780d05749864caa72299c9292133ee04",
+    "evidence/final/missing-workspace-filter.json": "16425af22d0c5dbefd24d5415b1aca7dafce3b3730b01f731ec303b2c34e1990",
+    "evidence/final/premature-short-page.json": "8e26021d0257812f8e83d9539460a47c19016a52674adeba5668541a1890f7a9",
+    "evidence/final/restored.json": "6d6ab2642cadc7252903ef34e03f35378eedc063851d32c62a2c302cf5ae9151",
+    "evidence/final/skip-short-page-gap.json": "561ce73039400e021632d878d1e02863be97a1f9cd135b9bfafe63afcea6b974",
+    "evidence/final/suppress-page-error.json": "dcda062951660d2cff5fa5b9072de10fcbbd71200d73fcddcf09522ae6595056"
+  },
+  "limits": [
+    "mocked Auth, membership, Storage, database and RPC",
+    "no shared page snapshot",
+    "SQL does not share JavaScript NFKC normalization",
+    "no live database or transport interruption",
+    "no build, browser, native file delivery or practitioner acceptance"
+  ]
+}

@@ -83,7 +83,7 @@ import {
   type ProjectCorridorRow,
 } from "@/lib/cartographic/project-corridor-record";
 import { deriveHomeMapView, homeGeographyLabel, parseWorkspaceHomeGeography } from "@/lib/workspaces/home-geography";
-import { canAccessWorkspaceAction, isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
+import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import type {
   BillingInvoiceRow,
   FundingAwardRow,
@@ -163,7 +163,7 @@ export default async function ProjectDetailPage({
   const projectResult = await supabase
     .from("projects")
     .select(
-      "id, workspace_id, name, summary, status, plan_type, delivery_phase, estimated_cost_amount, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, estimated_cost_recorded_at, created_at, updated_at, rtp_posture, rtp_posture_updated_at, latitude, longitude, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_geometry_geojson, place_set_at"
+      "id, workspace_id, name, summary, status, plan_type, delivery_phase, estimated_cost_amount, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, estimated_cost_recorded_at, created_at, updated_at, rtp_posture, rtp_posture_updated_at, jurisdiction_context, latitude, longitude, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_geometry_geojson, place_set_at"
     )
     .eq("id", projectId)
     .single();
@@ -187,9 +187,15 @@ export default async function ProjectDetailPage({
 
   const project = projectData as ProjectRow;
 
+  // Project controls follow the workspace that owns the RLS-readable project.
+  // The active workspace remains the navigation context, not write authority.
+  const projectMembershipResult = await supabase.from("workspace_members").select("role").eq("workspace_id", project.workspace_id).eq("user_id", user.id).maybeSingle();
+  const projectRole = projectMembershipResult.error ? null : projectMembershipResult.data?.role;
+
   // Every optional read on this page registers here so an empty panel can be
   // told apart from a panel whose query failed. See src/lib/ui/read-failures.ts.
   const reads = new ReadFailureLog();
+  reads.check("your role in this project's workspace", projectMembershipResult);
 
   // The home-geography columns come along because the stage-gate binding is only
   // honest next to them: the stored template id has a database default, so
@@ -1301,7 +1307,7 @@ export default async function ProjectDetailPage({
             availableModelRuns,
             rtpSafetyEvidence,
             rtpPriorityCriteria: resolveRtpPriorityFrameworkForWorkspace(parseWorkspaceHomeGeography(workspaceData)).criteria,
-            canWriteProjects: canAccessWorkspaceAction("plans.write", membership.role),
+            canWriteProjects: canAccessWorkspaceAction("plans.write", projectRole),
             deliverableCount: budgetInputs.deliverables.length,
             openRiskCount,
             openIssueCount,
@@ -1325,7 +1331,7 @@ export default async function ProjectDetailPage({
           spineRollup={projectSpineReadiness}
           stageGateSummary={stageGateSummary}
           stageGateRunOptions={buildStageGateRunOptions(availableRunRows, recentRuns)}
-          canRecordDecision={canAccessWorkspaceAction("stage_gates.decisions.write", membership.role)}
+          canRecordDecision={canAccessWorkspaceAction("stage_gates.decisions.write", projectRole)}
           identity={{
             id: project.id,
             name: project.name,
@@ -1334,8 +1340,9 @@ export default async function ProjectDetailPage({
             planType: project.plan_type,
             deliveryPhase: project.delivery_phase,
             place: placeIdentityOnly(projectPlaceOfRecord),
+            jurisdiction: { context: project.jurisdiction_context, revision: project.updated_at, userId: user.id, workspaceId: project.workspace_id },
           }}
-          canWriteIdentity={!isReadOnlyWorkspaceRole(membership.role)}
+          canWriteIdentity={canAccessWorkspaceAction("plans.write", projectRole)}
           workspaceHomeGeographyLabel={workspaceHomeGeographyLabel ?? ""}
         />
       </PageTabPanel>
@@ -1365,16 +1372,16 @@ export default async function ProjectDetailPage({
             budgetSummaryByDeliverableId={budgetSummaryByDeliverableId}
             assigneeRoster={assigneeRoster}
             deliverableAssigneeColumnPending={budgetInputs.pending.deliverableAssigneeColumn}
-            canWrite={!isReadOnlyWorkspaceRole(membership.role)}
+            canWrite={canAccessWorkspaceAction("plans.write", projectRole)}
           />
       </PageTabPanel>
 
       <PageTabPanel tabKey="funding" active={activeTab === "funding"}>
-          <ProjectEstimatedCostEditor project={project} canWrite={!isReadOnlyWorkspaceRole(membership.role)} documents={documentsLane.library.entries} />
+          <ProjectEstimatedCostEditor project={project} canWrite={canAccessWorkspaceAction("plans.write", projectRole)} documents={documentsLane.library.entries} />
           <ProjectFundingPanel
             projectId={project.id}
             workspaceId={project.workspace_id}
-            canWriteAwards={canAccessWorkspaceAction("programs.write", membership.role)}
+            canWriteAwards={canAccessWorkspaceAction("programs.write", projectRole)}
             projectFundingProfile={projectFundingProfile}
             projectFundingProfilePending={projectFundingProfilePending}
             fundingAwardsPending={fundingAwardsPending}
@@ -1433,7 +1440,7 @@ export default async function ProjectDetailPage({
             corridors={projectCorridors}
             corridorsPending={projectCorridorsPending}
             {...(projectMapHomeView ? { homeCenter: projectMapHomeView.center, homeZoom: projectMapHomeView.zoom } : {})}
-            canWrite={!isReadOnlyWorkspaceRole(membership.role)}
+            canWrite={canAccessWorkspaceAction("plans.write", projectRole)}
           />
 
           <ProjectEvidenceAndActivity
@@ -1452,7 +1459,7 @@ export default async function ProjectDetailPage({
             projectPlaceLabel={project.place_label ?? null}
           />
 
-          <ProjectDocumentsPanel library={documentsLane.library} projectId={project.id} canGenerateEvidenceBundle={canAccessWorkspaceAction("programs.write", membership.role)} />
+          <ProjectDocumentsPanel library={documentsLane.library} projectId={project.id} canGenerateEvidenceBundle={canAccessWorkspaceAction("programs.write", projectRole)} />
       </PageTabPanel>
 
       <PageTabPanel tabKey="record" active={activeTab === "record"}>
@@ -1461,7 +1468,7 @@ export default async function ProjectDetailPage({
           <ProjectRiskAndDecisionLog
             projectId={project.id}
             workspaceId={project.workspace_id}
-            canWrite={!isReadOnlyWorkspaceRole(membership.role)}
+            canWrite={canAccessWorkspaceAction("plans.write", projectRole)}
             risks={risks}
             issues={issues}
             decisions={decisions}

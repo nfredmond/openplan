@@ -1,0 +1,8 @@
+{
+  "mode": "parser",
+  "result": "AssertionError",
+  "diagnostic": "Missing expected exception: missing actor must not pass export parser",
+  "checked": [
+    "minimized external actor with internal custody"
+  ]
+}

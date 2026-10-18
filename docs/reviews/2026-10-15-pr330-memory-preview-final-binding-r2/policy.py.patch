@@ -1,0 +1,19 @@
+--- retained-v6/policy.py
++++ memory/policy.py
+@@ -7 +7 @@
+-HEAD = '49e3fa2004c1336ffa36c134a8f21bcc2d72d327'
++HEAD = 'f0cbeddff5ae3fc37e0dd8b91c02601429d977a6'
+@@ -14,5 +14,5 @@
+-HOST = '127.74.19.11'
+-API = 'http://' + HOST + ':29949'
+-WEB = 'http://' + HOST + ':3586'
+-PURPOSE = 'project-portfolio-skip-preview-20261015-v6'
+-ROOT = '/home/nathaniel/.local/state/openplan/' + PURPOSE
++HOST = '127.74.19.13'
++API = 'http://' + HOST + ':29952'
++WEB = 'http://' + HOST + ':3587'
++PURPOSE = 'pr330-memory-preview-20261015-r2'
++ROOT = '/dev/shm/openplan-pr330-preview-20261015'
+@@ -69 +69 @@
+-    exact({'valid': True}, {'valid': isinstance(value, str) and re.fullmatch(r'openplan_project_portfolio_preview_[0-9a-f]{24}', value) is not None}, 'target')
++    exact({'valid': True}, {'valid': isinstance(value, str) and re.fullmatch(r'openplan_pr330_preview_[0-9a-f]{24}', value) is not None}, 'target')

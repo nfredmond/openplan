@@ -1,0 +1,26 @@
+{
+  "src/test/planner-copy-says-the-plain-thing.test.ts": {
+    "sha256": "19ec1a9cd8c287d51339197d2eaf321ec0ed5438cad83f7c0d6d82916540b031",
+    "restored": true
+  },
+  "src/test/reference-count-projection-guard.test.ts": {
+    "sha256": "5378c4979fb405c9ca267c7d19c3fbb090dfe4a972621bc20a505d22bd4d3dc2",
+    "restored": true
+  },
+  "src/test/supabase-call-sites.ts": {
+    "sha256": "168c47061dee5e7a8f9753ee1feb4e3e2bab10b5ba93c953b44eab0c5e2bf2a9",
+    "restored": true
+  },
+  "src/components/projects/project-saved-map.tsx": {
+    "sha256": "0df6ac6876349ff1af24de44e7ca3d283a4c867e5696dc2b765fd01709e77469",
+    "restored": true
+  },
+  "src/lib/projects/project-jurisdiction.ts": {
+    "sha256": "471e271740a66dd314637b0378513f5eb035b896774f5bf2916a774aefd6c24d",
+    "restored": true
+  },
+  "src/app/api/projects/[projectId]/jurisdiction-readiness/route.ts": {
+    "sha256": "60e5a0b63b28fc6ddcbdd650d83c96f2694d811582d67a24aa326a61fb091edc",
+    "restored": true
+  }
+}

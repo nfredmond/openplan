@@ -64,6 +64,7 @@
     "@sparticuz/chromium": "^129.0.0",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.110.7",
+    "@xmldom/xmldom": "0.8.15",
     "ai": "^6.0.94",
     "better-sqlite3": "^12.8.0",
     "class-variance-authority": "^0.7.1",

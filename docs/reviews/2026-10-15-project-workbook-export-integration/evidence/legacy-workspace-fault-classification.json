@@ -1,0 +1,8 @@
+{
+  "trial": "legacy-workspace-fault",
+  "testFile": "src/test/project-portfolio-export-route.test.ts",
+  "test": "GET /api/projects/export/workbook stops before a project read when the user has no active workspace",
+  "exitCode": 1,
+  "marker": "missing workspace must stop before reads",
+  "classification": "KILLED"
+}

@@ -1,0 +1,53 @@
+{
+  "cohorts": [
+    {
+      "cohort": "combined-01",
+      "bindings": 40,
+      "mismatches": []
+    },
+    {
+      "cohort": "static-01",
+      "bindings": 40,
+      "mismatches": []
+    }
+  ],
+  "protectedMain": [
+    {
+      "path": "docs/ROADMAP.md",
+      "equalToMain": true
+    },
+    {
+      "path": "docs/product/V1_PRODUCT_CONTRACT.md",
+      "equalToMain": true
+    },
+    {
+      "path": "docs/product/CORE_REQUIREMENTS_LEDGER.md",
+      "equalToMain": true
+    },
+    {
+      "path": "docs/product/US_PLANNING_CAPABILITY_MATRIX.md",
+      "equalToMain": true
+    },
+    {
+      "path": "docs/product/US_PLANNING_CAPABILITY_REGISTRY.json",
+      "equalToMain": true
+    },
+    {
+      "path": "docs/ARCHITECTURE.md",
+      "equalToMain": true
+    },
+    {
+      "path": "docs/ops/KNOWN_ISSUES.md",
+      "equalToMain": true
+    },
+    {
+      "path": "openplan/package.json",
+      "equalToMain": true
+    },
+    {
+      "path": "openplan/package-lock.json",
+      "equalToMain": true
+    }
+  ],
+  "parent": "c9d9e9f2d3576262fa1ca7a06b9bb4110cad0cfe"
+}

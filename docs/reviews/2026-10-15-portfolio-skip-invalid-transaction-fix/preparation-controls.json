@@ -1,0 +1,24 @@
+{
+  "cases": [
+    {
+      "case": "baseline",
+      "rejectedUnsafeNames": true,
+      "expected": true,
+      "observedAsExpected": true
+    },
+    {
+      "case": "harmless-docstring",
+      "rejectedUnsafeNames": true,
+      "expected": true,
+      "observedAsExpected": true
+    },
+    {
+      "case": "bypassed-target-name",
+      "rejectedUnsafeNames": false,
+      "expected": false,
+      "observedAsExpected": true
+    }
+  ],
+  "mode": "in-memory Python source mutations; no source writes or SQL execution",
+  "limit": "Native SQL preflight and error oracles remain unexecuted."
+}

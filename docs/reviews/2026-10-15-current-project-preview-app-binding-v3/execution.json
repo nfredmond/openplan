@@ -1,0 +1,136 @@
+[
+  {
+    "unit": "openplan-binding-v3-prepare-01.service",
+    "configured": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "terminalExitCodeObservedByAgent": 0,
+    "journalAccounting": {
+      "CPU_USAGE_NSEC": "13258209000",
+      "MEMORY_PEAK": "536870912",
+      "MEMORY_SWAP_PEAK": "0"
+    },
+    "privateJournalSha256": "8aeb08326bf45439a7677af64181f9e2a43e7fca4fd712c4ebd75a28d7f1f006"
+  },
+  {
+    "unit": "openplan-binding-v3-direction-01.service",
+    "configured": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "terminalExitCodeObservedByAgent": 0,
+    "journalAccounting": {
+      "CPU_USAGE_NSEC": "865712000",
+      "MEMORY_PEAK": "91971584",
+      "MEMORY_SWAP_PEAK": "0"
+    },
+    "privateJournalSha256": "8fba46e37d776ec400a3148af270b62fd221c7339abe711a28040b485e5de957"
+  },
+  {
+    "unit": "openplan-binding-v3-controls-01.service",
+    "configured": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "terminalExitCodeObservedByAgent": 0,
+    "journalAccounting": {
+      "CPU_USAGE_NSEC": "56087168000",
+      "MEMORY_PEAK": "91013120",
+      "MEMORY_SWAP_PEAK": "0"
+    },
+    "privateJournalSha256": "983ceaeeb0a71b591ec8ab09147363e1f4add2ab52b8499c5edd8ca5dd83f748"
+  },
+  {
+    "unit": "openplan-binding-v3-attestation-01.service",
+    "configured": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "terminalExitCodeObservedByAgent": 0,
+    "journalAccounting": {
+      "CPU_USAGE_NSEC": "146398533000",
+      "MEMORY_PEAK": "111730688",
+      "MEMORY_SWAP_PEAK": "0"
+    },
+    "privateJournalSha256": "fbd35de004f6d0aac6fafe7dde9f3be00eb7aa923e823b3880b08cb3b0b35fb1"
+  },
+  {
+    "unit": "openplan-binding-v3-identity-01.service",
+    "configured": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "terminalExitCodeObservedByAgent": 0,
+    "journalAccounting": null,
+    "privateJournalSha256": "078773e9a863efa3cf705df4dbea63c1d7ede34d1fd05ed88f8cfd51f86531fc"
+  },
+  {
+    "unit": "openplan-binding-v3-composition-01.service",
+    "configured": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "terminalExitCodeObservedByAgent": 0,
+    "journalAccounting": null,
+    "privateJournalSha256": "016a9a51effc06c1e2f08799e8ec74d6f53ea0cbcc9a23b1635e5bff7f99ca5f"
+  },
+  {
+    "unit": "openplan-binding-v3-mechanical-01.service",
+    "configured": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "terminalExitCodeObservedByAgent": 0,
+    "journalAccounting": null,
+    "privateJournalSha256": "fc44ed37c947b7caedfb0729a8bc4b7cf1c2f32e22abaf30b96e5792362f4715"
+  },
+  {
+    "unit": "openplan-binding-v3-entry-01.service",
+    "configured": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "terminalExitCodeObservedByAgent": 0,
+    "journalAccounting": null,
+    "privateJournalSha256": "b2bfd1b01f2e954e5ff9cd8f2cd8852962cebe2ece74c64f9c39b43cf5d3768e"
+  },
+  {
+    "unit": "openplan-binding-v3-seal-01.service",
+    "configured": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "terminalExitCodeObservedByAgent": 1,
+    "journalAccounting": {
+      "CPU_USAGE_NSEC": "6152290000",
+      "MEMORY_PEAK": "536870912",
+      "MEMORY_SWAP_PEAK": "0"
+    },
+    "privateJournalSha256": "5f44746902df13e58b3183b115342f668ce524df94bbe1643013bd5084730805"
+  },
+  {
+    "unit": "openplan-binding-v3-seal-02.service",
+    "configured": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "terminalExitCodeObservedByAgent": 0,
+    "journalAccounting": {
+      "CPU_USAGE_NSEC": "5956746000",
+      "MEMORY_PEAK": "536870912",
+      "MEMORY_SWAP_PEAK": "0"
+    },
+    "privateJournalSha256": "fd788b6f37572be4eb0bc1162908b842118610d84f74a3f64f6d52f55ce44034"
+  }
+]

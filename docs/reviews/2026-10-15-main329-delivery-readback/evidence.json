@@ -1,0 +1,619 @@
+{
+  "pinnedMain": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+  "priorMain": "4ea6a8ca3b43c6712952fc4e527a8538237a9adb",
+  "requestedPrHead": "ac8512432a28a1791d551c688ac430c7fe493a8d",
+  "requestedMergeAt": "2026-10-15T08:16:28Z",
+  "hold": "pending; parent retains decision",
+  "github": {
+    "startedAt": "2026-10-15T08:18:33.127524+00:00",
+    "pinnedMain": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+    "totalCount": 8,
+    "runs": [
+      {
+        "id": 38704502966,
+        "name": "Production Health",
+        "head_sha": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+        "status": "completed",
+        "conclusion": "skipped",
+        "event": "deployment_status",
+        "run_attempt": 1,
+        "created_at": "2026-10-15T08:16:35Z",
+        "updated_at": "2026-10-15T08:16:45Z",
+        "run_started_at": "2026-10-15T08:16:35Z",
+        "html_url": "https://github.com/nfredmond/openplan/actions/runs/38704502966"
+      },
+      {
+        "id": 38704493851,
+        "name": "CI",
+        "head_sha": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+        "status": "in_progress",
+        "conclusion": null,
+        "event": "push",
+        "run_attempt": 1,
+        "created_at": "2026-10-15T08:16:31Z",
+        "updated_at": "2026-10-15T08:16:43Z",
+        "run_started_at": "2026-10-15T08:16:31Z",
+        "html_url": "https://github.com/nfredmond/openplan/actions/runs/38704493851"
+      },
+      {
+        "id": 38704494013,
+        "name": "Node queue process observations",
+        "head_sha": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+        "status": "in_progress",
+        "conclusion": null,
+        "event": "push",
+        "run_attempt": 1,
+        "created_at": "2026-10-15T08:16:31Z",
+        "updated_at": "2026-10-15T08:16:34Z",
+        "run_started_at": "2026-10-15T08:16:31Z",
+        "html_url": "https://github.com/nfredmond/openplan/actions/runs/38704494013"
+      },
+      {
+        "id": 38704493800,
+        "name": "Aerial worker custody regression",
+        "head_sha": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+        "status": "in_progress",
+        "conclusion": null,
+        "event": "push",
+        "run_attempt": 1,
+        "created_at": "2026-10-15T08:16:31Z",
+        "updated_at": "2026-10-15T08:16:35Z",
+        "run_started_at": "2026-10-15T08:16:31Z",
+        "html_url": "https://github.com/nfredmond/openplan/actions/runs/38704493800"
+      },
+      {
+        "id": 38704493992,
+        "name": "Worker security and cancellation",
+        "head_sha": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+        "status": "completed",
+        "conclusion": "success",
+        "event": "push",
+        "run_attempt": 1,
+        "created_at": "2026-10-15T08:16:31Z",
+        "updated_at": "2026-10-15T08:17:41Z",
+        "run_started_at": "2026-10-15T08:16:31Z",
+        "html_url": "https://github.com/nfredmond/openplan/actions/runs/38704493992"
+      },
+      {
+        "id": 38704493815,
+        "name": "Research collector evidence",
+        "head_sha": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+        "status": "completed",
+        "conclusion": "success",
+        "event": "push",
+        "run_attempt": 1,
+        "created_at": "2026-10-15T08:16:31Z",
+        "updated_at": "2026-10-15T08:17:16Z",
+        "run_started_at": "2026-10-15T08:16:31Z",
+        "html_url": "https://github.com/nfredmond/openplan/actions/runs/38704493815"
+      },
+      {
+        "id": 38704493802,
+        "name": "Integration secret rotation",
+        "head_sha": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+        "status": "completed",
+        "conclusion": "success",
+        "event": "push",
+        "run_attempt": 1,
+        "created_at": "2026-10-15T08:16:31Z",
+        "updated_at": "2026-10-15T08:17:46Z",
+        "run_started_at": "2026-10-15T08:16:31Z",
+        "html_url": "https://github.com/nfredmond/openplan/actions/runs/38704493802"
+      },
+      {
+        "id": 38704493767,
+        "name": "RLS Isolation",
+        "head_sha": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+        "status": "in_progress",
+        "conclusion": null,
+        "event": "push",
+        "run_attempt": 1,
+        "created_at": "2026-10-15T08:16:30Z",
+        "updated_at": "2026-10-15T08:16:34Z",
+        "run_started_at": "2026-10-15T08:16:30Z",
+        "html_url": "https://github.com/nfredmond/openplan/actions/runs/38704493767"
+      }
+    ],
+    "finishedAt": "2026-10-15T08:18:33.785810+00:00"
+  },
+  "health": {
+    "startedAt": "2026-10-15T08:18:45.939437+00:00",
+    "pinnedMain": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+    "httpStatus": 200,
+    "payload": {
+      "status": "ok",
+      "service": "openplan",
+      "checkedAt": "2026-10-15T08:18:46.184Z",
+      "deployment": {
+        "commit": "4ea6a8ca3b43",
+        "version": "0.68.0",
+        "migrations": {
+          "expected": 418,
+          "latest": "20261017000015"
+        }
+      },
+      "checks": {
+        "app": "ok",
+        "database": "not_checked"
+      }
+    },
+    "headers": {
+      "date": "Thu, 15 Oct 2026 08:18:46 GMT",
+      "cache-control": "no-store, max-age=0",
+      "x-vercel-id": "sfo1::sfo1::ck9xg-1792052326140-489857b96af8",
+      "x-vercel-cache": "MISS"
+    },
+    "finishedAt": "2026-10-15T08:18:46.204584+00:00"
+  },
+  "railway": {
+    "startedAt": "2026-10-15T08:18:33.830258+00:00",
+    "pinnedMain": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+    "project": "9d7fbdc3-c370-41b5-8471-34dc128e718e",
+    "environment": "343ca578-aef1-4005-9ef6-a8a5e89582d5",
+    "service": "4883a282-fbed-4043-b220-3b3daabe04e9",
+    "deployments": [
+      {
+        "id": "1fd9bd72-1e79-4584-8c3a-2ec6d1ca6c77",
+        "status": "WAITING",
+        "createdAt": "2026-10-15T08:16:30.354Z",
+        "updatedAt": null,
+        "commitHash": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053"
+      },
+      {
+        "id": "d8a4c5d0-a316-43e0-b0f2-425006f6411b",
+        "status": "SUCCESS",
+        "createdAt": "2026-10-15T07:15:18.814Z",
+        "updatedAt": null,
+        "commitHash": "4ea6a8ca3b43c6712952fc4e527a8538237a9adb"
+      },
+      {
+        "id": "2a577f7f-bca7-4186-a3e8-c2e41a5a3428",
+        "status": "REMOVED",
+        "createdAt": "2026-10-15T06:09:22.125Z",
+        "updatedAt": null,
+        "commitHash": "b259d73e56d22d4935ef2789874cf69901786b33"
+      },
+      {
+        "id": "c41ec7aa-9f23-46d8-8c99-b820864d65ff",
+        "status": "REMOVED",
+        "createdAt": "2026-10-15T00:44:24.825Z",
+        "updatedAt": null,
+        "commitHash": "1b2fefe0f0e98f99700fc77e99146fe697b43ee7"
+      },
+      {
+        "id": "75dd0d1a-1043-48b3-be5b-1b6ec2ba044c",
+        "status": "REMOVED",
+        "createdAt": "2026-10-14T22:43:22.371Z",
+        "updatedAt": null,
+        "commitHash": "eef4253167815e60b5ab4093833abeaaa22a64d6"
+      }
+    ],
+    "finishedAt": "2026-10-15T08:18:34.764933+00:00"
+  },
+  "rpc": {
+    "startedAt": "2026-10-15T08:18:45.937214+00:00",
+    "pinnedMain": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+    "transactionReadOnly": "off",
+    "installed": {
+      "migrationCount": 418,
+      "latest": "20261017000015",
+      "migration16Present": false
+    },
+    "observation": {
+      "scope": "process_only",
+      "observedAt": "2026-10-15T08:18:46.31943+00:00",
+      "jobCompletion": "unassessed",
+      "queues": [
+        {
+          "kind": "contract-calculations",
+          "lastSeenAt": "2026-10-15T08:18:27.311164+00:00",
+          "lastState": "running",
+          "state": "observed_running",
+          "runningInstances": 1,
+          "stoppingInstances": 0
+        },
+        {
+          "kind": "document-exports",
+          "lastSeenAt": "2026-10-15T08:18:32.267864+00:00",
+          "lastState": "running",
+          "state": "observed_running",
+          "runningInstances": 1,
+          "stoppingInstances": 0
+        },
+        {
+          "kind": "engagement-email",
+          "lastSeenAt": "2026-10-15T08:18:28.274081+00:00",
+          "lastState": "running",
+          "state": "observed_running",
+          "runningInstances": 1,
+          "stoppingInstances": 0
+        },
+        {
+          "kind": "gtfs-ingestion",
+          "lastSeenAt": null,
+          "lastState": null,
+          "state": "unobserved",
+          "runningInstances": 0,
+          "stoppingInstances": 0
+        },
+        {
+          "kind": "provider-api",
+          "lastSeenAt": "2026-10-15T08:18:31.222912+00:00",
+          "lastState": "running",
+          "state": "observed_running",
+          "runningInstances": 1,
+          "stoppingInstances": 0
+        },
+        {
+          "kind": "synthesis-execution",
+          "lastSeenAt": "2026-10-15T08:18:33.051556+00:00",
+          "lastState": "running",
+          "state": "observed_running",
+          "runningInstances": 1,
+          "stoppingInstances": 0
+        },
+        {
+          "kind": "synthesis-preparation",
+          "lastSeenAt": "2026-10-15T08:18:33.100588+00:00",
+          "lastState": "running",
+          "state": "observed_running",
+          "runningInstances": 1,
+          "stoppingInstances": 0
+        },
+        {
+          "kind": "translation-generation",
+          "lastSeenAt": "2026-10-15T08:18:31.765782+00:00",
+          "lastState": "running",
+          "state": "observed_running",
+          "runningInstances": 1,
+          "stoppingInstances": 0
+        }
+      ]
+    },
+    "individualObservations": [
+      {
+        "kind": "contract-calculations",
+        "state": "running",
+        "sequence": 27,
+        "buildSha": null,
+        "startedAt": "2026-10-15T08:05:27.785887+00:00",
+        "lastSeenAt": "2026-10-15T08:18:27.311164+00:00"
+      },
+      {
+        "kind": "contract-calculations",
+        "state": "stopped",
+        "sequence": 131,
+        "buildSha": null,
+        "startedAt": "2026-10-15T07:00:50.847344+00:00",
+        "lastSeenAt": "2026-10-15T08:05:22.413967+00:00"
+      },
+      {
+        "kind": "document-exports",
+        "state": "running",
+        "sequence": 27,
+        "buildSha": null,
+        "startedAt": "2026-10-15T08:05:32.393937+00:00",
+        "lastSeenAt": "2026-10-15T08:18:32.267864+00:00"
+      },
+      {
+        "kind": "document-exports",
+        "state": "stopped",
+        "sequence": 130,
+        "buildSha": null,
+        "startedAt": "2026-10-15T07:00:56.430620+00:00",
+        "lastSeenAt": "2026-10-15T08:05:21.565948+00:00"
+      },
+      {
+        "kind": "engagement-email",
+        "state": "running",
+        "sequence": 27,
+        "buildSha": null,
+        "startedAt": "2026-10-15T08:05:28.490994+00:00",
+        "lastSeenAt": "2026-10-15T08:18:28.274081+00:00"
+      },
+      {
+        "kind": "engagement-email",
+        "state": "stopped",
+        "sequence": 130,
+        "buildSha": null,
+        "startedAt": "2026-10-15T07:00:52.344137+00:00",
+        "lastSeenAt": "2026-10-15T08:05:21.454707+00:00"
+      },
+      {
+        "kind": "provider-api",
+        "state": "running",
+        "sequence": 27,
+        "buildSha": null,
+        "startedAt": "2026-10-15T08:05:31.576812+00:00",
+        "lastSeenAt": "2026-10-15T08:18:31.222912+00:00"
+      },
+      {
+        "kind": "provider-api",
+        "state": "stopped",
+        "sequence": 130,
+        "buildSha": null,
+        "startedAt": "2026-10-15T07:00:55.324720+00:00",
+        "lastSeenAt": "2026-10-15T08:05:21.145294+00:00"
+      },
+      {
+        "kind": "synthesis-execution",
+        "state": "running",
+        "sequence": 27,
+        "buildSha": null,
+        "startedAt": "2026-10-15T08:05:33.162292+00:00",
+        "lastSeenAt": "2026-10-15T08:18:33.051556+00:00"
+      },
+      {
+        "kind": "synthesis-execution",
+        "state": "stopped",
+        "sequence": 130,
+        "buildSha": null,
+        "startedAt": "2026-10-15T07:00:57.227782+00:00",
+        "lastSeenAt": "2026-10-15T08:05:21.148264+00:00"
+      },
+      {
+        "kind": "synthesis-preparation",
+        "state": "running",
+        "sequence": 27,
+        "buildSha": null,
+        "startedAt": "2026-10-15T08:05:33.242483+00:00",
+        "lastSeenAt": "2026-10-15T08:18:33.100588+00:00"
+      },
+      {
+        "kind": "synthesis-preparation",
+        "state": "stopped",
+        "sequence": 130,
+        "buildSha": null,
+        "startedAt": "2026-10-15T07:00:57.412993+00:00",
+        "lastSeenAt": "2026-10-15T08:05:21.145321+00:00"
+      },
+      {
+        "kind": "translation-generation",
+        "state": "running",
+        "sequence": 27,
+        "buildSha": null,
+        "startedAt": "2026-10-15T08:05:32.062852+00:00",
+        "lastSeenAt": "2026-10-15T08:18:31.765782+00:00"
+      },
+      {
+        "kind": "translation-generation",
+        "state": "stopped",
+        "sequence": 130,
+        "buildSha": null,
+        "startedAt": "2026-10-15T07:00:56.040680+00:00",
+        "lastSeenAt": "2026-10-15T08:05:21.172554+00:00"
+      }
+    ],
+    "availableReaders": [
+      "read_node_queue_process_observations"
+    ],
+    "finishedAt": "2026-10-15T08:18:46.451141+00:00"
+  },
+  "startup": {
+    "startedAt": "2026-10-15T08:18:45.936869+00:00",
+    "deployments": [
+      {
+        "id": "1fd9bd72-1e79-4584-8c3a-2ec6d1ca6c77",
+        "exitCode": 0,
+        "startupWorkers": []
+      },
+      {
+        "id": "d8a4c5d0-a316-43e0-b0f2-425006f6411b",
+        "exitCode": 0,
+        "startupWorkers": []
+      }
+    ],
+    "finishedAt": "2026-10-15T08:18:48.662974+00:00"
+  },
+  "followup": {
+    "startedAt": "2026-10-15T08:19:13.669405+00:00",
+    "github": [
+      {
+        "id": 38704502966,
+        "name": "Production Health",
+        "head_sha": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+        "status": "completed",
+        "conclusion": "skipped",
+        "event": "deployment_status",
+        "updated_at": "2026-10-15T08:16:45Z",
+        "run_attempt": 1,
+        "html_url": "https://github.com/nfredmond/openplan/actions/runs/38704502966"
+      },
+      {
+        "id": 38704493851,
+        "name": "CI",
+        "head_sha": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+        "status": "in_progress",
+        "conclusion": null,
+        "event": "push",
+        "updated_at": "2026-10-15T08:16:43Z",
+        "run_attempt": 1,
+        "html_url": "https://github.com/nfredmond/openplan/actions/runs/38704493851"
+      },
+      {
+        "id": 38704494013,
+        "name": "Node queue process observations",
+        "head_sha": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+        "status": "in_progress",
+        "conclusion": null,
+        "event": "push",
+        "updated_at": "2026-10-15T08:16:34Z",
+        "run_attempt": 1,
+        "html_url": "https://github.com/nfredmond/openplan/actions/runs/38704494013"
+      },
+      {
+        "id": 38704493800,
+        "name": "Aerial worker custody regression",
+        "head_sha": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+        "status": "in_progress",
+        "conclusion": null,
+        "event": "push",
+        "updated_at": "2026-10-15T08:16:35Z",
+        "run_attempt": 1,
+        "html_url": "https://github.com/nfredmond/openplan/actions/runs/38704493800"
+      },
+      {
+        "id": 38704493992,
+        "name": "Worker security and cancellation",
+        "head_sha": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+        "status": "completed",
+        "conclusion": "success",
+        "event": "push",
+        "updated_at": "2026-10-15T08:17:41Z",
+        "run_attempt": 1,
+        "html_url": "https://github.com/nfredmond/openplan/actions/runs/38704493992"
+      },
+      {
+        "id": 38704493815,
+        "name": "Research collector evidence",
+        "head_sha": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+        "status": "completed",
+        "conclusion": "success",
+        "event": "push",
+        "updated_at": "2026-10-15T08:17:16Z",
+        "run_attempt": 1,
+        "html_url": "https://github.com/nfredmond/openplan/actions/runs/38704493815"
+      },
+      {
+        "id": 38704493802,
+        "name": "Integration secret rotation",
+        "head_sha": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+        "status": "completed",
+        "conclusion": "success",
+        "event": "push",
+        "updated_at": "2026-10-15T08:17:46Z",
+        "run_attempt": 1,
+        "html_url": "https://github.com/nfredmond/openplan/actions/runs/38704493802"
+      },
+      {
+        "id": 38704493767,
+        "name": "RLS Isolation",
+        "head_sha": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+        "status": "in_progress",
+        "conclusion": null,
+        "event": "push",
+        "updated_at": "2026-10-15T08:16:34Z",
+        "run_attempt": 1,
+        "html_url": "https://github.com/nfredmond/openplan/actions/runs/38704493767"
+      }
+    ],
+    "railway": [
+      {
+        "id": "1fd9bd72-1e79-4584-8c3a-2ec6d1ca6c77",
+        "status": "WAITING",
+        "createdAt": "2026-10-15T08:16:30.354Z",
+        "commit": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053"
+      },
+      {
+        "id": "d8a4c5d0-a316-43e0-b0f2-425006f6411b",
+        "status": "SUCCESS",
+        "createdAt": "2026-10-15T07:15:18.814Z",
+        "commit": "4ea6a8ca3b43c6712952fc4e527a8538237a9adb"
+      },
+      {
+        "id": "2a577f7f-bca7-4186-a3e8-c2e41a5a3428",
+        "status": "REMOVED",
+        "createdAt": "2026-10-15T06:09:22.125Z",
+        "commit": "b259d73e56d22d4935ef2789874cf69901786b33"
+      }
+    ],
+    "finishedAt": "2026-10-15T08:19:14.322322+00:00"
+  },
+  "privateReceipts": [
+    {
+      "name": "1fd9bd72-1e79-4584-8c3a-2ec6d1ca6c77-startup-private.jsonl",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "1fd9bd72-1e79-4584-8c3a-2ec6d1ca6c77-startup-stderr-private.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "capture.py",
+      "bytes": 5561,
+      "sha256": "e34e2989b468c34fdf51ddb84d45aa442ae69df4a0d6eded09742ddb70de5dd0"
+    },
+    {
+      "name": "d8a4c5d0-a316-43e0-b0f2-425006f6411b-startup-private.jsonl",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "d8a4c5d0-a316-43e0-b0f2-425006f6411b-startup-stderr-private.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "followup-summary.json",
+      "bytes": 3735,
+      "sha256": "5723d97c90dec791f0f2a59e2dc3474919d2aef9a3c5f58c745044a5d506e267"
+    },
+    {
+      "name": "github-followup-private.json",
+      "bytes": 98411,
+      "sha256": "d5925277a41f0bb26b6d598c9a6765f501914c9da8fe15bb33567fafb65e337a"
+    },
+    {
+      "name": "github-followup-stderr-private.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "github-runs-private.json",
+      "bytes": 116293,
+      "sha256": "99c81704f355a0858a4eac3ad468375366270a8e2e8170ad7677021a0afc46c5"
+    },
+    {
+      "name": "github-summary.json",
+      "bytes": 3935,
+      "sha256": "674f53026629b1fd5015b70bc50f960d75b74ac2b85e52fe9173ab90349744ef"
+    },
+    {
+      "name": "health-summary.json",
+      "bytes": 753,
+      "sha256": "17a78de1f8f78be2da89101f9616583fabde44a6c3a7310b76512f6184eec292"
+    },
+    {
+      "name": "process-observations-private.json",
+      "bytes": 1912,
+      "sha256": "f96bb599ed9083bbd01fd3491439de70b79f94ac0657717aeda8cbd0ccd09fa6"
+    },
+    {
+      "name": "public-health-raw.json",
+      "bytes": 315,
+      "sha256": "61192f2110daf9275f663a793d45982bd8f44537068bde84c4d35be416b75733"
+    },
+    {
+      "name": "railway-deployments-private.json",
+      "bytes": 10428,
+      "sha256": "7ec7f59caf87886d5d44ddea44b5148e325b48aec6b40b03a6318a5d11f72471"
+    },
+    {
+      "name": "railway-followup-private.json",
+      "bytes": 6159,
+      "sha256": "fd4f7638e61aa88d1c19ee708d3ffb3895c888c559ec7ce1ab55ed51dca194d8"
+    },
+    {
+      "name": "railway-followup-stderr-private.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "railway-summary.json",
+      "bytes": 1487,
+      "sha256": "3bde1b2dd3abeb3f75529ac15049d6c306b88b3d6ede542028d2f63695c08975"
+    },
+    {
+      "name": "rpc-summary.json",
+      "bytes": 5730,
+      "sha256": "4e8b2189e242108025d5c893cadd2ed031355aa7cfa62e03ba71c78bbf53859f"
+    },
+    {
+      "name": "startup-summary.json",
+      "bytes": 355,
+      "sha256": "355b27f5cc01cd3c71ee6ee389ba0d6fa5a31bc28d4f1317133d6403256c64d3"
+    }
+  ]
+}

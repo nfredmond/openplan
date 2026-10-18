@@ -1,0 +1,79 @@
+[
+  {
+    "name": "types",
+    "command": [
+      "node",
+      "--max-old-space-size=768",
+      "node_modules/typescript/bin/tsc",
+      "-p",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/docs/reviews/2026-10-15-project-jurisdiction/implementation/tsconfig.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "name": "lint",
+    "command": [
+      "node",
+      "node_modules/eslint/bin/eslint.js",
+      "--max-warnings=0",
+      "src/app/(app)/projects/[projectId]/_components/project-jurisdiction-readiness.tsx",
+      "src/app/(app)/projects/[projectId]/page.tsx",
+      "src/app/api/projects/[projectId]/export/geopackage/route.ts",
+      "src/app/api/projects/[projectId]/jurisdiction-readiness/route.ts",
+      "src/app/api/projects/[projectId]/route.ts",
+      "src/app/api/reports/[reportId]/generate/route.ts",
+      "src/components/models/study-area-picker.tsx",
+      "src/components/projects/project-identity-editor.tsx",
+      "src/components/projects/project-jurisdiction-editor.tsx",
+      "src/lib/jurisdiction-readiness/evidence-bundle.ts",
+      "src/lib/jurisdiction-readiness/payload.ts",
+      "src/lib/project-evidence-bundles/generated-records.ts",
+      "src/lib/projects/project-geopackage.ts",
+      "src/lib/projects/project-jurisdiction.ts",
+      "src/lib/reports/html.ts",
+      "src/test/jurisdiction-readiness-evidence-bundle.test.ts",
+      "src/test/jurisdiction-readiness-routes.test.ts",
+      "src/test/project-evidence-generated-pagination.test.ts",
+      "src/test/project-geopackage.test.ts",
+      "src/test/project-jurisdiction-artifacts.test.ts",
+      "src/test/project-jurisdiction-editor.test.tsx",
+      "src/test/project-jurisdiction-picker.test.tsx",
+      "src/test/project-jurisdiction-route.test.ts",
+      "src/test/project-jurisdiction.test.ts",
+      "src/test/refused-project-jurisdiction-action.test.ts",
+      "src/test/report-generate-route.test.ts"
+    ],
+    "exitCode": 0
+  },
+  {
+    "name": "tests",
+    "command": [
+      "node",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "--configLoader",
+      "runner",
+      "--config",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/docs/reviews/2026-10-15-project-jurisdiction/implementation/vitest.config.mts",
+      "src/test/project-jurisdiction.test.ts",
+      "src/test/project-jurisdiction-route.test.ts",
+      "src/test/project-jurisdiction-editor.test.tsx",
+      "src/test/project-jurisdiction-artifacts.test.ts",
+      "src/test/project-jurisdiction-picker.test.tsx",
+      "src/test/refused-project-jurisdiction-action.test.ts",
+      "src/test/jurisdiction-readiness-routes.test.ts",
+      "src/test/jurisdiction-readiness-evidence-bundle.test.ts",
+      "src/test/project-record-route.test.ts",
+      "src/test/project-identity-editor.test.tsx",
+      "src/test/project-geopackage.test.ts",
+      "src/test/project-geopackage-route.test.ts",
+      "src/test/study-area-picker.test.tsx",
+      "src/test/report-generate-route.test.ts",
+      "src/test/project-evidence-generated-pagination.test.ts",
+      "src/test/project-evidence-bundle-route.test.ts",
+      "--reporter=json",
+      "--outputFile=/home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/docs/reviews/2026-10-15-project-jurisdiction/implementation/final-checks-01/tests.json"
+    ],
+    "exitCode": 0
+  }
+]

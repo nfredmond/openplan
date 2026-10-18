@@ -1,0 +1,2839 @@
+{
+  "identity": [
+    {
+      "current_database": "openplan_jurisdiction_native_3d281df106064b8cbb9e0c82_up",
+      "current_user": "supabase_admin",
+      "version": "PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit",
+      "server_version_num": "170006",
+      "work_mem": "16MB",
+      "statement_timeout": "10s",
+      "lock_timeout": "3s"
+    }
+  ],
+  "history": [
+    {
+      "version": "20260219000001",
+      "name": "gtfs_schema",
+      "statements_md5": "f4aa685fa24103094a759c0a3167039a"
+    },
+    {
+      "version": "20260219000002",
+      "name": "workspace_schema",
+      "statements_md5": "3af37db051e8f96157cef9b0c1c8f895"
+    },
+    {
+      "version": "20260219000003",
+      "name": "census_lodes_schema",
+      "statements_md5": "41b68825d805bdff3e3ec1829bb89e88"
+    },
+    {
+      "version": "20260219000004",
+      "name": "safe_query_fn",
+      "statements_md5": "2952b898a5fd4aef457f8ec3971185c7"
+    },
+    {
+      "version": "20260219000005",
+      "name": "workspace_trigger",
+      "statements_md5": "dfba6004126948d0ad867c52272c3f96"
+    },
+    {
+      "version": "20260219000006",
+      "name": "storage",
+      "statements_md5": "a45ad1e05f9796c4659a1cb5945a1468"
+    },
+    {
+      "version": "20260224000001",
+      "name": "runs_schema",
+      "statements_md5": "6b9f81b2cb42b1192f1a397204d3cff8"
+    },
+    {
+      "version": "20260224000002",
+      "name": "runs_ai_interpretation",
+      "statements_md5": "de7acf48477aaee4e46d146edc0875aa"
+    },
+    {
+      "version": "20260225000003",
+      "name": "fix_handle_new_user_trigger",
+      "statements_md5": "b86d4c8a6808881b87648614e2572114"
+    },
+    {
+      "version": "20260225000004",
+      "name": "workspace_slug_normalization",
+      "statements_md5": "f0c09d5568547131005a33ffb28bccd1"
+    },
+    {
+      "version": "20260226000005",
+      "name": "runs_report_telemetry",
+      "statements_md5": "d85a9f552d8ccd2332809a8370164a89"
+    },
+    {
+      "version": "20260226000006",
+      "name": "workspace_billing_skeleton",
+      "statements_md5": "c2036ea2219614846eae24cc498d374b"
+    },
+    {
+      "version": "20260226000007",
+      "name": "billing_events",
+      "statements_md5": "b8ab0f754f26cb9ccba5f2c44fcea9c0"
+    },
+    {
+      "version": "20260226000008",
+      "name": "billing_webhook_receipts",
+      "statements_md5": "625cb1e8ad3950d9b682f3b85ba8f033"
+    },
+    {
+      "version": "20260305000009",
+      "name": "op003_workspace_stage_gate_binding",
+      "statements_md5": "660c40c7abfe88e7c65a978813f298f3"
+    },
+    {
+      "version": "20260306000010",
+      "name": "op003_stage_gate_decision_log",
+      "statements_md5": "7250c39cac78c111fd7fee62bc1bfd1d"
+    },
+    {
+      "version": "20260313000011",
+      "name": "projects_module",
+      "statements_md5": "913a05c71304c1991c55cf5c6cef1b1e"
+    },
+    {
+      "version": "20260313000012",
+      "name": "project_subrecords",
+      "statements_md5": "47eedd62d2f3a19ecd68cb54e60af349"
+    },
+    {
+      "version": "20260313000013",
+      "name": "project_issues_meetings",
+      "statements_md5": "ba2101d56c46f8dd8e05a954820a35df"
+    },
+    {
+      "version": "20260313000014",
+      "name": "data_hub_module",
+      "statements_md5": "9739e510f6b0ac926704612d1818ae1a"
+    },
+    {
+      "version": "20260313000015",
+      "name": "data_hub_geometry_attachment",
+      "statements_md5": "763e17a19cbfafde5fea66ddb174e4fc"
+    },
+    {
+      "version": "20260313000016",
+      "name": "data_hub_corridor_attachment",
+      "statements_md5": "7331e6cc505719337b6e463eed747c3e"
+    },
+    {
+      "version": "20260313000017",
+      "name": "data_hub_crash_point_attachment",
+      "statements_md5": "7668a3b62713c9de06d479c0df7da6b3"
+    },
+    {
+      "version": "20260314000018",
+      "name": "reports_module",
+      "statements_md5": "d547227c49aeb99640fbbfc15dfb137c"
+    },
+    {
+      "version": "20260314000019",
+      "name": "scenarios_module",
+      "statements_md5": "d2d0679e79bdca66026cfb79da555df8"
+    },
+    {
+      "version": "20260314000020",
+      "name": "engagement_module",
+      "statements_md5": "795f8ebe622d7d9ad3ce52d000c44c6b"
+    },
+    {
+      "version": "20260315000021",
+      "name": "plans_module",
+      "statements_md5": "8b2989acdb6c64a4f274265d3372378c"
+    },
+    {
+      "version": "20260315000022",
+      "name": "programs_module",
+      "statements_md5": "907c85f9b8b39268a5aa6df846d05c9a"
+    },
+    {
+      "version": "20260315000023",
+      "name": "models_module",
+      "statements_md5": "a2006428ddb55c4b7575b502bbb4c80d"
+    },
+    {
+      "version": "20260316000024",
+      "name": "fix_workspace_members_rls_recursion",
+      "statements_md5": "f54bdd341113105b39ba828eefe2d393"
+    },
+    {
+      "version": "20260317000025",
+      "name": "model_runs_module",
+      "statements_md5": "a5f9d4046498da10050e286b832c4a3c"
+    },
+    {
+      "version": "20260318000026",
+      "name": "model_run_stages_and_artifacts",
+      "statements_md5": "ef12555ef21250069a4dde0347c4ea42"
+    },
+    {
+      "version": "20260318000027",
+      "name": "network_packages_schema",
+      "statements_md5": "70e68d89806bb97228de0f1ebfb329ee"
+    },
+    {
+      "version": "20260318000028",
+      "name": "network_zones_corridors_connectors",
+      "statements_md5": "a2ac55bb55f61b46ff077bae9ea80cbd"
+    },
+    {
+      "version": "20260318000029",
+      "name": "network_package_qa_columns",
+      "statements_md5": "6a7a6a7b59f9de445180467db6b83de5"
+    },
+    {
+      "version": "20260318000030",
+      "name": "model_run_skim_config",
+      "statements_md5": "37b7bac2ab7bdc6f24990f750ba27489"
+    },
+    {
+      "version": "20260318000031",
+      "name": "model_run_kpis",
+      "statements_md5": "bf4158ad08f91e33abc2559f90fedce4"
+    },
+    {
+      "version": "20260321000032",
+      "name": "engagement_public_share",
+      "statements_md5": "21934c7436838f8ff172c00ba7a614f5"
+    },
+    {
+      "version": "20260321000033",
+      "name": "lane_c_lapm_pm_invoicing",
+      "statements_md5": "e990fda5beff1380bcab2d02a6fb9042"
+    },
+    {
+      "version": "20260324000134",
+      "name": "county_onramp_runs",
+      "statements_md5": "2f27647134e1decd07e437ae9b9489df"
+    },
+    {
+      "version": "20260409000035",
+      "name": "rtp_cycles_module",
+      "statements_md5": "1f92cbdc1cb03e0132e762d2ab857a09"
+    },
+    {
+      "version": "20260409000036",
+      "name": "project_rtp_cycle_links",
+      "statements_md5": "4f97c8fdefa408b3ca8438917dfd6e85"
+    },
+    {
+      "version": "20260409000037",
+      "name": "rtp_cycle_chapters",
+      "statements_md5": "ba64b8eb2c33b936b7e1c462a1d9043e"
+    },
+    {
+      "version": "20260409000038",
+      "name": "rtp_engagement_targets",
+      "statements_md5": "4b33361fe36ac7dc82ef8a666658c9b7"
+    },
+    {
+      "version": "20260409000039",
+      "name": "rtp_cycle_chapter_content",
+      "statements_md5": "0e965e6cc0cd0b339d052996da3c347f"
+    },
+    {
+      "version": "20260409000040",
+      "name": "reports_rtp_cycle_target",
+      "statements_md5": "093cc3f7ce446f440af96edab12a72c5"
+    },
+    {
+      "version": "20260410000041",
+      "name": "funding_opportunities",
+      "statements_md5": "3802db985d7ab9f6b801d28170cb6bee"
+    },
+    {
+      "version": "20260410000042",
+      "name": "funding_opportunity_decisions",
+      "statements_md5": "b717a3e16d9f81c7f3b49ca2c07fa0c4"
+    },
+    {
+      "version": "20260410000043",
+      "name": "funding_awards_and_profiles",
+      "statements_md5": "791ec1c438c5a1dd0816abfc9a266359"
+    },
+    {
+      "version": "20260410000044",
+      "name": "funding_opportunity_expected_amounts",
+      "statements_md5": "d56f097e30202029e1659b3af902e077"
+    },
+    {
+      "version": "20260410000045",
+      "name": "scenario_shared_spine",
+      "statements_md5": "4075f0f07bd2096f719df3fe0601433c"
+    },
+    {
+      "version": "20260410000046",
+      "name": "scenario_comparison_snapshots",
+      "statements_md5": "c95d2266598e7e8323964ab221286846"
+    },
+    {
+      "version": "20260410000047",
+      "name": "reports_metadata_json",
+      "statements_md5": "f873476f3e8a7623d0966fb9ddd480f2"
+    },
+    {
+      "version": "20260415000048",
+      "name": "aerial_operations_os",
+      "statements_md5": "41af48773e05f1e6f4809aa470228c62"
+    },
+    {
+      "version": "20260416000049",
+      "name": "reports_rtp_basis_staleness",
+      "statements_md5": "5d076f01e11f6fde0e15202dc955442c"
+    },
+    {
+      "version": "20260416000050",
+      "name": "assistant_action_executions",
+      "statements_md5": "31f62cc15e41705d1464a1f78a368ab4"
+    },
+    {
+      "version": "20260416000051",
+      "name": "projects_aerial_posture",
+      "statements_md5": "47f240957c056c7cd5a96a8bab9aa424"
+    },
+    {
+      "version": "20260416000052",
+      "name": "projects_rtp_posture",
+      "statements_md5": "bfc9acdc1a82d93b6d2cc9ce8ab391ad"
+    },
+    {
+      "version": "20260416000053",
+      "name": "project_milestones_obligation_type",
+      "statements_md5": "1d45e1ccb52073af1944edc040b8577b"
+    },
+    {
+      "version": "20260416000054",
+      "name": "model_run_kpis_behavioral_onramp",
+      "statements_md5": "5200d39de2254d8cb08498f16e1f7e7f"
+    },
+    {
+      "version": "20260416000055",
+      "name": "scenario_comparison_summary_view",
+      "statements_md5": "53608fcfdab513087c76e9824a247d66"
+    },
+    {
+      "version": "20260418000056",
+      "name": "funding_opportunity_decision_states_expansion",
+      "statements_md5": "94ff198f1d7c58df5bbffa155f4ac5a8"
+    },
+    {
+      "version": "20260418000057",
+      "name": "aerial_mission_aoi",
+      "statements_md5": "435b7d825f92dd4083da33025f2dc34e"
+    },
+    {
+      "version": "20260418000058",
+      "name": "drop_execute_safe_query",
+      "statements_md5": "aefa5b5808c8a5cad096c3d85207f756"
+    },
+    {
+      "version": "20260419000059",
+      "name": "workspaces_is_demo",
+      "statements_md5": "91aa6590e7d8f66f91cab0feb0aaab1b"
+    },
+    {
+      "version": "20260420000060",
+      "name": "report_artifacts_bucket",
+      "statements_md5": "21924b78a404cb07510af44412272d9c"
+    },
+    {
+      "version": "20260420000061",
+      "name": "pin_function_search_paths",
+      "statements_md5": "2bd1441e430d428959752427df022af6"
+    },
+    {
+      "version": "20260420000062",
+      "name": "public_data_select_policies",
+      "statements_md5": "a67e10dc71d97cebf03657e4d713b39a"
+    },
+    {
+      "version": "20260420000063",
+      "name": "public_views_security_invoker",
+      "statements_md5": "62ed5b4e782a8b8889108083f362ff74"
+    },
+    {
+      "version": "20260420000064",
+      "name": "scope_gtfs_child_feed_visibility",
+      "statements_md5": "f9dedb931911ec96d78713feb51bd64d"
+    },
+    {
+      "version": "20260421000065",
+      "name": "projects_location",
+      "statements_md5": "8e1732cb031fe713f8ac30501f87fcb2"
+    },
+    {
+      "version": "20260421000066",
+      "name": "project_corridors",
+      "statements_md5": "5dc3869e55ce5c3c824b64b6e70e883d"
+    },
+    {
+      "version": "20260422000067",
+      "name": "rtp_cycles_anchor",
+      "statements_md5": "6dd7eb8bff655fc98d24db628d0e994e"
+    },
+    {
+      "version": "20260422000068",
+      "name": "census_tracts_map_view",
+      "statements_md5": "89400dc86e0dc8bb4194988f34653a33"
+    },
+    {
+      "version": "20260424000069",
+      "name": "modeling_evidence_backbone",
+      "statements_md5": "7579711270873347385ad8b7b4371ba6"
+    },
+    {
+      "version": "20260424000070",
+      "name": "reports_modeling_county_run_link",
+      "statements_md5": "4cdefe7f3526da3f9731545be1321511"
+    },
+    {
+      "version": "20260424000071",
+      "name": "reports_modeling_county_run_link_grants",
+      "statements_md5": "fe35e14e14b649988284f34460838515"
+    },
+    {
+      "version": "20260424000072",
+      "name": "billing_ledger_foundation",
+      "statements_md5": "e6a057502ac33e095cef4b4556f25d0e"
+    },
+    {
+      "version": "20260424000073",
+      "name": "workspace_invitations",
+      "statements_md5": "6ab86d3b20e6a9fb0387c3935c5f04eb"
+    },
+    {
+      "version": "20260424000074",
+      "name": "access_requests",
+      "statements_md5": "3e3cf53183ee26e8151474a6b80627ac"
+    },
+    {
+      "version": "20260424000075",
+      "name": "access_request_intake_hardening",
+      "statements_md5": "34e1cb6707505d2cff04ae2be2704e16"
+    },
+    {
+      "version": "20260424000076",
+      "name": "access_request_review_events",
+      "statements_md5": "7649641a5c3a8a550667851ce3b3b048"
+    },
+    {
+      "version": "20260424000077",
+      "name": "access_request_provisioning_link",
+      "statements_md5": "a09c3238385dc885547d9e8d97c51453"
+    },
+    {
+      "version": "20260427000078",
+      "name": "access_request_service_pipeline",
+      "statements_md5": "d713d6c8207d077c4c29093677458c9c"
+    },
+    {
+      "version": "20260508000079",
+      "name": "modeling_caveat_kpi_sql_gate",
+      "statements_md5": "7dad72452aaeb4b6a063b65dd66bd388"
+    },
+    {
+      "version": "20260519000080",
+      "name": "county_run_worker_dispatch",
+      "statements_md5": "b6a7d20ce0188ddd1bfcb534bb96c9b6"
+    },
+    {
+      "version": "20260519000081",
+      "name": "assistant_action_approval_integrity",
+      "statements_md5": "02f96bc6aaeb96ef3331553afa0ab747"
+    },
+    {
+      "version": "20260717000082",
+      "name": "v1_security_hardening",
+      "statements_md5": "6e0b2c71a6753c0cf5385c2f37b1b4a1"
+    },
+    {
+      "version": "20260717000083",
+      "name": "funding_opportunity_narrative_drafts",
+      "statements_md5": "bb8413c703857255c1b0fb6b628746de"
+    },
+    {
+      "version": "20260717000084",
+      "name": "engagement_geometry_photos_votes",
+      "statements_md5": "e4872a731c3145e34d82ed9de3f20ae1"
+    },
+    {
+      "version": "20260717000085",
+      "name": "narrative_draft_grounding",
+      "statements_md5": "9e221407baac74afda546d0a7ffb48a5"
+    },
+    {
+      "version": "20260718000086",
+      "name": "run_artifacts_bucket",
+      "statements_md5": "df1f549ee211fefe73c4ace37859e5dd"
+    },
+    {
+      "version": "20260718000087",
+      "name": "model_runs_engine_key_behavioral",
+      "statements_md5": "c1b78a78f4e53613b9e0c3167feaeb48"
+    },
+    {
+      "version": "20260718000088",
+      "name": "sketch_abm_engine",
+      "statements_md5": "c4a74be335f336ea199bde9cd76dd379"
+    },
+    {
+      "version": "20260718000089",
+      "name": "project_bca_screenings",
+      "statements_md5": "bf9cd9aa5e694f3db27a97cb2f2b9699"
+    },
+    {
+      "version": "20260719000090",
+      "name": "engagement_ai_synthesis",
+      "statements_md5": "22889d378d149d94c4713194dacd8394"
+    },
+    {
+      "version": "20260719000091",
+      "name": "engagement_category_style",
+      "statements_md5": "033a0d95d7d4e9c8234ad145e6d96029"
+    },
+    {
+      "version": "20260719000092",
+      "name": "engagement_corridor_join",
+      "statements_md5": "2db6dfc2c66440e861c397c3ca5d4b30"
+    },
+    {
+      "version": "20260719000093",
+      "name": "engagement_sentiment_hotspots",
+      "statements_md5": "44847455223faad12d09f7e6c264a1ae"
+    },
+    {
+      "version": "20260719000094",
+      "name": "engagement_item_demographics",
+      "statements_md5": "762210f97266cbb0ebd3e7e0ed621811"
+    },
+    {
+      "version": "20260719000095",
+      "name": "engagement_representativeness_cache",
+      "statements_md5": "c840200e4fcea2ec01aea93be063c7e9"
+    },
+    {
+      "version": "20260719000096",
+      "name": "engagement_near_duplicates",
+      "statements_md5": "fe63f0f5777c229542dc0c3363527e9f"
+    },
+    {
+      "version": "20260720000097",
+      "name": "engagement_threaded_replies",
+      "statements_md5": "53b6678011f0a23d32867b15265486e0"
+    },
+    {
+      "version": "20260720000098",
+      "name": "engagement_translation_cache",
+      "statements_md5": "fe790da85a7df8907fcfadc4a1cd1561"
+    },
+    {
+      "version": "20260720000099",
+      "name": "ite_trip_generation_engine",
+      "statements_md5": "3a7b21deb8cc57473287b9d28e833385"
+    },
+    {
+      "version": "20260721000001",
+      "name": "aerial_processing_jobs",
+      "statements_md5": "fccd7ee3e9112a4bb9a950088a7ac431"
+    },
+    {
+      "version": "20260721000002",
+      "name": "modeling_calibrated_claim_tier",
+      "statements_md5": "10263f289ebd6695b5ffff05ee4fae07"
+    },
+    {
+      "version": "20260722000001",
+      "name": "rtp_priority_scoring",
+      "statements_md5": "59a149f95a9a5895ee1b2318f018ea0e"
+    },
+    {
+      "version": "20260722000002",
+      "name": "project_rtp_evidence_run",
+      "statements_md5": "81df1d9d41e4dc0a11ef5724a2afaa6f"
+    },
+    {
+      "version": "20260722000003",
+      "name": "rtp_public_share",
+      "statements_md5": "f842b683b5dfadba4908bd57d6593134"
+    },
+    {
+      "version": "20260722000004",
+      "name": "reap_model_run_rpc",
+      "statements_md5": "e0cfbc66a1547aa5d47e3aef83c38385"
+    },
+    {
+      "version": "20260722000005",
+      "name": "reap_rpc_lock_down",
+      "statements_md5": "357d28b883f04763788cee427687d24a"
+    },
+    {
+      "version": "20260722000006",
+      "name": "aerial_project_posture_table",
+      "statements_md5": "f7230f594b9bbcebfebc6d2bd38875f1"
+    },
+    {
+      "version": "20260722000007",
+      "name": "engagement_survey_builder",
+      "statements_md5": "6efbd686e2d5e6883809398cd475a062"
+    },
+    {
+      "version": "20260722000008",
+      "name": "engagement_close_loop",
+      "statements_md5": "0e81d800b7f84bcf3c3b9631eca6bde9"
+    },
+    {
+      "version": "20260722000009",
+      "name": "engagement_notifications",
+      "statements_md5": "b6509510ffa773966b347957085a7995"
+    },
+    {
+      "version": "20260723000001",
+      "name": "knowledge_base",
+      "statements_md5": "3534ec5cbd5abd7754c02ccddba0f189"
+    },
+    {
+      "version": "20260723000002",
+      "name": "kb_search_chunks",
+      "statements_md5": "e9ea8dab1356b849eff23419f3ed0071"
+    },
+    {
+      "version": "20260723000003",
+      "name": "kb_search_chunks_or_semantics",
+      "statements_md5": "850962e7af1965234628ea41cfa4e7c3"
+    },
+    {
+      "version": "20260723000004",
+      "name": "safety_crashes",
+      "statements_md5": "7ae057154b0771b71242b36ad252d279"
+    },
+    {
+      "version": "20260723000005",
+      "name": "workspace_home_geography",
+      "statements_md5": "e829ddb13b2a3690725468e44e7ba76c"
+    },
+    {
+      "version": "20260724000001",
+      "name": "equity_tract_designations",
+      "statements_md5": "8524f7f90853e08140f866ade5bba9dc"
+    },
+    {
+      "version": "20260727000003",
+      "name": "run_project_provenance",
+      "statements_md5": "3f768b06c8b93e83f057bc1f9a288cf4"
+    },
+    {
+      "version": "20260727000004",
+      "name": "report_runs_typed_evidence",
+      "statements_md5": "fd32fe4db5b8e845b617e1e773091ec7"
+    },
+    {
+      "version": "20260727000005",
+      "name": "scenario_entries_model_run_attachment",
+      "statements_md5": "1ea422007e7defba46c6935b278d9c7d"
+    },
+    {
+      "version": "20260727000006",
+      "name": "models_network_package_link",
+      "statements_md5": "a68bd34c2d519a33b80c67205938929b"
+    },
+    {
+      "version": "20260727000007",
+      "name": "module_link_cleanup_triggers",
+      "statements_md5": "fffdd92cec7f058b811a28f53f5fc7af"
+    },
+    {
+      "version": "20260727000008",
+      "name": "reports_engagement_campaign_target",
+      "statements_md5": "e4ffbfd83b368e11713f59d5569f3c97"
+    },
+    {
+      "version": "20260727000009",
+      "name": "invoicing_reimbursement_profiles",
+      "statements_md5": "7023a56641833ece787e43622de88964"
+    },
+    {
+      "version": "20260727000010",
+      "name": "receivable_invoicing",
+      "statements_md5": "bc178a0ff6d8783f65252c0dcbb78ac5"
+    },
+    {
+      "version": "20260727000011",
+      "name": "invoicing_time_and_rates",
+      "statements_md5": "62eddd8772bdedf955d74c709e23a8d7"
+    },
+    {
+      "version": "20260727000012",
+      "name": "deliverable_budgets_and_spend",
+      "statements_md5": "bfb1c70957c0bf9e54b724e1693b5932"
+    },
+    {
+      "version": "20260727000013",
+      "name": "document_narrative_drafts",
+      "statements_md5": "557b1b79799ab5100a79e89e9a85dfd2"
+    },
+    {
+      "version": "20260727000014",
+      "name": "grant_application_assembly",
+      "statements_md5": "a901a5b874a5ed8a344fc23829647249"
+    },
+    {
+      "version": "20260727000015",
+      "name": "pursuit_kind_and_solicitation",
+      "statements_md5": "4b3d2ef6fc2f12d7b9719130cb855d76"
+    },
+    {
+      "version": "20260727000016",
+      "name": "application_section_finalizer",
+      "statements_md5": "d55b92875a81e14e274637e990e86193"
+    },
+    {
+      "version": "20260728000001",
+      "name": "workspace_integration_keys",
+      "statements_md5": "2973591c74c406be6c842e936338377e"
+    },
+    {
+      "version": "20260728000002",
+      "name": "spend_entry_deliverable_same_project",
+      "statements_md5": "672fb44ff84fb51552851672fc0637a5"
+    },
+    {
+      "version": "20260728000003",
+      "name": "viewer_role",
+      "statements_md5": "83b0732ea480154bff3d4ce4e426eaab"
+    },
+    {
+      "version": "20260728000004",
+      "name": "workspace_owner_floor",
+      "statements_md5": "6c7aadfd7b163ecebc95b935cce26191"
+    },
+    {
+      "version": "20260728000005",
+      "name": "project_corridors_writable",
+      "statements_md5": "f0fd33df8623d7c5964aaac3704b27b9"
+    },
+    {
+      "version": "20260728000006",
+      "name": "workspace_write_role_gate",
+      "statements_md5": "601e679f355ada7fdef59b65a17f2681"
+    },
+    {
+      "version": "20260728000007",
+      "name": "workspace_write_role_gate_children",
+      "statements_md5": "17f188d9dd556db143a6e1d95b93de15"
+    },
+    {
+      "version": "20260728000008",
+      "name": "projects_deletable",
+      "statements_md5": "fd8f408357a87bb9fe2e459f0726a9cf"
+    },
+    {
+      "version": "20260728000009",
+      "name": "project_place_of_record",
+      "statements_md5": "d5cbf72e0fb1b34e69b4cd01af9afc4e"
+    },
+    {
+      "version": "20260728000010",
+      "name": "permissive_update_policies",
+      "statements_md5": "4036438eee98834af5b297a9b4cea92d"
+    },
+    {
+      "version": "20260728000011",
+      "name": "stage_gate_decisions_project_scope",
+      "statements_md5": "c7e500cfb0992c50272568b47167b2ef"
+    },
+    {
+      "version": "20260728000012",
+      "name": "vmt_significance_screenings",
+      "statements_md5": "d96a633b77b242a688953fb3b9cd8778"
+    },
+    {
+      "version": "20260729000001",
+      "name": "funding_award_closure_provenance",
+      "statements_md5": "428e56eae1b0c2bb9d6e438b5ba7e41f"
+    },
+    {
+      "version": "20260729000002",
+      "name": "engagement_context_layers",
+      "statements_md5": "7b0b37de83c56f039c88e5702d595e2d"
+    },
+    {
+      "version": "20260729000003",
+      "name": "engagement_campaign_place_of_record",
+      "statements_md5": "a0905aaa0e647bbba14ba6e1dae02620"
+    },
+    {
+      "version": "20260729000004",
+      "name": "engagement_content_translations",
+      "statements_md5": "9ff8d4bf18bac677f953fc0c99df99d0"
+    },
+    {
+      "version": "20260730000001",
+      "name": "engagement_campaign_accessibility_contact",
+      "statements_md5": "516c11cd139bff1db0509e7e5cc74ad0"
+    },
+    {
+      "version": "20260730000002",
+      "name": "engagement_campaign_submission_geofence",
+      "statements_md5": "e878242047954d7c472979dfc4b78679"
+    },
+    {
+      "version": "20260730000003",
+      "name": "engagement_survey_response_drafts",
+      "statements_md5": "48b14f2aee9043b90c9a53787d83ea2e"
+    },
+    {
+      "version": "20260730000004",
+      "name": "aerial_artifact_custody",
+      "statements_md5": "31096b1612e82c750a9076f586565389"
+    },
+    {
+      "version": "20260730000005",
+      "name": "aerial_artifact_custody_anon_revoke",
+      "statements_md5": "dae2a8dd6922865337d67358b377e063"
+    },
+    {
+      "version": "20260730000006",
+      "name": "assistant_action_agent_principal",
+      "statements_md5": "9666ebc6b13a1c9c228e445b081a2ef7"
+    },
+    {
+      "version": "20260730000007",
+      "name": "name_the_dead_billing_schema",
+      "statements_md5": "a2e2b99dc66d1fc3435ac780334729b0"
+    },
+    {
+      "version": "20260730000008",
+      "name": "zero_policy_table_anon_revoke",
+      "statements_md5": "c0d6b80e77e30cb68bd32405a6808fb4"
+    },
+    {
+      "version": "20260730000009",
+      "name": "public_reference_data_write_revoke",
+      "statements_md5": "a35935b9047ff664cb37d6939fb53cd8"
+    },
+    {
+      "version": "20260730000010",
+      "name": "enable_rls_on_gtfs_child_tables",
+      "statements_md5": "5baf4e16361dabfc63048668818cc1ca"
+    },
+    {
+      "version": "20260730000011",
+      "name": "enable_rls_on_public_reference_tables",
+      "statements_md5": "74b5abd64117a34fdc443b32623edada"
+    },
+    {
+      "version": "20260804000001",
+      "name": "default_deny_new_table_grants",
+      "statements_md5": "209847bf759cd801b2244b6c81d228c4"
+    },
+    {
+      "version": "20260804000002",
+      "name": "restore_client_role_grants_after_cli_default_flip",
+      "statements_md5": "954adebda9a9d2c17b1406d5df126357"
+    },
+    {
+      "version": "20260805000001",
+      "name": "us_federal_default_stage_gate_template",
+      "statements_md5": "84ee205766e2bbed6e0696499df0584d"
+    },
+    {
+      "version": "20260805000002",
+      "name": "widen_demographics_language_vocabulary",
+      "statements_md5": "509f1479b93815f24dffaf34b5407739"
+    },
+    {
+      "version": "20260805000003",
+      "name": "rtp_financial_element",
+      "statements_md5": "f93641ec5a0884ce2850e6d08137fab1"
+    },
+    {
+      "version": "20260805000004",
+      "name": "rtp_horizon_bands_may_not_overlap",
+      "statements_md5": "9615b4dbf33366cf215a23264d44507e"
+    },
+    {
+      "version": "20260805000005",
+      "name": "restore_revoked_client_grants",
+      "statements_md5": "2d08ab29b4f02b534a28b63628ac14a7"
+    },
+    {
+      "version": "20260805000006",
+      "name": "gtfs_service_levels",
+      "statements_md5": "d5095281ebacdfe5b0aee0dd6c5744e7"
+    },
+    {
+      "version": "20260805000007",
+      "name": "gtfs_service_level_honesty_columns",
+      "statements_md5": "d937b2a5059714fd57d5e1d7f812a4c9"
+    },
+    {
+      "version": "20260805000008",
+      "name": "promote_gtfs_feed_version",
+      "statements_md5": "4b82df121b42bd9a8f9c4b115fd442ad"
+    },
+    {
+      "version": "20260805000009",
+      "name": "title_vi_service_equity",
+      "statements_md5": "e9e9231e08b85d2a6b171591a75b1bc0"
+    },
+    {
+      "version": "20260805000010",
+      "name": "census_tract_universes",
+      "statements_md5": "2209bfe764ad1f6a6e1cce6be185186d"
+    },
+    {
+      "version": "20260805000011",
+      "name": "survey_question_draft_status",
+      "statements_md5": "ce941b233238b161cf30fea1bc1e13f2"
+    },
+    {
+      "version": "20260810000001",
+      "name": "model_run_failure_history",
+      "statements_md5": "577bf686a78dd038d4e34b29d0dd19eb"
+    },
+    {
+      "version": "20260810000002",
+      "name": "engagement_campaign_slugs",
+      "statements_md5": "b36029dd57b45f4017ac920cde42493f"
+    },
+    {
+      "version": "20260810000003",
+      "name": "engagement_campaign_projects",
+      "statements_md5": "258b742824041fed1cf3a66e4d18b8b9"
+    },
+    {
+      "version": "20260811000001",
+      "name": "aerial_flight_plans",
+      "statements_md5": "bd206c61604eb2fbfc1da18de678a59f"
+    },
+    {
+      "version": "20260811000002",
+      "name": "aerial_imagery",
+      "statements_md5": "5695a6ddb3dd75add3c9d7c5ccee7b7c"
+    },
+    {
+      "version": "20260811000003",
+      "name": "aerial_custody_georef",
+      "statements_md5": "54326480874c1bf86b2836e3b74cad46"
+    },
+    {
+      "version": "20260811000004",
+      "name": "aerial_processing_manifest_jobs",
+      "statements_md5": "6fe9dd20d833975e441901ff09816295"
+    },
+    {
+      "version": "20260811000005",
+      "name": "document_library_stored_kinds",
+      "statements_md5": "65bdfde0f7cb2741cd7f139e12053e97"
+    },
+    {
+      "version": "20260811000006",
+      "name": "project_record_assignees",
+      "statements_md5": "b129f2b756431c5c0f8bc6b29483721a"
+    },
+    {
+      "version": "20260811000007",
+      "name": "work_notifications",
+      "statements_md5": "a3072f71375815a51e550b035f62f146"
+    },
+    {
+      "version": "20260811000008",
+      "name": "rtp_extraction_staging",
+      "statements_md5": "23408cd4838b4ddf66b372b0b6946668"
+    },
+    {
+      "version": "20260811000009",
+      "name": "rtp_extraction_provenance",
+      "statements_md5": "d5e3100dba8f07974df8abb4a0a41d91"
+    },
+    {
+      "version": "20260811000010",
+      "name": "kb_ocr_extraction_source",
+      "statements_md5": "926d899a8580f7c778c85668260da9fd"
+    },
+    {
+      "version": "20260811000011",
+      "name": "work_notifications_grants",
+      "statements_md5": "61dbf226621c3b5ed5aa387644148532"
+    },
+    {
+      "version": "20260812000001",
+      "name": "safety_crash_neutral_dimensions",
+      "statements_md5": "0dfadbb053e89f0abb8801576313fef3"
+    },
+    {
+      "version": "20260812000002",
+      "name": "safety_crash_parties",
+      "statements_md5": "244ba3726678f0ea88cb2ed7bb7e2d97"
+    },
+    {
+      "version": "20260812000003",
+      "name": "safety_crash_severity_counts",
+      "statements_md5": "048ccfbdefba25dd153d5c56205bd7a4"
+    },
+    {
+      "version": "20260812000010",
+      "name": "award_expenditure_deadline",
+      "statements_md5": "9151ed23d85f3f75329de1e9f4b312c6"
+    },
+    {
+      "version": "20260812000011",
+      "name": "local_measure_fund",
+      "statements_md5": "d6258a843302b201b877441f9ad95c90"
+    },
+    {
+      "version": "20260812000012",
+      "name": "measure_claims",
+      "statements_md5": "8fd0e7442165bec99cade67f2a226e3f"
+    },
+    {
+      "version": "20260812000013",
+      "name": "measure_claim_review_reminder",
+      "statements_md5": "a7fd935e269452ffab7099b510705b58"
+    },
+    {
+      "version": "20260812000014",
+      "name": "measure_off_the_top_and_atomic_allocation",
+      "statements_md5": "f475703427bfd565dcdb57ed3eb02e9d"
+    },
+    {
+      "version": "20260812000015",
+      "name": "workspace_gis_layers",
+      "statements_md5": "94544dd307516b50ea0f4086748b2491"
+    },
+    {
+      "version": "20260812000016",
+      "name": "workspace_gis_features",
+      "statements_md5": "a8a9d3edf3dc250063e47b9cda06deba"
+    },
+    {
+      "version": "20260812000018",
+      "name": "workspace_gis_layer_references",
+      "statements_md5": "cec84b6d15374b4c3ebe74536bc549de"
+    },
+    {
+      "version": "20260812000019",
+      "name": "measure_period_reserve",
+      "statements_md5": "a34e373c5608553c08253571d2e6cbc0"
+    },
+    {
+      "version": "20260816000001",
+      "name": "workspace_gis_workspace_binding",
+      "statements_md5": "56dcd8a9f418000094f8bd6b66a17316"
+    },
+    {
+      "version": "20260817000001",
+      "name": "kb_search_chunks_extraction_source",
+      "statements_md5": "da9b042f1160bf42a786815c0d5f9c86"
+    },
+    {
+      "version": "20260817000002",
+      "name": "cron_job_heartbeats",
+      "statements_md5": "b6fb33e96ae4dc61225412fad68af659"
+    },
+    {
+      "version": "20260820000001",
+      "name": "run_artifacts_markdown",
+      "statements_md5": "19d1e15db5c4372d541e87f0c9d8a22f"
+    },
+    {
+      "version": "20260821000001",
+      "name": "engagement_crash_corroboration",
+      "statements_md5": "04ea7e5b97fb4934e089e6368620cf58"
+    },
+    {
+      "version": "20260822000001",
+      "name": "work_notification_recipient_can_mark_read",
+      "statements_md5": "62ba311b604ec971b8c31832b6b44d77"
+    },
+    {
+      "version": "20260823000001",
+      "name": "report_artifact_aerial_preview_mime",
+      "statements_md5": "eaf658911e658394dfcf5878d440f0f3"
+    },
+    {
+      "version": "20260823000002",
+      "name": "land_use_plans",
+      "statements_md5": "e2d173de4a30aae7ad575704a6309b31"
+    },
+    {
+      "version": "20260823000003",
+      "name": "land_use_plan_policy_compaction",
+      "statements_md5": "47559da25c5b00439e93490e53116b8a"
+    },
+    {
+      "version": "20260823000004",
+      "name": "land_use_plan_workspace_cascade",
+      "statements_md5": "6c966ad7d6e4f56fd48dff6e918062ce"
+    },
+    {
+      "version": "20260823000005",
+      "name": "land_use_plan_append_only_cascade",
+      "statements_md5": "b17fb8e7e6241fb782bbe27562368fcb"
+    },
+    {
+      "version": "20260823000006",
+      "name": "land_use_plan_report_target",
+      "statements_md5": "aa5cc079b07fba1587d4aace8291ec36"
+    },
+    {
+      "version": "20260823000007",
+      "name": "land_use_plan_review_reporting",
+      "statements_md5": "8083827bf5eee83ee1f956b39307f099"
+    },
+    {
+      "version": "20260824000001",
+      "name": "safety_ksi_concentrations",
+      "statements_md5": "430ee51cfa5c6520fe18de7a80d69281"
+    },
+    {
+      "version": "20260824000002",
+      "name": "safety_ksi_tract_burden",
+      "statements_md5": "4cf72a317b9b694af0a594496f30539c"
+    },
+    {
+      "version": "20260824000003",
+      "name": "project_estimated_cost_and_csv_provenance",
+      "statements_md5": "e753beb639be4de31caaccf2bb0daba8"
+    },
+    {
+      "version": "20260824000004",
+      "name": "workspace_stage_gate_template_selection",
+      "statements_md5": "625d3722dd926601942401e2135c2939"
+    },
+    {
+      "version": "20260824000005",
+      "name": "county_run_worker_lifecycle",
+      "statements_md5": "4845bbf709f64ef64701ab62b645a60d"
+    },
+    {
+      "version": "20260824000006",
+      "name": "worker_health_reminder_preferences_and_crash_cutoff",
+      "statements_md5": "3d67d4b4fa47b04b85a4f1c8a6a613ef"
+    },
+    {
+      "version": "20260825000001",
+      "name": "reviewed_portfolio_import",
+      "statements_md5": "d07efceffcad009a0c9d01d5cedc401d"
+    },
+    {
+      "version": "20260825000002",
+      "name": "direct_workbook_portfolio_import",
+      "statements_md5": "079cf351f751144e75e04f93388b592a"
+    },
+    {
+      "version": "20260825000003",
+      "name": "safety_road_context_cache",
+      "statements_md5": "77b48767640b00c61b5d7c394a320480"
+    },
+    {
+      "version": "20260825000004",
+      "name": "safety_road_context_scope_guard",
+      "statements_md5": "9fe2ef5d6e02b40d08f13e5088197be1"
+    },
+    {
+      "version": "20260826000001",
+      "name": "safety_exact_acquisition_screens",
+      "statements_md5": "08842ea57b9561d646456ce3d5f75adb"
+    },
+    {
+      "version": "20260826000002",
+      "name": "project_evidence_bundles",
+      "statements_md5": "18c41be75846578151361390e38efd6d"
+    },
+    {
+      "version": "20260826000003",
+      "name": "model_truth_correction",
+      "statements_md5": "ceb6ab805a0216f10bcce116aa1c59aa"
+    },
+    {
+      "version": "20260826000004",
+      "name": "governed_decision_packages",
+      "statements_md5": "bdb6476ef3ef393735d36c1e6aa39d4e"
+    },
+    {
+      "version": "20260826000005",
+      "name": "decision_package_creator_submission",
+      "statements_md5": "ac68dd680666d69f53e52910a7f6d335"
+    },
+    {
+      "version": "20260826000006",
+      "name": "decision_package_approver_membership_visibility",
+      "statements_md5": "e94672f8503abd5a5324c4f6fd7a7ad1"
+    },
+    {
+      "version": "20260826000007",
+      "name": "scenario_model_link_cascade_delete",
+      "statements_md5": "9180c3c1e9d7095a43f96fc6f3d44893"
+    },
+    {
+      "version": "20260827000001",
+      "name": "model_truth_completion",
+      "statements_md5": "479888e53f83ae23a4f35758c42529a4"
+    },
+    {
+      "version": "20260827000002",
+      "name": "governed_decision_enforcement",
+      "statements_md5": "2067319fd6729855a72d9ba98121b252"
+    },
+    {
+      "version": "20260827000003",
+      "name": "evidence_dependency_freshness",
+      "statements_md5": "0391f318e19c1fd302534b19148b80f4"
+    },
+    {
+      "version": "20260828000001",
+      "name": "model_validation_assessment_custody",
+      "statements_md5": "ba4a09f2fe0d932e3f1c7cacca03f168"
+    },
+    {
+      "version": "20260828000002",
+      "name": "validation_custody_fail_closed",
+      "statements_md5": "3471eaa1c08525856aa6fb14ec49c13e"
+    },
+    {
+      "version": "20260828000003",
+      "name": "model_validation_structural_diagnosis_custody",
+      "statements_md5": "99d5308e3b897aeec2038067c03190b6"
+    },
+    {
+      "version": "20260828000004",
+      "name": "comparable_observation_v2_custody",
+      "statements_md5": "7229e8bbd95f7f4468c76cfb26c97a1e"
+    },
+    {
+      "version": "20260828000005",
+      "name": "structural_demand_diagnosis_custody",
+      "statements_md5": "10f54d1bba9c1a824f145901bc46449e"
+    },
+    {
+      "version": "20260831000001",
+      "name": "distributed_work_loading_custody",
+      "statements_md5": "ea739a065fef76c44d0d4aae8861d8e2"
+    },
+    {
+      "version": "20260831000002",
+      "name": "distributed_work_loading_custody_guards",
+      "statements_md5": "2160c6743a9fd70d587502a018c4e911"
+    },
+    {
+      "version": "20260904000001",
+      "name": "persist_fars_crashes",
+      "statements_md5": "7d1acf7745c487c9a1c3998477b4049f"
+    },
+    {
+      "version": "20260905000001",
+      "name": "portfolio_unknown_price_year",
+      "statements_md5": "0cc4abaee9826ee00ba5a7865f2fd831"
+    },
+    {
+      "version": "20260905000002",
+      "name": "safety_acquisition_custody",
+      "statements_md5": "3a51c4e0bca08c4f83fc398a9a28646a"
+    },
+    {
+      "version": "20260905000003",
+      "name": "crash_resource_update_provenance",
+      "statements_md5": "e4a52a2f1aec2f91f8345379f1252c22"
+    },
+    {
+      "version": "20260906000001",
+      "name": "program_work_program_preparation",
+      "statements_md5": "36c5b0e62fdca23093f086bef8a1df92"
+    },
+    {
+      "version": "20260906000002",
+      "name": "program_work_program_source_snapshot",
+      "statements_md5": "f55a5c513b96319123efd3dfc269a343"
+    },
+    {
+      "version": "20260906000003",
+      "name": "program_work_program_conflict_response",
+      "statements_md5": "19e980c18fa48d830904f8b517bdfdd7"
+    },
+    {
+      "version": "20260907000001",
+      "name": "document_extraction_recovery",
+      "statements_md5": "71bdec67851c794d994d8a6d8151b9a6"
+    },
+    {
+      "version": "20260907000002",
+      "name": "work_program_extraction_versions",
+      "statements_md5": "54c5a5bed2976071ef29deb19ad9fff8"
+    },
+    {
+      "version": "20260907000003",
+      "name": "work_program_preparation_references",
+      "statements_md5": "a12ec40f82c86d1087b3f29ab6e1ce7d"
+    },
+    {
+      "version": "20260907000004",
+      "name": "work_program_export_custody",
+      "statements_md5": "1e3afed5562dc0148d6bfe195807f2d2"
+    },
+    {
+      "version": "20260907000005",
+      "name": "work_program_recovery_forward_repair",
+      "statements_md5": "d9950c266113834e0ffc214a288bec8b"
+    },
+    {
+      "version": "20260907000006",
+      "name": "document_extraction_cancel",
+      "statements_md5": "757ac0c643b8b67be836dd6689127d27"
+    },
+    {
+      "version": "20260908000001",
+      "name": "engagement_record_custody",
+      "statements_md5": "61ea6522bba68644e7293217329a2be2"
+    },
+    {
+      "version": "20260908000002",
+      "name": "engagement_configuration_versions",
+      "statements_md5": "e2fcdb9d3ef759ca8f1fdb552c358792"
+    },
+    {
+      "version": "20260908000003",
+      "name": "engagement_public_copy_guards",
+      "statements_md5": "b22e82392717755122c6e6feac53e0af"
+    },
+    {
+      "version": "20260908000004",
+      "name": "engagement_report_jobs",
+      "statements_md5": "1f01753f92c8044853e69222a77e3ddf"
+    },
+    {
+      "version": "20260908000005",
+      "name": "engagement_report_delivery",
+      "statements_md5": "cecc4fb081f412d8906baf4810cf425d"
+    },
+    {
+      "version": "20260908000006",
+      "name": "engagement_survey_receipts",
+      "statements_md5": "8d0567db78b7537a2a0f6a8d1610b79d"
+    },
+    {
+      "version": "20260908000007",
+      "name": "engagement_setup_reuse",
+      "statements_md5": "dedf10f1b1862c05c444c4212130dcde"
+    },
+    {
+      "version": "20260908000008",
+      "name": "engagement_export_access_paths",
+      "statements_md5": "36bf12a9899d3ea69f4343790564e801"
+    },
+    {
+      "version": "20260908000009",
+      "name": "engagement_bundle_access",
+      "statements_md5": "85061b2ec7713b795501e0795f355f18"
+    },
+    {
+      "version": "20260908000010",
+      "name": "engagement_review_intent",
+      "statements_md5": "f900f16999682f737fb2b36d6d99a0fe"
+    },
+    {
+      "version": "20260908000011",
+      "name": "engagement_campaign_configuration_scope",
+      "statements_md5": "bd6a873b9289725bcb06393aec069bf9"
+    },
+    {
+      "version": "20260909000001",
+      "name": "work_program_review",
+      "statements_md5": "5df20ae1c12e2f11d2674cb9de7aaf1b"
+    },
+    {
+      "version": "20260909000002",
+      "name": "work_program_review_packets",
+      "statements_md5": "9fe3e7a7901467dfce97c4c16ab255b0"
+    },
+    {
+      "version": "20260910000001",
+      "name": "work_program_actuals",
+      "statements_md5": "50991b5607ae10e669079d4b8115e049"
+    },
+    {
+      "version": "20260910000002",
+      "name": "work_program_reporting",
+      "statements_md5": "568cb1c75817abb8a8234f0326565897"
+    },
+    {
+      "version": "20260910000003",
+      "name": "work_program_report_exports",
+      "statements_md5": "f6f97f8f145639487f182e643f754db3"
+    },
+    {
+      "version": "20260911000001",
+      "name": "contract_reconciliation",
+      "statements_md5": "173d3c2dba9a0f4f1e4cf89fd3c606fc"
+    },
+    {
+      "version": "20260911000002",
+      "name": "contract_billing",
+      "statements_md5": "24f09cac82f132d74f958428e2ed8d92"
+    },
+    {
+      "version": "20260911000003",
+      "name": "contract_documents",
+      "statements_md5": "b8ac5d8feb6ad121f1cbacd251a7cab7"
+    },
+    {
+      "version": "20260911000004",
+      "name": "contract_imports",
+      "statements_md5": "2ec02a0e975ae2ec0d6b2297331c7ed4"
+    },
+    {
+      "version": "20260911000005",
+      "name": "contract_relationships",
+      "statements_md5": "11d755f3abcbd6c8e9ea1c1898259ea2"
+    },
+    {
+      "version": "20260911000006",
+      "name": "contract_staff_assignments",
+      "statements_md5": "4e3ad53c9899eee1b81848e04536d75e"
+    },
+    {
+      "version": "20260911000007",
+      "name": "contract_evidence",
+      "statements_md5": "dcb0f11a94345166e3a90bb781475251"
+    },
+    {
+      "version": "20260911000008",
+      "name": "contract_source_deletions",
+      "statements_md5": "0787214e44a8c1b35cbab054e72454cd"
+    },
+    {
+      "version": "20260912000001",
+      "name": "contract_master_authorization",
+      "statements_md5": "ff2bc7fd6942a4b54d88bd19536086e9"
+    },
+    {
+      "version": "20260912000002",
+      "name": "contract_scoped_access",
+      "statements_md5": "54dce889726ecb4df005fc6bd4471594"
+    },
+    {
+      "version": "20260912000003",
+      "name": "received_consultant_invoices",
+      "statements_md5": "5b58f2569d92ff920e7502e97f94b97c"
+    },
+    {
+      "version": "20260912000004",
+      "name": "contract_accounting_reconciliation",
+      "statements_md5": "ccb1a8f410cb15d28c468f8c91917f97"
+    },
+    {
+      "version": "20260912000005",
+      "name": "legacy_order_authorization",
+      "statements_md5": "b6374f13e38e61d8768e4f350ff6bac7"
+    },
+    {
+      "version": "20260913000001",
+      "name": "contract_delivery",
+      "statements_md5": "acdab5c4059f03535be8aab3e839ff37"
+    },
+    {
+      "version": "20260914000001",
+      "name": "contract_management_responses",
+      "statements_md5": "eec79cae9420e14f69ec6e15475d56a3"
+    },
+    {
+      "version": "20260915000001",
+      "name": "contract_settlement_closeout",
+      "statements_md5": "8409770e68c5437a8b0db898dc5ea620"
+    },
+    {
+      "version": "20260915000002",
+      "name": "contract_management_reports",
+      "statements_md5": "ae15dc7e579cb589344ef10be2ac4d64"
+    },
+    {
+      "version": "20260915000003",
+      "name": "contract_closeout_relationships",
+      "statements_md5": "87d78c8c7b15a0f537e68f535ca85fa9"
+    },
+    {
+      "version": "20260916000001",
+      "name": "contract_calculation_jobs",
+      "statements_md5": "01f1fefd9a9a4f239823bb3d33fef803"
+    },
+    {
+      "version": "20260917000001",
+      "name": "contract_staff_schedule_integrity",
+      "statements_md5": "f011f46f69505908aec1167a8be98bbe"
+    },
+    {
+      "version": "20260918000001",
+      "name": "contract_mutable_source_cutoffs",
+      "statements_md5": "93e08af872397961f6f8053365a44709"
+    },
+    {
+      "version": "20260919000001",
+      "name": "contract_pm_proposal_inputs",
+      "statements_md5": "288a0d2a270b9e30de2d5799be94505c"
+    },
+    {
+      "version": "20260920000001",
+      "name": "contract_pending_reviews",
+      "statements_md5": "8303f6d1b34bbf5d185d8aada1ea67f1"
+    },
+    {
+      "version": "20260921000001",
+      "name": "contract_indexed_source_files",
+      "statements_md5": "f40b288b48623ea901f2209c673c8d7f"
+    },
+    {
+      "version": "20260922000001",
+      "name": "contract_billing_direction",
+      "statements_md5": "27cf9da758432be491047e5aedf2aed9"
+    },
+    {
+      "version": "20260923000001",
+      "name": "contract_forecast_billing_custody",
+      "statements_md5": "baad8e4fbdd175b05b56f291b7075b22"
+    },
+    {
+      "version": "20260924000001",
+      "name": "contract_staff_import_visibility",
+      "statements_md5": "8ed2f21eebf9abd693798cf309f64135"
+    },
+    {
+      "version": "20260925000001",
+      "name": "contract_export_source_receipts",
+      "statements_md5": "6ecbbbdb1ba0c49267a11e946e81b11a"
+    },
+    {
+      "version": "20260926000001",
+      "name": "contract_participant_and_accounting_work",
+      "statements_md5": "c4e8bf39b6e296590e8906429e715b5b"
+    },
+    {
+      "version": "20260927000001",
+      "name": "contract_participant_caller_view",
+      "statements_md5": "4a39381fa9498c1d51b522c1d7f894c4"
+    },
+    {
+      "version": "20260928000001",
+      "name": "contract_completed_review_dates",
+      "statements_md5": "36a02f62262737f7280014528e72f48a"
+    },
+    {
+      "version": "20260929000001",
+      "name": "contract_source_visibility_receipts",
+      "statements_md5": "98dafb038175a4cc0423a95232c5be78"
+    },
+    {
+      "version": "20260930000001",
+      "name": "contract_participant_closed_state",
+      "statements_md5": "029054b1d914e3aac58f9ea78d7723dd"
+    },
+    {
+      "version": "20261001000001",
+      "name": "contract_forecast_evidence_envelope",
+      "statements_md5": "546b38b21f2fb162366aca5bbf8ded9a"
+    },
+    {
+      "version": "20261002000001",
+      "name": "contract_delivery_read_cost",
+      "statements_md5": "c2a7c09a51a5d48aeb784ad8434a3c60"
+    },
+    {
+      "version": "20261003000001",
+      "name": "work_program_reimbursement",
+      "statements_md5": "945166be1a04438dde624bd74a25feed"
+    },
+    {
+      "version": "20261004000001",
+      "name": "work_program_closeout_reconciliation",
+      "statements_md5": "14ad7a33704820a1ca72a3e5154f7f24"
+    },
+    {
+      "version": "20261005000001",
+      "name": "work_program_period_closure",
+      "statements_md5": "30dea4164fe9bc8ce2ac81fdd4e0bad7"
+    },
+    {
+      "version": "20261006000001",
+      "name": "work_program_refund_matches",
+      "statements_md5": "1fdb885cf927d099754717874daa7960"
+    },
+    {
+      "version": "20261007000001",
+      "name": "work_program_multi_carryover",
+      "statements_md5": "f497f94621ba0eb366f0bfefc4cd73a6"
+    },
+    {
+      "version": "20261008000001",
+      "name": "assistant_hold_receipts",
+      "statements_md5": "aeea8b7207453cf5b06759aca2b6937c"
+    },
+    {
+      "version": "20261009000001",
+      "name": "assistant_submittal_receipts",
+      "statements_md5": "d4eb3d613273d31ff1ee5d7b48e1ed85"
+    },
+    {
+      "version": "20261010000001",
+      "name": "assistant_provider_connections",
+      "statements_md5": "c4de9a46ef334b16e951b8ad052917ed"
+    },
+    {
+      "version": "20261011000001",
+      "name": "assistant_claude_connections",
+      "statements_md5": "1108b4acbb01f8a16c84b99627c8b7ef"
+    },
+    {
+      "version": "20261011000002",
+      "name": "assistant_opencode_connections",
+      "statements_md5": "0ec657b2081133d1d097af9d83ee929c"
+    },
+    {
+      "version": "20261012000001",
+      "name": "workspace_provider_api_revisions",
+      "statements_md5": "2ef9c9d515c9c616cc3c69e4eec42056"
+    },
+    {
+      "version": "20261012000002",
+      "name": "assistant_api_turns",
+      "statements_md5": "0b99f7ea5dacb0a8c661f024f62302d6"
+    },
+    {
+      "version": "20261013000001",
+      "name": "engagement_response_snapshot",
+      "statements_md5": "a46125bff01b20fe01dbbd60fe602158"
+    },
+    {
+      "version": "20261014000001",
+      "name": "engagement_response_history",
+      "statements_md5": "85d41962eda35c0afc1bb77c997b7b8a"
+    },
+    {
+      "version": "20261014000002",
+      "name": "engagement_response_history_reader",
+      "statements_md5": "7a34bd1cd20402841bb808ef2f414b01"
+    },
+    {
+      "version": "20261014000003",
+      "name": "engagement_response_recovery",
+      "statements_md5": "aaf54399201486f3f774fc5b3d2226ad"
+    },
+    {
+      "version": "20261014000004",
+      "name": "engagement_delivery_summary",
+      "statements_md5": "38a0f56627602ae676fbdc9315df36b1"
+    },
+    {
+      "version": "20261014000005",
+      "name": "engagement_delivery_authority_locks",
+      "statements_md5": "872358d436a03b1e97652646f5c954ab"
+    },
+    {
+      "version": "20261014000006",
+      "name": "engagement_response_rpc_policy_cleanup",
+      "statements_md5": "909178858972fec02920f8318d93bbdf"
+    },
+    {
+      "version": "20261014000007",
+      "name": "engagement_conflicts_without_transaction_retry",
+      "statements_md5": "2d6ecae12b56e69a2fbf0bd114511aca"
+    },
+    {
+      "version": "20261014000008",
+      "name": "engagement_translation_scope",
+      "statements_md5": "84615c644922f839b72ca41fef804ae0"
+    },
+    {
+      "version": "20261014000009",
+      "name": "engagement_translation_history",
+      "statements_md5": "d0da8648904a37755bcdaabf598229e6"
+    },
+    {
+      "version": "20261014000010",
+      "name": "engagement_translation_commands",
+      "statements_md5": "e2da4bc58a6aceae56e1fc4020dfb781"
+    },
+    {
+      "version": "20261014000011",
+      "name": "engagement_translation_snapshot",
+      "statements_md5": "a19676dfbe6c7e4695c5a67fef224ce9"
+    },
+    {
+      "version": "20261014000012",
+      "name": "engagement_translation_history_receipts",
+      "statements_md5": "c4c3f2dd75456e1c75256c8e786e0f56"
+    },
+    {
+      "version": "20261014000013",
+      "name": "engagement_translation_generation",
+      "statements_md5": "424c84f5a056aa4342f967d15c9a059c"
+    },
+    {
+      "version": "20261014000014",
+      "name": "engagement_translation_generation_reads",
+      "statements_md5": "233d5b706ae7c36d94657f1f1f0dc17e"
+    },
+    {
+      "version": "20261014000015",
+      "name": "engagement_translation_generation_catalog",
+      "statements_md5": "42f66e6ae6182c746ebd135bf3b9b617"
+    },
+    {
+      "version": "20261014000016",
+      "name": "engagement_translation_retained_publication",
+      "statements_md5": "f40b4d9d126136bb7fc0a871d77c0629"
+    },
+    {
+      "version": "20261014000017",
+      "name": "engagement_translation_command_activation",
+      "statements_md5": "b082758e8d193bbed2729df78d67b281"
+    },
+    {
+      "version": "20261014000018",
+      "name": "engagement_translation_shared_reads",
+      "statements_md5": "db005eb294dc56f3eb6c14a5b1714630"
+    },
+    {
+      "version": "20261014000019",
+      "name": "engagement_translation_generation_resolution",
+      "statements_md5": "1e711f6b43ba4112b3b15e026fe1b267"
+    },
+    {
+      "version": "20261014000020",
+      "name": "engagement_public_translation_queue",
+      "statements_md5": "097ea93b6ad1f6ff99c3d01da6a1e273"
+    },
+    {
+      "version": "20261014000021",
+      "name": "engagement_response_decision_links",
+      "statements_md5": "91f38e6fd96f0673ac7d909eccac83da"
+    },
+    {
+      "version": "20261014000022",
+      "name": "engagement_decision_request_resolution",
+      "statements_md5": "16373dd486bed0404924c7763c8be610"
+    },
+    {
+      "version": "20261014000023",
+      "name": "engagement_public_copy_privacy",
+      "statements_md5": "2f2f1da5fa81a0455e49b3b4e9264874"
+    },
+    {
+      "version": "20261014000024",
+      "name": "engagement_report_decision_history",
+      "statements_md5": "4b0b712118f172dc1fd25a08b1a819e4"
+    },
+    {
+      "version": "20261014000025",
+      "name": "engagement_synthesis_sources",
+      "statements_md5": "3d52cfa71a3f8dacbb6525833b6bfa03"
+    },
+    {
+      "version": "20261014000026",
+      "name": "engagement_synthesis_source_list",
+      "statements_md5": "31325087aa7c5542251d23f435cb5dc4"
+    },
+    {
+      "version": "20261014000027",
+      "name": "engagement_synthesis_reviews",
+      "statements_md5": "a39cc62969ecb5b948236bf8d8cc8e9a"
+    },
+    {
+      "version": "20261014000028",
+      "name": "engagement_synthesis_approvals",
+      "statements_md5": "3b9bb7a4f712161a25c5fa04d9896208"
+    },
+    {
+      "version": "20261014000029",
+      "name": "engagement_synthesis_response_links",
+      "statements_md5": "fc9b6ce02a70cccfcadd5a85424d2d54"
+    },
+    {
+      "version": "20261014000030",
+      "name": "engagement_decision_synthesis_history",
+      "statements_md5": "c2370a1d477aae85562cdfef36eae43a"
+    },
+    {
+      "version": "20261014000031",
+      "name": "engagement_decision_resolution_guard",
+      "statements_md5": "39927fa5463b9c771de7baae1c1bf9be"
+    },
+    {
+      "version": "20261014000032",
+      "name": "application_temporary_schema_order",
+      "statements_md5": "2b1c37cb2192fc0851c20a8ee17fca4c"
+    },
+    {
+      "version": "20261014000033",
+      "name": "engagement_synthesis_generation_requests",
+      "statements_md5": "bdd49305abd1e4cdb10afa6c6b988732"
+    },
+    {
+      "version": "20261014000034",
+      "name": "engagement_synthesis_generation_plans",
+      "statements_md5": "81a3ec42bd6b6a5c8549e8a9006dda6a"
+    },
+    {
+      "version": "20261014000035",
+      "name": "engagement_synthesis_generation_execution",
+      "statements_md5": "df49b4f6256ac6ec755e5f5d52c20c49"
+    },
+    {
+      "version": "20261014000036",
+      "name": "engagement_synthesis_generation_history",
+      "statements_md5": "38c51cdc4e1181ddc0ac4750cf888b92"
+    },
+    {
+      "version": "20261014000037",
+      "name": "engagement_synthesis_context_requests",
+      "statements_md5": "1cfb153828fcfc7b498cf8df645a0ebb"
+    },
+    {
+      "version": "20261014000038",
+      "name": "engagement_synthesis_context_plans",
+      "statements_md5": "f22a4d0cae47d3a2ade39b355607c07f"
+    },
+    {
+      "version": "20261014000039",
+      "name": "engagement_synthesis_context_execution",
+      "statements_md5": "0f63b0b3205ad108d7ddd359b6796466"
+    },
+    {
+      "version": "20261015000001",
+      "name": "measure_period_fund_integrity",
+      "statements_md5": "8eaf2de277efaa6e1be1b1d430dafc09"
+    },
+    {
+      "version": "20261015000002",
+      "name": "security_artifact_storage_writes",
+      "statements_md5": "f1cddc14dd851f2c406f47e020c67bf8"
+    },
+    {
+      "version": "20261015000003",
+      "name": "engagement_synthesis_thematic_requests",
+      "statements_md5": "3e0669c981dddca9f129924e904e6d28"
+    },
+    {
+      "version": "20261015000004",
+      "name": "engagement_synthesis_thematic_choices",
+      "statements_md5": "69d057b6ab53486cec316d9fccc3d92f"
+    },
+    {
+      "version": "20261015000005",
+      "name": "engagement_synthesis_thematic_preparation",
+      "statements_md5": "a3622aa6d9b1617c80eeb916c560522b"
+    },
+    {
+      "version": "20261015000006",
+      "name": "engagement_synthesis_thematic_inputs",
+      "statements_md5": "8ad740254b09348fa571fe3397ea1c96"
+    },
+    {
+      "version": "20261015000007",
+      "name": "engagement_synthesis_thematic_input_seals",
+      "statements_md5": "6bc68966df451cf658a623a1943c8696"
+    },
+    {
+      "version": "20261015000008",
+      "name": "engagement_synthesis_thematic_plans",
+      "statements_md5": "da7592d9e2700c6ccbebb8b2f4199ae5"
+    },
+    {
+      "version": "20261015000009",
+      "name": "engagement_synthesis_thematic_execution",
+      "statements_md5": "cc8de899f03c235be5dd67ba43cd892b"
+    },
+    {
+      "version": "20261015000010",
+      "name": "engagement_synthesis_thematic_import",
+      "statements_md5": "dcceb5dca6f4d7672715c586967fb266"
+    },
+    {
+      "version": "20261015000011",
+      "name": "engagement_synthesis_thematic_discovery",
+      "statements_md5": "b0e0a3285c8c2bcb844542db9524ef73"
+    },
+    {
+      "version": "20261015000012",
+      "name": "engagement_synthesis_preparation_queue",
+      "statements_md5": "7646813e11cd36152bbb18177c5f2a35"
+    },
+    {
+      "version": "20261015000013",
+      "name": "engagement_synthesis_request_discovery",
+      "statements_md5": "43b6bee68cef9fb166f50286a99811c6"
+    },
+    {
+      "version": "20261015000014",
+      "name": "engagement_synthesis_preparation_recovery",
+      "statements_md5": "364e1618eaabe3d3e40a8eb30c31bde2"
+    },
+    {
+      "version": "20261016000001",
+      "name": "bca_workbench_versions",
+      "statements_md5": "1c2a4d7e868a0a4a0b37d6413abb1a8d"
+    },
+    {
+      "version": "20261016000002",
+      "name": "land_use_plan_context",
+      "statements_md5": "1076e41fea20d52a5dd814398f5889c5"
+    },
+    {
+      "version": "20261016000003",
+      "name": "land_use_plan_draft_revision",
+      "statements_md5": "5e75cfea75ee97920965b075acb6df33"
+    },
+    {
+      "version": "20261016000004",
+      "name": "land_use_plan_freeze_commands",
+      "statements_md5": "67717398fd49d1527a70a098d6c22c12"
+    },
+    {
+      "version": "20261016000005",
+      "name": "land_use_plan_freeze_server_path",
+      "statements_md5": "16f9eabbd1c2fd0602efde8a3fea3401"
+    },
+    {
+      "version": "20261016000006",
+      "name": "land_use_plan_retained_study_area",
+      "statements_md5": "8264e659f0eb21194f1ad97573f82fe9"
+    },
+    {
+      "version": "20261016000007",
+      "name": "land_use_plan_creation_commands",
+      "statements_md5": "11e0067f2d19ba2aabadfa44d86f1bc7"
+    },
+    {
+      "version": "20261016000008",
+      "name": "land_use_plan_creation_cancellation",
+      "statements_md5": "5820226eecc86cc44c9b193ae779807f"
+    },
+    {
+      "version": "20261016000009",
+      "name": "land_use_plan_cascade_guards",
+      "statements_md5": "c903e8c17678f8804b5041f2129a5514"
+    },
+    {
+      "version": "20261016000010",
+      "name": "land_use_plan_rule_reconciliation",
+      "statements_md5": "6a8c79d542a050c2feb10484367c4812"
+    },
+    {
+      "version": "20261016000011",
+      "name": "workspace_gis_cascade_guards",
+      "statements_md5": "e68595ac0ea88e0030644ac7ea3cde39"
+    },
+    {
+      "version": "20261016000012",
+      "name": "land_use_plan_implementation_report_commands",
+      "statements_md5": "609dae1fbc49ae54b282171d8d8a5686"
+    },
+    {
+      "version": "20261016000013",
+      "name": "synthesis_execution_queue",
+      "statements_md5": "bff73292835d90dad34f9eb1effc4de4"
+    },
+    {
+      "version": "20261016000014",
+      "name": "model_attempt_command_custody",
+      "statements_md5": "26e88e9843a0f09b0efb4038cb8b0d6b"
+    },
+    {
+      "version": "20261016000015",
+      "name": "legacy_assessment_command_receipts",
+      "statements_md5": "4096041ac0ee3a80cc0864e85c102796"
+    },
+    {
+      "version": "20261016000016",
+      "name": "legacy_artifact_command_receipts",
+      "statements_md5": "8383879a471e0dbd3f8d07711b96c858"
+    },
+    {
+      "version": "20261016000017",
+      "name": "legacy_kpi_command_receipts",
+      "statements_md5": "1b2e7b8677ce21eb31388fb1a0ab871a"
+    },
+    {
+      "version": "20261016000018",
+      "name": "model_execution_retention",
+      "statements_md5": "2852b9f950fa65291dcecf9f4767cceb"
+    },
+    {
+      "version": "20261016000019",
+      "name": "model_recovery_status",
+      "statements_md5": "a0e25dd648da30d0095377cccad23f7b"
+    },
+    {
+      "version": "20261016000020",
+      "name": "model_blocked_stage_receipts",
+      "statements_md5": "34ae274e4eebfc7fcca4f45593b5a18d"
+    },
+    {
+      "version": "20261016000021",
+      "name": "model_attempt_prepared_artifact_identity",
+      "statements_md5": "2c15a823d4871e8298fe81a18ec2d27f"
+    },
+    {
+      "version": "20261016000022",
+      "name": "model_reaper_recovery_boundary",
+      "statements_md5": "5a7ccd366b773dc8acc8db293819d684"
+    },
+    {
+      "version": "20261016000023",
+      "name": "model_recovery_decisions",
+      "statements_md5": "90d38439cc32196b177bc3a978313e63"
+    },
+    {
+      "version": "20261016000024",
+      "name": "model_attempt_instrument_member_read",
+      "statements_md5": "84d261c2fe6c23ec568ef1704f749218"
+    },
+    {
+      "version": "20261016000025",
+      "name": "gtfs_abandonment_fence",
+      "statements_md5": "edf79c8f60ea2f6cb5e5070ce4b42531"
+    },
+    {
+      "version": "20261016000026",
+      "name": "gtfs_failure_closure",
+      "statements_md5": "5d190c0d0ef394e2c9086aaf0531f603"
+    },
+    {
+      "version": "20261016000027",
+      "name": "run_project_workspace_foreign_keys",
+      "statements_md5": "5b2a6d6f7a7b2a07911c48d23fcdbe24"
+    },
+    {
+      "version": "20261016000028",
+      "name": "gtfs_managed_execution",
+      "statements_md5": "395dc9878360a922873cf90f5cbfcabe"
+    },
+    {
+      "version": "20261016000029",
+      "name": "gtfs_submission_status",
+      "statements_md5": "0169fa0141ffa746a32824d574a16fe4"
+    },
+    {
+      "version": "20261016000030",
+      "name": "gtfs_human_review",
+      "statements_md5": "35ec3731e066c594b4abe217ddb3c648"
+    },
+    {
+      "version": "20261016000031",
+      "name": "gtfs_request_cancellation",
+      "statements_md5": "9c8b6af7c5329baaf5f08e838016564c"
+    },
+    {
+      "version": "20261016000032",
+      "name": "model_kpi_receipt_float_precision",
+      "statements_md5": "09f40de33c81f15541a9e3b263c06bc7"
+    },
+    {
+      "version": "20261017000001",
+      "name": "project_map_packages",
+      "statements_md5": "08a9bf02fa8b993b5afd6585b5fe7895"
+    },
+    {
+      "version": "20261017000002",
+      "name": "engagement_survey_question_counts",
+      "statements_md5": "922deca86fde71edc4514901c0c32ad0"
+    },
+    {
+      "version": "20261017000003",
+      "name": "aerial_private_dispatch_custody",
+      "statements_md5": "f61e0106e2b8d319468fd49096550d6b"
+    },
+    {
+      "version": "20261017000005",
+      "name": "money_integrity_corrections",
+      "statements_md5": "b4d2a81ee5df1ec19cd5674a71612d9a"
+    },
+    {
+      "version": "20261017000006",
+      "name": "permission_integrity",
+      "statements_md5": "5569f8de4b17aaceb53292bbbe164b3c"
+    },
+    {
+      "version": "20261017000007",
+      "name": "workspace_time_zone",
+      "statements_md5": "3107927ee5c086706fdc10ace3304682"
+    },
+    {
+      "version": "20261017000008",
+      "name": "historical_run_decisions",
+      "statements_md5": "c4818c82f4c6a87b2520101ebf348580"
+    },
+    {
+      "version": "20261017000009",
+      "name": "owp_program_type",
+      "statements_md5": "804cf14982ab97460de52c757761a9a5"
+    },
+    {
+      "version": "20261017000010",
+      "name": "workspace_storage_quota",
+      "statements_md5": "696b0c6bf1ba167905cc2ec68edbb7dc"
+    },
+    {
+      "version": "20261017000011",
+      "name": "aerial_preserve_held_custody",
+      "statements_md5": "33a56c92f1abd5a396cb5fe4ee9efb9d"
+    },
+    {
+      "version": "20261017000012",
+      "name": "aerial_delivery_authority",
+      "statements_md5": "8699f7b2335dc8f0c8b86b8de66b2062"
+    },
+    {
+      "version": "20261017000013",
+      "name": "artifact_storage_server_writes",
+      "statements_md5": "955728b4f3011fa375a7ba332e257894"
+    },
+    {
+      "version": "20261017000014",
+      "name": "work_program_evidence_date_workspace_calendar",
+      "statements_md5": "e4757210284a5c79cff2dbc4526149f0"
+    },
+    {
+      "version": "20261017000015",
+      "name": "node_queue_process_observations",
+      "statements_md5": "75718ea62af5cf4d699924385426aaba"
+    },
+    {
+      "version": "20261017000016",
+      "name": "project_jurisdiction_context",
+      "statements_md5": "dfde2e103fb9dc5bd8714171dc00b3c9"
+    }
+  ],
+  "roles": [
+    {
+      "rolname": "anon",
+      "rolsuper": false,
+      "rolbypassrls": false,
+      "rolcreaterole": false,
+      "rolcreatedb": false,
+      "rolcanlogin": false
+    },
+    {
+      "rolname": "authenticated",
+      "rolsuper": false,
+      "rolbypassrls": false,
+      "rolcreaterole": false,
+      "rolcreatedb": false,
+      "rolcanlogin": false
+    },
+    {
+      "rolname": "authenticator",
+      "rolsuper": false,
+      "rolbypassrls": false,
+      "rolcreaterole": false,
+      "rolcreatedb": false,
+      "rolcanlogin": true
+    },
+    {
+      "rolname": "postgres",
+      "rolsuper": false,
+      "rolbypassrls": true,
+      "rolcreaterole": true,
+      "rolcreatedb": true,
+      "rolcanlogin": true
+    },
+    {
+      "rolname": "service_role",
+      "rolsuper": false,
+      "rolbypassrls": true,
+      "rolcreaterole": false,
+      "rolcreatedb": false,
+      "rolcanlogin": false
+    },
+    {
+      "rolname": "supabase_admin",
+      "rolsuper": true,
+      "rolbypassrls": true,
+      "rolcreaterole": true,
+      "rolcreatedb": true,
+      "rolcanlogin": true
+    }
+  ],
+  "roleMemberships": [
+    {
+      "member": "authenticator",
+      "granted_role": "anon"
+    },
+    {
+      "member": "authenticator",
+      "granted_role": "authenticated"
+    },
+    {
+      "member": "authenticator",
+      "granted_role": "service_role"
+    },
+    {
+      "member": "pg_monitor",
+      "granted_role": "pg_read_all_settings"
+    },
+    {
+      "member": "pg_monitor",
+      "granted_role": "pg_read_all_stats"
+    },
+    {
+      "member": "pg_monitor",
+      "granted_role": "pg_stat_scan_tables"
+    },
+    {
+      "member": "postgres",
+      "granted_role": "anon"
+    },
+    {
+      "member": "postgres",
+      "granted_role": "authenticated"
+    },
+    {
+      "member": "postgres",
+      "granted_role": "authenticator"
+    },
+    {
+      "member": "postgres",
+      "granted_role": "pg_create_subscription"
+    },
+    {
+      "member": "postgres",
+      "granted_role": "pg_monitor"
+    },
+    {
+      "member": "postgres",
+      "granted_role": "pg_read_all_data"
+    },
+    {
+      "member": "postgres",
+      "granted_role": "pg_signal_backend"
+    },
+    {
+      "member": "postgres",
+      "granted_role": "service_role"
+    },
+    {
+      "member": "postgres",
+      "granted_role": "supabase_functions_admin"
+    },
+    {
+      "member": "postgres",
+      "granted_role": "supabase_privileged_role"
+    },
+    {
+      "member": "supabase_etl_admin",
+      "granted_role": "pg_monitor"
+    },
+    {
+      "member": "supabase_etl_admin",
+      "granted_role": "pg_read_all_data"
+    },
+    {
+      "member": "supabase_etl_admin",
+      "granted_role": "supabase_privileged_role"
+    },
+    {
+      "member": "supabase_read_only_user",
+      "granted_role": "pg_monitor"
+    },
+    {
+      "member": "supabase_read_only_user",
+      "granted_role": "pg_read_all_data"
+    },
+    {
+      "member": "supabase_realtime_admin",
+      "granted_role": "anon"
+    },
+    {
+      "member": "supabase_realtime_admin",
+      "granted_role": "authenticated"
+    },
+    {
+      "member": "supabase_realtime_admin",
+      "granted_role": "service_role"
+    },
+    {
+      "member": "supabase_storage_admin",
+      "granted_role": "authenticator"
+    }
+  ],
+  "triggers": [
+    {
+      "tgname": "engagement_project_frame",
+      "tgenabled": "O",
+      "definition": "CREATE TRIGGER engagement_project_frame AFTER UPDATE OF place_source, place_label, place_min_lon, place_min_lat, place_max_lon, place_max_lat ON public.projects FOR EACH ROW EXECUTE FUNCTION refresh_engagement_inherited_frame()"
+    },
+    {
+      "tgname": "preserve_project_provider_history",
+      "tgenabled": "O",
+      "definition": "CREATE TRIGGER preserve_project_provider_history BEFORE DELETE ON public.projects FOR EACH ROW EXECUTE FUNCTION preserve_project_provider_history()"
+    },
+    {
+      "tgname": "projects_jurisdiction_context_guard",
+      "tgenabled": "O",
+      "definition": "CREATE TRIGGER projects_jurisdiction_context_guard BEFORE INSERT OR UPDATE ON public.projects FOR EACH ROW EXECUTE FUNCTION guard_project_jurisdiction_context()"
+    },
+    {
+      "tgname": "retain_contract_project_parent",
+      "tgenabled": "O",
+      "definition": "CREATE TRIGGER retain_contract_project_parent BEFORE UPDATE ON public.projects FOR EACH ROW EXECUTE FUNCTION guard_contract_parent_identity()"
+    },
+    {
+      "tgname": "trg_projects_cleanup_module_links",
+      "tgenabled": "O",
+      "definition": "CREATE TRIGGER trg_projects_cleanup_module_links AFTER DELETE ON public.projects FOR EACH ROW EXECUTE FUNCTION cleanup_module_links_for_target('project_record')"
+    },
+    {
+      "tgname": "trg_projects_updated_at",
+      "tgenabled": "O",
+      "definition": "CREATE TRIGGER trg_projects_updated_at BEFORE UPDATE ON public.projects FOR EACH ROW EXECUTE FUNCTION set_projects_updated_at()"
+    }
+  ],
+  "functions": [
+    {
+      "signature": "guard_project_jurisdiction_context()",
+      "prosecdef": false,
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "proacl": "{postgres=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.guard_project_jurisdiction_context()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\nBEGIN\n  IF (TG_OP = 'INSERT' AND NEW.jurisdiction_context IS NOT NULL)\n    OR (TG_OP = 'UPDATE' AND NEW.jurisdiction_context IS DISTINCT FROM OLD.jurisdiction_context) THEN\n    IF current_user NOT IN ('service_role', 'postgres') THEN\n      RAISE EXCEPTION 'Project jurisdiction requires the authorized human server route' USING ERRCODE = '42501';\n    END IF;\n    IF NEW.jurisdiction_context IS NULL THEN\n      RAISE EXCEPTION 'Clear project jurisdiction to explicit unresolved' USING ERRCODE = '23514';\n    END IF;\n    IF current_user = 'service_role' THEN\n      -- Recheck and hold the attributed actor's current writer membership in\n      -- this statement, closing the route-check to service-write race.\n      PERFORM 1 FROM public.workspace_members AS member\n        WHERE member.workspace_id = NEW.workspace_id\n          AND member.user_id = (NEW.jurisdiction_context->>'recordedBy')::uuid\n          AND public.workspace_role_rank(member.role) >= 2\n        FOR SHARE;\n      IF NOT FOUND THEN\n        RAISE EXCEPTION 'Current attributed workspace writer required' USING ERRCODE = '42501';\n      END IF;\n      NEW.jurisdiction_context := jsonb_set(NEW.jurisdiction_context, '{recordedAt}', to_jsonb(clock_timestamp()));\n      NEW.updated_at := clock_timestamp();\n    END IF;\n    -- Trusted postgres archive restoration preserves the original provenance\n    -- and revision. Ordinary authenticated writers cannot enter this branch.\n  END IF;\n  RETURN NEW;\nEND;\n$function$\n"
+    },
+    {
+      "signature": "set_projects_updated_at()",
+      "prosecdef": false,
+      "proconfig": [
+        "search_path=public, pg_catalog"
+      ],
+      "proacl": null,
+      "definition": "CREATE OR REPLACE FUNCTION public.set_projects_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'public', 'pg_catalog'\nAS $function$\nBEGIN\n  NEW.updated_at = greatest(clock_timestamp(), OLD.updated_at + interval '1 microsecond');\n  RETURN NEW;\nEND;\n$function$\n"
+    },
+    {
+      "signature": "valid_project_jurisdiction_context(jsonb)",
+      "prosecdef": false,
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "proacl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.valid_project_jurisdiction_context(value jsonb)\n RETURNS boolean\n LANGUAGE plpgsql\n IMMUTABLE\n SET search_path TO ''\nAS $function$\nDECLARE item jsonb;\nBEGIN\n  IF value IS NULL THEN RETURN true; END IF;\n  IF jsonb_typeof(value) <> 'object' OR octet_length(value::text) > 20000\n    OR NOT (value ?& ARRAY['version','state','entries','recordedBy','recordedAt'])\n    OR value - ARRAY['version','state','entries','recordedBy','recordedAt'] <> '{}'::jsonb\n    OR value->'version' <> '1'::jsonb\n    OR jsonb_typeof(value->'state') <> 'string' OR value->>'state' NOT IN ('unresolved','declared')\n    OR jsonb_typeof(value->'entries') <> 'array'\n    OR jsonb_typeof(value->'recordedBy') <> 'string'\n    OR jsonb_typeof(value->'recordedAt') <> 'string'\n    OR value->>'recordedAt' !~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}([.][0-9]+)?(Z|[+-][0-9]{2}:[0-9]{2})$' THEN RETURN false; END IF;\n  PERFORM (value->>'recordedBy')::uuid;\n  PERFORM (value->>'recordedAt')::timestamptz;\n  IF jsonb_array_length(value->'entries') > 12\n    OR (value->>'state' = 'unresolved' AND jsonb_array_length(value->'entries') <> 0)\n    OR (value->>'state' = 'declared' AND jsonb_array_length(value->'entries') = 0) THEN RETURN false; END IF;\n  FOR item IN SELECT * FROM jsonb_array_elements(value->'entries') LOOP\n    IF jsonb_typeof(item) <> 'object'\n      OR NOT (item ?& ARRAY['label','countryCode','subdivisionCode','kind','reference','scope','identity'])\n      OR item - ARRAY['label','countryCode','subdivisionCode','kind','reference','scope','identity'] <> '{}'::jsonb\n      OR jsonb_typeof(item->'label') <> 'string' OR length(btrim(item->>'label')) NOT BETWEEN 1 AND 200\n      OR jsonb_typeof(item->'kind') <> 'string' OR length(btrim(item->>'kind')) NOT BETWEEN 1 AND 80\n      OR jsonb_typeof(item->'scope') <> 'string' OR item->>'scope' NOT IN ('administrative','sovereign','overlap','other')\n      OR jsonb_typeof(item->'identity') <> 'string' OR item->>'identity' NOT IN ('staff_declared','server_resolved')\n      OR (item->'countryCode' <> 'null'::jsonb AND (jsonb_typeof(item->'countryCode') <> 'string' OR item->>'countryCode' !~ '^[A-Z]{2}$'))\n      OR (item->'subdivisionCode' <> 'null'::jsonb AND (jsonb_typeof(item->'subdivisionCode') <> 'string' OR item->>'subdivisionCode' !~ '^[A-Z0-9-]{1,16}$'))\n      OR (item->'reference' <> 'null'::jsonb AND (jsonb_typeof(item->'reference') <> 'string' OR item->>'reference' !~ '^[a-z][a-z0-9._-]*:[^[:space:]]{1,180}$'))\n      THEN RETURN false; END IF;\n  END LOOP;\n  RETURN true;\nEXCEPTION WHEN OTHERS THEN RETURN false;\nEND;\n$function$\n"
+    },
+    {
+      "signature": "workspace_member_can_write(uuid)",
+      "prosecdef": false,
+      "proconfig": [
+        "search_path=public, pg_catalog"
+      ],
+      "proacl": "{=X/postgres,postgres=X/postgres,authenticated=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.workspace_member_can_write(p_workspace_id uuid)\n RETURNS boolean\n LANGUAGE sql\n STABLE\n SET search_path TO 'public', 'pg_catalog'\nAS $function$\n  SELECT EXISTS (\n    SELECT 1\n    FROM public.workspace_members wm\n    WHERE wm.workspace_id = p_workspace_id\n      AND wm.user_id = auth.uid()\n      AND public.workspace_role_rank(wm.role) >= public.workspace_role_rank('member')\n  );\n$function$\n"
+    },
+    {
+      "signature": "workspace_role_rank(text)",
+      "prosecdef": false,
+      "proconfig": [
+        "search_path=public, pg_catalog"
+      ],
+      "proacl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.workspace_role_rank(p_role text)\n RETURNS integer\n LANGUAGE sql\n IMMUTABLE\n SET search_path TO 'public', 'pg_catalog'\nAS $function$\n  SELECT CASE p_role\n    WHEN 'owner' THEN 4\n    WHEN 'admin' THEN 3\n    WHEN 'member' THEN 2\n    WHEN 'viewer' THEN 1\n    ELSE 0\n  END;\n$function$\n"
+    }
+  ],
+  "constraints": [
+    {
+      "conname": "projects_budget_amount_nonnegative",
+      "convalidated": true,
+      "definition": "CHECK (((budget_amount IS NULL) OR (budget_amount >= (0)::numeric)))"
+    },
+    {
+      "conname": "projects_created_by_fkey",
+      "convalidated": true,
+      "definition": "FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL"
+    },
+    {
+      "conname": "projects_delivery_phase_check",
+      "convalidated": true,
+      "definition": "CHECK ((delivery_phase = ANY (ARRAY['scoping'::text, 'analysis'::text, 'engagement'::text, 'programming'::text, 'delivery'::text, 'complete'::text])))"
+    },
+    {
+      "conname": "projects_estimated_cost_amount_check",
+      "convalidated": true,
+      "definition": "CHECK (((estimated_cost_amount IS NULL) OR (estimated_cost_amount > (0)::numeric)))"
+    },
+    {
+      "conname": "projects_estimated_cost_basis_year_check",
+      "convalidated": true,
+      "definition": "CHECK (((estimated_cost_basis_year IS NULL) OR ((estimated_cost_basis_year >= 1800) AND (estimated_cost_basis_year <= 3000))))"
+    },
+    {
+      "conname": "projects_estimated_cost_coherence_check",
+      "convalidated": true,
+      "definition": "CHECK ((((estimated_cost_amount IS NULL) AND (estimated_cost_currency IS NULL) AND (estimated_cost_basis_year IS NULL) AND (estimated_cost_source_document_id IS NULL) AND (estimated_cost_recorded_by IS NULL) AND (estimated_cost_recorded_at IS NULL)) OR ((estimated_cost_amount IS NOT NULL) AND (estimated_cost_currency IS NOT NULL) AND (estimated_cost_recorded_at IS NOT NULL))))"
+    },
+    {
+      "conname": "projects_estimated_cost_currency_check",
+      "convalidated": true,
+      "definition": "CHECK (((estimated_cost_currency IS NULL) OR (estimated_cost_currency ~ '^[A-Z]{3}$'::text)))"
+    },
+    {
+      "conname": "projects_estimated_cost_recorded_by_fkey",
+      "convalidated": true,
+      "definition": "FOREIGN KEY (estimated_cost_recorded_by) REFERENCES users(id) ON DELETE SET NULL"
+    },
+    {
+      "conname": "projects_estimated_cost_source_document_id_fkey",
+      "convalidated": true,
+      "definition": "FOREIGN KEY (estimated_cost_source_document_id) REFERENCES kb_documents(id) ON DELETE SET NULL"
+    },
+    {
+      "conname": "projects_id_workspace_restore_key",
+      "convalidated": true,
+      "definition": "UNIQUE (id, workspace_id)"
+    },
+    {
+      "conname": "projects_jurisdiction_context_valid",
+      "convalidated": true,
+      "definition": "CHECK (valid_project_jurisdiction_context(jurisdiction_context))"
+    },
+    {
+      "conname": "projects_latitude_range_chk",
+      "convalidated": true,
+      "definition": "CHECK (((latitude IS NULL) OR ((latitude >= ('-90'::integer)::numeric) AND (latitude <= (90)::numeric))))"
+    },
+    {
+      "conname": "projects_longitude_range_chk",
+      "convalidated": true,
+      "definition": "CHECK (((longitude IS NULL) OR ((longitude >= ('-180'::integer)::numeric) AND (longitude <= (180)::numeric))))"
+    },
+    {
+      "conname": "projects_pkey",
+      "convalidated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "conname": "projects_place_bbox_complete",
+      "convalidated": true,
+      "definition": "CHECK ((num_nulls(place_min_lon, place_min_lat, place_max_lon, place_max_lat) = ANY (ARRAY[0, 4])))"
+    },
+    {
+      "conname": "projects_place_bbox_on_globe",
+      "convalidated": true,
+      "definition": "CHECK ((((place_min_lon IS NULL) OR ((place_min_lon >= ('-180'::integer)::double precision) AND (place_min_lon <= (180)::double precision))) AND ((place_max_lon IS NULL) OR ((place_max_lon >= ('-180'::integer)::double precision) AND (place_max_lon <= (180)::double precision))) AND ((place_min_lat IS NULL) OR ((place_min_lat >= ('-90'::integer)::double precision) AND (place_min_lat <= (90)::double precision))) AND ((place_max_lat IS NULL) OR ((place_max_lat >= ('-90'::integer)::double precision) AND (place_max_lat <= (90)::double precision))) AND ((place_min_lat IS NULL) OR (place_max_lat IS NULL) OR (place_min_lat <= place_max_lat))))"
+    },
+    {
+      "conname": "projects_place_coherent",
+      "convalidated": true,
+      "definition": "CHECK ((((place_ref IS NULL) OR (place_source IS NOT NULL)) AND ((place_source IS NULL) OR (length(TRIM(BOTH FROM place_source)) > 0)) AND ((place_kind IS NULL) OR (length(TRIM(BOTH FROM place_kind)) > 0)) AND ((place_ref IS NULL) OR (length(TRIM(BOTH FROM place_ref)) > 0)) AND ((place_source IS NULL) OR (place_set_at IS NOT NULL))))"
+    },
+    {
+      "conname": "projects_place_country_code_iso",
+      "convalidated": true,
+      "definition": "CHECK (((place_country_code IS NULL) OR (place_country_code ~ '^[A-Z]{2}$'::text)))"
+    },
+    {
+      "conname": "projects_place_drawn_has_no_ref",
+      "convalidated": true,
+      "definition": "CHECK (((place_source IS DISTINCT FROM 'drawn'::text) OR (place_ref IS NULL)))"
+    },
+    {
+      "conname": "projects_place_subdivision_code_iso",
+      "convalidated": true,
+      "definition": "CHECK (((place_subdivision_code IS NULL) OR ((place_country_code IS NOT NULL) AND (place_subdivision_code ~ '^[A-Z0-9]{1,3}$'::text))))"
+    },
+    {
+      "conname": "projects_status_check",
+      "convalidated": true,
+      "definition": "CHECK ((status = ANY (ARRAY['draft'::text, 'active'::text, 'on_hold'::text, 'complete'::text])))"
+    },
+    {
+      "conname": "projects_workspace_id_fkey",
+      "convalidated": true,
+      "definition": "FOREIGN KEY (workspace_id) REFERENCES workspaces(id) ON DELETE CASCADE"
+    }
+  ],
+  "rls": [
+    {
+      "relrowsecurity": true,
+      "relforcerowsecurity": false,
+      "relowner": "postgres"
+    }
+  ],
+  "policies": [
+    {
+      "tablename": "projects",
+      "policyname": "projects_delete",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "DELETE",
+      "qual": "(EXISTS ( SELECT 1\n   FROM workspace_members wm\n  WHERE ((wm.workspace_id = projects.workspace_id) AND (wm.user_id = uid()))))",
+      "with_check": null
+    },
+    {
+      "tablename": "projects",
+      "policyname": "projects_insert",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "(workspace_id IN ( SELECT workspace_members.workspace_id\n   FROM workspace_members\n  WHERE (workspace_members.user_id = uid())))"
+    },
+    {
+      "tablename": "projects",
+      "policyname": "projects_read",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "(workspace_id IN ( SELECT workspace_members.workspace_id\n   FROM workspace_members\n  WHERE (workspace_members.user_id = uid())))",
+      "with_check": null
+    },
+    {
+      "tablename": "projects",
+      "policyname": "projects_update",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "UPDATE",
+      "qual": "(workspace_id IN ( SELECT workspace_members.workspace_id\n   FROM workspace_members\n  WHERE (workspace_members.user_id = uid())))",
+      "with_check": "(workspace_id IN ( SELECT workspace_members.workspace_id\n   FROM workspace_members\n  WHERE (workspace_members.user_id = uid())))"
+    },
+    {
+      "tablename": "projects",
+      "policyname": "projects_writer_only_delete",
+      "permissive": "RESTRICTIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "DELETE",
+      "qual": "workspace_member_can_write(workspace_id)",
+      "with_check": null
+    },
+    {
+      "tablename": "projects",
+      "policyname": "projects_writer_only_insert",
+      "permissive": "RESTRICTIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "INSERT",
+      "qual": null,
+      "with_check": "workspace_member_can_write(workspace_id)"
+    },
+    {
+      "tablename": "projects",
+      "policyname": "projects_writer_only_update",
+      "permissive": "RESTRICTIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "UPDATE",
+      "qual": "workspace_member_can_write(workspace_id)",
+      "with_check": "workspace_member_can_write(workspace_id)"
+    },
+    {
+      "tablename": "workspace_members",
+      "policyname": "members_read_own",
+      "permissive": "PERMISSIVE",
+      "roles": [
+        "public"
+      ],
+      "cmd": "SELECT",
+      "qual": "(user_id = uid())",
+      "with_check": null
+    }
+  ],
+  "grants": [
+    {
+      "grantee": "anon",
+      "table_name": "projects",
+      "privilege_type": "DELETE"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "projects",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "projects",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "projects",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "projects",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "projects",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "projects",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "workspace_members",
+      "privilege_type": "DELETE"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "workspace_members",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "workspace_members",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "workspace_members",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "workspace_members",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "workspace_members",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "anon",
+      "table_name": "workspace_members",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "projects",
+      "privilege_type": "DELETE"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "projects",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "projects",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "projects",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "projects",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "projects",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "projects",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "workspace_members",
+      "privilege_type": "DELETE"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "workspace_members",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "workspace_members",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "workspace_members",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "workspace_members",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "workspace_members",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "authenticated",
+      "table_name": "workspace_members",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "projects",
+      "privilege_type": "DELETE"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "projects",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "projects",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "projects",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "projects",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "projects",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "projects",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "workspace_members",
+      "privilege_type": "DELETE"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "workspace_members",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "workspace_members",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "workspace_members",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "workspace_members",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "workspace_members",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "postgres",
+      "table_name": "workspace_members",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "projects",
+      "privilege_type": "DELETE"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "projects",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "projects",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "projects",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "projects",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "projects",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "projects",
+      "privilege_type": "UPDATE"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "workspace_members",
+      "privilege_type": "DELETE"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "workspace_members",
+      "privilege_type": "INSERT"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "workspace_members",
+      "privilege_type": "REFERENCES"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "workspace_members",
+      "privilege_type": "SELECT"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "workspace_members",
+      "privilege_type": "TRIGGER"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "workspace_members",
+      "privilege_type": "TRUNCATE"
+    },
+    {
+      "grantee": "service_role",
+      "table_name": "workspace_members",
+      "privilege_type": "UPDATE"
+    }
+  ],
+  "resources": [
+    {
+      "bytes": 110668947,
+      "foreign_tables": 0,
+      "subscriptions": 0
+    }
+  ]
+}

@@ -1,0 +1,147 @@
+{
+  "subjectCommit": "e33ad511e1e98f9ee4cfa59a32d13f23ef1debcc",
+  "reviewControlSHA256": "ca5abe3991ae654ac66aeeac96503fb8a9dac129979fca33691b465c315e5259",
+  "sealedFiles": 30,
+  "subjectPrivateFilesUnchanged": 74,
+  "manifestSHA256": "5122add2ac35f95851ca8b6138be6c450ebcb50d6dba48582d5179394965ae9d",
+  "operationFilesSHA256": "88763144a835d0ef84df3c746ca92708fe39206df0acb7db34f194a8864dd7db",
+  "existingContextsValidated": 4,
+  "rawContextReceiptsValidated": 8,
+  "contextPins": {
+    "observer-receipts/caller-c2ac0b0257ac8c788126fdea54e6a02ecd10be467790ece623874d05876baf4a.json": "5f8f604389dfb2bf93f64c2a00b3c67a6b49e6589dbd5c5943e0ec65be9ccda0",
+    "observer-receipts/transport-c2ac0b0257ac8c788126fdea54e6a02ecd10be467790ece623874d05876baf4a.json": "5f8f604389dfb2bf93f64c2a00b3c67a6b49e6589dbd5c5943e0ec65be9ccda0",
+    "context-tests/actual-app-01.json": "aaf4d463734b3b9367f0076cebe8064aacf1ab11746881967bdf0442a49938ce",
+    "observer-receipts/caller-e24def675380db3a87e42f7ee9e61666db41a7c8215d00f33ddb4f70b580ae75.json": "2e1779468b8895e6fa3d4a727656a113277b230961b83f062f1c37b8529790b3",
+    "observer-receipts/transport-e24def675380db3a87e42f7ee9e61666db41a7c8215d00f33ddb4f70b580ae75.json": "2e1779468b8895e6fa3d4a727656a113277b230961b83f062f1c37b8529790b3",
+    "context-tests/actual-app-02.json": "ba25ab9588139a036e2668cad97cf09bcf4d91155fd043cd920ef4f2cd10fb0c",
+    "observer-receipts/caller-5a7cc7234ef3cf6d5018a0a7a5f4f5ee24a2dcd4d57ccb7b147bb779d5f7ddcb.json": "cd3a135b33db24404a9c6bac3e55f003978dbb897672bd939bd0fe6b632b31bc",
+    "observer-receipts/transport-5a7cc7234ef3cf6d5018a0a7a5f4f5ee24a2dcd4d57ccb7b147bb779d5f7ddcb.json": "cd3a135b33db24404a9c6bac3e55f003978dbb897672bd939bd0fe6b632b31bc",
+    "context-tests/actual-attestor-01.json": "635ce8fa8226acc7c6158d867f7ce388bb493ae2701992c6f0b1844b3939f46a",
+    "observer-receipts/caller-1bb6a933c279444a3f44a4d01f0085e33e74f3480cba5f09509240a13aabddc4.json": "85f20bb31aadef8992cec40fb9efafa2aa6f95d4aa934ada2a635c85f78f3af9",
+    "observer-receipts/transport-1bb6a933c279444a3f44a4d01f0085e33e74f3480cba5f09509240a13aabddc4.json": "85f20bb31aadef8992cec40fb9efafa2aa6f95d4aa934ada2a635c85f78f3af9",
+    "context-tests/actual-attestor-02.json": "691ca8087da9131c24b4e14190d0e224b17ee5a0589c932b820db25fc65959f8"
+  },
+  "cases": [
+    {
+      "case": "private-input-consumer-without-transport",
+      "outcome": "SURVIVED",
+      "hazard": false
+    },
+    {
+      "case": "R1-valid-saved-observation",
+      "outcome": "SURVIVED",
+      "hazard": false
+    },
+    {
+      "case": "R1-request",
+      "outcome": "REFUSED",
+      "reason": "transport-result-freshness:ok"
+    },
+    {
+      "case": "R1-observerSHA256",
+      "outcome": "REFUSED",
+      "reason": "transport-observer-identity:ok"
+    },
+    {
+      "case": "R1-observerUserNamespace",
+      "outcome": "REFUSED",
+      "reason": "transport-observer-identity:ok"
+    },
+    {
+      "case": "R1-listenerPid",
+      "outcome": "REFUSED",
+      "reason": "transport-old-pid:ok"
+    },
+    {
+      "case": "R3-harmless-observation-note",
+      "outcome": "SURVIVED",
+      "hazard": false
+    },
+    {
+      "case": "R3-statusConstraint-OR-true",
+      "outcome": "REFUSED",
+      "reason": "upgrade-checks:statusConstraint"
+    },
+    {
+      "case": "R3-phaseConstraint-OR-true",
+      "outcome": "REFUSED",
+      "reason": "upgrade-checks:phaseConstraint"
+    },
+    {
+      "case": "R3-matching-bad-first-receipt",
+      "outcome": "REFUSED",
+      "reason": "upgrade-checks:statusConstraint"
+    },
+    {
+      "case": "R2-composed-harmless",
+      "outcome": "SURVIVED",
+      "hazard": false
+    },
+    {
+      "case": "R2-source-drift",
+      "outcome": "REFUSED",
+      "reason": "source-drift"
+    },
+    {
+      "case": "R2-database-drift",
+      "outcome": "REFUSED",
+      "reason": "protected-database:snapshot"
+    },
+    {
+      "case": "N1-stopped-old-rest-publishes",
+      "outcome": "SURVIVED",
+      "hazard": true
+    },
+    {
+      "case": "N1-stopped-old-auth-publishes",
+      "outcome": "SURVIVED",
+      "hazard": true
+    },
+    {
+      "case": "N1-stopped-old-storage-publishes",
+      "outcome": "SURVIVED",
+      "hazard": true
+    },
+    {
+      "case": "N1-stopped-old-gateway-publishes",
+      "outcome": "SURVIVED",
+      "hazard": true
+    },
+    {
+      "case": "N1-paused-old-rest-publishes",
+      "outcome": "SURVIVED",
+      "hazard": true
+    },
+    {
+      "case": "N1-proposed-running-detector-harmless",
+      "outcome": "SURVIVED",
+      "hazard": false
+    },
+    {
+      "case": "N1-proposed-running-detector-stopped",
+      "outcome": "REFUSED",
+      "reason": "protected-active:running"
+    },
+    {
+      "case": "N1-disabled-running-detector-exposes-stopped-helper",
+      "outcome": "SURVIVED",
+      "hazard": true
+    },
+    {
+      "case": "N1-existing-image-detector",
+      "outcome": "REFUSED",
+      "reason": "protected-helper:sha256"
+    }
+  ],
+  "counts": {
+    "SURVIVED": 11,
+    "REFUSED": 11
+  },
+  "hazardSurvivorsAreFindings": true,
+  "operatingTransportsInvoked": 0,
+  "blindCategories": [
+    "Synthetic Docker and DB observations do not prove live preservation.",
+    "Existing context receipts are inspected, not independently rerun.",
+    "No SQL parse, PostgreSQL normalization, build, runtime or UI acceptance."
+  ]
+}

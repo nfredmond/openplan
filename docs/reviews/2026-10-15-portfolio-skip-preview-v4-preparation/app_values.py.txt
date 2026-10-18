@@ -1,0 +1,33 @@
+def app_values(r):
+    r.pinned_files()
+    values=read(ROOT/'app-env-private.json')
+    require(values==r.read('app-env-private.json') and values['OPENPLAN_COMMIT_SHA']==APP_HEAD,'app-env-delta')
+    encoded=''.join(key+'='+json.dumps(value)+'\n' for key,value in values.items()).encode()
+    require((ROOT/'app-v1.env').read_bytes()==encoded,'app-env-encoding')
+    require(values['NEXT_PUBLIC_SUPABASE_URL']==API and values['NEXT_PUBLIC_APP_URL']==WEB and
+        values['OPENPLAN_GTFS_MANAGED_INGESTION']=='0','app-env-endpoints')
+    return values
+
+
+def acquire(r):
+    r.pinned_files();r.target_check();r.upgrade_ready()
+    active=r.verify_services();r.source_check();r.unchanged_inputs()
+    require(active==r.read('service-receipts-private.json'),'active-race')
+    require(r.read('clone-ready.json')['sourceSha256']==SOURCE_ANCHOR,'source-anchor')
+    identity=r.read('target-identity.json')
+    require(identity['database']==r.TARGET and identity['owner']=='postgres','target-binding')
+    return {'activeReceiptSha256':sha(ROOT/'service-receipts-private.json'),'sourceAnchor':SOURCE_ANCHOR,
+        'helperHead':APP_HEAD,'producer':APP_HEAD,'clusterId':r.p.DB_ID,'target':identity,'images':r.p.IMAGES,
+        'upgradeReceiptSHA256':sha(ROOT/'upgrade-ready.json')}
+
+
+def migrations():
+    expected=read(ROOT/'migrations.json')
+    baseline=read(FROZEN/'candidate-migrations.json')
+    require(len(expected)==420 and expected=={**baseline,
+        'openplan/supabase/migrations/20261017000017_portfolio_skip_invalid_classifications.sql':
+        'b129f80e37aa9be71069683acd42df3fb6fdb94078ed0458f20b6e9c5155a41b'},'migration-baseline')
+    actual={str(f.relative_to(CANDIDATE)):sha(f) for f in sorted((APP/'supabase/migrations').glob('*.sql'))
+        if f.is_file() and not f.is_symlink()}
+    require(actual==expected,'migration-bytes')
+    return digest(actual)

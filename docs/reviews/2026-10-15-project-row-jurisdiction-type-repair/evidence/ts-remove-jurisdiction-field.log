@@ -1,0 +1,5 @@
+CHECKED src/app/(app)/projects/[projectId]/page.tsx
+CHECKED src/app/(app)/projects/[projectId]/_components/_types.ts
+src/app/(app)/projects/[projectId]/page.tsx(1337,46): error TS2339: Property 'jurisdiction_context' does not exist on type 'ProjectRow'.
+
+{"rootCount":2,"loadedSourceFiles":997,"diagnostics":1,"scope":"Only explicit roots receive syntactic and semantic diagnostics; imported declarations resolve normally. No full-project verdict."}

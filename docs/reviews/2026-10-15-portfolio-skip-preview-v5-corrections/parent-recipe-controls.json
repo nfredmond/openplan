@@ -1,0 +1,48 @@
+{
+  "scope": "Actual parent shell, fixed external checks and real predecessor gate against new owned stand-ins. The runner only appends a verb; no systemd/app/helper/DB/browser stage dispatches. REVIEW here is a syntactic fixture token, not acceptance of its content.",
+  "cases": [
+    {
+      "case": "one-preflight-only-harmless",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "duplicate-admission",
+      "outcome": "REFUSED"
+    },
+    {
+      "case": "missing-restore-readiness",
+      "outcome": "REFUSED"
+    },
+    {
+      "case": "missing-post-runtime",
+      "outcome": "REFUSED"
+    },
+    {
+      "case": "review-mismatch",
+      "outcome": "REFUSED"
+    },
+    {
+      "case": "unknown-stage-refuses",
+      "outcome": "REFUSED"
+    },
+    {
+      "case": "harmless-comment-preserves-gate",
+      "outcome": "REFUSED"
+    },
+    {
+      "case": "remove-prerequisite-codefault-detected",
+      "outcome": "KILLED",
+      "reason": "Missing artifact permits the stand-in post verb, which the detector rejects."
+    },
+    {
+      "case": "one-post-verb-only-with-prerequisites",
+      "outcome": "SURVIVED"
+    }
+  ],
+  "codeAndLogRestoredInFinally": true,
+  "operatingStages": 0,
+  "blindCategories": [
+    "Human review acceptance is not encoded by commit existence.",
+    "Future receipts here are stand-ins; operating domain guards must reacquire real identities."
+  ]
+}

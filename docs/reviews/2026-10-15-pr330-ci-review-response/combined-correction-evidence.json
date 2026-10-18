@@ -1,0 +1,55 @@
+{
+  "checkedHead": "2046fca9aa1dde80043fe39075f00c6fc7512e54",
+  "applicationTree": "a13c491da3ad3ba5b237ca5fa8802b236c4ef27b",
+  "implementationCommit": "9f8278347698f61d3b813df805d56abd87fa11fb",
+  "independentReviewCommit": "4f7a4dc5a322284d66085ffacfec29fa9e579295",
+  "parentReadbackBindings": 52,
+  "focused": {
+    "passed": 296,
+    "failed": 0,
+    "skipped": 0,
+    "files": 12,
+    "seed": 723279,
+    "receipt": "/home/nathaniel/.local/state/openplan/pr330-ci-correction-combined-checks-20261015/logs/combined-focused.json",
+    "receiptSha256": "4b383feef7ed7f41bc2ba0ac3777e13d663013d7d6ceb53556af748c265d9180",
+    "reportSha256": "5dc56523c049ab518e5ebb7680a89e91de37b1f4a9359273e14d3d8d0bb9f60c",
+    "metrics": {
+      "memory.max": "1610612736",
+      "memory.swap.max": "0",
+      "memory.peak": "641855488",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "cpu.max": "50000 100000"
+    }
+  },
+  "fullTypeScript": {
+    "exitCode": 0,
+    "elapsedSeconds": 208.251,
+    "metrics": {
+      "memory.max": "8589934592",
+      "memory.swap.max": "0",
+      "memory.peak": "5867081728",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "cpu.max": "50000 100000"
+    },
+    "receiptSha256": "872e41129863777d734511d1fed208358858aef09f43251dfe26c40e8bd8a12a",
+    "emptyCompilerLog": true,
+    "configSha256": "cb3404493257250c77d7145c9825ed31f79246b640eb30a59b8069d39091bf29",
+    "beforeAfterIdentityAndWorkingStatusMatch": true,
+    "trackedDiffAbsent": true
+  },
+  "newCi": "Not pushed or observed",
+  "preview": "Draft97 old source remains unsealed; no new operating stage; capacity approval pending",
+  "limits": [
+    "Focused synthetic/source checks and full source/receipt review do not establish native messages, new browser/build/runtime/hosted acceptance.",
+    "Old 759 CI remains failed; old c89 native workbook proof and APP49 browser proof retain source identities.",
+    "Native target full pg_class preservation remains unaccepted, cause unknown.",
+    "420/latest17 versus last verified hosted418/latest15 promotion hold remains; no release."
+  ],
+  "workbookSourceContinuity": {
+    "oldProofHead": "75931937aa85950da68577abef1246d7f3c8ff13",
+    "oldProofAppTree": "c89e9ec4eeddfc973641e8683df7bc9d38113838",
+    "sixRouteSerializerContractBindingsUnchanged": true,
+    "currentAppTree": "a13c491da3ad3ba5b237ca5fa8802b236c4ef27b",
+    "limit": "Byte continuity only. The old native execution remains pinned to its old head. This is not a fresh new-head runtime, browser or full dependency-closure observation."
+  }
+}

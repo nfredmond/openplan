@@ -1,0 +1,21 @@
+{
+  "preparedOnly": true,
+  "executionBlocked": true,
+  "sourceHead": "f0cbeddff5ae3fc37e0dd8b91c02601429d977a6",
+  "appTree": "a13c491da3ad3ba5b237ca5fa8802b236c4ef27b",
+  "packetSHA256": "14ee3619801e7d8838b6cb1d89fe71c17f036db997eb945c06c05ac421a6c652",
+  "runtimeListSHA256": "667bbb25dfb56c6f8e79cd1a9440f62e37752811911b87f1d28e6a9d25981b14",
+  "operationListSHA256": "8fd8fa6b02c843b1a7a7d78bb32ee015f4e5e11acdfbb761eccd076a4318a5c7",
+  "sourceInventorySHA256": "008b9b8e9fd42cf7794255637196a9f96f6cbf791e1c37752db5940172f67769",
+  "sourceFiles": 17349,
+  "sourceBytes": 528310488,
+  "migrations": 420,
+  "runtimeFiles": 42,
+  "finalChangedEdgesMatched": true,
+  "finalIndependentReviewAccepted": false,
+  "admissionExists": false,
+  "runtimeRootExists": false,
+  "operatingJournalExists": false,
+  "executionEntries": 0,
+  "timestamp": "2026-10-15T18:27:17.285578+00:00"
+}

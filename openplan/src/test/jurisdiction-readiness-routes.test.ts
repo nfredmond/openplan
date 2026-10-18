@@ -34,6 +34,10 @@ vi.mock("@/lib/workspaces/membership", async () => {
 import { GET as getWorkspaceReadiness } from "@/app/api/workspaces/jurisdiction-readiness/route";
 import { GET as getProjectReadiness } from "@/app/api/projects/[projectId]/jurisdiction-readiness/route";
 
+import { actor, declaration, exportProject } from "./project-jurisdiction-export-fixture";
+import { buildProjectJurisdictionReadinessExportPayload } from "@/lib/jurisdiction-readiness/payload";
+import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
+
 const USER_ID = "11111111-1111-4111-8111-111111111111";
 const WORKSPACE_ID = "22222222-2222-4222-8222-222222222222";
 const PROJECT_ID = "33333333-3333-4333-8333-333333333333";
@@ -57,6 +61,7 @@ describe("jurisdiction readiness APIs", () => {
     projectReadMock.mockResolvedValue({
       data: {
         id: PROJECT_ID,
+        jurisdiction_context: null,
         place_label: "Puerto Rico",
         place_country_code: "US",
         place_subdivision_code: "PR",
@@ -95,8 +100,10 @@ describe("jurisdiction readiness APIs", () => {
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(body.jurisdiction.id).toBe("US-PR");
-    expect(body.reports.find((report: { job: { id: string } }) => report.job.id === "land-use-plan"))
+    expect(body.schema, "Download selects external v3").toBe("openplan.project-jurisdiction-readiness-export.v3");
+    expect(selectMock).toHaveBeenCalledWith("projects", "id, updated_at, jurisdiction_context, place_label, place_country_code, place_subdivision_code");
+    expect(body.entries[0].assessment.jurisdiction.id).toBe("US-PR");
+    expect(body.entries[0].assessment.reports.find((report: { job: { id: string } }) => report.job.id === "land-use-plan"))
       .toMatchObject({ status: "unavailable", adapterIds: [] });
   });
 
@@ -140,4 +147,20 @@ describe("jurisdiction readiness APIs", () => {
     expect(response.status).toBe(404);
     expect(await response.json()).toMatchObject({ error: "Workspace not found" });
   });
+});
+
+it("distinguishes authenticated internal custody from minimized download bytes", async () => {
+  vi.clearAllMocks();
+  authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
+  projectReadMock.mockResolvedValue({ data: exportProject, error: null });
+  const internal = await getProjectReadiness(new NextRequest(`http://localhost/api/projects/${PROJECT_ID}/jurisdiction-readiness`), { params: Promise.resolve({ projectId: PROJECT_ID }) });
+  const internalBody = await internal.json();
+  expect(internalBody.schema, "Authenticated API retains internal v2").toBe("openplan.project-jurisdiction-readiness-response.v2");
+  expect(internalBody.context.recordedBy, "Authenticated API retains trusted actor").toBe(actor);
+  const download = await getProjectReadiness(new NextRequest(`http://localhost/api/projects/${PROJECT_ID}/jurisdiction-readiness?download=1`), { params: Promise.resolve({ projectId: PROJECT_ID }) });
+  const body = await download.json();
+  expect(JSON.stringify(body), "Download omits internal actor").not.toContain(actor);
+  expect(body, "Download shares the external canonical contract").toEqual(buildProjectJurisdictionReadinessExportPayload(exportProject, jurisdictionReadinessRegistrySha256()));
+  expect(body.context.recordedAt).toBe(declaration.recordedAt);
+  expect(body.payloadSha256, "Internal API hash is deliberately distinct").not.toBe(internalBody.payloadSha256);
 });

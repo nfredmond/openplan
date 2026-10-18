@@ -1,0 +1,49 @@
+Running as unit: openplan-jurisdiction-controls-03.service; invocation ID: 233e4f023ded4906bb8df217a078f0b7
+harmless comment survivor: SURVIVED as expected
+strict input provenance: ASSERTION FAILED as expected
+bounded declaration count: ASSERTION FAILED as expected
+reference guard: ASSERTION FAILED as expected
+resolver metadata: ASSERTION FAILED as expected
+resolver identity match: ASSERTION FAILED as expected
+unread projection: ASSERTION FAILED as expected
+stored metadata strictness: ASSERTION FAILED as expected
+explicit unresolved suppresses fallback: ASSERTION FAILED as expected
+staff declaration cannot become supported: ASSERTION FAILED as expected
+resolved administrative guidance: ASSERTION FAILED as expected
+retain every context: ASSERTION FAILED as expected
+freeze same revision: ASSERTION FAILED as expected
+payload hash: ASSERTION FAILED as expected
+server actor provenance: ASSERTION FAILED as expected
+CAS predicate: ASSERTION FAILED as expected
+workspace write predicate: ASSERTION FAILED as expected
+write projection: ASSERTION FAILED as expected
+independent command boundary: ASSERTION FAILED as expected
+assistant execution refusal: ASSERTION FAILED as expected
+browser origin refusal: ASSERTION FAILED as expected
+expected account refusal: ASSERTION FAILED as expected
+expected workspace refusal: ASSERTION FAILED as expected
+role authorization: ASSERTION FAILED as expected
+preflight revision conflict: ASSERTION FAILED as expected
+concurrent revision conflict: ASSERTION FAILED as expected
+failed identity HTTP status: ASSERTION FAILED as expected
+geometry preservation boundary: ASSERTION FAILED as expected
+cancel local only: ASSERTION FAILED as expected
+editor exact revision: ASSERTION FAILED as expected
+retain conflict draft: ASSERTION FAILED as expected
+explicit clear: ASSERTION FAILED as expected
+staff entry mode: ASSERTION FAILED as expected
+search-only no geometry: ASSERTION FAILED as expected
+agent registry refusal: ASSERTION FAILED as expected
+GeoPackage independent context: ASSERTION FAILED as expected
+HTML declaration and hash: ASSERTION FAILED as expected
+legacy readiness evidence claim: ASSERTION FAILED as expected
+unknown context remains unassessed: ASSERTION FAILED as expected
+read API projection: ASSERTION FAILED as expected
+GeoPackage registered manifest: ASSERTION FAILED as expected
+report context projection: ASSERTION FAILED as expected
+bundle context read: ASSERTION FAILED as expected
+          Finished with result: success
+Main processes terminated with: code=exited, status=0/SUCCESS
+               Service runtime: 47.260s
+             CPU time consumed: 1min 7.576s
+                   Memory peak: 296.5M (swap: 0B)

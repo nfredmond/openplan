@@ -1,0 +1,487 @@
+{
+  "status": "two_assigned_integration_issues_resolved_local_only",
+  "base": "69d52fe4e31a9cd6bea030c2a06ea657435473ec",
+  "historicalRestoreBase": "783fd24c230a1e640543e51fcef6cd5d70db0bb0",
+  "assignedCheckout": "/home/nathaniel/.t3/worktrees/openplan/t3-710cbf16",
+  "branch": "t3/workbook-xmldom-dep-probe-restore",
+  "parentIntegration": "87fa1ec8fc297138ab6c161098d64918d82716ca",
+  "dependencyDeclaration": {
+    "name": "@xmldom/xmldom",
+    "exactVersion": "0.8.15",
+    "runtime": true,
+    "installOrFetch": false,
+    "knipSuppression": false
+  },
+  "parity": {
+    "lockPackageEntries": 1144,
+    "unchangedNonRootPackageEntries": 1143,
+    "changedPackageEntries": [
+      ""
+    ],
+    "resolvedIntegrityLicenseMapsIdentical": true,
+    "lockBytesWithoutAddedRootLineMatchBaseExactly": true,
+    "parserEntry": {
+      "version": "0.8.15",
+      "resolved": "https://registry.npmjs.org/@xmldom/xmldom/-/xmldom-0.8.15.tgz",
+      "integrity": "sha512-/5NV/vDALVFDXgLmfsy9TRCBlKwO2LNBFzpzvb9iIj+jR+eSc6DLYYvVOdivT/jm7MtU6TebYuRmzEOI7w40UA==",
+      "license": "MIT",
+      "engines": {
+        "node": ">=10.0.0"
+      }
+    },
+    "historicalProbes": [
+      {
+        "historical": "docs/reviews/2026-10-15-project-workbook-export-independent/probe.test.ts",
+        "base783fdSha256": "cb6b587080ed3705dfdc63e87ad0429061a7a36b761a03cbd4680eb7c5af8eed",
+        "restoredSha256": "cb6b587080ed3705dfdc63e87ad0429061a7a36b761a03cbd4680eb7c5af8eed",
+        "adaptedCopy": "independent-route/probe.test.ts",
+        "candidate69dSha256": "af1baae3a7dc99bb1ea136e8a5404bf68745561c9e922fe4753a6d5baa201e2d",
+        "adaptedSha256": "af1baae3a7dc99bb1ea136e8a5404bf68745561c9e922fe4753a6d5baa201e2d",
+        "copyMatches69dExactly": true
+      },
+      {
+        "historical": "docs/reviews/2026-10-15-workbook-live-pagination/probe.test.ts",
+        "base783fdSha256": "2491e76f49e2310d46335e84178caa175fee0ca2a8553f21cef76bd556d7c45f",
+        "restoredSha256": "2491e76f49e2310d46335e84178caa175fee0ca2a8553f21cef76bd556d7c45f",
+        "adaptedCopy": "live-pagination/probe.test.ts",
+        "candidate69dSha256": "ea45f1e29a2e413128f4fa2e1dd4ff25ca94feb15460c065f62394bf10745823",
+        "adaptedSha256": "ea45f1e29a2e413128f4fa2e1dd4ff25ca94feb15460c065f62394bf10745823",
+        "copyMatches69dExactly": true
+      }
+    ],
+    "runtimeSourceUnchanged": true,
+    "manifestBytesWithoutAddedLineMatchBaseExactly": true
+  },
+  "testCounts": {
+    "focused": {
+      "numTotalTests": 27,
+      "numPassedTests": 27,
+      "numFailedTests": 0,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "success": true
+    },
+    "independent-probe": {
+      "numTotalTests": 17,
+      "numPassedTests": 17,
+      "numFailedTests": 0,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "success": true
+    },
+    "restored-probe": {
+      "numTotalTests": 17,
+      "numPassedTests": 17,
+      "numFailedTests": 0,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "success": true
+    }
+  },
+  "checks": {
+    "focused": {
+      "label": "focused",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--configLoader",
+        "native",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/workbook-layout-dependency-integration-20261015/vitest.config.mjs",
+        "src/test/portfolio-workbook-export.test.ts",
+        "src/test/project-portfolio-export-route.test.ts",
+        "src/test/engagement-review-export.test.ts",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=/home/nathaniel/.local/state/openplan/workbook-layout-dependency-integration-20261015/focused.json"
+      ],
+      "exitCode": 0,
+      "seconds": 9.229
+    },
+    "lint": {
+      "label": "lint",
+      "command": [
+        "node",
+        "node_modules/eslint/bin/eslint.js",
+        "src/lib/export/review-workbook-layout.ts",
+        "src/lib/projects/portfolio-export.ts",
+        "src/lib/engagement/review-export.ts",
+        "src/app/api/projects/export/workbook/route.ts",
+        "src/test/portfolio-workbook-export.test.ts",
+        "src/test/project-portfolio-export-route.test.ts",
+        "src/test/engagement-review-export.test.ts",
+        "--max-warnings=0"
+      ],
+      "exitCode": 0,
+      "seconds": 5.598
+    },
+    "types": {
+      "label": "types",
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--project",
+        "/home/nathaniel/.local/state/openplan/workbook-layout-dependency-integration-20261015/types.json"
+      ],
+      "exitCode": 0,
+      "seconds": 9.801
+    },
+    "independent-probe": {
+      "label": "independent-probe",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--configLoader",
+        "native",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/workbook-layout-dependency-integration-20261015/independent.config.mjs",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=/home/nathaniel/.local/state/openplan/workbook-layout-dependency-integration-20261015/independent-probe.json"
+      ],
+      "exitCode": 0,
+      "seconds": 49.398
+    },
+    "deadcode": {
+      "label": "deadcode",
+      "command": [
+        "npm",
+        "run",
+        "deadcode"
+      ],
+      "exitCode": 0,
+      "seconds": 13.54
+    },
+    "lock-consistency": {
+      "label": "lock-consistency",
+      "command": [
+        "npm",
+        "ls",
+        "--package-lock-only",
+        "--all",
+        "--json"
+      ],
+      "exitCode": 0,
+      "seconds": 1.559
+    },
+    "locked-parser": {
+      "label": "locked-parser",
+      "command": [
+        "npm",
+        "ls",
+        "@xmldom/xmldom",
+        "--package-lock-only",
+        "--json"
+      ],
+      "exitCode": 0,
+      "seconds": 1.6
+    },
+    "braces-tests": {
+      "label": "braces-tests",
+      "command": [
+        "npm",
+        "run",
+        "test:braces-vendor"
+      ],
+      "exitCode": 0,
+      "seconds": 0.9
+    },
+    "braces-local-audit": {
+      "label": "braces-local-audit",
+      "command": [
+        "node",
+        "scripts/ops/verify-braces-vendor.mjs"
+      ],
+      "exitCode": 0,
+      "seconds": 0.3
+    },
+    "lint-independent-route": {
+      "label": "lint-independent-route",
+      "command": [
+        "bash",
+        "-c",
+        "node node_modules/eslint/bin/eslint.js --stdin --stdin-filename src/test/workbook-independent-route-probe.test.ts --max-warnings=0 < /home/nathaniel/.local/state/openplan/workbook-layout-dependency-integration-20261015/source/docs/reviews/2026-10-15-workbook-layout-dependency-integration/independent-route/probe.test.ts"
+      ],
+      "exitCode": 0,
+      "seconds": 4.074
+    },
+    "lint-live-pagination": {
+      "label": "lint-live-pagination",
+      "command": [
+        "bash",
+        "-c",
+        "node node_modules/eslint/bin/eslint.js --stdin --stdin-filename src/test/workbook-live-pagination-probe.test.ts --max-warnings=0 < /home/nathaniel/.local/state/openplan/workbook-layout-dependency-integration-20261015/source/docs/reviews/2026-10-15-workbook-layout-dependency-integration/live-pagination/probe.test.ts"
+      ],
+      "exitCode": 0,
+      "seconds": 4.3
+    },
+    "installed-parser": {
+      "label": "installed-parser",
+      "command": [
+        "node",
+        "-e",
+        "const fs=require('node:fs'); console.log(JSON.stringify({resolved:require.resolve('@xmldom/xmldom'),version:JSON.parse(fs.readFileSync('node_modules/@xmldom/xmldom/package.json','utf8')).version}));"
+      ],
+      "exitCode": 0,
+      "seconds": 0.115
+    },
+    "restored-probe": {
+      "label": "restored-probe",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--configLoader",
+        "native",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/workbook-layout-dependency-integration-20261015/independent.config.mjs",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=/home/nathaniel/.local/state/openplan/workbook-layout-dependency-integration-20261015/restored-probe.json"
+      ],
+      "exitCode": 0,
+      "seconds": 48.699
+    },
+    "restored-types": {
+      "label": "restored-types",
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--project",
+        "/home/nathaniel/.local/state/openplan/workbook-layout-dependency-integration-20261015/types.json"
+      ],
+      "exitCode": 0,
+      "seconds": 9.8
+    },
+    "direction": {
+      "label": "direction",
+      "command": [
+        "npm",
+        "run",
+        "product:direction:check"
+      ],
+      "cwd": "/home/nathaniel/.t3/worktrees/openplan/t3-710cbf16/openplan",
+      "exitCode": 0
+    }
+  },
+  "deadcodeWarnings": {
+    "unusedExports": 573,
+    "unusedExportedTypes": 696,
+    "duplicateExports": 1
+  },
+  "localVendorAudit": {
+    "testsPassed": 19,
+    "vendorResult": {
+      "package": "3.0.4-openplan.1",
+      "installedCopies": 1,
+      "fileHashes": 10
+    },
+    "networkNpmAuditExecuted": false
+  },
+  "installedParser": {
+    "resolved": "/home/nathaniel/.local/state/openplan/workbook-layout-dependency-integration-20261015/source/openplan/node_modules/@xmldom/xmldom/lib/index.js",
+    "version": "0.8.15"
+  },
+  "controls": [
+    {
+      "case": "harmless-independent-comment",
+      "outcome": "survived",
+      "test": "independent boundary count=0 cap=1000",
+      "expectedDiagnostic": null,
+      "diagnostic": null,
+      "exitCode": 0
+    },
+    {
+      "case": "missing-route-await",
+      "outcome": "detected",
+      "test": "independent boundary count=0 cap=1000",
+      "expectedDiagnostic": "independent complete byte parity",
+      "diagnostic": [
+        "AssertionError: independent complete byte parity: expected false to be true // Object.is equality",
+        "    at /home/nathaniel/.local/state/openplan/workbook-layout-dependency-integration-20261015/source/docs/reviews/2026-10-15-workbook-layout-dependency-integration/independent-route/probe.test.ts:102:96",
+        "    at file:///home/nathaniel/.local/state/openplan/workbook-layout-dependency-integration-20261015/source/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      ],
+      "exitCode": 1
+    },
+    {
+      "case": "missing-probe-await",
+      "outcome": "detected",
+      "test": "independent boundary count=0 cap=1000",
+      "expectedDiagnostic": "Promise",
+      "diagnostic": [
+        "TypeError: The first argument must be of type string or an instance of Buffer, ArrayBuffer, or Array or an Array-like Object. Received an instance of Promise",
+        "    at Buffer.from (node:buffer:364:9)",
+        "    at /home/nathaniel/.local/state/openplan/workbook-layout-dependency-integration-20261015/source/docs/reviews/2026-10-15-workbook-layout-dependency-integration/independent-route/probe.test.ts:102:46"
+      ],
+      "exitCode": 1
+    },
+    {
+      "case": "harmless-live-types",
+      "outcome": "survived",
+      "exitCode": 0,
+      "boundary": "compiler only, no DB execution"
+    },
+    {
+      "case": "missing-live-await-types",
+      "outcome": "detected",
+      "exitCode": 2,
+      "expectedDiagnostic": "TS2769 Promise<Uint8Array",
+      "diagnostic": [
+        "../docs/reviews/2026-10-15-workbook-layout-dependency-integration/live-pagination/probe.test.ts(164,54): error TS2769: No overload matches this call.",
+        "  The last overload gave the following error.",
+        "    Argument of type 'Promise<Uint8Array<ArrayBufferLike>>' is not assignable to parameter of type 'WithImplicitCoercion<string | ArrayLike<number>>'."
+      ],
+      "boundary": "compiler only, no DB execution"
+    },
+    {
+      "case": "exact restoration",
+      "sha256": {
+        "route": "64fd96d9caae5f8808b5825dbabc23f788fb9883d5a52ff9b974275884304265",
+        "independent": "af1baae3a7dc99bb1ea136e8a5404bf68745561c9e922fe4753a6d5baa201e2d",
+        "live": "ea45f1e29a2e413128f4fa2e1dd4ff25ca94feb15460c065f62394bf10745823"
+      },
+      "allMatchOriginal": true
+    }
+  ],
+  "refusedFirstControlTrial": {
+    "outcome": "refused harness trial",
+    "exitCode": 1,
+    "reason": "KeyError: numRuntimeErrorTestSuites",
+    "harmlessSelectedCaseExitCode": 0,
+    "acceptedMutations": 0,
+    "restorationRecordedIn": "controls-trial-01.json"
+  },
+  "sourceBindings": [
+    {
+      "path": "openplan/src/lib/export/review-workbook-layout.ts",
+      "sha256": "134ebad39797bfb27996ec1052514ce4ba5c9da53edf5d315a64a326c1fabd68",
+      "candidate69dAndPrivateArchiveMatch": true
+    },
+    {
+      "path": "openplan/src/lib/projects/portfolio-export.ts",
+      "sha256": "06591e3aa6cd922495575f5b0675ca66539be9fa646c562f3b614d52a27a0b0c",
+      "candidate69dAndPrivateArchiveMatch": true
+    },
+    {
+      "path": "openplan/src/lib/engagement/review-export.ts",
+      "sha256": "5cf61fcc3ae95287085c4c6e2e1983497381d165d0caf7f429b8ccee2865c019",
+      "candidate69dAndPrivateArchiveMatch": true
+    },
+    {
+      "path": "openplan/src/app/api/projects/export/workbook/route.ts",
+      "sha256": "64fd96d9caae5f8808b5825dbabc23f788fb9883d5a52ff9b974275884304265",
+      "candidate69dAndPrivateArchiveMatch": true
+    },
+    {
+      "path": "openplan/src/test/portfolio-workbook-export.test.ts",
+      "sha256": "6a44f492173b67087037e2d4371cf4191b2219ab33776624ffc3b25eb57a76f4",
+      "candidate69dAndPrivateArchiveMatch": true
+    },
+    {
+      "path": "openplan/src/test/project-portfolio-export-route.test.ts",
+      "sha256": "f3432540f3ee5a7588ac98d135ce6be7bd0fc9895ad222b98dd135de86c79426",
+      "candidate69dAndPrivateArchiveMatch": true
+    },
+    {
+      "path": "openplan/src/test/engagement-review-export.test.ts",
+      "sha256": "f237b7d81738b23ede80127a8b93e87906a77cb38d017b904d30505e0d334eef",
+      "candidate69dAndPrivateArchiveMatch": true
+    }
+  ],
+  "originalImplementationReportAndEvidenceUnchanged": true,
+  "privateProofRoot": "/home/nathaniel/.local/state/openplan/workbook-layout-dependency-integration-20261015",
+  "sourceArchiveSha256": "e582b6ac94d20be71780daded85417f4ad41954358e4099f5417ef586506d38c",
+  "privateRunnerBindings": [
+    {
+      "file": "run.py",
+      "sha256": "a18cadafa5997a58d11ad4772149e75da87230531d15b57a90b50067b8ca0a32"
+    },
+    {
+      "file": "controls.py",
+      "sha256": "819e1466d2e26276be845ed237a7ed8dacd04c6e25acc196738a8789def4639f"
+    },
+    {
+      "file": "controls-trial-01.py",
+      "sha256": "cc46f6e0169c6ccaca0c3580bce96f611171ed40cbc235a272be11fc517e5adb"
+    },
+    {
+      "file": "supplement.py",
+      "sha256": "5ef4d03ac91c29a64ee08cdceb94384d9bea04298010c7ea5fb90d31ef2d571e"
+    },
+    {
+      "file": "vitest.config.mjs",
+      "sha256": "1d4149029e1b7c5aff9753e0ad29160c8df602457872fd1f7599c1f24746339b"
+    },
+    {
+      "file": "independent.config.mjs",
+      "sha256": "854ba17d8f4c382f1b71c5c55c888581f2c49959a53e02cd271a5949c03c80c9"
+    },
+    {
+      "file": "types.json",
+      "sha256": "0df43b9b1cd27a3589f32af1e7ec2dd0b7baf55bd69fa4c58dab5ad371dff424"
+    }
+  ],
+  "resources": {
+    "checks": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "cpu.max": "50000 100000",
+      "memory.peak": "515592192",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.swap.peak": "0",
+      "affinity": [
+        23
+      ],
+      "nodeHeapMiB": 640,
+      "vitestWorkers": 1
+    },
+    "controls": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "cpu.max": "50000 100000",
+      "memory.peak": "474824704",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.swap.peak": "0",
+      "affinity": [
+        23
+      ]
+    },
+    "supplement": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "cpu.max": "50000 100000",
+      "memory.peak": "291688448",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.swap.peak": "0",
+      "affinity": [
+        23
+      ]
+    }
+  },
+  "nodeHeapMiB": 640,
+  "vitestWorkers": 1,
+  "isolation": {
+    "networkUnshared": true,
+    "dependenciesReadOnly": true,
+    "privateSourceArchiveMountedReadOnlyForChecks": true,
+    "sourceFaultsOnlyPrivateCopies": true,
+    "privateCaches": true
+  },
+  "limits": [
+    "Local checks do not establish fresh independent whole-candidate review.",
+    "Live probe receives compiler-only evidence; no database execution.",
+    "No full suite, full QA, build, browser, native regeneration, Excel, services, hosted operation, PR, push, main merge or release.",
+    "Full deadcode retains existing warning-tier findings.",
+    "Earlier 06a full QA does not cover this candidate.",
+    "Native artifacts and preview packet remain untouched; original claim limits remain.",
+    "Parent retains independent review, integration, build, journeys and delivery hold."
+  ]
+}

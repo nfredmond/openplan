@@ -1,0 +1,39 @@
+{
+  "baseCommit": "1b2fefe0f0e98f99700fc77e99146fe697b43ee7",
+  "branch": "t3/project-csv-portfolio-intake-audit",
+  "sources": {
+    "AGENTS.md": "dbdf9a39ee662e2b32833970067d306c9fb74c3fde1b6f31402960501e3159a6",
+    "docs/product/V1_PRODUCT_CONTRACT.md": "304094a6bf6d8813a0f31b905d4959bfa11defb9a22275d4963ea4fede7356be",
+    "docs/ROADMAP.md": "0a02ff11515ebd86825bb8b6a914343d49644152d001eb6fff891f87da08d921",
+    "docs/product/CORE_REQUIREMENTS_LEDGER.md": "5fe6d34924483052291801d3c1b2ec5623833d0c5d3cbbf73858a2e16a79f078",
+    "docs/product/US_PLANNING_CAPABILITY_MATRIX.md": "adff647cacbd6ce12b4ca51bf2f5e25ba3da95a22f3dd831ae2b3e6552843105",
+    "docs/reviews/product-direction/2026-10-06-integration-review.md": "9934058a60139e3e917becdb4c468fa750b15fce154676a9d3fce37d850e428c",
+    "docs/ops/KNOWN_ISSUES.md": "995823d3f38236b164ebce55f77be047fe81b1c1484ce15a75be4ec09cdde05f",
+    "docs/ARCHITECTURE.md": "f050b327f919cc86311e82995dd5666c6affee482ad4fe705e124997a60d41bf",
+    "openplan/supabase/config.toml": "a91e2c6282775296f9470066696530618d8768ca0adc21fad8a9b4b3e7bf105e",
+    "openplan/src/components/projects/project-portfolio-importer.tsx": "e12b0daff968c7d13adad01a4ccb0765da0ca1b48136d04ebd4e14039cfaada2",
+    "openplan/src/lib/projects/portfolio-import.ts": "23d6ac5a56d6f5fa4eb63167e80c8ac910677c06b73ae1bee365993db68999c6",
+    "openplan/src/lib/projects/portfolio-workbook.ts": "beb55521add02d4ca6a0ddc8788fa5094fbbd0528cac96a79d672442be178e89",
+    "openplan/src/app/api/projects/import/route.ts": "15a244fb60d281da3d880a14f8c44881576b900539b255a2b8d4d3027079715f",
+    "openplan/src/test/project-portfolio-import-route.test.ts": "ff4013413247de110edbd83c90e5470be893c6d1cf3e04bbc28eb90fec71972d",
+    "openplan/src/test/project-portfolio-importer.test.tsx": "56aa6f41458c9ac341147b3fd67b6b3b4fcdd8de2d4f046eb56c8100b49f6b37",
+    "openplan/src/test/portfolio-import-review.test.ts": "5abff7fa30d3ea297ef4adfd874dafaa75e49e39b9cc2e8f93c02ac0aadda639",
+    "openplan/src/test/portfolio-workbook-import.test.ts": "413735efb7e72dfad96f12e7e3a7d3fa8c37d87f32ff711885ea667d346dd2a6",
+    "openplan/src/test/refused-project-portfolio-import-action.test.ts": "e7f61f705cc431c42ee0704fe1709ce4f82d94a798f60251fadca6bd82415ac8",
+    "openplan/src/app/(app)/projects/page.tsx": "7d546e39c93aab0c9bb511048b5d440dd0a0e02844a0933e6aa9b179ac00d6bb",
+    "openplan/src/app/api/knowledge-base/documents/route.ts": "4bc4f605bd105a672c4c35047b0b20de5b299f345423e966402225e2c0742a52",
+    "openplan/src/app/api/knowledge-base/documents/[documentId]/download/route.ts": "465f27019087b4275ecea32e2c5f54e183eaf69874868ba9758509e0e1578c76",
+    "openplan/src/app/api/projects/export/workbook/route.ts": "110a5bb8181b18ebd1d13307c6d38427d4f0b07fab6f7f47438f161891659cb7",
+    "openplan/src/lib/projects/portfolio-round-trip-contract.ts": "ad012e38746d24039fbc0d7da7206e5254088e83958410baeeb03349de89d7ec",
+    "openplan/supabase/migrations/20260905000001_portfolio_unknown_price_year.sql": "b49ba27f9a5635e6cdab325aab9155057f697ce55ff1f066939cc9460bda1d63",
+    "openplan/supabase/migrations/20260825000002_direct_workbook_portfolio_import.sql": "ce5b61363df29cfde4a6852061a11ce01fb65efc7a49e01869f09564fc9bc566",
+    "docs/reviews/2026-10-15-project-portfolio-intake/verify_controls.py": "319c4c7afea1f8c6dd531a6f04eb0a858de95cc7565200161ae710acd51d27d8",
+    "openplan/.portfolio-intake-qa/vitest.config.mts": "7ed5bb1089016bc90e355473079277cf71879de3efd730b748b609f4c88f35fc"
+  },
+  "externalEvidence": {
+    "/home/nathaniel/.local/state/openplan/first-week-sol-20261015/02-project-end-to-end/findings.json": "07012c7f1dc7d2ca1dcb0594800e8fd8274482cb57b316b672f4784fbd322ee5",
+    "/home/nathaniel/.local/state/openplan/first-week-sol-20261015/02-project-end-to-end/collection-notes.json": "835f446910da566f3b9ebc61bc9f58ffce0995877b06a48c194f9dabdff5e66a",
+    "/home/nathaniel/.local/state/openplan/first-week-sol-20261015/02-project-end-to-end/retry-after-buckets-20261015/run.json": "45634f080c3355bd359ab9ebfcb56f5311f0e367f72f10c7ed7dfaa344789326"
+  },
+  "note": "Source hashes identify this bounded checkpoint. The private generated config is reproducible through verify_controls.py; it is removed at handoff. External synthetic records remain private; their hashes do not establish their claims."
+}

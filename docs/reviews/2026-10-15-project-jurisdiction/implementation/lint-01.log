@@ -1,0 +1,6 @@
+Running as unit: openplan-jurisdiction-lint-01.service; invocation ID: 882feb6005e4428a8ef677c426ba3c18
+          Finished with result: success
+Main processes terminated with: code=exited, status=0/SUCCESS
+               Service runtime: 3.008s
+             CPU time consumed: 5.563s
+                   Memory peak: 456.6M (swap: 0B)

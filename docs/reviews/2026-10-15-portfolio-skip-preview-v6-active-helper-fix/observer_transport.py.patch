@@ -1,0 +1,9 @@
+--- /home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v5/observer_transport.py
++++ observer_transport.py
+@@ -10,3 +10,3 @@
+-ROOT=Path('/home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v5')
+-OBSERVER_SHA='5e133acdae0ae91cc18d9e73c887d7e1c4dfea4ec278e60e2c884670a8a0c966'
+-UNIT='openplan-portfolio-v5-preserved-web-observer'
++ROOT=Path('/home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v6')
++OBSERVER_SHA='2ebe4e3b238413db916d211181bab81fbd2337da063f2b0a8e1badf73c008a36'
++UNIT='openplan-portfolio-v6-preserved-web-observer'

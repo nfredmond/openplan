@@ -1,0 +1,9 @@
+{
+  "migrationSHA256": "b129f80e37aa9be71069683acd42df3fb6fdb94078ed0458f20b6e9c5155a41b",
+  "postgresMajor": 17,
+  "derivation": "Fixed source reasoning: pg_get_constraintdef wraps CHECK, Boolean OR and explicit IN deparsing as = ANY with text-cast ARRAY elements. Values and operators follow exact candidate17.sql. No target read establishes or replaces this oracle. Any different normalization refuses for review.",
+  "constraints": {
+    "statusConstraint": "CHECK (((decision <> 'create'::text) OR (resolved_status = ANY (ARRAY['draft'::text, 'active'::text, 'on_hold'::text, 'complete'::text]))))",
+    "phaseConstraint": "CHECK (((decision <> 'create'::text) OR (resolved_delivery_phase = ANY (ARRAY['scoping'::text, 'analysis'::text, 'engagement'::text, 'programming'::text, 'delivery'::text, 'complete'::text]))))"
+  }
+}

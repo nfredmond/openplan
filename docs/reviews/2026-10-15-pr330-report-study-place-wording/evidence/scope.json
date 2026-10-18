@@ -1,0 +1,9 @@
+{
+  "baseCommit": "f00465a86ee546e6b261a663f4611cde7b56cb6e",
+  "baseAppTree": "a13c491da3ad3ba5b237ca5fa8802b236c4ef27b",
+  "baseHelperSha256": "4cee16f36e2a3d25720a5d6e985b68a95cfca86857e812d96812b0878d1e2bd4",
+  "correctedHelperSha256": "8218090f7ab3c6c39610691883021228c428c52706a80b2c506bd0251c9968aa",
+  "onlyResolvedSentenceChanged": true,
+  "geometryCodeUnchanged": true,
+  "newCopyHasNoEmDash": true
+}

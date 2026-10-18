@@ -1,0 +1,771 @@
+{
+  "reviewedHead": "06a108010ab39aa42eed4c2bcda3e1371b8aa813",
+  "base": "b4dbcac21a58f61bd480ccade4dec69383dacbc7",
+  "sourceFix": "36de7771973c867a4ae09e1c9b56d3bbd7be719d",
+  "testFix": "f4cd3247ef01b05120b0e78bd917c87d3c45e996",
+  "privateRoot": "/home/nathaniel/.local/state/openplan/combined-qa-fix-independent-20261015-01",
+  "findings": [
+    {
+      "priority": "P2",
+      "file": "openplan/src/test/supabase-call-sites.ts",
+      "line": 613,
+      "problem": "Named function/class expressions shadow imports but are resolved as imported string literals."
+    }
+  ],
+  "sources": {
+    "openplan/src/app/(app)/projects/[projectId]/_components/project-jurisdiction-readiness.tsx": {
+      "sha256": "097ffd2f698b5078e3946ba17352f55040444a8348661f5e81c37132ac8652e0",
+      "b4Sha256": "366b1f293afada62613455cfc23f3df73c90428d97ebea422a45fc34e7c9f006",
+      "fixCommit": "36de7771973c867a4ae09e1c9b56d3bbd7be719d",
+      "matchesFix": true,
+      "unchangedFromB4": false,
+      "privateSnapshotMatches": true
+    },
+    "openplan/src/app/(app)/projects/[projectId]/_components/project-map-presence-panel.tsx": {
+      "sha256": "b6c1bd972f71a421c262f5029d6de04b77adbb3e48dbd7c2d457c78d2cfae051",
+      "b4Sha256": "0b11d8aeef07c2ac7b3beef8a1a60986f1c098edb4c375afd446d3ee6a69c3eb",
+      "fixCommit": "36de7771973c867a4ae09e1c9b56d3bbd7be719d",
+      "matchesFix": true,
+      "unchangedFromB4": false,
+      "privateSnapshotMatches": true
+    },
+    "openplan/src/components/projects/project-jurisdiction-editor.tsx": {
+      "sha256": "b7a8c7d83bc73330b53b501a5be00d9a16c3ebb78c0661821b64a30b58d9e190",
+      "b4Sha256": "f8afd63053e01c812d2cc4c47d9f1c01c8bdbd03553144a877ee306f2a4d95e3",
+      "fixCommit": "36de7771973c867a4ae09e1c9b56d3bbd7be719d",
+      "matchesFix": true,
+      "unchangedFromB4": false,
+      "privateSnapshotMatches": true
+    },
+    "openplan/src/components/projects/project-saved-map.tsx": {
+      "sha256": "0df6ac6876349ff1af24de44e7ca3d283a4c867e5696dc2b765fd01709e77469",
+      "b4Sha256": "85f349c6fa17bf7f2586e6ea3b4405bad0d682e69a956dc4d4e3cd92ceaee687",
+      "fixCommit": "36de7771973c867a4ae09e1c9b56d3bbd7be719d",
+      "matchesFix": true,
+      "unchangedFromB4": false,
+      "privateSnapshotMatches": true
+    },
+    "openplan/src/test/planner-copy-says-the-plain-thing.test.ts": {
+      "sha256": "19ec1a9cd8c287d51339197d2eaf321ec0ed5438cad83f7c0d6d82916540b031",
+      "b4Sha256": "e1efadec0295b7e3ef48f9ac6dc95b8f3a81652e639594e56412d25a5aa08e77",
+      "fixCommit": "36de7771973c867a4ae09e1c9b56d3bbd7be719d",
+      "matchesFix": true,
+      "unchangedFromB4": false,
+      "privateSnapshotMatches": true
+    },
+    "openplan/src/test/reference-count-projection-guard.test.ts": {
+      "sha256": "f477f4802c88ba038803a8d9e0a46820dd2e141a26277044fde8ecee68145f74",
+      "b4Sha256": "3dd39ac88839eb45c4c755d8775fd5c063156c801b4b31c5dcabe4718dace5e6",
+      "fixCommit": "36de7771973c867a4ae09e1c9b56d3bbd7be719d",
+      "matchesFix": true,
+      "unchangedFromB4": false,
+      "privateSnapshotMatches": true
+    },
+    "openplan/src/test/supabase-call-sites.ts": {
+      "sha256": "168c47061dee5e7a8f9753ee1feb4e3e2bab10b5ba93c953b44eab0c5e2bf2a9",
+      "b4Sha256": "48f78996c0192f50c64bd99499f44d64c82d7cf498bd525650e1d34acec264a5",
+      "fixCommit": "36de7771973c867a4ae09e1c9b56d3bbd7be719d",
+      "matchesFix": true,
+      "unchangedFromB4": false,
+      "privateSnapshotMatches": true
+    },
+    "openplan/src/test/engagement-synthesis-generation-worker.test.ts": {
+      "sha256": "a7e6a23ec6038cd53f7bc1d4e77bd16c62dd6d74b654d23c9c17c806008c67c2",
+      "b4Sha256": "095f09817becbe7d642e93cb6412da3b968048720d6cfdf61194995eca1ed646",
+      "fixCommit": "f4cd3247ef01b05120b0e78bd917c87d3c45e996",
+      "matchesFix": true,
+      "unchangedFromB4": false,
+      "privateSnapshotMatches": true
+    },
+    "openplan/src/lib/engagement/synthesis-generation-worker.ts": {
+      "sha256": "92544532a249a470b69d496b34f007360540999122f30c79cfd9394e035651f2",
+      "b4Sha256": "92544532a249a470b69d496b34f007360540999122f30c79cfd9394e035651f2",
+      "fixCommit": "36de7771973c867a4ae09e1c9b56d3bbd7be719d",
+      "matchesFix": true,
+      "unchangedFromB4": true,
+      "privateSnapshotMatches": true
+    },
+    "workers/planner_agent_connector/connector-client.mjs": {
+      "sha256": "6a26291c3ed01de49e46096024e3caf753e73532659556b4cab3b735e44bf4ce",
+      "b4Sha256": "6a26291c3ed01de49e46096024e3caf753e73532659556b4cab3b735e44bf4ce",
+      "fixCommit": "36de7771973c867a4ae09e1c9b56d3bbd7be719d",
+      "matchesFix": true,
+      "unchangedFromB4": true,
+      "privateSnapshotMatches": true
+    },
+    "openplan/package.json": {
+      "sha256": "154335990cbbe60cfb540426288ad0dc32d6b6a5468e28a9d143f179627ee2c7",
+      "b4Sha256": "154335990cbbe60cfb540426288ad0dc32d6b6a5468e28a9d143f179627ee2c7",
+      "fixCommit": "36de7771973c867a4ae09e1c9b56d3bbd7be719d",
+      "matchesFix": true,
+      "unchangedFromB4": true,
+      "privateSnapshotMatches": true
+    },
+    "openplan/package-lock.json": {
+      "sha256": "40c30e5b8ae8aac104f242af61298b9e5a3e85fe7b004fee3c44d945c7cfe965",
+      "b4Sha256": "40c30e5b8ae8aac104f242af61298b9e5a3e85fe7b004fee3c44d945c7cfe965",
+      "fixCommit": "36de7771973c867a4ae09e1c9b56d3bbd7be719d",
+      "matchesFix": true,
+      "unchangedFromB4": true,
+      "privateSnapshotMatches": true
+    },
+    "openplan/src/app/api/projects/[projectId]/jurisdiction-readiness/route.ts": {
+      "sha256": "60e5a0b63b28fc6ddcbdd650d83c96f2694d811582d67a24aa326a61fb091edc",
+      "b4Sha256": "60e5a0b63b28fc6ddcbdd650d83c96f2694d811582d67a24aa326a61fb091edc",
+      "fixCommit": "36de7771973c867a4ae09e1c9b56d3bbd7be719d",
+      "matchesFix": true,
+      "unchangedFromB4": true,
+      "privateSnapshotMatches": true
+    },
+    "openplan/src/lib/projects/project-jurisdiction.ts": {
+      "sha256": "471e271740a66dd314637b0378513f5eb035b896774f5bf2916a774aefd6c24d",
+      "b4Sha256": "471e271740a66dd314637b0378513f5eb035b896774f5bf2916a774aefd6c24d",
+      "fixCommit": "36de7771973c867a4ae09e1c9b56d3bbd7be719d",
+      "matchesFix": true,
+      "unchangedFromB4": true,
+      "privateSnapshotMatches": true
+    }
+  },
+  "scanner": {
+    "checkable": 1802,
+    "actualBindings": [
+      {
+        "name": "named-function-expression",
+        "declarationKinds": [
+          "FunctionExpression"
+        ]
+      },
+      {
+        "name": "named-class-expression",
+        "declarationKinds": [
+          "ClassExpression"
+        ]
+      }
+    ],
+    "patchedResults": [
+      {
+        "name": "named",
+        "expected": "id, jurisdiction_context",
+        "actual": "id, jurisdiction_context",
+        "pass": true
+      },
+      {
+        "name": "alias",
+        "expected": "id, jurisdiction_context",
+        "actual": "id, jurisdiction_context",
+        "pass": true
+      },
+      {
+        "name": "at-alias",
+        "expected": "id, updated_at, jurisdiction_context, place_label, place_country_code, place_subdivision_code",
+        "actual": "id, updated_at, jurisdiction_context, place_label, place_country_code, place_subdivision_code",
+        "pass": true
+      },
+      {
+        "name": "static-template",
+        "expected": "id",
+        "actual": "id",
+        "pass": true
+      },
+      {
+        "name": "MUTABLE",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "COMPUTED",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "PRIVATE",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "TEMPLATE",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "reexport",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "type-only",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "package",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "parameter",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "destructured-parameter",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "rest-parameter",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "catch",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "TDZ",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "function-declaration",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "named-function-expression",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "named-class-expression",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      }
+    ],
+    "patchPreservesCensus": true,
+    "actualResolvedAncestorChecks": true,
+    "counts": {
+      "total": 2008,
+      "beforeUnknown": 250,
+      "afterUnknown": 181,
+      "resolved": 69
+    },
+    "siteIdentityPreserved": true,
+    "results": [
+      {
+        "name": "named",
+        "expected": "id, jurisdiction_context",
+        "actual": "id, jurisdiction_context",
+        "pass": true
+      },
+      {
+        "name": "alias",
+        "expected": "id, jurisdiction_context",
+        "actual": "id, jurisdiction_context",
+        "pass": true
+      },
+      {
+        "name": "at-alias",
+        "expected": "id, updated_at, jurisdiction_context, place_label, place_country_code, place_subdivision_code",
+        "actual": "id, updated_at, jurisdiction_context, place_label, place_country_code, place_subdivision_code",
+        "pass": true
+      },
+      {
+        "name": "static-template",
+        "expected": "id",
+        "actual": "id",
+        "pass": true
+      },
+      {
+        "name": "MUTABLE",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "COMPUTED",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "PRIVATE",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "TEMPLATE",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "reexport",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "type-only",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "package",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "parameter",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "destructured-parameter",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "rest-parameter",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "catch",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "TDZ",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "function-declaration",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "named-function-expression",
+        "expected": null,
+        "actual": "id, jurisdiction_context",
+        "pass": false
+      },
+      {
+        "name": "named-class-expression",
+        "expected": null,
+        "actual": "id, jurisdiction_context",
+        "pass": false
+      }
+    ],
+    "harmlessSame": true,
+    "disabledResolutionFailures": [
+      {
+        "name": "named",
+        "expected": "id, jurisdiction_context",
+        "actual": null,
+        "pass": false
+      },
+      {
+        "name": "alias",
+        "expected": "id, jurisdiction_context",
+        "actual": null,
+        "pass": false
+      },
+      {
+        "name": "at-alias",
+        "expected": "id, updated_at, jurisdiction_context, place_label, place_country_code, place_subdivision_code",
+        "actual": null,
+        "pass": false
+      },
+      {
+        "name": "static-template",
+        "expected": "id",
+        "actual": null,
+        "pass": false
+      }
+    ],
+    "originalFaults": [
+      {
+        "name": "named-function-expression",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "named-class-expression",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      }
+    ],
+    "resolvedSiteInventorySha256": "2ccb07e4facd72aa98df9d3f02a6a27be6d7a0ff7a204d535267ba9ec4f7e4ef"
+  },
+  "checks": [
+    {
+      "label": "focused-baseline-0077",
+      "mask": "0077",
+      "exitCode": 0,
+      "passed": 52,
+      "skipped": 0,
+      "failures": [],
+      "rawLogSha256": "7984fbd57707e28e9248fa7db2b1c8970ce15671d8ab127d15b540ec0768e972"
+    },
+    {
+      "label": "worker-baseline-0022",
+      "mask": "0022",
+      "exitCode": 0,
+      "passed": 40,
+      "skipped": 0,
+      "failures": [],
+      "rawLogSha256": "fe86a23589da65ce9268722874326bbaa370cf506061f7ccde6dab5ea638f0a9"
+    },
+    {
+      "label": "harmless-all",
+      "mask": "0077",
+      "exitCode": 0,
+      "passed": 52,
+      "skipped": 0,
+      "failures": [],
+      "rawLogSha256": "610ddc5d14b5dc0436b21fd8e10f6c27eb43d171878b3e1d3046ea02bb8304c3"
+    },
+    {
+      "label": "disabled-import",
+      "mask": "0077",
+      "exitCode": 1,
+      "passed": 0,
+      "skipped": 7,
+      "failures": [
+        {
+          "name": "reference count projections resolves direct imported literals while retaining computed, mutable and shadowed unknowns",
+          "failureMessagesSha256": "74a71e50d4b3bcac6bdcb49528a75d79de7f17d40d49caf18e47477d5e27555e"
+        }
+      ],
+      "rawLogSha256": "dcecc1c054c1e81f85bc1393d133a74685146ed365ba5f7f42acd96d4426a2c3"
+    },
+    {
+      "label": "mutable-import",
+      "mask": "0077",
+      "exitCode": 1,
+      "passed": 0,
+      "skipped": 7,
+      "failures": [
+        {
+          "name": "reference count projections resolves direct imported literals while retaining computed, mutable and shadowed unknowns",
+          "failureMessagesSha256": "f3d8c74bf0f92ab13545ed48d8c276fbe426db261e902cba9854ec6ac54abc76"
+        }
+      ],
+      "rawLogSha256": "2c076ef8a68e2b44b938f9ab11fba3b981ec0c9c87294ef9a0d571c9447e3966"
+    },
+    {
+      "label": "actual-missing-field",
+      "mask": "0077",
+      "exitCode": 1,
+      "passed": 0,
+      "skipped": 7,
+      "failures": [
+        {
+          "name": "reference count projections checks the new project jurisdiction reader's imported literal against the schema",
+          "failureMessagesSha256": "4ab84edea9dd73580e645e394b46650752203d7b80d3a2cded17000738fb87e0"
+        }
+      ],
+      "rawLogSha256": "a00f3e9357072faa1e01b39c673ba83c5ed18cfbeccf5e4647fd47953e3b1a51"
+    },
+    {
+      "label": "unknown-growth",
+      "mask": "0077",
+      "exitCode": 1,
+      "passed": 0,
+      "skipped": 7,
+      "failures": [
+        {
+          "name": "reference count projections guards the guard",
+          "failureMessagesSha256": "dc109d0a8b67180938bc6ac2198a86cd87e984891e2338724276d0c2c6f3425f"
+        }
+      ],
+      "rawLogSha256": "44fd03a53ab3029719a59f13535479cfd2b6074fbc269a9bff3ecf2384d97308"
+    },
+    {
+      "label": "returned-workspace",
+      "mask": "0077",
+      "exitCode": 1,
+      "passed": 0,
+      "skipped": 3,
+      "failures": [
+        {
+          "name": "planner copy says the plain thing uses no term from the ledger more often than the recorded baseline",
+          "failureMessagesSha256": "599ebd810017e3c476017453f4d9644e2caf60f7a97272f108b3d9b981c7caa6"
+        }
+      ],
+      "rawLogSha256": "cf9e36771de0405c099c47c6a74ed72d567078a59e085d1ae539b26db50c770c"
+    },
+    {
+      "label": "returned-jargon",
+      "mask": "0077",
+      "exitCode": 1,
+      "passed": 0,
+      "skipped": 3,
+      "failures": [
+        {
+          "name": "planner copy says the plain thing uses no term from the ledger more often than the recorded baseline",
+          "failureMessagesSha256": "599ebd810017e3c476017453f4d9644e2caf60f7a97272f108b3d9b981c7caa6"
+        }
+      ],
+      "rawLogSha256": "54dd47633ad41a3a1e4fcb698a223b3f1c3dd21b251a0ceb161fcc63580b331a"
+    },
+    {
+      "label": "privacy-bypass-0077",
+      "mask": "0077",
+      "exitCode": 1,
+      "passed": 0,
+      "skipped": 39,
+      "failures": [
+        {
+          "name": "synthesis worker custody and recovery refuses nonprivate and malformed saved journals",
+          "failureMessagesSha256": "55b2f84724aaa169563cdd6ff01b96030d70fd9dc0330fbd1931b3daee66b165"
+        }
+      ],
+      "rawLogSha256": "edd4b77d17a7922acd2e9caf663c7b27d4c9324ff66ae2aa0992a12b6a138e41"
+    },
+    {
+      "label": "schema-bypass-0077",
+      "mask": "0077",
+      "exitCode": 1,
+      "passed": 0,
+      "skipped": 39,
+      "failures": [
+        {
+          "name": "synthesis worker custody and recovery refuses nonprivate and malformed saved journals",
+          "failureMessagesSha256": "bfe2405c7c3e9215119561264861c594059c1305e9533639b854a9afffe1dc94"
+        }
+      ],
+      "rawLogSha256": "db611283cb0bad9d2e76261af2afba9e3103fa5d539c090dd2186f8c6c79b132"
+    },
+    {
+      "label": "privacy-bypass-0022",
+      "mask": "0022",
+      "exitCode": 1,
+      "passed": 0,
+      "skipped": 39,
+      "failures": [
+        {
+          "name": "synthesis worker custody and recovery refuses nonprivate and malformed saved journals",
+          "failureMessagesSha256": "55b2f84724aaa169563cdd6ff01b96030d70fd9dc0330fbd1931b3daee66b165"
+        }
+      ],
+      "rawLogSha256": "0bdfe4e944d983b21adbe8fa4b6a06dd413173ae25ea78e072d9a19b1559e7a6"
+    },
+    {
+      "label": "schema-bypass-0022",
+      "mask": "0022",
+      "exitCode": 1,
+      "passed": 0,
+      "skipped": 39,
+      "failures": [
+        {
+          "name": "synthesis worker custody and recovery refuses nonprivate and malformed saved journals",
+          "failureMessagesSha256": "bfe2405c7c3e9215119561264861c594059c1305e9533639b854a9afffe1dc94"
+        }
+      ],
+      "rawLogSha256": "4cf707e8ebd30d826fb00f696d14decd6324b912ad743ec937b308dc37d64e2d"
+    },
+    {
+      "label": "read-before-public-refusal",
+      "mask": "0077",
+      "exitCode": 1,
+      "passed": 0,
+      "skipped": 39,
+      "failures": [
+        {
+          "name": "synthesis worker custody and recovery refuses nonprivate and malformed saved journals",
+          "failureMessagesSha256": "fa324953a9bfc4c68f8748f3b4764ced097edd93baf4330884a7d1273b28b29b"
+        }
+      ],
+      "rawLogSha256": "0bb943c9b439a14f71db8db440fc47407de2a67f2ce99fdfe2620ef5a92d9e08"
+    },
+    {
+      "label": "read-before-private-schema",
+      "mask": "0077",
+      "exitCode": 1,
+      "passed": 0,
+      "skipped": 39,
+      "failures": [
+        {
+          "name": "synthesis worker custody and recovery refuses nonprivate and malformed saved journals",
+          "failureMessagesSha256": "8816215c8c202a4d47ed9233fcbbeb1479a89a36dcb089d103e26366fce2e227"
+        }
+      ],
+      "rawLogSha256": "9d9ce15fd485d3653ffda069fd0bec7edd6d212dbf893c35e5070bec2e764c74"
+    },
+    {
+      "label": "original-fixture-0077",
+      "mask": "0077",
+      "exitCode": 1,
+      "passed": 0,
+      "skipped": 39,
+      "failures": [
+        {
+          "name": "synthesis worker custody and recovery refuses nonprivate and malformed saved journals",
+          "failureMessagesSha256": "8b5c8e2cc566464d31dd66dd14f736a3bc5303acb39bed73c67c5e7475287bc8"
+        }
+      ],
+      "rawLogSha256": "05f9a2de593036d6f89fd0ca37dfdc0d58abd606d69c7c30b3426a16278e222c"
+    },
+    {
+      "label": "original-fixture-0022",
+      "mask": "0022",
+      "exitCode": 0,
+      "passed": 1,
+      "skipped": 39,
+      "failures": [],
+      "rawLogSha256": "29ee9cce946beb9d42dd5bb3a23744ea1c838b147eecc25226815feda490b1db"
+    },
+    {
+      "label": "restored",
+      "mask": "0077",
+      "exitCode": 0,
+      "passed": 52,
+      "skipped": 0,
+      "failures": [],
+      "rawLogSha256": "206de892f8b532ae0ed51daeeecf15ad937df8743e93239639cc1a569ebc3169"
+    }
+  ],
+  "workspaceControllerReadback": {
+    "exitCode": 1,
+    "namedAssertion": true,
+    "expectedWorkspace": 136,
+    "receivedWorkspace": 137,
+    "originalControllerError": "Abbreviated JSON failure message omitted the word workspace; full Vitest diff contains it."
+  },
+  "resources": {
+    "resources.json": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "memory.peak": "83210240",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.swap.peak": "0"
+    },
+    "resources-02.json": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "memory.peak": "214142976",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.swap.peak": "0"
+    },
+    "resources-03.json": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "memory.peak": "255967232",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.swap.peak": "0"
+    },
+    "resources-04.json": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "memory.peak": "254951424",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.swap.peak": "0"
+    },
+    "check-resources.json": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "memory.peak": "381816832",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.swap.peak": "0"
+    },
+    "check-02-resources.json": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "memory.peak": "363651072",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.swap.peak": "0"
+    }
+  },
+  "restoration": {
+    "openplan/src/test/planner-copy-says-the-plain-thing.test.ts": {
+      "sha256": "19ec1a9cd8c287d51339197d2eaf321ec0ed5438cad83f7c0d6d82916540b031",
+      "restored": true
+    },
+    "openplan/src/test/reference-count-projection-guard.test.ts": {
+      "sha256": "f477f4802c88ba038803a8d9e0a46820dd2e141a26277044fde8ecee68145f74",
+      "restored": true
+    },
+    "openplan/src/test/supabase-call-sites.ts": {
+      "sha256": "168c47061dee5e7a8f9753ee1feb4e3e2bab10b5ba93c953b44eab0c5e2bf2a9",
+      "restored": true
+    },
+    "openplan/src/components/projects/project-saved-map.tsx": {
+      "sha256": "0df6ac6876349ff1af24de44e7ca3d283a4c867e5696dc2b765fd01709e77469",
+      "restored": true
+    },
+    "openplan/src/lib/projects/project-jurisdiction.ts": {
+      "sha256": "471e271740a66dd314637b0378513f5eb035b896774f5bf2916a774aefd6c24d",
+      "restored": true
+    },
+    "openplan/src/lib/engagement/synthesis-generation-worker.ts": {
+      "sha256": "92544532a249a470b69d496b34f007360540999122f30c79cfd9394e035651f2",
+      "restored": true
+    },
+    "workers/planner_agent_connector/connector-client.mjs": {
+      "sha256": "6a26291c3ed01de49e46096024e3caf753e73532659556b4cab3b735e44bf4ce",
+      "restored": true
+    },
+    "openplan/src/test/engagement-synthesis-generation-worker.test.ts": {
+      "sha256": "a7e6a23ec6038cd53f7bc1d4e77bd16c62dd6d74b654d23c9c17c806008c67c2",
+      "restored": true
+    },
+    "openplan/src/app/api/projects/[projectId]/jurisdiction-readiness/route.ts": {
+      "sha256": "60e5a0b63b28fc6ddcbdd650d83c96f2694d811582d67a24aa326a61fb091edc",
+      "restored": true
+    }
+  },
+  "privateRunnerHashes": {
+    "scanner-probe.cjs": "691d72c3ba162c84979a37a03842259cb8f110ed82017dbf45a044890c51f623",
+    "run.py": "d49e6f501eb995ae7959a154d20e8412f71791d817eea028fec1289cab9f726e",
+    "scanner-03.cjs": "1f58496e777ba9025b446ad7ded693d4da06d82a16aa7b268cf57af7278151cd",
+    "scanner-run-03.py": "0857bd8922ef7fe71e52236f0e6968a1af95e0de4c5ab6be6d8d1351fc1e8f3b",
+    "scanner-04.cjs": "e683347ddd2fdd09caee0f34eaf3c6cf558a0829eb2e9afbec9dac9cc3dbf613",
+    "scanner-run-04.py": "c45cdfdb2ef315f07e151767e048cc80e29abebfa36f65916b1808dd5f0da50c",
+    "checks.py": "f2b533153ef5d2ce2ff73651da415c05871ecdc130a5b6278f859a58e10c5098",
+    "checks-02.py": "95c681f26189497d0ee888d2241c85ea477e2951ca01de01654614f85c349ba3"
+  },
+  "retainedProbeReceipts": {
+    "scanner.log": "126a0d973c09d282895eb600830a7eea66af512f8679d69b044a5c9521459403",
+    "scanner-02.log": "a88a1dd594ae9263e606572c0fd460603967783b098e143c290a8287c64fa7b0",
+    "scanner-03.log": "a88a1dd594ae9263e606572c0fd460603967783b098e143c290a8287c64fa7b0",
+    "scanner-04.log": "a88a1dd594ae9263e606572c0fd460603967783b098e143c290a8287c64fa7b0",
+    "scanner-strict.log": "b8cb0e7e477d200b5bcadae6b726ba7be63ffbb06b71216c2123a143d6fe7d60",
+    "scanner-04-results.json": "2ccb07e4facd72aa98df9d3f02a6a27be6d7a0ff7a204d535267ba9ec4f7e4ef",
+    "check-results.json": "55501a2fc87433d9f864857311eee5ec0fd8ed65fd73778eb91ada996094183f",
+    "check-02-results.json": "131c76f5183eaf53045f9c6427778f212615d3e6287ce87900a29c1d8af30235",
+    "returned-workspace.log": "cf9e36771de0405c099c47c6a74ed72d567078a59e085d1ae539b26db50c770c",
+    "workspace-controller-readback.json": "0f95cb99e1d0df4f3b0906dbdbbf8a7cc6e64523e2dbd41c59cf6b0c8bcd8fa7",
+    "restoration.json": "a42ae25ebc95e802a26d8ae6e1027663e80cb76b871370125d8253ad144700bf",
+    "restoration-02.json": "a42ae25ebc95e802a26d8ae6e1027663e80cb76b871370125d8253ad144700bf"
+  }
+}

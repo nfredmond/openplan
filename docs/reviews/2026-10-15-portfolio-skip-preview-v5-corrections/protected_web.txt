@@ -1,0 +1,18 @@
+def protected_web():
+    # Imported app/attestor mains intentionally have no user-bus environment.
+    # Only this fixed transport crosses to the host user manager. It accepts no command.
+    transport=OUT/'observer_transport.py'
+    p.exact({'regular':True,'mode':0o600,'sha256':'__TRANSPORT_SHA__'},
+        {'regular':transport.is_file() and not transport.is_symlink(),'mode':transport.stat().st_mode&0o777,
+         'sha256':sha(transport)},'old-web-transport-seal')
+    nonce=secrets.token_hex(32)
+    environment={'PATH':'/usr/bin:/bin','HOME':str(OUT/'observer-home'),'PYTHONDONTWRITEBYTECODE':'1'}
+    result=subprocess.run(['/usr/bin/python3','-B',str(transport),nonce],env=environment,capture_output=True,timeout=60)
+    write('observer-receipts/caller-'+nonce+'.json',{'request':nonce,'returncode':result.returncode,
+        'stdout':result.stdout.decode(errors='replace'),'stderr':result.stderr.decode(errors='replace')})
+    p.exact({'returncode':0},{'returncode':result.returncode},'old-web-host-observer')
+    value=json.loads(result.stdout)
+    p.exact({'request':nonce,'unit':'openplan-current-project-preview-app-21510042e-v3-web.service',
+        'invocation':'34615ba06b554482b0f79c90fe999a61','listenerPid':'4104299',
+        'observerUserNamespace':'user:[4026531837]'},value,'old-web-host-result')
+    return value

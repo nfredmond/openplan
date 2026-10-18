@@ -1,0 +1,198 @@
+--- original/launcher.py
++++ recovery/rest_uri_recovery_01_launcher.py
+@@ -9,0 +10 @@
++import re
+@@ -21 +22 @@
+-import policy as p
++import rest_uri_recovery_01_policy as p
+@@ -23,0 +25,3 @@
++RECOVERY = OUT / 'rest-uri-recovery-01'
++ACTIVE_RECEIPTS = RECOVERY / 'active-service-receipts-private.json'
++INPUT_MANIFEST_SHA256 = 'f4699a12503ed9f4d7488394f72edd5595d1c16b74e6b657fd2cec7af24881e8'
+@@ -48 +52 @@
+-    path=OUT/name
++    path=RECOVERY/name
+@@ -60 +64 @@
+-        with (OUT/log).open('xb') as stream:stream.write(result.stdout+result.stderr)
++        with (RECOVERY/log).open('xb') as stream:stream.write(result.stdout+result.stderr)
+@@ -133,0 +138,44 @@
++    expected=read('rest-uri-recovery-01/template-binding-v1.json')
++    p.exact({'names':['rest_uri_recovery_01_controller.py','rest_uri_recovery_01_launcher.py','rest_uri_recovery_01_policy.py']},
++            {'names':sorted(expected)},'recovery-templates')
++    p.files(expected,{name:sha(OUT/name) for name in expected})
++
++
++def recovery_inputs(original, active):
++    """Keep every helper input except the corrected REST query byte-identical."""
++    expected=json.loads(json.dumps(original))
++    old=expected['rest']['PGRST_DB_URI']
++    p.exact({'query':'options=-c+search_path%3Dpublic%2Cextensions'},
++            {'query':urlsplit(old).query},'recovery-original-uri')
++    fixed=urlunsplit(urlsplit(old)._replace(query='options=-c%20search_path%3Dpublic%2Cextensions'))
++    expected['rest']['PGRST_DB_URI']=fixed
++    observed=json.loads(json.dumps(active))
++    uri=urlsplit(observed['rest']['PGRST_DB_URI'])
++    # Hex case is harmless; no form decoding or credential normalization.
++    observed['rest']['PGRST_DB_URI']=urlunsplit(uri._replace(
++        query=re.sub(r'%[0-9a-fA-F]{2}',lambda m:m[0].upper(),uri.query)))
++    p.exact({'envs':expected},{'envs':observed},'recovery-inputs')
++    return fixed
++
++
++def active_receipts():
++    """Select the replacement only after its exact persisted ID has started."""
++    p.exact({'complete':True},{'complete':all((RECOVERY/name).is_file() and not (RECOVERY/name).is_symlink()
++        for name in ['replacement-receipt-private.json','replacement-started-private.json',
++        'active-service-receipts-private.json','active-binding-private.json'])},'recovery-state')
++    original=read('service-receipts-private.json')
++    created=read('rest-uri-recovery-01/replacement-receipt-private.json')
++    started=read('rest-uri-recovery-01/replacement-started-private.json')
++    active=read('rest-uri-recovery-01/active-service-receipts-private.json')
++    binding=read('rest-uri-recovery-01/active-binding-private.json')
++    old=original['rest']['id'];identity=created['id']
++    p.exact({'valid':True},{'valid':isinstance(identity,str) and len(identity)==64 and
++        all(c in '0123456789abcdef' for c in identity) and identity!=old},'replacement-id')
++    expected={**original,'rest':{**original['rest'],'id':identity}}
++    p.files(expected,active)
++    p.files(expected['rest'],created)
++    p.exact({'id':identity,'running':True},started,'replacement-started')
++    p.exact({'receiptSha256':sha(ACTIVE_RECEIPTS),'id':identity,
++        'createdSha256':sha(RECOVERY/'replacement-receipt-private.json'),
++        'startedSha256':sha(RECOVERY/'replacement-started-private.json')},binding,'active-binding')
++    return active
+@@ -137,0 +186 @@
++    p.exact({'sha256':INPUT_MANIFEST_SHA256},{'sha256':sha(RECOVERY/'input-binding-v1.json')},'recovery-input-manifest')
+@@ -144 +193,6 @@
+-    p.configuration(plan,read('envs-private.json'),read('kong-private.json'),app,optional)
++    expected=read('rest-uri-recovery-01/input-binding-v1.json')
++    p.files(expected,{name:sha(OUT/name) for name in expected})
++    envs=read('rest-uri-recovery-01/envs-v1-private.json')
++    p.native_rest_uri(envs['rest']['PGRST_DB_URI'])
++    recovery_inputs(read('envs-private.json'),envs)
++    p.configuration(plan,envs,read('kong-private.json'),app,optional)
+@@ -185,43 +239 @@
+-    plan=pinned_files();source_check();unchanged_inputs();free_ports()
+-    target=plan['target'];props=plan['properties']
+-    existing=json.loads(sql('postgres','SELECT jsonb_agg(datname) FROM pg_database;'))
+-    p.exact({'fresh':True},{'fresh':target not in existing},'clone')
+-    p.exact({'disk':True},{'disk':shutil.disk_usage(OUT).free>=8*1024**3},'clone')
+-    write('clone-intent.json',{'target':target,'container':p.DB_ID,'source':p.SOURCE})
+-    dump=OUT/'source-private.dump'
+-    dump_args=p.source_dump_args();p.dump_command(dump_args)
+-    with dump.open('xb') as stream:
+-        result=subprocess.run(dump_args,stdout=stream,stderr=subprocess.PIPE,timeout=300)
+-    write('dump-result.json',{'returncode':result.returncode,'bytes':dump.stat().st_size,'sha256':sha(dump)})
+-    (OUT/'dump-private.log').write_bytes(result.stderr)
+-    p.exact({'ok':True},{'ok':result.returncode==0 and 0<dump.stat().st_size<=128*1024**2},'dump')
+-    source_check()
+-    args=['docker','exec',p.DB_ID,'createdb','-U','supabase_admin','-T','template0','--owner',props['owner'],
+-        '--encoding',props['encoding'],'--lc-collate',props['collate'],'--lc-ctype',props['ctype'],
+-        '--locale-provider','icu','--icu-locale',props['locale'],target]
+-    p.safe_parent_command(args,target);run(args,log='create-private.log')
+-    write('target-identity.json',target_identity(target));target_check()
+-    args=['docker','exec','-i',p.DB_ID,'pg_restore','-U','supabase_admin','-d',target,'--jobs=1','--exit-on-error','--single-transaction']
+-    p.safe_parent_command(args,target)
+-    p.exact({'sha256':read('dump-result.json')['sha256']},{'sha256':sha(dump)},'dump-bytes')
+-    target_check()
+-    with dump.open('rb') as stream:
+-        result=subprocess.run(args,stdin=stream,capture_output=True,timeout=300)
+-    (OUT/'restore-private.log').write_bytes(result.stdout+result.stderr)
+-    target_check()
+-    p.exact({'sha256':read('dump-result.json')['sha256']},{'sha256':sha(dump)},'dump-bytes')
+-    p.exact({'returncode':0},{'returncode':result.returncode},'restore')
+-    # Only generated database ACL grants. No roles, source properties, or global settings.
+-    run(['docker','exec','-i',p.DB_ID,'psql','-Xq','-U','supabase_admin','-d',target,'-v','ON_ERROR_STOP=1','--single-transaction'],
+-        data=read('acl-private.json')['sql'].encode(),log='target-acl-private.log')
+-    after=snapshot(target);before=read('source-binding-private.json')['snapshot']
+-    # Table rows, auth hashes, migration history and sequence state must match exactly.
+-    projection=lambda rows:[row for row in rows if 'table' in row or 'versions' in row or 'sequences' in row or 'properties' in row]
+-    p.exact({'data':projection(before)},{'data':projection(after)},'restored-data')
+-    p.files(read('storage-binding-private.json'),inventory(OLD_STORAGE))
+-    shutil.copytree(OLD_STORAGE,OUT/'storage-objects')
+-    p.files(read('storage-binding-private.json'),inventory(OUT/'storage-objects'))
+-    source_check();unchanged_inputs()
+-    write('clone-ready.json',dict(target=target,dumpSha256=sha(dump),sourceSha256=read('source-binding-private.json')['sha256'],
+-        targetDataSha256=p.digest(projection(after)),storageSha256=p.digest(inventory(OUT/'storage-objects'))))
+-    print('New retained clone prepared. No helper or app started.')
++    raise ValueError('recovery-disabled:clone')
+@@ -276 +288 @@
+-    receipts=read('service-receipts-private.json')
++    receipts=active_receipts()
+@@ -278 +290 @@
+-    envs=read('envs-private.json')
++    envs=read('rest-uri-recovery-01/envs-v1-private.json')
+@@ -287,34 +299 @@
+-    plan=pinned_files();source_check();unchanged_inputs();free_ports();target_check()
+-    p.exact({'target':plan['target']},{'target':read('clone-ready.json')['target']},'clone-ready')
+-    envs=read('envs-private.json');receipts={}
+-    # Exclusive intent prevents retries from creating duplicates after lost acknowledgements.
+-    write('services-intent.json',{'names':plan['names'],'target':plan['target']})
+-    for kind in ['rest','auth','storage','gateway']:
+-        envfile=OUT/(kind+'-private.env')
+-        with envfile.open('x') as stream:
+-            for key,value in envs[kind].items():
+-                if '\n' in key+value or '\r' in key+value:raise ValueError('environment-newline')
+-                stream.write(key+'='+value+'\n')
+-        labels={'openplan.purpose':p.PURPOSE,'openplan.candidate':p.HEAD,'openplan.database':plan['target']}
+-        args=['docker','create','--pull','never','--name',plan['names'][kind],'--network',p.NETWORK,
+-            '--memory',str(p.LIMIT),'--memory-swap',str(p.LIMIT),'--cpus','0.5','--pids-limit','128','--env-file',str(envfile)]
+-        for key,value in labels.items():args+=['--label',key+'='+value]
+-        if kind=='gateway':args+=['--publish',p.HOST+':29948:8000']
+-        if kind=='storage':args+=['--mount','type=bind,source='+str(OUT/'storage-objects')+',target=/mnt']
+-        if kind=='gateway':
+-            # Kong's image user must read its bind-mounted config. The host parent
+-            # directory remains 0700; only this owned container receives the mount.
+-            (OUT/'kong-private.json').chmod(0o444)
+-            args+=['--mount','type=bind,source='+str(OUT/'kong-private.json')+',target=/etc/kong/proof.json,readonly']
+-        args.append(p.IMAGES[kind])
+-        identity=run(args,log=kind+'-create-private.log').decode().strip()
+-        receipt=dict(id=identity,name=plan['names'][kind],database=plan['target'],labels=labels)
+-        # Persist each exact returned ID before startup. Never stop by a name/prefix.
+-        write(kind+'-receipt-private.json',receipt);receipts[kind]=receipt
+-        expected=expected_service(kind,receipt,envs[kind])
+-        p.created_service(expected,observed_service(kind,receipt))
+-        run(['docker','start',identity],log=kind+'-start-private.log')
+-        p.service(expected_service(kind,receipt,envs[kind]),observed_service(kind,receipt))
+-    write('service-receipts-private.json',receipts)
+-    verify_services();source_check();unchanged_inputs()
+-    print('Exact helper identities started. Parent must check API health before app execution.')
++    raise ValueError('recovery-disabled:services')
+@@ -324,11 +303 @@
+-    pinned_files()
+-    # Uses local objects only, never fetches or touches the parent integration tree.
+-    run(['git','-C',REPO,'worktree','add','--detach',str(OUT/'candidate'),p.HEAD],log='checkout-private.log')
+-    p.exact({'head':p.HEAD},{'head':run(['git','-C',str(APP),'rev-parse','HEAD']).decode().strip()},'checkout')
+-    for name in ['.env','.env.local','.env.production','.env.production.local','.env.development','.env.development.local','.env.test','.env.test.local']:
+-        if (APP/name).exists():raise ValueError('candidate-inherited-env')
+-    values=read('app-env-private.json')
+-    with (APP/'.env.local').open('x') as stream:
+-        for key,value in values.items():stream.write(key+'='+json.dumps(value)+'\n')
+-    write('app-env-binding.json',{'sha256':sha(APP/'.env.local')})
+-    print('Isolated candidate checkout configured. Dependencies and build remain parent operations.')
++    raise ValueError('recovery-disabled:checkout')
+@@ -378 +347 @@
+-    (OUT/'build-private.log').write_bytes(result.stdout+result.stderr)
++    (RECOVERY/'build-private.log').write_bytes(result.stdout+result.stderr)
+@@ -381 +350 @@
+-        serviceReceiptHash=sha(OUT/'service-receipts-private.json'))
++        serviceReceiptHash=sha(ACTIVE_RECEIPTS))
+@@ -391 +360 @@
+-    report=read('build-result.json');resources=cgroup()
++    report=read('rest-uri-recovery-01/build-result.json');resources=cgroup()
+@@ -393 +362 @@
+-    expected=dict(head=p.HEAD,clean=True,app=str(APP),build=report['build'],buildHash=p.digest(read('build-files.json')),
++    expected=dict(head=p.HEAD,clean=True,app=str(APP),build=report['build'],buildHash=p.digest(read('rest-uri-recovery-01/build-files.json')),
+@@ -399 +368 @@
+-        'envHash':sha(APP/'.env.local'),'receiptHash':sha(OUT/'service-receipts-private.json'),
++        'envHash':sha(APP/'.env.local'),'receiptHash':sha(ACTIVE_RECEIPTS),
+@@ -411,4 +380 @@
+-    command=sys.argv[1] if len(sys.argv)>1 else 'controls'
+-    if command=='controls':
+-        import controls
+-        print(json.dumps(controls.run(),indent=2));return
++    command=sys.argv[1] if len(sys.argv)>1 else 'active-check'
+@@ -416,2 +382,2 @@
+-    operations={'check':lambda:(pinned_files(),source_check(),unchanged_inputs(),free_ports()),
+-        'clone':clone,'services':services,'checkout':checkout,'build':build,'start':start,'verify-services':verify_services}
++    operations={'active-check':lambda:(verify_services(),source_check(),unchanged_inputs()),
++        'build':build,'start':start,'verify-services':verify_services}

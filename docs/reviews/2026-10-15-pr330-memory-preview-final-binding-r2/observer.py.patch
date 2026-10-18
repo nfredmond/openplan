@@ -1,0 +1,5 @@
+--- retained-v6/observer.py
++++ memory/observer.py
+@@ -10 +10 @@
+-ROOT=Path('/home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v6')
++ROOT=Path('/dev/shm/openplan-pr330-preview-20261015')

@@ -1,0 +1,178 @@
+{
+  "head": "92eaacf51bd111d3de37cf72943301aba0f7acde",
+  "cwd": "/home/nathaniel/.t3/worktrees/openplan/t3-49d6c6f5",
+  "node": "v24.22.0",
+  "bindings": {
+    "openplan/src/lib/geographies/place-of-record.ts": "696a40a252d01a6eb745a1554f75a824e659961ca2c0e6630b9c5ca140909563",
+    "openplan/src/lib/geo/wgs84-bounds.ts": "ee95eec456ac0ff92a6e1becb0002b64cdc7aaebbdeb869af42a2d775a7a3719",
+    "openplan/src/lib/cartographic/geometry-bbox.ts": "52907dca5a4516575f8566fb31b4291312f713a611dd6750f93476107563e458",
+    "openplan/src/lib/cartographic/corridor-line-geojson.ts": "230c02311801f9831bcdf370561d7939fe2e2dd818d89df852568ccc2e19e436",
+    "openplan/src/lib/projects/project-geopackage.ts": "c0663e8409ca3519ff13fe131a49cc5d91de9f5650ef273df5cc96540fb8ba8a",
+    "openplan/src/components/projects/project-saved-map.tsx": "7ce9c845b81803526921fd633afbf1280375709f8eda6df58ab21393bf3b4aca",
+    "openplan/src/app/(app)/projects/[projectId]/_components/project-map-presence-panel.tsx": "0b11d8aeef07c2ac7b3beef8a1a60986f1c098edb4c375afd446d3ee6a69c3eb",
+    "openplan/src/components/projects/project-map-presence.tsx": "a9915f80b097f3a21bac227f0d10fc0894aacf09ce077d63f84e05cca773e781",
+    "openplan/src/test/project-saved-map.test.tsx": "66e87dd7a9ed1a45b30032a856afd3c013d4b00a2768c8fd7af8bd3a1bc022c0"
+  },
+  "controlRecords": [
+    {
+      "name": "baseline",
+      "result": "survived",
+      "diagnostic": null
+    },
+    {
+      "name": "harmless-comment",
+      "result": "survived",
+      "diagnostic": null
+    },
+    {
+      "name": "targeted-wrong-center",
+      "result": "intended assertion failed",
+      "diagnostic": "zero-coordinate camera must easeTo center [0,0]"
+    },
+    {
+      "name": "restored",
+      "result": "survived",
+      "diagnostic": null
+    }
+  ],
+  "splitArea": {
+    "type": "MultiPolygon",
+    "coordinates": [
+      [
+        [
+          [
+            179.7,
+            51
+          ],
+          [
+            180,
+            51
+          ],
+          [
+            180,
+            51.2
+          ],
+          [
+            179.7,
+            51.2
+          ],
+          [
+            179.7,
+            51
+          ]
+        ]
+      ],
+      [
+        [
+          [
+            -180,
+            51
+          ],
+          [
+            -179.7,
+            51
+          ],
+          [
+            -179.7,
+            51.2
+          ],
+          [
+            -180,
+            51.2
+          ],
+          [
+            -180,
+            51
+          ]
+        ]
+      ]
+    ]
+  },
+  "splitInventory": {
+    "crs": "EPSG:4326",
+    "layers": [
+      {
+        "layerKey": "project_area",
+        "geometryType": "Polygon or MultiPolygon",
+        "featureCount": 1,
+        "rejectedFeatureCount": 0,
+        "status": "included"
+      },
+      {
+        "layerKey": "project_location",
+        "geometryType": "Point",
+        "featureCount": 1,
+        "rejectedFeatureCount": 0,
+        "status": "included"
+      },
+      {
+        "layerKey": "project_corridors",
+        "geometryType": "LineString",
+        "featureCount": 1,
+        "rejectedFeatureCount": 0,
+        "status": "included"
+      }
+    ],
+    "featureCount": 3,
+    "unavailableLayerCount": 0,
+    "rejectedFeatureCount": 0
+  },
+  "splitAreaFrame": [
+    {
+      "method": "fitBounds",
+      "bbox": [
+        [
+          -180,
+          51
+        ],
+        [
+          180,
+          51.2
+        ]
+      ],
+      "options": {
+        "padding": 64,
+        "maxZoom": 15,
+        "duration": 400
+      }
+    }
+  ],
+  "datelinePairFrame": [
+    {
+      "method": "fitBounds",
+      "bbox": [
+        [
+          -179.8,
+          51.1
+        ],
+        [
+          179.8,
+          51.1
+        ]
+      ],
+      "options": {
+        "padding": 64,
+        "maxZoom": 15,
+        "duration": 400
+      }
+    }
+  ],
+  "zeroFrame": [
+    {
+      "method": "easeTo",
+      "options": {
+        "center": [
+          0,
+          0
+        ],
+        "zoom": 14,
+        "duration": 400
+      }
+    }
+  ],
+  "limitations": [
+    "No DOM, React lifecycle, Mapbox rendering or projection",
+    "Camera statements extracted from exact candidate; outer visibility and style readiness are outside this diagnostic",
+    "No database, browser, service or implementation source mutation"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "trial": "legacy-unknown-year-fault",
+  "testFile": "src/test/project-portfolio-export-route.test.ts",
+  "test": "GET /api/projects/export/workbook exports and reimports a recorded cost with an unknown price year",
+  "exitCode": 1,
+  "marker": "legacy round trip must preserve an unknown price year",
+  "classification": "KILLED"
+}

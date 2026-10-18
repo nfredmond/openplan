@@ -1,0 +1,53 @@
+{
+  "refs": {
+    "b259": "b259d73e56d22d4935ef2789874cf69901786b33",
+    "candidate": "b4dbcac21a58f61bd480ccade4dec69383dacbc7"
+  },
+  "files": {
+    "openplan/src/app/(app)/projects/[projectId]/_components/project-jurisdiction-readiness.tsx": {
+      "b259Sha256": "5d01dcfab4e9630053ba94a833835f88316aa3d79166c57279d995f460d76797",
+      "candidateSha256": "366b1f293afada62613455cfc23f3df73c90428d97ebea422a45fc34e7c9f006",
+      "correctedSha256": "097ffd2f698b5078e3946ba17352f55040444a8348661f5e81c37132ac8652e0"
+    },
+    "openplan/src/app/(app)/projects/[projectId]/_components/project-map-presence-panel.tsx": {
+      "b259Sha256": "8fbaf258b90f1a03e3b4c35a1b45ac5ec0891bfb7705dddd87fee5f37acc07c8",
+      "candidateSha256": "0b11d8aeef07c2ac7b3beef8a1a60986f1c098edb4c375afd446d3ee6a69c3eb",
+      "correctedSha256": "b6c1bd972f71a421c262f5029d6de04b77adbb3e48dbd7c2d457c78d2cfae051"
+    },
+    "openplan/src/app/api/projects/[projectId]/jurisdiction-readiness/route.ts": {
+      "b259Sha256": "011d9947353ee408ae9ad2a2f8c0c6e875adf5bb1c5d4804e88e5d30cb7c8e26",
+      "candidateSha256": "60e5a0b63b28fc6ddcbdd650d83c96f2694d811582d67a24aa326a61fb091edc",
+      "correctedSha256": "60e5a0b63b28fc6ddcbdd650d83c96f2694d811582d67a24aa326a61fb091edc"
+    },
+    "openplan/src/components/projects/project-jurisdiction-editor.tsx": {
+      "b259Sha256": null,
+      "candidateSha256": "f8afd63053e01c812d2cc4c47d9f1c01c8bdbd03553144a877ee306f2a4d95e3",
+      "correctedSha256": "b7a8c7d83bc73330b53b501a5be00d9a16c3ebb78c0661821b64a30b58d9e190"
+    },
+    "openplan/src/components/projects/project-saved-map.tsx": {
+      "b259Sha256": null,
+      "candidateSha256": "85f349c6fa17bf7f2586e6ea3b4405bad0d682e69a956dc4d4e3cd92ceaee687",
+      "correctedSha256": "0df6ac6876349ff1af24de44e7ca3d283a4c867e5696dc2b765fd01709e77469"
+    },
+    "openplan/src/lib/projects/project-jurisdiction.ts": {
+      "b259Sha256": null,
+      "candidateSha256": "471e271740a66dd314637b0378513f5eb035b896774f5bf2916a774aefd6c24d",
+      "correctedSha256": "471e271740a66dd314637b0378513f5eb035b896774f5bf2916a774aefd6c24d"
+    },
+    "openplan/src/test/planner-copy-says-the-plain-thing.test.ts": {
+      "b259Sha256": "e1efadec0295b7e3ef48f9ac6dc95b8f3a81652e639594e56412d25a5aa08e77",
+      "candidateSha256": "e1efadec0295b7e3ef48f9ac6dc95b8f3a81652e639594e56412d25a5aa08e77",
+      "correctedSha256": "19ec1a9cd8c287d51339197d2eaf321ec0ed5438cad83f7c0d6d82916540b031"
+    },
+    "openplan/src/test/reference-count-projection-guard.test.ts": {
+      "b259Sha256": "3dd39ac88839eb45c4c755d8775fd5c063156c801b4b31c5dcabe4718dace5e6",
+      "candidateSha256": "3dd39ac88839eb45c4c755d8775fd5c063156c801b4b31c5dcabe4718dace5e6",
+      "correctedSha256": "f477f4802c88ba038803a8d9e0a46820dd2e141a26277044fde8ecee68145f74"
+    },
+    "openplan/src/test/supabase-call-sites.ts": {
+      "b259Sha256": "48f78996c0192f50c64bd99499f44d64c82d7cf498bd525650e1d34acec264a5",
+      "candidateSha256": "48f78996c0192f50c64bd99499f44d64c82d7cf498bd525650e1d34acec264a5",
+      "correctedSha256": "168c47061dee5e7a8f9753ee1feb4e3e2bab10b5ba93c953b44eab0c5e2bf2a9"
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "cwd": "/home/nathaniel/.t3/worktrees/openplan/t3-e444198e/openplan",
+  "cacheRoot": "/home/nathaniel/.local/state/openplan/pr330-study-place-wording-i1ii_nvb",
+  "heapMiB": 1024,
+  "maxWorkers": 1,
+  "directionExitCode": 0,
+  "sourceRestoredExactly": true,
+  "sourceSha256": "8218090f7ab3c6c39610691883021228c428c52706a80b2c506bd0251c9968aa",
+  "cases": []
+}

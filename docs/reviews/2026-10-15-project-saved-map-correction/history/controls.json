@@ -1,0 +1,329 @@
+{
+  "records": [
+    {
+      "name": "baseline",
+      "exit": 0,
+      "passed": 21,
+      "failed": []
+    },
+    {
+      "name": "harmless-comment",
+      "exit": 0,
+      "passed": 21,
+      "failed": []
+    },
+    {
+      "name": "missing-site",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "the project panel supplies saved features draws the inventory's exact three geometries with canWrite=false",
+          "messages": [
+            "AssertionError: expected [ Array(2) ] to deeply equal [ Array(3) ]\n    at /home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/project-saved-map.test.tsx:65:111\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "the project panel supplies saved features draws the inventory's exact three geometries with canWrite=true",
+          "messages": [
+            "AssertionError: expected [ Array(2) ] to deeply equal [ Array(3) ]\n    at /home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/project-saved-map.test.tsx:65:111\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "drop-saved-holes",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "the project panel supplies saved features draws the inventory's exact three geometries with canWrite=false",
+          "messages": [
+            "AssertionError: expected [ Array(3) ] to deeply equal [ Array(3) ]\n    at /home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/project-saved-map.test.tsx:65:111\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "the project panel supplies saved features draws the inventory's exact three geometries with canWrite=true",
+          "messages": [
+            "AssertionError: expected [ Array(3) ] to deeply equal [ Array(3) ]\n    at /home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/project-saved-map.test.tsx:65:111\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "wrong-area-filter",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "the project panel supplies saved features draws the inventory's exact three geometries with canWrite=false",
+          "messages": [
+            "AssertionError: expected [ '==', [ 'geometry-type' ], \u2026(1) ] to deeply equal [ Array(3) ]\n    at /home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/project-saved-map.test.tsx:67:54\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "the project panel supplies saved features draws the inventory's exact three geometries with canWrite=true",
+          "messages": [
+            "AssertionError: expected [ '==', [ 'geometry-type' ], \u2026(1) ] to deeply equal [ Array(3) ]\n    at /home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/project-saved-map.test.tsx:67:54\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "pending-corridors-hide-map",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "the project panel supplies saved features keeps the saved area and site when the corridors table is unavailable",
+          "messages": [
+            "Error: No mapbox map was constructed \u2014 the component rendered no map at all.\n    at Module.lastFakeMap (/home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/helpers/mapbox-gl-fake.ts:496:19)\n    at /home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/project-saved-map.test.tsx:76:17\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "invalid-area-bypass",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "the project panel supplies saved features reports invalid saved shapes without repairing or drawing them",
+          "messages": [
+            "AssertionError: expected [ FakeMapboxMap{ \u2026(21) } ] to have a length of +0 but got 1\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/expect/dist/index.js:1389:20)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/project-saved-map.test.tsx:84:24\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "drop-global-site",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "the project panel supplies saved features retains a valid site at longitude 0 latitude 0",
+          "messages": [
+            "Error: No mapbox map was constructed \u2014 the component rendered no map at all.\n    at Module.lastFakeMap (/home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/helpers/mapbox-gl-fake.ts:496:19)\n    at /home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/project-saved-map.test.tsx:91:17\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "the project panel supplies saved features retains a valid site at longitude -121.5 latitude 39",
+          "messages": [
+            "Error: No mapbox map was constructed \u2014 the component rendered no map at all.\n    at Module.lastFakeMap (/home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/helpers/mapbox-gl-fake.ts:496:19)\n    at /home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/project-saved-map.test.tsx:91:17\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "the project panel supplies saved features retains a valid site at longitude 179.8 latitude 52",
+          "messages": [
+            "Error: No mapbox map was constructed \u2014 the component rendered no map at all.\n    at Module.lastFakeMap (/home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/helpers/mapbox-gl-fake.ts:496:19)\n    at /home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/project-saved-map.test.tsx:91:17\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "the project panel supplies saved features retains a valid site at longitude -170.7 latitude -14.3",
+          "messages": [
+            "Error: No mapbox map was constructed \u2014 the component rendered no map at all.\n    at Module.lastFakeMap (/home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/helpers/mapbox-gl-fake.ts:496:19)\n    at /home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/project-saved-map.test.tsx:91:17\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "the project panel supplies saved features retains a valid site at longitude 144.8 latitude 13.4",
+          "messages": [
+            "Error: No mapbox map was constructed \u2014 the component rendered no map at all.\n    at Module.lastFakeMap (/home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/helpers/mapbox-gl-fake.ts:496:19)\n    at /home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/project-saved-map.test.tsx:91:17\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        },
+        {
+          "name": "the project panel supplies saved features retains a valid site at longitude 151.2 latitude -33.8",
+          "messages": [
+            "Error: No mapbox map was constructed \u2014 the component rendered no map at all.\n    at Module.lastFakeMap (/home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/helpers/mapbox-gl-fake.ts:496:19)\n    at /home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/project-saved-map.test.tsx:91:17\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "hide-unconfigured-notice",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "the project panel supplies saved features keeps inventory and download access when no engine is configured",
+          "messages": [
+            "TestingLibraryElementError: Unable to find an accessible element with the role \"status\"\n\nHere are the accessible roles:\n\n  article:\n\n  Name \"\":\n  \u001b[36m<article\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"module-section-surface scroll-mt-24\"\u001b[39m\n    \u001b[33mid\u001b[39m=\u001b[32m\"project-map-presence\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  heading:\n\n  Name \"Where this project is\":\n  \u001b[36m<h2\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"module-section-title\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Core project layers\":\n  \u001b[36m<h3\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm font-semibold text-foreground\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  paragraph:\n\n  Name \"\":\n  \u001b[36m<p\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"module-section-description\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"\":\n  \u001b[36m<p\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"max-w-2xl text-sm text-muted-foreground\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"\":\n  \u001b[36m<p\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"mt-1 text-xs text-muted-foreground\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"\":\n  \u001b[36m<p\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"mt-2 text-sm font-medium text-foreground\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  link:\n\n  Name \"Download GeoPackage\":\n  \u001b[36m<a\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-9 gap-1.5 px-3.5 has-[>svg]:px-3\"\u001b[39m\n    \u001b[33mdata-size\u001b[39m=\u001b[32m\"sm\"\u001b[39m\n    \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n    \u001b[33mdata-variant\u001b[39m=\u001b[32m\"outline\"\u001b[39m\n    \u001b[33mdownload\u001b[39m=\u001b[32m\"\"\u001b[39m\n    \u001b[33mhref\u001b[39m=\u001b[32m\"/api/projects/project-1/export/geopackage\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Map packages\":\n  \u001b[36m<a\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-9 gap-1.5 px-3.5 has-[>svg]:px-3\"\u001b[39m\n    \u001b[33mdata-size\u001b[39m=\u001b[32m\"sm\"\u001b[39m\n    \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n    \u001b[33mdata-variant\u001b[39m=\u001b[32m\"outline\"\u001b[39m\n    \u001b[33mhref\u001b[39m=\u001b[32m\"/maps?projectId=project-1\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  list:\n\n  Name \"\":\n  \u001b[36m<ul\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"mt-2 space-y-1 text-sm text-foreground\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  listitem:\n\n  Name \"\":\n  \u001b[36m<li />\u001b[39m\n\n  Name \"\":\n  \u001b[36m<li />\u001b[39m\n\n  Name \"\":\n  \u001b[36m<li />\u001b[39m\n\n  --------------------------------------------------\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[36m<article\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"module-section-surface scroll-mt-24\"\u001b[39m\n      \u001b[33mid\u001b[39m=\u001b[32m\"project-map-presence\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"module-section-header\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<div\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-center gap-3\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<span\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-[color:var(--pine)]/10 text-[color:var(--pine)]\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<svg\u001b[39m\n              \u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"lucide lucide-map h-5 w-5\"\u001b[39m\n              \u001b[33mfill\u001b[39m=\u001b[32m\"none\"\u001b[39m\n              \u001b[33mheight\u001b[39m=\u001b[32m\"24\"\u001b[39m\n              \u001b[33mstroke\u001b[39m=\u001b[32m\"currentColor\"\u001b[39m\n              \u001b[33mstroke-linecap\u001b[39m=\u001b[32m\"round\"\u001b[39m\n              \u001b[33mstroke-linejoin\u001b[39m=\u001b[32m\"round\"\u001b[39m\n              \u001b[33mstroke-width\u001b[39m=\u001b[32m\"2\"\u001b[39m\n              \u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 24\"\u001b[39m\n              \u001b[33mwidth\u001b[39m=\u001b[32m\"24\"\u001b[39m\n              \u001b[33mxmlns\u001b[39m=\u001b[32m\"http://www.w3.org/2000/svg\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<path\u001b[39m\n                \u001b[33md\u001b[39m=\u001b[32m\"M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z\"\u001b[39m\n              \u001b[36m/>\u001b[39m\n              \u001b[36m<path\u001b[39m\n                \u001b[33md\u001b[39m=\u001b[32m\"M15 5.764v15\"\u001b[39m\n              \u001b[36m/>\u001b[39m\n              \u001b[36m<path\u001b[39m\n                \u001b[33md\u001b[39m=\u001b[32m\"M9 3.236v15\"\u001b[39m\n              \u001b[36m/>\u001b[39m\n            \u001b[36m</svg>\u001b[39m\n          \u001b[36m</span>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"module-section-heading\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<h2\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"module-section-title\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0mWhere this project is\u001b[0m\n            \u001b[36m</h2>\u001b[39m\n            \u001b[36m<p\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"module-section-description\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0mReview the saved study area, site marker and corridors together. Draw or upload a location or corridor below. Save changes to include them on this map and in exports.\u001b[0m\n            \u001b[36m</p>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n        \u001b[36m</div>\u001b[39m\n      \u001b[36m</div>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/70 bg-muted/25 px-4 py-3\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<p\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"max-w-2xl text-sm text-muted-foreground\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mTake the stored project area, site marker, and corridors into QGIS or another GIS. The package includes an EPSG:4326 manifest that names any missing or invalid map shapes. Linked datasets, documents, and analysis evidence are not included yet.\u001b[0m\n          \u001b[0m \u001b[0m\n          \u001b[0mApproved public engagement locations from every linked outreach effort are included automatically; private notes and pending comments are excluded. Inspect the downloaded layer summary for their counts.\u001b[0m\n        \u001b[36m</p>\u001b[39m\n        \u001b[36m<div\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"flex flex-wrap gap-2\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<a\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-9 gap-1.5 px-3.5 has-[>svg]:px-3\"\u001b[39m\n            \u001b[33mdata-size\u001b[39m=\u001b[32m\"sm\"\u001b[39m\n            \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n            \u001b[33mdata-variant\u001b[39m=\u001b[32m\"outline\"\u001b[39m\n            \u001b[33mdownload\u001b[39m=\u001b[32m\"\"\u001b[39m\n            \u001b[33mhref\u001b[39m=\u001b[32m\"/api/projects/project-1/export/geopackage\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<svg\u001b[39m\n              \u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"lucide lucide-download\"\u001b[39m\n              \u001b[33mfill\u001b[39m=\u001b[32m\"none\"\u001b[39m\n              \u001b[33mheight\u001b[39m=\u001b[32m\"24\"\u001b[39m\n              \u001b[33mstroke\u001b[39m=\u001b[32m\"currentColor\"\u001b[39m\n              \u001b[33mstroke-linecap\u001b[39m=\u001b[32m\"round\"\u001b[39m\n              \u001b[33mstroke-linejoin\u001b[39m=\u001b[32m\"round\"\u001b[39m\n              \u001b[33mstroke-width\u001b[39m=\u001b[32m\"2\"\u001b[39m\n              \u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 24\"\u001b[39m\n              \u001b[33mwidth\u001b[39m=\u001b[32m\"24\"\u001b[39m\n              \u001b[33mxmlns\u001b[39m=\u001b[32m\"http://www.w3.org/2000/svg\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<path\u001b[39m\n                \u001b[33md\u001b[39m=\u001b[32m\"M12 15V3\"\u001b[39m\n              \u001b[36m/>\u001b[39m\n              \u001b[36m<path\u001b[39m\n                \u001b[33md\u001b[39m=\u001b[32m\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"\u001b[39m\n              \u001b[36m/>\u001b[39m\n              \u001b[36m<path\u001b[39m\n                \u001b[33md\u001b[39m=\u001b[32m\"m7 10 5 5 5-5\"\u001b[39m\n              \u001b[36m/>\u001b[39m\n            \u001b[36m</svg>\u001b[39m\n            \u001b[0mDownload GeoPackage\u001b[0m\n          \u001b[36m</a>\u001b[39m\n          \u001b[36m<a\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-9 gap-1.5 px-3.5 has-[>svg]:px-3\"\u001b[39m\n            \u001b[33mdata-size\u001b[39m=\u001b[32m\"sm\"\u001b[39m\n            \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n            \u001b[33mdata-variant\u001b[39m=\u001b[32m\"outline\"\u001b[39m\n            \u001b[33mhref\u001b[39m=\u001b[32m\"/maps?projectId=project-1\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mMap packages\u001b[0m\n          \u001b[36m</a>\u001b[39m\n        \u001b[36m</div>\u001b[39m\n      \u001b[36m</div>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"mt-3 rounded-lg border border-border/70 bg-background px-4 py-3\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<h3\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm font-semibold text-foreground\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mCore project layers\u001b[0m\n        \u001b[36m</h3>\u001b[39m\n        \u001b[36m<p\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"mt-1 text-xs text-muted-foreground\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mCoordinate reference system: \u001b[0m\n          \u001b[0mEPSG:4326\u001b[0m\n          \u001b[0m (WGS 84 longitude/latitude)\u001b[0m\n        \u001b[36m</p>\u001b[39m\n        \u001b[36m<ul\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"mt-2 space-y-1 text-sm text-foreground\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<li>\u001b[39m\n            \u001b[0mproject_area\u001b[0m\n            \u001b[0m \u00b7 \u001b[0m\n            \u001b[0mPolygon or MultiPolygon\u001b[0m\n            \u001b[0m \u00b7 \u001b[0m\n            \u001b[0m1\u001b[0m\n            \u001b[0m \u001b[0m\n            \u001b[0mfeature\u001b[0m\n            \u001b[0m included\u001b[0m\n          \u001b[36m</li>\u001b[39m\n          \u001b[36m<li>\u001b[39m\n            \u001b[0mproject_location\u001b[0m\n            \u001b[0m \u00b7 \u001b[0m\n            \u001b[0mPoint\u001b[0m\n            \u001b[0m \u00b7 \u001b[0m\n            \u001b[0m1\u001b[0m\n            \u001b[0m \u001b[0m\n            \u001b[0mfeature\u001b[0m\n            \u001b[0m included\u001b[0m\n          \u001b[36m</li>\u001b[39m\n          \u001b[36m<li>\u001b[39m\n            \u001b[0mproject_corridors\u001b[0m\n            \u001b[0m \u00b7 \u001b[0m\n            \u001b[0mLineString\u001b[0m\n            \u001b[0m \u00b7 \u001b[0m\n            \u001b[0m1\u001b[0m\n            \u001b[0m \u001b[0m\n            \u001b[0mfeature\u001b[0m\n            \u001b[0m included\u001b[0m\n          \u001b[36m</li>\u001b[39m\n        \u001b[36m</ul>\u001b[39m\n        \u001b[36m<p\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"mt-2 text-sm font-medium text-foreground\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0m3\u001b[0m\n          \u001b[0m core layers \u00b7 \u001b[0m\n          \u001b[0m3\u001b[0m\n          \u001b[0m \u001b[0m\n          \u001b[0mfeatures\u001b[0m\n          \u001b[0m included \u00b7 \u001b[0m\n          \u001b[0m0\u001b[0m\n          \u001b[0m unavailable \u00b7 \u001b[0m\n          \u001b[0m0\u001b[0m\n          \u001b[0m rejected \u001b[0m\n          \u001b[0mshapes\u001b[0m\n        \u001b[36m</p>\u001b[39m\n      \u001b[36m</div>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"mt-4\"\u001b[39m\n      \u001b[36m/>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"mt-4\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<div>\u001b[39m\n          \u001b[0mGeography editors\u001b[0m\n        \u001b[36m</div>\u001b[39m\n      \u001b[36m</div>\u001b[39m\n    \u001b[36m</article>\u001b[39m\n  \u001b[36m</div>\u001b[39m\n\u001b[36m</body>\u001b[39m\n    at Object.getElementError (/home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@testing-library/dom/dist/config.js:37:19)\n    at /home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:76:38\n    at /home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:52:17\n    at /home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:95:19\n    at /home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/project-saved-map.test.tsx:101:19\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ignore-late-mount",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "saved map lifecycle draws late geometry after an initially empty mount",
+          "messages": [
+            "Error: No mapbox map was constructed \u2014 the component rendered no map at all.\n    at Module.lastFakeMap (/home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/helpers/mapbox-gl-fake.ts:496:19)\n    at /home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/project-saved-map.test.tsx:114:17\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "stale-style-data",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "saved map lifecycle uses the newest geometry when style.load precedes tile readiness",
+          "messages": [
+            "AssertionError: expected { type: 'FeatureCollection', \u2026(1) } to deeply equal { type: 'FeatureCollection', \u2026(1) }\n    at /home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/project-saved-map.test.tsx:128:36\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "skip-source-refresh",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "saved map lifecycle replaces removed features without rebuilding the map",
+          "messages": [
+            "AssertionError: expected { type: 'FeatureCollection', \u2026(1) } to deeply equal { type: 'FeatureCollection', \u2026(1) }\n    at /home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/project-saved-map.test.tsx:139:36\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "skip-style-recovery",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "saved map lifecycle repaints saved layers after a style replacement without another camera move",
+          "messages": [
+            "AssertionError: expected undefined to deeply equal { type: 'FeatureCollection', \u2026(1) }\n    at /home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/project-saved-map.test.tsx:156:36\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "leak-pending-paint",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "saved map lifecycle cancels pending paint and style listeners on unmount",
+          "messages": [
+            "AssertionError: expected [ 1, 1, 1, +0, +0 ] to deeply equal [ +0, +0, +0, +0, +0 ]\n    at /home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/project-saved-map.test.tsx:167:108\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "skip-sizing",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "saved map lifecycle resizes its actual container when a hidden tab becomes visible",
+          "messages": [
+            "AssertionError: expected \"vi.fn()\" to be called with arguments: [ <div \u2026(3)></div> ]\n\nNumber of calls: 0\n\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/expect/dist/index.js:1487:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/project-saved-map.test.tsx:185:21\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "skip-visible-framing",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "saved map lifecycle resizes its actual container when a hidden tab becomes visible",
+          "messages": [
+            "AssertionError: expected undefined to deeply equal [ 144.79371, 13.4443 ]\n    at /home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/project-saved-map.test.tsx:191:40\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "fit-hidden-container",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "saved map lifecycle resizes its actual container when a hidden tab becomes visible",
+          "messages": [
+            "AssertionError: expected [ { \u2026(3) } ] to have a length of +0 but got 1\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/expect/dist/index.js:1389:20)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/project-saved-map.test.tsx:187:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "stale-async-data",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "saved map lifecycle uses latest saved geometry after asynchronous MapLibre startup",
+          "messages": [
+            "AssertionError: expected { type: 'FeatureCollection', \u2026(1) } to deeply equal { type: 'FeatureCollection', \u2026(1) }\n    at /home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/project-saved-map.test.tsx:212:36\n    at file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "leak-async-build",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "saved map lifecycle does not construct an asynchronous map after the panel unmounts",
+          "messages": [
+            "AssertionError: expected [ FakeMapboxMap{ \u2026(21) } ] to have a length of +0 but got 1\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/expect/dist/index.js:1389:20)\n    at Proxy.<anonymous> (file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/project-saved-map.test.tsx:224:24\n    at file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "leak-setup-map",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "saved map lifecycle releases a constructed map if control setup fails",
+          "messages": [
+            "AssertionError: expected false to be true // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/project-saved-map.test.tsx:232:37\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ignore-style-error",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "saved map lifecycle states an initial style failure and releases the map",
+          "messages": [
+            "TestingLibraryElementError: Unable to find an accessible element with the role \"status\"\n\nHere are the accessible roles:\n\n  article:\n\n  Name \"\":\n  \u001b[36m<article\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"module-section-surface scroll-mt-24\"\u001b[39m\n    \u001b[33mid\u001b[39m=\u001b[32m\"project-map-presence\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  heading:\n\n  Name \"Where this project is\":\n  \u001b[36m<h2\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"module-section-title\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Core project layers\":\n  \u001b[36m<h3\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm font-semibold text-foreground\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  paragraph:\n\n  Name \"\":\n  \u001b[36m<p\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"module-section-description\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"\":\n  \u001b[36m<p\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"max-w-2xl text-sm text-muted-foreground\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"\":\n  \u001b[36m<p\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"mt-1 text-xs text-muted-foreground\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"\":\n  \u001b[36m<p\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"mt-2 text-sm font-medium text-foreground\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  link:\n\n  Name \"Download GeoPackage\":\n  \u001b[36m<a\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-9 gap-1.5 px-3.5 has-[>svg]:px-3\"\u001b[39m\n    \u001b[33mdata-size\u001b[39m=\u001b[32m\"sm\"\u001b[39m\n    \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n    \u001b[33mdata-variant\u001b[39m=\u001b[32m\"outline\"\u001b[39m\n    \u001b[33mdownload\u001b[39m=\u001b[32m\"\"\u001b[39m\n    \u001b[33mhref\u001b[39m=\u001b[32m\"/api/projects/project-1/export/geopackage\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  Name \"Map packages\":\n  \u001b[36m<a\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-9 gap-1.5 px-3.5 has-[>svg]:px-3\"\u001b[39m\n    \u001b[33mdata-size\u001b[39m=\u001b[32m\"sm\"\u001b[39m\n    \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n    \u001b[33mdata-variant\u001b[39m=\u001b[32m\"outline\"\u001b[39m\n    \u001b[33mhref\u001b[39m=\u001b[32m\"/maps?projectId=project-1\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  list:\n\n  Name \"\":\n  \u001b[36m<ul\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"mt-2 space-y-1 text-sm text-foreground\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  listitem:\n\n  Name \"\":\n  \u001b[36m<li />\u001b[39m\n\n  Name \"\":\n  \u001b[36m<li />\u001b[39m\n\n  Name \"\":\n  \u001b[36m<li />\u001b[39m\n\n  --------------------------------------------------\n  figure:\n\n  Name \"\":\n  \u001b[36m<figure\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-2\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n  img:\n\n  Name \"Saved project study area, site marker and corridors\":\n  \u001b[36m<div\u001b[39m\n    \u001b[33maria-label\u001b[39m=\u001b[32m\"Saved project study area, site marker and corridors\"\u001b[39m\n    \u001b[33mclass\u001b[39m=\u001b[32m\"h-[360px] w-full overflow-hidden rounded-lg border border-border\"\u001b[39m\n    \u001b[33mrole\u001b[39m=\u001b[32m\"img\"\u001b[39m\n  \u001b[36m/>\u001b[39m\n\n  --------------------------------------------------\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[36m<article\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"module-section-surface scroll-mt-24\"\u001b[39m\n      \u001b[33mid\u001b[39m=\u001b[32m\"project-map-presence\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"module-section-header\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<div\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-center gap-3\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<span\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-[color:var(--pine)]/10 text-[color:var(--pine)]\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<svg\u001b[39m\n              \u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"lucide lucide-map h-5 w-5\"\u001b[39m\n              \u001b[33mfill\u001b[39m=\u001b[32m\"none\"\u001b[39m\n              \u001b[33mheight\u001b[39m=\u001b[32m\"24\"\u001b[39m\n              \u001b[33mstroke\u001b[39m=\u001b[32m\"currentColor\"\u001b[39m\n              \u001b[33mstroke-linecap\u001b[39m=\u001b[32m\"round\"\u001b[39m\n              \u001b[33mstroke-linejoin\u001b[39m=\u001b[32m\"round\"\u001b[39m\n              \u001b[33mstroke-width\u001b[39m=\u001b[32m\"2\"\u001b[39m\n              \u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 24\"\u001b[39m\n              \u001b[33mwidth\u001b[39m=\u001b[32m\"24\"\u001b[39m\n              \u001b[33mxmlns\u001b[39m=\u001b[32m\"http://www.w3.org/2000/svg\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<path\u001b[39m\n                \u001b[33md\u001b[39m=\u001b[32m\"M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z\"\u001b[39m\n              \u001b[36m/>\u001b[39m\n              \u001b[36m<path\u001b[39m\n                \u001b[33md\u001b[39m=\u001b[32m\"M15 5.764v15\"\u001b[39m\n              \u001b[36m/>\u001b[39m\n              \u001b[36m<path\u001b[39m\n                \u001b[33md\u001b[39m=\u001b[32m\"M9 3.236v15\"\u001b[39m\n              \u001b[36m/>\u001b[39m\n            \u001b[36m</svg>\u001b[39m\n          \u001b[36m</span>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"module-section-heading\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<h2\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"module-section-title\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0mWhere this project is\u001b[0m\n            \u001b[36m</h2>\u001b[39m\n            \u001b[36m<p\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"module-section-description\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0mReview the saved study area, site marker and corridors together. Draw or upload a location or corridor below. Save changes to include them on this map and in exports.\u001b[0m\n            \u001b[36m</p>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n        \u001b[36m</div>\u001b[39m\n      \u001b[36m</div>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/70 bg-muted/25 px-4 py-3\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<p\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"max-w-2xl text-sm text-muted-foreground\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mTake the stored project area, site marker, and corridors into QGIS or another GIS. The package includes an EPSG:4326 manifest that names any missing or invalid map shapes. Linked datasets, documents, and analysis evidence are not included yet.\u001b[0m\n          \u001b[0m \u001b[0m\n          \u001b[0mApproved public engagement locations from every linked outreach effort are included automatically; private notes and pending comments are excluded. Inspect the downloaded layer summary for their counts.\u001b[0m\n        \u001b[36m</p>\u001b[39m\n        \u001b[36m<div\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"flex flex-wrap gap-2\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<a\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-9 gap-1.5 px-3.5 has-[>svg]:px-3\"\u001b[39m\n            \u001b[33mdata-size\u001b[39m=\u001b[32m\"sm\"\u001b[39m\n            \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n            \u001b[33mdata-variant\u001b[39m=\u001b[32m\"outline\"\u001b[39m\n            \u001b[33mdownload\u001b[39m=\u001b[32m\"\"\u001b[39m\n            \u001b[33mhref\u001b[39m=\u001b[32m\"/api/projects/project-1/export/geopackage\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<svg\u001b[39m\n              \u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"lucide lucide-download\"\u001b[39m\n              \u001b[33mfill\u001b[39m=\u001b[32m\"none\"\u001b[39m\n              \u001b[33mheight\u001b[39m=\u001b[32m\"24\"\u001b[39m\n              \u001b[33mstroke\u001b[39m=\u001b[32m\"currentColor\"\u001b[39m\n              \u001b[33mstroke-linecap\u001b[39m=\u001b[32m\"round\"\u001b[39m\n              \u001b[33mstroke-linejoin\u001b[39m=\u001b[32m\"round\"\u001b[39m\n              \u001b[33mstroke-width\u001b[39m=\u001b[32m\"2\"\u001b[39m\n              \u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 24\"\u001b[39m\n              \u001b[33mwidth\u001b[39m=\u001b[32m\"24\"\u001b[39m\n              \u001b[33mxmlns\u001b[39m=\u001b[32m\"http://www.w3.org/2000/svg\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<path\u001b[39m\n                \u001b[33md\u001b[39m=\u001b[32m\"M12 15V3\"\u001b[39m\n              \u001b[36m/>\u001b[39m\n              \u001b[36m<path\u001b[39m\n                \u001b[33md\u001b[39m=\u001b[32m\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"\u001b[39m\n              \u001b[36m/>\u001b[39m\n              \u001b[36m<path\u001b[39m\n                \u001b[33md\u001b[39m=\u001b[32m\"m7 10 5 5 5-5\"\u001b[39m\n              \u001b[36m/>\u001b[39m\n            \u001b[36m</svg>\u001b[39m\n            \u001b[0mDownload GeoPackage\u001b[0m\n          \u001b[36m</a>\u001b[39m\n          \u001b[36m<a\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-[color:color-mix(in_srgb,var(--line)_84%,var(--ink)_16%)] bg-background text-[color:var(--ink)] hover:border-[color:var(--pine)] hover:bg-[color:color-mix(in_srgb,var(--pine)_8%,var(--background))] hover:text-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-9 gap-1.5 px-3.5 has-[>svg]:px-3\"\u001b[39m\n            \u001b[33mdata-size\u001b[39m=\u001b[32m\"sm\"\u001b[39m\n            \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n            \u001b[33mdata-variant\u001b[39m=\u001b[32m\"outline\"\u001b[39m\n            \u001b[33mhref\u001b[39m=\u001b[32m\"/maps?projectId=project-1\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mMap packages\u001b[0m\n          \u001b[36m</a>\u001b[39m\n        \u001b[36m</div>\u001b[39m\n      \u001b[36m</div>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"mt-3 rounded-lg border border-border/70 bg-background px-4 py-3\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<h3\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm font-semibold text-foreground\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mCore project layers\u001b[0m\n        \u001b[36m</h3>\u001b[39m\n        \u001b[36m<p\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"mt-1 text-xs text-muted-foreground\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mCoordinate reference system: \u001b[0m\n          \u001b[0mEPSG:4326\u001b[0m\n          \u001b[0m (WGS 84 longitude/latitude)\u001b[0m\n        \u001b[36m</p>\u001b[39m\n        \u001b[36m<ul\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"mt-2 space-y-1 text-sm text-foreground\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<li>\u001b[39m\n            \u001b[0mproject_area\u001b[0m\n            \u001b[0m \u00b7 \u001b[0m\n            \u001b[0mPolygon or MultiPolygon\u001b[0m\n            \u001b[0m \u00b7 \u001b[0m\n            \u001b[0m1\u001b[0m\n            \u001b[0m \u001b[0m\n            \u001b[0mfeature\u001b[0m\n            \u001b[0m included\u001b[0m\n          \u001b[36m</li>\u001b[39m\n          \u001b[36m<li>\u001b[39m\n            \u001b[0mproject_location\u001b[0m\n            \u001b[0m \u00b7 \u001b[0m\n            \u001b[0mPoint\u001b[0m\n            \u001b[0m \u00b7 \u001b[0m\n            \u001b[0m1\u001b[0m\n            \u001b[0m \u001b[0m\n            \u001b[0mfeature\u001b[0m\n            \u001b[0m included\u001b[0m\n          \u001b[36m</li>\u001b[39m\n          \u001b[36m<li>\u001b[39m\n            \u001b[0mproject_corridors\u001b[0m\n            \u001b[0m \u00b7 \u001b[0m\n            \u001b[0mLineString\u001b[0m\n            \u001b[0m \u00b7 \u001b[0m\n            \u001b[0m1\u001b[0m\n            \u001b[0m \u001b[0m\n            \u001b[0mfeature\u001b[0m\n            \u001b[0m included\u001b[0m\n          \u001b[36m</li>\u001b[39m\n        \u001b[36m</ul>\u001b[39m\n        \u001b[36m<p\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"mt-2 text-sm font-medium text-foreground\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0m3\u001b[0m\n          \u001b[0m core layers \u00b7 \u001b[0m\n          \u001b[0m3\u001b[0m\n          \u001b[0m \u001b[0m\n          \u001b[0mfeatures\u001b[0m\n          \u001b[0m included \u00b7 \u001b[0m\n          \u001b[0m0\u001b[0m\n          \u001b[0m unavailable \u00b7 \u001b[0m\n          \u001b[0m0\u001b[0m\n          \u001b[0m rejected \u001b[0m\n          \u001b[0mshapes\u001b[0m\n        \u001b[36m</p>\u001b[39m\n      \u001b[36m</div>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"mt-4\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<figure\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-2\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33maria-label\u001b[39m=\u001b[32m\"Saved project study area, site marker and corridors\"\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"h-[360px] w-full overflow-hidden rounded-lg border border-border\"\u001b[39m\n            \u001b[33mrole\u001b[39m=\u001b[32m\"img\"\u001b[39m\n          \u001b[36m/>\u001b[39m\n          \u001b[36m<figcaption\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"text-xs text-muted-foreground\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mSaved project records: blue study area, green site marker, amber corridors. Geometry does not establish jurisdiction or surveyed boundaries. Basemap attribution appears on the map.\u001b[0m\n          \u001b[36m</figcaption>\u001b[39m\n        \u001b[36m</figure>\u001b[39m\n      \u001b[36m</div>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"mt-4\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<div>\u001b[39m\n          \u001b[0mGeography editors\u001b[0m\n        \u001b[36m</div>\u001b[39m\n      \u001b[36m</div>\u001b[39m\n    \u001b[36m</article>\u001b[39m\n  \u001b[36m</div>\u001b[39m\n\u001b[36m</body>\u001b[39m\n    at Object.getElementError (/home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@testing-library/dom/dist/config.js:37:19)\n    at /home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:76:38\n    at /home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:52:17\n    at /home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:95:19\n    at /home/nathaniel/.t3/worktrees/openplan/t3-7c93268d/openplan/src/test/project-saved-map.test.tsx:241:19\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/model-relaunch-retention-20261008/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "restored",
+      "exit": 0,
+      "passed": 21,
+      "failed": []
+    }
+  ],
+  "sourceBindings": {
+    "openplan/src/components/projects/project-saved-map.tsx": "7ce9c845b81803526921fd633afbf1280375709f8eda6df58ab21393bf3b4aca",
+    "openplan/src/app/(app)/projects/[projectId]/_components/project-map-presence-panel.tsx": "0b11d8aeef07c2ac7b3beef8a1a60986f1c098edb4c375afd446d3ee6a69c3eb",
+    "openplan/src/components/projects/project-map-presence.tsx": "a9915f80b097f3a21bac227f0d10fc0894aacf09ce077d63f84e05cca773e781",
+    "openplan/src/test/project-saved-map.test.tsx": "66e87dd7a9ed1a45b30032a856afd3c013d4b00a2768c8fd7af8bd3a1bc022c0"
+  },
+  "blindCategories": [
+    "WebGL rendering and browser style acceptance",
+    "desktop and exact 390px identified-build journey",
+    "live database, authorization and export byte parity",
+    "practitioner usefulness and full accessibility"
+  ]
+}

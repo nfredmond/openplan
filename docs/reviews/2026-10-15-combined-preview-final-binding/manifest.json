@@ -1,0 +1,39 @@
+{
+  "candidate": "06a108010ab39aa42eed4c2bcda3e1371b8aa813",
+  "repository": "/home/nathaniel/.t3/worktrees/openplan/t3-6bf6371f",
+  "privateRoot": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/project-geography-preview-final-20261015",
+  "reviewedCommit": "a72f012ced074cadbfeb8981e2944e056e6373d2",
+  "independentCommit": "ce93566f4f0daf2234f6ef5424a9f5393e404484",
+  "privateBindingManifestSha256": "eba8c9af486fcdbe4c16ff68345db8f39dd7c9c4047c5cc2f2ed9c85da54010a",
+  "templateBindingManifestSha256": "522594cb0ab70af1cce07f148d73e2f385519ead46c9f334af57207f836b6f04",
+  "templateSha256": {
+    "launcher.py": "830cda6f8bae69b46e5e6108ba22a82236817b340fe783ec4b4118e7c9ed36fb",
+    "policy.py": "9c63235a3505a4301cb7e0a7cc90c53fd6ddf796a101047a9f53ce3c4f4c214f",
+    "controls.py": "5ce62be0c8014884c394844ec0ff4e71ff3161f14d48fe5e6445be388c70a949",
+    "mutation_controls.py": "d29b7dafbbf1d168f78a6edcf75b2c525fa1694ab4f4963b4ad655038cbfa51b"
+  },
+  "publicFileSha256": {
+    "README.md": "55570340a948b0f5fdfb35b1b30bd08f7f3d5bef693feb429827889aba80cd3f",
+    "controls.json": "2640273d5de243ccdc7d434b11cad1ab7a386121e84658ace724df134efddb55",
+    "final_audit.py": "41d8d02b73140a726bc98e60ece6d1eec7c5c32cdb4a5013e99ef49fe6089938",
+    "preflight.py": "5213fd622d45f5e80e814d572e447744c820bc52464270ba1ab5874758956803",
+    "preparation.json": "1914e51e90127394b6bc9f44a7500a7c9a6651ab6add1876933f8b08f3502a62",
+    "prepare.py": "2efa8b6befe1e273aa601e4b7a8f5cdd13a57a1b13c0353af4048e6a282840eb",
+    "templates/controls.py": "5ce62be0c8014884c394844ec0ff4e71ff3161f14d48fe5e6445be388c70a949",
+    "templates/launcher.py": "830cda6f8bae69b46e5e6108ba22a82236817b340fe783ec4b4118e7c9ed36fb",
+    "templates/mutation_controls.py": "d29b7dafbbf1d168f78a6edcf75b2c525fa1694ab4f4963b4ad655038cbfa51b",
+    "templates/policy.py": "9c63235a3505a4301cb7e0a7cc90c53fd6ddf796a101047a9f53ce3c4f4c214f",
+    "verify.py": "cd7545e7055c0485ee45e8448c60e39740fc5af82d7e0e2133d0558325213ca8"
+  },
+  "publicDisclosureScan": {
+    "harmlessSurvivor": true,
+    "injectedPrivateValueRefusals": 15,
+    "exactRestoration": true
+  },
+  "oldPacketRootsByteModeUnchanged": 8,
+  "combinedPacketOperationIntentsAbsent": 4,
+  "privateModes": true,
+  "noBytecode": true,
+  "operationallyProved": false,
+  "limits": "File hashes and synthetic probes do not prove runtime acceptance or protect against privileged replacement."
+}

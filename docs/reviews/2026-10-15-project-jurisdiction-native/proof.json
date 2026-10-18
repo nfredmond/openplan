@@ -1,0 +1,2824 @@
+{
+  "candidate": "f18ea8cd51d12168ec2766e1fc5cc34eeb775df2",
+  "migration16Sha256": "1384e6a2767827c2b756d978bd6e76f6fea364e4e1263e953c0358364341267f",
+  "migration15Sha256": "40a554ab2d1c97791f3e2875ca5ff24350d400bd3e1ec618896bcdeeed097113",
+  "cluster": "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce",
+  "serverVersion": "PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit",
+  "resources": {
+    "memoryMax": "1073741824",
+    "swapMax": "0",
+    "serverMemoryLimit": 0,
+    "serverSwapLimit": 0,
+    "serverImage": "public.ecr.aws/supabase/postgres:17.6.1.156",
+    "cluster": "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce"
+  },
+  "databases": [
+    {
+      "oid": 6056500,
+      "datname": "openplan_attempt_cli_5b3c1368c1c644b99444cd6194af1142",
+      "owner": "postgres",
+      "datcollate": "en_US.UTF-8",
+      "datctype": "en_US.UTF-8",
+      "datconnlimit": -1
+    },
+    {
+      "oid": 6087679,
+      "datname": "openplan_jurisdiction_native_3d281df106064b8cbb9e0c82_restore",
+      "owner": "postgres",
+      "datcollate": "en_US.UTF-8",
+      "datctype": "en_US.UTF-8",
+      "datconnlimit": -1
+    },
+    {
+      "oid": 6072103,
+      "datname": "openplan_jurisdiction_native_3d281df106064b8cbb9e0c82_up",
+      "owner": "postgres",
+      "datcollate": "en_US.UTF-8",
+      "datctype": "en_US.UTF-8",
+      "datconnlimit": -1
+    }
+  ],
+  "containers": [
+    {
+      "id": "8a4c18b56ba3e692862167cd4656679636dfbc5c514827ca2c675a26adcbe3e4",
+      "name": "/openplan-jurisdiction-native-rest-c912a4f746a3",
+      "database": "openplan_jurisdiction_native_3d281df106064b8cbb9e0c82_up",
+      "running": false,
+      "oomKilled": false,
+      "exitCode": 255
+    },
+    {
+      "id": "5be17cffb786756ae7e8b87fe5af4226c74ee772ce1ad6473a40d59cd3248698",
+      "name": "/openplan-jurisdiction-native-rest-74bcebccc828",
+      "database": "openplan_jurisdiction_native_3d281df106064b8cbb9e0c82_up",
+      "running": false,
+      "oomKilled": false,
+      "exitCode": 255
+    },
+    {
+      "id": "dd0c0371cf3685fa1097b1da9e119fd188f7671697aa331329b990edbe146368",
+      "name": "/openplan-jurisdiction-native-rest-603877f0c413",
+      "database": "openplan_jurisdiction_native_3d281df106064b8cbb9e0c82_up",
+      "running": false,
+      "oomKilled": false,
+      "exitCode": 255
+    }
+  ],
+  "sourceUnchanged": {
+    "history": true,
+    "globalRolesAndMemberships": true,
+    "projectAndCorridorRows": true
+  },
+  "cohorts": {
+    "native": {
+      "directory": "attempt-8893331682",
+      "observations": 39,
+      "resultSha256": "084a7441539d960fa63ddd1a378c833b9f286ad0229b9a431fbf56f48c44c114",
+      "observationsSha256": "3f897d7ba15cd7740bf8e0d523d545f3b873f72313395d0bebf88ea1283140b4",
+      "events": [
+        {
+          "case": "validity",
+          "observed": {
+            "cases": [
+              {
+                "case": "sql-null",
+                "accepted": true
+              },
+              {
+                "case": "declared",
+                "accepted": true
+              },
+              {
+                "case": "unresolved",
+                "accepted": true
+              },
+              {
+                "case": "array",
+                "accepted": false,
+                "sqlstate": "23514",
+                "message": "new row for relation \"projects\" violates check constraint \"projects_jurisdiction_context_valid\""
+              },
+              {
+                "case": "json-null",
+                "accepted": false,
+                "sqlstate": "23514",
+                "message": "new row for relation \"projects\" violates check constraint \"projects_jurisdiction_context_valid\""
+              },
+              {
+                "case": "scalar",
+                "accepted": false,
+                "sqlstate": "23514",
+                "message": "new row for relation \"projects\" violates check constraint \"projects_jurisdiction_context_valid\""
+              },
+              {
+                "case": "missing-key",
+                "accepted": false,
+                "sqlstate": "23514",
+                "message": "new row for relation \"projects\" violates check constraint \"projects_jurisdiction_context_valid\""
+              },
+              {
+                "case": "extra-key",
+                "accepted": false,
+                "sqlstate": "23514",
+                "message": "new row for relation \"projects\" violates check constraint \"projects_jurisdiction_context_valid\""
+              },
+              {
+                "case": "version-string",
+                "accepted": false,
+                "sqlstate": "23514",
+                "message": "new row for relation \"projects\" violates check constraint \"projects_jurisdiction_context_valid\""
+              },
+              {
+                "case": "version-two",
+                "accepted": false,
+                "sqlstate": "23514",
+                "message": "new row for relation \"projects\" violates check constraint \"projects_jurisdiction_context_valid\""
+              },
+              {
+                "case": "state-null",
+                "accepted": false,
+                "sqlstate": "23514",
+                "message": "new row for relation \"projects\" violates check constraint \"projects_jurisdiction_context_valid\""
+              },
+              {
+                "case": "entries-object",
+                "accepted": false,
+                "sqlstate": "23514",
+                "message": "new row for relation \"projects\" violates check constraint \"projects_jurisdiction_context_valid\""
+              },
+              {
+                "case": "actor-type",
+                "accepted": false,
+                "sqlstate": "23514",
+                "message": "new row for relation \"projects\" violates check constraint \"projects_jurisdiction_context_valid\""
+              },
+              {
+                "case": "actor-invalid",
+                "accepted": false,
+                "sqlstate": "23514",
+                "message": "new row for relation \"projects\" violates check constraint \"projects_jurisdiction_context_valid\""
+              },
+              {
+                "case": "time-type",
+                "accepted": false,
+                "sqlstate": "23514",
+                "message": "new row for relation \"projects\" violates check constraint \"projects_jurisdiction_context_valid\""
+              },
+              {
+                "case": "time-date-only",
+                "accepted": false,
+                "sqlstate": "23514",
+                "message": "new row for relation \"projects\" violates check constraint \"projects_jurisdiction_context_valid\""
+              },
+              {
+                "case": "time-impossible",
+                "accepted": false,
+                "sqlstate": "23514",
+                "message": "new row for relation \"projects\" violates check constraint \"projects_jurisdiction_context_valid\""
+              },
+              {
+                "case": "unresolved-with-entry",
+                "accepted": false,
+                "sqlstate": "23514",
+                "message": "new row for relation \"projects\" violates check constraint \"projects_jurisdiction_context_valid\""
+              },
+              {
+                "case": "declared-empty",
+                "accepted": false,
+                "sqlstate": "23514",
+                "message": "new row for relation \"projects\" violates check constraint \"projects_jurisdiction_context_valid\""
+              },
+              {
+                "case": "thirteen",
+                "accepted": false,
+                "sqlstate": "23514",
+                "message": "new row for relation \"projects\" violates check constraint \"projects_jurisdiction_context_valid\""
+              },
+              {
+                "case": "oversize",
+                "accepted": false,
+                "sqlstate": "23514",
+                "message": "new row for relation \"projects\" violates check constraint \"projects_jurisdiction_context_valid\""
+              },
+              {
+                "case": "label-42",
+                "accepted": false,
+                "sqlstate": "23514",
+                "message": "new row for relation \"projects\" violates check constraint \"projects_jurisdiction_context_valid\""
+              },
+              {
+                "case": "label- ",
+                "accepted": false,
+                "sqlstate": "23514",
+                "message": "new row for relation \"projects\" violates check constraint \"projects_jurisdiction_context_valid\""
+              },
+              {
+                "case": "kind-None",
+                "accepted": false,
+                "sqlstate": "23514",
+                "message": "new row for relation \"projects\" violates check constraint \"projects_jurisdiction_context_valid\""
+              },
+              {
+                "case": "scope-legal",
+                "accepted": false,
+                "sqlstate": "23514",
+                "message": "new row for relation \"projects\" violates check constraint \"projects_jurisdiction_context_valid\""
+              },
+              {
+                "case": "identity-trusted",
+                "accepted": false,
+                "sqlstate": "23514",
+                "message": "new row for relation \"projects\" violates check constraint \"projects_jurisdiction_context_valid\""
+              },
+              {
+                "case": "countryCode-usa",
+                "accepted": false,
+                "sqlstate": "23514",
+                "message": "new row for relation \"projects\" violates check constraint \"projects_jurisdiction_context_valid\""
+              },
+              {
+                "case": "countryCode-2",
+                "accepted": false,
+                "sqlstate": "23514",
+                "message": "new row for relation \"projects\" violates check constraint \"projects_jurisdiction_context_valid\""
+              },
+              {
+                "case": "subdivisionCode-California space",
+                "accepted": false,
+                "sqlstate": "23514",
+                "message": "new row for relation \"projects\" violates check constraint \"projects_jurisdiction_context_valid\""
+              },
+              {
+                "case": "reference-06045",
+                "accepted": false,
+                "sqlstate": "23514",
+                "message": "new row for relation \"projects\" violates check constraint \"projects_jurisdiction_context_valid\""
+              },
+              {
+                "case": "reference-tigerweb:has space",
+                "accepted": false,
+                "sqlstate": "23514",
+                "message": "new row for relation \"projects\" violates check constraint \"projects_jurisdiction_context_valid\""
+              },
+              {
+                "case": "reference-4",
+                "accepted": false,
+                "sqlstate": "23514",
+                "message": "new row for relation \"projects\" violates check constraint \"projects_jurisdiction_context_valid\""
+              },
+              {
+                "case": "entry-missing",
+                "accepted": false,
+                "sqlstate": "23514",
+                "message": "new row for relation \"projects\" violates check constraint \"projects_jurisdiction_context_valid\""
+              },
+              {
+                "case": "entry-extra",
+                "accepted": false,
+                "sqlstate": "23514",
+                "message": "new row for relation \"projects\" violates check constraint \"projects_jurisdiction_context_valid\""
+              },
+              {
+                "case": "entry-scalar",
+                "accepted": false,
+                "sqlstate": "23514",
+                "message": "new row for relation \"projects\" violates check constraint \"projects_jurisdiction_context_valid\""
+              }
+            ],
+            "sqlDoesNotResolveReferences": true
+          }
+        },
+        {
+          "case": "direct-owner-insert",
+          "observed": {
+            "sqlstate": "42501",
+            "message": "Project jurisdiction requires the authorized human server route"
+          }
+        },
+        {
+          "case": "direct-owner-update",
+          "observed": {
+            "sqlstate": "42501",
+            "message": "Project jurisdiction requires the authorized human server route"
+          }
+        },
+        {
+          "case": "direct-admin-insert",
+          "observed": {
+            "sqlstate": "42501",
+            "message": "Project jurisdiction requires the authorized human server route"
+          }
+        },
+        {
+          "case": "direct-admin-update",
+          "observed": {
+            "sqlstate": "42501",
+            "message": "Project jurisdiction requires the authorized human server route"
+          }
+        },
+        {
+          "case": "direct-member-insert",
+          "observed": {
+            "sqlstate": "42501",
+            "message": "Project jurisdiction requires the authorized human server route"
+          }
+        },
+        {
+          "case": "direct-member-update",
+          "observed": {
+            "sqlstate": "42501",
+            "message": "Project jurisdiction requires the authorized human server route"
+          }
+        },
+        {
+          "case": "ordinary-null-and-geometry",
+          "observed": [
+            {
+              "role": "owner",
+              "nullInsert": true,
+              "geometryUpdate": true
+            },
+            {
+              "role": "admin",
+              "nullInsert": true,
+              "geometryUpdate": true
+            },
+            {
+              "role": "member",
+              "nullInsert": true,
+              "geometryUpdate": true
+            },
+            {
+              "actor": "viewer",
+              "visibleRows": 1,
+              "ordinaryUpdateRows": 0,
+              "insertSqlstate": "42501"
+            },
+            {
+              "actor": "outsider",
+              "visibleRows": 0,
+              "ordinaryUpdateRows": 0,
+              "insertSqlstate": "42501"
+            },
+            {
+              "actor": "foreignActor",
+              "visibleRows": 0,
+              "ordinaryUpdateRows": 0,
+              "insertSqlstate": "42501"
+            },
+            {
+              "actor": null,
+              "visibleRows": 0,
+              "ordinaryUpdateRows": 0,
+              "insertSqlstate": "42501"
+            }
+          ]
+        },
+        {
+          "case": "rls-read-isolation",
+          "observed": [
+            {
+              "actor": "owner",
+              "ids": {
+                "sha256": "e8c55ce2e949ec32bf776d1e0083a519602a4c93de39144ad8b97287c621e4e7"
+              }
+            },
+            {
+              "actor": "admin",
+              "ids": {
+                "sha256": "e8c55ce2e949ec32bf776d1e0083a519602a4c93de39144ad8b97287c621e4e7"
+              }
+            },
+            {
+              "actor": "member",
+              "ids": {
+                "sha256": "e8c55ce2e949ec32bf776d1e0083a519602a4c93de39144ad8b97287c621e4e7"
+              }
+            },
+            {
+              "actor": "viewer",
+              "ids": {
+                "sha256": "e8c55ce2e949ec32bf776d1e0083a519602a4c93de39144ad8b97287c621e4e7"
+              }
+            },
+            {
+              "actor": "outsider",
+              "ids": {
+                "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+              }
+            },
+            {
+              "actor": "foreignActor",
+              "ids": {
+                "sha256": "36270e75415b020e4b309063d22c6d586b670bfcc8a96a004ef81db82dacd6b1"
+              }
+            },
+            {
+              "actor": null,
+              "ids": {
+                "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+              }
+            }
+          ]
+        },
+        {
+          "case": "service-owner",
+          "observed": {
+            "actor": "owner",
+            "before": {
+              "sha256": "d07e91841f05ea4e181f5ff301efefd480e7faa4078a023c171cfb21279a4b21"
+            },
+            "after": {
+              "sha256": "f0f66da81c8d64379f0c334e353cdff4b977f436e345143e96f1153203133dba"
+            },
+            "databaseBounds": [
+              "2026-10-15 06:30:14.821676+00:00",
+              "2026-10-15 06:30:14.824704+00:00"
+            ]
+          }
+        },
+        {
+          "case": "service-admin",
+          "observed": {
+            "actor": "admin",
+            "before": {
+              "sha256": "d07e91841f05ea4e181f5ff301efefd480e7faa4078a023c171cfb21279a4b21"
+            },
+            "after": {
+              "sha256": "e64ab34f23ef9009974260dc5b430aaa73ca268238940798a2f2a177d9a83207"
+            },
+            "databaseBounds": [
+              "2026-10-15 06:30:14.831931+00:00",
+              "2026-10-15 06:30:14.834751+00:00"
+            ]
+          }
+        },
+        {
+          "case": "service-member",
+          "observed": {
+            "actor": "member",
+            "before": {
+              "sha256": "d07e91841f05ea4e181f5ff301efefd480e7faa4078a023c171cfb21279a4b21"
+            },
+            "after": {
+              "sha256": "e324be59e9678e3efaf9d0538a864fce712af30b8288d0c72723debbb4c181bf"
+            },
+            "databaseBounds": [
+              "2026-10-15 06:30:14.841997+00:00",
+              "2026-10-15 06:30:14.844877+00:00"
+            ]
+          }
+        },
+        {
+          "case": "service-viewer",
+          "observed": {
+            "actor": "viewer",
+            "sqlstate": "42501",
+            "message": "Current attributed workspace writer required"
+          }
+        },
+        {
+          "case": "service-outsider",
+          "observed": {
+            "actor": "outsider",
+            "sqlstate": "42501",
+            "message": "Current attributed workspace writer required"
+          }
+        },
+        {
+          "case": "service-foreignActor",
+          "observed": {
+            "actor": "foreignActor",
+            "sqlstate": "42501",
+            "message": "Current attributed workspace writer required"
+          }
+        },
+        {
+          "case": "service-None",
+          "observed": {
+            "actor": null,
+            "sqlstate": "42501",
+            "message": "Current attributed workspace writer required"
+          }
+        },
+        {
+          "case": "service-noactor",
+          "observed": {
+            "sqlstate": "42501",
+            "message": "Current attributed workspace writer required"
+          }
+        },
+        {
+          "case": "membership-downgrade-True",
+          "observed": {
+            "change": "downgrade",
+            "saveFirst": true,
+            "lockWait": {
+              "wait_event_type": "Lock",
+              "wait_event": "transactionid",
+              "blockers": [
+                1120923
+              ]
+            },
+            "before": {
+              "sha256": "d07e91841f05ea4e181f5ff301efefd480e7faa4078a023c171cfb21279a4b21"
+            },
+            "after": {
+              "sha256": "9279b6869b5404f4828e7051afb20961e0db9a786c15b2878c9c088fe0be7f45"
+            }
+          }
+        },
+        {
+          "case": "membership-downgrade-False",
+          "observed": {
+            "change": "downgrade",
+            "saveFirst": false,
+            "lockWait": {
+              "wait_event_type": "Lock",
+              "wait_event": "transactionid",
+              "blockers": [
+                1120925
+              ]
+            },
+            "before": {
+              "sha256": "9279b6869b5404f4828e7051afb20961e0db9a786c15b2878c9c088fe0be7f45"
+            },
+            "after": {
+              "sha256": "9279b6869b5404f4828e7051afb20961e0db9a786c15b2878c9c088fe0be7f45"
+            }
+          }
+        },
+        {
+          "case": "membership-revoke-True",
+          "observed": {
+            "change": "revoke",
+            "saveFirst": true,
+            "lockWait": {
+              "wait_event_type": "Lock",
+              "wait_event": "transactionid",
+              "blockers": [
+                1120929
+              ]
+            },
+            "before": {
+              "sha256": "9279b6869b5404f4828e7051afb20961e0db9a786c15b2878c9c088fe0be7f45"
+            },
+            "after": {
+              "sha256": "6c5fd532898a4d3f69461a9e179175bb801b8bfcdaef3858aaed81cd8eb65b51"
+            }
+          }
+        },
+        {
+          "case": "membership-revoke-False",
+          "observed": {
+            "change": "revoke",
+            "saveFirst": false,
+            "lockWait": {
+              "wait_event_type": "Lock",
+              "wait_event": "transactionid",
+              "blockers": [
+                1120931
+              ]
+            },
+            "before": {
+              "sha256": "6c5fd532898a4d3f69461a9e179175bb801b8bfcdaef3858aaed81cd8eb65b51"
+            },
+            "after": {
+              "sha256": "6c5fd532898a4d3f69461a9e179175bb801b8bfcdaef3858aaed81cd8eb65b51"
+            }
+          }
+        },
+        {
+          "case": "cas-exact-revision",
+          "observed": {
+            "firstRows": 1,
+            "secondRows": 0,
+            "lockWait": {
+              "wait_event_type": "Lock",
+              "wait_event": "transactionid",
+              "blockers": [
+                1120934
+              ]
+            },
+            "before": {
+              "sha256": "6c5fd532898a4d3f69461a9e179175bb801b8bfcdaef3858aaed81cd8eb65b51"
+            },
+            "after": {
+              "sha256": "77c5a1c2edbc8cf684621bdba1d7a303ebabbaa79deed5d97115fd14f86e5ab5"
+            }
+          }
+        },
+        {
+          "case": "stale-workspace",
+          "observed": {
+            "foreignPredicateRows": 0,
+            "unknownProjectRows": 0,
+            "inFlightRows": 0,
+            "lockWait": {
+              "wait_event_type": "Lock",
+              "wait_event": "transactionid",
+              "blockers": [
+                1120938
+              ]
+            }
+          }
+        },
+        {
+          "case": "ordinary-privileged-role-refusals",
+          "observed": {
+            "attempts": [
+              {
+                "role": "anon",
+                "target": "postgres",
+                "sqlstate": "42501",
+                "message": "permission denied to set role \"postgres\""
+              },
+              {
+                "role": "anon",
+                "target": "service_role",
+                "sqlstate": "42501",
+                "message": "permission denied to set role \"service_role\""
+              },
+              {
+                "role": "anon",
+                "target": "supabase_admin",
+                "sqlstate": "42501",
+                "message": "permission denied to set role \"supabase_admin\""
+              },
+              {
+                "role": "authenticated",
+                "target": "postgres",
+                "sqlstate": "42501",
+                "message": "permission denied to set role \"postgres\""
+              },
+              {
+                "role": "authenticated",
+                "target": "service_role",
+                "sqlstate": "42501",
+                "message": "permission denied to set role \"service_role\""
+              },
+              {
+                "role": "authenticated",
+                "target": "supabase_admin",
+                "sqlstate": "42501",
+                "message": "permission denied to set role \"supabase_admin\""
+              }
+            ],
+            "inventory": [
+              {
+                "r": "anon",
+                "may_validate": false,
+                "may_guard": false,
+                "postgres_member": false,
+                "service_member": false
+              },
+              {
+                "r": "authenticated",
+                "may_validate": true,
+                "may_guard": false,
+                "postgres_member": false,
+                "service_member": false
+              }
+            ]
+          }
+        },
+        {
+          "case": "control-harmless-comment",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-ordinary-guard-removed",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "ordinary owner update must refuse forged context: expected SQLSTATE 42501, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-constraint-removed",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "actual validity constraint must refuse malformed: expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-time-stamp-omitted",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "service recordedAt must be database time",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-actor-membership-redirected",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "attributed foreign writer must refuse: expected SQLSTATE 42501, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-writer-rank-weakened",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "viewer attributed context must refuse: expected SQLSTATE 42501, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-membership-lock-weakened",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "save-first downgrade must block on held membership/project row"
+          }
+        },
+        {
+          "case": "control-cas-predicate-omitted",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "CAS must have exactly one winner"
+          }
+        },
+        {
+          "case": "control-workspace-predicate-omitted",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "foreign project old-workspace predicate must return zero"
+          }
+        },
+        {
+          "case": "snapshot-oracle-controls",
+          "observed": {
+            "harmless": "survived",
+            "upgradeGeometry": "killed",
+            "upgradeSite": "killed",
+            "upgradeCorridor": "killed",
+            "restoreProvenance": "killed",
+            "category": "In-memory corrupted readback controls; not corrupted archive restore executions."
+          }
+        },
+        {
+          "case": "restored-direct",
+          "observed": {
+            "sqlstate": "42501",
+            "message": "Project jurisdiction requires the authorized human server route"
+          }
+        },
+        {
+          "case": "restored-service",
+          "observed": {
+            "actor": "member",
+            "before": {
+              "sha256": "6c41b071a6fc887da6812ec0d450f7d3c371d275f3fd1e1d1ad4533c67302f25"
+            },
+            "after": {
+              "sha256": "85ec9f6f60f7dea9d9bf0e67bdcea95019f24c7e1fe40c5fa9ee0de245e5140f"
+            },
+            "databaseBounds": [
+              "2026-10-15 06:30:17.398087+00:00",
+              "2026-10-15 06:30:17.401693+00:00"
+            ]
+          }
+        },
+        {
+          "case": "restored-membership",
+          "observed": {
+            "change": "downgrade",
+            "saveFirst": true,
+            "lockWait": {
+              "wait_event_type": "Lock",
+              "wait_event": "transactionid",
+              "blockers": [
+                1120965
+              ]
+            },
+            "before": {
+              "sha256": "6c41b071a6fc887da6812ec0d450f7d3c371d275f3fd1e1d1ad4533c67302f25"
+            },
+            "after": {
+              "sha256": "a1a8cb40ed3b2503e234e950e65fc65772018d3a7a88bcc14da748d245abb047"
+            }
+          }
+        },
+        {
+          "case": "restored-cas",
+          "observed": {
+            "firstRows": 1,
+            "secondRows": 0,
+            "lockWait": {
+              "wait_event_type": "Lock",
+              "wait_event": "transactionid",
+              "blockers": [
+                1120967
+              ]
+            },
+            "before": {
+              "sha256": "a1a8cb40ed3b2503e234e950e65fc65772018d3a7a88bcc14da748d245abb047"
+            },
+            "after": {
+              "sha256": "e959fe72de00183020eb6d3a68bd5b15b56ea31f69b8d08bf1155e29936c146a"
+            }
+          }
+        },
+        {
+          "case": "rls-read-isolation",
+          "observed": [
+            {
+              "actor": "owner",
+              "ids": {
+                "sha256": "e8c55ce2e949ec32bf776d1e0083a519602a4c93de39144ad8b97287c621e4e7"
+              }
+            },
+            {
+              "actor": "admin",
+              "ids": {
+                "sha256": "e8c55ce2e949ec32bf776d1e0083a519602a4c93de39144ad8b97287c621e4e7"
+              }
+            },
+            {
+              "actor": "member",
+              "ids": {
+                "sha256": "e8c55ce2e949ec32bf776d1e0083a519602a4c93de39144ad8b97287c621e4e7"
+              }
+            },
+            {
+              "actor": "viewer",
+              "ids": {
+                "sha256": "e8c55ce2e949ec32bf776d1e0083a519602a4c93de39144ad8b97287c621e4e7"
+              }
+            },
+            {
+              "actor": "outsider",
+              "ids": {
+                "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+              }
+            },
+            {
+              "actor": "foreignActor",
+              "ids": {
+                "sha256": "36270e75415b020e4b309063d22c6d586b670bfcc8a96a004ef81db82dacd6b1"
+              }
+            },
+            {
+              "actor": null,
+              "ids": {
+                "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "extended": {
+      "directory": "extended-abeb1e937d",
+      "observations": 164,
+      "resultSha256": "fa5aa01f07f2ffe7ca09b646ce40c4caafd016e1adbff67cd55be33895fb9207",
+      "observationsSha256": "74c63d9efeb4b564c79bec7e7e68587d12379d65c9490a39cfe8fcaf4b6e205c",
+      "events": [
+        {
+          "case": "control-valid-helper-array",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-helper-array",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "helper rejects array",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-constraint-array",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-constraint-array",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "constraint rejects array: expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-helper-json-null",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-helper-json-null",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "helper rejects json-null",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-constraint-json-null",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-constraint-json-null",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "constraint rejects json-null: expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-helper-scalar",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-helper-scalar",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "helper rejects scalar",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-constraint-scalar",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-constraint-scalar",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "constraint rejects scalar: expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-helper-missing-key",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-helper-missing-key",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "helper rejects missing-key",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-constraint-missing-key",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-constraint-missing-key",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "constraint rejects missing-key: expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-helper-extra-key",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-helper-extra-key",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "helper rejects extra-key",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-constraint-extra-key",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-constraint-extra-key",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "constraint rejects extra-key: expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-helper-version-string",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-helper-version-string",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "helper rejects version-string",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-constraint-version-string",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-constraint-version-string",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "constraint rejects version-string: expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-helper-version-two",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-helper-version-two",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "helper rejects version-two",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-constraint-version-two",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-constraint-version-two",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "constraint rejects version-two: expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-helper-state-null",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-helper-state-null",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "helper rejects state-null",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-constraint-state-null",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-constraint-state-null",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "constraint rejects state-null: expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-helper-entries-object",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-helper-entries-object",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "helper rejects entries-object",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-constraint-entries-object",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-constraint-entries-object",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "constraint rejects entries-object: expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-helper-actor-type",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-helper-actor-type",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "helper rejects actor-type",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-constraint-actor-type",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-constraint-actor-type",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "constraint rejects actor-type: expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-helper-actor-invalid",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-helper-actor-invalid",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "helper rejects actor-invalid",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-constraint-actor-invalid",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-constraint-actor-invalid",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "constraint rejects actor-invalid: expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-helper-time-type",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-helper-time-type",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "helper rejects time-type",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-constraint-time-type",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-constraint-time-type",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "constraint rejects time-type: expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-helper-time-date-only",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-helper-time-date-only",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "helper rejects time-date-only",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-constraint-time-date-only",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-constraint-time-date-only",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "constraint rejects time-date-only: expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-helper-time-impossible",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-helper-time-impossible",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "helper rejects time-impossible",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-constraint-time-impossible",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-constraint-time-impossible",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "constraint rejects time-impossible: expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-helper-unresolved-with-entry",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-helper-unresolved-with-entry",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "helper rejects unresolved-with-entry",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-constraint-unresolved-with-entry",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-constraint-unresolved-with-entry",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "constraint rejects unresolved-with-entry: expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-helper-declared-empty",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-helper-declared-empty",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "helper rejects declared-empty",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-constraint-declared-empty",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-constraint-declared-empty",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "constraint rejects declared-empty: expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-helper-thirteen",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-helper-thirteen",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "helper rejects thirteen",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-constraint-thirteen",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-constraint-thirteen",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "constraint rejects thirteen: expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-helper-oversize",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-helper-oversize",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "helper rejects oversize",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-constraint-oversize",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-constraint-oversize",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "constraint rejects oversize: expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-helper-label-42",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-helper-label-42",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "helper rejects label-42",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-constraint-label-42",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-constraint-label-42",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "constraint rejects label-42: expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-helper-label- ",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-helper-label- ",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "helper rejects label- ",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-constraint-label- ",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-constraint-label- ",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "constraint rejects label- : expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-helper-kind-None",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-helper-kind-None",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "helper rejects kind-None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-constraint-kind-None",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-constraint-kind-None",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "constraint rejects kind-None: expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-helper-scope-legal",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-helper-scope-legal",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "helper rejects scope-legal",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-constraint-scope-legal",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-constraint-scope-legal",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "constraint rejects scope-legal: expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-helper-identity-trusted",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-helper-identity-trusted",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "helper rejects identity-trusted",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-constraint-identity-trusted",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-constraint-identity-trusted",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "constraint rejects identity-trusted: expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-helper-countryCode-usa",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-helper-countryCode-usa",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "helper rejects countryCode-usa",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-constraint-countryCode-usa",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-constraint-countryCode-usa",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "constraint rejects countryCode-usa: expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-helper-countryCode-2",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-helper-countryCode-2",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "helper rejects countryCode-2",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-constraint-countryCode-2",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-constraint-countryCode-2",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "constraint rejects countryCode-2: expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-helper-subdivisionCode-California space",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-helper-subdivisionCode-California space",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "helper rejects subdivisionCode-California space",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-constraint-subdivisionCode-California space",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-constraint-subdivisionCode-California space",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "constraint rejects subdivisionCode-California space: expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-helper-reference-06045",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-helper-reference-06045",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "helper rejects reference-06045",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-constraint-reference-06045",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-constraint-reference-06045",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "constraint rejects reference-06045: expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-helper-reference-tigerweb:has space",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-helper-reference-tigerweb:has space",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "helper rejects reference-tigerweb:has space",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-constraint-reference-tigerweb:has space",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-constraint-reference-tigerweb:has space",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "constraint rejects reference-tigerweb:has space: expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-helper-reference-4",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-helper-reference-4",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "helper rejects reference-4",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-constraint-reference-4",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-constraint-reference-4",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "constraint rejects reference-4: expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-helper-entry-missing",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-helper-entry-missing",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "helper rejects entry-missing",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-constraint-entry-missing",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-constraint-entry-missing",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "constraint rejects entry-missing: expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-helper-entry-extra",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-helper-entry-extra",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "helper rejects entry-extra",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-constraint-entry-extra",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-constraint-entry-extra",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "constraint rejects entry-extra: expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-helper-entry-scalar",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-helper-entry-scalar",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "helper rejects entry-scalar",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-valid-constraint-entry-scalar",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-broken-constraint-entry-scalar",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "constraint rejects entry-scalar: expected SQLSTATE 23514, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-rls-harmless",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-rls-disabled",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "nonmember RLS read must be empty",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-trusted-insert-harmless",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-trusted-insert-actor-corrupted",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "trusted INSERT must preserve all provenance revision geometry",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-trusted-insert-time-corrupted",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "trusted INSERT must preserve all provenance revision geometry",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-trusted-insert-revision-corrupted",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "trusted INSERT must preserve all provenance revision geometry",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-trusted-insert-geometry-corrupted",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "trusted INSERT must preserve all provenance revision geometry",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "role-custody-control-anon-postgres",
+          "observed": {
+            "harmless": "survived",
+            "brokenPrivilegedSession": "killed",
+            "assertion": "role custody refusal: expected SQLSTATE 42501, observed None",
+            "globalRoleChange": false
+          }
+        },
+        {
+          "case": "role-custody-control-anon-service_role",
+          "observed": {
+            "harmless": "survived",
+            "brokenPrivilegedSession": "killed",
+            "assertion": "role custody refusal: expected SQLSTATE 42501, observed None",
+            "globalRoleChange": false
+          }
+        },
+        {
+          "case": "role-custody-control-anon-supabase_admin",
+          "observed": {
+            "harmless": "survived",
+            "brokenPrivilegedSession": "killed",
+            "assertion": "role custody refusal: expected SQLSTATE 42501, observed None",
+            "globalRoleChange": false
+          }
+        },
+        {
+          "case": "role-custody-control-authenticated-postgres",
+          "observed": {
+            "harmless": "survived",
+            "brokenPrivilegedSession": "killed",
+            "assertion": "role custody refusal: expected SQLSTATE 42501, observed None",
+            "globalRoleChange": false
+          }
+        },
+        {
+          "case": "role-custody-control-authenticated-service_role",
+          "observed": {
+            "harmless": "survived",
+            "brokenPrivilegedSession": "killed",
+            "assertion": "role custody refusal: expected SQLSTATE 42501, observed None",
+            "globalRoleChange": false
+          }
+        },
+        {
+          "case": "role-custody-control-authenticated-supabase_admin",
+          "observed": {
+            "harmless": "survived",
+            "brokenPrivilegedSession": "killed",
+            "assertion": "role custody refusal: expected SQLSTATE 42501, observed None",
+            "globalRoleChange": false
+          }
+        },
+        {
+          "case": "control-ordinary-harmless-owner",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-ordinary-overbroad-owner",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "ordinary null and geometry must remain writable",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-ordinary-harmless-admin",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-ordinary-overbroad-admin",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "ordinary null and geometry must remain writable",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-ordinary-harmless-member",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-ordinary-overbroad-member",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "ordinary null and geometry must remain writable",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "service-insert",
+          "observed": [
+            {
+              "jurisdiction_context": {
+                "state": "declared",
+                "entries": [
+                  {
+                    "kind": "county",
+                    "label": "Synthetic declaration",
+                    "scope": "administrative",
+                    "identity": "server_resolved",
+                    "reference": "tigerweb:06045",
+                    "countryCode": "US",
+                    "subdivisionCode": "CA"
+                  }
+                ],
+                "version": 1,
+                "recordedAt": "2026-10-15T06:30:34.144068+00:00",
+                "recordedBy": "533e6d14-8534-4edc-a608-c146a3b7fda5"
+              }
+            }
+          ]
+        },
+        {
+          "case": "control-direct-harmless-owner-INSERT",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-direct-removed-owner-INSERT",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "direct owner INSERT refuses: expected SQLSTATE 42501, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-direct-harmless-owner-UPDATE",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-direct-removed-owner-UPDATE",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "direct owner UPDATE refuses: expected SQLSTATE 42501, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-direct-harmless-admin-INSERT",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-direct-removed-admin-INSERT",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "direct admin INSERT refuses: expected SQLSTATE 42501, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-direct-harmless-admin-UPDATE",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-direct-removed-admin-UPDATE",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "direct admin UPDATE refuses: expected SQLSTATE 42501, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-direct-harmless-member-INSERT",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-direct-removed-member-INSERT",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "direct member INSERT refuses: expected SQLSTATE 42501, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-direct-harmless-member-UPDATE",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-direct-removed-member-UPDATE",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "direct member UPDATE refuses: expected SQLSTATE 42501, observed None",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "rls-read-isolation",
+          "observed": [
+            {
+              "actor": "owner",
+              "ids": {
+                "sha256": "e8c55ce2e949ec32bf776d1e0083a519602a4c93de39144ad8b97287c621e4e7"
+              }
+            },
+            {
+              "actor": "admin",
+              "ids": {
+                "sha256": "e8c55ce2e949ec32bf776d1e0083a519602a4c93de39144ad8b97287c621e4e7"
+              }
+            },
+            {
+              "actor": "member",
+              "ids": {
+                "sha256": "e8c55ce2e949ec32bf776d1e0083a519602a4c93de39144ad8b97287c621e4e7"
+              }
+            },
+            {
+              "actor": "viewer",
+              "ids": {
+                "sha256": "e8c55ce2e949ec32bf776d1e0083a519602a4c93de39144ad8b97287c621e4e7"
+              }
+            },
+            {
+              "actor": "outsider",
+              "ids": {
+                "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+              }
+            },
+            {
+              "actor": "foreignActor",
+              "ids": {
+                "sha256": "36270e75415b020e4b309063d22c6d586b670bfcc8a96a004ef81db82dacd6b1"
+              }
+            },
+            {
+              "actor": null,
+              "ids": {
+                "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+              }
+            }
+          ]
+        },
+        {
+          "case": "ordinary-null-and-geometry",
+          "observed": [
+            {
+              "role": "owner",
+              "nullInsert": true,
+              "geometryUpdate": true
+            },
+            {
+              "role": "admin",
+              "nullInsert": true,
+              "geometryUpdate": true
+            },
+            {
+              "role": "member",
+              "nullInsert": true,
+              "geometryUpdate": true
+            },
+            {
+              "actor": "viewer",
+              "visibleRows": 1,
+              "ordinaryUpdateRows": 0,
+              "insertSqlstate": "42501"
+            },
+            {
+              "actor": "outsider",
+              "visibleRows": 0,
+              "ordinaryUpdateRows": 0,
+              "insertSqlstate": "42501"
+            },
+            {
+              "actor": "foreignActor",
+              "visibleRows": 0,
+              "ordinaryUpdateRows": 0,
+              "insertSqlstate": "42501"
+            },
+            {
+              "actor": null,
+              "visibleRows": 0,
+              "ordinaryUpdateRows": 0,
+              "insertSqlstate": "42501"
+            }
+          ]
+        },
+        {
+          "case": "final-membership-race",
+          "observed": {
+            "change": "downgrade",
+            "saveFirst": true,
+            "lockWait": {
+              "wait_event_type": "Lock",
+              "wait_event": "transactionid",
+              "blockers": [
+                1121202
+              ]
+            },
+            "before": {
+              "sha256": "e959fe72de00183020eb6d3a68bd5b15b56ea31f69b8d08bf1155e29936c146a"
+            },
+            "after": {
+              "sha256": "e1139535f8d531396f80af6095d91f8706021bb864817f05be635dffd2ce6b20"
+            }
+          }
+        },
+        {
+          "case": "final-cas",
+          "observed": {
+            "firstRows": 1,
+            "secondRows": 0,
+            "lockWait": {
+              "wait_event_type": "Lock",
+              "wait_event": "transactionid",
+              "blockers": [
+                1121204
+              ]
+            },
+            "before": {
+              "sha256": "e1139535f8d531396f80af6095d91f8706021bb864817f05be635dffd2ce6b20"
+            },
+            "after": {
+              "sha256": "629e98f74172fbd98da2986ea8b79f8eceaf24b6fdb1ebf3ee9d6825cff0d1b3"
+            }
+          }
+        }
+      ]
+    },
+    "races": {
+      "directory": "race-controls-a947096613",
+      "observations": 21,
+      "resultSha256": "2803bb4a78186464791b0b770c01896a85f33c43974a9493cb39a2be0527f69e",
+      "observationsSha256": "0695878a56bad6b18dc7ee804499a751b27f9c436407ae2c0c5b5a63de7a7269",
+      "events": [
+        {
+          "case": "harmless-downgrade-True",
+          "observed": {
+            "change": "downgrade",
+            "saveFirst": true,
+            "lockWait": {
+              "wait_event_type": "Lock",
+              "wait_event": "transactionid",
+              "blockers": [
+                1121210
+              ]
+            },
+            "before": {
+              "sha256": "629e98f74172fbd98da2986ea8b79f8eceaf24b6fdb1ebf3ee9d6825cff0d1b3"
+            },
+            "after": {
+              "sha256": "8922f9255735769836383605ab6fa617afeba3818aba86b1c9268a5bdf262910"
+            }
+          }
+        },
+        {
+          "case": "harmless-downgrade-False",
+          "observed": {
+            "change": "downgrade",
+            "saveFirst": false,
+            "lockWait": {
+              "wait_event_type": "Lock",
+              "wait_event": "transactionid",
+              "blockers": [
+                1121212
+              ]
+            },
+            "before": {
+              "sha256": "8922f9255735769836383605ab6fa617afeba3818aba86b1c9268a5bdf262910"
+            },
+            "after": {
+              "sha256": "8922f9255735769836383605ab6fa617afeba3818aba86b1c9268a5bdf262910"
+            }
+          }
+        },
+        {
+          "case": "harmless-revoke-True",
+          "observed": {
+            "change": "revoke",
+            "saveFirst": true,
+            "lockWait": {
+              "wait_event_type": "Lock",
+              "wait_event": "transactionid",
+              "blockers": [
+                1121216
+              ]
+            },
+            "before": {
+              "sha256": "8922f9255735769836383605ab6fa617afeba3818aba86b1c9268a5bdf262910"
+            },
+            "after": {
+              "sha256": "621125741e6ba574e4c9ae0236e5efde6a52389ee70af0939d08664e42667788"
+            }
+          }
+        },
+        {
+          "case": "harmless-revoke-False",
+          "observed": {
+            "change": "revoke",
+            "saveFirst": false,
+            "lockWait": {
+              "wait_event_type": "Lock",
+              "wait_event": "transactionid",
+              "blockers": [
+                1121219
+              ]
+            },
+            "before": {
+              "sha256": "621125741e6ba574e4c9ae0236e5efde6a52389ee70af0939d08664e42667788"
+            },
+            "after": {
+              "sha256": "621125741e6ba574e4c9ae0236e5efde6a52389ee70af0939d08664e42667788"
+            }
+          }
+        },
+        {
+          "case": "lock-omitted-downgrade",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "save-first downgrade must block on held membership/project row"
+          }
+        },
+        {
+          "case": "lock-omitted-revoke",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "save-first revoke must block on held membership/project row"
+          }
+        },
+        {
+          "case": "change-first-wrong-member-downgrade",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "change-first downgrade must block on held membership/project row"
+          }
+        },
+        {
+          "case": "change-first-wrong-member-revoke",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "change-first revoke must block on held membership/project row"
+          }
+        },
+        {
+          "case": "control-geometry-harmless-owner",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-geometry-overbroad-owner",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "ordinary geometry replacement must succeed",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-geometry-harmless-admin",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-geometry-overbroad-admin",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "ordinary geometry replacement must succeed",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-geometry-harmless-member",
+          "observed": {
+            "outcome": "survived",
+            "assertion": null,
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "control-geometry-overbroad-member",
+          "observed": {
+            "outcome": "killed",
+            "assertion": "ordinary geometry replacement must succeed",
+            "blindCategory": "This mutation tests the named database assertion, not route/browser behavior."
+          }
+        },
+        {
+          "case": "cas-harmless-query",
+          "observed": {
+            "firstRows": 1,
+            "secondRows": 0,
+            "lockWait": {
+              "wait_event_type": "Lock",
+              "wait_event": "transactionid",
+              "blockers": [
+                1121260
+              ]
+            },
+            "before": {
+              "sha256": "29dc5913abaa7264544311e19fbc670c7b326e7b1b0c794be401120649dfc919"
+            },
+            "after": {
+              "sha256": "153bcd9fd873c4dc7d2f6fb0f579be7f293dead1f964af0e9a60cc78eee11a1d"
+            }
+          }
+        },
+        {
+          "case": "scope-harmless-query",
+          "observed": {
+            "foreignPredicateRows": 0,
+            "unknownProjectRows": 0,
+            "inFlightRows": 0,
+            "lockWait": {
+              "wait_event_type": "Lock",
+              "wait_event": "transactionid",
+              "blockers": [
+                1121264
+              ]
+            }
+          }
+        },
+        {
+          "case": "ordinary-null-and-geometry",
+          "observed": [
+            {
+              "role": "owner",
+              "nullInsert": true,
+              "geometryUpdate": true
+            },
+            {
+              "role": "admin",
+              "nullInsert": true,
+              "geometryUpdate": true
+            },
+            {
+              "role": "member",
+              "nullInsert": true,
+              "geometryUpdate": true
+            },
+            {
+              "actor": "viewer",
+              "visibleRows": 1,
+              "ordinaryUpdateRows": 0,
+              "insertSqlstate": "42501"
+            },
+            {
+              "actor": "outsider",
+              "visibleRows": 0,
+              "ordinaryUpdateRows": 0,
+              "insertSqlstate": "42501"
+            },
+            {
+              "actor": "foreignActor",
+              "visibleRows": 0,
+              "ordinaryUpdateRows": 0,
+              "insertSqlstate": "42501"
+            },
+            {
+              "actor": null,
+              "visibleRows": 0,
+              "ordinaryUpdateRows": 0,
+              "insertSqlstate": "42501"
+            }
+          ]
+        },
+        {
+          "case": "restored-downgrade-True",
+          "observed": {
+            "change": "downgrade",
+            "saveFirst": true,
+            "lockWait": {
+              "wait_event_type": "Lock",
+              "wait_event": "transactionid",
+              "blockers": [
+                1121275
+              ]
+            },
+            "before": {
+              "sha256": "a494c9c55e7d105885a58ee266e83dabd1d463177f9d94ab36e7893346132de6"
+            },
+            "after": {
+              "sha256": "47c7b640f97d70cf3773031a037a969485a93f6fdef9f9d2a7c6e9aa6963dfba"
+            }
+          }
+        },
+        {
+          "case": "restored-downgrade-False",
+          "observed": {
+            "change": "downgrade",
+            "saveFirst": false,
+            "lockWait": {
+              "wait_event_type": "Lock",
+              "wait_event": "transactionid",
+              "blockers": [
+                1121277
+              ]
+            },
+            "before": {
+              "sha256": "47c7b640f97d70cf3773031a037a969485a93f6fdef9f9d2a7c6e9aa6963dfba"
+            },
+            "after": {
+              "sha256": "47c7b640f97d70cf3773031a037a969485a93f6fdef9f9d2a7c6e9aa6963dfba"
+            }
+          }
+        },
+        {
+          "case": "restored-revoke-True",
+          "observed": {
+            "change": "revoke",
+            "saveFirst": true,
+            "lockWait": {
+              "wait_event_type": "Lock",
+              "wait_event": "transactionid",
+              "blockers": [
+                1121281
+              ]
+            },
+            "before": {
+              "sha256": "47c7b640f97d70cf3773031a037a969485a93f6fdef9f9d2a7c6e9aa6963dfba"
+            },
+            "after": {
+              "sha256": "4dcd7d8206048d4ce8337b40a77635f71bddf70c9f05b1cd9983768cee7dec69"
+            }
+          }
+        },
+        {
+          "case": "restored-revoke-False",
+          "observed": {
+            "change": "revoke",
+            "saveFirst": false,
+            "lockWait": {
+              "wait_event_type": "Lock",
+              "wait_event": "transactionid",
+              "blockers": [
+                1121283
+              ]
+            },
+            "before": {
+              "sha256": "4dcd7d8206048d4ce8337b40a77635f71bddf70c9f05b1cd9983768cee7dec69"
+            },
+            "after": {
+              "sha256": "4dcd7d8206048d4ce8337b40a77635f71bddf70c9f05b1cd9983768cee7dec69"
+            }
+          }
+        }
+      ]
+    },
+    "transport": {
+      "directory": "transport-ea990bdaeb",
+      "observations": 16,
+      "resultSha256": "68d3702a537f141e952dd780d785ea6f0c1a2f516bcf08f77e11bf65c01f0b4b",
+      "observationsSha256": "e9fc4b438dc9d8afebf34b52d2bf3ed4851d68ca2f09b85524a2d9360f2d7688",
+      "events": [
+        {
+          "case": "postgrest-identity",
+          "observed": {
+            "id": "dd0c0371cf3685fa1097b1da9e119fd188f7671697aa331329b990edbe146368",
+            "version": "PostgREST 14.15",
+            "target": "openplan_jurisdiction_native_3d281df106064b8cbb9e0c82_up",
+            "limits": {
+              "name": "openplan-jurisdiction-native-rest-603877f0c413",
+              "database": "openplan_jurisdiction_native_3d281df106064b8cbb9e0c82_up",
+              "image": "sha256:2f8e7b656f09db697a8875177694b417b35cb76c21370de07fc54e711e902326",
+              "environmentSha256": "5bfc46c5f79d9b868ba0c5c0e56f724375e9281f3e34c913f1bcbf9b4968c464",
+              "memory": 536870912,
+              "memorySwap": 536870912,
+              "publish": "http://127.74.17.10:29944",
+              "id": "dd0c0371cf3685fa1097b1da9e119fd188f7671697aa331329b990edbe146368"
+            }
+          }
+        },
+        {
+          "case": "jwt-direct-owner",
+          "observed": {
+            "status": 403,
+            "code": "42501",
+            "bodySha256": "4f6aebc06f881240c23a867f42146a77c40b6a971ea6f2399b7891c0d708b9bc",
+            "rowCount": null
+          }
+        },
+        {
+          "case": "jwt-direct-admin",
+          "observed": {
+            "status": 403,
+            "code": "42501",
+            "bodySha256": "4f6aebc06f881240c23a867f42146a77c40b6a971ea6f2399b7891c0d708b9bc",
+            "rowCount": null
+          }
+        },
+        {
+          "case": "jwt-direct-member",
+          "observed": {
+            "status": 403,
+            "code": "42501",
+            "bodySha256": "4f6aebc06f881240c23a867f42146a77c40b6a971ea6f2399b7891c0d708b9bc",
+            "rowCount": null
+          }
+        },
+        {
+          "case": "jwt-read-viewer",
+          "observed": {
+            "status": 200,
+            "code": null,
+            "bodySha256": "b091d1d7d9f39573e3a5b6290da91a6a167496012b0ae44ab009c67ae2b86f90",
+            "rowCount": 1
+          }
+        },
+        {
+          "case": "jwt-read-outsider",
+          "observed": {
+            "status": 200,
+            "code": null,
+            "bodySha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "rowCount": 0
+          }
+        },
+        {
+          "case": "jwt-read-foreignActor",
+          "observed": {
+            "status": 200,
+            "code": null,
+            "bodySha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "rowCount": 0
+          }
+        },
+        {
+          "case": "jwt-read-None",
+          "observed": {
+            "status": 200,
+            "code": null,
+            "bodySha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "rowCount": 0
+          }
+        },
+        {
+          "case": "jwt-service-refused-viewer",
+          "observed": {
+            "status": 403,
+            "code": "42501",
+            "bodySha256": "745fd5a3e84d11ef57439e6477703a2936afba7974f1a9e0981567357b6c9356",
+            "rowCount": null
+          }
+        },
+        {
+          "case": "jwt-service-refused-foreignActor",
+          "observed": {
+            "status": 403,
+            "code": "42501",
+            "bodySha256": "745fd5a3e84d11ef57439e6477703a2936afba7974f1a9e0981567357b6c9356",
+            "rowCount": null
+          }
+        },
+        {
+          "case": "jwt-service-refused-None",
+          "observed": {
+            "status": 403,
+            "code": "42501",
+            "bodySha256": "745fd5a3e84d11ef57439e6477703a2936afba7974f1a9e0981567357b6c9356",
+            "rowCount": null
+          }
+        },
+        {
+          "case": "jwt-service-writer",
+          "observed": {
+            "status": 200,
+            "code": null,
+            "bodySha256": "56fc3f4e3cd5db96e1d4680aaadfc1dcffb76eb97ab27a10cdc2488e9c5d7137",
+            "rowCount": 1
+          }
+        },
+        {
+          "case": "jwt-constraint",
+          "observed": {
+            "status": 400,
+            "code": "23514",
+            "bodySha256": "3456f32697c54674c5a11ebcc6c95918b91a89c24bd3e3a125a51e9712167954",
+            "rowCount": null
+          }
+        },
+        {
+          "case": "transport-harmless",
+          "observed": {
+            "status": 403,
+            "code": "42501",
+            "bodySha256": "4f6aebc06f881240c23a867f42146a77c40b6a971ea6f2399b7891c0d708b9bc",
+            "rowCount": null
+          }
+        },
+        {
+          "case": "transport-role-guard-removed",
+          "observed": {
+            "outcome": "killed",
+            "actual": {
+              "status": 200,
+              "code": null,
+              "bodySha256": "cc41bb18be5d8f5c91d239dc7eeb6399f4d20f471d571693dc27035f939ce4fa",
+              "rowCount": 1
+            }
+          }
+        },
+        {
+          "case": "transport-restored",
+          "observed": {
+            "status": 403,
+            "code": "42501",
+            "bodySha256": "4f6aebc06f881240c23a867f42146a77c40b6a971ea6f2399b7891c0d708b9bc",
+            "rowCount": null
+          }
+        }
+      ]
+    }
+  },
+  "runnerSha256": {
+    "native_proof.py": "4f48445c0c69d0bb3ef52a3ea2101ad22de2d8a0210ff8800f043c789bc6d8ea",
+    "transport_proof.py": "78a5af9bc65de7da05007a44cd26ee6fab4419267f04707df14f67fcdad61c33",
+    "extended_controls.py": "7184120e88da7187795fc8d65478d2e5728b70b9a0c39cc021309cd6cf9ca613",
+    "race_controls.py": "1dc36070e879f47d6b98d72ae13f469fc7172a9993e3e4e547dca539002e7fdf",
+    "audit.py": "6914cfdfa5db2dbbc69a282cbc457c625a93bf99bc0130a48a602b09bad282e2"
+  },
+  "snapshots": {
+    "source-inventory.json": "4726b6b9703d7cb90e8273dcd02922974e811206a73dfb251762b8b36f8c5fb3",
+    "source-snapshot.json": "a52856d1d861ca45f73dd31452c449010e4f7e4dcefc0391a56a4577bf412f63",
+    "before16.json": "c6999491b0f7af68302a78dccf70a56c084cb4ff7a0a1bb8d9410cddc516c4b1",
+    "after16.json": "dfba69ab93a1a04b43bda6f731260b2444af2e3e493eff683a243569da35e7da",
+    "restore-before.json": "13f1802c643c0d5f073b4ade6cfb54fc2b121cbf04fcbe658d8db6b8da23359e",
+    "restore-after.json": "13f1802c643c0d5f073b4ade6cfb54fc2b121cbf04fcbe658d8db6b8da23359e",
+    "target419-inventory.json": "199a3105fb83a3c7ff854c96401f0033459b20b20ec2d2946ba3cf81bf04c511"
+  },
+  "privateRoot": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/project-jurisdiction-native-20261015/run-fba198344db5",
+  "finalAudit": "audit-369a2304de"
+}

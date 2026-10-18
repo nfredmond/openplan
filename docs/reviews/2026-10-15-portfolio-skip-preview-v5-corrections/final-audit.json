@@ -1,0 +1,36 @@
+{
+  "preparedOnly": true,
+  "permittedOldWebContextTestsOnly": true,
+  "operatingStages": 0,
+  "oldRootInventoriesExact": true,
+  "oldRootEntries": {
+    "/home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v4": 42,
+    "/home/nathaniel/.t3/worktrees/openplan/t3-9eeec4ad/docs/reviews/2026-10-15-portfolio-skip-preview-v4-preparation": 30,
+    "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/project-geography-preview-final-20261015": 20645,
+    "/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3": 26085,
+    "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-v2-20261015": 4431
+  },
+  "oldInventoryBeforeSHA256": "ad9ade8701051f0ba35243c19faacdac5bdefafc1b91ef310a07480e9cb93c88",
+  "oldInventoryAfterSHA256": "ad9ade8701051f0ba35243c19faacdac5bdefafc1b91ef310a07480e9cb93c88",
+  "sealedFiles": 30,
+  "manifestSHA256": "5122add2ac35f95851ca8b6138be6c450ebcb50d6dba48582d5179394965ae9d",
+  "checksumListSHA256": "88763144a835d0ef84df3c746ca92708fe39206df0acb7db34f194a8864dd7db",
+  "parentRecipeSHA256": "0c9d37fea1e3024c4cc2a354ae0c32913715fcef53ba084596e9abe072ab75f5",
+  "observerSHA256": "5e133acdae0ae91cc18d9e73c887d7e1c4dfea4ec278e60e2c884670a8a0c966",
+  "transportSHA256": "452a0a83e6f214fe4031e94ba5defdfa506d23a27855892e4aa2604ce93588f4",
+  "publicPrivateAndDiffsMatch": true,
+  "unchangedInheritedFunctionsMatch": true,
+  "APP49Unchanged": true,
+  "appEnvAndCandidateExactV4": true,
+  "candidateAbsent": true,
+  "executionEmpty": true,
+  "postJourneyResultAbsent": true,
+  "knownSecretsScreenPass": true,
+  "privacyHarmlessAndInjectionAndDisabledCodeControls": true,
+  "blindCategories": [
+    "No SQL transport, parsing, normalization or preservation run.",
+    "No new helper/app build/runtime/journey evidence.",
+    "Filesystem custody and known-value screening do not prove hostile-host security or unknown-secret absence.",
+    "User manager and same-user code/tool custody remain trusted."
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "at": "2026-10-15T10:11:03.202794+00:00",
+  "filesScanned": 22,
+  "bytesScanned": 225869905,
+  "exactTraceIds": [
+    "2d6db1e5eb4b5333c30068f62ff453bb",
+    "36da2553fb0f3b886874f17b312f1439"
+  ],
+  "matchingRecordCount": 21,
+  "observedSpanNames": [
+    "McpHttpServer.authenticateRequest",
+    "McpServer.@effect/mcp/2025-06-18/tools/call",
+    "McpSessionRegistry.resolve",
+    "POST",
+    "PreviewAutomationBroker.awaitResponse",
+    "PreviewAutomationBroker.closeConnection",
+    "PreviewAutomationBroker.disconnect",
+    "PreviewAutomationBroker.invoke",
+    "PreviewToolkit.invoke",
+    "mcp.loadCaller",
+    "mcp.requireCapability",
+    "sql.transaction",
+    "sqlite"
+  ],
+  "openCorrelation": {
+    "file": "server.trace.ndjson.7",
+    "line": 20776,
+    "traceId": "36da2553fb0f3b886874f17b312f1439",
+    "tool": "preview_open",
+    "parameterKeys": [
+      "tabId",
+      "open",
+      "show"
+    ],
+    "selected": {
+      "tabId": "tab_5_04ad8e8d-007b-4300-817b-9cf70f5c64bd",
+      "open": true,
+      "show": true
+    }
+  },
+  "snapshotTabCorrelation": "not established",
+  "pendingCaptureSubstep": "not established",
+  "runtimeActions": [],
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/project-preview-capture-parent-trace-readback-20261015",
+  "hashes": {
+    "trace-readback-schema.json": "e308eb17e73308c24a5b1fa543d7c2948f2ce76910e2592a33f0ae5e29707852",
+    "parameters-redacted.json": "c8cca662cab3142e3fe1493cd5c7261d3f8b0bdc8f07b3e8fda581d1ebb6939f"
+  }
+}

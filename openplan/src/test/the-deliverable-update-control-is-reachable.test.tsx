@@ -118,6 +118,7 @@ const PROJECT: ProjectRow = {
   estimated_cost_recorded_at: null,
   rtp_posture: null,
   rtp_posture_updated_at: null,
+  jurisdiction_context: null,
   latitude: null,
   longitude: null,
   place_source: null,

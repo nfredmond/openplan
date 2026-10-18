@@ -1,0 +1,1384 @@
+[
+  {
+    "privateDirectory": "cap-1000",
+    "trials": [
+      {
+        "label": "original-oracle-baseline-2000",
+        "outcome": "survived",
+        "tests": [
+          "original-2000"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "original-2000",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "original-oracle-harmless-2000",
+        "outcome": "survived",
+        "tests": [
+          "original-2000"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "original-2000",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "original-oracle-corrected-source-2000",
+        "outcome": "killed",
+        "tests": [
+          "original-2000"
+        ],
+        "diagnostic": "original must issue one capped read",
+        "exit": 1,
+        "actual": [
+          {
+            "title": "original-2000",
+            "status": "failed",
+            "firstDiagnostic": "AssertionError: original must issue one capped read: expected 3 to be 1 // Object.is equality"
+          }
+        ]
+      },
+      {
+        "label": "original-oracle-restored-2000",
+        "outcome": "survived",
+        "tests": [
+          "original-2000"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "original-2000",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "original-oracle-baseline-2001",
+        "outcome": "survived",
+        "tests": [
+          "original-2001"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "original-2001",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "original-oracle-harmless-2001",
+        "outcome": "survived",
+        "tests": [
+          "original-2001"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "original-2001",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "original-oracle-corrected-source-2001",
+        "outcome": "killed",
+        "tests": [
+          "original-2001"
+        ],
+        "diagnostic": "original must issue one capped read",
+        "exit": 1,
+        "actual": [
+          {
+            "title": "original-2001",
+            "status": "failed",
+            "firstDiagnostic": "AssertionError: original must issue one capped read: expected 3 to be 1 // Object.is equality"
+          }
+        ]
+      },
+      {
+        "label": "original-oracle-restored-2001",
+        "outcome": "survived",
+        "tests": [
+          "original-2001"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "original-2001",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "restored-final",
+        "outcome": "survived",
+        "tests": [
+          "portfolio-0",
+          "portfolio-1000",
+          "portfolio-2000",
+          "portfolio-2001",
+          "later-page-error"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "portfolio-0",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-1000",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-2000",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-2001",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "later-page-error",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      }
+    ],
+    "restoration": {
+      "routeSha256": "efd81d2e4a2bc9b181dca617d60c5ce6b21f9db65b596f306f4fa1d11257bbd9",
+      "exactRestoration": true
+    }
+  },
+  {
+    "privateDirectory": "cap-137",
+    "trials": [
+      {
+        "label": "baseline-396e8e",
+        "outcome": "survived",
+        "tests": [
+          "portfolio-0",
+          "portfolio-1000",
+          "portfolio-2000",
+          "portfolio-2001",
+          "later-page-error"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "portfolio-0",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-1000",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-2000",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-2001",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "later-page-error",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "harmless-11a7dd",
+        "outcome": "survived",
+        "tests": [
+          "portfolio-0",
+          "portfolio-1000",
+          "portfolio-2000",
+          "portfolio-2001",
+          "later-page-error"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "portfolio-0",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-1000",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-2000",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-2001",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "later-page-error",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "fault-short-page",
+        "outcome": "killed",
+        "tests": [
+          "portfolio-2000"
+        ],
+        "diagnostic": "live read must retain all supported rows or exact sentinel",
+        "exit": 1,
+        "actual": [
+          {
+            "title": "portfolio-2000",
+            "status": "failed",
+            "firstDiagnostic": "AssertionError: live read must retain all supported rows or exact sentinel: expected 137 to be 2000 // Object.is equality"
+          }
+        ]
+      },
+      {
+        "label": "restored-final",
+        "outcome": "survived",
+        "tests": [
+          "portfolio-0",
+          "portfolio-1000",
+          "portfolio-2000",
+          "portfolio-2001",
+          "later-page-error"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "portfolio-0",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-1000",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-2000",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-2001",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "later-page-error",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      }
+    ],
+    "restoration": {
+      "routeSha256": "efd81d2e4a2bc9b181dca617d60c5ce6b21f9db65b596f306f4fa1d11257bbd9",
+      "exactRestoration": true,
+      "blind": "Stable synthetic JWT/native GET execution; no Next server, cookie, browser or snapshot acceptance."
+    }
+  },
+  {
+    "privateDirectory": "earlier-cap-1000-0db2eaf1",
+    "trials": [
+      {
+        "label": "baseline-eb173a",
+        "outcome": "survived",
+        "tests": [
+          "portfolio-0",
+          "portfolio-1000",
+          "portfolio-2000",
+          "portfolio-2001",
+          "later-page-error"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "portfolio-0",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-1000",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-2000",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-2001",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "later-page-error",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "harmless-4c4ec5",
+        "outcome": "survived",
+        "tests": [
+          "portfolio-0",
+          "portfolio-1000",
+          "portfolio-2000",
+          "portfolio-2001",
+          "later-page-error"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "portfolio-0",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-1000",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-2000",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-2001",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "later-page-error",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "original-reproduction",
+        "outcome": "survived",
+        "tests": [
+          "original-2000",
+          "original-2001"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "original-2000",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "original-2001",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "fault-first-page-end",
+        "outcome": "killed",
+        "tests": [
+          "portfolio-2000"
+        ],
+        "diagnostic": "live read must retain all supported rows or exact sentinel",
+        "exit": 1,
+        "actual": [
+          {
+            "title": "portfolio-2000",
+            "status": "failed",
+            "firstDiagnostic": "AssertionError: live read must retain all supported rows or exact sentinel: expected 1000 to be 2000 // Object.is equality"
+          }
+        ]
+      },
+      {
+        "label": "restored-first-page-end",
+        "outcome": "survived",
+        "tests": [
+          "portfolio-2000"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "portfolio-2000",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "fault-progress-by-request",
+        "outcome": "killed",
+        "tests": [
+          "portfolio-2000"
+        ],
+        "diagnostic": "live paging offset must advance by actual received rows",
+        "exit": 1,
+        "actual": [
+          {
+            "title": "portfolio-2000",
+            "status": "failed",
+            "firstDiagnostic": "AssertionError: live paging offset must advance by actual received rows: expected 1 to be +0 // Object.is equality"
+          }
+        ]
+      },
+      {
+        "label": "restored-progress-by-request",
+        "outcome": "survived",
+        "tests": [
+          "portfolio-2000"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "portfolio-2000",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "fault-projection-summary",
+        "outcome": "killed",
+        "tests": [
+          "portfolio-1000"
+        ],
+        "diagnostic": "native query projection must retain all exact selected columns",
+        "exit": 1,
+        "actual": [
+          {
+            "title": "portfolio-1000",
+            "status": "failed",
+            "firstDiagnostic": "AssertionError: native query projection must retain all exact selected columns: expected [ 'created_at', \u2026(22) ] to deeply equal [ 'created_at', \u2026(23) ]"
+          }
+        ]
+      },
+      {
+        "label": "restored-projection-summary",
+        "outcome": "survived",
+        "tests": [
+          "portfolio-1000"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "portfolio-1000",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "fault-scope-omitted",
+        "outcome": "killed",
+        "tests": [
+          "portfolio-1000"
+        ],
+        "diagnostic": "native query must use selected workspace",
+        "exit": 1,
+        "actual": [
+          {
+            "title": "portfolio-1000",
+            "status": "failed",
+            "firstDiagnostic": "AssertionError: native query must use selected workspace: expected null to be 'eq.12c331e4-a495-4f8f-a07e-993f14c4e6\u2026' // Object.is equality"
+          }
+        ]
+      },
+      {
+        "label": "restored-scope-omitted",
+        "outcome": "survived",
+        "tests": [
+          "portfolio-1000"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "portfolio-1000",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "fault-date-order",
+        "outcome": "killed",
+        "tests": [
+          "portfolio-1000"
+        ],
+        "diagnostic": "native query must use timestamp desc and id asc",
+        "exit": 1,
+        "actual": [
+          {
+            "title": "portfolio-1000",
+            "status": "failed",
+            "firstDiagnostic": "AssertionError: native query must use timestamp desc and id asc: expected 'updated_at.asc,id.asc' to be 'updated_at.desc,id.asc' // Object.is equality"
+          }
+        ]
+      },
+      {
+        "label": "restored-date-order",
+        "outcome": "survived",
+        "tests": [
+          "portfolio-1000"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "portfolio-1000",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "fault-tie-order",
+        "outcome": "killed",
+        "tests": [
+          "portfolio-1000"
+        ],
+        "diagnostic": "native query must use timestamp desc and id asc",
+        "exit": 1,
+        "actual": [
+          {
+            "title": "portfolio-1000",
+            "status": "failed",
+            "firstDiagnostic": "AssertionError: native query must use timestamp desc and id asc: expected 'updated_at.desc,id.desc' to be 'updated_at.desc,id.asc' // Object.is equality"
+          }
+        ]
+      },
+      {
+        "label": "restored-tie-order",
+        "outcome": "survived",
+        "tests": [
+          "portfolio-1000"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "portfolio-1000",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "fault-sentinel-end",
+        "outcome": "killed",
+        "tests": [
+          "portfolio-2001"
+        ],
+        "diagnostic": "live inclusive request must end at bounded sentinel",
+        "exit": 1,
+        "actual": [
+          {
+            "title": "portfolio-2001",
+            "status": "failed",
+            "firstDiagnostic": "AssertionError: live inclusive request must end at bounded sentinel: expected +0 to be 1 // Object.is equality"
+          }
+        ]
+      },
+      {
+        "label": "restored-sentinel-end",
+        "outcome": "survived",
+        "tests": [
+          "portfolio-2001"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "portfolio-2001",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "fault-success-status",
+        "outcome": "killed",
+        "tests": [
+          "portfolio-0"
+        ],
+        "diagnostic": "complete workbook must retain HTTP 200",
+        "exit": 1,
+        "actual": [
+          {
+            "title": "portfolio-0",
+            "status": "failed",
+            "firstDiagnostic": "AssertionError: complete workbook must retain HTTP 200: expected 201 to be 200 // Object.is equality"
+          }
+        ]
+      },
+      {
+        "label": "restored-success-status",
+        "outcome": "survived",
+        "tests": [
+          "portfolio-0"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "portfolio-0",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "fault-refusal-status",
+        "outcome": "killed",
+        "tests": [
+          "portfolio-2001"
+        ],
+        "diagnostic": "route refusal must retain exact HTTP status",
+        "exit": 1,
+        "actual": [
+          {
+            "title": "portfolio-2001",
+            "status": "failed",
+            "firstDiagnostic": "AssertionError: route refusal must retain exact HTTP status: expected 400 to be 409 // Object.is equality"
+          }
+        ]
+      },
+      {
+        "label": "restored-refusal-status",
+        "outcome": "survived",
+        "tests": [
+          "portfolio-2001"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "portfolio-2001",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "fault-failure-status",
+        "outcome": "killed",
+        "tests": [
+          "later-page-error"
+        ],
+        "diagnostic": "route refusal must retain exact HTTP status",
+        "exit": 1,
+        "actual": [
+          {
+            "title": "later-page-error",
+            "status": "failed",
+            "firstDiagnostic": "AssertionError: route refusal must retain exact HTTP status: expected 409 to be 500 // Object.is equality"
+          }
+        ]
+      },
+      {
+        "label": "restored-failure-status",
+        "outcome": "survived",
+        "tests": [
+          "later-page-error"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "later-page-error",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "fault-error-partial-workbook",
+        "outcome": "killed",
+        "tests": [
+          "later-page-error"
+        ],
+        "diagnostic": "route refusal must retain exact HTTP status",
+        "exit": 1,
+        "actual": [
+          {
+            "title": "later-page-error",
+            "status": "failed",
+            "firstDiagnostic": "AssertionError: route refusal must retain exact HTTP status: expected 200 to be 500 // Object.is equality"
+          }
+        ]
+      },
+      {
+        "label": "restored-error-partial-workbook",
+        "outcome": "survived",
+        "tests": [
+          "later-page-error"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "later-page-error",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "fault-serializer-input",
+        "outcome": "killed",
+        "tests": [
+          "portfolio-1000"
+        ],
+        "diagnostic": "serializer must receive every original projected row",
+        "exit": 1,
+        "actual": [
+          {
+            "title": "portfolio-1000",
+            "status": "failed",
+            "firstDiagnostic": "AssertionError: serializer must receive every original projected row: expected [ { \u2026(24) } ] to deeply equal [ { \u2026(24) }, { \u2026(24) }, \u2026(998) ]"
+          }
+        ]
+      },
+      {
+        "label": "restored-serializer-input",
+        "outcome": "survived",
+        "tests": [
+          "portfolio-1000"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "portfolio-1000",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "fault-workspace-metadata",
+        "outcome": "killed",
+        "tests": [
+          "portfolio-1000"
+        ],
+        "diagnostic": "serializer must retain selected workspace name",
+        "exit": 1,
+        "actual": [
+          {
+            "title": "portfolio-1000",
+            "status": "failed",
+            "firstDiagnostic": "AssertionError: serializer must retain selected workspace name: expected 'Substituted workspace' to be 'Synthetic portfolio 1000' // Object.is equality"
+          }
+        ]
+      },
+      {
+        "label": "restored-workspace-metadata",
+        "outcome": "survived",
+        "tests": [
+          "portfolio-1000"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "portfolio-1000",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "fault-unknown-year",
+        "outcome": "killed",
+        "tests": [
+          "portfolio-1000"
+        ],
+        "diagnostic": "serializer must receive every original projected row",
+        "exit": 1,
+        "actual": [
+          {
+            "title": "portfolio-1000",
+            "status": "failed",
+            "firstDiagnostic": "AssertionError: serializer must receive every original projected row: expected [ { \u2026(24) }, { \u2026(24) }, \u2026(998) ] to deeply equal [ { \u2026(24) }, { \u2026(24) }, \u2026(998) ]"
+          }
+        ]
+      },
+      {
+        "label": "restored-unknown-year",
+        "outcome": "survived",
+        "tests": [
+          "portfolio-1000"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "portfolio-1000",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "fault-cache-header",
+        "outcome": "killed",
+        "tests": [
+          "portfolio-0"
+        ],
+        "diagnostic": "workbook response must remain private no-store",
+        "exit": 1,
+        "actual": [
+          {
+            "title": "portfolio-0",
+            "status": "failed",
+            "firstDiagnostic": "AssertionError: workbook response must remain private no-store: expected 'public, max-age=3600' to be 'private, no-store' // Object.is equality"
+          }
+        ]
+      },
+      {
+        "label": "restored-cache-header",
+        "outcome": "survived",
+        "tests": [
+          "portfolio-0"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "portfolio-0",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "restored-final",
+        "outcome": "survived",
+        "tests": [
+          "portfolio-0",
+          "portfolio-1000",
+          "portfolio-2000",
+          "portfolio-2001",
+          "later-page-error"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "portfolio-0",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-1000",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-2000",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-2001",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "later-page-error",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      }
+    ],
+    "restoration": {
+      "routeSha256": "efd81d2e4a2bc9b181dca617d60c5ce6b21f9db65b596f306f4fa1d11257bbd9",
+      "exactRestoration": true,
+      "blind": "Stable synthetic JWT/native GET execution; no Next server, cookie, browser or snapshot acceptance."
+    }
+  },
+  {
+    "privateDirectory": "earlier-cap-1000-78c36cfb",
+    "trials": [
+      {
+        "label": "baseline-c63ecd",
+        "outcome": "survived",
+        "tests": [
+          "portfolio-0",
+          "portfolio-1000",
+          "portfolio-2000",
+          "portfolio-2001",
+          "later-page-error"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "portfolio-0",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-1000",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-2000",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-2001",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "later-page-error",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "harmless-7ce717",
+        "outcome": "survived",
+        "tests": [
+          "portfolio-0",
+          "portfolio-1000",
+          "portfolio-2000",
+          "portfolio-2001",
+          "later-page-error"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "portfolio-0",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-1000",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-2000",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-2001",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "later-page-error",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "original-reproduction",
+        "outcome": "survived",
+        "tests": [
+          "original-2000",
+          "original-2001"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "original-2000",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "original-2001",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      }
+    ],
+    "restoration": {
+      "routeSha256": "efd81d2e4a2bc9b181dca617d60c5ce6b21f9db65b596f306f4fa1d11257bbd9",
+      "exactRestoration": true,
+      "blind": "Stable synthetic JWT/native GET execution; no Next server, cookie, browser or snapshot acceptance."
+    }
+  },
+  {
+    "privateDirectory": "earlier-cap-1000-915883ca",
+    "trials": [
+      {
+        "label": "original-oracle-baseline",
+        "outcome": "survived",
+        "tests": [
+          "original-2000"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "original-2000",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "original-oracle-harmless",
+        "outcome": "survived",
+        "tests": [
+          "original-2000"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "original-2000",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "original-oracle-corrected-source",
+        "outcome": "killed",
+        "tests": [
+          "original-2000"
+        ],
+        "diagnostic": "original must issue one capped read",
+        "exit": 1,
+        "actual": [
+          {
+            "title": "original-2000",
+            "status": "failed",
+            "firstDiagnostic": "AssertionError: original must issue one capped read: expected 3 to be 1 // Object.is equality"
+          }
+        ]
+      },
+      {
+        "label": "original-oracle-restored",
+        "outcome": "survived",
+        "tests": [
+          "original-2000"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "original-2000",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "restored-final",
+        "outcome": "survived",
+        "tests": [
+          "portfolio-0",
+          "portfolio-1000",
+          "portfolio-2000",
+          "portfolio-2001",
+          "later-page-error"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "portfolio-0",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-1000",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-2000",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-2001",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "later-page-error",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      }
+    ],
+    "restoration": {
+      "routeSha256": "efd81d2e4a2bc9b181dca617d60c5ce6b21f9db65b596f306f4fa1d11257bbd9",
+      "exactRestoration": true
+    }
+  },
+  {
+    "privateDirectory": "earlier-cap-1000-d55f8d69",
+    "trials": [
+      {
+        "label": "baseline-e63677",
+        "outcome": "survived",
+        "tests": [
+          "portfolio-0",
+          "portfolio-1000",
+          "portfolio-2000",
+          "portfolio-2001",
+          "later-page-error"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "portfolio-0",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-1000",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-2000",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-2001",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "later-page-error",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "harmless-47d9ea",
+        "outcome": "survived",
+        "tests": [
+          "portfolio-0",
+          "portfolio-1000",
+          "portfolio-2000",
+          "portfolio-2001",
+          "later-page-error"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "portfolio-0",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-1000",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-2000",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-2001",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "later-page-error",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "original-reproduction",
+        "outcome": "survived",
+        "tests": [
+          "original-2000",
+          "original-2001"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "original-2000",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "original-2001",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      }
+    ],
+    "restoration": {
+      "routeSha256": "efd81d2e4a2bc9b181dca617d60c5ce6b21f9db65b596f306f4fa1d11257bbd9",
+      "exactRestoration": true,
+      "blind": "Stable synthetic JWT/native GET execution; no Next server, cookie, browser or snapshot acceptance."
+    }
+  },
+  {
+    "privateDirectory": "earlier-cap-137-4a715dc5",
+    "trials": [
+      {
+        "label": "baseline-ae2274",
+        "outcome": "survived",
+        "tests": [
+          "portfolio-0",
+          "portfolio-1000",
+          "portfolio-2000",
+          "portfolio-2001",
+          "later-page-error"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "portfolio-0",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-1000",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-2000",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-2001",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "later-page-error",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      },
+      {
+        "label": "harmless-f89889",
+        "outcome": "survived",
+        "tests": [
+          "portfolio-0",
+          "portfolio-1000",
+          "portfolio-2000",
+          "portfolio-2001",
+          "later-page-error"
+        ],
+        "diagnostic": null,
+        "exit": 0,
+        "actual": [
+          {
+            "title": "portfolio-0",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-1000",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-2000",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "portfolio-2001",
+            "status": "passed",
+            "firstDiagnostic": null
+          },
+          {
+            "title": "later-page-error",
+            "status": "passed",
+            "firstDiagnostic": null
+          }
+        ]
+      }
+    ],
+    "restoration": {
+      "routeSha256": "efd81d2e4a2bc9b181dca617d60c5ce6b21f9db65b596f306f4fa1d11257bbd9",
+      "exactRestoration": true,
+      "blind": "Stable synthetic JWT/native GET execution; no Next server, cookie, browser or snapshot acceptance."
+    }
+  }
+]

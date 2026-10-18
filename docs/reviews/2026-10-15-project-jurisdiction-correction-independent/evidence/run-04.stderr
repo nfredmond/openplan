@@ -1,0 +1,13 @@
+{
+  "mode": "epoch:revision",
+  "result": "AssertionError",
+  "diagnostic": "original intent must not submit after committed scope round trip\n\n1 !== 0\n",
+  "checked": [
+    "scope round trip refuses userId=actor-B",
+    "explicit restart userId=actor-B",
+    "scope round trip refuses workspaceId=workspace-B",
+    "explicit restart workspaceId=workspace-B",
+    "scope round trip refuses projectId=review-project-B",
+    "explicit restart projectId=review-project-B"
+  ]
+}

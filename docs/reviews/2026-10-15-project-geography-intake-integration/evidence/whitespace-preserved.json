@@ -1,0 +1,5 @@
+{
+  "exitCode": 2,
+  "rawDiagnostics": "docs/reviews/2026-10-15-project-jurisdiction-corrections/baseline-01.log:20: new blank line at EOF.\ndocs/reviews/2026-10-15-project-jurisdiction-corrections/staging-whitespace.log:3: trailing whitespace.\n++[41450:0x409f6000]     7755 ms: Scavenge (interleaved) 633.2 (641.4) -> 631.8 (641.7) MB, pooled: 0 MB, 4.21 / 0.00 ms  (average mu = 0.286, current mu = 0.256) allocation failure; \ndocs/reviews/2026-10-15-project-jurisdiction-corrections/types-01.log:5: trailing whitespace.\n+[41450:0x409f6000]     7755 ms: Scavenge (interleaved) 633.2 (641.4) -> 631.8 (641.7) MB, pooled: 0 MB, 4.21 / 0.00 ms  (average mu = 0.286, current mu = 0.256) allocation failure; \n",
+  "encodingNote": "Exact diagnostics encoded as JSON to preserve original trailing spaces without adding new whitespace errors."
+}

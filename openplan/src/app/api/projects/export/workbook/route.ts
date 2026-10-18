@@ -44,21 +44,33 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
     }
 
-    const result = await supabase
-      .from("projects")
-      .select(PROJECT_EXPORT_COLUMNS)
-      .eq("workspace_id", membership.workspace_id)
-      .order("updated_at", { ascending: false })
-      .limit(PORTFOLIO_IMPORT_MAX_ROWS + 1);
-    if (result.error) {
-      audit.error("portfolio_workbook_read_failed", {
-        workspaceId: membership.workspace_id,
-        code: result.error.code ?? null,
-      });
-      return NextResponse.json({ error: "Failed to read the project portfolio" }, { status: 500 });
+    const projects: PortfolioRoundTripProject[] = [];
+    const pageSize = 1_000;
+    let lastId: string | null = null;
+    // Page by identity so updated_at edits cannot move unread rows behind an
+    // offset. Short response caps are not exhaustion. These separate reads do
+    // not provide an atomic snapshot of row values or concurrent inserts/deletes.
+    while (projects.length <= PORTFOLIO_IMPORT_MAX_ROWS) {
+      let query = supabase
+        .from("projects")
+        .select(PROJECT_EXPORT_COLUMNS)
+        .eq("workspace_id", membership.workspace_id)
+        .order("id", { ascending: true });
+      if (lastId !== null) query = query.gt("id", lastId);
+      const result = await query.limit(Math.min(pageSize, PORTFOLIO_IMPORT_MAX_ROWS + 1 - projects.length));
+      if (result.error || !result.data) {
+        audit.error("portfolio_workbook_read_failed", {
+          workspaceId: membership.workspace_id,
+          code: result.error?.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to read the project portfolio" }, { status: 500 });
+      }
+      const page = result.data as unknown as PortfolioRoundTripProject[];
+      if (page.length === 0) break;
+      projects.push(...page);
+      lastId = page[page.length - 1].id;
     }
 
-    const projects = (result.data ?? []) as unknown as PortfolioRoundTripProject[];
     if (projects.length > PORTFOLIO_IMPORT_MAX_ROWS) {
       audit.warn("portfolio_workbook_row_limit", {
         workspaceId: membership.workspace_id,
@@ -72,12 +84,22 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         { status: 409 }
       );
     }
+    // Preserve the previous presentation order using the values actually read.
+    projects.sort((left, right) => {
+      const milliseconds = Date.parse(right.updated_at) - Date.parse(left.updated_at);
+      // PostgreSQL timestamps retain microseconds beyond JavaScript's milliseconds.
+      const submillisecond = (value: string) => Number(
+        (value.match(/\.(\d+)/)?.[1] ?? "").padEnd(6, "0").slice(3, 6)
+      );
+      return milliseconds || submillisecond(right.updated_at) - submillisecond(left.updated_at)
+        || (left.id < right.id ? -1 : left.id > right.id ? 1 : 0);
+    });
     // The workbook leaves an unknown price year blank; the reviewed importer
     // preserves it as unknown instead of substituting its default year.
 
     const generatedAt = new Date();
     const workspaceName = workspace.name?.trim() || "Workspace";
-    const bytes = buildPortfolioRoundTripWorkbook({
+    const bytes = await buildPortfolioRoundTripWorkbook({
       workspaceId: membership.workspace_id,
       workspaceName,
       projects,

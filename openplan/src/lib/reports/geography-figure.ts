@@ -364,7 +364,7 @@ function describeStudyArea(place: PlaceOfRecord): {
     return {
       title: label ?? "Study area",
       detail:
-        "The project's area of record — a place that was searched for, so the boundary, the county filter and the jurisdiction can all be re-derived from it.",
+        "The project's area of record is a searched study place whose boundary and county filter can be recovered. Project jurisdiction requires a separate human declaration and assessment. Geography does not resolve adopting authority or legal applicability.",
       caveat: null,
     };
   }

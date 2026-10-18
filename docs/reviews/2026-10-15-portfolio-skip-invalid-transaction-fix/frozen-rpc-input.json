@@ -1,0 +1,91 @@
+{
+  "sourceHash": "b6c01c67c37506a56301c37301f0eb84d9d21dcacb415a4988c21f0e00e7e0a7",
+  "previewHash": "b8d13529a3267b9b733a3ec80181494615d44c4940e833866bf691da006d0508",
+  "format": "csv",
+  "configurations": [
+    {
+      "worksheetIndex": 0,
+      "headerRow": 1,
+      "mapping": {
+        "name": 0,
+        "description": 1,
+        "estimatedCost": 4,
+        "status": 2,
+        "sourceLocation": 3
+      },
+      "defaults": {
+        "planType": "capital_program",
+        "status": "draft",
+        "deliveryPhase": "programming",
+        "cost": {
+          "currency": "EUR",
+          "scale": "ones",
+          "priceYear": null
+        }
+      },
+      "worksheetName": "CSV"
+    }
+  ],
+  "rows": [
+    {
+      "worksheetIndex": 0,
+      "worksheetName": "CSV",
+      "headerRow": 1,
+      "rowNumber": 2,
+      "fingerprint": "de5c37620688220fed9ca6f2c9f371a5739554abc502f7ccb1bbe3df1746189b",
+      "sourceId": null,
+      "name": "Synthetic UI import =1+1",
+      "description": "Engineering fixture only. Literal formula text remains data.",
+      "sourceLocationText": "Unverified text only",
+      "estimatedCost": {
+        "amount": "125000",
+        "currency": "EUR",
+        "priceYear": null
+      },
+      "planType": "capital_program",
+      "status": "active",
+      "deliveryPhase": "programming",
+      "decision": "create",
+      "state": "warning",
+      "canCreate": true,
+      "confirmNameMatch": false,
+      "confirmFormula": false,
+      "formulaFields": [],
+      "errors": [],
+      "warnings": [
+        {
+          "code": "unknown_price_year",
+          "message": "Cost price year is unknown; do not treat this estimate as current-year prices."
+        }
+      ]
+    },
+    {
+      "worksheetIndex": 0,
+      "worksheetName": "CSV",
+      "headerRow": 1,
+      "rowNumber": 3,
+      "fingerprint": "79cdf0a32ae24e6a6ac80ea80f0a664bbc75b9d1ad461411518c45c1beb6d182",
+      "sourceId": null,
+      "name": "Synthetic skipped row",
+      "description": "Skip control, never create.",
+      "sourceLocationText": "Not a jurisdiction",
+      "estimatedCost": null,
+      "planType": "capital_program",
+      "status": "invented-status",
+      "deliveryPhase": "programming",
+      "decision": "skip",
+      "state": "blocked",
+      "canCreate": false,
+      "confirmNameMatch": false,
+      "confirmFormula": false,
+      "formulaFields": [],
+      "errors": [
+        {
+          "code": "invalid_status",
+          "message": "Choose a supported OpenPlan project status."
+        }
+      ],
+      "warnings": []
+    }
+  ]
+}

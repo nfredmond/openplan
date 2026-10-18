@@ -1,0 +1,142 @@
+--- 807c89/PARENT_RECIPE.md
++++ v3/PARENT_RECIPE.md
+@@ -1 +1 @@
+-# Prepared v2 recipe resolves R1 and R2; no application step has run
++# V3 is prepared for review; application execution remains blocked
+@@ -3,4 +3,6 @@
+-The parent must finish a new independent review before consuming any one-shot
+-intent. Compare the public manifest with the installed private files first.
+-Retain sole operational ownership. The REST transition is already complete;
+-do not repeat it, recreate helpers or recapture a source anchor.
++Application source stays exactly `21510042e94bcaf80f262205ad156a7bb639e35c`.
++A later parent documentation commit does not change this binding. Complete the
++new proportional independent review of both compiler repairs and this mechanical
++rebind before running any command below. This preparation never invokes them.
++Retain sole operational ownership and compare the reviewed external manifest
++with the installed files. The private checksum list alone is not a trust anchor.
+@@ -8,4 +10,5 @@
+-[run_stage_v2.sh](run_stage_v2.sh) is the fixed, reviewed POSIX entry point.
+-Its checksum check runs before systemd. The public manifest pins the checksum
+-list, runner and controller bytes. Keep that external manifest comparison;
+-the private checksum list alone is not an independent trust anchor.
++The REST transition is complete. Preserve the original helper packet, stopped
++old REST container, active receipts and failed v2 application unit and files.
++Do not rerun recovery, clone a database, migrate, recapture an anchor, reset an
++intent, retry an old stage, copy a candidate or reuse partial `.next` output.
++The application candidate below must remain absent until authorized execution.
+@@ -14 +17 @@
+-APP_PACKET=/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2
++APP_PACKET=/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3
+@@ -16,2 +19,2 @@
+-# Compare this checksum list's SHA-256 with the independently reviewed manifest.
+-sha256sum "$APP_PACKET/operation-files.sha256"
++# Compare these hashes with the independently reviewed public manifest first.
++sha256sum "$APP_PACKET/run_stage_v3.sh" "$APP_PACKET/operation-files.sha256"
+@@ -20,4 +23,4 @@
+-sh "$APP_PACKET/run_stage_v2.sh" active-check
+-sh "$APP_PACKET/run_stage_v2.sh" checkout
+-sh "$APP_PACKET/run_stage_v2.sh" build
+-sh "$APP_PACKET/run_stage_v2.sh" start
++sh "$APP_PACKET/run_stage_v3.sh" active-check
++sh "$APP_PACKET/run_stage_v3.sh" checkout
++sh "$APP_PACKET/run_stage_v3.sh" build
++sh "$APP_PACKET/run_stage_v3.sh" start
+@@ -25,2 +28,2 @@
+-# Collect once after the actual web unit is ready. Start acceptance alone is insufficient.
+-sh "$APP_PACKET/run_stage_v2.sh" attest
++# Collect once after actual web readiness. Request acceptance is not process proof.
++sh "$APP_PACKET/run_stage_v3.sh" attest
+@@ -29,8 +32,4 @@
+-The actual web unit remains
+-`openplan-current-project-preview-app-678-v1-web.service`.
+-`start` returns the status of systemd's asynchronous unit-creation request.
+-That status does not establish that Python or the web process stays running.
+-The attestor must acquire the actual unit, listener, process, environment,
+-resources, build bytes, health response and preservation checks afterward.
+-Build uses `--wait --pipe`; its nonzero controller status propagates through
+-POSIX `exec`. The composed fixture observes both the request and child result.
++The fixed units use prefix `openplan-current-project-preview-app-21510042e-v3`:
++`-active-check`, `-checkout`, `-build`, `-web.service` and `-attest`.
++The attestor requires that exact web unit and cgroup. The failed
++`openplan-current-project-preview-app-678-v1-build` remains retained and unused.
+@@ -38 +37,7 @@
+-## One filesystem boundary surrounds the npm payload
++The runner preserves the independently reviewed v2 arrangement. Trusted,
++hash-pinned Python build/start controllers run directly under systemd. They
++retain ordinary user filesystem and Docker permissions; they have no outer
++read-only OS boundary. Fixed paths and reviewed code limit intended writes.
++Absolute host tools, the local systemd user manager, interpreter startup and
++same-user custody remain trusted assumptions. No host/AppArmor/sysctl setting,
++permission or capability changes.
+@@ -40,8 +45,7 @@
+-`build` and `start` run the trusted, hash-pinned Python controller directly under
+-systemd. Build retains 10 GiB, zero swap and 50 percent CPU; start retains 512 MiB,
+-zero swap and 50 percent CPU. The command clears the interpreter environment before Python loads, using a
+-private HOME and fixed PATH. The controller performs the unchanged app/env/head,
+-source/active receipt, resource, intent and preservation checks before invoking
+-the actual inner bubblewrap command. No outer bubblewrap encloses these two
+-controllers. This avoids the reproduced namespace refusal without changing a
+-host protection or dropping npm confinement.
++The actual npm child retains one inner bubblewrap boundary: whole host read-only;
++new owned candidate/execution/tmp writable; resolved donor and environment
++read-only; `/run` hidden; private HOME/cache/log/XDG paths. Build networking stays
++off. Start retains the local network. Build retains heap 6144, 10 GiB memory,
++zero swap and 50 percent CPU. Start retains heap 320, 512 MiB, zero swap and
++50 percent CPU. Resource guards, current RAM/disk headroom, exact env and source,
++full-SHA receipts, tool hashes and fresh complete build inventory remain intact.
+@@ -49,5 +53,6 @@
+-The controller has the user's ordinary filesystem and Docker permissions.
+-It is not protected by an outer read-only filesystem. Its reviewed fixed Python
+-paths, argv and code limit intended writes to the new candidate/execution root.
+-The installed controller and helpers remain trusted. This does not protect
+-against a controller defect, altered host tools or a hostile same-user actor.
++Active-check, checkout and attestation each retain one outer read-only wrapper,
++without an inner wrapper. The local shared-clone operation protects the source
++Git object store read-only and writes only the absent new application candidate.
++Interpreter environment clearing and checksum refusal precede controller entry.
++Each actual stage reacquires readiness and original source/global/earlier-helper/
++Storage preservation. Stored true flags cannot replace those acquisitions.
+@@ -55,5 +60,9 @@
+-The original helper CLI is never dispatched. Its imported readiness and
+-preservation functions read frozen bindings, inspect fixed Docker identities,
+-make fixed HTTP checks and use read-only SQL sessions. They do not call its
+-mutation/failure-record entry points. The v2 controller writes its own intents,
+-logs, receipts and result files in the new root. It does not append to old packets.
++Checkout/build/start use exclusive, fsynced single-use intents. Preserve partial
++state after any refusal or lost acknowledgement. Do not automatically retry.
++The start request returns before proving that Python or the web process remains
++running. The real attestor must acquire the exact unit, listener, cwd, cgroup,
++full environment, build receipt/inventory/tool bindings, non-cache bytes,
++health identity and actual readiness. Its health comparison requires exactly
++`21510042e94b`, 419 expected migrations and latest `20261017000016`. Checkout,
++environment, build and process SHA remain the full 40 characters. Health reports
++expected build metadata, not a live database census.
+@@ -61,21 +70,7 @@
+-The actual npm payload still enters the unchanged inner constructor. It mounts
+-the whole host read-only, allows only owned candidate/execution/tmp writes,
+-mounts resolved dependencies and `.env.local` read-only, hides `/run`, supplies
+-private HOME/npm cache/log/XDG/tmp paths, disables build networking and retains
+-local network access at startup. These are kernel-enforced payload restrictions,
+-separate from the trusted controller's source-level write limits.
+-
+-`active-check`, `checkout` and `attest` retain one outer read-only wrapper.
+-They do not launch an inner bubblewrap. The checkout controller uses a fixed
+-local shared/no-checkout clone into the absent new root, with durable intent
+-before creation. Its source object store remains read-only while the new clone
+-uses alternates. It detaches at the full app SHA and writes the environment and
+-dependency link only in that clone. No real checkout runs during preparation.
+-
+-The corrected health comparison requires exactly `67828c17c4c2`, plus 419
+-expected migrations and latest `20261017000016`. Full checkout, environment,
+-build and process identity remain `67828c17c4c270529468eef1edd144e4a52b693a`.
+-Preserve all intent/partial state after a refusal or lost acknowledgement.
+-Do not retry creation, remove an intent, swap receipts or build the old `06a`.
+-No actual app execution, capacity, browser, native or human acceptance follows
+-from the fixture results.
++The parent full-project type check passes with unchanged full configuration and
++retained generated declaration inputs. It is not a successful Next build,
++new types-generation proof, accepted build output or startup evidence. Actual
++v3 capacity/build/start/readback still need their own evidence after review.
++T3 capture remains blocked. Desktop and 390px journeys, console, login/decryption,
++usable artifacts, native Excel, practitioner, public and scientific acceptance
++remain unproved. No browser or fallback call runs during this preparation.

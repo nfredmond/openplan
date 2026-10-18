@@ -125,10 +125,10 @@ import {
 } from "@/lib/reports/dual-demand-agreement";
 import { readReportAerialOrthoSelections, reportAerialOrthoPreviewHref } from "@/lib/reports/aerial-ortho-evidence";
 import { freezeSelectedReportAerialOrtho } from "@/lib/reports/aerial-ortho-evidence-server";
-import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
+import { looksLikePendingSchema, readPendingSchemaMissingColumn } from "@/lib/supabase/pending-schema";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import {
-  PROJECT_PLACE_COLUMNS,
+  PROJECT_PLACE_COLUMN_NAMES,
   placeOfRecordFromProject,
   type ProjectPlaceRow,
 } from "@/lib/projects/project-place";
@@ -136,8 +136,19 @@ import type {
   PacketGeographyCorridor,
   PacketGeographyReadState,
 } from "@/lib/reports/geography-figure";
-import { buildJurisdictionReadinessPayload } from "@/lib/jurisdiction-readiness/payload";
+import { buildProjectJurisdictionReadinessExportPayload } from "@/lib/jurisdiction-readiness/payload";
 import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
+import { buildReportProjectJurisdictionSchemaPendingPayload } from "@/lib/reports/project-jurisdiction";
+
+const PACKET_PROJECT_OPTIONAL_COLUMN_GROUPS = [
+  { kind: "jurisdiction", columns: ["jurisdiction_context"] },
+  { kind: "geography", columns: PROJECT_PLACE_COLUMN_NAMES },
+  { kind: "estimate", columns: ["estimated_cost_amount", "estimated_cost_currency", "estimated_cost_basis_year", "estimated_cost_source_document_id"] },
+  { kind: "site", columns: ["latitude", "longitude"] },
+] as const;
+// Keep the initial projection literal so the source guard checks every column.
+// Route tests pin parity with the four independently removable groups above.
+const PACKET_PROJECT_COLUMNS = "id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at, jurisdiction_context, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_geometry_geojson, place_set_at, estimated_cost_amount, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, latitude, longitude";
 
 /**
  * A read whose ABSENCE is honest when the schema is genuinely not there: no
@@ -180,6 +191,7 @@ import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readines
  * database answers the narrow re-query, which carries none of it.
  */
 type PacketProjectRow = {
+  jurisdiction_context?: unknown;
   id: string;
   workspace_id: string;
   name: string;
@@ -1522,7 +1534,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         // missing-column error, which the narrow re-query below recovers from —
         // the same shape the `report_runs` typed-evidence fallback uses.
         .select(
-          `id, workspace_id, name, summary, status, plan_type, delivery_phase, estimated_cost_amount, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, created_at, updated_at, latitude, longitude, ${PROJECT_PLACE_COLUMNS}`
+          PACKET_PROJECT_COLUMNS
         )
         .eq("id", report.project_id)
         .maybeSingle(),
@@ -1616,22 +1628,32 @@ export async function POST(request: NextRequest, context: RouteContext) {
         .order("created_at", { ascending: false }),
     ]);
 
-    // Geography fallback. A missing place column is a PENDING SCHEMA, not an
-    // absent study area, and the two must not read the same in the packet — so
-    // the narrow re-query restores generation and the read state carries the
-    // reason into the figure, which prints it.
+    // Remove only the named unavailable field group. Place, jurisdiction, cost
+    // and site migrations can be at different stages; one gap proves nothing
+    // about the others. Unknown schema errors and non-schema failures refuse.
     let projectGeographyReadState: PacketGeographyReadState = "ok";
+    let projectJurisdictionSchemaPending = false;
     let projectResultForPacket = projectResult;
-    if (projectResult.error && looksLikePendingSchema(projectResult.error.message)) {
-      projectGeographyReadState = "schema_pending";
-      audit.warn("report_project_geography_schema_pending", {
+    let projectColumnsForPacket = PACKET_PROJECT_COLUMNS.split(", ");
+    for (let attempt = 0; attempt < PACKET_PROJECT_OPTIONAL_COLUMN_GROUPS.length; attempt += 1) {
+      const message = projectResultForPacket.error?.message;
+      const missingColumn = readPendingSchemaMissingColumn(message, "projects");
+      const missing = PACKET_PROJECT_OPTIONAL_COLUMN_GROUPS.find(group => group.columns.some(column =>
+        column === missingColumn && projectColumnsForPacket.includes(column)
+      ));
+      if (!missing) break;
+      if (missing.kind === "geography") projectGeographyReadState = "schema_pending";
+      if (missing.kind === "jurisdiction") projectJurisdictionSchemaPending = true;
+      projectColumnsForPacket = projectColumnsForPacket.filter(column => !missing.columns.some(unavailable => unavailable === column));
+      audit.warn("report_project_columns_schema_pending", {
         reportId: report.id,
         projectId: report.project_id,
-        message: projectResult.error.message,
+        fieldGroup: missing.kind,
+        message,
       });
       projectResultForPacket = (await supabase
         .from("projects")
-        .select("id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at")
+        .select(projectColumnsForPacket.join(", "))
         .eq("id", report.project_id)
         .maybeSingle()) as unknown as typeof projectResult;
     }
@@ -1761,18 +1783,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     // Cast: the projection is a template literal (the place columns interpolated
-    // from PROJECT_PLACE_COLUMNS), which supabase-js's string parser cannot
+    // from PACKET_PROJECT_COLUMNS), which supabase-js's string parser cannot
     // type — the same reason the workspace read above is cast. Guaranteed
     // non-null here; a failed or empty project read returned already.
     const projectRow = projectResultForPacket.data as unknown as PacketProjectRow;
-    const jurisdictionReadiness = buildJurisdictionReadinessPayload(
-      {
-        countryCode: projectRow.place_country_code ?? null,
-        subdivisionCode: projectRow.place_subdivision_code ?? null,
-        label: projectRow.place_label ?? null,
-      },
-      jurisdictionReadinessRegistrySha256(),
-    );
+    const registrySha256 = jurisdictionReadinessRegistrySha256();
+    const jurisdictionReadiness = projectJurisdictionSchemaPending
+      ? buildReportProjectJurisdictionSchemaPendingPayload(projectRow, registrySha256, projectGeographyReadState)
+      : buildProjectJurisdictionReadinessExportPayload(projectRow, registrySha256);
     let estimatedCostSourceTitle: string | null = null;
     if (projectRow.estimated_cost_source_document_id) {
       // The recorded FK is the source of this estimate. Portfolio imports are
@@ -2703,6 +2721,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         reportOrigin: engagementProvenance?.origin ?? "report_builder",
         reportReason: engagementProvenance?.reason ?? null,
         projectUpdatedAt: projectRow.updated_at,
+        projectGeographyReadState,
         jurisdictionReadiness,
         linkedRunCount: linkedRuns.length,
         citedModelRunCount: citedModelRuns.length,

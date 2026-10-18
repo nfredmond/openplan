@@ -1,0 +1,11 @@
+{
+  "openplan/src/components/projects/project-jurisdiction-editor.tsx": "f8afd63053e01c812d2cc4c47d9f1c01c8bdbd03553144a877ee306f2a4d95e3",
+  "openplan/src/lib/jurisdiction-readiness/payload.ts": "e16cd5539dac55e13b4c889fc897bd8ed2429b6ece7caeda7031d17edbaf805c",
+  "openplan/src/lib/projects/project-jurisdiction.ts": "471e271740a66dd314637b0378513f5eb035b896774f5bf2916a774aefd6c24d",
+  "openplan/src/lib/project-evidence-bundles/generated-records.ts": "52353f5d766646142d458a63ecbe53ffb9a2aca16d04e9ce53dff791aa8a7b6c",
+  "openplan/src/lib/projects/project-geopackage.ts": "7a0d199b888db1a33f8790223c4f24bd53aa2a510db19b5dc87932d031b0d2de",
+  "openplan/src/lib/reports/html.ts": "a1cfb75c0ed2673a7aa7162277ec393f07670c587c1ac7bd68b7058874890b56",
+  "openplan/src/lib/jurisdiction-readiness/evidence-bundle.ts": "34ab92aaf0d893c4d524b64bfcabc0b860b581c57cf566c02289be967bfe98fc",
+  "openplan/src/app/api/projects/[projectId]/jurisdiction-readiness/route.ts": "60e5a0b63b28fc6ddcbdd650d83c96f2694d811582d67a24aa326a61fb091edc",
+  "openplan/src/app/api/reports/[reportId]/generate/route.ts": "c91d67548e4aa807be70af49c7fa2872d0b1129a6a41a8d51b9832474fcc61ca"
+}

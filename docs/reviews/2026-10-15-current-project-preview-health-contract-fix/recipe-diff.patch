@@ -1,0 +1,81 @@
+--- f299/parent-recipe
++++ v2/parent-recipe
+@@ -2 +2 @@
+-APP_PACKET=/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015
++APP_PACKET=/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2
+@@ -4,6 +4,3 @@
+-# Reacquire readiness/preservation before creating the new application checkout.
+-systemd-run --user --wait --pipe --unit=openplan-current-project-preview-app-678-v1-check \
+-  -p MemoryMax=512M -p MemorySwapMax=0 -p CPUQuota=50% \
+-  /usr/bin/bwrap --die-with-parent --ro-bind / / --dev /dev --proc /proc \
+-  --bind "$APP_PACKET" "$APP_PACKET" --bind "$APP_PACKET/tmp" /tmp \
+-  /usr/bin/python3 -B "$APP_PACKET/app_binding_v1.py" active-check
++# Compare this checksum list's SHA-256 with the independently reviewed manifest.
++sha256sum "$APP_PACKET/operation-files.sha256"
++sha256sum --check --strict "$APP_PACKET/operation-files.sha256"
+@@ -11,5 +8,4 @@
+-systemd-run --user --wait --pipe --unit=openplan-current-project-preview-app-678-v1-checkout \
+-  -p MemoryMax=512M -p MemorySwapMax=0 -p CPUQuota=50% \
+-  /usr/bin/bwrap --die-with-parent --ro-bind / / --dev /dev --proc /proc \
+-  --bind "$APP_PACKET" "$APP_PACKET" --bind "$APP_PACKET/tmp" /tmp \
+-  /usr/bin/python3 -B "$APP_PACKET/app_binding_v1.py" checkout
++sh "$APP_PACKET/run_stage_v2.sh" active-check
++sh "$APP_PACKET/run_stage_v2.sh" checkout
++sh "$APP_PACKET/run_stage_v2.sh" build
++sh "$APP_PACKET/run_stage_v2.sh" start
+@@ -17,18 +13,2 @@
+-systemd-run --user --wait --pipe --unit=openplan-current-project-preview-app-678-v1-build \
+-  -p MemoryMax=10G -p MemorySwapMax=0 -p CPUQuota=50% \
+-  /usr/bin/bwrap --die-with-parent --ro-bind / / --dev /dev --proc /proc \
+-  --bind "$APP_PACKET" "$APP_PACKET" --bind "$APP_PACKET/tmp" /tmp \
+-  /usr/bin/python3 -B "$APP_PACKET/app_binding_v1.py" build
+-
+-systemd-run --user --unit=openplan-current-project-preview-app-678-v1-web \
+-  -p MemoryMax=512M -p MemorySwapMax=0 -p CPUQuota=50% \
+-  /usr/bin/bwrap --die-with-parent --ro-bind / / --dev /dev --proc /proc \
+-  --bind "$APP_PACKET" "$APP_PACKET" --bind "$APP_PACKET/tmp" /tmp \
+-  /usr/bin/python3 -B "$APP_PACKET/app_binding_v1.py" start
+-
+-# After the unit is actually ready, collect identified process/HTTP readback once.
+-systemd-run --user --wait --pipe --unit=openplan-current-project-preview-app-678-v1-attest \
+-  -p MemoryMax=512M -p MemorySwapMax=0 -p CPUQuota=50% \
+-  /usr/bin/bwrap --die-with-parent --ro-bind / / --dev /dev --proc /proc \
+-  --bind "$APP_PACKET" "$APP_PACKET" --bind "$APP_PACKET/tmp" /tmp \
+-  /usr/bin/python3 -B "$APP_PACKET/attest_start_v1.py"
++# Collect once after the actual web unit is ready. Start acceptance alone is insufficient.
++sh "$APP_PACKET/run_stage_v2.sh" attest
+--- /dev/null
++++ v2/run_stage_v2.sh
+@@ -0,0 +1,32 @@
++#!/bin/sh
++# Reviewed trusted controller arrangement. This file has a fixed private root.
++set -eu
++umask 077
++ROOT=/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2
++[ "$#" -eq 1 ] || exit 2
++/usr/bin/sha256sum --check --strict "$ROOT/operation-files.sha256" >/dev/null
++case "$1" in
++  build)
++    exec /usr/bin/systemd-run --user --wait --pipe --unit=openplan-current-project-preview-app-678-v1-build \
++      -p MemoryMax=10G -p MemorySwapMax=0 -p CPUQuota=50% -p UMask=0077 \
++      /usr/bin/env -i PATH=/usr/bin:/bin HOME="$ROOT/home" PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 -B "$ROOT/app_binding_v1.py" build
++    ;;
++  start)
++    exec /usr/bin/systemd-run --user --unit=openplan-current-project-preview-app-678-v1-web \
++      -p MemoryMax=512M -p MemorySwapMax=0 -p CPUQuota=50% -p UMask=0077 \
++      /usr/bin/env -i PATH=/usr/bin:/bin HOME="$ROOT/home" PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 -B "$ROOT/app_binding_v1.py" start
++    ;;
++  active-check|checkout|attest)
++    stage=$1
++    if [ "$stage" = attest ]; then
++      set -- /usr/bin/env -i PATH=/usr/bin:/bin HOME="$ROOT/home" PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 -B "$ROOT/attest_start_v1.py"
++    else
++      set -- /usr/bin/env -i PATH=/usr/bin:/bin HOME="$ROOT/home" PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 -B "$ROOT/app_binding_v1.py" "$stage"
++    fi
++    exec /usr/bin/systemd-run --user --wait --pipe --unit="openplan-current-project-preview-app-678-v1-$stage" \
++      -p MemoryMax=512M -p MemorySwapMax=0 -p CPUQuota=50% -p UMask=0077 \
++      /usr/bin/bwrap --die-with-parent --ro-bind / / --dev /dev --proc /proc \
++      --bind "$ROOT" "$ROOT" --bind "$ROOT/tmp" /tmp "$@"
++    ;;
++  *) exit 2 ;;
++esac

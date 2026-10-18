@@ -1,0 +1,5 @@
+--- /home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v4/policy.py
++++ policy.py
+@@ -17 +17 @@
+-PURPOSE = 'project-portfolio-skip-preview-20261015-v4'
++PURPOSE = 'project-portfolio-skip-preview-20261015-v5'

@@ -1,0 +1,8 @@
+{
+  "trial": "pagination-membership-fault",
+  "testFile": "src/test/project-workbook-export-pagination.test.ts",
+  "test": "stops callers without active membership before project reads",
+  "exitCode": 1,
+  "marker": "missing membership must stop before portfolio access",
+  "classification": "KILLED"
+}

@@ -1,0 +1,197 @@
+{
+  "candidateCommit": "97c310944ecf694525798bcc7cdb30edb7832686",
+  "sourcePins": {
+    "PARENT_RECIPE.md": "60c61851c329dc6d52236a5b3810e4ca2dc9816eb535c0cfd1a70898c3cb692c",
+    "PREPARATION_FILES.sha256": "634c0f75406af721fc1a30353e472ba5abab313722c89fff59426b9dd5d80208",
+    "REBIND.md": "d51d0ae4b3259c12c7f7357d4a267dc15b1cadf0a13f4a739ad3884ee6e58fea",
+    "STATUS.md": "e9e61923bea761d4c337a5e9f5a65cb82dba413680a9ba739a3417dd68aea82e",
+    "app_binding_v1.py.patch": "02f39d03d6ce2c9b47b01059f611588aeb551557d196eeb46e2f87bb8eea9457",
+    "attest_start_v1.py.patch": "9b70ea6af4119e0999a5a8199d922b602fbe42c4a7f352984f85380f10af866c",
+    "context.json": "b76c6ec72be78b25863058d24fc82aca4d416800e31b96d5284459e15fcde4b9",
+    "controls.json": "f7714426c4e5576ab0276125ecfef36a34f978f1d161e04884c2cca2fe579bf3",
+    "helper.py.patch": "2a585561e01085adaa65d2d7d2c187701767fad8f1d3d9720bc21ec976d63408",
+    "identity.json": "7b7161a88f09f8bc03196991930ec43fd3b8f4614c3f8340c2f4472ee11cb4c6",
+    "memory_storage.py": "672a9d8bc5406436dac8aaaff7da618fe5b30715085339738401649f28bdd25c",
+    "observer.py.patch": "47f2cdb7a3173be3fa35022199e668b6dd8cef451852456f521feabb91c90ee6",
+    "observer_transport.py.patch": "fd94138dafe81a8a8499efbdb558a6a1c01401647c2ed4cd3236e3713b29b6d1",
+    "packet.json": "0ac21f174aeb301972110b8c45ea2712d643786aa0f3939f83d84a992b27fd4f",
+    "parent_recipe.sh": "1109127a37c70f4c3c06296ad4ed2d0d80dea697e0d8e87eff68bfdc77975ac5",
+    "policy.py.patch": "0f419c06881ebf72e778c402a30e00cdf3a5dd5c06f21f162b117085346181d8",
+    "preparation-audit.json": "706ca39344bf9391c4972970bb279af83093140913d7353e84f5f3769381c81c",
+    "preparation_audit.py": "3d233feac33efdc4ad52e69b6376c6de00924f3dd26cb41064eeecb70c92b489",
+    "prepare_packet.py": "3400fbf3262f42fc06b401ce3692896248888d77fb0d5a49c9a66e89f7da6449",
+    "run_stage.sh.patch": "efa9381e224582f678c8a09bbfe086ca4e812771a6b4eb3b3576dfc4945ba754",
+    "templates/app_binding_v1.py": "db438d5c289cacfb20cd9fbcf250ff396c9827619f8d0fb5e2c4d532cfeddfe7",
+    "templates/attest_start_v1.py": "90dd632f2ab9de7cfb11a3af8451438a1c6b0084e20ea0104bea9b16fedfcadf",
+    "templates/helper.py": "9bcecc1b62f0e14b9e65df64517337db3bd7305a2e31f4f086f90eb15958a828",
+    "templates/observer.py": "869ff3c3d30198fd06b17303a9eb1c319e0a8518783cfc15a1e66039d44ac2ca",
+    "templates/observer_transport.py": "f2e4a598f9f84203db91422c17cb4521aa0e1a6b96d7848f0a3aa52d5e477db9",
+    "templates/policy.py": "f2d37cb1ec1a865ad20989ffab6914041b95ff9ec1b7655d6db4d968d50f21b6",
+    "templates/run_stage.sh": "dc94f6800f453bb0a661f5e6b6c1d47b070bb36e32e4a6933bcfa1f2188691ca",
+    "verify_context.py": "58ce0b50f6b8b82d62671178a29b52b4171a4e0effac5bc6442ee1af5407e1ac",
+    "verify_identity.py": "14b972482259ff68a92d1220126397c1aae35d5bc5eea1030815b051bed633fe",
+    "verify_preparation.py": "294570813e1d3342dbd37cb910552d7aff614c9c5738a676fc1b8256479d9330"
+  },
+  "preparationListPinsMatched": 29,
+  "retainedPublicPrivateReceiptEquality": {
+    "controls.json": true,
+    "context.json": true,
+    "identity.json": true,
+    "preparation-audit.json": true
+  },
+  "functionComparison": {
+    "app_binding_v1.py": {
+      "unchangedFunctions": [
+        "acquire",
+        "app_values",
+        "build",
+        "cgroup",
+        "checkout",
+        "command",
+        "dependencies",
+        "digest",
+        "environment",
+        "execution_dirs",
+        "inventory",
+        "load_recovery",
+        "main",
+        "migrations",
+        "private_file",
+        "read",
+        "require",
+        "sha",
+        "write_once"
+      ],
+      "changedFunctions": [
+        "app_check",
+        "bindings",
+        "budget",
+        "confined_argv",
+        "headroom",
+        "start"
+      ]
+    },
+    "attest_start_v1.py": {
+      "unchangedFunctions": [
+        "main",
+        "npm_child_path"
+      ],
+      "changedFunctions": [
+        "attest"
+      ]
+    },
+    "helper.py": {
+      "unchangedFunctions": [
+        "active_helper_identities",
+        "configured_source",
+        "db_check",
+        "fresh_target",
+        "health",
+        "ident",
+        "inspect",
+        "inventory",
+        "literal",
+        "main",
+        "observed_service",
+        "packet_inventory",
+        "pinned_files",
+        "post_journey",
+        "read",
+        "require_active_helper",
+        "restore",
+        "retained_dump",
+        "run",
+        "sha",
+        "snapshot",
+        "source_check",
+        "sql",
+        "target_check",
+        "target_identity",
+        "templates",
+        "token",
+        "unchanged_inputs",
+        "upgrade",
+        "upgrade_ready",
+        "upgrade_sql",
+        "upgrade_state",
+        "upgraded",
+        "verify_services",
+        "write"
+      ],
+      "changedFunctions": [
+        "expected_service",
+        "free_ports",
+        "preflight",
+        "preserve",
+        "protected_web",
+        "services"
+      ]
+    },
+    "observer.py": {
+      "unchangedFunctions": [
+        "bus_environment",
+        "command",
+        "digest",
+        "main",
+        "observe",
+        "require",
+        "resource_check",
+        "sha"
+      ],
+      "changedFunctions": []
+    },
+    "observer_transport.py": {
+      "unchangedFunctions": [
+        "argv",
+        "main",
+        "observe",
+        "require",
+        "sha",
+        "validate",
+        "write_once"
+      ],
+      "changedFunctions": []
+    },
+    "policy.py": {
+      "unchangedFunctions": [
+        "config_observations",
+        "configuration",
+        "configured_source",
+        "created_service",
+        "database",
+        "digest",
+        "dump_command",
+        "exact",
+        "files",
+        "health",
+        "launch",
+        "native_rest_uri",
+        "optional_values",
+        "safe_parent_command",
+        "selected_values",
+        "service",
+        "source",
+        "source_dump_args",
+        "source_fingerprint"
+      ],
+      "changedFunctions": [
+        "target_name"
+      ]
+    }
+  },
+  "controlCount": 26,
+  "controlSpecimenRestored": true,
+  "preparationArchive": {
+    "sha256": "168371e8dcf646641dcab71dc336a395f781362f9f3de9516bf827d93d156098",
+    "members": 2972,
+    "fileBytesCompared": 1860,
+    "applicationArchive": false
+  },
+  "retainedV6BeforeAfterEqual": true,
+  "retainedV6Entries": 23651,
+  "blindCategories": [
+    "retained receipt readback, not a fresh V6/runtime/DB census",
+    "archive hash/content readback, not extraction/recovery/installation",
+    "unchanged function bytes do not establish preserved operating context"
+  ]
+}

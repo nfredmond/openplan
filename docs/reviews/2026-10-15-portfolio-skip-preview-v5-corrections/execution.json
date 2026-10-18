@@ -1,0 +1,129 @@
+{
+  "scope": "Preparation, pure delta/recipe fixtures and expressly permitted old-web observation tests only. No operating stage or new-preview runtime.",
+  "units": [
+    {
+      "unit": "openplan-portfolio-v5-prepare-01",
+      "invocation": "ae679fc959b94fb6a5a7bd785ec1fdc8",
+      "exit": 0,
+      "seconds": 22.926,
+      "roundedMemoryPeak": "512M",
+      "swap": "0B",
+      "eventCounters": "not captured; no zero-event claim"
+    },
+    {
+      "unit": "openplan-portfolio-v5-r1-context-app-01",
+      "invocation": "e39213b3e5434f3da44ea414586b2b4b",
+      "exit": 0,
+      "runtimeMs": 522,
+      "roundedMemoryPeak": "29M"
+    },
+    {
+      "unit": "openplan-portfolio-v5-r1-context-attestor-01",
+      "invocation": "662d3e6bb0084bd4bbcb9efeff55223f",
+      "exit": 0,
+      "runtimeMs": 453,
+      "roundedMemoryPeak": "27.3M"
+    },
+    {
+      "unit": "openplan-portfolio-v5-r1-context-app-02",
+      "invocation": "80e12ac0685a4474a49c9b373ee30a0a",
+      "exit": 0,
+      "runtimeMs": 495,
+      "roundedMemoryPeak": "27.4M",
+      "adds": "Actual protected-path EROFS checks"
+    },
+    {
+      "unit": "openplan-portfolio-v5-r1-context-attestor-02",
+      "invocation": "83fd929c9dd946a19882f8039d55969a",
+      "exit": 0,
+      "runtimeMs": 461,
+      "roundedMemoryPeak": "27M",
+      "adds": "Actual protected-path EROFS checks"
+    },
+    {
+      "unit": "openplan-portfolio-v5-delta-controls-01",
+      "invocation": "c5a277fc56fc4c1487955f405364ff7e",
+      "exit": 1,
+      "reason": "Spy KeyError, retained failed source; no pass"
+    },
+    {
+      "unit": "openplan-portfolio-v5-delta-controls-02",
+      "invocation": "bb6e44d0df4a4f06a2d6367548fdab75",
+      "exit": 0,
+      "cases": 41,
+      "roundedMemoryPeak": "31.5M"
+    },
+    {
+      "unit": "openplan-portfolio-v5-delta-controls-03",
+      "invocation": "a9050a941b784f1fb3293518ad9d565c",
+      "exit": 0,
+      "cases": 52,
+      "roundedMemoryPeak": "32.8M",
+      "adds": "Resource/seal code faults and inventory specimens"
+    },
+    {
+      "unit": "openplan-portfolio-v5-delta-controls-04",
+      "invocation": "bbc716a02f25419cb8dcbc20ea97f7cc",
+      "exit": 0,
+      "cases": 55,
+      "roundedMemoryPeak": "33.4M",
+      "adds": "Actual preservation consumer and omitted-inventory code fault"
+    },
+    {
+      "unit": "openplan-portfolio-v5-parent-controls-01",
+      "invocation": "f5d5c259545c462faa9c01e0a760635d",
+      "exit": 0,
+      "cases": 9,
+      "roundedMemoryPeak": "26.2M"
+    },
+    {
+      "unit": "openplan-portfolio-v5-reseal-01",
+      "invocation": "e65b5c51f9334e759b9bf76db99f4093",
+      "exit": 0
+    },
+    {
+      "unit": "openplan-portfolio-v5-reseal-02",
+      "invocation": "85d31bd47e15449b9d81778765af87ba",
+      "exit": 0
+    },
+    {
+      "unit": "openplan-portfolio-v5-final-audit-01",
+      "invocation": "6503a652bb334b70b87b2dccb2be3d9b",
+      "exit": 1,
+      "seconds": 10.786,
+      "roundedMemoryPeak": "512M",
+      "reason": "AST empty-field formatting assumption; inventory matched; no pass"
+    },
+    {
+      "unit": "openplan-portfolio-v5-final-audit-02",
+      "invocation": "37ef7b0a8e6c4e4c901faee1b6ab44cd",
+      "exit": 1,
+      "seconds": 10.883,
+      "roundedMemoryPeak": "512M",
+      "reason": "Typography scanner self-match; inventory and mechanical checks matched; no pass"
+    },
+    {
+      "unit": "openplan-portfolio-v5-final-audit-03",
+      "invocation": "8ac793dca5a949baaa36004012372ead",
+      "invocationCandidates": [
+        "8ac793dca5a949baaa36004012372ead"
+      ],
+      "exit": 0,
+      "seconds": 10.551,
+      "roundedMemoryPeak": "512M",
+      "swap": "0B",
+      "eventCounters": "not captured; no zero-event claim",
+      "oldRoots": 5,
+      "oldRootEntriesExact": 51233
+    }
+  ],
+  "limits": {
+    "MemoryMax": "512M",
+    "MemorySwapMax": "0",
+    "CPUQuota": "50%",
+    "flock": "/home/nathaniel/.local/state/openplan/compiler-repair-checks-20261015.lock",
+    "privateHomeCache": true,
+    "pythonBytecode": false
+  },
+  "hostObserver": "Fixed bounded transient read-only unit. Actual counters are in context evidence, not inferred from rounded controller summaries."
+}

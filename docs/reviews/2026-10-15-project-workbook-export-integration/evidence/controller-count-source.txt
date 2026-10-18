@@ -1,0 +1,302 @@
+"""Run serial, source-bound controls without overwriting earlier trials."""
+import argparse
+import copy
+import hashlib
+import importlib.util
+import json
+import os
+from pathlib import Path
+import re
+import subprocess
+
+ROOT = Path(__file__).resolve().parents[3]
+APP = ROOT / 'openplan'
+HERE = Path(__file__).resolve().parent
+OUT = HERE / 'evidence'
+ROUTE = APP / 'src/app/api/projects/export/workbook/route.ts'
+LEGACY = APP / 'src/test/project-portfolio-export-route.test.ts'
+NEW_TEST = 'src/test/project-workbook-export-pagination.test.ts'
+CONFIG = '.operator-private/workbook-integration/vitest.config.mts'
+CANDIDATE = '702ee1270de23cb9e469711398c580d9a977878b'
+IMPORT = '536d4ccbd6'
+
+
+def write(name, value):
+    path = OUT / name
+    with path.open('x') as stream:
+        stream.write(json.dumps(value, indent=2) + '\n')
+
+
+def classify(report, code, test_file, name, marker=None):
+    if report.get('numRuntimeErrorTestSuites', 0) or report.get('unhandledErrors', []):
+        raise ValueError('runtime or unhandled error')
+    suites = report.get('testResults', [])
+    if len(suites) != 1 or suites[0].get('message'):
+        raise ValueError('empty selection or suite/import error')
+    if Path(suites[0]['name']).resolve() != (APP / test_file).resolve():
+        raise ValueError('wrong source test file')
+    assertions = suites[0].get('assertionResults', [])
+    if any(a['status'] not in ('passed', 'failed', 'pending', 'skipped') for a in assertions):
+        raise ValueError('unknown assertion status')
+    active = [a for a in assertions if a['status'] in ('passed', 'failed')]
+    if len(active) != 1 or active[0]['fullName'] != name:
+        raise ValueError('wrong test identity or active count')
+    assertion = active[0]
+    if marker is None:
+        if (code != 0 or report['success'] is not True or assertion['status'] != 'passed'
+                or report['numFailedTests'] != 0 or report['numPassedTests'] != 1
+                or assertion.get('failureMessages', [])):
+            raise ValueError('positive did not pass')
+        return 'SURVIVED'
+    if (code != 1 or report['success'] is not False or report['numFailedTests'] != 1
+            or report['numPassedTests'] != 0 or assertion['status'] != 'failed'):
+        raise ValueError('not one assertion failure')
+    messages = assertion['failureMessages']
+    if len(messages) != 1 or not messages[0].startswith('AssertionError:') or marker not in messages[0]:
+        raise ValueError('wrong assertion diagnostic')
+    return 'KILLED'
+
+
+def invoke(label, files, config=CONFIG, name=None):
+    report_path, log_path = OUT / f'{label}.json', OUT / f'{label}.log'
+    if report_path.exists() or log_path.exists():
+        raise ValueError(f'preserve existing trial before rerun: {label}')
+    command = ['node', 'node_modules/vitest/vitest.mjs', 'run', *files,
+               '--config', config, '--configLoader', 'runner', '--maxWorkers', '1',
+               '--no-file-parallelism', '--reporter=json', '--outputFile', str(report_path)]
+    if name is not None:
+        command += ['-t', '^' + re.escape(name) + '$']
+    result = subprocess.run(command, cwd=APP, env=dict(os.environ, NODE_OPTIONS='--max-old-space-size=640'),
+                            text=True, capture_output=True, timeout=60)
+    log_path.write_text(result.stdout + result.stderr)
+    return json.loads(report_path.read_text()), result.returncode
+
+
+def classifier_controls():
+    name, marker = 'selected test', 'named failure'
+    test_file = str(LEGACY.relative_to(APP))
+    report = {'numFailedTests': 1, 'numPassedTests': 0, 'success': False, 'testResults': [{
+        'name': str(LEGACY), 'message': '', 'assertionResults': [{
+            'fullName': name, 'status': 'failed', 'failureMessages': ['AssertionError: ' + marker]}]}]}
+    assert classify(report, 1, test_file, name, marker) == 'KILLED'
+    harmless = copy.deepcopy(report)
+    harmless['unrelatedMetadata'] = 'comment only'
+    assert classify(harmless, 1, test_file, name, marker) == 'KILLED'
+    refusals = []
+    for label in ('runtime', 'unhandled', 'import', 'empty', 'wrong-file', 'wrong-test',
+                  'wrong-assertion', 'runtime-diagnostic', 'wrong-code', 'extra-failure',
+                  'extra-active', 'unknown-status', 'wrong-summary', 'false-success'):
+        trial, code = copy.deepcopy(report), 1
+        suite = trial['testResults'][0]
+        assertion = suite['assertionResults'][0]
+        if label == 'runtime': trial['numRuntimeErrorTestSuites'] = 1
+        elif label == 'unhandled': trial['unhandledErrors'] = ['unhandled error']
+        elif label == 'import': suite['message'] = 'Error: failed import'
+        elif label == 'empty': trial['testResults'] = []
+        elif label == 'wrong-file': suite['name'] = str(APP / 'other.test.ts')
+        elif label == 'wrong-test': assertion['fullName'] = 'other test'
+        elif label == 'wrong-assertion': assertion['failureMessages'] = ['AssertionError: another diagnostic']
+        elif label == 'runtime-diagnostic': assertion['failureMessages'] = ['TypeError: ' + marker]
+        elif label == 'wrong-code': code = 2
+        elif label == 'extra-failure': trial['numFailedTests'] = 2
+        elif label == 'extra-active': suite['assertionResults'].append(copy.deepcopy(assertion))
+        elif label == 'unknown-status': assertion['status'] = 'unknown'
+        elif label == 'wrong-summary': trial['numPassedTests'] = 1
+        elif label == 'false-success': trial['success'] = True
+        try:
+            classify(trial, code, test_file, name, marker)
+        except ValueError as error:
+            refusals.append({'case': label, 'result': 'REFUSED', 'reason': str(error)})
+        else:
+            raise AssertionError(f'classifier must reject {label}')
+
+    def diagnostic_guard(classifier):
+        wrong = copy.deepcopy(report)
+        wrong['testResults'][0]['assertionResults'][0]['failureMessages'] = ['AssertionError: other']
+        try:
+            classifier(wrong, 1, test_file, name, marker)
+        except ValueError:
+            return
+        raise AssertionError('classifier audit must reject an unrelated assertion')
+
+    diagnostic_guard(classify)
+    try:
+        diagnostic_guard(lambda *_args: 'KILLED')
+    except AssertionError as error:
+        assert str(error) == 'classifier audit must reject an unrelated assertion'
+        write('classifier-controls.json', {'valid': 'KILLED', 'harmless': 'SURVIVED',
+              'intendedFault': str(error), 'refusals': refusals})
+    else:
+        raise AssertionError('vacuous classifier survived its own audit')
+
+
+def setup():
+    private = APP / '.operator-private/workbook-integration'
+    private.mkdir(parents=True, exist_ok=True)
+    config = """import { defineConfig } from 'vitest/config';
+import path from 'node:path';
+export default defineConfig({
+  cacheDir: path.resolve(process.cwd(), '.operator-private/workbook-integration/vite-cache'),
+  resolve: { alias: { '@': path.resolve(process.cwd(), 'src') } },
+  test: { environment: 'node', maxWorkers: 1, maxConcurrency: 1, fileParallelism: false,
+    cache: false, clearMocks: true, unstubEnvs: true, unstubGlobals: true },
+});
+"""
+    (private / 'vitest.config.mts').write_text(config)
+    (private / 'cohort.config.mts').write_text(config.replace(
+        "import path from 'node:path';", "import path from 'node:path';\nimport react from '@vitejs/plugin-react';"
+    ).replace('  cacheDir:', '  plugins: [react()],\n  cacheDir:').replace(
+        "environment: 'node'", "environment: 'jsdom', globals: true, setupFiles: ['./src/test/setup.ts']"))
+
+
+PREFIX = 'GET /api/projects/export/workbook '
+VIEWER = PREFIX + 'exports only the active workspace and allows read-only members'
+OVER = PREFIX + 'refuses an over-limit portfolio instead of silently truncating it'
+QUERY_MARKER = 'every legacy read must preserve projection scope order and inclusive range'
+PAYLOAD_MARKER = 'legacy workbook must retain ordered scoped original metadata'
+LEGACY_FILE = str(LEGACY.relative_to(APP))
+LEGACY_CASES = [
+    ('viewer', VIEWER, 'viewer export must remain successful', ROUTE,
+     '      status: 200,', '      status: 201,'),
+    ('workspace', PREFIX + 'stops before a project read when the user has no active workspace',
+     'missing workspace must stop before reads', ROUTE, '{ status: 404 }', '{ status: 200 }'),
+    ('over-limit', OVER, 'legacy over-limit export must refuse without a workbook', ROUTE,
+     'if (projects.length > PORTFOLIO_IMPORT_MAX_ROWS) {',
+     'projects.splice(PORTFOLIO_IMPORT_MAX_ROWS);\n    if (projects.length > PORTFOLIO_IMPORT_MAX_ROWS) {'),
+    ('unknown-year', PREFIX + 'exports and reimports a recorded cost with an unknown price year',
+     'legacy round trip must preserve an unknown price year', ROUTE,
+     '      projects,', '      projects: projects.map(project => ({ ...project, estimated_cost_basis_year: 2026 })), '),
+    ('denied-read', PREFIX + 'fails closed when the workspace-scoped read fails',
+     'denied project read must fail without a workbook', ROUTE,
+     'return NextResponse.json({ error: "Failed to read the project portfolio" }, { status: 500 });',
+     'return NextResponse.json({ error: "Failed to read the project portfolio" }, { status: 200 });'),
+    ('projection', VIEWER, QUERY_MARKER, ROUTE, '  "summary",\n', ''),
+    ('workspace-filter', VIEWER, QUERY_MARKER, ROUTE,
+     '.eq("workspace_id", membership.workspace_id)', '.eq("workspace_id", user.id)'),
+    ('date-order', VIEWER, QUERY_MARKER, ROUTE,
+     '.order("updated_at", { ascending: false })', '.order("updated_at", { ascending: true })'),
+    ('tie-order', VIEWER, QUERY_MARKER, ROUTE, '\n        .order("id", { ascending: true })', ''),
+    ('range', VIEWER, QUERY_MARKER, ROUTE,
+     '.range(projects.length, Math.min(projects.length + pageSize - 1, PORTFOLIO_IMPORT_MAX_ROWS))',
+     '.range(projects.length, Math.min(projects.length + pageSize - 2, PORTFOLIO_IMPORT_MAX_ROWS))'),
+    ('metadata', VIEWER, PAYLOAD_MARKER, ROUTE, '      projects,',
+     '      projects: projects.map(project => ({ ...project, estimated_cost_source_document_id: null })), '),
+    ('fake-filter', VIEWER, QUERY_MARKER, LEGACY,
+     'query.filters.every(([column, value]) => row[column] === value)', 'query.filters.every(() => true)'),
+    ('fake-order', VIEWER, PAYLOAD_MARKER, LEGACY,
+     'for (const [column, ascending] of query.orders)', 'for (const [column, ascending] of query.orders.slice(0, 0))'),
+    ('fake-projection', VIEWER, PAYLOAD_MARKER, LEGACY,
+     'query.columns.split(",").map((column) => column.trim()).map((column) => [column, row[column]])',
+     'Object.keys(row).map((column) => [column, row[column]])'),
+    ('fake-inclusive-range', OVER, 'legacy over-limit export must refuse without a workbook', LEGACY,
+     'rows.slice(from, from + count)', 'rows.slice(from, from + count - 1)'),
+]
+
+
+def main(start_at=None, cohort_only=False):
+    OUT.mkdir(parents=True, exist_ok=True)
+    setup()
+    classifier_controls()
+    spec = importlib.util.spec_from_file_location('prior_controls', HERE.parent /
+        '2026-10-15-project-workbook-export-pagination/verify_controls.py')
+    prior = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(prior)
+    originals = {ROUTE: ROUTE.read_bytes(), LEGACY: LEGACY.read_bytes()}
+    trials = []
+
+    def run(label, test_file, name, marker=None):
+        report, code = invoke(label, [test_file], name=name)
+        record = {'trial': label, 'testFile': test_file, 'test': name, 'exitCode': code, 'marker': marker}
+        try:
+            record['classification'] = classify(report, code, test_file, name, marker)
+        except Exception as error:
+            record.update(classification='REFUSED', reason=str(error))
+            raise
+        finally:
+            trials.append(record)
+            write(label + '-classification.json', record)
+        print(label, record['classification'], flush=True)
+
+    try:
+        if start_at is None and not cohort_only:
+            LEGACY.write_bytes(subprocess.check_output(['git', 'show', CANDIDATE + ':' + str(LEGACY.relative_to(ROOT))], cwd=ROOT))
+            baseline, code = invoke('legacy-baseline', [LEGACY_FILE])
+            failed = [a['fullName'] for s in baseline['testResults'] for a in s['assertionResults'] if a['status'] == 'failed']
+            assert code == 1 and baseline['numPassedTests'] == 2 and baseline['numFailedTests'] == 3
+            assert set(failed) == {VIEWER, OVER, PREFIX + 'exports and reimports a recorded cost with an unknown price year'}
+            assert all(not s['message'] for s in baseline['testResults'])
+            LEGACY.write_bytes(originals[LEGACY])
+        cases = [('pagination-' + label, NEW_TEST, name, marker, ROUTE, before, after)
+                 for label, name, marker, before, after in prior.CASES]
+        cases += [('legacy-' + label, LEGACY_FILE, name, marker, target, before, after)
+                  for label, name, marker, target, before, after in LEGACY_CASES]
+        # A single capped terminal request must still reproduce the old refusal defect.
+        route_source = originals[ROUTE].decode()
+        start, end = route_source.index('    const projects:'), route_source.index('\n    if (projects.length >')
+        cases.append(('legacy-single-capped-query', LEGACY_FILE, OVER,
+                      'legacy over-limit export must refuse without a workbook', ROUTE,
+                      route_source[start:end], '''    const result = await supabase.from("projects").select(PROJECT_EXPORT_COLUMNS)
+      .eq("workspace_id", membership.workspace_id).order("updated_at", { ascending: false })
+      .limit(PORTFOLIO_IMPORT_MAX_ROWS + 1);
+    const projects = result.data as unknown as PortfolioRoundTripProject[];
+'''))
+        if start_at is not None:
+            labels = [case[0] for case in cases]
+            cases = cases[labels.index(start_at):]
+        if cohort_only:
+            cases = []
+        for label, test_file, name, marker, target, before, after in cases:
+            try:
+                run(label + '-positive', test_file, name)
+                target.write_bytes(originals[target] + b'\n// Harmless integration control.\n')
+                run(label + '-harmless', test_file, name)
+                target.write_bytes(originals[target])
+                source = originals[target].decode()
+                if source.count(before) != 1:
+                    raise ValueError(f'nonunique mutation binding: {label}')
+                target.write_text(source.replace(before, after, 1))
+                run(label + '-fault', test_file, name, marker)
+            finally:
+                for path, source in originals.items():
+                    path.write_bytes(source)
+            run(label + '-restored', test_file, name)
+
+        files = [LEGACY_FILE, NEW_TEST, 'src/test/portfolio-workbook-export.test.ts',
+                 'src/test/portfolio-price-year.test.ts', 'src/test/portfolio-import-review.test.ts',
+                 'src/test/portfolio-workbook-import.test.ts', 'src/test/project-portfolio-import-route.test.ts',
+                 'src/test/project-portfolio-importer.test.tsx', 'src/test/refused-project-portfolio-import-action.test.ts']
+        report, code = invoke('combined-focused', files, '.operator-private/workbook-integration/cohort.config.mts')
+        active = [a for s in report['testResults'] for a in s['assertionResults'] if a['status'] in ('passed', 'failed')]
+        assert code == 0 and report['success'] is True and report['numFailedTests'] == 0
+        assert len(report['testResults']) == len(files) and len(active) == 67 and all(a['status'] == 'passed' for a in active)
+        write('combined-summary.json', {'exitCode': code, 'passed': len(active), 'files': [
+            {'file': str(Path(s['name']).relative_to(APP)), 'passed': len(s['assertionResults'])} for s in report['testResults']],
+            'importCorrectionIntegrated': subprocess.run(['git', 'merge-base', '--is-ancestor', IMPORT, 'HEAD'], cwd=ROOT).returncode == 0})
+        lint = subprocess.run(['node', 'node_modules/eslint/bin/eslint.js', '--max-warnings', '0', LEGACY_FILE],
+                              cwd=APP, text=True, capture_output=True, timeout=60,
+                              env=dict(os.environ, NODE_OPTIONS='--max-old-space-size=640'))
+        (OUT / 'lint.log').write_text(lint.stdout + lint.stderr)
+        write('lint.json', {'exitCode': lint.returncode, 'files': [LEGACY_FILE]})
+        assert lint.returncode == 0
+    finally:
+        for path, source in originals.items():
+            path.write_bytes(source)
+        write('controls.json', trials)
+        write('restoration.json', {str(path.relative_to(ROOT)): {
+            'sha256': hashlib.sha256(path.read_bytes()).hexdigest(), 'restored': path.read_bytes() == source}
+            for path, source in originals.items()})
+        cgroup = Path('/sys/fs/cgroup' + Path('/proc/self/cgroup').read_text().strip().split('::')[-1])
+        write('resources.json', {key: (cgroup / key).read_text().strip() for key in
+                                ('memory.max', 'memory.swap.max', 'memory.peak', 'memory.events')})
+        assert all(path.read_bytes() == source for path, source in originals.items())
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--start-at', help='Resume at an exact case label; keep earlier evidence.')
+    parser.add_argument('--output', type=Path, help='Use a fresh evidence directory.')
+    parser.add_argument('--cohort-only', action='store_true', help='Run combined checks after retained source controls.')
+    args = parser.parse_args()
+    if args.output is not None:
+        OUT = args.output.resolve()
+    main(args.start_at, args.cohort_only)

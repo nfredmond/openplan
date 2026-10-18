@@ -1,0 +1,27 @@
+{
+  "harmlessNativeRead": "survived",
+  "databaseAndClusterRefusals": [
+    "database-openplan_jurisdiction_native_3d281df106064b8cbb9e0c82_up",
+    "database-openplan_pr330_native_unallocated",
+    "database-postgres",
+    "cluster-Id",
+    "cluster-Name",
+    "cluster-State"
+  ],
+  "helperHarmlessMetadata": "survived",
+  "helperRefusals": [
+    "identity",
+    "name",
+    "image",
+    "memory",
+    "swap",
+    "cpu",
+    "pids",
+    "target",
+    "mount",
+    "port",
+    "uri"
+  ],
+  "exactRestore": true,
+  "blind": "identity/config controls use copied real readbacks; they do not prove Docker or PostgreSQL isolation against a malicious host"
+}

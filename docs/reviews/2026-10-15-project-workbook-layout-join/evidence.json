@@ -1,0 +1,195 @@
+{
+  "at": "2026-10-15T09:31:58.892873+00:00",
+  "testedHead": "67828c17c4c270529468eef1edd144e4a52b693a",
+  "reviewedRuntime": "69d52fe4e31a9cd6bea030c2a06ea657435473ec",
+  "dependencyHistoryClosure": "80517981af9b0340fd6b55ece13ab777f09e8ffa",
+  "independentReview": "a4b1045b25adf891cd9a58a05bba21910d31174c",
+  "sourceParity": {
+    "openplan/src/app/api/projects/export/workbook/route.ts": "64fd96d9caae5f8808b5825dbabc23f788fb9883d5a52ff9b974275884304265",
+    "openplan/src/lib/engagement/review-export.ts": "5cf61fcc3ae95287085c4c6e2e1983497381d165d0caf7f429b8ccee2865c019",
+    "openplan/src/lib/export/review-workbook-layout.ts": "134ebad39797bfb27996ec1052514ce4ba5c9da53edf5d315a64a326c1fabd68",
+    "openplan/src/lib/projects/portfolio-export.ts": "06591e3aa6cd922495575f5b0675ca66539be9fa646c562f3b614d52a27a0b0c",
+    "openplan/src/test/engagement-review-export.test.ts": "f237b7d81738b23ede80127a8b93e87906a77cb38d017b904d30505e0d334eef",
+    "openplan/src/test/portfolio-workbook-export.test.ts": "6a44f492173b67087037e2d4371cf4191b2219ab33776624ffc3b25eb57a76f4",
+    "openplan/src/test/project-portfolio-export-route.test.ts": "f3432540f3ee5a7588ac98d135ce6be7bd0fc9895ad222b98dd135de86c79426",
+    "openplan/package.json": "a857e933382f3a990db3bcb036f579af8b9c044cb6b77509ae4daf71ed498e71",
+    "openplan/package-lock.json": "e93237b82fea6899fe67c18e2e4e0ed2d6f66a295cea420cab7c05ec61535420",
+    "docs/reviews/2026-10-15-project-workbook-export-independent/probe.test.ts": "cb6b587080ed3705dfdc63e87ad0429061a7a36b761a03cbd4680eb7c5af8eed",
+    "docs/reviews/2026-10-15-workbook-live-pagination/probe.test.ts": "2491e76f49e2310d46335e84178caa175fee0ca2a8553f21cef76bd556d7c45f",
+    "migrationCountExact06a": 419
+  },
+  "commands": [
+    {
+      "label": "braces-local-audit",
+      "command": [
+        "node",
+        "scripts/ops/verify-braces-vendor.mjs"
+      ],
+      "exitCode": 0,
+      "seconds": 0.299
+    },
+    {
+      "label": "braces-tests",
+      "command": [
+        "npm",
+        "run",
+        "test:braces-vendor"
+      ],
+      "exitCode": 0,
+      "seconds": 0.9
+    },
+    {
+      "label": "deadcode",
+      "command": [
+        "npm",
+        "run",
+        "deadcode"
+      ],
+      "exitCode": 0,
+      "seconds": 11.899
+    },
+    {
+      "label": "direction",
+      "command": [
+        "npm",
+        "run",
+        "product:direction:check"
+      ],
+      "exitCode": 0,
+      "seconds": 1.401
+    },
+    {
+      "label": "focused",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--configLoader",
+        "native",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/project-workbook-layout-join-20261015-01/vitest.config.mjs",
+        "src/test/portfolio-workbook-export.test.ts",
+        "src/test/project-portfolio-export-route.test.ts",
+        "src/test/engagement-review-export.test.ts",
+        "src/test/reference-count-projection-guard.test.ts",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=/home/nathaniel/.local/state/openplan/project-workbook-layout-join-20261015-01/focused.json"
+      ],
+      "exitCode": 0,
+      "seconds": 26.262
+    },
+    {
+      "label": "independent-probe",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--configLoader",
+        "native",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/project-workbook-layout-join-20261015-01/independent.config.mjs",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=/home/nathaniel/.local/state/openplan/project-workbook-layout-join-20261015-01/independent-probe.json"
+      ],
+      "exitCode": 0,
+      "seconds": 49.501
+    },
+    {
+      "label": "lint",
+      "command": [
+        "node",
+        "node_modules/eslint/bin/eslint.js",
+        "src/lib/export/review-workbook-layout.ts",
+        "src/lib/projects/portfolio-export.ts",
+        "src/lib/engagement/review-export.ts",
+        "src/app/api/projects/export/workbook/route.ts",
+        "src/test/portfolio-workbook-export.test.ts",
+        "src/test/project-portfolio-export-route.test.ts",
+        "src/test/engagement-review-export.test.ts",
+        "--max-warnings=0"
+      ],
+      "exitCode": 0,
+      "seconds": 5.394
+    },
+    {
+      "label": "lock-consistency",
+      "command": [
+        "npm",
+        "ls",
+        "--package-lock-only",
+        "--all",
+        "--json"
+      ],
+      "exitCode": 0,
+      "seconds": 1.4
+    },
+    {
+      "label": "locked-parser",
+      "command": [
+        "npm",
+        "ls",
+        "@xmldom/xmldom",
+        "--package-lock-only",
+        "--json"
+      ],
+      "exitCode": 0,
+      "seconds": 1.6
+    },
+    {
+      "label": "types",
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--project",
+        "/home/nathaniel/.local/state/openplan/project-workbook-layout-join-20261015-01/types.json"
+      ],
+      "exitCode": 0,
+      "seconds": 9.2
+    }
+  ],
+  "resources": {
+    "memory.max": "1073741824",
+    "memory.swap.max": "0",
+    "cpu.max": "50000 100000",
+    "memory.peak": "513560576",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.swap.peak": "0",
+    "affinity": [
+      23
+    ],
+    "nodeHeapMiB": 640,
+    "vitestWorkers": 1
+  },
+  "rawEvidence": "/home/nathaniel/.local/state/openplan/project-workbook-layout-join-20261015-01",
+  "custody": {
+    "source-binding.json": "66d22c47715d58ea1bbd051dea6f6fa2b0f1f087a9c5342f882e9ee7f605697e",
+    "types-receipt.json": "e7edf81c9000c53d367b6b2997d286400f6fa48430e0529660201fdc214bb0d9",
+    "independent-probe.json": "2599e5664f0758701c33395c5ebfbaaae54577062ff97efb65c2e2218534e619",
+    "braces-local-audit-receipt.json": "a806b99644099e976406aff9e99c0df38c2f54b328239a77cb48a515837b5db3",
+    "direction-receipt.json": "69415dc195f35f1b240b77ad33c26b1a5ea0205be7e6fc69d36bb30c2a36c043",
+    "independent-probe-receipt.json": "1b182b81a135c0671a5ffe8324e2cd05e8b343bb9b1e183715ce36b32ee72fb7",
+    "lock-consistency-receipt.json": "502698b8bfeffca2c1faff60c5005596c146a27d4673920c278a2dff426d722b",
+    "locked-parser-receipt.json": "3fe59b62192e6479203d28a76325e5abde2815013ef69a990170b86712d45d69",
+    "resources.json": "cc05f0726f2fde5c42e8f08793133ea0a037ad2bf1b459a51e14fbaf6828f316",
+    "focused-receipt.json": "f3d4a7cfd28fa4375ba5e315974254a53816132acfdac8c015d4b2c189e33344",
+    "joined-source-parity.json": "11ae732aff17fca0c06cdd3d6387969fb30f47e7f6cb40a40fdbf6c68647adba",
+    "focused.json": "b404d4db713612a31deb93533e9d71edd254015d649fc79683bd69145edc9f07",
+    "types.json": "59ba8cb2d5fddfb7dbfb52460483c84437e5769e93207d7a467a03160db0de4c",
+    "scoped-files.json": "9ca2e62d0ba1a1dc7d81f942cbdd01df07869949934f2f491dcd4dc1e15bf6e9",
+    "deadcode-receipt.json": "f0ee9c53b5a546310aff364d01b5af50020dcad923d815c0526f217f7585ad5b",
+    "lint-receipt.json": "7f6286c4bda4e71940f1520ff38b44cb7e0d71f91b952a9d4804d8b091d42e6c",
+    "braces-tests-receipt.json": "9077b924c0de3c63af5634ea30fb3395f74f4571d4caa5bda04d24ffa9a6e7a2"
+  },
+  "limits": [
+    "No new full QA or production build",
+    "No live database or browser journey",
+    "Mainced6 delivery verification applies only to exactced6; no new merge or release",
+    "Frozen06a full QA does not cover new workbook runtime"
+  ]
+}

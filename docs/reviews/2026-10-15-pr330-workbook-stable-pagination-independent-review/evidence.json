@@ -1,0 +1,314 @@
+{
+  "reviewedHead": "5f2df554d794cf428ca75744d099f914b5272c6d",
+  "sourcePinsMatched": 9,
+  "trials": [
+    {
+      "trial": "harmless-cohort",
+      "classification": "SURVIVED",
+      "activeTests": 17,
+      "sha256": "5befc7828359deed0db668f9b0b8b40c0b47cda73c4fbfbcddbf0d76304d8036",
+      "separateProcessReceipt": false
+    },
+    {
+      "trial": "complete",
+      "classification": "KILLED",
+      "activeTests": 1,
+      "sha256": "1ba4ea7833fa4c7afd0978fbd2b376382a3267465f5fdcd7e4e594a686ebc1de",
+      "separateProcessReceipt": false
+    },
+    {
+      "trial": "projection",
+      "classification": "KILLED",
+      "activeTests": 1,
+      "sha256": "8f955564b68dba06b26d4cf82745dd4e580fbce17f2952079ffaee1c0363a8c5",
+      "separateProcessReceipt": false
+    },
+    {
+      "trial": "workspace",
+      "classification": "KILLED",
+      "activeTests": 1,
+      "sha256": "8155098e818558513687941ac381a86473d2c2929398ac7895abe66a61d4f8b8",
+      "separateProcessReceipt": false
+    },
+    {
+      "trial": "cursor-column",
+      "classification": "KILLED",
+      "activeTests": 1,
+      "sha256": "c001880405fe65c2f74e3252ee08cbe513949188db18e3da0c40e037db2a152f",
+      "separateProcessReceipt": false
+    },
+    {
+      "trial": "cursor-order",
+      "classification": "KILLED",
+      "activeTests": 1,
+      "sha256": "714f1e7f444c4c9c7e0a0c0df94ffc755307d199095476f1e63a96fe1079a9e9",
+      "separateProcessReceipt": false
+    },
+    {
+      "trial": "plus-one",
+      "classification": "KILLED",
+      "activeTests": 1,
+      "sha256": "591d9cecbd97c4831a510ba585a6f18d161cd075e32c90515547b4c23bd70e8c",
+      "separateProcessReceipt": false
+    },
+    {
+      "trial": "short-page",
+      "classification": "KILLED",
+      "activeTests": 1,
+      "sha256": "85af256baf5b9143f468008248c0afa3e8eaf9ee613825dcc745c5de245a780c",
+      "separateProcessReceipt": false
+    },
+    {
+      "trial": "over-limit",
+      "classification": "KILLED",
+      "activeTests": 1,
+      "sha256": "5337a63820d509b05d889f889a495746804d7a767d766d93dc2af0bc26d25da8",
+      "separateProcessReceipt": false
+    },
+    {
+      "trial": "late-error",
+      "classification": "KILLED",
+      "activeTests": 1,
+      "sha256": "223453165ac89562999202372e78b9b81bf78ff5b9dec8bef1393f6fc316c9f4",
+      "separateProcessReceipt": false
+    },
+    {
+      "trial": "unavailable",
+      "classification": "KILLED",
+      "activeTests": 1,
+      "sha256": "2796271bce0353348f13308dffedf4bb3cc5a4ad2d995903da5f58e6eff0fde1",
+      "separateProcessReceipt": false
+    },
+    {
+      "trial": "empty",
+      "classification": "KILLED",
+      "activeTests": 1,
+      "sha256": "0c1e83797923a2abe19f4653c2fec23fabed6e0a3c79852a678ffcd72965bf07",
+      "separateProcessReceipt": false
+    },
+    {
+      "trial": "anonymous",
+      "classification": "KILLED",
+      "activeTests": 1,
+      "sha256": "ec537502168388ed15b26638809b0b7a39ba80b7b721d11db4b82b27d9416b39",
+      "separateProcessReceipt": false
+    },
+    {
+      "trial": "membership",
+      "classification": "KILLED",
+      "activeTests": 1,
+      "sha256": "bcb76935bb3af372d404e60f0eec3e2ffa817c9e56dc757062cc184b5ca326a9",
+      "separateProcessReceipt": false
+    },
+    {
+      "trial": "old-offset",
+      "classification": "KILLED",
+      "activeTests": 1,
+      "sha256": "cb9204c65837297122a30e839a0fc4c19a3c583000d8fa19b78dfaa24377f6fa",
+      "separateProcessReceipt": false
+    },
+    {
+      "trial": "presentation",
+      "classification": "KILLED",
+      "activeTests": 1,
+      "sha256": "2274ff1800bc89b0d9e4e5c06927672c1b6d595898a8b54d3873d79be346587d",
+      "separateProcessReceipt": false
+    },
+    {
+      "trial": "microseconds",
+      "classification": "KILLED",
+      "activeTests": 1,
+      "sha256": "0cd7285357ad48f63876c0fe565fac6c65d22304316448838b090b6c0c61a1b6",
+      "separateProcessReceipt": false
+    },
+    {
+      "trial": "legacy-query",
+      "classification": "KILLED",
+      "activeTests": 1,
+      "sha256": "1e0b1150b06ff02036c2477fd542599fb829d3ecf7ce61bccfb692367e16209a",
+      "separateProcessReceipt": false
+    },
+    {
+      "trial": "legacy-async",
+      "classification": "KILLED",
+      "activeTests": 1,
+      "sha256": "a307f65e59940e9fc3fea7b725c882a5dc5a8588980866113c6d42d8ef52f6a8",
+      "separateProcessReceipt": false
+    },
+    {
+      "trial": "legacy-membership",
+      "classification": "KILLED",
+      "activeTests": 1,
+      "sha256": "0a0ef002fc73faeb76b568b51557209928445fd7d9a50e856801eff9281e56c5",
+      "separateProcessReceipt": false
+    },
+    {
+      "trial": "legacy-limit",
+      "classification": "KILLED",
+      "activeTests": 1,
+      "sha256": "aeb51a60611f74d6489939ac32879ca3211602d9c1ebbf117a244b034ddede99",
+      "separateProcessReceipt": false
+    },
+    {
+      "trial": "legacy-year",
+      "classification": "KILLED",
+      "activeTests": 1,
+      "sha256": "a94ffcce392ccfee98331d8030d71883eab600e866d8704eb99cd27f81ffa1c8",
+      "separateProcessReceipt": false
+    },
+    {
+      "trial": "legacy-read-error",
+      "classification": "KILLED",
+      "activeTests": 1,
+      "sha256": "058bf885f686c49c114c28d3ef0e6eeee9ab710a86fcf5b540dc333911f71078",
+      "separateProcessReceipt": false
+    },
+    {
+      "trial": "fake-cursor-corrected-diagnostic",
+      "classification": "KILLED",
+      "activeTests": 1,
+      "sha256": "bf4a66513f15d914b3dabc6c50af78fe079376a46e95b9b1e1cc8f48cb489582",
+      "separateProcessReceipt": true
+    },
+    {
+      "trial": "legacy-fake-cursor",
+      "classification": "KILLED",
+      "activeTests": 1,
+      "sha256": "27739795b46e57acaf954c9ad9df972c68514a6d29f275ee6baf68a688f293e3",
+      "separateProcessReceipt": true
+    },
+    {
+      "trial": "restored-cohort",
+      "classification": "SURVIVED",
+      "activeTests": 24,
+      "sha256": "c2c7058e169a0621e77b02bfc37643f362d021bae57c03d097ecee00427be716",
+      "separateProcessReceipt": true
+    }
+  ],
+  "restorationPinsMatched": 3,
+  "restorationReceiptsRead": 2,
+  "retainedReportBindings": {
+    "harmless-cohort.json": "5befc7828359deed0db668f9b0b8b40c0b47cda73c4fbfbcddbf0d76304d8036",
+    "complete.json": "1ba4ea7833fa4c7afd0978fbd2b376382a3267465f5fdcd7e4e594a686ebc1de",
+    "projection.json": "8f955564b68dba06b26d4cf82745dd4e580fbce17f2952079ffaee1c0363a8c5",
+    "workspace.json": "8155098e818558513687941ac381a86473d2c2929398ac7895abe66a61d4f8b8",
+    "cursor-column.json": "c001880405fe65c2f74e3252ee08cbe513949188db18e3da0c40e037db2a152f",
+    "cursor-order.json": "714f1e7f444c4c9c7e0a0c0df94ffc755307d199095476f1e63a96fe1079a9e9",
+    "plus-one.json": "591d9cecbd97c4831a510ba585a6f18d161cd075e32c90515547b4c23bd70e8c",
+    "short-page.json": "85af256baf5b9143f468008248c0afa3e8eaf9ee613825dcc745c5de245a780c",
+    "over-limit.json": "5337a63820d509b05d889f889a495746804d7a767d766d93dc2af0bc26d25da8",
+    "late-error.json": "223453165ac89562999202372e78b9b81bf78ff5b9dec8bef1393f6fc316c9f4",
+    "unavailable.json": "2796271bce0353348f13308dffedf4bb3cc5a4ad2d995903da5f58e6eff0fde1",
+    "empty.json": "0c1e83797923a2abe19f4653c2fec23fabed6e0a3c79852a678ffcd72965bf07",
+    "anonymous.json": "ec537502168388ed15b26638809b0b7a39ba80b7b721d11db4b82b27d9416b39",
+    "membership.json": "bcb76935bb3af372d404e60f0eec3e2ffa817c9e56dc757062cc184b5ca326a9",
+    "old-offset.json": "cb9204c65837297122a30e839a0fc4c19a3c583000d8fa19b78dfaa24377f6fa",
+    "presentation.json": "2274ff1800bc89b0d9e4e5c06927672c1b6d595898a8b54d3873d79be346587d",
+    "microseconds.json": "0cd7285357ad48f63876c0fe565fac6c65d22304316448838b090b6c0c61a1b6",
+    "legacy-query.json": "1e0b1150b06ff02036c2477fd542599fb829d3ecf7ce61bccfb692367e16209a",
+    "legacy-async.json": "a307f65e59940e9fc3fea7b725c882a5dc5a8588980866113c6d42d8ef52f6a8",
+    "legacy-membership.json": "0a0ef002fc73faeb76b568b51557209928445fd7d9a50e856801eff9281e56c5",
+    "legacy-limit.json": "aeb51a60611f74d6489939ac32879ca3211602d9c1ebbf117a244b034ddede99",
+    "legacy-year.json": "a94ffcce392ccfee98331d8030d71883eab600e866d8704eb99cd27f81ffa1c8",
+    "legacy-read-error.json": "058bf885f686c49c114c28d3ef0e6eeee9ab710a86fcf5b540dc333911f71078",
+    "fake-cursor-corrected-diagnostic.json": "bf4a66513f15d914b3dabc6c50af78fe079376a46e95b9b1e1cc8f48cb489582",
+    "legacy-fake-cursor.json": "27739795b46e57acaf954c9ad9df972c68514a6d29f275ee6baf68a688f293e3",
+    "restored-cohort.json": "c2c7058e169a0621e77b02bfc37643f362d021bae57c03d097ecee00427be716",
+    "original-reproduction.json": "49ceba7f49d58d683180e37385d4a680f4f5ac377f9403b514c94e288d32b722",
+    "candidate-focused.json": "e0a1d364a92ed58830f150346ce23c87a0de3f506239125fb66110596f6ed926",
+    "candidate-dom-focused.json": "909c90e69a93ebc1d715d9c0e3011ba995dec2bbd78368ec3d9f7150bf8a701b",
+    "fake-cursor.json": "629f0b5091d5191c3a165a4cc53228935f7f05d4b870aa9734773401791a4de5",
+    "initial-restoration.json": "bb5f70727b48c3a2e6313862be73ce8c68efc58106cf134ebc00b93b12356486",
+    "restoration.json": "bb5f70727b48c3a2e6313862be73ce8c68efc58106cf134ebc00b93b12356486"
+  },
+  "sourceBindings": {
+    "openplan/src/app/api/projects/export/workbook/route.ts": "05d66697f949a34058c36fd3598ba2ce0e5bb1ce5876d3ed8028d8201b485045",
+    "openplan/src/test/project-workbook-export-pagination.test.ts": "007220959d6e123b3196a34ebf5848892cbffc0d511168002e788fd22d51c918",
+    "openplan/src/test/project-portfolio-export-route.test.ts": "440bd068450e0075138438d556ad86adf6786856cab4fe47556abe409762aeed",
+    "openplan/src/lib/projects/portfolio-export.ts": "06591e3aa6cd922495575f5b0675ca66539be9fa646c562f3b614d52a27a0b0c",
+    "openplan/src/lib/projects/portfolio-round-trip-contract.ts": "ad012e38746d24039fbc0d7da7206e5254088e83958410baeeb03349de89d7ec",
+    "openplan/src/lib/projects/portfolio-workbook.ts": "beb55521add02d4ca6a0ddc8788fa5094fbbd0528cac96a79d672442be178e89",
+    "openplan/src/lib/projects/project-place.ts": "dbb2f5013264076454d5be031d29f30d530cf99e813ce8fa69344a081496f344",
+    "openplan/src/lib/export/review-workbook-layout.ts": "134ebad39797bfb27996ec1052514ce4ba5c9da53edf5d315a64a326c1fabd68",
+    "openplan/supabase/config.toml": "a91e2c6282775296f9470066696530618d8768ca0adc21fad8a9b4b3e7bf105e",
+    "docs/reviews/2026-10-15-pr330-workbook-stable-pagination-fix/STATUS.md": "976fa96874e09bf7c918127c6d4bb24cbce1618a7bae480d7d6d413ce4a1d3ce",
+    "docs/reviews/2026-10-15-pr330-workbook-stable-pagination-fix/evidence.json": "8974cd7381126c81cf2ad26fb9969a60f2f6ce177fa9ef4664303b7b7bd1ae8b",
+    "docs/reviews/2026-10-15-pr330-workbook-stable-pagination-fix/source-bindings.json": "bcfc4d0524c6884c77fbd9509fb107f53eedf2957fe25e376d3a6bb476bfaed3",
+    "docs/reviews/2026-10-15-pr330-workbook-stable-pagination-fix/verify_controls.py": "9200417e368d03c7dcb3c2c9b2fd9cb3f5aea495967610bf33f6901155c94e21"
+  },
+  "installedClient": {
+    "version": "2.110.7",
+    "bindings": {
+      "package.json": "84026425ce9d99c99e4615152036cd49b46b228f510850b4e563547435b20060",
+      "src/PostgrestFilterBuilder.ts": "a1247c0dd4f57bc7621249e0ac96f3964baf74c6497005698ba72e09d5efdf08",
+      "src/PostgrestTransformBuilder.ts": "ad9d2f29f2b8736ef7d4167a902f127c8e94dae8686225decf3549418eaeb15a",
+      "src/PostgrestBuilder.ts": "ab0e96ce5f138c2bbc52e9b882b51e9267bf4f4d46efb530305d9e270a9f053f",
+      "src/PostgrestQueryBuilder.ts": "5e7eb7a64331eac2176a4a82b2dfbf036054508e7e484bded0f9464b62b30b31"
+    }
+  },
+  "readerControls": {
+    "harmlessCopy": "SURVIVED",
+    "changedBytes": "retained hash mismatch",
+    "restored": true
+  },
+  "classifierControls": {
+    "harmlessMetadata": "SURVIVED",
+    "refusals": [
+      {
+        "case": "runtime",
+        "classification": "REFUSED",
+        "reason": "runtime or unhandled error"
+      },
+      {
+        "case": "suite-error",
+        "classification": "REFUSED",
+        "reason": "missing suite or suite error"
+      },
+      {
+        "case": "empty",
+        "classification": "REFUSED",
+        "reason": "missing suite or suite error"
+      },
+      {
+        "case": "wrong-test",
+        "classification": "REFUSED",
+        "reason": "wrong test identity or count"
+      },
+      {
+        "case": "wrong-file",
+        "classification": "REFUSED",
+        "reason": "wrong test identity or count"
+      },
+      {
+        "case": "wrong-assertion",
+        "classification": "REFUSED",
+        "reason": "wrong assertion diagnostic"
+      },
+      {
+        "case": "wrong-code",
+        "classification": "REFUSED",
+        "reason": "not one assertion failure"
+      },
+      {
+        "case": "extra-failure",
+        "classification": "REFUSED",
+        "reason": "not one assertion failure"
+      }
+    ],
+    "restored": true
+  },
+  "oldOffsetFailure": "AssertionError at the exact-ID multiset assertion, project-workbook-export-pagination.test.ts:196; earlier count assertion passed.",
+  "scope": "Receipt and source audit only. No Vitest or mutation campaign rerun; no network or DB calls.",
+  "reviewDisposition": "No material P1/P2 finding within bounded source and retained-evidence review; native transport and changed-head browser acceptance remain open.",
+  "executed": [
+    "npm run product:direction:check (exit 0)",
+    "read_retained.py (exit 0; source/report audit and in-memory classifier controls only)"
+  ],
+  "auditScriptSha256": "4610e65565a1e10895217e885f6c8dd3608028a4e905eda5d103b4e2d3d7f8fc",
+  "privateAuditSha256": "2b6773c87b02be3072fe047512d296e395353e47f2ed60958ff9501875226d92",
+  "upstreamUuidSource": {
+    "url": "https://raw.githubusercontent.com/postgres/postgres/REL_17_STABLE/src/backend/utils/adt/uuid.c",
+    "accessed": "2026-10-15",
+    "sha256": "898f0b3491934a26622cbddcf90cd6cc80c81c967057ca36d832df6233de04d2"
+  }
+}

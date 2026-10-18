@@ -1,0 +1,6 @@
+Running as unit: openplan-jurisdiction-types-03.service
+          Finished with result: success
+Main processes terminated with: code=exited, status=0/SUCCESS
+               Service runtime: 4.617s
+             CPU time consumed: 9.686s
+                   Memory peak: 744.9M (swap: 0B)

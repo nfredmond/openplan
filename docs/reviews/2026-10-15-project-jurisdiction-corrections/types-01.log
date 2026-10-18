@@ -1,0 +1,19 @@
+Running as unit: run-p41450-i87975799.scope; invocation ID: 065993ac8b68412dbae9fee89818b04d
+
+<--- Last few GCs --->
+
+[41450:0x409f6000]     7755 ms: Scavenge (interleaved) 633.2 (641.4) -> 631.8 (641.7) MB, pooled: 0 MB, 4.21 / 0.00 ms  (average mu = 0.286, current mu = 0.256) allocation failure; 
+[41450:0x409f6000]     7913 ms: Mark-Compact (reduce) 633.8 (642.4) -> 629.1 (638.9) MB, pooled: 0 MB, 138.94 / 0.00 ms  (+ 0.0 ms in 9 steps since start of marking, biggest step 0.0 ms, walltime since start of marking 142 ms) (average mu = 0.264, current
+FATAL ERROR: Ineffective mark-compacts near heap limit Allocation failed - JavaScript heap out of memory
+----- Native stack trace -----
+
+ 1: 0x942e80  [node]
+ 2: 0x75f71e node::OOMErrorHandler(char const*, v8::OOMDetails const&) [node]
+ 3: 0xc98c20  [node]
+ 4: 0xc98d0f  [node]
+ 5: 0xf3c5e5  [node]
+ 6: 0xf3c612  [node]
+ 7: 0xf3c90a  [node]
+ 8: 0xf4d60a  [node]
+ 9: 0xf519b0  [node]
+10: 0x19ef441  [node]

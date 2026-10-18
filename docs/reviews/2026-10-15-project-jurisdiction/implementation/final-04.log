@@ -1,0 +1,46 @@
+Running as unit: openplan-jurisdiction-final-04.service; invocation ID: ba1b04975daf4d6ab297a5eef5b044b2
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan[39m
+
+ [32m✓[39m src/test/project-jurisdiction-editor.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[32m 239[2mms[22m[39m
+ [32m✓[39m src/test/report-generate-route.test.ts [2m([22m[2m71 tests[22m[2m)[22m[32m 193[2mms[22m[39m
+ [32m✓[39m src/test/project-jurisdiction-artifacts.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m src/test/project-evidence-generated-pagination.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 39[2mms[22m[39m
+ [32m✓[39m src/test/project-geopackage.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m src/test/project-geopackage-route.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 11[2mms[22m[39m
+ [32m✓[39m src/test/project-jurisdiction-picker.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 346[2mms[22m[39m
+   [33m[2m✓[22m[39m reuses the search front door without emitting study geometry in search-only mode [33m 344[2mms[22m[39m
+ [32m✓[39m src/test/project-jurisdiction.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 55[2mms[22m[39m
+[90mstdout[2m | src/test/jurisdiction-readiness-routes.test.ts[2m > [22m[2mjurisdiction readiness APIs[2m > [22m[2mreturns the same evidence-backed Oregon cells with an exact registry hash
+[22m[39m{"ts":"2026-10-15T05:25:35.382Z","subsystem":"openplan/api","route":"workspaces.jurisdiction_readiness.read","level":"info","event":"workspace_jurisdiction_readiness_read","requestId":"b7d38c96-43f7-4624-92fa-cd5e901caa32","method":"GET","path":"/api/workspaces/jurisdiction-readiness","userAgent":"unknown","clientIp":"unknown","context":{"workspaceId":"22222222-2222-4222-8222-222222222222","jurisdictionId":"US-OR","download":true,"registrySha256":"531dca87cc6621786d4cff27b0fb52dd5b99105c3a78c6307a9a35322201c158"}}
+
+[90mstdout[2m | src/test/jurisdiction-readiness-routes.test.ts[2m > [22m[2mjurisdiction readiness APIs[2m > [22m[2muses the project place and keeps Puerto Rico's unavailable claims visible
+[22m[39m{"ts":"2026-10-15T05:25:35.393Z","subsystem":"openplan/api","route":"projects.jurisdiction_readiness.read","level":"info","event":"project_jurisdiction_readiness_read","requestId":"71c15166-7440-4cea-9cfb-bff230f435e7","method":"GET","path":"/api/projects/33333333-3333-4333-8333-333333333333/jurisdiction-readiness","userAgent":"unknown","clientIp":"unknown","context":{"projectId":"33333333-3333-4333-8333-333333333333","contextSource":"legacy_study_place","download":true,"registrySha256":"531dca87cc6621786d4cff27b0fb52dd5b99105c3a78c6307a9a35322201c158"}}
+
+[90mstderr[2m | src/test/jurisdiction-readiness-routes.test.ts[2m > [22m[2mjurisdiction readiness APIs[2m > [22m[2mdoes not turn a failed project read into an unassessed jurisdiction
+[22m[39m{"ts":"2026-10-15T05:25:35.395Z","subsystem":"openplan/api","route":"projects.jurisdiction_readiness.read","level":"error","event":"project_jurisdiction_readiness_failed","requestId":"887a3204-49eb-4a3b-99b2-54cadcfc1d8d","method":"GET","path":"/api/projects/33333333-3333-4333-8333-333333333333/jurisdiction-readiness","userAgent":"unknown","clientIp":"unknown","context":{"projectId":"33333333-3333-4333-8333-333333333333","message":"database unavailable"}}
+
+[90mstderr[2m | src/test/jurisdiction-readiness-routes.test.ts[2m > [22m[2mjurisdiction readiness APIs[2m > [22m[2mdoes not turn a failed workspace read into an unassessed jurisdiction
+[22m[39m{"ts":"2026-10-15T05:25:35.396Z","subsystem":"openplan/api","route":"workspaces.jurisdiction_readiness.read","level":"error","event":"workspace_jurisdiction_readiness_failed","requestId":"3a64338f-5ad5-4fb4-85d8-182f9396018a","method":"GET","path":"/api/workspaces/jurisdiction-readiness","userAgent":"unknown","clientIp":"unknown","context":{"workspaceId":"22222222-2222-4222-8222-222222222222","message":"database unavailable"}}
+
+ [32m✓[39m src/test/jurisdiction-readiness-routes.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m src/test/project-jurisdiction-route.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m src/test/study-area-picker.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 923[2mms[22m[39m
+     [33m[2m✓[22m[39m names an area it chose itself [33m 317[2mms[22m[39m
+     [33m[2m✓[22m[39m drops its own label when the area is replaced from outside [33m 317[2mms[22m[39m
+ [32m✓[39m src/test/jurisdiction-readiness-evidence-bundle.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m src/test/refused-project-jurisdiction-action.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/test/project-identity-editor.test.tsx [2m([22m[2m18 tests[22m[2m)[22m[33m 1399[2mms[22m[39m
+ [32m✓[39m src/test/project-record-route.test.ts [2m([22m[2m18 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m src/test/project-evidence-bundle-route.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m16 passed[39m[22m[90m (16)[39m
+[2m      Tests [22m [1m[32m173 passed[39m[22m[90m (173)[39m
+[2m   Start at [22m 22:25:28
+[2m   Duration [22m 13.58s[2m (transform 1.34s, setup 436ms, import 2.90s, tests 3.35s, environment 5.48s)[22m
+
+          Finished with result: success
+Main processes terminated with: code=exited, status=0/SUCCESS
+               Service runtime: 14.089s
+             CPU time consumed: 18.276s
+                   Memory peak: 366.8M (swap: 0B)

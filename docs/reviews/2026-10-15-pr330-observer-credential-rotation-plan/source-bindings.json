@@ -1,0 +1,98 @@
+{
+  "sourceHead": "f0cbeddff5ae3fc37e0dd8b91c02601429d977a6",
+  "applicationTree": "a13c491da3ad3ba5b237ca5fa8802b236c4ef27b",
+  "preparationCheckoutHead": "764c00e13f5d7eff8bce118ac683be2c792f0ea9",
+  "observerReportCommit": "988bd69456b4d95eb6e15dde667ed6428a226379",
+  "sources": [
+    {
+      "path": "openplan/src/lib/integrations/key-crypto.ts",
+      "commit": "f0cbeddff5ae3fc37e0dd8b91c02601429d977a6",
+      "sha256": "298f8b2218e578af8c6e6c050011d7839002c801aa68daf25df1411b42a7d274"
+    },
+    {
+      "path": "openplan/src/lib/integrations/workspace-keys.ts",
+      "commit": "f0cbeddff5ae3fc37e0dd8b91c02601429d977a6",
+      "sha256": "f237f10867b29072634103821046310c1af30e2f34af26b1f62e0097291570ac"
+    },
+    {
+      "path": "openplan/src/lib/integrations/context.ts",
+      "commit": "f0cbeddff5ae3fc37e0dd8b91c02601429d977a6",
+      "sha256": "054cd5ce0e7e8e032a4a0f51e7c65f0af895c86b448f6dda7152382399111826"
+    },
+    {
+      "path": "openplan/src/lib/integrations/translation-credentials.ts",
+      "commit": "f0cbeddff5ae3fc37e0dd8b91c02601429d977a6",
+      "sha256": "fb0a54d0529a11ed42aef6bb07c7b3f4acd2bd9d2cdeb407e50db3f12c5932a6"
+    },
+    {
+      "path": "openplan/src/lib/integrations/provider-api-credentials.ts",
+      "commit": "f0cbeddff5ae3fc37e0dd8b91c02601429d977a6",
+      "sha256": "102a3c27c161ab83bb5f5d91c5dfc3f6cb40ee13c2f90b9c851ef82106aded3e"
+    },
+    {
+      "path": "openplan/src/lib/assistant/provider-api-worker.ts",
+      "commit": "f0cbeddff5ae3fc37e0dd8b91c02601429d977a6",
+      "sha256": "f3de17ecda6b6a42e7bdffaab859077876e8ecf461b2a6700fed2d24b3307000"
+    },
+    {
+      "path": "openplan/src/lib/engagement/translation-generation-worker.ts",
+      "commit": "f0cbeddff5ae3fc37e0dd8b91c02601429d977a6",
+      "sha256": "94322942982b34ea6d108a64fb8cfd3b14ed47b227f1da06f19a48c6987d9f17"
+    },
+    {
+      "path": "openplan/src/lib/engagement/synthesis-generation-worker-load.ts",
+      "commit": "f0cbeddff5ae3fc37e0dd8b91c02601429d977a6",
+      "sha256": "7f1ac2fe3b1f2b9e07394c949fb7610ce6e373291ff192a99f6fc832582f7652"
+    },
+    {
+      "path": "openplan/docs/SELF_HOSTING.md",
+      "commit": "f0cbeddff5ae3fc37e0dd8b91c02601429d977a6",
+      "sha256": "90053933d65cfb5e1d761ec1afa97f37e146b0af4c21161fd0b1141b0934ade0"
+    },
+    {
+      "path": "openplan/docs/ops/BACKUP_AND_RESTORE.md",
+      "commit": "f0cbeddff5ae3fc37e0dd8b91c02601429d977a6",
+      "sha256": "3b43d427ba165fcf82c372701d967c782d9d200d552174346b5e57f6fce0ae15"
+    },
+    {
+      "path": "openplan/docs/ops/HOSTED_RECOVERY.md",
+      "commit": "f0cbeddff5ae3fc37e0dd8b91c02601429d977a6",
+      "sha256": "b93e59cde0ad0c2d1768273b29ace4bade93b104c3b146e04b4c97d62e479e95"
+    },
+    {
+      "path": "openplan/docs/ops/HOSTED_OPERATIONS.md",
+      "commit": "f0cbeddff5ae3fc37e0dd8b91c02601429d977a6",
+      "sha256": "eac75dae31e056d81bfdd676a97e6612fb829a2dadfd8e1b14e78a9ba45663e3"
+    },
+    {
+      "path": "openplan/scripts/workers/translation-generation.ts",
+      "commit": "f0cbeddff5ae3fc37e0dd8b91c02601429d977a6",
+      "sha256": "cdcf5bedc1796005b27c4cf324181bb5073910a7d976dab25aebd677fe05b8b9"
+    },
+    {
+      "path": "openplan/scripts/workers/provider-api.ts",
+      "commit": "f0cbeddff5ae3fc37e0dd8b91c02601429d977a6",
+      "sha256": "bb90653b67b2f80d2720c1b88279dcc9eda3fa2b20e24b750d9d86ca46f7d01e"
+    },
+    {
+      "path": "openplan/scripts/workers/synthesis-generation.ts",
+      "commit": "f0cbeddff5ae3fc37e0dd8b91c02601429d977a6",
+      "sha256": "44bb29001c8f01aa5a8bc1dc204175c785667a9a945198db1117a05100c240a8"
+    },
+    {
+      "path": "docs/reviews/2026-10-15-pr330-memory-preview-final-binding-r2/templates/helper.py",
+      "commit": "764c00e13f5d7eff8bce118ac683be2c792f0ea9",
+      "sha256": "7a65cfff843c03a9837b85d7bea128c2e4b46db843f657542ed8c0b8351c89d3"
+    },
+    {
+      "path": "docs/reviews/2026-10-15-pr330-memory-preview-final-binding-r2/templates/policy.py",
+      "commit": "764c00e13f5d7eff8bce118ac683be2c792f0ea9",
+      "sha256": "e73d914bed7c6a9b72f5c6c23e29641308051467c31abd7359b069b167186091"
+    },
+    {
+      "path": "docs/reviews/2026-10-15-pr330-memory-preview-final-binding-r2/prepare_packet.py",
+      "commit": "764c00e13f5d7eff8bce118ac683be2c792f0ea9",
+      "sha256": "e5a5f0859f3b1c3fdbf25fa167faf2e3ff4a7c43a02eec08778a41b1b55d43fd"
+    }
+  ]
+}

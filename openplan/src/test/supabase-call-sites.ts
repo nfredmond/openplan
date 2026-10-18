@@ -595,10 +595,27 @@ export function collectSupabaseWriteSites(options: CollectOptions = {}): Supabas
 /** Every `.select()` reached through a `.from()`, read or RETURNING. */
 export function collectSupabaseSelectSites(options: CollectOptions = {}): SupabaseSelectSite[] {
   const sites: SupabaseSelectSite[] = [];
+  const importedSources = new Map<string, ts.SourceFile>();
 
   for (const file of targetFiles(options)) {
     const source = parse(file);
     const { declarations } = collectDeclarations(source);
+    // Conservatively retain unknown if any local binding shares an import's
+    // name, including untyped parameters and declarations before initialization.
+    const localNames = new Set<string>();
+    const collectNames = (node: ts.Node) => {
+      if (ts.isVariableDeclaration(node) || ts.isParameter(node)) {
+        const bindingNames = (name: ts.BindingName): void => {
+          if (ts.isIdentifier(name)) localNames.add(name.text);
+          else for (const element of name.elements) if (ts.isBindingElement(element)) bindingNames(element.name);
+        };
+        bindingNames(node.name);
+      } else if ((ts.isFunctionDeclaration(node) || ts.isClassDeclaration(node) || ts.isEnumDeclaration(node) || ts.isFunctionExpression(node) || ts.isClassExpression(node)) && node.name) {
+        localNames.add(node.name.text);
+      }
+      ts.forEachChild(node, collectNames);
+    };
+    collectNames(source);
 
     /**
      * `.select(KB_DOCUMENT_COLUMNS)` is as checkable as `.select("id, name")`
@@ -611,7 +628,35 @@ export function collectSupabaseSelectSites(options: CollectOptions = {}): Supaba
       if (!ts.isIdentifier(argument)) return null;
 
       const declaration = lookup(declarations, argument.text, argument.getStart(source));
-      if (!declaration) return null;
+      if (!declaration) {
+        if (localNames.has(argument.text)) return null;
+        // Read direct named exports without executing a module. Computed values,
+        // mutable bindings, packages and re-exports remain unknown.
+        for (const statement of source.statements) {
+          if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) continue;
+          const clause = statement.importClause;
+          if (!clause || clause.isTypeOnly || !clause.namedBindings || !ts.isNamedImports(clause.namedBindings)) continue;
+          const binding = clause.namedBindings.elements.find((entry) => !entry.isTypeOnly && entry.name.text === argument.text);
+          if (!binding) continue;
+          const specifier = statement.moduleSpecifier.text;
+          const base = specifier.startsWith("@/") ? path.join(SRC_DIR, specifier.slice(2))
+            : specifier.startsWith(".") ? path.resolve(path.dirname(file), specifier) : null;
+          if (!base) return null;
+          const target = [base + ".ts", base + ".tsx"].find((candidate) => statSync(candidate, { throwIfNoEntry: false })?.isFile());
+          if (!target) return null;
+          let imported = importedSources.get(target);
+          if (!imported) { imported = parse(target); importedSources.set(target, imported); }
+          const exportedName = binding.propertyName?.text ?? binding.name.text;
+          for (const exported of imported.statements) {
+            if (!ts.isVariableStatement(exported) || !(exported.declarationList.flags & ts.NodeFlags.Const) ||
+              !exported.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword)) continue;
+            const value = exported.declarationList.declarations.find((entry) => ts.isIdentifier(entry.name) && entry.name.text === exportedName)?.initializer;
+            if (value && ts.isStringLiteralLike(value)) return value.text;
+          }
+          return null;
+        }
+        return null;
+      }
 
       const text = declaration.initializer.trim();
       const quoted = text.match(/^(["'`])([\s\S]*)\1$/);

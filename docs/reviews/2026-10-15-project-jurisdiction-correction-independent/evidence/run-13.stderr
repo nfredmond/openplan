@@ -1,0 +1,10 @@
+{
+  "mode": "null",
+  "result": "AssertionError",
+  "diagnostic": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'project_declaration'\n- 'legacy_study_place'\n",
+  "checked": [
+    "minimized external actor with internal custody",
+    "strict storage parse before external conversion",
+    "external canonical material hashed after minimization"
+  ]
+}

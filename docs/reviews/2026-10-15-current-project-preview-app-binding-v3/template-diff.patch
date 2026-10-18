@@ -1,0 +1,13 @@
+--- 807c89/templates/app_binding_v1.py
++++ v3/templates/app_binding_v1.py
+@@ -14 +14 @@
+-APP_HEAD = '67828c17c4c270529468eef1edd144e4a52b693a'
++APP_HEAD = '21510042e94bcaf80f262205ad156a7bb639e35c'
+@@ -18 +18 @@
+-ROOT = Path('/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2')
++ROOT = Path('/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3')
+--- 807c89/templates/attest_start_v1.py
++++ v3/templates/attest_start_v1.py
+@@ -11 +11 @@
+-UNIT = 'openplan-current-project-preview-app-678-v1-web.service'
++UNIT = 'openplan-current-project-preview-app-21510042e-v3-web.service'

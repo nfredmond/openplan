@@ -1,0 +1,52 @@
+{
+  "scope": "Independent source review and copied-function controls only. No operating-stage, DB, Docker, HTTP, context-unit, compiler, build or browser execution.",
+  "units": [
+    {
+      "unit": "openplan-portfolio-v5-independent-round2-78ca8e4a-01.service",
+      "invocation": "2abc61906bc742d3a53e52b2d135c8c6",
+      "exit": 0,
+      "seconds": 2.468,
+      "roundedMemoryPeak": "74.4M",
+      "swap": "0B",
+      "observations": 20,
+      "purpose": "Initial bounded reproduction and input/receipt readback. The private initial source is reconstructed from the exact edits, not a source hash captured at launch.",
+      "privateLogSHA256": "2c7b9b93069b1a332ec581c3682f7899b705fc991eba2fd31727e31a75fd3c64"
+    },
+    {
+      "unit": "openplan-portfolio-v5-independent-round2-78ca8e4a-02.service",
+      "invocation": null,
+      "invocationLimit": "systemd-run did not print an invocation ID. The collected unit has no retained InvocationID; bounded user-journal read confirms command and runtime summary but supplies no invocation ID.",
+      "exit": 0,
+      "seconds": 2.885,
+      "roundedMemoryPeak": "68.3M",
+      "swap": "0B",
+      "observations": 22,
+      "purpose": "Adds paused-helper specimen, sealed-mode check and pure private-input consumer.",
+      "sourceSHA256": "ca5abe3991ae654ac66aeeac96503fb8a9dac129979fca33691b465c315e5259",
+      "privateLogSHA256": "7f05f608ea5f08f9855fa442811ddfeadadf86e8170718097ec768ab1180e297"
+    },
+    {
+      "unit": "openplan-portfolio-v5-independent-round2-78ca8e4a-audit.service",
+      "invocation": "c20121e75cea42cb9604ca338614457d",
+      "exit": 0,
+      "seconds": 0.260,
+      "roundedMemoryPeak": "9.9M",
+      "swap": "0B",
+      "purpose": "Final input custody, retained dump/failure bindings and known-secret/typography screen with harmless, injection and disabled-scanner controls. No old-root live inventory replay."
+    }
+  ],
+  "requestedLimits": {
+    "MemoryMax": "512M",
+    "MemorySwapMax": "0",
+    "CPUQuota": "50%",
+    "UMask": "0077",
+    "lock": "/home/nathaniel/.local/state/openplan/compiler-repair-checks-20261015.lock",
+    "privateHomeCache": true,
+    "pythonBytecode": false
+  },
+  "resourceLimits": "Requested properties are bound to the actual launch commands. The pipe summaries report rounded peaks and swap. No memory-event counters were captured. Post-completion systemctl properties are unavailable, not current measurements.",
+  "findings": ["N1 P2: protected helper runtime state is omitted from later preservation comparisons."],
+  "operatingStages": 0,
+  "push": false,
+  "pullRequest": false
+}

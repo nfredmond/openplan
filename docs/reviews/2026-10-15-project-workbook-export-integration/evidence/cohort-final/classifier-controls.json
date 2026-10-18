@@ -1,0 +1,77 @@
+{
+  "valid": "KILLED",
+  "harmless": "SURVIVED",
+  "intendedFault": "classifier audit must reject an unrelated assertion",
+  "refusals": [
+    {
+      "case": "runtime",
+      "result": "REFUSED",
+      "reason": "runtime or unhandled error"
+    },
+    {
+      "case": "unhandled",
+      "result": "REFUSED",
+      "reason": "runtime or unhandled error"
+    },
+    {
+      "case": "import",
+      "result": "REFUSED",
+      "reason": "empty selection or suite/import error"
+    },
+    {
+      "case": "empty",
+      "result": "REFUSED",
+      "reason": "empty selection or suite/import error"
+    },
+    {
+      "case": "wrong-file",
+      "result": "REFUSED",
+      "reason": "wrong source test file"
+    },
+    {
+      "case": "wrong-test",
+      "result": "REFUSED",
+      "reason": "wrong test identity or active count"
+    },
+    {
+      "case": "wrong-assertion",
+      "result": "REFUSED",
+      "reason": "wrong assertion diagnostic"
+    },
+    {
+      "case": "runtime-diagnostic",
+      "result": "REFUSED",
+      "reason": "wrong assertion diagnostic"
+    },
+    {
+      "case": "wrong-code",
+      "result": "REFUSED",
+      "reason": "not one assertion failure"
+    },
+    {
+      "case": "extra-failure",
+      "result": "REFUSED",
+      "reason": "not one assertion failure"
+    },
+    {
+      "case": "extra-active",
+      "result": "REFUSED",
+      "reason": "wrong test identity or active count"
+    },
+    {
+      "case": "unknown-status",
+      "result": "REFUSED",
+      "reason": "unknown assertion status"
+    },
+    {
+      "case": "wrong-summary",
+      "result": "REFUSED",
+      "reason": "not one assertion failure"
+    },
+    {
+      "case": "false-success",
+      "result": "REFUSED",
+      "reason": "not one assertion failure"
+    }
+  ]
+}

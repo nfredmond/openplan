@@ -1,0 +1,11 @@
+Running as unit: run-p142154-i88066773.scope; invocation ID: c36005653daf4ae3b7a80fbb080c83e0
+harmless survivor: keeps draft when an in-flight save returns after project changes SURVIVED True
+harmless survivor: keeps draft when an in-flight save returns after revision changes SURVIVED True
+harmless survivor: carries minimized same-revision canonical material through real generated files and SQLite at different clocks SURVIVED True
+harmless survivor: freezes non-null export-safe report readiness with canonical hash parity SURVIVED True
+harmless survivor: blocks confirmation after permission is revoked and restored during a save SURVIVED True
+permission scope epoch tracking INTENDED ASSERTION True
+project scope epoch tracking INTENDED ASSERTION True
+revision scope epoch tracking INTENDED ASSERTION True
+clock independence INTENDED ASSERTION True
+actual report GeoPackage parity INTENDED ASSERTION True

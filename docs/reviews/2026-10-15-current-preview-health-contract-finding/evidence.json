@@ -1,0 +1,10 @@
+{
+  "at": "2026-10-15T10:03:15.556009+00:00",
+  "severity": "P2",
+  "unexecutedPacket": "f29968d67c8177f33122691ad5879c675d457e08",
+  "appHead": "67828c17c4c270529468eef1edd144e4a52b693a",
+  "routeSha256": "d9e42a2ca04795334020528a866eb937126933dbcb5b83fbb65fd00d4938e4b1",
+  "attestorSha256": "f65afb51641f76962d0d80ce1d42b666f75a6d95b4ecceafd5ffe130ae52fcf7",
+  "sourceFinding": "Producer returns exact12 lowercase; consumer comparesfull40. No runtimeexecutionclaimed.",
+  "parentHashReadback": "/home/nathaniel/.local/state/openplan/current-project-preview-parent-readback-20261015-01.json"
+}

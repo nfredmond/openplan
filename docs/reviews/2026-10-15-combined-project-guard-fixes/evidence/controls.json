@@ -1,0 +1,100 @@
+[
+  {
+    "name": "baseline",
+    "exitCode": 0,
+    "result": "survived",
+    "assertion": null,
+    "logSha256": "916e05a0535208a53195cf5fd72d9e7219365991477cbec5099a810e8b71f986"
+  },
+  {
+    "name": "harmless",
+    "exitCode": 0,
+    "result": "survived",
+    "assertion": null,
+    "logSha256": "e0b1a0db8adb7d1a70e1a30582dd9993b2d3193d1703d367a9586dc237efb1d0"
+  },
+  {
+    "name": "copy-jargon",
+    "exitCode": 1,
+    "result": "killed",
+    "assertion": "uses no term from the ledger more often than the recorded baseline",
+    "logSha256": "d2a8bcf0b88c85b0e11aa07dfb35673c3d1571dd403657280c2690981b85997f"
+  },
+  {
+    "name": "ratchet-returned-word",
+    "exitCode": 1,
+    "result": "killed",
+    "assertion": "uses no term from the ledger more often than the recorded baseline",
+    "logSha256": "9db7bc587e4bc4d74a4d4fe163471527dc16ab81ecc41f2b6a06a2b302ab7145"
+  },
+  {
+    "name": "reader-removed",
+    "exitCode": 1,
+    "result": "killed",
+    "assertion": "checks the new project jurisdiction reader's imported literal against the schema",
+    "logSha256": "018ce9fb7b14d561744b3e4076387ed971f3a716c658339634b31d2c23a368cf"
+  },
+  {
+    "name": "reader-missing-field",
+    "exitCode": 1,
+    "result": "killed",
+    "assertion": "checks the new project jurisdiction reader's imported literal against the schema",
+    "logSha256": "bbba4de86c0445d3c6e8ff93574acd0d84649233a9a5d9e2eb2a2bf80608a674"
+  },
+  {
+    "name": "imported-column-typo",
+    "exitCode": 1,
+    "result": "killed",
+    "assertion": "never names a column on a table it cannot see",
+    "logSha256": "c517c8d3f4fd673c2faf767af2894625ce829088d4b9d3ea8478b4720a0f070a"
+  },
+  {
+    "name": "import-resolution-disabled",
+    "exitCode": 1,
+    "result": "killed",
+    "assertion": "resolves direct imported literals while retaining computed, mutable and shadowed unknowns",
+    "logSha256": "ad06ced43ecda4ab1ad12adbc0c49837ccf638943e02cab5b936d1b013a7416b"
+  },
+  {
+    "name": "mutable-import-accepted",
+    "exitCode": 1,
+    "result": "killed",
+    "assertion": "resolves direct imported literals while retaining computed, mutable and shadowed unknowns",
+    "logSha256": "9278af6add66eb5e3f6bb32c1e63a131b60d8146a0c04373b142e44842c98050"
+  },
+  {
+    "name": "private-binding-accepted",
+    "exitCode": 1,
+    "result": "killed",
+    "assertion": "resolves direct imported literals while retaining computed, mutable and shadowed unknowns",
+    "logSha256": "c148642712fd9e95e28c3475f2b98b3c97e465662e2f62474d7641b866909453"
+  },
+  {
+    "name": "template-accepted",
+    "exitCode": 1,
+    "result": "killed",
+    "assertion": "resolves direct imported literals while retaining computed, mutable and shadowed unknowns",
+    "logSha256": "933f9f05f125f6f24bd3e79173513a52d707260a04f2b67db793fecfd1e04825"
+  },
+  {
+    "name": "parameter-shadow-ignored",
+    "exitCode": 1,
+    "result": "killed",
+    "assertion": "resolves direct imported literals while retaining computed, mutable and shadowed unknowns",
+    "logSha256": "3e2f9ab49d4d2ea65fcc1ffc8c8381e4daafe26f55493921b624672caa678f80"
+  },
+  {
+    "name": "new-unknown-projection",
+    "exitCode": 1,
+    "result": "killed",
+    "assertion": "guards the guard",
+    "logSha256": "2a33d22dcee8c5b56945d6c6f503951a21af276c7746d95a62c3c6ea77a98467"
+  },
+  {
+    "name": "restored",
+    "exitCode": 0,
+    "result": "survived",
+    "assertion": null,
+    "logSha256": "6b9b1c263d5695510ef3efe0d9cd382376ee9f29c08aa320b5937cfa36abbbe9"
+  }
+]

@@ -1,0 +1,523 @@
+{
+  "status": "bounded_candidate_not_integration_ready",
+  "base": "783fd24c230a1e640543e51fcef6cd5d70db0bb0",
+  "integrationFinding": {
+    "import": "@xmldom/xmldom",
+    "installedLockedVersion": "0.8.15",
+    "declaredDirectDependency": false,
+    "unlistedRule": "error",
+    "fullDeadcodeExecuted": false,
+    "packageFilesChanged": false,
+    "requiresParentScopeDecision": true
+  },
+  "checks": {
+    "focused": {
+      "passed": 27,
+      "skipped": 0,
+      "failed": 0,
+      "runtimeErrorSuites": 0
+    },
+    "independentInMemoryProbe": {
+      "passed": 17,
+      "skipped": 0,
+      "failed": 0,
+      "runtimeErrorSuites": 0
+    },
+    "scopedLintExit": 0,
+    "scopedTypeScriptExit": 0,
+    "directionExit": 0,
+    "gitDiffCheckExit": 0,
+    "mutationRestoration": {
+      "portfolio": true,
+      "helper": true,
+      "route": true
+    }
+  },
+  "versions": {
+    "xlsx": "0.20.3",
+    "jszip": "3.10.1",
+    "@xmldom/xmldom": "0.8.15",
+    "vitest": "4.1.11",
+    "typescript": "5.9.3"
+  },
+  "sourceBindings": [
+    {
+      "path": "docs/reviews/2026-10-15-project-workbook-export-independent/probe.test.ts",
+      "sha256": "af1baae3a7dc99bb1ea136e8a5404bf68745561c9e922fe4753a6d5baa201e2d"
+    },
+    {
+      "path": "docs/reviews/2026-10-15-workbook-live-pagination/probe.test.ts",
+      "sha256": "ea45f1e29a2e413128f4fa2e1dd4ff25ca94feb15460c065f62394bf10745823"
+    },
+    {
+      "path": "openplan/src/app/api/projects/export/workbook/route.ts",
+      "sha256": "64fd96d9caae5f8808b5825dbabc23f788fb9883d5a52ff9b974275884304265"
+    },
+    {
+      "path": "openplan/src/lib/engagement/review-export.ts",
+      "sha256": "5cf61fcc3ae95287085c4c6e2e1983497381d165d0caf7f429b8ccee2865c019"
+    },
+    {
+      "path": "openplan/src/lib/projects/portfolio-export.ts",
+      "sha256": "06591e3aa6cd922495575f5b0675ca66539be9fa646c562f3b614d52a27a0b0c"
+    },
+    {
+      "path": "openplan/src/test/engagement-review-export.test.ts",
+      "sha256": "f237b7d81738b23ede80127a8b93e87906a77cb38d017b904d30505e0d334eef"
+    },
+    {
+      "path": "openplan/src/test/portfolio-workbook-export.test.ts",
+      "sha256": "6a44f492173b67087037e2d4371cf4191b2219ab33776624ffc3b25eb57a76f4"
+    },
+    {
+      "path": "openplan/src/test/project-portfolio-export-route.test.ts",
+      "sha256": "f3432540f3ee5a7588ac98d135ce6be7bd0fc9895ad222b98dd135de86c79426"
+    },
+    {
+      "path": "openplan/src/lib/export/review-workbook-layout.ts",
+      "sha256": "134ebad39797bfb27996ec1052514ce4ba5c9da53edf5d315a64a326c1fabd68"
+    }
+  ],
+  "privateRunnerBindings": [
+    {
+      "file": "run.py",
+      "sha256": "f4a26840e103edcc84255fecb6f115afab2b55bf7bfa68645a5b2d74ac0ed7b8"
+    },
+    {
+      "file": "generate.ts",
+      "sha256": "1ed1778075f486228c49e486e461384350578b79ee4f99cbf6ae17bd654362c6"
+    },
+    {
+      "file": "native_oracle.py",
+      "sha256": "32db41136bb2d7d10fb346c2982b17c99ed9118913b863b100f869c8fa410c0f"
+    },
+    {
+      "file": "native-04.py",
+      "sha256": "14f91771bb3546ba369309d8c0aed05808cef9f8b621ed4eac047f25719d33ca"
+    },
+    {
+      "file": "pdf-supplement-02.py",
+      "sha256": "69e5fe500b670fcc4d106257ffb108f2b41cbc33ac6e741d1e470d5011b66aed"
+    },
+    {
+      "file": "mutations-03.py",
+      "sha256": "b9d0fe4a6c24339a648b37b286811004a1dd083f954313049dccdc0b652816f8"
+    },
+    {
+      "file": "final.py",
+      "sha256": "db3261b2b1cdeabbc9e0d95f2d23be19f6af614e6dda8a136bbebe5b1bf16006"
+    },
+    {
+      "file": "final-resume.py",
+      "sha256": "4d56fd6f01f63ddf09c00f137b2005206d5e6ddadcff12cce6225455ab18d7b4"
+    },
+    {
+      "file": "final-artifacts.py",
+      "sha256": "9f5a2f99ae40dd845735503b8d81a9440f61562a0776b790852f647411109ef3"
+    }
+  ],
+  "cases": [
+    {
+      "records": 0,
+      "allTypedOOXMLCellsEqual": true,
+      "allTypedNativeCellsEqual": true,
+      "readmeCellsEqual": true,
+      "projectColumns": 19,
+      "nativeProjectRows": 1,
+      "idSequenceSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "formulas": 0,
+      "unknownPriceYears": 0,
+      "pdfPages": 6,
+      "completeReadmePDFPage": 6,
+      "candidate": {
+        "sha256": "2f7a8a1377f7223b198d0892e28eb4945e768ee3139789911eafa958c1ae8372",
+        "bytes": 10435
+      },
+      "ods": {
+        "sha256": "6ff28024d0599c91037a1701142e2694cdbfc127de24f7f66e400d87f531c748",
+        "bytes": 12469
+      },
+      "endpointPrintEvidence": null
+    },
+    {
+      "records": 1000,
+      "allTypedOOXMLCellsEqual": true,
+      "allTypedNativeCellsEqual": true,
+      "readmeCellsEqual": true,
+      "projectColumns": 19,
+      "nativeProjectRows": 1001,
+      "idSequenceSha256": "a1f520e8d45ca13a45e3147fe4f5f9e2e50ef7f86bcf2724de745226c63d20ee",
+      "formulas": 0,
+      "unknownPriceYears": 500,
+      "pdfPages": 386,
+      "completeReadmePDFPage": 386,
+      "candidate": {
+        "sha256": "f1a1c03a53ac60e4357a84c8299833fa7096db8d95ab72f7553a9cc35ef79794",
+        "bytes": 106395
+      },
+      "ods": {
+        "sha256": "6f01d369b912e18f5f77c33d419223a8ed45c420a81be107749528dd655d352c",
+        "bytes": 56450
+      },
+      "endpointPrintEvidence": {
+        "records": 1000,
+        "firstIDPage": 1,
+        "lastIDPage": 77,
+        "verticalIDPagesWithRepeatedHeaders": 77,
+        "allReadmeTextTogether": true
+      }
+    },
+    {
+      "records": 2000,
+      "allTypedOOXMLCellsEqual": true,
+      "allTypedNativeCellsEqual": true,
+      "readmeCellsEqual": true,
+      "projectColumns": 19,
+      "nativeProjectRows": 2001,
+      "idSequenceSha256": "598bdd66c4ad8b6fe3bb60b236cea8e457c148fa90448ae5589acae116374c76",
+      "formulas": 0,
+      "unknownPriceYears": 1000,
+      "pdfPages": 771,
+      "completeReadmePDFPage": 771,
+      "candidate": {
+        "sha256": "211b0ea969060720312af1e31b98360e698443509dc230b245d73ca8de5587a3",
+        "bytes": 202012
+      },
+      "ods": {
+        "sha256": "7a2b83702f66bdb8fb5c8d4a895af3660b6964c89c204e55fe0e4338f2a618f1",
+        "bytes": 97576
+      },
+      "endpointPrintEvidence": {
+        "records": 2000,
+        "firstIDPage": 1,
+        "lastIDPage": 154,
+        "verticalIDPagesWithRepeatedHeaders": 154,
+        "allReadmeTextTogether": true
+      }
+    }
+  ],
+  "engagementExtraction": {
+    "allTypedCellsFormulasEqual": true,
+    "stylesByteIdentical": true,
+    "worksheetAndWorkbookXMLSemanticallyEqual": true
+  },
+  "mutations": [
+    {
+      "case": "harmless comment",
+      "outcome": "survived",
+      "failedTests": [],
+      "expectedDiagnostic": null
+    },
+    {
+      "case": "unknown year substituted",
+      "outcome": "detected",
+      "failedTests": [
+        "portfolio XLSX round-trip round-trips an estimated cost whose price year is unknown without inventing a default"
+      ],
+      "expectedDiagnostic": "priceYear"
+    },
+    {
+      "case": "description changed",
+      "outcome": "detected",
+      "failedTests": [
+        "portfolio XLSX round-trip re-enters the reviewed importer with exact row-level project fields and no formulas"
+      ],
+      "expectedDiagnostic": "description"
+    },
+    {
+      "case": "row refusal removed",
+      "outcome": "detected",
+      "failedTests": [
+        "portfolio XLSX round-trip refuses to build a workbook that the importer would have to truncate"
+      ],
+      "expectedDiagnostic": "promise resolved"
+    },
+    {
+      "case": "wrap removed",
+      "outcome": "detected",
+      "failedTests": [
+        "campaign review records retains the extracted review styles, frozen headers and recalculation settings on every sheet",
+        "portfolio XLSX round-trip emits wrapped cells, bounded readme printing and readable repeated project headers"
+      ],
+      "expectedDiagnostic": "header wrap serialized"
+    },
+    {
+      "case": "freeze moved",
+      "outcome": "detected",
+      "failedTests": [
+        "campaign review records retains the extracted review styles, frozen headers and recalculation settings on every sheet",
+        "portfolio XLSX round-trip emits wrapped cells, bounded readme printing and readable repeated project headers"
+      ],
+      "expectedDiagnostic": "engagement frozen header retained"
+    },
+    {
+      "case": "header style removed",
+      "outcome": "detected",
+      "failedTests": [
+        "campaign review records retains the extracted review styles, frozen headers and recalculation settings on every sheet",
+        "portfolio XLSX round-trip emits wrapped cells, bounded readme printing and readable repeated project headers"
+      ],
+      "expectedDiagnostic": "engagement header style retained"
+    },
+    {
+      "case": "engagement recalc removed",
+      "outcome": "detected",
+      "failedTests": [
+        "campaign review records retains the extracted review styles, frozen headers and recalculation settings on every sheet"
+      ],
+      "expectedDiagnostic": "engagement recalc retained"
+    },
+    {
+      "case": "readme too wide",
+      "outcome": "detected",
+      "failedTests": [
+        "portfolio XLSX round-trip emits wrapped cells, bounded readme printing and readable repeated project headers"
+      ],
+      "expectedDiagnostic": "bounded readme value width"
+    },
+    {
+      "case": "print titles missing",
+      "outcome": "detected",
+      "failedTests": [
+        "portfolio XLSX round-trip emits wrapped cells, bounded readme printing and readable repeated project headers"
+      ],
+      "expectedDiagnostic": "repeat project headers vertically"
+    },
+    {
+      "case": "readme heights removed",
+      "outcome": "detected",
+      "failedTests": [
+        "portfolio XLSX round-trip emits wrapped cells, bounded readme printing and readable repeated project headers"
+      ],
+      "expectedDiagnostic": "long readme guidance has height"
+    },
+    {
+      "case": "route await removed",
+      "outcome": "detected",
+      "failedTests": [
+        "GET /api/projects/export/workbook exports only the active workspace and allows read-only members"
+      ],
+      "expectedDiagnostic": "awaited serializer bytes reach response"
+    },
+    {
+      "case": "async failure returns success",
+      "outcome": "detected",
+      "failedTests": [
+        "GET /api/projects/export/workbook catches an asynchronous serializer failure before logging or sending a workbook"
+      ],
+      "expectedDiagnostic": "async formatting failure is handled"
+    },
+    {
+      "case": "ZIP date preservation removed",
+      "outcome": "detected",
+      "failedTests": [
+        "portfolio XLSX round-trip keeps identical serialization inputs byte-stable across formatting times"
+      ],
+      "expectedDiagnostic": "formatting retains deterministic ZIP dates"
+    }
+  ],
+  "odsHeaderWrapperControls": [
+    {
+      "case": "flatten harmless header wrapper",
+      "outcome": "survived"
+    },
+    {
+      "case": "missing wrapped header",
+      "outcome": "detected",
+      "diagnostic": "exact nineteen headers"
+    },
+    {
+      "case": "altered wrapped header",
+      "outcome": "detected",
+      "diagnostic": "exact nineteen headers"
+    }
+  ],
+  "priorComparatorControls": [
+    {
+      "case": "harmless dictionary metadata",
+      "outcome": "survived"
+    },
+    {
+      "case": "renamed sheet",
+      "outcome": "detected",
+      "diagnostic": "sheet names and order"
+    },
+    {
+      "case": "changed header",
+      "outcome": "detected",
+      "diagnostic": "exact nineteen headers"
+    },
+    {
+      "case": "dropped row",
+      "outcome": "detected",
+      "diagnostic": "complete project record count"
+    },
+    {
+      "case": "duplicate ID",
+      "outcome": "detected",
+      "diagnostic": "unique project IDs"
+    },
+    {
+      "case": "swapped first and last IDs",
+      "outcome": "detected",
+      "diagnostic": "stable complete ID order including first and last"
+    },
+    {
+      "case": "formula marker on literal",
+      "outcome": "detected",
+      "diagnostic": "literal cells without formulas"
+    },
+    {
+      "case": "missing last column",
+      "outcome": "detected",
+      "diagnostic": "nineteen project cells"
+    },
+    {
+      "case": "decimal text cast to number",
+      "outcome": "detected",
+      "diagnostic": "decimal text and unknown blank semantics"
+    },
+    {
+      "case": "unknown price year replaced by zero",
+      "outcome": "detected",
+      "diagnostic": "decimal text and unknown blank semantics"
+    },
+    {
+      "case": "changed description",
+      "outcome": "detected",
+      "diagnostic": "all project literal text values"
+    },
+    {
+      "case": "changed Read me row count",
+      "outcome": "detected",
+      "diagnostic": "complete Read me metadata and instructions"
+    },
+    {
+      "case": "runtime error",
+      "outcome": "refused"
+    },
+    {
+      "case": "wrong assertion",
+      "outcome": "refused"
+    }
+  ],
+  "pdfControls": [
+    {
+      "case": "harmless PDF whitespace",
+      "outcome": "survived"
+    },
+    {
+      "case": "actual split-label trial refused",
+      "outcome": "detected",
+      "diagnostic": "all Read me labels and values together on one PDF page"
+    },
+    {
+      "case": "changed instruction refused",
+      "outcome": "detected",
+      "diagnostic": "all Read me labels and values together on one PDF page"
+    },
+    {
+      "case": "harmless repeated-header whitespace",
+      "outcome": "survived"
+    },
+    {
+      "case": "missing vertical print header",
+      "outcome": "detected",
+      "diagnostic": "project header repeated on every vertical ID page"
+    }
+  ],
+  "resources": {
+    "testsAndTypes": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "cpu.max": "50000 100000",
+      "memory.peak": "508534784",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.swap.peak": "0"
+    },
+    "independentProbe": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "cpu.max": "50000 100000",
+      "memory.peak": "386453504",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.swap.peak": "0"
+    },
+    "finalArtifactScope": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "cpu.max": "50000 100000",
+      "memory.peak": "312180736",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.swap.peak": "0"
+    },
+    "nodeHeapMiB": 640,
+    "vitestWorkers": 1,
+    "nativeTimeoutSeconds": 90,
+    "affinity": [
+      23
+    ]
+  },
+  "originalsPreserved": true,
+  "originals": [
+    {
+      "file": "portfolio-0.xlsx",
+      "sha256": "40ae4e85dd62644adc529332d49918ff92e7438a44c9bfbae54104f32168fa6c",
+      "bytes": 11659,
+      "mode": "0o600"
+    },
+    {
+      "file": "portfolio-1000.xlsx",
+      "sha256": "13cf9d52d34ae21e794f2f841994c65d61c56072ef7ae2d49cbc36e11cd0ab34",
+      "bytes": 257240,
+      "mode": "0o600"
+    },
+    {
+      "file": "portfolio-2000.xlsx",
+      "sha256": "5178026f4834555fc151efc934f2a162b9dfe17cc527dd3bd76561398d9e880c",
+      "bytes": 501381,
+      "mode": "0o600"
+    },
+    {
+      "file": "fixtures-private.json",
+      "sha256": "242b85879f91a1a1e06b165e06bdd5212b534e86a3b0cd56eac9778f67b7fb49",
+      "bytes": 7712064,
+      "mode": "0o600"
+    },
+    {
+      "file": "observations.json",
+      "sha256": "9bfdc833aaa59bdc3cc021a7ce790b513ae2d26c815fe06252c3088defe147a1",
+      "bytes": 308982,
+      "mode": "0o600"
+    }
+  ],
+  "visualInspection": {
+    "engine": "LibreOffice Calc 26.2.6.3",
+    "dpi": 110,
+    "finalSamplePages": {
+      "0": [
+        6
+      ],
+      "1000": [
+        77
+      ],
+      "2000": [
+        1,
+        2,
+        154,
+        770,
+        771
+      ]
+    },
+    "allPagesVisuallyInspected": false,
+    "practitionerOrHumanAcceptance": false
+  },
+  "limits": [
+    "Unlisted parser import requires package ownership decision before integration.",
+    "No full QA, build, live database, RLS, browser, Excel, hosted or human acceptance.",
+    "Wide Projects printing intentionally uses five horizontal bands at 100 percent.",
+    "Arbitrary long text may exceed 409-point row height.",
+    "ODS and OOXML empty strings and absent cells compare as semantic blanks.",
+    "Historical live-pagination probe receives await compatibility but is not replayed."
+  ]
+}

@@ -1,0 +1,194 @@
+[
+  {
+    "privateDirectory": "cap-1000",
+    "receipt": {
+      "id": "19509fee809b95344af9c176902c835b197a332910821f81b465039a69953caf",
+      "name": "openplan-workbook-native-rest-0f57fde3e2af",
+      "database": "openplan_workbook_native_f022913ef7654f40b2795c55",
+      "image": "sha256:2f8e7b656f09db697a8875177694b417b35cb76c21370de07fc54e711e902326",
+      "cap": 1000,
+      "publish": "127.74.18.10:29946",
+      "memory": 536870912,
+      "memorySwap": 536870912,
+      "cpu": 0.5,
+      "version": "PostgREST 14.15"
+    },
+    "stopped": {
+      "id": "19509fee809b95344af9c176902c835b197a332910821f81b465039a69953caf",
+      "running": false,
+      "oomKilled": false,
+      "exitCode": 255
+    },
+    "resources": {
+      "runnerMax": "1073741824",
+      "runnerSwapMax": "0",
+      "runnerPeak": "268615680",
+      "runnerEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+    }
+  },
+  {
+    "privateDirectory": "cap-137",
+    "receipt": {
+      "id": "9be5aa5a625b4828d74bd6e33875736cb588db4c6bd4f842317622eec01b2010",
+      "name": "openplan-workbook-native-rest-6966ae691ae8",
+      "database": "openplan_workbook_native_f022913ef7654f40b2795c55",
+      "image": "sha256:2f8e7b656f09db697a8875177694b417b35cb76c21370de07fc54e711e902326",
+      "cap": 137,
+      "publish": "127.74.18.10:29946",
+      "memory": 536870912,
+      "memorySwap": 536870912,
+      "cpu": 0.5,
+      "version": "PostgREST 14.15"
+    },
+    "stopped": {
+      "id": "9be5aa5a625b4828d74bd6e33875736cb588db4c6bd4f842317622eec01b2010",
+      "running": false,
+      "oomKilled": false,
+      "exitCode": 255
+    },
+    "resources": {
+      "runnerMax": "1073741824",
+      "runnerSwapMax": "0",
+      "runnerPeak": "260194304",
+      "runnerEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+    }
+  },
+  {
+    "privateDirectory": "earlier-cap-1000-0db2eaf1",
+    "receipt": {
+      "id": "9baae8345e2fa5869ea6299a4f819e3c2baad8175a13c4e5511b707578f08aa6",
+      "name": "openplan-workbook-native-rest-8663bf6f59df",
+      "database": "openplan_workbook_native_f022913ef7654f40b2795c55",
+      "image": "sha256:2f8e7b656f09db697a8875177694b417b35cb76c21370de07fc54e711e902326",
+      "cap": 1000,
+      "publish": "127.74.18.10:29946",
+      "memory": 536870912,
+      "memorySwap": 536870912,
+      "cpu": 0.5,
+      "version": "PostgREST 14.15"
+    },
+    "stopped": {
+      "id": "9baae8345e2fa5869ea6299a4f819e3c2baad8175a13c4e5511b707578f08aa6",
+      "running": false,
+      "oomKilled": false,
+      "exitCode": 255
+    },
+    "resources": {
+      "runnerMax": "1073741824",
+      "runnerSwapMax": "0",
+      "runnerPeak": "266162176",
+      "runnerEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+    }
+  },
+  {
+    "privateDirectory": "earlier-cap-1000-78c36cfb",
+    "receipt": {
+      "id": "21f141c69589b86d3ab8db6b275538f0fabcf65fa552c9360f1f3ab6435da718",
+      "name": "openplan-workbook-native-rest-9f5441ed1904",
+      "database": "openplan_workbook_native_f022913ef7654f40b2795c55",
+      "image": "sha256:2f8e7b656f09db697a8875177694b417b35cb76c21370de07fc54e711e902326",
+      "cap": 1000,
+      "publish": "127.74.18.10:29946",
+      "memory": 536870912,
+      "memorySwap": 536870912,
+      "cpu": 0.5,
+      "version": "PostgREST 14.15"
+    },
+    "stopped": {
+      "id": "21f141c69589b86d3ab8db6b275538f0fabcf65fa552c9360f1f3ab6435da718",
+      "running": false,
+      "oomKilled": false,
+      "exitCode": 255
+    }
+  },
+  {
+    "privateDirectory": "earlier-cap-1000-8a223b12",
+    "receipt": {
+      "id": "b47963969d3df7a367536adf8db6da1247b0006f212a59412338e3e2f5e5e65d",
+      "name": "openplan-workbook-native-rest-86642d553003",
+      "database": "openplan_workbook_native_f022913ef7654f40b2795c55",
+      "image": "sha256:2f8e7b656f09db697a8875177694b417b35cb76c21370de07fc54e711e902326",
+      "cap": 1000,
+      "publish": "127.74.18.10:29946",
+      "memory": 536870912,
+      "memorySwap": 536870912,
+      "cpu": 0.5,
+      "version": "PostgREST 14.15"
+    },
+    "stopped": {
+      "id": "b47963969d3df7a367536adf8db6da1247b0006f212a59412338e3e2f5e5e65d",
+      "running": false,
+      "oomKilled": false,
+      "exitCode": 255
+    }
+  },
+  {
+    "privateDirectory": "earlier-cap-1000-915883ca",
+    "receipt": {
+      "id": "7b080b56d7090b28dd0251016964f869be4c00026d7f6bbee3bad0e150743d62",
+      "name": "openplan-workbook-native-rest-d5edb2229f1b",
+      "database": "openplan_workbook_native_f022913ef7654f40b2795c55",
+      "image": "sha256:2f8e7b656f09db697a8875177694b417b35cb76c21370de07fc54e711e902326",
+      "cap": 1000,
+      "publish": "127.74.18.10:29946",
+      "memory": 536870912,
+      "memorySwap": 536870912,
+      "cpu": 0.5,
+      "version": "PostgREST 14.15"
+    },
+    "stopped": {
+      "id": "7b080b56d7090b28dd0251016964f869be4c00026d7f6bbee3bad0e150743d62",
+      "running": false,
+      "oomKilled": false,
+      "exitCode": 255
+    },
+    "resources": {
+      "runnerMax": "1073741824",
+      "runnerSwapMax": "0",
+      "runnerPeak": "262352896",
+      "runnerEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+    }
+  },
+  {
+    "privateDirectory": "earlier-cap-1000-d55f8d69",
+    "receipt": {
+      "id": "e5a516ba1b4eed853bf73a64199ec0b1e4507ececc78f9dff95c276e22428322",
+      "name": "openplan-workbook-native-rest-88d3ff98c7d5",
+      "database": "openplan_workbook_native_f022913ef7654f40b2795c55",
+      "image": "sha256:2f8e7b656f09db697a8875177694b417b35cb76c21370de07fc54e711e902326",
+      "cap": 1000,
+      "publish": "127.74.18.10:29946",
+      "memory": 536870912,
+      "memorySwap": 536870912,
+      "cpu": 0.5,
+      "version": "PostgREST 14.15"
+    },
+    "stopped": {
+      "id": "e5a516ba1b4eed853bf73a64199ec0b1e4507ececc78f9dff95c276e22428322",
+      "running": false,
+      "oomKilled": false,
+      "exitCode": 255
+    }
+  },
+  {
+    "privateDirectory": "earlier-cap-137-4a715dc5",
+    "receipt": {
+      "id": "b4fb0aa3bdb6861117ae90d0146dd5cd3556f27f11382a6e87789fb6d0b84311",
+      "name": "openplan-workbook-native-rest-650b47726159",
+      "database": "openplan_workbook_native_f022913ef7654f40b2795c55",
+      "image": "sha256:2f8e7b656f09db697a8875177694b417b35cb76c21370de07fc54e711e902326",
+      "cap": 137,
+      "publish": "127.74.18.10:29946",
+      "memory": 536870912,
+      "memorySwap": 536870912,
+      "cpu": 0.5,
+      "version": "PostgREST 14.15"
+    },
+    "stopped": {
+      "id": "b4fb0aa3bdb6861117ae90d0146dd5cd3556f27f11382a6e87789fb6d0b84311",
+      "running": false,
+      "oomKilled": false,
+      "exitCode": 255
+    }
+  }
+]

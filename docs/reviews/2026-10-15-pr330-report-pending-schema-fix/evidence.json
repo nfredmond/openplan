@@ -1,0 +1,442 @@
+{
+  "schema": "openplan.pr330-report-pending-schema-fix-evidence.v1",
+  "date": "2026-10-15",
+  "base": "401c44a0f7bfe4b54740e2c3d07e30f8ed36f169",
+  "branch": "t3/pr330-report-pending-schema-fix",
+  "evidenceBoundary": "Source and synthetic real-route/generated-HTML/custody tests only. No changed-head native database, browser, PDF or deployment acceptance.",
+  "sourceSha256": {
+    "openplan/src/app/api/reports/[reportId]/generate/route.ts": "182bf5775780a5c79c29bf2983e803900c8822aeda6dec2685634c46e1600a96",
+    "openplan/src/lib/reports/project-jurisdiction.ts": "5270629e46498e6fe08f20e3c42c58529980a07f77e2f0946283ee4e5655f01e",
+    "openplan/src/lib/reports/html.ts": "5e794504a8dac9d990618caab92d7c626241f0503628815a873ea9ddbd79e740",
+    "openplan/src/test/report-generate-route.test.ts": "3f581e9dbfd6110ff64d3a08eb49eaaacc56f987e14480cd818f1a19e9ebca2b"
+  },
+  "unchangedFromParentSha256": {
+    "openplan/src/lib/projects/project-jurisdiction.ts": "471e271740a66dd314637b0378513f5eb035b896774f5bf2916a774aefd6c24d",
+    "openplan/src/lib/jurisdiction-readiness/payload.ts": "e16cd5539dac55e13b4c889fc897bd8ed2429b6ece7caeda7031d17edbaf805c",
+    "openplan/src/app/(app)/projects/[projectId]/page.tsx": "1dae1462e32857bcea2ff737d6ab2061ffb0aa4d94308c32b0d1df99801c0710",
+    "openplan/src/app/api/projects/export/workbook/route.ts": "64fd96d9caae5f8808b5825dbabc23f788fb9883d5a52ff9b974275884304265",
+    "openplan/package-lock.json": "e93237b82fea6899fe67c18e2e4e0ed2d6f66a295cea420cab7c05ec61535420",
+    "openplan/vitest.config.ts": "2af1a9ecbe50bde256b20197cfbff00f34cfc57534a86234c83ee55425cb8da5",
+    "openplan/tsconfig.json": "cb3404493257250c77d7145c9825ed31f79246b640eb30a59b8069d39091bf29"
+  },
+  "directionCheck": {
+    "command": [
+      "npm",
+      "run",
+      "product:direction:check"
+    ],
+    "cwd": "openplan",
+    "exitCode": 0,
+    "existingReminders": [
+      "jurisdiction registry review expired",
+      "capability matrix and registry review expired",
+      "review release differs from package release",
+      "intervening source changes"
+    ]
+  },
+  "preFixReproduction": {
+    "namedTests": 2,
+    "statusExpected": 200,
+    "statusObserved": 500,
+    "postgresAndPostgrestMessages": true,
+    "reportSha256": "80731386987ec93858f03d1587c750e49496bf07242b3bc6909f20e072b56d92"
+  },
+  "finalChecks": [
+    {
+      "label": "final-runtime",
+      "exitCode": 0,
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "src/test/report-generate-route.test.ts",
+        "src/test/report-html-accepted-narrative.test.ts",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/privatepr330-report-pending-schema-fix-20261015/vitest.config.mts",
+        "--configLoader",
+        "runner",
+        "--maxWorkers",
+        "1",
+        "--no-file-parallelism",
+        "--reporter",
+        "json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/privatepr330-report-pending-schema-fix-20261015/logs/final-runtime.vitest.json"
+      ],
+      "elapsedSeconds": 8.909,
+      "memoryPeakBytes": 396681216,
+      "memoryMaxBytes": 1610612736,
+      "memorySwapMaxBytes": 0,
+      "nodeHeapMiB": 1024,
+      "cpuMax": "50000 100000",
+      "memoryEvents": [
+        "low 0",
+        "high 0",
+        "max 0",
+        "oom 0",
+        "oom_kill 0",
+        "oom_group_kill 0",
+        "sock_throttled 0"
+      ],
+      "rootMountOptions": "ro,nosuid,nodev,relatime",
+      "privateMountOptions": "rw,nosuid,nodev,relatime",
+      "receiptSha256": "0c9d63451b2a7007c124ff1836d9bc0966a3c8798f94f89c157625d8af8e7033"
+    },
+    {
+      "label": "final-types",
+      "exitCode": 0,
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--project",
+        "/home/nathaniel/.local/state/openplan/privatepr330-report-pending-schema-fix-20261015/tsconfig.json",
+        "--noEmit",
+        "--incremental",
+        "false"
+      ],
+      "elapsedSeconds": 16.465,
+      "memoryPeakBytes": 782708736,
+      "memoryMaxBytes": 1610612736,
+      "memorySwapMaxBytes": 0,
+      "nodeHeapMiB": 1024,
+      "cpuMax": "50000 100000",
+      "memoryEvents": [
+        "low 0",
+        "high 0",
+        "max 0",
+        "oom 0",
+        "oom_kill 0",
+        "oom_group_kill 0",
+        "sock_throttled 0"
+      ],
+      "rootMountOptions": "ro,nosuid,nodev,relatime",
+      "privateMountOptions": "rw,nosuid,nodev,relatime",
+      "receiptSha256": "af01bc23e598aec06e06e4987cee3b8735b626e0c564de2a2ad0bd0ad98635d2"
+    },
+    {
+      "label": "final-eslint",
+      "exitCode": 0,
+      "command": [
+        "node",
+        "node_modules/eslint/bin/eslint.js",
+        "src/app/api/reports/[reportId]/generate/route.ts",
+        "src/lib/reports/project-jurisdiction.ts",
+        "src/lib/reports/html.ts",
+        "src/test/report-generate-route.test.ts",
+        "--max-warnings",
+        "0"
+      ],
+      "elapsedSeconds": 6.907,
+      "memoryPeakBytes": 407855104,
+      "memoryMaxBytes": 1610612736,
+      "memorySwapMaxBytes": 0,
+      "nodeHeapMiB": 1024,
+      "cpuMax": "50000 100000",
+      "memoryEvents": [
+        "low 0",
+        "high 0",
+        "max 0",
+        "oom 0",
+        "oom_kill 0",
+        "oom_group_kill 0",
+        "sock_throttled 0"
+      ],
+      "rootMountOptions": "ro,nosuid,nodev,relatime",
+      "privateMountOptions": "rw,nosuid,nodev,relatime",
+      "receiptSha256": "f3b69bd584230b916b27f8e51e441c136f93dbd868449059c482f98c6df9603e"
+    }
+  ],
+  "finalRuntime": {
+    "passedTests": 101,
+    "failedTests": 0,
+    "skippedTests": 0,
+    "todoTests": 0,
+    "files": {
+      "report-generate-route.test.ts": 87,
+      "report-html-accepted-narrative.test.ts": 14
+    },
+    "reportSha256": "25b452d925e2a2d15afcde241a42aabbe98ab4920d382be2bc7013ab49a0a02a"
+  },
+  "controls": [
+    {
+      "campaign": "c02",
+      "label": "harmless-comment",
+      "outcome": "SURVIVED",
+      "selectedTests": 15,
+      "diagnostic": null,
+      "source": "openplan/src/app/api/reports/[reportId]/generate/route.ts",
+      "elapsedSeconds": 6.799,
+      "memoryPeakBytes": 391905280,
+      "restoredSha256": "182bf5775780a5c79c29bf2983e803900c8822aeda6dec2685634c46e1600a96"
+    },
+    {
+      "campaign": "c02",
+      "label": "strict-builder-on-pending",
+      "outcome": "KILLED",
+      "selectedTests": 2,
+      "diagnostic": "Schema-pending jurisdiction still generates",
+      "source": "openplan/src/app/api/reports/[reportId]/generate/route.ts",
+      "elapsedSeconds": 5.997,
+      "memoryPeakBytes": 365780992,
+      "restoredSha256": "182bf5775780a5c79c29bf2983e803900c8822aeda6dec2685634c46e1600a96"
+    },
+    {
+      "campaign": "c02",
+      "label": "false-jurisdiction-success",
+      "outcome": "KILLED",
+      "selectedTests": 2,
+      "diagnostic": "Pending custody never invents a human declaration or registry assessment",
+      "source": "openplan/src/lib/reports/project-jurisdiction.ts",
+      "elapsedSeconds": 6.398,
+      "memoryPeakBytes": 381087744,
+      "restoredSha256": "5270629e46498e6fe08f20e3c42c58529980a07f77e2f0946283ee4e5655f01e"
+    },
+    {
+      "campaign": "c02",
+      "label": "false-geography-success",
+      "outcome": "KILLED",
+      "selectedTests": 2,
+      "diagnostic": "Pending payload records missing study geography",
+      "source": "openplan/src/lib/reports/project-jurisdiction.ts",
+      "elapsedSeconds": 6.106,
+      "memoryPeakBytes": 376057856,
+      "restoredSha256": "5270629e46498e6fe08f20e3c42c58529980a07f77e2f0946283ee4e5655f01e"
+    },
+    {
+      "campaign": "c02",
+      "label": "missing-disclosure",
+      "outcome": "KILLED",
+      "selectedTests": 2,
+      "diagnostic": "Actual HTML discloses schema-pending jurisdiction",
+      "source": "openplan/src/lib/reports/html.ts",
+      "elapsedSeconds": 6.298,
+      "memoryPeakBytes": 370786304,
+      "restoredSha256": "5e794504a8dac9d990618caab92d7c626241f0503628815a873ea9ddbd79e740"
+    },
+    {
+      "campaign": "c02",
+      "label": "missing-rendered-hash",
+      "outcome": "KILLED",
+      "selectedTests": 2,
+      "diagnostic": "Actual HTML prints pending payload hash",
+      "source": "openplan/src/lib/reports/html.ts",
+      "elapsedSeconds": 6.499,
+      "memoryPeakBytes": 379637760,
+      "restoredSha256": "5e794504a8dac9d990618caab92d7c626241f0503628815a873ea9ddbd79e740"
+    },
+    {
+      "campaign": "c02",
+      "label": "missing-rendered-schema",
+      "outcome": "KILLED",
+      "selectedTests": 2,
+      "diagnostic": "Actual HTML prints pending schema identity",
+      "source": "openplan/src/lib/reports/html.ts",
+      "elapsedSeconds": 6.184,
+      "memoryPeakBytes": 378363904,
+      "restoredSha256": "5e794504a8dac9d990618caab92d7c626241f0503628815a873ea9ddbd79e740"
+    },
+    {
+      "campaign": "c02",
+      "label": "false-unset-rendering",
+      "outcome": "KILLED",
+      "selectedTests": 2,
+      "diagnostic": "Pending HTML never substitutes an unset or unresolved declaration",
+      "source": "openplan/src/lib/reports/html.ts",
+      "elapsedSeconds": 6.488,
+      "memoryPeakBytes": 384827392,
+      "restoredSha256": "5e794504a8dac9d990618caab92d7c626241f0503628815a873ea9ddbd79e740"
+    },
+    {
+      "campaign": "c02",
+      "label": "invented-null-context",
+      "outcome": "KILLED",
+      "selectedTests": 2,
+      "diagnostic": "Pending custody never invents a human declaration or registry assessment",
+      "source": "openplan/src/lib/reports/project-jurisdiction.ts",
+      "elapsedSeconds": 6.488,
+      "memoryPeakBytes": 389222400,
+      "restoredSha256": "5270629e46498e6fe08f20e3c42c58529980a07f77e2f0946283ee4e5655f01e"
+    },
+    {
+      "campaign": "c02",
+      "label": "forged-hash",
+      "outcome": "KILLED",
+      "selectedTests": 2,
+      "diagnostic": "Pending custody hashes its actual disclosed read state",
+      "source": "openplan/src/lib/reports/project-jurisdiction.ts",
+      "elapsedSeconds": 6.508,
+      "memoryPeakBytes": 375484416,
+      "restoredSha256": "5270629e46498e6fe08f20e3c42c58529980a07f77e2f0946283ee4e5655f01e"
+    },
+    {
+      "campaign": "c02",
+      "label": "generation-clock-in-hash",
+      "outcome": "KILLED",
+      "selectedTests": 1,
+      "diagnostic": "Pending custody excludes the generation clock",
+      "source": "openplan/src/lib/reports/project-jurisdiction.ts",
+      "elapsedSeconds": 6.361,
+      "memoryPeakBytes": 376492032,
+      "restoredSha256": "5270629e46498e6fe08f20e3c42c58529980a07f77e2f0946283ee4e5655f01e"
+    },
+    {
+      "campaign": "c02",
+      "label": "drop-readable-cost",
+      "outcome": "KILLED",
+      "selectedTests": 2,
+      "diagnostic": "Fallback retains readable estimated_cost_amount",
+      "source": "openplan/src/app/api/reports/[reportId]/generate/route.ts",
+      "elapsedSeconds": 6.197,
+      "memoryPeakBytes": 365350912,
+      "restoredSha256": "182bf5775780a5c79c29bf2983e803900c8822aeda6dec2685634c46e1600a96"
+    },
+    {
+      "campaign": "c02",
+      "label": "drop-readable-place",
+      "outcome": "KILLED",
+      "selectedTests": 2,
+      "diagnostic": "Fallback retains readable place_label",
+      "source": "openplan/src/app/api/reports/[reportId]/generate/route.ts",
+      "elapsedSeconds": 6.269,
+      "memoryPeakBytes": 370974720,
+      "restoredSha256": "182bf5775780a5c79c29bf2983e803900c8822aeda6dec2685634c46e1600a96"
+    },
+    {
+      "campaign": "c02",
+      "label": "wrong-project-predicate",
+      "outcome": "KILLED",
+      "selectedTests": 2,
+      "diagnostic": "Fallback retains project predicate",
+      "source": "openplan/src/app/api/reports/[reportId]/generate/route.ts",
+      "elapsedSeconds": 6.109,
+      "memoryPeakBytes": 361209856,
+      "restoredSha256": "182bf5775780a5c79c29bf2983e803900c8822aeda6dec2685634c46e1600a96"
+    },
+    {
+      "campaign": "c02",
+      "label": "place-gap-mislabeled-jurisdiction",
+      "outcome": "KILLED",
+      "selectedTests": 1,
+      "diagnostic": "Readable jurisdiction retains strict external contract",
+      "source": "openplan/src/app/api/reports/[reportId]/generate/route.ts",
+      "elapsedSeconds": 6.306,
+      "memoryPeakBytes": 351752192,
+      "restoredSha256": "182bf5775780a5c79c29bf2983e803900c8822aeda6dec2685634c46e1600a96"
+    },
+    {
+      "campaign": "c02",
+      "label": "missing-projection-guard",
+      "outcome": "KILLED",
+      "selectedTests": 1,
+      "diagnostic": "Ordinary readers still reject missing projection",
+      "source": "openplan/src/lib/projects/project-jurisdiction.ts",
+      "elapsedSeconds": 5.885,
+      "memoryPeakBytes": 360075264,
+      "restoredSha256": "471e271740a66dd314637b0378513f5eb035b896774f5bf2916a774aefd6c24d"
+    },
+    {
+      "campaign": "c02",
+      "label": "malformed-jurisdiction-accepted",
+      "outcome": "KILLED",
+      "selectedTests": 1,
+      "diagnostic": "Malformed saved jurisdiction fails closed",
+      "source": "openplan/src/lib/projects/project-jurisdiction.ts",
+      "elapsedSeconds": 6.303,
+      "memoryPeakBytes": 367628288,
+      "restoredSha256": "471e271740a66dd314637b0378513f5eb035b896774f5bf2916a774aefd6c24d"
+    },
+    {
+      "campaign": "c02",
+      "label": "unclassified-schema-retry",
+      "outcome": "KILLED",
+      "selectedTests": 1,
+      "diagnostic": "Unclassified failure never retries a narrower projection",
+      "source": "openplan/src/app/api/reports/[reportId]/generate/route.ts",
+      "elapsedSeconds": 6.161,
+      "memoryPeakBytes": 372137984,
+      "restoredSha256": "182bf5775780a5c79c29bf2983e803900c8822aeda6dec2685634c46e1600a96"
+    },
+    {
+      "campaign": "c02",
+      "label": "skip-estimate-recovery",
+      "outcome": "KILLED",
+      "selectedTests": 1,
+      "diagnostic": "Old core projection still generates",
+      "source": "openplan/src/app/api/reports/[reportId]/generate/route.ts",
+      "elapsedSeconds": 6.381,
+      "memoryPeakBytes": 368218112,
+      "restoredSha256": "182bf5775780a5c79c29bf2983e803900c8822aeda6dec2685634c46e1600a96"
+    },
+    {
+      "campaign": "c02",
+      "label": "skip-site-recovery",
+      "outcome": "KILLED",
+      "selectedTests": 1,
+      "diagnostic": "Old core projection still generates",
+      "source": "openplan/src/app/api/reports/[reportId]/generate/route.ts",
+      "elapsedSeconds": 6.312,
+      "memoryPeakBytes": 358047744,
+      "restoredSha256": "182bf5775780a5c79c29bf2983e803900c8822aeda6dec2685634c46e1600a96"
+    },
+    {
+      "campaign": "c04",
+      "label": "harmless-comment",
+      "outcome": "SURVIVED",
+      "selectedTests": 15,
+      "diagnostic": null,
+      "source": "openplan/src/app/api/reports/[reportId]/generate/route.ts",
+      "elapsedSeconds": 6.587,
+      "memoryPeakBytes": 391061504,
+      "restoredSha256": "182bf5775780a5c79c29bf2983e803900c8822aeda6dec2685634c46e1600a96"
+    },
+    {
+      "campaign": "c04",
+      "label": "unclassified-read-refusal",
+      "outcome": "KILLED",
+      "selectedTests": 6,
+      "diagnostic": "Unclassified failure refuses report",
+      "source": "openplan/src/app/api/reports/[reportId]/generate/route.ts",
+      "elapsedSeconds": 6.205,
+      "memoryPeakBytes": 367919104,
+      "restoredSha256": "182bf5775780a5c79c29bf2983e803900c8822aeda6dec2685634c46e1600a96"
+    },
+    {
+      "campaign": "c04",
+      "label": "failed-fallback-refusal",
+      "outcome": "KILLED",
+      "selectedTests": 1,
+      "diagnostic": "Failed fallback refuses report",
+      "source": "openplan/src/app/api/reports/[reportId]/generate/route.ts",
+      "elapsedSeconds": 6.713,
+      "memoryPeakBytes": 369192960,
+      "restoredSha256": "182bf5775780a5c79c29bf2983e803900c8822aeda6dec2685634c46e1600a96"
+    }
+  ],
+  "controlSummary": {
+    "acceptedExecutions": 23,
+    "uniqueBrokenBehaviorsKilled": 21,
+    "harmlessCaseExecutionsSurvived": 2,
+    "exactRestoration": true
+  },
+  "retainedRejectedAttempts": [
+    {
+      "attempt": "initial config",
+      "reason": "Runner loader does not provide __dirname; no tests discovered."
+    },
+    {
+      "attempt": "initial controls",
+      "reason": "Clock mutation fails stale first-upload comparison. Controller rejects wrong assertion. Helper corrected to latest actual upload."
+    },
+    {
+      "attempt": "c03 supplement",
+      "reason": "Broad mutation anchor changes campaign error return. Six project tests survive. Controller rejects wrong outcome; unique project-branch anchor used in c04."
+    }
+  ],
+  "blindCategories": [
+    "Live database projection, PostgREST message forms beyond enumerated fixtures, RLS, schema-cache recovery and transaction consistency",
+    "Browser layout, 390px, PDF typesetting, accessibility and actual downloads",
+    "Live Storage persistence, authentication and native downloaded-artifact custody",
+    "Whole application compiler roots, generated build types, build, full suite and hosted operation",
+    "Legal applicability, scientific accuracy and practitioner or public acceptance"
+  ]
+}

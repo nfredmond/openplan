@@ -200,9 +200,18 @@ describe("synthesis worker custody and recovery", () => {
     expect(f.from).not.toHaveBeenCalled(); expect(f.providerCalls).toHaveLength(0);
   });
   it("refuses nonprivate and malformed saved journals", async () => {
-    const f = await fixture(); await writeFile(join(f.args.directory, "pending.json"), "{}", { mode: 0o644 });
+    const f = await fixture(), path = join(f.args.directory, "pending.json");
+    await writeFile(path, "{}", { mode: 0o600 });
+    // chmod sets the refusal fixture's permissions independently of the runner's umask.
+    await chmod(path, 0o644);
+    expect((await stat(path)).mode & 0o777).toBe(0o644);
     await expect(runSynthesisGenerationWorkerAttempt(f.args)).rejects.toThrow("connector_file_not_private");
-    await chmod(join(f.args.directory, "pending.json"), 0o600);
-    await expect(runSynthesisGenerationWorkerAttempt(f.args)).rejects.toThrow(); expect(f.from).not.toHaveBeenCalled();
+    expect(f.from).not.toHaveBeenCalled();
+    await chmod(path, 0o600);
+    expect((await stat(path)).mode & 0o777).toBe(0o600);
+    await expect(runSynthesisGenerationWorkerAttempt(f.args)).rejects.toMatchObject({
+      name: "ZodError", issues: expect.arrayContaining([expect.objectContaining({ code: "invalid_union", path: ["phase"] })]),
+    });
+    expect(f.from).not.toHaveBeenCalled();
   });
 });

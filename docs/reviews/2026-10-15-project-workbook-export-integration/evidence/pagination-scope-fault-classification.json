@@ -1,0 +1,8 @@
+{
+  "trial": "pagination-scope-fault",
+  "testFile": "src/test/project-workbook-export-pagination.test.ts",
+  "test": "scopes and projects every ordered page for a read-only workspace member",
+  "exitCode": 1,
+  "marker": "every page must retain scope projection stable order and bounded ranges",
+  "classification": "KILLED"
+}

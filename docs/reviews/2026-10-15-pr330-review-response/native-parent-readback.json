@@ -1,0 +1,49 @@
+{
+  "publicPacketPins": 29,
+  "sourceAndExtractedPins": 962,
+  "sourceHead": "75931937aa85950da68577abef1246d7f3c8ff13",
+  "appTree": "c89e9ec4eeddfc973641e8683df7bc9d38113838",
+  "helpers": [
+    {
+      "id": "0be90d4b3abefb4d78716d3e984c7ef06c3d06a61400e843cb5c0bc296be638f",
+      "running": false,
+      "oomKilled": false,
+      "exitCode": 255
+    },
+    {
+      "id": "fac3614704bd8f53c481ca33e2a43ce5f86e96b25e9afa715d1bb51d71de10a9",
+      "running": false,
+      "oomKilled": false,
+      "exitCode": 255
+    },
+    {
+      "id": "c9d930c46a25ce6e4c01a1af5d679191b109d85f4aa0fbac7a295181572b6aa4",
+      "running": false,
+      "oomKilled": false,
+      "exitCode": 255
+    },
+    {
+      "id": "02707e824730f0e83a22b7e4d4909113316307b2cff62b0ea49d5b63e0eaa972",
+      "running": false,
+      "oomKilled": false,
+      "exitCode": 255
+    },
+    {
+      "id": "e7f90b625c4d14dc08b4fe53312fad12263c23fec77dcce3600406ba3f083450",
+      "running": false,
+      "oomKilled": false,
+      "exitCode": 255
+    },
+    {
+      "id": "0a4d14d6969a69549643014536504f8593772fb5dee8478a9ad78992adeeec54",
+      "running": false,
+      "oomKilled": false,
+      "exitCode": 255
+    }
+  ],
+  "targetFullCatalogAccepted": false,
+  "copiedVerifier": true,
+  "actualWorkbookHashesAndXmlMatchPublished": 6,
+  "limits": "No NextHTTP/cookie/browser/download/nativeExcel/fullRLS/capacity/recovery/atomic snapshot acceptance",
+  "catalogLimit": "Target pg_class digest differs, cause undetermined; full target catalog preservation NOT accepted"
+}

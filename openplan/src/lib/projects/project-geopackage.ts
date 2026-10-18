@@ -1,3 +1,5 @@
+import { buildProjectJurisdictionReadinessExportPayload } from "@/lib/jurisdiction-readiness/payload";
+import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
 import Database from "better-sqlite3";
 import { createHash } from "node:crypto";
 import { isCorridorLineGeoJson, type CorridorLineGeoJson } from "@/lib/cartographic/corridor-line-geojson";
@@ -17,6 +19,7 @@ type AreaGeometry =
   | { type: "MultiPolygon"; coordinates: PolygonCoordinates[] };
 
 export type ProjectGeoPackageProject = ProjectPlaceRow & {
+  jurisdiction_context?: unknown;
   id: string;
   workspace_id: string;
   name: string;
@@ -683,6 +686,25 @@ export function buildProjectGeoPackage(input: {
   try {
     db.transaction(() => {
       createCoreTables(db);
+      // A separate attribute record preserves context without relabelling study geometry.
+      const contextSupplied = "jurisdiction_context" in input.project;
+      const readiness = contextSupplied ? buildProjectJurisdictionReadinessExportPayload(input.project, jurisdictionReadinessRegistrySha256()) : null;
+      const jurisdiction = readiness?.context ?? null;
+      db.exec(`CREATE TABLE project_jurisdiction_context (
+        fid INTEGER PRIMARY KEY, project_id TEXT NOT NULL, project_revision TEXT NOT NULL,
+        scope TEXT NOT NULL, jurisdiction_context_json TEXT NOT NULL,
+        readiness_schema TEXT, registry_version TEXT, registry_sha256 TEXT,
+        readiness_payload_json TEXT, payload_sha256 TEXT
+      )`);
+      registerContents(db, { table: "project_jurisdiction_context", dataType: "attributes",
+        identifier: "Independent project jurisdiction declaration",
+        description: "Separate from study geometry. No adopting authority or legal applicability is inferred.", generatedAt });
+      db.prepare("INSERT INTO project_jurisdiction_context (project_id, project_revision, scope, jurisdiction_context_json, readiness_schema, registry_version, registry_sha256, readiness_payload_json, payload_sha256) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
+        .run(input.project.id, input.project.updated_at,
+          contextSupplied ? jurisdiction === null ? "legacy study-place context only" : "independent human declaration" : "jurisdiction not supplied by caller; geometry export only",
+          canonicalizeActionPayload(jurisdiction), readiness?.schema ?? null, readiness?.registryVersion ?? null, readiness?.registrySha256 ?? null,
+          readiness ? canonicalizeActionPayload(readiness) : null, readiness?.payloadSha256 ?? null);
+
       db.exec(`
         CREATE TABLE project_info (
           fid INTEGER PRIMARY KEY,

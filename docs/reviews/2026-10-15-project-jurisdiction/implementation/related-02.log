@@ -1,0 +1,38 @@
+Running as unit: openplan-jurisdiction-related-02.service; invocation ID: efbe5fbc95bc4a5a9c399ee5d8b2b5f9
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan[39m
+
+ [32m✓[39m src/test/report-generate-route.test.ts [2m([22m[2m71 tests[22m[2m)[22m[32m 212[2mms[22m[39m
+ [31m❯[39m src/test/project-jurisdiction-artifacts.test.ts [2m([22m[2m2 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 20[2mms[22m[39m
+   [32m✓[39m exports a separate jurisdiction manifest without changing project_area attributes or WKB[32m 16[2mms[22m[39m
+[31m   [31m×[31m renders each declaration and its payload hash with escaped labels and no authority inference[39m[32m 3[2mms[22m[39m
+ [32m✓[39m src/test/project-evidence-generated-pagination.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 37[2mms[22m[39m
+ [32m✓[39m src/test/project-jurisdiction-picker.test.tsx [2m([22m[2m1 test[22m[2m)[22m[33m 348[2mms[22m[39m
+   [33m[2m✓[22m[39m reuses the search front door without emitting study geometry in search-only mode [33m 346[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/test/project-jurisdiction-artifacts.test.ts[2m > [22mrenders each declaration and its payload hash with escaped labels and no authority inference
+[31m[1mError[22m: Refusing to build a stage-gate board without a bound template id: resolve the workspace's binding (resolveWorkspaceStageGateBinding) and pass its templateId.[39m
+[36m [2m❯[22m buildProjectStageGateSummary src/lib/stage-gates/summary.ts:[2m242:11[22m[39m
+    [90m240|[39m     // for "whichever template". Substituting the registry default her…
+    [90m241|[39m     [90m// one jurisdiction's gates get rendered under another's name.[39m
+    [90m242|[39m     [35mthrow[39m [35mnew[39m [33mError[39m(
+    [90m   |[39m           [31m^[39m
+    [90m243|[39m       "Refusing to build a stage-gate board without a bound template i…
+    [90m244|[39m         "binding (resolveWorkspaceStageGateBinding) and pass its templ…
+[90m [2m❯[22m src/test/project-jurisdiction-artifacts.test.ts:[2m31:54[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m3 passed[39m[22m[90m (4)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m78 passed[39m[22m[90m (79)[39m
+[2m   Start at [22m 22:17:49
+[2m   Duration [22m 4.25s[2m (transform 978ms, setup 136ms, import 1.60s, tests 616ms, environment 1.45s)[22m
+
+          Finished with result: exit-code
+Main processes terminated with: code=exited, status=1/FAILURE
+               Service runtime: 4.576s
+             CPU time consumed: 6.395s
+                   Memory peak: 319.5M (swap: 0B)

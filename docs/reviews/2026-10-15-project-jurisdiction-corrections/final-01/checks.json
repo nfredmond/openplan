@@ -1,0 +1,65 @@
+[
+  {
+    "name": "types",
+    "command": [
+      "node",
+      "--max-old-space-size=768",
+      "node_modules/typescript/bin/tsc",
+      "-p",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/docs/reviews/2026-10-15-project-jurisdiction-corrections/tsconfig.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "name": "lint",
+    "command": [
+      "node",
+      "--max-old-space-size=640",
+      "node_modules/eslint/bin/eslint.js",
+      "--max-warnings=0",
+      "src/app/api/projects/[projectId]/jurisdiction-readiness/route.ts",
+      "src/app/api/reports/[reportId]/generate/route.ts",
+      "src/components/projects/project-jurisdiction-editor.tsx",
+      "src/lib/jurisdiction-readiness/evidence-bundle.ts",
+      "src/lib/jurisdiction-readiness/payload.ts",
+      "src/lib/project-evidence-bundles/generated-records.ts",
+      "src/lib/projects/project-geopackage.ts",
+      "src/lib/reports/html.ts",
+      "src/test/jurisdiction-readiness-routes.test.ts",
+      "src/test/project-jurisdiction-artifacts.test.ts",
+      "src/test/project-jurisdiction-editor.test.tsx",
+      "src/test/project-jurisdiction.test.ts",
+      "src/test/report-generate-route.test.ts",
+      "src/test/project-jurisdiction-export-corrections.test.ts",
+      "src/test/project-jurisdiction-export-fixture.ts"
+    ],
+    "exitCode": 0
+  },
+  {
+    "name": "tests",
+    "command": [
+      "node",
+      "--max-old-space-size=640",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "--configLoader",
+      "runner",
+      "--config",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/docs/reviews/2026-10-15-project-jurisdiction-corrections/vitest.config.mts",
+      "src/test/project-jurisdiction-editor.test.tsx",
+      "src/test/project-jurisdiction-export-corrections.test.ts",
+      "src/test/project-jurisdiction-artifacts.test.ts",
+      "src/test/project-jurisdiction.test.ts",
+      "src/test/jurisdiction-readiness-routes.test.ts",
+      "src/test/jurisdiction-readiness-evidence-bundle.test.ts",
+      "src/test/report-generate-route.test.ts",
+      "src/test/project-evidence-generated-pagination.test.ts",
+      "src/test/project-geopackage.test.ts",
+      "src/test/project-geopackage-route.test.ts",
+      "src/test/project-evidence-bundle-route.test.ts",
+      "--reporter=json",
+      "--outputFile=/home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/docs/reviews/2026-10-15-project-jurisdiction-corrections/final-01/tests.json"
+    ],
+    "exitCode": 0
+  }
+]

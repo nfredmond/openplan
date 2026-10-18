@@ -1,5 +1,6 @@
 import * as XLSX from "xlsx";
-import { describe, expect, it } from "vitest";
+import JSZip from "jszip";
+import { describe, expect, it, vi } from "vitest";
 import { reviewPortfolioWorkbook } from "@/lib/projects/portfolio-import";
 import {
   buildPortfolioRoundTripWorkbook,
@@ -58,7 +59,7 @@ const projects = [
 
 describe("portfolio XLSX round-trip", () => {
   it("round-trips an estimated cost whose price year is unknown without inventing a default", async () => {
-    const bytes = buildPortfolioRoundTripWorkbook({
+    const bytes = await buildPortfolioRoundTripWorkbook({
       workspaceId: "44444444-4444-4444-8444-444444444444", workspaceName: "OpenPlan QA",
       projects: [{ ...projects[0], estimated_cost_basis_year: null }], generatedAt,
     });
@@ -76,7 +77,7 @@ describe("portfolio XLSX round-trip", () => {
   });
 
   it("re-enters the reviewed importer with exact row-level project fields and no formulas", async () => {
-    const bytes = buildPortfolioRoundTripWorkbook({
+    const bytes = await buildPortfolioRoundTripWorkbook({
       workspaceId: "44444444-4444-4444-8444-444444444444",
       workspaceName: "OpenPlan QA",
       projects,
@@ -136,13 +137,64 @@ describe("portfolio XLSX round-trip", () => {
     expect(review.rows[0]).not.toHaveProperty("geometry");
   });
 
-  it("refuses to build a workbook that the importer would have to truncate", () => {
-    expect(() => buildPortfolioRoundTripWorkbook({
+  it("refuses to build a workbook that the importer would have to truncate", async () => {
+    await expect(buildPortfolioRoundTripWorkbook({
       workspaceId: "44444444-4444-4444-8444-444444444444",
       workspaceName: "OpenPlan QA",
       projects: Array.from({ length: 2_001 }, () => projects[1]),
       generatedAt,
-    })).toThrow("portfolio_round_trip_row_limit");
+    })).rejects.toThrow("portfolio_round_trip_row_limit");
+  });
+
+  it("emits wrapped cells, bounded readme printing and readable repeated project headers", async () => {
+    const bytes = await buildPortfolioRoundTripWorkbook({
+      workspaceId: "44444444-4444-4444-8444-444444444444", workspaceName: "A & B <review> \"quoted\"",
+      projects, generatedAt,
+    });
+    const zip = await JSZip.loadAsync(bytes);
+    const xml = async (path: string) => new DOMParser().parseFromString(await zip.file(path)!.async("string"), "application/xml");
+    const styles = await xml("xl/styles.xml");
+    expect(styles.querySelector("parsererror"), "valid style XML").toBeNull();
+    const cellStyles = [...styles.querySelectorAll("cellXfs > xf")];
+    expect(cellStyles[1].querySelector("alignment")?.getAttribute("wrapText"), "header wrap serialized").toBe("1");
+    expect(cellStyles[2].querySelector("alignment")?.getAttribute("wrapText"), "body wrap serialized").toBe("1");
+    const project = await xml("xl/worksheets/sheet1.xml"), readme = await xml("xl/worksheets/sheet2.xml");
+    expect(project.querySelector('c[r="A1"]')?.getAttribute("s"), "styled project header").toBe("1");
+    expect(project.querySelector('c[r="B2"]')?.getAttribute("s"), "styled project body").toBe("2");
+    expect(project.querySelector("pane")?.getAttribute("state"), "frozen project header").toBe("frozen");
+    expect(project.querySelector("pane")?.getAttribute("topLeftCell")).toBe("A2");
+    for (const sheet of [project, readme]) {
+      expect(sheet.querySelector("parsererror"), "valid worksheet XML").toBeNull();
+      expect(sheet.querySelector("pageSetup")?.getAttribute("scale"), "readable native print scale").toBe("100");
+      expect(sheet.querySelector("pageSetup")?.hasAttribute("fitToWidth"), "no microscopic one-page fit").toBe(false);
+      expect(sheet.querySelector("sheetProtection"), "no work-program protection").toBeNull();
+    }
+    expect(project.querySelector("pageSetup")?.getAttribute("orientation")).toBe("landscape");
+    expect(readme.querySelector("pageSetup")?.getAttribute("orientation")).toBe("portrait");
+    expect(Number(project.querySelector('col[min="2"]')?.getAttribute("width")), "ID width").toBeGreaterThanOrEqual(40);
+    expect(Number(project.querySelector('row[r="1"]')?.getAttribute("ht")), "wrapped project headers have height").toBeGreaterThanOrEqual(38);
+    expect(Number(readme.querySelector('col[min="2"]')?.getAttribute("width")), "bounded readme value width").toBeLessThan(50);
+    expect(Number(readme.querySelector('row[r="11"]')?.getAttribute("ht")), "long readme guidance has height").toBeGreaterThanOrEqual(38);
+    expect(readme.querySelector('c[r="A14"]')?.getAttribute("s"), "mapping header style").toBe("1");
+    const book = await xml("xl/workbook.xml");
+    const names = [...book.querySelectorAll("definedName")].map(node => [node.getAttribute("name"), node.getAttribute("localSheetId"), node.textContent]);
+    expect(names, "repeat project headers vertically").toContainEqual(["_xlnm.Print_Titles", "0", "'Projects'!$1:$1"]);
+    expect(names, "bounded complete readme print area").toContainEqual(["_xlnm.Print_Area", "1", "'Read me'!$A$1:$B$24"]);
+    const workbook = XLSX.read(bytes, { type: "array" });
+    expect(workbook.Sheets["Read me"].B3.v, "XML-sensitive workspace text retained").toBe('A & B <review> "quoted"');
+  });
+
+  it("keeps identical serialization inputs byte-stable across formatting times", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      const input = { workspaceId: "44444444-4444-4444-8444-444444444444", workspaceName: "OpenPlan QA", projects, generatedAt };
+      vi.setSystemTime(new Date("2026-10-15T00:00:00Z"));
+      const first = await buildPortfolioRoundTripWorkbook(input);
+      vi.setSystemTime(new Date("2026-10-15T01:00:00Z"));
+      expect(Buffer.from(await buildPortfolioRoundTripWorkbook(input)).equals(Buffer.from(first)), "formatting retains deterministic ZIP dates").toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("uses a bounded filesystem-safe filename", () => {

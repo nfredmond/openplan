@@ -1,0 +1,8 @@
+{
+  "trial": "legacy-viewer-fault",
+  "testFile": "src/test/project-portfolio-export-route.test.ts",
+  "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+  "exitCode": 1,
+  "marker": "viewer export must remain successful",
+  "classification": "KILLED"
+}

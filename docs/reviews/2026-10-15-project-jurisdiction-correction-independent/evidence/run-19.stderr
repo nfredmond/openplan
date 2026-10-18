@@ -1,0 +1,21 @@
+{
+  "mode": "api",
+  "result": "AssertionError",
+  "diagnostic": "Expected values to be strictly deep-equal:\n+ actual - expected\n... Skipped lines\n\n  {\n-   attribution: 'Recorded time and source attribution retained; internal actor identifier omitted.',\n    context: {\n      entries: [\n        {\n          countryCode: 'US',\n          identity: 'staff_declared',\n...\n      recordedAt: '2026-10-15T00:00:00.000Z',\n+     recordedBy: '33333333-3333-4333-8333-333333333333',\n-     schema: 'openplan.project-jurisdiction-context-export.v1',\n      state: 'declared',\n+     version: 1\n    },\n    contextSource: 'project_declaration',\n    disclosure: 'Human-declared project context. Resolved identity does not establish adopting authority or legal applicability. Registry guidance assesses administrative state-level scope only.',\n    entries: [\n      {\n...\n    ],\n+   payloadSha256: 'cef159e7d708fcb152949d22b7ae871f71ba7f4c9848cd56002670a21807f13f',\n-   payloadSha256: 'ef7de4958a21746ddc2657bce0b1329bce458a01e1da50ed3f07519dd8c9e0f9',\n    projectId: 'review-project',\n    projectRevision: '2026-10-15T01:00:00.000Z',\n    registrySha256: '531dca87cc6621786d4cff27b0fb52dd5b99105c3a78c6307a9a35322201c158',\n+   schema: 'openplan.project-jurisdiction-readiness-response.v2'\n-   registryVersion: '2026-10-11.1',\n-   schema: 'openplan.project-jurisdiction-readiness-export.v3',\n-   scope: 'external_handoff'\n  }\n",
+  "checked": [
+    "minimized external actor with internal custody",
+    "strict storage parse before external conversion",
+    "external canonical material hashed after minimization",
+    "null unresolved invalid missing remain distinct",
+    "sovereign overlap and global support not inherited",
+    "canonical hash and material stable across clocks",
+    "complete generated adapter minimizes identifiers",
+    "bundle and separate JSON parity",
+    "standalone GeoPackage canonical parity and source geometry",
+    "bundle GeoPackage canonical parity and source geometry",
+    "report external hash attribution and escaped source labels",
+    "original input object unchanged",
+    "download requires authenticated caller",
+    "API ordinary custody and external download contracts"
+  ]
+}

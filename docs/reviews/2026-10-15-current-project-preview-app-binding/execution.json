@@ -1,0 +1,187 @@
+[
+  {
+    "unit": "openplan-app-binding-direction-01.service",
+    "enforced": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "managerMessages": [
+      "Started openplan-app-binding-direction-01.service - [systemd-run] /usr/bin/bwrap --die-with-parent --ro-bind / / --bind /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015/tmp /tmp --bind /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015/cache /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015/cache --clearenv --setenv PATH /usr/bin:/bin --setenv HOME /tmp --setenv npm_config_cache /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015/cache --setenv NODE_PATH /home/nathaniel/.t3/worktrees/openplan/t3-0f743997/openplan/node_modules --chdir /home/nathaniel/.t3/worktrees/openplan/t3-59122ef0/openplan /usr/bin/npm run product:direction:check.",
+      "openplan-app-binding-direction-01.service: Main process exited, code=exited, status=1/FAILURE",
+      "openplan-app-binding-direction-01.service: Failed with result 'exit-code'."
+    ]
+  },
+  {
+    "unit": "openplan-app-binding-direction-02.service",
+    "enforced": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "managerMessages": [
+      "Started openplan-app-binding-direction-02.service - [systemd-run] /usr/bin/bwrap --die-with-parent --ro-bind / / --bind /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015/tmp /tmp --bind /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015/cache /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015/cache --clearenv --setenv PATH /usr/bin:/bin --setenv HOME /home/nathaniel --setenv npm_config_cache /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015/cache --setenv NODE_PATH /home/nathaniel/.t3/worktrees/openplan/t3-0f743997/openplan/node_modules --chdir /home/nathaniel/.t3/worktrees/openplan/t3-59122ef0/openplan /usr/bin/npm run product:direction:check.",
+      "openplan-app-binding-direction-02.service: Main process exited, code=exited, status=1/FAILURE",
+      "openplan-app-binding-direction-02.service: Failed with result 'exit-code'."
+    ]
+  },
+  {
+    "unit": "openplan-app-binding-direction-03.service",
+    "enforced": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "managerMessages": [
+      "Started openplan-app-binding-direction-03.service - [systemd-run] /usr/bin/bwrap --die-with-parent --ro-bind / / --dev /dev --proc /proc --bind /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015/tmp /tmp --bind /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015/cache /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015/cache --clearenv --setenv PATH /usr/bin:/bin --setenv HOME /home/nathaniel --setenv npm_config_cache /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015/cache --setenv NODE_PATH /home/nathaniel/.t3/worktrees/openplan/t3-0f743997/openplan/node_modules --chdir /home/nathaniel/.t3/worktrees/openplan/t3-59122ef0/openplan /usr/bin/npm run product:direction:check.",
+      "openplan-app-binding-direction-03.service: Consumed 672ms CPU time over 1.318s wall clock time, 75.8M memory peak."
+    ]
+  },
+  {
+    "unit": "openplan-app-binding-prepare-01.service",
+    "enforced": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "managerMessages": [
+      "Started openplan-app-binding-prepare-01.service - [systemd-run] /usr/bin/python3 -B docs/reviews/2026-10-15-current-project-preview-app-binding/prepare.py.",
+      "openplan-app-binding-prepare-01.service: Main process exited, code=exited, status=2/INVALIDARGUMENT",
+      "openplan-app-binding-prepare-01.service: Failed with result 'exit-code'."
+    ]
+  },
+  {
+    "unit": "openplan-app-binding-prepare-02.service",
+    "enforced": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "managerMessages": [
+      "Started openplan-app-binding-prepare-02.service - [systemd-run] /usr/bin/python3 -B /home/nathaniel/.t3/worktrees/openplan/t3-59122ef0/docs/reviews/2026-10-15-current-project-preview-app-binding/prepare.py.",
+      "openplan-app-binding-prepare-02.service: Consumed 3.143s CPU time over 6.335s wall clock time, 512M memory peak."
+    ]
+  },
+  {
+    "unit": "openplan-app-binding-final-bind-01.service",
+    "enforced": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "managerMessages": [
+      "Started openplan-app-binding-final-bind-01.service - [systemd-run] /usr/bin/python3 -B /home/nathaniel/.t3/worktrees/openplan/t3-59122ef0/docs/reviews/2026-10-15-current-project-preview-app-binding/finalize.py."
+    ]
+  },
+  {
+    "unit": "openplan-app-binding-controls-01.service",
+    "enforced": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "managerMessages": [
+      "Started openplan-app-binding-controls-01.service - [systemd-run] /usr/bin/python3 -B /home/nathaniel/.t3/worktrees/openplan/t3-59122ef0/docs/reviews/2026-10-15-current-project-preview-app-binding/verify_controls.py.",
+      "openplan-app-binding-controls-01.service: Main process exited, code=exited, status=1/FAILURE",
+      "openplan-app-binding-controls-01.service: Failed with result 'exit-code'.",
+      "openplan-app-binding-controls-01.service: Consumed 12.404s CPU time over 24.816s wall clock time, 94.8M memory peak."
+    ]
+  },
+  {
+    "unit": "openplan-app-binding-controls-02.service",
+    "enforced": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "managerMessages": [
+      "Started openplan-app-binding-controls-02.service - [systemd-run] /usr/bin/python3 -B /home/nathaniel/.t3/worktrees/openplan/t3-59122ef0/docs/reviews/2026-10-15-current-project-preview-app-binding/verify_controls.py.",
+      "openplan-app-binding-controls-02.service: Main process exited, code=exited, status=1/FAILURE",
+      "openplan-app-binding-controls-02.service: Failed with result 'exit-code'.",
+      "openplan-app-binding-controls-02.service: Consumed 14.303s CPU time over 28.589s wall clock time, 36.1M memory peak."
+    ]
+  },
+  {
+    "unit": "openplan-app-binding-controls-03.service",
+    "enforced": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "managerMessages": [
+      "Started openplan-app-binding-controls-03.service - [systemd-run] /usr/bin/python3 -B /home/nathaniel/.t3/worktrees/openplan/t3-59122ef0/docs/reviews/2026-10-15-current-project-preview-app-binding/verify_controls.py.",
+      "openplan-app-binding-controls-03.service: Consumed 40.334s CPU time over 1min 20.620s wall clock time, 40.8M memory peak."
+    ]
+  },
+  {
+    "unit": "openplan-app-binding-controls-04.service",
+    "enforced": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "managerMessages": [
+      "Started openplan-app-binding-controls-04.service - [systemd-run] /usr/bin/python3 -B /home/nathaniel/.t3/worktrees/openplan/t3-59122ef0/docs/reviews/2026-10-15-current-project-preview-app-binding/verify_controls.py.",
+      "openplan-app-binding-controls-04.service: Consumed 46.183s CPU time over 1min 32.356s wall clock time, 41M memory peak."
+    ]
+  },
+  {
+    "unit": "openplan-app-binding-controls-05.service",
+    "enforced": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "managerMessages": [
+      "Started openplan-app-binding-controls-05.service - [systemd-run] /usr/bin/python3 -B /home/nathaniel/.t3/worktrees/openplan/t3-59122ef0/docs/reviews/2026-10-15-current-project-preview-app-binding/verify_controls.py.",
+      "openplan-app-binding-controls-05.service: Consumed 46.079s CPU time over 1min 32.131s wall clock time, 40.8M memory peak."
+    ]
+  },
+  {
+    "unit": "openplan-app-binding-boundary-01.service",
+    "enforced": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "managerMessages": [
+      "Started openplan-app-binding-boundary-01.service - [systemd-run] /usr/bin/python3 -B /home/nathaniel/.t3/worktrees/openplan/t3-59122ef0/docs/reviews/2026-10-15-current-project-preview-app-binding/verify_boundary.py.",
+      "openplan-app-binding-boundary-01.service: Main process exited, code=exited, status=1/FAILURE",
+      "openplan-app-binding-boundary-01.service: Failed with result 'exit-code'."
+    ]
+  },
+  {
+    "unit": "openplan-app-binding-boundary-02.service",
+    "enforced": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "managerMessages": [
+      "Started openplan-app-binding-boundary-02.service - [systemd-run] /usr/bin/python3 -B /home/nathaniel/.t3/worktrees/openplan/t3-59122ef0/docs/reviews/2026-10-15-current-project-preview-app-binding/verify_boundary.py."
+    ]
+  },
+  {
+    "unit": "openplan-app-binding-attestation-controls-01.service",
+    "enforced": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "managerMessages": [
+      "Started openplan-app-binding-attestation-controls-01.service - [systemd-run] /usr/bin/python3 -B /home/nathaniel/.t3/worktrees/openplan/t3-59122ef0/docs/reviews/2026-10-15-current-project-preview-app-binding/verify_attestation.py.",
+      "openplan-app-binding-attestation-controls-01.service: Consumed 48.467s CPU time over 1min 36.901s wall clock time, 38.8M memory peak."
+    ]
+  },
+  {
+    "unit": "openplan-app-binding-small-guards-01.service",
+    "enforced": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "managerMessages": [
+      "Started openplan-app-binding-small-guards-01.service - [systemd-run] /usr/bin/python3 -B /home/nathaniel/.t3/worktrees/openplan/t3-59122ef0/docs/reviews/2026-10-15-current-project-preview-app-binding/verify_small_guards.py."
+    ]
+  }
+]

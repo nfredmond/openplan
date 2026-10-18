@@ -1,0 +1,100 @@
+{
+  "sourceHeadBeforeLocalCheckpoint": "92eaacf51bd111d3de37cf72943301aba0f7acde",
+  "resourcePrefix": [
+    "systemd-run",
+    "--user",
+    "--scope",
+    "--quiet",
+    "-p",
+    "MemoryMax=1G",
+    "-p",
+    "MemorySwapMax=0",
+    "-p",
+    "CPUQuota=100%"
+  ],
+  "vitest": {
+    "exit": 0,
+    "passed": 157,
+    "failed": 0,
+    "skipped": 0,
+    "files": {
+      "openplan/src/test/geometry-bbox.test.ts": {
+        "passed": 16,
+        "sha256": "15461d67a42d6b518254704d0ca00ce5276c46738f42e617f51733dd5d7f63e0"
+      },
+      "openplan/src/test/project-detail-page.test.tsx": {
+        "passed": 67,
+        "sha256": "a6f8534f37c89772f0b291d7e2384f98b394d8c3feb0f79c482d304477236524"
+      },
+      "openplan/src/test/project-geography-upload.test.tsx": {
+        "passed": 8,
+        "sha256": "b4d5fc70a875dd2945131a06a01810284bf45d53282d0ca54af9d743e5ba6791"
+      },
+      "openplan/src/test/project-geopackage-reachability.test.tsx": {
+        "passed": 2,
+        "sha256": "bc82b1f62bbbdf0dad4ec5ec45c3006aab3b7221530c43c946bcd75f29cd83f0"
+      },
+      "openplan/src/test/project-map-presence-routes.test.ts": {
+        "passed": 20,
+        "sha256": "15f6f1697c3f357c99d9cb4159939a681f0c41faeefa3cfc63df7f4ee57d4d6e"
+      },
+      "openplan/src/test/project-saved-map.test.tsx": {
+        "passed": 23,
+        "sha256": "5960b92c7765c7481d52a5bc037b1a05101b2df2c97f470770f1d74b89b185f3"
+      },
+      "openplan/src/test/saved-geometry-frame.test.ts": {
+        "passed": 10,
+        "sha256": "444338c042c7afcfa5665dc9f4cf7d9e9ae1d6552fe3ba05f523e9ec1b7a540c"
+      },
+      "openplan/src/test/wgs84-bounds.test.ts": {
+        "passed": 11,
+        "sha256": "f8b3cc82a9e7cf28a4361d1f52c51b21bb4e91e30a3457b3902a41c0e7c0f871"
+      }
+    },
+    "arguments": [
+      "run",
+      "src/test/geometry-bbox.test.ts",
+      "src/test/project-detail-page.test.tsx",
+      "src/test/project-geography-upload.test.tsx",
+      "src/test/project-geopackage-reachability.test.tsx",
+      "src/test/project-map-presence-routes.test.ts",
+      "src/test/project-saved-map.test.tsx",
+      "src/test/saved-geometry-frame.test.ts",
+      "src/test/wgs84-bounds.test.ts",
+      "--maxWorkers=1",
+      "--no-file-parallelism",
+      "--cache=false",
+      "--reporter=json"
+    ]
+  },
+  "eslint": {
+    "exit": 0,
+    "maxWarnings": 0,
+    "files": [
+      "src/components/projects/project-saved-map.tsx",
+      "src/lib/cartographic/saved-geometry-frame.ts",
+      "src/test/project-saved-map.test.tsx",
+      "src/test/saved-geometry-frame.test.ts"
+    ]
+  },
+  "typescript": {
+    "exit": 0,
+    "arguments": [
+      "--noEmit",
+      "--project",
+      "docs/reviews/2026-10-15-project-saved-map-correction/scoped-tsconfig.json"
+    ]
+  },
+  "direction": {
+    "exit": 0,
+    "package": "openplan",
+    "command": "npm run product:direction:check",
+    "existingReminders": [
+      "jurisdiction and capability review dates",
+      "reviewed package version versus current version",
+      "substantive changes after direction review"
+    ]
+  },
+  "node": "v24.22.0",
+  "python": "Python 3.14.4"
+}

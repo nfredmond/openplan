@@ -1,0 +1,8 @@
+{
+  "trial": "legacy-workspace-filter-restored",
+  "testFile": "src/test/project-portfolio-export-route.test.ts",
+  "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+  "exitCode": 0,
+  "marker": null,
+  "classification": "SURVIVED"
+}

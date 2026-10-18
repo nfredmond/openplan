@@ -1,0 +1,17 @@
+{
+  "preparedOnly": true,
+  "controls": [
+    {
+      "case": "final-parent-review-admission",
+      "result": "removed guard accepts intended bad input; refusal assertion detects fault"
+    },
+    {
+      "case": "final-packet-source",
+      "result": "removed guard accepts intended bad input; refusal assertion detects fault"
+    }
+  ],
+  "exactRestoration": true,
+  "blindCategories": [
+    "private in-memory admission specimens only; no real admission or operation"
+  ]
+}

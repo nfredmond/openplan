@@ -1,0 +1,853 @@
+{
+  "baseCommit": "80e3035098159deb3127bbb277226ae6f5872870",
+  "privateEvidenceRoot": "/home/nathaniel/.local/state/openplan/report-jurisdiction-test-type-repair-20261015",
+  "sourceBindings": {
+    "openplan/src/test/report-generate-route.test.ts": {
+      "baseSha256": "48cb036996eb87e75e608f5674355161e410392380f5c9a64422da24f3dad990",
+      "repairedSha256": "82d22da865fdbc0e83feff2812d9869dbe289a73e9d847f53c31965e6b34444b"
+    },
+    "openplan/src/app/api/reports/[reportId]/generate/route.ts": {
+      "baseSha256": "c91d67548e4aa807be70af49c7fa2872d0b1129a6a41a8d51b9832474fcc61ca",
+      "repairedSha256": "c91d67548e4aa807be70af49c7fa2872d0b1129a6a41a8d51b9832474fcc61ca"
+    },
+    "openplan/src/test/project-jurisdiction-export-fixture.ts": {
+      "baseSha256": "bcec27f6e587d48b0da731836aa8bda0e157d9afec0bb67ac939e6e92bd631bc",
+      "repairedSha256": "bcec27f6e587d48b0da731836aa8bda0e157d9afec0bb67ac939e6e92bd631bc"
+    },
+    "openplan/tsconfig.json": {
+      "baseSha256": "cb3404493257250c77d7145c9825ed31f79246b640eb30a59b8069d39091bf29",
+      "repairedSha256": "cb3404493257250c77d7145c9825ed31f79246b640eb30a59b8069d39091bf29"
+    },
+    "openplan/vitest.config.ts": {
+      "baseSha256": "2af1a9ecbe50bde256b20197cfbff00f34cfc57534a86234c83ee55425cb8da5",
+      "repairedSha256": "2af1a9ecbe50bde256b20197cfbff00f34cfc57534a86234c83ee55425cb8da5"
+    },
+    "openplan/package-lock.json": {
+      "baseSha256": "e93237b82fea6899fe67c18e2e4e0ed2d6f66a295cea420cab7c05ec61535420",
+      "repairedSha256": "e93237b82fea6899fe67c18e2e4e0ed2d6f66a295cea420cab7c05ec61535420"
+    }
+  },
+  "scopedTypeScriptConfig": {
+    "extends": "./source/openplan/tsconfig.json",
+    "compilerOptions": {
+      "incremental": false,
+      "typeRoots": [
+        "./source/openplan/node_modules/@types"
+      ]
+    },
+    "include": [
+      "./source/openplan/src/test/report-generate-route.test.ts",
+      "./source/openplan/src/app/api/reports/[reportId]/generate/route.ts",
+      "./source/openplan/next-env.d.ts"
+    ],
+    "exclude": [
+      "./source/openplan/node_modules"
+    ]
+  },
+  "compilerAndBehaviorControls": [
+    {
+      "label": "types-harmless",
+      "classification": "SURVIVED",
+      "exitCode": 0
+    },
+    {
+      "label": "runtime-harmless",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "expectedDiagnostic": null,
+      "executed": 1,
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "label": "types-original-control",
+      "classification": "KILLED",
+      "exitCode": 2,
+      "diagnostics": [
+        "src/test/report-generate-route.test.ts(4314,12): error TS18048: 'inserted.metadata_json' is possibly 'undefined'.",
+        "src/test/report-generate-route.test.ts(4314,12): error TS18046: 'inserted.metadata_json.sourceContext' is of type 'unknown'.",
+        "src/test/report-generate-route.test.ts(4315,27): error TS18048: 'inserted.metadata_json' is possibly 'undefined'.",
+        "src/test/report-generate-route.test.ts(4315,27): error TS18046: 'inserted.metadata_json.sourceContext' is of type 'unknown'.",
+        "src/test/report-generate-route.test.ts(4328,98): error TS18048: 'inserted.metadata_json' is possibly 'undefined'.",
+        "src/test/report-generate-route.test.ts(4328,98): error TS18046: 'inserted.metadata_json.sourceContext' is of type 'unknown'."
+      ]
+    },
+    {
+      "label": "metadata-absent",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "expectedDiagnostic": "Generated report includes metadata",
+      "executed": 1,
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "label": "source-context-missing",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "expectedDiagnostic": "Generated report metadata includes jurisdiction readiness source context",
+      "executed": 1,
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "label": "source-context-null",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "expectedDiagnostic": "Generated report metadata includes jurisdiction readiness source context",
+      "executed": 1,
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "label": "source-context-primitive",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "expectedDiagnostic": "Generated report metadata includes jurisdiction readiness source context",
+      "executed": 1,
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "label": "source-context-no-readiness",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "expectedDiagnostic": "Generated report metadata includes jurisdiction readiness source context",
+      "executed": 1,
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "label": "readiness-null",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "expectedDiagnostic": "Report metadata shares external canonical material",
+      "executed": 1,
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "label": "readiness-wrong-hash",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "expectedDiagnostic": "Report metadata shares external canonical material",
+      "executed": 1,
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "label": "classifier-rejections",
+      "rejected": [
+        "wrong-message",
+        "runner-exit",
+        "empty-selection"
+      ]
+    }
+  ],
+  "privateMutationRestoration": {
+    "src/test/report-generate-route.test.ts": {
+      "expectedSha256": "82d22da865fdbc0e83feff2812d9869dbe289a73e9d847f53c31965e6b34444b",
+      "actualSha256": "82d22da865fdbc0e83feff2812d9869dbe289a73e9d847f53c31965e6b34444b",
+      "exact": true
+    },
+    "src/app/api/reports/[reportId]/generate/route.ts": {
+      "expectedSha256": "c91d67548e4aa807be70af49c7fa2872d0b1129a6a41a8d51b9832474fcc61ca",
+      "actualSha256": "c91d67548e4aa807be70af49c7fa2872d0b1129a6a41a8d51b9832474fcc61ca",
+      "exact": true
+    }
+  },
+  "finalChecks": [
+    {
+      "label": "report-file-final",
+      "exitCode": 0,
+      "peakMemoryBytes": "349925376",
+      "elapsedSeconds": 6.921,
+      "counts": {
+        "numTotalTests": 72,
+        "numPassedTests": 72,
+        "numFailedTests": 0,
+        "numPendingTests": 0,
+        "numTodoTests": 0
+      }
+    },
+    {
+      "label": "eslint-final",
+      "exitCode": 0,
+      "peakMemoryBytes": "363278336",
+      "elapsedSeconds": 6.15
+    },
+    {
+      "label": "environment-final",
+      "exitCode": 0,
+      "peakMemoryBytes": "19927040",
+      "elapsedSeconds": 0.026,
+      "versions": {
+        "node": "v24.22.0",
+        "typescript": "5.9.3",
+        "vitest": "4.1.11",
+        "sqlite": "12.8.0"
+      }
+    }
+  ],
+  "finalSourceComparisons": {
+    "openplan/src/test/report-generate-route.test.ts": {
+      "worktreeMatches": true,
+      "privateMatches": true
+    },
+    "openplan/src/app/api/reports/[reportId]/generate/route.ts": {
+      "worktreeMatches": true,
+      "privateMatches": true
+    },
+    "openplan/src/test/project-jurisdiction-export-fixture.ts": {
+      "worktreeMatches": true,
+      "privateMatches": true
+    },
+    "openplan/tsconfig.json": {
+      "worktreeMatches": true,
+      "privateMatches": true
+    },
+    "openplan/vitest.config.ts": {
+      "worktreeMatches": true,
+      "privateMatches": true
+    },
+    "openplan/package-lock.json": {
+      "worktreeMatches": true,
+      "privateMatches": true
+    }
+  },
+  "resourceReceipts": {
+    "direction-corrected": {
+      "command": [
+        "npm",
+        "run",
+        "product:direction:check"
+      ],
+      "cwd": "/home/nathaniel/.t3/worktrees/openplan/t3-b3d69208/openplan",
+      "exitCode": 0,
+      "elapsedSeconds": 1.232,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "87216128",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "types-repaired": {
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "-p",
+        "../../tsconfig.json",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/home/nathaniel/.local/state/openplan/report-jurisdiction-test-type-repair-20261015/source/openplan",
+      "exitCode": 0,
+      "elapsedSeconds": 18.749,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "690671616",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "v3-types-harmless": {
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "-p",
+        "../../tsconfig.json",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/home/nathaniel/.local/state/openplan/report-jurisdiction-test-type-repair-20261015/source/openplan",
+      "exitCode": 0,
+      "elapsedSeconds": 19.056,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "694558720",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "v3-runtime-harmless": {
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "src/test/report-generate-route.test.ts",
+        "--config",
+        "../../vitest.config.mts",
+        "--configLoader",
+        "runner",
+        "--maxWorkers",
+        "1",
+        "--no-file-parallelism",
+        "-t",
+        "freezes non-null export-safe report readiness with canonical hash parity",
+        "--reporter",
+        "json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/report-jurisdiction-test-type-repair-20261015/controls/v3-runtime-harmless.vitest.json"
+      ],
+      "cwd": "/home/nathaniel/.local/state/openplan/report-jurisdiction-test-type-repair-20261015/source/openplan",
+      "exitCode": 0,
+      "elapsedSeconds": 6.712,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "308936704",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "v3-types-original-control": {
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "-p",
+        "../../tsconfig.json",
+        "--pretty",
+        "false"
+      ],
+      "cwd": "/home/nathaniel/.local/state/openplan/report-jurisdiction-test-type-repair-20261015/source/openplan",
+      "exitCode": 2,
+      "elapsedSeconds": 18.655,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "676446208",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "v3-metadata-absent": {
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "src/test/report-generate-route.test.ts",
+        "--config",
+        "../../vitest.config.mts",
+        "--configLoader",
+        "runner",
+        "--maxWorkers",
+        "1",
+        "--no-file-parallelism",
+        "-t",
+        "freezes non-null export-safe report readiness with canonical hash parity",
+        "--reporter",
+        "json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/report-jurisdiction-test-type-repair-20261015/controls/v3-metadata-absent.vitest.json"
+      ],
+      "cwd": "/home/nathaniel/.local/state/openplan/report-jurisdiction-test-type-repair-20261015/source/openplan",
+      "exitCode": 1,
+      "elapsedSeconds": 6.713,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "309952512",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "v3-source-context-missing": {
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "src/test/report-generate-route.test.ts",
+        "--config",
+        "../../vitest.config.mts",
+        "--configLoader",
+        "runner",
+        "--maxWorkers",
+        "1",
+        "--no-file-parallelism",
+        "-t",
+        "freezes non-null export-safe report readiness with canonical hash parity",
+        "--reporter",
+        "json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/report-jurisdiction-test-type-repair-20261015/controls/v3-source-context-missing.vitest.json"
+      ],
+      "cwd": "/home/nathaniel/.local/state/openplan/report-jurisdiction-test-type-repair-20261015/source/openplan",
+      "exitCode": 1,
+      "elapsedSeconds": 6.605,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "309338112",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "v3-source-context-null": {
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "src/test/report-generate-route.test.ts",
+        "--config",
+        "../../vitest.config.mts",
+        "--configLoader",
+        "runner",
+        "--maxWorkers",
+        "1",
+        "--no-file-parallelism",
+        "-t",
+        "freezes non-null export-safe report readiness with canonical hash parity",
+        "--reporter",
+        "json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/report-jurisdiction-test-type-repair-20261015/controls/v3-source-context-null.vitest.json"
+      ],
+      "cwd": "/home/nathaniel/.local/state/openplan/report-jurisdiction-test-type-repair-20261015/source/openplan",
+      "exitCode": 1,
+      "elapsedSeconds": 6.506,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "311590912",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "v3-source-context-primitive": {
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "src/test/report-generate-route.test.ts",
+        "--config",
+        "../../vitest.config.mts",
+        "--configLoader",
+        "runner",
+        "--maxWorkers",
+        "1",
+        "--no-file-parallelism",
+        "-t",
+        "freezes non-null export-safe report readiness with canonical hash parity",
+        "--reporter",
+        "json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/report-jurisdiction-test-type-repair-20261015/controls/v3-source-context-primitive.vitest.json"
+      ],
+      "cwd": "/home/nathaniel/.local/state/openplan/report-jurisdiction-test-type-repair-20261015/source/openplan",
+      "exitCode": 1,
+      "elapsedSeconds": 7.299,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "302108672",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "v3-source-context-no-readiness": {
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "src/test/report-generate-route.test.ts",
+        "--config",
+        "../../vitest.config.mts",
+        "--configLoader",
+        "runner",
+        "--maxWorkers",
+        "1",
+        "--no-file-parallelism",
+        "-t",
+        "freezes non-null export-safe report readiness with canonical hash parity",
+        "--reporter",
+        "json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/report-jurisdiction-test-type-repair-20261015/controls/v3-source-context-no-readiness.vitest.json"
+      ],
+      "cwd": "/home/nathaniel/.local/state/openplan/report-jurisdiction-test-type-repair-20261015/source/openplan",
+      "exitCode": 1,
+      "elapsedSeconds": 6.57,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "311431168",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "v3-readiness-null": {
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "src/test/report-generate-route.test.ts",
+        "--config",
+        "../../vitest.config.mts",
+        "--configLoader",
+        "runner",
+        "--maxWorkers",
+        "1",
+        "--no-file-parallelism",
+        "-t",
+        "freezes non-null export-safe report readiness with canonical hash parity",
+        "--reporter",
+        "json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/report-jurisdiction-test-type-repair-20261015/controls/v3-readiness-null.vitest.json"
+      ],
+      "cwd": "/home/nathaniel/.local/state/openplan/report-jurisdiction-test-type-repair-20261015/source/openplan",
+      "exitCode": 1,
+      "elapsedSeconds": 6.606,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "303714304",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "v3-readiness-wrong-hash": {
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "src/test/report-generate-route.test.ts",
+        "--config",
+        "../../vitest.config.mts",
+        "--configLoader",
+        "runner",
+        "--maxWorkers",
+        "1",
+        "--no-file-parallelism",
+        "-t",
+        "freezes non-null export-safe report readiness with canonical hash parity",
+        "--reporter",
+        "json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/report-jurisdiction-test-type-repair-20261015/controls/v3-readiness-wrong-hash.vitest.json"
+      ],
+      "cwd": "/home/nathaniel/.local/state/openplan/report-jurisdiction-test-type-repair-20261015/source/openplan",
+      "exitCode": 1,
+      "elapsedSeconds": 6.589,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "304201728",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "report-file-final": {
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "src/test/report-generate-route.test.ts",
+        "--config",
+        "../../vitest.config.mts",
+        "--configLoader",
+        "runner",
+        "--maxWorkers",
+        "1",
+        "--no-file-parallelism",
+        "--reporter",
+        "json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/report-jurisdiction-test-type-repair-20261015/logs/report-file-final.vitest.json"
+      ],
+      "cwd": "/home/nathaniel/.local/state/openplan/report-jurisdiction-test-type-repair-20261015/source/openplan",
+      "exitCode": 0,
+      "elapsedSeconds": 6.921,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "349925376",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "eslint-final": {
+      "command": [
+        "node",
+        "node_modules/eslint/bin/eslint.js",
+        "src/test/report-generate-route.test.ts",
+        "--max-warnings",
+        "0"
+      ],
+      "cwd": "/home/nathaniel/.local/state/openplan/report-jurisdiction-test-type-repair-20261015/source/openplan",
+      "exitCode": 0,
+      "elapsedSeconds": 6.15,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "363278336",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "environment-final": {
+      "command": [
+        "node",
+        "-e",
+        "console.log(JSON.stringify({node:process.version,typescript:require('typescript/package.json').version,vitest:require('vitest/package.json').version,sqlite:require('better-sqlite3/package.json').version}))"
+      ],
+      "cwd": "/home/nathaniel/.local/state/openplan/report-jurisdiction-test-type-repair-20261015/source/openplan",
+      "exitCode": 0,
+      "elapsedSeconds": 0.026,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "19927040",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    }
+  },
+  "maximumMeasuredPeakMemoryBytes": 695541760,
+  "privateEvidenceFiles": {
+    "base.json": "9ce20759e4bb4dc0ad3845974736923ffcd9d9d77a41f24fb7fe4fd4ed14d580",
+    "tsconfig.json": "8f23399122d4dc2188e3fa0f3202df944d6c0a620e3579d5e3c13184d4158a02",
+    "vitest.config.mts": "5a42e2fda5d85f29cc010d743590802fb75e58ba230187a9d882b1cea288a01d",
+    "run.py": "05257178de9549321b92f15395040f8e153934491bc9a11bb50bae028ce51c97",
+    "execute.py": "d650ae8de837ed1e3405fad7dbb9ebdc1a58bd90a01a60240cfc006be1e9715f",
+    "controls.py": "85398744fd75ffdb204f4f742c13c81de02809942d2bd1b61e9c168636d23de3",
+    "controls-v1.py": "2a9ca93ffc08ce62ba9b04dc2afdca94cb519c9118e8db7a1b3740826fbedf0d",
+    "controls-v2.py": "8cbb30099e2b013d68e2716bbacfecd4609a06078abd1d63ade64c98f6c47b99",
+    "final-checks.py": "dccf251ece39d474a15b1f140fda60d9d10d50510db15c66b46b27f2bc4e70d1",
+    "controls/results.json": "ca9449f708ad8d4d7960d76bccd579344a69e615b24faf55f49799ece2a0fcb9",
+    "controls/restoration.json": "a151419e60fee457f20fee9d08cd7f9f0a3508856bc75265dc024c2532b4f632",
+    "source-bindings.json": "67d42322b1728fa5ae182448c79cceff9336fbc2270260df7d3f05052bbec0e5",
+    "source-checks-final.json": "c03b01f309d83182425e0e6f7f2b4a7ad32e08a74a78bed30bb49ea164989106"
+  },
+  "limits": [
+    "Scoped test and route import graph, not whole-project TypeScript or generated build types.",
+    "Synthetic route and serialization fixtures, not live database or downloaded native artifact provenance.",
+    "No full build, full QA, DB, RLS, browser, services, PR, push, merge or release."
+  ],
+  "allMeasuredChecks": {
+    "direction-corrected": {
+      "exitCode": 0,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "87216128",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "environment-final": {
+      "exitCode": 0,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "19927040",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "eslint-final": {
+      "exitCode": 0,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "363278336",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "report-file-final": {
+      "exitCode": 0,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "349925376",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "runtime-harmless": {
+      "exitCode": 0,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "304799744",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "types-harmless": {
+      "exitCode": 0,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "685584384",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "types-original-corrected": {
+      "exitCode": 2,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "664891392",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "types-repaired": {
+      "exitCode": 0,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "690671616",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "v2-metadata-absent": {
+      "exitCode": 1,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "308215808",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "v2-runtime-harmless": {
+      "exitCode": 0,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "307433472",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "v2-types-harmless": {
+      "exitCode": 0,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "695541760",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "v2-types-original-control": {
+      "exitCode": 2,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "673853440",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "v3-metadata-absent": {
+      "exitCode": 1,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "309952512",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "v3-readiness-null": {
+      "exitCode": 1,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "303714304",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "v3-readiness-wrong-hash": {
+      "exitCode": 1,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "304201728",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "v3-runtime-harmless": {
+      "exitCode": 0,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "308936704",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "v3-source-context-missing": {
+      "exitCode": 1,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "309338112",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "v3-source-context-no-readiness": {
+      "exitCode": 1,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "311431168",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "v3-source-context-null": {
+      "exitCode": 1,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "311590912",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "v3-source-context-primitive": {
+      "exitCode": 1,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "302108672",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "v3-types-harmless": {
+      "exitCode": 0,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "694558720",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    },
+    "v3-types-original-control": {
+      "exitCode": 2,
+      "metrics": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "memory.peak": "676446208",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      }
+    }
+  }
+}

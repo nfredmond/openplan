@@ -1,0 +1,468 @@
+{
+  "main": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+  "mainRef": {
+    "at": "2026-10-15T09:18:28.022060+00:00",
+    "returncode": 0,
+    "sha": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053"
+  },
+  "github": {
+    "startedAt": "2026-10-15T09:15:37.806249+00:00",
+    "pinnedMain": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+    "totalCount": 10,
+    "runs": [
+      {
+        "id": 38710992721,
+        "name": "Production Health",
+        "head_sha": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+        "status": "completed",
+        "conclusion": "skipped",
+        "event": "deployment_status",
+        "run_attempt": 1,
+        "created_at": "2026-10-15T09:10:30Z",
+        "updated_at": "2026-10-15T09:10:30Z",
+        "run_started_at": "2026-10-15T09:10:30Z",
+        "html_url": "https://github.com/nfredmond/openplan/actions/runs/38710992721"
+      },
+      {
+        "id": 38708548734,
+        "name": "Production Health",
+        "head_sha": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+        "status": "completed",
+        "conclusion": "success",
+        "event": "deployment_status",
+        "run_attempt": 1,
+        "created_at": "2026-10-15T08:50:29Z",
+        "updated_at": "2026-10-15T08:50:58Z",
+        "run_started_at": "2026-10-15T08:50:29Z",
+        "html_url": "https://github.com/nfredmond/openplan/actions/runs/38708548734"
+      },
+      {
+        "id": 38704502966,
+        "name": "Production Health",
+        "head_sha": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+        "status": "completed",
+        "conclusion": "skipped",
+        "event": "deployment_status",
+        "run_attempt": 1,
+        "created_at": "2026-10-15T08:16:35Z",
+        "updated_at": "2026-10-15T08:16:45Z",
+        "run_started_at": "2026-10-15T08:16:35Z",
+        "html_url": "https://github.com/nfredmond/openplan/actions/runs/38704502966"
+      },
+      {
+        "id": 38704494013,
+        "name": "Node queue process observations",
+        "head_sha": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+        "status": "completed",
+        "conclusion": "success",
+        "event": "push",
+        "run_attempt": 1,
+        "created_at": "2026-10-15T08:16:31Z",
+        "updated_at": "2026-10-15T08:22:23Z",
+        "run_started_at": "2026-10-15T08:16:31Z",
+        "html_url": "https://github.com/nfredmond/openplan/actions/runs/38704494013"
+      },
+      {
+        "id": 38704493992,
+        "name": "Worker security and cancellation",
+        "head_sha": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+        "status": "completed",
+        "conclusion": "success",
+        "event": "push",
+        "run_attempt": 1,
+        "created_at": "2026-10-15T08:16:31Z",
+        "updated_at": "2026-10-15T08:17:41Z",
+        "run_started_at": "2026-10-15T08:16:31Z",
+        "html_url": "https://github.com/nfredmond/openplan/actions/runs/38704493992"
+      },
+      {
+        "id": 38704493815,
+        "name": "Research collector evidence",
+        "head_sha": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+        "status": "completed",
+        "conclusion": "success",
+        "event": "push",
+        "run_attempt": 1,
+        "created_at": "2026-10-15T08:16:31Z",
+        "updated_at": "2026-10-15T08:17:16Z",
+        "run_started_at": "2026-10-15T08:16:31Z",
+        "html_url": "https://github.com/nfredmond/openplan/actions/runs/38704493815"
+      },
+      {
+        "id": 38704493802,
+        "name": "Integration secret rotation",
+        "head_sha": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+        "status": "completed",
+        "conclusion": "success",
+        "event": "push",
+        "run_attempt": 1,
+        "created_at": "2026-10-15T08:16:31Z",
+        "updated_at": "2026-10-15T08:17:46Z",
+        "run_started_at": "2026-10-15T08:16:31Z",
+        "html_url": "https://github.com/nfredmond/openplan/actions/runs/38704493802"
+      },
+      {
+        "id": 38704493851,
+        "name": "CI",
+        "head_sha": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+        "status": "completed",
+        "conclusion": "success",
+        "event": "push",
+        "run_attempt": 1,
+        "created_at": "2026-10-15T08:16:31Z",
+        "updated_at": "2026-10-15T08:46:07Z",
+        "run_started_at": "2026-10-15T08:16:31Z",
+        "html_url": "https://github.com/nfredmond/openplan/actions/runs/38704493851"
+      },
+      {
+        "id": 38704493800,
+        "name": "Aerial worker custody regression",
+        "head_sha": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+        "status": "completed",
+        "conclusion": "success",
+        "event": "push",
+        "run_attempt": 1,
+        "created_at": "2026-10-15T08:16:31Z",
+        "updated_at": "2026-10-15T09:09:31Z",
+        "run_started_at": "2026-10-15T08:16:31Z",
+        "html_url": "https://github.com/nfredmond/openplan/actions/runs/38704493800"
+      },
+      {
+        "id": 38704493767,
+        "name": "RLS Isolation",
+        "head_sha": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+        "status": "completed",
+        "conclusion": "success",
+        "event": "push",
+        "run_attempt": 1,
+        "created_at": "2026-10-15T08:16:30Z",
+        "updated_at": "2026-10-15T08:50:24Z",
+        "run_started_at": "2026-10-15T08:16:30Z",
+        "html_url": "https://github.com/nfredmond/openplan/actions/runs/38704493767"
+      }
+    ],
+    "finishedAt": "2026-10-15T09:15:38.440260+00:00"
+  },
+  "publicHealth": {
+    "startedAt": "2026-10-15T09:15:37.806570+00:00",
+    "pinnedMain": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+    "httpStatus": 200,
+    "payload": {
+      "status": "ok",
+      "service": "openplan",
+      "checkedAt": "2026-10-15T09:15:38.053Z",
+      "deployment": {
+        "commit": "ced6aced9ddc",
+        "version": "0.68.0",
+        "migrations": {
+          "expected": 418,
+          "latest": "20261017000015"
+        }
+      },
+      "checks": {
+        "app": "ok",
+        "database": "not_checked"
+      }
+    },
+    "headers": {
+      "date": "Thu, 15 Oct 2026 09:15:38 GMT",
+      "cache-control": "no-store, max-age=0",
+      "x-vercel-id": "sfo1::sfo1::5kqlm-1792055738006-270d49b7318e",
+      "x-vercel-cache": "MISS"
+    },
+    "finishedAt": "2026-10-15T09:15:38.070136+00:00"
+  },
+  "railway": {
+    "startedAt": "2026-10-15T09:15:37.806874+00:00",
+    "pinnedMain": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+    "project": "9d7fbdc3-c370-41b5-8471-34dc128e718e",
+    "environment": "343ca578-aef1-4005-9ef6-a8a5e89582d5",
+    "service": "4883a282-fbed-4043-b220-3b3daabe04e9",
+    "deployments": [
+      {
+        "id": "1fd9bd72-1e79-4584-8c3a-2ec6d1ca6c77",
+        "status": "SUCCESS",
+        "createdAt": "2026-10-15T08:16:30.354Z",
+        "updatedAt": null,
+        "commitHash": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053"
+      },
+      {
+        "id": "d8a4c5d0-a316-43e0-b0f2-425006f6411b",
+        "status": "REMOVED",
+        "createdAt": "2026-10-15T07:15:18.814Z",
+        "updatedAt": null,
+        "commitHash": "4ea6a8ca3b43c6712952fc4e527a8538237a9adb"
+      },
+      {
+        "id": "2a577f7f-bca7-4186-a3e8-c2e41a5a3428",
+        "status": "REMOVED",
+        "createdAt": "2026-10-15T06:09:22.125Z",
+        "updatedAt": null,
+        "commitHash": "b259d73e56d22d4935ef2789874cf69901786b33"
+      },
+      {
+        "id": "c41ec7aa-9f23-46d8-8c99-b820864d65ff",
+        "status": "REMOVED",
+        "createdAt": "2026-10-15T00:44:24.825Z",
+        "updatedAt": null,
+        "commitHash": "1b2fefe0f0e98f99700fc77e99146fe697b43ee7"
+      },
+      {
+        "id": "75dd0d1a-1043-48b3-be5b-1b6ec2ba044c",
+        "status": "REMOVED",
+        "createdAt": "2026-10-14T22:43:22.371Z",
+        "updatedAt": null,
+        "commitHash": "eef4253167815e60b5ab4093833abeaaa22a64d6"
+      }
+    ],
+    "finishedAt": "2026-10-15T09:15:38.546129+00:00"
+  },
+  "startup": {
+    "startedAt": "2026-10-15T09:16:01.299163+00:00",
+    "finishedAt": "2026-10-15T09:16:02.404313+00:00",
+    "deployment": "1fd9bd72-1e79-4584-8c3a-2ec6d1ca6c77",
+    "pinnedMain": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+    "returncode": 0,
+    "parsedRows": 95,
+    "parseErrors": 0,
+    "startup": [
+      {
+        "timestamp": "2026-10-15T09:10:23.661241399Z",
+        "message": "Started OpenPlan worker: document-exports"
+      },
+      {
+        "timestamp": "2026-10-15T09:10:23.661244689Z",
+        "message": "Started OpenPlan worker: engagement-email"
+      },
+      {
+        "timestamp": "2026-10-15T09:10:23.661248219Z",
+        "message": "Started OpenPlan worker: provider-api"
+      },
+      {
+        "timestamp": "2026-10-15T09:10:23.661251169Z",
+        "message": "Started OpenPlan worker: translation-generation"
+      },
+      {
+        "timestamp": "2026-10-15T09:10:23.661255049Z",
+        "message": "Started OpenPlan worker: synthesis-preparation"
+      },
+      {
+        "timestamp": "2026-10-15T09:10:23.661257819Z",
+        "message": "Started OpenPlan worker: synthesis-execution"
+      },
+      {
+        "timestamp": "2026-10-15T09:10:23.661260919Z",
+        "message": "Started OpenPlan worker: contract-calculations"
+      }
+    ],
+    "scope": "Provider logs for exact deployment; no direct per-process source attestation or job completion."
+  },
+  "runtimeObservation": {
+    "scope": "process_only",
+    "observedAt": "2026-10-15T09:15:38.221932+00:00",
+    "jobCompletion": "unassessed",
+    "queues": [
+      {
+        "kind": "contract-calculations",
+        "lastSeenAt": "2026-10-15T09:15:25.524316+00:00",
+        "lastState": "running",
+        "state": "observed_running",
+        "runningInstances": 1,
+        "stoppingInstances": 0
+      },
+      {
+        "kind": "document-exports",
+        "lastSeenAt": "2026-10-15T09:15:30.975092+00:00",
+        "lastState": "running",
+        "state": "observed_running",
+        "runningInstances": 1,
+        "stoppingInstances": 0
+      },
+      {
+        "kind": "engagement-email",
+        "lastSeenAt": "2026-10-15T09:15:26.739495+00:00",
+        "lastState": "running",
+        "state": "observed_running",
+        "runningInstances": 1,
+        "stoppingInstances": 0
+      },
+      {
+        "kind": "gtfs-ingestion",
+        "lastSeenAt": null,
+        "lastState": null,
+        "state": "unobserved",
+        "runningInstances": 0,
+        "stoppingInstances": 0
+      },
+      {
+        "kind": "provider-api",
+        "lastSeenAt": "2026-10-15T09:15:29.277874+00:00",
+        "lastState": "running",
+        "state": "observed_running",
+        "runningInstances": 1,
+        "stoppingInstances": 0
+      },
+      {
+        "kind": "synthesis-execution",
+        "lastSeenAt": "2026-10-15T09:15:31.588297+00:00",
+        "lastState": "running",
+        "state": "observed_running",
+        "runningInstances": 1,
+        "stoppingInstances": 0
+      },
+      {
+        "kind": "synthesis-preparation",
+        "lastSeenAt": "2026-10-15T09:15:31.319945+00:00",
+        "lastState": "running",
+        "state": "observed_running",
+        "runningInstances": 1,
+        "stoppingInstances": 0
+      },
+      {
+        "kind": "translation-generation",
+        "lastSeenAt": "2026-10-15T09:15:30.109481+00:00",
+        "lastState": "running",
+        "state": "observed_running",
+        "runningInstances": 1,
+        "stoppingInstances": 0
+      }
+    ]
+  },
+  "runningRows": [
+    {
+      "kind": "contract-calculations",
+      "state": "running",
+      "sequence": 11,
+      "buildSha": null,
+      "startedAt": "2026-10-15T09:10:26.015433+00:00",
+      "lastSeenAt": "2026-10-15T09:15:25.524316+00:00"
+    },
+    {
+      "kind": "document-exports",
+      "state": "running",
+      "sequence": 11,
+      "buildSha": null,
+      "startedAt": "2026-10-15T09:10:31.120787+00:00",
+      "lastSeenAt": "2026-10-15T09:15:30.975092+00:00"
+    },
+    {
+      "kind": "engagement-email",
+      "state": "running",
+      "sequence": 11,
+      "buildSha": null,
+      "startedAt": "2026-10-15T09:10:27.008975+00:00",
+      "lastSeenAt": "2026-10-15T09:15:26.739495+00:00"
+    },
+    {
+      "kind": "provider-api",
+      "state": "running",
+      "sequence": 11,
+      "buildSha": null,
+      "startedAt": "2026-10-15T09:10:29.621320+00:00",
+      "lastSeenAt": "2026-10-15T09:15:29.277874+00:00"
+    },
+    {
+      "kind": "synthesis-execution",
+      "state": "running",
+      "sequence": 11,
+      "buildSha": null,
+      "startedAt": "2026-10-15T09:10:31.720855+00:00",
+      "lastSeenAt": "2026-10-15T09:15:31.588297+00:00"
+    },
+    {
+      "kind": "synthesis-preparation",
+      "state": "running",
+      "sequence": 11,
+      "buildSha": null,
+      "startedAt": "2026-10-15T09:10:31.530481+00:00",
+      "lastSeenAt": "2026-10-15T09:15:31.319945+00:00"
+    },
+    {
+      "kind": "translation-generation",
+      "state": "running",
+      "sequence": 11,
+      "buildSha": null,
+      "startedAt": "2026-10-15T09:10:30.215585+00:00",
+      "lastSeenAt": "2026-10-15T09:15:30.109481+00:00"
+    }
+  ],
+  "installed": {
+    "migrationCount": 418,
+    "latest": "20261017000015",
+    "migration16Present": false
+  },
+  "transactionReadOnly": "off",
+  "verification": {
+    "verifiedAt": "2026-10-15T09:18:28.063907+00:00",
+    "main": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+    "deployment": "1fd9bd72-1e79-4584-8c3a-2ec6d1ca6c77",
+    "mainCiAndWebAndProviderProcessCorrelation": true,
+    "harmlessSurvivor": true,
+    "faults": [
+      {
+        "fault": "unfinished_workflow",
+        "expectedRefusal": "workflow_success",
+        "refused": true
+      },
+      {
+        "fault": "old_web",
+        "expectedRefusal": "web_identity",
+        "refused": true
+      },
+      {
+        "fault": "waiting_railway",
+        "expectedRefusal": "railway_delivery",
+        "refused": true
+      },
+      {
+        "fault": "missing_startup",
+        "expectedRefusal": "startup_workers",
+        "refused": true
+      },
+      {
+        "fault": "stale_process",
+        "expectedRefusal": "fresh_process",
+        "refused": true
+      },
+      {
+        "fault": "wrong_process_sha",
+        "expectedRefusal": "process_sha",
+        "refused": true
+      },
+      {
+        "fault": "unexpected_schema",
+        "expectedRefusal": "installed_migrations",
+        "refused": true
+      },
+      {
+        "fault": "changed_main",
+        "expectedRefusal": "main_ref",
+        "refused": true
+      }
+    ],
+    "inputHashesUnchanged": {
+      "github": "7deb5d8ce5a32966d682be340ad0b2451da22f89736c55f454207e418af2a3fb",
+      "health": "4706abddfa0b092614fa51d310170068006b53bc854f7fa48750f0e10ebfb288",
+      "railway": "f583b0a44df02c30d26e152ff3f52d2a295a5b27517ed2f52e987110b3ec4f3f",
+      "rpc": "c7bf1b129d57a6d9ba843d6ffafa3943944a190eeeee9577b13012e33f060ae3",
+      "startup": "4494caa3f749c47389485952e244cef01e4b8de424f075e41b8ac9e7c85ce4fc",
+      "main-ref": "9e15af92be451b21f056746e3abb382c4a19709c8ea187a230cb49ec995f60dd"
+    },
+    "noDirectPerProcessSourceAttestation": true,
+    "noJobCompletionOrCapacityAcceptance": true,
+    "databaseServerEnforcedReadonlyNotEstablished": true
+  },
+  "privateProofRoot": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/node-queue-observation-20261014/main329-continuation-05-20261015",
+  "rawReceipts": {
+    "process-observations-private.json": "13566a7ea78c23c5aba943ac2e110d24896defcfb5e4f1c62d8aa7bcfae8db08",
+    "railway-deployments-private.json": "7f220219319a99520596c07e6b6d2ad945a8b20684388126633c5f5875defa0d",
+    "verify-readback.py": "6daa996c63979e871274501b834faa1419a5d6c1698ce87bd82c571416f8373d",
+    "public-health-raw.json": "acf2debbd2096adda1bfafca6065009ea45a0cd943db995db6a0a34ca312103c",
+    "startup-raw-private.jsonl": "613e2684f017ecf0df8bf2ae4adc005d9f61bcd9315631585ae58cf72912dbd0",
+    "github-runs-private.json": "aa8ca6d57ea56ce1c7f3d94123634e4f47403195fd4e6091168822614dae43f6",
+    "main-ref-raw-private.json": "1c167a270422c47089f19b838e16878cdfe911788f01c5172357a047beb10d3a",
+    "verify-readback-02.py": "5fee9c5cda13c4ca891389900563f075222905320ac3401beeef4137f9780d35",
+    "verification-initial-limit.json": "926cb514084714061d9317c1ff038ff61e5aff3360ed65b042748e4ad8144bcb"
+  },
+  "limits": "Workflow/API/provider/process correlation only; no per-worker source attestation, job completion, capacity, scientific, practitioner or release acceptance."
+}

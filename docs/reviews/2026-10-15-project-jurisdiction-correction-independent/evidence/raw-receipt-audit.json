@@ -1,0 +1,513 @@
+[
+  {
+    "receipt": "controls-04/00.json",
+    "executed": 1,
+    "excluded": 15,
+    "result": "passed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/01.json",
+    "executed": 1,
+    "excluded": 15,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/02.json",
+    "executed": 1,
+    "excluded": 15,
+    "result": "passed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/03.json",
+    "executed": 1,
+    "excluded": 15,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/04.json",
+    "executed": 1,
+    "excluded": 15,
+    "result": "passed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/05.json",
+    "executed": 1,
+    "excluded": 15,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/06.json",
+    "executed": 1,
+    "excluded": 15,
+    "result": "passed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/07.json",
+    "executed": 1,
+    "excluded": 15,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/08.json",
+    "executed": 1,
+    "excluded": 15,
+    "result": "passed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/09.json",
+    "executed": 1,
+    "excluded": 15,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/10.json",
+    "executed": 1,
+    "excluded": 15,
+    "result": "passed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/11.json",
+    "executed": 1,
+    "excluded": 15,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/12.json",
+    "executed": 1,
+    "excluded": 15,
+    "result": "passed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/13.json",
+    "executed": 1,
+    "excluded": 15,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/14.json",
+    "executed": 1,
+    "excluded": 15,
+    "result": "passed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/15.json",
+    "executed": 1,
+    "excluded": 15,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/16.json",
+    "executed": 1,
+    "excluded": 15,
+    "result": "passed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/17.json",
+    "executed": 1,
+    "excluded": 15,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/18.json",
+    "executed": 1,
+    "excluded": 15,
+    "result": "passed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/19.json",
+    "executed": 1,
+    "excluded": 15,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/20.json",
+    "executed": 1,
+    "excluded": 15,
+    "result": "passed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/21.json",
+    "executed": 1,
+    "excluded": 15,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/22.json",
+    "executed": 1,
+    "excluded": 15,
+    "result": "passed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/23.json",
+    "executed": 1,
+    "excluded": 15,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/24.json",
+    "executed": 1,
+    "excluded": 15,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/25.json",
+    "executed": 1,
+    "excluded": 15,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/26.json",
+    "executed": 1,
+    "excluded": 1,
+    "result": "passed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/27.json",
+    "executed": 1,
+    "excluded": 1,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/28.json",
+    "executed": 1,
+    "excluded": 1,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/29.json",
+    "executed": 1,
+    "excluded": 1,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/30.json",
+    "executed": 1,
+    "excluded": 1,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/31.json",
+    "executed": 1,
+    "excluded": 1,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/32.json",
+    "executed": 1,
+    "excluded": 1,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/33.json",
+    "executed": 1,
+    "excluded": 1,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/34.json",
+    "executed": 1,
+    "excluded": 1,
+    "result": "passed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/35.json",
+    "executed": 1,
+    "excluded": 1,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/36.json",
+    "executed": 1,
+    "excluded": 1,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/37.json",
+    "executed": 1,
+    "excluded": 1,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/38.json",
+    "executed": 1,
+    "excluded": 1,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/39.json",
+    "executed": 1,
+    "excluded": 1,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/40.json",
+    "executed": 1,
+    "excluded": 1,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/41.json",
+    "executed": 1,
+    "excluded": 1,
+    "result": "passed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/42.json",
+    "executed": 1,
+    "excluded": 1,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/43.json",
+    "executed": 1,
+    "excluded": 1,
+    "result": "passed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/44.json",
+    "executed": 1,
+    "excluded": 1,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/45.json",
+    "executed": 1,
+    "excluded": 1,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/46.json",
+    "executed": 1,
+    "excluded": 6,
+    "result": "passed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/47.json",
+    "executed": 1,
+    "excluded": 6,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/48.json",
+    "executed": 1,
+    "excluded": 6,
+    "result": "passed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/49.json",
+    "executed": 1,
+    "excluded": 6,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/50.json",
+    "executed": 1,
+    "excluded": 6,
+    "result": "passed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/51.json",
+    "executed": 1,
+    "excluded": 6,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/52.json",
+    "executed": 1,
+    "excluded": 6,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/53.json",
+    "executed": 1,
+    "excluded": 71,
+    "result": "passed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/54.json",
+    "executed": 1,
+    "excluded": 71,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/55.json",
+    "executed": 1,
+    "excluded": 71,
+    "result": "passed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/56.json",
+    "executed": 1,
+    "excluded": 71,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/57.json",
+    "executed": 1,
+    "excluded": 1,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/58.json",
+    "executed": 1,
+    "excluded": 1,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/59.json",
+    "executed": 1,
+    "excluded": 1,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/60.json",
+    "executed": 1,
+    "excluded": 15,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/61.json",
+    "executed": 1,
+    "excluded": 15,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-04/62.json",
+    "executed": 1,
+    "excluded": 15,
+    "result": "passed",
+    "expectedObserved": false
+  },
+  {
+    "receipt": "controls-05/00.json",
+    "executed": 1,
+    "excluded": 16,
+    "result": "passed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-05/01.json",
+    "executed": 1,
+    "excluded": 16,
+    "result": "passed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-05/02.json",
+    "executed": 1,
+    "excluded": 1,
+    "result": "passed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-05/03.json",
+    "executed": 1,
+    "excluded": 71,
+    "result": "passed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-05/04.json",
+    "executed": 1,
+    "excluded": 16,
+    "result": "passed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-05/05.json",
+    "executed": 1,
+    "excluded": 16,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-05/06.json",
+    "executed": 1,
+    "excluded": 16,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-05/07.json",
+    "executed": 1,
+    "excluded": 16,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-05/08.json",
+    "executed": 1,
+    "excluded": 1,
+    "result": "failed",
+    "expectedObserved": true
+  },
+  {
+    "receipt": "controls-05/09.json",
+    "executed": 1,
+    "excluded": 71,
+    "result": "failed",
+    "expectedObserved": true
+  }
+]

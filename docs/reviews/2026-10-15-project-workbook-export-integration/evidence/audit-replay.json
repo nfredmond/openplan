@@ -1,0 +1,13 @@
+{
+  "acceptedTrialsReclassified": 118,
+  "completeTrials": 116,
+  "completeFaults": 29,
+  "completeHarmlessSurvivors": 29,
+  "retainedBoundarySurvivor": true,
+  "cohortGuard": {
+    "positive": "SURVIVED",
+    "harmless": "SURVIVED",
+    "missingCase": "KILLED",
+    "assertion": "combined cohort must execute every expected case"
+  }
+}

@@ -1,0 +1,320 @@
+{
+  "scope": "Files, pure consumers, SQL assembly and mechanical binding only. No DB/HTTP/Docker/npm/browser operation.",
+  "cases": [
+    {
+      "case": "sealed-inputs",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "old-packet-files-harmless",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "old-packet-byte-drift",
+      "outcome": "REFUSED",
+      "reason": "old-packet:sha256"
+    },
+    {
+      "case": "app-binding",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "new-helper-import",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "new-app-env",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "retained-dump",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "configuration-harmless-note",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "old-target-prefix",
+      "outcome": "REFUSED",
+      "reason": "target:valid"
+    },
+    {
+      "case": "proof-target-prefix",
+      "outcome": "REFUSED",
+      "reason": "target:valid"
+    },
+    {
+      "case": "new-target-name",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "rest-wrong-database",
+      "outcome": "REFUSED",
+      "reason": "configuration:endpoints"
+    },
+    {
+      "case": "auth-wrong-database",
+      "outcome": "REFUSED",
+      "reason": "configuration:endpoints"
+    },
+    {
+      "case": "storage-wrong-database",
+      "outcome": "REFUSED",
+      "reason": "configuration:endpoints"
+    },
+    {
+      "case": "native-rest-plus",
+      "outcome": "REFUSED",
+      "reason": "native-rest-uri:value"
+    },
+    {
+      "case": "app-NEXT_PUBLIC_APP_URL",
+      "outcome": "REFUSED",
+      "reason": "configuration:"
+    },
+    {
+      "case": "app-NEXT_PUBLIC_SUPABASE_URL",
+      "outcome": "REFUSED",
+      "reason": "configuration:"
+    },
+    {
+      "case": "app-OPENPLAN_COMMIT_SHA",
+      "outcome": "REFUSED",
+      "reason": "configuration:"
+    },
+    {
+      "case": "old-cors",
+      "outcome": "REFUSED",
+      "reason": "configuration:cors"
+    },
+    {
+      "case": "old-upstream",
+      "outcome": "REFUSED",
+      "reason": "configuration:upstreams"
+    },
+    {
+      "case": "retained-dump-hash",
+      "outcome": "REFUSED",
+      "reason": "retained-dump:sha256"
+    },
+    {
+      "case": "original-v1-body-selection",
+      "outcome": "REFUSED",
+      "reason": "different-v2-body"
+    },
+    {
+      "case": "upgrade-state-harmless-note",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "upgrade-database",
+      "outcome": "REFUSED",
+      "reason": "upgrade-state:database"
+    },
+    {
+      "case": "upgrade-historyCount",
+      "outcome": "REFUSED",
+      "reason": "upgrade-state:historyCount"
+    },
+    {
+      "case": "upgrade-latest",
+      "outcome": "REFUSED",
+      "reason": "upgrade-state:latest"
+    },
+    {
+      "case": "upgrade-versions",
+      "outcome": "REFUSED",
+      "reason": "upgrade-state:versions"
+    },
+    {
+      "case": "upgrade-body",
+      "outcome": "REFUSED",
+      "reason": "upgrade-state:body"
+    },
+    {
+      "case": "upgrade-priorHistoryDigest",
+      "outcome": "REFUSED",
+      "reason": "upgrade-state:priorHistoryDigest"
+    },
+    {
+      "case": "upgrade-historySQL",
+      "outcome": "REFUSED",
+      "reason": "upgrade-state:historySQL"
+    },
+    {
+      "case": "upgrade-statusConstraint",
+      "outcome": "REFUSED",
+      "reason": "upgrade-statusConstraint"
+    },
+    {
+      "case": "upgrade-phaseConstraint",
+      "outcome": "REFUSED",
+      "reason": "upgrade-phaseConstraint"
+    },
+    {
+      "case": "upgrade-SQL-harmless-comment",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "SQL-history419",
+      "outcome": "REFUSED",
+      "reason": "SQL:history419"
+    },
+    {
+      "case": "SQL-history-bytes",
+      "outcome": "REFUSED",
+      "reason": "SQL:history-bytes"
+    },
+    {
+      "case": "SQL-original-body",
+      "outcome": "REFUSED",
+      "reason": "SQL:original-body"
+    },
+    {
+      "case": "SQL-connections",
+      "outcome": "REFUSED",
+      "reason": "SQL:connections"
+    },
+    {
+      "case": "SQL-history420",
+      "outcome": "REFUSED",
+      "reason": "SQL:history420"
+    },
+    {
+      "case": "SQL-history-lock",
+      "outcome": "REFUSED",
+      "reason": "SQL:history-lock"
+    },
+    {
+      "case": "SQL-transaction",
+      "outcome": "REFUSED",
+      "reason": "SQL:transaction"
+    },
+    {
+      "case": "fresh-name-harmless",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "database-reserved",
+      "outcome": "REFUSED",
+      "reason": "target-reserved:fresh"
+    },
+    {
+      "case": "helper-reserved",
+      "outcome": "REFUSED",
+      "reason": "helper-reserved:fresh"
+    },
+    {
+      "case": "bindable-fixture",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "occupied-29949",
+      "outcome": "REFUSED",
+      "reason": "occupied-port"
+    },
+    {
+      "case": "occupied-3586",
+      "outcome": "REFUSED",
+      "reason": "occupied-port"
+    },
+    {
+      "case": "420-migration-census",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "419-manifest",
+      "outcome": "REFUSED",
+      "reason": "migration-baseline"
+    },
+    {
+      "case": "npm-path-harmless",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "npm-wrong-base",
+      "outcome": "REFUSED",
+      "reason": "attest-base-path"
+    },
+    {
+      "case": "mechanical-runtime-baseline",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "helper-gate-removal",
+      "outcome": "REFUSED",
+      "reason": "mechanical:service-upgrade"
+    },
+    {
+      "case": "attestor-health420",
+      "outcome": "REFUSED",
+      "reason": "mechanical:health420"
+    },
+    {
+      "case": "attestor-attest-port",
+      "outcome": "REFUSED",
+      "reason": "mechanical:attest-port"
+    },
+    {
+      "case": "attestor-health-commit",
+      "outcome": "REFUSED",
+      "reason": "mechanical:health-commit"
+    },
+    {
+      "case": "attestor-npm-path",
+      "outcome": "REFUSED",
+      "reason": "mechanical:npm-path"
+    },
+    {
+      "case": "runner-harmless-comment",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "runner-host-attestor",
+      "outcome": "REFUSED",
+      "reason": "runner:host-attestor"
+    },
+    {
+      "case": "runner-memory",
+      "outcome": "REFUSED",
+      "reason": "runner:memory"
+    },
+    {
+      "case": "runner-seal",
+      "outcome": "REFUSED",
+      "reason": "runner:seal"
+    },
+    {
+      "case": "runner-reservation",
+      "outcome": "REFUSED",
+      "reason": "runner:reservation"
+    },
+    {
+      "case": "mechanical-harmless-survivor",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "mechanical-unit-detector",
+      "outcome": "REFUSED",
+      "reason": "mechanical:unit"
+    },
+    {
+      "case": "public-known-secret-screen",
+      "outcome": "SURVIVED"
+    }
+  ],
+  "count": 64,
+  "restoredInFinally": true,
+  "sealedFilesUnchanged": true,
+  "candidateAbsent": true,
+  "executionEmpty": true,
+  "applicationSource": "49e3fa2004c1336ffa36c134a8f21bcc2d72d327",
+  "blindCategories": [
+    "No PostgreSQL parsing or execution of the new upgrade transaction.",
+    "No helper/API/CORS transport or storage-byte test.",
+    "No new compiler/build/start/process attestation or browser journey.",
+    "Mechanical source checks cannot establish behavioral equivalence of modified statements.",
+    "Known-value privacy scan does not detect unknown secrets."
+  ]
+}

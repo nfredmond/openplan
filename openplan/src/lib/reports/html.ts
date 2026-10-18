@@ -56,7 +56,8 @@ import { scoreValueForPresentation } from "@/lib/analysis/score-presentation";
 import { presentRunSummary } from "@/lib/analysis/run-summary-presentation";
 import type { FrozenReportAerialOrthoSnapshotV1 } from "@/lib/reports/aerial-ortho-evidence";
 import { buildEvidenceDescriptor, type EvidenceDescriptorV1 } from "@/lib/evidence/evidence-descriptor";
-import type { JurisdictionReadinessPayload } from "@/lib/jurisdiction-readiness/payload";
+import type { JurisdictionReadinessPayload, ProjectJurisdictionReadinessPayload, ProjectJurisdictionReadinessExportPayload } from "@/lib/jurisdiction-readiness/payload";
+import type { ReportProjectJurisdictionSchemaPendingPayload } from "./project-jurisdiction";
 
 /**
  * The disclosure label rendered over every included AI narrative block.
@@ -228,7 +229,7 @@ export type ReportGenerationData = {
   modelingEvidence: ReportModelingEvidence[];
   evidenceDescriptors?: EvidenceDescriptorV1[];
   /** The exact sparse registry reading frozen into this packet. */
-  jurisdictionReadiness?: JurisdictionReadinessPayload;
+  jurisdictionReadiness?: JurisdictionReadinessPayload | ProjectJurisdictionReadinessPayload | ProjectJurisdictionReadinessExportPayload | ReportProjectJurisdictionSchemaPendingPayload;
   /**
    * The crash evidence attached to this project, or null when the read FAILED.
    * Optional so existing callers keep working — but `undefined` and `null` mean
@@ -372,9 +373,25 @@ function listMarkup(items: ProjectItem[], emptyMessage: string): string {
     .join("")}</ul>`;
 }
 
-function jurisdictionReadinessMarkup(payload: JurisdictionReadinessPayload | undefined): string {
+function jurisdictionReadinessMarkup(payload: ReportGenerationData["jurisdictionReadiness"]): string {
   if (!payload) return "";
 
+  if (payload.schema === "openplan.report-project-jurisdiction-schema-pending.v1") {
+    return `<section id="project-jurisdiction-context"><h2>Project jurisdiction context</h2><p>${esc(payload.disclosure)}</p>
+      <p>Project revision: ${esc(payload.projectRevision ?? "Unavailable")}. Readiness payload SHA-256: ${esc(payload.payloadSha256)}.</p>
+      <p>Payload schema: ${esc(payload.schema)}. Scope: ${esc(payload.scope)}. Registry SHA-256: ${esc(payload.registrySha256)}. Study geography read state: ${esc(payload.studyAreaReadState)}.</p></section>`;
+  }
+
+  if (payload.schema === "openplan.project-jurisdiction-readiness-response.v2" || payload.schema === "openplan.project-jurisdiction-readiness-export.v3") {
+    return `<section id="project-jurisdiction-context"><h2>Project jurisdiction context</h2><p>${esc(payload.disclosure)}</p>
+      <p>Project revision: ${esc(payload.projectRevision ?? "Unavailable")}. Readiness payload SHA-256: ${esc(payload.payloadSha256)}. Study geometry retains its own identity and coordinates.</p>
+      ${payload.schema === "openplan.project-jurisdiction-readiness-export.v3" ? `<p>Payload schema: ${esc(payload.schema)}. Scope: ${esc(payload.scope)}. Registry: ${esc(payload.registryVersion)}; SHA-256: ${esc(payload.registrySha256)}. ${esc(payload.attribution)} Recorded at: ${esc(payload.context?.recordedAt ?? "No separate declaration")}.</p>` : ""}
+      ${payload.entries.length ? payload.entries.map(entry => `<article><h3>${esc(entry.declaration?.label ?? "Legacy study-place context")}</h3><p>${esc(entry.assessmentScope)}</p>
+        ${entry.declaration ? `<p>Kind: ${esc(entry.declaration.kind)}. Source reference: ${esc(entry.declaration.reference ?? "None")}. Identity: ${esc(entry.declaration.identity === "staff_declared" ? "Unverified staff declaration" : "Server-resolved identity")}.</p><p>Declared country: ${esc(entry.declaration.countryCode ?? "Unspecified")}; subdivision: ${esc(entry.declaration.subdivisionCode ?? "Unspecified")}; scope: ${esc(entry.declaration.scope)}.</p>` : ""}
+        ${jurisdictionReadinessMarkup(entry.assessment)}
+        ${entry.administrativeGuidance ? `<h4>Separate administrative state-level guidance, identity unverified</h4>${jurisdictionReadinessMarkup(entry.administrativeGuidance)}` : ""}</article>`).join("") : "<p>Jurisdiction explicitly unresolved. No study-place fallback applies.</p>"}
+      </section>`;
+  }
   const reports = payload.reports
     .map((report) => `<article class="run-card">
       <div class="run-head">

@@ -1,0 +1,134 @@
+--- /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/app_binding_v1.py
++++ app_binding_v1.py
+@@ -14,3 +14,3 @@
+-APP_HEAD = '21510042e94bcaf80f262205ad156a7bb639e35c'
+-HELPER_HEAD = '06a108010ab39aa42eed4c2bcda3e1371b8aa813'
+-RECOVERY_PRODUCER = 'd71e0aa7aa1b2c3c945ee87a54ea49d6a5772378'
++APP_HEAD = '49e3fa2004c1336ffa36c134a8f21bcc2d72d327'
++HELPER_HEAD = APP_HEAD
++RECOVERY_PRODUCER = APP_HEAD
+@@ -18 +18 @@
+-ROOT = Path('/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3')
++ROOT = Path('/home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v4')
+@@ -20 +20 @@
+-SOURCE_REPO = Path('/home/nathaniel/.t3/worktrees/openplan/t3-e33fc359')
++SOURCE_REPO = Path('/home/nathaniel/.t3/worktrees/openplan/t3-9eeec4ad')
+@@ -26,11 +26,4 @@
+-ACTIVE_REST_ID = '140c68675574a3705fa68aa46543d806d66d1f20739bf63273d6126108d5430d'
+-OPERATION_OBSERVATION = Path('/home/nathaniel/.local/state/openplan/rest-recovery-parent-operation-20261015-01/observations.json')
+-ACTIVE = FROZEN / 'rest-uri-recovery-01/active-service-receipts-private.json'
+-HOST = '127.74.19.10'
+-API = 'http://' + HOST + ':29948'
+-WEB = 'http://' + HOST + ':3585'
+-HELPERS = {
+-    'rest_uri_recovery_01_launcher.py': '259fd6712429fcf4b4eafea7d9eef0a07685c5d7e6cc216b6d347a06700ff5fd',
+-    'rest_uri_recovery_01_policy.py': 'b8cd15dd1284aef71a302a2614724b1cb34e9783ee7049028eb08e16309df156',
+-    'rest_uri_recovery_01_controller.py': '0a2abd7530658eedb033ba4c235393612ff364210f064a32b4ff3d903134f175',
+-}
++HOST = '127.74.19.11'
++API = 'http://' + HOST + ':29949'
++WEB = 'http://' + HOST + ':3586'
++HELPERS = {'helper.py': 'ca3775b60cfba6e74cc7a9ff90b3170e841d4312499394b62f3083326a42877e', 'policy.py': 'c1a662292ea67d4e31422714bd8909c5a03f0d05c2b5fcd5361dae3502a74bf4'}
+@@ -91,18 +84,9 @@
+-    # Import the actual fixed modules, with no patching or selectable input map.
+-    for name, expected in HELPERS.items():
+-        path = FROZEN/name
+-        private_file(path)
+-        require(sha(path) == expected, 'helper-sha:' + name)
+-    for name in ['rest_uri_recovery_01_policy', 'rest_uri_recovery_01_launcher']:
+-        require(name not in sys.modules or Path(sys.modules[name].__file__) == FROZEN/(name+'.py'),
+-                'helper-module-root')
+-    sys.path.insert(0, str(FROZEN))
+-    try:
+-        r = importlib.import_module('rest_uri_recovery_01_launcher')
+-    finally:
+-        sys.path.pop(0)
+-    require(Path(r.__file__) == FROZEN/'rest_uri_recovery_01_launcher.py' and
+-        Path(r.p.__file__) == FROZEN/'rest_uri_recovery_01_policy.py' and
+-        r.OUT == FROZEN and r.p.ROOT == str(FROZEN) and r.p.HEAD == HELPER_HEAD and
+-        r.p.SOURCE_ANCHOR == SOURCE_ANCHOR and r.ACTIVE_RECEIPTS == ACTIVE and
+-        r.p.API == API and r.p.WEB == WEB, 'helper-root-head')
++    # Only the new sealed helper module is imported. No old launcher is invoked.
++    for name,expected in HELPERS.items():
++        private_file(ROOT/name);require(sha(ROOT/name)==expected,'helper-sha:'+name)
++    require('helper' not in sys.modules or Path(sys.modules['helper'].__file__)==ROOT/'helper.py','helper-module-root')
++    sys.path.insert(0,str(ROOT))
++    try:r=importlib.import_module('helper')
++    finally:sys.path.pop(0)
++    require(Path(r.__file__)==ROOT/'helper.py' and Path(r.p.__file__)==ROOT/'policy.py' and r.OUT==ROOT and
++        r.p.HEAD==APP_HEAD and r.p.SOURCE_ANCHOR==SOURCE_ANCHOR and r.p.API==API and r.p.WEB==WEB,'helper-root-head')
+@@ -120 +104 @@
+-    expected = {'app_binding_v1.py', 'app-env-private.json', 'app-v1.env', 'migrations.json', 'dependency-binding.json', 'recovery-active-binding.json', 'attest_start_v1.py'}
++    expected = {'app_binding_v1.py', 'app-env-private.json', 'app-v1.env', 'migrations.json', 'dependency-binding.json', 'upgrade-expectations.json', 'attest_start_v1.py'}
+@@ -131 +114,0 @@
+-    # The complete old environment is acquired through its original pinned checker.
+@@ -133,8 +116,6 @@
+-    old = r.read('app-env-private.json')
+-    require(old['OPENPLAN_COMMIT_SHA'] == HELPER_HEAD, 'old-env-head')
+-    values = read(ROOT/'app-env-private.json')
+-    require(values == {**old, 'OPENPLAN_COMMIT_SHA': APP_HEAD}, 'app-env-delta')
+-    encoded = ''.join(key+'='+json.dumps(value)+'\n' for key, value in values.items()).encode()
+-    require((ROOT/'app-v1.env').read_bytes() == encoded, 'app-env-encoding')
+-    require(values['NEXT_PUBLIC_SUPABASE_URL'] == API and values['NEXT_PUBLIC_APP_URL'] == WEB and
+-            values['OPENPLAN_GTFS_MANAGED_INGESTION'] == '0', 'app-env-endpoints')
++    values=read(ROOT/'app-env-private.json')
++    require(values==r.read('app-env-private.json') and values['OPENPLAN_COMMIT_SHA']==APP_HEAD,'app-env-delta')
++    encoded=''.join(key+'='+json.dumps(value)+'\n' for key,value in values.items()).encode()
++    require((ROOT/'app-v1.env').read_bytes()==encoded,'app-env-encoding')
++    require(values['NEXT_PUBLIC_SUPABASE_URL']==API and values['NEXT_PUBLIC_APP_URL']==WEB and
++        values['OPENPLAN_GTFS_MANAGED_INGESTION']=='0','app-env-endpoints')
+@@ -145,25 +126,9 @@
+-    # These functions acquire actual IDs, configuration, HTTP/CORS and preservation.
+-    # No booleans in a stored report substitute for these calls.
+-    r.pinned_files()
+-    r.active_receipts()
+-    pin = read(ROOT/'recovery-active-binding.json')
+-    require(set(pin) == {'producer', 'restId', 'files', 'operationObservationSha256'} and
+-            pin['producer'] == RECOVERY_PRODUCER and pin['restId'] == ACTIVE_REST_ID, 'active-pin-schema')
+-    names = ['replacement-receipt-private.json', 'replacement-started-private.json',
+-             'active-service-receipts-private.json', 'active-binding-private.json']
+-    require(set(pin['files']) == set(names), 'active-pin-files')
+-    require({name: sha(ACTIVE.parent/name) for name in names} == pin['files'], 'active-pin-hashes')
+-    require(sha(OPERATION_OBSERVATION) == pin['operationObservationSha256'], 'active-operation-observation')
+-    require(r.active_receipts()['rest']['id'] == ACTIVE_REST_ID, 'active-rest-id')
+-    before = sha(ACTIVE)
+-    receipts = r.verify_services()
+-    r.source_check()
+-    r.unchanged_inputs()
+-    require(before == sha(ACTIVE) and receipts == r.active_receipts(), 'active-race')
+-    require(r.read('clone-ready.json')['sourceSha256'] == SOURCE_ANCHOR, 'source-anchor')
+-    require(r.read('target-identity.json') == {
+-        'oid': '6118831', 'database': 'openplan_project_combined_preview_0752bc2e8104b7a40faab27f',
+-        'owner': 'postgres'}, 'target-binding')
+-    return {'activeReceiptSha256': before, 'sourceAnchor': SOURCE_ANCHOR,
+-            'helperHead': HELPER_HEAD, 'producer': RECOVERY_PRODUCER,
+-            'clusterId': r.p.DB_ID, 'target': r.read('target-identity.json'), 'images': r.p.IMAGES}
++    r.pinned_files();r.target_check();r.upgrade_ready()
++    active=r.verify_services();r.source_check();r.unchanged_inputs()
++    require(active==r.read('service-receipts-private.json'),'active-race')
++    require(r.read('clone-ready.json')['sourceSha256']==SOURCE_ANCHOR,'source-anchor')
++    identity=r.read('target-identity.json')
++    require(identity['database']==r.TARGET and identity['owner']=='postgres','target-binding')
++    return {'activeReceiptSha256':sha(ROOT/'service-receipts-private.json'),'sourceAnchor':SOURCE_ANCHOR,
++        'helperHead':APP_HEAD,'producer':APP_HEAD,'clusterId':r.p.DB_ID,'target':identity,'images':r.p.IMAGES,
++        'upgradeReceiptSHA256':sha(ROOT/'upgrade-ready.json')}
+@@ -173,5 +138,8 @@
+-    expected = read(ROOT/'migrations.json')
+-    require(len(expected) == 419 and expected == read(FROZEN/'candidate-migrations.json'), 'migration-baseline')
+-    actual = {str(f.relative_to(CANDIDATE)): sha(f) for f in sorted((APP/'supabase/migrations').glob('*.sql'))
+-              if f.is_file() and not f.is_symlink()}
+-    require(actual == expected, 'migration-bytes')
++    expected=read(ROOT/'migrations.json')
++    baseline=read(FROZEN/'candidate-migrations.json')
++    require(len(expected)==420 and expected=={**baseline,
++        'openplan/supabase/migrations/20261017000017_portfolio_skip_invalid_classifications.sql':
++        'b129f80e37aa9be71069683acd42df3fb6fdb94078ed0458f20b6e9c5155a41b'},'migration-baseline')
++    actual={str(f.relative_to(CANDIDATE)):sha(f) for f in sorted((APP/'supabase/migrations').glob('*.sql'))
++        if f.is_file() and not f.is_symlink()}
++    require(actual==expected,'migration-bytes')
+@@ -288 +256 @@
+-        [] if phase == 'build' else ['--', '--hostname', HOST, '--port', '3585'])
++        [] if phase == 'build' else ['--', '--hostname', HOST, '--port', '3586'])
+@@ -366 +334 @@
+-        probe.bind((HOST, 3585))
++        probe.bind((HOST, 3586))

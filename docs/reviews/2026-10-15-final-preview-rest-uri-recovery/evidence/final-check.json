@@ -1,0 +1,128 @@
+{
+  "packetInventory": {
+    "initialCount": 16870,
+    "finalCount": 16873,
+    "changed": [],
+    "removed": [],
+    "added": [
+      "rest_uri_recovery_01_controller.py",
+      "rest_uri_recovery_01_launcher.py",
+      "rest_uri_recovery_01_policy.py"
+    ]
+  },
+  "unchangedOriginalFunctions": [
+    "app_check",
+    "cgroup",
+    "clean_env",
+    "configured_source",
+    "db_check",
+    "expected_service",
+    "free_ports",
+    "health",
+    "ident",
+    "inspect",
+    "inventory",
+    "literal",
+    "observed_service",
+    "read",
+    "sha",
+    "snapshot",
+    "source_check",
+    "sql",
+    "target_check",
+    "target_identity",
+    "token",
+    "unchanged_inputs"
+  ],
+  "changedOriginalFunctions": [
+    "build",
+    "checkout",
+    "clone",
+    "main",
+    "pinned_files",
+    "run",
+    "services",
+    "start",
+    "templates",
+    "verify_services",
+    "write"
+  ],
+  "newFunctions": [
+    "active_receipts",
+    "recovery_inputs"
+  ],
+  "manifestHashesAndPrivateModesMatch": true,
+  "historicalRowsEqualOriginalBoundReplay": true,
+  "historicalCount": 607,
+  "historicalOutcomes": {
+    "survived": 99,
+    "intended_refusal": 508
+  },
+  "historicalHealthFaultsKilled": 9,
+  "baselineRecoveryControls": 63,
+  "baselineRecoveryOutcomes": {
+    "survived": 15,
+    "intended_refusal": 48
+  },
+  "allRecoveryObservationsIncludingRestoration": 379,
+  "newFaultsKilled": 15,
+  "harmlessCommentSurvives": true,
+  "inventoryAssay": [
+    "harmless-mtime-survives",
+    "changed-bytes-detected",
+    "changed-mode-detected",
+    "exact-restoration"
+  ],
+  "privacy": {
+    "knownPrivateValueCount": 9,
+    "allInjectionsRefuse": true,
+    "harmlessNoteSurvives": true,
+    "blindCategory": "Unknown secrets and short values shared with common identifiers are not classified; full configured URIs are protected."
+  },
+  "bytecodeAbsent": true,
+  "nativeReplay": {
+    "cases": [
+      {
+        "case": "old-plus",
+        "returncode": 3,
+        "expectedPlusSearchPathError": true
+      },
+      {
+        "case": "corrected-percent-space",
+        "returncode": 0,
+        "observed": {
+          "user": "authenticator",
+          "database": "openplan_project_combined_preview_0752bc2e8104b7a40faab27f",
+          "projects": "projects",
+          "readonly": "on",
+          "searchPath": "public,extensions"
+        }
+      },
+      {
+        "case": "harmless-lowercase-hex",
+        "returncode": 0,
+        "observed": {
+          "user": "authenticator",
+          "database": "openplan_project_combined_preview_0752bc2e8104b7a40faab27f",
+          "projects": "projects",
+          "readonly": "on",
+          "searchPath": "public,extensions"
+        }
+      },
+      {
+        "case": "encoded-literal-plus",
+        "returncode": 3,
+        "expectedPlusSearchPathError": true
+      },
+      {
+        "case": "restored-old-plus",
+        "returncode": 3,
+        "expectedPlusSearchPathError": true
+      }
+    ],
+    "credentialArgv": false,
+    "targetOnly": true,
+    "restReady": false,
+    "scope": "Native libpq parsing and read-only connection, not HTTP readiness."
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "@supabase/supabase-js": "2.110.7",
+  "@supabase/postgrest-js": "2.110.7",
+  "xlsx": "0.20.3",
+  "vitest": "4.1.11",
+  "next": "16.3.8",
+  "@xmldom/xmldom": "0.8.15",
+  "jszip": "3.10.1"
+}

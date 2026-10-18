@@ -1,0 +1,16 @@
+--- original/controls.py
++++ recovery/../historical_controls.py
+@@ -340,2 +340,5 @@
+-        'app-env-private.json':app,'envs-private.json':envs,'kong-private.json':kong}
+-    with patch.object(l,'templates'),patch.object(l,'Path',return_value=path),patch.object(l,'sha',return_value='hash'),patch.object(l,'read',side_effect=lambda name:fixture[name]):
++        'app-env-private.json':app,'envs-private.json':envs,'kong-private.json':kong,
++        'rest-uri-recovery-01/input-binding-v1.json':{},
++        'rest-uri-recovery-01/envs-v1-private.json':copy.deepcopy(envs)}
++    fixture['rest-uri-recovery-01/envs-v1-private.json']['rest']['PGRST_DB_URI']=envs['rest']['PGRST_DB_URI'].replace('-c+search_path','-c%20search_path')
++    with patch.object(l,'templates'),patch.object(l,'INPUT_MANIFEST_SHA256','hash'),patch.object(l,'Path',return_value=path),patch.object(l,'sha',return_value='hash'),patch.object(l,'read',side_effect=lambda name:fixture[name]):
+@@ -445 +448 @@
+-        if name=='envs-private.json':return {kind:{} for kind in p.IMAGES}
++        if name=='rest-uri-recovery-01/envs-v1-private.json':return {kind:{} for kind in p.IMAGES}
+@@ -450 +453 @@
+-        with patch.object(l,'read',side_effect=integration_read):return l.verify_services()
++        with patch.object(l,'read',side_effect=integration_read),patch.object(l,'active_receipts',return_value=receipts):return l.verify_services()
