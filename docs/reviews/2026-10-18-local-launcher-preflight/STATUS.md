@@ -94,3 +94,43 @@ requires a unittest test-error header and the subsequent complete run succeeds.
   success under both pandas versions does not prove supported numerical behavior.
 - Root independently reviews this checkpoint before integration. Real environment
   preflight, worker operation and numerical/model acceptance remain separate work.
+
+## PR340 fallback and lightweight CI correction
+
+This follow-up starts from `239a152a1195ca86dc50fc89aa284556974d43fc` in the
+clean T3 checkout `/home/nathaniel/.t3/worktrees/openplan/t3-b89018cf`, branch
+`t3/fix-launcher-preflight-fallback-ci-packaging`. Root retains integration ownership.
+
+The preflight-only ActivitySim search now considers the admitted `AEQ_PY` after
+the existing `.venv311` and system candidates. Full-path lookup preserves spaces.
+The `.venv-exec` execution branch still takes priority. An external interpreter
+with helper dependencies does not establish installed ActivitySim. AequilibraE
+admission, explicit-selection refusal, CLI configuration and calibration opt-in
+remain unchanged.
+
+The worker job in `.github/workflows/ci.yml` now explicitly installs `packaging`.
+The launcher test imports the actual requirements helper, so the five previously
+declared lightweight dependencies are insufficient. This addresses the reported
+failure in job `117778371287`, run `39162380694`. Other workflow discovery paths
+do not include this suite; the security workflow uses explicit suite names.
+No heavy engine install or test exclusion is added.
+
+All 17 launcher tests, including the new isolated external-only helper case,
+and four dependency-pin checks pass. Both shell syntax checks pass. Tests run
+serially under a 768 MiB address-space limit with numeric thread counts set to
+one. A private copy of the existing lightweight environment uses Python 3.11.15
+and adds only cached `packaging==26.0` offline. Neither engine is installed there.
+
+The harmless launcher/YAML comments survive. Removing the new fallback or
+restoring truncated path lookup fails both absent-local and unusable-local
+scenarios. Removing the new CI dependency selects the matching existing
+lightweight environment without packaging and reproduces the helper's exact
+missing-parser refusal. Source bytes are restored after each fault. This local
+declaration-driven check does not execute GitHub's installer or establish CI
+success. The first whitespace check cannot create Git's preload thread under
+the resource limit; disabling index preloading passes. Private logs and hashes
+remain in the ignored, mode-0700 `.tmp/launcher-pr340-correction/` directory.
+
+The fixture, pin and syntax blind categories above still apply. No workers,
+models, skims, assignment, network, database, browser or scientific artifacts run
+or change. GitHub CI for this follow-up has not run.

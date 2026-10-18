@@ -307,6 +307,28 @@ class LauncherTests(unittest.TestCase):
                 self.assertIsNone(activity["ACTIVITYSIM_CLI"])
                 self.assertIn("PREFLIGHT-ONLY", result.stdout)
 
+    def test_activitysim_preflight_uses_external_when_local_and_system_helpers_unavailable(self):
+        self.interpreter("bin/python3", imports=[])
+        external = self.interpreter("external execution env/bin/python", imports=["import requests, dotenv"])
+        for local_present in (False, True):
+            with self.subTest(local_present=local_present):
+                if local_present:
+                    self.interpreter("workers/aequilibrae_worker/.venv311/bin/python", imports=[])
+                    self.interpreter("workers/activitysim_worker/.venv-exec/bin/python", imports=[])
+                self.clear_records()
+                result = self.launch(LAUNCHERS[0], {"OPENPLAN_AEQUILIBRAE_PYTHON": str(external)})
+                entries = self.assert_launches(result, external, 2)
+                activity = next(entry for entry in entries if Path(entry["worker"]).name == "supabase_poll.py")
+                self.assertEqual(activity["interpreter"], str(external))
+                self.assertIsNone(activity["ACTIVITYSIM_CLI"])
+                self.assertIn("[PREFLIGHT-ONLY (no ActivitySim installed)]", result.stdout)
+                self.assertTrue(all(entry["AEQ_CALIBRATE"] is None and entry["COUNT_AUTO_INGEST"] is None for entry in entries))
+                probes = [call for call in self.records(self.calls) if call["args"][0] == "-c"]
+                self.assertEqual(probes[-2:], [
+                    {"interpreter": str(self.root / "bin/python3"), "args": ["-c", "import requests, dotenv"]},
+                    {"interpreter": str(external), "args": ["-c", "import requests, dotenv"]},
+                ])
+
     def test_activitysim_exec_binding_and_calibrate_option_unchanged(self):
         candidate = self.interpreter("workers/aequilibrae_worker/.venv311/bin/python")
         execution = self.interpreter("workers/activitysim_worker/.venv-exec/bin/python", imports=["import activitysim, requests, dotenv"])

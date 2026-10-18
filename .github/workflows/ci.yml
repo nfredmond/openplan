@@ -244,8 +244,9 @@ jobs:
       # demand logic: LODES OD, resident VMT, OD-matrix blend, mode choice, GTFS.
       # python-dotenv is here because four suites import main.py, whose module
       # level imports it — verified in a clean venv with exactly this list.
+      # packaging parses requirements in test_local_launchers.py's real helper.
       - name: Install test deps
-        run: pip install "numpy<2.1" pandas shapely requests python-dotenv
+        run: pip install "numpy<2.1" pandas shapely requests python-dotenv packaging
 
       - name: Hosted model supervisor
         run: python ../hosted-models/test_supervise.py
