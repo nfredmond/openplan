@@ -20,6 +20,12 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Engagement text inspection:** staff can inspect hidden formatting characters in
+comments, restricted history, survey answers and saved synthesis sources. The
+optional view shows counts, code points and escaped text while preserving the
+readable contribution. It does not change moderation or infer intent. No
+migration is required.
+
 **Grant catalog search:** find programs by name, administering agency, project
 type or displayed catalog details. Results show a count, a clear control and an
 empty state. Jurisdiction coverage remains visible while filtering. A search
