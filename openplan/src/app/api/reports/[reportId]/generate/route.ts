@@ -2650,11 +2650,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     let artifactStoragePath: string | null = null;
     let pdfEngine: ReportPdfEngine | null = null;
+    const authorizedReportForGuidedRecheck = report;
     async function recheckGuidedBeforeStorage(): Promise<NextResponse | null> {
       if (!guidedComparison) return null;
       try {
-        await verifyGuidedComparisonReport({ client: supabase, workspaceId: report.workspace_id,
-          projectId: report.project_id!, reportType: report.report_type, snapshotId: guidedComparison.snapshotId, saved: guidedComparison });
+        await verifyGuidedComparisonReport({ client: supabase, workspaceId: authorizedReportForGuidedRecheck.workspace_id,
+          projectId: authorizedReportForGuidedRecheck.project_id!, reportType: authorizedReportForGuidedRecheck.report_type, snapshotId: guidedComparison.snapshotId, saved: guidedComparison });
         return null;
       } catch (error) {
         return NextResponse.json({ error: error instanceof Error ? error.message : "The selected comparison changed before storage." }, { status: 409 });
