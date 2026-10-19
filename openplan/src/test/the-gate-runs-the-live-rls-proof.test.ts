@@ -45,6 +45,17 @@ describe("the gate runs the live RLS proof", () => {
     ).toContain("scripts/ops/rls-gate.mjs");
   });
 
+  it("runs the dedicated Safety ledger probes counted by the schema census", () => {
+    const pkg = JSON.parse(readFileSync("package.json", "utf8")) as {
+      scripts: Record<string, string>;
+    };
+    // Match runner arguments, so prose or a similarly named suite cannot register this proof.
+    const suites = pkg.scripts["test:rls-live"]
+      .match(/^OPENPLAN_RLS_LIVE_TEST=1 node --env-file-if-exists=\.env\.local node_modules\/vitest\/vitest\.mjs run ([^;&|#`"'$<>()\\]+)$/)?.[1]
+      .trim().split(/\s+/) ?? [];
+    expect(suites.filter((suite) => suite === "src/test/ss4a-safety-seed-rls.test.ts")).toHaveLength(1);
+  });
+
   it("runs the proof when a stack is up", () => {
     expect(
       decideRlsGate({ statusOk: true, statusOutput: 'DB_URL="postgresql://postgres@127.0.0.1:54322/postgres"\n' })

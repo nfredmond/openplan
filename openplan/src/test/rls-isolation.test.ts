@@ -198,6 +198,9 @@ const SERVICE_ONLY_TABLES = new Set(["billing_webhook_receipts"]);
 const DEDICATED_LIVE_RLS_PROBES = new Set([
   // grant-deadline-changes-rls: transactional capture, tenant/member reads and direct-write refusal.
   "funding_opportunity_deadline_changes",
+  // ss4a-safety-seed-rls: owner/viewer reads, outsider/anon isolation, direct-write refusal and service custody.
+  "funding_opportunity_safety_seeds",
+  "report_safety_snapshot_persistence",
   // attempt-instrument-member-read-rls: both methods, membership, parent visibility and private writes.
   "model_attempt_instrument_custody",
   "project_bca_versions",
