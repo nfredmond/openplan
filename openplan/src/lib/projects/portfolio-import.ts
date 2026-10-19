@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { projectEstimateDecimal } from "@/lib/projects/estimated-cost";
 import { parse as parseCsv } from "csv-parse/sync";
 import {
   PORTFOLIO_IMPORT_MAX_BYTES,
@@ -188,11 +189,17 @@ function scaledDecimal(raw: string, scale: PortfolioCostScale): string | null {
     scaled = `${digits.slice(0, decimalAt)}.${digits.slice(decimalAt)}`;
   }
 
-  if (!scaled.includes(".")) return scaled.replace(/^0+(?=\d)/, "");
-  const [scaledWhole, scaledFraction] = scaled.split(".");
-  const normalizedWhole = scaledWhole.replace(/^0+(?=\d)/, "");
-  const normalizedFraction = scaledFraction.replace(/0+$/, "");
-  return normalizedFraction ? `${normalizedWhole}.${normalizedFraction}` : normalizedWhole;
+  if (!scaled.includes(".")) scaled = scaled.replace(/^0+(?=\d)/, "");
+  else {
+    const [scaledWhole, scaledFraction] = scaled.split(".");
+    const normalizedWhole = scaledWhole.replace(/^0+(?=\d)/, "");
+    const normalizedFraction = scaledFraction.replace(/0+$/, "");
+    scaled = normalizedFraction ? `${normalizedWhole}.${normalizedFraction}` : normalizedWhole;
+  }
+  // Keep preview/receipt spelling compatible, but validate the final scaled
+  // amount with the same exact-cent and range boundary as project PATCH.
+  try { projectEstimateDecimal(scaled); } catch { return null; }
+  return scaled;
 }
 
 function validateMapping(mapping: PortfolioImportMapping, headerCount: number): void {

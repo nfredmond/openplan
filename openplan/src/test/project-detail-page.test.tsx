@@ -2025,7 +2025,7 @@ describe("ProjectDetailPage", () => {
     await renderPage("delivery");
 
     expect(projectSelectMock, "project page must read the complete geography and jurisdiction projection").toHaveBeenCalledWith(
-      "id, workspace_id, name, summary, status, plan_type, delivery_phase, estimated_cost_amount, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, estimated_cost_recorded_at, created_at, updated_at, rtp_posture, rtp_posture_updated_at, jurisdiction_context, latitude, longitude, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_geometry_geojson, place_set_at"
+      "id, workspace_id, name, summary, status, plan_type, delivery_phase, estimated_cost_amount::text, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, estimated_cost_recorded_at, created_at, updated_at, rtp_posture, rtp_posture_updated_at, jurisdiction_context, latitude, longitude, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_geometry_geojson, place_set_at"
     );
     expect(screen.getByText("No milestones recorded yet.")).toBeInTheDocument();
     expect(screen.getByText("No submittals recorded yet.")).toBeInTheDocument();

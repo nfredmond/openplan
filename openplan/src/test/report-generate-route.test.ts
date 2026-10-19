@@ -4499,21 +4499,26 @@ describe("POST /api/reports/[reportId]/generate", () => {
     );
   });
   // Answer from the actual projection. An omitted column never reappears in a fallback row.
-  function pendingProjectSchema(missing: string[], style: "postgres" | "cache" = "postgres", malformed = false) {
+  function pendingProjectSchema(missing: string[], style: "postgres" | "cache" = "postgres", malformed = false, amount: number | string = 125000) {
     const row: Record<string, unknown> = { ...exportProject,
       jurisdiction_context: malformed ? { invalid: true } : exportProject.jurisdiction_context,
-      estimated_cost_amount: 125000, estimated_cost_currency: "EUR",
+      estimated_cost_amount: amount, estimated_cost_currency: "EUR",
       estimated_cost_basis_year: 2026, estimated_cost_source_document_id: null,
     };
     projectMaybeSingleMock.mockImplementation(async () => {
       const columns = projectSelectMock.mock.calls.at(-1)![0].split(",").map(column => column.trim());
-      const unavailable = missing.find(column => columns.includes(column));
+      const unavailable = missing.find(column => columns.some(selected => selected.split("::")[0] === column));
       if (unavailable) return { data: null, error: {
         message: style === "postgres" ? `column projects.${unavailable} does not exist`
           : `Could not find the '${unavailable}' column of 'projects' in the schema cache`,
         code: style === "postgres" ? "42703" : "PGRST204",
       } };
-      return { data: Object.fromEntries(columns.filter(column => column in row).map(column => [column, row[column]])), error: null };
+      return { data: Object.fromEntries(columns.map(selected => {
+        const column = selected.split("::")[0];
+        const value = row[column];
+        return [column, column === "estimated_cost_amount" && value != null
+          ? selected.endsWith("::text") ? String(value) : Number(value) : value];
+      })), error: null };
     });
   }
 
@@ -4542,7 +4547,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
     const expected = [
       "id", "workspace_id", "name", "summary", "status", "plan_type", "delivery_phase", "created_at", "updated_at",
       "jurisdiction_context", ...PROJECT_PLACE_COLUMN_NAMES,
-      "estimated_cost_amount", "estimated_cost_currency", "estimated_cost_basis_year", "estimated_cost_source_document_id",
+      "estimated_cost_amount::text", "estimated_cost_currency", "estimated_cost_basis_year", "estimated_cost_source_document_id",
       "latitude", "longitude",
     ].join(", ");
     expect((await generatePendingSchemaReport()).status).toBe(200);
@@ -4564,8 +4569,15 @@ describe("POST /api/reports/[reportId]/generate", () => {
     const projections = projectSelectMock.mock.calls.map(call => call[0]);
     expect(projections, "Single missing group takes exactly one retry").toHaveLength(2);
     expect(projections[1], "Fallback removes the complete named group and nothing else").toBe(
-      projections[0].split(", ").filter(column => !columns.includes(column)).join(", ")
+      projections[0].split(", ").filter(column => !columns.includes(column.split("::")[0])).join(", ")
     );
+  });
+
+  it("preserves exact estimate cents through the report query and uploaded HTML", async () => {
+    pendingProjectSchema([], "postgres", false, "999999999999999.99");
+    expect((await generatePendingSchemaReport()).status).toBe(200);
+    expect(projectSelectMock.mock.calls[0][0]).toContain("estimated_cost_amount::text");
+    expect(generatedPendingSchemaOutput().html).toContain("999,999,999,999,999.99");
   });
 
   it.each(["postgres", "cache"] as const)("generates schema-pending jurisdiction with readable place and cost (%s)", async style => {
@@ -4707,13 +4719,15 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expect(html, "Actual generated report prints shared canonical hash").toContain(expected.payloadSha256);
     expect(html, "Actual generated report excludes jurisdiction actor UUID").not.toContain(jurisdictionActor);
     vi.setSystemTime(new Date("2030-01-01T00:00:00Z"));
-    const client = { from() {
-      const query = { select() { return query; }, eq() { return query; }, in() { return query; }, order() { return query; }, range() { return query; },
-        async maybeSingle() { return { data: exportProject, error: null }; },
+    const bundleProjectSelect = vi.fn();
+    const client = { from(table: string) {
+      const query = { select(columns: string) { if (table === "projects") bundleProjectSelect(columns); return query; }, eq() { return query; }, in() { return query; }, order() { return query; }, range() { return query; },
+        async maybeSingle() { return { data: { ...exportProject, estimated_cost_amount_exact: null }, error: null }; },
         then(resolve: (value: unknown) => unknown) { return Promise.resolve(resolve({ data: [], error: null })); },
       }; return query;
     } };
     const bundle = await loadProjectEvidenceGeneratedFiles(client, exportProject, new Date());
+    expect(bundleProjectSelect).toHaveBeenCalledWith("*, estimated_cost_amount_exact:estimated_cost_amount::text");
     const json = JSON.parse(bundle.files.find(file => file.path === "project/jurisdiction-readiness.json")!.bytes.toString());
     expect(json, "Actual report and bundle JSON share canonical material across clocks").toEqual(reportReadiness);
     const standalone = buildProjectGeoPackage({ project: exportProject, corridors: [], generatedAt: new Date() });
