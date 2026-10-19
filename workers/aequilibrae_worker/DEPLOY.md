@@ -30,6 +30,12 @@ each other's networks and validate against each other's traffic counts — a wro
 surface that decides what a run may claim. To run more at once, run more instances: separate
 processes have separate globals, and they cannot take the same stage.
 
+The image uses Python 3.11 and checks the assignment adapter's exact engine,
+source and binary identity after copying the worker. The reviewed extension is
+the CPython 3.11 Linux x86_64 wheel of AequilibraE 1.6.2. Other wheels or platforms
+refuse that build check. This is a compatibility boundary, not scientific
+validation. A fresh image build and runtime journey remain separate checks.
+
 ## Required Environment Variables
 
 Both values come from **your own** Supabase project — the same one the OpenPlan app points at.

@@ -30,41 +30,50 @@ class Checks(unittest.TestCase):
         self.temp=tempfile.TemporaryDirectory(prefix='odm-url-transport-');self.root=Path(self.temp.name)
         self.raw=b'Synthetic source bytes\x00\xff';self.mode='ordinary';self.requests=[];self.children=[]
         self.entered,self.release,self.closed=threading.Event(),threading.Event(),threading.Event()
+        self.finished=threading.Event()
         self.original_spawn=subprocess.Popen;fixture=self
         class Handler(BaseHTTPRequestHandler):
             def log_message(self,*_args):pass
-            def peer_closed(self):
+            def peer_closed(self,closed):
                 readable,_,_=select.select([self.connection],[],[],3)
-                if readable and self.connection.recv(1)==b'':fixture.closed.set()
+                if not readable:return
+                try:
+                    if self.connection.recv(1)==b'':closed.set()
+                except ConnectionResetError:
+                    # Killing a reader with unread response bytes can send RST.
+                    closed.set()
             def do_GET(self):
+                mode=fixture.mode
+                entered,release,closed,finished=fixture.entered,fixture.release,fixture.closed,fixture.finished
                 fixture.requests.append({'path':self.path,'headers':dict(self.headers)})
                 try:
-                    if fixture.mode=='held_headers':
-                        fixture.entered.set();self.peer_closed();fixture.release.wait(3);return
+                    if mode=='held_headers':
+                        entered.set();self.peer_closed(closed);release.wait(3);return
                     if self.path.startswith('/redirect'):
                         self.send_response(302)
                         self.send_header('Location',fixture.redirect)
                         self.send_header('Content-Length','999999');self.end_headers()
-                        self.peer_closed();return
-                    self.send_response(206 if fixture.mode=='partial_status' else 200)
-                    if fixture.mode in ('chunked','truncated_chunked'):self.send_header('Transfer-Encoding','chunked')
-                    elif fixture.mode not in ('unknown_length','encoded','ambiguous','bad_length'):
-                        length=len(fixture.raw)+(10 if fixture.mode in ('truncated','held_body') else 0)
+                        self.peer_closed(closed);return
+                    self.send_response(206 if mode=='partial_status' else 200)
+                    if mode in ('chunked','truncated_chunked'):self.send_header('Transfer-Encoding','chunked')
+                    elif mode not in ('unknown_length','encoded','ambiguous','bad_length'):
+                        length=len(fixture.raw)+(10 if mode in ('truncated','held_body') else 0)
                         self.send_header('Content-Length',str(length))
-                        if fixture.mode=='duplicate_length':self.send_header('Content-Length',str(length))
-                    if fixture.mode=='bad_length':self.send_header('Content-Length','-1')
-                    if fixture.mode=='encoded':self.send_header('Content-Encoding','gzip')
-                    if fixture.mode=='ambiguous':
+                        if mode=='duplicate_length':self.send_header('Content-Length',str(length))
+                    if mode=='bad_length':self.send_header('Content-Length','-1')
+                    if mode=='encoded':self.send_header('Content-Encoding','gzip')
+                    if mode=='ambiguous':
                         self.send_header('Content-Length',str(len(fixture.raw)));self.send_header('Transfer-Encoding','chunked')
                     self.end_headers()
-                    if fixture.mode=='held_body':
-                        self.wfile.write(fixture.raw[:3]);self.wfile.flush();fixture.entered.set()
-                        self.peer_closed();fixture.release.wait(3);return
-                    if fixture.mode in ('chunked','truncated_chunked'):
-                        self.wfile.write(f'{len(fixture.raw):x}\r\n'.encode()+fixture.raw+b'\r\n'+(b'0\r\n\r\n' if fixture.mode=='chunked' else b''))
+                    if mode=='held_body':
+                        self.wfile.write(fixture.raw[:3]);self.wfile.flush();entered.set()
+                        self.peer_closed(closed);release.wait(3);return
+                    if mode in ('chunked','truncated_chunked'):
+                        self.wfile.write(f'{len(fixture.raw):x}\r\n'.encode()+fixture.raw+b'\r\n'+(b'0\r\n\r\n' if mode=='chunked' else b''))
                     else:self.wfile.write(fixture.raw)
                     self.wfile.flush()
                 except (BrokenPipeError,ConnectionResetError):pass
+                finally:finished.set()
         self.Handler=Handler;self.launch()
 
     def launch(self,context=None):
@@ -212,16 +221,22 @@ class Checks(unittest.TestCase):
     def test_actual_cancellation_reaps_child_and_closes_headers_and_body(self):
         for mode in ('held_headers','held_body'):
             with self.subTest(mode=mode):
-                self.mode=mode;self.entered.clear();self.closed.clear();cancelled=threading.Event();output=io.BytesIO()
+                self.mode=mode
+                self.entered,self.release,self.closed,self.finished=(threading.Event() for _ in range(4))
+                cancelled=threading.Event();output=io.BytesIO()
                 thread=threading.Thread(target=lambda:cancelled.set() if self.entered.wait(2) else None,daemon=True);thread.start()
                 try:
                     with patch('url_transport.subprocess.Popen',side_effect=self.spawn),self.assertRaisesRegex(InterruptedError,'Source transport cancelled'):
                         self.transport(cancelled=cancelled.is_set)(self.url,output,4096,time.monotonic()+3)
+                    self.assertTrue(self.entered.is_set() and cancelled.is_set(),'Cancellation must follow source readiness')
                     self.assertIsNotNone(self.children[-1].poll(),'Cancelled source child must be reaped')
                     self.assertTrue(self.closed.wait(1),'Cancelled source peer must see connection close')
                     self.assertLess(len(output.getvalue()),len(self.raw),'Cancelled body cannot complete')
-                finally:self.release.set();thread.join(3)
-                self.release.clear()
+                finally:
+                    self.release.set();thread.join(3)
+                    self.assertFalse(thread.is_alive(),'Owned cancellation waiter must finish')
+                    if self.entered.is_set():
+                        self.assertTrue(self.finished.wait(3),'Owned source handler must finish before the next mode')
 
     def test_actual_deadline_reaps_stalled_response(self):
         self.mode='held_headers';began=time.monotonic()

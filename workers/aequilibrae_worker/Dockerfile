@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM python:3.11-slim
 
 # Install system dependencies for spatialite + AequilibraE
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -24,6 +24,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # TWICE (mode_choice.py, then time_of_day.py); a glob makes that impossible.
 # Test/off-run-path scripts ride along harmlessly (CMD runs only main.py).
 COPY *.py .
+RUN python -c "from model_assignment_graph_adapter import supported_engine; supported_engine()"
 COPY data/ data/
 
 # Set environment defaults for cloud
