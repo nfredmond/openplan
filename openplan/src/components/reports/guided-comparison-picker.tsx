@@ -40,7 +40,7 @@ function ProjectGuidedComparisonPicker({ projectId, value, onChange, disabled = 
         {options.map((option) => <option key={option.id} value={option.id}>{option.label} ({option.id})</option>)}
       </select>
     </label>
-    <p className="text-sm text-muted-foreground">Choose an exact saved snapshot. It includes four separate model outputs. Save verifies its files and custody. Prototype and inconclusive findings remain limited.</p>
+    <p className="text-sm text-muted-foreground">Choose an exact saved snapshot. It includes four separate model outputs. Saving checks that its files match the saved comparison. Prototype and inconclusive findings remain limited.</p>
     {disabled || !projectId ? <p className="text-sm text-muted-foreground">Saved comparisons apply to project analysis summaries. Choose a project and that report type to select one.</p> : null}
     {state.loading && !disabled && projectId ? <p role="status">Reading saved comparisons...</p> : null}
     {!disabled && projectId && state.error ? <p role="alert">{state.error}</p> : !disabled && projectId && !state.loading && options.length === 0 ? <p>No ready guided snapshots are available for this project.</p> : null}

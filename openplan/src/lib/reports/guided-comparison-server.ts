@@ -12,7 +12,7 @@ import {
   type ModelRunArtifactRow, type ModelRunStageRow, type ScenarioComparisonModelRunLinkRow,
 } from "@/lib/models/guided-model-evidence";
 import { isGuidedProjectComparisonModel, usesGuidedWorkerNetwork, parseGuidedBuildAssumption } from "@/lib/models/project-comparison";
-import { isModelingClaimStatus } from "@/lib/models/evidence-backbone";
+import { isModelingClaimStatus, resolveModelingClaimDecision } from "@/lib/models/evidence-backbone";
 import { readAttemptInstruments } from "@/lib/models/attempt-instrument-read";
 import { buildGuidedComparisonResults, type GuidedComparisonDecision } from "@/lib/models/guided-comparison-results";
 import { GUIDED_REPORT_CAVEATS, guidedReportCanonicalJson, objectRecord, type GuidedComparisonOption, type GuidedComparisonReportPayload, type GuidedComparisonSelectionV1 } from "./guided-comparison";
@@ -28,8 +28,7 @@ export const GUIDED_REPORT_LINK_COLUMNS = "comparison_snapshot_id, model_run_id,
 export const GUIDED_REPORT_KPI_COLUMNS = "id, run_id, attempt_id, kpi_name, kpi_label, kpi_category, value, unit, geometry_ref, breakdown_json, created_at";
 export const GUIDED_REPORT_ARTIFACT_COLUMNS = "id, run_id, stage_id, attempt_id, artifact_type, file_url, file_size_bytes, content_hash, metadata_json, created_at";
 const uuid = z.string().uuid();
-const requestSchema = z.object({ snapshotId: uuid }).strict();
-export const guidedComparisonRequestSchema = requestSchema.nullable().optional();
+export { guidedComparisonRequestSchema } from "./guided-comparison-request";
 
 function requireEvidence(condition: unknown, reason: string): asserts condition {
   if (!condition) throw new Error(`Guided comparison cannot be included: ${reason}`);
@@ -255,8 +254,13 @@ export async function verifyGuidedComparisonReport(input: {
       row.demand_method === link.method && row.model_output_artifact_id === output.id && row.model_output_sha256 === output.content_hash), "exact attempt-bound validation is missing or ambiguous.") : null;
     // Managed scientific projections are refused by the existing schema. Its
     // attempt instrument supports only inconclusive, prototype disclosure.
+    // This is report data derived from evidence, never a persisted tier change.
+    const disclosure = instrument ? resolveModelingClaimDecision({
+      track, validationResults: [], requiredMetricKeys: [],
+      prototypeReasons: ["The exact attempt-bound validation instrument is inconclusive; no stronger scientific projection is authorized."],
+    }) : null;
     const decision: Decision = instrument ? { id: instrument.id, workspace_id: workspaceId, model_run_id: run.id, track,
-      claim_status: "prototype_only", status_reason: "The exact attempt-bound validation instrument is inconclusive; no stronger scientific projection is authorized.",
+      claim_status: disclosure!.claimStatus, status_reason: disclosure!.statusReason,
       source: "model_attempt_instrument_custody" } : exactlyOne(decisions.filter((row) => row.model_run_id === run.id && row.track === track), "a track-matched decision is missing or ambiguous.");
     requireEvidence(isModelingClaimStatus(decision.claim_status), "the claim status is unsupported.");
     const validation: Row = instrument ? { ...instrument, track } : exactlyOne(assessments.filter((row) => row.model_run_id === run.id && row.track === track && row.model_output_artifact_id === output.id), "exact output validation custody is missing or ambiguous.");

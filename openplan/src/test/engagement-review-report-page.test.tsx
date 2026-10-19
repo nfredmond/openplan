@@ -1,5 +1,11 @@
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+// This suite owns a different report path. An unexpected guided verification
+// must fail instead of reaching private artifact readers or service credentials.
+vi.mock("@/lib/reports/guided-comparison-server", () => ({
+  verifyGuidedComparisonReport: vi.fn(() => { throw new Error("Unexpected guided comparison verification"); }),
+}));
 import { loadEngagementReviewReportPage } from '@/components/reports/specialized-report-page';
 import ReportDetailPage from '@/app/(app)/reports/[reportId]/page';
 

@@ -269,6 +269,15 @@ describe("no registered action's execution path can write a tier", () => {
  * every assertion above pass by finding nothing.
  */
 describe("the write-surface extraction this guard rests on", () => {
+  it("keeps a read-only SQL projection and tier comparison separate from writes", () => {
+    expect(writtenColumns('db.from("modeling_claim_decisions").select("model_run_id, claim_status").eq("claim_status", "prototype_only")')).toEqual([]);
+  });
+
+  it("detects tier writes even when the value comes from a disclosure projection", () => {
+    expect(writtenColumns('db.from("modeling_claim_decisions").update({ claim_status: disclosure.claimStatus })')).toContain("claim_status");
+    expect(writtenColumns('const row = { claim_status: disclosure.claimStatus }; db.from("modeling_claim_decisions").upsert(row)')).toContain("claim_status");
+    expect(writtenColumns('db.from("modeling_claim_decisions").insert([{ claim_status: "prototype_only" }])')).toContain("claim_status");
+  });
   it("reads the first key of an object, not just its siblings", () => {
     expect(topLevelObjectKeys("{\n  claim_status: x,\n  other: y,\n}")).toEqual(["claim_status", "other"]);
   });

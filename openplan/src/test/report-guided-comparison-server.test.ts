@@ -110,6 +110,18 @@ describe("exact saved guided comparison report verifier", () => {
     expect(sealed.payload.sources).toHaveLength(4);
     expect(sealed.payload.sources.every((source) => source.decision.claim_status === "prototype_only" && source.validation.scientific_outcome === "inconclusive")).toBe(true);
     expectExactSources(sealed, f);
+    for (const source of sealed.payload.sources) {
+      const instrument = f.tables.model_attempt_instrument_custody.find((row) => row.model_run_id === source.runId)!;
+      // The resolver must preserve the former read-only projection byte for byte
+      // when serialized into the retained report binding.
+      expect(source.decision).toEqual({
+        id: instrument.id, workspace_id: REPORT_WORKSPACE, model_run_id: source.runId,
+        track: source.method === "aequilibrae" ? "assignment" : "behavioral_demand",
+        claim_status: "prototype_only",
+        status_reason: "The exact attempt-bound validation instrument is inconclusive; no stronger scientific projection is authorized.",
+        source: "model_attempt_instrument_custody",
+      });
+    }
     expect(mocks.rpc.mock.calls.some(([name]) => name === "read_guided_comparison_report_kpi_custody")).toBe(false);
     expect(f.db.log).toEqual(expect.arrayContaining([expect.objectContaining({ table: "model_attempt_instrument_custody", filters: expect.arrayContaining([["workspace_id", REPORT_WORKSPACE]]) })]));
   });

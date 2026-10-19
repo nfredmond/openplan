@@ -4,6 +4,13 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { cleanup, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { stripSourceComments } from "@/test/helpers/source-text";
+
+// This suite owns a different report path. An unexpected guided verification
+// must fail instead of reaching private artifact readers or service credentials.
+vi.mock("@/lib/reports/guided-comparison-server", () => ({
+  verifyGuidedComparisonReport: vi.fn(() => { throw new Error("Unexpected guided comparison verification"); }),
+}));
 
 /**
  * A REPORT-LANE RUN CITATION MUST TRAVEL WITH ITS CLAIM TIER, AND A CITATION
@@ -558,39 +565,52 @@ describe("report-lane run citations carry their claim tier", () => {
    *
    * Everything above proves `buildReportHtml` renders a tier it is GIVEN, and
    * that `withCitedModelRunClaimTiers` resolves one. Neither proves the packet
-   * a planner downloads carries it — and for one session it did not: the
-   * generate route assembled `citedModelRuns` from its own `model_runs`
-   * projection at two separate sites and wrapped neither, so
+   * a planner downloads carries it. For one session it did not: the generate
+   * route assembled citations from its own `model_runs` projection at two
+   * separate sites and wrapped neither, so
    * `citedModelRunClaimTierLine` was dead code in production while every test
    * above was green. That is the shipped-invisible class, and only a check at
    * the CALL SITE catches it.
    *
    * This is deliberately a source assertion rather than a driven route test:
    * the generate route needs ~40 tables' worth of fixtures to reach the HTML
-   * builder, and the fact worth guarding is one mechanical thing — that no
-   * `citedModelRuns` is built without the shared lookup. A driven test is
-   * better and would supersede this; a missing test is worse than both.
+   * builder. Campaign and manual rows still need the shared lookup. The
+   * standard packet now merges manual rows with separately verified guided
+   * rows, so its final array is not a third lookup site. Name all three
+   * producers and keep both calls covered. This regex inventory does not
+   * establish data flow through arbitrary aliases or later reassignments.
    */
   describe("the generate route's own call sites", () => {
-    it("wraps every citedModelRuns it builds in the shared claim-tier lookup", () => {
-      const source = readFileSync(
+    it("keeps campaign and manual citations in the shared lookup and merges verified guided tiers", () => {
+      const source = stripSourceComments(readFileSync(
         path.join(process.cwd(), "src", "app", "api", "reports", "[reportId]", "generate", "route.ts"),
         "utf8"
+      ));
+
+      const assignments = Array.from(
+        source.matchAll(/\bconst\s+(citedModelRuns|manualCitedModelRuns)\s*=\s*([\s\S]*?);/g),
+        (match) => ({ name: match[1], initializer: match[2].trim(), offset: match.index })
       );
 
-      const assignments = source.match(/const\s+citedModelRuns\s*=\s*(await\s+)?[A-Za-z_$][\w$]*/g) ?? [];
+      // An exact inventory makes a renamed, missing or added producer explicit.
+      expect(assignments.map(({ name }) => name), "citation producer inventory changed").toEqual([
+        "citedModelRuns", "manualCitedModelRuns", "citedModelRuns",
+      ]);
+      const [campaign, manual, merged] = assignments;
 
-      // Guard the guard: if this finds nothing the assertion below passes
-      // vacuously, and the route was refactored out from under it.
-      expect(assignments.length, "no `const citedModelRuns =` found — this scan is stale").toBeGreaterThanOrEqual(2);
-
-      const unwrapped = assignments.filter(
-        (assignment) => !assignment.includes("withCitedModelRunClaimTiers")
-      );
-      expect(
-        unwrapped,
-        "a packet built from these rows renders no claim tier — wrap them in withCitedModelRunClaimTiers"
-      ).toEqual([]);
+      expect(campaign.initializer, "campaign citations bypass the shared claim-tier lookup")
+        .toMatch(/^await\s+withCitedModelRunClaimTiers\(\s*supabase\s*,\s*campaignRunLinkRows\b/);
+      expect(manual.initializer, "manual citations bypass the shared claim-tier lookup")
+        .toMatch(/^await\s+withCitedModelRunClaimTiers\(\s*supabase\s*,\s*reportRunLinkRows\b/);
+      expect(merged.initializer, "the standard packet drops the wrapped manual citations")
+        .toMatch(/^\[\s*\.\.\.manualCitedModelRuns\s*,/);
+      expect(merged.initializer, "guided citations must come from the verified selection")
+        .toMatch(/\.\.\.\(guidedComparison\?\.payload\.sources\s*\?\?\s*\[\]\)\.map\(\(source\)\s*=>\s*\(\{/);
+      expect(merged.initializer, "guided citations must carry their verified decision")
+        .toMatch(/claimStatus:\s*source\.decision\.claim_status\b/);
+      const guidedVerification = /\bguidedComparison\s*=\s*await\s+verifyGuidedComparisonReport\(/.exec(source);
+      expect(guidedVerification?.index ?? Infinity, "guided verification must precede merged citations in source")
+        .toBeLessThan(merged.offset);
     });
   });
 });
