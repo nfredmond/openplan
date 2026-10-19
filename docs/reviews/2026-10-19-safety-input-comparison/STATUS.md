@@ -82,3 +82,5 @@ candidate includes the reviewed exact-money and HIN dependencies. Current CI,
 upgrade, concurrent interleavings and broader recovery remain open. Full Safety
 plans, qualified effects, full geographic coverage, exact-year SS4A mapping,
 hosted operation and separate model acceptance are unfinished. M6 is in progress.
+
+PR357 CI schema inventory correction: four comparison tables and their four SELECT policies are now counted. Three internal columns have SQL-read or write-only explanations; the existing content_text explanation moves to name collisions. The source guard cohort passes all 37 tests in baseline, harmless and restored runs. Seven targeted faults fail for their intended assertions; restoration and scoped lint pass. The ordinary outer exits zero in 39.835 seconds. Reviewed application and migration bytes remain unchanged. These source controls do not establish installed catalogue, browser or scientific acceptance. Private logs remain outside the repository.

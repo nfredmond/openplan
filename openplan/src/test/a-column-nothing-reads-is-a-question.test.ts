@@ -73,6 +73,9 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   category: Category;
   reason: string;
 }> = [
+  { column: "report_safety_comparison_revisions.acquisition_id", category: "READ_IN_SQL", reason: "The source-mutation fence locates retained comparisons by acquisition identity, and generation locks that exact acquisition before checking retained source custody." },
+  { column: "report_safety_comparison_members.members_text", category: "READ_IN_SQL", reason: "The JSON equality constraint compares the original serialized member manifest with members; the generated digest hashes these retained bytes. Application exports use the structured manifest." },
+  { column: "report_safety_comparison_members.members_hash", category: "WRITE_ONLY", reason: "The database stores a digest of the serialized internal member manifest. No current application or SQL reader selects this digest; it is retained audit metadata, not a claimed verification result." },
   { column: "rtp_extraction_runs.manual_request_id", category: "READ_IN_SQL", reason: "stage_rtp_manual_source_proposal locates the retained run by workspace and request identity; the partial unique index prevents a second run for that same request." },
   { column: "rtp_extraction_runs.manual_request_payload", category: "READ_IN_SQL", reason: "stage_rtp_manual_source_proposal compares the complete retained request JSON on retry before returning the original candidate, refusing a changed payload." },
   { column: "rtp_extraction_runs.manual_payload_sha256", category: "READ_IN_SQL", reason: "stage_rtp_manual_source_proposal compares the retained request digest on retry alongside the original payload before returning the existing proposal." },
@@ -146,7 +149,6 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   { column: "engagement_synthesis_approval_events.event_text", category: "READ_IN_SQL", reason: "The private packet and history RPCs return the original event bytes. Native custody tests read them; the staff browser connection is still under development." },
   { column: "engagement_synthesis_approval_events.intent_json", category: "READ_IN_SQL", reason: "The service-only approval writer compares the complete stored command before recovering an exact retry, including actor, reason and all version/source bindings." },
   { column: "engagement_synthesis_approval_events.predecessor_sha256", category: "READ_IN_SQL", reason: "The composite predecessor foreign key reads this hash with review_id and predecessor_id to enforce the same exact earlier event independently of the writer's comparison." },
-  { column: "engagement_synthesis_review_revisions.content_text", category: "READ_IN_SQL", reason: "read_engagement_synthesis_review returns exact contentText for server verification and staff display; the retain RPC compares unchanged correction bytes." },
   { column: "engagement_synthesis_review_revisions.content_title", category: "READ_IN_SQL", reason: "list_engagement_synthesis_reviews reads this generated title from the current revision and returns it in staff source history." },
   { column: "engagement_synthesis_review_revisions.intent_json", category: "READ_IN_SQL", reason: "The retain RPC compares exact retry commands; read_engagement_synthesis_review returns intent for server replay and lineage verification." },
   { column: "engagement_synthesis_review_revisions.parent_sha256", category: "READ_IN_SQL", reason: "Review read and revision history RPCs return parentSha256; the server checks that it matches the exact retained predecessor." },
@@ -394,6 +396,7 @@ const TOO_GENERIC = new Set([
  * SQL custody explanations without claiming table-specific application readers.
  */
 const NAME_COLLISIONS = [
+  { column: "engagement_synthesis_review_revisions.content_text", category: "READ_IN_SQL", reason: "read_engagement_synthesis_review returns exact contentText for server verification and staff display; the retain RPC compares unchanged correction bytes." },
   { column: "model_legacy_artifact_receipts.artifact_id", category: "READ_IN_SQL", reason: "record_legacy_model_artifact selects the saved receipt by its prepared artifact identity before deciding whether to insert a row." },
   { column: "model_artifact_write_context.artifact_id", category: "READ_IN_SQL", reason: "The managed-output trigger matches this exact record identity with the current transaction and attempt before allowing insertion." },
   { column: "land_use_plan_implementation_report_commands.command_text", category: "READ_IN_SQL", reason: "The implementation report transaction compares exact original request bytes before replaying its retained receipt." },

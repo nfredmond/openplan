@@ -498,12 +498,14 @@ const EXPECTED = {
   // permissive member SELECT policy and no client write policy. Source delta
   // is +2 policies, permissive policies and policy-bearing tables. This is a
   // source inventory expectation, not a fresh installed-catalog observation.
-  policies: 764,
-  permissive: 513,
+  // 20261019120000 adds four public immutable comparison tables, each with
+  // one permissive member SELECT policy. No client write policy is added.
+  policies: 768,
+  permissive: 517,
   restrictive: 251,
   permissiveWrites: 278,
   expanded: 286,
-  tablesWithPolicies: 232,
+  tablesWithPolicies: 236,
   // 20261014000013 adds three generation custody tables with RLS and no client policies.
   // Installed isolated catalog confirms all three; no application view or policy is added.
   // Migration 20 adds the private public-translation mapping table, RLS and no policies.
@@ -569,13 +571,15 @@ const EXPECTED = {
   // Deadline journal contributes one RLS table; Safety migration 000002 adds
   // funding_opportunity_safety_seeds and report_safety_snapshot_persistence.
   // Each is an ordinary RLS table; no view is added.
-  relations: 327,
-  tables: 313,
+  // The same comparison migration adds four public RLS tables and no view.
+  // Its transaction-entry table lives in a private schema outside this scan.
+  relations: 331,
+  tables: 317,
   // 20261019000002 adds eight manual-source fields to existing rtp_extraction_runs.
   // It adds no relation, view, RLS table or policy. The manual migration leaves relation counts unchanged.
   // The complete run fieldset below checks the additive columns at source tier.
   views: 14,
-  rlsEnabledTables: 313,
+  rlsEnabledTables: 317,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */
