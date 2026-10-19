@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 from unittest.mock import Mock, patch
 import unittest
+from urllib.parse import parse_qs, urlsplit
 
 # Import the actual dispatcher without loading operator credentials.
 with patch('dotenv.load_dotenv'), patch.dict(os.environ, {
@@ -31,8 +32,20 @@ class OrdinaryPopulationDispatchTests(unittest.TestCase):
         stage = copy.deepcopy(f.tables['model_run_stages'][1])
         stage['status'] = 'queued'
         run = copy.deepcopy(f.tables['model_runs'][1])
+        run['run_title'] = 'Supplied population reuse'
         published, patches = [], []
         def get(url, **kwargs):
+            parsed = urlsplit(url)
+            if parsed.path.endswith('/model_runs') and parsed.query:
+                query = parse_qs(parsed.query)
+                self.assertEqual(query['id'], ['eq.' + f.consumer_id])
+                selected = query['select'][0].split(',')
+                self.assertEqual(set(selected), {
+                    'id', 'workspace_id', 'model_id', 'project_id', 'scenario_set_id',
+                    'scenario_entry_id', 'status', 'attempt_managed', 'corridor_geojson',
+                    'query_text', 'engine_key', 'run_title', 'input_snapshot_json',
+                    'assumption_snapshot_json'})
+                return response([{key: run[key] for key in selected}])
             if '?' in url:
                 # The normal dispatcher sees later work, so this is not parent completion.
                 return response([{'status': 'queued'}])
@@ -48,7 +61,6 @@ class OrdinaryPopulationDispatchTests(unittest.TestCase):
             stack.enter_context(patch.object(model_attempt_writer, 'current', return_value=None))
             stack.enter_context(patch.object(main, '_CUSTODY', Mock()))
             stack.enter_context(patch.object(main, 'sb_claim_stage', return_value=True))
-            stack.enter_context(patch.object(main, 'sb_get_run', return_value=run))
             stack.enter_context(patch.object(main, 'sb_patch_run'))
             stack.enter_context(patch.object(main, 'sb_patch_stage', side_effect=lambda sid, value: patches.append(value)))
             stack.enter_context(patch.object(main, 'resolve_zone_attributes', return_value=(f.zone_payload(f.consumer_id), {})))
@@ -58,7 +70,7 @@ class OrdinaryPopulationDispatchTests(unittest.TestCase):
             stack.enter_context(patch.object(main, 'stage_setup', return_value={'log': 'Supplied engine boundary'}))
             stack.enter_context(patch.object(main, 'sb_record_retained_artifact', side_effect=artifact))
             self.assertTrue(main.process_stage(stage))
-        self.assertEqual(len(published), 7)
+        self.assertEqual(len(published), 7, patches)
         self.assertEqual({p['artifact_type'] for p, _ in published}, {
             'common_population', 'common_population_households', 'common_population_persons',
             'common_population_selected_zones', 'common_population_diagnostics',

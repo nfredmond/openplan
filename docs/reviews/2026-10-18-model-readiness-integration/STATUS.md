@@ -97,3 +97,16 @@ remain failed in private records. The migration is applied only to the isolated
 test schema, without a migration-history entry. No hosted rollout, fresh
 four-model-run journey, browser acceptance, scientific validation or v1 closure
 follows from this checkpoint. Historical runs and studies remain unchanged.
+
+
+The first fresh baseline fails Setup before synthesis. Its actual normal reader
+omits the custody flag and scope columns; the entry test had supplied a full row.
+The correction expands the actual projection and makes that test use a
+projection-aware HTTP response. The ordinary-entry and authority suites pass;
+removing each of six required columns causes its intended assertion failure,
+with exact restoration. The failed run remains failed. Both workers stop idle.
+The first production build fails at excessive page-worker spawning; a fresh
+single-worker build passes compilation, TypeScript and all 145 static pages.
+The identified app reaches the real baseline review through normal navigation.
+Readable desktop and 390-pixel captures show no horizontal overflow. No new
+baseline or scientific success is claimed from this correction.
