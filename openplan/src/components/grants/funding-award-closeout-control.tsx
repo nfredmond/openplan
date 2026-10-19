@@ -181,7 +181,7 @@ function CloseoutCoverageBreakdown({ breakdown }: { breakdown: CloseoutInvoiceBr
     return (
       <p className="mt-2 text-xs text-muted-foreground">
         The refusal arrived without its invoice breakdown, so the split across paid, submitted and open
-        invoices is not shown here. The billing register for this project is the record.
+        invoices is not shown here. See the invoice details in this project’s billing register.
       </p>
     );
   }

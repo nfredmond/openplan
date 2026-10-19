@@ -1,7 +1,12 @@
 // Caller/query mocks cannot establish live RLS or native SQL behavior.
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { NextRequest } from "next/server";
 vi.mock("server-only", () => ({}));
-const { createClientMock, serviceMock } = vi.hoisted(() => ({ createClientMock: vi.fn(), serviceMock: vi.fn() }));
+const { createClientMock, serviceMock, auditFactory, audit } = vi.hoisted(() => ({
+  createClientMock: vi.fn(), serviceMock: vi.fn(), auditFactory: vi.fn(),
+  audit: { info: vi.fn(), warn: vi.fn(), error: vi.fn() },
+}));
+vi.mock("@/lib/observability/audit", () => ({ createApiAuditLogger: auditFactory }));
 vi.mock("@/lib/supabase/server", () => ({ createClient: createClientMock, createServiceRoleClient: serviceMock }));
 
 import { GET } from "@/app/api/funding-awards/[awardId]/closure-history/route";
@@ -41,10 +46,11 @@ function client() {
     }),
   };
 }
-const request = () => GET(new Request(`http://localhost/api/funding-awards/${AWARD}/closure-history`), { params: Promise.resolve({ awardId: AWARD }) });
+const request = () => GET(new NextRequest(`http://localhost/api/funding-awards/${AWARD}/closure-history`), { params: Promise.resolve({ awardId: AWARD }) });
 
 beforeEach(() => {
   vi.clearAllMocks();
+  auditFactory.mockReturnValue(audit);
   calls = [];
   user = { id: ACTOR };
   authError = null;
@@ -59,6 +65,24 @@ beforeEach(() => {
 });
 
 describe("caller-scoped award closure history", () => {
+  it("invokes the route audit and emits the outcome without retained notes", async () => {
+    const incoming = new NextRequest(`http://localhost/api/funding-awards/${AWARD}/closure-history`);
+    expect((await GET(incoming, { params: Promise.resolve({ awardId: AWARD }) })).status).toBe(200);
+    expect(auditFactory).toHaveBeenCalledWith("funding-awards.closure-history", incoming);
+    expect(audit.info).toHaveBeenCalledWith("history_read_succeeded", { receiptCount: 1 });
+    expect(JSON.stringify(audit.info.mock.calls)).not.toContain(receipt.basis.note);
+  });
+
+  it("audits authentication refusal and a rejected read without private details", async () => {
+    user = null;
+    expect((await request()).status).toBe(401);
+    expect(audit.warn).toHaveBeenCalledWith("authentication_required");
+    user = { id: ACTOR };
+    createClientMock.mockRejectedValueOnce(new Error("Private transport detail"));
+    expect((await request()).status).toBe(503);
+    expect(audit.error).toHaveBeenCalledWith("history_read_exception");
+    expect(JSON.stringify(audit.error.mock.calls)).not.toContain("Private transport detail");
+  });
   it("allows a current viewer and asserts exact projection, count, both filters and deterministic order after access reads", async () => {
     const response = await request();
     expect(response.status).toBe(200);
@@ -105,7 +129,7 @@ describe("caller-scoped award closure history", () => {
   });
 
   it("refuses invalid award IDs without creating a client", async () => {
-    const response = await GET(new Request("http://localhost"), { params: Promise.resolve({ awardId: "bad" }) });
+    const response = await GET(new NextRequest("http://localhost"), { params: Promise.resolve({ awardId: "bad" }) });
     expect(response.status).toBe(400);
     expect(createClientMock).not.toHaveBeenCalled();
   });

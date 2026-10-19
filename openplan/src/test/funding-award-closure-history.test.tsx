@@ -83,7 +83,7 @@ describe("discoverable retained award transition reader", () => {
     const view = render(<FundingAwardClosureHistory awardId={AWARD} refreshKey="legacy-basis" />);
     showHistory();
     await screen.findByText("Closed on recorded paid coverage (earned_coverage)");
-    expect(section()).toHaveTextContent("Retained basis unassessed");
+    expect(section()).toHaveTextContent("Retained closure details are unassessed");
     expect(section()).not.toHaveTextContent("Retained paid amount:");
     expect(view.container.querySelector("pre")?.textContent).toBe(JSON.stringify(basis, null, 2));
   });

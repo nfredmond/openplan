@@ -29,7 +29,7 @@ function Receipt({ receipt }: { receipt: AwardClosureReceipt }) {
         <div><dt className="inline font-semibold">Actor ID: </dt><dd className="inline">{receipt.actor_id}</dd></div>
       </dl>
       {basis.kind === "unassessed" ? (
-        <p>Retained basis unassessed. Its legacy or malformed shape cannot support a reason, destination or financial summary here.</p>
+        <p>Retained closure details are unassessed. Their legacy or malformed format cannot support a reason, destination or financial summary here.</p>
       ) : (
         <div className="space-y-1 whitespace-pre-wrap break-words">
           <p><strong>{basis.kind === "reopen" ? "Reopen reason" : "Stated close-out basis"}: </strong>{basis.note ?? "Not recorded"}</p>
@@ -41,7 +41,7 @@ function Receipt({ receipt }: { receipt: AwardClosureReceipt }) {
               <p><strong>Retained paid amount: </strong>{basis.currency} {basis.paid}</p>
             </>
           )}
-          <p><strong>Previous closure basis: </strong>{basis.previousClosure.basis ?? "Not recorded"}</p>
+          <p><strong>Previous closure type: </strong>{basis.previousClosure.basis ?? "Not recorded"}</p>
           <p><strong>Previous closure timestamp: </strong>{basis.previousClosure.closedAt ?? "Not recorded"}</p>
           <p><strong>Previous closure note: </strong>{basis.previousClosure.note ?? "Not recorded"}</p>
         </div>
