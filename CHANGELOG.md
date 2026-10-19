@@ -20,6 +20,12 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Source-page plan proposals:** Document review can stage quoted records from a
+retained page without an AI account. Pending proposals have their own pages,
+separate from reading history. Manual chapter copies retain source authorship;
+review and saving remain explicit. Apply
+`20261019000002_rtp_manual_source_page_proposals.sql` before deploying this capability.
+
 **Compact assignment graph preparation:** a worker-owned adapter checks complete
 car-eligible link incidence before excluding a proved nontraversable sink chain.
 It retains the native compressor's IDs and checks signed path correspondence

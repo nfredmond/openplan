@@ -1,0 +1,9 @@
+# RTP source-page intake, October 18, 2026
+
+Document review can stage any of its six existing source-record kinds from one retained page without an AI account. The form preserves a quoted page/version and request identity. A service-only transaction rechecks current access and source identity, then retains a pending proposal. Nothing is accepted, published or adopted automatically. Manual chapter copies retain their actual authorship without an invented model.
+
+Pending numeric proposals now page independently from recent reading history. The oldest records stay reachable beyond 50 runs. Exact counts and source reads disclose incomplete responses; reconciliation covers the displayed page. Separate history and chapter review remain available.
+
+Independent source review accepts the bounded correction after one P2 finding. The first ordinary test run stops at297 passes and one ambiguous legacy selector, preserved privately. The corrected harmless and restored cohorts each pass298 tests across16 files;19 targeted faults fail the intended assertions, with exact restoration and lint. A separate37-case cohort and six faults cover nullable-model readers, page bounds, chapter source drift and agent refusal. Both final wrappers exit0. The first wrapper's printed elapsed value is invalid because a source offset reused its timer variable; systemd records121.089 seconds. Raw evidence remains private.
+
+Migration20261019000002 remains unapplied. These mocked route/DOM and reader checks do not prove SQL/RLS, PostgREST cursor semantics, concurrent snapshots, native privileges, browser navigation, responsive layout or complete predecessor coverage. Build, isolated native tests and an identified workflow journey remain open. Source authority, column attribution, OCR accuracy and legal adoption are separate. Full RTP and v1 remain open.
