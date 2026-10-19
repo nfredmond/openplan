@@ -156,10 +156,71 @@ class HouseholdConversion(unittest.TestCase):
         self.assertEqual(rows[0]["HHT"], 0)
         self.assertEqual(accounting["hht_unreported"], 1)
 
-    def test_the_vintage_guard_refuses_a_repointed_endpoint(self):
-        mtc.check_income_vintage("https://api.census.gov/data/2022/acs/acs5")
-        with self.assertRaises(mtc.MtcInputError):
-            mtc.check_income_vintage("https://api.census.gov/data/2023/acs/acs5")
+    def test_the_vintage_guard_accepts_only_matching_verified_products(self):
+        for year in (2022, 2023):
+            summary = f"https://api.census.gov/data/{year}/acs/acs5"
+            self.assertEqual(mtc.check_income_vintage(summary, summary + "/pums"), year)
+        with self.assertRaisesRegex(mtc.MtcInputError, "years must match"):
+            mtc.check_income_vintage(
+                "https://api.census.gov/data/2023/acs/acs5",
+                "https://api.census.gov/data/2022/acs/acs5/pums",
+            )
+        with self.assertRaisesRegex(mtc.MtcInputError, "no verified Census vintage profile"):
+            mtc.check_income_vintage(
+                "https://api.census.gov/data/2024/acs/acs5",
+                "https://api.census.gov/data/2024/acs/acs5/pums",
+            )
+
+    def test_2023_household_conversion_and_caveat_use_2023_dollars(self):
+        summary = "https://api.census.gov/data/2023/acs/acs5"
+        kwargs = {"acs5_url": summary, "pums_url": summary + "/pums"}
+        rows, accounting = mtc.mtc_households([FITTED_HOUSEHOLD], **kwargs)
+        # Independent expected value: round(100000 * 172.2 / 304.702).
+        self.assertEqual(rows[0]["income"], 56514)
+        self.assertEqual(accounting["income_source_dollar_year"], 2023)
+        self.assertEqual(accounting["income_dollar_year"], 2000)
+        self.assertIn("304.702 (2023)", accounting["income_deflator_basis"])
+        self.assertTrue(any("172.2/304.702" in caveat and "2023" in caveat for caveat in mtc.mtc_config_caveats(**kwargs)))
+
+    def test_the_existing_no_argument_call_uses_the_adapters_checked_pair(self):
+        from unittest import mock
+
+        for year, expected in ((2022, 58841), (2023, 56514)):
+            summary = f"https://api.census.gov/data/{year}/acs/acs5"
+            with mock.patch.multiple(cp, ACS_5_URL=summary, PUMS_URL=summary + "/pums"):
+                rows, accounting = mtc.mtc_households([FITTED_HOUSEHOLD])
+                caveats = mtc.mtc_config_caveats()
+            self.assertEqual(rows[0]["income"], expected)
+            self.assertEqual(accounting["income_source_dollar_year"], year)
+            self.assertTrue(any(f"source dollar year {year}" in caveat for caveat in caveats))
+
+    def test_household_conversion_refuses_a_mixed_configured_pair(self):
+        from unittest import mock
+
+        with mock.patch.multiple(
+            cp,
+            ACS_5_URL="https://api.census.gov/data/2023/acs/acs5",
+            PUMS_URL="https://api.census.gov/data/2022/acs/acs5/pums",
+        ):
+            with self.assertRaisesRegex(mtc.MtcInputError, "years must match"):
+                mtc.mtc_households([FITTED_HOUSEHOLD])
+            with self.assertRaisesRegex(mtc.MtcInputError, "years must match"):
+                mtc.mtc_config_caveats()
+
+    def test_a_supported_population_profile_still_needs_a_verified_deflator(self):
+        from unittest import mock
+
+        summary = "https://api.census.gov/data/2023/acs/acs5"
+        with mock.patch.dict(mtc.CPI_U_ANNUAL_BY_SOURCE_YEAR, {2022: 292.655}, clear=True):
+            with self.assertRaisesRegex(mtc.MtcInputError, "No verified year-2000 income conversion"):
+                mtc.check_income_vintage(summary, summary + "/pums")
+
+    def test_unrelated_household_metadata_does_not_change_income_conversion(self):
+        summary = "https://api.census.gov/data/2023/acs/acs5"
+        kwargs = {"acs5_url": summary, "pums_url": summary + "/pums"}
+        original = mtc.mtc_households([FITTED_HOUSEHOLD], **kwargs)
+        harmless = mtc.mtc_households([{**FITTED_HOUSEHOLD, "unrelated_note": "fixture"}], **kwargs)
+        self.assertEqual(original, harmless)
 
 
 class PersonConversion(unittest.TestCase):

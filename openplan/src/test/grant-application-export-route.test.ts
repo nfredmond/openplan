@@ -1,3 +1,5 @@
+import { buildSafetySeedPreview } from "@/lib/grants/ss4a-safety-seed";
+import { safetySeedFixture, seedId } from "./fixtures/grants/safety-seed";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
@@ -65,8 +67,9 @@ import { POST as exportApplication } from "@/app/api/funding-opportunities/[oppo
 import { WORKSPACE_STORAGE_UNREADABLE_MESSAGE, workspaceStorageFullMessage } from "@/lib/workspaces/storage-quota";
 import { GET as downloadExport } from "@/app/api/funding-opportunities/[opportunityId]/application/export/[exportId]/download/route";
 
-type QueryResult = { data: unknown; error: { message: string; code?: string } | null };
+type QueryResult = { count?: number | null; data: unknown; error: { message: string; code?: string } | null };
 type QueryChain = Record<string, ReturnType<typeof vi.fn>> & {
+  select: ReturnType<typeof vi.fn<(columns: string, options?: { count?: string }) => QueryChain>>;
   then: (resolve: (value: unknown) => unknown, reject?: (reason: unknown) => unknown) => unknown;
 };
 
@@ -81,11 +84,21 @@ function makeQuery(result: QueryResult): QueryChain {
   return chain;
 }
 
+let seedHistoryChain: QueryChain;
 function installTables(handlers: Record<string, () => QueryChain>) {
   createClientMock.mockResolvedValue({
     auth: { getUser: authGetUserMock },
     from: vi.fn((table: string) => {
       const handler = handlers[table];
+      if (table === "funding_opportunity_section_drafts") {
+        const base = handler ? handler() : makeQuery({ data: [], error: null });
+        const originalSelect = base.select;
+        base.select = vi.fn((columns: string, options?: { count?: string }) => {
+          if (columns === "id, section_id, origin, safety_seed_id, grounding_json") return seedHistoryChain;
+          return originalSelect(columns, options);
+        });
+        return base;
+      }
       if (!handler) throw new Error(`Unexpected table: ${table}`);
       return handler();
     }),
@@ -196,6 +209,7 @@ const postContext = { params: Promise.resolve({ opportunityId: OPPORTUNITY_ID })
 
 beforeEach(() => {
   vi.clearAllMocks();
+  seedHistoryChain = makeQuery({ data: [], error: null, count: 0 });
   createApiAuditLoggerMock.mockReturnValue(mockAudit);
   authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
   loadFundingOpportunityAccessMock.mockResolvedValue({
@@ -234,6 +248,44 @@ beforeEach(() => {
 });
 
 describe("POST /api/funding-opportunities/[opportunityId]/application/export", () => {
+  it.each([false, true])("exports protected code origin and caveats after operator edits=%s without the AI gate", async (edited) => {
+    const provenance = buildSafetySeedPreview(safetySeedFixture()).sections[0].provenance;
+    const codeDraft = { id: DRAFT_ID, section_id: SECTION_ID, draft_markdown: "Code-built draft text.", model: null,
+      origin: "safety_plan_seed", safety_seed_id: seedId(70), grounding_json: provenance };
+    const draftChain = makeQuery({ data: [codeDraft], error: null });
+    seedHistoryChain = makeQuery({ data: [codeDraft], error: null, count: 1 });
+    let draftReads = 0;
+    installTables({
+      funding_opportunity_application_sections: () => makeQuery({ data: [{ ...finalOperatorSection, finalized_from_draft_id: DRAFT_ID,
+        final_markdown: edited ? "Operator edits, sources retained in appendix." : codeDraft.draft_markdown }], error: null }),
+      funding_opportunity_attachments: () => makeQuery({ data: [requiredMissingAttachment], error: null }),
+      funding_opportunity_section_drafts: () => draftReads++ === 0 ? draftChain : makeQuery({ data: [], error: null }),
+      funding_opportunity_application_exports: () => makeQuery({ data: exportRowResult, error: null }),
+    });
+    const response = await exportApplication(postRequest(), postContext);
+    expect(response.status).toBe(201);
+    const html = renderReportPdfMock.mock.calls[0][0];
+    expect(html).toContain(edited ? "Code-built Safety seed, operator-edited" : "Code-built Safety seed, finalized unedited");
+    expect(html).toContain(provenance.snapshotHash); expect(html).toContain(provenance.acquisitionId);
+    expect(html).toContain(provenance.caveat); expect(html).toContain("1 required attachment(s) outstanding");
+    expect(draftChain.select).toHaveBeenCalledWith("id, section_id, draft_markdown, model, grounding_json, origin, safety_seed_id");
+    expect(seedHistoryChain.eq).toHaveBeenCalledWith("workspace_id", WORKSPACE_ID);
+    expect(seedHistoryChain.eq).toHaveBeenCalledWith("opportunity_id", OPPORTUNITY_ID);
+    expect(seedHistoryChain.eq).toHaveBeenCalledWith("origin", "safety_plan_seed");
+  });
+
+  it("refuses incomplete or malformed seed-history provenance instead of dropping caveats", async () => {
+    installTables({
+      funding_opportunity_application_sections: () => makeQuery({ data: [finalOperatorSection], error: null }),
+      funding_opportunity_attachments: () => makeQuery({ data: [], error: null }),
+    });
+    seedHistoryChain = makeQuery({ data: [], error: null, count: 1 });
+    expect((await exportApplication(postRequest(), postContext)).status).toBe(503);
+    seedHistoryChain = makeQuery({ data: [{ origin: "safety_plan_seed", safety_seed_id: seedId(70), grounding_json: {} }], error: null, count: 1 });
+    expect((await exportApplication(postRequest(), postContext)).status).toBe(422);
+    expect(renderReportPdfMock).not.toHaveBeenCalled();
+  });
+
   it("refuses when a section was finalized UNEDITED from a non-exportable draft, listing the offenders", async () => {
     installTables({
       funding_opportunity_application_sections: () =>

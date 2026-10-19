@@ -1,3 +1,5 @@
+import { safetySeedFixture, seedId } from "./fixtures/grants/safety-seed";
+import { buildSafetySeedPreview } from "@/lib/grants/ss4a-safety-seed";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -134,6 +136,19 @@ afterEach(() => {
 });
 
 describe("FundingOpportunityApplicationWorkspace", () => {
+  it("shows a protected code seed in a never-AI budget section and offers explicit code finalization", async () => {
+    const provenance = buildSafetySeedPreview(safetySeedFixture()).sections[5].provenance;
+    await openWorkspace(applicationPayload({ latestDraftsBySectionId: { [BUDGET_SECTION_ID]: {
+      id: DRAFT_ID, section_id: BUDGET_SECTION_ID, draft_markdown: "[OPERATOR: Enter the approved budget.]", model: null,
+      origin: "safety_plan_seed", safety_seed_id: seedId(70), grounding_json: provenance, created_at: "2026-10-18T00:00:00Z",
+    } } }));
+    fireEvent.click(await screen.findByRole("button", { name: "Budget and cost estimate" }));
+    expect(screen.getByTestId("safety-seed-working-draft")).toHaveTextContent("Code-built Safety seed");
+    expect(screen.getByTestId("safety-seed-working-draft")).toHaveTextContent(provenance.caveat);
+    expect(screen.getByRole("button", { name: "Finalize Safety seed unedited" })).toBeEnabled();
+    expect(screen.queryByRole("button", { name: /Draft with AI/i })).toBeNull();
+  });
+
   it("offers the init affordance for an empty application and posts the explicit catalog key", async () => {
     await openWorkspace(
       applicationPayload({ sections: [], attachments: [], kbDocumentOptions: [], reportArtifactOptions: [] })

@@ -21,6 +21,7 @@ from __future__ import annotations
 import sys
 import unittest
 from pathlib import Path
+from unittest import mock
 
 SCRIPT_DIR = Path(__file__).resolve().parents[1]
 if str(SCRIPT_DIR) not in sys.path:
@@ -73,9 +74,8 @@ class SortingAHouseholdIntoItsCategory(unittest.TestCase):
         self.assertAlmostEqual(cp.adjusted_income("100000", "1.1"), 110_000.0, places=3)
 
     def test_both_spellings_of_the_adjustment_factor_are_accepted(self) -> None:
-        # The API serves 1.042311; the published flat files carry 1042311. A
-        # factor of a million applied by accident would not look like an error in
-        # any downstream number — every household would simply be rich.
+        # Official API/flat-file factors carry six implied decimals. Legacy
+        # normalized factors remain valid inputs to the pure converter.
         api_form = cp.adjusted_income("50000", "1.042311")
         file_form = cp.adjusted_income("50000", "1042311")
         self.assertAlmostEqual(api_form, file_form, places=3)
@@ -317,6 +317,146 @@ class TheRawCodesTheMtcPackageNeeds(unittest.TestCase):
         # population that cannot be coded, silently.
         self.assertIn("HHT", cp.PUMS_HOUSEHOLD_VARIABLES)
         self.assertIn("WKHP", cp.PUMS_PERSON_VARIABLES)
+
+
+class VerifiedCensusVintageProfiles(unittest.TestCase):
+    def endpoints(self, year: int) -> tuple[str, str]:
+        summary = f"https://api.census.gov/data/{year}/acs/acs5"
+        return summary, f"{summary}/pums"
+
+    def puma(self, vintage: str = "2020") -> dict:
+        return {"vintage": vintage, "state_fips": "06", "puma": "01234", "name": "Fixture PUMA"}
+
+    def response(self, field: str, **values) -> list[list[str]]:
+        header = [*cp.PUMS_HOUSEHOLD_VARIABLES, *cp.PUMS_PERSON_VARIABLES, field]
+        row = {name: "" for name in header}
+        row.update({"SERIALNO": "fixture", "HINCP": "50000", "ADJINC": "1207712", field: "01234"})
+        row.update(values)
+        return [header, [row[name] for name in header]]
+
+    def test_2022_keeps_both_puma_vintages_and_its_sample_window(self) -> None:
+        profile = cp.census_vintage_profile(*self.endpoints(2022))
+        self.assertEqual((profile.first_year, profile.final_year), (2018, 2022))
+        self.assertEqual(dict(profile.puma_fields), {"2020": "PUMA20", "2010": "PUMA10"})
+
+    def test_2023_uses_one_crosswalked_puma_and_its_own_sample_window(self) -> None:
+        profile = cp.census_vintage_profile(*self.endpoints(2023))
+        self.assertEqual((profile.first_year, profile.final_year), (2019, 2023))
+        self.assertEqual(profile.puma_fields, (("2020", "PUMA"),))
+
+    def test_a_trailing_slash_does_not_change_the_product(self) -> None:
+        # Harmless survivor anchor: endpoint spelling does not change the input basis.
+        summary, pums = self.endpoints(2022)
+        self.assertEqual(cp.census_vintage_profile(summary + "/", pums + "/"), cp.census_vintage_profile(summary, pums))
+
+    def test_mixed_years_and_unverified_products_refuse(self) -> None:
+        summary, pums = self.endpoints(2022)
+        pairs = [
+            (summary, self.endpoints(2023)[1]),
+            (self.endpoints(2023)[0], pums),
+            self.endpoints(2024),
+            (summary.replace("acs5", "acs1"), pums),
+            (summary, pums.replace("acs5", "acs1")),
+            (summary + "?key=never-log-this", pums),
+            (summary, pums.replace("api.census.gov", "unverified.example")),
+        ]
+        for pair in pairs:
+            with self.subTest(pair=pair):
+                with self.assertRaises(cp.CensusPumsError) as error:
+                    cp.census_vintage_profile(*pair)
+                self.assertNotIn("never-log-this", str(error.exception))
+
+    def test_2023_resolves_only_the_2020_boundary_layer(self) -> None:
+        summary, pums = self.endpoints(2023)
+        payload = {"features": [{"attributes": {"PUMA": "01234", "STATE": "06", "NAME": "Fixture PUMA"}}]}
+        with mock.patch.multiple(cp, ACS_5_URL=summary, PUMS_URL=pums), mock.patch.object(cp, "_get_json", return_value=payload) as fetch:
+            resolved = cp.resolve_pumas((-1, -1, 1, 1))
+        self.assertEqual(resolved, [self.puma()])
+        self.assertEqual(fetch.call_count, 1)
+        self.assertEqual(fetch.call_args.args[0], cp.PUMA_LAYERS["2020"])
+
+    def test_2022_resolves_both_boundary_vintages(self) -> None:
+        summary, pums = self.endpoints(2022)
+        payload = {"features": [{"attributes": {"PUMA": "01234", "STATE": "06", "NAME": "Fixture PUMA"}}]}
+        with mock.patch.multiple(cp, ACS_5_URL=summary, PUMS_URL=pums), mock.patch.object(cp, "_get_json", return_value=payload) as fetch:
+            resolved = cp.resolve_pumas((-1, -1, 1, 1))
+        self.assertEqual([puma["vintage"] for puma in resolved], ["2020", "2010"])
+        self.assertEqual([call.args[0] for call in fetch.call_args_list], [cp.PUMA_LAYERS["2020"], cp.PUMA_LAYERS["2010"]])
+
+    def test_2023_requests_and_checks_its_puma_field_with_integer_adjinc(self) -> None:
+        summary, pums = self.endpoints(2023)
+        # Official 2023 ADJINC metadata: 2019 factor is 1207712, six implied decimals.
+        with mock.patch.multiple(cp, ACS_5_URL=summary, PUMS_URL=pums), mock.patch.object(cp, "_get_json", return_value=self.response("PUMA")) as fetch:
+            rows, _summary = cp.fetch_pums_person_rows([self.puma()], "fixture-key")
+        params = fetch.call_args.args[1]
+        self.assertEqual(params["PUMA"], "01234")
+        self.assertEqual(params["for"], "state:06")
+        self.assertIn("PUMA", params["get"].split(","))
+        self.assertNotIn("PUMA10", params)
+        self.assertNotIn("PUMA20", params)
+        self.assertAlmostEqual(cp.adjusted_income(rows[0]["HINCP"], rows[0]["ADJINC"]), 60385.6)
+
+    def test_2022_fetches_both_fields_and_ignores_only_other_vintage_sentinels(self) -> None:
+        summary, pums = self.endpoints(2022)
+        def answer(_url, params, _label):
+            field = "PUMA20" if "PUMA20" in params else "PUMA10"
+            payload = self.response(field, SERIALNO=field)
+            other = self.response(field, **{field: cp.PUMA_NOT_APPLICABLE})[1]
+            return [*payload, other]
+        with mock.patch.multiple(cp, ACS_5_URL=summary, PUMS_URL=pums), mock.patch.object(cp, "_get_json", side_effect=answer) as fetch:
+            rows, report = cp.fetch_pums_person_rows([self.puma(), self.puma("2010")], "fixture-key")
+        self.assertEqual(fetch.call_count, 2)
+        self.assertEqual([row["SERIALNO"] for row in rows], ["PUMA20", "PUMA10"])
+        self.assertEqual([source["person_records"] for source in report["sources"]], [1, 1])
+
+    def test_wrong_profile_pumas_and_mixed_endpoints_refuse_before_fetch(self) -> None:
+        summary, pums = self.endpoints(2023)
+        with mock.patch.multiple(cp, ACS_5_URL=summary, PUMS_URL=pums), mock.patch.object(cp, "_get_json") as fetch:
+            with self.assertRaisesRegex(cp.CensusPumsError, "PUMA vintages"):
+                cp.fetch_pums_person_rows([self.puma("2010")], "fixture-key")
+            fetch.assert_not_called()
+        with mock.patch.multiple(cp, ACS_5_URL=summary, PUMS_URL=self.endpoints(2022)[1]), mock.patch.object(cp, "_get_json") as fetch:
+            with self.assertRaisesRegex(cp.CensusPumsError, "years must match"):
+                cp.resolve_pumas((-1, -1, 1, 1))
+            with self.assertRaisesRegex(cp.CensusPumsError, "years must match"):
+                cp.fetch_acs_zone_controls(["06001000100"], [cp.SIZE_CONTROL], "fixture-key")
+            fetch.assert_not_called()
+
+    def test_wrong_response_schema_and_predicate_refuse(self) -> None:
+        summary, pums = self.endpoints(2023)
+        short = self.response("PUMA")
+        # Keep every required value valid. Only an extra declared cell is
+        # missing, so the row-shape guard must own this refusal.
+        short[0].append("unrelated")
+        missing_adjustment = self.response("PUMA")
+        adjustment_index = missing_adjustment[0].index("ADJINC")
+        for row in missing_adjustment:
+            row.pop(adjustment_index)
+        for payload in [self.response("PUMA20"), self.response("PUMA", PUMA="99999"), short, missing_adjustment, {"error": "fixture"}]:
+            with self.subTest(payload=payload), mock.patch.multiple(cp, ACS_5_URL=summary, PUMS_URL=pums), mock.patch.object(cp, "_get_json", return_value=payload):
+                with self.assertRaises(cp.CensusPumsError):
+                    cp.fetch_pums_person_rows([self.puma()], "fixture-key")
+
+    def test_extra_response_column_survives_without_changing_population(self) -> None:
+        summary, pums = self.endpoints(2023)
+        payload = self.response("PUMA")
+        payload[0].append("unrelated")
+        payload[1].append("metadata")
+        # Reordered named columns also preserve the same Census record.
+        for row in payload:
+            row[0], row[-1] = row[-1], row[0]
+        with mock.patch.multiple(cp, ACS_5_URL=summary, PUMS_URL=pums), mock.patch.object(cp, "_get_json", return_value=payload):
+            rows, _report = cp.fetch_pums_person_rows([self.puma()], "fixture-key")
+        self.assertEqual(rows[0]["SERIALNO"], "fixture")
+
+    def test_provenance_records_the_selected_window_fields_and_dollar_year(self) -> None:
+        summary, pums = self.endpoints(2023)
+        with mock.patch.multiple(cp, ACS_5_URL=summary, PUMS_URL=pums):
+            provenance = cp.seed_provenance([self.puma()], {}, 1000, {})
+        self.assertEqual(provenance["acs_sample_years"], [2019, 2023])
+        self.assertEqual(provenance["income_dollar_year"], 2023)
+        self.assertEqual(provenance["puma_fields"], {"2020": "PUMA"})
+        self.assertEqual(provenance["acs_summary_endpoint"], summary)
 
 
 class SchoolEnrollment(unittest.TestCase):

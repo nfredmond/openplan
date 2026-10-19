@@ -104,7 +104,7 @@ export const APPLICATION_ATTACHMENT_SELECT =
 
 /** Draft columns as returned to clients (workspace_id stays server-side). */
 export const APPLICATION_SECTION_DRAFT_SELECT =
-  "id, opportunity_id, section_id, draft_markdown, model, grounding_json, grounded_sentence_count, total_sentence_count, revision_of, revision_instructions, created_at";
+  "id, opportunity_id, section_id, draft_markdown, model, origin, safety_seed_id, grounding_json, grounded_sentence_count, total_sentence_count, revision_of, revision_instructions, created_at";
 
 export type ApplicationSectionRow = {
   id: string;

@@ -21,13 +21,15 @@ for Nevada County, and by the time anyone came back to it the correct code was
 
 ================================================== THE TWO TRAPS IN THIS DATA
 
-**The five-year file spans two PUMA vintages.** Every record in the 2018–2022
+**The default 2022 file spans two PUMA vintages.** Every record in the 2018–2022
 ACS 5-year PUMS carries both a ``PUMA10`` and a ``PUMA20`` field, but only one is
 filled: records from 2018–2021 have ``PUMA10`` and ``PUMA20 = -0009`` ("not
 applicable"); 2022 records are the reverse. Query one vintage and the API returns
 HTTP 200 with **a fifth of the sample** and no indication anything is missing —
 588 households where the union gives 2,649. Both vintages are queried and unioned
 here, and ``seed_provenance`` reports the count so a thin seed is visible.
+The explicitly selected 2023 product instead uses one crosswalked 2020-based
+PUMA field. A verified profile keeps the two schemas separate.
 
 **HTTP 200 is not evidence at block-group geography.** ``B08202`` (workers per
 household) answers 200 with every cell null below tract level, exactly as
@@ -39,6 +41,8 @@ from __future__ import annotations
 
 import math
 import os
+import re
+from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, Sequence
 
 import requests
@@ -55,9 +59,6 @@ PUMA_LAYERS = {
     "2010": "https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2019/MapServer/0/query",
 }
 
-# The PUMS field naming each vintage's code, and the value it carries when the
-# record belongs to the other vintage.
-PUMA_FIELDS = {"2020": "PUMA20", "2010": "PUMA10"}
 PUMA_NOT_APPLICABLE = "-0009"
 
 HTTP_TIMEOUT_SECONDS = float(os.getenv("CENSUS_HTTP_TIMEOUT_SECONDS", "60"))
@@ -86,6 +87,44 @@ WORKING_ESR_CODES = frozenset({"1", "2", "4", "5"})
 
 class CensusPumsError(RuntimeError):
     """A seed or a set of marginals could not be built, with the reason to show."""
+
+
+@dataclass(frozen=True)
+class CensusVintageProfile:
+    final_year: int
+    first_year: int
+    puma_fields: tuple[tuple[str, str], ...]
+
+
+# Census PUMS user guides, section VIII.C: 2022 retains dual PUMA vintages;
+# 2023 crosswalks the entire five-year sample to the 2020-based PUMA field.
+# https://www2.census.gov/programs-surveys/acs/tech_docs/pums/2019_2023ACS_PUMS_User_Guide.pdf
+CENSUS_VINTAGE_PROFILES = {
+    2022: CensusVintageProfile(2022, 2018, (("2020", "PUMA20"), ("2010", "PUMA10"))),
+    2023: CensusVintageProfile(2023, 2019, (("2020", "PUMA"),)),
+}
+
+
+def census_vintage_profile(
+    acs5_url: str | None = None, pums_url: str | None = None
+) -> CensusVintageProfile:
+    """Resolve one supported summary/microdata product pair before any fetch.
+
+    Endpoint overrides select an explicit supported profile; they cannot mix
+    years, substitute a one-year product, or imply an unverified PUMA schema.
+    """
+    summary = ACS_5_URL if acs5_url is None else acs5_url
+    microdata = PUMS_URL if pums_url is None else pums_url
+    summary_match = re.fullmatch(r"https://api\.census\.gov/data/(\d{4})/acs/acs5/?", summary)
+    pums_match = re.fullmatch(r"https://api\.census\.gov/data/(\d{4})/acs/acs5/pums/?", microdata)
+    if summary_match is None or pums_match is None:
+        raise CensusPumsError("Population inputs require supported Census ACS five-year summary and PUMS endpoints.")
+    year = int(summary_match.group(1))
+    if year != int(pums_match.group(1)):
+        raise CensusPumsError("ACS summary and PUMS endpoint years must match for population inputs.")
+    if year not in CENSUS_VINTAGE_PROFILES:
+        raise CensusPumsError(f"ACS {year} population inputs have no verified Census vintage profile.")
+    return CENSUS_VINTAGE_PROFILES[year]
 
 
 # --------------------------------------------------------------------------
@@ -322,10 +361,9 @@ def adjusted_income(raw_income: Any, adjustment: Any) -> float | None:
     final-year dollars. Skipping the adjustment shifts early-year households a
     bracket down and quietly overstates how many households are poor.
 
-    The API serves the factor already divided (``1.042311``) where the published
-    flat files carry it as an integer (``1042311``); both are accepted, because a
-    factor of a million applied by accident would not look like an error in any
-    downstream number.
+    Official API metadata and flat files encode six implied decimal places
+    (``1042311``). Legacy normalized factors (``1.042311``) remain accepted;
+    applying a factor of a million would silently distort the income brackets.
     """
     if raw_income in (None, "", "null"):
         return None
@@ -526,15 +564,12 @@ def _get_json(url: str, params: Mapping[str, Any], label: str) -> Any:
 
 
 def resolve_pumas(bbox: tuple[float, float, float, float]) -> list[dict[str, Any]]:
-    """Every PUMA touching this study area, in both vintages.
-
-    Both are needed because the five-year microdata file is split between them —
-    see this module's header. A PUMA present in only one vintage is still
-    returned; its records simply come from the years that used it.
-    """
+    """Resolve the study area's PUMAs in the selected product's supported vintages."""
+    profile = census_vintage_profile()
     min_lon, min_lat, max_lon, max_lat = bbox
     found: list[dict[str, Any]] = []
-    for vintage, url in PUMA_LAYERS.items():
+    for vintage, _field in profile.puma_fields:
+        url = PUMA_LAYERS[vintage]
         payload = _get_json(
             url,
             {
@@ -585,6 +620,10 @@ def fetch_pums_person_rows(
     failure this module's header describes, and it is only visible if the counts
     are kept apart.
     """
+    profile = census_vintage_profile()
+    fields = dict(profile.puma_fields)
+    if any(str(puma.get("vintage")) not in fields for puma in pumas):
+        raise CensusPumsError("The supplied PUMA vintages do not match the selected Census population profile.")
     if not census_api_key:
         raise CensusPumsError(
             "A Census API key is required to read household microdata. Get a free one at "
@@ -596,21 +635,30 @@ def fetch_pums_person_rows(
 
     for puma in pumas:
         vintage = str(puma["vintage"])
-        field = PUMA_FIELDS[vintage]
+        field = fields[vintage]
         payload = _get_json(
             PUMS_URL,
             {
-                "get": ",".join(variables),
+                "get": ",".join([*variables, field]),
                 "for": f"state:{puma['state_fips']}",
                 field: puma["puma"],
                 "key": census_api_key,
             },
             f"The {vintage} microdata for PUMA {puma['state_fips']}{puma['puma']}",
         )
+        if not isinstance(payload, list) or (payload and (
+            not isinstance(payload[0], list)
+            or not all(name in payload[0] for name in [*variables, field])
+            or any(not isinstance(row, list) or len(row) != len(payload[0]) for row in payload[1:])
+        )):
+            raise CensusPumsError("PUMS response does not carry the selected profile's PUMA field and row schema.")
         fetched = _rows_to_dicts(payload if isinstance(payload, list) else [])
         # A record belonging to the other vintage carries the sentinel rather
         # than a blank, so a plain emptiness check would keep all of them.
-        fetched = [r for r in fetched if str(r.get(field, "")).strip() != PUMA_NOT_APPLICABLE]
+        if profile.final_year == 2022:
+            fetched = [r for r in fetched if str(r.get(field, "")).strip() != PUMA_NOT_APPLICABLE]
+        if any(str(row.get(field, "")).strip() != str(puma["puma"]) for row in fetched):
+            raise CensusPumsError("PUMS response contains records outside the requested profile/PUMA predicate.")
         rows.extend(fetched)
         per_source.append(
             {
@@ -641,6 +689,7 @@ def _fetch_acs_rows(
     than returning a subset: data for only some of a study area is the shape
     of failure that looks like success downstream.
     """
+    census_vintage_profile()
     if not census_api_key:
         raise CensusPumsError(f"A Census API key is required to read {purpose}.")
     if not variables:
@@ -774,6 +823,7 @@ def seed_provenance(
     town is drawn from a far wider area than the map shows — true of every
     population synthesiser, and worth saying rather than leaving to be discovered.
     """
+    profile = census_vintage_profile()
     names = sorted({str(p.get("name") or "").strip() for p in pumas if p.get("name")})
     thin_note = ""
     if seed_size < 500:
@@ -784,6 +834,10 @@ def seed_provenance(
     return {
         "source": "US Census Bureau ACS 5-year Public Use Microdata Sample (PUMS)",
         "endpoint": PUMS_URL,
+        "acs_summary_endpoint": ACS_5_URL,
+        "acs_sample_years": [profile.first_year, profile.final_year],
+        "income_dollar_year": profile.final_year,
+        "puma_fields": dict(profile.puma_fields),
         "puma_names": names,
         "puma_sources": list(fetch_summary.get("sources", [])),
         "person_records": fetch_summary.get("person_records", 0),

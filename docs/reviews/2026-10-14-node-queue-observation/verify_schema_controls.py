@@ -66,7 +66,19 @@ def run(repo,out):
     records=[]
     def positive(label):
         code,data,failed,_=execute(label)
-        if code or not data['success'] or failed or data['numPassedTests']!=37:raise AssertionError(label+' positive differs')
+        suites=data['testResults'];assertions=[row for suite in suites for row in suite['assertionResults']]
+        identities={(Path(suite['name']).resolve(),row['title']) for suite in suites for row in suite['assertionResults']}
+        required={(test.resolve(),'reads every relation the migrations declare'),
+                  (columns.resolve(),'finds no unread column that is not accounted for'),
+                  (columns.resolve(),'keeps name collisions tied to existing columns and actual source names')}
+        if (code or not data['success'] or failed or data['numPassedTests']!=37 or len(assertions)!=37
+            or any(row['status']!='passed' for row in assertions)
+            or {Path(suite['name']).resolve() for suite in suites}!={test.resolve(),columns.resolve()}
+            or not required.issubset(identities)):
+            raise AssertionError(label+' positive differs: '+json.dumps({'exitCode':code,'success':data.get('success'),
+                'numPassedTests':data.get('numPassedTests'),'numFailedTests':data.get('numFailedTests'),
+                'failed':failed,'missingRequiredTests':sorted((str(path),title) for path,title in required-identities),
+                'report':str(out/(label+'.json')),'log':str(out/(label+'.log'))}))
         records.append({'control':label,'outcome':'survived','cases':37});print(label+' survived',flush=True)
     try:
         positive('baseline')
