@@ -569,10 +569,12 @@ const EXPECTED = {
   // Deadline journal contributes one RLS table; Safety migration 000002 adds
   // funding_opportunity_safety_seeds and report_safety_snapshot_persistence.
   // Each is an ordinary RLS table; no view is added.
-  relations: 327,
-  tables: 313,
+  // 20261019051430 adds three private population receipt/revocation tables.
+  // Each enables RLS and grants no client policy. Source census only.
+  relations: 330,
+  tables: 316,
   views: 14,
-  rlsEnabledTables: 313,
+  rlsEnabledTables: 316,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */
@@ -856,6 +858,18 @@ describe("migration schema inventory", () => {
     expect(schema.hasColumn("gtfs_feed_versions", "ingest_failure_receipt")).toBe(true);
   });
   it("reads every relation the migrations declare", () => {
+    // Pin each population relation and its complete field projection, so a
+    // renamed or omitted field cannot hide behind an unchanged total.
+    const populationColumns = {
+      model_population_checkpoint_receipts: ["request_id", "workspace_id", "run_id", "stage_id", "deployment_id", "facts", "checkpoint_sha256", "context_json", "origin_run", "request_payload", "response_payload", "recorded_at"],
+      model_population_checkpoint_revocations: ["checkpoint_id", "actor_id", "reason", "recorded_at"],
+      model_population_replacement_receipts: ["request_id", "workspace_id", "source_run_id", "checkpoint_id", "actor_id", "replacement_run_id", "request_payload", "response_payload", "source_state", "recorded_at"],
+    };
+    for (const [table, fields] of Object.entries(populationColumns)) {
+      for (const field of fields) expect(schema.hasColumn(table, field), `${table}.${field}`).toBe(true);
+      expect([...(schema.columns(table) ?? [])].sort(), table).toEqual([...fields].sort());
+      expect(schema.rlsEnabled(table), table).toBe(true);
+    }
     expect(schema.relations()).toHaveLength(EXPECTED.relations);
     expect(schema.tables()).toHaveLength(EXPECTED.tables);
     expect(schema.views()).toHaveLength(EXPECTED.views);
