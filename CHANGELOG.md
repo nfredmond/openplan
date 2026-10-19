@@ -20,6 +20,15 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Exact project estimates:** decimal entry, reviewed imports, report output and
+exports retain hundredths without a floating-point conversion. Missing price
+years remain unknown. Project estimates remain separate from management budgets,
+funding awards and benefit-cost calculations. Apply
+`20261019080000_project_estimate_exact_cents.sql` before deploying this correction.
+It validates future amounts as positive values of at most 1,000,000,000,000,000
+with at most two decimal places. It does not rewrite retained estimates or
+recover precision lost in older source values.
+
 **Engagement text inspection:** staff can inspect hidden formatting characters in
 comments, restricted history, survey answers and saved synthesis sources. The
 optional view shows counts, code points and escaped text while preserving the
