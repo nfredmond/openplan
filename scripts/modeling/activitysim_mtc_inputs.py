@@ -163,34 +163,38 @@ def derive_ptype(age: int, pemploy: int, pstudent: int) -> int:
 # Income. The MTC specifications segment household income in YEAR-2000
 # dollars (annotate_households.csv bins income/1000 at 30/60/100); the fitted
 # population's incomes arrive in the ACS file's final-year dollars via ADJINC.
-# BLS CPI-U annual averages (series CUUR0000SA0): 2000 = 172.2, 2022 =
-# 292.655. Historical annual averages do not change; the vintage guard below
-# is what keeps this honest if the ACS endpoint is ever repointed.
+# ActivitySim 1.5.1 docs/users-guide/example_models.rst names 2000 dollars.
+# BLS CPI-U annual averages (CUUR0000SA0) supply the conversion, including
+# 2023 = 304.702: https://www.bls.gov/news.release/archives/cesan_09252024.pdf
 # --------------------------------------------------------------------------
 
 CPI_U_ANNUAL_2000 = 172.2
 CPI_U_ANNUAL_2022 = 292.655
-INCOME_DEFLATOR_TO_2000 = CPI_U_ANNUAL_2000 / CPI_U_ANNUAL_2022
-INCOME_DEFLATOR_SOURCE_YEAR = 2022
+CPI_U_ANNUAL_2023 = 304.702
+CPI_U_ANNUAL_BY_SOURCE_YEAR = {2022: CPI_U_ANNUAL_2022, 2023: CPI_U_ANNUAL_2023}
 
 
-def check_income_vintage(acs5_url: str) -> None:
-    """Refuse to deflate incomes from a vintage the deflator was not built for.
+def check_income_vintage(acs5_url: str, pums_url: str | None = None) -> int:
+    """Require matching supported summary/PUMS products and income dollars."""
+    import census_pums as cp
 
-    The ACS endpoint year is configurable (CENSUS_ACS5_URL). ADJINC always
-    adjusts to the file's own final year, so a repointed endpoint silently
-    changes what dollars the incomes are in — and a deflator applied to the
-    wrong base year is invisible in every downstream number.
-    """
-    match = re.search(r"/data/(\d{4})/", str(acs5_url))
-    year = int(match.group(1)) if match else None
-    if year != INCOME_DEFLATOR_SOURCE_YEAR:
-        raise MtcInputError(
-            f"The year-2000 income deflator here is built for the {INCOME_DEFLATOR_SOURCE_YEAR} "
-            f"ACS vintage, but the configured endpoint is {acs5_url!r}. Update "
-            "CPI_U_ANNUAL_* and INCOME_DEFLATOR_SOURCE_YEAR together before using a "
-            "different vintage."
-        )
+    try:
+        year = cp.census_vintage_profile(acs5_url, pums_url).final_year
+    except cp.CensusPumsError as exc:
+        raise MtcInputError(str(exc)) from exc
+    if year not in CPI_U_ANNUAL_BY_SOURCE_YEAR:
+        raise MtcInputError(f"No verified year-2000 income conversion exists for ACS {year}.")
+    return year
+
+
+def _income_conversion(
+    acs5_url: str | None = None, pums_url: str | None = None
+) -> tuple[int, float]:
+    """Select the conversion from the same endpoint pair the seed adapter uses."""
+    import census_pums as cp
+
+    year = check_income_vintage(cp.ACS_5_URL if acs5_url is None else acs5_url, pums_url)
+    return year, CPI_U_ANNUAL_2000 / CPI_U_ANNUAL_BY_SOURCE_YEAR[year]
 
 
 # --------------------------------------------------------------------------
@@ -198,7 +202,12 @@ def check_income_vintage(acs5_url: str) -> None:
 # --------------------------------------------------------------------------
 
 
-def mtc_households(household_rows: Sequence[Mapping[str, Any]]) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+def mtc_households(
+    household_rows: Sequence[Mapping[str, Any]],
+    *,
+    acs5_url: str | None = None,
+    pums_url: str | None = None,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     """The fitted households, renamed and re-denominated for prototype_mtc.
 
     Requires the census-fitted schema (hht present, incomes in final-year
@@ -213,6 +222,7 @@ def mtc_households(household_rows: Sequence[Mapping[str, Any]]) -> tuple[list[di
             "The MTC config package needs households fitted from Census microdata; the supplied "
             f"households are missing {', '.join(missing)}. Build the bundle with --population census."
         )
+    source_year, income_deflator = _income_conversion(acs5_url, pums_url)
     rows: list[dict[str, Any]] = []
     hht_unreported = 0
     for row in household_rows:
@@ -226,7 +236,7 @@ def mtc_households(household_rows: Sequence[Mapping[str, Any]]) -> tuple[list[di
             {
                 "household_id": int(row["household_id"]),
                 "home_zone_id": int(row["home_zone_id"]),
-                "income": int(round(float(row["income"]) * INCOME_DEFLATOR_TO_2000)),
+                "income": int(round(float(row["income"]) * income_deflator)),
                 "hhsize": int(row["persons"]),
                 "HHT": hht,
                 "auto_ownership": int(row["autos"]),
@@ -237,10 +247,11 @@ def mtc_households(household_rows: Sequence[Mapping[str, Any]]) -> tuple[list[di
         "households": len(rows),
         "hht_unreported": hht_unreported,
         "income_dollar_year": 2000,
-        "income_deflator": round(INCOME_DEFLATOR_TO_2000, 6),
+        "income_source_dollar_year": source_year,
+        "income_deflator": round(income_deflator, 6),
         "income_deflator_basis": (
             f"BLS CPI-U annual averages (CUUR0000SA0): {CPI_U_ANNUAL_2000} (2000) / "
-            f"{CPI_U_ANNUAL_2022} ({INCOME_DEFLATOR_SOURCE_YEAR})"
+            f"{CPI_U_ANNUAL_BY_SOURCE_YEAR[source_year]} ({source_year})"
         ),
     }
     return rows, accounting
@@ -885,12 +896,15 @@ def mtc_network_los_yaml(taz_skims_relative_path: str = "skims/mtc_skims.omx") -
     )
 
 
-def mtc_config_caveats() -> list[str]:
+def mtc_config_caveats(
+    *, acs5_url: str | None = None, pums_url: str | None = None
+) -> list[str]:
     """What every reader of an MTC-package bundle must be told.
 
     Built from this module's own constants so the words can never drift from
     the arithmetic they describe.
     """
+    source_year, _deflator = _income_conversion(acs5_url, pums_url)
     return [
         (
             "The travel behaviour is ActivitySim's stock prototype_mtc example — coefficients "
@@ -904,7 +918,8 @@ def mtc_config_caveats() -> list[str]:
         ),
         (
             f"Household incomes were deflated to year-{2000} dollars (BLS CPI-U annual averages "
-            f"{CPI_U_ANNUAL_2000}/{CPI_U_ANNUAL_2022}) because the MTC specifications segment "
+            f"{CPI_U_ANNUAL_2000}/{CPI_U_ANNUAL_BY_SOURCE_YEAR[source_year]}, "
+            f"source dollar year {source_year}) because the MTC specifications segment "
             "income in 2000 dollars."
         ),
         (

@@ -26,6 +26,11 @@ optional view shows counts, code points and escaped text while preserving the
 readable contribution. It does not change moderation or infer intent. No
 migration is required.
 
+**Linked estimate sources:** the project estimate editor opens its exact saved
+supporting document, including one older than the recent-document list. Read
+failures, unavailable originals and missing price years stay visible. The link
+uses the existing authorized document download route. No migration is required.
+
 **Recorded grant deadline changes:** My Work retains notices when an opportunity's
 application or decision deadline is added, changed or cleared in OpenPlan. Each
 notice preserves the old and new dates and identifies an unknown actor when
@@ -37,6 +42,14 @@ opportunity card now edits or clears its recorded dates, shows the browser time
 zone, and sends only changed fields so untouched timestamp precision remains.
 Failed saves keep the draft visible. Apply
 `20261018000001_grant_deadline_changes.sql` before deploying this capability.
+
+**Safety plan seeds:** the existing SS4A application workspace previews six
+source-bound working drafts from an exact same-project Safety artifact. Source
+snapshots, draft origin and export caveats stay attached; final text, prior
+drafts and checklist states remain. Review each section and its missing inputs
+before finalizing. Apply `20261018000002_ss4a_safety_seed.sql` before deploying
+this capability. The [source status](docs/reviews/2026-10-18-ss4a-safety-seed/STATUS.md)
+records the separate native, browser and artifact checks and retained failures.
 
 **Compact assignment graph preparation:** a worker-owned adapter checks complete
 car-eligible link incidence before excluding a proved nontraversable sink chain.

@@ -1,3 +1,4 @@
+import { SAFETY_SEED_CAVEAT } from "@/lib/grants/safety-seed-origin";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -159,6 +160,7 @@ describe("buildGrantApplicationHtml", () => {
       BCA_NARRATIVE_CAVEAT,
       ENGAGEMENT_NARRATIVE_CAVEAT,
       KB_NARRATIVE_CAVEAT,
+      SAFETY_SEED_CAVEAT,
     ]);
     for (const caveat of APPLICATION_EXPORT_STANDING_CAVEATS) {
       expect(html).toContain(caveat);

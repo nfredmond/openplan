@@ -21,10 +21,9 @@
  * individually reversible — and then delete the empty shell.
  *
  * `blocking` versus `evidence` is about what the refusal SAYS, not about whether
- * it refuses; both do. `blocking` marks records that represent an external
- * commitment — money already claimed from a funder or billed to a client —
- * where "delete the children first" is not honest advice, because those records
- * are supposed to outlive the project. Those say so explicitly.
+ * it refuses; both do. `blocking` marks external commitments and immutable
+ * Safety generation custody. "Delete the children first" is not honest advice
+ * for those records, which must remain attributable. Those say so explicitly.
  *
  * This module is pure so the policy is testable without a database, and so the
  * rule lives in one place instead of being re-derived in a route and a dialog.
@@ -65,7 +64,7 @@ export type ProjectDeleteBlocker = ProjectDeleteRelation & {
 export type ProjectDeleteAssessment = {
   deletable: boolean;
   blockers: ProjectDeleteBlocker[];
-  /** True when at least one blocker is an external financial commitment. */
+  /** True when at least one blocker requires preserving commitments or custody. */
   hasCommitments: boolean;
   /** One-line summary for the refusal body. */
   headline: string;
@@ -109,6 +108,18 @@ export const PROJECT_DELETE_RELATIONS: readonly ProjectDeleteRelation[] = [
     severity: "blocking",
     behavior: "cascade",
     href: "/grants",
+  },
+  // Migration 20261018000002 cascades this FK, but the receipt preserves
+  // immutable snapshot and revision custody. Retire the project to retain it.
+  {
+    table: "report_safety_snapshot_persistence",
+    column: "project_id",
+    label: "Safety generation custody receipts",
+    severity: "blocking",
+    behavior: "cascade",
+    href: "/reports",
+    describeLoss: (count) =>
+      `${pluralize(count, "Safety generation custody receipts")} would be destroyed along with the project. These immutable receipts retain the snapshot hash and source revisions; retire the project to preserve them.`,
   },
 
   // Work products destroyed outright by the cascade.
@@ -320,7 +331,7 @@ export function assessProjectDelete(
     blockers,
     hasCommitments,
     headline: hasCommitments
-      ? "This project carries records that are meant to outlive it — funding, invoicing, or a costed placement in a fiscally constrained plan — so it cannot be deleted."
+      ? "This project carries records that are meant to outlive it, including funding, invoicing, costed placements in fiscally constrained plans, or retained Safety evidence, so it cannot be deleted."
       : `This project has ${pluralize(
           blockers.reduce((total, blocker) => total + blocker.count, 0),
           "attached records"
@@ -329,6 +340,8 @@ export function assessProjectDelete(
       ? "Set the project's status to complete to retire it. Its attached records and private Planner Agent history stay intact."
       : blockers.some(blocker => blocker.table === "project_bca_versions")
       ? "Set the project's status to complete to retire it. Saved benefit-cost analyses stay intact and attributable."
+      : blockers.some(blocker => blocker.table === "report_safety_snapshot_persistence")
+      ? "Set the project's status to complete to retire it. Its attached records and immutable Safety generation custody stay intact and attributable."
       : hasCommitments
       ? "Set the project's status to complete to retire it. Its funding and invoicing history stays intact and attributable."
       : "Set the project's status to complete to retire it — that is reversible — or remove the attached records from the modules listed above and delete the empty project afterwards.",
