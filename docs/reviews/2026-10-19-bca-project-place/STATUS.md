@@ -17,10 +17,16 @@ The latest ordinary window passes 95 tests across nine files before and after
 11 named fault controls. Each fault produces its intended assertion failure;
 source bytes/modes and temporary helpers are restored. The private diagnostic
 reader accepts the saved equality witness and rejects 11 negative cases.
-Source-identical configured TypeScript and scoped lint pass in R4. R4 remains
-failed overall because its diagnostic classifier stops; root retains its version
-control and limited equality-source observation separately. SQL-source checks
-are not native SQL evidence.
+Configured TypeScript and scoped lint pass in R4 on the source shared with R5,
+before the later live RLS test integration. Those results do not cover the new
+native test code. R4 remains failed overall because its diagnostic classifier
+stops; root retains its version control and limited equality-source observation
+separately. SQL-source checks are not native SQL evidence.
+
+Draft [PR 358](https://github.com/nfredmond/openplan/pull/358) publishes the source
+checkpoint and connects the prepared insertion fixture to the existing live RLS
+suite. Its baseline, harmless and three fault cases await native execution and CI.
+The native fixture additions do not change the earlier application code.
 
 Earlier failures remain preserved: R1's metadata helper wrongly requires a
 generated file; R2's fixture assumes JSON key order; R3 reports widened query
