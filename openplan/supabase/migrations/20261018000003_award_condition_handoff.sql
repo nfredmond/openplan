@@ -450,7 +450,7 @@ BEGIN
    IF NEW.award_handoff_revision_id IS DISTINCT FROM a.current_handoff_revision_id THEN RAISE EXCEPTION 'Invoice terms are stale; review current terms' USING ERRCODE='PT409'; END IF;
   END IF;
  ELSIF a.latest_handoff_revision_id IS NOT NULL AND (TG_OP='INSERT' OR NEW.funding_award_id IS DISTINCT FROM OLD.funding_award_id) THEN RAISE EXCEPTION 'Review current terms and explicitly bind the invoice' USING ERRCODE='22023'; END IF;
- IF NEW.handoff_applicable_revision_id IS DISTINCT FROM CASE WHEN TG_OP='UPDATE' THEN OLD.handoff_applicable_revision_id END AND NOT EXISTS(SELECT FROM public.funding_award_handoff_revisions r WHERE r.id=NEW.handoff_applicable_revision_id AND r.award_id=NEW.funding_award_id AND r.id::text=current_setting('openplan.award_handoff_command',true) AND current_setting('role',true) IN ('service_role','postgres','none')) THEN RAISE EXCEPTION 'Invoice applicability requires reviewed amendment' USING ERRCODE='23514'; END IF;
+ IF NEW.handoff_applicable_revision_id IS DISTINCT FROM (CASE WHEN TG_OP='UPDATE' THEN OLD.handoff_applicable_revision_id END) AND NOT EXISTS(SELECT FROM public.funding_award_handoff_revisions r WHERE r.id=NEW.handoff_applicable_revision_id AND r.award_id=NEW.funding_award_id AND r.id::text=current_setting('openplan.award_handoff_command',true) AND current_setting('role',true) IN ('service_role','postgres','none')) THEN RAISE EXCEPTION 'Invoice applicability requires reviewed amendment' USING ERRCODE='23514'; END IF;
  RETURN NEW;
 END $$;
 CREATE TRIGGER handoff_invoice_guard BEFORE INSERT OR UPDATE OR DELETE ON public.billing_invoice_records FOR EACH ROW EXECUTE FUNCTION public.guard_handoff_invoice();

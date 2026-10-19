@@ -28,3 +28,10 @@ assertions, with exact restoration. Configured typegen/tsc, scoped lint and the
 direction check end 0. The sixth independent review accepts the account DELETE
 entry and four native controls in source. Native CI, rollout and the visible
 award workflow remain pending. No migration or hosted write follows this check.
+
+CI follow-up, October 18: the first isolated RLS and restore runs stop while
+compiling the invoice guard. Parenthesizing its SQL CASE expression fixes that
+PL/pgSQL parse ambiguity. A disposable PostgreSQL 17 probe rejects the original
+with 42601, compiles the correction and harmless comment, refuses unreviewed
+applicability, and accepts the reviewed synthetic change. Full migration, RLS,
+Storage and contention checks still require CI. Raw logs stay in private state.
