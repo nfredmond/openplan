@@ -7,6 +7,7 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Textarea } from "@/components/ui/textarea";
+import { FundingAwardClosureHistory } from "@/components/grants/funding-award-closure-history";
 import { formatCurrency, formatDateTime } from "@/lib/grants/page-helpers";
 import {
   FUNDING_AWARD_CLOSED_SPENDING_STATUS,
@@ -285,6 +286,7 @@ function FundingAwardCloseoutRow({
   const [note, setNote] = useState("");
   const [outcome, setOutcome] = useState<CloseoutOutcome | null>(null);
   const [isReopening, setIsReopening] = useState(false);
+  const [historyRefresh, setHistoryRefresh] = useState(0);
   const [reopenReason, setReopenReason] = useState("");
   const [reopenStatus, setReopenStatus] =
     useState<(typeof FUNDING_AWARD_OPEN_SPENDING_STATUS_OPTIONS)[number]["value"] | "">("");
@@ -312,6 +314,7 @@ function FundingAwardCloseoutRow({
         | null;
 
       if (response.ok) {
+        setHistoryRefresh((value) => value + 1);
         // The route answers 200 twice: once for a close-out it performed, once
         // for an award that was already closed. The second is not a failure —
         // it is the idempotent answer to a stale page or a second planner
@@ -409,6 +412,7 @@ function FundingAwardCloseoutRow({
         | null;
 
       if (response.ok) {
+        setHistoryRefresh((value) => value + 1);
         setIsReopening(false);
         setReopenReason("");
         setOutcome({
@@ -487,6 +491,12 @@ function FundingAwardCloseoutRow({
       </div>
 
       {isClosed ? <FundingAwardClosureProvenance award={award} /> : null}
+
+      <FundingAwardClosureHistory
+        key={award.id}
+        awardId={award.id}
+        refreshKey={JSON.stringify([award.currentRevisionId, award.spendingStatus, award.closedAt, award.reopenedAt, historyRefresh])}
+      />
 
       {isReopening ? (
         <div className="mt-3 rounded-[0.5rem] border border-border/60 bg-background/70 px-3 py-3">
