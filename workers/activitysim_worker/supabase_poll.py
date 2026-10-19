@@ -457,7 +457,7 @@ def sb_get_run_artifacts(run_id: str, *, stage_id: str | None = None, run: dict 
         except Exception as error:
             writer.stopped = True
             raise WorkerStateReadUnconfirmed("Managed screening handoff requires reconciliation; no legacy fallback") from error
-    from model_activitysim_handoff import common_population_request, read_screening_stage_artifacts, RUN_PROJECTION
+    from model_activitysim_handoff import common_population_request, read_screening_stage_artifacts, RUN_PROJECTION, ScreeningReadError
     request = common_population_request(run) if run is not None else None
     if request is not None:
         if request['custody'] != 'legacy_stage_snapshot' or stage_id is None:
@@ -467,7 +467,7 @@ def sb_get_run_artifacts(run_id: str, *, stage_id: str | None = None, run: dict 
                 get=requests.get, post=requests.post)
             if any(key not in run or not same_json_value(run[key], selected['run'][key])
                    for key in RUN_PROJECTION.split(',')):
-                raise ValueError("Actual behavioral run differs from its dispatched snapshot")
+                raise ScreeningReadError("dispatch", "content_changed", endpoint="model_runs", record_ids=(run_id, stage_id))
             return selected['artifacts']
         except Exception as error:
             raise WorkerStateReadUnconfirmed("Ordinary screening custody requires reconciliation") from error
@@ -563,6 +563,7 @@ def mark_stage_skipped(stage: dict, reason: str) -> bool:
 
 
 class WorkerStateReadUnconfirmed(RuntimeError):
+    state_operation = "READ"
     """The worker cannot determine whether unfinished stages remain."""
 
 
@@ -750,12 +751,12 @@ def _retain_common_population(artifacts: list[dict], run_id: str, execution_dir:
         "origin": metadata["origin"], "custody": request['custody']}
 
 
-def _recheck_common_population(artifacts, run_id, stage_id, run, record, zone_rows):
+def _verify_common_population_publication(artifacts, run_id, stage_id, run, record, zone_rows):
     """Recheck actual custody and pinned bytes before downstream use/publication."""
     from model_common_population_package import identity, population_library
     after = sb_get_run_artifacts(run_id, stage_id=stage_id, run=run)
-    if not same_json_value(artifacts, after):
-        raise RuntimeError("Screening producer or population ownership changed before publication")
+    from model_activitysim_handoff import require_same_inventory
+    require_same_inventory(artifacts, after, "selected_artifacts")
     loaded = population_library().read_common_population(Path(record['directory']),
         expected_manifest=record['manifest'], zone_rows=zone_rows)
     if loaded['source_manifest'].get('custody') != record['custody']:
@@ -763,13 +764,29 @@ def _recheck_common_population(artifacts, run_id, stage_id, run, record, zone_ro
     if any(not same_json_value(record.get(key), value) for key, value in identity(loaded).items()):
         raise RuntimeError("Retained population identity changed before publication")
     final = sb_get_run_artifacts(run_id, stage_id=stage_id, run=run)
-    if not same_json_value(artifacts, final):
-        raise RuntimeError("Screening producer or population ownership changed after publication byte verification")
+    require_same_inventory(artifacts, final, "selected_artifacts")
     import model_attempt_writer
     writer = model_attempt_writer.current()
     if writer is not None:
         writer.require_open()
         writer.files.verify()
+
+
+
+def _recheck_common_population(artifacts, run_id, stage_id, run, record, zone_rows):
+    """A failed prepublication read or byte recheck preserves the saved stage."""
+    from model_activitysim_handoff import ScreeningReadError
+    try:
+        _verify_common_population_publication(artifacts, run_id, stage_id, run, record, zone_rows)
+    except WorkerStateReadUnconfirmed:
+        raise
+    except ScreeningReadError as error:
+        raise WorkerStateReadUnconfirmed("Screening input inventory changed before publication") from error
+    except Exception as error:
+        diagnostic = ScreeningReadError('population_bytes', 'verification_failed',
+            record_ids=(run_id, stage_id), error_class=type(error).__name__)
+        diagnostic.__cause__ = error
+        raise WorkerStateReadUnconfirmed("Population byte verification is unconfirmed") from diagnostic
 
 
 def _adapt_zone_attributes(src_csv: str, dest_csv: str) -> int:

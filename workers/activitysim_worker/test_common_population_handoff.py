@@ -13,6 +13,8 @@ from pathlib import Path
 import sys
 import unittest
 from unittest.mock import Mock, patch
+from contextlib import ExitStack
+from urllib.parse import urlsplit, parse_qs
 
 with patch.dict(os.environ, {"SUPABASE_URL": "http://127.0.0.1:1", "SUPABASE_SERVICE_ROLE_KEY": "synthetic-test-only"}):
     import supabase_poll as worker
@@ -29,6 +31,12 @@ RUN = "11111111-1111-4111-8111-111111111111"
 SETUP = "22222222-2222-4222-8222-222222222222"
 ATTEMPT = "33333333-3333-4333-8333-333333333333"
 CONSUMER = "44444444-4444-4444-8444-444444444444"
+
+
+def worker_population_kinds():
+    return ('common_population','common_population_households','common_population_persons',
+        'common_population_selected_zones','common_population_diagnostics','common_population_source_manifest',
+        'common_population_source_zone_attributes')
 
 
 class BehavioralPopulationHandoffTests(unittest.TestCase):
@@ -220,11 +228,36 @@ class BehavioralPopulationHandoffTests(unittest.TestCase):
                 if row['artifact_type'].startswith('common_population'):
                     row['metadata_json']['replacement'] = copy.deepcopy(native_lineage)
 
+        # These boundary records are independent of the request and selected rows.
+        custody_pairs = [(CONSUMER, None),
+            (SETUP, '99999999-9999-4999-8999-000000000000'),
+            (SETUP, '99999999-9999-4999-8999-000000000001'),
+            (SETUP, '99999999-9999-4999-8999-000000000002'),
+            (SETUP, '99999999-9999-4999-8999-000000000003'),
+            (SETUP, '99999999-9999-4999-8999-000000000004'),
+            (SETUP, '99999999-9999-4999-8999-000000000005'),
+            (SETUP, '99999999-9999-4999-8999-000000000006')]
+        native_custody = {pair: {'schema':'openplan.common-population-stage-custody.v1',
+            'custody':'legacy_stage_snapshot','workspace_id':'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+            'run_id':'11111111-1111-4111-8111-111111111111','stage_id':pair[0],
+            'artifact_id':pair[1],'eligible':True} for pair in custody_pairs}
+        classified = {'run_id':RUN,'run_status':'running','outputs':[
+            {'kind':'artifact','ownership_state':'legacy_unknown',
+             'record':copy.deepcopy({key:value for key,value in row.items() if key!='model_run_stages'})}
+            for row in self.inventory if row['artifact_type'].startswith('common_population')]}
+        projections = {
+            'model_runs': 'id,workspace_id,model_id,project_id,scenario_set_id,scenario_entry_id,engine_key,status,attempt_managed,corridor_geojson,query_text,input_snapshot_json,assumption_snapshot_json',
+            'model_run_stages': 'id,run_id,stage_name,sort_order,status,attempt_managed,active_attempt_id',
+            'model_run_artifacts': 'id,run_id,stage_id,attempt_id,artifact_type,file_url,file_size_bytes,content_hash,metadata_json,model_run_stages!inner(id,run_id,status,attempt_managed,active_attempt_id)',
+        }
         def response(value):return Mock(status_code=200,json=Mock(return_value=copy.deepcopy(value)))
         def get(url, **kwargs):
             table = url.rsplit('/',1)[-1]
+            self.assertEqual(kwargs['params'], {'id' if table=='model_runs' else 'run_id':'eq.'+RUN,
+                'select':projections[table]})
+            self.assertEqual(kwargs['timeout'], (5, 30))
+            self.assertIs(kwargs['allow_redirects'], False)
             if table=='model_runs':
-                self.assertEqual(kwargs['params'],{'id':'eq.'+RUN,'select':RUN_PROJECTION})
                 return response([self.run])
             self.assertEqual(kwargs['params']['run_id'],'eq.'+RUN)
             if table=='model_run_stages':return response(stages)
@@ -237,18 +270,20 @@ class BehavioralPopulationHandoffTests(unittest.TestCase):
                 self.assertIs(kwargs['allow_redirects'], False)
                 return response(native_lineage)
             if url.endswith('/read_model_attempt_outputs'):
-                return response({'run_id':RUN,'run_status':'running','outputs':[
-                    {'kind':'artifact','ownership_state':'legacy_unknown',
-                     'record':{key:value for key,value in row.items() if key!='model_run_stages'}}
-                    for row in self.inventory if row['artifact_type'].startswith('common_population')]})
+                self.assertEqual(kwargs['json'], {'p_run_id':RUN,'p_workspace_id':'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'})
+                self.assertEqual(kwargs['timeout'], (5, 30))
+                self.assertIs(kwargs['allow_redirects'], False)
+                return response(classified)
             self.assertTrue(url.endswith('/read_common_population_stage_custody'))
             args = kwargs['json']
-            self.assertEqual(args['p_workspace'],self.run['workspace_id'])
-            self.assertEqual(args['p_run'],RUN)
+            pair = (args['p_stage'], args['p_artifact'])
+            self.assertIn(pair, native_custody)
+            self.assertEqual(args, {'p_workspace':'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+                'p_run':RUN,'p_stage':pair[0],'p_artifact':pair[1]})
+            self.assertEqual(kwargs['timeout'], (5, 30))
+            self.assertIs(kwargs['allow_redirects'], False)
             self.ordinary_attestations.append(copy.deepcopy(args))
-            return response({'schema':'openplan.common-population-stage-custody.v1',
-                'custody':'legacy_stage_snapshot','workspace_id':args['p_workspace'],'run_id':args['p_run'],
-                'stage_id':args['p_stage'],'artifact_id':args['p_artifact'],'eligible':True})
+            return response(native_custody[pair])
         return get,post,stages
 
     def test_restored_lineage_real_classifier_and_pinned_population_copy(self):
@@ -383,8 +418,252 @@ class BehavioralPopulationHandoffTests(unittest.TestCase):
         path = Path(record['directory'])/'persons.csv'
         path.write_bytes(path.read_bytes()+b'changed\n')
         with patch.object(worker,'sb_get_run_artifacts',return_value=self.inventory), \
-                self.assertRaisesRegex(ValueError,'identity mismatch'):
+                self.assertRaises(worker.WorkerStateReadUnconfirmed):
             worker._recheck_common_population(self.inventory,RUN,CONSUMER,self.run,record,self.fixture.zones)
+
+    def ordinary_composition(self, fault=None):
+        """Real handler, producers, readers and journal; supplied CLI and transport only."""
+        import model_command_client as client
+        import model_command_journal as journal
+        import run_behavioral_demand_prototype as prototype
+        # Reuse the current transport and runtime fixture homes.
+        tests_dir = Path(__file__).parent/'tests'
+        if str(tests_dir) not in sys.path:
+            sys.path.insert(0, str(tests_dir))
+        from test_retained_outputs import CommittingDatabase
+        from test_ingest_activitysim_runtime_outputs import build_runtime
+        get, post, stages = self.ordinary_http_fixture()
+        import model_legacy_artifact_command as artifact_command
+        # Serialize the three extraction registrations through the producer's
+        # named-command identity and receipt validator, with fresh fixture custody.
+        for row in self.inventory:
+            if row['artifact_type'] not in ('skim_matrix','zone_attributes','network_setup_summary'):
+                continue
+            payload={key:copy.deepcopy(row[key]) for key in artifact_command.FIELDS-{'id'}}
+            payload['metadata_json']={'filename':Path(row['file_url'][len('local://'):]).name}
+            command=artifact_command.prepare_named(self.fixture.root/'extraction-journal',
+                'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',payload,name=payload['metadata_json']['filename'],
+                base_url=worker.SUPABASE_URL,deployment_id='synthetic-custody-extraction')
+            receipt=client.checked_receipt(command,{**command['arguments']['payload'],'attempt_id':None})
+            journal.resolve(self.fixture.root/'extraction-journal',command,receipt)
+            row.update(receipt)
+        database = CommittingDatabase()
+        storage, reads, patches = {}, {}, []
+        self.composition_database, self.composition_patches = database, patches
+        self.composition_stages = stages
+        self.composition_execution = None
+        self.composition_selected = {row['id'] for row in self.inventory}
+        corrupted = False
+
+        def response(value):
+            return Mock(status_code=200,json=Mock(return_value=copy.deepcopy(value)))
+
+        def after_matrix():
+            return any(row['receipt']['artifact_type']=='activitysim_demand_matrix'
+                for row in database.rows['record_legacy_model_artifact'].values())
+
+        def corrupt_after_matrix():
+            nonlocal corrupted
+            if not fault or corrupted:
+                return
+            corrupted = True
+            selected = next(row for row in self.inventory if row['artifact_type']=='network_setup_summary')
+            if fault=='hash': selected['content_hash']='0'*64
+            elif fault=='metadata': selected['metadata_json']['changed']=True
+            elif fault=='missing': self.inventory.remove(selected)
+            elif fault=='duplicate': self.inventory.append(copy.deepcopy(selected))
+            elif fault=='consumer': stages[-1]['attempt_managed']=True
+            elif fault=='producer': stages[1]['status']='failed'
+            elif fault=='parent': self.run['status']='failed'
+            elif fault=='roster':
+                path = self.composition_execution/'common_population'/'persons.csv'
+                path.write_bytes(path.read_bytes()+b'changed\n')
+
+        def read(url, **kwargs):
+            if '/storage/' in url:
+                return Mock(status_code=200,content=storage[url.rsplit('/',1)[-1]])
+            table = urlsplit(url).path.rsplit('/',1)[-1]
+            # process_stage's initial parent and final completion reads use URL queries.
+            if 'params' not in kwargs:
+                if table=='model_runs': return response([self.run])
+                if table=='model_run_stages': return response([])
+                raise AssertionError('Unexpected query transport')
+            result = get(url, **kwargs)
+            rows = result.json()
+            reads[table] = reads.get(table, 0)+1
+            # Return fresh state and vary order on each snapshot, including within a read.
+            if table=='model_runs': rows=[copy.deepcopy(self.run)]
+            if table=='model_run_stages': rows=copy.deepcopy(stages)
+            if table=='model_run_artifacts': rows=copy.deepcopy(self.inventory)
+            if reads[table] % 2: rows.reverse()
+            return response(rows)
+
+        def write(url, **kwargs):
+            endpoint = url.rsplit('/',1)[-1]
+            if '/storage/' in url:
+                storage[endpoint]=kwargs['data']
+                return response({})
+            if endpoint in database.rows:
+                args = kwargs['json']
+                self.assertEqual(set(args), {'p_workspace','p_payload'})
+                self.assertEqual(args['p_workspace'],'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa')
+                self.assertEqual(args['p_payload']['run_id'],RUN)
+                self.assertEqual(args['p_payload']['stage_id'],CONSUMER)
+                reply = database.post(url, **kwargs)
+                if endpoint=='record_legacy_model_artifact':
+                    row = reply.json()
+                    self.inventory.append({**copy.deepcopy(row),'model_run_stages':copy.deepcopy(stages[-1])})
+                    for kind in (*worker_population_kinds(), 'skim_matrix','zone_attributes','network_setup_summary'):
+                        self.assertEqual(sum(item['artifact_type']==kind for item in self.inventory),1)
+                    if row['artifact_type']=='activitysim_demand_matrix':
+                        corrupt_after_matrix()
+                return reply
+            reply = post(url, **kwargs)
+            if after_matrix() and fault=='lineage' and endpoint=='read_model_population_lineage':
+                return response({'schema':'openplan.population-replacement.v1'})
+            if after_matrix() and fault=='attestation' and endpoint=='read_common_population_stage_custody':
+                value=reply.json(); value['eligible']=False
+                return response(value)
+            return reply
+
+        def patch_row(url, **kwargs):
+            payload = kwargs['json']
+            patches.append(copy.deepcopy(payload))
+            record_id = parse_qs(urlsplit(url).query)['id'][0][3:]
+            return response([{'id':record_id,**payload}])
+
+        def cli_boundary(**kwargs):
+            self.composition_execution = Path(kwargs['bundle_path']).parents[1]
+            runtime_dir = Path(kwargs['runtime_dir'])
+            actual = build_runtime(runtime_dir.parent, mode='activitysim_cli',status='succeeded',
+                output_rows={'final_trips.csv':[{'origin':7,'destination':9,'trip_mode':'DRIVEALONEFREE'}]})
+            self.assertEqual(actual,runtime_dir)
+            return {'runtime_dir':str(actual),'runtime_manifest_path':str(actual/'runtime_manifest.json'),
+                'runtime_summary_path':str(actual/'runtime_summary.json'),'mode':'activitysim_cli',
+                'status':'succeeded','stage_statuses':{'run_activitysim':'succeeded'},'caveats':[]}
+
+        with ExitStack() as stack:
+            environment={key:'' for key in os.environ if key.startswith('ACTIVITYSIM_')}
+            environment.update(OPENPLAN_DEPLOYMENT_ID='synthetic-custody-composition',OPENPLAN_HOSTED_ARTIFACT_MIRROR='0')
+            for context in (patch.dict(os.environ,environment),
+                    patch.object(model_attempt_writer,'current',return_value=None),
+                    patch.object(worker,'ACTIVITYSIM_WORK_DIR',str(self.fixture.root/'ordinary-worker')),
+                    patch.object(worker.requests,'get',side_effect=read),
+                    patch.object(worker.requests,'post',side_effect=write),
+                    patch.object(worker.requests,'patch',side_effect=patch_row),
+                    patch.object(prototype,'run_activitysim_runtime',side_effect=cli_boundary)):
+                stack.enter_context(context)
+            self.composition_journal = Path(worker.stage_journal_dir(RUN,CONSUMER))
+            worker.process_stage(stages[-1])
+            records=journal.read_existing(self.composition_journal,
+                client.destination(worker.SUPABASE_URL,'synthetic-custody-composition'),include_resolved=True)
+            for record in records:
+                self.assertTrue(record['resolved'])
+                self.assertEqual(client.checked_receipt(record['command'],record['response']),record['response'])
+        return records
+
+    def test_ordinary_permuted_inventory_publishes_through_zones_and_kpis(self):
+        records=self.ordinary_composition()
+        published=[entry['command']['arguments']['payload'] for entry in records]
+        self.assertEqual([row['artifact_type'] for row in published if 'artifact_type' in row],
+            ['evidence_packet','activitysim_demand_package_manifest','activitysim_demand_matrix','activitysim_demand_zones'])
+        self.assertGreaterEqual(sum('kpi_name' in row for row in published),4)
+        self.assertTrue(any(row.get('status')=='succeeded' for row in self.composition_patches))
+        selected=worker_population_kinds()+('skim_matrix','zone_attributes','network_setup_summary')
+        self.assertEqual({row['id'] for row in self.inventory if row['artifact_type'] in selected},self.composition_selected)
+        manifest=next(row for row in published if row.get('artifact_type')=='activitysim_demand_package_manifest')
+        package=Path(manifest['file_url'][len('local://'):]).parent
+        self.assertEqual(read_package_population(package)['population_basis_digest'],identity(self.loaded)['population_basis_digest'])
+        for path in (self.common.MANIFEST_NAME,*self.common.ROLES.values()):
+            self.assertEqual((package/'common_population'/path).read_bytes(),(self.fixture.directory/path).read_bytes())
+
+    def assert_composition_refusal(self, fault, phase, reason):
+        from model_activitysim_handoff import ScreeningReadError
+        with self.assertRaises(worker.WorkerStateReadUnconfirmed, msg='required prepublication refusal') as caught:
+            self.ordinary_composition(fault)
+        diagnostic=caught.exception.__cause__
+        self.assertIsInstance(diagnostic,ScreeningReadError)
+        self.assertEqual((diagnostic.phase,diagnostic.reason),(phase,reason))
+        kinds=[row['receipt']['artifact_type'] for row in self.composition_database.rows['record_legacy_model_artifact'].values()]
+        self.assertEqual(kinds,['evidence_packet','activitysim_demand_package_manifest','activitysim_demand_matrix'])
+        self.assertEqual(self.composition_database.rows['record_legacy_model_kpi'],{})
+        self.assertFalse(any(row.get('status') in ('succeeded','failed') for row in self.composition_patches))
+
+    def test_changed_input_refuses_at_real_zones_recheck(self):
+        self.assert_composition_refusal('hash','inventory','content_changed')
+
+    def test_ordinary_refuses_metadata_membership_duplicate_custody_lineage_native_and_roster(self):
+        cases=[('metadata','inventory','content_changed'),('missing','selection','validation_failed'),
+            ('duplicate','inventory','duplicate_id'),('consumer','consumer','validation_failed'),
+            ('producer','producer','validation_failed'),('parent','parent','validation_failed'),
+            ('lineage','lineage','validation_failed'),('attestation','native_attestation','validation_failed'),
+            ('roster','population_bytes','verification_failed')]
+        # Each case needs a fresh fixture and journal. No request is replayed.
+        for fault,phase,reason in cases:
+            with self.subTest(fault=fault):
+                case=BehavioralPopulationHandoffTests()
+                case.setUp()
+                try: case.assert_composition_refusal(fault,phase,reason)
+                finally: case.doCleanups()
+
+    def test_inventory_guard_preserves_membership_content_types_arrays_and_all_rows(self):
+        from model_activitysim_handoff import ScreeningReadError, require_same_inventory
+        before=[{'id':RUN,'metadata_json':{'semantic':[False,None,1]}}]
+        for changed,reason in [([], 'membership_changed'),
+                ([before[0],before[0]],'duplicate_id'),
+                ([{'id':'AAAAAAAA-AAAA-4AAA-8AAA-AAAAAAAAAAAA','metadata_json':{}}],'invalid_id'),
+                ([{'id':RUN,'metadata_json':{'semantic':[0,None,1]}}],'content_changed'),
+                ([{'id':RUN,'metadata_json':{'semantic':[1,None,False]}}],'content_changed'),
+                ([{'id':RUN,'metadata_json':{'semantic':[False,None,1]},'extra':True}],'content_changed')]:
+            with self.subTest(reason=reason),self.assertRaises(ScreeningReadError) as caught:
+                require_same_inventory(before,changed,'model_run_artifacts')
+            self.assertEqual(caught.exception.reason,reason)
+        unrelated={'id':SETUP,'artifact_type':'evidence_packet','metadata_json':{'value':1}}
+        with self.assertRaises(ScreeningReadError) as caught:
+            require_same_inventory([*before,unrelated],[*before,{**unrelated,'metadata_json':{'value':2}}],'model_run_artifacts')
+        self.assertEqual(caught.exception.reason,'content_changed')
+        self.assertEqual(caught.exception.record_ids,(SETUP,))
+        self.assertEqual(len(caught.exception.fingerprints),2)
+
+    def test_read_diagnostics_classification_and_sanitized_failure_details(self):
+        from model_activitysim_handoff import ScreeningReadError
+        import model_stage_lease as lease
+        get,post,_=self.ordinary_http_fixture()
+        secret='sensitive-response-url-key-and-record'
+        replies=[(Mock(status_code=503,json=Mock(return_value={'code':'PT409','message':secret})),
+                    'http_failed',503,'PT409'),
+                 (Mock(status_code=True,json=Mock(return_value={'code':'bad SQLSTATE '+secret})),
+                    'http_failed',None,None),
+                 (Mock(status_code=200,json=Mock(side_effect=ValueError(secret))),
+                    'invalid_json',None,None)]
+        for response,reason,status,sqlstate in replies:
+            with patch.object(model_attempt_writer,'current',return_value=None), \
+                    patch.object(worker.requests,'get',return_value=response), \
+                    patch.object(worker.requests,'post',side_effect=post), \
+                    self.assertRaises(worker.WorkerStateReadUnconfirmed) as caught:
+                worker.sb_get_run_artifacts(RUN,stage_id=CONSUMER,run=self.run)
+            cause=caught.exception.__cause__
+            self.assertIsInstance(cause,ScreeningReadError)
+            self.assertEqual((cause.phase,cause.reason,cause.endpoint),('snapshot_before',reason,'model_runs'))
+            self.assertEqual((cause.status,cause.sqlstate),(status,sqlstate))
+            lease.attach_stage_identity(caught.exception,{'id':CONSUMER,'run_id':RUN,'stage_name':worker.STAGE_BUNDLE_PREFLIGHT})
+            logs=[];lease.report_unconfirmed_state(caught.exception,'ActivitySim worker',logs.append)
+            text=' '.join(logs)
+            self.assertIn('UNCONFIRMED STATE READ',text)
+            self.assertIn('"reason":"'+reason+'"',text)
+            self.assertNotIn('UNCONFIRMED STATE WRITE',text)
+            self.assertNotIn(secret,text)
+            self.assertIsNotNone(cause.__cause__ if reason=='invalid_json' else caught.exception.__cause__)
+        with patch.object(model_attempt_writer,'current',return_value=None), \
+                patch.object(worker.requests,'get',side_effect=RuntimeError(secret)), \
+                self.assertRaises(worker.WorkerStateReadUnconfirmed) as caught:
+            worker.sb_get_run_artifacts(RUN,stage_id=CONSUMER,run=self.run)
+        self.assertEqual(caught.exception.__cause__.error_class,'RuntimeError')
+        self.assertNotIn(secret,str(caught.exception.__cause__))
+        error=worker.WorkerStateWriteUnconfirmed(secret)
+        logs=[];lease.report_unconfirmed_state(error,'ActivitySim worker',logs.append)
+        self.assertIn('UNCONFIRMED STATE WRITE',' '.join(logs))
+        self.assertNotIn(secret,' '.join(logs))
 
     def demand_inputs(self):
         trips = self.fixture.root/"final_trips.csv"

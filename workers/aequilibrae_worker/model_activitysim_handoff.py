@@ -1,6 +1,9 @@
 """Read exact screening inputs for managed or ordinary ActivitySim consumers."""
 from contextlib import ExitStack, closing
 import uuid
+import hashlib
+import json
+import re
 from model_predecessor_inputs import select
 from model_receipt_values import same_json_value
 
@@ -13,6 +16,94 @@ POPULATION_KINDS = ('common_population', 'common_population_households', 'common
 POPULATION_METADATA_FIELDS = {'schema', 'population_basis', 'population_basis_payload_json',
     'population_basis_digest', 'origin', 'scientific_acceptance', 'custody'}
 RUN_PROJECTION = 'id,workspace_id,model_id,project_id,scenario_set_id,scenario_entry_id,engine_key,status,attempt_managed,corridor_geojson,query_text,input_snapshot_json,assumption_snapshot_json'
+
+
+class ScreeningReadError(ValueError):
+    """Fixed diagnostics for ordinary reads. Never retain a response body in text."""
+
+    def __init__(self, phase, reason, *, endpoint=None, record_ids=(), status=None,
+                 sqlstate=None, fingerprints=(), error_class=None):
+        self.phase, self.reason = phase, reason
+        self.endpoint = endpoint
+        self.record_ids = tuple(value for value in record_ids if _canonical_id(value))
+        self.status = status if type(status) is int and 100 <= status <= 599 else None
+        self.sqlstate = sqlstate if isinstance(sqlstate, str) and re.fullmatch(r'[0-9A-Z]{5}', sqlstate) else None
+        self.fingerprints = fingerprints
+        self.error_class = error_class
+        super().__init__(self.diagnostic())
+
+    def diagnostic(self):
+        values = {'phase': self.phase, 'reason': self.reason}
+        for key, value in (('endpoint', self.endpoint), ('ids', self.record_ids),
+                ('http_status', self.status), ('sqlstate', self.sqlstate),
+                ('fingerprints', self.fingerprints), ('exception_class', self.error_class)):
+            if value is not None and value != ():
+                values[key] = value
+        return json.dumps(values, sort_keys=True, separators=(',', ':'))
+
+
+def _canonical_id(value):
+    if not isinstance(value, str):
+        return False
+    try:
+        return str(uuid.UUID(value)) == value
+    except ValueError:
+        return False
+
+
+def _inventory_map(rows, endpoint):
+    """Index every row, including non-selected outputs, without normalizing content."""
+    result = {}
+    for row in rows:
+        value = row.get('id')
+        if not _canonical_id(value):
+            raise ScreeningReadError('inventory', 'invalid_id', endpoint=endpoint)
+        if value in result:
+            raise ScreeningReadError('inventory', 'duplicate_id', endpoint=endpoint, record_ids=(value,))
+        result[value] = row
+    return result
+
+
+def require_same_inventory(before, after, endpoint):
+    """Only the outer row sequence is unordered. Nested arrays remain positional."""
+    left, right = _inventory_map(before, endpoint), _inventory_map(after, endpoint)
+    if left.keys() != right.keys():
+        reason = 'membership_changed'
+        affected = sorted(left.keys() ^ right.keys())
+    else:
+        affected = sorted(key for key in left if not same_json_value(left[key], right[key]))
+        if not affected:
+            return
+        reason = 'content_changed'
+    fingerprints = tuple(hashlib.sha256(json.dumps(value, sort_keys=True, separators=(',', ':'),
+        allow_nan=False).encode()).hexdigest() for value in (left, right))
+    raise ScreeningReadError('inventory', reason, endpoint=endpoint,
+        record_ids=affected, fingerprints=fingerprints)
+
+
+def _ordinary_response(call, endpoint, phase, record_ids):
+    """Read one supplied transport response; expose only status and SQLSTATE."""
+    try:
+        with closing(call()) as response:
+            if response.status_code != 200:
+                sqlstate = None
+                try:
+                    body = response.json()
+                    sqlstate = body.get('code') if isinstance(body, dict) else None
+                except Exception:
+                    pass
+                raise ScreeningReadError(phase, 'http_failed', endpoint=endpoint,
+                    record_ids=record_ids, status=response.status_code, sqlstate=sqlstate)
+            try:
+                return response.json()
+            except Exception as error:
+                raise ScreeningReadError(phase, 'invalid_json', endpoint=endpoint,
+                    record_ids=record_ids, error_class=type(error).__name__) from error
+    except ScreeningReadError:
+        raise
+    except Exception as error:
+        raise ScreeningReadError(phase, 'transport_failed', endpoint=endpoint,
+            record_ids=record_ids, error_class=type(error).__name__) from error
 
 
 def common_population_request(run):
@@ -102,13 +193,15 @@ def _population_companions(run_id, stage_id, stages, artifacts, request):
     return selected
 
 
-def _classify_population_outputs(base_url, service_key, run_id, workspace_id, selected, custody, post=None):
+def _classify_population_outputs(base_url, service_key, run_id, workspace_id, selected, custody, post=None, diagnostic=None):
     """Use the existing service classifier to check revocation, not row status alone."""
     if custody not in ('managed_attempt', 'legacy_stage_snapshot'):
         raise ValueError('Population classification requires explicit supported custody')
     if post is None:
         import requests
         post = requests.post
+    if diagnostic is not None:
+        diagnostic.update(phase='classification', endpoint='read_model_attempt_outputs')
     with closing(post(base_url.rstrip('/') + '/rest/v1/rpc/read_model_attempt_outputs',
             headers={'apikey': service_key, 'Authorization': 'Bearer ' + service_key},
             json={'p_run_id': run_id, 'p_workspace_id': workspace_id},
@@ -127,6 +220,8 @@ def _classify_population_outputs(base_url, service_key, run_id, workspace_id, se
             if any(key not in record or not same_json_value(record[key], artifact.get(key))
                    for key in ARTIFACT_PROJECTION.split(',model_run_stages!inner')[0].split(',')):
                 raise ValueError('Classified population output differs from the selected artifact')
+    if diagnostic is not None:
+        diagnostic.update(phase='lineage', endpoint='read_model_population_lineage')
     with closing(post(base_url.rstrip('/') + '/rest/v1/rpc/read_model_population_lineage',
             headers={'apikey': service_key, 'Authorization': 'Bearer ' + service_key},
             json={'p_workspace_id': workspace_id, 'p_run_id': run_id}, timeout=(5, 30), allow_redirects=False)) as response:
@@ -175,7 +270,7 @@ def read_screening_artifacts(writer, run_id):
         return selected
 
 
-def read_screening_stage_artifacts(base_url, service_key, run_id, stage_id, *, get=None, post=None):
+def _read_screening_stage_artifacts(base_url, service_key, run_id, stage_id, *, get=None, post=None, diagnostic):
     """Read ordinary-stage authority without constructing a managed writer.
 
     The legacy classifier describes rows; only the bounded custody RPC attests
@@ -190,23 +285,26 @@ def read_screening_stage_artifacts(base_url, service_key, run_id, stage_id, *, g
             raise ValueError('Canonical behavioral run and stage required')
     headers = {'apikey': service_key, 'Authorization': 'Bearer ' + service_key}
 
+    snapshot_phase = 'snapshot_before'
+
     def read(table, projection, **scope):
-        with closing(get(base_url.rstrip('/') + '/rest/v1/' + table, headers=headers,
+        diagnostic.update(phase=snapshot_phase, endpoint=table)
+        rows = _ordinary_response(lambda: get(base_url.rstrip('/') + '/rest/v1/' + table, headers=headers,
                 params={**{key: 'eq.' + value for key, value in scope.items()}, 'select': projection},
-                timeout=(5, 30), allow_redirects=False)) as response:
-            rows = response.json() if response.status_code == 200 else None
-            if not isinstance(rows, list) or any(not isinstance(row, dict) for row in rows):
-                raise ValueError('Stage-snapshot screening read is incomplete')
-            fields = projection.split(',model_run_stages!inner')[0].split(',')
-            if any(not set(fields).issubset(row) or any(row.get(key) != value for key, value in scope.items()) for row in rows):
-                raise ValueError('Stage-snapshot screening row differs from requested scope')
-            return rows
+                timeout=(5, 30), allow_redirects=False), table, snapshot_phase, (run_id, stage_id))
+        if not isinstance(rows, list) or any(not isinstance(row, dict) for row in rows):
+            raise ValueError('Stage-snapshot screening read is incomplete')
+        fields = projection.split(',model_run_stages!inner')[0].split(',')
+        if any(not set(fields).issubset(row) or any(row.get(key) != value for key, value in scope.items()) for row in rows):
+            raise ValueError('Stage-snapshot screening row differs from requested scope')
+        return rows
 
     def read_run():
         rows = read('model_runs', RUN_PROJECTION, id=run_id)
         if len(rows) != 1:
             raise ValueError('Stage-snapshot behavioral run must be unique')
         run = rows[0]
+        diagnostic.update(phase='parent', endpoint='model_runs')
         workspace = run.get('workspace_id')
         if (not isinstance(workspace, str) or str(uuid.UUID(workspace)) != workspace
                 or run.get('status') != 'running' or run.get('attempt_managed') is not False):
@@ -219,6 +317,9 @@ def read_screening_stage_artifacts(base_url, service_key, run_id, stage_id, *, g
     owned, request = read_run()
     stages = read('model_run_stages', STAGE_PROJECTION, run_id=run_id)
     artifacts = read('model_run_artifacts', ARTIFACT_PROJECTION, run_id=run_id)
+    _inventory_map(stages, 'model_run_stages')
+    _inventory_map(artifacts, 'model_run_artifacts')
+    diagnostic.update(phase='consumer', endpoint='model_run_stages')
     consumers = [row for row in stages if row['id'] == stage_id]
     if len(consumers) != 1:
         raise ValueError('Stage-snapshot consumer must be unique')
@@ -233,14 +334,16 @@ def read_screening_stage_artifacts(base_url, service_key, run_id, stage_id, *, g
         expected = {'schema': 'openplan.common-population-stage-custody.v1',
             'custody': 'legacy_stage_snapshot', 'workspace_id': owned['workspace_id'],
             'run_id': run_id, 'stage_id': stage, 'artifact_id': artifact_id, 'eligible': True}
-        with closing(post(base_url.rstrip('/') + '/rest/v1/rpc/read_common_population_stage_custody',
+        diagnostic.update(phase='native_attestation', endpoint='read_common_population_stage_custody')
+        result = _ordinary_response(lambda: post(base_url.rstrip('/') + '/rest/v1/rpc/read_common_population_stage_custody',
                 headers=headers, json={'p_workspace': owned['workspace_id'], 'p_run': run_id,
-                    'p_stage': stage, 'p_artifact': artifact_id}, timeout=(5, 30), allow_redirects=False)) as response:
-            result = response.json() if response.status_code == 200 else None
-            if not same_json_value(result, expected):
-                raise ValueError('Fresh stage-snapshot custody eligibility is unconfirmed')
+                    'p_stage': stage, 'p_artifact': artifact_id}, timeout=(5, 30), allow_redirects=False),
+            'read_common_population_stage_custody', 'native_attestation', (run_id, stage, artifact_id))
+        if not same_json_value(result, expected):
+            raise ValueError('Fresh stage-snapshot custody eligibility is unconfirmed')
 
     attest(stage_id)
+    diagnostic.update(phase='producer', endpoint='model_run_stages')
     selected = []
     producers = [row for row in stages if row.get('stage_name') == 'Artifact Extraction']
     if len(producers) != 1:
@@ -250,6 +353,7 @@ def read_screening_stage_artifacts(base_url, service_key, run_id, stage_id, *, g
             or producer.get('attempt_managed') is not False or producer.get('active_attempt_id') is not None
             or type(producer.get('sort_order')) is not int or producer['sort_order'] >= consumer['sort_order']):
         raise ValueError('Ordinary screening requires its earlier completed ordinary producer')
+    diagnostic.update(phase='selection', endpoint='model_run_artifacts')
     for kind in KINDS:
         matches = [row for row in artifacts if row.get('artifact_type') == kind]
         if len(matches) != 1:
@@ -261,15 +365,44 @@ def read_screening_stage_artifacts(base_url, service_key, run_id, stage_id, *, g
                     for key in ('id', 'run_id', 'status', 'attempt_managed', 'active_attempt_id'))):
             raise ValueError('Ordinary screening companion differs from its producer')
         selected.append(row)
+    diagnostic.update(phase='population', endpoint='model_run_artifacts')
     companions = _population_companions(run_id, stage_id, stages, artifacts, request)
-    _classify_population_outputs(base_url, service_key, run_id, owned['workspace_id'], companions, request['custody'], post)
+    def classified_post(url, **kwargs):
+        endpoint = diagnostic['endpoint']
+        value = _ordinary_response(lambda: post(url, **kwargs), endpoint, diagnostic['phase'], (run_id, stage_id))
+        # The classifier owns and closes this small response view just as for HTTP.
+        class Response:
+            status_code = 200
+            def json(self): return value
+            def close(self): pass
+        return Response()
+    _classify_population_outputs(base_url, service_key, run_id, owned['workspace_id'], companions,
+        request['custody'], classified_post, diagnostic=diagnostic)
     for artifact in companions:
         attest(artifact['stage_id'], artifact)
+    snapshot_phase = 'snapshot_after'
     final, _ = read_run()
     final_stages = read('model_run_stages', STAGE_PROJECTION, run_id=run_id)
     final_artifacts = read('model_run_artifacts', ARTIFACT_PROJECTION, run_id=run_id)
-    if (not same_json_value(owned, final) or not same_json_value(stages, final_stages)
-            or not same_json_value(artifacts, final_artifacts)):
-        raise ValueError('Ordinary behavioral run or producer changed during screening selection')
+    diagnostic.update(phase='parent_recheck', endpoint='model_runs')
+    if not same_json_value(owned, final):
+        raise ValueError('Ordinary behavioral run changed during screening selection')
+    require_same_inventory(stages, final_stages, 'model_run_stages')
+    require_same_inventory(artifacts, final_artifacts, 'model_run_artifacts')
     attest(stage_id)
     return {'run': owned, 'artifacts': selected + companions}
+
+
+def read_screening_stage_artifacts(base_url, service_key, run_id, stage_id, *, get=None, post=None):
+    """Preserve the failure chain with fixed phase and reason diagnostics."""
+    diagnostic = {'phase': 'request', 'endpoint': None}
+    try:
+        return _read_screening_stage_artifacts(base_url, service_key, run_id, stage_id,
+            get=get, post=post, diagnostic=diagnostic)
+    except ScreeningReadError:
+        raise
+    except Exception as error:
+        raise ScreeningReadError(diagnostic['phase'],
+            'validation_failed' if isinstance(error, ValueError) else 'unexpected_error',
+            endpoint=diagnostic['endpoint'], record_ids=(run_id, stage_id),
+            error_class=type(error).__name__) from error
