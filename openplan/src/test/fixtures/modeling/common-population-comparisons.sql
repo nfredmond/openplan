@@ -215,10 +215,10 @@ BEGIN BEGIN EXECUTE statement;
  END;
  RAISE EXCEPTION 'Invalid population claim was accepted';
 END $$;
-CREATE FUNCTION pg_temp.cp_expect_stage_refusal(statement text) RETURNS void LANGUAGE plpgsql AS $$
+CREATE FUNCTION pg_temp.cp_expect_stage_refusal(statement text, expected_message text DEFAULT 'Common population stage custody is invalid') RETURNS void LANGUAGE plpgsql AS $$
 BEGIN BEGIN EXECUTE statement;
  EXCEPTION WHEN check_violation THEN
-  IF SQLERRM='Common population stage custody is invalid' THEN RETURN; END IF;
+  IF SQLERRM=expected_message THEN RETURN; END IF;
   RAISE;
  END;
  RAISE EXCEPTION 'Invalid stage custody was accepted';

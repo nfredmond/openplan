@@ -20,8 +20,137 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Selected model comparisons in Reports.** Reports can retain an explicitly
+selected comparison with separate method values, source identities and caveats.
+Apply `20261019070000_guided_comparison_report_evidence.sql` before deploying
+this path. New selected artifacts retain their identity, rendered body, selection
+and writeback receipt. Ordinary writes cannot replace or delete that history,
+including through report, project or workspace cascades. Legacy unselected
+artifacts keep their existing behavior. These safeguards do not validate model
+accuracy or establish project benefits.
+
+**Common population comparisons and replacement runs:** guided comparisons retain
+the same realized population across the separate AequilibraE and ActivitySim
+tracks. An explicit replacement run can reuse a prospectively retained population
+checkpoint while preserving the original failed run. Apply
+`20261019000001_model_common_population_comparisons.sql` and
+`20261019051430_model_population_replacement.sql` before deploying these paths.
+Managed replacement and hosted snapshot transport remain unsupported. These
+changes do not establish model accuracy or nationwide validation.
+
 The model-run progress fix keeps elapsed time advancing during five-second
 status refreshes that return fresh stage records.
+
+## 0.69.0 (2026-10-19)
+
+**Development release candidate, prepared for final release checks.** This
+packages the already-main history through `99dfde596d0cf4f12c46965379cc832204a99254`.
+It does not declare a tag, current hosted deployment or completed v1 milestone.
+Open PRs #347, #350 and #352 remain outside this candidate.
+
+**Project evidence into grant pursuit.** Report and evidence-bundle choices show
+file formats, generation times and artifact IDs. Report generation retains its
+writeback revision and jurisdiction snapshot; changed context requests a refresh.
+The estimate editor retrieves the exact saved supporting document. Grant catalog
+search filters recorded programs. Opportunity cards edit or clear recorded dates,
+and My Work retains notices of those OpenPlan edits. The SS4A workspace prepares
+six source-bound working drafts from a same-project Safety artifact, retaining
+prior drafts, final text, checklist states and source caveats.
+
+**Source reading and text inspection.** RTP document review now offers an
+explicit policy-and-goal reading scope and identifies matching passages left
+unread. Numeric reading remains the default; chapter text still passes through
+draft staging and review. Engagement text inspection exposes hidden formatting
+without changing the stored contribution or moderation decision. Neither change
+adds a migration.
+
+**Exercised outcomes and limits.** The dated records below retain agent-run
+desktop and 390px interactions, report/bundle downloads, exact estimate-source
+bytes and an inspected SS4A DRAFT PDF. These checks cover different identified
+builds. The [first-week record](docs/ops/FIRST_WEEK_2026-10-17.md) remains nine
+reached and three partial across builds, with its failed outcome gate intact.
+Search does not establish eligibility or an open call; estimate retrieval does
+not establish a current estimating basis. Notices describe saved OpenPlan edits,
+not verified funder amendments. SS4A drafts are not a complete Safety journey,
+grant-ready analysis, finalization or submission. Full v1, nationwide scientific
+validation and human acceptance are not claimed. Planner feedback is post-v1
+under the development release policy and does not gate this increment.
+
+**Operator steps before deployment or tagging.** This tree contains 428 migration
+files, including the 29 additions since v0.68.0 listed below. Compare exact file
+and applied-history inventories, definitions and dependencies on the intended
+installation. Apply the required additive migrations in order before deploying
+dependent code, following [self-hosting](openplan/docs/SELF_HOSTING.md) and the
+[runbook](openplan/docs/ops/RUNBOOK.md). Keep the previous compatible build.
+Confirm the documented npm lockfile/webpack install and build path, applicable
+QA, shuffled, isolated RLS and worker checks, and a populated v0.68.0 upgrade
+that preserves representative records and artifact custody. Confirm separate
+[restore evidence](openplan/docs/ops/BACKUP_AND_RESTORE.md) where affected.
+This packaging change performs none of those installation or recovery operations.
+
+The supplied hosted rollout record has 429 applied-history rows, including an
+open-PR RTP migration, while this candidate has 428 files. Counts and the largest
+version cannot establish compatibility. Do not blindly reapply migrations or
+rewrite history. A saved backup readback reports `restorePerformed=false` and
+`activeWritersExcluded=false`; it does not prove restoration or an atomic capture.
+No current hosted Git/build/alias, managed schema or affected authenticated
+workflow acceptance is established by this candidate. Bind those checks to the
+actual deployment before claiming it runs this release.
+
+Reminder transport still needs exact installed RPC and ordinary API evidence,
+including inserted, duplicate and deferred results and preserved existing reminder
+behavior. Application reminders and full reminder-kind coexistence remain pending
+separate activation. Land-use publication, retained geography and public viewport
+corrections retain their source-only limits and open native/browser boundaries.
+Assignment-image and supported worker-install receipts remain separate; compact
+graph and interpreter controls do not establish model accuracy. ActivitySim's
+publication refusal remains under correction outside this release's claims.
+
+### Migrations added since v0.68.0
+
+- `20261016000028_gtfs_managed_execution.sql`
+- `20261016000029_gtfs_submission_status.sql`
+- `20261016000030_gtfs_human_review.sql`
+- `20261016000031_gtfs_request_cancellation.sql`
+- `20261016000032_model_kpi_receipt_float_precision.sql`
+- `20261017000001_project_map_packages.sql`
+- `20261017000002_engagement_survey_question_counts.sql`
+- `20261017000003_aerial_private_dispatch_custody.sql`
+- `20261017000005_money_integrity_corrections.sql`
+- `20261017000006_permission_integrity.sql`
+- `20261017000007_workspace_time_zone.sql`
+- `20261017000008_historical_run_decisions.sql`
+- `20261017000009_owp_program_type.sql`
+- `20261017000010_workspace_storage_quota.sql`
+- `20261017000011_aerial_preserve_held_custody.sql`
+- `20261017000012_aerial_delivery_authority.sql`
+- `20261017000013_artifact_storage_server_writes.sql`
+- `20261017000014_work_program_evidence_date_workspace_calendar.sql`
+- `20261017000015_node_queue_process_observations.sql`
+- `20261017000016_project_jurisdiction_context.sql`
+- `20261017000017_portfolio_skip_invalid_classifications.sql`
+- `20261017000018_assistant_usage_limit_receipts.sql`
+- `20261017000019_project_budget_complete_inputs.sql`
+- `20261017000020_engagement_billed_summaries.sql`
+- `20261017014010_land_use_plan_context_geography.sql`
+- `20261017030608_land_use_plan_publication_transaction.sql`
+- `20261017052401_public_designation_query_viewport.sql`
+- `20261018000001_grant_deadline_changes.sql`
+- `20261018000002_ss4a_safety_seed.sql`
+
+### Retained development notes
+
+The base tree's notes follow unchanged. Candidate, unapplied and pending labels
+record each lane's dated evidence boundary; they are not a current installation
+inventory or a claim that every included component is activated. Later evidence
+must close the relevant boundary before deployment. Prior failures remain in
+the linked records.
+
+**Engagement text inspection:** staff can inspect hidden formatting characters in
+comments, restricted history, survey answers and saved synthesis sources. The
+optional view shows counts, code points and escaped text while preserving the
+readable contribution. It does not change moderation or infer intent. No
+migration is required.
 
 **Linked estimate sources:** the project estimate editor opens its exact saved
 supporting document, including one older than the recent-document list. Read

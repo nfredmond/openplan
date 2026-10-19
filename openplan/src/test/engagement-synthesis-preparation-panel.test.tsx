@@ -13,7 +13,7 @@ describe("prepared source inspection", () => {
     fireEvent.click(screen.getByRole("button", { name: "Next source page" }));
     expect(screen.getByText(/Page 2 of 13/)).toBeTruthy();
     fireEvent.change(screen.getByLabelText("Search all retained contributions"), { target: { value: "FINAL SOURCE TAIL" } });
-    expect(screen.getByText(/SYNTHETIC long concern é/, { selector: "p" }).textContent).toContain("FINAL SOURCE TAIL");
+    expect(screen.getByLabelText("Retained contribution text, readable text").textContent).toContain("FINAL SOURCE TAIL");
     fireEvent.change(screen.getByLabelText("Inspect a prepared group"), { target: { value: "question:0" } });
     expect(screen.getByLabelText("Search all retained contributions")).toHaveValue("");
     expect(screen.getByText(/1 matching contributions. Page 1 of 1/)).toBeTruthy();

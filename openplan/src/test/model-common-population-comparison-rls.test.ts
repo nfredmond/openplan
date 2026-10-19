@@ -9,6 +9,7 @@ import { resolveLocalDbContainer } from "./helpers/live-catalog";
 const fixture = readFileSync("src/test/fixtures/modeling/common-population-comparisons.sql", "utf8");
 const signature = "public.validate_common_population_comparison()";
 const stageSignature = "public.read_common_population_stage_custody(uuid,uuid,uuid,uuid)";
+const ordinaryStageSignature = "public.read_common_population_stage_custody_before_replacement(uuid,uuid,uuid,uuid)";
 type TrialOptions = { source?: string; output?: string; guard?: string; custody?: "managed_attempt" | "legacy_stage_snapshot" };
 const owner = "SET LOCAL ROLE authenticated;";
 const sourceFault = "UPDATE cp_probe SET source_metadata=source_metadata-'population_basis';";
@@ -205,7 +206,7 @@ const linkRefusal = (position: number) => `${owner} DO $$ DECLARE s uuid; BEGIN 
       result:=public.read_common_population_stage_custody(p.workspace_id,r,s,NULL);
       IF result IS DISTINCT FROM jsonb_build_object('schema','openplan.common-population-stage-custody.v1','custody','legacy_stage_snapshot',
         'workspace_id',p.workspace_id,'run_id',r,'stage_id',s,'artifact_id',NULL,'eligible',true) THEN RAISE EXCEPTION 'Bundle custody differs'; END IF;
-      PERFORM pg_temp.cp_expect_stage_refusal(format('SELECT public.read_common_population_stage_custody(%L,%L,%L,NULL)',p.other_workspace,r,s));
+      PERFORM pg_temp.cp_expect_stage_refusal(format('SELECT public.read_common_population_stage_custody(%L,%L,%L,NULL)',p.other_workspace,r,s),'Population scope mismatch');
       PERFORM pg_temp.cp_expect_stage_refusal(format('SELECT public.read_common_population_stage_custody(%L,%L,%L,NULL)',p.workspace_id,r,g.setup_id));
       RESET ROLE;
     END $$;`, { custody: "legacy_stage_snapshot" }));
@@ -312,7 +313,7 @@ const linkRefusal = (position: number) => `${owner} DO $$ DECLARE s uuid; BEGIN 
       UPDATE public.model_legacy_artifact_receipts SET response_payload=response_payload-'metadata_json' WHERE artifact_id=(SELECT artifact_id FROM cp_groups WHERE name='main');
       SET LOCAL ROLE service_role; SELECT pg_temp.cp_expect_stage_refusal($stage$${stageSourceCall}$stage$); RESET ROLE;`, {
       custody: "legacy_stage_snapshot", guard: `DO $$ DECLARE definition text; broken text; BEGIN
-        definition:=pg_get_functiondef('${stageSignature}'::regprocedure);
+        definition:=pg_get_functiondef('${ordinaryStageSignature}'::regprocedure);
         broken:=replace(definition,'AND receipt.response_payload = pg_catalog.to_jsonb(v_artifact)','');
         IF broken=definition THEN RAISE EXCEPTION 'Receipt mutation anchor missing'; END IF;
         EXECUTE broken;

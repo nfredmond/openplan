@@ -89,6 +89,7 @@ describe("authorized model recovery page join", () => {
     const projection = queries.find((query) => query.table === "model_runs" && query.method === "select")?.args[0];
     expect(projection).toEqual(expect.stringContaining("id, model_id"));
     expect(projection).toEqual(expect.stringContaining("engine_key, status"));
+    expect(projection).toEqual(expect.stringContaining("artifacts:model_run_artifacts(id, artifact_type, file_url, file_size_bytes, content_hash, metadata_json)"));
   });
   it.each(["kept_as_record", "closed_for_fresh_run"])("keeps a historical run with a %s decision out of reaping", async (outcome) => {
     const decision = { request_id: "50000000-0000-4000-8000-000000000001", outcome, actor_id: "40000000-0000-4000-8000-000000000001", reason: "Synthetic review", recorded_at: stamp };
