@@ -15,6 +15,10 @@ import stat
 import unittest
 from unittest.mock import Mock, patch
 
+# Keep this suite importable without an operator environment.
+os.environ.setdefault("SUPABASE_URL", "http://worker-import-only.invalid")
+os.environ.setdefault("SUPABASE_SERVICE_ROLE_KEY", "import-only-not-a-key")
+
 import model_command_client as client
 import model_command_journal as journal
 import model_common_population_handoff as handoff

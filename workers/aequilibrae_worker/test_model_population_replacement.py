@@ -15,6 +15,10 @@ from unittest.mock import Mock, patch
 import unittest
 from urllib.parse import parse_qs, urlsplit
 
+# Keep this suite importable without an operator environment.
+os.environ.setdefault("SUPABASE_URL", "http://worker-import-only.invalid")
+os.environ.setdefault("SUPABASE_SERVICE_ROLE_KEY", "import-only-not-a-key")
+
 with patch('dotenv.load_dotenv'), patch.dict(os.environ, {
         'SUPABASE_URL': 'https://bound.invalid', 'SUPABASE_SERVICE_ROLE_KEY': 'fixture-only'}):
     import main
