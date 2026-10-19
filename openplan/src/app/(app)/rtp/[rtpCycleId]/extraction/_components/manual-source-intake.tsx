@@ -110,7 +110,7 @@ export function ManualSourceIntake({ rtpCycleId, actorId, documents, canWrite }:
   const spec = RTP_EXTRACTION_TARGETS[draft.targetKind];
   return <details className="mt-4 rounded border p-4">
     <summary className="cursor-pointer font-semibold">Enter from source page</summary>
-    <p className="my-3 text-sm">Stage one quoted source record without an AI account. This reads one retained page at a time, up to 200,000 characters. It does not establish complete predecessor coverage, source authority or adoption.</p>
+    <p className="my-3 text-sm">Stage one quoted source item without an AI account. This reads one retained page at a time, up to 200,000 characters. It does not establish complete predecessor coverage, source authority or adoption.</p>
     <p className="text-sm">Blank values stay unknown. Enter exact whole dollars without rounding. Classifications need your review. The verifier checks presence, not column attribution, units or OCR accuracy. Tables across pages, maps and unextractable material remain unresolved.</p>
     <p className="my-2 text-sm"><Link className="underline" href="/knowledge-base">Open Documents for the retained original and local text/OCR reading</Link>. Retained text is required for verified proposals.</p>
     <p role="status" className="my-2 text-sm">{recovery}</p>
@@ -120,7 +120,7 @@ export function ManualSourceIntake({ rtpCycleId, actorId, documents, canWrite }:
       </select></label>
       <button type="button" className="module-inline-action" disabled={!draft.kbDocumentId} onClick={loadVersions}>Load retained versions</button>
       <label className="block">Retained text version<select className="mt-1 block w-full rounded border bg-background p-2" value={draft.documentExtractionId} onChange={(event) => { update({ documentExtractionId: event.target.value }); setSource(null); }}>
-        <option value="">Choose a version</option>{versions.map((version) => <option key={version.id} value={version.id}>{new Date(version.created_at).toLocaleString()} · {version.page_count} pages · {version.id}</option>)}
+        <option value="">Choose a version</option>{versions.map((version) => <option key={version.id} value={version.id}>{new Date(version.created_at).toLocaleString("en-US")} · {version.page_count} pages · {version.id}</option>)}
       </select></label>
       <label className="block">PDF page number<input className="mt-1 block w-full rounded border bg-background p-2" type="number" min={1} value={draft.sourcePage} onChange={(event) => { const page = Number(event.target.value); if (Number.isInteger(page) && page > 0) update({ sourcePage: page }); setSource(null); }} /></label>
       <button type="button" className="module-inline-action" disabled={!draft.documentExtractionId} onClick={openPage}>Open retained page</button>
@@ -146,9 +146,9 @@ export function ManualSourceIntake({ rtpCycleId, actorId, documents, canWrite }:
       })}
       <div className="flex flex-wrap gap-3"><button type="button" className="module-inline-action" disabled={!source || !draft.quote} onClick={stage}>{busy ? "Saving proposal…" : "Stage source proposal"}</button>
         <button type="button" className="module-inline-action" onClick={() => { update({ requestId: "" }); setMessage("New proposal started. Enter the next source record before staging."); }}>Start a new proposal</button></div>
-      <p className="text-sm">Retry unchanged work with the same request. After changing a saved or uncertain request, start a new proposal explicitly. Existing records remain retained.</p>
+      <p className="text-sm">Retry unchanged work with the same request. After changing a saved or uncertain request, start a new proposal explicitly. Earlier proposals remain available.</p>
     </fieldset>
-    {!canWrite ? <p className="text-sm">Your workspace role has read-only access.</p> : null}
+    {!canWrite ? <p className="text-sm">Your role has read-only access.</p> : null}
     {message ? <p role="status" className="mt-3 whitespace-pre-wrap text-sm">{message}</p> : null}
   </details>;
 }
