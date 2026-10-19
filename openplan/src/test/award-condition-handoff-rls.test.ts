@@ -1,5 +1,6 @@
 import {randomUUID} from 'node:crypto';
 import {spawnSync} from 'node:child_process';
+import {readFileSync} from 'node:fs';
 import {isAbsolute} from 'node:path';
 import {beforeAll,describe,it,expect} from 'vitest';
 import {LIVE_RLS} from './local-supabase-env';
@@ -39,6 +40,83 @@ import {awardTermsFixture} from './fixtures/grants/award-handoff';
   const result=spawnSync('docker',['exec','-i',container,'psql','-X','-U','postgres','-d','postgres','-qAt','-v','ON_ERROR_STOP=1'],{input:sql.replaceAll('__ACTOR__',actor).replaceAll('__VIEWER__',viewer).replaceAll('__PROJECT__',project).replaceAll('__AWARD__',award).replaceAll('__OPPORTUNITY__',opp).replaceAll('__DOCUMENT__',document),encoding:'utf8',timeout:20000,maxBuffer:2*1024*1024});
   expect(result.error).toBeUndefined();expect(result.status,result.stderr).toBe(0);expect(result.stdout).toContain('AWARD_HANDOFF_ASSERTIONS_REACHED');
  }
+ // Prepared, UNEXECUTED privilege controls. Source GRANT text cannot prove these assertions.
+ it('denies every residual write privilege on all four history tables and six read-only views',()=>exercise(`
+  RESET ROLE;
+  -- Reproduce creation-time residue even when the isolated stack already applied the correction.
+  -- Removing either REVOKE from the source below must fail the actual privilege matrix.
+  GRANT ALL PRIVILEGES ON TABLE public.funding_award_handoff_revisions,public.funding_award_handoff_sources,
+   public.funding_award_handoff_occurrences,public.funding_award_closure_receipts,
+   public.current_award_handoff_records,public.active_project_submittals,public.active_project_milestones,
+   public.legacy_calendar_funding_awards,public.funding_award_handoff_fulfillment,public.funding_opportunity_issuance TO service_role;
+  ${readFileSync('supabase/migrations/20261019163759_award_handoff_relation_privileges.sql','utf8')}
+  SET LOCAL ROLE service_role;
+  DO $$ DECLARE
+   tables text[]:=ARRAY['funding_award_handoff_revisions','funding_award_handoff_sources','funding_award_handoff_occurrences','funding_award_closure_receipts'];
+   views text[]:=ARRAY['current_award_handoff_records','active_project_submittals','active_project_milestones','legacy_calendar_funding_awards','funding_award_handoff_fulfillment','funding_opportunity_issuance'];
+   name text; relation regclass; privilege text; role_name text; allowed boolean;
+  BEGIN
+   PERFORM pg_temp.assert_handoff(current_user='service_role','Privilege case did not enter service role');
+   FOREACH name IN ARRAY tables||views LOOP
+    relation:=('public.'||name)::regclass;
+    -- The server's full table privilege set includes TRUNCATE and MAINTAIN where supported.
+    FOR privilege IN SELECT a.privilege_type FROM pg_catalog.pg_class c,
+     LATERAL pg_catalog.aclexplode(pg_catalog.acldefault('r',c.relowner)) a WHERE c.oid=relation LOOP
+     FOREACH role_name IN ARRAY ARRAY['service_role','authenticated','anon'] LOOP
+      allowed:=role_name<>'anon' AND (privilege='SELECT' OR (role_name='service_role' AND name=ANY(tables) AND privilege='INSERT'));
+      PERFORM pg_temp.assert_handoff(has_table_privilege(role_name,relation,privilege)=allowed,'Unexpected '||role_name||' '||privilege||' on '||name);
+      PERFORM pg_temp.assert_handoff(NOT has_table_privilege(role_name,relation,privilege||' WITH GRANT OPTION'),'Grant option retained: '||role_name||' '||privilege||' on '||name);
+     END LOOP;
+    END LOOP;
+    PERFORM pg_temp.assert_handoff(NOT EXISTS(SELECT FROM pg_catalog.pg_class c,
+     LATERAL pg_catalog.aclexplode(coalesce(c.relacl,pg_catalog.acldefault('r',c.relowner))) a
+     WHERE c.oid=relation AND a.grantee=0),'PUBLIC relation grant retained on '||name);
+    FOREACH role_name IN ARRAY ARRAY['service_role','authenticated','anon'] LOOP
+     FOREACH privilege IN ARRAY ARRAY['INSERT','UPDATE','REFERENCES'] LOOP
+      allowed:=role_name='service_role' AND name=ANY(tables) AND privilege='INSERT';
+      PERFORM pg_temp.assert_handoff(has_any_column_privilege(role_name,relation,privilege)=allowed,'Unexpected column '||role_name||' '||privilege||' on '||name);
+     END LOOP;
+    END LOOP;
+    PERFORM pg_temp.assert_handoff(NOT EXISTS(SELECT FROM pg_catalog.pg_attribute c,
+     LATERAL pg_catalog.aclexplode(c.attacl) a WHERE c.attrelid=relation AND c.attnum>0 AND NOT c.attisdropped AND a.grantee=0),'PUBLIC column grant retained on '||name);
+   END LOOP;
+  END $$;`));
+ it('preserves service handoff inserts, closeout, replay and member reads with the narrowed grants',()=>exercise(`
+  RESET ROLE;
+  CREATE FUNCTION pg_temp.assert_handoff_read_rows() RETURNS void LANGUAGE plpgsql SECURITY INVOKER AS $f$
+  DECLARE revision uuid; item record; actual bigint; BEGIN
+   SELECT current_handoff_revision_id INTO STRICT revision FROM public.funding_awards WHERE id='__AWARD__';
+   FOR item IN SELECT * FROM (VALUES
+    ('funding_award_handoff_revisions','award_id','__AWARD__'::uuid,1),
+    ('funding_award_handoff_sources','revision_id',revision,1),
+    ('funding_award_handoff_occurrences','award_id','__AWARD__'::uuid,2),
+    ('funding_award_closure_receipts','award_id','__AWARD__'::uuid,1),
+    ('current_award_handoff_records','award_id','__AWARD__'::uuid,2),
+    ('active_project_submittals','project_id','__PROJECT__'::uuid,2),
+    ('active_project_milestones','project_id','__PROJECT__'::uuid,1),
+    ('legacy_calendar_funding_awards','project_id','__PROJECT__'::uuid,1),
+    ('funding_award_handoff_fulfillment','award_id','__AWARD__'::uuid,2),
+    ('funding_opportunity_issuance','opportunity_id','__OPPORTUNITY__'::uuid,1)
+   ) AS expected(name,key,value,total) LOOP
+    EXECUTE format('SELECT count(to_jsonb(r)) FROM public.%I r WHERE %I=$1',item.name,item.key) INTO actual USING item.value;
+    PERFORM pg_temp.assert_handoff(actual=item.total,'Ordinary '||current_user||' read changed on '||item.name);
+   END LOOP;
+  END $f$;
+  SET LOCAL ROLE service_role;
+  DO $$ DECLARE p jsonb:=pg_temp.handoff_preview(); r jsonb; closed jsonb; BEGIN
+   r:=pg_temp.handoff_apply(p);
+   PERFORM pg_temp.assert_handoff(pg_temp.handoff_apply(p)=r,'Narrow grants changed exact handoff replay');
+   INSERT INTO public.billing_invoice_records(workspace_id,project_id,funding_award_id,invoice_number,status,amount,retention_amount,net_amount,award_handoff_revision_id,currency_code)
+   SELECT w,'__PROJECT__','__AWARD__','Synthetic narrow-grant paid coverage','paid',100.01,0,100.01,(r->>'revisionId')::uuid,'USD' FROM handoff_fixture;
+   closed:=public.managed_award_closeout('__ACTOR__','__AWARD__',(r->>'revisionId')::uuid,'earned_coverage',NULL);
+   PERFORM pg_temp.assert_handoff(closed->>'status'='closed' AND closed->>'paid'='100.01','Narrow grants broke managed closure receipt');
+   INSERT INTO public.funding_awards(workspace_id,project_id,title) SELECT w,'__PROJECT__','Synthetic legacy calendar read' FROM handoff_fixture;
+   PERFORM pg_temp.assert_handoff_read_rows();
+  END $$;
+  RESET ROLE;
+  SELECT set_config('request.jwt.claims',jsonb_build_object('sub','__ACTOR__','role','authenticated')::text,true);
+  SET LOCAL ROLE authenticated;
+  SELECT pg_temp.assert_handoff_read_rows();`));
  it('retains the legacy expenditure source through a first pending handoff, then switches at the first effective version',()=>exercise(`
   DO $$ DECLARE p jsonb; t jsonb; r jsonb; BEGIN
    UPDATE public.funding_awards SET expenditure_deadline_at='2027-05-01T00:00:00Z' WHERE id='__AWARD__';

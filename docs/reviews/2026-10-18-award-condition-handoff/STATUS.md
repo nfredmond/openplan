@@ -152,3 +152,42 @@ October 19 invoice-modal checks: the real GuidedFlow cohort passes 54 tests in b
 October 19 transition-history reader, SOURCE ONLY: an uncommitted candidate based on `7fc486d10e78d2dc66ce896214a85e5b084777ba` adds a caller-scoped read endpoint and an expandable reader in the existing Grants award close-out row, including read-only viewers. Exact-count reads refuse partial or malformed receipt sets and disclose a 500-receipt limit. Legacy destinations remain unrecorded; malformed basis payloads remain unassessed. Route/reader/UI tests are prepared and UNEXECUTED. No migrations, grants, write transactions, money logic or invoice composer change. Root owns ordinary checks, harmless and wrong-behavior controls, and later identified desktop/390px acceptance. Prior browser reports remain partial. Full private handoff: `v1-award-transition-history-source-20261019-r3/REPORT.md`.
 
 October 19 transition-history checks: 91 selected route, reader and close/reopen UI tests pass in the final harmless and restored cohorts. Sixteen targeted wrong behaviors produce 19 intended assertion failures across retained windows, including caller projection/scope, count/type/duplicate refusal, legacy destination, string amounts, escaped notes, viewer reachability, refresh and stale committed text. The first stale-selection assertion proved insufficient when its mutation survived; its replacement observes committed DOM text before passive effects and fails when the render guard is removed. Earlier diagnostic-reader windows remain failed, with exact restored source and full raw assertions retained. The final outstanding window exits 0 with direction and scoped lint. Top-of-test historical UNEXECUTED comments are removed afterward as a prose-only change; executable bytes are unchanged. No migration or write path changes. Native RLS and the new identified desktop/390px history journey remain unassessed. Private checks and full limits are in v1-award-transition-history-checks-20261019-r1 through r4.
+
+October 19 relation-privilege correction, SOURCE ONLY: saved catalogue review R19
+identifies residual service_role creation grants, including TRUNCATE, on the four
+immutable award tables and six views. Root accepts this least-privilege gap for
+correction. CLI 2.109.1 generates
+`20261019163759_award_handoff_relation_privileges.sql`. It revokes service relation
+privileges on those exact objects, then grants SELECT/INSERT on the tables and
+SELECT on the views. Client grants, default ACLs, RPCs, definitions and original
+migration bodies remain unchanged. The invoker RPCs lock other relations; these
+ten objects need no column UPDATE grant in the inspected composition.
+
+One source assertion and two cases in the registered award live suite are
+prepared and UNEXECUTED. The privilege case seeds broad grants only inside its
+rollback fixture, executes the correction and checks effective table/column
+privileges, grant options and PUBLIC ACLs. It enumerates the server's complete
+relation privileges, including TRUNCATE and supported MAINTAIN. The positive case
+retains service inserts, replay/closeout and all ten member reads. Root's intended
+recipe is harmless comment, each missing-REVOKE fault against that actual matrix,
+exact restoration and final source/native cases on an isolated stack. These
+checks cannot establish hosted grants, arbitrary RPC composition or browser
+acceptance. All execution checks remain held. Root owns rollout sequencing and
+the required Unreleased migration reference, outside this four-file scope. The
+old outer metadata-size failure and display-name reader error remain unchanged;
+neither becomes a SQL failure or an acceptance waiver.
+
+October 19 privilege-correction checks: independent R8 accepts the source/data
+candidate without P1/P2. Root's ordinary02 exits 0 in 8.879 seconds. Harmless and
+restored cohorts each pass all 15 source checks; removing either REVOKE produces
+exactly one intended privilege-correction assertion failure, with the other 14
+checks passing. Scoped lint exits 0. Source bytes/modes restore, the owned
+dependency link is absent and the compiler lock is released. Wrapper01 remains
+exit 1 before tests, source edits or dependency linking because root's controller
+omits private /dev and Git cannot open /dev/null. The separate corrected
+controller02 supplies private /dev and network isolation; this is not a product
+defect or a regraded first attempt. Actual limits are 2GiB, zero swap, one CPU,
+affinity 0 and 64 tasks. Native privilege cases remain UNEXECUTED locally and
+hosted privilege acceptance remains WITHHELD. These 15 source checks do not
+establish actual grants, RLS, locks, rollback, hosted/browser or scientific
+acceptance. Raw results and both wrapper outcomes remain private and unchanged.

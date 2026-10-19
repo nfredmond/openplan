@@ -1,4 +1,6 @@
 import { formatCurrency as grantsCurrency } from "@/lib/grants/page-helpers";
+import { readFileSync } from "node:fs";
+import { blankComments } from "./migrations/read-migrations";
 // Prepared source only. These pure controls cannot prove SQL/RLS/storage, routes or UI.
 import { describe,it,expect } from "vitest";
 import { assertCompleteFundingRead,AWARD_HANDOFF_BODY_LIMIT,serializeHandoffApply,comparableFundingText,awardTermsSchema,comparableAwardFunding,exactInvoiceAmounts,managedInvoiceTotals,storageMoney } from "@/lib/grants/award-handoff";
@@ -14,6 +16,22 @@ import { summarizeAwardSubstantiation } from "@/lib/invoicing/invoice-records";
 import { handoffId as id,awardTermsFixture } from "./fixtures/grants/award-handoff";
 const award={id:id(1),current_handoff_revision_id:id(2),latest_handoff_revision_id:id(2),currency_code:'USD',awarded_amount:'100.01',match_amount:'0.00'};
 const invoice={id:id(4),funding_award_id:id(1),award_handoff_revision_id:id(2),currency_code:'USD',status:'paid',amount:'100.01',retention_amount:'0.00',net_amount:'100.01'};
+// Source shape only. Effective default/role/column grants require the registered live suite.
+describe('award handoff relation privilege correction',()=>{
+ it('revokes residual service privileges before granting only append-only tables and read-only views',()=>{
+  const sql=blankComments(readFileSync('supabase/migrations/20261019163759_award_handoff_relation_privileges.sql','utf8'));
+  const tables=['funding_award_handoff_revisions','funding_award_handoff_sources','funding_award_handoff_occurrences','funding_award_closure_receipts'];
+  const views=['current_award_handoff_records','active_project_submittals','active_project_milestones','legacy_calendar_funding_awards','funding_award_handoff_fulfillment','funding_opportunity_issuance'];
+  const relations=(names:string[])=>names.map(name=>`public.${name}`).join(', ');
+  const normalize=(statement:string)=>statement.replace(/\s+/g,' ').trim();
+  expect(sql.split(';').map(normalize).filter(Boolean)).toEqual([
+   `REVOKE ALL PRIVILEGES ON TABLE ${relations(tables)} FROM service_role`,
+   `GRANT SELECT, INSERT ON TABLE ${relations(tables)} TO service_role`,
+   `REVOKE ALL PRIVILEGES ON TABLE ${relations(views)} FROM service_role`,
+   `GRANT SELECT ON TABLE ${relations(views)} TO service_role`,
+  ]);
+ });
+});
 describe('source-confirmed award conditions',()=>{
  it('keeps two dates beneath one condition and rejects duplicate occurrence identity',()=>{
   const t=awardTermsFixture();expect(awardTermsSchema.safeParse(t).success).toBe(true);

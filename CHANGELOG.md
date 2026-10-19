@@ -42,6 +42,17 @@ cycle data when funding reads fail. The cycle detail withholds dependent funding
 figures; the registry identifies partial totals. Successful incomplete funding
 reads still refuse.
 
+**Award history privileges:** apply
+`20261019163759_award_handoff_relation_privileges.sql` to remove residual
+service_role creation grants. It restores only SELECT/INSERT on
+`funding_award_handoff_revisions`, `funding_award_handoff_sources`,
+`funding_award_handoff_occurrences` and `funding_award_closure_receipts`, and only
+SELECT on `current_award_handoff_records`, `active_project_submittals`,
+`active_project_milestones`, `legacy_calendar_funding_awards`,
+`funding_award_handoff_fulfillment` and `funding_opportunity_issuance`.
+Authenticated SELECT and object definitions remain unchanged. Source review
+does not establish installed privileges.
+
 **Source-page plan proposals:** Document review can stage quoted records from a
 retained page without an AI account. Pending proposals have their own pages,
 separate from reading history. Manual chapter copies retain source authorship;
