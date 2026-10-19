@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import { NextRequest } from "next/server";
 
 const mocks = vi.hoisted(() => ({ client: vi.fn(), membership: vi.fn(), complete: vi.fn() }));
@@ -18,7 +18,7 @@ const chapter = "77777777-7777-4777-8777-777777777777";
 const runId = "88888888-8888-4888-8888-888888888888";
 const quote = "Improve access.";
 let rpc: ReturnType<typeof vi.fn>;
-let insert: ReturnType<typeof vi.fn>;
+let insert: Mock<(payload: unknown) => void>;
 let projections: Record<string, string>;
 let filters: Record<string, Array<[string, string]>>;
 function post(headers: Record<string, string> = {}) {
@@ -29,7 +29,7 @@ beforeEach(() => {
   mocks.membership.mockResolvedValue({ membership: { workspace_id: workspace, role: "member" } });
   mocks.complete.mockResolvedValue({});
   rpc = vi.fn().mockResolvedValue({ data: { documentId: document, extractionId: extraction, checksum: "original", contentSha256: "pages", source: "text_layer", page: 112, pageCount: 140, text: quote }, error: null });
-  insert = vi.fn();
+  insert = vi.fn<(payload: unknown) => void>();
   const rows: Record<string, unknown> = {
     rtp_cycles: { id: cycle, workspace_id: workspace }, rtp_cycle_chapters: { id: chapter, title: "SYNTHETIC chapter" },
     rtp_extraction_candidates: { id: candidateId, run_id: runId, target_kind: "chapter_block", proposed_json: { text: quote }, source_chunk_id: null, source_page: 112, source_quote: quote, quote_verified: true, status: "pending" },
