@@ -103,7 +103,7 @@ BEGIN
     OR e.content_sha256 IS DISTINCT FROM p_request->>'contentSha256'
     OR j.source_checksum IS DISTINCT FROM e.document_checksum
     OR j.extraction_mode NOT IN ('text','ocr')
-    OR p_source IS DISTINCT FROM CASE j.extraction_mode WHEN 'text' THEN 'text_layer' ELSE 'ocr' END
+    OR p_source IS DISTINCT FROM (CASE j.extraction_mode WHEN 'text' THEN 'text_layer' ELSE 'ocr' END)
     OR v_page IS NULL OR v_page < 1 OR v_page > e.page_count
     OR (v_page_json->>'page')::integer IS DISTINCT FROM v_page
     OR jsonb_typeof(v_page_json->'text') IS DISTINCT FROM 'string'
