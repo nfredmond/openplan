@@ -53,6 +53,7 @@ export function ExtractionRunLauncher({
   const [error, setError] = useState<string | null>(null);
   const [summary, setSummary] = useState<string | null>(null);
   const [warning, setWarning] = useState<string | null>(null);
+  const [coverageWarnings, setCoverageWarnings] = useState<string[]>([]);
 
   async function read() {
     if (!canWrite || isReading || !readable.some((document) => document.id === documentId)) return;
@@ -60,6 +61,7 @@ export function ExtractionRunLauncher({
     setError(null);
     setSummary(null);
     setWarning(null);
+    setCoverageWarnings([]);
 
     try {
       const response = await fetch(`/api/rtp-cycles/${rtpCycleId}/extraction-runs`, {
@@ -74,7 +76,7 @@ export function ExtractionRunLauncher({
       const payload = (await response.json().catch(() => ({}))) as {
         error?: string;
         warning?: string | null;
-        summary?: { proposed?: number; discarded?: number };
+        summary?: { proposed?: number; discarded?: number; perTarget?: Array<{ targetKind: string; passagesMatched: number; passagesRead: number }> };
       };
 
       if (!response.ok) {
@@ -84,6 +86,13 @@ export function ExtractionRunLauncher({
 
       const proposed = payload.summary?.proposed ?? 0;
       const discarded = payload.summary?.discarded ?? 0;
+      const unreadPassages = (payload.summary?.perTarget ?? []).filter(
+        (target) => target.passagesRead < target.passagesMatched
+      );
+      setCoverageWarnings(unreadPassages.map((target) => {
+        const category = target.targetKind === "chapter_block" ? "policy and goal text" : target.targetKind.replaceAll("_", " ");
+        return `${target.passagesRead} of ${target.passagesMatched} matching passages were read for ${category}. The remaining matching passages were not evaluated.`;
+      }));
       const reviewLocation = readingScope === "chapter" ? "in Place copied chapter text" : "below";
       setSummary(
         discarded > 0
@@ -94,7 +103,7 @@ export function ExtractionRunLauncher({
             }. ${proposed} ${
               proposed === 1 ? "is" : "are"
             } waiting for review ${reviewLocation}.`
-          : `${proposed} ${proposed === 1 ? "proposal is" : "proposals are"} waiting for review ${reviewLocation}. Nothing was dropped.`
+          : `${proposed} ${proposed === 1 ? "proposal is" : "proposals are"} waiting for review ${reviewLocation}.${unreadPassages.length ? " No proposals were dropped by source checks." : " Nothing was dropped."}`
       );
       setWarning(payload.warning ?? null);
       router.refresh();
@@ -169,6 +178,7 @@ export function ExtractionRunLauncher({
         </p>
       ) : null}
       {summary ? <p className="text-sm text-foreground">{summary}</p> : null}
+      {coverageWarnings.map((message) => <p key={message} role="status" className="text-xs text-amber-700 dark:text-amber-300">{message}</p>)}
       {warning ? <p className="text-xs text-amber-700 dark:text-amber-300">{warning}</p> : null}
       {error ? <p role="alert" className="text-sm text-red-600 dark:text-red-400">{error}</p> : null}
 

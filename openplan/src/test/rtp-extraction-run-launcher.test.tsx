@@ -192,4 +192,50 @@ describe("document reading scope", () => {
     expect(readButton()).toBeEnabled();
     expect(refresh).toHaveBeenCalledOnce();
   });
+  it.each(["numeric", "chapter"])("discloses unread matching passages in %s scope without summing overlapping categories", async (value) => {
+    fetchMock.mockResolvedValueOnce(Response.json({
+      summary: { proposed: 2, discarded: 0, perTarget: [
+        { targetKind: "chapter_block", passagesMatched: 30, passagesRead: 24 },
+        { targetKind: "financial_line", passagesMatched: 26, passagesRead: 24 },
+        { targetKind: "horizon_band", passagesMatched: 4, passagesRead: 4 },
+      ] },
+      warning: "SYNTHETIC duplicate warning",
+    }));
+    render(launcher());
+    fireEvent.change(scope(), { target: { value } });
+    fireEvent.click(readButton());
+    await waitFor(() => expect(refresh).toHaveBeenCalledOnce());
+    expect(screen.getAllByRole("status")).toHaveLength(2);
+    expect(screen.getByText("24 of 30 matching passages were read for policy and goal text. The remaining matching passages were not evaluated.")).toBeVisible();
+    expect(screen.getByText("24 of 26 matching passages were read for financial line. The remaining matching passages were not evaluated.")).toBeVisible();
+    expect(screen.getByText("SYNTHETIC duplicate warning")).toBeVisible();
+    expect(screen.queryByText(/Nothing was dropped/)).toBeNull();
+    expect(screen.getByText(/No proposals were dropped by source checks/)).toBeVisible();
+  });
+
+  it("keeps full passage coverage distinct from an unread remainder", async () => {
+    fetchMock.mockResolvedValueOnce(Response.json({ summary: { proposed: 2, discarded: 0, perTarget: [
+      { targetKind: "chapter_block", passagesMatched: 24, passagesRead: 24 },
+    ] } }));
+    render(launcher());
+    fireEvent.change(scope(), { target: { value: "chapter" } });
+    fireEvent.click(readButton());
+    await waitFor(() => expect(refresh).toHaveBeenCalledOnce());
+    expect(screen.queryByRole("status")).toBeNull();
+    expect(screen.getByText(/Nothing was dropped/)).toBeVisible();
+  });
+
+  it("clears earlier passage coverage when the next read fails", async () => {
+    fetchMock.mockResolvedValueOnce(Response.json({ summary: { proposed: 1, discarded: 0, perTarget: [
+      { targetKind: "chapter_block", passagesMatched: 25, passagesRead: 24 },
+    ] } }));
+    render(launcher());
+    fireEvent.click(readButton());
+    expect(await screen.findByRole("status")).toHaveTextContent("24 of 25");
+    fetchMock.mockRejectedValueOnce(new Error("SYNTHETIC later read failure"));
+    fireEvent.click(readButton());
+    expect(await screen.findByRole("alert")).toHaveTextContent("SYNTHETIC later read failure");
+    expect(screen.queryByRole("status")).toBeNull();
+  });
+
 });
