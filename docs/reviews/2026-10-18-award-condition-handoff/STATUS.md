@@ -79,3 +79,37 @@ intended reasons. Functions, selected rows, history and test bytes restore exact
 scoped lint passes. Earlier wrapper and fixture failures remain private, including
 the duplicate-receipt stop before tests. No hosted award rollout, Storage byte
 journey, browser acceptance or arbitrary transaction-order claim follows.
+
+
+## Notice selection and worksheet wording
+
+On identified build UjybDki28fpxO9BuKrgrH at82b8e70d, ordinary navigation creates
+one labelled synthetic award, uploads its PDF notice, reviews and saves one
+handoff, then reloads exact USD100.01 and USD0.00. Two separate report dates
+appear in unassigned My Work and project delivery. Desktop and settled390px
+captures are readable. A downloaded two-page worksheet carries the exact ledger
+and authority caveats. Full journey console capture is interrupted; later page
+console capture is empty, while server report-only CSP warnings remain. This is
+bounded local acceptance, not a wholly clean or hosted journey.
+
+That journey finds manual document-ID entry and a misleading worksheet message.
+The source correction selects ordinary uploaded PDFs through the existing
+workspace document search, retains its list-limit/error disclosures and leaves
+SQL scope/checksum/byte checks unchanged. Changing the selected original clears
+notice-specific version/date/citation fields for review. Earlier application
+JSON starts collapsed. The worksheet now says project-cost applicability is
+unassessed because costs lack award-version/currency links. It does not claim
+a read failed, supply a zero or change any arithmetic.
+
+All74 focused picker/lifecycle/worksheet cases and scoped lint pass. Harmless
+controls survive. Ten selected faults expose wrong offered sources, request
+scope, selection, list/refusal handling and cost-state wording; source bytes
+restore exactly. The first exclusion assertion misses a real unwanted option
+because it checks incomplete labels. It is replaced by the complete option-ID
+assertion. A subsequent result-marker mismatch stops its wrapper after the
+correct assertion failure. Those failed trials remain retained; remaining
+faults and final74 complete in a separate normal terminal0 unit.
+
+These new UI and wording bytes still need an identified build/browser readback
+and bounded source review. Earlier native database tests retain their own
+candidate and limits. No new hosted migration or operation is claimed.

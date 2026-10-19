@@ -253,6 +253,15 @@ function renderFixture(
   });
 }
 
+it("distinguishes unassessed award cost applicability from a failed cost read", () => {
+  const html = renderFixture({ costs: { ok: false, pending: false, unassessed: true, message: "Not bound" } });
+  expect(html).toContain("costs are not linked to this award&#39;s terms version and currency");
+  expect(html).toContain("applicability to this claim is unassessed");
+  expect(html).toContain("No cost detail or total is included");
+  expect(html).not.toContain("cost ledger could not be read");
+  expect(html).not.toContain("No cost entries recorded for this period.");
+});
+
 // ---------------------------------------------------------------------------
 
 describe("summarizeWorksheetCostEntries — the one sum in this module", () => {

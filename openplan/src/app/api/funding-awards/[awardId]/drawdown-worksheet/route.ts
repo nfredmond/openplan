@@ -313,7 +313,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       profile: profileResolution.binding,
       currencyCode: award.currency_code,
       interimDefaultRationale: INTERIM_DEFAULT_RATIONALE,
-      costs: award.latest_handoff_revision_id ? { ok:false, pending:false, message:"Project cost entries lack award-version and currency binding. Cost total unassessed." } : costs,
+      costs: award.latest_handoff_revision_id ? { ok:false, pending:false, unassessed:true, message:"Project cost entries lack award-version and currency binding. Cost total unassessed." } : costs,
       assemblyNotices,
     });
 

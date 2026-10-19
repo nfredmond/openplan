@@ -380,6 +380,16 @@ describe("a failed read never becomes a zero", () => {
     expect(html).toContain("This is not a statement that no costs were recorded.");
     expect(html).not.toContain("No cost entries recorded for this period.");
   });
+
+  it("marks project costs unassessed when a retained handoff lacks cost-to-version links", async () => {
+    const award = tableResults.funding_awards.data as Record<string, unknown>;
+    award.latest_handoff_revision_id = "55555555-5555-4555-8555-555555555555";
+    const response = await GET(request(), context());
+    expect(response.status).toBe(200);
+    expect(buildWorksheetHtmlMock.mock.calls[0][0].costs).toMatchObject({ ok: false, pending: false, unassessed: true });
+    expect(renderedHtml()).toContain("applicability to this claim is unassessed");
+    expect(renderedHtml()).not.toContain("cost ledger could not be read");
+  });
 });
 
 describe("who may read a worksheet", () => {

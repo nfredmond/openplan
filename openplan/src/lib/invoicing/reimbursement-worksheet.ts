@@ -159,7 +159,7 @@ export type WorksheetCostSection =
        */
       recordedTotal: number | null;
     }
-  | { ok: false; pending: boolean; message: string };
+  | { ok: false; pending: boolean; message: string; unassessed?: boolean };
 
 /**
  * Sum the period's recorded project costs.
@@ -502,7 +502,9 @@ function costSection(data: ReimbursementWorksheetData): string {
   const { costs } = data;
 
   if (!costs.ok) {
-    const reason = costs.pending
+    const reason = "unassessed" in costs && costs.unassessed
+      ? "Project costs are not linked to this award's terms version and currency, so their applicability to this claim is unassessed. No cost detail or total is included. This is not a statement that no costs were recorded."
+      : costs.pending
       ? "The project cost ledger is not available on this deployment yet, so no cost detail is shown. This is not a statement that no costs were recorded."
       : "The project cost ledger could not be read, so no cost detail is shown. This is not a statement that no costs were recorded.";
     return `<section class="costs">

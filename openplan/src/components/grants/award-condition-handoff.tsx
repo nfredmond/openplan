@@ -4,10 +4,11 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { AwardNoticePicker } from "./award-notice-picker";
 import { serializeHandoffApply, awardTermsSchema, type AwardTerms, type AwardOccurrence } from "@/lib/grants/award-handoff";
 
 type Revision = { id: string; sequence: number; proposal: unknown; terms: AwardTerms; receipt: unknown; created_at: string };
-type History = { legacyObligations:Array<{id:string;title:string;status:string;actual_date:string|null;assignee_user_id:string|null;notes:string|null}>; issuance?:{source_backed_award_count:number|string;award_ids:string[]}|null; award: { id:string; project_id:string; current_handoff_revision_id: string | null; latest_handoff_revision_id: string | null; has_source_backed_issuance: boolean }; application:unknown; history: Revision[]; occurrences: Array<{ id: string; requirement: AwardOccurrence; submittal_id: string | null; milestone_id: string | null; submittal_status:string|null;submitted_at:string|null;fulfillment_evidence:string|null;milestone_status:string|null;actual_date:string|null }>; invoices:Array<{id:string;invoice_number:string;award_handoff_revision_id:string|null;currency_code:string|null;status:string}>; sourceLimits: string };
+type History = { legacyObligations:Array<{id:string;title:string;status:string;actual_date:string|null;assignee_user_id:string|null;notes:string|null}>; issuance?:{source_backed_award_count:number|string;award_ids:string[]}|null; award: { id:string; workspace_id:string; project_id:string; current_handoff_revision_id: string | null; latest_handoff_revision_id: string | null; has_source_backed_issuance: boolean }; application:unknown; history: Revision[]; occurrences: Array<{ id: string; requirement: AwardOccurrence; submittal_id: string | null; milestone_id: string | null; submittal_status:string|null;submitted_at:string|null;fulfillment_evidence:string|null;milestone_status:string|null;actual_date:string|null }>; invoices:Array<{id:string;invoice_number:string;award_handoff_revision_id:string|null;currency_code:string|null;status:string}>; sourceLimits: string };
 type Review = { reviewed: Record<string, unknown>; reviewHash: string };
 const unknown = "Not recorded; unresolved";
 const emptyTerms: AwardTerms = {
@@ -98,7 +99,7 @@ function AwardConditionHandoffSession({ awardId, opportunityId, title, initially
       {history?.occurrences.map((o)=><OccurrenceOutcome key={o.id} occurrence={o} projectId={history.award.project_id} awardId={awardId} onSaved={()=>void load("refresh")}/>)}
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="min-w-0 space-y-3"><h2 className="font-semibold">Retained proposal and earlier terms</h2>
-          {history?.application?<details open><summary>Current application text and recorded editor/provenance</summary><pre className="whitespace-pre-wrap break-words text-xs">{JSON.stringify(history.application,null,2)}</pre></details>:null}
+          {history?.application?<details><summary>Current application text and recorded editor/provenance</summary><pre className="whitespace-pre-wrap break-words text-xs">{JSON.stringify(history.application,null,2)}</pre></details>:null}
           <p className="text-sm">Current application text does not prove what was submitted. Historical exports and external receipt remain separately qualified.</p>
           {history?.history.map((r) => <details key={r.id}><summary>Revision {r.sequence}, {r.created_at}</summary><pre className="whitespace-pre-wrap break-words text-xs">{JSON.stringify({ proposal: r.proposal, terms: r.terms, receipt: r.receipt }, null, 2)}</pre></details>)}
           {!history?.history.length ? <p className="text-sm">The complete current application will appear before you save the handoff.</p> : null}
@@ -117,7 +118,7 @@ function AwardConditionHandoffSession({ awardId, opportunityId, title, initially
           <label className="grid gap-1 text-sm">Current funder disposition<select className="module-select" value={terms.issuanceDisposition.state} onChange={(e)=>set("issuanceDisposition",{...terms.issuanceDisposition,state:e.target.value as AwardTerms['issuanceDisposition']['state']})}>{['issued','rescinded','corrected'].map((s)=><option key={s} value={s}>{s.replaceAll("_"," ")}</option>)}</select></label>
           <Field label="Disposition provision in this notice/amendment" value={terms.issuanceDisposition.evidence} change={(v)=>set("issuanceDisposition",{...terms.issuanceDisposition,evidence:v})}/>
           {terms.issuanceDisposition.state!=='issued'?<Field label="Earlier retained revision corrected or rescinded" value={terms.issuanceDisposition.priorRevisionId??''} change={(v)=>set("issuanceDisposition",{...terms.issuanceDisposition,priorRevisionId:v||null})}/>:null}
-          <NoticeSources terms={terms} change={setTerms} />
+          <NoticeSources terms={terms} change={setTerms} workspaceId={history?.award.workspace_id??""} />
           <label className="grid gap-1 text-sm">Recipient acceptance/decline source<select className="module-select" value={terms.acceptanceSourceId??''} onChange={(e)=>set("acceptanceSourceId",e.target.value||null)}><option value="">Not entered</option>{terms.sources.map((source)=><option key={source.id} value={source.id}>{source.version||source.id}</option>)}</select></label>
           <label className="grid gap-1 text-sm">Spending authorization source<select className="module-select" value={terms.authorization.sourceId??''} onChange={(e)=>set("authorization",{...terms.authorization,sourceId:e.target.value||null})}><option value="">Not entered</option>{terms.sources.map((source)=><option key={source.id} value={source.id}>{source.version||source.id}</option>)}</select></label>
           <OccurrenceEditor legacy={history?.legacyObligations??[]} rows={terms.occurrences} change={(v) => set("occurrences",v)} />
@@ -136,11 +137,13 @@ function AwardConditionHandoffSession({ awardId, opportunityId, title, initially
   </section>;
 }
 
-function NoticeSources({ terms, change }: { terms: AwardTerms; change: (t: AwardTerms) => void }) {
+function NoticeSources({ terms, change, workspaceId }: { terms: AwardTerms; change: (t: AwardTerms) => void; workspaceId:string }) {
   const notice = terms.sources.find((s) => s.id === terms.noticeSourceId) ?? { family: "kb_pdf" as const, id: "", version: "", sourceDate: "", citation: "" };
   function update(field: "id" | "version" | "sourceDate" | "citation", value: string) { const next = { ...notice, [field]: value }; change({ ...terms, noticeSourceId: next.id, sources: [next,...terms.sources.filter((s)=>s.id!==terms.noticeSourceId)] }); }
-  return <div className="space-y-3"><h3 className="font-semibold">Retained actual notice</h3><p className="text-sm">Upload the ordinary PDF in Documents, then copy its document ID. Management exports, private attachments and URLs are excluded. This source must be intended for everyone with membership here.</p>{(['id','version','sourceDate','citation'] as const).map((field) => <Field key={field} label={`Notice ${field}`} value={notice[field]} change={(v) => update(field,v)} />)}
-    {terms.sources.filter((s)=>s.id!==terms.noticeSourceId).map((source,index)=><fieldset key={index} className="space-y-2"><legend>Supporting retained PDF</legend>{(['id','version','sourceDate','citation'] as const).map((field)=><Field key={field} label={`Supporting source ${field}`} value={source[field]} change={(v)=>change({...terms,sources:terms.sources.map((s)=>s===source?{...s,[field]:v}:s)})}/>)}</fieldset>)}
+  return <div className="space-y-3"><h3 className="font-semibold">Retained actual notice</h3><p className="text-sm">Upload the ordinary PDF in Documents, then select it here by title or filename. Management exports, private attachments and URLs are excluded. This source must be intended for everyone with membership here.</p>
+    <AwardNoticePicker workspaceId={workspaceId} value={notice.id} onChange={(id)=>{const next={family:'kb_pdf' as const,id,version:'',sourceDate:'',citation:''};change({...terms,noticeSourceId:id,sources:[next,...terms.sources.filter((source)=>source.id!==terms.noticeSourceId)]});}} />
+    {(['version','sourceDate','citation'] as const).map((field) => <Field key={field} label={`Notice ${field}`} value={notice[field]} change={(v) => update(field,v)} />)}
+    {terms.sources.filter((s)=>s.id!==terms.noticeSourceId).map((source,index)=><fieldset key={index} className="space-y-2"><legend>Supporting retained PDF</legend><AwardNoticePicker workspaceId={workspaceId} label="Supporting notice PDF" value={source.id} onChange={(id)=>change({...terms,sources:terms.sources.map((entry)=>entry===source?{family:'kb_pdf',id,version:'',sourceDate:'',citation:''}:entry)})}/>{(['version','sourceDate','citation'] as const).map((field)=><Field key={field} label={`Supporting source ${field}`} value={source[field]} change={(v)=>change({...terms,sources:terms.sources.map((s)=>s===source?{...s,[field]:v}:s)})}/>)}</fieldset>)}
     <Button type="button" variant="outline" onClick={()=>change({...terms,sources:[...terms.sources,{family:'kb_pdf',id:'',version:'',sourceDate:'',citation:''}]})}>Add supporting PDF</Button>
   </div>;
 }
