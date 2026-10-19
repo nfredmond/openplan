@@ -69,7 +69,7 @@ describe("retained source panel", () => {
     fireEvent.click(await screen.findByRole("button", { name: /Open saved source/ }));
     expect(await screen.findByLabelText("Saved source inspection")).toBeTruthy();
     fireEvent.change(screen.getByLabelText("Search all retained contributions"), { target: { value: "FINAL SOURCE TAIL" } });
-    expect(screen.getByText(/SYNTHETIC long concern é/, { selector: "p" }).textContent).toContain("FINAL SOURCE TAIL");
+    expect(screen.getByLabelText("Retained contribution text, readable text").textContent).toBe(makeSourceSnapshot().items[300].body);
     expect(screen.getByText(/1 matching contributions/)).toBeTruthy();
     expect(screen.getByRole("heading", { name: "Comment: SYNTHETIC retained category" })).toBeTruthy();
   });
