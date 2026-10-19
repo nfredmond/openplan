@@ -28,6 +28,12 @@ It validates future amounts as positive values of at most 1,000,000,000,000,000
 with at most two decimal places. It does not rewrite retained estimates or
 recover precision lost in older source values.
 
+**Source-page plan proposals:** Document review can stage quoted records from a
+retained page without an AI account. Pending proposals have their own pages,
+separate from reading history. Manual chapter copies retain source authorship;
+review and saving remain explicit. Apply
+`20261019000002_rtp_manual_source_page_proposals.sql` before deploying this capability.
+
 ## 0.69.0 (2026-10-19)
 
 **Development release candidate, prepared for final release checks.** This
