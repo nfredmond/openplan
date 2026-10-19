@@ -573,6 +573,9 @@ const EXPECTED = {
   // Each enables RLS and grants no client policy. Source census only.
   relations: 330,
   tables: 316,
+  // 20261019000002 adds eight manual-source fields to existing rtp_extraction_runs.
+  // It adds no relation, view, RLS table or policy. The manual migration leaves relation counts unchanged.
+  // The complete run fieldset below checks the additive columns at source tier.
   views: 14,
   rlsEnabledTables: 316,
 } as const;
@@ -871,6 +874,19 @@ describe("migration schema inventory", () => {
       expect(schema.rlsEnabled(table), table).toBe(true);
     }
     expect(schema.relations()).toHaveLength(EXPECTED.relations);
+    // Retained-page identity and exact retry custody extend the existing run.
+    // A missing or renamed field must fail even when every count stays equal.
+    const rtpExtractionRunColumns = [
+      "id", "workspace_id", "rtp_cycle_id", "kb_document_id", "model",
+      "extraction_source", "status", "candidate_count", "discarded_count",
+      "failure_reason", "created_by", "created_at", "source_method",
+      "document_extraction_id", "original_checksum", "extraction_content_sha256",
+      "manual_request_id", "manual_request_payload", "manual_payload_sha256", "manual_authorship",
+    ];
+    for (const field of rtpExtractionRunColumns) {
+      expect(schema.hasColumn("rtp_extraction_runs", field), `rtp_extraction_runs.${field}`).toBe(true);
+    }
+    expect(schema.columns("rtp_extraction_runs"), "complete RTP extraction run fieldset").toEqual(new Set(rtpExtractionRunColumns));
     expect(schema.tables()).toHaveLength(EXPECTED.tables);
     expect(schema.views()).toHaveLength(EXPECTED.views);
     expect(schema.tables().filter((t) => schema.rlsEnabled(t))).toHaveLength(EXPECTED.rlsEnabledTables);
