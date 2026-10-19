@@ -54,8 +54,8 @@ BEGIN
   PERFORM pg_temp.manual_assert((SELECT model IS NULL AND source_method='manual_retained_page' AND extraction_source='text_layer'
     AND manual_authorship='authenticated_user' AND manual_request_payload=request_json AND manual_payload_sha256=encode(extensions.digest(convert_to(request_json::text,'UTF8'),'sha256'),'hex')
     FROM public.rtp_extraction_runs WHERE id=(result->>'runId')::uuid),'NATIVE_PROVENANCE');
-  PERFORM pg_temp.manual_assert((SELECT source_chunk_id IS NULL AND quote_verified AND source_page=112 AND proposed_json=payload
-    FROM public.rtp_extraction_candidates WHERE id=(result->>'candidateId')::uuid),'NATIVE_CANDIDATE');
+  PERFORM pg_temp.manual_assert((SELECT candidate.source_chunk_id IS NULL AND candidate.quote_verified AND candidate.source_page=112 AND candidate.proposed_json=payload
+    FROM public.rtp_extraction_candidates candidate WHERE candidate.id=(result->>'candidateId')::uuid),'NATIVE_CANDIDATE');
   SELECT public.read_rtp_retained_source_page(cycle,document,extraction,112) INTO source_page;
   PERFORM pg_temp.manual_assert(source_page->>'text'=source_text AND source_page->>'pageCount'='140' AND source_page->>'extractionId'=extraction::text,'NATIVE_FULL_LATE_PAGE');
   PERFORM pg_temp.manual_assert(public.read_rtp_retained_source_page(cycle,document,gen_random_uuid(),112) IS NULL,'NATIVE_WRONG_VERSION');
