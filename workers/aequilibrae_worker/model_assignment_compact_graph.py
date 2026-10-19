@@ -12,7 +12,7 @@ def _integers(values,label):
     return values
 
 
-def verify(graph):
+def _verify(graph):
     """Require compact adjacency and each retained source chain to agree.
 
     Source directions mapped to the engine's final sentinel are counted, not
@@ -55,8 +55,17 @@ def verify(graph):
     digest=hashlib.sha256();centroids=set(map(int,graph.centroids))
     for compact_id,edges in enumerate(groups):
         outgoing={}
+        def refusal(reason, stop=None):
+            row={name:values[compact_id] for name,values in frame.items()}
+            detail={'compact_id':compact_id, 'compact_link_id':int(row['link_id']) if 'link_id' in row else None,
+                    'compact_direction':int(row['direction']) if 'direction' in row else None,
+                    'compact_indices':[int(starts[compact_id]),int(ends[compact_id])],
+                    'original_endpoints':[int(nodes[starts[compact_id]]),int(nodes[ends[compact_id]])],
+                    'stop_node':stop, 'mapped_source_directions':[[link,direction] for _,_,link,direction in edges[:20]],
+                    'mapped_count':len(edges), 'residue_count':len(outgoing)}
+            return ValueError(reason+'; '+json.dumps(detail,sort_keys=True))
         for start,end,link,direction in edges:
-            if start in outgoing:raise ValueError('Compact routing source chain branches')
+            if start in outgoing:raise refusal('Compact routing source chain branches',start)
             outgoing[start]=(end,link,direction)
         start=int(nodes[starts[compact_id]]);end=int(nodes[ends[compact_id]])
         current=start;path=[]
@@ -64,10 +73,23 @@ def verify(graph):
             next_node,link,direction=outgoing.pop(current)
             path.append([link,direction]);current=next_node
             if current==end:break
-            if current in centroids:raise ValueError('Compact routing chain crosses a centroid')
+            if current in centroids:raise refusal('Compact routing chain crosses a centroid',current)
         if not path or current!=end or outgoing:
-            raise ValueError('Compact routing source chain differs from endpoints')
+            raise refusal('Compact routing source chain differs from endpoints',current)
         digest.update(json.dumps([start,end,path],separators=(',',':')).encode()+b'\n')
     return {'scope':'retained_compact_source_paths','status':'matched','compact_link_count':count,
             'source_path_sha256':digest.hexdigest(),'excluded_direction_count':excluded,
             'excluded_direction_equivalence':'unassessed','runtime_cost_and_flow_equivalence':'unassessed'}
+
+
+def verify(graph, *, stage='pre-assignment retention'):
+    try:
+        record = _verify(graph)
+        if getattr(graph, 'exclusion_proof', None) is not None:
+            record['producer_correction'] = {
+                'engine_source_pins': graph._source_pins,
+                'source_topology_sha256': graph._source_identity,
+                'omissions': graph.omissions, 'exclusion_proof': graph.exclusion_proof}
+        return record
+    except ValueError as exc:
+        raise ValueError(f'Compact routing refused stage={stage}: {exc}') from exc

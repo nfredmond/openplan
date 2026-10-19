@@ -101,7 +101,7 @@ def import_worker_main():
     return main
 
 
-def mock_engine_runtime(project_factory):
+def mock_engine_runtime(project_factory, *, graph_builder=None):
     """Scoped unit-test imports only; any unconfigured native computation fails.
 
     Unlike the module-load stub, this explicit context is used only by tests
@@ -124,7 +124,14 @@ def mock_engine_runtime(project_factory):
         paths = types.ModuleType("aequilibrae.paths")
         for name in ("TrafficAssignment", "TrafficClass", "NetworkSkimming"):
             setattr(paths, name, UnexpectedNativeComputation)
-        with patch.dict(sys.modules, {"aequilibrae": engine, "aequilibrae.matrix": matrix, "aequilibrae.paths": paths}):
+        # Cleanup tests inject a failure at the graph-builder boundary. Loading
+        # the native adapter against these intentionally incomplete modules
+        # would fail on imports before reaching the cleanup behavior under test.
+        adapter = types.ModuleType("model_assignment_graph_adapter")
+        adapter.build_car_graph = UnexpectedNativeComputation if graph_builder is None else graph_builder
+        adapter.verify_before_skimming = UnexpectedNativeComputation
+        with patch.dict(sys.modules, {"aequilibrae": engine, "aequilibrae.matrix": matrix, "aequilibrae.paths": paths,
+                                     "model_assignment_graph_adapter": adapter}):
             yield
 
     return installed()

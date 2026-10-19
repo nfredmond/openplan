@@ -32,13 +32,21 @@ zone, and sends only changed fields so untouched timestamp precision remains.
 Failed saves keep the draft visible. Apply
 `20261018000001_grant_deadline_changes.sql` before deploying this capability.
 
-**Safety plan seeds, source candidate:** the existing SS4A application workspace
-can preview six code-built working drafts from an exact same-project Safety
-artifact. Source snapshots, draft origin and export caveats stay attached;
-final text, prior drafts and checklist states remain. Migration
-`20261018000002_ss4a_safety_seed` must precede dependent code. Native transaction,
-RLS and browser verification remain pending. The local check campaign retains
-an outer wrapper failure; see the [source status](docs/reviews/2026-10-18-ss4a-safety-seed/STATUS.md).
+**Safety plan seeds:** the existing SS4A application workspace previews six
+source-bound working drafts from an exact same-project Safety artifact. Source
+snapshots, draft origin and export caveats stay attached; final text, prior
+drafts and checklist states remain. Review each section and its missing inputs
+before finalizing. Apply `20261018000002_ss4a_safety_seed.sql` before deploying
+this capability. The [source status](docs/reviews/2026-10-18-ss4a-safety-seed/STATUS.md)
+records the separate native, browser and artifact checks and retained failures.
+
+**Compact assignment graph preparation:** a worker-owned adapter checks complete
+car-eligible link incidence before excluding a proved nontraversable sink chain.
+It retains the native compressor's IDs and checks signed path correspondence
+before skimming. Unsupported or ambiguous graphs still refuse. Assignment image
+builds now require the reviewed CPython 3.11 Linux x86_64 engine bytes; other
+wheels are not accepted by version alone. This correction does not validate
+earlier exclusions or establish model accuracy. No migration is required.
 
 **Grant catalog search:** find programs by name, administering agency, project
 type or displayed catalog details. Results show a count, a clear control and an

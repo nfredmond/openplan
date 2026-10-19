@@ -7,7 +7,7 @@ from worker_import_for_tests import mock_engine_runtime
 
 class EngineUnitBoundaryTests(unittest.TestCase):
     def test_restores_modules_even_after_interruption(self):
-        names = ('aequilibrae', 'aequilibrae.matrix', 'aequilibrae.paths')
+        names = ('aequilibrae', 'aequilibrae.matrix', 'aequilibrae.paths', 'model_assignment_graph_adapter')
         before = {name: sys.modules.get(name) for name in names}
         factory = Mock(return_value=object())
         with self.assertRaises(KeyboardInterrupt):
@@ -22,7 +22,8 @@ class EngineUnitBoundaryTests(unittest.TestCase):
         with mock_engine_runtime(Mock()):
             from aequilibrae.matrix import AequilibraeMatrix
             from aequilibrae.paths import TrafficAssignment, TrafficClass, NetworkSkimming
-            for factory in (AequilibraeMatrix, TrafficAssignment, TrafficClass, NetworkSkimming):
+            from model_assignment_graph_adapter import build_car_graph, verify_before_skimming
+            for factory in (AequilibraeMatrix, TrafficAssignment, TrafficClass, NetworkSkimming, build_car_graph, verify_before_skimming):
                 with self.subTest(factory=factory), self.assertRaisesRegex(AssertionError, 'unconfigured native computation'):
                     factory()
 
