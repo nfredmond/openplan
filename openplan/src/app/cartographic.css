@@ -48,7 +48,7 @@
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: calc(12px * var(--corner-scale));
   padding: 8px 14px;
   display: flex;
   align-items: center;
@@ -58,7 +58,7 @@
 
 .op-cart-btn {
   padding: 7px 12px;
-  border-radius: 8px;
+  border-radius: calc(8px * var(--corner-scale));
   border: 1px solid var(--line);
   background: var(--panel-solid);
   color: var(--ink);
@@ -94,7 +94,7 @@
   color: var(--muted);
   border: 1px solid var(--line);
   padding: 1px 5px;
-  border-radius: 3px;
+  border-radius: calc(3px * var(--corner-scale));
 }
 
 /* ---------- LEFT RAIL ---------- */
@@ -110,7 +110,7 @@
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: calc(14px * var(--corner-scale));
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   transition: width 0.22s cubic-bezier(0.2, 0.7, 0.3, 1), box-shadow 0.22s;
@@ -197,7 +197,7 @@
   /* 24px floor (WCAG 2.5.8). Below that the nav scrolls instead of shrinking. */
   height: clamp(24px, calc((100dvh - var(--op-rail-chrome, 268px)) / var(--op-rail-rows, 20) - 4px), 40px);
   flex-shrink: 0;
-  border-radius: 9px;
+  border-radius: calc(9px * var(--corner-scale));
   border: none;
   background: transparent;
   display: flex;
@@ -244,7 +244,7 @@ html.dark .op-cart-rail__btn.is-active:hover {
   left: 28px;
   min-width: 14px;
   height: 14px;
-  border-radius: 8px;
+  border-radius: calc(8px * var(--corner-scale));
   background: var(--accent);
   color: var(--accent-foreground);
   font-family: var(--font-body);
@@ -337,7 +337,7 @@ html.dark .op-cart-rail__btn.is-active:hover {
 .op-cart-ws-mark {
   width: 22px;
   height: 22px;
-  border-radius: 5px;
+  border-radius: calc(5px * var(--corner-scale));
   background: linear-gradient(135deg, var(--accent-2), var(--accent));
   flex-shrink: 0;
 }
@@ -411,7 +411,7 @@ html.dark .op-cart-rail__btn.is-active:hover {
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: calc(14px * var(--corner-scale));
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12);
   overflow: hidden;
   display: flex;
@@ -487,7 +487,7 @@ html.dark .op-cart-rail__btn.is-active:hover {
 }
 .op-cart-surface__body::-webkit-scrollbar-thumb {
   background: var(--muted);
-  border-radius: 3px;
+  border-radius: calc(3px * var(--corner-scale));
   opacity: 0.3;
 }
 
@@ -534,7 +534,7 @@ html.dark .op-cart-rail__btn.is-active:hover {
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: calc(12px * var(--corner-scale));
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.1);
 }
 .op-cart-layers__hd {
@@ -650,7 +650,7 @@ html.dark .op-cart-layer-item__swatch {
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: calc(12px * var(--corner-scale));
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.1);
 }
 .op-cart-legend__hd {
@@ -737,7 +737,7 @@ html.dark .op-cart-layer-item__swatch {
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   border: 1px solid var(--line);
-  border-radius: 14px;
+  border-radius: calc(14px * var(--corner-scale));
   box-shadow: 0 -12px 36px rgba(0, 0, 0, 0.08);
   padding: 14px 18px;
   display: flex;
@@ -819,7 +819,7 @@ html.dark .op-cart-layer-item__swatch {
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: calc(10px * var(--corner-scale));
   display: flex;
   flex-direction: column;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
@@ -902,7 +902,7 @@ html.dark .op-cart-zoom button:hover {
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: calc(12px * var(--corner-scale));
   padding: 8px 12px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   max-width: 380px;
@@ -958,7 +958,7 @@ html.dark .op-cart-zoom button:hover {
 .op-cart-alert {
   border: 1px solid color-mix(in srgb, var(--warn) 45%, transparent);
   background: color-mix(in srgb, var(--warn) 12%, var(--panel-solid));
-  border-radius: 10px;
+  border-radius: calc(10px * var(--corner-scale));
   padding: 12px 14px;
   margin-bottom: 16px;
   color: var(--ink);
@@ -1292,7 +1292,7 @@ body[data-surface-wide="true"] .op-cart-legend:focus-within {
     right: 0;
     width: auto;
     height: var(--op-cart-rail-bar-height);
-    border-radius: 14px 14px 0 0;
+    border-radius: calc(14px * var(--corner-scale)) calc(14px * var(--corner-scale)) 0 0;
     border-bottom: 0;
   }
   /* Hover-to-expand is a pointer idiom and there is no pointer here; without
@@ -1670,7 +1670,7 @@ body[data-map-reading="true"] .op-cart-surface {
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: calc(12px * var(--corner-scale));
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.1);
   padding: 10px 12px;
   display: flex;
@@ -1684,7 +1684,7 @@ body[data-map-reading="true"] .op-cart-surface {
 .op-cart-mapread__btn {
   width: 100%;
   padding: 7px 10px;
-  border-radius: 8px;
+  border-radius: calc(8px * var(--corner-scale));
   border: 1px solid var(--line);
   /* `--panel-solid` and `--ink`, not the accent pair: `--accent-foreground` is
      defined once on :root and once on .dark and is NOT re-stated per palette,
@@ -1758,7 +1758,7 @@ body[data-map-reading="true"] .op-cart-surface {
      backdrop filter, so a translucent body would sit above an opaque arrow. */
   background: var(--panel-solid);
   border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: calc(12px * var(--corner-scale));
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16);
   padding: 12px 14px 13px;
   font-family: var(--font-body);
@@ -1800,7 +1800,7 @@ body[data-map-reading="true"] .op-cart-surface {
   right: 6px;
   width: 22px;
   height: 22px;
-  border-radius: 6px;
+  border-radius: calc(6px * var(--corner-scale));
   color: var(--muted);
   font-size: 17px;
   line-height: 1;
@@ -2169,7 +2169,7 @@ body:not([data-map-fills-surface="true"]) .op-cart-shell:not(:has(.op-map-backdr
     flex-direction: column;
     justify-content: center;
     gap: 3px;
-    border-radius: 10px;
+    border-radius: calc(10px * var(--corner-scale));
   }
   /* Desktop focus rules restore group-heading margins on short screens.
      Keep them collapsed on phones so links do not move during a tap. */
@@ -2272,7 +2272,7 @@ body[data-page-flush="true"] .op-cart-shell .op-cart-surface__body > .analysis-e
   overflow-y: auto;
   border: 0;
   border-top: 1px solid var(--line);
-  border-radius: 16px 16px 0 0;
+  border-radius: calc(16px * var(--corner-scale)) calc(16px * var(--corner-scale)) 0 0;
   background: var(--panel-solid);
   color: var(--ink);
 }
@@ -2298,7 +2298,7 @@ body[data-page-flush="true"] .op-cart-shell .op-cart-surface__body > .analysis-e
   height: 44px;
   margin-right: -10px;
   border: 0;
-  border-radius: 10px;
+  border-radius: calc(10px * var(--corner-scale));
   background: transparent;
   color: var(--ink-2);
   cursor: pointer;
@@ -2320,7 +2320,7 @@ body[data-page-flush="true"] .op-cart-shell .op-cart-surface__body > .analysis-e
   gap: 12px;
   min-height: 48px;
   padding: 0 10px;
-  border-radius: 10px;
+  border-radius: calc(10px * var(--corner-scale));
   color: var(--ink);
   font-size: 1rem;
   text-decoration: none;
