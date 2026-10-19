@@ -257,6 +257,26 @@ export async function POST(request: NextRequest, context: RouteContext) {
         }
       );
 
+      // Failed evidence remains unknown even when a section emphasizes another family.
+      if (evidence.readFailures.length > 0) {
+        const subjects = evidence.readFailures.map((failure) => failure.subject);
+        audit.error("section_draft_evidence_read_failed", {
+          opportunityId: opportunity.id,
+          sectionId: section.id,
+          workspaceId: opportunity.workspace_id,
+          userId: user.id,
+          failedReads: evidence.readFailures,
+          durationMs: Date.now() - startedAt,
+        });
+        return NextResponse.json(
+          {
+            error: `Could not draft this section: OpenPlan could not read ${subjects.join(", ")}. Evidence availability is unknown. Try again in a moment.`,
+            failedReads: subjects,
+          },
+          { status: 500 }
+        );
+      }
+
       const scopedKinds = section.suggested_evidence;
       const included = (kind: GrantApplicationEvidenceKind) =>
         scopedKinds.length === 0 || scopedKinds.includes(kind);
