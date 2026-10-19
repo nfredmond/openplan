@@ -4447,8 +4447,8 @@ def stage_assignment(
 
     from model_engine_scope import project_scope, matrix_scope
     with project_scope(Project, proj_dir) as project, matrix_scope() as own_matrix:
-        project.network.build_graphs(modes=["c"])
-        graph = project.network.graphs["c"]
+        from model_assignment_graph_adapter import build_car_graph, verify_before_skimming
+        graph = build_car_graph(project.network)
         # distance_net zeroes virtual centroid connectors so the routed-distance
         # skim shares resident_vmt_network's connector-excluded basis (the
         # convergence diagnostic compares like with like; connectors are modeling
@@ -4474,7 +4474,6 @@ def stage_assignment(
             skim_fields = ["travel_time", "distance", "distance_net"]
         except Exception as e:
             log += f"Convergence skim setup warning ({e}); routed-circuity diagnostic disabled.\n"
-        graph.set_graph("travel_time")
         graph.prepare_graph(np.array(assignment_centroids))
         graph.set_blocked_centroid_flows(True)
         if persisted_network_settings is None:
@@ -4515,7 +4514,7 @@ def stage_assignment(
             )
         # "distance"/"distance_net" ride along so the assignment classes carry
         # blended, flow-consistent routed-distance skims (diagnostic inputs).
-        graph.set_skimming(skim_fields)
+        verify_before_skimming(graph, skim_fields)
 
         log += f"Graph: {graph.num_links} links, {graph.num_nodes} nodes\n"
         log += "Running skims...\n"

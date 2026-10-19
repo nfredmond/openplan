@@ -32,6 +32,14 @@ zone, and sends only changed fields so untouched timestamp precision remains.
 Failed saves keep the draft visible. Apply
 `20261018000001_grant_deadline_changes.sql` before deploying this capability.
 
+**Compact assignment graph preparation:** a worker-owned adapter checks complete
+car-eligible link incidence before excluding a proved nontraversable sink chain.
+It retains the native compressor's IDs and checks signed path correspondence
+before skimming. Unsupported or ambiguous graphs still refuse. Assignment image
+builds now require the reviewed CPython 3.11 Linux x86_64 engine bytes; other
+wheels are not accepted by version alone. This correction does not validate
+earlier exclusions or establish model accuracy. No migration is required.
+
 **Grant catalog search:** find programs by name, administering agency, project
 type or displayed catalog details. Results show a count, a clear control and an
 empty state. Jurisdiction coverage remains visible while filtering. A search

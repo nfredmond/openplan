@@ -240,7 +240,7 @@ jobs:
           python-version: "3.11"
 
       # Lightweight deps only — the modeling unit tests do NOT import aequilibrae
-      # (that heavy engine stays a local/deploy concern). This guards the pure
+      # (the engine runs in compact-graph-native.yml). This guards the pure
       # demand logic: LODES OD, resident VMT, OD-matrix blend, mode choice, GTFS.
       # python-dotenv is here because four suites import main.py, whose module
       # level imports it — verified in a clean venv with exactly this list.
