@@ -464,14 +464,14 @@ class PopulationHandoffTests(unittest.TestCase):
             handoff._resolve(self.writer, common)
         self.assertFalse(self.destination.exists())
 
-    def test_corrupt_roster_and_preexisting_destination_refuse(self):
+    def test_corrupt_source_refuses_again_after_partial_copy(self):
         people = self.source_dir / common.ROLES['persons']
         people.write_bytes(people.read_bytes() + b'changed\n')
-        with self.assertRaisesRegex(ValueError, 'byte size differs'):
+        with self.assertRaisesRegex(ValueError, '^Handoff source byte size differs$'):
             self.prepare()
         self.assertTrue(self.destination.exists())
         self.writer.stopped = False
-        with self.assertRaisesRegex(ValueError, 'fresh destination'):
+        with self.assertRaisesRegex(ValueError, '^Handoff source byte size differs$'):
             self.prepare()
 
     def test_missing_transport_result_and_arbitrary_request_fields_never_fallback(self):

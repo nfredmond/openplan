@@ -14,6 +14,7 @@ import math
 import os
 from pathlib import Path
 import re
+import stat
 from types import SimpleNamespace
 import uuid
 
@@ -392,11 +393,69 @@ def _owned_destination(writer, destination):
     files.verify()
     destination = Path(destination).absolute()
     owned = files.path.resolve(strict=True)
-    if destination.exists() or destination.is_symlink() or not destination.parent.resolve(strict=True).is_relative_to(owned):
-        raise PopulationHandoffError('Population copy requires a fresh destination in the owned attempt')
+    if destination.is_symlink() or not destination.parent.resolve(strict=True).is_relative_to(owned):
+        raise PopulationHandoffError('Population copy requires a destination in the owned attempt')
     if destination.parent.resolve(strict=True) != destination.parent or destination.name in ('', '.', '..'):
         raise PopulationHandoffError('Population destination cannot use path aliases')
     return files.root.parent, destination
+
+
+def _copy_selected_population(writer, root, destination, source, manifest, before, common):
+    """Keep matching final files and publish only missing registered companions."""
+    basis = common._json(common._checked_bytes(source.parent, manifest, common.MANIFEST_NAME))
+    descriptors = basis.get('files') if isinstance(basis, dict) else None
+    if not isinstance(descriptors, dict) or set(descriptors) != set(common.ROLES):
+        raise PopulationHandoffError('Population manifest has unknown or missing companion roles')
+    expected = {common.MANIFEST_NAME: manifest}
+    for role, name in common.ROLES.items():
+        descriptor = descriptors[role]
+        if not isinstance(descriptor, dict) or set(descriptor) != {'path', 'sha256', 'bytes'} or descriptor['path'] != name:
+            raise PopulationHandoffError('Population companion descriptor cannot select arbitrary paths')
+        registered = before['companions'][role]['artifact']
+        if (registered['file_url'] != 'local://' + str(source.parent / name)
+                or _hash(registered['content_hash']) != _hash(descriptor['sha256'])
+                or _size(registered['file_size_bytes'], database=True, empty=True) != _size(descriptor['bytes'], empty=True)):
+            raise PopulationHandoffError('Population companion differs from the retained manifest descriptor')
+        expected[name] = descriptor
+    for name, receipt in expected.items():
+        info = (source.parent / name).lstat()
+        if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
+            raise PopulationHandoffError('Population source must contain private regular files')
+    destination.mkdir(mode=0o700, exist_ok=True)
+    descriptor = os.open(destination, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    try:
+        pinned = os.fstat(descriptor)
+        def verify():
+            writer.files.verify()
+            current = destination.lstat()
+            if (not stat.S_ISDIR(current.st_mode) or destination.resolve(strict=True) != destination
+                    or (current.st_dev, current.st_ino) != (pinned.st_dev, pinned.st_ino)):
+                raise PopulationHandoffError('Population copy directory changed during reconciliation')
+        verify()
+        if set(os.listdir(descriptor)) - set(expected):
+            raise PopulationHandoffError('Population copy contains unexplained files')
+        # Recovery fault anchor: verify every survivor before filling any gap.
+        present = set(os.listdir(descriptor))
+        for name in present:
+            info = (destination / name).lstat()
+            if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
+                raise PopulationHandoffError('Population copy must contain private regular files')
+            common._checked_bytes(destination, expected[name], name)
+            common._checked_bytes(source.parent, expected[name], name)
+        for name, receipt in expected.items():
+            verify()
+            if name not in present:
+                copy_registered(root, before['request']['source']['modelRunId'], source.parent / name,
+                    destination / name, sha256=receipt['sha256'], size_bytes=receipt['bytes'])
+        verify()
+        for name, receipt in expected.items():
+            info = (destination / name).lstat()
+            if not stat.S_ISREG(info.st_mode) or info.st_nlink != 1:
+                raise PopulationHandoffError('Population copy must contain private regular files')
+            common._checked_bytes(destination, receipt, name)
+        return descriptors, (pinned.st_dev, pinned.st_ino)
+    finally:
+        os.close(descriptor)
 
 
 def prepare_population_input(writer, *, destination=None, zone_rows=None, zone_attributes=None):
@@ -433,27 +492,12 @@ def prepare_population_input(writer, *, destination=None, zone_rows=None, zone_a
         if (not source.is_absolute() or source.name != common.MANIFEST_NAME
                 or os.path.normpath(str(source)) != str(source) or '\\' in str(source)
                 or source.resolve(strict=True) != source
+                or not source.is_relative_to(root / 'runs' / reference['modelRunId'])
                 or reference['sizeBytes'] > MAX_MANIFEST_BYTES):
             raise PopulationHandoffError('Population source manifest path or size is unsupported')
-        destination.mkdir(mode=0o700, exist_ok=False)
         manifest = {'path': common.MANIFEST_NAME, 'sha256': reference['sha256'], 'bytes': reference['sizeBytes']}
-        copy_registered(root, reference['modelRunId'], source, destination / common.MANIFEST_NAME,
-                        sha256=manifest['sha256'], size_bytes=manifest['bytes'])
-        basis = common._json(common._checked_bytes(destination, manifest, common.MANIFEST_NAME))
-        descriptors = basis.get('files') if isinstance(basis, dict) else None
-        if not isinstance(descriptors, dict) or set(descriptors) != set(common.ROLES):
-            raise PopulationHandoffError('Population manifest has unknown or missing companion roles')
-        for role, name in common.ROLES.items():
-            descriptor = descriptors[role]
-            if not isinstance(descriptor, dict) or set(descriptor) != {'path', 'sha256', 'bytes'} or descriptor['path'] != name:
-                raise PopulationHandoffError('Population companion descriptor cannot select arbitrary paths')
-            registered = before['companions'][role]['artifact']
-            if (registered['file_url'] != 'local://' + str(source.parent / name)
-                    or _hash(registered['content_hash']) != _hash(descriptor['sha256'])
-                    or _size(registered['file_size_bytes'], database=True, empty=True) != _size(descriptor['bytes'], empty=True)):
-                raise PopulationHandoffError('Population companion differs from the retained manifest descriptor')
-            copy_registered(root, reference['modelRunId'], source.parent / name, destination / name,
-                            sha256=_hash(descriptor['sha256']), size_bytes=_size(descriptor['bytes'], empty=True))
+        descriptors, directory_identity = _copy_selected_population(
+            writer, root, destination, source, manifest, before, common)
         retained_zones = list(csv.DictReader(io.StringIO(common._checked_bytes(
             destination, descriptors['source_zone_attributes'], common.ROLES['source_zone_attributes']).decode('utf-8'), newline='')))
         selected_zones = retained_zones if zone_rows is None else zone_rows
@@ -489,6 +533,8 @@ def prepare_population_input(writer, *, destination=None, zone_rows=None, zone_a
         if not _same(before, after):
             raise PopulationHandoffError('Population source or consumer changed during copy')
         writer.files.verify()
+        if destination.is_symlink() or (destination.stat().st_dev, destination.stat().st_ino) != directory_identity:
+            raise PopulationHandoffError('Population copy directory changed during reconciliation')
         population = common.read_common_population(destination, expected_manifest=manifest, zone_rows=selected_zones)
         writer.require_open()
         return {'mode': 'reuse', 'custody': before['request']['custody'], 'request': before['request'], 'source': reference,

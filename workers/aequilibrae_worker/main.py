@@ -2908,19 +2908,31 @@ def ensure_dynamic_package(run_id: str, work_dir: str, run_row: dict | None = No
     population_input = None
     snapshot = run_row.get("input_snapshot_json") or {}
     if isinstance(snapshot, dict) and snapshot.get("commonPopulation") is not None:
-        import model_attempt_writer
         from model_common_population_package import population_library
         population_library()
         from model_common_population_handoff import prepare_population_input
-        writer = population_setup_reader(run_id, run_row, work_dir, stage_id=stage_id)
-        if os.path.exists(manifest_path):
-            raise RuntimeError("A retained guided package already exists; reconcile it instead of refitting")
-        population_input = prepare_population_input(writer,
-            destination=os.path.join(work_dir, "population-source"), zone_attributes=zone_attributes)
-        if population_input["mode"] == "generate":
-            population_input["source_record"]["study_area"] = {
-                "bbox": list(bbox), "corridor_geojson": corridor_geojson,
-            }
+        import model_common_population_setup_recovery as recovery
+        try:
+            reader = population_setup_reader(run_id, run_row, work_dir, stage_id=stage_id)
+            directory = recovery.checkpoint_directory(reader, work_dir)
+            destination = dict(base_url=SUPABASE_URL, deployment_id=os.environ.get('OPENPLAN_DEPLOYMENT_ID', ''))
+            saved = recovery.read_checkpoint(reader, directory, **destination, optional=True)
+            if saved is None and os.path.lexists(pkg_dir):
+                raise RuntimeError('Uncheckpointed population package cannot be adopted')
+            population_input = prepare_population_input(reader,
+                destination=os.path.join(work_dir, "population-source"), zone_attributes=zone_attributes)
+            if population_input["mode"] == "generate":
+                population_input["source_record"]["study_area"] = {
+                    "bbox": list(bbox), "corridor_geojson": corridor_geojson,
+                }
+            inputs = recovery.setup_inputs(reader, population_input, bbox=bbox,
+                corridor_geojson=corridor_geojson, zone_geography=zone_geography, zone_attributes=zone_attributes)
+            return recovery.retain_package(reader, directory, inputs, lambda: generate_package(
+                output_dir=pkg_dir, bbox=bbox, corridor_geojson=corridor_geojson,
+                zone_geography=zone_geography, zone_attributes=zone_attributes, population_input=population_input),
+                **destination)
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed('Guided package requires reconciliation; no refit or stage restart') from error
 
     if os.path.exists(manifest_path):
         with open(manifest_path) as f:
@@ -2988,40 +3000,27 @@ def population_setup_reader(run_id: str, run_row: dict, work_dir: str, *, stage_
 
 
 def publish_common_population(run_id: str, stage_id: str, pkg_dir: str, package_meta: dict) -> None:
-    """Register actual files through the explicitly selected retained command."""
-    import csv
-    from model_common_population_package import population_library, read_package_population
-    common = population_library()
-    metadata = read_package_population(pkg_dir)
-    if not metadata:
-        raise RuntimeError("Common population publication requires its verified package")
-    record = package_meta["common_population"]
-    run_row = sb_get_run(run_id)
-    reader = population_setup_reader(run_id, run_row, os.path.dirname(pkg_dir), stage_id=stage_id)
-    with open(os.path.join(pkg_dir, 'common_population', common.ROLES['source_zone_attributes']), newline='') as handle:
-        source_rows = list(csv.DictReader(handle))
-    loaded = common.read_common_population(os.path.join(pkg_dir, 'common_population'),
-        expected_manifest=record['manifest'], zone_rows=source_rows)
-    from model_common_population_handoff import confirm_population_publication
-    custody = confirm_population_publication(reader, loaded)
-    if custody != record.get('custody') or metadata['population_custody'] != custody:
-        raise RuntimeError('Population consumed custody differs before publication')
-    directory = os.path.join(pkg_dir, "common_population")
-    files = [("common_population", common.MANIFEST_NAME, record["manifest"])]
-    with open(os.path.join(directory, common.MANIFEST_NAME)) as handle:
-        basis = json.load(handle)
-    files += [("common_population_" + role, common.ROLES[role], descriptor)
-              for role, descriptor in basis["files"].items()]
-    for kind, filename, descriptor in files:
-        sb_record_retained_artifact({
-            "run_id": run_id, "stage_id": stage_id, "artifact_type": kind,
-            "file_url": "local://" + os.path.join(directory, filename),
-            "file_size_bytes": descriptor["bytes"], "content_hash": descriptor["sha256"],
-            "metadata_json": {"schema": common.SCHEMA, "custody": custody,
-                              **{key: value for key, value in metadata.items() if key != 'population_custody'},
-                              "origin": record.get("origin"), "scientific_acceptance": "unassessed"},
-        }, workspace_id=run_row['workspace_id'],
-           journal_dir=os.path.join(os.path.dirname(pkg_dir), 'common-population-commands'), logical_name=kind)
+    """Deliver the completed package's frozen plan, stopping on any uncertainty."""
+    import model_common_population_setup_recovery as recovery
+    try:
+        work_dir = os.path.dirname(pkg_dir)
+        reader = population_setup_reader(run_id, sb_get_run(run_id), work_dir, stage_id=stage_id)
+        directory = recovery.checkpoint_directory(reader, work_dir)
+        destination = dict(base_url=SUPABASE_URL, deployment_id=os.environ.get('OPENPLAN_DEPLOYMENT_ID', ''))
+        inputs, result = recovery.read_checkpoint(reader, directory, **destination)
+        if recovery.check_package(reader, inputs, result) != package_meta:
+            raise ValueError('Population publication package differs from its checkpoint')
+        expected, saved = recovery.publication_state(reader, directory, result, **destination)
+        if any(not row['resolved'] for row in saved.values() if row['command']['request_id'] in {
+                command['request_id'] for command in expected.values()}):
+            raise ValueError('Pending population publication requires explicit receipt reconciliation')
+        recovery.verify_acknowledged(reader, expected, saved)
+        for kind, payload in result['publication'].items():
+            recovery.check_package(reader, inputs, result)
+            sb_record_retained_artifact(payload, workspace_id=reader.context.workspace_id,
+                journal_dir=str(directory), logical_name=kind)
+    except Exception as error:
+        raise WorkerStateWriteUnconfirmed('Population publication requires reconciliation; no stage restart') from error
 
 
 # ─── Stage 1: AequilibraE Setup ────────────────────────────────────────

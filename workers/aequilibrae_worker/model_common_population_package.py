@@ -10,6 +10,7 @@ import hashlib
 import json
 import math
 import os
+import stat
 import sys
 from pathlib import Path
 
@@ -177,3 +178,83 @@ def read_package_population(package_directory):
             if field not in row or float(row[field]) != expected:
                 raise ValueError('Assignment demographics differ from realized population: ' + field)
     return {**metadata, 'population_custody': custody}
+
+
+def package_inventory(package_directory, *, durable=False):
+    """Pin completed package bytes without treating their existence as authority."""
+    common = population_library()
+    directory = Path(package_directory).absolute()
+    if directory.resolve(strict=True) != directory:
+        raise ValueError('Population package cannot use path aliases')
+    names = ['manifest.json', 'zone_attributes.csv', 'od_trip_matrix.csv',
+             'common_population/' + common.MANIFEST_NAME,
+             *['common_population/' + name for name in common.ROLES.values()]]
+    receipts = {}
+    root = os.open(directory, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    try:
+        for name in names:
+            parent = os.dup(root)
+            try:
+                parts = Path(name).parts
+                for part in parts[:-1]:
+                    child = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=parent)
+                    os.close(parent)
+                    parent = child
+                descriptor = os.open(parts[-1], os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=parent)
+                with os.fdopen(descriptor, 'rb') as stream:
+                    before = os.fstat(stream.fileno())
+                    if not stat.S_ISREG(before.st_mode) or before.st_nlink != 1:
+                        raise ValueError('Population package requires private regular files')
+                    digest = hashlib.sha256()
+                    length = 0
+                    while data := stream.read(1024 * 1024):
+                        digest.update(data)
+                        length += len(data)
+                    after = os.fstat(stream.fileno())
+                    named = os.stat(parts[-1], dir_fd=parent, follow_symlinks=False)
+                    fields = ('st_dev', 'st_ino', 'st_size', 'st_mtime_ns', 'st_ctime_ns', 'st_nlink')
+                    if any(getattr(before, field) != getattr(after, field)
+                           or getattr(after, field) != getattr(named, field) for field in fields):
+                        raise ValueError('Population package file changed during read')
+                    if durable:
+                        os.fsync(stream.fileno())
+                receipts[name] = {'path': name, 'sha256': digest.hexdigest(), 'bytes': length}
+                if durable:
+                    os.fsync(parent)
+            finally:
+                os.close(parent)
+        current = directory.stat()
+        pinned = os.fstat(root)
+        if directory.resolve(strict=True) != directory or (current.st_dev, current.st_ino) != (pinned.st_dev, pinned.st_ino):
+            raise ValueError('Population package directory changed during read')
+        if durable:
+            os.fsync(root)
+            parent = os.open(directory.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+            try:
+                os.fsync(parent)
+            finally:
+                os.close(parent)
+    finally:
+        os.close(root)
+    return receipts
+
+
+def publication_payloads(package_directory, *, run_id, stage_id):
+    """Build the seven fixed output slots from the checked package itself."""
+    common = population_library()
+    directory = Path(package_directory)
+    metadata = read_package_population(directory)
+    if not metadata:
+        raise ValueError('Common population publication requires its verified package')
+    manifest = common._json((directory / 'manifest.json').read_bytes())
+    record = manifest['common_population']
+    basis = common._json((directory / 'common_population' / common.MANIFEST_NAME).read_bytes())
+    roles = [('common_population', common.MANIFEST_NAME, record['manifest']),
+             *[('common_population_' + role, name, basis['files'][role]) for role, name in common.ROLES.items()]]
+    return {kind: {'run_id': run_id, 'stage_id': stage_id, 'artifact_type': kind,
+        'file_url': 'local://' + str(directory / 'common_population' / name),
+        'file_size_bytes': receipt['bytes'], 'content_hash': receipt['sha256'],
+        'metadata_json': {'schema': common.SCHEMA, 'custody': record['custody'],
+                         **{key: value for key, value in metadata.items() if key != 'population_custody'},
+                         'origin': record.get('origin'), 'scientific_acceptance': 'unassessed'}}
+        for kind, name, receipt in roles}

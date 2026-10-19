@@ -126,3 +126,18 @@ Fresh baseline 017699ba remains failed on the corrected normal-reader gap. New
 baseline 5a157b8a passes custody and retains a population package, then fails
 OSM setup on Overpass HTTP 502. Both publish zero artifacts. Their files and
 failures remain intact. No completed comparison or scientific acceptance follows.
+
+
+October 18 recovery correction: newly generated guided packages retain a
+completed computation checkpoint before network setup. Verified partial copies
+keep their bytes and inodes. The callable receipt adapter reconciles the original
+seven command identities against fresh artifact rows. It does not restart a
+stage, adopt either historical failed package or create execution authority.
+Independent R2 source review accepts the journal path correction. Harmless and
+restored cohorts each pass 75 worker tests; 11 targeted faults fail intended
+assertions, with exact six-file restoration. The first wrapper rejects valid
+unittest output followed by worker logging and remains failed. The corrected
+reader and complete ordinary unit terminate 0. Supplied file/SQLite/HTTP controls
+do not establish native RPC/RLS, controller-level 502 ordering, a distributed
+legacy lease, hosted recovery or scientific acceptance. Private receipts remain
+in `v1-common-population-setup-recovery-design-20261018/`.
