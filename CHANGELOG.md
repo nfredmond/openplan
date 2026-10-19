@@ -20,11 +20,29 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Safety input and applicability review:** project-status reports can retain one
+influence area, No Build and treatment alternatives, stored crash membership,
+sourced facts, missing inputs and exact historical estimate references. Save an
+immutable revision, then generate its CSV, HTML or PDF. Every numerical effect,
+forecast and priority remains unassessed. This is not a complete Safety action
+plan or grant-ready SS4A analysis. Exact-year notice mapping is still unavailable.
+Apply `20261019120000_safety_comparison_inputs.sql` before deploying this feature.
+The [dated status](docs/reviews/2026-10-19-safety-input-comparison/STATUS.md)
+separates source, database, build and local browser evidence and their limits.
+
 **Source-page plan proposals:** Document review can stage quoted records from a
 retained page without an AI account. Pending proposals have their own pages,
 separate from reading history. Manual chapter copies retain source authorship;
 review and saving remain explicit. Apply
 `20261019000002_rtp_manual_source_page_proposals.sql` before deploying this capability.
+
+**Exact project estimates:** decimal entry, reviewed imports, report output and
+exports preserve exact hundredths. Missing price years remain unknown. Project estimates remain separate from management budgets,
+funding awards and benefit-cost calculations. Apply
+`20261019080000_project_estimate_exact_cents.sql` before deploying this correction.
+It validates future amounts as positive values of at most 1,000,000,000,000,000
+with at most two decimal places. It does not rewrite retained estimates or
+recover precision lost in older source values.
 
 ## 0.69.0 (2026-10-19)
 

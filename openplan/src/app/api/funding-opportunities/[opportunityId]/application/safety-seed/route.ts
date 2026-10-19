@@ -8,7 +8,8 @@ import { readAssistantExecutionSource } from "@/lib/assistant/action-approval-se
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION } from "@/lib/safety/crash-evidence";
-import { readSafetyPlanSnapshot } from "@/lib/reports/safety-plan-snapshot";
+import { readSafetyArtifactSnapshot } from "@/lib/reports/safety-comparison-snapshot";
+import { SAFETY_V2_NOFO_REFUSAL } from "@/lib/safety/candidate-comparison";
 import { buildSafetySeedPreview, SafetySeedRefusal, SS4A_SEED_MIGRATION, SS4A_SECTION_PROJECTION, SS4A_PROJECT_PROJECTION, SS4A_REPORT_PROJECTION, SS4A_ARTIFACT_PROJECTION, type SeedSourceRows } from "@/lib/grants/ss4a-safety-seed";
 
 const bodySchema = z.discriminatedUnion("operation", [
@@ -17,10 +18,11 @@ const bodySchema = z.discriminatedUnion("operation", [
 ]);
 type Context = { params: Promise<{ opportunityId: string }> };
 
-const SAFETY_ARTIFACT_OPTION_SELECT = "id, artifact_kind, generated_at, reports!inner(id, title)";
+const SAFETY_ARTIFACT_OPTION_SELECT = "id, artifact_kind, generated_at, metadata_json, reports!inner(id, title)";
 const artifactOptionRow = z.object({
   id: z.string().uuid(), artifact_kind: z.enum(["html", "pdf"]),
   generated_at: z.string().datetime({ offset: true }).nullable(),
+  metadata_json: z.record(z.string(), z.unknown()),
   reports: z.object({ id: z.string().uuid(), title: z.string() }),
 });
 
@@ -44,7 +46,7 @@ export async function GET(request: NextRequest, context: Context) {
     if (!opportunity.project_id) return NextResponse.json({ artifacts: [], nextCursor: null, requiresProject: true });
     let query = client.from("report_artifacts").select(SAFETY_ARTIFACT_OPTION_SELECT)
       .eq("reports.workspace_id", opportunity.workspace_id).eq("reports.project_id", opportunity.project_id)
-      .not("metadata_json->>safetyPlanSnapshotV1", "is", null)
+      .or("metadata_json->>safetyPlanSnapshotV1.not.is.null,metadata_json->>safetyPlanSnapshotV2.not.is.null")
       .order("id", { ascending: false }).limit(51);
     if (before) query = query.lt("id", before);
     const result = await query;
@@ -53,7 +55,8 @@ export async function GET(request: NextRequest, context: Context) {
     if (!parsed.success) throw new Error("Safety artifact source shape differs");
     const rows = parsed.data.slice(0, 50);
     return NextResponse.json({
-      artifacts: rows.map((row) => ({ id: row.id, reportTitle: row.reports.title, artifactKind: row.artifact_kind, generatedAt: row.generated_at })),
+      artifacts: rows.map((row) => ({ id: row.id, reportTitle: row.reports.title, artifactKind: row.artifact_kind, generatedAt: row.generated_at,
+        sourceVersion: readSafetyArtifactSnapshot(row.metadata_json).kind })),
       nextCursor: parsed.data.length > 50 ? rows.at(-1)!.id : null, requiresProject: false,
     });
   } catch {
@@ -104,8 +107,14 @@ export async function POST(request: NextRequest, context: Context) {
     ]);
     if ([opportunity, project, artifact, sections].some((result) => result.error)) throw new Error("Failed to read the complete Safety seed sources");
     if (!opportunity.data || !project.data || !artifact.data || !sections.data) throw new SafetySeedRefusal("The selected source is unavailable in this workspace and project.");
-    const snapshot = readSafetyPlanSnapshot(artifact.data.metadata_json?.safetyPlanSnapshotV1);
-    if (!snapshot) throw new SafetySeedRefusal("Legacy or malformed Safety snapshot. Regenerate the Safety report and select the new artifact. HTML cannot be used.");
+    const recognized = readSafetyArtifactSnapshot(artifact.data.metadata_json);
+    if (recognized.kind === "v2") {
+      const owner = await client.from("reports").select(SS4A_REPORT_PROJECTION).eq("id", artifact.data.report_id).eq("workspace_id", o.workspace_id).eq("project_id", o.project_id).maybeSingle();
+      if (owner.error || !owner.data || recognized.snapshot.artifactId !== artifact.data.id || recognized.snapshot.reportId !== owner.data.id || recognized.snapshot.projectId !== o.project_id || recognized.snapshot.workspaceId !== o.workspace_id) throw new SafetySeedRefusal("Safety v2 artifact must belong to this application's exact project and workspace.");
+      throw new SafetySeedRefusal(SAFETY_V2_NOFO_REFUSAL);
+    }
+    if (recognized.kind !== "v1") throw new SafetySeedRefusal("Missing, malformed, ambiguous or unsupported Safety snapshot. Regenerate the report or select an identified versioned artifact. HTML cannot be used.");
+    const snapshot = recognized.snapshot;
     const [report, acquisition, drafts, persistence] = await Promise.all([
       client.from("reports").select(SS4A_REPORT_PROJECTION).eq("id", artifact.data.report_id).eq("workspace_id", o.workspace_id).eq("project_id", o.project_id).maybeSingle(),
       client.from("safety_crash_ingests").select(SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION).eq("id", snapshot.acquisition.id).eq("workspace_id", o.workspace_id).eq("project_id", o.project_id).maybeSingle(),

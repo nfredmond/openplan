@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { patchSafetyComparison } from "@/lib/reports/safety-comparison-server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
@@ -370,6 +371,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (!payloadBody.ok) return payloadBody.response;
 
     const payload = payloadBody.data;
+    if (payload && typeof payload === "object" && "safetyComparison" in payload) {
+      return patchSafetyComparison(request, parsedParams.data.reportId, payload);
+    }
     const parsed = patchReportSchema.safeParse(payload);
 
     if (!parsed.success) {
@@ -404,6 +408,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     if (!access.membership || !canAccessWorkspaceAction("reports.write", access.membership.role)) {
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
+    }
+
+    if (access.report.metadata_json?.safetyComparisonV2 !== undefined) {
+      return NextResponse.json({ error: "This report owns an immutable Safety input comparison. Use its comparison editor; legacy report and child edits are unavailable." }, { status: 422 });
     }
 
     if (parsed.data.runIds) {

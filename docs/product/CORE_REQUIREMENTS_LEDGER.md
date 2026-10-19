@@ -4,6 +4,14 @@ September 4, 2026 review proposal. These requirements record Nathaniel's directi
 
 ## Scope traceability
 
+October 19 evidence update for CORE-MODAL-01 and CORE-PLATFORM-01: the
+[Safety input-comparison checkpoint](../reviews/2026-10-19-safety-input-comparison/STATUS.md)
+connects a project and its retained observations to No Build, treatment inputs,
+applicability facts and immutable report files. Effects remain unassessed.
+Complete Safety plans, qualified effect transfer, prioritization, exact-year
+SS4A mapping and nationwide/territory/tribal coverage remain open. This bounded
+increment does not close either requirement; the roadmap remains the sole queue.
+
 October 7 evidence update for CORE-ENG-03/04: the
 [manual engagement case](../reviews/2026-10-07-engagement-manual-case/VERIFICATION.md)
 connects retained source contributions, corrected staff review, exact approval,

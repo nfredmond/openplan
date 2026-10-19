@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 import * as XLSX from "xlsx";
 import { PORTFOLIO_ROUND_TRIP_HEADERS } from "@/lib/projects/portfolio-round-trip-contract";
 import type { PortfolioRoundTripProject } from "@/lib/projects/portfolio-export";
+import { moneyCents } from "@/lib/money/optional-amount";
 
 const state = vi.hoisted(() => ({ createClient: vi.fn(), membership: vi.fn() }));
 vi.mock("@/lib/supabase/server", () => ({ createClient: state.createClient }));
@@ -14,7 +15,7 @@ import { GET } from "@/app/api/projects/export/workbook/route";
 
 const WORKSPACE = "22222222-2222-4222-8222-222222222222";
 const USER = "11111111-1111-4111-8111-111111111111";
-const COLUMNS = "id, name, summary, status, plan_type, delivery_phase, estimated_cost_amount, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, estimated_cost_recorded_at, created_at, updated_at, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_set_at";
+const COLUMNS = "id, name, summary, status, plan_type, delivery_phase, estimated_cost_amount::text, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, estimated_cost_recorded_at, created_at, updated_at, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_set_at";
 type Row = PortfolioRoundTripProject & { workspace_id: string };
 type Query = { table: string; columns: string; filters: [string, unknown][]; cursors: [string, string][]; orders: [string, boolean][]; range: [number, number]; limit: number };
 
@@ -66,7 +67,13 @@ function database(rows: Row[], options: { cap?: number; failFrom?: number; nullF
           });
           const size = Math.min(to - from + 1, query.limit, options.cap ?? 1000);
           const data = selected.slice(from, from + size).map((row) => Object.fromEntries(
-            query.columns.split(",").map((key) => key.trim()).map((key) => [key, row[key as keyof Row]])
+            query.columns.split(",").map((key) => key.trim()).map((selected) => {
+              const key = selected.split("::")[0];
+              const value = row[key as keyof Row];
+              // Model the SDK's precision loss if the server text cast is removed.
+              return [key, key === "estimated_cost_amount" && value != null
+                ? selected.endsWith("::text") ? String(value) : Number(value) : value];
+            })
           ));
           return Promise.resolve(resolve({ data, error: null }));
         },
@@ -93,6 +100,18 @@ function expectedRow(row: Row) {
 beforeEach(() => {
   vi.clearAllMocks();
   state.membership.mockResolvedValue({ membership: { workspace_id: WORKSPACE, role: "viewer" }, workspace: { name: "Synthetic workspace" } });
+});
+
+it("exports the exact unusual cent value as workbook text with an unknown year", async () => {
+  const row = { ...projects(1)[0], estimated_cost_amount: "999999999999999.99" };
+  const { queries } = database([row]);
+  const response = await request();
+  expect(response.status).toBe(200);
+  const result = await grid(response);
+  expect(queries[0].columns).toBe(COLUMNS);
+  expect(result.workbook.Sheets.Projects.D2).toMatchObject({ t: "s", v: row.estimated_cost_amount });
+  expect(moneyCents(result.rows[1][3])).toBe(BigInt("99999999999999999"));
+  expect(result.rows[1][5]).toBe("");
 });
 
 it("exports all 2000 projects through the configured row cap with original workbook values", async () => {

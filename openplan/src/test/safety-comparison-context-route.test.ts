@@ -1,0 +1,16 @@
+/** AUTHORED, UNEXECUTED. Projection doubles cannot prove PostgREST casts, RLS or snapshot completeness. */
+import { beforeEach,describe,expect,it,vi } from "vitest";
+import { NextRequest } from "next/server";
+import { comparisonId,comparisonRevision } from "./fixtures/safety/comparison";
+const mocks=vi.hoisted(()=>({create:vi.fn(),access:vi.fn()}));
+vi.mock("@/lib/supabase/server",()=>({createClient:mocks.create}));
+vi.mock("@/lib/reports/api",async original=>({...await original<typeof import("@/lib/reports/api")>(),loadReportAccess:mocks.access}));
+import { GET } from "@/app/api/reports/[reportId]/safety-comparison/route";
+import { REPORT_ACCESS_COLUMNS } from "@/lib/reports/api";
+import { SAFETY_COMPARISON_PROJECT_SELECT,SAFETY_COMPARISON_ACQUISITION_SELECT } from "@/lib/safety/candidate-comparison";
+function chain(data:unknown){const q={select:vi.fn(),eq:vi.fn(),not:vi.fn(),in:vi.fn(),lt:vi.fn(),order:vi.fn(),limit:vi.fn(),maybeSingle:vi.fn().mockResolvedValue({data,error:null}),then:(resolve:(value:unknown)=>unknown)=>Promise.resolve({data,error:null}).then(resolve)};for(const key of["select","eq","not","in","lt","order","limit"] as const)q[key].mockReturnValue(q);return q;}
+let tables:Record<string,ReturnType<typeof chain>>;
+beforeEach(()=>{vi.clearAllMocks();tables={projects:chain({id:comparisonId(3),workspace_id:comparisonId(2),updated_at:comparisonRevision,estimated_cost_amount:"99999999999999.91",estimated_cost_currency:"USD",estimated_cost_basis_year:null,estimated_cost_source_document_id:null}),safety_crash_ingests:chain([]),report_artifacts:chain([])};mocks.create.mockResolvedValue({auth:{getUser:async()=>({data:{user:{id:comparisonId(1)}}})},from:(table:string)=>{if(!tables[table])throw new Error(`Unexpected ${table}`);return tables[table];}});mocks.access.mockResolvedValue({report:{id:comparisonId(4),workspace_id:comparisonId(2),project_id:comparisonId(3),report_type:"project_status",land_use_plan_id:null,updated_at:comparisonRevision,metadata_json:{}},membership:{role:"viewer"},error:null});});
+describe("comparison source context projections",()=>{
+ it("exposes the exact report revision and text money/acquisition revisions, scoped to both workspace and project",async()=>{const response=await GET(new NextRequest("http://localhost/api/source"),{params:Promise.resolve({reportId:comparisonId(4)})});expect(response.status).toBe(200);const data=await response.json();expect(data.report.updated_at).toBe(comparisonRevision);expect(data.project.estimated_cost_amount).toBe("99999999999999.91");expect(data.canWrite).toBe(false);expect(REPORT_ACCESS_COLUMNS.split(", ")).toContain("updated_at");expect(tables.projects.select).toHaveBeenCalledWith(SAFETY_COMPARISON_PROJECT_SELECT);expect(SAFETY_COMPARISON_PROJECT_SELECT).toContain("estimated_cost_amount::text");expect(tables.safety_crash_ingests.select).toHaveBeenCalledWith(SAFETY_COMPARISON_ACQUISITION_SELECT);expect(SAFETY_COMPARISON_ACQUISITION_SELECT).toContain("evidence_revision::text");for(const table of["projects","safety_crash_ingests"])expect(tables[table].eq).toHaveBeenCalledWith("workspace_id",comparisonId(2));expect(tables.safety_crash_ingests.eq).toHaveBeenCalledWith("project_id",comparisonId(3));expect(tables.safety_crash_ingests.limit).toHaveBeenCalledWith(51);});
+});

@@ -1,5 +1,7 @@
 import { downloadEngagementReview } from "@/lib/engagement/review-export-download";
+import { createHash } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
+import { readSafetyArtifactSnapshot } from "@/lib/reports/safety-comparison-snapshot";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
@@ -119,6 +121,11 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
     return NextResponse.json({ error: "Artifact not found" }, { status: 404 });
   }
 
+  const safetySnapshot = readSafetyArtifactSnapshot(artifact.metadata_json);
+  if (safetySnapshot.kind === "invalid" || ((safetySnapshot.kind === "v1" || safetySnapshot.kind === "v2") &&
+    (safetySnapshot.snapshot.artifactId !== artifact.id || safetySnapshot.snapshot.reportId !== report.id || safetySnapshot.snapshot.workspaceId !== report.workspace_id || safetySnapshot.snapshot.projectId !== report.project_id))) {
+    return NextResponse.json({ error: "Safety artifact version, hash or ownership is invalid. No legacy fallback is permitted." }, { status: 422 });
+  }
   const engagementJobId = artifact.metadata_json?.engagementReviewJobId;
   if (typeof engagementJobId === "string") {
     if (typeof artifact.storage_path !== "string" || typeof artifact.metadata_json?.sha256 !== "string") return NextResponse.json({error:"Retained file identity unavailable"},{status:404});
@@ -147,6 +154,21 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
     }
 
     const service = createServiceRoleClient();
+    if (safetySnapshot.kind === "v2") {
+      const expectedHash = artifact.metadata_json?.sha256;
+      if (typeof expectedHash !== "string" || !/^[a-f0-9]{64}$/.test(expectedHash) || !ref.objectPath.endsWith(`-${expectedHash}.${extension}`)) {
+        return NextResponse.json({ error: "Safety artifact byte identity is unavailable." }, { status: 422 });
+      }
+      const retained = await service.storage.from(ref.bucket).download(ref.objectPath);
+      if (retained.error || !retained.data) return NextResponse.json({ error: "Retained Safety artifact bytes are unavailable." }, { status: 503 });
+      const bytes = new Uint8Array(await retained.data.arrayBuffer());
+      if (createHash("sha256").update(bytes).digest("hex") !== expectedHash) return NextResponse.json({ error: "Retained Safety artifact checksum differs. No substituted file is accepted." }, { status: 422 });
+      return new NextResponse(bytes, { headers: {
+        "Content-Type": extension === "pdf" ? "application/pdf" : "text/html; charset=utf-8",
+        "Content-Disposition": `attachment; filename="${downloadFilename(report.title, artifact.generated_at, extension)}"`,
+        "Cache-Control": "private, no-store", "Content-Security-Policy": "sandbox", "X-Content-Type-Options": "nosniff",
+      } });
+    }
     const { data, error } = await service.storage
       .from(ref.bucket)
       .createSignedUrl(ref.objectPath, REPORT_ARTIFACT_SIGNED_URL_TTL_SECONDS, {

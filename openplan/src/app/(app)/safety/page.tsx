@@ -239,7 +239,7 @@ export default async function SafetyPage({
     requestedProjectId
       ? supabase
           .from("reports")
-          .select("id, title, metadata_json")
+          .select("id, title, report_type, land_use_plan_id, metadata_json")
           .eq("workspace_id", workspaceId)
           .eq("project_id", requestedProjectId)
           .order("updated_at", { ascending: false })
@@ -401,10 +401,11 @@ export default async function SafetyPage({
         openedForProject={projectRow ? { id: projectRow.id, name: projectRow.name } : null}
         projects={projects}
         ingestHistory={ingestHistory}
-        projectReports={((reportsResult.data ?? []) as Array<{ id: string; title: string; metadata_json?: unknown }>).map(
+        projectReports={((reportsResult.data ?? []) as Array<{ id: string; title: string; report_type?: string; land_use_plan_id?: string | null; metadata_json?: unknown }>).map(
           (report) => ({
             id: report.id,
             title: report.title,
+            supportsSafetyComparison: report.report_type === "project_status" && report.land_use_plan_id === null,
             safetyActionPlan: readReportSafetyActionPlan(report.metadata_json),
           })
         )}

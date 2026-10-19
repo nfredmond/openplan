@@ -260,7 +260,7 @@ describe("a safety project's packet carries its crashes", () => {
         ...base,
         project: {
           ...base.project,
-          estimated_cost_amount: 1_200_000,
+          estimated_cost_amount: "999999999999999.99",
           estimated_cost_currency: "CAD",
           estimated_cost_basis_year: 2026,
           estimated_cost_source_document_id: "doc-1",
@@ -268,7 +268,7 @@ describe("a safety project's packet carries its crashes", () => {
         },
       });
       expect(html).toContain("CAD");
-      expect(html).toContain("1,200,000");
+      expect(html).toContain("999,999,999,999,999.99");
       expect(html).toContain("Price year 2026");
       expect(html).toContain("Source: projects.csv");
       expect(html).toContain("separate from the project-management budget");

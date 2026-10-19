@@ -65,6 +65,7 @@ export type HighInjuryNetworkUnavailableReason =
   | "crash_read_failed"
   | "too_many_crashes"
   | "road_read_failed"
+  | "year_scope_unavailable"
   | "custody_unavailable";
 
 export type HighInjuryNetwork =
@@ -77,6 +78,7 @@ export type HighInjuryNetwork =
       status: "computed";
       basis: HighInjuryNetworkBasis;
       method: HighInjuryNetworkMethod;
+      /** Exact requested-year selection, not evidence of complete observation. */
       years: number[];
       /** Ranked, at most `listLimit` long. */
       segments: HighInjuryNetworkSegment[];
@@ -139,6 +141,15 @@ export function highInjuryNetworkMeasureLabel(basis: HighInjuryNetworkBasis, met
   return basis === "ksi" ? `${crashes} ${scope}` : `${crashes} ${scope} (fatal crashes only)`;
 }
 
+/** List sparse selections without implying that the intervening years were selected. */
+export function describeHighInjuryNetworkYears(years: readonly number[]): string {
+  const sorted = [...new Set(years)].sort((a, b) => a - b);
+  if (sorted.length === 0) return "Requested crash years not recorded";
+  const contiguous = sorted.every((year, index) => index === 0 || year === sorted[index - 1] + 1);
+  const label = sorted.length > 1 && contiguous ? `${sorted[0]}–${sorted[sorted.length - 1]}` : sorted.join(", ");
+  return `Requested crash years: ${label}`;
+}
+
 /** One sentence on how the ranking was built. */
 export function describeHighInjuryNetworkMethod(
   method: HighInjuryNetworkMethod,
@@ -161,6 +172,8 @@ export function describeHighInjuryNetworkUnavailable(reason: HighInjuryNetworkUn
       return "This area holds more severe crashes than OpenPlan ranks in one pass. Pick a smaller study area. No ranking is shown rather than a partial one.";
     case "road_read_failed":
       return "Stored road lines could not be read, so no high-injury network is ranked. That is a failed read, not an absence of roads.";
+    case "year_scope_unavailable":
+      return "Requested crash years are missing, invalid, or outside the selected range, so no high-injury network is ranked. This does not establish zero crashes or complete observation coverage.";
     case "custody_unavailable":
       return "This acquisition's stored records do not reconcile with its recorded total, so no high-injury network is ranked.";
   }
@@ -576,8 +589,9 @@ export function computeHighInjuryNetwork(input: {
 /** Plain coverage sentence: what was placed, what was listed, what was left out. */
 export function describeHighInjuryNetworkCoverage(network: Extract<HighInjuryNetwork, { status: "computed" }>): string {
   const crashWord = network.basis === "ksi" ? "fatal or serious-injury crashes" : "fatal crashes";
+  const periodCaveat = " Requested years filter stored crashes; they do not establish complete observation coverage or an annual denominator. Unavailable years are not zero-crash observations.";
   if (network.crashesConsidered === 0) {
-    return `No ${crashWord} are recorded here for these years. That is not a finding that the roads are safe.`;
+    return `No ${crashWord} are recorded here for these years. That is not a finding that the roads are safe.${periodCaveat}`;
   }
   const notPlaced = network.crashesConsidered - network.crashesPlaced;
   const placedSentence = network.method === "road_segments"
@@ -591,7 +605,7 @@ export function describeHighInjuryNetworkCoverage(network: Extract<HighInjuryNet
   const listedSentence = network.segments.length > 0
     ? ` The ${network.segments.length} listed ${network.method === "road_segments" ? "pieces" : "squares"} hold ${network.listedCrashes.toLocaleString("en-US")} of them${network.listedMiles === null ? "" : ` on ${network.listedMiles.toFixed(1)} miles`}.`
     : "";
-  return placedSentence + notPlacedSentence + listedSentence;
+  return placedSentence + notPlacedSentence + listedSentence + periodCaveat;
 }
 
 export type HighInjuryNetworkFeatureCollection = {

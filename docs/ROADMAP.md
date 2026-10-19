@@ -74,6 +74,12 @@ unchanged. This does not waive migration safety, isolated RLS, independent model
 validation or any v1 requirement. The proven provider-choice task remains an
 early product responsibility; the deferred captures do not block other lanes.
 
+The October 19 M6 input-comparison checkpoint records a Reports-owned immutable
+review, isolated database checks and an identified local desktop/390px journey.
+It moves M6 to in progress. Complete Safety action plans, qualified numerical
+effects, exact-year SS4A mapping and the wider geographic obligations remain
+open. It closes no milestone and changes no direction-review binding.
+
 ## Destination
 
 OpenPlan v1 is a free, open-source operating system for core planning work in
@@ -112,7 +118,7 @@ record. "PR" means a pull request open on October 12. KI-001 means
 | M5 | Data, GIS and analysis reuse | Later, partial | Audit | Format coverage matrix |
 | M5a | Agency file formats | Next (B1a, C9) | Audit | Large uploads to Storage (KI-017, PR 255) |
 | M5b | Drone work (M5b.1–6) | In progress | [Oct 14 custody](reviews/2026-10-14-aerial-immutable-custody/STATUS.md); [roster recovery](reviews/2026-10-14-aerial-custody-recovery/STATUS.md); [retained access candidate](reviews/2026-10-14-artifact-access/STATUS.md); [terminal journal candidate](reviews/2026-10-14-terminal-delivery/STATUS.md); [explicit artifact HTTP candidate](reviews/2026-10-14-artifact-http/STATUS.md); [original coordinator candidate](reviews/2026-10-14-worker-coordination/STATUS.md); [original input/commit candidate](reviews/2026-10-14-original-pipeline/STATUS.md); [running progress candidate](reviews/2026-10-14-running-progress/STATUS.md); [original outcome repair candidate](reviews/2026-10-14-outcome-recovery/STATUS.md); [original scheduling candidate](reviews/2026-10-14-recovery-execution/STATUS.md); [explicit operator configuration candidate](reviews/2026-10-14-runtime-binding/STATUS.md); [explicit assembly candidate](reviews/2026-10-14-runtime-assembly/STATUS.md); [owned HTTP candidate](reviews/2026-10-14-owned-worker-service/STATUS.md); [explicit worker command candidate](reviews/2026-10-14-owned-worker-cli/STATUS.md) | Complete callback/Storage recovery, preview rendering and default worker integration (M5b.2); name the DJI controller |
-| M6 | Multimodal and safety decisions | Next (B3) | Audit | Safety action plan and SS4A |
+| M6 | Multimodal and safety decisions | In progress, partial (B3) | [Oct 19 input comparison](reviews/2026-10-19-safety-input-comparison/STATUS.md) | Complete systemic/project/plan Safety, qualified effects and exact-year SS4A mapping; retain geographic, observation and scientific limits. |
 | M6a | Transit, active travel and freight | Later | Audit | Transit service-plan case |
 | M6b | Benefit-cost and demand management | In progress, partial | [Oct 6](reviews/2026-10-06-bca/VERIFICATION.md) | Bind BCA geography (KI-024) |
 | M6c | Project prioritization | Later | Audit | Not started |
