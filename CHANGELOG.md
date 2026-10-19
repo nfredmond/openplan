@@ -25,9 +25,9 @@ No changes recorded after the 0.69.0 development candidate.
 ## 0.69.0 (2026-10-19)
 
 **Development release candidate, prepared for final release checks.** This
-packages the already-main history through `ae3e2f70cf0d759c2a4e1f6b95be8fda7a3e44d2`.
+packages the already-main history through `99dfde596d0cf4f12c46965379cc832204a99254`.
 It does not declare a tag, current hosted deployment or completed v1 milestone.
-Open PRs #346, #347, #350, #351 and #352 remain outside this candidate.
+Open PRs #347, #350 and #352 remain outside this candidate.
 
 **Project evidence into grant pursuit.** Report and evidence-bundle choices show
 file formats, generation times and artifact IDs. Report generation retains its
@@ -37,6 +37,13 @@ search filters recorded programs. Opportunity cards edit or clear recorded dates
 and My Work retains notices of those OpenPlan edits. The SS4A workspace prepares
 six source-bound working drafts from a same-project Safety artifact, retaining
 prior drafts, final text, checklist states and source caveats.
+
+**Source reading and text inspection.** RTP document review now offers an
+explicit policy-and-goal reading scope and identifies matching passages left
+unread. Numeric reading remains the default; chapter text still passes through
+draft staging and review. Engagement text inspection exposes hidden formatting
+without changing the stored contribution or moderation decision. Neither change
+adds a migration.
 
 **Exercised outcomes and limits.** The dated records below retain agent-run
 desktop and 390px interactions, report/bundle downloads, exact estimate-source
@@ -119,6 +126,12 @@ record each lane's dated evidence boundary; they are not a current installation
 inventory or a claim that every included component is activated. Later evidence
 must close the relevant boundary before deployment. Prior failures remain in
 the linked records.
+
+**Engagement text inspection:** staff can inspect hidden formatting characters in
+comments, restricted history, survey answers and saved synthesis sources. The
+optional view shows counts, code points and escaped text while preserving the
+readable contribution. It does not change moderation or infer intent. No
+migration is required.
 
 **Linked estimate sources:** the project estimate editor opens its exact saved
 supporting document, including one older than the recent-document list. Read
