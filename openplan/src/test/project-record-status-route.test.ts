@@ -7,13 +7,15 @@ const authGetUserMock = vi.fn();
 const projectsSingleMock = vi.fn();
 
 const projectMilestonesMaybeSingleMock = vi.fn();
-const projectMilestonesSelectMock = vi.fn(() => ({ maybeSingle: projectMilestonesMaybeSingleMock }));
+const projectMilestonesIsMock = vi.fn();
+const projectMilestonesSelectMock = vi.fn(() => ({ maybeSingle: projectMilestonesMaybeSingleMock, is: projectMilestonesIsMock }));
 const projectMilestonesEqProjectMock = vi.fn(() => ({ select: projectMilestonesSelectMock }));
 const projectMilestonesEqIdMock = vi.fn(() => ({ eq: projectMilestonesEqProjectMock }));
 const projectMilestonesUpdateMock = vi.fn(() => ({ eq: projectMilestonesEqIdMock }));
 
 const projectSubmittalsMaybeSingleMock = vi.fn();
-const projectSubmittalsSelectMock = vi.fn(() => ({ maybeSingle: projectSubmittalsMaybeSingleMock }));
+const projectSubmittalsIsMock = vi.fn();
+const projectSubmittalsSelectMock = vi.fn(() => ({ maybeSingle: projectSubmittalsMaybeSingleMock, is: projectSubmittalsIsMock }));
 const projectSubmittalsEqProjectMock = vi.fn(() => ({ select: projectSubmittalsSelectMock }));
 const projectSubmittalsEqIdMock = vi.fn(() => ({ eq: projectSubmittalsEqProjectMock }));
 const projectSubmittalsUpdateMock = vi.fn(() => ({ eq: projectSubmittalsEqIdMock }));
@@ -428,6 +430,14 @@ describe("PATCH /api/projects/[projectId]/records/[recordId]", () => {
       expect(projectMilestonesUpdateMock).toHaveBeenCalledTimes(1);
     }
   });
+  it('keeps the unmanaged-origin filter on an agent submittal update', async () => {
+    const request = jsonRequest(SUBMITTAL_ID, { recordType: 'submittal', status: 'submitted' });
+    request.headers.set('x-openplan-assistant-execution-source', 'planner_agent_quick_link');
+    expect((await patchRecord(request, routeContext(SUBMITTAL_ID))).status).toBe(200);
+    expect(projectSubmittalsIsMock).toHaveBeenCalledWith('handoff_origin_revision_id', null);
+    expect(projectSubmittalsSelectMock).toHaveBeenCalledWith('id, title, submittal_type, status, agency_label, assignee_user_id, reference_number, due_date, submitted_at, review_cycle, notes, created_at, updated_at');
+  });
+
   it('allows manual managed fulfillment and refuses an agent before outcome mutation',async()=>{
     managedOrigin='11111111-2222-4333-8444-555555555555';
     const body={recordType:'submittal',status:'accepted',submittedAt:'2026-10-18T12:00:00Z',note:'Synthetic actual receipt'};

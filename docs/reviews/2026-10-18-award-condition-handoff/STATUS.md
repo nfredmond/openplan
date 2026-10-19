@@ -15,3 +15,16 @@ estimate-source access. The merge keeps the award calendar views, exact invoice
 fields and both native award suites in the live CI command. The original author
 checkout remains read-only. Joined checks and a focused review of the account
 DELETE entry and native controls remain pending; migration 000003 is unapplied.
+
+Joined-check continuation, October 18: the first broad cohort records 302 passes
+and 90 failures; the next records 402 passes and six failures. Those failed
+windows remain private and unchanged. Corrections preserve the real calendar
+views, exact-count/projection fixtures and JSON transport, classify failed reads
+before successful-read completeness checks, and keep returned record rows visible
+to the write guard. The final affected cohort passes 171 tests; the separate
+record/guard cohort passes 22. Harmless controls survive and targeted query-field,
+origin-filter, readback, error-order and timestamp faults fail at their intended
+assertions, with exact restoration. Configured typegen/tsc, scoped lint and the
+direction check end 0. The sixth independent review accepts the account DELETE
+entry and four native controls in source. Native CI, rollout and the visible
+award workflow remain pending. No migration or hosted write follows this check.

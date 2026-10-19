@@ -225,11 +225,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
           updated_at: updatedAt,
         })
         .eq("id", parsedParams.data.recordId)
-        .eq("project_id", project.id);
+        .eq("project_id", project.id)
+        .select("id, title, summary, milestone_type, phase_code, status, owner_label, assignee_user_id, target_date, actual_date, notes, created_at, updated_at");
       if (!manual) mutation.is("handoff_origin_revision_id",null);
-      const { data, error } = await mutation
-        .select("id, title, summary, milestone_type, phase_code, status, owner_label, assignee_user_id, target_date, actual_date, notes, created_at, updated_at")
-        .maybeSingle();
+      const { data, error } = await mutation.maybeSingle();
 
       if (error && isWriteFailure(error)) {
         audit.error("project_record_update_failed", {
@@ -406,11 +405,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         updated_at: updatedAt,
       })
       .eq("id", parsedParams.data.recordId)
-      .eq("project_id", project.id);
+      .eq("project_id", project.id)
+      .select("id, title, submittal_type, status, agency_label, assignee_user_id, reference_number, due_date, submitted_at, review_cycle, notes, created_at, updated_at");
     if (!manual) mutation.is("handoff_origin_revision_id",null);
-    const { data, error } = await mutation
-      .select("id, title, submittal_type, status, agency_label, assignee_user_id, reference_number, due_date, submitted_at, review_cycle, notes, created_at, updated_at")
-      .maybeSingle();
+    const { data, error } = await mutation.maybeSingle();
 
     if (error && isWriteFailure(error)) {
       audit.error("project_record_update_failed", {

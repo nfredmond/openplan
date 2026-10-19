@@ -356,7 +356,7 @@ const UNVERIFIED_CALLER_WRITES: Record<string, number> = {
   "src/lib/models/behavioral-onramp-kpis.ts": 1,
   "src/lib/models/evidence-backbone.ts": 1,
   "src/lib/notifications/engagement.ts": 2,
-  "src/lib/projects/rtp-posture-writeback.ts": 1,
+  // RTP posture now reads the invalidated row and compares the exact source epoch.
   "src/lib/reports/scenario-writeback.ts": 2,
   "src/lib/safety/ingest.ts": 2,
 };

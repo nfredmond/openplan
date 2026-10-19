@@ -605,7 +605,6 @@ export async function buildRtpCycleExportInput(input: {
           { data: [], error: null },
         ];
 
-  if(linkedProjectIds.length && [fundingAwardsResult,fundingOpportunitiesResult,billingInvoicesResult].some((r)=>'count' in r && r.count!==r.data?.length))throw new Error("Complete award funding/terms/currency inputs unavailable; no partial RTP funding export accepted");
   // These four reads are TOTALLED into the funding snapshot. A failure read as
   // `?? []` does not leave a gap a reader could notice — it prints $0 committed
   // and a fully unfunded portfolio, under the agency's name, in a document a
@@ -624,6 +623,8 @@ export async function buildRtpCycleExportInput(input: {
       message: fundingError.message,
     }, fundingError.code ?? null);
   }
+
+  if(linkedProjectIds.length && [fundingAwardsResult,fundingOpportunitiesResult,billingInvoicesResult].some((r)=>'count' in r && r.count!==r.data?.length))throw new Error("Complete award funding/terms/currency inputs unavailable; no partial RTP funding export accepted");
 
   type FundingProfileRow = {
     project_id: string;

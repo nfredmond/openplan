@@ -1722,7 +1722,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // an unapplied migration answers 503 with a migration hint instead of a
     // generic 500 an operator cannot act on — the shape this route already uses
     // for the campaign target and the stage-gate project scope.
-    assertCompleteFundingRead(fundingAwardsResult,fundingOpportunitiesResult,billingInvoicesResult);
     const fundingReadFailure =
       classifyRouteReadFailure("this project's funding records", fundingProfileResult) ??
       classifyRouteReadFailure("this project's funding records", fundingAwardsResult) ??
@@ -1738,6 +1737,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
       });
       return NextResponse.json(fundingReadFailure.body, { status: fundingReadFailure.status });
     }
+
+    assertCompleteFundingRead(fundingAwardsResult,fundingOpportunitiesResult,billingInvoicesResult);
 
     if (loadErrors.length > 0 || !projectResultForPacket.data) {
       const firstError = loadErrors[0];
