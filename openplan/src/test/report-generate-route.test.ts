@@ -1383,7 +1383,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
     });
     const member = await createClientMock();
     createClientMock.mockResolvedValue({ ...member, from: (table: string) => table === "safety_crashes" ? { select: crashSelect } : fromMock(table) });
-    const acquisition = { ...fixture.acquisition, project_id: projectId, min_lon: -1, min_lat: -1, max_lon: 1, max_lat: 1,
+    const acquisition: typeof fixture.acquisition = { ...fixture.acquisition, project_id: projectId, min_lon: -1, min_lat: -1, max_lon: 1, max_lat: 1,
       years_requested: requestedYears, crash_count: crashRows.length, geocoded_count: crashRows.length, stored_count: crashRows.length };
     safetyIngestOrderMock.mockResolvedValueOnce({ data: [acquisition], error: null });
     rpcMock.mockImplementation(async (name: string) => ({ data: name === "safety_crash_evidence_counts"
