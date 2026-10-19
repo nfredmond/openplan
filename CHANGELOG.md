@@ -20,6 +20,9 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+The model-run progress fix keeps elapsed time advancing during five-second
+status refreshes that return fresh stage records.
+
 **Linked estimate sources:** the project estimate editor opens its exact saved
 supporting document, including one older than the recent-document list. Read
 failures, unavailable originals and missing price years stay visible. The link

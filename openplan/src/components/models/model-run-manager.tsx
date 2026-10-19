@@ -1649,11 +1649,16 @@ function RunProgressBar({ stages }: { stages: ModelRunStage[] }) {
   // figure has to advance on its own rather than only when the poll happens to
   // return changed data.
   const [now, setNow] = useState(() => Date.now());
+  const runningStageId = running?.id ?? null;
+  const runningStageStatus = running?.status ?? null;
+  const runningStageStartedAt = running?.started_at ?? null;
+  // Polls return fresh stage objects. Keep the clock's interval across those
+  // refreshes while the same stage attempt remains running.
   useEffect(() => {
-    if (!running) return;
+    if (!runningStageId || runningStageStatus?.toLowerCase() !== "running") return;
     const timer = window.setInterval(() => setNow(Date.now()), 30_000);
     return () => window.clearInterval(timer);
-  }, [running]);
+  }, [runningStageId, runningStageStatus, runningStageStartedAt]);
 
   const elapsed = describeElapsed(running?.started_at ?? null, now);
   const convergence = latestConvergence(running?.log_tail ?? null);
