@@ -20,8 +20,23 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Common population comparisons and replacement runs:** guided comparisons retain
+the same realized population across the separate AequilibraE and ActivitySim
+tracks. An explicit replacement run can reuse a prospectively retained population
+checkpoint while preserving the original failed run. Apply
+`20261019000001_model_common_population_comparisons.sql` and
+`20261019051430_model_population_replacement.sql` before deploying these paths.
+Managed replacement and hosted snapshot transport remain unsupported. These
+changes do not establish model accuracy or nationwide validation.
+
 The model-run progress fix keeps elapsed time advancing during five-second
 status refreshes that return fresh stage records.
+
+**Engagement text inspection:** staff can inspect hidden formatting characters in
+comments, restricted history, survey answers and saved synthesis sources. The
+optional view shows counts, code points and escaped text while preserving the
+readable contribution. It does not change moderation or infer intent. No
+migration is required.
 
 **Linked estimate sources:** the project estimate editor opens its exact saved
 supporting document, including one older than the recent-document list. Read

@@ -1,12 +1,12 @@
 "use client";
 
 /**
- * READING A PLAN DOCUMENT — the door into the whole lane.
+ * Reading a plan document opens the proposal queue.
  *
  * A planner picks a document already in this workspace's library and asks
  * OpenPlan to read it. What comes back is a QUEUE OF PROPOSALS, not a change to
- * the plan: nothing in the plan moves until somebody reviews a card below and
- * saves it.
+ * the plan: numeric proposals wait below, while chapter text uses draft staging
+ * before the reviewer copies, edits and saves it in the chapter editor.
  *
  * WHAT THIS COMPONENT INSISTS ON SAYING:
  *
@@ -48,28 +48,35 @@ export function ExtractionRunLauncher({
   const unreadable = documents.filter((document) => document.unreadableReason !== null);
 
   const [documentId, setDocumentId] = useState(readable[0]?.id ?? "");
+  const [readingScope, setReadingScope] = useState<"numeric" | "chapter">("numeric");
   const [isReading, setIsReading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [summary, setSummary] = useState<string | null>(null);
   const [warning, setWarning] = useState<string | null>(null);
+  const [coverageWarnings, setCoverageWarnings] = useState<string[]>([]);
 
   async function read() {
-    if (!documentId) return;
+    if (!canWrite || isReading || !readable.some((document) => document.id === documentId)) return;
     setIsReading(true);
     setError(null);
     setSummary(null);
     setWarning(null);
+    setCoverageWarnings([]);
 
     try {
       const response = await fetch(`/api/rtp-cycles/${rtpCycleId}/extraction-runs`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ kbDocumentId: documentId }),
+        body: JSON.stringify(
+          readingScope === "chapter"
+            ? { kbDocumentId: documentId, targetKinds: ["chapter_block"] }
+            : { kbDocumentId: documentId }
+        ),
       });
       const payload = (await response.json().catch(() => ({}))) as {
         error?: string;
         warning?: string | null;
-        summary?: { proposed?: number; discarded?: number };
+        summary?: { proposed?: number; discarded?: number; perTarget?: Array<{ targetKind: string; passagesMatched: number; passagesRead: number }> };
       };
 
       if (!response.ok) {
@@ -79,14 +86,24 @@ export function ExtractionRunLauncher({
 
       const proposed = payload.summary?.proposed ?? 0;
       const discarded = payload.summary?.discarded ?? 0;
+      const unreadPassages = (payload.summary?.perTarget ?? []).filter(
+        (target) => target.passagesRead < target.passagesMatched
+      );
+      setCoverageWarnings(unreadPassages.map((target) => {
+        const category = target.targetKind === "chapter_block" ? "policy and goal text" : target.targetKind.replaceAll("_", " ");
+        return `${target.passagesRead} of ${target.passagesMatched} matching passages were read for ${category}. The remaining matching passages were not evaluated.`;
+      }));
+      const reviewLocation = readingScope === "chapter" ? "in Place copied chapter text" : "below";
       setSummary(
         discarded > 0
-          ? `${proposed + discarded} proposed; ${discarded} dropped because ${
-              discarded === 1 ? "its figures were" : "their figures were"
-            } not in the text ${discarded === 1 ? "it" : "they"} cited. ${proposed} ${
+          ? `${proposed + discarded} proposed; ${discarded} dropped ${
+              readingScope === "chapter"
+                ? "by source checks"
+                : `because ${discarded === 1 ? "its figures were" : "their figures were"} not in the text ${discarded === 1 ? "it" : "they"} cited`
+            }. ${proposed} ${
               proposed === 1 ? "is" : "are"
-            } waiting for review below.`
-          : `${proposed} ${proposed === 1 ? "proposal is" : "proposals are"} waiting for review below. Nothing was dropped.`
+            } waiting for review ${reviewLocation}.`
+          : `${proposed} ${proposed === 1 ? "proposal is" : "proposals are"} waiting for review ${reviewLocation}.${unreadPassages.length ? " No proposals were dropped by source checks." : " Nothing was dropped."}`
       );
       setWarning(payload.warning ?? null);
       router.refresh();
@@ -102,7 +119,7 @@ export function ExtractionRunLauncher({
       {readable.length === 0 ? (
         <p className="text-sm text-muted-foreground">
           No document in this workspace&apos;s library can be transcribed from yet. Upload the adopted
-          plan as a document, and OpenPlan will read its pages so figures can be copied out of it with
+          plan as a document, and OpenPlan will read its pages so figures or text can be copied with
           the page they came from.
         </p>
       ) : (
@@ -122,6 +139,19 @@ export function ExtractionRunLauncher({
               ))}
             </select>
           </label>
+          <label className="min-w-[16rem] flex-1 space-y-1 text-xs">
+            <span className="font-medium text-foreground">Reading scope</span>
+            <select
+              className="h-9 w-full rounded-[0.4rem] border border-border bg-background px-2 text-sm"
+              value={readingScope}
+              onChange={(event) => setReadingScope(event.target.value === "chapter" ? "chapter" : "numeric")}
+              disabled={isReading || !canWrite}
+              aria-describedby="extraction-reading-scope-help"
+            >
+              <option value="numeric">Figures and financial details</option>
+              <option value="chapter">Policy and goal text</option>
+            </select>
+          </label>
           <Button type="button" size="sm" onClick={read} disabled={isReading || !canWrite || !documentId}>
             {isReading ? (
               <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
@@ -133,13 +163,22 @@ export function ExtractionRunLauncher({
         </div>
       )}
 
+      {readable.length > 0 ? (
+        <p id="extraction-reading-scope-help" className="text-xs text-muted-foreground">
+          {readingScope === "chapter"
+            ? "Policy and goal text stays quoted from the source. Use Place copied chapter text to choose a chapter and stage a draft. Review the draft, then copy, edit and save it in the chapter editor. Reading or placing text does not change adopted policy."
+            : "Figures and financial details wait below for review before you save them into the plan."}
+        </p>
+      ) : null}
+
       {isReading ? (
         <p className="text-xs text-muted-foreground">
-          Reading the document a page at a time. A long plan takes a while — nothing is written to the
+          Reading the document a page at a time. A long plan takes a while. Nothing is written to the
           plan by this, so it is safe to leave and come back.
         </p>
       ) : null}
       {summary ? <p className="text-sm text-foreground">{summary}</p> : null}
+      {coverageWarnings.map((message) => <p key={message} role="status" className="text-xs text-amber-700 dark:text-amber-300">{message}</p>)}
       {warning ? <p className="text-xs text-amber-700 dark:text-amber-300">{warning}</p> : null}
       {error ? <p role="alert" className="text-sm text-red-600 dark:text-red-400">{error}</p> : null}
 
@@ -153,7 +192,7 @@ export function ExtractionRunLauncher({
           <ul className="mt-2 space-y-1">
             {unreadable.map((document) => (
               <li key={document.id}>
-                <span className="text-foreground">{document.title}</span> — {document.unreadableReason}
+                <span className="text-foreground">{document.title}</span>: {document.unreadableReason}
               </li>
             ))}
           </ul>

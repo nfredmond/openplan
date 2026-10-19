@@ -16,6 +16,7 @@ import { HistoricalRunDecision } from "@/components/models/historical-run-decisi
 import { OperatorDetail } from "@/components/ui/read-failure-notice";
 import { ModelRunEvidencePanel } from "@/components/models/model-run-evidence-panel";
 import { StructuralDiagnosisExplanation } from "@/components/models/structural-diagnosis-explanation";
+import { validationArtifactContext, validationAssessmentDisplays, type ValidationAssessmentDisplay, type ValidationDisplayArtifact } from "@/lib/models/validation-assessment-display";
 import { ModelRunHeadlineAnswer } from "@/components/models/model-run-headline-answer";
 import { ModelRunCeqaVmtScreen } from "@/components/models/model-run-ceqa-vmt-screen";
 import { ModelRunTripGenScreen } from "@/components/models/model-run-trip-gen-screen";
@@ -140,14 +141,7 @@ export type ModelRunStage = {
   log_tail?: string | null;
 };
 
-export type ModelRunArtifact = {
-  id: string;
-  artifact_type: string;
-  file_url: string;
-  file_size_bytes: number | null;
-  content_hash?: string | null;
-  metadata_json?: Record<string, unknown> | null;
-};
+export type ModelRunArtifact = ValidationDisplayArtifact;
 
 type ManagedModelRun = {
   recovery?: ModelRecoveryStatus;
@@ -1773,44 +1767,47 @@ function ModelRunStagingAndArtifacts({
     return null;
   }
 
-  const assessmentArtifact = artifacts.find((artifact) => artifact.artifact_type === "model_validation_assessment");
-  const diagnosisArtifact = artifacts.find(
-    (artifact) => artifact.artifact_type === "model_validation_structural_diagnosis",
-  );
+  const assessmentDisplays = validationAssessmentDisplays(artifacts);
   const structuralInputAuditArtifact = artifacts.find(
     (artifact) => artifact.artifact_type === "model_structural_input_audit_v1",
   );
   const structuralDemandDiagnosisArtifact = artifacts.find(
     (artifact) => artifact.artifact_type === "model_validation_structural_diagnosis_v3",
   );
-  const assessment = assessmentArtifact?.metadata_json ?? null;
-  const diagnosis = diagnosisArtifact?.metadata_json ?? null;
-  const scientificOutcome =
-    typeof assessment?.scientific_outcome === "string" ? assessment.scientific_outcome : null;
-  const assessmentReasons = Array.isArray(assessment?.reasons)
-    ? assessment.reasons.filter((reason): reason is string => typeof reason === "string")
-    : [];
-  const coverage =
-    assessment?.coverage && typeof assessment.coverage === "object" && !Array.isArray(assessment.coverage)
-      ? (assessment.coverage as Record<string, unknown>)
-      : null;
-  const exactInputs =
-    assessment?.exact_inputs && typeof assessment.exact_inputs === "object" && !Array.isArray(assessment.exact_inputs)
-      ? (assessment.exact_inputs as Record<string, unknown>)
-      : null;
-  const networkStateHashes =
-    exactInputs?.network_state_hashes &&
-    typeof exactInputs.network_state_hashes === "object" &&
-    !Array.isArray(exactInputs.network_state_hashes)
-      ? (exactInputs.network_state_hashes as Record<string, unknown>)
-      : null;
   const evidenceWriteFailed = run.claimDecision?.reason?.toLowerCase().includes("validation evidence write failed") ?? false;
 
-  return (
-    <div className="mt-4 min-w-0 max-w-full border-t pt-4">
-      {assessment ? (
+  function renderAssessment(display: ValidationAssessmentDisplay) {
+    const assessment = display.assessment ?? {};
+    const diagnoses = artifacts.filter((artifact) => artifact.artifact_type === "model_validation_structural_diagnosis" &&
+      artifact.metadata_json?.assessment_sha256 === display.artifact.content_hash &&
+      artifact.metadata_json?.schema === "openplan.model-validation-structural-diagnosis.v1");
+    const diagnosisArtifact = display.status === "bound" && diagnoses.length === 1 ? diagnoses[0] : null;
+    const diagnosis = diagnosisArtifact?.metadata_json ?? null;
+    const scientificOutcome =
+      typeof assessment.scientific_outcome === "string" && ["pass", "fail", "inconclusive"].includes(assessment.scientific_outcome)
+        ? assessment.scientific_outcome
+        : "unknown";
+    const assessmentReasons = Array.isArray(assessment?.reasons)
+      ? assessment.reasons.filter((reason): reason is string => typeof reason === "string")
+      : [];
+    const coverage =
+      assessment?.coverage && typeof assessment.coverage === "object" && !Array.isArray(assessment.coverage)
+        ? (assessment.coverage as Record<string, unknown>)
+        : null;
+    const exactInputs =
+      assessment?.exact_inputs && typeof assessment.exact_inputs === "object" && !Array.isArray(assessment.exact_inputs)
+        ? (assessment.exact_inputs as Record<string, unknown>)
+        : null;
+    const networkStateHashes =
+      exactInputs?.network_state_hashes &&
+      typeof exactInputs.network_state_hashes === "object" &&
+      !Array.isArray(exactInputs.network_state_hashes)
+        ? (exactInputs.network_state_hashes as Record<string, unknown>)
+        : null;
+    return (
         <section
-          aria-label="Scientific model validation assessment"
+          key={display.artifact.id}
+          aria-label={`Scientific model validation assessment: ${display.method} · assessment ${display.artifact.id}`}
           className="mb-4 min-w-0 max-w-full rounded-[0.75rem] border border-border/70 bg-background/80 p-4"
         >
           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -1818,20 +1815,21 @@ function ModelRunStagingAndArtifacts({
               <p className="text-xs font-semibold text-muted-foreground">
                 Rules v{String(assessment.rules_version ?? "unknown")} · scientific validation
               </p>
-              <h4 className="mt-1 font-semibold text-foreground">Observed-count comparability assessment</h4>
+              <h4 className="mt-1 font-semibold text-foreground">{display.method}</h4>
+              <p className="mt-1 text-sm text-muted-foreground">Observed-count comparability assessment</p>
             </div>
             <StatusBadge
-              tone={scientificOutcome === "pass" ? "success" : scientificOutcome === "fail" ? "danger" : "warning"}
+              tone={display.status === "bound" ? "info" : "warning"}
             >
-              {scientificOutcome ?? "inconclusive"}
+              {display.status === "bound" ? `Recorded outcome: ${scientificOutcome}` : "scientifically unchecked"}
             </StatusBadge>
           </div>
+          <p className="mt-3 text-xs text-muted-foreground">
+            Binding: {display.status}. {display.reason}
+          </p>
           <p className="mt-3 text-sm text-muted-foreground">
-            {scientificOutcome === "pass"
-              ? "The decisive observations were comparable to this exact model output under the frozen rule."
-              : scientificOutcome === "fail"
-                ? "Comparable decisive observations did not meet the exact frozen rule. The negative result is retained."
-                : "OpenPlan could not establish that the observations and model output represent the same quantity. No validation claim is allowed."}
+            Recorded outcome: {scientificOutcome}. This is recorded assessment data. This panel checks metadata association only.
+            {" "}Scientific validity and downloaded bytes remain unverified. No validation claim is allowed.
           </p>
           {assessmentReasons.length > 0 ? (
             <ul className="mt-3 list-disc space-y-1 pl-5 text-xs text-muted-foreground">
@@ -1839,6 +1837,14 @@ function ModelRunStagingAndArtifacts({
             </ul>
           ) : null}
           <dl className="mt-4 grid min-w-0 grid-cols-1 gap-3 text-xs">
+            <div>
+              <dt className="font-semibold text-foreground">Output artifact</dt>
+              <dd className="mt-1 break-all text-muted-foreground">{String(exactInputs?.model_output_artifact_id ?? "unknown")}</dd>
+            </div>
+            <div>
+              <dt className="font-semibold text-foreground">Assessment artifact</dt>
+              <dd className="mt-1 break-all text-muted-foreground">{display.artifact.id} · SHA-256 {display.artifact.content_hash ?? "unknown"}</dd>
+            </div>
             <div>
               <dt className="font-semibold text-foreground">Planning use</dt>
               <dd className="mt-1 break-words text-muted-foreground">{String(assessment.planning_use ?? "unknown")}</dd>
@@ -1871,9 +1877,19 @@ function ModelRunStagingAndArtifacts({
               </dd>
             </div>
           </dl>
+          <ul className="mt-3 space-y-2 text-xs text-muted-foreground">
+            {[display.artifact, display.input, display.basis, display.output].map((artifact) => artifact ? (
+              <li key={artifact.id} className="min-w-0 break-all">
+                <a href={`/api/models/${modelId}/runs/${run.id}/artifacts/${artifact.id}/download`} target="_blank" rel="noopener noreferrer" className="font-semibold underline">
+                  Download {labelForArtifactType(artifact.artifact_type)} · {display.method} · artifact {artifact.id}
+                </a>
+                <p className="mt-1">SHA-256 {artifact.content_hash ?? "unknown"}</p>
+              </li>
+            ) : null)}
+          </ul>
           {run.engine_key === "behavioral_demand" ? (
             <p className="mt-3 text-xs text-muted-foreground">
-              AequilibraE assignment and ActivitySim behavioral-demand evidence remain separate; neither method is averaged into the other.
+              AequilibraE assignment and ActivitySim behavioral-demand evidence remain separate; neither method is averaged into the other. Model agreement is sensitivity evidence, not accuracy.
             </p>
           ) : null}
           {scientificOutcome === "inconclusive" && diagnosisArtifact && diagnosis ? (
@@ -1884,7 +1900,13 @@ function ModelRunStagingAndArtifacts({
             />
           ) : null}
         </section>
-      ) : evidenceWriteFailed ? (
+    );
+  }
+
+  return (
+    <div className="mt-4 min-w-0 max-w-full border-t pt-4">
+      {assessmentDisplays.map(renderAssessment)}
+      {assessmentDisplays.length === 0 && evidenceWriteFailed ? (
         <section aria-label="Scientific model validation assessment" className="mb-4 rounded-[0.75rem] border border-destructive/40 bg-destructive/5 p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h4 className="font-semibold text-foreground">Validation evidence write failed</h4>
@@ -1972,9 +1994,11 @@ function ModelRunStagingAndArtifacts({
               <h4 className="mb-2 font-semibold">Run artifacts</h4>
               <ul className="space-y-2">
                 {artifacts.map((art) => (
-                  <li key={art.id} className="flex items-center justify-between gap-3 rounded-[0.5rem] border border-border/60 bg-background/80 px-3 py-2.5 text-muted-foreground">
-                    <div>
+                  <li key={art.id} className="flex min-w-0 flex-wrap items-center justify-between gap-3 rounded-[0.5rem] border border-border/60 bg-background/80 px-3 py-2.5 text-muted-foreground">
+                    <div className="min-w-0">
                       <p className="font-medium text-foreground">{labelForArtifactType(art.artifact_type)}</p>
+                      {validationArtifactContext(art, assessmentDisplays) ? <p className="mt-1 break-all text-xs">{validationArtifactContext(art, assessmentDisplays)}</p> : null}
+                      <p className="mt-1 break-all text-xs">Artifact {art.id} · SHA-256 {art.content_hash ?? "unknown"}</p>
                       {formatFileSize(art.file_size_bytes) ? <p className="text-xs">{formatFileSize(art.file_size_bytes)}</p> : null}
                     </div>
                     <a
@@ -1982,6 +2006,7 @@ function ModelRunStagingAndArtifacts({
                       target="_blank"
                       rel="noopener noreferrer"
                       className="underline hover:text-foreground"
+                      aria-label={`View / Download ${labelForArtifactType(art.artifact_type)} · ${validationArtifactContext(art, assessmentDisplays) ?? "Run artifact"} · artifact ${art.id}`}
                     >
                       View / Download
                     </a>

@@ -242,7 +242,7 @@ export function ProjectComparisonStarter({
       {runtimeNotice ? <p className="mt-3 text-sm text-amber-800 dark:text-amber-200" role="status">{runtimeNotice}</p> : null}
       {populationSummary ? (
         <p className="mt-2 text-sm text-muted-foreground" data-testid="comparison-population-summary">
-          Retained population: {populationSummary.households.toLocaleString()} households and {populationSummary.persons.toLocaleString()} household residents.
+          Retained population: {populationSummary.households.toLocaleString("en-US")} households and {populationSummary.persons.toLocaleString("en-US")} household residents.
           Source run {populationSummary.sourceRunId}. Group quarters remain excluded and unassessed.
         </p>
       ) : null}

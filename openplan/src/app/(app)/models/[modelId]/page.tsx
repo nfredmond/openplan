@@ -805,6 +805,7 @@ export default async function ModelDetailPage({
       label: "Runs",
       // `#run-model` is where the project comparison starter sends a planner.
       anchors: ["run-model"],
+      anchorPrefixes: ["model-run-"],
       unreadable: unreadableLanes([
         ["this model's runs", modelRunsUnreadable],
         ["transit feeds", transitFeedsUnreadable || transitVersionsUnreadable],
