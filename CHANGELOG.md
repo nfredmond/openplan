@@ -20,11 +20,18 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Engagement text inspection:** staff can inspect hidden formatting characters in
+comments, restricted history, survey answers and saved synthesis sources. The
+optional view shows counts, code points and escaped text while preserving the
+readable contribution. It does not change moderation or infer intent. No
+migration is required.
+
 **Source-page plan proposals:** Document review can stage quoted records from a
 retained page without an AI account. Pending proposals have their own pages,
 separate from reading history. Manual chapter copies retain source authorship;
 review and saving remain explicit. Apply
 `20261019000002_rtp_manual_source_page_proposals.sql` before deploying this capability.
+
 **Linked estimate sources:** the project estimate editor opens its exact saved
 supporting document, including one older than the recent-document list. Read
 failures, unavailable originals and missing price years stay visible. The link

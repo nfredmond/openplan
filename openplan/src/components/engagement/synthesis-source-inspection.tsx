@@ -3,6 +3,7 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { SynthesisSourceSnapshot } from "@/lib/engagement/synthesis-sources";
 import { prepareSynthesisSource, type SynthesisPreparationGroup } from "@/lib/engagement/synthesis-preparation";
+import { EngagementTextInspection } from "./engagement-text-inspection";
 
 const contextLabels = {
   retained: "Historical definition retained", uncategorized: "Uncategorized",
@@ -65,8 +66,9 @@ export function SynthesisSourceInspection({ snapshot, sha256 }: { snapshot: Synt
     <div className="flex flex-wrap gap-3"><Button type="button" variant="outline" disabled={page === 0} onClick={() => setPage(page - 1)}>Previous source page</Button><Button type="button" variant="outline" disabled={(page + 1) * 25 >= filtered.length} onClick={() => setPage(page + 1)}>Next source page</Button></div>
     {filtered.slice(page * 25, (page + 1) * 25).map(row => <article key={row.id} className="rounded border p-3 space-y-2">
       <h4 className="font-semibold break-words">{row.kind}: {row.title ?? row.label}</h4><p className="text-xs break-words">{row.label} · {row.status} · {row.createdAt}</p>
-      <p className="whitespace-pre-wrap break-words">{row.text}</p>
-      <details><summary>Exact retained fields</summary><pre className="whitespace-pre-wrap break-all text-xs">{JSON.stringify(row.retained, null, 2)}</pre></details>
+      {row.title !== null ? <EngagementTextInspection text={row.title} label="Retained title or question" /> : null}
+      <EngagementTextInspection text={row.text} label="Retained contribution text" />
+      <details><summary>Exact retained fields</summary><p className="text-xs">JSON escapes some controls. Inspection counts describe this representation.</p><EngagementTextInspection text={JSON.stringify(row.retained, null, 2)} label="Retained fields, JSON representation" /></details>
     </article>)}
     <p className="text-xs">The retained fields include original typed values and mapped locations when available. Attachment contents and spatial interpretation are not assessed by this inspection.</p>
   </article>;
