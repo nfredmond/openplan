@@ -121,6 +121,52 @@ import {awardTermsFixture} from './fixtures/grants/award-handoff';
    PERFORM pg_temp.assert_handoff(NOT has_function_privilege(current_user,'public.award_handoff_command(uuid,uuid,text,jsonb,text,jsonb)','EXECUTE'),'Authenticated service RPC executable');
    PERFORM pg_temp.assert_handoff(NOT has_table_privilege(current_user,'public.funding_award_handoff_revisions','INSERT'),'Authenticated direct revision INSERT allowed');
   END $$;`));
+ // Prepared, UNEXECUTED successor cases. Run only later on an explicitly isolated stack.
+ it.each(['delayed','not_started','active',null])('persists managed reopen destination %s and keeps the prior closure receipt exact',(target)=>exercise(`
+  DO $$ DECLARE p jsonb:=pg_temp.handoff_preview(); r jsonb; closed jsonb; reopened jsonb; old_receipt jsonb; target text:=${target === null ? 'NULL' : `'${target}'`}; BEGIN
+   r:=pg_temp.handoff_apply(p);
+   INSERT INTO public.billing_invoice_records(workspace_id,project_id,funding_award_id,invoice_number,status,amount,retention_amount,net_amount,award_handoff_revision_id,currency_code)
+   SELECT w,'__PROJECT__','__AWARD__','Synthetic exact paid coverage','paid',100.01,0,100.01,(r->>'revisionId')::uuid,'USD' FROM handoff_fixture;
+   closed:=public.managed_award_closeout('__ACTOR__','__AWARD__',(r->>'revisionId')::uuid,'earned_coverage','Synthetic reviewed paid coverage');
+   PERFORM pg_temp.assert_handoff(closed->>'status'='closed' AND closed->>'paid'='100.01','Exact earned coverage changed');
+   SELECT to_jsonb(c) INTO STRICT old_receipt FROM public.funding_award_closure_receipts c WHERE id=(closed->>'closureReceiptId')::uuid;
+   reopened:=${target === null ? "public.managed_award_closeout('__ACTOR__','__AWARD__',(r->>'revisionId')::uuid,'reopen','Synthetic source requires reopening')" : "public.managed_award_closeout('__ACTOR__','__AWARD__',(r->>'revisionId')::uuid,'reopen','Synthetic source requires reopening',target)"};
+   PERFORM pg_temp.assert_handoff((SELECT spending_status=coalesce(target,'active') AND closure_basis IS NULL AND closed_at IS NULL AND closed_by IS NULL AND closure_note IS NULL AND reopened_at IS NOT NULL AND reopened_by='__ACTOR__' AND reopen_reason='Synthetic source requires reopening' AND current_handoff_revision_id=(r->>'revisionId')::uuid AND latest_handoff_revision_id=(r->>'revisionId')::uuid AND awarded_amount=100.01 AND match_amount=0 AND currency_code='USD' FROM public.funding_awards WHERE id='__AWARD__'),'Selected reopen destination or award identity changed');
+   PERFORM pg_temp.assert_handoff(reopened->>'status'='reopened' AND reopened->>'spendingStatus'=coalesce(target,'active'),'Response lost selected reopen destination');
+   PERFORM pg_temp.assert_handoff((SELECT event='reopen' AND revision_id=(r->>'revisionId')::uuid AND actor_id='__ACTOR__' AND basis->>'reopenSpendingStatus'=coalesce(target,'active') AND basis->>'note'='Synthetic source requires reopening' AND basis->'previousClosure'->>'basis'='earned_coverage' FROM public.funding_award_closure_receipts WHERE id=(reopened->>'closureReceiptId')::uuid),'Receipt lost selected destination, actor, reason or original closure');
+   PERFORM pg_temp.assert_handoff((SELECT to_jsonb(c)=old_receipt FROM public.funding_award_closure_receipts c WHERE id=(closed->>'closureReceiptId')::uuid),'Reopen rewrote historical closure receipt');
+   BEGIN PERFORM public.managed_award_closeout('__ACTOR__','__AWARD__',(r->>'revisionId')::uuid,'reopen','Synthetic second reopen','delayed');RAISE EXCEPTION 'Open award reopened again';EXCEPTION WHEN invalid_parameter_value THEN NULL;END;
+   PERFORM pg_temp.assert_handoff((SELECT count(*)=2 FROM public.funding_award_closure_receipts WHERE award_id='__AWARD__'),'Reopen duplicated or erased receipt history');
+   PERFORM pg_temp.assert_handoff((SELECT count(*)=1 FROM public.project_milestones WHERE funding_award_id='__AWARD__' AND milestone_type='closeout' AND status='complete'),'Reopen erased or recreated earned closeout milestone');
+   PERFORM pg_temp.assert_handoff(pg_temp.handoff_apply(p)=r,'Reopen changed exact committed handoff replay');
+  END $$;`));
+ it('refuses invalid reopen destinations, stale revisions and denied actors without writing state or receipts',()=>exercise(`
+  DO $$ DECLARE r jsonb:=pg_temp.handoff_apply(pg_temp.handoff_preview()); target text; before_award jsonb; before_receipts jsonb; BEGIN
+   INSERT INTO public.billing_invoice_records(workspace_id,project_id,funding_award_id,invoice_number,status,amount,retention_amount,net_amount,award_handoff_revision_id,currency_code)
+   SELECT w,'__PROJECT__','__AWARD__','Synthetic exact paid coverage','paid',100.01,0,100.01,(r->>'revisionId')::uuid,'USD' FROM handoff_fixture;
+   PERFORM public.managed_award_closeout('__ACTOR__','__AWARD__',(r->>'revisionId')::uuid,'earned_coverage',NULL,NULL);
+   SELECT to_jsonb(a) INTO STRICT before_award FROM public.funding_awards a WHERE id='__AWARD__';
+   SELECT jsonb_agg(to_jsonb(c) ORDER BY id) INTO before_receipts FROM public.funding_award_closure_receipts c WHERE award_id='__AWARD__';
+   FOREACH target IN ARRAY ARRAY['fully_spent','unknown','',' active'] LOOP
+    BEGIN PERFORM public.managed_award_closeout('__ACTOR__','__AWARD__',(r->>'revisionId')::uuid,'reopen','Synthetic reason',target);RAISE EXCEPTION 'Invalid destination accepted: %',target;EXCEPTION WHEN invalid_parameter_value THEN NULL;END;
+   END LOOP;
+   BEGIN PERFORM public.managed_award_closeout('__ACTOR__','__AWARD__',(r->>'revisionId')::uuid,'earned_coverage',NULL,'delayed');RAISE EXCEPTION 'Reopen target accepted for earned closure';EXCEPTION WHEN invalid_parameter_value THEN NULL;END;
+   BEGIN PERFORM public.managed_award_closeout('__ACTOR__','__AWARD__',gen_random_uuid(),'reopen','Synthetic reason','delayed');RAISE EXCEPTION 'Stale reopen accepted';EXCEPTION WHEN SQLSTATE 'PT409' THEN NULL;END;
+   BEGIN PERFORM public.managed_award_closeout('__VIEWER__','__AWARD__',(r->>'revisionId')::uuid,'reopen','Synthetic reason','delayed');RAISE EXCEPTION 'Viewer reopen accepted';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+   BEGIN PERFORM public.managed_award_closeout(NULL,'__AWARD__',(r->>'revisionId')::uuid,'reopen','Synthetic reason','delayed');RAISE EXCEPTION 'Unbound actor reopen accepted';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+   BEGIN PERFORM public.managed_award_closeout('__ACTOR__','__AWARD__',(r->>'revisionId')::uuid,'reopen','  ','delayed');RAISE EXCEPTION 'Unreasoned reopen accepted';EXCEPTION WHEN invalid_parameter_value THEN NULL;END;
+   PERFORM pg_temp.assert_handoff((SELECT to_jsonb(a)=before_award FROM public.funding_awards a WHERE id='__AWARD__'),'Refused request changed award');
+   PERFORM pg_temp.assert_handoff((SELECT jsonb_agg(to_jsonb(c) ORDER BY id)=before_receipts FROM public.funding_award_closure_receipts c WHERE award_id='__AWARD__'),'Refused request changed receipt history');
+  END $$;
+  RESET ROLE;SET LOCAL ROLE authenticated;
+  DO $$ DECLARE signature text; BEGIN
+   FOREACH signature IN ARRAY ARRAY['public.managed_award_closeout(uuid,uuid,uuid,text,text)','public.managed_award_closeout(uuid,uuid,uuid,text,text,text)'] LOOP
+    PERFORM pg_temp.assert_handoff(NOT has_function_privilege(current_user,signature,'EXECUTE'),'Authenticated managed closeout executable');
+    PERFORM pg_temp.assert_handoff(NOT has_function_privilege('anon',signature,'EXECUTE'),'Anonymous managed closeout executable');
+    PERFORM pg_temp.assert_handoff(has_function_privilege('service_role',signature,'EXECUTE'),'Service managed closeout missing');
+   END LOOP;
+   BEGIN PERFORM public.managed_award_closeout('__ACTOR__','__AWARD__',NULL,'reopen','Synthetic reason','delayed');RAISE EXCEPTION 'Authenticated RPC executed';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+  END $$;`));
  it('keeps bound invoice identity through null, currency-clear and reparent attempts',()=>exercise(`
   DO $$ DECLARE r jsonb:=pg_temp.handoff_apply(pg_temp.handoff_preview()); invoice uuid:=gen_random_uuid(); other uuid:=gen_random_uuid(); BEGIN
    INSERT INTO public.funding_awards(id,workspace_id,project_id,title) SELECT other,w,'__PROJECT__','Synthetic unmanaged destination' FROM handoff_fixture;

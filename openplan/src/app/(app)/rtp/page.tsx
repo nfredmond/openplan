@@ -355,15 +355,23 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
       : Promise.resolve({ data: [], error: null }),
   ]);
 
-  classifyRead(reads, "funding records for the linked projects", fundingProfilesResult);
-  classifyRead(reads, "committed awards for the linked projects", fundingAwardsResult);
-  classifyRead(reads, "pursued funding for the linked projects", fundingOpportunitiesResult);
-  classifyRead(reads, "reimbursement invoices for the linked projects", billingInvoicesResult);
+  const fundingStates = [
+    classifyRead(reads, "funding records for the linked projects", fundingProfilesResult),
+    classifyRead(reads, "committed awards for the linked projects", fundingAwardsResult),
+    classifyRead(reads, "pursued funding for the linked projects", fundingOpportunitiesResult),
+    classifyRead(reads, "reimbursement invoices for the linked projects", billingInvoicesResult),
+  ];
+  const fundingSchemaPending = fundingStates.includes("pending_schema");
   classifyRead(reads, "reports for the linked projects", linkedProjectReportsResult);
   const fundingProfiles = fundingProfilesResult.error
     ? []
     : ((fundingProfilesResult.data ?? []) as ProjectFundingProfileRow[]);
-  if(linkedProjectIds.length) assertCompleteFundingRead(fundingAwardsResult,fundingOpportunitiesResult,billingInvoicesResult);
+  // Failed reads keep their disclosure; successful reads still require complete source sets.
+  if (linkedProjectIds.length) {
+    assertCompleteFundingRead(
+      ...[fundingAwardsResult, fundingOpportunitiesResult, billingInvoicesResult].filter((result) => !result.error)
+    );
+  }
   const fundingAwards = fundingAwardsResult.error
     ? []
     : ((fundingAwardsResult.data ?? []) as FundingAwardRow[]);
@@ -846,6 +854,14 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
               </ul>
             </OperatorDetail>
           }
+        />
+      ) : null}
+
+      {fundingSchemaPending ? (
+        <StateBlock
+          tone="warning"
+          title="Funding records are not available yet"
+          description="Part of the linked-project funding record is pending a database update. Funding counts and dollar totals below use only what did load. A zero or an empty list is not a finding about this workspace."
         />
       ) : null}
 

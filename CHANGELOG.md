@@ -32,6 +32,16 @@ The additive corrections separate PL/pgSQL variables from query aliases. Twelve
 isolated transaction and parent-DELETE contention cases pass. The visible workflow
 and hosted award rollout remain pending.
 
+**Managed award reopen correction:** apply
+`20261019101500_managed_award_reopen_status.sql` after the three award migrations
+above, and refresh the API schema cache before deploying the new caller. It
+retains the selected not-started, active or delayed destination in the award,
+receipt and response. Existing five-argument callers keep the active default.
+Earlier native cases do not cover this new overload. RTP pages retain loaded
+cycle data when funding reads fail. The cycle detail withholds dependent funding
+figures; the registry identifies partial totals. Successful incomplete funding
+reads still refuse.
+
 ## 0.69.0 (2026-10-19)
 
 **Development release candidate, prepared for final release checks.** This

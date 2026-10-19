@@ -322,7 +322,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       if (payload.spendingStatus === FUNDING_AWARD_CLOSED_SPENDING_STATUS || payload.reopen) {
         if(readAssistantExecutionSource(request)!=="manual") return NextResponse.json({error:"Managed award closeout/reopen has no approved agent action."},{status:403});
         if(FIELD_EDIT_KEYS.some((key)=>payload[key]!==undefined)) return NextResponse.json({error:"Closeout/reopen is a separate operation from field edits."},{status:422});
-        return managedCloseout({actorId:user.id,awardId:award.id,expectedRevisionId:payload.expectedCurrentRevisionId,event:payload.reopen?"reopen":"earned_coverage",note:payload.reopen?.reason ?? payload.closeoutNote ?? null});
+        return managedCloseout({actorId:user.id,awardId:award.id,expectedRevisionId:payload.expectedCurrentRevisionId,event:payload.reopen?"reopen":"earned_coverage",note:payload.reopen?.reason ?? payload.closeoutNote ?? null,reopenSpendingStatus:payload.reopen?.spendingStatus});
       }
       if ([payload.awardedAmount,payload.matchAmount,payload.obligationDueAt,payload.expenditureDeadlineAt].some((v)=>v!==undefined)) return NextResponse.json({error:"Revise the award handoff to change source-controlled money or deadlines.",href:`/grants/award-conditions?awardId=${award.id}`},{status:422});
     }

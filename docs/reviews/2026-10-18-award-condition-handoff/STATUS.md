@@ -125,3 +125,20 @@ award revision is saved. Page console/error capture is empty; full network
 cleanliness is unassessed. Both owned services stop normally. The new checks,
 build, browser and full independent report remain private. Hosted rollout and
 new-head CI still remain.
+
+October 19 selected-state correction, SOURCE ONLY: the managed award PATCH now
+passes the explicit reopen destination through the server helper. Additive
+migration `20261019101500_managed_award_reopen_status` adds a guarded destination
+argument, persists that state and records it in the new receipt and response.
+The five-argument entry delegates with the existing active default. The original
+three award migrations, historical receipts, money/access checks and parent
+DELETE entries remain unchanged. The new migration is unapplied here; hosted
+award rollout remains pending. Route/helper tests and isolated native fixture
+successors are prepared and UNEXECUTED. No test, compiler, lock, install, DB,
+service or browser operation runs for this correction. Prior receipts retain
+their exact candidates and limits. Fresh independent review and root-owned
+ordinary/native validation remain pending; B4/M13e and full v1 remain open.
+
+Root ordinary checks on October 19: all 149 route/helper/RTP page tests pass, including the real Projects display unavailable-state cases. A harmless change survives; status forwarding, default, validation, projection, pending-label/notice, Projects row/summary and successful-read completeness faults fail for their intended assertions. Source bytes and modes restore. Earlier reader windows remain failed on abbreviated object output and quoted parameter selection; the remaining checks finish with parent 0 in 36.127 seconds and scoped lint 0. Independent financial/access source review accepts the selected-status delta. The revised RTP Projects display awaits its fresh review. The new migration and actual role/cache/transaction behavior remain unexecuted locally, and new-build/browser acceptance plus current CI remain separate. Raw records stay private.
+
+The subsequent independent RTP round 2 source review accepts the exact four-file display correction and closes its Projects-tab objection at source level. The original request-changes report remains preserved. This adds no database or browser evidence.

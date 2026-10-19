@@ -4,11 +4,14 @@ import { NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { AWARD_HANDOFF_MIGRATION } from "./award-handoff";
+import { FUNDING_AWARD_OPEN_SPENDING_STATUS_OPTIONS } from "@/lib/programs/catalog";
 
-export function handoffFailure(error: { code?: string; message: string }) {
+export const MANAGED_AWARD_CLOSEOUT_MIGRATION = "20261019101500_managed_award_reopen_status";
+
+export function handoffFailure(error: { code?: string; message: string }, migration = AWARD_HANDOFF_MIGRATION) {
   const missing = looksLikePendingSchema(error.message);
   const status = missing ? 503 : ["PT409", "40001"].includes(error.code ?? "") ? 409 : error.code === "42501" ? 403 : ["22023", "23514", "23503", "22P02", "22007", "22008"].includes(error.code ?? "") ? 422 : 500;
-  return NextResponse.json({ error: missing ? `Award handoff requires migration ${AWARD_HANDOFF_MIGRATION}.` : status === 500 ? "Award handoff failed. Retain and retry the exact reviewed request after a lost response." : error.message }, { status });
+  return NextResponse.json({ error: missing ? `Award handoff requires migration ${migration}.` : status === 500 ? "Award handoff failed. Retain and retry the exact reviewed request after a lost response." : error.message }, { status });
 }
 
 type VerifiedSource = { id: string; checksum: string; byteSize: number; objectIdentity: unknown };
@@ -31,9 +34,10 @@ export async function verifyHandoffBytes(reviewed: Record<string, unknown>): Pro
   return verified;
 }
 
-export async function managedCloseout(input: { actorId: string; awardId: string; expectedRevisionId: string | null | undefined; event: "earned_coverage" | "reopen"; note: string | null }) {
+export async function managedCloseout(input: { actorId: string; awardId: string; expectedRevisionId: string | null | undefined; event: "earned_coverage" | "reopen"; note: string | null; reopenSpendingStatus?: string }) {
   if (!input.expectedRevisionId && input.event!=="reopen") return NextResponse.json({ error: "Review current award conditions and supply expectedCurrentRevisionId." }, { status: 409 });
-  const result = await createServiceRoleClient().rpc("managed_award_closeout", { p_actor: input.actorId, p_award: input.awardId, p_expected: input.expectedRevisionId ?? null, p_event: input.event, p_note: input.note });
-  if (result.error) return handoffFailure(result.error);
+  if (input.reopenSpendingStatus !== undefined && (input.event !== "reopen" || !FUNDING_AWARD_OPEN_SPENDING_STATUS_OPTIONS.some((option) => option.value === input.reopenSpendingStatus))) return NextResponse.json({ error: "Reopen destination must be not_started, active or delayed and belongs only to reopen." }, { status: 422 });
+  const result = await createServiceRoleClient().rpc("managed_award_closeout", { p_actor: input.actorId, p_award: input.awardId, p_expected: input.expectedRevisionId ?? null, p_event: input.event, p_note: input.note, p_reopen_spending_status: input.reopenSpendingStatus ?? null });
+  if (result.error) return handoffFailure(result.error, MANAGED_AWARD_CLOSEOUT_MIGRATION);
   return NextResponse.json(result.data);
 }
