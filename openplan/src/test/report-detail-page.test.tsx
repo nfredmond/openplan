@@ -3,6 +3,7 @@ import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readines
 import { PROJECT_JURISDICTION_COLUMNS } from "@/lib/projects/project-jurisdiction";
 import { cleanup, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+vi.mock("server-only", () => ({}));
 
 const createClientMock = vi.fn();
 const notFoundMock = vi.fn(() => {

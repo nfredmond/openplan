@@ -1,4 +1,6 @@
 import { reportJurisdictionState } from "@/lib/reports/jurisdiction-freshness";
+import { objectRecord, readGuidedComparisonSelection, type GuidedComparisonSelectionV1 } from "@/lib/reports/guided-comparison";
+import { verifyGuidedComparisonReport } from "@/lib/reports/guided-comparison-server";
 import { getReportPacketFreshness } from "@/lib/reports/catalog";
 import { artifactGenerationWritebackIsCurrent } from "@/lib/reports/report-registry-freshness";
 import { notFound, redirect } from "next/navigation";
@@ -85,6 +87,7 @@ import type {
 } from "./_components/_types";
 import { buildFundingPostureDriftItem } from "./_components/_funding-drift";
 import { buildEngagementDriftItem } from "./_components/_engagement-drift";
+import { buildStageGateDriftItem, describeStageGateReadFailure } from "./_components/_stage-gate-drift";
 import { buildArtifactSafetyReadDriftItem, buildProjectSafetyDriftItem, describeSafetyEvidenceReadFailure, loadLatestProjectSafetyIngest, type ReportSafetyFreshnessSupabaseLike } from "./_components/_safety-drift";
 import {
   checkLiveScenarioSpineReads,
@@ -375,6 +378,22 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
   const typedRunCitations = buildTypedRunCitations(reportRunLinks, citedModelRuns, citedCountyRuns);
   const citedModelRunIdsInOrder = typedRunCitations.filter((citation) => citation.kind === "model").map((citation) => citation.runId);
   const agreementPanel = project ? await loadReportDualDemandAgreementPanel({ supabase, modelRunIds: citedModelRunIdsInOrder, workspaceId: report.workspace_id, projectId: project.id, reportMetadata: report.metadata_json }) : { evidence: [], selections: [] };
+  let guidedSelection: GuidedComparisonSelectionV1 | null = null;
+  let guidedProblem: string | null = null;
+  try {
+    guidedSelection = readGuidedComparisonSelection(report.metadata_json);
+    if (guidedSelection && project) await verifyGuidedComparisonReport({ client: supabase,
+      workspaceId: report.workspace_id, projectId: project.id, reportType: report.report_type,
+      snapshotId: guidedSelection.snapshotId, saved: guidedSelection });
+    else if (guidedSelection) throw new Error("The selected comparison has no project target.");
+  } catch (error) {
+    guidedProblem = error instanceof Error ? error.message : "The selected comparison could not be verified.";
+  }
+  const guidedPanel = project && report.report_type === "analysis_summary" ? {
+    projectId: project.id, snapshotId: guidedSelection?.snapshotId ?? null,
+    bindingSha256: guidedSelection?.bindingSha256 ?? null, problem: guidedProblem,
+    includedRunIds: guidedSelection?.payload.sources.map((source) => source.runId) ?? [],
+  } : undefined;
   const aerialOrthoCatalog = project ? await loadReportAerialOrthoCatalog({ supabase, workspaceId: report.workspace_id, projectId: project.id }) : { state: "absent" as const, layers: [], notes: [] };
   const safetyIngestOptionsResult = project
     ? await loadReportSafetyIngestOptions(supabase, report.workspace_id, project.id)
@@ -978,12 +997,8 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
   // An unreadable live board is not the same as no gate board (`null` above). The workspace binding may be unresolved, or
   // the decision log may fail. The drift check below withholds its verdict, so
   // an outage cannot be read here as "nothing changed".
-  const stageGateLiveReadFailure =
-    stageGateSnapshot && report.project_id && stageGateBindingUnavailableReason
-      ? stageGateBindingUnavailableReason
-      : currentStageGateSummary && !currentStageGateSummary.decisionsRead.readable
-        ? currentStageGateSummary.decisionsRead.reason
-        : null;
+  const stageGateLiveReadFailure = describeStageGateReadFailure(
+    stageGateSnapshot, report.project_id, stageGateBindingUnavailableReason, currentStageGateSummary);
   const currentProjectRecordsByKey = new Map<ProjectRecordSnapshotKey, CurrentProjectRecordEntry>([
     [
       "deliverables",
@@ -1045,6 +1060,12 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
     sourceContext ? evidenceChainSummary : null
   );
   const driftItems: DriftItem[] = [];
+  const frozenGuided = objectRecord(latestArtifact?.metadata_json?.guidedComparisonSelectionV1);
+  if (guidedSelection || frozenGuided || guidedProblem) driftItems.push({ key: "guided_comparison", label: "Selected guided comparison",
+    status: guidedProblem || frozenGuided?.bindingSha256 !== guidedSelection?.bindingSha256 ? "updated" : "unchanged",
+    detail: guidedProblem ?? (frozenGuided?.bindingSha256 !== guidedSelection?.bindingSha256
+      ? "The saved report selection differs from the retained artifact. Historical downloads keep their original comparison."
+      : "The selected four outputs, KPI receipts, assumptions, population and artifact bytes match the saved binding.") });
 
   const packetGeneratedAt = latestArtifact?.generated_at ?? report.generated_at;
   const artifactSafetyDriftItem = buildArtifactSafetyReadDriftItem(latestArtifact?.metadata_json);
@@ -1187,43 +1208,8 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
     driftItems.push(fundingPostureDrift);
   }
 
-  // No drift row when the live log did not load, and deliberately none: a drift
-  // row is a COMPARISON, and every status one could carry ("unchanged", "count
-  // changed") would state something about the live board that nothing here
-  // established. The counts on an unreadable board are zero because they are
-  // unknown, so comparing them would have reported an outage as gates lost
-  // since generation. The gap is named in the packet-freshness line instead.
-  if (stageGateSnapshot && currentStageGateSummary && !stageGateLiveReadFailure) {
-    const snapshotBlockedGateId = stageGateSnapshot.blockedGate?.gateId ?? null;
-    const currentBlockedGateId = currentStageGateSummary.blockedGate?.gateId ?? null;
-    const snapshotNextGateId = stageGateSnapshot.nextGate?.gateId ?? null;
-    const currentNextGateId = currentStageGateSummary.nextGate?.gateId ?? null;
-    const countsChanged =
-      stageGateSnapshot.passCount !== currentStageGateSummary.passCount ||
-      stageGateSnapshot.holdCount !== currentStageGateSummary.holdCount ||
-      stageGateSnapshot.notStartedCount !== currentStageGateSummary.notStartedCount;
-    const gatesChanged =
-      snapshotBlockedGateId !== currentBlockedGateId ||
-      snapshotNextGateId !== currentNextGateId;
-
-    driftItems.push({
-      key: "stage-gates",
-      label: "Stage gates",
-      status: gatesChanged
-        ? "gate changed"
-        : countsChanged
-          ? "count changed"
-          : "unchanged",
-      detail: gatesChanged
-        ? `Blocked ${snapshotBlockedGateId ?? "none"} -> ${currentBlockedGateId ?? "none"}. Next ${snapshotNextGateId ?? "complete"} -> ${currentNextGateId ?? "complete"}.`
-        : countsChanged
-          // "no decision recorded", not "not started": the third count is the
-          // gates whose verdict is unrecorded, and the gate itself may be well
-          // under way. The board says it that way and this line must match.
-          ? `Snapshot ${stageGateSnapshot.passCount} pass / ${stageGateSnapshot.holdCount} hold / ${stageGateSnapshot.notStartedCount} with no decision recorded. Live ${currentStageGateSummary.passCount} pass / ${currentStageGateSummary.holdCount} hold / ${currentStageGateSummary.notStartedCount} with no decision recorded.`
-          : "Review counts and next steps still match the saved report snapshot.",
-    });
-  }
+  const stageGateDrift = buildStageGateDriftItem(stageGateSnapshot, currentStageGateSummary, Boolean(stageGateLiveReadFailure));
+  if (stageGateDrift) driftItems.push(stageGateDrift);
 
   const driftedItems = driftItems.filter((item) => item.status !== "unchanged");
   // "Refresh recommended" is a RECOMMENDATION, not a claim that anything moved,
@@ -1276,6 +1262,7 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
     sourceContext,
     driftedSourceCount: driftedItems.length,
     comparisonAggregate: currentReportComparisonAggregate,
+    guidedComparison: guidedPanel ? { selected: Boolean(guidedSelection), problem: guidedProblem } : undefined,
     fundingSnapshot,
     datasetOutputContexts,
     // Refresh-log rows are operator-recorded, never executed by OpenPlan; a
@@ -1288,6 +1275,7 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
     <>
     <PlanningContextStripForProject requestedProjectId={query.projectId} project={project} error={projectResult.error} className="mb-4" /><ReportReadFailureDisclosure reads={reads} />
     <ReportStandardDetail
+      guidedComparison={guidedPanel}
       searchParams={query}
       unreadableByTab={buildReportUnreadableByTab({ artifactsUnreadable, sectionsUnreadable, projectRecordsUnreadable: projectRecordReadFailures.size > 0, stageGatesUnreadable: Boolean(stageGateLiveReadFailure), crashEvidenceUnreadable: Boolean(safetyEvidenceLiveReadFailure) })}
       report={report}

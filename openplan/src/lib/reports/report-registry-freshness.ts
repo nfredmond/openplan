@@ -1,6 +1,7 @@
 import { getReportPacketFreshness, resolveReportPacketSourceUpdatedAt, type ReportJurisdictionState } from "./catalog";
 import { PACKET_FRESHNESS_LABELS } from "./packet-labels";
 import type { ReportDriftSummary } from "./source-review-posture";
+import { guidedReportCanonicalJson, readGuidedComparisonSelection } from "./guided-comparison";
 
 function asRecord(value: unknown): Record<string, unknown> | null {
   return value && typeof value === "object" && !Array.isArray(value)
@@ -103,11 +104,25 @@ export function resolveTrackedReportSourceUpdatedAt(input: {
 
 /** Shared row adapter keeps overview and registry writeback handling consistent. */
 export function resolveReportPacketRowFreshness(
-  report: { latest_artifact_kind: string | null; generated_at: string | null; updated_at: string },
+  report: { latest_artifact_kind: string | null; generated_at: string | null; updated_at: string; metadata_json?: Record<string, unknown> | null },
   artifact: { generated_at: string; metadata_json: Record<string, unknown> | null } | null | undefined,
   jurisdictionState?: ReportJurisdictionState,
 ) {
   const generatedAt = artifact?.generated_at ?? report.generated_at;
+  if (generatedAt && report.metadata_json !== undefined) {
+    try {
+      readGuidedComparisonSelection(report.metadata_json);
+      readGuidedComparisonSelection(artifact?.metadata_json);
+    } catch {
+      return { label: PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED, tone: "warning" as const,
+        detail: "A saved guided comparison binding is unavailable or unsupported. Reopen the report to review it. Historical files remain available." };
+    }
+  }
+  if (generatedAt && report.metadata_json !== undefined && guidedReportCanonicalJson(report.metadata_json?.guidedComparisonSelectionV1 ?? null) !==
+      guidedReportCanonicalJson(artifact?.metadata_json?.guidedComparisonSelectionV1 ?? null)) {
+    return { label: PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED, tone: "warning" as const,
+      detail: "The saved guided comparison differs from the retained artifact. Reopen the report to verify current evidence before generating again. Historical files keep their original comparison." };
+  }
   const writebackCurrent = artifactGenerationWritebackIsCurrent(artifact?.metadata_json, report.updated_at);
   return getReportPacketFreshness({ latestArtifactKind: report.latest_artifact_kind, generatedAt,
     generationWritebackCurrent: writebackCurrent, jurisdictionState,

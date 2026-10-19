@@ -74,6 +74,7 @@ const REPORT_HEADER_ANCHORS = [
 ] as const;
 
 type ReportStandardDetailProps = {
+  guidedComparison?: ComponentProps<typeof ReportDetailControls>["guidedComparison"];
   /**
    * The page's query string. The active tab is read out of it here rather than
    * passed separately, so there is exactly one place that decides which tab a
@@ -123,6 +124,7 @@ type ReportStandardDetailProps = {
 };
 
 export function ReportStandardDetail({
+  guidedComparison,
   searchParams,
   unreadableByTab,
   report,
@@ -283,6 +285,7 @@ export function ReportStandardDetail({
           fundingSummary={fundingSummaryDigest}
           modelRunOptions={citeableModelRuns}
           citedModelRunIds={citedModelRunIds}
+          guidedComparison={guidedComparison}
           agreementEvidence={agreementEvidence}
           agreementCorridorSelections={agreementCorridorSelections}
           aerialOrthoCatalog={aerialOrthoCatalog}

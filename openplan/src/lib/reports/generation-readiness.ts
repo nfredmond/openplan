@@ -242,6 +242,7 @@ export function buildReportGenerationReadiness(input: {
   sourceContext: Record<string, unknown> | null;
   driftedSourceCount: number;
   comparisonAggregate?: ReportComparisonSnapshotAggregate | null;
+  guidedComparison?: { selected: boolean; problem: string | null };
   fundingSnapshot?: ReportFundingSnapshot | null;
   datasetOutputContexts?: DatasetDependentOutputContext[];
   /**
@@ -306,7 +307,16 @@ export function buildReportGenerationReadiness(input: {
 
   const checks = [
     sourceContextCheck,
-    comparisonContextCheck(input.comparisonAggregate),
+    input.guidedComparison?.problem ? {
+      id: "comparison_context" as const, label: "Selected guided comparison", status: "blocked" as const,
+      statusLabel: "Selected evidence cannot be verified", detail: input.guidedComparison.problem,
+      nextAction: "Review and save the exact comparison again, or clear the selection. Historical artifacts remain available.",
+    } : input.guidedComparison?.selected ? {
+      id: "comparison_context" as const, label: "Selected guided comparison", status: "ready" as const,
+      statusLabel: "Exact four-output selection verified",
+      detail: "The selected snapshot supplies separate worker outputs. Analysis Studio attachments are not required for this comparison.",
+      nextAction: "Generate after reviewing the retained assumptions and scientific caveats.",
+    } : comparisonContextCheck(input.comparisonAggregate),
     fundingCheck(fundingProfileScan, fundingSnapshotIncomplete),
     dataLineageCheck(dataLineageSummary, input.refreshLogNote ?? null),
   ];
