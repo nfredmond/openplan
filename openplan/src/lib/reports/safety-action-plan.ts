@@ -16,6 +16,7 @@ import {
   describeHighInjuryNetworkCoverage,
   describeHighInjuryNetworkMethod,
   describeHighInjuryNetworkUnavailable,
+  describeHighInjuryNetworkYears,
   highInjuryNetworkMeasureLabel,
   type HighInjuryNetwork,
 } from "@/lib/safety/high-injury-network";
@@ -204,12 +205,6 @@ export type SafetyActionPlanSectionDraft = {
   draftNotice: string;
 };
 
-function yearsText(years: readonly number[]): string {
-  if (years.length === 0) return "Years not recorded";
-  const sorted = [...years].sort((a, b) => a - b);
-  return sorted.length === 1 ? String(sorted[0]) : `${sorted[0]}–${sorted[sorted.length - 1]}`;
-}
-
 /**
  * Build the draft section. `evidence` null means the crash summary could not be
  * read; `network` undefined means it was not computed for this packet. Both
@@ -260,8 +255,8 @@ export function buildSafetyActionPlanSection(input: {
       measureLabel: highInjuryNetworkMeasureLabel(network.basis, network.method),
       method: describeHighInjuryNetworkMethod(network.method, network.parameters),
       coverage: describeHighInjuryNetworkCoverage(network),
-      years: yearsText(network.years),
-      sourceLine: `Source: ${sourceLabel}, ${yearsText(network.years)}.${roads}`,
+      years: describeHighInjuryNetworkYears(network.years),
+      sourceLine: `Source: ${sourceLabel}. ${describeHighInjuryNetworkYears(network.years)}.${roads}`,
       rows: network.segments.map((segment) => ({
         rank: segment.rank,
         tied: segment.tied,
