@@ -30,7 +30,7 @@ BEGIN
   IF NOT FOUND OR (SELECT pg_catalog.count(*) FROM public.scenario_comparison_model_run_links link
       WHERE link.comparison_snapshot_id = p_snapshot AND link.model_run_id = r.id) <> 1
     OR method NOT IN ('aequilibrae','activitysim')
-    OR r.engine_key IS DISTINCT FROM CASE method WHEN 'aequilibrae' THEN 'aequilibrae' ELSE 'behavioral_demand' END THEN
+    OR r.engine_key IS DISTINCT FROM (CASE method WHEN 'aequilibrae' THEN 'aequilibrae' ELSE 'behavioral_demand' END) THEN
     RAISE EXCEPTION 'Guided report KPI custody snapshot is invalid' USING ERRCODE = '23514';
   END IF;
   SELECT * INTO k FROM public.model_run_kpis WHERE id = p_kpi AND run_id = r.id;
@@ -50,10 +50,10 @@ BEGIN
     JOIN public.model_stage_execution_starts execution_start ON execution_start.stage_id = stage.id AND execution_start.run_id = stage.run_id
     WHERE stage.id::text = receipt.request_payload->'payload'->>'stage_id' AND stage.run_id = r.id;
   IF NOT FOUND OR s.status <> 'succeeded' OR s.attempt_managed IS DISTINCT FROM false OR s.active_attempt_id IS NOT NULL
-    OR s.stage_name IS DISTINCT FROM CASE
+    OR s.stage_name IS DISTINCT FROM (CASE
       WHEN method = 'aequilibrae' THEN 'Artifact Extraction'
       WHEN k.kpi_name = 'activitysim_trips' THEN 'ActivitySim Bundle & Preflight'
-      ELSE 'ActivitySim Network Assignment' END
+      ELSE 'ActivitySim Network Assignment' END)
     OR NOT EXISTS (SELECT 1 FROM public.model_execution_custody_enrollment enrollment
       WHERE enrollment.run_id = r.id AND enrollment.provenance = 'new_run')
     OR receipt.request_payload IS DISTINCT FROM pg_catalog.jsonb_build_object('workspace_id',p_workspace,'payload',
