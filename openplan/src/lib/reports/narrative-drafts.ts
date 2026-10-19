@@ -55,7 +55,7 @@ export type DocumentNarrativeDraft = {
   target_id: string;
   section_key: string | null;
   draft_markdown: string;
-  model: string;
+  model: string | null;
   /** Raw grounding_json; parse with `parseStoredNarrativeGrounding`. */
   grounding_json: unknown;
   grounded_sentence_count: number;
@@ -91,7 +91,11 @@ export function parseStoredDraft(value: unknown): DocumentNarrativeDraft | null 
   }
   if (typeof record.target_id !== "string") return null;
   if (typeof record.draft_markdown !== "string") return null;
-  if (typeof record.model !== "string") return null;
+  const grounding = record.grounding_json && typeof record.grounding_json === "object"
+    ? record.grounding_json as Record<string, unknown> : null;
+  const manualCopy = record.target_kind === "rtp_chapter" && grounding?.mode === "transcription"
+    && grounding.source_method === "manual_retained_page" && grounding.chunk_recheck === "retained_page_matched";
+  if (typeof record.model !== "string" && !(record.model === null && manualCopy)) return null;
   if (typeof record.facts_hash !== "string") return null;
   if (
     typeof record.status !== "string" ||
@@ -109,7 +113,7 @@ export function parseStoredDraft(value: unknown): DocumentNarrativeDraft | null 
     target_id: record.target_id,
     section_key: asStringOrNull(record.section_key),
     draft_markdown: record.draft_markdown,
-    model: record.model,
+    model: record.model as string | null,
     grounding_json: record.grounding_json ?? null,
     grounded_sentence_count: record.grounded_sentence_count,
     total_sentence_count: record.total_sentence_count,
@@ -331,19 +335,20 @@ export function buildAcceptedSectionNarratives(
   rows: unknown[],
   computeCurrentFactsHash: (sectionKey: string) => string
 ): AcceptedSectionNarrative[] {
-  const latestBySection = new Map<string, DocumentNarrativeDraft>();
+  const latestBySection = new Map<string, DocumentNarrativeDraft & { model: string }>();
 
   for (const row of rows) {
     const draft = parseStoredDraft(row);
     if (!draft) continue;
     if (draft.target_kind !== "report_section" || !draft.section_key) continue;
+    if (draft.model === null) continue;
     if (draft.status !== "accepted") continue;
 
     const existing = latestBySection.get(draft.section_key);
     const draftAcceptedAt = draft.accepted_at ? new Date(draft.accepted_at).getTime() : 0;
     const existingAcceptedAt = existing?.accepted_at ? new Date(existing.accepted_at).getTime() : -1;
     if (!existing || draftAcceptedAt >= existingAcceptedAt) {
-      latestBySection.set(draft.section_key, draft);
+      latestBySection.set(draft.section_key, { ...draft, model: draft.model });
     }
   }
 

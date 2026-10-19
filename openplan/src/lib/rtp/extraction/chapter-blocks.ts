@@ -83,6 +83,7 @@ export const CHAPTER_BLOCK_REFUSAL_REASONS = [
   "text_too_long",
   "not_a_verbatim_copy",
   "quote_not_in_page",
+  "retained_page_missing",
 ] as const;
 
 export type ChapterBlockRefusalReason = (typeof CHAPTER_BLOCK_REFUSAL_REASONS)[number];
@@ -92,6 +93,7 @@ export type ChapterBlockRefusalReason = (typeof CHAPTER_BLOCK_REFUSAL_REASONS)[n
  * needs. None of them apologises: a refused block is this feature working.
  */
 export const CHAPTER_BLOCK_REFUSAL_SENTENCES: Record<ChapterBlockRefusalReason, string> = {
+  retained_page_missing: "The selected retained source page is unavailable. Nothing was staged. Reopen that version before retrying.",
   not_a_chapter_block:
     "This passage was copied out of the document as something other than chapter text, so it cannot be staged as chapter text.",
   quote_unverified:
@@ -127,7 +129,7 @@ export type StoredChapterBlockCandidate = {
  * changed. The distinction is recorded on the draft so the difference survives
  * to whoever reads it later.
  */
-export type ChapterBlockChunkRecheck = "matched" | "chunk_no_longer_stored";
+export type ChapterBlockChunkRecheck = "matched" | "chunk_no_longer_stored" | "retained_page_matched";
 
 export type VerifiedChapterBlock = {
   candidateId: string;
@@ -159,8 +161,10 @@ function readProposedText(proposedJson: unknown): string | null {
  */
 export function verifyStoredChapterBlock(
   candidate: StoredChapterBlockCandidate,
-  chunk: { content: string | null } | null
+  chunk: { content: string | null } | null,
+  sourceVariant: "chunk" | "retained_page" = "chunk"
 ): ChapterBlockVerification {
+  if (sourceVariant === "retained_page" && !chunk) return { ok: false, reason: "retained_page_missing" };
   if (candidate.target_kind !== CHAPTER_BLOCK_TARGET_KIND) {
     return { ok: false, reason: "not_a_chapter_block" };
   }
@@ -194,7 +198,7 @@ export function verifyStoredChapterBlock(
     if (!passage || !passage.includes(quote)) {
       return { ok: false, reason: "quote_not_in_page" };
     }
-    chunkRecheck = "matched";
+    chunkRecheck = sourceVariant === "retained_page" ? "retained_page_matched" : "matched";
   }
 
   return {
@@ -207,6 +211,7 @@ export function verifyStoredChapterBlock(
 export type ChapterBlockSource = {
   kbDocumentId: string | null;
   documentTitle: string | null;
+  retainedPage?: { extractionId: string; checksum: string; contentSha256: string };
 };
 
 function citationRecord(block: VerifiedChapterBlock, source: ChapterBlockSource): TranscriptionRecord {
@@ -272,6 +277,8 @@ export function renderTranscribedChapterBlock(
  */
 export type TranscribedChapterGrounding = {
   mode: "transcription";
+  source_method?: "manual_retained_page";
+  retained_source?: { extractionId: string; checksum: string; contentSha256: string };
   verbatim: true;
   extraction_candidate_id: string;
   kb_document_id: string | null;
@@ -302,6 +309,7 @@ export function buildTranscribedChapterGrounding(
   return {
     mode: "transcription",
     verbatim: true,
+    ...(source.retainedPage ? { source_method: "manual_retained_page" as const, retained_source: source.retainedPage } : {}),
     extraction_candidate_id: block.candidateId,
     kb_document_id: source.kbDocumentId,
     document_title: source.documentTitle,
@@ -310,7 +318,7 @@ export function buildTranscribedChapterGrounding(
     chunk_recheck: block.chunkRecheck,
     grounded_sentence_count: 0,
     total_sentence_count: 0,
-    note: TRANSCRIPTION_NOTE,
+    note: source.retainedPage ? "Copied manually from the selected retained document page. Words are checked against its retained text. Source authority, column meaning and OCR accuracy remain for review." : TRANSCRIPTION_NOTE,
   };
 }
 
@@ -332,15 +340,22 @@ export function readTranscribedChapterGrounding(
   if (typeof record.source_page !== "number") return null;
   if (typeof record.source_quote !== "string") return null;
   const recheck = record.chunk_recheck;
+  const retained = record.retained_source && typeof record.retained_source === "object"
+    ? record.retained_source as Record<string, unknown> : null;
+  const retainedSource = retained && typeof retained.extractionId === "string" && typeof retained.checksum === "string" && typeof retained.contentSha256 === "string"
+    ? { extractionId: retained.extractionId, checksum: retained.checksum, contentSha256: retained.contentSha256 } : undefined;
+  if (record.source_method === "manual_retained_page" && (!retainedSource || recheck !== "retained_page_matched")) return null;
+  if (recheck === "retained_page_matched" && record.source_method !== "manual_retained_page") return null;
   return {
     mode: "transcription",
+    ...(record.source_method === "manual_retained_page" ? { source_method: "manual_retained_page" as const, retained_source: retainedSource } : {}),
     verbatim: true,
     extraction_candidate_id: record.extraction_candidate_id,
     kb_document_id: typeof record.kb_document_id === "string" ? record.kb_document_id : null,
     document_title: typeof record.document_title === "string" ? record.document_title : null,
     source_page: record.source_page,
     source_quote: record.source_quote,
-    chunk_recheck: recheck === "matched" ? "matched" : "chunk_no_longer_stored",
+    chunk_recheck: recheck === "retained_page_matched" ? "retained_page_matched" : recheck === "matched" ? "matched" : "chunk_no_longer_stored",
     grounded_sentence_count: 0,
     total_sentence_count: 0,
     note: typeof record.note === "string" ? record.note : TRANSCRIPTION_NOTE,
@@ -381,7 +396,8 @@ export function describeTranscribedChapterDraft(
       ? " The page it came from is no longer stored the way it was when this was copied, so it could not be checked against the document again."
       : "";
 
-  return { badge: chip.headline, detail: `${grounding.note}${accepted}${stale}` };
+  const retainedVersion = grounding.retained_source ? ` Retained text version ${grounding.retained_source.extractionId}.` : "";
+  return { badge: chip.headline, detail: `${grounding.note}${retainedVersion}${accepted}${stale}` };
 }
 
 /**
@@ -398,6 +414,11 @@ export function transcribedChapterFactsInput(
   block: VerifiedChapterBlock,
   source: ChapterBlockSource
 ): string {
+  if (source.retainedPage) return JSON.stringify([
+    "rtp_chapter_retained_page_transcription_v1", source.kbDocumentId,
+    source.retainedPage.extractionId, source.retainedPage.checksum, source.retainedPage.contentSha256,
+    block.page, block.quote,
+  ]);
   return JSON.stringify([
     "rtp_chapter_transcription_v1",
     source.kbDocumentId ?? "",
