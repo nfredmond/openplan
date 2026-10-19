@@ -141,6 +141,33 @@ describe("Safety seed preview and atomic apply dispatch", () => {
     const response = await call({ operation: "apply", artifactId: rows.artifact.id, previewHash });
     expect(response.status).toBe(500); expect(await response.json()).not.toHaveProperty("applied");
   });
+  it.each([
+    { message: 'relation "public.funding_opportunity_safety_seeds" does not exist', status: 503 },
+    { message: "permission denied for table funding_opportunity_safety_seeds", status: 500 },
+    { message: "retained seed receipt does not exist", status: 500 },
+  ])("classifies a retained-receipt read failure as $status: $message", async ({ message, status }) => {
+    tables.funding_opportunity_safety_seeds = chain({ data: null, error: { message } });
+    const response = await call({ operation: "apply", artifactId: rows.artifact.id, previewHash: "a".repeat(64) });
+    const body = await response.json();
+    expect(response.status).toBe(status);
+    expect(body).not.toHaveProperty("applied");
+    if (status === 503) expect(body.error).toContain("20261018000002");
+    else expect(body.error).not.toContain("requires migration");
+    expect(from.mock.calls.map(([table]) => table)).toEqual(["funding_opportunity_safety_seeds"]);
+    expect(mocks.service).not.toHaveBeenCalled(); expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+  it("discloses a missing apply function from the RPC without claiming application", async () => {
+    const preview = buildSafetySeedPreview(rows);
+    mocks.rpc.mockResolvedValue({ data: null, error: {
+      code: "PGRST202", message: "Could not find the function public.apply_ss4a_safety_seed in the schema cache",
+    } });
+    const response = await call({ operation: "apply", artifactId: rows.artifact.id, previewHash: preview.previewHash });
+    const body = await response.json();
+    expect(response.status).toBe(503); expect(body.error).toContain("20261018000002");
+    expect(body).not.toHaveProperty("applied");
+    expect(mocks.rpc).toHaveBeenCalledTimes(1);
+    expect(mocks.rpc.mock.calls[0][1].p_sections).toEqual(preview.sections);
+  });
   it.each(["artifact", "acquisition", "drafts", "project", "report", "persistence"])("fails closed on %s read failure", async (which) => {
     const table = { artifact: "report_artifacts", acquisition: "safety_crash_ingests", drafts: "funding_opportunity_section_drafts", project: "projects", report: "reports", persistence: "report_safety_snapshot_persistence" }[which]!;
     tables[table] = chain({ data: null, error: { message: "read failed" } });
@@ -155,7 +182,7 @@ describe("Safety seed preview and atomic apply dispatch", () => {
     rows.artifact.metadata_json = { htmlContent: "not an evidence source" };
     const legacy = await call({ operation: "preview", artifactId: rows.artifact.id });
     expect(legacy.status).toBe(422); expect((await legacy.json()).error).toMatch(/Regenerate/);
-    tables.funding_opportunity_safety_seeds = chain({ data: null, error: { message: "relation does not exist" } });
+    tables.funding_opportunity_safety_seeds = chain({ data: null, error: { message: 'relation "public.funding_opportunity_safety_seeds" does not exist' } });
     const pending = await call({ operation: "apply", artifactId: rows.artifact.id, previewHash: "a".repeat(64) });
     expect(pending.status).toBe(503); expect((await pending.json()).error).toContain("20261018000002");
   });
