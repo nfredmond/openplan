@@ -195,3 +195,12 @@ style restoration pass; all captures are inspected. The two background aborts
 remain explicit. Both browser and preview exit0, with the compiler released and
 owned environment removed. No source, generation, apply or export changes occur
 during this journey. Raw captures stay private. Hosted migration remains held.
+
+CI integration follow-up, October 18: use the canonical schema classifier, keep
+the identical acquisition projection as a checked literal, and retain Safety
+custody as a project-deletion blocker. Export fixtures now supply complete empty
+Safety history and assert the exact query. The first check attempt fails before
+tests because of its config loader; restoration passes. The corrected ordinary
+window passes 96 affected tests, nine intended assertion failures, restored 96,
+lint and direction. Migration 000002 stays byte-identical. These checks do not
+prove installed SQL, concurrent deletion, browser, PDF or Storage behavior.

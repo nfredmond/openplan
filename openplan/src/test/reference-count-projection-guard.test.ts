@@ -128,6 +128,19 @@ function checkableSites(): SupabaseSelectSite[] {
 }
 
 describe("reference count projections", () => {
+  it("resolves the Safety seed's complete acquisition projection against the schema", () => {
+    const sites = selectSites.filter((site) =>
+      site.file === "src/app/api/funding-opportunities/[opportunityId]/application/safety-seed/route.ts" &&
+      site.table === "safety_crash_ingests"
+    );
+    expect(sites).toHaveLength(1);
+    expect(sites[0]).toMatchObject({
+      projectionExpression: "SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION",
+      projection: "id, project_id, min_lon, min_lat, max_lon, max_lat, status, source_id, source_label, attribution, severity_completeness, crash_count, geocoded_count, stored_count, truncated, years_requested, created_at, dimension_coverage, party_completeness, party_count, involvement_basis, published_through, published_through_provenance",
+    });
+    expect(projectionColumns(sites[0].projection as string).every((column) => schema.hasColumn("safety_crash_ingests", column))).toBe(true);
+  });
+
   it("checks the new project jurisdiction reader's imported literal against the schema", () => {
     const sites = selectSites.filter((site) => site.file === "src/app/api/projects/[projectId]/jurisdiction-readiness/route.ts");
     expect(sites).toHaveLength(1);
