@@ -147,7 +147,8 @@ def _bundle_profile_for_execution(exec_cfg: dict[str, Any]) -> dict[str, str]:
 
 
 def _build_executed_demand_package(
-    pipeline: dict[str, Any], screening_dir: str, run_root: str
+    pipeline: dict[str, Any], screening_dir: str, run_root: str,
+    *, retained_population: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Reduce a real ActivitySim trip list to the package used by assignment.
 
@@ -177,6 +178,12 @@ def _build_executed_demand_package(
     )
 
     zone_path = Path(screening_dir) / "package" / "zone_attributes.csv"
+    screening_manifest = Path(screening_dir) / "bundle_manifest.json"
+    if screening_manifest.is_file():
+        with screening_manifest.open() as handle:
+            handoff = json.load(handle)
+        if handoff.get("common_population") is not None and retained_population is None:
+            raise RuntimeError("Executed guided demand requires the verified retained population handoff")
     output_dir = Path(run_root) / "activitysim_demand_package"
     return build_activitysim_demand_package(
         trips_csv=trips_path,
@@ -187,6 +194,7 @@ def _build_executed_demand_package(
             "zone_attributes_csv": str(zone_path),
             "behavioral_pipeline_manifest": pipeline.get("manifest_path"),
         },
+        retained_population=retained_population,
     )
 # Per-run scratch dir for the built bundle + prototype pipeline outputs.
 ACTIVITYSIM_WORK_DIR = os.getenv(
@@ -421,7 +429,7 @@ def sb_get_run(run_id: str) -> dict:
             raise WorkerStateReadUnconfirmed("Managed run read requires reconciliation; no legacy read fallback") from error
     url = (
         f"{SUPABASE_URL}/rest/v1/model_runs?id=eq.{run_id}"
-        "&select=id,workspace_id,corridor_geojson,query_text,engine_key,run_title,input_snapshot_json"
+        "&select=id,workspace_id,model_id,project_id,scenario_set_id,scenario_entry_id,engine_key,status,attempt_managed,corridor_geojson,query_text,input_snapshot_json,assumption_snapshot_json,run_title"
     )
     res = requests.get(url, headers=HEADERS, timeout=30)
     if res.status_code != 200:
@@ -432,16 +440,37 @@ def sb_get_run(run_id: str) -> dict:
     return rows[0]
 
 
-def sb_get_run_artifacts(run_id: str) -> list[dict]:
+def sb_get_run_artifacts(run_id: str, *, stage_id: str | None = None, run: dict | None = None) -> list[dict]:
     import model_attempt_writer
     writer = model_attempt_writer.current()
     if writer is not None:
         from model_activitysim_handoff import read_screening_artifacts
         try:
-            return read_screening_artifacts(writer, run_id)
+            if stage_id is not None and stage_id != writer.context.stage_id:
+                raise ValueError("Managed handoff consumer differs from the bound stage")
+            selected = read_screening_artifacts(writer, run_id)
+            if run is not None:
+                actual = writer.read_run(run_id, expected_stage_name=STAGE_BUNDLE_PREFLIGHT)
+                if any(key not in run or not same_json_value(run[key], value) for key, value in actual.items()):
+                    raise ValueError("Actual managed run differs from its dispatched snapshot")
+            return selected
         except Exception as error:
             writer.stopped = True
             raise WorkerStateReadUnconfirmed("Managed screening handoff requires reconciliation; no legacy fallback") from error
+    from model_activitysim_handoff import common_population_request, read_screening_stage_artifacts, RUN_PROJECTION
+    request = common_population_request(run) if run is not None else None
+    if request is not None:
+        if request['custody'] != 'legacy_stage_snapshot' or stage_id is None:
+            raise WorkerStateReadUnconfirmed("Ordinary screening requires its explicit stage-snapshot consumer")
+        try:
+            selected = read_screening_stage_artifacts(SUPABASE_URL, SUPABASE_KEY, run_id, stage_id,
+                get=requests.get, post=requests.post)
+            if any(key not in run or not same_json_value(run[key], selected['run'][key])
+                   for key in RUN_PROJECTION.split(',')):
+                raise ValueError("Actual behavioral run differs from its dispatched snapshot")
+            return selected['artifacts']
+        except Exception as error:
+            raise WorkerStateReadUnconfirmed("Ordinary screening custody requires reconciliation") from error
     url = (
         f"{SUPABASE_URL}/rest/v1/model_run_artifacts?run_id=eq.{run_id}"
         "&select=id,run_id,stage_id,attempt_id,artifact_type,file_url,file_size_bytes,content_hash,metadata_json,model_run_stages!inner(id,run_id,status,attempt_managed,active_attempt_id)"
@@ -620,7 +649,19 @@ def _retain_handoff_file(artifacts: list[dict], artifact_type: str, run_id: str,
         raise RuntimeError("Screening handoff hash is unavailable")
     if type(expected_size) is not int or expected_size < 0:
         raise RuntimeError("Screening handoff byte size is unavailable")
-    destination = Path(execution_dir) / (artifact_type + ".retained")
+    if artifact_type.startswith("common_population"):
+        from model_common_population_package import population_library
+        common = population_library()
+        names = {"common_population": common.MANIFEST_NAME,
+                 **{"common_population_" + role: path for role, path in common.ROLES.items()}}
+        if artifact_type not in names:
+            raise RuntimeError("Unknown population handoff role")
+        if (Path(source).name != names[artifact_type] or Path(source) != resolved
+                or os.path.normpath(source) != source or "\\" in source):
+            raise RuntimeError("Population handoff source cannot use role or path aliases")
+        destination = Path(execution_dir) / "common_population" / names[artifact_type]
+    else:
+        destination = Path(execution_dir) / (artifact_type + ".retained")
     import model_handoff_files
     import model_attempt_writer
     managed = model_attempt_writer.current()
@@ -639,6 +680,96 @@ def _retain_handoff_file(artifacts: list[dict], artifact_type: str, run_id: str,
             managed.stopped = True
         reason = str(error) if isinstance(error, ValueError) else "Local filesystem operation failed"
         raise RuntimeError("Screening handoff file copy was not confirmed: " + reason) from error
+
+
+def _retain_common_population(artifacts: list[dict], run_id: str, execution_dir: str, zone_rows: list[dict],
+        *, stage_id: str | None = None, run: dict | None = None) -> dict:
+    """Pin setup companions, validate actual rosters, then recheck ownership."""
+    import model_attempt_writer
+    from model_activitysim_handoff import POPULATION_KINDS, POPULATION_METADATA_FIELDS, common_population_request
+    from model_common_population_package import identity, population_library
+
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        writer.require_open()
+        owned = writer.read_run(run_id, expected_stage_name=STAGE_BUNDLE_PREFLIGHT)
+    else:
+        if run is None or stage_id is None:
+            raise RuntimeError("Common population handoff requires its actual ordinary consumer")
+        owned = run
+    request = common_population_request(owned)
+    if request is None:
+        raise RuntimeError("Common population handoff requires its retained reuse request")
+    if request['custody'] != ('managed_attempt' if writer is not None else 'legacy_stage_snapshot'):
+        raise RuntimeError("Population consumer and request custody disagree")
+    common = population_library()
+    candidates = [row for row in artifacts if row.get("artifact_type") in POPULATION_KINDS]
+    if len(candidates) != len(POPULATION_KINDS) or {row["artifact_type"] for row in candidates} != set(POPULATION_KINDS):
+        raise RuntimeError("Common population handoff requires exactly seven registered companions")
+    manifest_artifact = next(row for row in candidates if row["artifact_type"] == "common_population")
+    metadata = manifest_artifact.get("metadata_json")
+    if (not isinstance(metadata, dict) or set(metadata) != POPULATION_METADATA_FIELDS
+            or metadata.get("schema") != common.SCHEMA or metadata.get("scientific_acceptance") != "unassessed"
+            or metadata.get("custody") != request['custody']
+            or not same_json_value(metadata.get("origin"), request["source"])):
+        raise RuntimeError("Common population metadata differs from the authorized reuse")
+    if any(not same_json_value(row.get("metadata_json"), metadata) for row in candidates):
+        raise RuntimeError("Common population companion metadata disagrees")
+    before = sb_get_run_artifacts(run_id, stage_id=stage_id, run=owned)
+    if not same_json_value(artifacts, before):
+        raise RuntimeError("Screening producer or population ownership changed before file copy")
+    destination = Path(execution_dir) / "common_population"
+    destination.mkdir(mode=0o700, exist_ok=False)
+    for kind in POPULATION_KINDS:
+        _retain_handoff_file(artifacts, kind, run_id, execution_dir)
+    expected = {"path": common.MANIFEST_NAME, "sha256": manifest_artifact["content_hash"], "bytes": manifest_artifact["file_size_bytes"]}
+    if expected["sha256"] != request["source"]["sha256"] or type(expected["bytes"]) is not int or expected["bytes"] != request["source"]["sizeBytes"]:
+        raise RuntimeError("Current setup manifest differs from the authorized source realization")
+    loaded = common.read_common_population(destination, expected_manifest=expected, zone_rows=zone_rows)
+    if loaded['source_manifest'].get('custody') != request['custody']:
+        raise RuntimeError("Retained population source and consumer custody disagree")
+    actual_metadata = identity(loaded)
+    if any(not same_json_value(metadata.get(key), value) for key, value in actual_metadata.items()):
+        raise RuntimeError("Registered common population identity differs from retained rosters")
+    registered = {row["artifact_type"]: row for row in candidates}
+    for role, descriptor in loaded["basis"]["files"].items():
+        row = registered["common_population_" + role]
+        if row["content_hash"] != descriptor["sha256"] or type(row["file_size_bytes"]) is not int or row["file_size_bytes"] != descriptor["bytes"]:
+            raise RuntimeError("Registered common population companion differs from manifest descriptor")
+    after = sb_get_run_artifacts(run_id, stage_id=stage_id, run=owned)
+    if not same_json_value(artifacts, after):
+        raise RuntimeError("Screening producer or population ownership changed during file copy")
+    if writer is not None:
+        writer.require_open()
+        writer.files.verify()
+    common.read_common_population(destination, expected_manifest=expected, zone_rows=zone_rows)
+    final = sb_get_run_artifacts(run_id, stage_id=stage_id, run=owned)
+    if not same_json_value(artifacts, final):
+        raise RuntimeError("Screening producer or population ownership changed after byte verification")
+    return {"directory": str(destination), "manifest": expected, **actual_metadata,
+        "origin": metadata["origin"], "custody": request['custody']}
+
+
+def _recheck_common_population(artifacts, run_id, stage_id, run, record, zone_rows):
+    """Recheck actual custody and pinned bytes before downstream use/publication."""
+    from model_common_population_package import identity, population_library
+    after = sb_get_run_artifacts(run_id, stage_id=stage_id, run=run)
+    if not same_json_value(artifacts, after):
+        raise RuntimeError("Screening producer or population ownership changed before publication")
+    loaded = population_library().read_common_population(Path(record['directory']),
+        expected_manifest=record['manifest'], zone_rows=zone_rows)
+    if loaded['source_manifest'].get('custody') != record['custody']:
+        raise RuntimeError("Retained population source custody changed before publication")
+    if any(not same_json_value(record.get(key), value) for key, value in identity(loaded).items()):
+        raise RuntimeError("Retained population identity changed before publication")
+    final = sb_get_run_artifacts(run_id, stage_id=stage_id, run=run)
+    if not same_json_value(artifacts, final):
+        raise RuntimeError("Screening producer or population ownership changed after publication byte verification")
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        writer.require_open()
+        writer.files.verify()
 
 
 def _adapt_zone_attributes(src_csv: str, dest_csv: str) -> int:
@@ -684,6 +815,7 @@ def _materialize_screening_dir(
     setup_summary_path: str,
     dest_root: str,
     *, source_artifacts: list[dict], consumer_stage_id: str,
+    retained_population: dict[str, Any] | None = None,
 ) -> str:
     """Lay out the screening-run-dir the bundle builder expects:
     <dir>/bundle_manifest.json, <dir>/package/zone_attributes.csv,
@@ -702,7 +834,9 @@ def _materialize_screening_dir(
 
     # Preserve original registered inputs separately from adapted pipeline files.
     source_records = []
-    for kind in ("skim_matrix", "zone_attributes", "network_setup_summary"):
+    from model_activitysim_handoff import KINDS, POPULATION_KINDS
+    kinds = KINDS + (POPULATION_KINDS if retained_population is not None else ())
+    for kind in kinds:
         matches = [row for row in source_artifacts if row.get("artifact_type") == kind]
         if len(matches) != 1 or matches[0].get("run_id") != run_id:
             raise RuntimeError("Screening provenance requires one exact run artifact per input")
@@ -732,6 +866,9 @@ def _materialize_screening_dir(
         "zones": {"count": zones},
         "caveats": ["Screening-grade AequilibraE handoff; not calibrated."],
     }
+    if retained_population is not None:
+        manifest["common_population"] = {key: retained_population[key] for key in (
+            "manifest", "population_basis", "population_basis_payload_json", "population_basis_digest", "origin", "custody")}
     with open(os.path.join(screening_dir, "bundle_manifest.json"), "w") as fh:
         json.dump(manifest, fh, indent=2)
     return screening_dir
@@ -770,17 +907,28 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
 
     # 1. Locate the screening handoff (skim + zone attributes) the AequilibraE
     #    worker registered as local:// artifacts (same-host consumers only).
-    artifacts = sb_get_run_artifacts(run_id)
+    from model_activitysim_handoff import common_population_request
+    population_request = common_population_request(run)
+    artifacts = (sb_get_run_artifacts(run_id, stage_id=stage_id, run=run)
+        if population_request is not None else sb_get_run_artifacts(run_id))
     run_root = create_run_workspace(run_id)
     skim_path = _retain_handoff_file(artifacts, "skim_matrix", run_id, run_root)
     zone_attr_path = _retain_handoff_file(artifacts, "zone_attributes", run_id, run_root)
     setup_summary_path = _retain_handoff_file(artifacts, "network_setup_summary", run_id, run_root)
+    retained_population = None
+    if population_request is not None:
+        import csv
+        with open(zone_attr_path, newline="") as handle:
+            population_zone_rows = list(csv.DictReader(handle))
+        retained_population = _retain_common_population(artifacts, run_id, run_root, population_zone_rows,
+            stage_id=stage_id, run=run)
     log += "- Screening handoff copied and verified against registered bytes.\n"
     sb_patch_stage(stage_id, {"log_tail": log})
 
     screening_dir = _materialize_screening_dir(
         run_id, skim_path, zone_attr_path, setup_summary_path, run_root,
         source_artifacts=artifacts, consumer_stage_id=stage_id,
+        retained_population=retained_population,
     )
 
     scripts_dir = str(_REPO_ROOT / "scripts" / "modeling")
@@ -793,18 +941,24 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
     # same call runs a real, still-UNCALIBRATED ActivitySim run.
     exec_cfg = _activitysim_exec_config()
     bundle_profile = _bundle_profile_for_execution(exec_cfg)
+    if retained_population is not None:
+        bundle_profile["population_source"] = "census"
     pipeline = run_behavioral_demand_prototype(
         screening_run_dir=screening_dir,
         output_root=os.path.join(run_root, "behavioral_demand_prototype"),
         force=True,
+        **({"retained_population": {key: retained_population[key] for key in ("directory", "manifest")}}
+           if retained_population is not None else {}),
         **bundle_profile,
         **exec_cfg,
     )
     pipeline_status = pipeline.get("pipeline_status")
     runtime_mode = pipeline.get("runtime_mode") or "preflight_only"
     executed = runtime_mode in EXECUTED_RUNTIME_MODES
+    if retained_population is not None:
+        _recheck_common_population(artifacts, run_id, stage_id, run, retained_population, population_zone_rows)
     demand_package = (
-        _build_executed_demand_package(pipeline, screening_dir, run_root) if executed else None
+        _build_executed_demand_package(pipeline, screening_dir, run_root, retained_population=retained_population) if executed else None
     )
     log += f"- Bundle built + pipeline: {pipeline_status} (runtime mode: {runtime_mode}).\n"
     sb_patch_stage(stage_id, {"log_tail": log})
@@ -851,6 +1005,12 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
             )
     else:
         lead_caveats = list(PREFLIGHT_CAVEATS)
+    if retained_population is not None:
+        lead_caveats = [caveat for caveat in lead_caveats if "DETERMINISTIC SYNTHETIC SCAFFOLD" not in caveat
+                        and "Households and persons come from real Census" not in caveat]
+        lead_caveats.append(
+            "This bundle consumes one retained household-resident realization. Group quarters are excluded and unassessed; "
+            "shared input identity does not establish scientific accuracy or locally validated behavior.")
     evidence = {
         "schema_version": EVIDENCE_SCHEMA_VERSION,
         "packet_type": "behavioral_demand_preflight_evidence",
@@ -869,6 +1029,9 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
         "runtime_mode": runtime_mode,
         "bundle": bundle_stats,
         "bundle_profile": bundle_profile,
+        **({"common_population": {key: retained_population[key] for key in (
+            "manifest", "population_basis", "population_basis_payload_json", "population_basis_digest", "origin", "custody")}}
+           if retained_population is not None else {}),
         "accepted_behavior_components": accepted_components,
         "demand_package": {
             "status": "ready_for_same_network_assignment",
@@ -885,6 +1048,8 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
         "caveats": lead_caveats + list(pipeline.get("caveats", [])),
     }
     data = (json.dumps(evidence, indent=2) + "\n").encode("utf-8")
+    if retained_population is not None:
+        _recheck_common_population(artifacts, run_id, stage_id, run, retained_population, population_zone_rows)
     storage_ref = sb_upload_evidence(run_id, "behavioral_demand_evidence_packet.json", data, "application/json", stage_id=stage_id)
     if storage_ref:
         sb_record_retained_artifact(
@@ -908,6 +1073,8 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
         )
         for artifact_type, artifact_path in artifact_specs:
             artifact_bytes = Path(artifact_path).read_bytes()
+            if retained_population is not None:
+                _recheck_common_population(artifacts, run_id, stage_id, run, retained_population, population_zone_rows)
             sb_record_retained_artifact(
                 {
                     "run_id": run_id,
@@ -919,6 +1086,9 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
                     "metadata_json": {
                         "kind": "activitysim_assignment_handoff",
                         "uncalibrated": True,
+                        **({key: demand_package["common_population"][key] for key in (
+                            "population_basis", "population_basis_payload_json", "population_basis_digest", "origin", "custody")}
+                           if demand_package.get("common_population") is not None else {}),
                     },
                 },
                 workspace_id=run.get("workspace_id"), logical_name=artifact_type,
@@ -933,6 +1103,8 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
         "provenance and remaining borrowed behavior are recorded in the evidence packet. This "
         "is NOT a local forecast."
     )
+    if retained_population is not None:
+        scaffold_provenance = "Retained household-resident realization; group quarters and scientific accuracy remain unassessed."
     kpis = [
         ("activitysim_runtime_mode", "ActivitySim runtime mode", None, "", {"mode": runtime_mode, "provenance": scaffold_provenance}),
     ]
@@ -940,17 +1112,19 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
         kpis.append(("activitysim_bundle_zones", "ActivitySim bundle zones", float(bundle_stats["zones"]), "zones", {"provenance": scaffold_provenance}))
     if bundle_stats.get("synthetic_households") is not None:
         kpis.append((
-            "activitysim_bundle_fitted_households" if executed else "activitysim_bundle_synthetic_households",
-            "ActivitySim bundle Census-fitted households" if executed else "ActivitySim bundle synthetic households (scaffold)",
+            "activitysim_bundle_retained_households" if retained_population is not None else "activitysim_bundle_fitted_households" if executed else "activitysim_bundle_synthetic_households",
+            "ActivitySim bundle retained households" if retained_population is not None else "ActivitySim bundle Census-fitted households" if executed else "ActivitySim bundle synthetic households (scaffold)",
             float(bundle_stats["synthetic_households"]), "households", {"provenance": scaffold_provenance},
         ))
     if bundle_stats.get("synthetic_persons") is not None:
         kpis.append((
-            "activitysim_bundle_fitted_persons" if executed else "activitysim_bundle_synthetic_persons",
-            "ActivitySim bundle Census-fitted persons" if executed else "ActivitySim bundle synthetic persons (scaffold)",
+            "activitysim_bundle_retained_persons" if retained_population is not None else "activitysim_bundle_fitted_persons" if executed else "activitysim_bundle_synthetic_persons",
+            "ActivitySim bundle retained household residents" if retained_population is not None else "ActivitySim bundle Census-fitted persons" if executed else "ActivitySim bundle synthetic persons (scaffold)",
             float(bundle_stats["synthetic_persons"]), "persons", {"provenance": scaffold_provenance},
         ))
     for name, label, value, unit, breakdown in kpis:
+        if retained_population is not None:
+            _recheck_common_population(artifacts, run_id, stage_id, run, retained_population, population_zone_rows)
         sb_record_retained_kpi(
             {
                 "run_id": run_id,

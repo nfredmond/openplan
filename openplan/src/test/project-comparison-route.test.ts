@@ -3,13 +3,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 const createClientMock = vi.fn();
+const stageCustodyRpcMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn(() => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() }));
 
-vi.mock("@/lib/supabase/server", () => ({ createClient: () => createClientMock() }));
+vi.mock("@/lib/supabase/server", () => ({ createClient: () => createClientMock(), createServiceRoleClient: () => ({ rpc: stageCustodyRpcMock }) }));
 vi.mock("@/lib/observability/audit", () => ({ createApiAuditLogger: () => createApiAuditLoggerMock() }));
 
 import { POST } from "@/app/api/models/project-comparison/route";
 import { sortedCompactJson } from "@/lib/models/demand-agreement-artifact";
+import { populationFixture, POPULATION_ATTEMPT_ID } from "@/test/fixtures/common-population-evidence";
 
 const USER_ID = "22222222-2222-4222-8222-222222222222";
 const WORKSPACE_ID = "33333333-3333-4333-8333-333333333333";
@@ -36,6 +38,7 @@ const IDENTITY_METADATA = {
 };
 
 function fakeClient(role: string | null = "member") {
+  const selects: Record<string, string[]> = {};
   const tables: Record<string, Row[]> = {
     projects: [{ id: PROJECT_ID, workspace_id: WORKSPACE_ID, name: "Main Street" }],
     workspace_members: role ? [{ workspace_id: WORKSPACE_ID, user_id: USER_ID, role }] : [],
@@ -57,7 +60,7 @@ function fakeClient(role: string | null = "member") {
     private limitCount: number | null = null;
 
     constructor(private readonly table: string) {}
-    select(_columns?: string) { return this; }
+    select(columns = "") { (selects[this.table] ??= []).push(columns); return this; }
     insert(payload: Row | Row[]) { this.action = "insert"; this.payload = payload; return this; }
     update(payload: Row) { this.action = "update"; this.payload = payload; return this; }
     eq(column: string, value: unknown) { this.filters.push([column, value]); return this; }
@@ -96,6 +99,7 @@ function fakeClient(role: string | null = "member") {
   }
 
   return {
+    selects,
     tables,
     client: {
       auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: USER_ID } } }) },
@@ -112,23 +116,40 @@ function addOutput(
 ) {
   const artifactId = `artifact-${runId}`;
   const stageId = `stage-${runId}`;
+  const baselineRun = fake.tables.model_runs.find((row) => row.engine_key === "aequilibrae" &&
+    fake.tables.scenario_entries.some((entry) => entry.id === row.scenario_entry_id && entry.entry_type === "baseline"));
+  const population = populationFixture(String(baselineRun?.id ?? runId));
+  const run = fake.tables.model_runs.find((row) => row.id === runId);
+  if (run) run.attempt_managed = true;
+  if (run) run.input_snapshot_json = { commonPopulation: baselineRun?.id === runId ? population.generate : population.reuse };
   fake.tables.model_run_stages.push({
     id: stageId,
     run_id: runId,
     stage_name: method === "aequilibrae" ? "Artifact Extraction" : "ActivitySim Network Assignment",
     status: "succeeded",
+    attempt_managed: true,
+    active_attempt_id: POPULATION_ATTEMPT_ID,
   });
   fake.tables.model_run_artifacts.push({
     id: artifactId,
     run_id: runId,
     stage_id: stageId,
+    attempt_id: POPULATION_ATTEMPT_ID,
     artifact_type: method === "aequilibrae" ? "link_volumes" : "activitysim_link_volumes",
     file_url: `storage://run-artifacts/${runId}.csv`,
     file_size_bytes: 100,
     content_hash: hash,
-    metadata_json: IDENTITY_METADATA,
+    metadata_json: { ...IDENTITY_METADATA, ...population.metadata },
     created_at: "2026-08-27T00:00:00Z",
   });
+  if (baselineRun?.id === runId && !fake.tables.model_run_artifacts.some((row) => row.run_id === runId && row.artifact_type === "common_population")) {
+    fake.tables.model_run_stages.push({ id: population.source.stageId, run_id: runId,
+      stage_name: "AequilibraE Setup", status: "succeeded", attempt_managed: true, active_attempt_id: population.source.attemptId });
+    fake.tables.model_run_artifacts.push({ id: population.source.artifactId, run_id: runId, stage_id: population.source.stageId,
+      attempt_id: population.source.attemptId, artifact_type: "common_population", file_url: `local:///supplied/${runId}/common_population.json`,
+      content_hash: population.source.sha256, file_size_bytes: population.source.sizeBytes,
+      metadata_json: population.sourceMetadata, created_at: "2026-08-27T00:00:00Z" });
+  }
 }
 
 function addPreflight(fake: ReturnType<typeof fakeClient>, runId: string, mode: "preflight_only" | "executed") {
@@ -321,6 +342,27 @@ describe("project comparison starter route", () => {
         expect.objectContaining({ method: "activitysim", scenario: "build", artifactSha256: "d".repeat(64) }),
       ]),
     });
+    expect(fake.selects.model_runs).toContain("id, model_id, scenario_entry_id, engine_key, status, attempt_managed, assumption_snapshot_json, input_snapshot_json, created_at");
+    expect(fake.selects.model_run_artifacts).toContain("id, run_id, stage_id, attempt_id, artifact_type, file_url, file_size_bytes, content_hash, metadata_json, created_at");
+    expect(fake.selects.model_run_stages).toContain("id, run_id, stage_name, status, attempt_managed, active_attempt_id");
+
+    const populationArtifact = fake.tables.model_run_artifacts.find((row) => row.id === "artifact-asim-build");
+    if (!populationArtifact) throw new Error("Missing supplied ActivitySim output");
+    const originalPopulationMetadata = structuredClone(populationArtifact.metadata_json) as Record<string, unknown>;
+    const changedPopulation = populationFixture("aeq-base").basis;
+    changedPopulation.realized_zone_counts[0].persons = 3;
+    const changedPopulationPayload = sortedCompactJson(changedPopulation);
+    populationArtifact.metadata_json = { ...originalPopulationMetadata, population_basis: changedPopulation,
+      population_basis_payload_json: changedPopulationPayload, population_basis_digest: digest(changedPopulationPayload) };
+    const populationMismatch = await POST(request());
+    expect(await populationMismatch.json()).toMatchObject({ state: "population_basis_mismatch", repairState: "population_basis_mismatch",
+      nextRun: { method: "activitysim", scenario: "build" },
+      populationSummary: { sourceRunId: "aeq-base", households: 1, persons: 2, universe: "household_residents" } });
+    populationArtifact.metadata_json = IDENTITY_METADATA;
+    const populationUnassessed = await POST(request());
+    expect(await populationUnassessed.json()).toMatchObject({ state: "needs_shared_population_rerun", populationState: "unassessed",
+      nextRun: { method: "activitysim", scenario: "build" } });
+    populationArtifact.metadata_json = originalPopulationMetadata;
 
     const changedState = { network_settings_digest: SETTINGS_HASH, osm_snapshot: "changed" };
     const activitySimBuildArtifact = fake.tables.model_run_artifacts.find((row) => row.id === "artifact-asim-build");
@@ -334,7 +376,7 @@ describe("project comparison starter route", () => {
     const mismatched = await POST(request());
     expect(await mismatched.json()).toMatchObject({
       state: "needs_shared_network_rerun",
-      nextRun: null,
+      nextRun: { method: "activitysim", scenario: "build" },
     });
   });
 
@@ -378,4 +420,48 @@ describe("project comparison starter route", () => {
     expect(response.status).toBe(403);
     expect(fake.tables.scenario_sets).toHaveLength(0);
   });
+  it("requires fresh scoped stage attestations on the baseline source and all four consumed outputs", async () => {
+    const fake = fakeClient();
+    createClientMock.mockResolvedValue(fake.client);
+    await POST(request({ autoTripChangePct: -8, basis: "Supplied stage-custody scenario" }));
+    const id = (value: number) => `00000000-0000-4000-8000-${String(value).padStart(12, "0")}`;
+    const models = [fake.tables.models.find((row) => row.model_family === "travel_demand"), fake.tables.models.find((row) => row.model_family === "activity_based_model")];
+    const baseline = fake.tables.scenario_entries.find((row) => row.entry_type === "baseline");
+    const build = fake.tables.scenario_entries.find((row) => row.entry_type === "alternative");
+    const population = populationFixture(id(80), "legacy_stage_snapshot");
+    for (let index = 0; index < 4; index += 1) {
+      const scenario = index % 2 === 0 ? baseline : build;
+      const method = index < 2 ? "aequilibrae" : "activitysim";
+      fake.tables.model_runs.push({ id: id(80 + index), model_id: models[index < 2 ? 0 : 1]?.id,
+        scenario_entry_id: scenario?.id, status: "succeeded", attempt_managed: false,
+        engine_key: method === "aequilibrae" ? "aequilibrae" : "behavioral_demand", assumption_snapshot_json: scenario?.assumptions_json,
+        input_snapshot_json: { commonPopulation: index === 0 ? population.generate : population.reuse } });
+      fake.tables.model_run_stages.push({ id: id(90 + index), run_id: id(80 + index), status: "succeeded",
+        stage_name: method === "aequilibrae" ? "Artifact Extraction" : "ActivitySim Network Assignment", attempt_managed: false, active_attempt_id: null });
+      fake.tables.model_run_artifacts.push({ id: id(100 + index), run_id: id(80 + index), stage_id: id(90 + index),
+        attempt_id: null, artifact_type: method === "aequilibrae" ? "link_volumes" : "activitysim_link_volumes",
+        file_url: "local:///supplied/link_volumes.csv", file_size_bytes: 100, content_hash: "d".repeat(64),
+        metadata_json: { ...IDENTITY_METADATA, ...population.metadata }, created_at: "2026-10-18" });
+    }
+    fake.tables.model_run_stages.push({ id: population.source.stageId, run_id: id(80), stage_name: "AequilibraE Setup", status: "succeeded", attempt_managed: false, active_attempt_id: null });
+    fake.tables.model_run_artifacts.push({ id: population.source.artifactId, run_id: id(80), stage_id: population.source.stageId,
+      attempt_id: null, artifact_type: "common_population", file_url: "local:///supplied/common_population.json",
+      file_size_bytes: population.source.sizeBytes, content_hash: population.source.sha256, metadata_json: population.sourceMetadata, created_at: "2026-10-18" });
+    stageCustodyRpcMock.mockImplementation(async (_name: string, params: Record<string, unknown>) => ({ data: {
+      schema: "openplan.common-population-stage-custody.v1", custody: "legacy_stage_snapshot", workspace_id: params.p_workspace,
+      run_id: params.p_run, stage_id: params.p_stage, artifact_id: params.p_artifact, eligible: true,
+    }, error: null }));
+    expect(await (await POST(request())).json()).toMatchObject({ state: "ready_for_validation", populationState: "ready", nextRun: null });
+    expect(stageCustodyRpcMock).toHaveBeenCalledTimes(5);
+    expect(stageCustodyRpcMock).toHaveBeenCalledWith("read_common_population_stage_custody", {
+      p_workspace: WORKSPACE_ID, p_run: id(80), p_stage: population.source.stageId, p_artifact: population.source.artifactId,
+    });
+    stageCustodyRpcMock.mockClear();
+    fake.tables.model_run_artifacts.push({ id: id(110), run_id: id(80), artifact_type: "unrelated", metadata_json: {} });
+    expect(await (await POST(request())).json()).toMatchObject({ state: "ready_for_validation" });
+    expect(stageCustodyRpcMock).toHaveBeenCalledTimes(5);
+    stageCustodyRpcMock.mockResolvedValue({ data: null, error: null });
+    expect(await (await POST(request())).json()).toMatchObject({ state: "population_basis_invalid", nextRun: { method: "aequilibrae", scenario: "baseline" } });
+  });
+
 });

@@ -64,3 +64,36 @@ This is a wording and source-test correction. The earlier identified browser
 and download evidence retains its own build and limits; the revised text has
 not received a new browser run. Full new-head CI remains pending. No model,
 scientific, deployment or release acceptance follows.
+
+
+## Shared population implementation checkpoint
+
+New guided comparisons now retain one baseline household/person population and
+reuse its exact source files in both engines and both scenarios. Source controls,
+selected zones, school inputs and published population totals stay separate from
+actual realized household and person counts. The workers use those realized
+counts in demand conversion. Original demographic coverage flags remain intact.
+Group quarters remain excluded and unassessed.
+
+Normal new jobs explicitly use receipt-backed stage custody. They require fresh
+execution enrollment, all seven source artifacts and a scoped service reader.
+Managed attempts retain their separate checks and never fall back. Independent
+source reviews identify and close lost coverage flags and missing companion
+checks. Existing scientific, network and decision requirements remain unchanged.
+
+Configured TypeScript and scoped lint pass. Supplied TypeScript checks pass
+196 cases; focused final custody controls pass 95 cases before and after four
+intended assertion failures. Worker controls retain harmless survivors, targeted
+failures and exact restoration. On the existing isolated test stack, 74 new
+native cases and four existing model-truth cases pass without skips. Both
+installed function bodies match the reviewed SQL after the native mutations.
+The local REST service refuses invalid scope; anonymous execution is denied.
+Local security advisors report eight findings on existing functions and
+extensions, including the extension-owned spatial_ref_sys RLS error. They report
+none on the two new population functions. This is not a clean whole-schema audit.
+
+Earlier import, fixture, heap-limit, type-inference and copied-setup failures
+remain failed in private records. The migration is applied only to the isolated
+test schema, without a migration-history entry. No hosted rollout, fresh
+four-model-run journey, browser acceptance, scientific validation or v1 closure
+follows from this checkpoint. Historical runs and studies remain unchanged.

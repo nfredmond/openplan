@@ -563,9 +563,9 @@ def _get_json(url: str, params: Mapping[str, Any], label: str) -> Any:
         raise CensusPumsError(f"{label} did not return JSON: {response.text.strip()[:300]}") from exc
 
 
-def resolve_pumas(bbox: tuple[float, float, float, float]) -> list[dict[str, Any]]:
+def resolve_pumas(bbox: tuple[float, float, float, float], *, acs5_url: str | None = None, pums_url: str | None = None) -> list[dict[str, Any]]:
     """Resolve the study area's PUMAs in the selected product's supported vintages."""
-    profile = census_vintage_profile()
+    profile = census_vintage_profile(acs5_url, pums_url)
     min_lon, min_lat, max_lon, max_lat = bbox
     found: list[dict[str, Any]] = []
     for vintage, _field in profile.puma_fields:
@@ -611,7 +611,7 @@ def resolve_pumas(bbox: tuple[float, float, float, float]) -> list[dict[str, Any
 
 
 def fetch_pums_person_rows(
-    pumas: Sequence[Mapping[str, Any]], census_api_key: str
+    pumas: Sequence[Mapping[str, Any]], census_api_key: str, *, acs5_url: str | None = None, pums_url: str | None = None
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     """Fetch the microdata for every PUMA and vintage, and report what each gave.
 
@@ -620,7 +620,7 @@ def fetch_pums_person_rows(
     failure this module's header describes, and it is only visible if the counts
     are kept apart.
     """
-    profile = census_vintage_profile()
+    profile = census_vintage_profile(acs5_url, pums_url)
     fields = dict(profile.puma_fields)
     if any(str(puma.get("vintage")) not in fields for puma in pumas):
         raise CensusPumsError("The supplied PUMA vintages do not match the selected Census population profile.")
@@ -637,7 +637,7 @@ def fetch_pums_person_rows(
         vintage = str(puma["vintage"])
         field = fields[vintage]
         payload = _get_json(
-            PUMS_URL,
+            PUMS_URL if pums_url is None else pums_url,
             {
                 "get": ",".join([*variables, field]),
                 "for": f"state:{puma['state_fips']}",
@@ -679,7 +679,8 @@ def fetch_pums_person_rows(
 
 
 def _fetch_acs_rows(
-    geoids: Sequence[str], variables: Sequence[str], census_api_key: str, *, purpose: str
+    geoids: Sequence[str], variables: Sequence[str], census_api_key: str, *, purpose: str,
+    acs5_url: str | None = None, pums_url: str | None = None
 ) -> dict[str, dict[str, Any]]:
     """Fetch ACS cells for every zone, keyed by GEOID.
 
@@ -689,7 +690,7 @@ def _fetch_acs_rows(
     than returning a subset: data for only some of a study area is the shape
     of failure that looks like success downstream.
     """
-    census_vintage_profile()
+    census_vintage_profile(acs5_url, pums_url)
     if not census_api_key:
         raise CensusPumsError(f"A Census API key is required to read {purpose}.")
     if not variables:
@@ -723,7 +724,7 @@ def _fetch_acs_rows(
             for start in range(0, len(variables), ACS_VARIABLES_PER_REQUEST):
                 chunk = variables[start : start + ACS_VARIABLES_PER_REQUEST]
                 payload = _get_json(
-                    ACS_5_URL,
+                    ACS_5_URL if acs5_url is None else acs5_url,
                     {
                         "get": ",".join(chunk),
                         "for": f"{geography}:*",
@@ -753,14 +754,16 @@ def _fetch_acs_rows(
 
 
 def fetch_acs_zone_controls(
-    geoids: Sequence[str], controls: Sequence[Control], census_api_key: str
+    geoids: Sequence[str], controls: Sequence[Control], census_api_key: str, *,
+    acs5_url: str | None = None, pums_url: str | None = None
 ) -> dict[str, dict[str, Any]]:
     """Fetch the control marginals for every zone, keyed by GEOID."""
     variables = acs_variables_for(controls)
     if not variables:
         raise CensusPumsError("No control variables were requested, so there is nothing to fit to.")
     return _fetch_acs_rows(
-        geoids, variables, census_api_key, purpose="the zone totals a population is fitted to"
+        geoids, variables, census_api_key, purpose="the zone totals a population is fitted to",
+        acs5_url=acs5_url, pums_url=pums_url
     )
 
 
@@ -772,8 +775,9 @@ ENROLLMENT_COLLEGE_CELLS = ("B14001_008E", "B14001_009E")  # undergraduate + gra
 
 
 def fetch_acs_school_enrollment(
-    geoids: Sequence[str], census_api_key: str
-) -> dict[str, dict[str, float]]:
+    geoids: Sequence[str], census_api_key: str, *, acs5_url: str | None = None, pums_url: str | None = None,
+    include_source_rows: bool = False,
+) -> dict[str, Any]:
     """High-school and college enrolment by residence zone, keyed by GEOID.
 
     A zone with null cells reads as zero enrolment, but EVERY cell null across
@@ -782,7 +786,8 @@ def fetch_acs_school_enrollment(
     area where nobody attends school.
     """
     variables = [ENROLLMENT_HIGH_SCHOOL_CELL, *ENROLLMENT_COLLEGE_CELLS]
-    rows = _fetch_acs_rows(geoids, variables, census_api_key, purpose="school enrolment (ACS B14001)")
+    rows = _fetch_acs_rows(geoids, variables, census_api_key, purpose="school enrolment (ACS B14001)",
+                           acs5_url=acs5_url, pums_url=pums_url)
 
     enrollment: dict[str, dict[str, float]] = {}
     any_value = False
@@ -807,6 +812,14 @@ def fetch_acs_school_enrollment(
             "table is not published at this geography, and a study area where nobody attends "
             "school would be a fabrication, not a default."
         )
+    if include_source_rows:
+        return {
+            "enrollment": enrollment,
+            "raw_by_geoid": rows,
+            "missing_cells_by_geoid": {geoid: [cell for cell in variables if _cell_value(row, cell) is None
+                or not math.isfinite(_cell_value(row, cell)) or _cell_value(row, cell) < 0] for geoid, row in rows.items()},
+            "basis": "ACS B14001 enrolled residents; not school seats or measured full-time college enrollment",
+        }
     return enrollment
 
 
@@ -814,7 +827,7 @@ def seed_provenance(
     pumas: Sequence[Mapping[str, Any]],
     fetch_summary: Mapping[str, Any],
     seed_size: int,
-    dropped: Mapping[str, int],
+    dropped: Mapping[str, int], *, acs5_url: str | None = None, pums_url: str | None = None,
 ) -> dict[str, Any]:
     """What the synthetic population is drawn from, in words a report can carry.
 
@@ -823,7 +836,7 @@ def seed_provenance(
     town is drawn from a far wider area than the map shows — true of every
     population synthesiser, and worth saying rather than leaving to be discovered.
     """
-    profile = census_vintage_profile()
+    profile = census_vintage_profile(acs5_url, pums_url)
     names = sorted({str(p.get("name") or "").strip() for p in pumas if p.get("name")})
     thin_note = ""
     if seed_size < 500:
@@ -833,8 +846,8 @@ def seed_provenance(
         )
     return {
         "source": "US Census Bureau ACS 5-year Public Use Microdata Sample (PUMS)",
-        "endpoint": PUMS_URL,
-        "acs_summary_endpoint": ACS_5_URL,
+        "endpoint": PUMS_URL if pums_url is None else pums_url,
+        "acs_summary_endpoint": ACS_5_URL if acs5_url is None else acs5_url,
         "acs_sample_years": [profile.first_year, profile.final_year],
         "income_dollar_year": profile.final_year,
         "puma_fields": dict(profile.puma_fields),

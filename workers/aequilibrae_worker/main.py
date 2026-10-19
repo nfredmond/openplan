@@ -2886,7 +2886,7 @@ def should_run_calibration(calibrate_requested: bool, counts_path: str) -> bool:
     return bool(calibrate_requested) and COUNT_VALIDATION_ENABLED and os.path.exists(counts_path)
 
 
-def ensure_dynamic_package(run_id: str, work_dir: str, run_row: dict | None = None) -> dict:
+def ensure_dynamic_package(run_id: str, work_dir: str, run_row: dict | None = None, *, stage_id: str | None = None) -> dict:
     run_row = run_row or sb_get_run(run_id)
     corridor_geojson, bbox = resolve_run_study_area(run_row)
     pkg_dir = os.path.join(work_dir, "package")
@@ -2902,6 +2902,23 @@ def ensure_dynamic_package(run_id: str, work_dir: str, run_row: dict | None = No
     zone_attributes, zone_attributes_note = resolve_zone_attributes(run_id, work_dir, run_row)
     if zone_attributes is None:
         print(f"  Zone attributes: {zone_attributes_note['reason']}")
+
+    population_input = None
+    snapshot = run_row.get("input_snapshot_json") or {}
+    if isinstance(snapshot, dict) and snapshot.get("commonPopulation") is not None:
+        import model_attempt_writer
+        from model_common_population_package import population_library
+        population_library()
+        from model_common_population_handoff import prepare_population_input
+        writer = population_setup_reader(run_id, run_row, work_dir, stage_id=stage_id)
+        if os.path.exists(manifest_path):
+            raise RuntimeError("A retained guided package already exists; reconcile it instead of refitting")
+        population_input = prepare_population_input(writer,
+            destination=os.path.join(work_dir, "population-source"), zone_attributes=zone_attributes)
+        if population_input["mode"] == "generate":
+            population_input["source_record"]["study_area"] = {
+                "bbox": list(bbox), "corridor_geojson": corridor_geojson,
+            }
 
     if os.path.exists(manifest_path):
         with open(manifest_path) as f:
@@ -2939,12 +2956,70 @@ def ensure_dynamic_package(run_id: str, work_dir: str, run_row: dict | None = No
         manifest = generate_package(
             output_dir=pkg_dir, bbox=bbox, corridor_geojson=corridor_geojson,
             zone_geography=zone_geography, zone_attributes=zone_attributes,
+            **({"population_input": population_input} if population_input is not None else {}),
         )
     except DataPipelineError as exc:
         raise RuntimeError(f"Dynamic package generation failed: {exc}") from exc
 
     manifest["package_dir"] = pkg_dir
     return manifest
+
+
+def population_setup_reader(run_id: str, run_row: dict, work_dir: str, *, stage_id: str | None = None):
+    """Select explicit stage custody, never recover a failed managed path as legacy."""
+    import model_attempt_writer
+    from model_common_population_handoff import StagePopulationReader
+    request = (run_row.get('input_snapshot_json') or {}).get('commonPopulation')
+    custody = request.get('custody') if isinstance(request, dict) else None
+    writer = model_attempt_writer.current()
+    if custody == 'managed_attempt':
+        if writer is None or writer.context.run_id != run_id:
+            raise RuntimeError('Managed population requires the actual bound attempt')
+        return writer
+    if custody != 'legacy_stage_snapshot' or writer is not None or run_row.get('attempt_managed') is not False:
+        raise RuntimeError('Population custody differs from the actual invocation')
+    if stage_id is None:
+        raise RuntimeError('Population requires its actual claimed Setup stage')
+    return StagePopulationReader(base_url=SUPABASE_URL, service_key=SUPABASE_KEY,
+        workspace_id=run_row['workspace_id'], run_id=run_id, stage_id=stage_id,
+        shared_root=RUN_WORK_ROOT, work_dir=work_dir, get=requests.get, post=requests.post)
+
+
+def publish_common_population(run_id: str, stage_id: str, pkg_dir: str, package_meta: dict) -> None:
+    """Register actual files through the explicitly selected retained command."""
+    import csv
+    from model_common_population_package import population_library, read_package_population
+    common = population_library()
+    metadata = read_package_population(pkg_dir)
+    if not metadata:
+        raise RuntimeError("Common population publication requires its verified package")
+    record = package_meta["common_population"]
+    run_row = sb_get_run(run_id)
+    reader = population_setup_reader(run_id, run_row, os.path.dirname(pkg_dir), stage_id=stage_id)
+    with open(os.path.join(pkg_dir, 'common_population', common.ROLES['source_zone_attributes']), newline='') as handle:
+        source_rows = list(csv.DictReader(handle))
+    loaded = common.read_common_population(os.path.join(pkg_dir, 'common_population'),
+        expected_manifest=record['manifest'], zone_rows=source_rows)
+    from model_common_population_handoff import confirm_population_publication
+    custody = confirm_population_publication(reader, loaded)
+    if custody != record.get('custody') or metadata['population_custody'] != custody:
+        raise RuntimeError('Population consumed custody differs before publication')
+    directory = os.path.join(pkg_dir, "common_population")
+    files = [("common_population", common.MANIFEST_NAME, record["manifest"])]
+    with open(os.path.join(directory, common.MANIFEST_NAME)) as handle:
+        basis = json.load(handle)
+    files += [("common_population_" + role, common.ROLES[role], descriptor)
+              for role, descriptor in basis["files"].items()]
+    for kind, filename, descriptor in files:
+        sb_record_retained_artifact({
+            "run_id": run_id, "stage_id": stage_id, "artifact_type": kind,
+            "file_url": "local://" + os.path.join(directory, filename),
+            "file_size_bytes": descriptor["bytes"], "content_hash": descriptor["sha256"],
+            "metadata_json": {"schema": common.SCHEMA, "custody": custody,
+                              **{key: value for key, value in metadata.items() if key != 'population_custody'},
+                              "origin": record.get("origin"), "scientific_acceptance": "unassessed"},
+        }, workspace_id=run_row['workspace_id'],
+           journal_dir=os.path.join(os.path.dirname(pkg_dir), 'common-population-commands'), logical_name=kind)
 
 
 # ─── Stage 1: AequilibraE Setup ────────────────────────────────────────
@@ -4140,6 +4215,8 @@ def assignment_artifact_metadata(assign_result: dict, filename: str) -> dict:
         )
     return {
         "filename": filename,
+        **{key: assign_result[key] for key in ("population_basis", "population_basis_payload_json", "population_basis_digest", "population_custody")
+           if key in assign_result},
         "assignment_convergence": convergence_record,
         "assignment_profile": profile,
         "assignment_profile_payload_json": profile_payload,
@@ -4363,6 +4440,8 @@ def stage_assignment(
     proj_dir = project_work_directory(work_dir)
     pkg_dir = package_work_directory(work_dir, pkg_dir)
     out_dir = create_assignment_output_directory(work_dir, output_dir_name)
+    from model_common_population_package import read_package_population
+    population_metadata = read_package_population(pkg_dir)
 
     centroid_map = setup_result["centroid_map"]
     # Keys might be strings after JSON round-trip
@@ -5143,6 +5222,7 @@ def stage_assignment(
     log += f"Links with volume: {loaded_links}/{len(results_df)}\n"
 
     return {
+        **population_metadata,
         "convergence": convergence_record,
         "network": {"links": int(graph.num_links), "nodes": int(graph.num_nodes), "zones": n_zones},
         "demand": {
@@ -7203,11 +7283,13 @@ def _claim_and_run_stage(stage: dict) -> bool:
     try:
         if stage_name == "AequilibraE Setup":
             run_row = sb_get_run(run_id)
-            package_meta = ensure_dynamic_package(run_id, work_dir, run_row=run_row)
+            package_meta = ensure_dynamic_package(run_id, work_dir, run_row=run_row, stage_id=stage_id)
             pkg_dir = package_meta["package_dir"]
             bbox = tuple(package_meta["bbox"])
 
             result = stage_setup(run_id, stage_id, work_dir, bbox, pkg_dir)
+            if package_meta.get("common_population") is not None:
+                publish_common_population(run_id, stage_id, pkg_dir, package_meta)
             os.makedirs(os.path.join(work_dir, "run_output"), exist_ok=True)
             write_run_state(work_dir, {"setup": result, "package": package_meta})
             sb_patch_stage(stage_id, {

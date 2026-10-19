@@ -216,7 +216,8 @@ class TheWholePackage(unittest.TestCase):
         self.assertEqual(manifest["demand_source"], "activitysim_trip_table")
         self.assertEqual(manifest["conversion"]["non_auto_person_trips"], 1)
         self.assertAlmostEqual(manifest["conversion"]["vehicle_trips"], 0.5)
-        self.assertIn("attributable to the demand model", manifest["method_note"])
+        self.assertIn("require separate identity checks", manifest["method_note"])
+        self.assertNotIn("attributable to the demand model and nothing else", manifest["method_note"])
 
     def test_a_trip_list_with_no_vehicle_trips_is_refused(self) -> None:
         # Assigning it would produce an empty network and a comparison

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import {
   checkMonthlyRunCap,
@@ -23,7 +23,11 @@ import {
 } from "@/lib/http/write-outcome";
 import {
   collectGuidedRunEvidence,
+  readGuidedStageCustody,
+  guidedPopulationRerun,
   guidedEvidenceSharesExactNetwork,
+  guidedPopulationComparison,
+  guidedPopulationSnapshotMetadata,
   guidedRunJobKey,
   latestGuidedRuns,
   verifiedActivitySimPreflight,
@@ -323,10 +327,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
       caveats: parsed.data.caveats ?? [],
       status: parsed.data.status ?? "draft",
     });
-    const metadataJson = {
+    const metadataJson: Record<string, unknown> = {
       ...(parsed.data.metadata ?? {}),
       sourceContext,
     };
+    // The consumed population claim is reconstructed from actual output evidence.
+    delete metadataJson.commonPopulation;
 
     const guidedModelsResult = await supabase
       .from("models")
@@ -366,7 +372,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       ] as const satisfies readonly GuidedRunJob[];
       const runsResult = await supabase
         .from("model_runs")
-        .select("id, model_id, scenario_entry_id, engine_key, status, assumption_snapshot_json, created_at")
+        .select("id, model_id, scenario_entry_id, engine_key, status, attempt_managed, assumption_snapshot_json, input_snapshot_json, created_at")
         .in("model_id", [aequilibraeModel.id, activitysimModel.id])
         .in("scenario_entry_id", [parsed.data.baselineEntryId, parsed.data.candidateEntryId])
         .order("created_at", { ascending: false })
@@ -379,9 +385,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const artifactsResult = runIds.length
         ? await supabase
             .from("model_run_artifacts")
-            .select("id, run_id, stage_id, artifact_type, file_url, file_size_bytes, content_hash, metadata_json, created_at")
+            .select("id, run_id, stage_id, attempt_id, artifact_type, file_url, file_size_bytes, content_hash, metadata_json, created_at")
             .in("run_id", runIds)
-            .in("artifact_type", ["link_volumes", "activitysim_link_volumes", "evidence_packet"])
+            .in("artifact_type", ["link_volumes", "activitysim_link_volumes", "evidence_packet", "common_population"])
             .order("created_at", { ascending: false })
             .order("id", { ascending: false })
         : { data: [], error: null };
@@ -390,9 +396,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
       }
       const stagesResult = runIds.length
         ? await supabase.from("model_run_stages")
-            .select("id, run_id, stage_name, status")
+            .select("id, run_id, stage_name, status, attempt_managed, active_attempt_id")
             .in("run_id", runIds)
-            .in("stage_name", ["Artifact Extraction", "ActivitySim Bundle & Preflight", "ActivitySim Network Assignment"])
+            .in("stage_name", ["AequilibraE Setup", "Artifact Extraction", "ActivitySim Bundle & Preflight", "ActivitySim Network Assignment"])
         : { data: [], error: null };
       const kpisResult = runIds.length
         ? await supabase.from("model_run_kpis")
@@ -408,7 +414,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const artifacts = (artifactsResult.data ?? []) as ModelRunArtifactRow[];
       const stages = (stagesResult.data ?? []) as ModelRunStageRow[];
       const kpis = (kpisResult.data ?? []) as ModelRunKpiRow[];
-      guidedEvidence = collectGuidedRunEvidence(jobs, runs, artifacts, stages);
+      const eligibleStageArtifacts = await readGuidedStageCustody({ workspaceId: access.scenarioSet.workspace_id,
+        runs, artifacts, stages,
+        readStageCustody: (workspaceId, runId, stageId, artifactId) => createServiceRoleClient().rpc("read_common_population_stage_custody", {
+          p_workspace: workspaceId, p_run: runId, p_stage: stageId, p_artifact: artifactId,
+        }),
+      });
+      guidedEvidence = collectGuidedRunEvidence(jobs, runs, artifacts, stages, eligibleStageArtifacts);
       const latest = latestGuidedRuns(jobs, runs);
       const missingActivitySim = jobs
         .filter((job) => job.method === "activitysim")
@@ -431,6 +443,21 @@ export async function POST(request: NextRequest, context: RouteContext) {
           },
           { status: 409 },
         );
+      }
+      const population = guidedPopulationComparison(jobs, guidedEvidence);
+      if (population.state !== "not_required" && population.state !== "ready") {
+        return NextResponse.json({
+          error: "A ready fixed-population comparison requires the same verified retained household population and baseline reference on all four outputs.",
+          repairState: "repairState" in population ? population.repairState : "needs_model_outputs",
+        }, { status: 409 });
+      }
+      if (population.state === "ready") {
+        const sourceCheck = guidedPopulationRerun(jobs, guidedEvidence, artifacts, stages, eligibleStageArtifacts);
+        if (sourceCheck.nextRun || sourceCheck.repairState) return NextResponse.json({
+          error: "The retained baseline population source could not be verified.",
+          repairState: sourceCheck.repairState ?? "population_basis_invalid",
+        }, { status: 409 });
+        metadataJson.commonPopulation = guidedPopulationSnapshotMetadata(population);
       }
       const decisionsResult = await supabase.from("modeling_claim_decisions")
         .select("model_run_id, track, claim_status")

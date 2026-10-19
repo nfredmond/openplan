@@ -6,6 +6,7 @@ import { loadAnalysisSequenceFacts } from "@/components/models/analysis-sequence
 import { resolveAnalysisSequence } from "@/components/models/analysis-sequence";
 import { sortedCompactJson } from "@/lib/models/demand-agreement-artifact";
 import { guidedRunJobKey, latestGuidedRuns, type GuidedRunJob } from "@/lib/models/guided-model-evidence";
+import { populationFixture, POPULATION_ATTEMPT_ID } from "@/test/fixtures/common-population-evidence";
 
 /** Project modeling facts must come from this project's exact output custody. */
 
@@ -67,6 +68,7 @@ function artifactMetadata() {
     network_settings_digest: SETTINGS_HASH,
     network_state_record: NETWORK_STATE,
     network_state_digest: STATE_HASH,
+    ...populationFixture().metadata,
   };
 }
 
@@ -103,15 +105,18 @@ function guidedTables(): Record<string, TableData> {
     model_id,
     scenario_entry_id,
     status: "succeeded",
+    attempt_managed: true,
     engine_key: model_id === "model-aeq" ? "aequilibrae" : "behavioral_demand",
     assumption_snapshot_json: scenario_entry_id === "entry-build"
       ? { guidedProjectChange: { kind: "assigned_auto_trip_change_pct", autoTripChangePct: -8, basis: "adopted project forecast" } }
       : {},
+    input_snapshot_json: { commonPopulation: id === "run-aeq-base" ? populationFixture().generate : populationFixture().reuse },
   }));
   const artifacts = runs.map((run, index) => ({
     id: `artifact-${index}`,
     run_id: run.id,
     stage_id: `stage-${index}`,
+    attempt_id: POPULATION_ATTEMPT_ID,
     artifact_type: run.model_id === "model-aeq" ? "link_volumes" : "activitysim_link_volumes",
     file_url: `storage://run-artifacts/${run.id}.csv`,
     file_size_bytes: 24,
@@ -149,6 +154,8 @@ function guidedTables(): Record<string, TableData> {
       run_id: run.id,
       stage_name: run.model_id === "model-aeq" ? "Artifact Extraction" : "ActivitySim Network Assignment",
       status: "succeeded",
+      attempt_managed: true,
+      active_attempt_id: POPULATION_ATTEMPT_ID,
     })) },
     model_run_artifacts: { rows: artifacts },
     modeling_claim_decisions: { rows: runs.map((run) => ({
@@ -156,7 +163,7 @@ function guidedTables(): Record<string, TableData> {
       track: run.model_id === "model-aeq" ? "assignment" : "behavioral_demand",
       claim_status: "screening_grade",
     })) },
-    scenario_comparison_snapshots: { rows: [{ id: "snapshot-1", scenario_set_id: "set-1", status: "ready" }] },
+    scenario_comparison_snapshots: { rows: [{ id: "snapshot-1", scenario_set_id: "set-1", status: "ready", metadata_json: { commonPopulation: populationFixture().snapshot } }] },
     scenario_comparison_model_run_links: { rows: runs.map((run, index) => ({
       comparison_snapshot_id: "snapshot-1",
       model_run_id: run.id,
@@ -260,6 +267,31 @@ describe("what the analysis sequence counts as a checked run", () => {
     expect(facts.savedComparisonPacketCount).toBe(1);
   });
 
+  it("retains an old snapshot but does not count its absent fixed-population policy as current", async () => {
+    const tables = guidedTables();
+    const snapshot = tables.scenario_comparison_snapshots.rows?.[0];
+    if (!snapshot) throw new Error("Missing supplied snapshot");
+    delete snapshot.metadata_json;
+    const { facts } = await load(tables);
+    expect(facts.savedComparisonPacketCount).toBe(1);
+    expect(facts.comparisonPacketCount).toBe(0);
+  });
+
+  it("withholds fixed-population comparison readiness when one consumed basis is absent", async () => {
+    const tables = guidedTables();
+    const artifact = tables.model_run_artifacts.rows?.[3];
+    if (!artifact) throw new Error("Missing supplied output");
+    const metadata = { ...(artifact.metadata_json as Record<string, unknown>) };
+    delete metadata.population_basis;
+    delete metadata.population_basis_payload_json;
+    delete metadata.population_basis_digest;
+    artifact.metadata_json = metadata;
+    const { facts } = await load(tables);
+    expect(facts.checkedRunCount).toBe(4);
+    expect(facts.guidedComparisonCheckedCount).toBe(0);
+    expect(facts.comparisonPacketCount).toBe(0);
+  });
+
   it("keeps validation incomplete until all four exact outputs have track-matched decisions", async () => {
     const tables = guidedTables();
     tables.modeling_claim_decisions.rows = tables.modeling_claim_decisions.rows?.slice(0, 3);
@@ -355,6 +387,11 @@ describe("what the analysis sequence counts as a checked run", () => {
     expect(recorded.selects.model_run_artifacts).toContain("file_size_bytes");
     expect(recorded.selects.model_run_artifacts).toContain("metadata_json");
     expect(recorded.selects.model_run_stages).toContain("stage_name");
+    expect(recorded.selects.model_run_stages).toContain("attempt_managed");
+    expect(recorded.selects.model_run_stages).toContain("active_attempt_id");
+    expect(recorded.selects.model_run_artifacts).toContain("attempt_id");
+    expect(recorded.selects.model_runs).toContain("input_snapshot_json");
+    expect(recorded.selects.scenario_comparison_snapshots).toContain("metadata_json");
     expect(recorded.selects.modeling_claim_decisions).toContain("claim_status");
     expect(recorded.selects.scenario_comparison_model_run_links).toContain("artifact_sha256");
   });

@@ -16,7 +16,10 @@ import {
 } from "@/lib/models/project-comparison";
 import {
   collectGuidedRunEvidence,
+  readGuidedStageCustody,
   guidedEvidenceSharesExactNetwork,
+  guidedPopulationComparison,
+  guidedPopulationRerun,
   guidedRunJobKey,
   latestGuidedRuns,
   verifiedActivitySimPreflight,
@@ -27,7 +30,7 @@ import {
   type ModelRunStageRow,
 } from "@/lib/models/guided-model-evidence";
 import { createApiAuditLogger } from "@/lib/observability/audit";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 
 const inputSchema = z.object({
   projectId: z.string().uuid(),
@@ -302,7 +305,7 @@ export async function POST(request: NextRequest) {
 
     const guidedRunsResult = await supabase
       .from("model_runs")
-      .select("id, model_id, scenario_entry_id, engine_key, status, assumption_snapshot_json, created_at")
+      .select("id, model_id, scenario_entry_id, engine_key, status, attempt_managed, assumption_snapshot_json, input_snapshot_json, created_at")
       .in("model_id", [modelIds.aequilibrae, modelIds.activitysim])
       .in("scenario_entry_id", [baselineEntryId, buildEntryId])
       .order("created_at", { ascending: false })
@@ -332,9 +335,9 @@ export async function POST(request: NextRequest) {
     const artifactsResult = guidedRunIds.length > 0
       ? await supabase
           .from("model_run_artifacts")
-          .select("id, run_id, stage_id, artifact_type, file_url, file_size_bytes, content_hash, metadata_json, created_at")
+          .select("id, run_id, stage_id, attempt_id, artifact_type, file_url, file_size_bytes, content_hash, metadata_json, created_at")
           .in("run_id", guidedRunIds)
-          .in("artifact_type", ["link_volumes", "activitysim_link_volumes", "evidence_packet"])
+          .in("artifact_type", ["link_volumes", "activitysim_link_volumes", "evidence_packet", "common_population"])
           .order("created_at", { ascending: false })
           .order("id", { ascending: false })
       : { data: [], error: null };
@@ -349,9 +352,9 @@ export async function POST(request: NextRequest) {
     const stagesResult = guidedRunIds.length > 0
       ? await supabase
           .from("model_run_stages")
-          .select("id, run_id, stage_name, status")
+          .select("id, run_id, stage_name, status, attempt_managed, active_attempt_id")
           .in("run_id", guidedRunIds)
-          .in("stage_name", ["Artifact Extraction", "ActivitySim Bundle & Preflight", "ActivitySim Network Assignment"])
+          .in("stage_name", ["AequilibraE Setup", "Artifact Extraction", "ActivitySim Bundle & Preflight", "ActivitySim Network Assignment"])
       : { data: [], error: null };
     if (stagesResult.error) {
       return NextResponse.json({ error: "Comparison is set up, but its run stages could not be verified" }, { status: 500 });
@@ -370,7 +373,13 @@ export async function POST(request: NextRequest) {
     }
     const stages = (stagesResult.data ?? []) as ModelRunStageRow[];
     const kpis = (kpisResult.data ?? []) as ModelRunKpiRow[];
-    const currentEvidence = collectGuidedRunEvidence(orderedRunJobs, guidedRuns, artifacts, stages);
+    const eligibleStageArtifacts = await readGuidedStageCustody({ workspaceId: project.workspace_id,
+      runs: guidedRuns, artifacts, stages,
+      readStageCustody: (workspaceId, runId, stageId, artifactId) => createServiceRoleClient().rpc("read_common_population_stage_custody", {
+        p_workspace: workspaceId, p_run: runId, p_stage: stageId, p_artifact: artifactId,
+      }),
+    });
+    const currentEvidence = collectGuidedRunEvidence(orderedRunJobs, guidedRuns, artifacts, stages, eligibleStageArtifacts);
     const evidenceByJob = new Map(
       currentEvidence.map((item) => [`${item.method}:${item.scenario}`, item]),
     );
@@ -413,6 +422,16 @@ export async function POST(request: NextRequest) {
       !hasActivitySimPreflightForNext,
     );
     const sharedNetworkMismatch = currentEvidence.length === 4 && !guidedEvidenceSharesExactNetwork(currentEvidence);
+    const population = guidedPopulationComparison(orderedRunJobs, currentEvidence);
+    const populationRerun = guidedPopulationRerun(orderedRunJobs, currentEvidence, artifacts, stages, eligibleStageArtifacts);
+    const populationRepair = !sharedNetworkMismatch
+      ? populationRerun.repairState ?? ("repairState" in population ? population.repairState : null) : null;
+    const baselineNetwork = currentEvidence.find((item) => item.method === "aequilibrae" && item.scenario === "baseline");
+    const networkRerun = sharedNetworkMismatch && baselineNetwork
+      ? orderedRunJobs.find((job) => currentEvidence.some((item) => guidedRunJobKey(item) === guidedRunJobKey(job) &&
+          (item.assignmentProfileSha256 !== baselineNetwork.assignmentProfileSha256 || item.networkSettingsSha256 !== baselineNetwork.networkSettingsSha256 ||
+            item.networkStateSha256 !== baselineNetwork.networkStateSha256))) ?? orderedRunJobs[0] : null;
+    const reviewNextRun = populationRepair ? populationRerun.nextRun ?? nextRun : networkRerun ?? nextRun;
 
     audit.info("project_comparison_ready_for_inputs", {
       workspaceId: project.workspace_id,
@@ -426,12 +445,14 @@ export async function POST(request: NextRequest) {
       {
         state: buildAssumptionRequired
           ? "needs_build_assumption"
+          : sharedNetworkMismatch
+            ? "needs_shared_network_rerun"
+          : populationRepair
+            ? populationRepair
           : needsActivitySimRuntime
             ? "needs_activitysim_runtime"
           : needsActivitySimOutput
             ? "needs_activitysim_output"
-          : sharedNetworkMismatch
-            ? "needs_shared_network_rerun"
           : nextRun
             ? "ready_for_run"
             : "ready_for_validation",
@@ -440,7 +461,15 @@ export async function POST(request: NextRequest) {
         buildEntryId,
         modelIds,
         networkBasis: GUIDED_WORKER_NETWORK_BASIS.kind,
-        nextRun: buildAssumptionRequired ? null : nextRun,
+        nextRun: buildAssumptionRequired ? null : reviewNextRun,
+        ...(populationRepair ? { repairState: populationRepair,
+          repairReason: populationRerun.summary
+            ? "Review a new run for the selected job using the retained baseline population. The existing baseline remains the source."
+            : "The consumed population is missing or invalid. Run a new baseline and reuse its retained population for the other jobs." } : {}),
+        populationState: populationRepair === "population_basis_mismatch" ? "mismatch"
+          : populationRepair === "population_basis_invalid" ? "invalid"
+          : populationRepair === "needs_shared_population_rerun" ? "unassessed" : population.state,
+        populationSummary: populationRerun.summary,
         buildAssumptionRequired,
         buildAssumption,
         verifiedOutputs: currentEvidence.map((item) => ({
@@ -453,6 +482,8 @@ export async function POST(request: NextRequest) {
           assignmentProfileSha256: item.assignmentProfileSha256,
           networkSettingsSha256: item.networkSettingsSha256,
           networkStateSha256: item.networkStateSha256,
+          populationState: item.population.state,
+          populationBasisDigest: item.population.state === "verified" ? item.population.digest : null,
         })),
         activitysimPreflightRuns,
       },

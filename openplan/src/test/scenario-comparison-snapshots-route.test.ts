@@ -1,8 +1,10 @@
 import { createHash } from "node:crypto";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { populationFixture, POPULATION_ATTEMPT_ID } from "@/test/fixtures/common-population-evidence";
 
 const createClientMock = vi.fn();
+const stageCustodyRpcMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
 const markScenarioLinkedReportsBasisStaleMock = vi.fn();
@@ -48,6 +50,9 @@ const guidedArtifactsResultMock = vi.fn();
 const guidedStagesResultMock = vi.fn();
 const guidedKpisResultMock = vi.fn();
 const guidedDecisionsResultMock = vi.fn();
+const guidedRunsSelectMock = vi.fn(() => orderedResult(guidedRunsResultMock));
+const guidedArtifactsSelectMock = vi.fn(() => orderedResult(guidedArtifactsResultMock));
+const guidedStagesSelectMock = vi.fn(() => orderedResult(guidedStagesResultMock));
 const guidedLinksInsertMock = vi.fn();
 const comparisonSnapshotReadyMaybeSingleMock = vi.fn();
 const comparisonSnapshotReadySelectMock = vi.fn(() => ({ maybeSingle: comparisonSnapshotReadyMaybeSingleMock }));
@@ -109,15 +114,15 @@ const fromMock = vi.fn((table: string) => {
   }
 
   if (table === "model_runs") {
-    return { select: () => orderedResult(guidedRunsResultMock) };
+    return { select: guidedRunsSelectMock };
   }
 
   if (table === "model_run_artifacts") {
-    return { select: () => orderedResult(guidedArtifactsResultMock) };
+    return { select: guidedArtifactsSelectMock };
   }
 
   if (table === "model_run_stages") {
-    return { select: () => orderedResult(guidedStagesResultMock) };
+    return { select: guidedStagesSelectMock };
   }
 
   if (table === "model_run_kpis") {
@@ -137,6 +142,7 @@ const fromMock = vi.fn((table: string) => {
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: (...args: unknown[]) => createClientMock(...args),
+  createServiceRoleClient: () => ({ rpc: stageCustodyRpcMock }),
 }));
 
 vi.mock("@/lib/observability/audit", () => ({
@@ -387,14 +393,26 @@ describe("/api/scenarios/[scenarioSetId]/spine/comparison-snapshots", () => {
     const buildAssumptions = {
       projectPackage: "Protected bike network",
       internalSolverKey: "do-not-leak",
+      guidedProjectChange: { kind: "assigned_auto_trip_change_pct", autoTripChangePct: -5, basis: "Supplied scenario" },
     };
+    const population = populationFixture();
+    const readCurrentEntries = () => {
+      entryMaybeSingleMock.mockReset();
+      for (const [id, type, assumptions] of [
+        ["55555555-5555-4555-8555-555555555555", "baseline", baselineAssumptions],
+        ["77777777-7777-4777-8777-777777777777", "alternative", buildAssumptions],
+      ] as const) entryMaybeSingleMock.mockResolvedValueOnce({ data: { id, scenario_set_id: "11111111-1111-4111-8111-111111111111",
+        entry_type: type, label: type, assumptions_json: assumptions, attached_run_id: null }, error: null });
+    };
+    readCurrentEntries();
     const runs = [
       ["run-aeq-base", "model-aeq", "55555555-5555-4555-8555-555555555555", "aequilibrae", baselineAssumptions],
       ["run-aeq-build", "model-aeq", "77777777-7777-4777-8777-777777777777", "aequilibrae", buildAssumptions],
       ["run-asim-base", "model-asim", "55555555-5555-4555-8555-555555555555", "behavioral_demand", baselineAssumptions],
       ["run-asim-build", "model-asim", "77777777-7777-4777-8777-777777777777", "behavioral_demand", buildAssumptions],
-    ].map(([id, model_id, scenario_entry_id, engine_key, assumption_snapshot_json]) => ({
-      id, model_id, scenario_entry_id, engine_key, assumption_snapshot_json, status: "succeeded",
+    ].map(([id, model_id, scenario_entry_id, engine_key, assumption_snapshot_json], index) => ({
+      id, model_id, scenario_entry_id, engine_key, assumption_snapshot_json, status: "succeeded", attempt_managed: true,
+      input_snapshot_json: { commonPopulation: index === 0 ? population.generate : population.reuse },
     }));
     const metadata = {
       assignment_profile: JSON.parse(profilePayload),
@@ -405,29 +423,38 @@ describe("/api/scenarios/[scenarioSetId]/spine/comparison-snapshots", () => {
       network_settings_digest: settingsHash,
       network_state_record: networkState,
       network_state_digest: stateHash,
+      ...population.metadata,
     };
     guidedRunsResultMock.mockReturnValue({ data: runs, error: null });
-    guidedArtifactsResultMock.mockReturnValue({
-      data: runs.map((run, index) => ({
+    const artifacts = runs.map((run, index) => ({
         id: `artifact-${index}`,
         run_id: run.id,
         stage_id: `stage-${index}`,
+        attempt_id: POPULATION_ATTEMPT_ID,
         artifact_type: run.model_id === "model-aeq" ? "link_volumes" : "activitysim_link_volumes",
         file_url: `storage://run-artifacts/${run.id}.csv`,
         file_size_bytes: 100,
         content_hash: `${index + 1}`.repeat(64),
-        metadata_json: metadata,
+        metadata_json: structuredClone(metadata),
         created_at: `2026-08-27T00:00:0${index}Z`,
-      })),
+      }));
+    guidedArtifactsResultMock.mockReturnValue({
+      data: [...artifacts, { id: population.source.artifactId, run_id: runs[0].id, stage_id: population.source.stageId,
+        attempt_id: population.source.attemptId, artifact_type: "common_population", file_url: "local:///supplied/common_population.json",
+        file_size_bytes: population.source.sizeBytes, content_hash: population.source.sha256,
+        metadata_json: population.sourceMetadata, created_at: "2026-10-18" }],
       error: null,
     });
     guidedStagesResultMock.mockReturnValue({
-      data: runs.map((run, index) => ({
+      data: [...runs.map((run, index) => ({
         id: `stage-${index}`,
         run_id: run.id,
         stage_name: run.model_id === "model-aeq" ? "Artifact Extraction" : "ActivitySim Network Assignment",
         status: "succeeded",
-      })),
+        attempt_managed: true,
+        active_attempt_id: POPULATION_ATTEMPT_ID,
+      })), { id: population.source.stageId, run_id: runs[0].id, stage_name: "AequilibraE Setup", status: "succeeded",
+        attempt_managed: true, active_attempt_id: population.source.attemptId }],
       error: null,
     });
     guidedKpisResultMock.mockReturnValue({ data: [], error: null });
@@ -466,6 +493,27 @@ describe("/api/scenarios/[scenarioSetId]/spine/comparison-snapshots", () => {
       }),
     ]));
     expect(comparisonSnapshotUpdateMock).toHaveBeenCalledWith({ status: "ready" });
+    expect(comparisonSnapshotInsertMock).toHaveBeenCalledWith(expect.objectContaining({
+      metadata_json: expect.objectContaining({ commonPopulation: population.snapshot }),
+    }));
+    expect(guidedRunsSelectMock).toHaveBeenCalledWith("id, model_id, scenario_entry_id, engine_key, status, attempt_managed, assumption_snapshot_json, input_snapshot_json, created_at");
+    expect(guidedArtifactsSelectMock).toHaveBeenCalledWith("id, run_id, stage_id, attempt_id, artifact_type, file_url, file_size_bytes, content_hash, metadata_json, created_at");
+    expect(guidedStagesSelectMock).toHaveBeenCalledWith("id, run_id, stage_name, status, attempt_managed, active_attempt_id");
+
+    comparisonSnapshotInsertMock.mockClear();
+    const original = structuredClone(artifacts[3].metadata_json);
+    artifacts[3].metadata_json.population_basis_digest = "0".repeat(64);
+    readCurrentEntries();
+    const corruptPopulation = await postComparisonSnapshot(new NextRequest("http://localhost/api/scenarios/1/spine/comparison-snapshots", {
+      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({
+        baselineEntryId: "55555555-5555-4555-8555-555555555555", candidateEntryId: "77777777-7777-4777-8777-777777777777",
+        label: "Corrupt supplied population", status: "ready", metadata: { commonPopulation: population.snapshot },
+      }),
+    }), { params: Promise.resolve({ scenarioSetId: "11111111-1111-4111-8111-111111111111" }) });
+    expect(corruptPopulation.status).toBe(409);
+    expect(await corruptPopulation.json()).toMatchObject({ repairState: "population_basis_invalid" });
+    expect(comparisonSnapshotInsertMock).not.toHaveBeenCalled();
+    artifacts[3].metadata_json = original;
 
     comparisonSnapshotInsertMock.mockClear();
     guidedLinksInsertMock.mockClear();
@@ -516,6 +564,48 @@ describe("/api/scenarios/[scenarioSetId]/spine/comparison-snapshots", () => {
     expect(incomplete.status).toBe(409);
     expect(await incomplete.json()).toMatchObject({ repairState: "needs_validation_decisions" });
     expect(comparisonSnapshotInsertMock).not.toHaveBeenCalled();
+
+    const stageId = (value: number) => `00000000-0000-4000-8000-${String(value).padStart(12, "0")}`;
+    const stagePopulation = populationFixture(stageId(70), "legacy_stage_snapshot");
+    const stageRuns = runs.map((run, index) => ({ ...run, id: stageId(70 + index), attempt_managed: false,
+      input_snapshot_json: { commonPopulation: index === 0 ? stagePopulation.generate : stagePopulation.reuse } }));
+    const stageArtifacts = artifacts.map((artifact, index) => ({ ...artifact, id: stageId(80 + index), run_id: stageRuns[index].id,
+      stage_id: stageId(90 + index), attempt_id: null, metadata_json: { ...metadata, ...stagePopulation.metadata } }));
+    const stageSourceArtifact = { id: stagePopulation.source.artifactId, run_id: stageRuns[0].id, stage_id: stagePopulation.source.stageId,
+      attempt_id: null, artifact_type: "common_population", file_url: "local:///supplied/common_population.json",
+      file_size_bytes: stagePopulation.source.sizeBytes, content_hash: stagePopulation.source.sha256,
+      metadata_json: stagePopulation.sourceMetadata, created_at: "2026-10-18" };
+    guidedRunsResultMock.mockReturnValue({ data: stageRuns, error: null });
+    guidedArtifactsResultMock.mockReturnValue({ data: [...stageArtifacts, stageSourceArtifact], error: null });
+    guidedStagesResultMock.mockReturnValue({ data: [...stageRuns.map((run, index) => ({ id: stageId(90 + index), run_id: run.id,
+      stage_name: index < 2 ? "Artifact Extraction" : "ActivitySim Network Assignment", status: "succeeded", attempt_managed: false, active_attempt_id: null })),
+      { id: stagePopulation.source.stageId, run_id: stageRuns[0].id, stage_name: "AequilibraE Setup", status: "succeeded", attempt_managed: false, active_attempt_id: null }], error: null });
+    guidedDecisionsResultMock.mockReturnValue({ data: stageRuns.map((run, index) => ({ model_run_id: run.id,
+      track: index < 2 ? "assignment" : "behavioral_demand", claim_status: "prototype_only" })), error: null });
+    stageCustodyRpcMock.mockImplementation(async (_name: string, params: Record<string, unknown>) => ({ data: {
+      schema: "openplan.common-population-stage-custody.v1", custody: "legacy_stage_snapshot", workspace_id: params.p_workspace,
+      run_id: params.p_run, stage_id: params.p_stage, artifact_id: params.p_artifact, eligible: true,
+    }, error: null }));
+    const stageRequest = () => new NextRequest("http://localhost/api/scenarios/1/spine/comparison-snapshots", {
+      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({
+        baselineEntryId: "55555555-5555-4555-8555-555555555555", candidateEntryId: "77777777-7777-4777-8777-777777777777",
+        label: "Supplied stage-snapshot custody", status: "ready",
+      }),
+    });
+    readCurrentEntries();
+    const stageReady = await postComparisonSnapshot(stageRequest(), { params: Promise.resolve({ scenarioSetId: "11111111-1111-4111-8111-111111111111" }) });
+    expect(stageReady.status).toBe(201);
+    expect(stageCustodyRpcMock).toHaveBeenCalledTimes(5);
+    expect(comparisonSnapshotInsertMock).toHaveBeenCalledWith(expect.objectContaining({ metadata_json: expect.objectContaining({
+      commonPopulation: stagePopulation.snapshot,
+    }) }));
+    comparisonSnapshotInsertMock.mockClear();
+    stageCustodyRpcMock.mockResolvedValue({ data: { schema: "openplan.common-population-stage-custody.v1", eligible: true }, error: null });
+    readCurrentEntries();
+    const stageRefused = await postComparisonSnapshot(stageRequest(), { params: Promise.resolve({ scenarioSetId: "11111111-1111-4111-8111-111111111111" }) });
+    expect(stageRefused.status).toBe(409);
+    expect(comparisonSnapshotInsertMock).not.toHaveBeenCalled();
+
   });
 
   it("accepts a real buildTripGenComparisonPayload body through the real route schema and persists the split caveats", async () => {
