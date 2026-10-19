@@ -204,3 +204,12 @@ tests because of its config loader; restoration passes. The corrected ordinary
 window passes 96 affected tests, nine intended assertion failures, restored 96,
 lint and direction. Migration 000002 stays byte-identical. These checks do not
 prove installed SQL, concurrent deletion, browser, PDF or Storage behavior.
+
+CI census follow-up, October 18: both Safety ledgers now have dedicated tenant,
+client-write and attributed-service probes, registered in the global census.
+Seven rollback-only native cases and 27 route/registration tests pass before
+and after 13 intended permission, policy, census and registration faults.
+All source bytes restore exactly; scoped lint and configured TypeScript pass.
+The first runner fails while reading a fault reason from the wrong output and
+stays failed. Migration bytes remain unchanged. This does not prove hosted,
+Storage, concurrent-writer or browser behavior.

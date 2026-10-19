@@ -72,27 +72,71 @@ import { resolveLocalDbContainer } from "./helpers/live-catalog";
       PERFORM pg_temp.assert_safety((SELECT updated_at=(SELECT project_before FROM safety_input) FROM public.projects WHERE id='__PROJECT__'),'Failed custody advanced project');
     END $$; RESET ROLE;`));
 
-  it("limits reads to members and execution to the service with a current attributed writer", () => exercise(`
-    SET LOCAL ROLE service_role; SELECT pg_temp.persist_safety(); RESET ROLE;
-    DO $$ DECLARE u text; n integer; BEGIN
-      FOREACH u IN ARRAY ARRAY['__ACTOR__','__VIEWER__','__OUTSIDER__'] LOOP
-        PERFORM set_config('request.jwt.claim.sub',u,true); SET LOCAL ROLE authenticated;
-        SELECT count(*) INTO n FROM public.report_safety_snapshot_persistence WHERE artifact_id='__ARTIFACT__';
-        PERFORM pg_temp.assert_safety(n=CASE WHEN u='__OUTSIDER__' THEN 0 ELSE 1 END,'Custody tenant read wrong');
+  it("limits both ledgers to tenant reads, denies client writes and requires a current attributed service writer", () => exercise(`
+    DO $$ DECLARE u text; ledger text; n integer; rows jsonb;
+      artifact jsonb:=(SELECT i.artifact FROM safety_input i); report_update jsonb:=(SELECT i.report_update FROM safety_input i);
+      sections jsonb:=pg_temp.safety_sections(); c public.report_safety_snapshot_persistence;
+      s public.funding_opportunity_safety_seeds; BEGIN
+      SET LOCAL ROLE service_role;
+      FOREACH u IN ARRAY ARRAY['__VIEWER__','__OUTSIDER__'] LOOP
+        BEGIN PERFORM public.persist_safety_plan_generation(u::uuid,
+          jsonb_set(artifact,'{generated_by}',to_jsonb(u)),report_update);
+          RAISE EXCEPTION 'Nonwriter attributed persistence accepted'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+      END LOOP;
+      PERFORM pg_temp.persist_safety();
+      rows:=pg_temp.safety_rows();
+      FOREACH u IN ARRAY ARRAY['__VIEWER__','__OUTSIDER__'] LOOP
+        BEGIN PERFORM public.apply_ss4a_safety_seed(u::uuid,rows,repeat('b',64),sections);
+          RAISE EXCEPTION 'Nonwriter attributed seed accepted'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+      END LOOP;
+      PERFORM public.apply_ss4a_safety_seed('__ACTOR__',rows,repeat('b',64),sections);
+      SELECT * INTO STRICT c FROM public.report_safety_snapshot_persistence WHERE artifact_id='__ARTIFACT__';
+      SELECT * INTO STRICT s FROM public.funding_opportunity_safety_seeds WHERE opportunity_id='__OPPORTUNITY__';
+      RESET ROLE;
+      PERFORM pg_temp.assert_safety(c.workspace_id=s.workspace_id,'Ledger fixture tenants differ');
+      PERFORM pg_temp.assert_safety(EXISTS(SELECT FROM public.workspace_members
+        WHERE user_id='__OUTSIDER__' AND role='owner' AND workspace_id<>c.workspace_id)
+        AND NOT EXISTS(SELECT FROM public.workspace_members WHERE user_id='__OUTSIDER__' AND workspace_id=c.workspace_id),
+        'Outsider is not a separate tenant owner');
+      FOREACH u IN ARRAY ARRAY['__ACTOR__','__VIEWER__','__OUTSIDER__',''] LOOP
+        PERFORM set_config('request.jwt.claim.sub',u,true);
+        IF u='' THEN SET LOCAL ROLE anon; ELSE SET LOCAL ROLE authenticated; END IF;
+        IF u='' THEN
+          BEGIN PERFORM 1 FROM public.report_safety_snapshot_persistence WHERE artifact_id='__ARTIFACT__';
+            RAISE EXCEPTION 'Anonymous custody read granted'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+          BEGIN PERFORM 1 FROM public.funding_opportunity_safety_seeds WHERE opportunity_id='__OPPORTUNITY__';
+            RAISE EXCEPTION 'Anonymous seed read granted'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+        ELSE
+          SELECT count(*) INTO n FROM public.report_safety_snapshot_persistence WHERE artifact_id='__ARTIFACT__';
+          PERFORM pg_temp.assert_safety(n=CASE WHEN u='__OUTSIDER__' THEN 0 ELSE 1 END,'Custody tenant read wrong');
+          SELECT count(*) INTO n FROM public.funding_opportunity_safety_seeds WHERE opportunity_id='__OPPORTUNITY__';
+          PERFORM pg_temp.assert_safety(n=CASE WHEN u='__OUTSIDER__' THEN 0 ELSE 1 END,'Seed tenant read wrong');
+        END IF;
         PERFORM pg_temp.assert_safety(NOT has_function_privilege(current_user,'public.persist_safety_plan_generation(uuid,jsonb,jsonb)','EXECUTE'),'Persistence function exposed');
         PERFORM pg_temp.assert_safety(NOT has_function_privilege(current_user,'public.apply_ss4a_safety_seed(uuid,jsonb,text,jsonb)','EXECUTE'),'Seed function exposed');
-        PERFORM pg_temp.assert_safety(NOT has_any_column_privilege(current_user,'public.report_safety_snapshot_persistence','UPDATE'),'Ordinary member custody UPDATE granted');
+        BEGIN PERFORM public.persist_safety_plan_generation('__ACTOR__',artifact,report_update);
+          RAISE EXCEPTION 'Client persistence execution accepted'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+        BEGIN PERFORM public.apply_ss4a_safety_seed('__ACTOR__',rows,repeat('b',64),sections);
+          RAISE EXCEPTION 'Client seed execution accepted'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+        FOREACH ledger IN ARRAY ARRAY['public.report_safety_snapshot_persistence','public.funding_opportunity_safety_seeds'] LOOP
+          PERFORM pg_temp.assert_safety(NOT has_any_column_privilege(current_user,ledger,'INSERT'),'Client ledger INSERT granted: '||ledger);
+          PERFORM pg_temp.assert_safety(NOT has_any_column_privilege(current_user,ledger,'UPDATE'),'Client ledger UPDATE granted: '||ledger);
+          PERFORM pg_temp.assert_safety(NOT has_table_privilege(current_user,ledger,'DELETE'),'Client ledger DELETE granted: '||ledger);
+        END LOOP;
+        BEGIN INSERT INTO public.report_safety_snapshot_persistence SELECT (c).*;
+          RAISE EXCEPTION 'Client custody insert accepted'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+        BEGIN UPDATE public.report_safety_snapshot_persistence SET artifact_id=artifact_id WHERE artifact_id=c.artifact_id;
+          RAISE EXCEPTION 'Client custody update accepted'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+        BEGIN DELETE FROM public.report_safety_snapshot_persistence WHERE artifact_id=c.artifact_id;
+          RAISE EXCEPTION 'Client custody delete accepted'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+        BEGIN INSERT INTO public.funding_opportunity_safety_seeds SELECT (s).*;
+          RAISE EXCEPTION 'Client seed insert accepted'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+        BEGIN UPDATE public.funding_opportunity_safety_seeds SET preview_hash=preview_hash WHERE id=s.id;
+          RAISE EXCEPTION 'Client seed update accepted'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+        BEGIN DELETE FROM public.funding_opportunity_safety_seeds WHERE id=s.id;
+          RAISE EXCEPTION 'Client seed delete accepted'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
         RESET ROLE;
       END LOOP;
-      SET LOCAL ROLE service_role;
-      BEGIN PERFORM public.persist_safety_plan_generation('__OUTSIDER__',
-        jsonb_set((SELECT artifact FROM safety_input),'{generated_by}','"__OUTSIDER__"'::jsonb),(SELECT report_update FROM safety_input));
-        RAISE EXCEPTION 'Outsider attributed writer accepted'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
-      RESET ROLE;
-      SET LOCAL ROLE anon;
-      BEGIN PERFORM 1 FROM public.report_safety_snapshot_persistence; RAISE EXCEPTION 'Anonymous custody read granted';
-        EXCEPTION WHEN insufficient_privilege THEN NULL; END;
-      RESET ROLE;
     END $$;`));
 
   it("appends six drafts, preserves earlier history and returns the same receipt after a lost response", () => exercise(`
