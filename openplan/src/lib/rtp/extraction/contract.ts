@@ -74,12 +74,11 @@ export type RtpExtractionTargetKind = (typeof RTP_EXTRACTION_TARGET_KINDS)[numbe
  * What a run reads when the caller does not say.
  *
  * `chapter_block` is EXCLUDED from the default on purpose. Verbatim chapter
- * prose does not land in an RTP table at all — it goes through the existing
- * `document_narrative_drafts` staging machinery, which is a different
- * acceptance path with a different reviewer flow. Transcribing hundreds of
- * blocks into a queue nobody has a screen for is the shipped-invisible defect
- * this repository has paid for repeatedly, so the block lane is opt-in until
- * its acceptance surface exists.
+ * prose goes through `document_narrative_drafts` staging. The Document review
+ * launcher requests it explicitly for policy and goal text. The reviewer chooses
+ * the destination through Place copied chapter text, then reviews the draft
+ * before copying, editing and saving it in the chapter editor. Keep this separate
+ * from numeric reading so an unchanged request does not add chapter model calls.
  */
 export const RTP_EXTRACTION_DEFAULT_TARGET_KINDS: readonly RtpExtractionTargetKind[] = [
   "financial_line",
