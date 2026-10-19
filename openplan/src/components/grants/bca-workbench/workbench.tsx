@@ -12,7 +12,12 @@ import {
   newBcaDocument,
   newBcaFlow,
   exampleBcaDocument,
+  reviewBcaProjectPlace,
 } from "@/lib/bca/workbench/document";
+import {
+  BCA_PLACE_LIMIT, bcaPlaceDescription, bcaPlaceReview, bcaPlaceReviewLabel, bcaProjectPlaceSchema,
+  type BcaProjectPlaceRead,
+} from "@/lib/bca/workbench/project-place";
 import { BCA_PROFILES, getBcaProfile } from "@/lib/bca/workbench/profiles";
 import {
   importBcaModelEvidence,
@@ -30,6 +35,7 @@ type Version = {
   created_by: string;
   document_json: unknown;
   inputHash: string;
+  projectPlaceReview?: { status: Parameters<typeof bcaPlaceReviewLabel>[0] };
 };
 type Pending = { id: string; document: BcaDocument };
 const tabs = [
@@ -54,6 +60,7 @@ export function BcaWorkbench({
   canSave,
   models,
   modelReadFailed,
+  projectPlace,
 }: {
   models: BcaModelEvidence[];
   modelReadFailed: boolean;
@@ -61,9 +68,12 @@ export function BcaWorkbench({
   projectName: string;
   userId: string;
   canSave: boolean;
+  projectPlace: BcaProjectPlaceRead;
 }) {
   const {confirm,confirmDialog}=useConfirmDialog();
-  const [doc, setDoc] = useState(() => newBcaDocument(projectId));
+  const [currentPlace, setCurrentPlace] = useState(projectPlace);
+  const [doc, setDoc] = useState(() => newBcaDocument(projectId,
+    projectPlace.status === "available" ? projectPlace.snapshot : undefined));
   const [tab, setTab] = useState<(typeof tabs)[number]>(tabs[0]);
   const [notice, setNotice] = useState("");
   const [pending, setPending] = useState<Pending | null>(null);
@@ -105,6 +115,7 @@ export function BcaWorkbench({
     }
   }, [doc, pending, key, loaded, storageProblem]);
   const parsed = bcaDocumentSchema.safeParse(doc);
+  const placeReview = bcaPlaceReview(doc, currentPlace);
   const set = <K extends keyof BcaDocument>(k: K, v: BcaDocument[K]) =>
     setDoc({ ...doc, [k]: v });
   async function history(older = false) {
@@ -119,6 +130,12 @@ export function BcaWorkbench({
       if (!r.ok) throw new Error(p.error);
       setVersions(older ? [...versions, ...p.versions] : p.versions);
       setMore(p.hasMore);
+      const place = bcaProjectPlaceSchema.safeParse(p.projectPlace?.snapshot);
+      setCurrentPlace(p.projectPlace?.status === "available" && place.success
+        ? { status: "available", snapshot: place.data }
+        : { status: p.projectPlace?.status === "invalid" ? "invalid" : "unavailable",
+          message: typeof p.projectPlace?.message === "string" ? p.projectPlace.message
+            : "The current project place could not be read. Reload the project before reviewing a new version." });
     } catch (e) {
       setNotice(e instanceof Error ? e.message : "Could not load history");
     } finally {
@@ -127,6 +144,10 @@ export function BcaWorkbench({
   }
   async function save() {
     if (!canSave || busy || storageProblem) return;
+    if (!pending && placeReview.status !== "matched-at-read") {
+      setNotice("Review the project place for a new version before saving.");
+      return;
+    }
     const request =
       pending ??
       (parsed.success
@@ -242,7 +263,7 @@ export function BcaWorkbench({
       <div className="flex flex-wrap gap-2">
         <button
           className={buttonClass}
-          disabled={busy || !!storageProblem || !canSave || (!pending && !parsed.success)}
+          disabled={busy || !!storageProblem || !canSave || (!pending && (!parsed.success || placeReview.status !== "matched-at-read"))}
           onClick={save}
         >
           {pending ? "Retry retained save" : "Save a version"}
@@ -390,6 +411,31 @@ export function BcaWorkbench({
           </button>
         ))}
       </nav>
+      <aside aria-label="Project place and retained analysis place" className="space-y-3 rounded border p-4 text-sm">
+        <h2 className="text-lg font-semibold">Project place of record</h2>
+        <p>Analysis place status: {bcaPlaceReviewLabel(placeReview.status)}.</p>
+        {placeReview.retained ? <div>
+          <p>Retained analysis place: {bcaPlaceDescription(placeReview.retained)}</p>
+          <p>Project revision: {placeReview.retained.projectUpdatedAt}; place recorded: {placeReview.retained.placeSetAt ?? "unset"}.</p>
+          <p>Separate jurisdiction declaration: {placeReview.retained.jurisdiction?.state ?? "not recorded"}.
+            {placeReview.retained.jurisdiction?.entries.map(entry => ` ${entry.label} (${entry.scope}; ${entry.identity}; ${entry.reference ?? "no reference"}).`).join("")}</p>
+        </div> : <p>Unbound legacy analysis. The affected-area narrative remains unchanged. Review the project place explicitly to create a new version.</p>}
+        {currentPlace.status === "available" ? <div>
+          <p>Project place at last read: {bcaPlaceDescription(currentPlace.snapshot)}</p>
+          <p>Project revision at last read: {currentPlace.snapshot.projectUpdatedAt}; place recorded: {currentPlace.snapshot.placeSetAt ?? "unset"}.</p>
+          <p>Separate current jurisdiction declaration: {currentPlace.snapshot.jurisdiction?.state ?? "not recorded"}.
+            {currentPlace.snapshot.jurisdiction?.entries.map(entry => ` ${entry.label} (${entry.scope}; ${entry.identity}; ${entry.reference ?? "no reference"}).`).join("")}</p>
+        </div> : <p role="alert">Current project place {currentPlace.status}: {currentPlace.message}</p>}
+        <p>{BCA_PLACE_LIMIT}</p>
+        <p>Describe the affected area and users separately below. Set or correct the place through <Link className="underline" href={`/projects/${projectId}`}>the project record</Link>.</p>
+        <button className={buttonClass} disabled={busy} onClick={() => void history()}>Refresh project place and history</button>
+        <button className={buttonClass} disabled={!!pending || busy || !!storageProblem || currentPlace.status !== "available" || placeReview.status === "matched-at-read"}
+          onClick={() => {
+            if (currentPlace.status !== "available" || pending) return;
+            setDoc(reviewBcaProjectPlace(doc, currentPlace.snapshot));
+            setNotice("Reviewed the project place for a new version. The affected-area narrative and prior saved versions remain unchanged. Review source assumptions before saving.");
+          }}>Review this place for a new version</button>
+      </aside>
       {!parsed.success && (
         <div
           role="alert"
@@ -454,7 +500,7 @@ export function BcaWorkbench({
                 onChange={(v) => set("alternative", v)}
               />
               <Field
-                label="Study geography and affected users"
+                label="Affected area and users (analyst narrative)"
                 multiline
                 value={doc.geography}
                 onChange={(v) => set("geography", v)}
@@ -881,6 +927,7 @@ export function BcaWorkbench({
               <p className="break-all text-xs">
                 Author {v.created_by}; analysis SHA-256 {v.inputHash}
               </p>
+              <p>Analysis place status: {bcaPlaceReviewLabel(v.projectPlaceReview?.status)}.</p>
               <button
                 className={buttonClass}
                 disabled={!!pending || busy}

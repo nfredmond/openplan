@@ -51,11 +51,12 @@ describe.skipIf(!LIVE_RLS)("BCA native permissions", () => {
     expect(r.status).not.toBe(0);
     expect(r.output).toContain("Outsider can read another workspace");
   });
-  it("detects missing required document fields", () => {
+  it("detects a disabled native insert guard through the named new-v1 witness", () => {
     const r = run(
-      "ALTER TABLE public.project_bca_versions DROP CONSTRAINT bca_required_document_fields;",
+      "ALTER TABLE public.project_bca_versions DISABLE TRIGGER project_bca_place_insert_guard;",
     );
     expect(r.status).not.toBe(0);
     expect(r.output).toContain("Expected denial");
+    expect(r.output).toContain("new-v1-insert-witness");
   });
 });
