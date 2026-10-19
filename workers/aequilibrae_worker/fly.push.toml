@@ -5,8 +5,9 @@
 # INSTEAD of fly.toml (which is the always-on polling configuration), as a
 # separate app:
 #
-#   fly launch --config fly.push.toml --copy-config --yes
-#   fly secrets set --config fly.push.toml \
+#   fly launch --config workers/aequilibrae_worker/fly.push.toml --copy-config --yes
+# Run from the repository root so shared modeling sources enter the image.
+#   fly secrets set --config workers/aequilibrae_worker/fly.push.toml \
 #       SUPABASE_URL="https://<your-project-ref>.supabase.co" \
 #       SUPABASE_SERVICE_ROLE_KEY="<your-service-role-key>" \
 #       OPENPLAN_MODELING_WORKER_TOKEN="<the same secret the app has>"
@@ -48,7 +49,7 @@ kill_signal = "SIGTERM"
 kill_timeout = "5m"
 
 [build]
-  dockerfile = "Dockerfile"
+  dockerfile = "workers/aequilibrae_worker/Dockerfile"
 
 [env]
   AEQ_WORKER_MODE = "push"

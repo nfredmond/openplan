@@ -209,6 +209,7 @@ describe("project comparison starter route", () => {
     expect(second.status).toBe(200);
     expect(fake.tables.scenario_sets).toHaveLength(1);
     expect(fake.tables.scenario_entries.map((row) => row.entry_type)).toEqual(["baseline", "alternative"]);
+    expect(fake.tables.scenario_entries.map((row) => row.assumptions_json)).toEqual([{}, {}]);
     expect(fake.tables.models).toHaveLength(2);
     expect(fake.tables.models.map((row) => row.model_family)).toEqual(["travel_demand", "activity_based_model"]);
     expect(fake.tables.models.every((row) => row.output_summary === "No modeled output yet.")).toBe(true);

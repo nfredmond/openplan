@@ -6,8 +6,8 @@
 # runs, so without this file `docker build` appears to hang for many minutes
 # and can fill a disk — with no message naming the cause.
 #
-# Only `workers/county_onramp_worker/Dockerfile` builds from the repo root; the
-# other workers build from their own directories and are unaffected.
+# County, standalone AequilibraE and shared-model images build from the repo
+# root so their shared modeling sources retain the same relative paths.
 
 # Build output and installed dependencies — rebuilt or reinstalled in-image.
 node_modules/

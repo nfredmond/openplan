@@ -84,6 +84,40 @@ function stageFixture() {
 }
 
 describe("server-selected common-population launch", () => {
+  it.each(["managed_attempt", "legacy_stage_snapshot"] as const)("retains the fresh guided baseline before any build assumption with %s custody", async (custody) => {
+    const f = fixture();
+    f.tables.scenario_entries = [baseline, { ...build, assumptions_json: {} }];
+    expect(await prepareCommonPopulationLaunch({ ...f.args, custody, scenarioEntry: baseline }))
+      .toEqual({ state: "ready", request: { ...generated, custody } });
+    expect(f.calls).toContainEqual({ table: "scenario_entries", method: "select", args: ["id, scenario_set_id, entry_type, assumptions_json"] });
+    expect(f.calls.map((call) => call.table)).not.toContain("model_runs");
+    expect(f.readOutputs).not.toHaveBeenCalled();
+    expect(f.readStageCustody).not.toHaveBeenCalled();
+  });
+
+  it("still refuses an invalid current build change on reuse", async () => {
+    const f = fixture();
+    const invalidBuild = { ...build, assumptions_json: { guidedProjectChange: {
+      kind: "assigned_auto_trip_change_pct", autoTripChangePct: -91, basis: "Planner sensitivity input",
+    } } };
+    f.tables.scenario_entries = [baseline, invalidBuild];
+    expect(await prepareCommonPopulationLaunch({ ...f.args, scenarioEntry: invalidBuild }))
+      .toMatchObject({ state: "repair", repairState: "common_population_comparison_scope_invalid" });
+    expect(f.calls.map((call) => call.table)).not.toContain("model_runs");
+  });
+
+  it.each(["missing baseline", "wrong baseline type", "duplicate build", "wrong entry scope"])("keeps %s invalid before a fresh guided baseline", async (fault) => {
+    const f = fixture();
+    const emptyBuild = { ...build, assumptions_json: {} };
+    f.tables.scenario_entries = fault === "missing baseline" ? [emptyBuild]
+      : fault === "wrong baseline type" ? [{ ...baseline, entry_type: "alternative" }, emptyBuild]
+      : fault === "duplicate build" ? [baseline, emptyBuild, { ...emptyBuild, id: id(80) }]
+      : [baseline, emptyBuild];
+    expect(await prepareCommonPopulationLaunch({ ...f.args,
+      scenarioEntry: fault === "wrong entry scope" ? { ...baseline, scenario_set_id: id(80) } : baseline,
+    })).toMatchObject({ state: "repair", repairState: "common_population_comparison_scope_invalid" });
+  });
+
   it("generates only the first guided AequilibraE baseline from the actual supplied adapter profile", async () => {
     const f = fixture();
     expect(await prepareCommonPopulationLaunch({ ...f.args, scenarioEntry: baseline })).toEqual({ state: "ready", request: generated });

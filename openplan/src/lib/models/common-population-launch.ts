@@ -155,13 +155,16 @@ async function resolveCommonPopulationLaunch(args: CommonPopulationLaunchArgs): 
   const entries = z.array(entrySchema).safeParse(buildRead.data);
   if (!entries.success) return repair("common_population_comparison_scope_invalid", "The guided scenario records are incomplete.");
   const builds = entries.data.filter((candidate) => candidate.entry_type === "alternative");
-  if (!builds.some((build) => hasCurrentChange(build.assumptions_json)) && !hasCurrentChange(entry.assumptions_json)) return { state: "not_applicable" };
+  // The guided producer sends the baseline first, before the planner saves a
+  // build assumption. Retain its population now; reuse still validates the change.
+  const generatesBaseline = method === "aequilibrae" && entry.id === set.baseline_entry_id;
+  if (!generatesBaseline && !builds.some((build) => hasCurrentChange(build.assumptions_json)) && !hasCurrentChange(entry.assumptions_json)) return { state: "not_applicable" };
   const baselines = entries.data.filter((candidate) => candidate.id === set.baseline_entry_id);
   const sourceBaseline = baselines[0];
   const build = builds[0];
   if (baselines.length !== 1 || !sourceBaseline || sourceBaseline.entry_type !== "baseline" || sourceBaseline.scenario_set_id !== set.id ||
       builds.length !== 1 || !build || build.scenario_set_id !== set.id || build.entry_type !== "alternative" ||
-      !parseGuidedBuildAssumption(build.assumptions_json) ||
+      (!generatesBaseline && !parseGuidedBuildAssumption(build.assumptions_json)) ||
       (entry.id !== set.baseline_entry_id && entry.id !== build.id) ||
       (entry.id === set.baseline_entry_id ? entry.entry_type !== "baseline" :
         entry.entry_type !== "alternative" || !jsonValuesEqual(entry.assumptions_json, build.assumptions_json))) {
@@ -179,7 +182,7 @@ async function resolveCommonPopulationLaunch(args: CommonPopulationLaunchArgs): 
   if (stamp.sourceId !== descriptor.id || stamp.vintage !== descriptor.vintage) {
     return repair("common_population_source_mismatch", "The supplied demographics do not match the registered population source. Rebuild the launch inputs.");
   }
-  if (method === "aequilibrae" && entry.id === set.baseline_entry_id) {
+  if (generatesBaseline) {
     return { state: "ready", request: { schema: SCHEMA, custody, mode: "generate", comparisonPolicy: POLICY, sourceProfile } };
   }
 

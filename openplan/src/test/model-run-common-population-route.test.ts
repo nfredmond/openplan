@@ -47,6 +47,7 @@ const artifact = { id: id(8), run_id: id(7), stage_id: id(9), attempt_id: null, 
 const inserts: Array<{ table: string; value: unknown }> = [];
 const projections: Array<{ table: string; columns: string }> = [];
 let selectedEntry: typeof baseline;
+let buildEntry: typeof baseline;
 let sourceStatus: string;
 
 function installClient() {
@@ -57,7 +58,7 @@ function installClient() {
       let inserted = false;
       const data = () => {
         if (inserted) return null;
-        if (table === "scenario_entries") return [baseline, build];
+        if (table === "scenario_entries") return [baseline, buildEntry];
         if (table === "scenario_sets") return [{ id: id(4), workspace_id: id(2), project_id: id(3), baseline_entry_id: id(5) }];
         if (table === "models") return [model];
         if (table === "model_runs") return [{ id: id(7), model_id: id(1), workspace_id: id(2), project_id: id(3), scenario_set_id: id(4),
@@ -91,7 +92,7 @@ const context = { params: Promise.resolve({ modelId: id(1) }) };
 
 beforeEach(() => {
   vi.clearAllMocks(); inserts.length = 0; projections.length = 0;
-  selectedEntry = baseline; sourceStatus = "succeeded";
+  selectedEntry = baseline; buildEntry = structuredClone(build); sourceStatus = "succeeded";
   mocks.access.mockResolvedValue({ model, membership: { role: "owner" }, allowed: true, error: null });
   mocks.zoneAttributes.mockResolvedValue({ version: "zone-attributes-v1", status: "supplied", storageRef: "storage://run-artifacts/owned/zone-attributes.json",
     sourceId: "us_census_acs5", vintage: "2023", demographics: { status: "supplied", geographies: 2 }, geographyIndexTruncated: false });
@@ -106,6 +107,19 @@ beforeEach(() => {
 });
 
 describe("common-population request at the real model run creation route", () => {
+  it("stamps the first new-project baseline while the producer's build assumption is still empty", async () => {
+    buildEntry = { ...build, assumptions_json: {} };
+    const response = await POST(request(), context);
+    expect(response.status).toBe(201);
+    expect(inserts.find((write) => write.table === "model_runs")?.value).toMatchObject({
+      scenario_entry_id: baseline.id, assumption_snapshot_json: {}, input_snapshot_json: { commonPopulation: generated },
+    });
+    expect(projections).toContainEqual({ table: "scenario_entries", columns: "id, scenario_set_id, label, entry_type, status, assumptions_json" });
+    expect(projections).toContainEqual({ table: "scenario_entries", columns: "id, scenario_set_id, entry_type, assumptions_json" });
+    expect(projections.some((read) => read.table === "model_runs")).toBe(false);
+    expect(mocks.outputs).not.toHaveBeenCalled();
+  });
+
   it("stamps a server-derived generate request and ignores caller source paths", async () => {
     const response = await POST(request({ commonPopulation: { mode: "reuse", source: { file_url: "/caller/path", artifactId: id(99) } } }), context);
     expect(response.status).toBe(201);

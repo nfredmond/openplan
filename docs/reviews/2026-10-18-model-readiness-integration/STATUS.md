@@ -110,3 +110,19 @@ single-worker build passes compilation, TypeScript and all 145 static pages.
 The identified app reaches the real baseline review through normal navigation.
 Readable desktop and 390-pixel captures show no horizontal overflow. No new
 baseline or scientific success is claimed from this correction.
+
+## Guided baseline and standalone-image correction
+
+The first guided baseline now retains population while the build assumption is
+still empty. Reuse keeps its change and custody checks. Standalone worker images
+use repository-root inputs and preserve the shared population-library paths.
+Independent source review accepts these two corrections. The actual route and
+helper pass 94 supplied tests; six targeted behavior faults fail. Two projected
+image-import tests and seven dependency-pin checks pass, with eight image/config
+faults detected. Source bytes restore exactly; scoped lint passes. These checks
+do not establish Docker builds, provider settings or model execution.
+
+Fresh baseline 017699ba remains failed on the corrected normal-reader gap. New
+baseline 5a157b8a passes custody and retains a population package, then fails
+OSM setup on Overpass HTTP 502. Both publish zero artifacts. Their files and
+failures remain intact. No completed comparison or scientific acceptance follows.
