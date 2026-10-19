@@ -258,9 +258,13 @@ class Checks(unittest.TestCase):
     def test_shared_budget_bounds_actual_slow_snapshot_validation(self):
         with self.f.runtime.owner():
             self.prepare()
-            effects, root = self.commit.draft._effects(self.f.request_id, time.monotonic() + .4)
+            effects, root = self.commit.draft._effects(self.f.request_id, time.monotonic() + 4)
             self.commit.timeout = .04
             began = time.monotonic()
+            # Setup must not consume the independent cap measured by this probe.
+            effects.deadline = began + .4
+            effects.timeout = .4
+            effects.source_arguments['timeout'] = .4
             with patch.object(self.commit.draft, '_effects', return_value=(effects, root)), patch.object(retained_source, 'digest', self.slow_validation(retained_source.digest)):
                 with self.assertRaises(TimeoutError):
                     self.read()
