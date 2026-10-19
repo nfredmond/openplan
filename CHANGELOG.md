@@ -26,6 +26,18 @@ optional view shows counts, code points and escaped text while preserving the
 readable contribution. It does not change moderation or infer intent. No
 migration is required.
 
+**Recorded grant deadline changes:** My Work retains notices when an opportunity's
+application or decision deadline is added, changed or cleared in OpenPlan. Each
+notice preserves the old and new dates and identifies an unknown actor when
+needed. These notices describe OpenPlan edits, not verified changes to a funder's
+official notice. The initial rollout keeps the deployed reminder key and leaves
+application reminders explicitly pending. Complete decision/application reminder
+coexistence needs a separate activation after older writers retire. The existing
+opportunity card now edits or clears its recorded dates, shows the browser time
+zone, and sends only changed fields so untouched timestamp precision remains.
+Failed saves keep the draft visible. Apply
+`20261018000001_grant_deadline_changes.sql` before deploying this capability.
+
 **Compact assignment graph preparation:** a worker-owned adapter checks complete
 car-eligible link incidence before excluding a proved nontraversable sink chain.
 It retains the native compressor's IDs and checks signed path correspondence

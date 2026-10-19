@@ -196,6 +196,8 @@ const SERVICE_ONLY_TABLES = new Set(["billing_webhook_receipts"]);
 // the same member-visible / outsider-hidden boundary plus their stricter write
 // rules. Keep this list exact so a filename alone cannot silently count.
 const DEDICATED_LIVE_RLS_PROBES = new Set([
+  // grant-deadline-changes-rls: transactional capture, tenant/member reads and direct-write refusal.
+  "funding_opportunity_deadline_changes",
   // attempt-instrument-member-read-rls: both methods, membership, parent visibility and private writes.
   "model_attempt_instrument_custody",
   "project_bca_versions",
@@ -1762,6 +1764,7 @@ describe("workspace RLS isolation inventory", () => {
     ]);
     expect([...SERVICE_ONLY_TABLES]).toEqual(["billing_webhook_receipts"]);
     expect([...DEDICATED_LIVE_RLS_PROBES]).toEqual([
+      "funding_opportunity_deadline_changes",
       "model_attempt_instrument_custody",
       "project_bca_versions",
       "engagement_decision_request_resolutions",

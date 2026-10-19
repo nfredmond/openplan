@@ -65,6 +65,8 @@ const KIND_LABELS: Record<string, string> = {
   submittal_due: "Submittal",
   invoice_due: "Invoice",
   grant_decision_due: "Grant decision",
+  grant_application_due: "Application closing",
+  grant_deadline_changed: "Recorded deadline change",
   award_obligation_due: "Award obligation",
   award_expenditure_due: "Award lapse",
   measure_claim_review_due: "Claim waiting",
@@ -74,6 +76,25 @@ export function WorkNotificationInboxPanel({ inbox, sweepFreshness, advanceDays 
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
+
+  async function openOpportunity(opportunity: { id: string; workspaceId: string }, key: string) {
+    setBusy(key);
+    setFailure(null);
+    try {
+      const response = await fetch("/api/workspaces/active", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ workspaceId: opportunity.workspaceId }),
+      });
+      if (!response.ok) throw new Error("The opportunity's workspace could not be opened. Reload and try again.");
+      router.push(`/grants?focusOpportunityId=${encodeURIComponent(opportunity.id)}#funding-opportunity-${encodeURIComponent(opportunity.id)}`);
+      router.refresh();
+    } catch (error) {
+      setFailure(error instanceof Error ? error.message : "The opportunity could not be opened.");
+    } finally {
+      setBusy(null);
+    }
+  }
 
   async function markRead(payload: { notificationId: string } | { markAll: true }, key: string) {
     setBusy(key);
@@ -199,12 +220,13 @@ export function WorkNotificationInboxPanel({ inbox, sweepFreshness, advanceDays 
         </div>
       ) : null}
       <p className="module-note">
-        What the daily check flagged for you — everything due within {advanceDays} {advanceDays === 1 ? "day" : "days"}, and everything already
-        overdue. Marking one read removes it from here; it does not change the record itself.
+        Deadline reminders arrive after the daily check for work due within {advanceDays} {advanceDays === 1 ? "day" : "days"} and overdue work.
+        Recorded grant deadline changes arrive when an edit is saved, including cleared dates.
+        Marking a notice read removes it from here; it does not change the record itself.
       </p>
       {inbox.truncated ? (
         <p className="module-note">
-          Showing the {inbox.rows.length} soonest. There are more unread reminders than this panel
+          Showing the {inbox.rows.length} newest. There are more unread notices than this panel
           lists.
         </p>
       ) : null}
@@ -221,12 +243,20 @@ export function WorkNotificationInboxPanel({ inbox, sweepFreshness, advanceDays 
                 <span className="module-record-title">{row.title}</span>
                 <StatusBadge tone="info">{KIND_LABELS[row.kind] ?? "Reminder"}</StatusBadge>
                 <span className="module-record-stamp">
-                  {formatWorkDeadlineDate(row.dueOn) ?? row.dueOn}
+                  {row.kind === "grant_deadline_changed"
+                    ? `Recorded ${formatWorkDeadlineDate(row.createdAt) ?? "date unavailable"}`
+                    : formatWorkDeadlineDate(row.dueOn) ?? row.dueOn}
                 </span>
               </div>
               <p className="module-record-summary">{row.body}</p>
             </div>
             <div className="module-record-actions">
+              {row.opportunity ? (
+                <Button type="button" variant="outline" size="sm" disabled={busy !== null}
+                  onClick={() => openOpportunity(row.opportunity!, row.id)}>
+                  Open opportunity
+                </Button>
+              ) : null}
               <Button
                 type="button"
                 variant="ghost"
