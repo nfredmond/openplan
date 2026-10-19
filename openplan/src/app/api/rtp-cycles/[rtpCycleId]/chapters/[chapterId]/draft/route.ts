@@ -386,7 +386,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
               { data: [], error: null },
             ];
 
-      if(linkedProjectIds.length) assertCompleteFundingRead(fundingAwardsResult,fundingOpportunitiesResult,invoicesResult);
       const fundingFailure = refuseOnEvidenceReadFailure(audit, chapter.id, [
         ["project funding profiles", fundingProfilesResult],
         ["funding awards", fundingAwardsResult],
@@ -394,6 +393,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         ["grant reimbursement invoices", invoicesResult],
       ]);
       if (fundingFailure) return fundingFailure;
+      if (linkedProjectIds.length) assertCompleteFundingRead(fundingAwardsResult, fundingOpportunitiesResult, invoicesResult);
 
       type ByProject<T> = Map<string, T[]>;
       const groupByProject = <T extends { project_id: string }>(rows: T[] | null | undefined): ByProject<T> => {

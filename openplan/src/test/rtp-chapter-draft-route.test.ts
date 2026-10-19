@@ -1,3 +1,4 @@
+import { exactCountResult } from "./helpers/exact-count-result";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { ENGAGEMENT_NARRATIVE_CAVEAT } from "@/lib/grants/engagement-evidence";
@@ -98,7 +99,12 @@ const baseCycle = {
   public_review_close_at: null,
 };
 
-function chainable(result: { data: unknown; error: { message: string } | null }) {
+type ReadFixture = { data: unknown; error: { message: string } | null; count?: number | null };
+type FinancialTable = "funding_awards" | "funding_opportunities" | "billing_invoice_records";
+type FinancialSelect = { table: FinancialTable; columns: string; options?: { count?: string } };
+
+function chainable(fixture: ReadFixture, onSelect?: (columns: string, options?: { count?: string }) => void) {
+  const result = exactCountResult(fixture);
   const chain: Record<string, unknown> = {
     maybeSingle: vi.fn(async () => result),
     then: (resolve: (value: unknown) => unknown, reject?: (reason: unknown) => unknown) =>
@@ -116,7 +122,11 @@ function chainable(result: { data: unknown; error: { message: string } | null })
       return { data: rows.slice(from, toInclusive + 1), error: null };
     }),
   };
-  for (const method of ["select", "eq", "in", "order", "limit"]) {
+  chain.select = vi.fn((columns: string, options?: { count?: string }) => {
+    onSelect?.(columns, options);
+    return chain;
+  });
+  for (const method of ["eq", "in", "order", "limit"]) {
     chain[method] = vi.fn(() => chain);
   }
   return chain;
@@ -133,7 +143,9 @@ function installClient(overrides?: {
    * nothing.
    */
   readErrors?: Record<string, { message: string }>;
+  financialReads?: Partial<Record<FinancialTable, ReadFixture>>;
 }) {
+  const financialSelects: FinancialSelect[] = [];
   const chapter = overrides?.chapter === undefined ? baseChapter : overrides.chapter;
   const membership =
     overrides?.membership === undefined
@@ -152,6 +164,11 @@ function installClient(overrides?: {
         return { ...lookup, insert: draftInsertMock, update: updateMock };
       }
       if (readError) return chainable({ data: null, error: readError });
+      if (table === "funding_awards" || table === "funding_opportunities" || table === "billing_invoice_records") {
+        return chainable(overrides?.financialReads?.[table] ?? { data: [], error: null }, (columns, options) => {
+          financialSelects.push({ table, columns, options });
+        });
+      }
       if (table === "rtp_cycle_chapters") return chainable({ data: chapter, error: null });
       if (table === "workspace_members") return chainable({ data: membership, error: null });
       if (table === "rtp_cycles") return chainable({ data: baseCycle, error: null });
@@ -218,10 +235,33 @@ function installClient(overrides?: {
           error: null,
         });
       }
-      // funding_awards, funding_opportunities, billing_invoice_records
       return chainable({ data: [], error: null });
     }),
   });
+  return financialSelects;
+}
+
+const FINANCIAL_PROJECTIONS: Record<FinancialTable, string> = {
+  funding_awards: "project_id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at, id, latest_handoff_revision_id, current_handoff_revision_id, currency_code, has_source_backed_issuance",
+  funding_opportunities: "project_id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at, has_source_backed_issuance",
+  billing_invoice_records: "project_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at, funding_award_id, award_handoff_revision_id, currency_code, handoff_applicable_revision_id",
+};
+const FINANCIAL_TABLES = Object.keys(FINANCIAL_PROJECTIONS) as FinancialTable[];
+const FINANCIAL_COMPLETENESS_ERROR = "Complete funding currency/version source sets are unavailable. No partial financial snapshot is accepted.";
+
+/** Each complete legacy set has one row; only the selected count changes in a refusal case. */
+function financialReads(): Record<FinancialTable, ReadFixture> {
+  const projectId = "44444444-4444-4444-8444-444444444444";
+  const awardId = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee";
+  return {
+    funding_awards: { data: [{ project_id: projectId, id: awardId, awarded_amount: "100.01", match_amount: "0.00", risk_flag: "none", obligation_due_at: null, updated_at: null, created_at: null, latest_handoff_revision_id: null, current_handoff_revision_id: null, currency_code: null, has_source_backed_issuance: false }], count: 1, error: null },
+    funding_opportunities: { data: [{ project_id: projectId, expected_award_amount: "25.01", decision_state: "pursue", opportunity_status: "open", closes_at: null, updated_at: null, created_at: null, has_source_backed_issuance: false }], count: 1, error: null },
+    billing_invoice_records: { data: [{ project_id: projectId, status: "paid", amount: "10.01", retention_percent: "0", retention_amount: "0.00", net_amount: "10.01", due_date: null, invoice_date: null, created_at: null, funding_award_id: awardId, award_handoff_revision_id: null, currency_code: null, handoff_applicable_revision_id: null }], count: 1, error: null },
+  };
+}
+
+function expectFinancialSelects(selects: FinancialSelect[]) {
+  expect(selects).toEqual(FINANCIAL_TABLES.map((table) => ({ table, columns: FINANCIAL_PROJECTIONS[table], options: { count: "exact" } })));
 }
 
 const updateSingleMock = vi.fn();
@@ -383,6 +423,38 @@ describe("/api/rtp-cycles/[rtpCycleId]/chapters/[chapterId]/draft POST", () => {
       })
     );
   });
+
+  it("chapter financial completeness accepts three complete one-row source sets", async () => {
+    const selects = installClient({ financialReads: financialReads() });
+    const response = await postChapterDraft(jsonRequest("POST"), routeContext());
+    expect(response.status).toBe(201);
+    expectFinancialSelects(selects);
+    expect(generateTextMock).toHaveBeenCalledTimes(1);
+    expect(anthropicMock).toHaveBeenCalledTimes(1);
+    expect(recordAiUsageEventMock).toHaveBeenCalledTimes(1);
+    expect(draftInsertMock).toHaveBeenCalledTimes(1);
+    expect(mockAudit.error).not.toHaveBeenCalled();
+  });
+
+  it.each(FINANCIAL_TABLES.flatMap((table) => [0, 2].map((count) => ({ table, count }))))(
+    "chapter financial completeness refuses $table count=$count with one successful row",
+    async ({ table, count }) => {
+      const reads = financialReads();
+      reads[table] = { ...reads[table], count };
+      const selects = installClient({ financialReads: reads });
+      const response = await postChapterDraft(jsonRequest("POST"), routeContext());
+      expect(response.status).toBe(500);
+      expect(await response.json()).toEqual({ error: "Unexpected error while drafting chapter" });
+      expectFinancialSelects(selects);
+      expect(mockAudit.error).toHaveBeenCalledWith("chapter_draft_unhandled_error", expect.objectContaining({
+        error: expect.objectContaining({ name: "Error", message: FINANCIAL_COMPLETENESS_ERROR }),
+      }));
+      expect(generateTextMock).not.toHaveBeenCalled();
+      expect(anthropicMock).not.toHaveBeenCalled();
+      expect(recordAiUsageEventMock).not.toHaveBeenCalled();
+      expect(draftInsertMock).not.toHaveBeenCalled();
+    }
+  );
 
   it("respects the OPENPLAN_ASSISTANT_MODEL override", async () => {
     vi.stubEnv("OPENPLAN_ASSISTANT_MODEL", "claude-haiku-4-5");

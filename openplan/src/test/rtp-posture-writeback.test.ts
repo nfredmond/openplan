@@ -54,6 +54,7 @@ function buildSupabase({
   awardsError,
   updateError,
   advanceEpochAfterAwardRead = false,
+  invalidationResult,
 }: {
   profile: ProjectFundingProfileRow | null;
   awards: FundingAwardRow[];
@@ -63,6 +64,7 @@ function buildSupabase({
   awardsError?: { message: string; code?: string };
   updateError?: { message: string; code?: string };
   advanceEpochAfterAwardRead?: boolean;
+  invalidationResult?: { data: { funding_source_epoch: number } | null; error: { code: string; details?: string; message: string } | null };
 }) {
   const capturedUpdate: CapturedUpdate = { values: undefined, where: [] };
   let epoch=7; let persisted:unknown=null;
@@ -130,7 +132,7 @@ function buildSupabase({
         const isFinal=values?.rtp_posture!==null;
         if(isFinal)capturedUpdate.values=values;
         const query={eq:(column:string,value:string|number)=>{where.push([column,value]);return query;},select:()=>query,maybeSingle:async()=>{
-          if(!isFinal){persisted=null;return {data:{funding_source_epoch:epoch},error:null};}
+          if(!isFinal){if(invalidationResult)return invalidationResult;persisted=null;return {data:{funding_source_epoch:epoch},error:null};}
           capturedUpdate.where=where;
           const matched=where.some(([column,value])=>column==='funding_source_epoch' && value===epoch);
           if(matched && !updateError)persisted=values?.rtp_posture;
@@ -342,6 +344,24 @@ describe("rebuildProjectRtpPosture", () => {
     expect(result.error?.code).toBe('PT409');expect(result.posture).toBeNull();expect(persisted()).toBeNull();
     expect(capturedUpdate.where).toContainEqual(['funding_source_epoch',7]);
     for(const field of ['id','current_handoff_revision_id','latest_handoff_revision_id','currency_code','has_source_backed_issuance'])expect(projections.funding_awards.split(', ')).toContain(field);
+  });
+
+  it.each([
+    { data: null, error: null },
+    { data: null, error: { code: "PGRST116", details: "The result contains 0 rows", message: "No rows" } },
+  ])("refuses a zero-row invalidation before reading funding or persisting ($error)", async (invalidationResult) => {
+    const { supabase, capturedUpdate, projections } = buildSupabase({ profile: null, awards: [], invalidationResult });
+    const result = await rebuildProjectRtpPosture({ supabase, projectId: "project-1", workspaceId: "workspace-1" });
+    expect(result).toEqual({ posture: null, updatedAt: null, error: { code: "PT409", message: "No project matched posture invalidation. No rebuild was persisted." } });
+    expect(projections).toEqual({});
+    expect(capturedUpdate.values).toBeUndefined();
+  });
+
+  it("keeps a real invalidation failure distinct from zero matched rows", async () => {
+    const { supabase, projections } = buildSupabase({ profile: null, awards: [], invalidationResult: { data: null, error: { code: "42501", message: "Permission denied" } } });
+    const result = await rebuildProjectRtpPosture({ supabase, projectId: "project-1", workspaceId: "workspace-1" });
+    expect(result.error).toEqual({ code: "42501", message: "Cannot invalidate previous RTP posture before rebuild" });
+    expect(projections).toEqual({});
   });
 
 });

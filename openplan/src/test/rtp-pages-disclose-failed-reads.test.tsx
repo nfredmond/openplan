@@ -1,3 +1,4 @@
+import { exactCountResult } from "./helpers/exact-count-result";
 import { cleanup, render, screen } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -53,7 +54,8 @@ const OK: QueryResult = { data: [], error: null };
  */
 let selectCalls: Record<string, string[]> = {};
 
-function makeQuery(result: QueryResult, table?: string) {
+function makeQuery(fixture: QueryResult, table?: string) {
+  const result = exactCountResult(fixture);
   const query: Record<string, unknown> = {};
   for (const method of ["select", "eq", "in", "not", "is", "order", "limit", "gte", "lte", "neq", "filter", "or"]) {
     query[method] = vi.fn((...args: unknown[]) => {

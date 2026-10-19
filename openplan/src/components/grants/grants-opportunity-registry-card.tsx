@@ -277,8 +277,8 @@ export function GrantsOpportunityRegistryCard({
           />
         ) : null}
 
-        {pursuitKind === "grant" && opportunity.project ? <Link className="text-sm font-semibold underline" href={`/grants/award-conditions?opportunityId=${opportunity.id}`}>Record award conditions</Link> : null}
-        {opportunity.has_source_backed_issuance ? <p className="text-sm">Source-backed award issuance recorded. Pursuit and administrative status remain separate.</p> : null}
+        {pursuitKind === "grant" && opportunity.project ? <Link className="text-sm font-semibold underline" href={`/grants/award-conditions?opportunityId=${opportunity.id}`}>Save award conditions</Link> : null}
+        {opportunity.has_source_backed_issuance ? <p className="text-sm">Source-backed award issuance is documented. Pursuit and administrative status remain separate.</p> : null}
         <FundingOpportunityApplicationWorkspace
           opportunityId={opportunity.id}
           pursuitKind={pursuitKind}

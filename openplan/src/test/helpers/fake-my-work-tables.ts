@@ -46,6 +46,9 @@ const RELATIONS: Record<string, Record<string, { fk: string; parent: string }>> 
   },
   land_use_plan_versions: { land_use_plans: { fk: "plan_id", parent: "land_use_plans" } },
   project_deliverables: { projects: { fk: "project_id", parent: "projects" } },
+  active_project_milestones: { projects: { fk: "project_id", parent: "projects" } },
+  active_project_submittals: { projects: { fk: "project_id", parent: "projects" } },
+  legacy_calendar_funding_awards: { projects: { fk: "project_id", parent: "projects" } },
   project_milestones: { projects: { fk: "project_id", parent: "projects" } },
   project_submittals: { projects: { fk: "project_id", parent: "projects" } },
   project_issues: { projects: { fk: "project_id", parent: "projects" } },
@@ -306,6 +309,20 @@ function runQuery(
   return rows;
 }
 
+/** Model the three security-invoker views without replacing their base history. */
+function withAwardCalendarViews(db: Db): Db {
+  const current = db.current_award_handoff_records ?? [];
+  const active = (table: string, key: string) => (db[table] ?? []).filter((row) =>
+    row.handoff_origin_revision_id == null || current.some((occurrence) => occurrence[key] === row.id)
+  );
+  return {
+    ...db,
+    active_project_milestones: active("project_milestones", "milestone_id"),
+    active_project_submittals: active("project_submittals", "submittal_id"),
+    legacy_calendar_funding_awards: (db.funding_awards ?? []).filter((row) => row.current_handoff_revision_id == null),
+  };
+}
+
 type FakeResult = { data: unknown; error: { message: string } | null };
 
 export function createFakeSupabase(db: Db, failures: Record<string, string> = {}) {
@@ -396,7 +413,7 @@ export function createFakeSupabase(db: Db, failures: Record<string, string> = {}
               const failure = failures[table];
               const result: FakeResult = failure
                 ? { data: null, error: { message: failure } }
-                : { data: runQuery(db, table, select, filters, order, limitCount), error: null };
+                : { data: runQuery(withAwardCalendarViews(db), table, select, filters, order, limitCount), error: null };
               return Promise.resolve(result).then(resolve, reject);
             },
           };

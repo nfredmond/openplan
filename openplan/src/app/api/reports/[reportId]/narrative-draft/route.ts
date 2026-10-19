@@ -317,7 +317,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
           .order("sort_order", { ascending: true })) as unknown as typeof reportRunLinksResult;
       }
 
-      assertCompleteFundingRead(fundingAwardsResult,fundingOpportunitiesResult,billingInvoicesResult);
       const loadErrors = [
         projectResult.error,
         reportRunLinksResult.error,
@@ -337,6 +336,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         return NextResponse.json({ error: "Failed to load report source records" }, { status: 500 });
       }
 
+      assertCompleteFundingRead(fundingAwardsResult, fundingOpportunitiesResult, billingInvoicesResult);
       const reportRunLinkRows = (reportRunLinksResult.data ?? []) as Array<{
         run_id?: string | null;
         model_run_id?: string | null;

@@ -1,3 +1,4 @@
+import { isWriteFailure, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import { assessedFundingNumber } from "@/lib/grants/award-handoff";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
@@ -60,7 +61,8 @@ export async function rebuildProjectRtpPosture({
   now = () => new Date(),
 }: RebuildProjectRtpPostureInput): Promise<RtpPostureWritebackResult> {
   const invalidation=await supabase.from("projects").update({rtp_posture:null,rtp_posture_updated_at:null}).eq("id",projectId).eq("workspace_id",workspaceId).select("funding_source_epoch").maybeSingle();
-  if(invalidation.error)return {posture:null,updatedAt:null,error:{message:"Cannot invalidate previous RTP posture before rebuild",code:invalidation.error.code}};
+  if (writeMatchedNoRows(invalidation)) return {posture:null,updatedAt:null,error:{code:"PT409",message:"No project matched posture invalidation. No rebuild was persisted."}};
+  if(isWriteFailure(invalidation.error))return {posture:null,updatedAt:null,error:{message:"Cannot invalidate previous RTP posture before rebuild",code:invalidation.error?.code}};
   const epoch: number | string | undefined = invalidation.data?.funding_source_epoch;
   if (epoch === undefined || (typeof epoch === 'number' ? !Number.isSafeInteger(epoch) || epoch < 0 : !/^\d+$/.test(epoch))) return {posture:null,updatedAt:null,error:{message:"Exact funding source epoch unavailable; posture remains invalidated"}};
   const profileResult = await supabase
@@ -180,7 +182,7 @@ export async function rebuildProjectRtpPosture({
     .select("id")
     .maybeSingle();
 
-  if (!updateResult.error && !updateResult.data) return {posture:null,updatedAt:null,error:{code:"PT409",message:"Funding sources changed during rebuild. Stale posture was not persisted; rebuild from current sources."}};
+  if (writeMatchedNoRows(updateResult)) return {posture:null,updatedAt:null,error:{code:"PT409",message:"Funding sources changed during rebuild. Stale posture was not persisted; rebuild from current sources."}};
   if (updateResult.error) {
     return {
       posture,

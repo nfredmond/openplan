@@ -277,7 +277,7 @@ export default async function GrantsPage({
     fundingAwardsData = legacyAwardsRead.data;
   }
 
-  if([opportunitiesRead,fundingAwardsRead,fundingInvoicesRead].some((r)=>!r.error && r.count!==r.data?.length))return <p>Complete grant funding records are unavailable. Totals remain unassessed.</p>;
+  if([opportunitiesRead,fundingAwardsRead,fundingInvoicesRead].some((r)=>!r.error && r.count!==r.data?.length))return <p>Complete grant funding details are unavailable. Totals remain unassessed.</p>;
   /**
    * WHAT COULD NOT BE READ ON THIS PAGE.
    *

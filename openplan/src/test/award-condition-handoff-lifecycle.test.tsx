@@ -38,7 +38,7 @@ describe("handoff editing reconciliation, prepared and unrun",()=>{
     render(<AwardConditionHandoff awardId={awardId} opportunityId={opportunityId} title="Synthetic award" initiallyOpen/>);
     await screen.findByText(/Current terms/, {exact:false});
     fireEvent.click(screen.getByLabelText(/I checked the actual notice/));
-    fireEvent.click(screen.getByRole("button",{name:"Record handoff or recover exact receipt"}));
+    fireEvent.click(screen.getByRole("button",{name:"Save handoff or recover exact receipt"}));
     await screen.findByText(/exact reviewed request remains retained/);
     expect(JSON.parse(sessionStorage.getItem(`award-handoff-pending:${awardId}`)!)).toEqual(retained);
     expect(JSON.parse(applied[0]).reviewed).toEqual(retained.reviewed);
@@ -61,8 +61,8 @@ describe("handoff editing reconciliation, prepared and unrun",()=>{
     }));
     render(<AwardConditionHandoff awardId={awardId} opportunityId={opportunityId} title="Synthetic award" initiallyOpen/>);
     await waitFor(()=>expect(screen.getByRole("button",{name:"Review handoff"})).toBeEnabled());preparePreview();
-    await screen.findByRole("button",{name:"Record handoff or recover exact receipt"});
-    fireEvent.click(screen.getByLabelText(/I checked the actual notice/));fireEvent.click(screen.getByRole("button",{name:"Record handoff or recover exact receipt"}));
+    await screen.findByRole("button",{name:"Save handoff or recover exact receipt"});
+    fireEvent.click(screen.getByLabelText(/I checked the actual notice/));fireEvent.click(screen.getByRole("button",{name:"Save handoff or recover exact receipt"}));
     await waitFor(()=>expect(screen.getByRole("button",{name:"Review handoff"})).toBeEnabled());
     expect(sessionStorage.getItem(`award-handoff-pending:${awardId}`)).toBeNull();preparePreview();
     await waitFor(()=>expect(previews).toHaveLength(2));
@@ -79,7 +79,7 @@ describe("handoff editing reconciliation, prepared and unrun",()=>{
     await waitFor(()=>expect(fetchMock).toHaveBeenCalledTimes(1));
     await act(async()=>resolveRead(reply(history(r2,o2))));
     expect(sessionStorage.getItem(`award-handoff-pending:${awardId}`)).toBe(JSON.stringify(retained));
-    expect(screen.getByRole("button",{name:"Record handoff or recover exact receipt"})).toBeInTheDocument();
+    expect(screen.getByRole("button",{name:"Save handoff or recover exact receipt"})).toBeInTheDocument();
     expect(screen.getByLabelText("Recorded award ceiling, actual amount")).toBeDisabled();
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });

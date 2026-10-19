@@ -60,14 +60,9 @@ const ROUTE_URL_FRAGMENT = "/records/${";
  * the reason it is still open. Delete an entry the moment a surface sends it —
  * a stale entry fails below.
  *
- * `note` (2026-08-11): the milestone and submittal branches accept a free-text
- * note, and only the CREATE composer ever writes one. Editing a recorded note
- * is the same shipped-invisible shape as reassignment was, found by this guard
- * on the day it was written, and left as its own change rather than smuggled
- * into the reassignment one.
+ * The award outcome editor now sends `note`; no unsent field remains.
  */
 const KNOWN_UNSENT: Record<string, string> = {
-  note: "Milestone/submittal notes are writable only at creation; no edit surface exists yet.",
 };
 
 /** A minimal core the parser must find, or the parser itself is broken. */

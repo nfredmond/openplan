@@ -640,7 +640,7 @@ export default async function ProjectDetailPage({
     )
     .eq("project_id", project.id)
     .order("updated_at", { ascending: false });
-  if(!fundingAwardsResult.error && fundingAwardsResult.count!==fundingAwardsResult.data?.length)return <p>Complete project funding records are unavailable. Totals remain unassessed.</p>;
+  if(!fundingAwardsResult.error && fundingAwardsResult.count!==fundingAwardsResult.data?.length)return <p>Complete project funding details are unavailable. Totals remain unassessed.</p>;
   const fundingAwards = looksLikePendingSchema(fundingAwardsResult.error?.message)
     ? []
     : ((fundingAwardsResult.data ?? []) as FundingAwardRow[]).map((item) => ({
@@ -668,7 +668,7 @@ export default async function ProjectDetailPage({
     )
     .eq("project_id", project.id)
     .order("updated_at", { ascending: false });
-  if(!fundingOpportunitiesResult.error && fundingOpportunitiesResult.count!==fundingOpportunitiesResult.data?.length)return <p>Complete project funding records are unavailable. Totals remain unassessed.</p>;
+  if(!fundingOpportunitiesResult.error && fundingOpportunitiesResult.count!==fundingOpportunitiesResult.data?.length)return <p>Complete project funding details are unavailable. Totals remain unassessed.</p>;
   const fundingOpportunities = looksLikePendingSchema(fundingOpportunitiesResult.error?.message)
     ? []
     : ((fundingOpportunitiesResult.data ?? []) as FundingOpportunityRow[]).map((item) => ({

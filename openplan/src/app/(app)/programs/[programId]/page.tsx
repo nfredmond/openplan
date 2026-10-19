@@ -961,8 +961,8 @@ export default async function ProgramDetailPage({
                           <div className="space-y-1.5">
                             <div className="flex flex-wrap items-start justify-between gap-3">
                               <h3 className="module-record-title text-[1.02rem]">{opportunity.title}</h3>
-                              <Link className="text-sm underline" href={`/grants/award-conditions?opportunityId=${opportunity.id}`}>Record award conditions</Link>
-                              {opportunity.has_source_backed_issuance?<p className="text-sm">Source-backed issuance recorded, independent of pursuit status.</p>:null}
+                              <Link className="text-sm underline" href={`/grants/award-conditions?opportunityId=${opportunity.id}`}>Save award conditions</Link>
+                              {opportunity.has_source_backed_issuance?<p className="text-sm">Source-backed issuance is documented, independent of pursuit status.</p>:null}
                               <p className="module-record-stamp">Updated {formatProgramDateTime(opportunity.updated_at)}</p>
                             </div>
                             <p className="module-record-summary line-clamp-2">

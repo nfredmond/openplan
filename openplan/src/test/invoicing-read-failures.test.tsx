@@ -1,3 +1,4 @@
+import { exactCountResult } from "./helpers/exact-count-result";
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("server-only",()=>({}));
@@ -52,7 +53,8 @@ const fundingAwardsSelectMock = vi.fn(() => ({ eq: fundingAwardsEqMock }));
 
 // billing_invoice_records: .select(...).eq("workspace_id", ...).order(...).limit(...)
 const invoicesLimitMock = vi.fn();
-const invoicesOrderMock = vi.fn(() => ({ limit: invoicesLimitMock }));
+// The production register awaits order directly; count this complete fixture there.
+const invoicesOrderMock = vi.fn(async () => exactCountResult(await invoicesLimitMock()));
 const invoicesEqMock = vi.fn(() => ({ order: invoicesOrderMock }));
 const invoicesSelectMock = vi.fn(() => ({ eq: invoicesEqMock }));
 
@@ -62,7 +64,11 @@ const milestonesSelectMock = vi.fn(() => ({ in: milestonesInMock }));
 const submittalsInMock = vi.fn(async () => ({ data: [], error: null }));
 const submittalsSelectMock = vi.fn(() => ({ in: submittalsInMock }));
 
+const fulfillmentInMock = vi.fn(async () => ({ data: [], count: 0, error: null }));
+const fulfillmentSelectMock = vi.fn(() => ({ in: fulfillmentInMock }));
+
 const fromMock = vi.fn((table: string) => {
+  if (table === "funding_award_handoff_fulfillment") return { select: fulfillmentSelectMock };
   if (table === "workspace_members") return { select: membersSelectMock };
   if (table === "workspaces") return { select: workspaceSelectMock };
   if (table === "projects") return { select: projectsSelectMock };
@@ -274,6 +280,13 @@ describe("the reimbursement lane does not render a failed read as an answer", ()
       screen.getAllByText(/permission denied for table "funding_awards"/i).length
     ).toBeGreaterThan(0);
   });
+  it("discloses an incomplete fulfillment read without calling it an empty schedule", async () => {
+    fulfillmentInMock.mockResolvedValueOnce({ data: [], count: 1, error: null });
+    await renderLane();
+    expect(fulfillmentSelectMock).toHaveBeenCalledWith("award_id, revision_id, submittal_status, submitted_at, fulfillment_evidence, milestone_status, actual_date", { count: "exact" });
+    expect(screen.getAllByText(/managed award fulfillment/i).length).toBeGreaterThan(0);
+  });
+
 });
 
 describe("the invoicing page does not render a failed membership read as an answer", () => {
@@ -318,4 +331,5 @@ describe("the invoicing page does not render a failed membership read as an answ
       screen.getAllByText(/permission denied for table "workspace_members"/i).length
     ).toBeGreaterThan(0);
   });
+
 });

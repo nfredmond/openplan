@@ -378,7 +378,8 @@ export async function assembleOpportunityEvidence(
         .limit(10),
     ]);
 
-    assertCompleteFundingRead(awardsResult,projectOpportunitiesResult,invoicesResult);
+    // Failed reads keep their named disclosure below; successful partial sets still refuse.
+    assertCompleteFundingRead(...[awardsResult, projectOpportunitiesResult, invoicesResult].filter((result) => !result.error));
     collectReadFailure("the linked project", projectResult);
     collectReadFailure("the project's funding profile", profileResult);
     collectReadFailure("the project's funding awards", awardsResult);

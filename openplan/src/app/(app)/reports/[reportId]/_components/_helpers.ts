@@ -396,7 +396,8 @@ export async function loadProjectFundingSourceRows(
       .order("created_at", { ascending: false }),
   ]);
 
-  assertCompleteFundingRead(awardsResult,opportunitiesResult,invoicesResult);
+  // Failed reads keep their named disclosure below; successful partial sets still refuse.
+  assertCompleteFundingRead(...[awardsResult, opportunitiesResult, invoicesResult].filter((result) => !result.error));
   return {
     profile: (profileResult.data ?? null) as Awaited<
       ReturnType<typeof loadProjectFundingSourceRows>

@@ -1,3 +1,4 @@
+import { exactCountResult } from "./helpers/exact-count-result";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { BCA_NARRATIVE_CAVEAT } from "@/lib/bca/parameters";
@@ -467,7 +468,8 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft", () => {
 
     // Generic awaitable query chain: every builder method returns the chain,
     // awaiting it (or calling maybeSingle) yields the canned result.
-    function chainable(result: { data: unknown; error: null }) {
+    function chainable(fixture: { data: unknown; error: null }) {
+      const result = exactCountResult(fixture);
       const chain: Record<string, unknown> = {
         maybeSingle: vi.fn(async () => result),
         then: (resolve: (value: unknown) => unknown, reject?: (reason: unknown) => unknown) =>

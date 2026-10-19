@@ -456,7 +456,7 @@ export function ProjectFundingPanel({
                       <div className="space-y-1.5">
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <h3 className="module-record-title">{award.title}</h3>
-                          <Link className="text-sm underline" href={`/grants/award-conditions?awardId=${award.id}`}>Record award conditions and view history</Link>
+                          <Link className="text-sm underline" href={`/grants/award-conditions?awardId=${award.id}`}>Save award conditions and view history</Link>
                           <p className="module-record-stamp">Updated {fmtDateTime(award.updated_at)}</p>
                         </div>
                         <p className="module-record-summary">{award.notes || "No award notes recorded yet."}</p>

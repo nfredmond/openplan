@@ -525,7 +525,8 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
       current.push(invoice);
       rtpFundingInvoicesByProjectId.set(invoice.project_id, current);
     }
-    if(rtpLinkedProjectIds.length) assertCompleteFundingRead(rtpFundingAwardsResult,rtpFundingOpportunitiesResult,rtpBillingInvoicesResult);
+    // Failed reads keep their named disclosure below; successful partial sets still refuse.
+    if (rtpLinkedProjectIds.length) assertCompleteFundingRead(...[rtpFundingAwardsResult, rtpFundingOpportunitiesResult, rtpBillingInvoicesResult].filter((result) => !result.error));
     const currentRtpFundingSnapshot = buildPortfolioFundingSnapshot({
       projects: rtpLinkedProjectIds.map((projectId) => ({
         profile: rtpFundingProfileByProjectId.get(projectId) ?? null,

@@ -1,3 +1,4 @@
+import { exactCountResult } from "./helpers/exact-count-result";
 import { render, screen, within } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -25,13 +26,13 @@ const fundingProfilesInMock = vi.fn();
 const fundingProfilesSelectMock = vi.fn(() => ({ in: fundingProfilesInMock }));
 
 const fundingAwardsInMock = vi.fn();
-const fundingAwardsSelectMock = vi.fn(() => ({ in: fundingAwardsInMock }));
+const fundingAwardsSelectMock = vi.fn(() => ({ in: (...args: unknown[]) => fundingAwardsInMock(...args).then(exactCountResult) }));
 
 const fundingOpportunitiesInMock = vi.fn();
-const fundingOpportunitiesSelectMock = vi.fn(() => ({ in: fundingOpportunitiesInMock }));
+const fundingOpportunitiesSelectMock = vi.fn(() => ({ in: (...args: unknown[]) => fundingOpportunitiesInMock(...args).then(exactCountResult) }));
 
 const billingInvoicesInMock = vi.fn();
-const billingInvoicesSelectMock = vi.fn(() => ({ in: billingInvoicesInMock }));
+const billingInvoicesSelectMock = vi.fn(() => ({ in: (...args: unknown[]) => billingInvoicesInMock(...args).then(exactCountResult) }));
 
 const reportSectionsInMock = vi.fn();
 const reportSectionsSelectMock = vi.fn(() => ({ in: reportSectionsInMock }));

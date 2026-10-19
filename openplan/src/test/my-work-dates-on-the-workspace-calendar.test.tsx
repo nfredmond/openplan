@@ -187,7 +187,7 @@ describe("My Work dates on the workspace calendar", () => {
       fake.queries.find((query) => query.table === table)?.ops.filter((op) => ["lt", "gte", "lte"].includes(op.verb));
 
     const la = (await read(LA, { dueOnOrAfter: "2026-10-10", dueOnOrBefore: "2026-11-01", datedOnly: true })).fake;
-    expect(opsOf(la, "funding_awards")).toEqual([
+    expect(opsOf(la, "legacy_calendar_funding_awards")).toEqual([
       { verb: "gte", args: ["obligation_due_at", "2026-10-10T07:00:00.000Z"] },
       // November 2 starts at 08:00 UTC in Pacific standard time.
       { verb: "lt", args: ["obligation_due_at", "2026-11-02T08:00:00.000Z"] },
@@ -198,7 +198,7 @@ describe("My Work dates on the workspace calendar", () => {
     ]);
 
     const tokyo = (await read(TOKYO, { dueBefore: "2026-10-10" })).fake;
-    expect(opsOf(tokyo, "funding_awards")).toEqual([
+    expect(opsOf(tokyo, "legacy_calendar_funding_awards")).toEqual([
       { verb: "lt", args: ["obligation_due_at", "2026-10-09T15:00:00.000Z"] },
     ]);
   });

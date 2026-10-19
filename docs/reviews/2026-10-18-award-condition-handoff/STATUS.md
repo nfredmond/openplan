@@ -48,3 +48,19 @@ These source and mocked-reader checks do not prove installed SQL, RLS, Storage,
 contention, money or browser behavior. Native CI and rollout remain pending.
 
 October 18 schema-inventory correction: the source parser now accounts for the four fixed-list RLS enables and named SELECT restorations in migration 000003. It retains blanket catalogue-grant handling and rejects unresolved or injected identifiers. The unchanged CI schema driver passes its 37-test cohorts and three intended faults. A separate harmless/restored 37-test cohort and nine targeted census, ordering, origin, identifier and unread-field faults pass their expected outcomes; bytes and modes restore exactly, and scoped lint passes. The bounded unit exits 0 in 63.221 seconds. Application and migration bytes remain unchanged. These source controls do not establish installed grants, RLS, SQL behavior, Storage or browser acceptance. Full configured TypeScript is not repeated for this test/parser-only delta.
+
+
+Root current-CI correction: complete mock counts preserve explicit errors and
+truncation, active-view fixtures retain excluded history, and named read failures
+stay distinct from missing money. Zero-row posture invalidation refuses before
+funding reads. Display assertions retain cents and absent amounts. Narrow lexical
+guards keep adjacent writers and current-day stamps rejected. The restored
+35-file cohort passes 410 tests with no skips; 25 targeted wrong behaviors fail
+for their intended results, exact bytes/modes restore and scoped lint passes.
+The first six fixture failures and three later control-reader/test-boundary
+stops remain preserved. A previously weak legacy-view test now checks the view
+boundary itself. Narrative routes include 15 explicit complete/truncated/failed
+financial-read cases. Private receipts remain in
+`v1-award-current-ci-source-correction-20261018/`. This is source/jsdom evidence;
+current-head full/default/shuffled CI, native finance and browser acceptance
+remain separate. No migration, access rule or financial threshold changes.
