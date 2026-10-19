@@ -1838,11 +1838,11 @@ function ModelRunStagingAndArtifacts({
           ) : null}
           <dl className="mt-4 grid min-w-0 grid-cols-1 gap-3 text-xs">
             <div>
-              <dt className="font-semibold text-foreground">Output artifact</dt>
+              <dt className="font-semibold text-foreground">Output file</dt>
               <dd className="mt-1 break-all text-muted-foreground">{String(exactInputs?.model_output_artifact_id ?? "unknown")}</dd>
             </div>
             <div>
-              <dt className="font-semibold text-foreground">Assessment artifact</dt>
+              <dt className="font-semibold text-foreground">Assessment file</dt>
               <dd className="mt-1 break-all text-muted-foreground">{display.artifact.id} · SHA-256 {display.artifact.content_hash ?? "unknown"}</dd>
             </div>
             <div>
@@ -1991,7 +1991,7 @@ function ModelRunStagingAndArtifacts({
           )}
           {artifacts?.length > 0 && (
             <div>
-              <h4 className="mb-2 font-semibold">Run artifacts</h4>
+              <h4 className="mb-2 font-semibold">Run files</h4>
               <ul className="space-y-2">
                 {artifacts.map((art) => (
                   <li key={art.id} className="flex min-w-0 flex-wrap items-center justify-between gap-3 rounded-[0.5rem] border border-border/60 bg-background/80 px-3 py-2.5 text-muted-foreground">

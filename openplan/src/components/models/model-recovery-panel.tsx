@@ -121,7 +121,7 @@ export function ModelRecoveryPanel({ userId, workspaceId, modelId, runId, permis
         </> : <p>This run is already terminal. This recovery command cannot abandon it again.</p>}
         {inspection.replacement?.state === 'unavailable' ? <p role="status">{inspection.replacement.reason}</p> : null}
         {inspection.replacement?.state === 'available' ? <section aria-label="Replacement using saved population" className="space-y-3">
-          <p>Create a new run using the exact saved population. It performs fresh network work and publishes new artifacts. The failed run and its records stay unchanged. This does not validate model accuracy.</p>
+          <p>Create a new run using the exact saved population. It performs fresh network work and publishes new output files. The failed run and its records stay unchanged. This does not validate model accuracy.</p>
           <label className="block" htmlFor={`${fieldId}-replacement`}>Reason for replacement<Textarea id={`${fieldId}-replacement`} maxLength={2000} value={reason} onChange={(event) => setReason(event.target.value)} disabled={busy || pending} /></label>
           <label className="flex items-start gap-2"><input type="checkbox" checked={acknowledged} onChange={(event) => setAcknowledged(event.target.checked)} disabled={busy || pending} /><span>I authorize a new run with this saved population and fresh network work.</span></label>
           <Button type="button" className={recoveryControlClassName} disabled={blocked || pending || !acknowledged || !reason.trim()} onClick={() => void send(undefined, true)}>Create replacement using saved population</Button>
