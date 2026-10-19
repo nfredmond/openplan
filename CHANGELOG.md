@@ -32,6 +32,12 @@ The additive corrections separate PL/pgSQL variables from query aliases. Twelve
 isolated transaction and parent-DELETE contention cases pass. The visible workflow
 and hosted award rollout remain pending.
 
+**Engagement text inspection:** staff can inspect hidden formatting characters in
+comments, restricted history, survey answers and saved synthesis sources. The
+optional view shows counts, code points and escaped text while preserving the
+readable contribution. It does not change moderation or infer intent. No
+migration is required.
+
 **Linked estimate sources:** the project estimate editor opens its exact saved
 supporting document, including one older than the recent-document list. Read
 failures, unavailable originals and missing price years stay visible. The link

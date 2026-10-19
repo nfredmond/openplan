@@ -42,6 +42,21 @@ jobs:
             NUMEXPR_NUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 \
             "$python_path" -B workers/aequilibrae_worker/native_tests/run_compact_graph.py
 
+      - name: Fresh OSM producer repeatability across hash seeds
+        shell: bash
+        run: |
+          set -euo pipefail
+          python_path="$(command -v python)"
+          cpu="$(python -c 'import os; print(min(os.sched_getaffinity(0)))')"
+          # The supervisor starts one probe at a time. The graph-only step
+          # above keeps its existing single-task boundary.
+          sudo systemd-run --quiet --wait --pipe --working-directory="$GITHUB_WORKSPACE" \
+            -p MemoryMax=768M -p MemorySwapMax=0 -p TasksMax=16 \
+            -p RuntimeMaxSec=120s -p CPUAffinity="$cpu" \
+            env OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 \
+            NUMEXPR_NUM_THREADS=1 PYTHONDONTWRITEBYTECODE=1 \
+            "$python_path" -B workers/aequilibrae_worker/native_tests/fresh_osm_modes_controls.py --seed-campaign
+
   assignment-images:
     name: assignment image (${{ matrix.image }})
     needs: compact-graph-native

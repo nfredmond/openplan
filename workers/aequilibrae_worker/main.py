@@ -475,6 +475,8 @@ os.environ["SPATIALITE_LIBRARY_PATH"] = SPATIALITE_PATH
 # demand, calibration, provenance, and handoff code without installing the heavy
 # assignment engine. A broken installed package still fails loudly; only a
 # genuinely absent top-level package defers the error until an engine stage runs.
+from model_fresh_osm_modes import install as install_fresh_osm_modes
+
 try:
     from aequilibrae.project.network.osm.osm_builder import OSMBuilder
 except ModuleNotFoundError as exc:
@@ -2966,6 +2968,7 @@ def stage_setup(run_id: str, stage_id: str, work_dir: str, bbox: tuple, pkg_dir:
         b = GATEWAY_BUFFER_DEG
         buffered_bbox = (bbox[0] - b, bbox[1] - b, bbox[2] + b, bbox[3] + b)
         model_area = box(*buffered_bbox)
+        install_fresh_osm_modes()
         project.network.create_from_osm(model_area=model_area, modes=["car"], clean=True)
 
     log += "OSM download complete.\n"
