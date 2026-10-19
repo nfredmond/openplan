@@ -97,7 +97,6 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   { column: "workspaces.stage_gate_binding_source", category: "WRITE_ONLY", reason: "Bootstrap passes the binding mode to create_owned_workspace (20261017000010), which writes it in SQL. No application code read it before or after that move; the response reports the resolved binding instead." },
   { column: "model_stage_skip_receipts.blocker_id", category: "WRITE_ONLY", reason: "The retained blocker identity has a foreign key and index for audit. Replay compares request_payload; no current application reader selects this separate column." },
   { column: "model_stage_skip_receipts.response_payload", category: "READ_IN_SQL", reason: "skip_blocked_model_stage returns the retained response on exact retry; model_run_has_retained_commands also reads its outcome." },
-  { column: "model_legacy_kpi_receipts.kpi_id", category: "READ_IN_SQL", reason: "record_legacy_model_kpi locates the original receipt by the prepared KPI identity before any new row insert." },
   { column: "model_legacy_kpi_receipts.response_payload", category: "READ_IN_SQL", reason: "record_legacy_model_kpi returns the original row after a lost response instead of duplicating the KPI." },
   { column: "model_legacy_artifact_receipts.response_payload", category: "READ_IN_SQL", reason: "record_legacy_model_artifact returns the saved artifact row after committed response loss without inserting another row." },
   { column: "gtfs_feed_versions.ingest_abandoned_at", category: "READ_IN_SQL", reason: "The stale-ingest transaction and version/derived-row triggers read this marker to refuse writes after abandonment." },
@@ -114,7 +113,6 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   { column: "model_run_write_context.transaction_id", category: "READ_IN_SQL", reason: "The managed-write trigger requires a private authorization row for txid_current(); the command removes that row before returning." },
   { column: "model_kpi_write_context.transaction_id", category: "READ_IN_SQL", reason: "The managed-write trigger requires a private authorization row for txid_current(); the command removes that row before returning." },
   { column: "model_artifact_write_context.transaction_id", category: "READ_IN_SQL", reason: "The managed-write trigger requires a private authorization row for txid_current(); the command removes that row before returning." },
-  { column: "model_kpi_write_context.kpi_id", category: "READ_IN_SQL", reason: "The managed-output trigger matches this exact record identity with the current transaction and attempt before allowing insertion." },
   { column: "model_run_relaunch_receipts.prior_run", category: "WRITE_ONLY", reason: "Relaunch retains the original state before resetting projections. No current application reader exposes this audit snapshot; consumer integration remains open." },
   { column: "model_run_relaunch_receipts.prior_stages", category: "WRITE_ONLY", reason: "Relaunch retains the original state before resetting projections. No current application reader exposes this audit snapshot; consumer integration remains open." },
   { column: "model_stage_attempts.revocation_reason", category: "WRITE_ONLY", reason: "Failure, reaping and relaunch retain the reason an attempt loses ownership. Current output readers classify status but do not expose this reason." },
@@ -396,6 +394,8 @@ const TOO_GENERIC = new Set([
  * SQL custody explanations without claiming table-specific application readers.
  */
 const NAME_COLLISIONS = [
+  { column: "model_legacy_kpi_receipts.kpi_id", category: "READ_IN_SQL", reason: "record_legacy_model_kpi locates the original receipt by the prepared KPI identity before any new row insert." },
+  { column: "model_kpi_write_context.kpi_id", category: "READ_IN_SQL", reason: "The managed-output trigger matches this exact record identity with the current transaction and attempt before allowing insertion." },
   { column: "model_legacy_artifact_receipts.artifact_id", category: "READ_IN_SQL", reason: "record_legacy_model_artifact selects the saved receipt by its prepared artifact identity before deciding whether to insert a row." },
   { column: "model_artifact_write_context.artifact_id", category: "READ_IN_SQL", reason: "The managed-output trigger matches this exact record identity with the current transaction and attempt before allowing insertion." },
   { column: "land_use_plan_implementation_report_commands.command_text", category: "READ_IN_SQL", reason: "The implementation report transaction compares exact original request bytes before replaying its retained receipt." },
