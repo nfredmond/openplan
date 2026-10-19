@@ -103,6 +103,17 @@ function renderPanel(overrides: Partial<Parameters<typeof HighInjuryNetworkPanel
 afterEach(() => cleanup());
 
 describe("the ranked table", () => {
+  it("lists sparse requested years and keeps observation coverage unknown", () => {
+    const sparse = network();
+    if (sparse.status !== "computed") throw new Error("expected a network");
+    sparse.years = [2020, 2022, 2024];
+    renderPanel({ network: sparse });
+    const facts = screen.getByTestId("safety-hin-facts").textContent ?? "";
+    expect(facts).toContain("Requested crash years: 2020, 2022, 2024");
+    expect(facts).not.toContain("2020–2024");
+    expect(facts).toContain("do not establish complete observation coverage or an annual denominator");
+  });
+
   it("states method, years, source and coverage beside the numbers", () => {
     renderPanel();
     expect(screen.getByTestId("safety-hin-measure").textContent).toBe("Fatal and serious-injury crashes per mile");

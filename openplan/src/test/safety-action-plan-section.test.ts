@@ -99,10 +99,22 @@ describe("the draft section", () => {
     expect(draft.crashSummary.sourceLine).toContain(evidence().citationText);
     expect(draft.crashSummary.figures.find((figure) => figure.label === "Fatal or serious-injury crashes")?.value).toBe(15);
     if (draft.network.kind !== "computed") throw new Error("expected a network");
-    expect(draft.network.sourceLine).toBe("Source: Statewide crash file, 2022–2024. Road lines: U.S. Census TIGER/Line roads 2025-01-01.");
+    expect(draft.network.sourceLine).toBe("Source: Statewide crash file. Requested crash years: 2022–2024. Road lines: U.S. Census TIGER/Line roads 2025-01-01.");
     expect(draft.network.measureLabel).toBe("Fatal and serious-injury crashes per mile");
     expect(draft.network.rows[0].countermeasureNames).toEqual(["Lighting", "Leading Pedestrian Interval"]);
     expect(draft.countermeasureSourceLine).toContain("Retrieved");
+  });
+
+  it("lists sparse requested years without asserting complete coverage or an annual denominator", () => {
+    const sparse = { ...network(), years: [2024, 2020, 2022] } as HighInjuryNetwork;
+    const draft = buildSafetyActionPlanSection({ plan: PLAN, evidence: evidence(), network: sparse });
+    if (draft.network.kind !== "computed") throw new Error("expected a network");
+    expect(draft.network.years).toBe("Requested crash years: 2020, 2022, 2024");
+    expect(draft.network.sourceLine).not.toContain("2020–2024");
+    expect(draft.network.coverage).toContain("do not establish complete observation coverage or an annual denominator");
+    const html = safetyActionPlanMarkup(draft);
+    expect(html).toContain("Requested crash years: 2020, 2022, 2024");
+    expect(html).toContain("do not establish complete observation coverage");
   });
 
   it("keeps an attachment whose segment left the list, with no rank", () => {
