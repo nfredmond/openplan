@@ -21,8 +21,7 @@ stable enough to promise smooth upgrades indefinitely.
 ## Unreleased
 
 **Exact project estimates:** decimal entry, reviewed imports, report output and
-exports retain hundredths without a floating-point conversion. Missing price
-years remain unknown. Project estimates remain separate from management budgets,
+exports preserve exact hundredths. Missing price years remain unknown. Project estimates remain separate from management budgets,
 funding awards and benefit-cost calculations. Apply
 `20261019080000_project_estimate_exact_cents.sql` before deploying this correction.
 It validates future amounts as positive values of at most 1,000,000,000,000,000
