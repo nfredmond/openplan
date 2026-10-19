@@ -148,7 +148,7 @@ export function ExtractionRunLauncher({
               disabled={isReading || !canWrite}
               aria-describedby="extraction-reading-scope-help"
             >
-              <option value="numeric">Figures and financial records</option>
+              <option value="numeric">Figures and financial details</option>
               <option value="chapter">Policy and goal text</option>
             </select>
           </label>
@@ -167,7 +167,7 @@ export function ExtractionRunLauncher({
         <p id="extraction-reading-scope-help" className="text-xs text-muted-foreground">
           {readingScope === "chapter"
             ? "Policy and goal text stays quoted from the source. Use Place copied chapter text to choose a chapter and stage a draft. Review the draft, then copy, edit and save it in the chapter editor. Reading or placing text does not change adopted policy."
-            : "Figures and financial records wait below for review before you save them into the plan."}
+            : "Figures and financial details wait below for review before you save them into the plan."}
         </p>
       ) : null}
 
