@@ -1,3 +1,4 @@
+import { comparableFundingText } from "@/lib/grants/award-handoff";
 import { renderChapterMarkdownToHtml } from "@/lib/markdown/render";
 import { modelingClaimStatusLabel } from "@/lib/models/evidence-backbone";
 import {
@@ -222,8 +223,8 @@ function formatRtpExportDateTime(value: string | null | undefined): string {
 }
 
 function formatRtpExportCurrency(value: number | null | undefined): string {
-  const amount = typeof value === "number" && Number.isFinite(value) ? value : 0;
-  return formatMoney(amount, { precision: "whole" });
+  if (value === null || value === undefined || !Number.isFinite(value)) return "Unassessed";
+  return formatMoney(value, { precision: "cents" });
 }
 
 function resolveEnabledSectionKeys(sectionKeys?: string[]): RtpExportSectionKey[] {
@@ -493,8 +494,8 @@ function fundingSourceContextMarkup(input: {
       ${
         fundingSnapshot
           ? `<div class="grid">
-              <div class="card"><strong>${esc(fundingSnapshot.label)}</strong><br/><span class="muted">${esc(fundingSnapshot.reason)}</span></div>
-              <div class="card"><strong>${esc(formatRtpExportCurrency(fundingSnapshot.committedFundingAmount))}</strong><br/><span class="muted">committed funding captured</span></div>
+              <div class="card"><strong>${esc(fundingSnapshot.comparableFunding ? `Recorded award ceilings: ${fundingSnapshot.comparableFunding.ceiling ?? "Unassessed"} ${fundingSnapshot.comparableFunding.currency ?? "currency unassessed"}; match ${fundingSnapshot.comparableFunding.match ?? "Unassessed"}. ${fundingSnapshot.comparableFunding.reasons.join("; ")}. Terms ${JSON.stringify(fundingSnapshot.comparableFunding.versions)}. Coverage unassessed without compatible cost basis.` : fundingSnapshot.label)}</strong><br/><span class="muted">${esc(fundingSnapshot.reason)}</span></div>
+              <div class="card"><strong>${esc(fundingSnapshot.comparableFunding ? comparableFundingText(fundingSnapshot.comparableFunding) : formatRtpExportCurrency(fundingSnapshot.committedFundingAmount))}</strong><br/><span class="muted">recorded award ceilings captured</span></div>
               <div class="card"><strong>${esc(formatRtpExportCurrency(fundingSnapshot.unfundedAfterLikelyAmount))}</strong><br/><span class="muted">uncovered after likely dollars</span></div>
               <div class="card"><strong>${esc(fundingSnapshot.reimbursementLabel)}</strong><br/><span class="muted">${esc(fundingSnapshot.reimbursementReason)}</span></div>
             </div>`

@@ -1,3 +1,5 @@
+import { managedCloseout } from "@/lib/grants/award-handoff-server";
+import { readAssistantExecutionSource } from "@/lib/assistant/action-approval-server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
@@ -157,6 +159,7 @@ const patchFundingAwardSchema = z
      * stay distinguishable from `null` (there is none).
      */
     expenditureDeadlineAt: z.string().datetime().nullable().optional(),
+    expectedCurrentRevisionId:z.string().uuid().optional(),
     spendingStatus: z.enum(FUNDING_AWARD_SPENDING_STATUSES).optional(),
     riskFlag: z.enum(FUNDING_AWARD_RISK_FLAGS).optional(),
     notes: z.string().trim().max(4000).nullable().optional(),
@@ -314,6 +317,15 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
     }
 
+    if (award.latest_handoff_revision_id) {
+      if (payload.recordClosedOnImport) return NextResponse.json({error:"Managed award closure requires version-bound paid coverage. Original imported closure remains historical."},{status:422});
+      if (payload.spendingStatus === FUNDING_AWARD_CLOSED_SPENDING_STATUS || payload.reopen) {
+        if(readAssistantExecutionSource(request)!=="manual") return NextResponse.json({error:"Managed award closeout/reopen has no approved agent action."},{status:403});
+        if(FIELD_EDIT_KEYS.some((key)=>payload[key]!==undefined)) return NextResponse.json({error:"Closeout/reopen is a separate operation from field edits."},{status:422});
+        return managedCloseout({actorId:user.id,awardId:award.id,expectedRevisionId:payload.expectedCurrentRevisionId,event:payload.reopen?"reopen":"earned_coverage",note:payload.reopen?.reason ?? payload.closeoutNote ?? null});
+      }
+      if ([payload.awardedAmount,payload.matchAmount,payload.obligationDueAt,payload.expenditureDeadlineAt].some((v)=>v!==undefined)) return NextResponse.json({error:"Revise the award handoff to change source-controlled money or deadlines.",href:`/grants/award-conditions?awardId=${award.id}`},{status:422});
+    }
     const isClosed = award.spending_status === FUNDING_AWARD_CLOSED_SPENDING_STATUS;
 
     if (payload.reopen) {

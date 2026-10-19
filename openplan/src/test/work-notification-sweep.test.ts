@@ -169,7 +169,7 @@ function fixtures() {
         projects: projectThree(),
       },
     ],
-    project_milestones: [
+    active_project_milestones: [
       {
         id: "m-1",
         project_id: PROJECT_TWO,
@@ -180,7 +180,7 @@ function fixtures() {
         projects: projectTwo(),
       },
     ],
-    project_submittals: [
+    active_project_submittals: [
       {
         id: "s-1",
         project_id: PROJECT_TWO,
@@ -219,7 +219,7 @@ function fixtures() {
         created_by: ALICE,
       },
     ],
-    funding_awards: [
+    legacy_calendar_funding_awards: [
       {
         id: "fa-1",
         workspace_id: WORKSPACE_ONE,
@@ -654,7 +654,7 @@ describe("the daily deadline sweep", () => {
     ["unrecorded_legacy", "Closure basis not recorded"],
   ])("retains %s obligation review without declaring compliance", async (basis, label) => {
     const { db, tables } = makeDbWithFixtures();
-    tables.funding_awards.find(row => row.id === "fa-spent")!.closure_basis = basis;
+    tables.legacy_calendar_funding_awards.find(row => row.id === "fa-spent")!.closure_basis = basis;
     await run(db);
     const reminder = db.notifications.find(row => row.subject_id === "fa-spent");
     expect(reminder?.kind).toBe("award_obligation_due");
@@ -675,7 +675,7 @@ describe("the daily deadline sweep", () => {
 
     it("is listed for review and not counted or worded as overdue when the date has passed", async () => {
       const { db, tables } = makeDbWithFixtures();
-      tables.funding_awards.find((row) => row.id === "fa-spent")!.obligation_due_at = "2026-08-01T00:00:00.000Z";
+      tables.legacy_calendar_funding_awards.find((row) => row.id === "fa-spent")!.obligation_due_at = "2026-08-01T00:00:00.000Z";
       await run(db);
 
       const digest = bobDigest(db);
@@ -701,7 +701,7 @@ describe("the daily deadline sweep", () => {
 
     it("leaves an open award with a passed date overdue", async () => {
       const { db, tables } = makeDbWithFixtures();
-      tables.funding_awards.find((row) => row.id === "fa-1")!.obligation_due_at = "2026-08-01T00:00:00.000Z";
+      tables.legacy_calendar_funding_awards.find((row) => row.id === "fa-1")!.obligation_due_at = "2026-08-01T00:00:00.000Z";
       await run(db);
 
       const digest = bobDigest(db);
@@ -740,7 +740,7 @@ describe("the daily deadline sweep", () => {
    *
    * MUTATION-VERIFIED (each reverted, all reported in the lane's handoff):
    * deleting `loadContext` from the source; replacing the quoted
-   * `remainingAuthorized` with a subtraction written in the sweep; returning
+   * `remainingAgainstCeiling` with a subtraction written in the sweep; returning
    * zeros instead of `unavailable` when the invoice read fails; dropping the
    * `>= limit` cap check; and removing the `ADD CONSTRAINT` from
    * 20260812000010, which fails the kind-vocabulary test above.
@@ -839,7 +839,7 @@ describe("the daily deadline sweep", () => {
   it("reports a source that failed without emptying the ones that did not", async () => {
     const db = new FakeWorkDb({
       tables: fixtures(),
-      errors: { project_milestones: { message: "permission denied for table project_milestones" } },
+      errors: { active_project_milestones: { message: "permission denied for table project_milestones" } },
     });
     db.emails.set(ALICE, "alice@example.gov");
     db.emails.set(BOB, "bob@example.gov");
@@ -951,10 +951,10 @@ describe("the reminder window on each workspace's calendar", () => {
     const all = tables as unknown as Record<string, Rows>;
     for (const table of [
       "project_deliverables",
-      "project_milestones",
-      "project_submittals",
+      "active_project_milestones",
+      "active_project_submittals",
       "funding_opportunities",
-      "funding_awards",
+      "legacy_calendar_funding_awards",
       "billing_invoice_records",
     ]) {
       all[table].splice(0);
@@ -1207,7 +1207,7 @@ describe("the reminder inbox read", () => {
  */
 describe("what the lapse reminder says is at risk", () => {
   function ledgerWithRemaining(remaining: number | null): AwardDrawdownLedger {
-    return { ...EMPTY_LEDGER, remainingAuthorized: remaining };
+    return { ...EMPTY_LEDGER, remainingAgainstCeiling: remaining };
   }
 
   it("states the amount still claimable, naming the currency", () => {
@@ -1289,7 +1289,7 @@ describe("what the lapse reminder says is at risk", () => {
 
   it("discloses an over-claim as an over-claim, not as a negative remainder", () => {
     expect(expenditureAtRiskSentence(ledgerWithRemaining(-2500), false, "USD")).toBe(
-      "Claims against this award already exceed the authorized amount by USD 2,500.00."
+      "Claims against this award already exceed the recorded award ceiling by USD 2,500.00."
     );
   });
 

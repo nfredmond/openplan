@@ -587,15 +587,15 @@ export async function buildRtpCycleExportInput(input: {
             .in("project_id", linkedProjectIds),
           supabase
             .from("funding_awards")
-            .select("project_id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at")
+            .select("project_id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at, id, latest_handoff_revision_id, current_handoff_revision_id, currency_code, has_source_backed_issuance", {count:"exact"})
             .in("project_id", linkedProjectIds),
           supabase
             .from("funding_opportunities")
-            .select("project_id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at")
+            .select("project_id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at, has_source_backed_issuance", {count:"exact"})
             .in("project_id", linkedProjectIds),
           supabase
             .from("billing_invoice_records")
-            .select("project_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at")
+            .select("project_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at, award_handoff_revision_id, currency_code, handoff_applicable_revision_id", {count:"exact"})
             .in("project_id", linkedProjectIds),
         ])
       : [
@@ -605,6 +605,7 @@ export async function buildRtpCycleExportInput(input: {
           { data: [], error: null },
         ];
 
+  if(linkedProjectIds.length && [fundingAwardsResult,fundingOpportunitiesResult,billingInvoicesResult].some((r)=>'count' in r && r.count!==r.data?.length))throw new Error("Complete award funding/terms/currency inputs unavailable; no partial RTP funding export accepted");
   // These four reads are TOTALLED into the funding snapshot. A failure read as
   // `?? []` does not leave a gap a reader could notice — it prints $0 committed
   // and a fully unfunded portfolio, under the agency's name, in a document a
@@ -630,7 +631,7 @@ export async function buildRtpCycleExportInput(input: {
     local_match_need_amount: number | null;
     updated_at: string | null;
   };
-  type FundingAwardRow = {
+  type FundingAwardRow = import("@/lib/grants/award-handoff").ComparableAward & {
     project_id: string;
     awarded_amount: number | string | null;
     match_amount: number | string | null;
@@ -640,6 +641,7 @@ export async function buildRtpCycleExportInput(input: {
     created_at: string | null;
   };
   type FundingOpportunityRow = {
+    has_source_backed_issuance?: boolean;
     project_id: string;
     expected_award_amount: number | string | null;
     decision_state: string | null;
@@ -648,7 +650,7 @@ export async function buildRtpCycleExportInput(input: {
     updated_at: string | null;
     created_at: string | null;
   };
-  type FundingInvoiceRow = {
+  type FundingInvoiceRow = import("@/lib/grants/award-handoff").ManagedInvoice & {
     project_id: string;
     status: string | null;
     amount: number | string | null;

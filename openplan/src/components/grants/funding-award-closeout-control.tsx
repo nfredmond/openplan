@@ -35,6 +35,7 @@ import {
 export type FundingAwardCloseoutAward = {
   id: string;
   title: string;
+  currentRevisionId?:string|null;
   /** `funding_awards.spending_status`; `fully_spent` is what close-out sets. */
   spendingStatus: string | null;
   /**
@@ -301,7 +302,7 @@ function FundingAwardCloseoutRow({
       const response = await fetch(`/api/funding-awards/${award.id}/closeout`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(note.trim() ? { notes: note.trim() } : {}),
+        body: JSON.stringify({ notes:note.trim()||undefined,expectedCurrentRevisionId:award.currentRevisionId??undefined }),
       });
 
       // A gateway or a crash can answer with something that is not JSON at all;
@@ -400,7 +401,7 @@ function FundingAwardCloseoutRow({
       const response = await fetch(`/api/funding-awards/${award.id}`, {
         method: "PATCH",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ reopen: { reason, spendingStatus: reopenStatus } }),
+        body: JSON.stringify({ expectedCurrentRevisionId:award.currentRevisionId??undefined,reopen: { reason, spendingStatus: reopenStatus } }),
       });
 
       const payload = (await response.json().catch(() => null)) as

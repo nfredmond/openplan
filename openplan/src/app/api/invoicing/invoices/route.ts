@@ -1,7 +1,8 @@
+import { storageMoney, exactInvoiceAmounts } from "@/lib/grants/award-handoff";
+import { readAssistantExecutionSource } from "@/lib/assistant/action-approval-server";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
-import { computeNetInvoiceAmount, computeRetentionAmount } from "@/lib/invoicing/invoice-records";
 import { isValidPosture, resolveReimbursementProfile } from "@/lib/invoicing/reimbursement-profile-binding";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { createClient } from "@/lib/supabase/server";
@@ -20,8 +21,10 @@ const createBillingInvoiceSchema = z.object({
   periodEnd: z.string().trim().max(30).optional(),
   invoiceDate: z.string().trim().max(30).optional(),
   dueDate: z.string().trim().max(30).optional(),
-  amount: z.coerce.number().min(0),
-  retentionPercent: z.coerce.number().min(0).max(100).optional(),
+  amount: z.union([z.number(),z.string()]).refine((v) => { try { storageMoney(v,"invoice"); return true; } catch { return false; } }, "Exact invoice NUMERIC(12,2) amount required"),
+  awardHandoffRevisionId: z.string().uuid().optional(),
+  currencyCode: z.string().regex(/^[A-Z]{3}$/).optional(),
+  retentionPercent: z.union([z.number(),z.string()]).optional(),
   supportingDocsStatus: z.enum(["pending", "partial", "complete", "accepted"]).optional(),
   submittedTo: z.string().trim().max(160).optional(),
   // No enum here on purpose: the valid posture vocabulary belongs to the
@@ -33,7 +36,7 @@ const createBillingInvoiceSchema = z.object({
 });
 
 const INVOICE_SELECT_LEGACY =
-  "id, workspace_id, project_id, funding_award_id, invoice_number, consultant_name, billing_basis, status, period_start, period_end, invoice_date, due_date, amount, retention_percent, retention_amount, net_amount, supporting_docs_status, submitted_to, caltrans_posture, notes, created_at";
+  "id, workspace_id, project_id, funding_award_id, invoice_number, consultant_name, billing_basis, status, period_start, period_end, invoice_date, due_date, amount, retention_percent, retention_amount, net_amount, award_handoff_revision_id, currency_code, handoff_applicable_revision_id, supporting_docs_status, submitted_to, caltrans_posture, notes, created_at";
 
 // caltrans_posture stays selected as the legacy read fallback for rows that
 // predate the profile backfill.
@@ -129,11 +132,12 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    let managedAward = false;
     let effectiveProjectId = parsed.data.projectId ?? null;
     if (parsed.data.fundingAwardId) {
       const { data: fundingAward, error: fundingAwardError } = await supabase
         .from("funding_awards")
-        .select("id, workspace_id, project_id")
+        .select("id, workspace_id, project_id, current_handoff_revision_id, latest_handoff_revision_id, currency_code")
         .eq("id", parsed.data.fundingAwardId)
         .single();
 
@@ -150,6 +154,11 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Funding award must match the selected project" }, { status: 400 });
       }
 
+      managedAward = Boolean(fundingAward.latest_handoff_revision_id);
+      if (managedAward) {
+        if (readAssistantExecutionSource(request) !== "manual") return NextResponse.json({error:"Managed award reimbursement binding has no registered approved agent action."},{status:403});
+        if (!fundingAward.current_handoff_revision_id || parsed.data.awardHandoffRevisionId !== fundingAward.current_handoff_revision_id || parsed.data.currencyCode !== fundingAward.currency_code) return NextResponse.json({error:"Review current award terms and currency before saving reimbursement."},{status:409});
+      }
       effectiveProjectId = effectiveProjectId ?? fundingAward.project_id ?? null;
     }
 
@@ -206,10 +215,11 @@ export async function POST(request: NextRequest) {
 
     const reimbursementPosture = requestedPosture ?? profileBinding.defaultPostureId;
 
-    const amount = parsed.data.amount;
     const retentionPercent = parsed.data.retentionPercent ?? 0;
-    const retentionAmount = computeRetentionAmount(amount, retentionPercent);
-    const netAmount = computeNetInvoiceAmount(amount, retentionAmount, retentionPercent);
+    let exact;
+    try { exact=exactInvoiceAmounts(parsed.data.amount,retentionPercent); }
+    catch(error) { return NextResponse.json({error:String(error)},{status:422}); }
+    const amount=exact.amount, retentionAmount=exact.retentionAmount, netAmount=exact.netAmount;
 
     // caltrans_posture is deliberately not written on the primary path: its DB
     // DEFAULT keeps the legacy column valid while the profile columns carry
@@ -219,6 +229,7 @@ export async function POST(request: NextRequest) {
       workspace_id: parsed.data.workspaceId,
       project_id: effectiveProjectId,
       funding_award_id: parsed.data.fundingAwardId ?? null,
+      ...(managedAward ? { award_handoff_revision_id:parsed.data.awardHandoffRevisionId,currency_code:parsed.data.currencyCode } : {}),
       invoice_number: parsed.data.invoiceNumber,
       consultant_name: parsed.data.consultantName?.trim() || null,
       billing_basis: parsed.data.billingBasis ?? "time_and_materials",
@@ -248,7 +259,7 @@ export async function POST(request: NextRequest) {
       .select(INVOICE_SELECT)
       .single();
 
-    if (error && looksLikePendingProfileSchema(error.message)) {
+    if (error && !managedAward && looksLikePendingProfileSchema(error.message)) {
       // This deployment's database predates the profile columns. Keep the
       // write working in the legacy shape — but only when the legacy column
       // can store the posture the user actually validated. Recording a

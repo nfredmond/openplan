@@ -1,3 +1,4 @@
+import { comparableFundingDisclosure } from "@/lib/grants/award-handoff";
 import { Compass, Plane } from "lucide-react";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
@@ -45,8 +46,8 @@ export function ProjectPostureUnified({
     return null;
   }
 
-  const rtpGap = rtpPosture?.remainingFundingGap ?? 0;
-  const rtpWarm = rtpGap > 0;
+  const rtpGap = rtpPosture?.remainingFundingGap;
+  const rtpWarm = !!rtpPosture?.comparableFunding || (rtpGap !== null && rtpGap !== undefined && rtpGap > 0);
   const rtpRowClass = rtpWarm
     ? "rounded-[0.75rem] border border-amber-300/50 bg-gradient-to-br from-amber-50/90 to-amber-100/40 px-5 py-4 dark:border-amber-900/70 dark:from-amber-950/30 dark:to-amber-950/10"
     : "rounded-[0.75rem] border border-border/70 bg-background/80 px-5 py-4";
@@ -87,11 +88,11 @@ export function ProjectPostureUnified({
               </p>
             </div>
             <p className="mt-2 text-sm font-medium leading-relaxed text-foreground">
-              Committed {fmtCurrency(rtpPosture.committedFundingAmount)} · remaining gap{" "}
+              {rtpPosture.comparableFunding ? comparableFundingDisclosure(rtpPosture.comparableFunding) : <>Committed {fmtCurrency(rtpPosture.committedFundingAmount)} · remaining gap{" "}
               <span className={rtpWarm ? "text-amber-900 dark:text-amber-100" : undefined}>
                 {fmtCurrency(rtpPosture.remainingFundingGap)}
               </span>{" "}
-              · {rtpPosture.awardCount} award{rtpPosture.awardCount === 1 ? "" : "s"} on record
+              · {rtpPosture.awardCount} award{rtpPosture.awardCount === 1 ? "" : "s"} on record</>}
             </p>
             <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{rtpPosture.reason}</p>
             <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{rtpPosture.reimbursementReason}</p>

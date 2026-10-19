@@ -1,3 +1,4 @@
+import { assertCompleteFundingRead, comparableFundingDisclosure } from "@/lib/grants/award-handoff";
 /**
  * Opportunity evidence assembly for grounded grant drafting.
  *
@@ -237,7 +238,7 @@ export type OpportunityEvidenceOptions = {
 type QueryError = { message: string } | null;
 type QueryResultLike = PromiseLike<{ data: unknown; error: QueryError }>;
 type QueryBuilderLike = QueryResultLike & {
-  select: (columns: string) => QueryBuilderLike;
+  select: (columns: string, options?: {count:"exact"}) => QueryBuilderLike;
   eq: (column: string, value: unknown) => QueryBuilderLike;
   neq: (column: string, value: unknown) => QueryBuilderLike;
   in: (column: string, values: unknown[]) => QueryBuilderLike;
@@ -256,6 +257,7 @@ function fundingSummaryClaims(
   projectName: string | null
 ): string[] {
   const projectLabel = projectName ?? "The linked project";
+  if (summary.comparableFunding) return [`${projectLabel}: ${comparableFundingDisclosure(summary.comparableFunding)}`];
   return [
     `${projectLabel} funding posture: ${summary.label} — ${summary.reason}`,
     `${projectLabel} pipeline posture: ${summary.pipelineLabel} — ${summary.pipelineReason}`,
@@ -337,15 +339,15 @@ export async function assembleOpportunityEvidence(
         .maybeSingle(),
       client
         .from("funding_awards")
-        .select("id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at")
+        .select("id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at, latest_handoff_revision_id, current_handoff_revision_id, currency_code, has_source_backed_issuance",{count:"exact"})
         .eq("project_id", opportunity.project_id),
       client
         .from("funding_opportunities")
-        .select("id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at")
+        .select("id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at, has_source_backed_issuance",{count:"exact"})
         .eq("project_id", opportunity.project_id),
       client
         .from("billing_invoice_records")
-        .select("id, funding_award_id, status, due_date, amount, retention_percent, retention_amount, net_amount")
+        .select("id, funding_award_id, status, due_date, amount, retention_percent, retention_amount, net_amount, award_handoff_revision_id, currency_code, handoff_applicable_revision_id",{count:"exact"})
         .eq("project_id", opportunity.project_id),
       client
         .from("reports")
@@ -376,6 +378,7 @@ export async function assembleOpportunityEvidence(
         .limit(10),
     ]);
 
+    assertCompleteFundingRead(awardsResult,projectOpportunitiesResult,invoicesResult);
     collectReadFailure("the linked project", projectResult);
     collectReadFailure("the project's funding profile", profileResult);
     collectReadFailure("the project's funding awards", awardsResult);

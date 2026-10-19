@@ -50,10 +50,11 @@ const WORKSPACE_ID = "22222222-2222-4222-8222-222222222222";
 const PROJECT_ID = "33333333-3333-4333-8333-333333333333";
 const USER_ID = "44444444-4444-4444-8444-444444444444";
 
-type TableResult = { data: unknown; error: { message: string } | null };
+type TableResult = { data: unknown; error: { message: string } | null; count?: number | null };
 
 /** Every `.select()` string the route issued, by table. */
 let selects: Record<string, string[]>;
+let selectOptions: Record<string, unknown[]>;
 /** Every filter the route applied, by table: `eq:column=value`, `gte:…`, `lte:…`. */
 let filters: Record<string, string[]>;
 let tableResults: Record<string, TableResult>;
@@ -64,11 +65,16 @@ let tableResults: Record<string, TableResult>;
  * A fake that records nothing proves nothing about a service-role read path —
  * the `.eq()` chain IS the access control here, so it is captured and asserted.
  */
-function makeChain(table: string) {
+function makeChain(table: string, options?: { count?: string }) {
   const record = (kind: string, column: string, value: unknown) => {
     (filters[table] ??= []).push(`${kind}:${column}=${String(value)}`);
   };
-  const result = () => tableResults[table] ?? { data: [], error: null };
+  const result = () => {
+    const raw = tableResults[table] ?? { data: [], error: null };
+    return { ...raw, count: options?.count === "exact"
+      ? Object.hasOwn(raw, "count") ? raw.count : Array.isArray(raw.data) ? raw.data.length : null
+      : null };
+  };
 
   const chain: Record<string, unknown> = {
     eq: (column: string, value: unknown) => (record("eq", column, value), chain),
@@ -157,6 +163,7 @@ function renderedHtml(): string {
 beforeEach(() => {
   vi.clearAllMocks();
   selects = {};
+  selectOptions = {};
   filters = {};
   setDefaults();
 
@@ -164,9 +171,10 @@ beforeEach(() => {
   createClientMock.mockResolvedValue({
     auth: { getUser: authGetUserMock },
     from: (table: string) => ({
-      select: (columns: string) => {
+      select: (columns: string, options?: { count?: string }) => {
         (selects[table] ??= []).push(columns);
-        return makeChain(table);
+        (selectOptions[table] ??= []).push(options);
+        return makeChain(table, options);
       },
     }),
   });
@@ -238,8 +246,8 @@ describe("GET the reimbursement worksheet", () => {
     expect(data.ledger.claimedGrossToDate).toBe(80000);
     expect(data.ledger.paidToDate).toBe(76000);
     expect(data.ledger.retentionHeld).toBe(4000);
-    expect(data.ledger.authorizedAmount).toBe(250000);
-    expect(data.ledger.remainingAuthorized).toBe(170000);
+    expect(data.ledger.recordedAwardCeiling).toBe(250000);
+    expect(data.ledger.remainingAgainstCeiling).toBe(170000);
     expect(renderedHtml()).toContain("$170,000.00");
   });
 
@@ -321,8 +329,9 @@ describe("a failed read never becomes a zero", () => {
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
       from: (table: string) => ({
-        select: (columns: string) => {
+        select: (columns: string, options?: { count?: string }) => {
           (selects[table] ??= []).push(columns);
+        (selectOptions[table] ??= []).push(options);
           if (table === "billing_invoice_records") {
             call += 1;
             if (call === 1) {
@@ -334,7 +343,7 @@ describe("a failed read never becomes a zero", () => {
               tableResults.billing_invoice_records = { data: [], error: null };
             }
           }
-          return makeChain(table);
+          return makeChain(table, options);
         },
       }),
     });
@@ -417,5 +426,25 @@ describe("who may read a worksheet", () => {
   it("requires the workspace to be named at all", async () => {
     const response = await GET(request(""), context());
     expect(response.status).toBe(400);
+  });
+});
+
+
+describe("complete worksheet invoice inputs", () => {
+  it("requests exact counts and the managed invoice identity fields", async () => {
+    expect((await GET(request(), context())).status).toBe(200);
+    expect(selectOptions.billing_invoice_records).toEqual([{ count: "exact" }]);
+    for (const field of ["award_handoff_revision_id", "currency_code", "handoff_applicable_revision_id"]) {
+      expect(selects.billing_invoice_records[0].split(", ")).toContain(field);
+    }
+    expect(filters.billing_invoice_records).toContain(`eq:funding_award_id=${AWARD_ID}`);
+  });
+  it("refuses a capped or unavailable invoice count before rendering money", async () => {
+    tableResults.billing_invoice_records.count = 2;
+    expect((await GET(request(), context())).status).toBe(503);
+    expect(renderReportPdfMock).not.toHaveBeenCalled();
+    tableResults.billing_invoice_records.count = null;
+    expect((await GET(request(), context())).status).toBe(503);
+    expect(renderReportPdfMock).not.toHaveBeenCalled();
   });
 });

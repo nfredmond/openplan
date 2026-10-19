@@ -8,7 +8,7 @@ import { formatMoney } from "@/lib/money/format";
  * `ROUNDED_MONEY_NOTE_RECONCILES_TO_LEDGER`) beside the figures.
  */
 export function formatUsdWholeAmount(value: number) {
-  return formatMoney(value, { precision: "whole" });
+  return formatMoney(value, { precision: "whole", absent:"Unassessed" });
 }
 
 export function buildRtpRegistryHref(filters: {

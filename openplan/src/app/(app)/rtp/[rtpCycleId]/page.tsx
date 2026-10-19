@@ -1,3 +1,4 @@
+import { assertCompleteFundingRead } from "@/lib/grants/award-handoff";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
@@ -344,19 +345,19 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
     linkedProjectIds.length
       ? supabase
           .from("funding_awards")
-          .select("project_id, awarded_amount, match_amount, risk_flag, obligation_due_at")
+          .select("project_id, awarded_amount, match_amount, risk_flag, obligation_due_at, id, latest_handoff_revision_id, current_handoff_revision_id, currency_code, has_source_backed_issuance",{count:"exact"})
           .in("project_id", linkedProjectIds)
       : Promise.resolve({ data: [], error: null }),
     linkedProjectIds.length
       ? supabase
           .from("funding_opportunities")
-          .select("project_id, decision_state, opportunity_status, expected_award_amount")
+          .select("project_id, decision_state, opportunity_status, expected_award_amount, has_source_backed_issuance",{count:"exact"})
           .in("project_id", linkedProjectIds)
       : Promise.resolve({ data: [], error: null }),
     linkedProjectIds.length
       ? supabase
           .from("billing_invoice_records")
-          .select("project_id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, due_date")
+          .select("project_id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, due_date, award_handoff_revision_id, currency_code, handoff_applicable_revision_id",{count:"exact"})
           .in("project_id", linkedProjectIds)
       : Promise.resolve({ data: [], error: null }),
   ]);
@@ -374,6 +375,7 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
   const fundingProfiles = fundingProfilesResult.error
     ? []
     : ((fundingProfilesResult.data ?? []) as ProjectFundingProfileRow[]);
+  if(linkedProjectIds.length) assertCompleteFundingRead(fundingAwardsResult,fundingOpportunitiesResult,billingInvoicesResult);
   const fundingAwards = fundingAwardsResult.error
     ? []
     : ((fundingAwardsResult.data ?? []) as FundingAwardRow[]);
@@ -797,6 +799,7 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
               : null,
             priority: link.priority,
             funding: {
+              comparableFunding: link.fundingStack.comparableFunding,
               pipelineLabel: link.fundingStack.pipelineLabel,
               pipelineStatus: link.fundingStack.pipelineStatus,
               committedFundingAmount: link.fundingStack.committedFundingAmount,

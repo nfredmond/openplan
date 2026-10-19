@@ -7,6 +7,16 @@ import {
 } from "@/lib/projects/funding";
 
 describe("project funding stack summary", () => {
+  it("retains recorded row counts when managed funding comparability is unassessed", () => {
+    const summary = buildProjectFundingStackSummary(null,
+      [{ latest_handoff_revision_id: "revision", currency_code: "EUR", awarded_amount: "100.01" }],
+      [{ decision_state: "pursue" }, { decision_state: "monitor" }],
+      [{ amount: "0.00", status: "draft" }]);
+    expect(summary).toMatchObject({ awardCount: 1, opportunityCount: 2, reimbursementPacketCount: 1 });
+    expect(summary.comparableFunding).toBeDefined();
+    expect(Number.isNaN(summary.committedFundingAmount)).toBe(true);
+  });
+
   it("does not call an unrelated project edit a funding-source update", () => {
     const snapshot = buildProjectFundingSnapshot({
       profile: null,

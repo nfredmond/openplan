@@ -38,7 +38,7 @@ import {
  *   outstandingClaimed  = 30,000.00 + 12,000.00            =  42,000.00
  *   retentionHeld       =  4,000.00 +  1,000.00 +   500.00 =   5,500.00  (paid only)
  *   retentionPending    =  3,333.33 +      0.00            =   3,333.33
- *   remainingAuthorized = 250,000.00 - 177,833.83          =  72,166.17
+ *   remainingAgainstCeiling = 250,000.00 - 177,833.83          =  72,166.17
  *
  * Invoice 1 ships with a POISONED stored `net_amount` of 0. The schema's
  * `net_amount` is a plain `NUMERIC DEFAULT 0` that any writer can leave at
@@ -161,7 +161,7 @@ describe("award drawdown ledger — the worked example", () => {
     const { lines, ...totals } = buildFixtureLedger();
 
     expect(totals).toEqual({
-      authorizedAmount: 250000.0,
+      recordedAwardCeiling: 250000.0,
       matchAmount: 32362.5,
       matchPosture: "secured",
       claimedGrossToDate: 177833.83,
@@ -177,7 +177,7 @@ describe("award drawdown ledger — the worked example", () => {
       draftedCount: 1,
       rejectedGross: 55000.0,
       rejectedCount: 1,
-      remainingAuthorized: 72166.17,
+      remainingAgainstCeiling: 72166.17,
     });
 
     expect(lines).toHaveLength(7);
@@ -227,7 +227,7 @@ describe("award drawdown ledger — the worked example", () => {
     // Removing the rejected invoice changes nothing that was folded in...
     expect(withoutRejected.claimedGrossToDate).toBe(withRejected.claimedGrossToDate);
     expect(withoutRejected.paidToDate).toBe(withRejected.paidToDate);
-    expect(withoutRejected.remainingAuthorized).toBe(withRejected.remainingAuthorized);
+    expect(withoutRejected.remainingAgainstCeiling).toBe(withRejected.remainingAgainstCeiling);
     // ...but the $55,000 the funder refused is still on the ledger where a
     // planner can see it, rather than vanishing into a zero.
     expect(withRejected.rejectedGross).toBe(55000.0);
@@ -330,17 +330,17 @@ describe("award drawdown ledger — authorization edges", () => {
     expect(ledger.ok).toBe(true);
     if (!ledger.ok) return;
 
-    expect(ledger.ledger.authorizedAmount).toBe(10000.0);
+    expect(ledger.ledger.recordedAwardCeiling).toBe(10000.0);
     expect(ledger.ledger.claimedGrossToDate).toBe(12000.0);
     // Clamping this at 0 would print "fully drawn down" over a $2,000 overage.
-    expect(ledger.ledger.remainingAuthorized).toBe(-2000.0);
+    expect(ledger.ledger.remainingAgainstCeiling).toBe(-2000.0);
   });
 
   it("refuses to treat an unrecorded award amount as a zero-dollar award", () => {
     const ledger = buildFixtureLedger({ award: { awarded_amount: "0.00", match_amount: "0.00" } });
 
-    expect(ledger.authorizedAmount).toBeNull();
-    expect(ledger.remainingAuthorized).toBeNull();
+    expect(ledger.recordedAwardCeiling).toBeNull();
+    expect(ledger.remainingAgainstCeiling).toBeNull();
     expect(ledger.matchAmount).toBeNull();
     // The claims themselves are still real and still reported.
     expect(ledger.claimedGrossToDate).toBe(177833.83);
@@ -365,9 +365,9 @@ describe("award drawdown ledger — authorization edges", () => {
 
     expect(ledger.ok).toBe(true);
     if (!ledger.ok) return;
-    expect(ledger.ledger.authorizedAmount).toBeNull();
+    expect(ledger.ledger.recordedAwardCeiling).toBeNull();
     expect(ledger.ledger.matchPosture).toBeNull();
-    expect(ledger.ledger.remainingAuthorized).toBeNull();
+    expect(ledger.ledger.remainingAgainstCeiling).toBeNull();
   });
 });
 
@@ -423,7 +423,7 @@ describe("award drawdown ledger — a failed read is never a ledger of zeros", (
     expect(ledger.ok).toBe(true);
     if (!ledger.ok) return;
     expect(ledger.ledger.claimedGrossToDate).toBe(0);
-    expect(ledger.ledger.remainingAuthorized).toBe(250000.0);
+    expect(ledger.ledger.remainingAgainstCeiling).toBe(250000.0);
     expect(ledger.ledger.lines).toEqual([]);
   });
 });

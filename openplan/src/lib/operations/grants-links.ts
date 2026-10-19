@@ -200,6 +200,8 @@ export function resolveRtpFundingFollowThrough(snapshot: FundingFollowThroughLik
     return null;
   }
 
+  if ([snapshot.unfundedAfterLikelyAmount,snapshot.outstandingReimbursementAmount,snapshot.uninvoicedAwardAmount].some((value)=>value===null || !Number.isFinite(value))) return {href:"/grants#grants-awards-reimbursement",title:"Linked RTP award coverage is unassessed. Review currency and current terms before relying on totals.",actionLabel:"Review award funding"};
+
   if ((snapshot.unfundedAfterLikelyAmount ?? 0) > 0 || (snapshot.gapProjectCount ?? 0) > 0) {
     return {
       href: "/grants#grants-gap-resolution-lane",

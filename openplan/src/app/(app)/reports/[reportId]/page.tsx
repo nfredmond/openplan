@@ -1,3 +1,4 @@
+import { assertCompleteFundingRead } from "@/lib/grants/award-handoff";
 import { reportJurisdictionState } from "@/lib/reports/jurisdiction-freshness";
 import { getReportPacketFreshness } from "@/lib/reports/catalog";
 import { artifactGenerationWritebackIsCurrent } from "@/lib/reports/report-registry-freshness";
@@ -5,10 +6,7 @@ import { notFound, redirect } from "next/navigation";
 import { ReportReadFailureDisclosure, ReportUnreadableShell } from "@/components/reports/report-read-failure-notice";
 import { RtpReportDetail } from "@/components/reports/rtp-report-detail";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
-import {
-  buildPortfolioFundingSnapshot,
-  buildProjectFundingSnapshot,
-} from "@/lib/projects/funding";
+import { buildPortfolioFundingSnapshot, buildProjectFundingSnapshot } from "@/lib/projects/funding";
 import {
   buildRtpCycleReadiness,
   buildRtpCycleWorkflowSummary,
@@ -98,7 +96,6 @@ import {
 import { ReportStandardDetail } from "./_components/report-standard-detail";
 import { loadSpecializedReportPage } from "@/components/reports/specialized-report-page";
 import { PlanningContextStripForProject } from "@/components/projects/planning-context-strip";
-
 export default async function ReportDetailPage({ params, searchParams }: ReportDetailRouteParams) {
   const { reportId } = await params; const query = searchParams ? await searchParams : {}; const supabase = await createClient();
 
@@ -312,15 +309,15 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
             .in("project_id", rtpLinkedProjectIds),
           supabase
             .from("funding_awards")
-            .select("project_id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at")
+            .select("project_id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at, id, latest_handoff_revision_id, current_handoff_revision_id, currency_code, has_source_backed_issuance",{count:"exact"})
             .in("project_id", rtpLinkedProjectIds),
           supabase
             .from("funding_opportunities")
-            .select("project_id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at")
+            .select("project_id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at, has_source_backed_issuance",{count:"exact"})
             .in("project_id", rtpLinkedProjectIds),
           supabase
             .from("billing_invoice_records")
-            .select("project_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at")
+            .select("project_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at, funding_award_id, award_handoff_revision_id, currency_code, handoff_applicable_revision_id",{count:"exact"})
             .in("project_id", rtpLinkedProjectIds),
         ])
       : [
@@ -528,6 +525,7 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
       current.push(invoice);
       rtpFundingInvoicesByProjectId.set(invoice.project_id, current);
     }
+    if(rtpLinkedProjectIds.length) assertCompleteFundingRead(rtpFundingAwardsResult,rtpFundingOpportunitiesResult,rtpBillingInvoicesResult);
     const currentRtpFundingSnapshot = buildPortfolioFundingSnapshot({
       projects: rtpLinkedProjectIds.map((projectId) => ({
         profile: rtpFundingProfileByProjectId.get(projectId) ?? null,

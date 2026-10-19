@@ -32,17 +32,20 @@ const membershipSelectMock = vi.fn(() => ({
   eq: () => ({ eq: () => ({ maybeSingle: membershipMaybeSingleMock }) }),
 }));
 
+let managedOrigin:string|null=null;
+const originSelect=vi.fn(()=>{const chain={eq:()=>chain,maybeSingle:async()=>({data:{id:'record',project_id:PROJECT_ID,funding_award_id:'award',handoff_origin_revision_id:managedOrigin},error:null})};return chain;});
+vi.mock("@/lib/assistant/action-approval-server",()=>({readAssistantExecutionSource:(request:NextRequest)=>request.headers.has('x-openplan-assistant-execution-source')?'planner_agent_quick_link':'manual'}));
 const fromMock = vi.fn((table: string) => {
   if (table === "projects") {
     return { select: projectsSelectMock };
   }
 
   if (table === "project_milestones") {
-    return { update: projectMilestonesUpdateMock };
+    return { update: projectMilestonesUpdateMock, select:originSelect };
   }
 
   if (table === "project_submittals") {
-    return { update: projectSubmittalsUpdateMock };
+    return { update: projectSubmittalsUpdateMock, select:originSelect };
   }
 
   if (table === "project_deliverables") {
@@ -92,6 +95,7 @@ function routeContext(recordId: string) {
 describe("PATCH /api/projects/[projectId]/records/[recordId]", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    managedOrigin=null;
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
 
     authGetUserMock.mockResolvedValue({
@@ -424,4 +428,16 @@ describe("PATCH /api/projects/[projectId]/records/[recordId]", () => {
       expect(projectMilestonesUpdateMock).toHaveBeenCalledTimes(1);
     }
   });
+  it('allows manual managed fulfillment and refuses an agent before outcome mutation',async()=>{
+    managedOrigin='11111111-2222-4333-8444-555555555555';
+    const body={recordType:'submittal',status:'accepted',submittedAt:'2026-10-18T12:00:00Z',note:'Synthetic actual receipt'};
+    const manual=await patchRecord(jsonRequest(SUBMITTAL_ID,body),routeContext(SUBMITTAL_ID));
+    expect(manual.status).toBe(200);
+    expect(originSelect).toHaveBeenCalledWith('id, project_id, funding_award_id, handoff_origin_revision_id');
+    projectSubmittalsUpdateMock.mockClear();
+    const agent=jsonRequest(SUBMITTAL_ID,body);agent.headers.set('x-openplan-assistant-execution-source','planner_agent_quick_link');
+    expect((await patchRecord(agent,routeContext(SUBMITTAL_ID))).status).toBe(403);
+    expect(projectSubmittalsUpdateMock).not.toHaveBeenCalled();
+  });
+
 });

@@ -69,6 +69,7 @@ import { GET as downloadExport } from "@/app/api/funding-opportunities/[opportun
 
 type QueryResult = { count?: number | null; data: unknown; error: { message: string; code?: string } | null };
 type QueryChain = Record<string, ReturnType<typeof vi.fn>> & {
+  select: ReturnType<typeof vi.fn<(columns: string, options?: { count?: string }) => unknown>>;
   then: (resolve: (value: unknown) => unknown, reject?: (reason: unknown) => unknown) => unknown;
 };
 

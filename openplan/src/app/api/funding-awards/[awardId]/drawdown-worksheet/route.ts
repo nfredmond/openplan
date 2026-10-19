@@ -67,7 +67,7 @@ type RouteContext = {
   params: Promise<{ awardId: string }>;
 };
 
-const AWARD_SELECT = "id, workspace_id, project_id, title, awarded_amount, match_amount, match_posture";
+const AWARD_SELECT = "id, workspace_id, project_id, title, awarded_amount, match_amount, match_posture, latest_handoff_revision_id, current_handoff_revision_id, currency_code";
 
 type AwardRow = DrawdownAwardLike & {
   id: string;
@@ -184,12 +184,12 @@ export async function GET(request: NextRequest, context: RouteContext) {
     // One loose result shape for both reads: the two select strings would
     // otherwise infer different structural types, and this codebase's Supabase
     // reads are cast deliberately (the clients are untyped by convention).
-    type InvoiceQueryResult = { data: unknown[] | null; error: { message?: string | null } | null };
+    type InvoiceQueryResult = { count:number|null; data: unknown[] | null; error: { message?: string | null } | null };
 
     const readInvoices = (columns: string) =>
       supabase
         .from("billing_invoice_records")
-        .select(columns)
+        .select(`${columns}, award_handoff_revision_id, currency_code, handoff_applicable_revision_id`,{count:"exact"})
         .eq("funding_award_id", award.id)
         .order("invoice_date", { ascending: true }) as unknown as Promise<InvoiceQueryResult>;
 
@@ -206,6 +206,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       }
     }
 
+    if(!invoiceResult.error && invoiceResult.count!==invoiceResult.data?.length)return NextResponse.json({error:"Complete invoice set unavailable. No partial worksheet total is accepted."},{status:503});
     const invoiceRead = toDrawdownInvoiceRead({
       data: (invoiceResult.data ?? null) as DrawdownInvoiceLike[] | null,
       error: invoiceResult.error,
@@ -299,14 +300,20 @@ export async function GET(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to resolve a reimbursement process" }, { status: 500 });
     }
 
+    if (award.current_handoff_revision_id) {
+      const current = await supabase.from("funding_award_handoff_revisions").select("id, terms").eq("id",award.current_handoff_revision_id).eq("award_id",award.id).maybeSingle();
+      if (current.error || !current.data) return NextResponse.json({error:"Current award terms unavailable"},{status:503});
+      assemblyNotices.push(`Recorded award ceiling, not authorization. Actual authorization: ${JSON.stringify(current.data.terms.authorization)}. Recipient acceptance: ${current.data.terms.acceptance}. Profile shown is guidance, not established applicability.`);
+    }
     const html = buildReimbursementWorksheetHtml({
       workspace: { name: workspaceRow?.name ?? null },
       award: { title: award.title, projectName: access.project.name },
       period: periodStart || periodEnd ? { start: periodStart ?? null, end: periodEnd ?? null } : null,
       ledger: ledgerResult.ledger,
       profile: profileResolution.binding,
+      currencyCode: award.currency_code,
       interimDefaultRationale: INTERIM_DEFAULT_RATIONALE,
-      costs,
+      costs: award.latest_handoff_revision_id ? { ok:false, pending:false, message:"Project cost entries lack award-version and currency binding. Cost total unassessed." } : costs,
       assemblyNotices,
     });
 

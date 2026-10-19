@@ -1,3 +1,5 @@
+import { AwardFundingFacts } from "@/components/grants/award-funding-facts";
+import { ManagedAwardLedgerFacts } from "@/components/grants/managed-award-ledger-facts";
 import Link from "next/link";
 import { CalendarClock } from "lucide-react";
 import { SetupPendingNotice } from "@/components/ui/setup-pending-notice";
@@ -223,6 +225,7 @@ export function ProjectFundingPanel({
     fundingAwards.flatMap((award) => {
       const built = buildAwardDrawdownLedger({
         award: {
+          ...award,
           awarded_amount: award.awarded_amount,
           match_amount: award.match_amount,
           match_posture: award.match_posture,
@@ -235,6 +238,7 @@ export function ProjectFundingPanel({
 
   return (
     <article id="project-funding-opportunities" className="module-section-surface">
+      {fundingStackSummary.comparableFunding ? <AwardFundingFacts snapshot={fundingStackSummary.comparableFunding} /> : null}
       <div className="module-section-header">
         <div className="flex items-center gap-3">
           <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-amber-500/10 text-amber-700 dark:text-amber-300">
@@ -452,14 +456,15 @@ export function ProjectFundingPanel({
                       <div className="space-y-1.5">
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <h3 className="module-record-title">{award.title}</h3>
+                          <Link className="text-sm underline" href={`/grants/award-conditions?awardId=${award.id}`}>Record award conditions and view history</Link>
                           <p className="module-record-stamp">Updated {fmtDateTime(award.updated_at)}</p>
                         </div>
                         <p className="module-record-summary">{award.notes || "No award notes recorded yet."}</p>
                       </div>
 
-                      <p className="mt-1.5 text-label text-muted-foreground">
+                      {award.latest_handoff_revision_id ? <AwardFundingFacts awards={[award]}/> : <p className="mt-1.5 text-label text-muted-foreground">
                         Awarded {fmtCurrency(award.awarded_amount)} · Match {fmtCurrency(award.match_amount)} · Reimbursed {fmtCurrency(awardInvoiceSummary?.paidNetAmount ?? 0)} · Outstanding {fmtCurrency(awardInvoiceSummary?.outstandingNetAmount ?? 0)} · Obligation {fmtDateTime(award.obligation_due_at)}{award.opportunity?.title ? ` · ${award.opportunity.title}` : ""}
-                      </p>
+                      </p>}
 
                       {/*
                         The lapse date sits with the obligation date because
@@ -471,11 +476,11 @@ export function ProjectFundingPanel({
                         and silence about that is indistinguishable from having
                         one.
                       */}
-                      <AwardExpenditureDeadlineControl
+                      {award.latest_handoff_revision_id ? <Link className="text-sm underline" href={`/grants/award-conditions?awardId=${award.id}`}>Review source-defined obligation, expenditure and report clocks</Link> : <AwardExpenditureDeadlineControl
                         awardId={award.id}
                         expenditureDeadlineAt={award.expenditure_deadline_at}
                         canWrite={canWriteAwards}
-                      />
+                      />}
 
                       {/*
                         Gross claimed beside net paid, each labelled, because
@@ -485,13 +490,13 @@ export function ProjectFundingPanel({
                         reader to subtract two figures that are not on the same
                         basis.
                       */}
-                      {drawdownLedger ? (
+                      {drawdownLedger?.managed ? <ManagedAwardLedgerFacts ledger={drawdownLedger.managed} /> : drawdownLedger ? (
                         <p className="mt-1 text-label text-muted-foreground">
-                          Claim progress: awarded {drawdownLedger.authorizedAmount !== null ? fmtCurrency(drawdownLedger.authorizedAmount) : "not entered"} · claimed {fmtCurrency(drawdownLedger.claimedGrossToDate)} gross · paid {fmtCurrency(drawdownLedger.paidToDate)} net
-                          {drawdownLedger.remainingAuthorized !== null
-                            ? drawdownLedger.remainingAuthorized >= 0
-                              ? ` · ${fmtCurrency(drawdownLedger.remainingAuthorized)} not yet claimed`
-                              : ` · claims exceed the award by ${fmtCurrency(Math.abs(drawdownLedger.remainingAuthorized))}`
+                          Claim progress: recorded award ceiling {drawdownLedger.recordedAwardCeiling !== null ? fmtCurrency(drawdownLedger.recordedAwardCeiling) : "not entered"} · claimed {fmtCurrency(drawdownLedger.claimedGrossToDate)} gross · paid {fmtCurrency(drawdownLedger.paidToDate)} net
+                          {drawdownLedger.remainingAgainstCeiling !== null
+                            ? drawdownLedger.remainingAgainstCeiling >= 0
+                              ? ` · ${fmtCurrency(drawdownLedger.remainingAgainstCeiling)} not yet claimed`
+                              : ` · claims exceed the award by ${fmtCurrency(Math.abs(drawdownLedger.remainingAgainstCeiling))}`
                             : ""}
                           {drawdownLedger.draftedCount > 0
                             ? ` · ${fmtCurrency(drawdownLedger.draftedNotClaimed)} drafted and not yet claimed, counted in none of the above`

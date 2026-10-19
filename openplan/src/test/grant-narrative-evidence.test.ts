@@ -27,7 +27,7 @@ import {
  * loader named.
  */
 
-type ReadResult = { data: unknown; error: { message: string } | null };
+type ReadResult = { data: unknown; error: { message: string } | null; count?: number | null };
 
 const OPPORTUNITY_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const WORKSPACE_ID = "33333333-3333-4333-8333-333333333333";
@@ -107,17 +107,28 @@ const READS: ReadonlyArray<{
 ];
 
 function clientResolving(resolve: (table: string, columns: string) => ReadResult) {
+  const readCalls: Array<{ table: string; columns: string; count?: "exact" }> = [];
   return {
+    readCalls,
     from(table: string) {
       let columns = "";
+      let exactCount = false;
+      const answer = (): ReadResult => {
+        const result = resolve(table, columns);
+        return exactCount && Array.isArray(result.data) && !Object.hasOwn(result, "count")
+          ? { ...result, count: result.data.length }
+          : result;
+      };
       const chain: Record<string, unknown> = {
-        select: (cols: string) => {
+        select: (cols: string, options?: { count?: "exact" }) => {
           columns = cols;
+          exactCount = options?.count === "exact";
+          readCalls.push({ table, columns: cols, count: options?.count });
           return chain;
         },
-        maybeSingle: () => Promise.resolve(resolve(table, columns)),
+        maybeSingle: () => Promise.resolve(answer()),
         then: (ok: (value: unknown) => unknown, err?: (reason: unknown) => unknown) =>
-          Promise.resolve(resolve(table, columns)).then(ok, err),
+          Promise.resolve(answer()).then(ok, err),
       };
       for (const method of ["eq", "neq", "not", "in", "order", "limit"]) {
         chain[method] = () => chain;
@@ -170,6 +181,25 @@ function clientFailing(read: (typeof READS)[number], message: string) {
 }
 
 describe("assembleOpportunityEvidence — a failed read is reported, never answered as absence", () => {
+  it("requests complete managed funding projections before making narrative facts", async () => {
+    const client = clientResolving(succeeding);
+    await assembleOpportunityEvidence(client, opportunity());
+    const awards = client.readCalls.find(read => read.table === "funding_awards");
+    const invoices = client.readCalls.find(read => read.table === "billing_invoice_records");
+    expect(awards).toMatchObject({ count: "exact" });
+    expect(awards?.columns.split(", ")).toEqual(expect.arrayContaining(["id", "latest_handoff_revision_id", "current_handoff_revision_id", "currency_code", "has_source_backed_issuance"]));
+    expect(invoices).toMatchObject({ count: "exact" });
+    expect(invoices?.columns.split(", ")).toEqual(expect.arrayContaining(["funding_award_id", "award_handoff_revision_id", "currency_code", "handoff_applicable_revision_id"]));
+    expect(client.readCalls.find(read => read.table === "funding_opportunities")).toMatchObject({ count: "exact" });
+  });
+
+  it.each([null, 1])("refuses a missing or incomplete exact funding count: %s", async count => {
+    const client = clientResolving((table, columns) => table === "funding_awards"
+      ? { data: [], error: null, count }
+      : succeeding(table, columns));
+    await expect(assembleOpportunityEvidence(client, opportunity())).rejects.toThrow("Complete funding currency/version source sets are unavailable");
+  });
+
   it("reports no failures when every read succeeds and genuinely finds nothing", async () => {
     const bundle = await assembleOpportunityEvidence(clientResolving(succeeding), opportunity());
 
@@ -202,10 +232,12 @@ describe("assembleOpportunityEvidence — a failed read is reported, never answe
   it.each(READS.filter((read) => !read.proposalOnly).map((read) => [read.subject, read] as const))(
     "reports a failed read of %s",
     async (subject, read) => {
-      const bundle = await assembleOpportunityEvidence(
-        clientFailing(read, `could not read ${read.table}`),
-        opportunity()
-      );
+      const pending = assembleOpportunityEvidence(clientFailing(read, `could not read ${read.table}`), opportunity());
+      if (["funding_awards", "funding_opportunities", "billing_invoice_records"].includes(read.table)) {
+        await expect(pending).rejects.toThrow("Complete funding currency/version source sets are unavailable");
+        return;
+      }
+      const bundle = await pending;
 
       expect(bundle.readFailures.map((failure) => failure.subject)).toEqual([subject]);
       expect(bundle.readFailures[0].message).toBe(`could not read ${read.table}`);

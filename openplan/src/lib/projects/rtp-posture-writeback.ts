@@ -1,3 +1,4 @@
+import { assessedFundingNumber } from "@/lib/grants/award-handoff";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   buildProjectFundingStackSummary,
@@ -11,6 +12,8 @@ import {
 } from "@/lib/projects/funding";
 
 export type ProjectRtpPosture = {
+  sourceEpoch: number | string;
+  comparableFunding?: import("@/lib/grants/award-handoff").ComparableFunding;
   status: ProjectFundingStackStatus;
   label: string;
   reason: string;
@@ -20,15 +23,15 @@ export type ProjectRtpPosture = {
   reimbursementStatus: ProjectFundingReimbursementStatus;
   reimbursementLabel: string;
   reimbursementReason: string;
-  fundingNeedAmount: number;
-  localMatchNeedAmount: number;
-  committedFundingAmount: number;
-  committedMatchAmount: number;
-  likelyFundingAmount: number;
-  totalPotentialFundingAmount: number;
-  remainingFundingGap: number;
-  remainingMatchGap: number;
-  unfundedAfterLikelyAmount: number;
+  fundingNeedAmount: number | null;
+  localMatchNeedAmount: number | null;
+  committedFundingAmount: number | null;
+  committedMatchAmount: number | null;
+  likelyFundingAmount: number | null;
+  totalPotentialFundingAmount: number | null;
+  remainingFundingGap: number | null;
+  remainingMatchGap: number | null;
+  unfundedAfterLikelyAmount: number | null;
   nextObligationAt: string | null;
   awardRiskCount: number;
   awardCount: number;
@@ -56,6 +59,10 @@ export async function rebuildProjectRtpPosture({
   workspaceId,
   now = () => new Date(),
 }: RebuildProjectRtpPostureInput): Promise<RtpPostureWritebackResult> {
+  const invalidation=await supabase.from("projects").update({rtp_posture:null,rtp_posture_updated_at:null}).eq("id",projectId).eq("workspace_id",workspaceId).select("funding_source_epoch").maybeSingle();
+  if(invalidation.error)return {posture:null,updatedAt:null,error:{message:"Cannot invalidate previous RTP posture before rebuild",code:invalidation.error.code}};
+  const epoch: number | string | undefined = invalidation.data?.funding_source_epoch;
+  if (epoch === undefined || (typeof epoch === 'number' ? !Number.isSafeInteger(epoch) || epoch < 0 : !/^\d+$/.test(epoch))) return {posture:null,updatedAt:null,error:{message:"Exact funding source epoch unavailable; posture remains invalidated"}};
   const profileResult = await supabase
     .from("project_funding_profiles")
     .select("funding_need_amount, local_match_need_amount, updated_at")
@@ -75,7 +82,7 @@ export async function rebuildProjectRtpPosture({
 
   const awardsResult = await supabase
     .from("funding_awards")
-    .select("awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at")
+    .select("awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at, id, latest_handoff_revision_id, current_handoff_revision_id, currency_code, has_source_backed_issuance", {count:"exact"})
     .eq("workspace_id", workspaceId)
     .eq("project_id", projectId);
 
@@ -92,7 +99,7 @@ export async function rebuildProjectRtpPosture({
 
   const opportunitiesResult = await supabase
     .from("funding_opportunities")
-    .select("expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at")
+    .select("expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at, has_source_backed_issuance", {count:"exact"})
     .eq("workspace_id", workspaceId)
     .eq("project_id", projectId);
 
@@ -109,7 +116,7 @@ export async function rebuildProjectRtpPosture({
 
   const invoicesResult = await supabase
     .from("billing_invoice_records")
-    .select("status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at")
+    .select("status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at, award_handoff_revision_id, currency_code, handoff_applicable_revision_id", {count:"exact"})
     .eq("workspace_id", workspaceId)
     .eq("project_id", projectId);
 
@@ -124,6 +131,7 @@ export async function rebuildProjectRtpPosture({
     };
   }
 
+  if([awardsResult,opportunitiesResult,invoicesResult].some((r)=>r.count!==r.data?.length))return {posture:null,updatedAt:null,error:{message:"Complete financial source sets unavailable; posture invalidated"}};
   const profile = (profileResult.data ?? null) as ProjectFundingProfileLike | null;
   const awards = (awardsResult.data ?? []) as FundingAwardLike[];
   const opportunities = (opportunitiesResult.data ?? []) as FundingOpportunityLike[];
@@ -132,6 +140,8 @@ export async function rebuildProjectRtpPosture({
   const summary = buildProjectFundingStackSummary(profile, awards, opportunities, invoices);
 
   const posture: ProjectRtpPosture = {
+    sourceEpoch: epoch,
+    comparableFunding: summary.comparableFunding,
     status: summary.status,
     label: summary.label,
     reason: summary.reason,
@@ -141,15 +151,15 @@ export async function rebuildProjectRtpPosture({
     reimbursementStatus: summary.reimbursementStatus,
     reimbursementLabel: summary.reimbursementLabel,
     reimbursementReason: summary.reimbursementReason,
-    fundingNeedAmount: summary.fundingNeedAmount,
-    localMatchNeedAmount: summary.localMatchNeedAmount,
-    committedFundingAmount: summary.committedFundingAmount,
-    committedMatchAmount: summary.committedMatchAmount,
-    likelyFundingAmount: summary.likelyFundingAmount,
-    totalPotentialFundingAmount: summary.totalPotentialFundingAmount,
-    remainingFundingGap: summary.remainingFundingGap,
-    remainingMatchGap: summary.remainingMatchGap,
-    unfundedAfterLikelyAmount: summary.unfundedAfterLikelyAmount,
+    fundingNeedAmount: assessedFundingNumber(summary.fundingNeedAmount),
+    localMatchNeedAmount: assessedFundingNumber(summary.localMatchNeedAmount),
+    committedFundingAmount: assessedFundingNumber(summary.committedFundingAmount),
+    committedMatchAmount: assessedFundingNumber(summary.committedMatchAmount),
+    likelyFundingAmount: assessedFundingNumber(summary.likelyFundingAmount),
+    totalPotentialFundingAmount: assessedFundingNumber(summary.totalPotentialFundingAmount),
+    remainingFundingGap: assessedFundingNumber(summary.remainingFundingGap),
+    remainingMatchGap: assessedFundingNumber(summary.remainingMatchGap),
+    unfundedAfterLikelyAmount: assessedFundingNumber(summary.unfundedAfterLikelyAmount),
     nextObligationAt: summary.nextObligationAt,
     awardRiskCount: summary.awardRiskCount,
     awardCount: awards.length,
@@ -165,8 +175,12 @@ export async function rebuildProjectRtpPosture({
       rtp_posture_updated_at: updatedAt,
     })
     .eq("id", projectId)
-    .eq("workspace_id", workspaceId);
+    .eq("workspace_id", workspaceId)
+    .eq("funding_source_epoch", epoch)
+    .select("id")
+    .maybeSingle();
 
+  if (!updateResult.error && !updateResult.data) return {posture:null,updatedAt:null,error:{code:"PT409",message:"Funding sources changed during rebuild. Stale posture was not persisted; rebuild from current sources."}};
   if (updateResult.error) {
     return {
       posture,

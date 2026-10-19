@@ -1,3 +1,4 @@
+import { comparableFundingDisclosure, type ComparableFunding } from "@/lib/grants/award-handoff";
 /**
  * The project lists — the part of an RTP a board actually turns to.
  *
@@ -56,6 +57,7 @@ export type RtpProgrammeListEntry = {
     narrative: string;
   };
   funding: {
+    comparableFunding?: ComparableFunding;
     pipelineLabel: string;
     pipelineStatus: FundingPipelineStatus;
     committedFundingAmount: number;
@@ -249,8 +251,7 @@ export function RtpProgrammeLists({
                           reader who merges them will think the plan is funded.
                         */}
                         <span className="text-label text-muted-foreground">
-                          Project funding: {formatMoney(entry.funding.committedFundingAmount, { precision: "whole" })} committed ·{" "}
-                          {formatMoney(entry.funding.unfundedAfterLikelyAmount, { precision: "whole" })} still to raise
+                          {entry.funding.comparableFunding ? comparableFundingDisclosure(entry.funding.comparableFunding) : <>Project funding: {formatMoney(entry.funding.committedFundingAmount, { precision: "whole", absent:"Unassessed" })} committed ·{" "}{formatMoney(entry.funding.unfundedAfterLikelyAmount, { precision: "whole", absent:"Unassessed" })} still to raise</>}
                         </span>
                       </div>
                     </li>
