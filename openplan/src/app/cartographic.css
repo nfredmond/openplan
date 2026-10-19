@@ -2341,6 +2341,13 @@ body[data-page-flush="true"] .op-cart-shell .op-cart-surface__body > .analysis-e
   border-top: 1px solid var(--line);
 }
 
+/* The More sheet places its trigger at the left edge. Let the wider menu
+   open into the sheet; header controls retain their right-aligned default. */
+.op-cart-navsheet__appearance .theme-appearance-menu {
+  left: 0;
+  right: auto;
+}
+
 /*
   ═══ UI OVERHAUL, OCTOBER 10, 2026: ONE FRAME FOR MAP PAGES ═══
 

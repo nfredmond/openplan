@@ -31,3 +31,12 @@ Build 01 remains failed before Next on duplicate npm config paths. Build 02 rema
 One new window passed: harmless 6/6, intended Square-scale AssertionError, exact CSS/test byte and mode restoration, final 6/6, full configured tsc --noEmit --incremental false exit 0, and scoped ESLint exit 0.
 Parent, manager wait and inner exited 0; the compiler lock and owned dependency link were released. Raw logs/JSON and custody receipts are under `/home/nathaniel/.local/state/openplan/m2c-appearance-postcss-type-check-20261019-01/`.
 These source/type checks do not establish computed corner coverage or universal avatar/chart geometry. A complete identified build and desktop/390px browser journey remain pending.
+
+Mobile placement update, October 19, 2026. Build 03 succeeded at 8401937 with BUILD_ID rf9UGtMgu6StbEBymDkHW; its evidence and earlier failures remain retained.
+Root's identified browser journey passes desktop appearance checks but finds the 390px More drawer menu offscreen at x=-115, width 256. Raw findings remain under `/home/nathaniel/.local/state/openplan/m2c-appearance-browser-20261019-02/`.
+The source correction anchors that drawer's menu left and retains the default right anchor. A focused actual-consumer/CSS assertion is prepared, with a harmless comment and removal of the scoped alignment planned as controls.
+No checks run on this correction yet. Computed CSS, desktop regression and the corrected 390px journey remain unverified; .next and build identity evidence stay untouched.
+
+Mobile placement ordinary result, October 19, 2026. One bounded window passed harmless 10/10, the named missing-alignment AssertionError, exact five-file byte/mode restoration, final 10/10 and three-file lint exit 0.
+Root reports parent/manager/inner exit 0, one compiler lease released and no owned dependency link. Peak memory was 351506432 bytes, with zero swap and memory events. Raw logs remain under `/home/nathaniel/.local/state/openplan/m2c-appearance-mobile-placement-20261019-01/ordinary-run/` and its root outer receipts.
+These checks cover the rendered consumer and CSS source. Browser 02 remains failed at x=-115; corrected desktop/390px placement has no browser acceptance yet. Prior build and browser failures remain retained.

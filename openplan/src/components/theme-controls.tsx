@@ -187,7 +187,7 @@ export function ThemeControls({ className = "" }: { className?: string }) {
             role="dialog"
             aria-label="Appearance"
             data-testid="theme-palette-list"
-            className="absolute right-0 top-[calc(100%+0.5rem)] z-50 max-h-[calc(100dvh-6rem)] w-64 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-xl border border-border/70 bg-popover p-1.5 shadow-[0_24px_48px_rgba(0,0,0,0.22)]"
+            className="theme-appearance-menu absolute right-0 top-[calc(100%+0.5rem)] z-50 max-h-[calc(100dvh-6rem)] w-64 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-xl border border-border/70 bg-popover p-1.5 shadow-[0_24px_48px_rgba(0,0,0,0.22)]"
           >
             <div role="group" aria-label="Corners" className="mb-1.5 border-b border-border px-2.5 pb-2 pt-1">
               <span className="mb-1 block text-xs font-semibold text-foreground">Corners</span>
