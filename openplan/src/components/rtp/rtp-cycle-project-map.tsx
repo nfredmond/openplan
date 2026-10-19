@@ -20,28 +20,25 @@
  * an empty map is never presented as an empty plan. The same rule governs a
  * FAILED load: it renders as a failure, never as "this plan has no projects".
  *
- * THE NO-TOKEN DEGRADE FETCHES ANYWAY, DELIBERATELY. A deployment with no
- * Mapbox key still holds the facts — how many projects are programmed, how many
- * have no location — and those are what an operator needs in order to know what
- * they are missing. Returning early on a missing token (as
- * `LocationDisplayMap` does, by rendering nothing at all) would make a
- * misconfigured deployment and a plan with no projects look identical.
+ * A deployment without a map engine still fetches the project facts and
+ * reports missing locations. A configuration failure is not an empty plan.
  *
- * PROPS ARE DELIBERATELY ONE STRING so a server page can mount this without
- * serialising a payload. The layer is fetched client-side for the same reason
- * every other `/api/map-features/*` layer is: the route owns the scoping, the
- * disclosure and the audit entry, and a second server-side read of the same
- * rows would be a second place for those to be got wrong.
+ * The staff page passes the cycle id. Its client fetch keeps scoping,
+ * disclosure and audit in the existing map-feature route. The public page
+ * instead supplies its already-authorized collection, as described below.
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import "maplibre-gl/dist/maplibre-gl.css";
 import { Map as MapIcon } from "lucide-react";
 
 import { MapUnavailableNotice } from "@/components/ui/map-unavailable-notice";
 import { keepMapSizedToContainer } from "@/lib/mapbox/keep-map-sized";
 import { hasInvalidPublicMapboxToken, resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
+import { deploymentMapEngine, startMap, styleForEngine, type MapEngine } from "@/lib/maps/map-engine";
+import { whenStyleAccepts } from "@/lib/maps/when-style-accepts";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 import {
   RTP_PORTFOLIO_ROLE_OPTIONS,
@@ -67,8 +64,15 @@ const HAS_UNUSABLE_MAPBOX_TOKEN =
     process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
   ) && !MAPBOX_ACCESS_TOKEN;
 
+// Preserve this panel's refusal of an unusable configured token, including
+// when an open style is present. Other callers keep the shared engine policy.
+const MAP_ENGINE: MapEngine = HAS_UNUSABLE_MAPBOX_TOKEN
+  ? { kind: "none", unusableToken: true }
+  : deploymentMapEngine();
+
 const SOURCE_ID = "rtp-cycle-projects";
 const CIRCLE_LAYER_ID = "rtp-cycle-projects-circle";
+const STYLE_LOAD_WATCHDOG_MS = 15_000;
 
 /**
  * Colour per portfolio role.
@@ -122,6 +126,11 @@ type LoadState =
   | { status: "loading" }
   | { status: "ready"; collection: RtpCycleProjectFeatureCollection }
   | { status: "failed"; message: string; hint: string | null };
+
+type FetchedResult = {
+  rtpCycleId: string;
+  result: Exclude<LoadState, { status: "loading" }>;
+};
 
 type ErrorBody = { error?: unknown; hint?: unknown };
 
@@ -244,24 +253,29 @@ export function RtpCycleProjectMap(props: RtpCycleProjectMapProps) {
   const rtpCycleId = "rtpCycleId" in props ? props.rtpCycleId : null;
   const isPublic = props.audience === "public";
 
-  const [state, setState] = useState<LoadState>(
-    suppliedCollection ? { status: "ready", collection: suppliedCollection } : { status: "loading" }
-  );
+  const [fetched, setFetched] = useState<FetchedResult | null>(null);
+  const state: LoadState = suppliedCollection
+    ? { status: "ready", collection: suppliedCollection }
+    : fetched !== null && fetched.rtpCycleId === rtpCycleId
+      ? fetched.result
+      : { status: "loading" };
   const [mapStartupFailed, setMapStartupFailed] = useState(false);
+  const [backgroundFailed, setBackgroundFailed] = useState(false);
 
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const styleLoadedRef = useRef(false);
+  const latestCollectionRef = useRef<RtpCycleProjectFeatureCollection | null>(null);
 
   useEffect(() => {
     if (rtpCycleId === null) return;
+    const requestedCycleId = rtpCycleId;
     const controller = new AbortController();
-    setState({ status: "loading" });
 
     (async () => {
       try {
         const response = await fetch(
-          `/api/map-features/rtp-cycle-projects?rtpCycleId=${encodeURIComponent(rtpCycleId)}`,
+          `/api/map-features/rtp-cycle-projects?rtpCycleId=${encodeURIComponent(requestedCycleId)}`,
           { method: "GET", credentials: "same-origin", signal: controller.signal }
         );
 
@@ -271,10 +285,13 @@ export function RtpCycleProjectMap(props: RtpCycleProjectMapProps) {
           // not load" is how a one-command fix becomes a support thread.
           const body = (await response.json().catch(() => null)) as ErrorBody | null;
           if (controller.signal.aborted) return;
-          setState({
-            status: "failed",
-            message: asText(body?.error) ?? `The project map could not be loaded (${response.status}).`,
-            hint: asText(body?.hint),
+          setFetched({
+            rtpCycleId: requestedCycleId,
+            result: {
+              status: "failed",
+              message: asText(body?.error) ?? `The project map could not be loaded (${response.status}).`,
+              hint: asText(body?.hint),
+            },
           });
           return;
         }
@@ -283,21 +300,27 @@ export function RtpCycleProjectMap(props: RtpCycleProjectMapProps) {
         if (controller.signal.aborted) return;
 
         if (!payload || payload.type !== "FeatureCollection" || !Array.isArray(payload.features)) {
-          setState({
-            status: "failed",
-            message: "The project map could not be loaded.",
-            hint: "The map layer answered in a shape this panel does not recognise.",
+          setFetched({
+            rtpCycleId: requestedCycleId,
+            result: {
+              status: "failed",
+              message: "The project map could not be loaded.",
+              hint: "The map layer answered in a shape this panel does not recognise.",
+            },
           });
           return;
         }
 
-        setState({ status: "ready", collection: payload });
+        setFetched({ rtpCycleId: requestedCycleId, result: { status: "ready", collection: payload } });
       } catch (error) {
-        if ((error as { name?: string }).name === "AbortError") return;
-        setState({
-          status: "failed",
-          message: "The project map could not be loaded.",
-          hint: null,
+        if (controller.signal.aborted || (error as { name?: string }).name === "AbortError") return;
+        setFetched({
+          rtpCycleId: requestedCycleId,
+          result: {
+            status: "failed",
+            message: "The project map could not be loaded.",
+            hint: null,
+          },
         });
       }
     })();
@@ -309,6 +332,11 @@ export function RtpCycleProjectMap(props: RtpCycleProjectMapProps) {
   const drawnCount = collection?.features.length ?? 0;
   const hasDrawableProjects = drawnCount > 0;
 
+  // The engine and style may arrive after newer props or a newer read.
+  useEffect(() => {
+    latestCollectionRef.current = collection;
+  }, [collection]);
+
   // The container only exists once there is something to draw, so a callback
   // ref — not a plain `useRef` read inside an effect — is what guarantees the
   // map is built against a node that is actually mounted.
@@ -317,91 +345,117 @@ export function RtpCycleProjectMap(props: RtpCycleProjectMapProps) {
   }, []);
 
   useEffect(() => {
-    if (!MAPBOX_ACCESS_TOKEN) return;
-    if (!collection || collection.features.length === 0) return;
+    if (MAP_ENGINE.kind === "none" || !hasDrawableProjects) return;
     const container = containerRef.current;
     if (!container || mapRef.current) return;
 
-    mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
-
-    // The opening frame is the plan's OWN first project, never a place-shaped
-    // constant. `CONTINENTAL_US_CENTER` is reached only when there is nothing
-    // to centre on, and the load handler fits to the full extent regardless.
-    const first = collection.features[0]?.geometry.coordinates ?? null;
-
-    let map: mapboxgl.Map;
-    try {
-      map = new mapboxgl.Map({
+    return startMap(MAP_ENGINE, mapboxgl, (gl) => {
+      const first = latestCollectionRef.current?.features[0]?.geometry.coordinates ?? null;
+      const map = new gl.Map({
         container,
-        style: "mapbox://styles/mapbox/light-v11",
+        style: styleForEngine(MAP_ENGINE, "mapbox://styles/mapbox/light-v11") as string,
         center: first ?? CONTINENTAL_US_CENTER,
         zoom: first ? SINGLE_POINT_ZOOM : NEUTRAL_ZOOM,
         attributionControl: false,
       });
-    } catch {
-      // WebGL unavailable, a blocked style request, a browser that cannot run
-      // GL at all. A stated failure beats an empty grey rectangle.
-      setMapStartupFailed(true);
-      return;
-    }
+      let disposed = false;
+      let backgroundLoaded = false;
+      let watchdog: number | undefined;
+      let popup: mapboxgl.Popup | null = null;
+      let stopSizing = () => {};
+      let stopWaitingForStyle = () => {};
 
-    mapRef.current = map;
-    // This panel lives in the cycle page's Projects tab, which is not the
-    // landing tab — so the container was `display: none` at construction and
-    // the map measured 0x0. Without this the tab opens on a blank rectangle.
-    const stopSizing = keepMapSizedToContainer(map, container);
-    map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
-    map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-right");
-
-    map.on("load", () => {
-      styleLoadedRef.current = true;
-      map.addSource(SOURCE_ID, { type: "geojson", data: collection });
-      map.addLayer({
-        id: CIRCLE_LAYER_ID,
-        type: "circle",
-        source: SOURCE_ID,
-        paint: {
-          "circle-radius": ["interpolate", ["linear"], ["zoom"], 4, 4, 12, 8],
-          "circle-color": ROLE_COLOR_EXPRESSION,
-          "circle-stroke-width": 1.5,
-          "circle-stroke-color": "#ffffff",
-        },
-      });
-
-      map.on("click", CIRCLE_LAYER_ID, (event) => {
+      const onBackgroundLoaded = () => {
+        if (disposed) return;
+        backgroundLoaded = true;
+        window.clearTimeout(watchdog);
+        setBackgroundFailed(false);
+      };
+      const onMapError = () => {
+        if (!disposed && !backgroundLoaded) setBackgroundFailed(true);
+      };
+      const onProjectClick = (event: mapboxgl.MapLayerMouseEvent) => {
         const feature = event.features?.[0];
         if (!feature) return;
-        new mapboxgl.Popup({ offset: 12, maxWidth: "280px" })
+        popup?.remove();
+        popup = new gl.Popup({ offset: 12, maxWidth: "280px" })
           .setLngLat(event.lngLat)
           .setDOMContent(buildPopupContent((feature.properties ?? {}) as Record<string, unknown>))
           .addTo(map);
-      });
-      map.on("mouseenter", CIRCLE_LAYER_ID, () => {
+      };
+      const onProjectEnter = () => {
         map.getCanvas().style.cursor = "pointer";
-      });
-      map.on("mouseleave", CIRCLE_LAYER_ID, () => {
+      };
+      const onProjectLeave = () => {
         map.getCanvas().style.cursor = "";
-      });
+      };
 
-      const bounds = new mapboxgl.LngLatBounds();
-      for (const feature of collection.features) {
-        bounds.extend(feature.geometry.coordinates);
-      }
-      if (!bounds.isEmpty()) {
-        map.fitBounds(bounds, { padding: 48, maxZoom: 13, duration: 0 });
-      }
-    });
+      const stop = () => {
+        disposed = true;
+        window.clearTimeout(watchdog);
+        stopWaitingForStyle();
+        stopSizing();
+        popup?.remove();
+        map.off("style.load", onBackgroundLoaded);
+        map.off("error", onMapError);
+        map.off("click", CIRCLE_LAYER_ID, onProjectClick);
+        map.off("mouseenter", CIRCLE_LAYER_ID, onProjectEnter);
+        map.off("mouseleave", CIRCLE_LAYER_ID, onProjectLeave);
+        map.remove();
+        if (mapRef.current === map) {
+          mapRef.current = null;
+          styleLoadedRef.current = false;
+        }
+      };
 
-    return () => {
-      stopSizing();
-      map.remove();
-      mapRef.current = null;
-      styleLoadedRef.current = false;
-    };
-    // Keyed on WHETHER there is anything to draw, not on the payload's
-    // identity: re-running this on every re-fetch would tear the map down and
-    // rebuild it under the planner. The effect below carries new data in.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      try {
+        mapRef.current = map;
+        setMapStartupFailed(false);
+        setBackgroundFailed(false);
+        // The Projects tab may be hidden when this map is constructed.
+        stopSizing = keepMapSizedToContainer(map, container);
+        map.addControl(new gl.NavigationControl({ showCompass: false }), "top-right");
+        map.addControl(new gl.AttributionControl({ compact: true }), "bottom-right");
+        map.on("style.load", onBackgroundLoaded);
+        map.on("error", onMapError);
+        watchdog = window.setTimeout(() => {
+          if (!disposed && !backgroundLoaded) setBackgroundFailed(true);
+        }, STYLE_LOAD_WATCHDOG_MS);
+
+        stopWaitingForStyle = whenStyleAccepts(map, () => {
+          const latest = latestCollectionRef.current;
+          if (disposed || !latest) return;
+          onBackgroundLoaded();
+          map.addSource(SOURCE_ID, { type: "geojson", data: latest });
+          map.addLayer({
+            id: CIRCLE_LAYER_ID,
+            type: "circle",
+            source: SOURCE_ID,
+            paint: {
+              "circle-radius": ["interpolate", ["linear"], ["zoom"], 4, 4, 12, 8],
+              "circle-color": ROLE_COLOR_EXPRESSION,
+              "circle-stroke-width": 1.5,
+              "circle-stroke-color": "#ffffff",
+            },
+          });
+          styleLoadedRef.current = true;
+          map.on("click", CIRCLE_LAYER_ID, onProjectClick);
+          map.on("mouseenter", CIRCLE_LAYER_ID, onProjectEnter);
+          map.on("mouseleave", CIRCLE_LAYER_ID, onProjectLeave);
+
+          const bounds = new gl.LngLatBounds();
+          for (const feature of latest.features) bounds.extend(feature.geometry.coordinates);
+          if (!bounds.isEmpty()) {
+            map.fitBounds(bounds, { padding: 48, maxZoom: 13, duration: 0 });
+          }
+        });
+      } catch (error) {
+        stop();
+        throw error;
+      }
+      return stop;
+    }, () => setMapStartupFailed(true));
+    // Payload changes update the existing map without another engine load.
   }, [hasDrawableProjects]);
 
   // Keeps the drawn dots in step with a payload that arrived after the map was
@@ -469,8 +523,8 @@ export function RtpCycleProjectMap(props: RtpCycleProjectMapProps) {
             its key was missing, and would have read the empty state as the
             whole story. Both facts are true at once, so both are stated.
           */}
-          {!MAPBOX_ACCESS_TOKEN ? (
-            <MapUnavailableNotice unusableToken={HAS_UNUSABLE_MAPBOX_TOKEN}>
+          {MAP_ENGINE.kind === "none" ? (
+            <MapUnavailableNotice unusableToken={MAP_ENGINE.unusableToken}>
               {drawnCount > 0 ? (
                 <p className="mt-1.5">
                   {drawnCount.toLocaleString("en-US")} of the{" "}
@@ -504,25 +558,36 @@ export function RtpCycleProjectMap(props: RtpCycleProjectMapProps) {
                 </p>
               )}
             </div>
-          ) : !MAPBOX_ACCESS_TOKEN ? null : mapStartupFailed ? (
-            <div className="rounded-[0.5rem] border border-dashed border-border/70 bg-muted/20 px-4 py-6 text-sm text-muted-foreground">
-              <p className="font-medium text-foreground">The map could not start in this browser</p>
-              <p className="mt-1.5">
-                Mapbox needs WebGL. The {drawnCount.toLocaleString("en-US")} located{" "}
-                {drawnCount === 1 ? "project" : "projects"} in this plan are still listed above.
-              </p>
+          ) : MAP_ENGINE.kind === "none" ? null : (
+            <div className="space-y-3">
+              {mapStartupFailed ? (
+                <div role="status" className="rounded-[0.5rem] border border-dashed border-border/70 bg-muted/20 px-4 py-6 text-sm text-muted-foreground">
+                  <p className="font-medium text-foreground">The map could not start in this browser</p>
+                  <p className="mt-1.5">
+                    The map library could not load or this browser could not initialize WebGL. The {drawnCount.toLocaleString("en-US")} located{" "}
+                    {drawnCount === 1 ? "project" : "projects"} in this plan are still listed above.
+                  </p>
+                </div>
+              ) : backgroundFailed ? (
+                <div role="status" className="rounded-[0.5rem] border border-dashed border-border/70 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
+                  <p className="font-medium text-foreground">The map background could not be loaded</p>
+                  <p className="mt-1.5">
+                    The project data loaded, but the background has not appeared. The project lists,
+                    counts and location disclosures are still available. This panel keeps waiting
+                    for the background.
+                  </p>
+                </div>
+              ) : null}
+              <div
+                ref={attachContainer}
+                // Keep the Projects tab's deep-link anchor on the mounted canvas.
+                id="rtp-cycle-project-map-canvas"
+                data-testid="rtp-cycle-project-map-canvas"
+                role="region"
+                aria-label="Projects programmed in this RTP cycle"
+                className="h-[360px] w-full overflow-hidden rounded-[0.5rem] border border-border/70 bg-muted/10"
+              />
             </div>
-          ) : (
-            <div
-              ref={attachContainer}
-              // The id, not only the testid: the cycle page's Projects tab
-              // declares `rtp-cycle-project-map-canvas` as one of its anchors,
-              // and an anchor with no element of that id is a deep link that
-              // opens the right tab and then scrolls nowhere.
-              id="rtp-cycle-project-map-canvas"
-              data-testid="rtp-cycle-project-map-canvas"
-              className="h-[360px] w-full overflow-hidden rounded-[0.5rem] border border-border/70 bg-muted/10"
-            />
           )}
 
           <ul className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
