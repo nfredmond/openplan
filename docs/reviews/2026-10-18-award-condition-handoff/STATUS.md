@@ -64,3 +64,18 @@ financial-read cases. Private receipts remain in
 `v1-award-current-ci-source-correction-20261018/`. This is source/jsdom evidence;
 current-head full/default/shuffled CI, native finance and browser acceptance
 remain separate. No migration, access rule or financial threshold changes.
+
+
+Isolated native follow-up, October 18: the installed migration exposed two
+PL/pgSQL variable/query-alias conflicts. Two additive migrations correct names
+without changing validation, writes, function identities, owners, ACLs or settings.
+The original migration bytes and prior history remain exact. All 12 transaction
+and Program/Auth parent-DELETE controls pass, including the same lock-order
+assertion rejecting actual entry removal. Auth uses its installed TCP login;
+no role grants are added. The submittal fixture now uses its actual agency label
+and assigned-user columns. A harmless function comment passes; restored original
+ambiguity, lost assignment, wrong Auth host and URL-query faults refuse for their
+intended reasons. Functions, selected rows, history and test bytes restore exactly;
+scoped lint passes. Earlier wrapper and fixture failures remain private, including
+the duplicate-receipt stop before tests. No hosted award rollout, Storage byte
+journey, browser acceptance or arbitrary transaction-order claim follows.

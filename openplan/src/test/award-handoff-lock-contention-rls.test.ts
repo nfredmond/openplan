@@ -1,5 +1,5 @@
 import { AssertionError, deepStrictEqual } from "node:assert";
-import { spawn } from "node:child_process";
+import { execFileSync, spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { isAbsolute } from "node:path";
 import { createInterface } from "node:readline";
@@ -12,16 +12,55 @@ import { resolveLocalDbContainer } from "./helpers/live-catalog";
 // not arbitrary transaction order, managed Auth internals or application journeys.
 class OwnedClientError extends Error {
   readonly terminated: boolean;
-  constructor(code: number | null, stderr: string) {
-    super(`Owned contention client exited (${code}): ${stderr}`);
+  constructor(code: number | null, stderr: string, auth = false) {
+    super(auth ? `Owned Auth contention client exited (${code}); diagnostics suppressed` : `Owned contention client exited (${code}): ${stderr}`);
     const states = [...stderr.matchAll(/(?:ERROR|FATAL):\s+([A-Z0-9]{5}):/g)].map(match => match[1]);
     this.terminated = (code === 2 || code === 3) && states.length === 1 && states[0] === "57P01"
       && stderr.includes("terminating connection due to administrator command");
   }
 }
 
-function connection(container: string) {
-  const child = spawn("docker", ["exec", "-i", container, "psql", "-X", "-U", "postgres", "-d", "postgres", "-qAt", "-v", "ON_ERROR_STOP=1", "-v", "VERBOSITY=verbose"], { stdio: ["pipe", "pipe", "pipe"] });
+// Auth DELETE uses its installed login, not a postgres SET ROLE or peer login.
+// Keep inspected credentials local to this spawn and suppress Auth diagnostics.
+function connection(container: string, auth = false) {
+  let childEnv: NodeJS.ProcessEnv | undefined;
+  if (auth) {
+    try {
+      if (!/^supabase_db_[a-z0-9][a-z0-9_.-]*$/.test(container)) throw new Error();
+      const authContainer = `supabase_auth_${container.slice("supabase_db_".length)}`;
+      const metadata: unknown = JSON.parse(execFileSync("docker", ["inspect", "--format", "{{json .Config.Env}}", authContainer], {
+        encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], timeout: 5_000, killSignal: "SIGKILL", maxBuffer: 1024 * 1024,
+      }));
+      if (!Array.isArray(metadata) || !metadata.every((value: unknown) => typeof value === "string")) throw new Error();
+      const entries = (metadata as string[]).filter(value => value.startsWith("GOTRUE_DB_DATABASE_URL="));
+      if (entries.length !== 1) throw new Error();
+      const raw = entries[0].slice("GOTRUE_DB_DATABASE_URL=".length);
+      if (raw.includes("?") || raw.includes("#") || [...raw].some(value => value.charCodeAt(0) <= 32 || value.charCodeAt(0) === 127)) throw new Error();
+      const url = new URL(raw);
+      if (!(url.protocol === "postgres:" || url.protocol === "postgresql:")
+        || url.username !== "supabase_auth_admin" || url.hostname !== container
+        || url.port !== "5432" || url.pathname !== "/postgres" || url.search || url.hash) throw new Error();
+      const password = decodeURIComponent(url.password);
+      if (!password || password.includes("\0")) throw new Error();
+      childEnv = { ...process.env, PGPASSWORD: password };
+    } catch {
+      // Do not attach the URL, inspect output, parser error or child-process cause.
+      throw new Error("Unable to resolve matching Auth database login metadata");
+    }
+  }
+  let child: ChildProcessWithoutNullStreams;
+  try {
+    child = spawn("docker", ["exec", "-i", ...(auth ? ["--env", "PGPASSWORD", "--env", "PGCONNECT_TIMEOUT=5"] : []),
+      container, "psql", "-X", ...(auth ? ["-h", "127.0.0.1", "-p", "5432", "-w"] : []),
+      "-U", auth ? "supabase_auth_admin" : "postgres", "-d", "postgres", "-qAt", "-v", "ON_ERROR_STOP=1", "-v", "VERBOSITY=verbose"],
+    { stdio: ["pipe", "pipe", "pipe"], env: childEnv });
+  } catch (error) {
+    if (auth) throw new Error("Unable to start owned Auth contention client");
+    throw error;
+  } finally {
+    // spawn copies the child environment synchronously. Retain no password here.
+    if (childEnv) delete childEnv.PGPASSWORD;
+  }
   const lines = createInterface({ input: child.stdout });
   let stderr = "", serial = 0, closed = false;
   let pending: { marker: string; rows: string[]; resolve: (rows: string[]) => void; reject: (error: Error) => void; timer: ReturnType<typeof setTimeout> } | undefined;
@@ -38,10 +77,10 @@ function connection(container: string) {
       if (pending) { clearTimeout(pending.timer); pending.reject(error); pending = undefined; }
       reject(error);
     };
-    child.once("error", fail);
+    child.once("error", error => fail(auth ? new Error("Owned Auth contention client failed") : error));
     child.once("close", code => {
       closed = true; lines.close();
-      if (code !== 0 || pending) fail(new OwnedClientError(code, stderr));
+      if (code !== 0 || pending) fail(new OwnedClientError(code, stderr, auth));
       else resolve();
     });
   });
@@ -136,6 +175,13 @@ async function until<T>(read: () => Promise<T>, ready: (value: T) => boolean): P
       observerPid = Number((await observer.query(`SET application_name='${application}-observer'; SET search_path=''; SET statement_timeout='20s'; SET lock_timeout='15s'; SELECT pg_backend_pid();`)).at(-1));
       expect(Number.isInteger(observerPid) && observerPid > 0).toBe(true);
       expect((await observer.query(`SELECT has_table_privilege('${role}','${table}','DELETE');`)).at(-1), `Required installed DELETE privilege for ${role}`).toBe("t");
+      // Prove the DELETE login before changing either fixtures or parent entries.
+      deleter = connection(container, parent === "auth user");
+      deletePid = Number((await deleter.query(`SET application_name='${application}-delete'; SET statement_timeout='20s'; SET lock_timeout='15s'; SELECT pg_backend_pid();`)).at(-1));
+      expect(Number.isInteger(deletePid) && deletePid > 0).toBe(true);
+      if (parent === "auth user") {
+        expect(await deleter.query("SELECT session_user,current_user;")).toEqual(["supabase_auth_admin|supabase_auth_admin"]);
+      }
       await observer.query(`BEGIN; LOCK TABLE ${table} IN ACCESS EXCLUSIVE MODE;`);
       captured = await readTrigger(observer);
       deepStrictEqual(captured, expectedTrigger, "Refuse missing, changed or disabled starting parent entry");
@@ -176,8 +222,7 @@ async function until<T>(read: () => Promise<T>, ready: (value: T) => boolean): P
         AND NOT EXISTS(SELECT FROM public.program_work_program_sources WHERE program_id='${program}')
         AND NOT EXISTS(SELECT FROM pg_locks WHERE pid=pg_backend_pid() AND locktype='advisory' AND classid=713 AND objid=1 AND objsubid=2);`)).at(-1)).toBe("t");
       await observer.query(`SELECT pg_advisory_lock(${gate}::bigint);`);
-      deleter = connection(container); saver = connection(container);
-      deletePid = Number((await deleter.query(`SET application_name='${application}-delete'; SET statement_timeout='20s'; SET lock_timeout='15s'; SELECT pg_backend_pid();`)).at(-1));
+      saver = connection(container);
       savePid = Number((await saver.query(`SET application_name='${application}-save'; SET statement_timeout='20s'; SET lock_timeout='15s'; SELECT pg_backend_pid();`)).at(-1));
       expect(new Set([observerPid, deletePid, savePid]).size).toBe(3);
       expect([deletePid, savePid].every(pid => Number.isInteger(pid) && pid > 0)).toBe(true);
@@ -191,7 +236,7 @@ async function until<T>(read: () => Promise<T>, ready: (value: T) => boolean): P
         'saveWaitsParent',EXISTS(SELECT FROM pg_locks waiting JOIN pg_locks held
           ON held.locktype='transactionid' AND held.transactionid=waiting.transactionid AND held.pid=${deletePid} AND held.granted
           WHERE waiting.pid=${savePid} AND waiting.locktype='transactionid' AND NOT waiting.granted));`)).at(-1)!);
-      deletion = deleter.query(`BEGIN; SET LOCAL ROLE ${role}; SELECT current_user;
+      deletion = deleter.query(`BEGIN; ${parent === "program" ? "SET LOCAL ROLE service_role;" : ""} SELECT current_user;
         ${removed ? "" : "/* Harmless control: this SQL comment changes no DELETE behavior. */"}
         DELETE FROM ${table} WHERE id='${target}' RETURNING id; COMMIT; SELECT 'DELETE_COMMITTED';`);
       void deletion.catch(recordQueryError);
@@ -260,12 +305,14 @@ async function until<T>(read: () => Promise<T>, ready: (value: T) => boolean): P
           await cleanup.query(`ROLLBACK; BEGIN; LOCK TABLE ${table} IN ACCESS EXCLUSIVE MODE;`);
           if (captured) {
             const current = await readTrigger(cleanup);
-            if (restoreEntry && !current) await cleanup.query(`${captured.definition}; ALTER TABLE ${table} ENABLE TRIGGER ${entry};`);
+            // Starting state requires O. CREATE restores that enabled default;
+            // ALTER TABLE would need table ownership on managed auth.users.
+            if (restoreEntry && !current) await cleanup.query(`${captured.definition};`);
             deepStrictEqual(await readTrigger(cleanup), captured, "Restore exact parent entry definition and enabled state");
           }
           await cleanup.query("COMMIT;");
         });
-        await attempt(() => cleanup.query(`ROLLBACK; BEGIN; DROP TRIGGER IF EXISTS ${name} ON ${table}; DROP FUNCTION IF EXISTS public.${name}(); COMMIT;`));
+        if (fixturesStarted) await attempt(() => cleanup.query(`ROLLBACK; BEGIN; DROP TRIGGER IF EXISTS ${name} ON ${table}; DROP FUNCTION IF EXISTS public.${name}(); COMMIT;`));
         if (fixturesStarted) await attempt(async () => {
           await cleanup.query("ROLLBACK;");
           deepStrictEqual(await readTrigger(cleanup), expectedTrigger, "Require restored parent entry before fixture DELETE");

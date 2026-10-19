@@ -145,10 +145,10 @@ import {awardTermsFixture} from './fixtures/grants/award-handoff';
   DO $$ DECLARE p jsonb:=pg_temp.handoff_preview(); r jsonb; t jsonb; target uuid; BEGIN
    r:=pg_temp.handoff_apply(p);
    SELECT submittal_id INTO target FROM public.current_award_handoff_records WHERE award_id='__AWARD__' AND occurrence_key='first';
-   UPDATE public.project_submittals SET owner_label='Synthetic officer',notes='Synthetic history' WHERE id=target;
+   UPDATE public.project_submittals SET agency_label='Synthetic officer',assignee_user_id='__ACTOR__',notes='Synthetic history' WHERE id=target;
    SELECT jsonb_set(p->'reviewed'->'terms','{occurrences}',jsonb_agg(o.requirement||jsonb_build_object('disposition',CASE WHEN occurrence_key='first' THEN 'reschedule' ELSE 'carry' END,'priorOccurrenceId',o.id,'reason','Source trigger unresolved','fulfillmentStillApplies',true,'clock',CASE WHEN occurrence_key='first' THEN jsonb_build_object('kind','unresolved_trigger','trigger','Source confirmation pending') ELSE o.requirement->'clock' END) ORDER BY occurrence_key)) INTO t FROM public.current_award_handoff_records o WHERE award_id='__AWARD__';
    PERFORM pg_temp.handoff_apply(pg_temp.handoff_preview(t));
-   PERFORM pg_temp.assert_handoff((SELECT due_date IS NULL AND owner_label='Synthetic officer' AND notes='Synthetic history' FROM public.active_project_submittals WHERE id=target),'Unresolved trigger retained actionable date or lost assignment/history');
+   PERFORM pg_temp.assert_handoff((SELECT due_date IS NULL AND agency_label='Synthetic officer' AND assignee_user_id='__ACTOR__' AND notes='Synthetic history' FROM public.active_project_submittals WHERE id=target),'Unresolved trigger retained actionable date or lost assignment/history');
    SELECT jsonb_set(t,'{occurrences}',jsonb_agg(o.requirement||jsonb_build_object('disposition',CASE WHEN occurrence_key='first' THEN 'reschedule' ELSE 'carry' END,'priorOccurrenceId',o.id,'reason','Source date confirmed','clock',CASE WHEN occurrence_key='first' THEN jsonb_build_object('kind','date_only','date','2027-02-01') ELSE o.requirement->'clock' END) ORDER BY occurrence_key)) INTO t FROM public.current_award_handoff_records o WHERE award_id='__AWARD__';
    PERFORM pg_temp.handoff_apply(pg_temp.handoff_preview(t));
    PERFORM pg_temp.assert_handoff((SELECT due_date='2027-02-01' FROM public.active_project_submittals WHERE id=target),'Resolution lost original target');

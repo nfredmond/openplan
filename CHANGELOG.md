@@ -25,8 +25,12 @@ award terms, staff review and project handoff revisions. Managed invoices keep
 their original currency, exact amounts and reviewed term revision. Incomplete
 reads leave coverage unassessed. These records do not establish legal compliance
 or replace a responsible person's review. Apply
-`20261018000003_award_condition_handoff.sql` before deploying this capability.
-Native transaction and concurrency checks and the visible workflow remain pending.
+`20261018000003_award_condition_handoff.sql`, then
+`20261019045213_award_handoff_terms_variable.sql` and
+`20261019045328_award_handoff_command_aliases.sql` before deploying this capability.
+The additive corrections separate PL/pgSQL variables from query aliases. Twelve
+isolated transaction and parent-DELETE contention cases pass. The visible workflow
+and hosted award rollout remain pending.
 
 **Linked estimate sources:** the project estimate editor opens its exact saved
 supporting document, including one older than the recent-document list. Read
