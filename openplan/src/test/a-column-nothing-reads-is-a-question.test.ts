@@ -73,6 +73,10 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   category: Category;
   reason: string;
 }> = [
+  { column: "rtp_extraction_runs.manual_request_id", category: "READ_IN_SQL", reason: "stage_rtp_manual_source_proposal locates the retained run by workspace and request identity; the partial unique index prevents a second run for that same request." },
+  { column: "rtp_extraction_runs.manual_request_payload", category: "READ_IN_SQL", reason: "stage_rtp_manual_source_proposal compares the complete retained request JSON on retry before returning the original candidate, refusing a changed payload." },
+  { column: "rtp_extraction_runs.manual_payload_sha256", category: "READ_IN_SQL", reason: "stage_rtp_manual_source_proposal compares the retained request digest on retry alongside the original payload before returning the existing proposal." },
+  { column: "rtp_extraction_runs.manual_authorship", category: "READ_IN_SQL", reason: "The rtp_manual_run_shape constraint requires authenticated_user authorship for a manual run; the identity trigger preserves that stored distinction from model output." },
   { column: "funding_opportunity_deadline_changes.deadline_field", category: "WRITE_ONLY", reason: "The capture trigger retains which recorded date changed. Its enum check validates the stored value; no current application reader selects the journal field." },
   { column: "funding_opportunity_deadline_changes.old_at", category: "WRITE_ONLY", reason: "The capture trigger retains the previous date for audit. The distinct-date constraint validates the pair; the inbox reads separately stored notice text, not this journal value." },
   { column: "funding_opportunity_deadline_changes.new_at", category: "WRITE_ONLY", reason: "The capture trigger retains the replacement date, including null for a cleared date. The inbox reads separately stored notice text and does not select this journal value." },
