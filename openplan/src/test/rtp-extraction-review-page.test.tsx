@@ -40,28 +40,42 @@ vi.mock("next/navigation", () => ({
 type RecordedRead = {
   table: string;
   columns: string;
-  filters: Array<{ column: string; value: unknown }>;
+  filters: Array<{ column: string; value: unknown; op?: "eq" | "neq" | "in" }>;
 };
 
 const readLog: RecordedRead[] = [];
 let tableData: Record<string, unknown>;
 let tableErrors: Record<string, { message: string }>;
 
-type FakeResult = { data: unknown; error: { message: string } | null };
+type FakeResult = { data: unknown; count: number | null; error: { message: string } | null };
 
-function fakeQuery(tableName: string, record: RecordedRead) {
+function fakeQuery(tableName: string, record: RecordedRead, options?: { count?: string; head?: boolean }) {
+  let start = 0;
+  let end: number | undefined;
   const resolveResult = (): FakeResult => {
     const error = tableErrors[tableName];
-    if (error) return { data: null, error };
+    if (error) return { data: null, count: null, error };
     const seeded = tableData[tableName];
-    return { data: seeded === undefined ? [] : seeded, error: null };
+    const rows = Array.isArray(seeded) ? seeded.filter((row: Record<string, unknown>) => record.filters.every((filter) => {
+      // Historical fixtures omit some scoping columns. Dedicated pagination
+      // tests below live in a separate file with complete rows and strict filters.
+      if (!Object.hasOwn(row, filter.column)) return true;
+      if (filter.op === "neq") return row[filter.column] !== filter.value;
+      if (filter.op === "in") return (filter.value as unknown[]).includes(row[filter.column]);
+      return row[filter.column] === filter.value;
+    })) : null;
+    return { data: options?.head ? null : rows ? rows.slice(start, end) : seeded === undefined ? [] : seeded,
+      count: options?.count === "exact" && rows ? rows.length : null, error: null };
   };
 
   const q: {
     eq: (column: string, value: unknown) => typeof q;
     in: (column: string, values: unknown) => typeof q;
+    neq: (column: string, value: unknown) => typeof q;
     order: () => typeof q;
-    limit: () => typeof q;
+    limit: (size: number) => typeof q;
+    range: (from: number, to: number) => typeof q;
+    or: () => typeof q;
     maybeSingle: () => Promise<FakeResult>;
     then: (resolve: (value: FakeResult) => unknown) => Promise<unknown>;
   } = {
@@ -70,11 +84,14 @@ function fakeQuery(tableName: string, record: RecordedRead) {
       return q;
     },
     in: (column, values) => {
-      record.filters.push({ column, value: values });
+      record.filters.push({ column, value: values, op: "in" });
       return q;
     },
+    neq: (column, value) => { record.filters.push({ column, value, op: "neq" }); return q; },
     order: () => q,
-    limit: () => q,
+    limit: (size) => { end = size; return q; },
+    range: (from, to) => { start = from; end = to + 1; return q; },
+    or: () => q,
     maybeSingle: async () => resolveResult(),
     then: (resolve) => Promise.resolve(resolveResult()).then(resolve),
   };
@@ -82,10 +99,10 @@ function fakeQuery(tableName: string, record: RecordedRead) {
 }
 
 const fromMock = vi.fn((tableName: string) => ({
-  select: vi.fn((columns: string) => {
+  select: vi.fn((columns: string, options?: { count?: string; head?: boolean }) => {
     const record: RecordedRead = { table: tableName, columns, filters: [] };
     readLog.push(record);
-    return fakeQuery(tableName, record);
+    return fakeQuery(tableName, record, options);
   }),
 }));
 
@@ -327,8 +344,9 @@ describe("no surface here grades the machine's work", () => {
 describe("documents that cannot be transcribed from", () => {
   it("lists them with the reason instead of leaving them out of the picker", async () => {
     await renderPage();
-    expect(screen.getByText("Scanned 2015 plan")).toBeTruthy();
-    expect(screen.getByText(/looks like a scan/i)).toBeTruthy();
+    const explanation = screen.getByText(/looks like a scan/i).closest("li");
+    expect(explanation).not.toBeNull();
+    expect(within(explanation!).getByText("Scanned 2015 plan")).toBeTruthy();
   });
 });
 

@@ -50,6 +50,8 @@ import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import { isWriteFailure } from "@/lib/http/write-outcome";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { authorizeRtpCycleWrite } from "@/lib/rtp/cycle-write-authorization";
+import { readRetainedSourcePage } from "@/lib/rtp/extraction/source-pages";
+import { readAssistantExecutionSource } from "@/lib/assistant/action-approval-server";
 import {
   CHAPTER_BLOCK_REFUSAL_SENTENCES,
   CHAPTER_BLOCK_TARGET_KIND,
@@ -85,7 +87,7 @@ const stageSchema = z
 const CANDIDATE_COLUMNS =
   "id, run_id, target_kind, proposed_json, source_chunk_id, source_page, source_quote, quote_verified, status";
 
-const RUN_COLUMNS = "id, model, kb_document_id, kb_documents(id, title)";
+const RUN_COLUMNS = "id, model, source_method, document_extraction_id, original_checksum, extraction_content_sha256, kb_document_id, kb_documents(id, title)";
 
 const DRAFT_COLUMNS =
   "id, workspace_id, target_kind, target_id, section_key, draft_markdown, model, grounding_json, grounded_sentence_count, total_sentence_count, facts_hash, status, accepted_markdown, accepted_by, accepted_at, created_by, created_at";
@@ -235,7 +237,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // The reading this passage came out of: it names the document the citation
     // has to credit, and the model whose reading produced it.
     const runResult = candidate.run_id
-      ? await supabase.from("rtp_extraction_runs").select(RUN_COLUMNS).eq("id", candidate.run_id).maybeSingle()
+      ? await supabase.from("rtp_extraction_runs").select(RUN_COLUMNS).eq("id", candidate.run_id).eq("rtp_cycle_id", rtpCycleId).eq("workspace_id", workspaceId).maybeSingle()
       : { data: null, error: null };
 
     const runFailure = classifyRouteReadFailure("the reading this passage came from", runResult);
@@ -253,12 +255,17 @@ export async function POST(request: NextRequest, context: RouteContext) {
       | {
           id: string;
           model: string | null;
+          source_method: string | null;
+          document_extraction_id: string | null;
+          original_checksum: string | null;
+          extraction_content_sha256: string | null;
           kb_document_id: string | null;
           kb_documents: { id: string; title: string | null } | Array<{ id: string; title: string | null }> | null;
         }
       | null;
 
     const document = firstOf(run?.kb_documents ?? null);
+    if (!run) return NextResponse.json({ error: "The source reading is unavailable. Nothing was staged.", reason: "source_missing" }, { status: 409 });
     const source: ChapterBlockSource = {
       kbDocumentId: document?.id ?? run?.kb_document_id ?? null,
       documentTitle: document?.title ?? null,
@@ -276,7 +283,16 @@ export async function POST(request: NextRequest, context: RouteContext) {
                       against the page" on a block nothing checked.
     */
     let chunk: { content: string | null } | null = null;
-    if (candidate.source_chunk_id) {
+    const retainedPage = run?.source_method === "manual_retained_page";
+    if (retainedPage) {
+      if (readAssistantExecutionSource(request) !== "manual") return NextResponse.json({ error: "RTP retained-page chapter placement is not a registered agent write.", reason: "agent_action_not_registered" }, { status: 403 });
+      if (!run?.kb_document_id || !run.document_extraction_id || !candidate.source_page) return NextResponse.json({ error: "The retained source identity is missing.", reason: "source_missing" }, { status: 409 });
+      const pageRead = await readRetainedSourcePage(supabase, { cycleId: rtpCycleId, documentId: run.kb_document_id, extractionId: run.document_extraction_id, page: candidate.source_page });
+      if (!pageRead.ok) return NextResponse.json({ error: pageRead.error, reason: pageRead.reason }, { status: pageRead.status });
+      if (pageRead.page.checksum !== run.original_checksum || pageRead.page.contentSha256 !== run.extraction_content_sha256) return NextResponse.json({ error: "The retained source identity changed. Nothing was staged.", reason: "source_drift" }, { status: 409 });
+      chunk = { content: pageRead.page.text };
+      source.retainedPage = { extractionId: pageRead.page.extractionId, checksum: pageRead.page.checksum, contentSha256: pageRead.page.contentSha256 };
+    } else if (candidate.source_chunk_id) {
       const chunkResult = await supabase
         .from("kb_document_chunks")
         .select("id, content")
@@ -305,7 +321,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
         source_quote: candidate.source_quote,
         quote_verified: candidate.quote_verified,
       },
-      chunk
+      chunk,
+      retainedPage ? "retained_page" : "chunk"
     );
 
     if (!verification.ok) {
@@ -351,7 +368,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         target_id: chapter.id,
         section_key: null,
         draft_markdown: draftMarkdown,
-        model: run?.model?.trim() || "unrecorded",
+        model: retainedPage ? null : run?.model?.trim() || "unrecorded",
         grounding_json: grounding,
         grounded_sentence_count: grounding.grounded_sentence_count,
         total_sentence_count: grounding.total_sentence_count,

@@ -107,7 +107,9 @@ export function TranscribedChapterDraftCard({
     >
       <div className="flex flex-wrap items-center gap-2">
         <span className="rounded border border-sky-300/60 bg-sky-50/60 px-2 py-0.5 text-label font-medium text-sky-900 dark:border-sky-900/50 dark:bg-sky-950/30 dark:text-sky-200">
-          Transcribed — not written by anyone
+          {grounding?.source_method === "manual_retained_page"
+            ? "Copied manually from retained page"
+            : "Transcribed source text"}
         </span>
         {described ? (
           <span className="inline-flex items-center gap-1 text-label text-muted-foreground">
