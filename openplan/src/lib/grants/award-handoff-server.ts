@@ -2,10 +2,11 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { AWARD_HANDOFF_MIGRATION } from "./award-handoff";
 
 export function handoffFailure(error: { code?: string; message: string }) {
-  const missing = /schema cache|does not exist|could not find.*function|could not find.*column/i.test(error.message);
+  const missing = looksLikePendingSchema(error.message);
   const status = missing ? 503 : ["PT409", "40001"].includes(error.code ?? "") ? 409 : error.code === "42501" ? 403 : ["22023", "23514", "23503", "22P02", "22007", "22008"].includes(error.code ?? "") ? 422 : 500;
   return NextResponse.json({ error: missing ? `Award handoff requires migration ${AWARD_HANDOFF_MIGRATION}.` : status === 500 ? "Award handoff failed. Retain and retry the exact reviewed request after a lost response." : error.message }, { status });
 }

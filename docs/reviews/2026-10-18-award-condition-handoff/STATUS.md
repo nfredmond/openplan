@@ -35,3 +35,14 @@ PL/pgSQL parse ambiguity. A disposable PostgreSQL 17 probe rejects the original
 with 42601, compiles the correction and harmless comment, refuses unreviewed
 applicability, and accepts the reviewed synthetic change. Full migration, RLS,
 Storage and contention checks still require CI. Raw logs stay in private state.
+
+Reader integration follow-up, October 18: the joined Safety parent and award
+correction use the canonical pending-schema classifier, retain the immutable
+revision project blocker, and check the two fixed record tables and two handoff
+views against their actual reader projections. The harmless and restored cohorts
+each pass 115 tests with no skips. Eleven targeted faults fail at the intended
+assertions; bytes and modes restore exactly. Scoped lint and configured TypeScript
+end 0. The earlier selector-only window stays failed: Vitest shortened its test
+name and selected zero cases. The corrected private runner rejects empty selections.
+These source and mocked-reader checks do not prove installed SQL, RLS, Storage,
+contention, money or browser behavior. Native CI and rollout remain pending.
