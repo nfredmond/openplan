@@ -79,6 +79,24 @@ describe("project delete preconditions", () => {
     expect(assessment.alternative).not.toContain("remove the attached records");
   });
 
+  it("preserves immutable Safety generation custody and names the inherited cascade", () => {
+    const assessment = assessProjectDelete(
+      { report_safety_snapshot_persistence: 1, reports: 10 }, { projectId: "p1" }
+    );
+    expect(assessment.deletable).toBe(false);
+    expect(assessment.hasCommitments).toBe(true);
+    expect(assessment.blockers[0]).toMatchObject({
+      table: "report_safety_snapshot_persistence", column: "project_id", count: 1,
+      severity: "blocking", behavior: "cascade", href: "/reports",
+    });
+    expect(assessment.blockers[0].reason).toContain("would be destroyed along with the project");
+    expect(assessment.blockers[0].reason).toContain("snapshot hash and source revisions");
+    expect(assessment.headline).toContain("retained Safety evidence");
+    expect(assessment.alternative).toContain("status to complete");
+    expect(assessment.alternative).toContain("immutable Safety generation custody stay intact");
+    expect(assessment.alternative).not.toContain("remove the attached records");
+  });
+
   it("refuses a project that carries work, and says where it lives", () => {
     const assessment = assessProjectDelete({ reports: 2, model_runs: 5 }, { projectId: "p1" });
 

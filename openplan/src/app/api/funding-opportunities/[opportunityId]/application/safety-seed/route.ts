@@ -2,6 +2,7 @@ import { SAFETY_PLAN_PERSISTENCE_SELECT } from "@/lib/reports/safety-plan-persis
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
+import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { loadFundingOpportunityAccess } from "@/lib/programs/api";
 import { readAssistantExecutionSource } from "@/lib/assistant/action-approval-server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
@@ -138,6 +139,6 @@ export async function POST(request: NextRequest, context: Context) {
 }
 
 function pendingOrFailure(error: { message: string; code?: string }) {
-  const pending = /schema cache|does not exist|could not find.*function|could not find.*table/i.test(error.message);
+  const pending = looksLikePendingSchema(error.message);
   return NextResponse.json({ error: pending ? `Safety seeding requires migration ${SS4A_SEED_MIGRATION}. Regenerate the preview after migration.` : "Failed to retain the Safety seed. Retry the same apply after a lost response." }, { status: pending ? 503 : 500 });
 }
