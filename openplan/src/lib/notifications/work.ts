@@ -538,7 +538,7 @@ const deliverablesSource: SweepSource = {
 
 const milestonesSource: SweepSource = {
   kind: "milestone_due",
-  table: "project_milestones",
+  table: "active_project_milestones",
   select: "id, project_id, title, target_date, status, assignee_user_id, projects!inner(id, name, workspace_id)",
   dateColumn: "target_date",
   dateColumnKind: "date",
@@ -570,7 +570,7 @@ const milestonesSource: SweepSource = {
 
 const submittalsSource: SweepSource = {
   kind: "submittal_due",
-  table: "project_submittals",
+  table: "active_project_submittals",
   select: "id, project_id, title, due_date, status, agency_label, assignee_user_id, projects!inner(id, name, workspace_id)",
   dateColumn: "due_date",
   dateColumnKind: "date",
@@ -710,7 +710,7 @@ const grantApplicationsSource: SweepSource = {
 
 const awardObligationsSource: SweepSource = {
   kind: "award_obligation_due",
-  table: "funding_awards",
+  table: "legacy_calendar_funding_awards",
   select: "id, workspace_id, project_id, title, obligation_due_at, spending_status, closure_basis, created_by",
   dateColumn: "obligation_due_at",
   dateColumnKind: "timestamptz",
@@ -945,7 +945,7 @@ export function expenditureAtRiskSentence(
   if (contextUnavailable || !ledger) {
     return "OpenPlan could not read this award's invoices, so the amount at risk is not stated here.";
   }
-  const remaining = ledger.remainingAuthorized;
+  const remaining = ledger.remainingAgainstCeiling;
   if (remaining === null) {
     return "No awarded amount is recorded on this award, so OpenPlan cannot say how much is at risk.";
   }
@@ -955,7 +955,7 @@ export function expenditureAtRiskSentence(
   if (remaining === 0) {
     return "Every authorized dollar on this award has already been claimed.";
   }
-  return `Claims against this award already exceed the authorized amount by ${reminderMoney(
+  return `Claims against this award already exceed the recorded award ceiling by ${reminderMoney(
     Math.abs(remaining),
     currencyCode
   )}.`;
@@ -963,7 +963,7 @@ export function expenditureAtRiskSentence(
 
 const awardExpendituresSource: SweepSource = {
   kind: "award_expenditure_due",
-  table: "funding_awards",
+  table: "legacy_calendar_funding_awards",
   select:
     "id, workspace_id, project_id, title, expenditure_deadline_at, spending_status, awarded_amount, match_amount, match_posture, created_by",
   dateColumn: "expenditure_deadline_at",

@@ -26,6 +26,7 @@ export type GrantsPageSearchParams = Promise<{
 }>;
 
 export type FundingOpportunityRow = {
+  has_source_backed_issuance?: boolean;
   id: string;
   workspace_id: string;
   program_id: string | null;
@@ -84,7 +85,8 @@ export type ProgramOption = {
   title: string;
 };
 
-export type FundingAwardRow = {
+export type FundingAwardRow = import("@/lib/grants/award-handoff").ComparableAward & {
+  current_handoff_revision_id?: string | null; latest_handoff_revision_id?: string | null; currency_code?: string | null; has_source_backed_issuance?: boolean;
   id: string;
   funding_opportunity_id: string | null;
   project_id: string | null;
@@ -130,7 +132,7 @@ export type FundingAwardRow = {
     | null;
 };
 
-export type BillingInvoiceRow = {
+export type BillingInvoiceRow = import("@/lib/grants/award-handoff").ManagedInvoice & {
   id: string;
   project_id: string | null;
   funding_award_id: string | null;
@@ -319,8 +321,8 @@ export function buildFocusedOpportunityCardHref(opportunityId: string | null | u
 }
 
 export function formatCurrency(value: number | string | null | undefined) {
-  const numeric = typeof value === "number" ? value : typeof value === "string" ? Number(value) : 0;
-  return formatMoney(Number.isFinite(numeric) ? numeric : 0, { precision: "whole" });
+  if (value === null || value === undefined || value === "" || !Number.isFinite(Number(value))) return "Unassessed";
+  return formatMoney(value, { precision: "cents", absent:"Unassessed" });
 }
 
 export function titleize(value: string | null | undefined): string {
@@ -408,6 +410,7 @@ export function isDecisionSoon(value: string | null | undefined) {
 }
 
 export function getOpportunityPriority(opportunity: {
+  has_source_backed_issuance?: boolean;
   opportunity_status: FundingOpportunityStatus;
   decision_state: FundingOpportunityDecision;
   closes_at: string | null;
@@ -418,7 +421,7 @@ export function getOpportunityPriority(opportunity: {
   if (isDecisionSoon(opportunity.decision_due_at) && opportunity.decision_state !== "skip") return 2;
   if (opportunity.opportunity_status === "open") return 3;
   if (opportunity.opportunity_status === "upcoming") return 4;
-  if (opportunity.opportunity_status === "awarded") return 5;
+  if (opportunity.has_source_backed_issuance || opportunity.opportunity_status === "awarded") return 5;
   return 6;
 }
 

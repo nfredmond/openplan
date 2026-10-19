@@ -37,6 +37,7 @@ const SOURCE_DATE = "A date carried by source data (a crash record or a data vin
 const DISPLAY_ONLY = "Shows a recorded instant as its UTC day in a sentence. Not a stamp or a deadline comparison; not converted in this change.";
 
 const ALLOWED: readonly AllowedSlice[] = [
+  { file: "src/lib/grants/award-handoff.ts", snippet: "date.toISOString().slice(0, 10) === s", reason: ROUND_TRIP },
   { file: "src/app/api/analysis/route.ts", snippet: "droppedSentenceIssues.slice(0, 10)", reason: NOT_A_DATE },
   { file: "src/app/api/projects/[projectId]/bca-analyses/route.ts", snippet: "issues.slice(0, 10)", reason: NOT_A_DATE },
   { file: "src/lib/engagement/survey.ts", snippet: "texts.slice(0, 10)", reason: NOT_A_DATE },
@@ -160,6 +161,15 @@ describe("calendar-day slices in server code", () => {
     const found = findCalendarDaySlices("src/lib/seeded.ts", seeded);
     expect(found.map((finding) => finding.line)).toEqual([1, 2, 3]);
     expect(found.some(isAllowed)).toBe(false);
+  });
+
+  it("limits the award date exception to a date-only round trip", () => {
+    const file = "src/lib/grants/award-handoff.ts";
+    const findings = findCalendarDaySlices(file, [
+      "return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === s;",
+      "const today = new Date().toISOString().slice(0, 10);",
+    ].join("\n"));
+    expect(findings.map(isAllowed)).toEqual([true, false]);
   });
 
   it("finds a real set of slices to judge (the scan is not vacuous)", () => {

@@ -1,3 +1,4 @@
+import { assessedFundingNumber, sumAssessedFunding, comparableAwardFunding, type ComparableFunding, type ComparableAward } from "@/lib/grants/award-handoff";
 import {
   summarizeBillingInvoiceRecords,
   uninvoicedCommittedAwardAmount,
@@ -11,7 +12,7 @@ export type ProjectFundingProfileLike = {
   updated_at?: string | null;
 };
 
-export type FundingAwardLike = {
+export type FundingAwardLike = ComparableAward & {
   awarded_amount?: number | string | null;
   match_amount?: number | string | null;
   risk_flag?: string | null;
@@ -21,6 +22,7 @@ export type FundingAwardLike = {
 };
 
 export type FundingOpportunityLike = {
+  has_source_backed_issuance?: boolean;
   expected_award_amount?: number | string | null;
   decision_state?: string | null;
   opportunity_status?: string | null;
@@ -65,29 +67,30 @@ export type ProjectFundingProfileScan = {
 };
 
 export type ProjectFundingSnapshot = {
+  comparableFunding?: ComparableFunding;
   capturedAt: string | null;
   projectUpdatedAt: string | null;
   latestSourceUpdatedAt: string | null;
-  fundingNeedAmount: number;
-  localMatchNeedAmount: number;
-  committedFundingAmount: number;
-  committedMatchAmount: number;
-  likelyFundingAmount: number;
-  totalPotentialFundingAmount: number;
-  remainingFundingGap: number;
-  remainingMatchGap: number;
-  unfundedAfterLikelyAmount: number;
+  fundingNeedAmount: number | null;
+  localMatchNeedAmount: number | null;
+  committedFundingAmount: number | null;
+  committedMatchAmount: number | null;
+  likelyFundingAmount: number | null;
+  totalPotentialFundingAmount: number | null;
+  remainingFundingGap: number | null;
+  remainingMatchGap: number | null;
+  unfundedAfterLikelyAmount: number | null;
   /**
    * Σ net over the CLAIMED statuses — what has actually been asked of a funder
    * and not withdrawn. Drafts have not been sent and rejected claims never will
    * be paid, so neither counts here, and neither is subtracted from
    * `uninvoicedAwardAmount` below.
    */
-  requestedReimbursementAmount: number;
-  paidReimbursementAmount: number;
-  outstandingReimbursementAmount: number;
-  draftReimbursementAmount: number;
-  uninvoicedAwardAmount: number;
+  requestedReimbursementAmount: number | null;
+  paidReimbursementAmount: number | null;
+  outstandingReimbursementAmount: number | null;
+  draftReimbursementAmount: number | null;
+  uninvoicedAwardAmount: number | null;
   nextObligationAt: string | null;
   awardRiskCount: number;
   awardCount: number;
@@ -114,6 +117,7 @@ export type ProjectFundingSnapshot = {
 };
 
 export type PortfolioFundingSnapshot = {
+  comparableFunding?: ComparableFunding;
   capturedAt: string | null;
   latestSourceUpdatedAt: string | null;
   linkedProjectCount: number;
@@ -121,13 +125,13 @@ export type PortfolioFundingSnapshot = {
   fundedProjectCount: number;
   likelyCoveredProjectCount: number;
   gapProjectCount: number;
-  committedFundingAmount: number;
-  likelyFundingAmount: number;
-  totalPotentialFundingAmount: number;
-  unfundedAfterLikelyAmount: number;
-  paidReimbursementAmount: number;
-  outstandingReimbursementAmount: number;
-  uninvoicedAwardAmount: number;
+  committedFundingAmount: number | null;
+  likelyFundingAmount: number | null;
+  totalPotentialFundingAmount: number | null;
+  unfundedAfterLikelyAmount: number | null;
+  paidReimbursementAmount: number | null;
+  outstandingReimbursementAmount: number | null;
+  uninvoicedAwardAmount: number | null;
   awardRiskCount: number;
   label: string;
   reason: string;
@@ -166,6 +170,25 @@ export function buildProjectFundingStackSummary(
   opportunities: FundingOpportunityLike[] = [],
   invoices: FundingInvoiceLike[] = []
 ) {
+  const managed = awards.some((a) => a.latest_handoff_revision_id || a.current_handoff_revision_id);
+  if (managed) {
+    const comparableFunding = comparableAwardFunding(awards);
+    return {
+      comparableFunding, fundingNeedAmount: Number.NaN, localMatchNeedAmount: Number.NaN,
+      awardCount: awards.length, opportunityCount: opportunities.length, reimbursementPacketCount: invoices.length,
+      committedFundingAmount: Number.NaN, committedMatchAmount: Number.NaN, remainingFundingGap: Number.NaN, remainingMatchGap: Number.NaN,
+      likelyFundingAmount: Number.NaN, totalPotentialFundingAmount: Number.NaN, unfundedAfterLikelyAmount: Number.NaN,
+      requestedReimbursementAmount: Number.NaN, paidReimbursementAmount: Number.NaN, outstandingReimbursementAmount: Number.NaN,
+      draftReimbursementAmount: Number.NaN, uninvoicedAwardAmount: Number.NaN,
+      nextObligationAt: null, awardRiskCount: awards.filter((a) => a.risk_flag === "watch" || a.risk_flag === "critical").length,
+      pursuedOpportunityCount: opportunities.filter((o) => o.decision_state === "pursue" && !o.has_source_backed_issuance).length,
+      status: "unknown" as ProjectFundingStackStatus, label: "Recorded award ceilings; coverage unassessed",
+      reason: "Use the exact version/currency snapshot. Target currency and cost basis are not established for comparison.",
+      pipelineStatus: "unknown" as ProjectFundingPipelineStatus, pipelineLabel: "Pipeline comparison unassessed", pipelineReason: "Issued opportunity estimates are excluded. Any remaining tranche needs its own source.",
+      reimbursementStatus: "unknown" as ProjectFundingReimbursementStatus, reimbursementLabel: "Review version-bound award ledger", reimbursementReason: "Legacy project-wide totals cannot establish comparable award coverage.",
+      hasTargetNeed: false, coverageRatio:null, pipelineCoverageRatio:null, reimbursementCoverageRatio:null, paidReimbursementCoverageRatio:null,
+    };
+  }
   const fundingNeedAmount = toNumber(profile?.funding_need_amount);
   const localMatchNeedAmount = toNumber(profile?.local_match_need_amount);
   const committedFundingAmount = awards.reduce((sum, award) => sum + toNumber(award.awarded_amount), 0);
@@ -175,6 +198,7 @@ export function buildProjectFundingStackSummary(
   const pursuedOpportunities = opportunities.filter(
     (opportunity) =>
       opportunity.decision_state === "pursue" &&
+      !opportunity.has_source_backed_issuance &&
       opportunity.opportunity_status !== "awarded" &&
       opportunity.opportunity_status !== "archived"
   );
@@ -260,11 +284,11 @@ export function buildProjectFundingStackSummary(
       reimbursementStatus = "paid";
       reimbursementLabel = "Awarded dollars reimbursed";
       reimbursementReason = "Linked award invoices marked paid now match or exceed the committed award total.";
-    } else if (outstandingReimbursementAmount > 0) {
+    } else if (outstandingReimbursementAmount !== null && outstandingReimbursementAmount > 0) {
       reimbursementStatus = "in_review";
       reimbursementLabel = "Reimbursement in flight";
       reimbursementReason = "Linked award invoices are currently under review, submitted, or approved for payment.";
-    } else if (paidReimbursementAmount > 0) {
+    } else if (paidReimbursementAmount !== null && paidReimbursementAmount > 0) {
       reimbursementStatus = "partially_paid";
       reimbursementLabel = "Partially reimbursed";
       reimbursementReason = "Some linked award invoices are already paid, but additional committed award dollars remain uninvoiced or unpaid.";
@@ -361,7 +385,25 @@ export function buildProjectFundingProfileScan(input: {
   unlinkedInvoiceAmount?: number;
   now?: Date | string;
 }): ProjectFundingProfileScan {
-  const summary = input.summary;
+  const retained = input.summary;
+  if (retained.comparableFunding) return { generatedAt:new Date().toISOString(),status:"unknown",label:"Award coverage unassessed",nextAction:"Review the recorded ceiling snapshot and establish target currency/cost basis before comparing coverage.",lanes:[{id:"funding_target",label:"Version-bound award funding",status:"unknown",statusLabel:"Unassessed",detail:retained.reason,nextAction:"Review current award conditions.",amount:null}] };
+  if ([retained.fundingNeedAmount,retained.localMatchNeedAmount,retained.committedFundingAmount,retained.committedMatchAmount,retained.unfundedAfterLikelyAmount,retained.outstandingReimbursementAmount].some((value)=>value===null || !Number.isFinite(value))) return {generatedAt:new Date().toISOString(),status:"unknown",label:"Funding facts unassessed",nextAction:"Read the complete funding source set before assessing coverage.",lanes:[{id:"funding_target",label:"Funding source completeness",status:"unknown",statusLabel:"Unassessed",detail:"Unavailable funding values do not establish zero or complete coverage.",nextAction:"Review complete source records.",amount:null}]};
+  const summary = { ...retained,
+    fundingNeedAmount: retained.fundingNeedAmount ?? Number.NaN,
+    localMatchNeedAmount: retained.localMatchNeedAmount ?? Number.NaN,
+    committedFundingAmount: retained.committedFundingAmount ?? Number.NaN,
+    committedMatchAmount: retained.committedMatchAmount ?? Number.NaN,
+    likelyFundingAmount: retained.likelyFundingAmount ?? Number.NaN,
+    totalPotentialFundingAmount: retained.totalPotentialFundingAmount ?? Number.NaN,
+    remainingFundingGap: retained.remainingFundingGap ?? Number.NaN,
+    remainingMatchGap: retained.remainingMatchGap ?? Number.NaN,
+    unfundedAfterLikelyAmount: retained.unfundedAfterLikelyAmount ?? Number.NaN,
+    requestedReimbursementAmount: retained.requestedReimbursementAmount ?? Number.NaN,
+    paidReimbursementAmount: retained.paidReimbursementAmount ?? Number.NaN,
+    outstandingReimbursementAmount: retained.outstandingReimbursementAmount ?? Number.NaN,
+    draftReimbursementAmount: retained.draftReimbursementAmount ?? Number.NaN,
+    uninvoicedAwardAmount: retained.uninvoicedAwardAmount ?? Number.NaN,
+  };
   const now = input.now instanceof Date ? input.now : new Date(input.now ?? Date.now());
   const obligationDaysUntil = daysUntil(summary.nextObligationAt, now);
   const lanes: ProjectFundingProfileScanLane[] = [];
@@ -608,10 +650,10 @@ export function buildProjectFundingSnapshot(input: {
     (opportunity) => opportunity.opportunity_status === "open"
   ).length;
   const pursuedOpportunityCount = opportunities.filter(
-    (opportunity) => opportunity.decision_state === "pursue"
+    (opportunity) => !opportunity.has_source_backed_issuance && opportunity.decision_state === "pursue"
   ).length;
   const awardedOpportunityCount = opportunities.filter(
-    (opportunity) => opportunity.opportunity_status === "awarded"
+    (opportunity) => opportunity.has_source_backed_issuance || opportunity.opportunity_status === "awarded"
   ).length;
   const closingSoonOpportunityCount = opportunities.filter((opportunity) =>
     isClosingSoon(opportunity.closes_at)
@@ -619,6 +661,7 @@ export function buildProjectFundingSnapshot(input: {
   const reimbursementPacketCount = invoices.length;
 
   return {
+    comparableFunding: summary.comparableFunding,
     capturedAt: input.capturedAt ?? null,
     projectUpdatedAt: input.projectUpdatedAt ?? null,
     latestSourceUpdatedAt: maxTimestamp([
@@ -627,20 +670,20 @@ export function buildProjectFundingSnapshot(input: {
       ...opportunities.map((opportunity) => opportunity.updated_at ?? opportunity.created_at ?? null),
       ...invoices.map((invoice) => invoice.invoice_date ?? invoice.created_at ?? invoice.due_date ?? null),
     ]),
-    fundingNeedAmount: summary.fundingNeedAmount,
-    localMatchNeedAmount: summary.localMatchNeedAmount,
-    committedFundingAmount: summary.committedFundingAmount,
-    committedMatchAmount: summary.committedMatchAmount,
-    likelyFundingAmount: summary.likelyFundingAmount,
-    totalPotentialFundingAmount: summary.totalPotentialFundingAmount,
-    remainingFundingGap: summary.remainingFundingGap,
-    remainingMatchGap: summary.remainingMatchGap,
-    unfundedAfterLikelyAmount: summary.unfundedAfterLikelyAmount,
-    requestedReimbursementAmount: summary.requestedReimbursementAmount,
-    paidReimbursementAmount: summary.paidReimbursementAmount,
-    outstandingReimbursementAmount: summary.outstandingReimbursementAmount,
-    draftReimbursementAmount: summary.draftReimbursementAmount,
-    uninvoicedAwardAmount: summary.uninvoicedAwardAmount,
+    fundingNeedAmount: assessedFundingNumber(summary.fundingNeedAmount),
+    localMatchNeedAmount: assessedFundingNumber(summary.localMatchNeedAmount),
+    committedFundingAmount: assessedFundingNumber(summary.committedFundingAmount),
+    committedMatchAmount: assessedFundingNumber(summary.committedMatchAmount),
+    likelyFundingAmount: assessedFundingNumber(summary.likelyFundingAmount),
+    totalPotentialFundingAmount: assessedFundingNumber(summary.totalPotentialFundingAmount),
+    remainingFundingGap: assessedFundingNumber(summary.remainingFundingGap),
+    remainingMatchGap: assessedFundingNumber(summary.remainingMatchGap),
+    unfundedAfterLikelyAmount: assessedFundingNumber(summary.unfundedAfterLikelyAmount),
+    requestedReimbursementAmount: assessedFundingNumber(summary.requestedReimbursementAmount),
+    paidReimbursementAmount: assessedFundingNumber(summary.paidReimbursementAmount),
+    outstandingReimbursementAmount: assessedFundingNumber(summary.outstandingReimbursementAmount),
+    draftReimbursementAmount: assessedFundingNumber(summary.draftReimbursementAmount),
+    uninvoicedAwardAmount: assessedFundingNumber(summary.uninvoicedAwardAmount),
     nextObligationAt: summary.nextObligationAt,
     awardRiskCount: summary.awardRiskCount,
     awardCount: input.awards.length,
@@ -703,28 +746,13 @@ export function buildPortfolioFundingSnapshot(input: {
   const gapProjectCount = projectSnapshots.filter(
     (snapshot) => snapshot.pipelineStatus === "unfunded" || snapshot.pipelineStatus === "partially_covered"
   ).length;
-  const committedFundingAmount = projectSnapshots.reduce((sum, snapshot) => sum + snapshot.committedFundingAmount, 0);
-  const likelyFundingAmount = projectSnapshots.reduce((sum, snapshot) => sum + snapshot.likelyFundingAmount, 0);
-  const totalPotentialFundingAmount = projectSnapshots.reduce(
-    (sum, snapshot) => sum + snapshot.totalPotentialFundingAmount,
-    0
-  );
-  const unfundedAfterLikelyAmount = projectSnapshots.reduce(
-    (sum, snapshot) => sum + snapshot.unfundedAfterLikelyAmount,
-    0
-  );
-  const paidReimbursementAmount = projectSnapshots.reduce(
-    (sum, snapshot) => sum + snapshot.paidReimbursementAmount,
-    0
-  );
-  const outstandingReimbursementAmount = projectSnapshots.reduce(
-    (sum, snapshot) => sum + snapshot.outstandingReimbursementAmount,
-    0
-  );
-  const uninvoicedAwardAmount = projectSnapshots.reduce(
-    (sum, snapshot) => sum + snapshot.uninvoicedAwardAmount,
-    0
-  );
+  const committedFundingAmount = sumAssessedFunding(projectSnapshots.map((snapshot)=>snapshot.committedFundingAmount));
+  const likelyFundingAmount = sumAssessedFunding(projectSnapshots.map((snapshot)=>snapshot.likelyFundingAmount));
+  const totalPotentialFundingAmount = sumAssessedFunding(projectSnapshots.map((snapshot)=>snapshot.totalPotentialFundingAmount));
+  const unfundedAfterLikelyAmount = sumAssessedFunding(projectSnapshots.map((snapshot)=>snapshot.unfundedAfterLikelyAmount));
+  const paidReimbursementAmount = sumAssessedFunding(projectSnapshots.map((snapshot)=>snapshot.paidReimbursementAmount));
+  const outstandingReimbursementAmount = sumAssessedFunding(projectSnapshots.map((snapshot)=>snapshot.outstandingReimbursementAmount));
+  const uninvoicedAwardAmount = sumAssessedFunding(projectSnapshots.map((snapshot)=>snapshot.uninvoicedAwardAmount));
   const awardRiskCount = projectSnapshots.reduce((sum, snapshot) => sum + snapshot.awardRiskCount, 0);
   const latestSourceUpdatedAt = maxTimestamp(
     projectSnapshots.map((snapshot) => snapshot.latestSourceUpdatedAt)
@@ -753,13 +781,13 @@ export function buildPortfolioFundingSnapshot(input: {
   let reimbursementReason = "No reimbursement posture is available for this linked project portfolio yet.";
 
   if (linkedProjectCount > 0) {
-    if (outstandingReimbursementAmount > 0) {
+    if (outstandingReimbursementAmount !== null && outstandingReimbursementAmount > 0) {
       reimbursementLabel = "Reimbursement in flight";
       reimbursementReason = `Linked projects still have reimbursement packets outstanding against committed awards.`;
-    } else if (uninvoicedAwardAmount > 0) {
+    } else if (uninvoicedAwardAmount !== null && uninvoicedAwardAmount > 0) {
       reimbursementLabel = "Awards awaiting reimbursement start";
       reimbursementReason = `Committed awards exist, but some reimbursement packets have not been started yet.`;
-    } else if (paidReimbursementAmount > 0) {
+    } else if (paidReimbursementAmount !== null && paidReimbursementAmount > 0) {
       reimbursementLabel = "Reimbursement paid";
       reimbursementReason = `Linked reimbursement packets have been paid against the current award stack.`;
     } else {
@@ -768,9 +796,11 @@ export function buildPortfolioFundingSnapshot(input: {
     }
   }
 
+  if (projectSnapshots.some((p) => p.comparableFunding)) { label="Recorded ceilings; portfolio coverage unassessed"; reason="Use exact version/currency totals. Target currency and cost basis remain unestablished."; reimbursementLabel="Reimbursement comparability requires award-version review"; reimbursementReason="Unknown or unbound invoice coverage cannot establish a portfolio total."; }
   return {
     capturedAt: input.capturedAt ?? null,
     latestSourceUpdatedAt,
+    comparableFunding: input.projects.some((p) => p.awards.some((a) => a.latest_handoff_revision_id)) ? comparableAwardFunding(input.projects.flatMap((p) => p.awards)) : undefined,
     linkedProjectCount,
     trackedProjectCount,
     fundedProjectCount,

@@ -1,3 +1,4 @@
+import { buildPortfolioFundingSnapshot } from "@/lib/projects/funding";
 import { describe, expect, it } from "vitest";
 import { buildRtpExportHtml, normalizeRtpLinkedProjects } from "@/lib/rtp/export";
 
@@ -10,6 +11,17 @@ const CA_CRITERIA = resolveRtpPriorityCriteria(US_CA_RTP_PRIORITY_FRAMEWORK);
 
 
 describe("buildRtpExportHtml", () => {
+  it('renders exact managed cents and unassessed gaps after a stored JSON round trip',()=>{
+    const award={id:'00000000-0000-4000-8000-000000000001',latest_handoff_revision_id:'00000000-0000-4000-8000-000000000002',current_handoff_revision_id:'00000000-0000-4000-8000-000000000002',currency_code:'USD',awarded_amount:'0.01',match_amount:'0.00'};
+    const snapshot=buildPortfolioFundingSnapshot({projects:[{profile:null,awards:[award,{...award,id:'00000000-0000-4000-8000-000000000003',awarded_amount:'0.02'}]}]});
+    const render=(fundingSnapshot:ReturnType<typeof buildPortfolioFundingSnapshot>)=>buildRtpExportHtml({priorityCriteria:CA_CRITERIA,cycle:{id:'synthetic-cycle',workspace_id:'synthetic-workspace',title:'Synthetic RTP',status:'draft',geography_label:null,horizon_start_year:2027,horizon_end_year:2050,adoption_target_date:null,public_review_open_at:null,public_review_close_at:null,summary:null,updated_at:'2026-10-18T00:00:00Z'},chapters:[],linkedProjects:[],campaigns:[],options:{fundingSnapshot}});
+    const html=render(JSON.parse(JSON.stringify(snapshot)));
+    expect(html).toContain('<strong>0.03 USD</strong><br/><span class="muted">recorded award ceilings captured</span>');
+    expect(html).toContain('<strong>Unassessed</strong><br/><span class="muted">uncovered after likely dollars</span>');
+    const zero=buildPortfolioFundingSnapshot({projects:[{profile:null,awards:[{...award,awarded_amount:'0.00'}]}]});
+    expect(render(zero)).toContain('<strong>0 USD</strong><br/><span class="muted">recorded award ceilings captured</span>');
+  });
+
   it("adds a release-review scan summary before packet sections", () => {
     const html = buildRtpExportHtml({
       priorityCriteria: CA_CRITERIA,

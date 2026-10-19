@@ -1,3 +1,4 @@
+import { assertCompleteFundingRead } from "@/lib/grants/award-handoff";
 import { persistSafetyPlanGeneration } from "@/lib/reports/safety-plan-persistence";
 import { buildSafetyPlanSnapshot, type SafetyPlanSnapshot } from "@/lib/reports/safety-plan-snapshot";
 import { finishReportGeneration } from "@/lib/reports/generation-writeback";
@@ -1578,17 +1579,17 @@ export async function POST(request: NextRequest, context: RouteContext) {
         .maybeSingle(),
       supabase
         .from("funding_awards")
-        .select("id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at")
+        .select("id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at, latest_handoff_revision_id, current_handoff_revision_id, currency_code, has_source_backed_issuance",{count:"exact"})
         .eq("project_id", report.project_id)
         .order("updated_at", { ascending: false }),
       supabase
         .from("funding_opportunities")
-        .select("id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at")
+        .select("id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at, has_source_backed_issuance",{count:"exact"})
         .eq("project_id", report.project_id)
         .order("updated_at", { ascending: false }),
       supabase
         .from("billing_invoice_records")
-        .select("id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at")
+        .select("id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at, award_handoff_revision_id, currency_code, handoff_applicable_revision_id",{count:"exact"})
         .eq("project_id", report.project_id)
         .order("created_at", { ascending: false }),
     ]);
@@ -1736,6 +1737,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
       });
       return NextResponse.json(fundingReadFailure.body, { status: fundingReadFailure.status });
     }
+
+    assertCompleteFundingRead(fundingAwardsResult,fundingOpportunitiesResult,billingInvoicesResult);
 
     if (loadErrors.length > 0 || !projectResultForPacket.data) {
       const firstError = loadErrors[0];

@@ -1,3 +1,4 @@
+import { comparableFundingDisclosure, readComparableFunding } from "@/lib/grants/award-handoff";
 import { isDateOnly } from "@/lib/time/workspace-calendar";
 import { type EvidenceChainSummary } from "@/lib/reports/evidence-chain";
 import {
@@ -854,8 +855,7 @@ function asSourceContext(metadata: Record<string, unknown> | null | undefined) {
 }
 
 function formatCurrency(value: number | null | undefined): string {
-  const numeric = typeof value === "number" ? value : 0;
-  return formatMoney(Number.isFinite(numeric) ? numeric : 0, { precision: "whole" });
+  return formatMoney(value, { precision: "whole", absent:"Unassessed" });
 }
 
 function normalizeFundingStatus(
@@ -1063,6 +1063,7 @@ export function parseStoredFundingSnapshot(
   }
 
   return {
+    comparableFunding: readComparableFunding(summary.comparableFunding),
     capturedAt: asNullableString(summary.capturedAt),
     projectUpdatedAt: asNullableString(summary.projectUpdatedAt),
     latestSourceUpdatedAt: asNullableString(summary.latestSourceUpdatedAt),
@@ -1217,6 +1218,8 @@ export function describeFundingSnapshot(
   if (!summary) {
     return null;
   }
+
+  if (summary.comparableFunding) return {headline:"Recorded award ceilings; coverage unassessed",detail:comparableFundingDisclosure(summary.comparableFunding),timingDetail:summary.latestSourceUpdatedAt ? `Funding sources current through ${formatDateTime(summary.latestSourceUpdatedAt)}.` : null};
 
   const headlineParts = [
     summary.awardCount > 0 ? `${summary.awardCount} award${summary.awardCount === 1 ? "" : "s"}` : null,

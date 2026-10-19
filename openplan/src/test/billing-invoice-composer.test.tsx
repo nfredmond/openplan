@@ -72,13 +72,14 @@ describe("InvoiceRecordComposer", () => {
     expect(previewCard).not.toBeNull();
     const preview = within(previewCard as HTMLElement);
     expect(preview.getByText("Gross amount")).toBeInTheDocument();
-    expect(preview.getByText("Retention (0.00%)")).toBeInTheDocument();
-    expect(preview.getAllByText("$0.00")).toHaveLength(3);
+    expect(preview.getByText("Retention (0%)")).toBeInTheDocument();
+    expect(preview.getAllByText("Not recorded")).toHaveLength(3);
+    expect(preview.queryByText("$0.00")).not.toBeInTheDocument();
 
     fireEvent.change(grossAmountInput, { target: { value: "12500" } });
     fireEvent.change(retentionPercentInput, { target: { value: "5" } });
 
-    expect(preview.getByText("Retention (5.00%)")).toBeInTheDocument();
+    expect(preview.getByText("Retention (5%)")).toBeInTheDocument();
     expect(preview.getByText("$12,500.00")).toBeInTheDocument();
     expect(preview.getByText("$625.00")).toBeInTheDocument();
     expect(preview.getByText("$11,875.00")).toBeInTheDocument();
@@ -96,7 +97,7 @@ describe("InvoiceRecordComposer", () => {
 
     fireEvent.change(screen.getByLabelText("Gross amount"), { target: { value: "3200" } });
 
-    expect(screen.getByText("Retention (0.00%)")).toBeInTheDocument();
+    expect(screen.getByText("Retention (0%)")).toBeInTheDocument();
     expect(screen.getAllByText("$3,200.00")).toHaveLength(2);
   });
 

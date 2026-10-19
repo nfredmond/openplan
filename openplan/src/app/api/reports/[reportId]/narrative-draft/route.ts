@@ -1,3 +1,4 @@
+import { assertCompleteFundingRead } from "@/lib/grants/award-handoff";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { generateText } from "ai";
@@ -283,7 +284,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
           () =>
             supabase
               .from("funding_awards")
-              .select("id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at")
+              .select("id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at, latest_handoff_revision_id, current_handoff_revision_id, currency_code, has_source_backed_issuance",{count:"exact"})
               .eq("project_id", report.project_id),
           [] as Array<Record<string, unknown>>
         ),
@@ -291,7 +292,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
           () =>
             supabase
               .from("funding_opportunities")
-              .select("id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at")
+              .select("id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at, has_source_backed_issuance",{count:"exact"})
               .eq("project_id", report.project_id),
           [] as Array<Record<string, unknown>>
         ),
@@ -299,7 +300,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
           () =>
             supabase
               .from("billing_invoice_records")
-              .select("id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at")
+              .select("id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at, award_handoff_revision_id, currency_code, handoff_applicable_revision_id",{count:"exact"})
               .eq("project_id", report.project_id),
           [] as Array<Record<string, unknown>>
         ),
@@ -335,6 +336,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         return NextResponse.json({ error: "Failed to load report source records" }, { status: 500 });
       }
 
+      assertCompleteFundingRead(fundingAwardsResult, fundingOpportunitiesResult, billingInvoicesResult);
       const reportRunLinkRows = (reportRunLinksResult.data ?? []) as Array<{
         run_id?: string | null;
         model_run_id?: string | null;

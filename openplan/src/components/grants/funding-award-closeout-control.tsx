@@ -7,6 +7,7 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Textarea } from "@/components/ui/textarea";
+import { FundingAwardClosureHistory } from "@/components/grants/funding-award-closure-history";
 import { formatCurrency, formatDateTime } from "@/lib/grants/page-helpers";
 import {
   FUNDING_AWARD_CLOSED_SPENDING_STATUS,
@@ -35,6 +36,7 @@ import {
 export type FundingAwardCloseoutAward = {
   id: string;
   title: string;
+  currentRevisionId?:string|null;
   /** `funding_awards.spending_status`; `fully_spent` is what close-out sets. */
   spendingStatus: string | null;
   /**
@@ -179,7 +181,7 @@ function CloseoutCoverageBreakdown({ breakdown }: { breakdown: CloseoutInvoiceBr
     return (
       <p className="mt-2 text-xs text-muted-foreground">
         The refusal arrived without its invoice breakdown, so the split across paid, submitted and open
-        invoices is not shown here. The billing register for this project is the record.
+        invoices is not shown here. See the invoice details in this project’s billing register.
       </p>
     );
   }
@@ -284,6 +286,7 @@ function FundingAwardCloseoutRow({
   const [note, setNote] = useState("");
   const [outcome, setOutcome] = useState<CloseoutOutcome | null>(null);
   const [isReopening, setIsReopening] = useState(false);
+  const [historyRefresh, setHistoryRefresh] = useState(0);
   const [reopenReason, setReopenReason] = useState("");
   const [reopenStatus, setReopenStatus] =
     useState<(typeof FUNDING_AWARD_OPEN_SPENDING_STATUS_OPTIONS)[number]["value"] | "">("");
@@ -301,7 +304,7 @@ function FundingAwardCloseoutRow({
       const response = await fetch(`/api/funding-awards/${award.id}/closeout`, {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(note.trim() ? { notes: note.trim() } : {}),
+        body: JSON.stringify({ notes:note.trim()||undefined,expectedCurrentRevisionId:award.currentRevisionId??undefined }),
       });
 
       // A gateway or a crash can answer with something that is not JSON at all;
@@ -311,6 +314,7 @@ function FundingAwardCloseoutRow({
         | null;
 
       if (response.ok) {
+        setHistoryRefresh((value) => value + 1);
         // The route answers 200 twice: once for a close-out it performed, once
         // for an award that was already closed. The second is not a failure —
         // it is the idempotent answer to a stale page or a second planner
@@ -400,7 +404,7 @@ function FundingAwardCloseoutRow({
       const response = await fetch(`/api/funding-awards/${award.id}`, {
         method: "PATCH",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ reopen: { reason, spendingStatus: reopenStatus } }),
+        body: JSON.stringify({ expectedCurrentRevisionId:award.currentRevisionId??undefined,reopen: { reason, spendingStatus: reopenStatus } }),
       });
 
       const payload = (await response.json().catch(() => null)) as
@@ -408,6 +412,7 @@ function FundingAwardCloseoutRow({
         | null;
 
       if (response.ok) {
+        setHistoryRefresh((value) => value + 1);
         setIsReopening(false);
         setReopenReason("");
         setOutcome({
@@ -486,6 +491,12 @@ function FundingAwardCloseoutRow({
       </div>
 
       {isClosed ? <FundingAwardClosureProvenance award={award} /> : null}
+
+      <FundingAwardClosureHistory
+        key={award.id}
+        awardId={award.id}
+        refreshKey={JSON.stringify([award.currentRevisionId, award.spendingStatus, award.closedAt, award.reopenedAt, historyRefresh])}
+      />
 
       {isReopening ? (
         <div className="mt-3 rounded-[0.5rem] border border-border/60 bg-background/70 px-3 py-3">

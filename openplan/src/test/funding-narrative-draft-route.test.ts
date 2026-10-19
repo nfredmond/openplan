@@ -1,3 +1,4 @@
+import { exactCountResult } from "./helpers/exact-count-result";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
@@ -140,7 +141,7 @@ function clientWith(fail?: (table: string, columns: string) => ReadResult | null
         return { insert: draftInsertMock } as unknown as Record<string, unknown>;
       }
       let columns = "";
-      const resolve = () => fail?.(table, columns) ?? succeeding(table, columns);
+      const resolve = () => exactCountResult(fail?.(table, columns) ?? succeeding(table, columns));
       const chain: Record<string, unknown> = {
         select: (cols: string) => {
           columns = cols;

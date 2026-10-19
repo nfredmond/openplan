@@ -20,6 +20,39 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Award-condition handoff:** the existing Grants workspace retains source-backed
+award terms, staff review and project handoff revisions. Managed invoices keep
+their original currency, exact amounts and reviewed term revision. Incomplete
+reads leave coverage unassessed. These records do not establish legal compliance
+or replace a responsible person's review. Apply
+`20261018000003_award_condition_handoff.sql`, then
+`20261019045213_award_handoff_terms_variable.sql` and
+`20261019045328_award_handoff_command_aliases.sql` before deploying this capability.
+The additive corrections separate PL/pgSQL variables from query aliases. Twelve
+isolated transaction and parent-DELETE contention cases pass. The visible workflow
+and hosted award rollout remain pending.
+
+**Managed award reopen correction:** apply
+`20261019101500_managed_award_reopen_status.sql` after the three award migrations
+above, and refresh the API schema cache before deploying the new caller. It
+retains the selected not-started, active or delayed destination in the award,
+receipt and response. Existing five-argument callers keep the active default.
+Earlier native cases do not cover this new overload. RTP pages retain loaded
+cycle data when funding reads fail. The cycle detail withholds dependent funding
+figures; the registry identifies partial totals. Successful incomplete funding
+reads still refuse.
+
+**Award history privileges:** apply
+`20261019163759_award_handoff_relation_privileges.sql` to remove residual
+service_role creation grants. It restores only SELECT/INSERT on
+`funding_award_handoff_revisions`, `funding_award_handoff_sources`,
+`funding_award_handoff_occurrences` and `funding_award_closure_receipts`, and only
+SELECT on `current_award_handoff_records`, `active_project_submittals`,
+`active_project_milestones`, `legacy_calendar_funding_awards`,
+`funding_award_handoff_fulfillment` and `funding_opportunity_issuance`.
+Authenticated SELECT and object definitions remain unchanged. Source review
+does not establish installed privileges.
+
 **Source-page plan proposals:** Document review can stage quoted records from a
 retained page without an AI account. Pending proposals have their own pages,
 separate from reading history. Manual chapter copies retain source authorship;

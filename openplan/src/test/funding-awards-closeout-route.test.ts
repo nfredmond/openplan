@@ -1,3 +1,4 @@
+vi.mock("server-only", () => ({}));
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
@@ -82,6 +83,9 @@ describe("POST /api/funding-awards/[awardId]/closeout", () => {
         workspace_id: WORKSPACE_ID,
         project_id: PROJECT_ID,
         title: "ATP award",
+        latest_handoff_revision_id: null,
+        current_handoff_revision_id: null,
+        currency_code: null,
         awarded_amount: 1_000_000,
         spending_status: "active",
         obligation_due_at: "2026-07-01T00:00:00Z",
@@ -241,6 +245,9 @@ describe("POST /api/funding-awards/[awardId]/closeout", () => {
         workspace_id: WORKSPACE_ID,
         project_id: PROJECT_ID,
         title: "ATP award",
+        latest_handoff_revision_id: null,
+        current_handoff_revision_id: null,
+        currency_code: null,
         awarded_amount: 1_000_000,
         spending_status: "fully_spent",
         obligation_due_at: "2026-07-01T00:00:00Z",
@@ -431,6 +438,9 @@ describe("POST /api/funding-awards/[awardId]/closeout", () => {
         workspace_id: WORKSPACE_ID,
         project_id: PROJECT_ID,
         title: "Historic ATP award",
+        latest_handoff_revision_id: null,
+        current_handoff_revision_id: null,
+        currency_code: null,
         awarded_amount: 1_000_000,
         spending_status: "fully_spent",
         closure_basis: "recorded_on_import",

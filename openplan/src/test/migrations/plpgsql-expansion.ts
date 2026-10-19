@@ -60,6 +60,8 @@ export type ExpandedStatement = {
   /** A concrete, terminated statement, ready for the literal policy parser. */
   sql: string;
   line: number;
+  /** Literal FOREACH lists name their subjects; catalogue loops do not. */
+  reach: "named" | "blanket";
 };
 
 type Bindings = Record<string, string>;
@@ -171,10 +173,11 @@ function foreachBindings(body: string): Bindings[] | null {
     }
   }
   if (close === -1) return null;
+  if (!/^\s*LOOP\b/i.test(body.slice(close + 1))) return null;
 
   const variable = match[1];
   const values = splitTopLevel(body.slice(open, close), ",").map((cell) => unquoteLiteral(cell));
-  if (!values.length || values.some((value) => value === null)) return null;
+  if (!values.length || values.some((value) => value === null || !/^[a-z_][a-z0-9_]*$/.test(value))) return null;
 
   return values.map((value) => ({ [variable]: value as string }));
 }
@@ -293,7 +296,7 @@ function resolveArgument(expression: string, bindings: Bindings): string | null 
   return out;
 }
 
-/** Apply `%I` / `%s` / `%%` positionally, exactly as PL/pgSQL's `format()` does. */
+/** Render the unquoted identifier subset of `%I`, plus `%s` and `%%`. */
 function applyFormat(template: string, args: string[]): string | null {
   let out = "";
   let next = 0;
@@ -310,10 +313,10 @@ function applyFormat(template: string, args: string[]): string | null {
     if (specifier === "%") {
       out += "%";
     } else if (specifier === "I" || specifier === "s") {
-      // Every generated identifier in this repo is unquoted lower_snake, so an
-      // %I renders bare. A name needing quoting would change that, which is why
-      // the caller asserts the rendered statements parse.
+      // Generated identifiers use unquoted lower_snake. Refuse names needing
+      // quoting so punctuation cannot become SQL in the rendered statement.
       if (next >= args.length) return null;
+      if (specifier === "I" && !/^[a-z_][a-z0-9_]*$/.test(args[next])) return null;
       out += args[next];
       next += 1;
     } else {
@@ -344,10 +347,21 @@ function expandDynamicStatements(file: string, sql: string, options: ExpandOptio
     const unexpandable = (offset: number, detail: string) =>
       new UnexpandableDynamicSqlError(file, lineAt(sql, block.offset + offset), detail, options.noun);
 
+    const literalRows = foreachBindings(block.body);
+    const catalogueRows = options.tables ? forPgTablesBindings(block.body, options.tables) : null;
+    const recordRows = forRecordBindings(block.body);
+    let loopText = block.body;
+    for (const [from, to] of stringLiteralRanges(block.body).reverse()) {
+      loopText = loopText.slice(0, from) + " ".repeat(to - from) + loopText.slice(to);
+    }
+    const loops = [...loopText.matchAll(/\b(?:FOREACH|FOR)\s+[A-Za-z_]\w*\s+IN\b/gi)];
+    if (loops.length > 1 || (loops.length === 1 && !literalRows && !catalogueRows && !recordRows)) {
+      throw unexpandable(sites[0].offset, "a loop whose exact single iteration set is not supported");
+    }
     const rows =
-      foreachBindings(block.body) ??
-      forPgTablesBindings(block.body, options.tables ?? []) ??
-      forRecordBindings(block.body) ??
+      literalRows ??
+      catalogueRows ??
+      recordRows ??
       [{}];
 
     // Parse each EXECUTE once, into something that can be rendered per row.
@@ -408,6 +422,7 @@ function expandDynamicStatements(file: string, sql: string, options: ExpandOptio
           site: siteIndex,
           sql: `${site.render(binding)};`,
           line: lineAt(sql, block.offset + site.offset),
+          reach: literalRows ? "named" : "blanket",
         });
       });
     });
@@ -443,5 +458,13 @@ export function expandDynamicGrantStatements(
     tables,
     interesting: (argument) =>
       /\b(?:GRANT|REVOKE)\b/i.test(argument) && !/\bON\s+(?:ALL\s+)?SEQUENCES?\b/i.test(argument),
+  });
+}
+
+/** RLS changes must reduce to exact relation identifiers, as grants do. */
+export function expandDynamicRlsStatements(file: string, sql: string): ExpandedStatement[] {
+  return expandDynamicStatements(file, sql, {
+    noun: "row-security change",
+    interesting: (argument) => /\bALTER\s+TABLE\b/i.test(argument) && /\bROW\s+LEVEL\s+SECURITY\b/i.test(argument),
   });
 }

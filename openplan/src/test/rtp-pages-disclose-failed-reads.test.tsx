@@ -1,4 +1,5 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { exactCountResult } from "./helpers/exact-count-result";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -38,7 +39,7 @@ const redirectMock = vi.fn(() => {
 const createClientMock = vi.fn();
 const loadCurrentWorkspaceMembershipMock = vi.fn();
 
-type QueryResult = { data: unknown; error: { message: string } | null };
+type QueryResult = { data: unknown; error: { message: string } | null; count?: number | null | undefined };
 
 /** Per-table results for one render. Anything unset resolves to an empty read. */
 let tableResults: Record<string, QueryResult> = {};
@@ -49,17 +50,30 @@ const OK: QueryResult = { data: [], error: null };
  * A thenable query builder: every chained method returns itself and awaiting it
  * yields the table's result. Deliberately generic — a per-method mock chain has
  * to be rewritten every time a page adds a `.limit()`, and the thing under test
- * here is what the page does with `error`, not the shape of the query.
+ * here is what the page renders for each read state. The focused funding cases
+ * also assert projections, exact-count requests and linked-project filters.
  */
 let selectCalls: Record<string, string[]> = {};
+let selectOptions: Record<string, unknown[]> = {};
+let inCalls: Record<string, unknown[][]> = {};
 
-function makeQuery(result: QueryResult, table?: string) {
+function makeQuery(fixture: QueryResult, table?: string) {
+  let result = fixture;
   const query: Record<string, unknown> = {};
   for (const method of ["select", "eq", "in", "not", "is", "order", "limit", "gte", "lte", "neq", "filter", "or"]) {
     query[method] = vi.fn((...args: unknown[]) => {
       if (method === "select" && table && typeof args[0] === "string") {
         selectCalls[table] = [...(selectCalls[table] ?? []), args[0]];
+        selectOptions[table] = [...(selectOptions[table] ?? []), args[1]];
       }
+      if (
+        method === "select" &&
+        (args[1] as { count?: string } | undefined)?.count === "exact" &&
+        !Object.prototype.hasOwnProperty.call(fixture, "count")
+      ) {
+        result = exactCountResult(fixture);
+      }
+      if (method === "in" && table) inCalls[table] = [...(inCalls[table] ?? []), args];
       return query;
     });
   }
@@ -211,6 +225,8 @@ async function renderRegistry() {
 beforeEach(() => {
   vi.clearAllMocks();
   selectCalls = {};
+  selectOptions = {};
+  inCalls = {};
   tableResults = {
     rtp_cycles: { data: CYCLE_ROW, error: null },
   };
@@ -774,5 +790,271 @@ describe("the RTP registry discloses a failed cycle read", () => {
     expect(screen.queryByText("The RTP cycle list could not be read")).not.toBeInTheDocument();
     expect(screen.queryByText("Part of this registry could not be read")).not.toBeInTheDocument();
     expect(screen.getByText("No plan cycles yet")).toBeInTheDocument();
+  });
+});
+
+// These drive the actual server pages and their rendered disclosures. Counts
+// are supplied only for exact-count selects; an explicit missing/null count is
+// retained so the mock cannot turn an incomplete read into a complete one.
+const FUNDING_READS = [
+  { table: "funding_awards", label: "committed awards for the linked projects" },
+  { table: "funding_opportunities", label: "pursued funding for the linked projects" },
+  { table: "billing_invoice_records", label: "reimbursement invoices for the linked projects" },
+] as const;
+const DISCLOSED_FUNDING_READS = [
+  ...FUNDING_READS,
+  { table: "project_funding_profiles", label: "funding records for the linked projects" },
+] as const;
+const FUNDING_READERS = [
+  { name: "registry", renderPage: renderRegistry, failureTitle: "Part of this registry could not be read" },
+  { name: "cycle detail", renderPage: renderDetail, failureTitle: "Part of this cycle could not be read" },
+] as const;
+
+function seedLinkedFunding(reader: typeof FUNDING_READERS[number]["name"], populated = true) {
+  tableResults.rtp_cycles = { data: reader === "registry" ? [CYCLE_ROW] : CYCLE_ROW, error: null };
+  tableResults.project_rtp_cycle_links = {
+    data: [{
+      id: "link-1", rtp_cycle_id: CYCLE_ROW.id, project_id: "project-1",
+      portfolio_role: "constrained", priority_rationale: null, priority_scores: {},
+      horizon_band_id: null, estimated_cost: 10, cost_basis_year: 2026,
+      created_at: "2026-04-01T00:00:00.000Z",
+      projects: { id: "project-1", name: "Corridor upgrade", status: "active",
+        delivery_phase: "planning", summary: null, rtp_posture_updated_at: null },
+    }],
+    error: null,
+  };
+  tableResults.project_funding_profiles = {
+    data: [{ project_id: "project-1", funding_need_amount: 10, local_match_need_amount: 0 }], error: null,
+  };
+  tableResults.funding_awards = {
+    data: populated ? [{ id: "award-1", project_id: "project-1", awarded_amount: 10, match_amount: 0,
+      risk_flag: "none", obligation_due_at: null, latest_handoff_revision_id: null,
+      current_handoff_revision_id: null, currency_code: "USD", has_source_backed_issuance: false }] : [],
+    error: null, count: populated ? 1 : 0,
+  };
+  tableResults.funding_opportunities = {
+    data: populated ? [{ project_id: "project-1", decision_state: "pursue", opportunity_status: "open",
+      expected_award_amount: 5, has_source_backed_issuance: false }] : [],
+    error: null, count: populated ? 1 : 0,
+  };
+  tableResults.billing_invoice_records = {
+    data: populated ? [{ project_id: "project-1", funding_award_id: "award-1", status: "submitted",
+      amount: 2, retention_percent: 0, retention_amount: 0, net_amount: 2, due_date: null,
+      award_handoff_revision_id: null, currency_code: "USD", handoff_applicable_revision_id: null }] : [],
+    error: null, count: populated ? 1 : 0,
+  };
+}
+
+function expectFundingCount(reader: typeof FUNDING_READERS[number]["name"], funded: boolean) {
+  if (reader === "registry") {
+    expect(within(screen.getByLabelText("Regional plan figures")).getByText(
+      funded ? "1 funded, 0 likely, 0 with a gap" : "0 funded, 0 likely, 1 with a gap"
+    )).toBeInTheDocument();
+  } else {
+    const card = screen.getByText("Funded projects").parentElement;
+    if (!card) throw new Error("Funded projects card is absent");
+    expect(within(card).getByText(funded ? "1/1" : "0/1")).toBeInTheDocument();
+  }
+}
+
+describe.each(FUNDING_READERS)("$name funding read disclosure and completeness", ({ name, renderPage, failureTitle }) => {
+  it.each(DISCLOSED_FUNDING_READS)("renders loaded cycle data and the named $table failure without throwing", async ({ table, label }) => {
+    seedLinkedFunding(name);
+    tableResults[table] = { data: null, error: { message: `permission denied for table ${table}` } };
+
+    await renderPage();
+
+    expect(screen.getAllByText(CYCLE_ROW.title).length).toBeGreaterThan(0);
+    expect(screen.getByText(failureTitle)).toBeInTheDocument();
+    expect(screen.getAllByText(new RegExp(label)).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(new RegExp(`permission denied for table ${table}`)).length).toBeGreaterThan(0);
+    expect(screen.queryByText("Funding records are not available yet")).not.toBeInTheDocument();
+    if (name === "registry") {
+      expect(screen.getByText(/summary counts and dollar totals below are computed only from what did load/)).toBeInTheDocument();
+    } else {
+      expect(screen.getByText(/Funding posture is unavailable because part of the funding record could not be read/)).toBeInTheDocument();
+    }
+  });
+
+  it.each(DISCLOSED_FUNDING_READS)("keeps pending-schema $table distinct from failure and successful zero", async ({ table }) => {
+    seedLinkedFunding(name);
+    tableResults[table] = { data: null, error: { message: `relation "${table}" does not exist` } };
+
+    await renderPage();
+
+    expect(screen.getAllByText(CYCLE_ROW.title).length).toBeGreaterThan(0);
+    expect(screen.getByText("Funding records are not available yet")).toBeInTheDocument();
+    expect(screen.getByText(/pending a database update/)).toBeInTheDocument();
+    expect(screen.queryByText(failureTitle)).not.toBeInTheDocument();
+    if (name === "cycle detail") {
+      expect(screen.getByText(/Funding posture is unavailable because part of the funding record could not be read/)).toBeInTheDocument();
+    }
+  });
+
+  it("renders complete nonempty funding data and requests its version/currency projections and exact counts", async () => {
+    seedLinkedFunding(name);
+
+    await renderPage();
+
+    expectFundingCount(name, true);
+    expect(screen.queryByText(failureTitle)).not.toBeInTheDocument();
+    expect(screen.queryByText("Funding records are not available yet")).not.toBeInTheDocument();
+    const projections = {
+      funding_awards: "project_id, awarded_amount, match_amount, risk_flag, obligation_due_at, id, latest_handoff_revision_id, current_handoff_revision_id, currency_code, has_source_backed_issuance",
+      funding_opportunities: "project_id, decision_state, opportunity_status, expected_award_amount, has_source_backed_issuance",
+      billing_invoice_records: "project_id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, due_date, award_handoff_revision_id, currency_code, handoff_applicable_revision_id",
+    };
+    for (const { table } of FUNDING_READS) {
+      expect(selectCalls[table]).toEqual([projections[table]]);
+      expect(selectOptions[table]).toEqual([{ count: "exact" }]);
+      expect(inCalls[table]).toEqual([["project_id", ["project-1"]]]);
+    }
+  });
+
+  it("renders successful empty funding sets with exact zero counts as the ordinary empty result", async () => {
+    seedLinkedFunding(name, false);
+
+    await renderPage();
+
+    expectFundingCount(name, false);
+    expect(screen.queryByText(failureTitle)).not.toBeInTheDocument();
+    expect(screen.queryByText("Funding records are not available yet")).not.toBeInTheDocument();
+  });
+
+  describe.each(FUNDING_READS)("$table successful-read refusal", ({ table }) => {
+    it.each([
+      { state: "truncated", count: 2 },
+      { state: "missing count", count: undefined },
+      { state: "null count", count: null },
+    ])("refuses a successful nonempty $state result", async ({ count }) => {
+      seedLinkedFunding(name);
+      tableResults[table] = { ...tableResults[table], count };
+
+      await expect(renderPage()).rejects.toThrow("No partial financial snapshot is accepted");
+      expect(screen.queryByText(CYCLE_ROW.title)).not.toBeInTheDocument();
+    });
+
+    it.each([undefined, null])("refuses successful empty data with an absent count (%s)", async (count) => {
+      seedLinkedFunding(name, false);
+      tableResults[table] = { data: [], error: null, count };
+
+      await expect(renderPage()).rejects.toThrow("No partial financial snapshot is accepted");
+    });
+
+    it("refuses null successful data even when the count is zero", async () => {
+      seedLinkedFunding(name, false);
+      tableResults[table] = { data: null, error: null, count: 0 };
+
+      await expect(renderPage()).rejects.toThrow("No partial financial snapshot is accepted");
+    });
+
+    it.each(["permission denied", "schema cache unavailable"])("still refuses a truncated success beside a classified error (%s)", async (message) => {
+      seedLinkedFunding(name);
+      const other = FUNDING_READS.find((read) => read.table !== table);
+      if (!other) throw new Error("A separate funding query is required");
+      tableResults[other.table] = { data: null, error: { message } };
+      tableResults[table] = { ...tableResults[table], count: 2 };
+
+      await expect(renderPage()).rejects.toThrow("No partial financial snapshot is accepted");
+    });
+  });
+});
+
+// Open Projects explicitly and inspect the real programme list. Overview's
+// unavailable state cannot satisfy these assertions through the tab mock.
+function seedProjectsFunding(populated = true) {
+  seedLinkedFunding("cycle detail", populated);
+  const links = tableResults.project_rtp_cycle_links.data as Array<{ priority_scores: Record<string, number> }>;
+  links[0].priority_scores = { safety: 3 };
+}
+
+function projectsFundingSurfaces() {
+  const programme = screen.getByRole("heading", { name: "What this plan commits to, and when" }).closest("article");
+  const summary = screen.getByRole("heading", { name: "Cycle-linked projects" }).closest("article");
+  if (!programme || !summary) throw new Error("Both Projects funding surfaces must render");
+  const project = within(programme).getByRole("link", { name: "Corridor upgrade" });
+  const row = project.closest("li");
+  if (!row) throw new Error("The real programme project row must render");
+  expect(project).toHaveAttribute("href", "/projects/project-1");
+  expect(row).toHaveTextContent(/\$10\s*\(2026 dollars\)/);
+  expect(within(row).getByText(/Priority \d+\/100/)).toBeInTheDocument();
+  expect(within(row).getByText(/improves safety \(high\)/)).toBeInTheDocument();
+  return { row, summary };
+}
+
+const PROJECTS_FUNDING_METRICS = [
+  "Funded", "Likely covered", "Still unfunded", "Paid reimbursements", "Outstanding requests", "Uninvoiced awards",
+] as const;
+const PROJECT_FUNDING_BADGES = [
+  "Funded", "Likely covered", "Gap remains", "Unfunded", "Funding pipeline logged", "Funding pipeline unknown",
+  "Pipeline comparison unassessed",
+] as const;
+
+function expectProjectsFundingUnavailable() {
+  const { row, summary } = projectsFundingSurfaces();
+  expect(within(row).getByText("Project funding unavailable")).toBeInTheDocument();
+  for (const label of PROJECT_FUNDING_BADGES) {
+    expect(within(row).queryByText(label)).not.toBeInTheDocument();
+  }
+  expect(within(row).queryByText(/Project funding:/)).not.toBeInTheDocument();
+  expect(within(row).queryByText(/Recorded award ceilings/)).not.toBeInTheDocument();
+  expect(within(summary).getByText("Project funding summary is unavailable")).toBeInTheDocument();
+  for (const label of PROJECTS_FUNDING_METRICS) {
+    expect(within(summary).queryByText(label)).not.toBeInTheDocument();
+  }
+  expect(summary.querySelectorAll(".module-metric-card")).toHaveLength(0);
+  expect(within(summary).queryByText(/A real gap remains/)).not.toBeInTheDocument();
+  expect(within(summary).queryByText(/The invoicing register shows the same invoice records to the cent/)).not.toBeInTheDocument();
+  expect(summary).toHaveTextContent("1 project in this plan.");
+}
+
+describe("cycle detail Projects withholds unavailable funding without hiding the programme", () => {
+  it.each(DISCLOSED_FUNDING_READS)("withholds dependent Projects claims for a generic $table error", async ({ table, label }) => {
+    seedProjectsFunding();
+    tableResults[table] = { data: null, error: { message: `permission denied for table ${table}` } };
+
+    await renderDetail("projects");
+
+    expect(screen.getAllByText(CYCLE_ROW.title).length).toBeGreaterThan(0);
+    expect(screen.getByText("Part of this cycle could not be read")).toBeInTheDocument();
+    expect(screen.getAllByText(new RegExp(label)).length).toBeGreaterThan(0);
+    expect(screen.queryByText("Funding records are not available yet")).not.toBeInTheDocument();
+    expectProjectsFundingUnavailable();
+  });
+
+  it.each(DISCLOSED_FUNDING_READS)("withholds dependent Projects claims for pending-schema $table", async ({ table }) => {
+    seedProjectsFunding();
+    tableResults[table] = { data: null, error: { message: `relation "${table}" does not exist` } };
+
+    await renderDetail("projects");
+
+    expect(screen.getAllByText(CYCLE_ROW.title).length).toBeGreaterThan(0);
+    expect(screen.getByText("Funding records are not available yet")).toBeInTheDocument();
+    expect(screen.getByText(/pending a database update/)).toBeInTheDocument();
+    expect(screen.queryByText("Part of this cycle could not be read")).not.toBeInTheDocument();
+    expectProjectsFundingUnavailable();
+  });
+
+  it.each([
+    { state: "complete nonempty", populated: true, badge: "Funded", funding: "Project funding: $10 committed · $0 still to raise", values: ["1", "0", "0", "$0", "$2", "$8"] },
+    { state: "successful exact-zero", populated: false, badge: "Unfunded", funding: "Project funding: $0 committed · $10 still to raise", values: ["0", "0", "1", "$0", "$0", "$0"] },
+  ])("retains ordinary Projects funding for $state reads", async ({ populated, badge, funding, values }) => {
+    seedProjectsFunding(populated);
+
+    await renderDetail("projects");
+
+    const { row, summary } = projectsFundingSurfaces();
+    expect(within(row).getByText(badge)).toBeInTheDocument();
+    expect(row).toHaveTextContent(funding);
+    for (const [index, label] of PROJECTS_FUNDING_METRICS.entries()) {
+      const card = within(summary).getByText(label).parentElement;
+      if (!card) throw new Error(`The ${label} metric card must render`);
+      expect(within(card).getByText(values[index], { exact: true })).toBeInTheDocument();
+    }
+    expect(within(summary).getByText(/The invoicing register shows the same invoice records to the cent/)).toBeInTheDocument();
+    expect(screen.queryByText("Project funding unavailable")).not.toBeInTheDocument();
+    expect(screen.queryByText("Project funding summary is unavailable")).not.toBeInTheDocument();
+    expect(screen.queryByText("Part of this cycle could not be read")).not.toBeInTheDocument();
+    expect(screen.queryByText("Funding records are not available yet")).not.toBeInTheDocument();
   });
 });

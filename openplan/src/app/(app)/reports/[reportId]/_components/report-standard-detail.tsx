@@ -1,3 +1,4 @@
+import { comparableFundingDisclosure } from "@/lib/grants/award-handoff";
 import { EngagementReviewFiles } from "@/components/engagement/engagement-review-files";
 import type { ComponentProps } from "react";
 import Link from "next/link";
@@ -343,7 +344,7 @@ export function ReportStandardDetail({
           </p>
           <p className="module-summary-detail">
             {fundingSnapshot
-              ? (fundingSnapshot.unfundedAfterLikelyAmount ?? 0) > 0
+              ? fundingSnapshot.comparableFunding ? comparableFundingDisclosure(fundingSnapshot.comparableFunding) : (fundingSnapshot.unfundedAfterLikelyAmount ?? 0) > 0
                 ? `${formatCurrency(fundingSnapshot.unfundedAfterLikelyAmount)} still uncovered after likely dollars.`
                 : fundingSnapshot.hasTargetNeed && fundingSnapshot.unfundedAfterLikelyAmount === null
                   ? "Funding gap unknown."

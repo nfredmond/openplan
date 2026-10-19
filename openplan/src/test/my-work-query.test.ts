@@ -296,7 +296,7 @@ describe("my work — the union read", () => {
     expect(item.detail).not.toContain("Funds must be obligated");
     expect(item.dueOn).toBe(award.obligation_due_at);
     expect(idsOf(result.items)).toContain("m-obligation");
-    expect(selects.funding_awards.split(",").map(x => x.trim())).toContain("closure_basis");
+    expect(selects.legacy_calendar_funding_awards.split(",").map(x => x.trim())).toContain("closure_basis");
   });
 
   it("reports each source's own count after de-duplication", async () => {
@@ -330,7 +330,7 @@ describe("my work — the union read", () => {
     expect(blocks.deadlines[0].href).toBe(`/projects/${P1}#project-deliverables`);
     expect(result.items.find((item) => item.id === "d-unassigned")).toBeUndefined();
     expect(selects.project_deliverables).toContain("owner_label");
-    expect(selects.project_milestones).toContain("funding_award_id");
+    expect(selects.active_project_milestones).toContain("funding_award_id");
   });
 });
 

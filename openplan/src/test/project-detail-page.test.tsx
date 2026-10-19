@@ -213,6 +213,17 @@ const meetingsOrderMock = vi.fn(() => ({ limit: meetingsLimitMock }));
 const meetingsEqMock = vi.fn(() => ({ order: meetingsOrderMock }));
 const meetingsSelectMock = vi.fn(() => ({ eq: meetingsEqMock }));
 
+type FundingReadResult = { data: unknown[] | null; error: unknown; count?: unknown };
+type FundingSelectOptions = { count?: string };
+
+/** Return counts only when requested; retain explicit incomplete/error fixtures. */
+async function countedFundingRead(read: Promise<FundingReadResult>, options?: FundingSelectOptions): Promise<FundingReadResult> {
+  const result = await read;
+  if (options?.count !== "exact") return { ...result, count: null };
+  if ("count" in result) return result;
+  return { ...result, count: !result.error && Array.isArray(result.data) ? result.data.length : null };
+}
+
 const invoicesLimitMock = vi.fn();
 const invoicesOrderMock = vi.fn(() => ({ limit: invoicesLimitMock }));
 const invoicesEqMock = vi.fn(() => ({ order: invoicesOrderMock }));
@@ -222,9 +233,15 @@ const invoicesEqMock = vi.fn(() => ({ order: invoicesOrderMock }));
 // claimed-to-date. It only runs when the project HAS awards, which is why the
 // harness needed this branch the moment an award was seeded.
 const awardInvoicesLimitMock = vi.fn(async () => ({ data: [], error: null }));
-const awardInvoicesOrderMock = vi.fn(() => ({ limit: awardInvoicesLimitMock }));
-const awardInvoicesInMock = vi.fn(() => ({ order: awardInvoicesOrderMock }));
-const invoicesSelectMock = vi.fn(() => ({ eq: invoicesEqMock, in: awardInvoicesInMock }));
+const awardInvoicesOrderMock = vi.fn((..._args: unknown[]) => awardInvoicesLimitMock());
+const awardInvoicesInMock = vi.fn((..._args: unknown[]) => ({ order: awardInvoicesOrderMock }));
+const invoicesSelectMock = vi.fn((_columns: string, options?: FundingSelectOptions) => ({
+  eq: invoicesEqMock,
+  in: (...args: unknown[]) => {
+    const query = awardInvoicesInMock(...args);
+    return { order: (...orderArgs: unknown[]) => countedFundingRead(query.order(...orderArgs), options) };
+  },
+}));
 
 const datasetLinksOrderMock = vi.fn();
 const datasetLinksEqMock = vi.fn(() => ({ order: datasetLinksOrderMock }));
@@ -245,17 +262,27 @@ const projectFundingProfileEqMock = vi.fn(() => ({ maybeSingle: projectFundingPr
 const projectFundingProfileSelectMock = vi.fn(() => ({ eq: projectFundingProfileEqMock }));
 
 const fundingAwardsLimitMock = vi.fn();
-const fundingAwardsOrderMock = vi.fn(() => ({ limit: fundingAwardsLimitMock }));
-const fundingAwardsEqMock = vi.fn(() => ({ order: fundingAwardsOrderMock }));
+const fundingAwardsOrderMock = vi.fn((..._args: unknown[]) => fundingAwardsLimitMock());
+const fundingAwardsEqMock = vi.fn((..._args: unknown[]) => ({ order: fundingAwardsOrderMock }));
 // The column list is a recorded argument, not a detail: a Supabase select string
 // is never checked against the schema, so a column this page stops asking for
 // simply arrives as `undefined` with nothing failing anywhere.
-const fundingAwardsSelectMock = vi.fn((_columns: string) => ({ eq: fundingAwardsEqMock }));
+const fundingAwardsSelectMock = vi.fn((_columns: string, options?: FundingSelectOptions) => ({
+  eq: (...args: unknown[]) => {
+    const query = fundingAwardsEqMock(...args);
+    return { order: (...orderArgs: unknown[]) => countedFundingRead(query.order(...orderArgs), options) };
+  },
+}));
 
 const fundingOpportunitiesLimitMock = vi.fn();
-const fundingOpportunitiesOrderMock = vi.fn(() => ({ limit: fundingOpportunitiesLimitMock }));
-const fundingOpportunitiesEqMock = vi.fn(() => ({ order: fundingOpportunitiesOrderMock }));
-const fundingOpportunitiesSelectMock = vi.fn(() => ({ eq: fundingOpportunitiesEqMock }));
+const fundingOpportunitiesOrderMock = vi.fn((..._args: unknown[]) => fundingOpportunitiesLimitMock());
+const fundingOpportunitiesEqMock = vi.fn((..._args: unknown[]) => ({ order: fundingOpportunitiesOrderMock }));
+const fundingOpportunitiesSelectMock = vi.fn((_columns: string, options?: FundingSelectOptions) => ({
+  eq: (...args: unknown[]) => {
+    const query = fundingOpportunitiesEqMock(...args);
+    return { order: (...orderArgs: unknown[]) => countedFundingRead(query.order(...orderArgs), options) };
+  },
+}));
 
 const datasetsInMock = vi.fn();
 const datasetsSelectMock = vi.fn(() => ({ in: datasetsInMock }));
@@ -1696,10 +1723,25 @@ describe("ProjectDetailPage", () => {
 
     await renderPage("funding");
 
-    const [awardColumns] = fundingAwardsSelectMock.mock.calls[0];
+    const [awardColumns, awardOptions] = fundingAwardsSelectMock.mock.calls[0];
     for (const column of ["closure_basis", "closed_at", "closure_note", "reopened_at"]) {
       expect(awardColumns, `the funding_awards select must name ${column}`).toContain(column);
     }
+    expect(awardOptions).toEqual({ count: "exact" });
+    for (const column of ["latest_handoff_revision_id", "current_handoff_revision_id", "currency_code", "has_source_backed_issuance"]) {
+      expect(awardColumns.split(", ")).toContain(column);
+    }
+    expect(fundingAwardsEqMock).toHaveBeenCalledWith("project_id", "project-1");
+    expect(fundingOpportunitiesSelectMock).toHaveBeenCalledWith(
+      expect.stringContaining("has_source_backed_issuance"),
+      { count: "exact" },
+    );
+    expect(fundingOpportunitiesEqMock).toHaveBeenCalledWith("project_id", "project-1");
+    expect(invoicesSelectMock).toHaveBeenCalledWith(
+      expect.stringContaining("award_handoff_revision_id, currency_code, handoff_applicable_revision_id"),
+      { count: "exact" },
+    );
+    expect(awardInvoicesInMock).toHaveBeenCalledWith("funding_award_id", ["award-1"]);
 
     // The same vocabulary the /grants close-out control uses — one language for
     // one fact, sourced from the programs catalog by both surfaces.

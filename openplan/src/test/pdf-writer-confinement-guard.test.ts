@@ -21,6 +21,8 @@ import { describe, expect, it } from "vitest";
 
 const SRC = path.join(process.cwd(), "src");
 const WRITER = path.join(SRC, "lib", "reports", "pdf-writer.ts");
+const NOTICE_READER = path.join(SRC, "lib", "grants", "award-handoff-server.ts");
+const NOTICE_HEADER_CHECK = 'bytes.subarray(0, 5).equals(Buffer.from("%PDF-"))';
 
 function walk(dir: string): string[] {
   return readdirSync(dir).flatMap((entry) => {
@@ -48,6 +50,11 @@ function codeOf(file: string): string {
   return stripSourceComments(readFileSync(file, "utf8"));
 }
 
+/** Exclude one exact read-only comparison, while scanning the rest of its module. */
+function assemblyCode(file: string, source: string): string {
+  return file === NOTICE_READER ? source.replace(NOTICE_HEADER_CHECK, "verifiedNoticeHeader") : source;
+}
+
 /** Structural markers only a PDF assembler emits. */
 const PDF_STRUCTURE_MARKERS = [
   /%PDF-/,
@@ -61,7 +68,7 @@ describe("PDF writer confinement", () => {
     const offenders: string[] = [];
 
     for (const file of otherProductFiles()) {
-      const source = codeOf(file);
+      const source = assemblyCode(file, codeOf(file));
       for (const marker of PDF_STRUCTURE_MARKERS) {
         if (marker.test(source)) {
           offenders.push(`${path.relative(process.cwd(), file)} → ${marker}`);
@@ -70,6 +77,16 @@ describe("PDF writer confinement", () => {
     }
 
     expect(offenders).toEqual([]);
+  });
+
+  it("allows the notice header reader but still rejects a writer beside it", () => {
+    const source = codeOf(NOTICE_READER);
+    expect(source.split(NOTICE_HEADER_CHECK)).toHaveLength(2);
+    expect(PDF_STRUCTURE_MARKERS.some((marker) => marker.test(assemblyCode(NOTICE_READER, NOTICE_HEADER_CHECK)))).toBe(false);
+    for (const writer of ['Buffer.from("%PDF-1.4")', '"<< /Type /Pages >>"', '"startxref"']) {
+      expect(PDF_STRUCTURE_MARKERS.some((marker) => marker.test(assemblyCode(NOTICE_READER, `${NOTICE_HEADER_CHECK}; ${writer}`)))).toBe(true);
+    }
+    expect(PDF_STRUCTURE_MARKERS.some((marker) => marker.test(assemblyCode("another-reader.ts", NOTICE_HEADER_CHECK)))).toBe(true);
   });
 
   it("carries no truncation of its own content", () => {

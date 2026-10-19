@@ -127,7 +127,7 @@ function looksLikePendingColumn(message: string | null | undefined): boolean {
  * about every closed award forever.
  */
 const FUNDING_AWARD_SELECT_LEGACY =
-  "id, funding_opportunity_id, project_id, program_id, title, awarded_amount, match_amount, obligation_due_at, spending_status, risk_flag, notes, updated_at, created_at, funding_opportunities(id, title), programs(id, title), projects(id, name)";
+  "id, funding_opportunity_id, project_id, program_id, title, latest_handoff_revision_id, current_handoff_revision_id, currency_code, has_source_backed_issuance, awarded_amount, match_amount, obligation_due_at, spending_status, risk_flag, notes, updated_at, created_at, funding_opportunities(id, title), programs(id, title), projects(id, name)";
 const FUNDING_AWARD_SELECT = FUNDING_AWARD_SELECT_LEGACY.replace(
   "spending_status,",
   "spending_status, closure_basis, closed_at, closure_note, reopened_at,"
@@ -185,7 +185,7 @@ export default async function GrantsPage({
     supabase
       .from("funding_opportunities")
       .select(
-        "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, fit_notes, readiness_notes, decision_rationale, decided_at, summary, pursuit_kind, solicitation_number, updated_at, created_at, programs(id, title, funding_classification), projects(id, name)"
+        "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, fit_notes, readiness_notes, decision_rationale, decided_at, summary, pursuit_kind, solicitation_number, updated_at, created_at, programs(id, title, funding_classification), projects(id, name), has_source_backed_issuance", {count:"exact"}
       )
       .eq("workspace_id", membership.workspace_id)
       .order("updated_at", { ascending: false }),
@@ -201,12 +201,12 @@ export default async function GrantsPage({
       .order("updated_at", { ascending: false }),
     supabase
       .from("funding_awards")
-      .select(FUNDING_AWARD_SELECT)
+      .select(FUNDING_AWARD_SELECT, {count:"exact"})
       .eq("workspace_id", membership.workspace_id)
       .order("updated_at", { ascending: false }),
     supabase
       .from("billing_invoice_records")
-      .select("id, project_id, funding_award_id, invoice_number, status, due_date, amount, retention_percent, retention_amount, net_amount")
+      .select("id, project_id, funding_award_id, invoice_number, status, due_date, amount, retention_percent, retention_amount, net_amount, award_handoff_revision_id, currency_code, handoff_applicable_revision_id", {count:"exact"})
       .eq("workspace_id", membership.workspace_id)
       .order("due_date", { ascending: true }),
     supabase
@@ -253,7 +253,7 @@ export default async function GrantsPage({
     const legacyRead = await supabase
       .from("funding_opportunities")
       .select(
-        "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, fit_notes, readiness_notes, decision_rationale, decided_at, summary, updated_at, created_at, programs(id, title, funding_classification), projects(id, name)"
+        "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, fit_notes, readiness_notes, decision_rationale, decided_at, summary, updated_at, created_at, programs(id, title, funding_classification), projects(id, name), has_source_backed_issuance", {count:"exact"}
       )
       .eq("workspace_id", membership.workspace_id)
       .order("updated_at", { ascending: false });
@@ -271,12 +271,13 @@ export default async function GrantsPage({
   if (fundingAwardsRead.error && looksLikePendingColumn(fundingAwardsRead.error.message)) {
     const legacyAwardsRead = await supabase
       .from("funding_awards")
-      .select(FUNDING_AWARD_SELECT_LEGACY)
+      .select(FUNDING_AWARD_SELECT_LEGACY, {count:"exact"})
       .eq("workspace_id", membership.workspace_id)
       .order("updated_at", { ascending: false });
     fundingAwardsData = legacyAwardsRead.data;
   }
 
+  if([opportunitiesRead,fundingAwardsRead,fundingInvoicesRead].some((r)=>!r.error && r.count!==r.data?.length))return <p>Complete grant funding details are unavailable. Totals remain unassessed.</p>;
   /**
    * WHAT COULD NOT BE READ ON THIS PAGE.
    *
@@ -552,8 +553,9 @@ export default async function GrantsPage({
       .filter((entry): entry is [string, BillingInvoiceRow] => Boolean(entry))
   );
   const invoiceById = new Map(fundingInvoices.map((invoice) => [invoice.id, invoice]));
-  const committedAwardAmount = fundingAwards.reduce((sum, award) => sum + Number(award.awarded_amount ?? 0), 0);
-  const trackedMatchAmount = fundingAwards.reduce((sum, award) => sum + Number(award.match_amount ?? 0), 0);
+  const hasManagedAwards = fundingAwards.some((a) => a.latest_handoff_revision_id);
+  const committedAwardAmount = hasManagedAwards ? Number.NaN : fundingAwards.reduce((sum, award) => sum + Number(award.awarded_amount ?? 0), 0);
+  const trackedMatchAmount = hasManagedAwards ? Number.NaN : fundingAwards.reduce((sum, award) => sum + Number(award.match_amount ?? 0), 0);
   const awardLinkedInvoices = fundingInvoices.filter((invoice) => Boolean(invoice.funding_award_id));
   const linkedInvoiceSummary = summarizeBillingInvoiceRecords(awardLinkedInvoices);
   const uninvoicedCommittedAmount = uninvoicedCommittedAwardAmount(committedAwardAmount, linkedInvoiceSummary);
@@ -719,9 +721,9 @@ export default async function GrantsPage({
   const pursueCount = opportunities.filter((opportunity) => opportunity.decision_state === "pursue").length;
   const monitorCount = opportunities.filter((opportunity) => opportunity.decision_state === "monitor").length;
   const closingSoonCount = opportunities.filter((opportunity) => isClosingSoon(opportunity.closes_at)).length;
-  const awardedCount = opportunities.filter((opportunity) => opportunity.opportunity_status === "awarded").length;
+  const awardedCount = opportunities.filter((opportunity) => (opportunity.has_source_backed_issuance || opportunity.opportunity_status === "awarded")).length;
   const awardedOpportunitiesMissingRecords = opportunities.filter(
-    (opportunity) => opportunity.opportunity_status === "awarded" && !fundingAwardOpportunityIds.has(opportunity.id)
+    (opportunity) => (opportunity.has_source_backed_issuance || opportunity.opportunity_status === "awarded") && !fundingAwardOpportunityIds.has(opportunity.id)
   );
   const leadAwardConversionOpportunity =
     awardedOpportunitiesMissingRecords.find((opportunity) => Boolean(opportunity.project?.id)) ?? null;

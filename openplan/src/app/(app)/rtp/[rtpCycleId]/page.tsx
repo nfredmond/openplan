@@ -1,3 +1,4 @@
+import { assertCompleteFundingRead } from "@/lib/grants/award-handoff";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
@@ -344,19 +345,19 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
     linkedProjectIds.length
       ? supabase
           .from("funding_awards")
-          .select("project_id, awarded_amount, match_amount, risk_flag, obligation_due_at")
+          .select("project_id, awarded_amount, match_amount, risk_flag, obligation_due_at, id, latest_handoff_revision_id, current_handoff_revision_id, currency_code, has_source_backed_issuance",{count:"exact"})
           .in("project_id", linkedProjectIds)
       : Promise.resolve({ data: [], error: null }),
     linkedProjectIds.length
       ? supabase
           .from("funding_opportunities")
-          .select("project_id, decision_state, opportunity_status, expected_award_amount")
+          .select("project_id, decision_state, opportunity_status, expected_award_amount, has_source_backed_issuance",{count:"exact"})
           .in("project_id", linkedProjectIds)
       : Promise.resolve({ data: [], error: null }),
     linkedProjectIds.length
       ? supabase
           .from("billing_invoice_records")
-          .select("project_id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, due_date")
+          .select("project_id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, due_date, award_handoff_revision_id, currency_code, handoff_applicable_revision_id",{count:"exact"})
           .in("project_id", linkedProjectIds)
       : Promise.resolve({ data: [], error: null }),
   ]);
@@ -370,10 +371,17 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
     classifyRead(reads, "pursued funding for the linked projects", fundingOpportunitiesResult),
     classifyRead(reads, "reimbursement invoices for the linked projects", billingInvoicesResult),
   ];
-  const fundingReadFailed = fundingStates.includes("failed");
+  const fundingSchemaPending = fundingStates.includes("pending_schema");
+  const fundingReadFailed = fundingStates.some((state) => state !== "ok");
   const fundingProfiles = fundingProfilesResult.error
     ? []
     : ((fundingProfilesResult.data ?? []) as ProjectFundingProfileRow[]);
+  // Failed reads keep their disclosure; successful reads still require complete source sets.
+  if (linkedProjectIds.length) {
+    assertCompleteFundingRead(
+      ...[fundingAwardsResult, fundingOpportunitiesResult, billingInvoicesResult].filter((result) => !result.error)
+    );
+  }
   const fundingAwards = fundingAwardsResult.error
     ? []
     : ((fundingAwardsResult.data ?? []) as FundingAwardRow[]);
@@ -658,6 +666,14 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
         />
       ) : null}
 
+      {fundingSchemaPending ? (
+        <StateBlock
+          tone="warning"
+          title="Funding records are not available yet"
+          description="Part of the linked-project funding record is pending a database update. Funding posture is unavailable. Empty lists and zero totals below are not findings about this cycle."
+        />
+      ) : null}
+
       <PageTabNav tabs={cycleTabs} activeKey={activeTab} basePath={`/rtp/${cycle.id}`} searchParams={resolvedSearchParams} ariaLabel="RTP cycle sections" />
 
       <PageTabPanel tabKey="overview" active={activeTab === "overview"} className="mt-6 space-y-4">
@@ -797,6 +813,7 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
               : null,
             priority: link.priority,
             funding: {
+              comparableFunding: link.fundingStack.comparableFunding,
               pipelineLabel: link.fundingStack.pipelineLabel,
               pipelineStatus: link.fundingStack.pipelineStatus,
               committedFundingAmount: link.fundingStack.committedFundingAmount,
@@ -805,6 +822,7 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
           }))}
           bands={financialElement.bands}
           readFailed={projectLinksState === "failed"}
+          fundingReadFailed={fundingReadFailed}
         />
 
         <article className="module-section-surface">
@@ -842,51 +860,61 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
                   <p className="mt-1 text-muted-foreground">{portfolioPriority.narrative}</p>
                 </div>
               ) : null}
-              <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-3">
-                <div className="module-metric-card">
-                  <p className="module-metric-label">Funded</p>
-                  <p className="module-metric-value text-sm">{fundedProjectCount}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Committed awards meet target need.</p>
-                </div>
-                <div className="module-metric-card">
-                  <p className="module-metric-label">Likely covered</p>
-                  <p className="module-metric-value text-sm">{likelyCoveredProjectCount}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Pursued opportunities appear able to close the remaining gap.</p>
-                </div>
-                <div className="module-metric-card">
-                  <p className="module-metric-label">Still unfunded</p>
-                  <p className="module-metric-value text-sm">{unfundedProjectCount}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">A real gap remains even after committed and likely funding.</p>
-                </div>
-                <div className="module-metric-card">
-                  <p className="module-metric-label">Paid reimbursements</p>
-                  <p className="module-metric-value text-sm">{formatMoney(paidReimbursementTotal, { precision: "whole" })}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Linked award invoices already marked paid.</p>
-                </div>
-                <div className="module-metric-card">
-                  <p className="module-metric-label">Outstanding requests</p>
-                  <p className="module-metric-value text-sm">{formatMoney(outstandingReimbursementTotal, { precision: "whole" })}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Submitted or approved requests still awaiting payment.</p>
-                </div>
-                <div className="module-metric-card">
-                  <p className="module-metric-label">Uninvoiced awards</p>
-                  <p className="module-metric-value text-sm">{formatMoney(uninvoicedAwardTotal, { precision: "whole" })}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">Committed award dollars not yet tied to linked invoice requests.</p>
-                </div>
-              </div>
+              {fundingReadFailed ? (
+                <StateBlock
+                  tone="warning"
+                  title="Project funding summary is unavailable"
+                  description="Funding counts and reimbursement totals are unavailable because part of the linked-project funding record could not be read."
+                />
+              ) : (
+                <>
+                  <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-3">
+                    <div className="module-metric-card">
+                      <p className="module-metric-label">Funded</p>
+                      <p className="module-metric-value text-sm">{fundedProjectCount}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">Committed awards meet target need.</p>
+                    </div>
+                    <div className="module-metric-card">
+                      <p className="module-metric-label">Likely covered</p>
+                      <p className="module-metric-value text-sm">{likelyCoveredProjectCount}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">Pursued opportunities appear able to close the remaining gap.</p>
+                    </div>
+                    <div className="module-metric-card">
+                      <p className="module-metric-label">Still unfunded</p>
+                      <p className="module-metric-value text-sm">{unfundedProjectCount}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">A real gap remains even after committed and likely funding.</p>
+                    </div>
+                    <div className="module-metric-card">
+                      <p className="module-metric-label">Paid reimbursements</p>
+                      <p className="module-metric-value text-sm">{formatMoney(paidReimbursementTotal, { precision: "whole" })}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">Linked award invoices already marked paid.</p>
+                    </div>
+                    <div className="module-metric-card">
+                      <p className="module-metric-label">Outstanding requests</p>
+                      <p className="module-metric-value text-sm">{formatMoney(outstandingReimbursementTotal, { precision: "whole" })}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">Submitted or approved requests still awaiting payment.</p>
+                    </div>
+                    <div className="module-metric-card">
+                      <p className="module-metric-label">Uninvoiced awards</p>
+                      <p className="module-metric-value text-sm">{formatMoney(uninvoicedAwardTotal, { precision: "whole" })}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">Committed award dollars not yet tied to linked invoice requests.</p>
+                    </div>
+                  </div>
 
-              {/*
-                THE RECONCILIATION DISCLOSURE. The three reimbursement cards
-                above restate the SAME `billing_invoice_records` the invoicing
-                register renders to the cent. Rounding them to the dollar is
-                the right call for a plan summary — but a planner reconciling a
-                draw against the plan and finding two different numbers for one
-                fact has no way to tell which is the rounding. So the surface
-                says that it rounds, once, beside the figures, and names where
-                the exact figure lives. Do not delete this line while those
-                cards round.
-              */}
-              <p className="text-xs text-muted-foreground">{ROUNDED_MONEY_NOTE_RECONCILES_TO_LEDGER}</p>
+                  {/*
+                    THE RECONCILIATION DISCLOSURE. The three reimbursement cards
+                    above restate the SAME `billing_invoice_records` the invoicing
+                    register renders to the cent. Rounding them to the dollar is
+                    the right call for a plan summary, but a planner reconciling a
+                    draw against the plan and finding two different numbers for one
+                    fact has no way to tell which is the rounding. So the surface
+                    says that it rounds, once, beside the figures, and names where
+                    the exact figure lives. Do not delete this line while those
+                    cards round.
+                  */}
+                  <p className="text-xs text-muted-foreground">{ROUNDED_MONEY_NOTE_RECONCILES_TO_LEDGER}</p>
+                </>
+              )}
 
               <p className="text-xs text-muted-foreground">
                 {/*

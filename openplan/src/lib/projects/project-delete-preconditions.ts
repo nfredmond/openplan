@@ -109,6 +109,17 @@ export const PROJECT_DELETE_RELATIONS: readonly ProjectDeleteRelation[] = [
     behavior: "cascade",
     href: "/grants",
   },
+  // The direct project FK has default NO ACTION. Revisions are immutable.
+  {
+    table: "funding_award_handoff_revisions",
+    column: "project_id",
+    label: "retained award handoff revisions",
+    severity: "blocking",
+    behavior: "restrict",
+    href: "/grants",
+    describeLoss: (count) =>
+      `${pluralize(count, "retained award handoff revisions")} ${count === 1 ? "prevents" : "prevent"} project deletion. This immutable history preserves reviewed award terms and receipts; retire the project to keep it attributable.`,
+  },
   // Migration 20261018000002 cascades this FK, but the receipt preserves
   // immutable snapshot and revision custody. Retire the project to retain it.
   {
@@ -342,6 +353,8 @@ export function assessProjectDelete(
       ? "Set the project's status to complete to retire it. Saved benefit-cost analyses stay intact and attributable."
       : blockers.some(blocker => blocker.table === "report_safety_snapshot_persistence")
       ? "Set the project's status to complete to retire it. Its attached records and immutable Safety generation custody stay intact and attributable."
+      : blockers.some(blocker => blocker.table === "funding_award_handoff_revisions")
+      ? "Set the project's status to complete to retire it. Its immutable award handoff history stays intact and attributable."
       : hasCommitments
       ? "Set the project's status to complete to retire it. Its funding and invoicing history stays intact and attributable."
       : "Set the project's status to complete to retire it — that is reversible — or remove the attached records from the modules listed above and delete the empty project afterwards.",

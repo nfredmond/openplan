@@ -56,7 +56,7 @@ vi.mock("@/lib/grants/pursuit", async () => {
 
 import { POST as postSectionDraft } from "@/app/api/funding-opportunities/[opportunityId]/sections/[sectionId]/draft/route";
 
-type QueryResult = { data: unknown; error: { message: string; code?: string } | null };
+type QueryResult = { data: unknown; error: { message: string; code?: string } | null; count?: number | null };
 type QueryChain = Record<string, ReturnType<typeof vi.fn>> & {
   then: (resolve: (value: unknown) => unknown, reject?: (reason: unknown) => unknown) => unknown;
 };
@@ -250,6 +250,64 @@ describe("/api/funding-opportunities/[opportunityId]/sections/[sectionId]/draft"
       routeContext()
     );
     expect(response.status).toBe(400);
+  });
+
+  it.each([
+    ["funding_awards", "the project's funding awards"],
+    ["funding_opportunities", "the project's other funding opportunities"],
+    ["billing_invoice_records", "the project's grant invoices"],
+    [null, null],
+  ])("preserves the funding evidence read outcome before section generation: %s", async (failedTable, subject) => {
+    const projectId = "44444444-4444-4444-8444-444444444444";
+    loadFundingOpportunityAccessMock.mockResolvedValue({
+      opportunity: { ...baseOpportunity, project_id: projectId },
+      membership: { workspace_id: WORKSPACE_ID, role: "member" },
+      error: null,
+      allowed: true,
+    });
+    const draftInsertChain = makeQuery({ data: storedDraft, error: null });
+    const statusBumpChain = makeQuery({ data: null, error: null });
+    const evidenceTables = [
+      "funding_awards", "funding_opportunities", "billing_invoice_records", "reports",
+      "project_bca_screenings", "engagement_campaigns", "project_rtp_cycle_links",
+    ];
+    installTables({
+      funding_opportunity_application_sections: tableSequence(
+        makeQuery({ data: baseSectionRow, error: null }), statusBumpChain
+      ),
+      funding_opportunity_section_drafts: () => draftInsertChain,
+      projects: () => makeQuery({ data: { id: projectId, name: "Main St Bridge" }, error: null }),
+      project_funding_profiles: () => makeQuery({ data: null, error: null }),
+      workspaces: () => makeQuery({ data: { time_zone: "UTC", home_country_code: null }, error: null }),
+      ...Object.fromEntries(evidenceTables.map((table) => [table, () => makeQuery(
+        table === failedTable
+          ? { data: null, error: { message: `could not read ${table}` } }
+          : { data: [], error: null, count: 0 }
+      )])),
+    });
+
+    const response = await postSectionDraft(jsonRequest(), routeContext());
+    const body = await response.json();
+    if (failedTable === null) {
+      expect(response.status).toBe(201);
+      expect(generateTextMock).toHaveBeenCalledOnce();
+      expect(recordAiUsageEventMock).toHaveBeenCalledOnce();
+      expect(draftInsertChain.insert).toHaveBeenCalledOnce();
+      expect(statusBumpChain.update).toHaveBeenCalledOnce();
+      return;
+    }
+    expect(response.status).toBe(500);
+    expect(body.failedReads).toEqual([subject]);
+    expect(body.error).toContain("Evidence availability is unknown");
+    expect(mockAudit.error).toHaveBeenCalledWith("section_draft_evidence_read_failed", expect.objectContaining({
+      opportunityId: OPPORTUNITY_ID,
+      sectionId: SECTION_ID,
+      failedReads: [{ subject, message: `could not read ${failedTable}` }],
+    }));
+    expect(generateTextMock).not.toHaveBeenCalled();
+    expect(recordAiUsageEventMock).not.toHaveBeenCalled();
+    expect(draftInsertChain.insert).not.toHaveBeenCalled();
+    expect(statusBumpChain.update).not.toHaveBeenCalled();
   });
 
   it("drafts a section with scoped facts, guidance, and emphasis, then meters and stores", async () => {

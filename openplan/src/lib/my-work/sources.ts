@@ -300,7 +300,7 @@ const milestonesSource: MyWorkSource = {
   label: "Milestones",
   readLabel: "project milestones",
   block: "deadlines",
-  table: "project_milestones",
+  table: "active_project_milestones",
   select:
     "id, project_id, title, status, target_date, owner_label, assignee_user_id, milestone_type, phase_code, funding_award_id, projects!inner(id, name, workspace_id)",
   workspaceFilterColumn: "projects.workspace_id",
@@ -350,7 +350,7 @@ const submittalsSource: MyWorkSource = {
   label: "Submittals",
   readLabel: "project submittals",
   block: "deadlines",
-  table: "project_submittals",
+  table: "active_project_submittals",
   select:
     "id, project_id, title, status, due_date, agency_label, submittal_type, assignee_user_id, projects!inner(id, name, workspace_id)",
   workspaceFilterColumn: "projects.workspace_id",
@@ -1031,7 +1031,7 @@ const awardObligationsSource: MyWorkSource = {
   label: "Award obligations",
   readLabel: "funding awards",
   block: "workspace_deadlines",
-  table: "funding_awards",
+  table: "legacy_calendar_funding_awards",
   select:
     "id, project_id, title, obligation_due_at, spending_status, closure_basis, risk_flag, projects!inner(id, name)",
   workspaceFilterColumn: "workspace_id",

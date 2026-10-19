@@ -253,6 +253,15 @@ function renderFixture(
   });
 }
 
+it("distinguishes unassessed award cost applicability from a failed cost read", () => {
+  const html = renderFixture({ costs: { ok: false, pending: false, unassessed: true, message: "Not bound" } });
+  expect(html).toContain("costs are not linked to this award&#39;s terms version and currency");
+  expect(html).toContain("applicability to this claim is unassessed");
+  expect(html).toContain("No cost detail or total is included");
+  expect(html).not.toContain("cost ledger could not be read");
+  expect(html).not.toContain("No cost entries recorded for this period.");
+});
+
 // ---------------------------------------------------------------------------
 
 describe("summarizeWorksheetCostEntries — the one sum in this module", () => {
@@ -391,13 +400,13 @@ describe("the worksheet prints the ledger's figures and computes none of its own
    */
   it("renders every award-position figure at its hand-derived value, on its own row", () => {
     const rows: ReadonlyArray<[string, string]> = [
-      ["Authorized amount", "$100,000.00"],
+      ["Recorded award ceiling", "$100,000.00"],
       ["Claimed to date (gross)", "$65,000.00"],
       ["Paid to date (net of retention)", "$38,000.00"],
       ["Claimed and not yet paid (net)", "$25,000.00"],
       ["Retention withheld on paid invoices", "$2,000.00"],
       ["Retention proposed on unpaid claims", "$0.00"],
-      ["Remaining against the authorization", "$35,000.00"],
+      ["Remaining against recorded award ceiling", "$35,000.00"],
       ["Drafted, not yet claimed (net)", "$5,000.00"],
       ["Rejected by the funder (gross)", "$9,000.00"],
       ["Local match recorded on the award", "$12,500.00"],
@@ -507,32 +516,32 @@ function positionRow(html: string, label: string): string {
 }
 
 describe("nothing unrecorded is rendered as a zero", () => {
-  it("renders an unrecorded authorization as 'Not recorded' and shows no remaining balance", () => {
+  it("renders an unrecorded legacy ceiling as 'Not recorded' and shows no remaining balance", () => {
     // The column is NOT NULL DEFAULT 0, so a zero cannot be told apart from an
     // amount nobody entered — and "$0.00 authorized" would state a fact the
     // database does not hold. Asserted row by row: a whole-block scan for
     // "$0.00" would be satisfied by the retention row's genuine, computed zero.
     const html = renderFixture({ ledger: fixtureLedger({ awardedAmount: "0" }) });
 
-    expect(positionRow(html, "Authorized amount")).toContain("Not recorded");
-    expect(positionRow(html, "Authorized amount")).not.toContain("$");
-    expect(positionRow(html, "Remaining against the authorization")).toContain("Not recorded");
-    expect(positionRow(html, "Remaining against the authorization")).not.toContain("$");
-    expect(html).toContain("No authorized amount is recorded on this award");
+    expect(positionRow(html, "Recorded award ceiling")).toContain("Not recorded");
+    expect(positionRow(html, "Recorded award ceiling")).not.toContain("$");
+    expect(positionRow(html, "Remaining against recorded award ceiling")).toContain("Not recorded");
+    expect(positionRow(html, "Remaining against recorded award ceiling")).not.toContain("$");
+    expect(html).toContain("No award ceiling is recorded on this award");
 
     // …and the same guard proves the rows DO carry figures when they exist.
     const recorded = renderFixture();
-    expect(positionRow(recorded, "Authorized amount")).toContain("$100,000.00");
-    expect(positionRow(recorded, "Remaining against the authorization")).toContain("$35,000.00");
+    expect(positionRow(recorded, "Recorded award ceiling")).toContain("$100,000.00");
+    expect(positionRow(recorded, "Remaining against recorded award ceiling")).toContain("$35,000.00");
   });
 
   it("shows a negative remainder as an over-claim rather than clamping it to zero", () => {
     const overClaimed = fixtureLedger({ awardedAmount: "10000.00" });
     // 10,000 authorized against 65,000 claimed gross.
-    expect(overClaimed.remainingAuthorized).toBe(-55000);
+    expect(overClaimed.remainingAgainstCeiling).toBe(-55000);
     const html = renderFixture({ ledger: overClaimed });
     expect(html).toContain("-$55,000.00");
-    expect(html).toContain("Claims against this award exceed its authorized amount");
+    expect(html).toContain("Claims against this award exceed its recorded award ceiling");
   });
 
   it("discloses paid invoices whose payment date nobody recorded", () => {

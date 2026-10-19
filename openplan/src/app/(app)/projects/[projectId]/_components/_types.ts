@@ -156,7 +156,7 @@ export type SubmittalRow = {
   created_at: string;
 };
 
-export type BillingInvoiceRow = {
+export type BillingInvoiceRow = import("@/lib/grants/award-handoff").ManagedInvoice & {
   id: string;
   funding_award_id: string | null;
   invoice_number: string;
@@ -196,6 +196,7 @@ export type BillingInvoiceRow = {
 };
 
 export type FundingOpportunityRow = {
+  has_source_backed_issuance?: boolean;
   id: string;
   program_id: string | null;
   project_id: string | null;
@@ -237,7 +238,7 @@ export type ProjectFundingProfileRow = {
   updated_at: string;
 };
 
-export type FundingAwardRow = {
+export type FundingAwardRow = import("@/lib/grants/award-handoff").ComparableAward & {
   id: string;
   project_id: string;
   program_id: string | null;

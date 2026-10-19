@@ -1,3 +1,4 @@
+import { exactCountResult } from "./helpers/exact-count-result";
 import { attemptInstrumentFixture } from "./fixtures/attempt-instruments";
 import { ATTEMPT_INSTRUMENT_PROJECTION } from "@/lib/models/attempt-instrument-read";
 import { readFileSync } from "node:fs";
@@ -59,7 +60,7 @@ const selectCalls: Record<string, string[]> = {};
 let tableData: Record<string, unknown>;
 let tableErrors: Record<string, { message: string; code?: string }>;
 
-type FakeResult = { data: unknown; error: { message: string; code?: string } | null };
+type FakeResult = { data: unknown; count?: number | null; error: { message: string; code?: string } | null };
 
 function fakeQuery(tableName: string) {
   let rangeStart = 0;
@@ -70,7 +71,7 @@ function fakeQuery(tableName: string) {
     // let a surface look correct while ignoring the error entirely.
     if (error) return { data: null, error };
     const seeded = tableData[tableName];
-    return { data: Array.isArray(seeded) ? seeded.slice(rangeStart, rangeEnd) : seeded === undefined ? [] : seeded, error: null };
+    return { ...exactCountResult({ data: seeded === undefined ? [] : seeded, error: null }), data: Array.isArray(seeded) ? seeded.slice(rangeStart, rangeEnd) : seeded === undefined ? [] : seeded };
   };
   const q: Record<string, unknown> = {};
   q.range = (from: number, to: number) => { rangeStart = from; rangeEnd = to + 1; return q; };
