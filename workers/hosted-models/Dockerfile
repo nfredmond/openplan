@@ -14,6 +14,7 @@ RUN /opt/aequilibrae/bin/python /tmp/verify_graph_compatibility.py
 RUN python -m venv /opt/activitysim && /opt/activitysim/bin/pip install --no-cache-dir -r /tmp/activitysim-exec.txt -r /tmp/activitysim-worker.txt
 RUN /opt/activitysim/bin/activitysim --help >/dev/null
 COPY workers/aequilibrae_worker ./workers/aequilibrae_worker
+RUN cd /app/workers/aequilibrae_worker && /opt/aequilibrae/bin/python -c "from model_assignment_graph_adapter import supported_engine; supported_engine()"
 COPY workers/activitysim_worker ./workers/activitysim_worker
 COPY scripts/modeling ./scripts/modeling
 COPY data/modeling ./data/modeling

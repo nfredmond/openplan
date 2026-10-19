@@ -635,7 +635,7 @@ export function FundingOpportunityApplicationWorkspace({
 
               {showAtpPacket ? <AtpScoringPacketPanel opportunityId={opportunityId} /> : null}
               {pursuitKind === "grant" && identifySeededCatalogKey(sections) === "ss4a" ? (
-                <SafetyPlanSeedPanel opportunityId={opportunityId} artifacts={artifactOptions} onApplied={loadApplication} />
+                <SafetyPlanSeedPanel opportunityId={opportunityId} onApplied={loadApplication} />
               ) : null}
 
               <div className="space-y-2" data-testid="application-sections">

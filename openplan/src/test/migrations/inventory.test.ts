@@ -494,12 +494,16 @@ const EXPECTED = {
   // catalog openplan-map-packages-stack: 761 policies, 510 permissive, 251
   // restrictive, 229 tables with policies.
   // 20261018000001 adds one member-readable, trigger-only deadline journal.
-  policies: 762,
-  permissive: 511,
+  // 20261018000002 declares two Safety custody tables, each with one static
+  // permissive member SELECT policy and no client write policy. Source delta
+  // is +2 policies, permissive policies and policy-bearing tables. This is a
+  // source inventory expectation, not a fresh installed-catalog observation.
+  policies: 764,
+  permissive: 513,
   restrictive: 251,
   permissiveWrites: 278,
   expanded: 286,
-  tablesWithPolicies: 230,
+  tablesWithPolicies: 232,
   // 20261014000013 adds three generation custody tables with RLS and no client policies.
   // Installed isolated catalog confirms all three; no application view or policy is added.
   // Migration 20 adds the private public-translation mapping table, RLS and no policies.
@@ -562,10 +566,13 @@ const EXPECTED = {
   // PostGIS's spatial_ref_sys) and 14 application views (16 with PostGIS's two).
   // 20261017000015 adds one deployment-global service-only process table.
   // Candidate native SQL applies RLS without adding a client policy or view.
-  relations: 325,
-  tables: 311,
+  // Deadline journal contributes one RLS table; Safety migration 000002 adds
+  // funding_opportunity_safety_seeds and report_safety_snapshot_persistence.
+  // Each is an ordinary RLS table; no view is added.
+  relations: 327,
+  tables: 313,
   views: 14,
-  rlsEnabledTables: 311,
+  rlsEnabledTables: 313,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

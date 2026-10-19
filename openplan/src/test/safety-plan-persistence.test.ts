@@ -35,7 +35,7 @@ function generationComposition() {
 describe("generated Safety artifact to SS4A preview composition", () => {
   it("keeps P0 immutable, accounts for all three own effects, and previews the bound P3 source", async () => {
     const f = generationComposition(); const frozen = structuredClone(f.snapshot);
-    expect(await persistSafetyPlanGeneration(f.input)).toEqual({ error: null, status: 200 });
+    expect(await persistSafetyPlanGeneration(f.input)).toEqual({ error: null, status: 200, storageDisposition: "retain" });
     expect(f.rpc).toHaveBeenCalledWith("persist_safety_plan_generation", { p_actor: seedId(99), p_artifact: f.input.artifact, p_report_update: f.input.reportUpdate });
     expect(f.effects).toEqual(["artifact insert: P1", "report writeback: P2", "artifact receipt: P3"]);
     expect(f.snapshot).toEqual(frozen);
@@ -71,6 +71,27 @@ describe("generated Safety artifact to SS4A preview composition", () => {
     expect((await persistSafetyPlanGeneration(f.input)).status).toBe(500);
     f.input.client.rpc.mockResolvedValueOnce({ data: null, error: null });
     expect((await persistSafetyPlanGeneration(f.input)).status).toBe(500);
+  });
+  it.each(["40001", "42501", "23514"])("permits file cleanup only after confirmed RPC rollback %s", async (code) => {
+    const f = generationComposition();
+    f.rpc.mockResolvedValueOnce({ data: null, error: { code, message: "Confirmed PostgreSQL refusal" } });
+    const result = await persistSafetyPlanGeneration(f.input);
+    expect(result.error?.code).toBe(code);
+    expect(result.storageDisposition).toBe("remove_unpersisted");
+  });
+  it.each(["", "PGRST000", "08006", "unknown"])("retains a possibly committed file after ambiguous RPC error %s", async (code) => {
+    const f = generationComposition();
+    f.rpc.mockResolvedValueOnce({ data: null, error: { code, message: "Response lost" } });
+    const result = await persistSafetyPlanGeneration(f.input);
+    expect(result.status).toBe(500);
+    expect(result.storageDisposition).toBe("retain");
+  });
+  it("retains files after malformed success receipts or thrown transport failures", async () => {
+    const f = generationComposition();
+    f.rpc.mockResolvedValueOnce({ data: null, error: null });
+    expect(await persistSafetyPlanGeneration(f.input)).toMatchObject({ status: 500, storageDisposition: "retain" });
+    f.rpc.mockRejectedValueOnce(new Error("Transport lost"));
+    await expect(persistSafetyPlanGeneration(f.input)).rejects.toThrow("Transport lost");
   });
   it("compares equivalent offsets and full PostgreSQL revision precision without a grace period", () => {
     expect(sameSafetyRevision("2026-10-18T12:00:03.000003Z", "2026-10-18T05:00:03.000003-07:00")).toBe(true);

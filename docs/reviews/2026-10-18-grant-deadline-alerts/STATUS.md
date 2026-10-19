@@ -73,3 +73,86 @@ returns actual 0 before compiler-lock release. Backend, migration and prior
 independent-review pins stay unchanged. Private logs remain in
 `grant-deadline-editor-focused-20261018-01/`. Browser date widgets, normal
 navigation and the resulting My Work notices remain to be checked.
+
+## Root integrated database and browser checks
+
+Migration 000001 passes four isolated transaction/access cases, a harmless run,
+four intended database faults and the restored cases. Populated upgrade run
+39169753517 passes on d2562c9c5. Hosted migration remains pending.
+
+Identified local build f27566af458c exercises Dashboard to Grants, amendment,
+cancel, phone-width clear and My Work. PATCH requests contain only deliberately
+changed fields. The unchanged date retains its value; the cleared date stays
+empty after the notice opens its exact opportunity. Desktop and 390px captures
+show the editor and recorded old/new/actor notice without horizontal overflow.
+A harmless annotation survives, a forced-width layout fault fails and restores.
+There are no page errors, console errors or failed HTTP responses in the accepted
+cohort. Background request cancellations remain recorded, so strict whole-run
+clean status is false. An earlier 3 GiB preview restarts before completion. Two
+notice drivers click before page JavaScript loads and time out; a separate fully
+loaded-page run completes the exact link and retained-clear check. Those failed
+attempts remain failed. This is agent-run local workflow evidence, not hosted,
+full Stage A, simultaneous-session or official-notice verification. Private
+receipts stay in v1-grant-combined-browser-20261018/preview03/browser04/.
+
+## Rollout compatibility correction, source only
+
+Independent r2 review rejects the targeted bridge: same-award obligation and
+expenditure reminders can abort unrelated inserts. The failed candidate and full
+objection remain private and immutable. The r3 source successor retains both
+indexes but uses a service-only invoker batch RPC with targetless insertion.
+Every request must classify as inserted, duplicate or explicitly deferred by
+the old key. Only inserted rows enter digests. Application reminders remain
+pending. Full kind coexistence requires separately admitted activation; proposed
+000004 stays outside migration inventory and the bridge remains the later
+rollback floor. All changed tests and SQL are UNRUN. Historical native targets,
+receipts and failures remain untouched. Private successor:
+`~/.local/state/openplan/v1-deadline-rollout-compatibility-20261018/r3/HANDOFF.md`.
+
+Root ordinary checks, October 18: the staged batch successor passes all 100
+affected tests and lint. A harmless edit survives. Nine targeted broken
+behaviors fail their intended assertions, then all 100 tests pass again with
+exact byte and mode restoration. These checks cover response validation,
+inserted-only mail, deferred reporting and SQL source composition. They do not
+prove PostgreSQL execution, locks, roles, concurrency or activation. New live
+cases are included in the existing RLS CI suite. Independent r3 review remains
+pending, so the PR stays draft and hosted migration remains held. Raw results
+remain private under v1-deadline-rollout-compatibility-20261018/root-checks-02.
+
+
+October 18, r4 source successor: the reminder RPC now returns one exact scalar JSONB envelope with complete nested outcomes. The r3 table-return cap finding remains accepted and its receipts remain historical. R4 ordinary checks, independent review and actual API/native rollout remain pending. Initial staged application reminders remain pending until a separate reviewed activation after old writers retire.
+
+October 18, r4 checks: one finite ordinary unit exited 0 after 54.667 seconds. Harmless and restored batches each pass 118 tests. Seven targeted failures cover protocol, envelope shape, request coverage, classification counts, nested projection, table-return regression and scalar SQL declaration; source bytes/modes restore exactly and scoped lint passes. Independent r4 source review finds no concrete P1/P2. The API cap cases are models, not installed HTTP evidence. Native/API/upgrade, hosted migration and later activation remain pending. All rejected r2/r3 evidence stays historical.
+
+
+October 18, CI allowlist correction attempt: both exact-head CI suites fail the
+stale `work.ts` direct-write exception. Removing that entry makes the deadweight
+assertion pass, but the one ordinary check window fails another assertion:
+`enqueueEmail(client...)` in `work.ts` now enters the external helper-call census
+and resolves as unknown rather than service-role. The harmless cohort passes
+123 tests and fails one. The owned unit and outer window exit 1. Temporary edits
+restore exact bytes and modes; the proposed entry removal remains uncommitted.
+The stale-entry fault, restored cohort and lint do not run. No retry or commit
+occurs. Existing scanner limits remain: RPC internals, dynamic targets and
+forwarded client provenance require separate evidence. Raw logs remain private
+under `v1-deadline-ci-envelope-correction-20261018/implementation/`. Prior CI and
+native evidence stay unchanged; this attempt adds no hosted or SQL acceptance.
+
+
+October 18, r6 forwarding-guard correction remains uncommitted. A separate
+forwarding entry checks sweep entry callers and the exact parameter passed to
+`enqueueEmail`; the stale direct-write exception stays removed. The harmless
+guard control passes six tests. Reintroducing the stale entry fails the intended
+deadweight assertion. A non-service cron client fails the intended provenance
+assertion, with `caller-rls` in the raw diff. The control reader then fails because
+Vitest abbreviates that diff in JSON. The unit and outer window exit 1 after
+55.67 seconds; peak memory is 440,041,472 bytes, swap zero. The shared lock stays
+held through restoration and terminal recording. All 15 pinned files, including
+the corrected guard, restore exact bytes and modes. The wrong forwarding-client
+control, restored notification/deadline cohort and lint do not run. No retry or
+commit occurs. Raw logs remain private in `v1-deadline-ci-forwarding-r6-20261018/`.
+This is incomplete source-guard evidence. Direct callee names and textual client
+resolution cannot prove aliased/dynamic calls, RPC internals or runtime client
+identity. The predecessor r5 failure and earlier acceptance limits remain.
+
+Root completion check: the separate ordinary window returns actual exit 0 in 135 seconds. The harmless guard has six passing checks; the restored guard and deadline/notification cohort passes all 124 tests, with zero skips. Reintroducing the stale exception, passing a non-service cron client and replacing the forwarded client each fail the intended assertion. The reader uses the full retained failure log when JSON abbreviates a diff. Scoped lint passes and all 15 pinned files restore exact bytes and modes. Earlier failed windows remain failed. This validates source scanning and mocked behavior, not runtime client keys, dynamic aliases, RPC internals or hosted migration. Raw logs remain private under v1-deadline-ci-forwarding-root-20261018.

@@ -20,23 +20,46 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Award-condition handoff:** the existing Grants workspace retains source-backed
+award terms, staff review and project handoff revisions. Managed invoices keep
+their original currency, exact amounts and reviewed term revision. Incomplete
+reads leave coverage unassessed. These records do not establish legal compliance
+or replace a responsible person's review. Apply
+`20261018000003_award_condition_handoff.sql` before deploying this capability.
+Native transaction and concurrency checks and the visible workflow remain pending.
+
+**Linked estimate sources:** the project estimate editor opens its exact saved
+supporting document, including one older than the recent-document list. Read
+failures, unavailable originals and missing price years stay visible. The link
+uses the existing authorized document download route. No migration is required.
+
 **Recorded grant deadline changes:** My Work retains notices when an opportunity's
 application or decision deadline is added, changed or cleared in OpenPlan. Each
 notice preserves the old and new dates and identifies an unknown actor when
-needed. Decision and application reminders can coexist. These notices describe
-OpenPlan edits, not verified changes to a funder's official notice. The existing
+needed. These notices describe OpenPlan edits, not verified changes to a funder's
+official notice. The initial rollout keeps the deployed reminder key and leaves
+application reminders explicitly pending. Complete decision/application reminder
+coexistence needs a separate activation after older writers retire. The existing
 opportunity card now edits or clears its recorded dates, shows the browser time
 zone, and sends only changed fields so untouched timestamp precision remains.
 Failed saves keep the draft visible. Apply
 `20261018000001_grant_deadline_changes.sql` before deploying this capability.
 
-**Safety plan seeds, source candidate:** the existing SS4A application workspace
-can preview six code-built working drafts from an exact same-project Safety
-artifact. Source snapshots, draft origin and export caveats stay attached;
-final text, prior drafts and checklist states remain. Migration
-`20261018000002_ss4a_safety_seed` must precede dependent code. Native transaction,
-RLS and browser verification remain pending. The local check campaign retains
-an outer wrapper failure; see the [source status](docs/reviews/2026-10-18-ss4a-safety-seed/STATUS.md).
+**Safety plan seeds:** the existing SS4A application workspace previews six
+source-bound working drafts from an exact same-project Safety artifact. Source
+snapshots, draft origin and export caveats stay attached; final text, prior
+drafts and checklist states remain. Review each section and its missing inputs
+before finalizing. Apply `20261018000002_ss4a_safety_seed.sql` before deploying
+this capability. The [source status](docs/reviews/2026-10-18-ss4a-safety-seed/STATUS.md)
+records the separate native, browser and artifact checks and retained failures.
+
+**Compact assignment graph preparation:** a worker-owned adapter checks complete
+car-eligible link incidence before excluding a proved nontraversable sink chain.
+It retains the native compressor's IDs and checks signed path correspondence
+before skimming. Unsupported or ambiguous graphs still refuse. Assignment image
+builds now require the reviewed CPython 3.11 Linux x86_64 engine bytes; other
+wheels are not accepted by version alone. This correction does not validate
+earlier exclusions or establish model accuracy. No migration is required.
 
 **Grant catalog search:** find programs by name, administering agency, project
 type or displayed catalog details. Results show a count, a clear control and an

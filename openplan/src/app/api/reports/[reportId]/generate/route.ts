@@ -2840,7 +2840,17 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const { error: reportUpdateError } = reportUpdateResult;
     if (reportUpdateError) {
       audit.error("report_update_failed", { reportId: report.id, message: reportUpdateError.message, code: reportUpdateError.code ?? null });
-      return NextResponse.json({ error: reportUpdateResult.status === 409 ? reportUpdateError.message : "Failed to update report generation status" }, { status: reportUpdateResult.status });
+      let cleanupPending = false;
+      if (safetyPlanSnapshotV1 && "storageDisposition" in reportUpdateResult && reportUpdateResult.storageDisposition === "remove_unpersisted" && artifactStoragePath) {
+        try {
+          const removed = await serviceSupabase.storage.from(REPORT_ARTIFACT_BUCKET).remove([artifactStoragePath]);
+          if (removed.error) throw new Error(removed.error.message);
+        } catch {
+          cleanupPending = true;
+          audit.error("refused_safety_artifact_cleanup_failed", { reportId: report.id, artifactId: artifact.id });
+        }
+      }
+      return NextResponse.json({ error: reportUpdateResult.status === 409 ? reportUpdateError.message : "Failed to update report generation status", ...(cleanupPending ? { cleanupPending: true } : {}) }, { status: reportUpdateResult.status });
     }
 
     audit.info("report_generated", {

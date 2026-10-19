@@ -11,12 +11,14 @@ vi.mock("@/lib/supabase/server", () => ({ createClient: mocks.create, createServ
 vi.mock("@/lib/programs/api", () => ({ loadFundingOpportunityAccess: mocks.access }));
 vi.mock("@/lib/observability/audit", () => ({ createApiAuditLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() }) }));
 vi.mock("@/lib/assistant/action-approval-server", () => ({ readAssistantExecutionSource: (request: NextRequest) => request.headers.get("x-openplan-assistant-execution-source") === "planner_agent_quick_link" ? "planner_agent_quick_link" : "manual" }));
-import { POST } from "@/app/api/funding-opportunities/[opportunityId]/application/safety-seed/route";
+import * as safetySeedRoute from "@/app/api/funding-opportunities/[opportunityId]/application/safety-seed/route";
+
+const { GET, POST } = safetySeedRoute;
 
 type Result = { count?: number | null; data: unknown; error: { message: string; code?: string } | null };
 function chain(result: Result) {
-  const q = { select: vi.fn(), eq: vi.fn(), order: vi.fn(), limit: vi.fn(), maybeSingle: vi.fn(), then: (resolve: (value: Result) => unknown) => Promise.resolve(result).then(resolve) };
-  for (const method of ["select", "eq", "order", "limit"] as const) q[method].mockReturnValue(q);
+  const q = { select: vi.fn(), eq: vi.fn(), not: vi.fn(), lt: vi.fn(), order: vi.fn(), limit: vi.fn(), maybeSingle: vi.fn(), then: (resolve: (value: Result) => unknown) => Promise.resolve(result).then(resolve) };
+  for (const method of ["select", "eq", "not", "lt", "order", "limit"] as const) q[method].mockReturnValue(q);
   q.maybeSingle.mockResolvedValue(result);
   return q;
 }
@@ -36,6 +38,49 @@ function install() {
   mocks.rpc.mockResolvedValue({ data: { id: seedId(70), draft_ids: [10,11,12,13,14,15].map(seedId) }, error: null });
 }
 beforeEach(() => { vi.clearAllMocks(); rows = safetySeedFixture(); install(); });
+
+describe("linked-project Safety artifact pages", () => {
+  it("exports only supported route handlers", () => {
+    expect(Object.keys(safetySeedRoute).sort()).toEqual(["GET", "POST"]);
+  });
+  const get = (suffix = "") => GET(new NextRequest(`http://localhost/api/source${suffix}`), context());
+  it("filters before the page bound and reaches older project artifacts with a stable cursor", async () => {
+    const artifacts = Array.from({ length: 51 }, (_, index) => ({ id: seedId(200 - index), artifact_kind: "html", generated_at: rows.artifact.generated_at,
+      reports: { id: rows.report.id, title: "Older linked project report" } }));
+    tables.report_artifacts = chain({ data: artifacts, error: null });
+    const result = await get(); expect(result.status).toBe(200);
+    const page = await result.json(); expect(page.artifacts).toHaveLength(50); expect(page.nextCursor).toBe(artifacts[49].id);
+    const q = tables.report_artifacts;
+    expect(q.select).toHaveBeenCalledWith("id, artifact_kind, generated_at, reports!inner(id, title)");
+    expect(q.eq).toHaveBeenCalledWith("reports.workspace_id", rows.opportunity.workspace_id);
+    expect(q.eq).toHaveBeenCalledWith("reports.project_id", rows.project.id);
+    expect(q.not).toHaveBeenCalledWith("metadata_json->>safetyPlanSnapshotV1", "is", null);
+    expect(q.order).toHaveBeenCalledWith("id", { ascending: false }); expect(q.limit).toHaveBeenCalledWith(51);
+    expect(from).not.toHaveBeenCalledWith("reports");
+    expect(page.artifacts[0]).toEqual({ id: artifacts[0].id, reportTitle: "Older linked project report", artifactKind: "html", generatedAt: rows.artifact.generated_at });
+    tables.report_artifacts = chain({ data: artifacts.slice(50), error: null });
+    const last = await (await get(`?before=${page.nextCursor}`)).json();
+    expect(tables.report_artifacts.lt).toHaveBeenCalledWith("id", page.nextCursor);
+    expect(last.artifacts.map((row: { id: string }) => row.id)).toEqual([artifacts[50].id]); expect(last.nextCursor).toBeNull();
+    expect(mocks.rpc).not.toHaveBeenCalled(); expect(mocks.service).not.toHaveBeenCalled();
+    expect(mocks.access).toHaveBeenCalledWith(expect.anything(), rows.opportunity.id, seedId(99), "programs.read");
+  });
+  it("distinguishes missing linkage, denied access, failed reads and malformed pages", async () => {
+    mocks.access.mockResolvedValueOnce({ opportunity: { ...rows.opportunity, project_id: null }, membership: {}, allowed: true });
+    expect(await (await get()).json()).toEqual({ artifacts: [], nextCursor: null, requiresProject: true });
+    expect(from).not.toHaveBeenCalled();
+    mocks.access.mockResolvedValueOnce({ opportunity: rows.opportunity, membership: {}, allowed: false });
+    expect((await get()).status).toBe(403); expect(from).not.toHaveBeenCalled();
+    tables.report_artifacts = chain({ data: null, error: { message: "Unavailable" } });
+    expect((await get()).status).toBe(500);
+    tables.report_artifacts = chain({ data: [{ id: "invalid" }], error: null });
+    expect((await get()).status).toBe(500);
+  });
+  it("refuses an invalid cursor before reading sources", async () => {
+    expect((await get("?before=invalid,filter")).status).toBe(400);
+    expect(mocks.create).not.toHaveBeenCalled();
+  });
+});
 
 describe("Safety seed preview and atomic apply dispatch", () => {
   it("previews the exact artifact with explicit projections and tenant/project filters and no writer", async () => {
