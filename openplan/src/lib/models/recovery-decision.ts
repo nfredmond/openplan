@@ -15,6 +15,11 @@ export const recoveryExpectedStateSchema = z.object({
 export const recoveryInspectionSchema = z.object({
   expected_state: recoveryExpectedStateSchema,
   process_termination_verified: z.literal(false), continuation_authorized: z.literal(false), model_resumed: z.literal(false),
+  replacement: z.discriminatedUnion('state', [
+    z.object({ state: z.literal('available'), checkpointId: recoveryIdentitySchema,
+      checkpointSha256: z.string().regex(/^[a-f0-9]{64}$/), engineKey: z.enum(['aequilibrae', 'behavioral_demand']) }).strict(),
+    z.object({ state: z.literal('unavailable'), reason: z.string().min(1) }).strict(),
+  ]).optional(),
 }).strict();
 
 export const recoveryDecisionSchema = z.object({
@@ -34,7 +39,41 @@ export const historicalRunDecisionSchema = z.object({
 }).strict();
 
 export type HistoricalRunDecision = z.infer<typeof historicalRunDecisionSchema>;
-export const recoveryRequestSchema = z.discriminatedUnion("decision", [recoveryDecisionSchema, historicalRunDecisionSchema]);
+export const populationReplacementDecisionSchema = z.object({
+  requestId: recoveryIdentitySchema, decision: z.literal('create_population_replacement'),
+  expectedState: recoveryExpectedStateSchema.refine((state) => state.status === 'failed' || state.status === 'cancelled'),
+  checkpointId: recoveryIdentitySchema, checkpointSha256: z.string().regex(/^[a-f0-9]{64}$/),
+  reason: z.string().min(1).max(2000).refine((value) => value.trim().length > 0),
+  acknowledgedNewRun: z.literal(true),
+}).strict();
+export type PopulationReplacementDecision = z.infer<typeof populationReplacementDecisionSchema>;
+export const savedRecoveryDecisionSchema = z.discriminatedUnion('decision', [recoveryDecisionSchema, populationReplacementDecisionSchema]);
+export const recoveryRequestSchema = z.discriminatedUnion("decision", [recoveryDecisionSchema, historicalRunDecisionSchema, populationReplacementDecisionSchema]);
+
+export function replacementRpcArguments(decision: PopulationReplacementDecision, workspaceId: string, runId: string, actorId: string) {
+  return { p_request_id: decision.requestId, p_workspace_id: workspaceId, p_run_id: runId, p_actor_id: actorId,
+    p_expected_state: decision.expectedState, p_checkpoint_id: decision.checkpointId,
+    p_checkpoint_sha256: decision.checkpointSha256, p_reason: decision.reason, p_acknowledged_new_run: decision.acknowledgedNewRun };
+}
+
+export function replacementReceipt(value: unknown, args: ReturnType<typeof replacementRpcArguments>) {
+  const parsed = z.object({ schema: z.literal('openplan.population-replacement.v1'), request_id: recoveryIdentitySchema,
+    request_payload: z.unknown(), outcome: z.literal('replacement_created'), replacement_run_id: recoveryIdentitySchema,
+    engine_key: z.enum(['aequilibrae', 'behavioral_demand']), old_run_changed: z.literal(false), model_resumed: z.literal(false),
+  }).strict().safeParse(value);
+  const expected = { workspace_id: args.p_workspace_id, run_id: args.p_run_id, actor_id: args.p_actor_id,
+    expected_state: args.p_expected_state, checkpoint_id: args.p_checkpoint_id, checkpoint_sha256: args.p_checkpoint_sha256,
+    reason: args.p_reason, acknowledged_new_run: true };
+  // Replacement fault anchor: a creation receipt cannot rebind the failed run.
+  return parsed.success && parsed.data.request_id === args.p_request_id && parsed.data.replacement_run_id !== args.p_run_id &&
+    canonicalizeActionPayload(parsed.data.request_payload) === canonicalizeActionPayload(expected) ? parsed.data : null;
+}
+
+export function matchesSavedRecoveryReceipt(value: unknown, decision: z.infer<typeof savedRecoveryDecisionSchema>, workspaceId: string, runId: string, actorId: string) {
+  return decision.decision === 'create_population_replacement'
+    ? replacementReceipt(value, replacementRpcArguments(decision, workspaceId, runId, actorId)) !== null
+    : matchesRecoveryReceipt(value, recoveryRpcArguments(decision, workspaceId, runId, actorId));
+}
 
 const historicalOutcomes = { keep_as_record: "kept_as_record", close_for_fresh_run: "closed_for_fresh_run" } as const;
 

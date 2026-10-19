@@ -18,6 +18,8 @@ export type CommonPopulationCustody = "legacy_stage_snapshot" | "managed_attempt
 type PopulationSource = { modelRunId: string; artifactId: string; stageId: string; sha256: string; sizeBytes: number };
 export type CommonPopulationRequest =
   | { schema: typeof SCHEMA; mode: "generate"; custody: CommonPopulationCustody; comparisonPolicy: typeof POLICY; sourceProfile: Record<string, unknown> }
+  | { schema: typeof SCHEMA; mode: 'restore_checkpoint'; custody: 'legacy_stage_snapshot'; comparisonPolicy: typeof POLICY;
+      sourceProfile: Record<string, unknown>; checkpoint: { id: string; sha256: string }; source: (PopulationSource & { attemptId: null }) | null }
   | ({ schema: typeof SCHEMA; mode: "reuse"; comparisonPolicy: typeof POLICY } & (
       | { custody: "legacy_stage_snapshot"; source: PopulationSource & { attemptId: null } }
       | { custody: "managed_attempt"; source: PopulationSource & { attemptId: string } }
@@ -67,6 +69,11 @@ const stageSchema = z.object({
 });
 const generateSchema = z.object({
   schema: z.literal(SCHEMA), custody: z.enum(["legacy_stage_snapshot", "managed_attempt"]), mode: z.literal("generate"), comparisonPolicy: z.literal(POLICY), sourceProfile: record,
+}).strict();
+const restoredSchema = z.object({ schema: z.literal(SCHEMA), custody: z.literal('legacy_stage_snapshot'),
+  mode: z.literal('restore_checkpoint'), comparisonPolicy: z.literal(POLICY), sourceProfile: record,
+  checkpoint: z.object({ id: uuid, sha256: z.string().regex(/^[a-f0-9]{64}$/) }).strict(),
+  source: z.null(),
 }).strict();
 
 export type ReadStageCustody = (workspaceId: string, runId: string, stageId: string, artifactId: string) => PromiseLike<ReadResult>;
@@ -209,7 +216,7 @@ async function resolveCommonPopulationLaunch(args: CommonPopulationLaunchArgs): 
       run.attempt_managed !== (custody === "managed_attempt")) {
     return repair("common_population_baseline_required", "Run a new AequilibraE baseline successfully before reusing its population. Existing runs remain historical.");
   }
-  const generated = generateSchema.safeParse(run.input_snapshot_json.commonPopulation);
+  const generated = z.union([generateSchema, restoredSchema]).safeParse(run.input_snapshot_json.commonPopulation);
   const sourceStamp = z.object({ status: z.literal("supplied"), sourceId: z.literal(descriptor.id), vintage: z.literal(descriptor.vintage),
     demographics: z.object({ status: z.literal("supplied"), geographies: z.number().int().positive() }),
     geographyIndexTruncated: z.literal(false),

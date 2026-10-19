@@ -708,7 +708,7 @@ def _retain_common_population(artifacts: list[dict], run_id: str, execution_dir:
         raise RuntimeError("Common population handoff requires exactly seven registered companions")
     manifest_artifact = next(row for row in candidates if row["artifact_type"] == "common_population")
     metadata = manifest_artifact.get("metadata_json")
-    if (not isinstance(metadata, dict) or set(metadata) != POPULATION_METADATA_FIELDS
+    if (not isinstance(metadata, dict) or set(metadata) not in (POPULATION_METADATA_FIELDS, POPULATION_METADATA_FIELDS | {'replacement'})
             or metadata.get("schema") != common.SCHEMA or metadata.get("scientific_acceptance") != "unassessed"
             or metadata.get("custody") != request['custody']
             or not same_json_value(metadata.get("origin"), request["source"])):

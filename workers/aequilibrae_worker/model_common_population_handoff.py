@@ -146,6 +146,24 @@ def _request(snapshot, common):
     if not isinstance(request, dict):
         raise PopulationHandoffError('Explicit common-population request required')
     mode = request.get('mode')
+    if mode == 'restore_checkpoint':
+        if (set(request) != {'schema', 'mode', 'custody', 'comparisonPolicy', 'sourceProfile', 'checkpoint', 'source'}
+                or request.get('schema') != REQUEST_SCHEMA or request.get('comparisonPolicy') != POLICY
+                or request.get('custody') != 'legacy_stage_snapshot' or not isinstance(request.get('checkpoint'), dict)
+                or set(request['checkpoint']) != {'id', 'sha256'}):
+            raise PopulationHandoffError('Unsupported registered population replacement request')
+        _uuid(request['checkpoint']['id'])
+        _hash(request['checkpoint']['sha256'])
+        common.validate_source_profile(request['sourceProfile'])
+        source = request['source']
+        if source is not None:
+            if not isinstance(source, dict) or set(source) != {'modelRunId', 'artifactId', 'stageId', 'attemptId', 'sha256', 'sizeBytes'} or source['attemptId'] is not None:
+                raise PopulationHandoffError('Replacement source must retain its exact legacy baseline reference')
+            for key in ('modelRunId', 'artifactId', 'stageId'):
+                _uuid(source[key])
+            _hash(source['sha256'])
+            _size(source['sizeBytes'])
+        return json.loads(_stable(request))
     fields = {'schema', 'mode', 'custody', 'comparisonPolicy', 'sourceProfile' if mode == 'generate' else 'source'}
     if (set(request) != fields or request.get('schema') != REQUEST_SCHEMA
             or request.get('comparisonPolicy') != POLICY or mode not in ('generate', 'reuse')
@@ -302,6 +320,8 @@ def _resolve(writer, common):
         if run['engine_key'] != 'aequilibrae' or not consumer['baseline']:
             raise PopulationHandoffError('Population generation belongs to the first AequilibraE baseline job')
         return {'consumer': consumer, 'request': request}
+    if request['mode'] == 'restore_checkpoint':
+        raise PopulationHandoffError('Registered replacement must use the copy-only Setup entry')
     reference = request['source']
     if reference['modelRunId'] == run['id']:
         raise PopulationHandoffError('Population reuse requires a distinct source run')
@@ -315,7 +335,7 @@ def _resolve(writer, common):
             or source_run['input_snapshot_json']['zoneGeography'] != run['input_snapshot_json']['zoneGeography']):
         raise PopulationHandoffError('Population source must be the completed baseline in this project, study and zone geography')
     source_request = _request(source_run['input_snapshot_json'], common)
-    if source_request['mode'] != 'generate' or source_request['custody'] != custody:
+    if source_request['mode'] not in ('generate', 'restore_checkpoint') or source_request['custody'] != custody:
         raise PopulationHandoffError('Population source must name its original generation request')
     artifact = _row(writer, 'model_run_artifacts', ARTIFACT_PROJECTION,
                     id=reference['artifactId'], run_id=source_run['id'], artifact_type='common_population')
@@ -341,8 +361,16 @@ def _resolve(writer, common):
         if custody == 'legacy_stage_snapshot':
             checked['stage_custody'] = read_stage_custody(writer, source_run['id'], reference['stageId'], row['id'])
         companions[role] = checked
-    return {'consumer': consumer, 'request': request, 'source': source, 'source_request': source_request,
-            'artifact': artifact, 'companions': companions}
+    result = {'consumer': consumer, 'request': request, 'source': source, 'source_request': source_request,
+              'artifact': artifact, 'companions': companions}
+    if source_request['mode'] == 'restore_checkpoint':
+        import model_population_replacement as replacement
+        data = replacement.origin(writer, source_run['id'])
+        if artifact['metadata_json'].get('replacement') != data['lineage']:
+            raise PopulationHandoffError('Completed replacement population lineage differs')
+        result['generation_source'] = _relations(writer, data['origin_run'])
+        result['replacement'] = data['lineage']
+    return result
 
 
 def _zone_payload(run, profile, payload):
@@ -504,7 +532,8 @@ def prepare_population_input(writer, *, destination=None, zone_rows=None, zone_a
         population = common.read_common_population(destination, expected_manifest=manifest, zone_rows=selected_zones)
         from model_common_population_package import identity
         expected_metadata = {'schema': common.SCHEMA, 'custody': before['request']['custody'],
-                             **identity(population), 'origin': None, 'scientific_acceptance': 'unassessed'}
+                             **identity(population), 'origin': None, 'scientific_acceptance': 'unassessed',
+                             **({'replacement': before['replacement']} if 'replacement' in before else {})}
         if not _same(artifact['metadata_json'], expected_metadata):
             raise PopulationHandoffError('Population companion identity differs from actual retained records')
         _zone_geography(retained_zones, before['source']['run']['input_snapshot_json']['zoneGeography'], common)
@@ -512,7 +541,7 @@ def prepare_population_input(writer, *, destination=None, zone_rows=None, zone_a
         source_record = population['source_manifest']
         if not isinstance(source_record, dict):
             raise PopulationHandoffError('Retained population source record is incomplete')
-        expected = _source_record(before['source'], profile, source_record.get('zone_attributes'))
+        expected = _source_record(before.get('generation_source', before['source']), profile, source_record.get('zone_attributes'))
         if (set(source_record) - {'study_area', 'selection_coverage'} != set(expected)
                 or not _same({key: source_record[key] for key in expected}, expected)
                 or not _same(population['basis']['source_profile'], profile)):
@@ -552,7 +581,7 @@ def confirm_population_publication(reader, population):
     try:
         reader.require_open()
         authority = _resolve(reader, common)
-        origin = authority['source'] if authority['request']['mode'] == 'reuse' else authority['consumer']
+        origin = authority.get('generation_source', authority['source']) if authority['request']['mode'] == 'reuse' else authority['consumer']
         profile = (authority['source_request'] if authority['request']['mode'] == 'reuse'
                    else authority['request'])['sourceProfile']
         record = population['source_manifest']

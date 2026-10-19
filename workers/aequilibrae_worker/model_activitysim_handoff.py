@@ -21,13 +21,22 @@ def common_population_request(run):
     if not isinstance(snapshot, dict) or 'commonPopulation' not in snapshot:
         return None
     request = snapshot['commonPopulation']
-    if (not isinstance(request, dict) or set(request) != {'schema', 'mode', 'comparisonPolicy', 'source', 'custody'}
-            or request.get('schema') != 'openplan.common-population-request.v1' or request.get('mode') != 'reuse'
+    restoring = isinstance(request, dict) and request.get('mode') == 'restore_checkpoint'
+    fields = {'schema', 'mode', 'comparisonPolicy', 'source', 'custody'} | ({'checkpoint', 'sourceProfile'} if restoring else set())
+    if (not isinstance(request, dict) or set(request) != fields
+            or request.get('schema') != 'openplan.common-population-request.v1' or request.get('mode') not in ('reuse', 'restore_checkpoint')
             or request.get('custody') not in ('legacy_stage_snapshot', 'managed_attempt')
             or request.get('comparisonPolicy') != 'fixed_population_auto_trip_change'
             or not isinstance(request.get('source'), dict)):
         raise ValueError('Behavioral population requires its explicit reuse request')
     source = request['source']
+    if restoring:
+        checkpoint = request['checkpoint']
+        if (request['custody'] != 'legacy_stage_snapshot' or not isinstance(checkpoint, dict)
+                or set(checkpoint) != {'id', 'sha256'} or str(uuid.UUID(checkpoint['id'])) != checkpoint['id']
+                or not isinstance(checkpoint['sha256'], str) or len(checkpoint['sha256']) != 64
+                or any(c not in '0123456789abcdef' for c in checkpoint['sha256'])):
+            raise ValueError('Unsupported behavioral replacement checkpoint')
     if set(source) != {'modelRunId', 'artifactId', 'stageId', 'attemptId', 'sha256', 'sizeBytes'}:
         raise ValueError('Behavioral population requires an exact source reference')
     for key in ('modelRunId', 'artifactId', 'stageId'):
@@ -79,7 +88,7 @@ def _population_companions(run_id, stage_id, stages, artifacts, request):
                 for key in ('id', 'run_id', 'status', 'attempt_managed', 'active_attempt_id'))):
             raise ValueError('Population companion producer snapshot differs')
         metadata = row.get('metadata_json')
-        if (not isinstance(metadata, dict) or set(metadata) != POPULATION_METADATA_FIELDS
+        if (not isinstance(metadata, dict) or set(metadata) not in (POPULATION_METADATA_FIELDS, POPULATION_METADATA_FIELDS | {'replacement'})
                 or metadata.get('schema') != 'openplan.common-population.v1'
                 or metadata.get('custody') != request['custody']
                 or metadata.get('scientific_acceptance') != 'unassessed'
@@ -118,6 +127,15 @@ def _classify_population_outputs(base_url, service_key, run_id, workspace_id, se
             if any(key not in record or not same_json_value(record[key], artifact.get(key))
                    for key in ARTIFACT_PROJECTION.split(',model_run_stages!inner')[0].split(',')):
                 raise ValueError('Classified population output differs from the selected artifact')
+    with closing(post(base_url.rstrip('/') + '/rest/v1/rpc/read_model_population_lineage',
+            headers={'apikey': service_key, 'Authorization': 'Bearer ' + service_key},
+            json={'p_workspace_id': workspace_id, 'p_run_id': run_id}, timeout=(5, 30), allow_redirects=False)) as response:
+        if response.status_code != 200:
+            raise ValueError('Population lineage access is unconfirmed')
+        lineage = response.json()
+    for artifact in selected:
+        if not same_json_value(artifact['metadata_json'].get('replacement'), lineage):
+            raise ValueError('Population registered lineage differs from native scope')
 
 
 def read_screening_artifacts(writer, run_id):

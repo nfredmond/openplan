@@ -165,6 +165,15 @@ class PopulationHandoffTests(unittest.TestCase):
         return reply
 
     def post(self, url, **kwargs):
+        if url.endswith('/register_model_population_checkpoint'):
+            body = copy.deepcopy(kwargs['json'])
+            request_id = body.pop('p_request_id')
+            args = {key[2:]: value for key, value in body.items()}
+            self.assertEqual(args['workspace_id'], self.workspace)
+            self.assertEqual(args['run_id'], self.consumer_id)
+            self.assertEqual(len(args['facts']['inventory']), 10)
+            return response({'schema': 'openplan.population-replacement.v1', 'request_id': request_id, **args,
+                'checkpoint_sha256': args['facts']['result_sha256'], 'outcome': 'checkpoint_registered'})
         if url.endswith('/read_common_population_stage_custody'):
             body = kwargs['json']
             self.assertEqual(set(body), {'p_workspace', 'p_run', 'p_stage', 'p_artifact'})

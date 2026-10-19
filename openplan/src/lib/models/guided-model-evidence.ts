@@ -133,6 +133,41 @@ const originSchema = z.object({
   attemptId: z.string().regex(UUID).nullable(), sha256: z.string().regex(SHA256), sizeBytes: safeCount.refine((size) => size > 0),
 }).strict();
 export type GuidedPopulationOrigin = z.infer<typeof originSchema>;
+const replacementLineageSchema = z.object({ schema: z.literal('openplan.population-replacement.v1'),
+  checkpoint_id: z.string().regex(UUID), checkpoint_sha256: z.string().regex(SHA256),
+  source_run_id: z.string().regex(UUID), source_stage_id: z.string().regex(UUID), source_attempt_id: z.null(),
+  population_digest: z.string().regex(SHA256), package_sha256: z.string().regex(SHA256),
+}).strict();
+const restoreRequestSchema = z.object({ custody: z.literal('legacy_stage_snapshot'),
+  schema: z.literal('openplan.common-population-request.v1'), mode: z.literal('restore_checkpoint'),
+  comparisonPolicy: z.literal(GUIDED_FIXED_POPULATION_POLICY), sourceProfile,
+  checkpoint: z.object({ id: z.string().regex(UUID), sha256: z.string().regex(SHA256) }).strict(),
+  source: originSchema.nullable(),
+}).strict();
+
+/** Restoration names retained data; native stage custody still proves the new producer. */
+function baselinePopulationRequest(value: unknown, custody: CommonPopulationCustody) {
+  return z.union([z.object({ custody: z.literal(custody), schema: z.literal('openplan.common-population-request.v1'),
+    mode: z.literal('generate'), comparisonPolicy: z.literal(GUIDED_FIXED_POPULATION_POLICY), sourceProfile }).strict(),
+    restoreRequestSchema.refine((request) => custody === 'legacy_stage_snapshot' && request.source === null),
+  ]).safeParse(value);
+}
+
+function reusedPopulationRequest(value: unknown, custody: CommonPopulationCustody) {
+  return z.union([z.object({ custody: z.literal(custody), schema: z.literal('openplan.common-population-request.v1'),
+    mode: z.literal('reuse'), comparisonPolicy: z.literal(GUIDED_FIXED_POPULATION_POLICY), source: originSchema }).strict(),
+    restoreRequestSchema.refine((request) => custody === 'legacy_stage_snapshot' && request.source !== null),
+  ]).safeParse(value);
+}
+
+/** Bind the retained source companion to the checkpoint named by its new run. */
+function sourceReplacementMatches(request: unknown, metadata: Record<string, unknown> | null | undefined): boolean {
+  const restored = restoreRequestSchema.safeParse(request);
+  if (!restored.success) return metadata?.replacement === undefined;
+  const lineage = replacementLineageSchema.safeParse(metadata?.replacement);
+  return lineage.success && lineage.data.checkpoint_id === restored.data.checkpoint.id &&
+    lineage.data.checkpoint_sha256 === restored.data.checkpoint.sha256;
+}
 export type GuidedPopulationComparison =
   | { state: "not_required" | "pending" }
   | { state: "unassessed" | "invalid" | "mismatch"; repairState: "needs_shared_population_rerun" | "population_basis_invalid" | "population_basis_mismatch" }
@@ -181,8 +216,10 @@ export function verifiedGuidedPopulation(metadata: Record<string, unknown> | nul
   const keys = ["population_basis", "population_basis_payload_json", "population_basis_digest"];
   if (!metadata || keys.every((key) => metadata[key] === undefined)) return { state: "unassessed" };
   if (sourceCompanion && (Object.keys(metadata).sort().join(",") !==
-      ["schema", "custody", "population_basis", "population_basis_payload_json", "population_basis_digest", "origin", "scientific_acceptance"].sort().join(",") ||
+      ["schema", "custody", "population_basis", "population_basis_payload_json", "population_basis_digest", "origin", "scientific_acceptance", ...(metadata.replacement === undefined ? [] : ['replacement'])].sort().join(",") ||
       metadata.schema !== "openplan.common-population.v1" || metadata.scientific_acceptance !== "unassessed")) return { state: "invalid" };
+  if (metadata.replacement !== undefined && (!replacementLineageSchema.safeParse(metadata.replacement).success ||
+      (metadata.replacement as Record<string, unknown>).population_digest !== metadata.population_basis_digest)) return { state: 'invalid' };
   const custody = z.enum(["legacy_stage_snapshot", "managed_attempt"]).safeParse(sourceCompanion ? metadata.custody : metadata.population_custody);
   if (!custody.success) return { state: "invalid" };
   const basis = identitySchema.safeParse(metadata.population_basis);
@@ -216,16 +253,14 @@ export function guidedPopulationComparison(jobs: readonly GuidedRunJob[], curren
   const first = baseline.population;
   if (current.some((item) => item.population.state !== "verified" || item.population.digest !== first.digest || item.population.custody !== first.custody ||
       !jsonValuesEqual(item.population.basis, first.basis))) return { state: "mismatch", repairState: "population_basis_mismatch" };
-  const generated = z.object({ custody: z.literal(first.custody), schema: z.literal("openplan.common-population-request.v1"), mode: z.literal("generate"),
-    comparisonPolicy: z.literal(GUIDED_FIXED_POPULATION_POLICY), sourceProfile }).strict().safeParse(baseline.populationRequest);
+  const generated = baselinePopulationRequest(baseline.populationRequest, first.custody);
   if (!generated.success || !jsonValuesEqual(generated.data.sourceProfile, first.basis.source_profile)) {
     return { state: "invalid", repairState: "population_basis_invalid" };
   }
   let origin: GuidedPopulationOrigin | null = null;
   for (const item of current.filter((candidate) => candidate !== baseline)) {
-    const reused = z.object({ custody: z.literal(first.custody), schema: z.literal("openplan.common-population-request.v1"), mode: z.literal("reuse"),
-      comparisonPolicy: z.literal(GUIDED_FIXED_POPULATION_POLICY), source: originSchema }).strict().safeParse(item.populationRequest);
-    if (!reused.success || !originMatchesCustody(reused.data.source, first.custody) || reused.data.source.modelRunId !== baseline.runId ||
+    const reused = reusedPopulationRequest(item.populationRequest, first.custody);
+    if (!reused.success || !reused.data.source || !originMatchesCustody(reused.data.source, first.custody) || reused.data.source.modelRunId !== baseline.runId ||
         reused.data.source.sha256 !== first.basis.manifest.sha256 || reused.data.source.sizeBytes !== first.basis.manifest.bytes ||
         (origin !== null && !jsonValuesEqual(origin, reused.data.source))) return { state: "mismatch", repairState: "population_basis_mismatch" };
     origin = reused.data.source;
@@ -259,8 +294,7 @@ export function guidedPopulationRerun(
     return { nextRun: baselineJob, summary: null, repairState: baseline.population.state === "unassessed" ? "needs_shared_population_rerun" : "population_basis_invalid" };
   }
   const population = baseline.population;
-  const generated = z.object({ custody: z.literal(population.custody), schema: z.literal("openplan.common-population-request.v1"), mode: z.literal("generate"),
-    comparisonPolicy: z.literal(GUIDED_FIXED_POPULATION_POLICY), sourceProfile }).strict().safeParse(baseline.populationRequest);
+  const generated = baselinePopulationRequest(baseline.populationRequest, population.custody);
   const sourceArtifact = artifacts.filter((item) => item.run_id === baseline.runId && item.artifact_type === "common_population").sort(newestFirst)[0];
   const sourcePopulation = verifiedGuidedPopulation(sourceArtifact?.metadata_json, true);
   const sourceStage = sourceArtifact ? stages.find((stage) => stage.id === sourceArtifact.stage_id && stage.run_id === baseline.runId) : null;
@@ -269,6 +303,7 @@ export function guidedPopulationRerun(
       sourceArtifact.metadata_json?.schema !== "openplan.common-population.v1" ||
       sourceArtifact.metadata_json?.custody !== population.custody ||
       sourceArtifact.metadata_json?.origin !== null || sourceArtifact.metadata_json?.scientific_acceptance !== "unassessed" ||
+      !sourceReplacementMatches(baseline.populationRequest, sourceArtifact.metadata_json) ||
       sourcePopulation.state !== "verified" || sourcePopulation.digest !== population.digest || !jsonValuesEqual(sourcePopulation.basis, population.basis) ||
       Number(sourceArtifact.file_size_bytes) !== population.basis.manifest.bytes || !sourceStage || sourceStage.stage_name !== "AequilibraE Setup" ||
       sourceStage.status !== "succeeded" || (population.custody === "managed_attempt"
@@ -288,8 +323,7 @@ export function guidedPopulationRerun(
   for (const job of jobs.filter((candidate) => candidate !== baselineJob)) {
     const item = current.find((candidate) => guidedRunJobKey(candidate) === guidedRunJobKey(job));
     if (!item) return { nextRun: job, summary };
-    const request = z.object({ custody: z.literal(population.custody), schema: z.literal("openplan.common-population-request.v1"), mode: z.literal("reuse"),
-      comparisonPolicy: z.literal(GUIDED_FIXED_POPULATION_POLICY), source: originSchema }).strict().safeParse(item.populationRequest);
+    const request = reusedPopulationRequest(item.populationRequest, population.custody);
     if (!verifiedPopulationProducer(item) || item.population.state !== "verified") return { nextRun: job, summary,
       repairState: item.population.state === "unassessed" ? "needs_shared_population_rerun" : "population_basis_invalid" };
     if (item.population.digest !== population.digest || item.population.custody !== population.custody || !jsonValuesEqual(item.population.basis, population.basis) ||

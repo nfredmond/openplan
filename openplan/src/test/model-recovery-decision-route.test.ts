@@ -1,3 +1,4 @@
+vi.mock('server-only', () => ({}));
 import { beforeEach, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 const mocks = vi.hoisted(() => ({ auth: vi.fn(), access: vi.fn(), rpc: vi.fn(), query: vi.fn(), service: vi.fn() }));

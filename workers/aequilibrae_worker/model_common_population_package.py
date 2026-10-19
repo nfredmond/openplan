@@ -239,7 +239,7 @@ def package_inventory(package_directory, *, durable=False):
     return receipts
 
 
-def publication_payloads(package_directory, *, run_id, stage_id):
+def publication_payloads(package_directory, *, run_id, stage_id, lineage=None):
     """Build the seven fixed output slots from the checked package itself."""
     common = population_library()
     directory = Path(package_directory)
@@ -256,5 +256,6 @@ def publication_payloads(package_directory, *, run_id, stage_id):
         'file_size_bytes': receipt['bytes'], 'content_hash': receipt['sha256'],
         'metadata_json': {'schema': common.SCHEMA, 'custody': record['custody'],
                          **{key: value for key, value in metadata.items() if key != 'population_custody'},
-                         'origin': record.get('origin'), 'scientific_acceptance': 'unassessed'}}
+                         'origin': record.get('origin'), 'scientific_acceptance': 'unassessed',
+                         **({'replacement': lineage} if lineage is not None else {})}}
         for kind, name, receipt in roles}

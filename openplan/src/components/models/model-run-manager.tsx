@@ -1349,7 +1349,7 @@ export function ModelRunManager({
                   }));
 
                 return (
-                  <div key={run.id} className="module-record-row">
+                  <div key={run.id} id={`model-run-${run.id}`} className="module-record-row">
                     <div className="module-record-main grid-cols-1">
                       <div className="module-record-kicker">
                         <StatusBadge tone={runStatus.tone}>{runStatus.label}</StatusBadge>

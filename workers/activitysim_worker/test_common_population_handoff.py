@@ -160,7 +160,7 @@ class BehavioralPopulationHandoffTests(unittest.TestCase):
         self.assertEqual(args["config_package"],"starter")
         self.assertNotIn("census_api_key",args)
 
-    def ordinary_http_fixture(self, source_custody='legacy_stage_snapshot'):
+    def ordinary_http_fixture(self, source_custody='legacy_stage_snapshot', *, restored=False):
         """Supply real ordinary rows and independent service attestations."""
         from model_activitysim_handoff import RUN_PROJECTION
         self.fixture.source.write_text(json.dumps({'run_name':'Supplied fixture','custody':source_custody}))
@@ -200,6 +200,25 @@ class BehavioralPopulationHandoffTests(unittest.TestCase):
                 'file_size_bytes':len(data),'content_hash':hashlib.sha256(data).hexdigest(),
                 'metadata_json':{},'model_run_stages':copy.deepcopy(extraction)})
         self.ordinary_attestations = []
+        # Independent native boundary, not an echo of selected artifact metadata.
+        native_lineage = None
+        if restored:
+            native_lineage = {
+                'schema': 'openplan.population-replacement.v1',
+                'checkpoint_id': '12345678-1234-4234-8234-123456789012',
+                'checkpoint_sha256': 'b' * 64,
+                'source_run_id': '23456789-2345-4345-8345-234567890123',
+                'source_stage_id': '34567890-3456-4456-8456-345678901234',
+                'source_attempt_id': None,
+                'population_digest': identity(self.loaded)['population_basis_digest'],
+                'package_sha256': 'c' * 64,
+            }
+            self.request.update(mode='restore_checkpoint',
+                checkpoint={'id': '12345678-1234-4234-8234-123456789012', 'sha256': 'b' * 64},
+                sourceProfile=copy.deepcopy(self.loaded['basis']['source_profile']))
+            for row in self.inventory:
+                if row['artifact_type'].startswith('common_population'):
+                    row['metadata_json']['replacement'] = copy.deepcopy(native_lineage)
 
         def response(value):return Mock(status_code=200,json=Mock(return_value=copy.deepcopy(value)))
         def get(url, **kwargs):
@@ -212,6 +231,11 @@ class BehavioralPopulationHandoffTests(unittest.TestCase):
             if table=='model_run_artifacts':return response(self.inventory)
             raise AssertionError('Unexpected ordinary GET: '+table)
         def post(url, **kwargs):
+            if url.endswith('/read_model_population_lineage'):
+                self.assertEqual(kwargs['json'], {'p_workspace_id': 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'p_run_id': RUN})
+                self.assertEqual(kwargs['timeout'], (5, 30))
+                self.assertIs(kwargs['allow_redirects'], False)
+                return response(native_lineage)
             if url.endswith('/read_model_attempt_outputs'):
                 return response({'run_id':RUN,'run_status':'running','outputs':[
                     {'kind':'artifact','ownership_state':'legacy_unknown',
@@ -226,6 +250,36 @@ class BehavioralPopulationHandoffTests(unittest.TestCase):
                 'custody':'legacy_stage_snapshot','workspace_id':args['p_workspace'],'run_id':args['p_run'],
                 'stage_id':args['p_stage'],'artifact_id':args['p_artifact'],'eligible':True})
         return get,post,stages
+
+    def test_restored_lineage_real_classifier_and_pinned_population_copy(self):
+        import census_pums as cp
+        get, post, _ = self.ordinary_http_fixture(restored=True)
+        with patch.object(model_attempt_writer, 'current', return_value=None), \
+                patch.object(worker.requests, 'get', side_effect=get), patch.object(worker.requests, 'post', side_effect=post), \
+                patch.object(cp, '_get_json', side_effect=AssertionError('Unexpected source refetch')) as fetch:
+            artifacts = worker.sb_get_run_artifacts(RUN, stage_id=CONSUMER, run=self.run)
+            retained = worker._retain_common_population(artifacts, RUN, str(self.execution), self.fixture.zones,
+                stage_id=CONSUMER, run=self.run)
+        fetch.assert_not_called()
+        self.assertEqual(retained['population_basis_digest'], identity(self.loaded)['population_basis_digest'])
+        self.assertEqual((self.execution/'common_population'/'persons.csv').read_bytes(),
+            (self.fixture.directory/'persons.csv').read_bytes())
+        self.assertTrue(self.ordinary_attestations)
+
+    def test_restored_lineage_native_mismatch_refuses_before_copy(self):
+        get, post, _ = self.ordinary_http_fixture(restored=True)
+        def mismatch(url, **kwargs):
+            reply = post(url, **kwargs)
+            if url.endswith('/read_model_population_lineage'):
+                changed = reply.json()
+                changed['checkpoint_id'] = '45678901-4567-4567-8567-456789012345'
+                return Mock(status_code=200, json=Mock(return_value=changed))
+            return reply
+        with patch.object(model_attempt_writer, 'current', return_value=None), \
+                patch.object(worker.requests, 'get', side_effect=get), patch.object(worker.requests, 'post', side_effect=mismatch):
+            with self.assertRaises(worker.WorkerStateReadUnconfirmed):
+                worker.sb_get_run_artifacts(RUN, stage_id=CONSUMER, run=self.run)
+        self.assertFalse((self.execution/'common_population').exists())
 
     def test_actual_ordinary_bundle_stage_reaches_real_retained_builder_and_demand_without_fit_or_refetch(self):
         import census_pums as cp

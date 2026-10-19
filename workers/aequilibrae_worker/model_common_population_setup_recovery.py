@@ -107,6 +107,9 @@ def setup_inputs(reader, prepared, *, bbox, corridor_geojson, zone_geography, zo
 
 def check_package(reader, inputs, result):
     """Recheck original authority, fixed bytes and the exact publication plan."""
+    if inputs.get('schema') == 'openplan.population-replacement.v1':
+        import model_population_replacement as replacement
+        return replacement.check_restored(reader, inputs, result)
     common = package.population_library()
     reader.require_open()
     reader.files.verify()
@@ -145,7 +148,9 @@ def check_package(reader, inputs, result):
     origin = inputs['authority']['request'].get('source')
     if record.get('custody') != custody or record.get('origin') != origin:
         raise ValueError('Population checkpoint custody or origin differs')
-    plan = package.publication_payloads(directory, run_id=reader.context.run_id, stage_id=reader.context.stage_id)
+    import model_population_replacement as replacement
+    plan = package.publication_payloads(directory, run_id=reader.context.run_id, stage_id=reader.context.stage_id,
+        lineage=replacement.publication_lineage(reader))
     if not handoff._same(plan, result['publication']):
         raise ValueError('Population checkpoint publication plan differs')
     if package.package_inventory(directory) != result['inventory']:
@@ -169,8 +174,10 @@ def retain_package(reader, directory, inputs, generate, *, base_url, deployment_
         manifest = package.population_library()._json((target / 'manifest.json').read_bytes())
         if generated != manifest:
             raise ValueError('Generated population package differs from written manifest')
+        import model_population_replacement as replacement
         result = {'package': manifest, 'inventory': package.package_inventory(target, durable=True),
-                  'publication': package.publication_payloads(target, run_id=reader.context.run_id, stage_id=reader.context.stage_id)}
+                  'publication': package.publication_payloads(target, run_id=reader.context.run_id, stage_id=reader.context.stage_id,
+                      lineage=replacement.publication_lineage(reader))}
         check_package(reader, inputs, result)
         _checkpoint_path(directory)
         return result

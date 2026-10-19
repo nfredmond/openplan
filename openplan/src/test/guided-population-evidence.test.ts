@@ -45,6 +45,31 @@ function fixture() {
   return { population, jobs, runs, artifacts, stages, evidence: () => collectGuidedRunEvidence(jobs, runs, artifacts, stages) };
 }
 
+function restoredFixture() {
+  const f = fixture();
+  const baseline = '10101010-1010-4010-8010-101010101010';
+  const population = populationFixture(baseline, 'legacy_stage_snapshot');
+  const lineage = { schema: 'openplan.population-replacement.v1',
+    checkpoint_id: '20202020-2020-4020-8020-202020202020', checkpoint_sha256: 'd'.repeat(64),
+    source_run_id: '30303030-3030-4030-8030-303030303030', source_stage_id: '40404040-4040-4040-8040-404040404040',
+    source_attempt_id: null, population_digest: population.digest, package_sha256: 'e'.repeat(64) };
+  f.runs.forEach((run, index) => { const oldId = run.id;
+    if (index === 0) { run.id = baseline;
+      f.stages.filter((item) => item.run_id === oldId).forEach((item) => { item.run_id = baseline; });
+      f.artifacts.filter((item) => item.run_id === oldId).forEach((item) => { item.run_id = baseline; }); }
+    run.attempt_managed = false;
+    run.input_snapshot_json = { commonPopulation: index === 0 ? { ...population.generate, mode: 'restore_checkpoint',
+      checkpoint: { id: lineage.checkpoint_id, sha256: lineage.checkpoint_sha256 }, source: null } : population.reuse };
+  });
+  f.stages.forEach((stage) => { stage.attempt_managed = false; stage.active_attempt_id = null; });
+  f.artifacts.forEach((artifact) => { artifact.attempt_id = null;
+    artifact.metadata_json = artifact.artifact_type === 'common_population'
+      ? { ...population.sourceMetadata, replacement: lineage } : { ...network, ...population.metadata }; });
+  const eligible = new Set(f.artifacts.map((item) => item.id));
+  return { ...f, population, lineage, eligible,
+    evidence: () => collectGuidedRunEvidence(f.jobs, f.runs, f.artifacts, f.stages, eligible) };
+}
+
 function changedMetadata(update: (basis: Record<string, unknown>) => void) {
   const result = populationFixture().metadata;
   const basis: Record<string, unknown> = structuredClone(result.population_basis);
@@ -161,6 +186,23 @@ describe("consumed population identity", () => {
     expect(guidedPopulationRerun(f.jobs, evidence(), f.artifacts, f.stages, eligible).nextRun).toEqual(f.jobs[1]);
     eligible.add(f.artifacts[1].id); eligible.delete(population.source.artifactId);
     expect(guidedPopulationRerun(f.jobs, evidence(), f.artifacts, f.stages, eligible).nextRun).toEqual(f.jobs[0]);
+  });
+
+  it('uses a completed restored baseline in all four real guided evidence readers', () => {
+    const f = restoredFixture();
+    const evidence = f.evidence();
+    const comparison = guidedPopulationComparison(f.jobs, evidence);
+    expect(evidence).toHaveLength(4); expect(comparison.state).toBe('ready');
+    if (comparison.state === 'ready') expect(guidedPopulationSnapshotMetadata(comparison)).toEqual(f.population.snapshot);
+    expect(guidedPopulationRerun(f.jobs, evidence, f.artifacts, f.stages, f.eligible)).toMatchObject({ nextRun: null });
+  });
+
+  it.each(['checkpoint_id', 'checkpoint_sha256', 'population_digest'])('refuses a restored source with mismatched %s lineage', (field) => {
+    const f = restoredFixture();
+    const source = f.artifacts.find((item) => item.artifact_type === 'common_population')!;
+    source.metadata_json = { ...source.metadata_json, replacement: { ...f.lineage,
+      [field]: field === 'checkpoint_id' ? '99999999-9999-4999-8999-999999999999' : 'f'.repeat(64) } };
+    expect(guidedPopulationRerun(f.jobs, f.evidence(), f.artifacts, f.stages, f.eligible).nextRun).toEqual(f.jobs[0]);
   });
 
   it.each([undefined, "unknown", "legacy_stage_snapshot"])("refuses absent or wrong consumed output custody %s", (custody) => {

@@ -2890,6 +2890,16 @@ def should_run_calibration(calibrate_requested: bool, counts_path: str) -> bool:
 
 def ensure_dynamic_package(run_id: str, work_dir: str, run_row: dict | None = None, *, stage_id: str | None = None) -> dict:
     run_row = run_row or sb_get_run(run_id)
+    snapshot = run_row.get('input_snapshot_json') or {}
+    if (snapshot.get('commonPopulation') or {}).get('mode') == 'restore_checkpoint':
+        import model_population_replacement as replacement
+        replacement.require_local(snapshot['commonPopulation'].get('custody'))
+        reader = population_setup_reader(run_id, run_row, work_dir, stage_id=stage_id)
+        metadata = replacement.restore(reader, settings=population_replacement_settings(run_row),
+            deployment_id=os.environ.get('OPENPLAN_DEPLOYMENT_ID', ''))
+        source_record = replacement.origin(reader)['registration']['facts']['inputs']['source_record']
+        _cache_zone_attributes(work_dir, source_record['zone_attributes'])
+        return metadata
     corridor_geojson, bbox = resolve_run_study_area(run_row)
     pkg_dir = os.path.join(work_dir, "package")
     manifest_path = os.path.join(pkg_dir, "manifest.json")
@@ -2977,6 +2987,105 @@ def ensure_dynamic_package(run_id: str, work_dir: str, run_row: dict | None = No
 
     manifest["package_dir"] = pkg_dir
     return manifest
+
+
+def population_replacement_settings(run_row: dict | None = None):
+    """Bind source bytes and effective scientific defaults without recording credentials."""
+    import model_population_replacement as replacement
+    import stat
+    from pathlib import Path
+    root = Path(__file__).resolve().parents[2]
+    files = {}
+    for directory in (root / 'workers' / 'aequilibrae_worker', root / 'scripts' / 'modeling'):
+        for path in sorted(directory.glob('*.py')):
+            if not path.name.startswith('test_'):
+                files[str(path.relative_to(root))] = hashlib.sha256(path.read_bytes()).hexdigest()
+    names = ('AEQ_CORES', 'AEQ_MAX_ZONES', 'MODE_SPLIT_ENABLED', 'GTFS_DISCOVER', 'PASSTHROUGH_SHARE',
+             'GATEWAY_BUFFER_DEG', 'LINK_DEFAULTS',
+             'COUNT_VALIDATION_ENABLED', 'COUNT_AUTO_INGEST', 'CALIBRATION_ENABLED', 'CALIBRATION_MAX_ITER',
+             'CALIBRATION_MIN_IMPROVEMENT', 'CALIBRATION_DEMAND_ENABLED', 'CALIBRATION_DEMAND_MAX_ITER')
+    environment = {name: os.environ.get(name) for name in (
+        'LODES_YEAR', 'HBW_SHARE', 'OD_MIN_COVERAGE', 'AEQ_ZONE_GEOGRAPHY', 'AEQ_CALIBRATE',
+        'AEQ_CALIBRATE_MAX_ITER', 'AEQ_CALIBRATE_DEMAND', 'AEQ_CALIBRATE_DEMAND_MAX_ITER',
+        'AEQ_CALIBRATE_MIN_IMPROVEMENT', 'COUNT_AUTO_INGEST', 'COUNT_VALIDATION_ENABLED',
+        'VALIDATION_COUNTS_PATH', 'OSM_OVERPASS_URL', 'TIGER_TRACT_LAYER_URL', 'CENSUS_ACS5_URL',
+        'GTFS_ACCESS_MILES', 'GTFS_TRANSFER_PENALTY_MIN', 'GTFS_FLAT_FARE', 'MODE_WALK_MPH',
+        'MODE_BIKE_MPH', 'AEQ_CORES', 'AEQ_MAX_ZONES', 'AEQ_GATEWAY_BUFFER_DEG', 'MODE_SPLIT_ENABLED',
+        'GTFS_DISCOVER', 'GATEWAY_PASSTHROUGH_SHARE')}
+    import importlib.metadata
+    versions = {}
+    for distribution in ('aequilibrae', 'numpy', 'pandas', 'scipy', 'shapely', 'pyproj'):
+        try:
+            versions[distribution] = importlib.metadata.version(distribution)
+        except importlib.metadata.PackageNotFoundError:
+            versions[distribution] = 'unavailable'
+    count_file = Path(VALIDATION_COUNTS_PATH)
+    counts = {'status': 'retained', 'sha256': hashlib.sha256(count_file.read_bytes()).hexdigest()} if count_file.is_file() else {'status': 'unavailable'}
+
+    def selector_digest(value):
+        return hashlib.sha256(value.encode('utf-8', 'surrogatepass')).hexdigest()
+
+    def local_archive(path):
+        # Follow the same effective local path as acquire_feed_archive. This is
+        # a byte fingerprint, not a feed-validity or hostile-writer guarantee.
+        selector = selector_digest(os.path.abspath(path))
+        try:
+            with os.fdopen(os.open(path, os.O_RDONLY | os.O_NONBLOCK), 'rb') as stream:
+                before = os.fstat(stream.fileno())
+                if not stat.S_ISREG(before.st_mode):
+                    return {'state': 'unavailable', 'selector_sha256': selector}
+                checksum = hashlib.sha256()
+                size = 0
+                while chunk := stream.read(min(1024 * 1024, before.st_size - size + 1)):
+                    size += len(chunk)
+                    if size > before.st_size:
+                        return {'state': 'unavailable', 'selector_sha256': selector}
+                    checksum.update(chunk)
+                identity = replacement.snapshots.identity
+                if size != before.st_size or identity(before) != identity(os.fstat(stream.fileno())) or identity(before) != identity(os.stat(path)):
+                    return {'state': 'unavailable', 'selector_sha256': selector}
+                return {'state': 'local_bytes_checked', 'selector_sha256': selector,
+                        'sha256': checksum.hexdigest(), 'size_bytes': before.st_size}
+        except (OSError, ValueError):
+            # Never retain exception text, host paths or selector credentials.
+            return {'state': 'unavailable', 'selector_sha256': selector}
+
+    env_url, env_path = os.getenv('GTFS_URL'), os.getenv('GTFS_PATH')
+    selection = gtfs_skim.parse_feed_selection(run_row)
+    # Pure precedence only. Settings preparation must not discover/download.
+    plan = gtfs_skim.plan_feed(None, discovering=False, env_url=env_url, env_path=env_path, selection=selection)
+    cache_path = os.getenv('GTFS_CACHE_DIR', os.path.join(os.path.dirname(gtfs_skim._DEFAULT_GTFS_PATH), '.gtfs_cache'))
+    if selection is not None:
+        transit = {'state': plan.origin, 'selection_state': 'selected' if plan.load else 'unavailable',
+                   'selector_sha256': selector_digest(plan.feed_version_id or 'refused_workspace_selection'),
+                   'archive_state': 'existing_workspace_version_reader_required', 'fallback': 'forbidden'}
+    elif plan.origin == 'operator_url':
+        transit = {'state': plan.origin, 'selector_sha256': selector_digest(env_url),
+                   'cache_selector_sha256': selector_digest(os.path.abspath(cache_path)),
+                   'archive_state': 'unresolved_remote_or_url_cache'}
+    elif plan.origin == 'operator_path':
+        transit = {'state': plan.origin, 'archive': local_archive(env_path)}
+    elif GTFS_DISCOVER:
+        # Discovery may find a feed, find none, or fail and use the bundled
+        # archive. Bind policy and that possible local fallback, not an answer.
+        transit = {'state': 'automatic_discovery_unresolved',
+                   'catalogue_selector_sha256': selector_digest(gtfs_skim._MDB_CATALOG_URL),
+                   'catalogue_cache_ttl_seconds': gtfs_skim._CATALOG_CACHE_TTL_S,
+                   'cache_selector_sha256': selector_digest(os.path.abspath(cache_path)),
+                   'archive_state': 'unresolved_remote_or_url_cache',
+                   'fallback_policy': 'bundled_only_if_catalog_unavailable',
+                   'fallback_archive': local_archive(gtfs_skim._DEFAULT_GTFS_PATH)}
+    else:
+        transit = {'state': plan.origin, 'archive': local_archive(gtfs_skim._DEFAULT_GTFS_PATH)}
+    transit.update(skim_settings=gtfs_skim.skim_settings().to_record(), stage_budget_seconds=gtfs_skim.GTFS_STAGE_BUDGET_S)
+    value = {'schema': 'openplan.population-replacement-settings.v1', 'source_files': files,
+             'effective': {name: globals().get(name) for name in names}, 'environment': environment,
+             'versions': versions, 'validation_counts': counts, 'transit_policy': transit,
+             'destination': replacement.client.destination(SUPABASE_URL, os.environ.get('OPENPLAN_DEPLOYMENT_ID', ''))}
+    import model_common_population_package
+    package_library = model_common_population_package.population_library()
+    package_library._reject_credentials(value)
+    return json.loads(replacement.journal.canonical(value))
 
 
 def population_setup_reader(run_id: str, run_row: dict, work_dir: str, *, stage_id: str | None = None):
@@ -7282,12 +7391,30 @@ def _claim_and_run_stage(stage: dict) -> bool:
     state_file = os.path.join(work_dir, f"state.json")
 
     try:
+        if stage_name != 'AequilibraE Setup':
+            current_run = sb_get_run(run_id)
+            if ((current_run.get('input_snapshot_json') or {}).get('commonPopulation') or {}).get('mode') == 'restore_checkpoint':
+                import model_population_replacement as replacement
+                replacement.check_effective_settings(
+                    population_setup_reader(run_id, current_run, work_dir, stage_id=stage_id),
+                    settings=population_replacement_settings(current_run), deployment_id=os.environ.get('OPENPLAN_DEPLOYMENT_ID', ''))
         if stage_name == "AequilibraE Setup":
             run_row = sb_get_run(run_id)
             package_meta = ensure_dynamic_package(run_id, work_dir, run_row=run_row, stage_id=stage_id)
             pkg_dir = package_meta["package_dir"]
             bbox = tuple(package_meta["bbox"])
 
+            if package_meta.get('common_population') is not None:
+                import model_population_replacement as replacement
+                population_reader = population_setup_reader(run_id, run_row, work_dir, stage_id=stage_id)
+                request = (run_row.get('input_snapshot_json') or {}).get('commonPopulation') or {}
+                if request.get('custody') == 'legacy_stage_snapshot' and os.getenv('OPENPLAN_HOSTED_ARTIFACT_MIRROR') != '1':
+                    import model_common_population_setup_recovery
+                    replacement.register(population_reader,
+                        model_common_population_setup_recovery.checkpoint_directory(population_reader, work_dir),
+                        settings=population_replacement_settings(run_row), deployment_id=os.environ.get('OPENPLAN_DEPLOYMENT_ID', ''))
+                if request.get('mode') == 'restore_checkpoint' and os.path.lexists(os.path.join(work_dir, 'aeq_project')):
+                    raise RuntimeError('Replacement network destination must be fresh')
             result = stage_setup(run_id, stage_id, work_dir, bbox, pkg_dir)
             if package_meta.get("common_population") is not None:
                 publish_common_population(run_id, stage_id, pkg_dir, package_meta)
