@@ -357,8 +357,8 @@ export default async function ProjectDetailPage({
 
   // The documents lane: the posture header's exact KB head-count (null on any
   // failed read, never zero) plus the project's slice of the Document Library,
-  // with per-source read outcomes the panel below discloses itself.
-  const documentsLane = await loadProjectDocumentsLane(supabase, project.id, project.workspace_id);
+  // with per-source read outcomes, and the estimate's exact linked source.
+  const documentsLane = await loadProjectDocumentsLane(supabase, project.id, project.workspace_id, project.estimated_cost_source_document_id);
 
   // Prefer runs attributed to THIS project (run-provenance migration). A
   // deployment without the project_id column falls back to the workspace-wide
@@ -1373,7 +1373,7 @@ export default async function ProjectDetailPage({
       </PageTabPanel>
 
       <PageTabPanel tabKey="funding" active={activeTab === "funding"}>
-          <ProjectEstimatedCostEditor project={project} canWrite={canAccessWorkspaceAction("plans.write", projectRole)} documents={documentsLane.library.entries} />
+          <ProjectEstimatedCostEditor project={project} canWrite={canAccessWorkspaceAction("plans.write", projectRole)} documents={documentsLane.library.entries} estimateSource={documentsLane.estimateSource} />
           <ProjectFundingPanel
             projectId={project.id}
             workspaceId={project.workspace_id}
