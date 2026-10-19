@@ -24,3 +24,10 @@ Private raw logs on this host:
 
 No TSC, build, browser, server, database or hosted acceptance ran.
 Computed CSS, identified desktop/390px fit, browser keyboard/console behavior and plot-symbol appearance remain pending root review.
+
+R10 update, October 19, 2026. This supersedes the initial no-TSC/build status above.
+The helper parent annotation now includes PostCSS AnyNode; runtime traversal and assertions stay unchanged.
+Build 01 remains failed before Next on duplicate npm config paths. Build 02 remains failed after webpack compiled in 89s, with TS2322 at the former parent annotation. Partial .next is retained.
+One new window passed: harmless 6/6, intended Square-scale AssertionError, exact CSS/test byte and mode restoration, final 6/6, full configured tsc --noEmit --incremental false exit 0, and scoped ESLint exit 0.
+Parent, manager wait and inner exited 0; the compiler lock and owned dependency link were released. Raw logs/JSON and custody receipts are under `/home/nathaniel/.local/state/openplan/m2c-appearance-postcss-type-check-20261019-01/`.
+These source/type checks do not establish computed corner coverage or universal avatar/chart geometry. A complete identified build and desktop/390px browser journey remain pending.

@@ -9,7 +9,7 @@ const sheets = ["globals", "cartographic", "workspace-gis"].map((name) =>
 function declarations(selector: string) {
   const values: Record<string, string> = {};
   for (const sheet of sheets) sheet.walkRules(selector, (rule) => {
-    let parent = rule.parent;
+    let parent: postcss.AnyNode | undefined = rule.parent;
     while (parent) {
       if (parent.type === "atrule" && parent.name === "media") return;
       parent = parent.parent;
