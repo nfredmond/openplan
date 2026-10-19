@@ -1,3 +1,4 @@
+import { readSafetySeedOrigin } from "@/lib/grants/safety-seed-origin";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
@@ -216,17 +217,27 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       if (parsed.data.finalMarkdown !== undefined) {
         // Operator-edited text: the human wrote or reviewed-and-edited it, so
         // the human — not a stored validation verdict — is the authority.
+        const sourceDraftId = parsed.data.finalizedFromDraftId ?? section.finalized_from_draft_id;
+        if (sourceDraftId) {
+          const linked = await supabase.from("funding_opportunity_section_drafts")
+            .select("id, section_id").eq("id", sourceDraftId).eq("section_id", section.id)
+            .eq("opportunity_id", opportunity.id).eq("workspace_id", opportunity.workspace_id).maybeSingle();
+          if (linked.error) return NextResponse.json({ error: "Failed to load edited draft provenance" }, { status: 500 });
+          if (!linked.data) return NextResponse.json({ error: "Edited draft provenance does not belong to this section" }, { status: 422 });
+        }
         updates.final_markdown = parsed.data.finalMarkdown;
-        updates.finalized_from_draft_id = parsed.data.finalizedFromDraftId ?? null;
+        updates.finalized_from_draft_id = sourceDraftId ?? null;
       } else if (parsed.data.finalizedFromDraftId !== undefined) {
         // UNEDITED stored AI draft: only an exportable draft (fully grounded
         // AND faithfulness-checked) may be committed verbatim. Anything less
         // returns the flagged sentences for human review instead of shipping.
         const { data: draftRow, error: draftError } = await supabase
           .from("funding_opportunity_section_drafts")
-          .select("id, section_id, draft_markdown, grounding_json")
+          .select("id, section_id, draft_markdown, grounding_json, origin, safety_seed_id")
           .eq("id", parsed.data.finalizedFromDraftId)
           .eq("section_id", section.id)
+          .eq("opportunity_id", opportunity.id)
+          .eq("workspace_id", opportunity.workspace_id)
           .maybeSingle();
 
         if (draftError) {
@@ -239,9 +250,12 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
           );
         }
 
-        const draft = draftRow as { draft_markdown: string; grounding_json: unknown };
+        const draft = draftRow as { draft_markdown: string; grounding_json: unknown; origin?: string; safety_seed_id?: string };
+        if (draft.origin === "safety_plan_seed" && !readSafetySeedOrigin(draft)) {
+          return NextResponse.json({ error: "Stored Safety seed provenance is malformed. Regenerate and seed again." }, { status: 422 });
+        }
         const grounding = parseStoredNarrativeGrounding(draft.grounding_json);
-        if (!grounding || !isNarrativeExportable(grounding)) {
+        if (!readSafetySeedOrigin(draft) && (!grounding || !isNarrativeExportable(grounding))) {
           return NextResponse.json(
             {
               error:

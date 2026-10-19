@@ -1,3 +1,4 @@
+import { SAFETY_SEED_CAVEAT, type SafetySeedProvenance } from "./safety-seed-origin";
 /**
  * The packaged grant-application document: one self-contained HTML string,
  * following the reports/html.ts conventions (all values escaped, inline
@@ -31,16 +32,20 @@ export const APPLICATION_EXPORT_STANDING_CAVEATS: readonly string[] = [
   BCA_NARRATIVE_CAVEAT,
   ENGAGEMENT_NARRATIVE_CAVEAT,
   KB_NARRATIVE_CAVEAT,
+  SAFETY_SEED_CAVEAT,
 ];
 
 export type GrantApplicationSectionOrigin =
   | "operator_authored"
   | "ai_draft_unedited"
   | "ai_draft_edited"
+  | "safety_seed_unedited"
+  | "safety_seed_operator_edited"
   | "none";
 
 export type GrantApplicationSectionProvenance = {
   origin: GrantApplicationSectionOrigin;
+  safetySeed?: SafetySeedProvenance;
   model: string | null;
   groundedSentenceCount: number | null;
   totalSentenceCount: number | null;
@@ -78,6 +83,7 @@ export type GrantApplicationExportData = {
   sections: GrantApplicationExportSection[];
   attachments: ApplicationAttachmentRow[];
   generatedAt: string;
+  safetySeedHistory?: SafetySeedProvenance[];
 };
 
 /** The document label per pursuit kind, used in the title and cover eyebrow. */
@@ -104,6 +110,8 @@ const ORIGIN_LABELS: Record<GrantApplicationSectionOrigin, string> = {
   ai_draft_unedited: "AI draft finalized unedited (passed the grounding gate)",
   ai_draft_edited: "AI draft, operator-edited",
   none: "No final text",
+  safety_seed_unedited: "Code-built Safety seed, finalized unedited",
+  safety_seed_operator_edited: "Code-built Safety seed, operator-edited",
 };
 
 function esc(value: string): string {
@@ -330,7 +338,19 @@ export function buildGrantApplicationHtml(data: GrantApplicationExportData): str
       ${orderedSections.map((entry) => sectionMarkup(entry)).join("\n      ")}
       ${attachmentsMarkup(data.attachments)}
       ${provenanceMarkup(orderedSections)}
+      ${safetySeedHistoryMarkup(data.safetySeedHistory ?? orderedSections.flatMap((entry) => entry.provenance.safetySeed ? [entry.provenance.safetySeed] : []))}
     </main>
   </body>
 </html>`;
+}
+
+/** Frozen qualifications remain in exports even after later operator edits. */
+function safetySeedHistoryMarkup(history: readonly SafetySeedProvenance[]): string {
+  if (!history.length) return "";
+  return `<section id="safety-seed-provenance"><h2>Safety seed sources and caveats</h2>${history.map((p) => `<article>
+    <p>${esc(p.caveat)}</p>
+    <p>Source report: <a href="/reports/${esc(p.reportId)}#artifact-${esc(p.artifactId)}">${esc(p.reportId)}</a>.
+    Artifact: <a href="/api/reports/${esc(p.reportId)}/artifacts/${esc(p.artifactId)}/download">${esc(p.artifactId)}</a>.
+    Acquisition: ${esc(p.acquisitionId)}. Snapshot SHA-256: ${esc(p.snapshotHash)}.</p>
+    <ul>${p.sourceCaveats.map((c) => `<li>${esc(c)}</li>`).join("")}</ul></article>`).join("")}</section>`;
 }

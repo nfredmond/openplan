@@ -3,7 +3,7 @@
 import { parse as parseCsv } from "csv-parse/browser/esm/sync";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import type { DocumentLibraryEntry } from "@/lib/document-library/types";
+import type { DocumentLibraryEntry, LinkedDocumentLibraryEntry } from "@/lib/document-library/types";
 
 type ProjectCostRecord = {
   id: string;
@@ -18,6 +18,7 @@ type ProjectEstimatedCostEditorProps = {
   project: ProjectCostRecord;
   canWrite: boolean;
   documents: Array<Pick<DocumentLibraryEntry, "sourceId" | "id" | "title" | "projectId">>;
+  estimateSource: LinkedDocumentLibraryEntry;
 };
 
 type CsvPreview = { columns: string[]; rows: string[][]; truncated: boolean };
@@ -66,15 +67,21 @@ export function ProjectEstimatedCostEditor({
   project,
   canWrite,
   documents,
+  estimateSource,
 }: ProjectEstimatedCostEditorProps) {
   const router = useRouter();
+  const [uploadedSources, setUploadedSources] = useState<Array<{ id: string; title: string }>>([]);
   const sourceOptions = useMemo(
-    () => documents
-      .filter((entry) => entry.sourceId === "knowledge_base" && entry.projectId === project.id)
-      .map((entry) => ({ id: entry.id, title: entry.title })),
-    [documents, project.id]
+    () => {
+      const entries = estimateSource.entry ? [...documents, estimateSource.entry] : documents;
+      const options = entries
+        .filter((entry) => entry.sourceId === "knowledge_base" && entry.projectId === project.id)
+        .map((entry) => ({ id: entry.id, title: entry.title }));
+      return [...options, ...uploadedSources].filter((entry, index, all) =>
+        all.findIndex((item) => item.id === entry.id) === index);
+    },
+    [documents, estimateSource.entry, project.id, uploadedSources]
   );
-  const [availableSources, setAvailableSources] = useState(sourceOptions);
   const [amount, setAmount] = useState(project.estimated_cost_amount === null ? "" : String(project.estimated_cost_amount));
   const [currency, setCurrency] = useState(project.estimated_cost_currency ?? "");
   const [priceYear, setPriceYear] = useState(project.estimated_cost_basis_year === null ? "" : String(project.estimated_cost_basis_year));
@@ -150,7 +157,7 @@ export function ProjectEstimatedCostEditor({
       setCurrencyColumn(suggestedColumn(preview.columns, [/currency/i]));
       if (suggestedCost) setCurrency(currencyFromHeader(preview.columns[Number(suggestedCost)] ?? ""));
       setSourceDocumentId(document.id);
-      setAvailableSources((current) => current.some((option) => option.id === document.id)
+      setUploadedSources((current) => current.some((option) => option.id === document.id)
         ? current
         : [...current, { id: document.id, title: document.title }]);
       setSelectedCsv(null);
@@ -180,7 +187,14 @@ export function ProjectEstimatedCostEditor({
     setMessage(`${name} selected. Save below to apply it to this project.`);
   }
 
-  const currentSource = availableSources.find((option) => option.id === project.estimated_cost_source_document_id);
+  const currentSource = estimateSource.entry;
+  const sourceDisclosure = estimateSource.status === "pending"
+    ? "The linked source document is not available yet because the document schema is pending."
+    : estimateSource.status === "failed"
+      ? "The linked source document could not be checked. Try again when the connection or access recovers."
+      : project.estimated_cost_source_document_id
+        ? "The linked source document is missing or is not readable for this project."
+        : "No source document linked.";
 
   return (
     <article className="module-section-surface min-w-0 max-w-full" aria-labelledby="estimated-project-cost-heading">
@@ -202,10 +216,17 @@ export function ProjectEstimatedCostEditor({
             {project.estimated_cost_basis_year ? `Price year ${project.estimated_cost_basis_year}. ` : "Price year not entered. "}
             {currentSource
               ? `Source: ${currentSource.title}.`
-              : project.estimated_cost_source_document_id
-                ? "The linked source document is not readable in this document list."
-                : "No source document linked."}
+              : sourceDisclosure}
           </p>
+          {currentSource ? (
+            currentSource.downloadHref ? (
+              <a className="mt-2 inline-block break-words font-medium underline" href={currentSource.downloadHref}>
+                Open supporting cost estimate
+              </a>
+            ) : (
+              <p className="mt-2 text-muted-foreground">The linked source has no stored original file to open.</p>
+            )
+          ) : null}
         </div>
       ) : (
         <p className="mt-4 text-sm text-muted-foreground">No planning-level cost estimate has been entered.</p>
@@ -257,7 +278,7 @@ export function ProjectEstimatedCostEditor({
             <label className="grid gap-1 text-sm">Amount<input className="rounded-md border bg-background px-3 py-2" inputMode="decimal" required min="0.01" step="0.01" value={amount} onChange={(event) => setAmount(event.target.value)} /></label>
             <label className="grid gap-1 text-sm">Currency<input className="rounded-md border bg-background px-3 py-2" required minLength={3} maxLength={3} placeholder="USD" value={currency} onChange={(event) => setCurrency(event.target.value.toUpperCase())} /></label>
             <label className="grid gap-1 text-sm">Price year (optional)<input className="rounded-md border bg-background px-3 py-2" type="number" min={1800} max={3000} value={priceYear} onChange={(event) => setPriceYear(event.target.value)} /></label>
-            <label className="grid gap-1 text-sm">Source document (optional)<select className="rounded-md border bg-background px-3 py-2" value={sourceDocumentId} onChange={(event) => setSourceDocumentId(event.target.value)}><option value="">No document linked</option>{availableSources.map((option) => <option key={option.id} value={option.id}>{option.title}</option>)}</select></label>
+            <label className="grid gap-1 text-sm">Source document (optional)<select className="rounded-md border bg-background px-3 py-2" value={sourceDocumentId} onChange={(event) => setSourceDocumentId(event.target.value)}><option value="">No document linked</option>{sourceDocumentId && !sourceOptions.some((option) => option.id === sourceDocumentId) ? <option value={sourceDocumentId}>Linked source unavailable</option> : null}{sourceOptions.map((option) => <option key={option.id} value={option.id}>{option.title}</option>)}</select></label>
             <div className="flex flex-wrap items-center gap-2 md:col-span-4">
               <button className="rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60" type="submit" disabled={saving}>{saving ? "Saving…" : selectedCsv ? "Apply selected project" : "Save estimated cost"}</button>
               {project.estimated_cost_amount !== null ? <button className="rounded-md border px-3 py-2 text-sm" type="button" disabled={saving} onClick={() => void save(null)}>Clear estimate</button> : null}

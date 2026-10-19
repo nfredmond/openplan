@@ -3,8 +3,9 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const refreshMock = vi.fn();
+const pushMock = vi.fn();
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ refresh: refreshMock }),
+  useRouter: () => ({ refresh: refreshMock, push: pushMock }),
 }));
 
 import { WorkNotificationInboxPanel } from "@/components/my-work/notification-inbox";
@@ -117,7 +118,8 @@ describe("the reminder panel", () => {
       kind,
       title: `Reminder about ${kind}`,
       body: "",
-      due_on: `2026-08-1${index}`,
+      due_on: kind === "grant_deadline_changed" ? null : `2026-08-1${index}`,
+      deadline_change_id: kind === "grant_deadline_changed" ? "event-badge" : null,
       project_id: null,
       created_at: "2026-08-11T13:00:00.000Z",
     }));
@@ -129,6 +131,34 @@ describe("the reminder panel", () => {
     // money must be committed, the other the date it goes back to the funder.
     expect(screen.getByText("Award obligation")).toBeTruthy();
     expect(screen.getByText("Award lapse")).toBeTruthy();
+  });
+
+  it("opens the exact changed opportunity in its workspace and labels a cleared date as recorded", async () => {
+    const body = "Pursue-or-skip decision deadline recorded in OpenPlan. Previous: 2026-10-18T18:00:00.123456Z. New: not recorded (cleared). Actor unknown.";
+    await renderPanel(await inboxFrom([{
+      id: "event-notice", recipient_user_id: ALICE, workspace_id: "workspace-target",
+      is_read: false, kind: "grant_deadline_changed", title: "A changed opportunity", body,
+      subject_table: "funding_opportunities", subject_id: "opportunity-target",
+      due_on: null, deadline_change_id: "event-original", created_at: "2026-10-18T20:00:00Z",
+    }]));
+    expect(screen.getByText("Recorded deadline change")).toBeTruthy();
+    expect(screen.getByText("Recorded Oct 18, 2026")).toBeTruthy();
+    expect(screen.getByText(body)).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Open opportunity" }));
+    await waitFor(() => expect(pushMock).toHaveBeenCalledWith("/grants?focusOpportunityId=opportunity-target#funding-opportunity-opportunity-target"));
+    expect(fetchMock).toHaveBeenCalledWith("/api/workspaces/active", expect.objectContaining({ body: JSON.stringify({ workspaceId: "workspace-target" }) }));
+    expect(fetchMock).not.toHaveBeenCalledWith("/api/work-notifications/read", expect.anything());
+  });
+
+  it("leaves a failed workspace switch visible and does not navigate", async () => {
+    fetchMock.mockResolvedValue({ ok: false });
+    await renderPanel({ ok: true, truncated: false, rows: [{
+      id: "change", kind: "grant_deadline_changed", title: "Changed", body: "Recorded change", dueOn: null, eventId: "event-original",
+      projectId: null, createdAt: null, opportunity: { id: "target", workspaceId: "other" },
+    }] });
+    fireEvent.click(screen.getByRole("button", { name: "Open opportunity" }));
+    await waitFor(() => expect(screen.getByRole("alert").textContent).toContain("could not be opened"));
+    expect(pushMock).not.toHaveBeenCalled();
   });
 
   it("renders nothing at all when a HEALTHY sweep found nothing due", async () => {

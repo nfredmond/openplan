@@ -353,33 +353,11 @@ export function buildSafetyCrashEvidence(
  * no generated Supabase types step, by deliberate decision) — so a consumer that
  * hand-wrote its own projection and forgot `party_completeness` would get
  * `undefined`, which reads as "not retrieved", which prints a caveat about
- * missing people onto an acquisition that has them.
+ * missing people onto an acquisition that has them. Keep the exported value a
+ * literal so the source projection guard checks every consumer against schema.
  */
-export const SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION = [
-  "id",
-  "project_id",
-  "min_lon",
-  "min_lat",
-  "max_lon",
-  "max_lat",
-  "status",
-  "source_id",
-  "source_label",
-  "attribution",
-  "severity_completeness",
-  "crash_count",
-  "geocoded_count",
-  "stored_count",
-  "truncated",
-  "years_requested",
-  "created_at",
-  "dimension_coverage",
-  "party_completeness",
-  "party_count",
-  "involvement_basis",
-  "published_through",
-  "published_through_provenance",
-].join(", ");
+export const SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION =
+  "id, project_id, min_lon, min_lat, max_lon, max_lat, status, source_id, source_label, attribution, severity_completeness, crash_count, geocoded_count, stored_count, truncated, years_requested, created_at, dimension_coverage, party_completeness, party_count, involvement_basis, published_through, published_through_provenance";
 
 /** The name of the grouped-count RPC. One spelling, so a caller cannot typo it into a silent empty. */
 export const SAFETY_CRASH_EVIDENCE_COUNTS_RPC = "safety_crash_evidence_counts";
