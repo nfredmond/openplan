@@ -32,6 +32,14 @@ zone, and sends only changed fields so untouched timestamp precision remains.
 Failed saves keep the draft visible. Apply
 `20261018000001_grant_deadline_changes.sql` before deploying this capability.
 
+**Safety plan seeds:** the existing SS4A application workspace previews six
+source-bound working drafts from an exact same-project Safety artifact. Source
+snapshots, draft origin and export caveats stay attached; final text, prior
+drafts and checklist states remain. Review each section and its missing inputs
+before finalizing. Apply `20261018000002_ss4a_safety_seed.sql` before deploying
+this capability. The [source status](docs/reviews/2026-10-18-ss4a-safety-seed/STATUS.md)
+records the separate native, browser and artifact checks and retained failures.
+
 **Compact assignment graph preparation:** a worker-owned adapter checks complete
 car-eligible link incidence before excluding a proved nontraversable sink chain.
 It retains the native compressor's IDs and checks signed path correspondence
