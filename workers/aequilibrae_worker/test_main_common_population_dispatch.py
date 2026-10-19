@@ -13,6 +13,7 @@ with patch('dotenv.load_dotenv'), patch.dict(os.environ, {
     import main
 import data_pipeline
 import model_attempt_writer
+import model_stage_computation
 import test_model_common_population_handoff as supplied
 response = supplied.response
 
@@ -29,6 +30,7 @@ class OrdinaryPopulationDispatchTests(unittest.TestCase):
 
     def test_normal_dispatch_reuses_real_population_and_publishes_exact_seven_files(self):
         f = self.fixture
+        deployment_id = 'supplied-population-dispatch'
         stage = copy.deepcopy(f.tables['model_run_stages'][1])
         stage['status'] = 'queued'
         run = copy.deepcopy(f.tables['model_runs'][1])
@@ -54,6 +56,7 @@ class OrdinaryPopulationDispatchTests(unittest.TestCase):
             published.append((copy.deepcopy(payload), kwargs))
             return {'id': 'supplied-receipt-id'}
         with ExitStack() as stack:
+            stack.enter_context(patch.dict(os.environ, {'OPENPLAN_DEPLOYMENT_ID': deployment_id}))
             values = {'RUN_WORK_ROOT': str(f.root), 'SUPABASE_URL': f.writer.base_url,
                       'SUPABASE_KEY': 'fixture-only'}
             for name, value in values.items():
@@ -70,6 +73,12 @@ class OrdinaryPopulationDispatchTests(unittest.TestCase):
             stack.enter_context(patch.object(main, 'stage_setup', return_value={'log': 'Supplied engine boundary'}))
             stack.enter_context(patch.object(main, 'sb_record_retained_artifact', side_effect=artifact))
             self.assertTrue(main.process_stage(stage))
+        self.assertEqual(model_stage_computation.summaries(
+            f.consumer_dir / 'common-population-commands',
+            base_url=f.writer.base_url, deployment_id=deployment_id), [{
+                'run_id': f.consumer_id, 'stage_id': f.consumer_stage,
+                'name': 'common-population-package', 'state': 'result_retained',
+                'model_resumed': False}])
         self.assertEqual(len(published), 7, patches)
         self.assertEqual({p['artifact_type'] for p, _ in published}, {
             'common_population', 'common_population_households', 'common_population_persons',

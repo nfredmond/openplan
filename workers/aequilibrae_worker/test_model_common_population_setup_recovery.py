@@ -579,7 +579,10 @@ class ManagedSetupRecoveryTests(unittest.TestCase):
             connection.execute('INSERT INTO execution_admissions VALUES(?,?,1)', (self.context.claim_request_id, self.f.workspace))
         work = self.f.root / 'runs' / self.f.consumer_id / 'attempts' / hashlib.sha256(bound.encode()).hexdigest() / self.f.consumer_stage / self.f.consumer_attempt
         work.mkdir(parents=True)
-        (work / 'attempt_owner.json').write_text(journal.canonical({'schema': 'openplan.attempt-workspace.v1', **asdict(self.context)}) + '\n')
+        owner = os.open(work / 'attempt_owner.json', os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        with os.fdopen(owner, 'w') as stream:
+            os.fchmod(stream.fileno(), 0o600)
+            stream.write(journal.canonical({'schema': 'openplan.attempt-workspace.v1', **asdict(self.context)}) + '\n')
         self.f.consumer_dir = work
         self.f.destination = work / 'population-source'
         self.f.tables['model_runs'][1]['run_title'] = 'Supplied managed population'

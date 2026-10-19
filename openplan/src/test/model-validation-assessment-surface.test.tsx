@@ -187,8 +187,8 @@ describe("separate method assessment panels", () => {
         expect(generic).toHaveAccessibleName(new RegExp(fixture.output.id));
       }
     }
-    expect(screen.getByRole("heading", { name: "AequilibraE assignment", exact: true })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "ActivitySim behavioral demand with AequilibraE assignment", exact: true })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "AequilibraE assignment" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "ActivitySim behavioral demand with AequilibraE assignment" })).toBeInTheDocument();
   });
 
   it.each(["storage", "local"] as const)("retains single AequilibraE compatibility with %s artifact references", (storage) => {
