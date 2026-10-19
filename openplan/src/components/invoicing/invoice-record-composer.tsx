@@ -190,6 +190,43 @@ function InvoiceRecordComposerSession({
   },[termsFor]);
   const [message, setMessage] = useState<string | null>(null);
 
+  /** Keep the current version and its acknowledgement inside the active modal step. */
+  const renderAwardTermsReview = useCallback((values: InvoiceValues) => {
+    if (!values.fundingAwardId) return null;
+    const key = selectionKey(values);
+    if (termsRead?.key === key && termsRead.status === "error") {
+      return <p role="alert">{termsRead.message}</p>;
+    }
+    const current = termsFor(values);
+    if (!current) return <p role="status">Loading current award terms. Review is pending.</p>;
+    if (!current.award.latest_handoff_revision_id) {
+      return <p>No retained award conditions are recorded. Award applicability remains unassessed.</p>;
+    }
+    if (!current.award.current_handoff_revision_id) {
+      return <p role="alert">No effective award terms are available. Reimbursement cannot be saved against this managed award.</p>;
+    }
+    const currentReviewKey = reviewKeyFor(values, current);
+    return (
+      <details open>
+        <summary>Current award terms for reimbursement</summary>
+        <p className="text-sm break-words">
+          Current version: {current.award.current_handoff_revision_id}. Currency: {current.award.currency_code}.
+        </p>
+        <pre className="whitespace-pre-wrap break-words text-xs">
+          {JSON.stringify(current.history.find((revision) => revision.id === current.award.current_handoff_revision_id)?.terms, null, 2)}
+        </pre>
+        <label>
+          <input
+            type="checkbox"
+            checked={reviewedTermsKey === currentReviewKey}
+            onChange={(event) => setReviewedTermsKey(event.target.checked ? currentReviewKey : null)}
+          />{" "}
+          I reviewed this exact current terms version. The reimbursement profile is guidance, not established award applicability.
+        </label>
+      </details>
+    );
+  }, [selectionKey, termsRead, termsFor, reviewKeyFor, reviewedTermsKey]);
+
   const steps = useMemo<GuidedFlowStep<InvoiceValues>[]>(
     () => [
       {
@@ -298,6 +335,7 @@ function InvoiceRecordComposerSession({
                   ))}
                 </select>
               </GuidedFlowRow>
+              {renderAwardTermsReview(flow.values)}
             </>
           );
         },
@@ -344,6 +382,7 @@ function InvoiceRecordComposerSession({
 
           return (
             <>
+              {renderAwardTermsReview(flow.values)}
               <GuidedFlowRow flow={flow} name="amount" label="Gross amount">
                 <Input {...flow.text("amount")} type="text" inputMode="decimal" placeholder="Actual invoice amount" />
               </GuidedFlowRow>
@@ -487,6 +526,7 @@ function InvoiceRecordComposerSession({
         },
         render: (flow) => (
           <>
+            {renderAwardTermsReview(flow.values)}
             <GuidedFlowRow flow={flow} name="periodStart" label="Period start">
               <Input {...flow.text("periodStart")} type="date" />
             </GuidedFlowRow>
@@ -513,7 +553,7 @@ function InvoiceRecordComposerSession({
         ),
       },
     ],
-    [fundingAwards, projects, reimbursementProfile, invalidateSelection, moneyFor]
+    [fundingAwards, projects, reimbursementProfile, invalidateSelection, moneyFor, renderAwardTermsReview]
   );
 
   const flow = useGuidedFlow<InvoiceValues>({
@@ -622,10 +662,6 @@ function InvoiceRecordComposerSession({
     }).catch((error)=>{if(!controller.signal.aborted && active.current && epoch.current===requestEpoch)setTermsRead({key:requestKey,status:"error",message:String(error)});});
     return ()=>controller.abort();
   },[canWrite,flowOpen,selectedAwardId,selectedProjectId,selectionEpoch,workspaceId,requestKey]);
-  const awardTerms=flowOpen ? termsFor(flow.values) : null;
-  const termsError=flowOpen && termsRead?.key===requestKey && termsRead.status==="error" ? termsRead.message : "";
-  const currentReviewKey=awardTerms ? reviewKeyFor(flow.values,awardTerms) : null;
-  const termsReviewed=currentReviewKey!==null && reviewedTermsKey===currentReviewKey;
   if (!canWrite) {
     return (
       <article className="border border-border/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.74),rgba(246,248,244,0.96))] px-5 py-5 shadow-[0_18px_40px_rgba(15,23,42,0.04)] dark:bg-[linear-gradient(180deg,rgba(15,23,32,0.86),rgba(11,18,26,0.96))]">
@@ -658,8 +694,6 @@ function InvoiceRecordComposerSession({
         </div>
       </div>
 
-      {termsError ? <p role="alert">{termsError}</p>:null}
-      {awardTerms?.award.latest_handoff_revision_id ? <details open><summary>Current award terms for reimbursement</summary><pre className="whitespace-pre-wrap break-words text-xs">{JSON.stringify(awardTerms.history.find((r)=>r.id===awardTerms.award.current_handoff_revision_id)?.terms ?? "No effective terms",null,2)}</pre><label><input type="checkbox" checked={termsReviewed} onChange={(e)=>setReviewedTermsKey(e.target.checked?currentReviewKey:null)} /> I reviewed this exact current terms version. The profile below is guidance, not established award applicability.</label></details>:null}
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <Button
           type="button"
