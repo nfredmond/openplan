@@ -42,9 +42,10 @@ class EngineScopeTests(unittest.TestCase):
 
     def test_actual_setup_closes_after_download_failure(self):
         project=Mock();project.network.create_from_osm.side_effect=ValueError('synthetic download failure')
-        with tempfile.TemporaryDirectory() as temp,mock_engine_runtime(Mock(return_value=project)),patch.object(aeq,'sb_patch_stage'):
+        with tempfile.TemporaryDirectory() as temp,mock_engine_runtime(Mock(return_value=project)),patch.object(aeq,'sb_patch_stage'),patch.object(aeq,'install_fresh_osm_modes') as install_modes:
             with self.assertRaisesRegex(ValueError,'synthetic download failure'):
                 aeq.stage_setup('run','stage',temp,(-122,38,-121,39),str(Path(temp)/'package'))
+        install_modes.assert_called_once_with()
         project.close.assert_called_once_with()
 
     def test_actual_assignment_closes_after_graph_failure(self):
