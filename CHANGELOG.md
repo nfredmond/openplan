@@ -20,34 +20,26 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-No changes recorded after the v0.70.0 candidate below.
+No changes recorded after v0.70.0.
 
 ## 0.70.0 (2026-10-21)
 
-**Development candidate, not yet tagged.** This packages merged main
-`981446636dc28a2ac61cfeb676e0156bdfbf22b9`. Final release checks and an affected
-final-candidate view remain pending. It does not declare a current hosted
-deployment or completed v1 milestone.
+**Manual source-page plan proposals.** Document review stages quoted records
+from a retained page without an AI account. Pending proposals have separate
+pagination from reading history. Manual chapter copies retain source authorship;
+review and saving remain explicit.
 
-**Source-page plan proposals.** Document review can stage quoted records from a
-retained page without an AI account. Pending proposals have their own pages,
-separate from reading history. Manual chapter copies retain source authorship;
-review and saving remain explicit. Existing isolated native and identified
-browser records retain their exact source/build scope and prior failed attempts.
+**Exact crash-year selection and map focus.** High-injury network reads apply
+each requested year, intersected with any range bounds, and refuse invalid or
+disjoint inputs. Sparse-year disclosures list the selected years. Selecting a
+ranked road reveals and focuses the existing map. The bounded desktop and 390px
+map-focus checks retain their identified builds and earlier failed attempts.
+Sparse-year browser selection remains unassessed.
 
-**Exact crash-year selection.** High-injury network reads apply each requested
-year, intersected with any range bounds, and refuse invalid or disjoint inputs.
-Sparse-year disclosures list the selected years. Focusing a ranked road also
-reveals and focuses the existing map. Later identified desktop/390px receipts
-cover the corrected map focus; sparse-year browser selection remains unassessed.
-Ordinary query/DOM controls do not prove provider completeness.
-
-**Dependency corrections.** The lockfile updates follow-redirects to 1.16.1,
-Hono to 4.13.11 and Vite to 7.3.7. A fresh audit then identifies two
-moderate findings through Vitest mocker. Vitest is pinned to 4.1.12 with its
-matching packages; npm also updates Chai to 6.3.0 and tinyrainbow to 3.2.0.
-The corrected lock-only audit reports zero advisories. A fresh install and full
-QA/build on this final graph remain pending.
+**Dependency corrections.** The installed lockfile updates follow-redirects to
+1.16.1, Hono to 4.13.11 and Vite to 7.3.7. Vitest and its matching packages use
+4.1.12; Chai uses 6.3.0 and tinyrainbow uses 3.2.0. The maintained dependency
+audit reports zero vulnerabilities at the final local QA checkpoint.
 
 **Upgrade before dependent code.** This tree has 429 migration files. The single
 addition since v0.69.0 is
@@ -56,15 +48,17 @@ and apply the pending additive migration before deploying this capability. Do
 not replay an already applied version or rewrite migration history. Keep the
 previous compatible build and follow the self-hosting and recovery guidance.
 
-**Remaining release and v1 boundaries.** Exact-candidate QA/build, shuffled,
-worker and isolated RLS evidence, release-order checks and the affected final-build
-view must be recorded before tagging. Hosted acceptance requires its
-own identified deployment and schema record. Source-page proposals do not prove
-complete predecessor coverage, OCR accuracy, adoption or legal applicability.
-Requested crash years do not establish complete observations, zero crashes in
-unavailable years, a valid annual denominator, treatment effects or scientific
-validity. Full RTP, Safety, nationwide AequilibraE and ActivitySim validation,
-and all remaining v1 requirements stay open.
+**Verification and limits.** The release record identifies the tested source,
+ordinary QA/build, shuffled order, applicable isolated RLS and worker checks,
+affected local views and representative upgrade evidence. The GitHub release
+records the final commit and publication. Hosted acceptance requires its own
+identified deployment and schema record. Local synthetic source-page workflows
+do not prove complete predecessor coverage, scanned OCR, source authority,
+adoption or legal applicability. Requested crash years do not establish
+complete observations, zero crashes in unavailable years, a valid annual
+denominator, treatment effects or scientific validity. Full RTP, Safety,
+nationwide AequilibraE and ActivitySim validation, and all remaining v1
+requirements stay open.
 
 ## 0.69.0 (2026-10-19)
 

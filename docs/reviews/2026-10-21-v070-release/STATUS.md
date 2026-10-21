@@ -1,4 +1,54 @@
-# v0.70.0 release candidate, not yet published
+# v0.70.0 release verification
+
+## Final local graph and release prerequisites, October 21
+
+The corrected graph installs privately with 969 installed package records
+matching the lockfile. Vitest and its matching packages use 4.1.12. There are
+no donor links. Package and lock versions remain 0.70.0; the dependency audit
+reports zero vulnerabilities at this checkpoint.
+
+The maintained QA gate passes at `85fe3a54c88cfe5489d81b7ea2a226cac14fcf5d`:
+24,002 application tests pass and 1,689 skip; provider controls record 432
+passes and four skips; vendor controls record 19 passes. Lint, dead-code checks,
+audit, webpack, configured TypeScript and 145 static pages complete. Local live
+RLS is explicitly skipped. These skips do not become native passes.
+
+The first shuffled seed 11465 fails on one 20-second report projection test.
+That failed run remains failed. Timed diagnostics find report generation takes
+23 milliseconds and the unused full-source scan about 5.6 seconds. Scanning the
+already-filtered route takes 34 to 39 milliseconds. Full ordered result parity
+holds for all 44 route records, including both project records and the computed
+fallback. The test now supplies that route through the helper's existing files
+option. Every projection, order and fallback assertion remains unchanged; the
+shared scanner and whole-source guards remain unchanged.
+
+A comment-only survivor passes. Removing an actual cost column, making the
+computed fallback literal, and changing its table subject each fail the named
+projection or fallback assertion. Exact bytes and modes restore. Focused checks
+record 126 passes and maintained lint passes. The repaired full seed 11465
+records 24,002 passes, 1,689 skips, zero failures in 288.16 seconds. The original
+timeout's precise phase remains unknown because its run has no phase telemetry.
+No timeout, assertion, skip or scientific criterion is weakened.
+
+The earlier CI-placeholder build has ID `l0EZgpwfUo6X365ms8z9a`. It cannot sign
+in to the retained local database. The release lead owns the separate local
+acceptance build, affected desktop and 390px views, exact-head CI, integration
+and matching publication. Those remain prerequisites for tagging; version
+metadata and this note do not declare publication. The tagged
+[GitHub release](https://github.com/nfredmond/openplan/releases/tag/v0.70.0)
+records the final commit and completed evidence when published.
+
+The release reuses the bounded RTP/HIN and representative v0.69 upgrade evidence
+below at their original source identities. Exact-candidate isolated CI protects
+its own schema/permission and worker boundaries. A local synthetic browser
+view cannot prove authenticated hosted operation, complete predecessor coverage,
+scientific accuracy or full v1. All contract and sole-roadmap requirements remain.
+
+## Earlier candidate checkpoints
+
+The following entries preserve their original pending status and dates. The
+current verification above supersedes only their current local QA disposition.
+
 
 October 21, 2026. This candidate packages merged main
 `981446636dc28a2ac61cfeb676e0156bdfbf22b9`, which is 20 commits beyond the
