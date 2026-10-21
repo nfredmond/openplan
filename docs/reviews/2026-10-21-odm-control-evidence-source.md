@@ -171,3 +171,56 @@ draft, without a release, hosted or scientific promotion.
 
 Private audit JSON, graph comparison and retained preparation failure:
 `/home/nathaniel/.local/state/openplan/pr362-dependency-lock-transfer-20261021-02/`
+
+## Phase timing and selected-fault diagnostics
+
+October 21, 2026. Separate local diagnostics refine the evidence without changing
+worker, verifier, test, fixture, assertion, classifier, durability or timeout
+bytes. The full maintained cohort remains FAILED. CI's original boolean-fault
+classification cause remains UNKNOWN. Python 3.11.15 differs from CI 3.11.17.
+
+After source review, the phase observer's 69 synthetic commands return overall 0
+in 8.628 seconds. Four harmless comments survive, 30 faults fail at their named
+assertions and 35 baseline/restoration commands pass. These controls exercise
+the observer and its evidence readers, without importing actual worker modules.
+
+A separately admitted instrumented full cohort then reaches the unchanged
+30-second child cap. Parent duration is 30.010 seconds; parent and service exit
+1. Its accepted 92-event prefix records 11 completed cases and a twelfth setup.
+Twelve completed setups total 13.364 seconds, and 11 completed bodies total
+15.545 seconds. The last event begins the twelfth body,
+`test_original_processing_dispatch_is_required_before_get`. That body's final
+duration is unavailable. Nine later cases have no start event. Observer overhead
+is included. This locates accumulated setup and body work; it does not establish
+a hung test, predict full-cohort duration or explain the CI classification.
+
+One separately admitted profile runs that twelfth test once and passes. Of
+2.703 seconds measured self time, 615 `posix.fsync` calls account for 2.060
+seconds, or 76.2 percent. The admission-journal synchronization caller accounts
+for 421 of those calls and 1.782 seconds. Cumulative caller times overlap and
+must not be added. This identifies synchronization cost in that single profiled
+run. It does not justify removing durability operations or increasing a cap.
+
+A separate five-command diagnostic checks the exact maintained
+`source-timeout-bool-normalized` mutation. Baseline, harmless comment,
+restored-before-fault and restored-final each pass the same selected test. The
+fault returns 1 at `ValueError not raised` for `value=True`; the unchanged
+maintained classifier accepts that intended failure. Overall duration is 12.873
+seconds. No operational timeout occurs in this observed fault. The possible
+timeout explanation from source assessment remains a hypothesis; no test or
+classifier change follows from it. This local diagnostic does not reproduce
+CI's rejection and does not pass the full 21-case cohort.
+
+All 123 source hashes, modes and sizes remain exact after each diagnostic. Owned
+process and cgroup checks record termination; resource counters for collected
+units remain unavailable. The failed instrumented run retains its actual unit
+identity and raw prefix. Prior failures are preserved. No source repair, cap
+increase, full-campaign acceptance, native database, browser, hosted, scientific
+or release claim follows.
+
+Private raw evidence and detailed limits:
+
+- `/home/nathaniel/.local/state/openplan/odm-phase-controls-20261021-01/RESULT.md`
+- `/home/nathaniel/.local/state/openplan/odm-phase-actual-timing-20261021-01/RESULT.md`
+- `/home/nathaniel/.local/state/openplan/odm-one-case-cprofile-20261021-01/RESULT.md`
+- `/home/nathaniel/.local/state/openplan/odm-timeout-bool-mutant-diagnostic-20261021-01/RESULT.md`
