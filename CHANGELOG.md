@@ -20,6 +20,16 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**PR332 review follow-up:** Project deliverable counts, delivery and activity
+views distinguish pending or failed inputs from an empty project. Current
+land-use publication refuses competing decisions, including a later repeal,
+and checks the decision against the retained packet in one read snapshot.
+Historical report decisions remain dated history. Operators must apply additive
+`20261020235917_land_use_publication_decision_boundary.sql` after
+`20261017030608_land_use_plan_publication_transaction.sql` and before deploying
+the dependent public reader. This source patch does not establish migration,
+concurrency, RLS or browser acceptance.
+
 **Source-page plan proposals:** Document review can stage quoted records from a
 retained page without an AI account. Pending proposals have their own pages,
 separate from reading history. Manual chapter copies retain source authorship;

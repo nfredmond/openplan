@@ -9,14 +9,11 @@ import { ProjectRecordComposer } from "@/components/projects/project-record-comp
 import { ProjectEstimatedCostEditor } from "@/components/projects/project-estimated-cost-editor";
 import { buildStageGateRunOptions, type StageGateEvidenceRunRow } from "./_components/_helpers";
 import { summarizeBillingInvoiceRecords } from "@/lib/invoicing/invoice-records";
-import {
-  buildGrantDecisionModelingSupport,
-  describeProjectGrantModelingReadiness,
-} from "@/lib/grants/modeling-evidence";
+import { buildGrantDecisionModelingSupport, describeProjectGrantModelingReadiness } from "@/lib/grants/modeling-evidence";
 import { buildAerialProjectPosture, describeAerialProjectPosture } from "@/lib/aerial/public";
 import { loadAerialMissionsAndPackagesForProject, loadAerialProjectPosture } from "@/lib/aerial/queries";
 import { buildProjectBudgetSnapshot, type DeliverableBudgetSummary } from "@/lib/projects/budget";
-import { loadProjectBudgetInputs, type ProjectBudgetQuerySupabaseLike } from "@/lib/projects/budget-queries";
+import { loadProjectBudgetInputs, projectDeliverableReadState, type ProjectBudgetQuerySupabaseLike } from "@/lib/projects/budget-queries";
 import { buildProjectControlsSummary } from "@/lib/projects/controls";
 import { buildProjectFundingStackSummary } from "@/lib/projects/funding";
 import { buildProjectSpineCrosslinkSummary, geographyLaneInput } from "@/lib/projects/project-spine-crosslinks";
@@ -505,6 +502,7 @@ export default async function ProjectDetailPage({
   // The board and timeline keep their original six-row recency window; the
   // budget snapshot above deliberately sees the full deliverable list.
   const deliverables = budgetInputs.deliverables.slice(0, 6);
+  const deliverableReadState = projectDeliverableReadState(budgetInputs);
 
   // WHO IS ON THIS TEAM, so an assignee id on a deliverable, milestone,
   // submittal or issue becomes a person. Service role behind the loader's own
@@ -1259,8 +1257,9 @@ export default async function ProjectDetailPage({
   // decisions and meetings with no way to add one — and its declared
   // `risk-`/`issue-`/`decision-`/`meeting-` anchors, which are that composer's
   // own form-field ids, pointed at elements rendered on another tab. The two
-  // lists must partition all seven; `page-tabs-page-header-and-record-
-  // creation.test.ts` fails if they ever stop doing so.
+  // lists partition all seven when deliverables are readable. Pending or failed
+  // deliverables withhold only their creation type. The page composition and
+  // `page-tabs-page-header-and-record-creation.test.ts` protect both states.
   return (
     <section className="module-page min-w-0 grid-cols-[minmax(0,1fr)]">
       <CartographicSurfaceWide />
@@ -1304,7 +1303,8 @@ export default async function ProjectDetailPage({
             rtpSafetyEvidence,
             rtpPriorityCriteria: resolveRtpPriorityFrameworkForWorkspace(parseWorkspaceHomeGeography(workspaceData)).criteria,
             canWriteProjects: canAccessWorkspaceAction("plans.write", projectRole),
-            deliverableCount: budgetInputs.deliverables.length,
+            deliverableCount: deliverableReadState === "readable" ? budgetInputs.deliverables.length : null,
+            deliverableReadState,
             openRiskCount,
             openIssueCount,
             kbDocumentCount: documentsLane.kbCount,
@@ -1344,7 +1344,8 @@ export default async function ProjectDetailPage({
       </PageTabPanel>
 
       <PageTabPanel tabKey="delivery" active={activeTab === "delivery"}>
-          <ProjectRecordComposer projectId={project.id} workspaceId={project.workspace_id} recordTypes={["milestone", "submittal", "deliverable"]} />
+          <ProjectRecordComposer projectId={project.id} workspaceId={project.workspace_id}
+            recordTypes={deliverableReadState === "readable" ? ["milestone", "submittal", "deliverable"] : ["milestone", "submittal"]} />
 
           <ProjectDeliveryBoard
             project={project}
@@ -1365,6 +1366,7 @@ export default async function ProjectDetailPage({
             prioritizedSubmittals={prioritizedSubmittals}
             invoicesReadFailed={projectInvoicesReadFailed}
             deliverables={deliverables}
+            deliverableReadState={deliverableReadState}
             budgetSummaryByDeliverableId={budgetSummaryByDeliverableId}
             assigneeRoster={assigneeRoster}
             deliverableAssigneeColumnPending={budgetInputs.pending.deliverableAssigneeColumn}
@@ -1473,7 +1475,7 @@ export default async function ProjectDetailPage({
             assigneeRoster={assigneeRoster}
           />
 
-          <ProjectActivityTimeline timelineItems={timelineItems} />
+          <ProjectActivityTimeline timelineItems={timelineItems} deliverableReadState={deliverableReadState} />
       </PageTabPanel>
     </section>
   );

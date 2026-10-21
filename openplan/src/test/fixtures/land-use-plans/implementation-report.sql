@@ -158,4 +158,98 @@ BEGIN
   DELETE FROM public.workspaces WHERE id=workspace;
   PERFORM pg_temp.report_assert((SELECT count(*)=0 FROM public.land_use_plan_implementation_report_commands WHERE plan_id=plan),'workspace cascade removes owned receipt');
 END $test$;
+
+-- Publication uses the same native report custody home. This is synthetic
+-- contract source, not agency adoption or an executed migration claim.
+DO $publication$
+DECLARE
+  actor uuid:=gen_random_uuid(); workspace uuid:=gen_random_uuid(); plan uuid:=gen_random_uuid();
+  version uuid:=gen_random_uuid(); document uuid:=gen_random_uuid(); release uuid:=gen_random_uuid(); foreign_plan uuid:=gen_random_uuid();
+  decision_id uuid:=gen_random_uuid(); snapshot_text text; content_hash text; manifest jsonb;
+  statement text; receipt jsonb; replay jsonb; artifact_before jsonb; native_before jsonb;
+  competitor_kind text; competitor_date date;
+BEGIN
+  INSERT INTO auth.users(id,email) VALUES(actor,actor||'@synthetic.invalid');
+  INSERT INTO public.workspaces(id,name,slug) VALUES(workspace,'SYNTHETIC publication boundary',workspace::text);
+  INSERT INTO public.workspace_members(workspace_id,user_id,role) VALUES(workspace,actor,'owner');
+  INSERT INTO public.kb_documents(id,workspace_id,title,source_kind,status)
+    VALUES(document,workspace,'SYNTHETIC publication evidence','pasted_text','ready');
+  INSERT INTO public.land_use_plans(id,workspace_id,title,descriptor_id,plan_kind_key,authority_label,geography_label)
+    VALUES(plan,workspace,'SYNTHETIC publication','local-unconfigured','community','SYNTHETIC authority','SYNTHETIC area');
+  INSERT INTO public.land_use_plan_versions(id,workspace_id,plan_id,version_number,version_kind)
+    VALUES(version,workspace,plan,1,'original');
+  INSERT INTO public.land_use_plans(id,workspace_id,title,descriptor_id,plan_kind_key,authority_label,geography_label)
+    VALUES(foreign_plan,workspace,'SYNTHETIC foreign decision plan','local-unconfigured','community','SYNTHETIC','SYNTHETIC');
+  snapshot_text:=format('{"designations":[],"implementationActions":[],"nodes":[],"plan":{"authorityLabel":"SYNTHETIC authority","descriptorId":"local-unconfigured","geographyLabel":"SYNTHETIC area","id":"%s","planKindKey":"community","title":"SYNTHETIC publication"},"relationships":[],"version":{"id":"%s","versionNumber":1}}',plan,version);
+  content_hash:=encode(extensions.digest(snapshot_text,'sha256'),'hex');
+  UPDATE public.land_use_plan_versions SET state='public_review',frozen_snapshot=snapshot_text::jsonb,
+    content_hash=encode(extensions.digest(snapshot_text,'sha256'),'hex'),frozen_at=now(),frozen_by=actor WHERE id=version;
+  INSERT INTO public.land_use_plan_review_releases(id,workspace_id,plan_id,version_id,version_content_hash,round_number,
+    review_method,review_open_on,review_close_on,external_review_document_id)
+    VALUES(release,workspace,plan,version,content_hash,1,'external_process','2026-10-01','2026-10-07',document);
+  UPDATE public.land_use_plan_review_releases SET status='closed',outcome_snapshot='{}',closed_at=now(),closed_by=actor WHERE id=release;
+  manifest:=jsonb_build_object('planId',plan,'versionId',version,'versionContentHash',content_hash,'reviewReleaseId',release,
+    'reviewOutcomeHash',(SELECT outcome_hash FROM public.land_use_plan_review_releases WHERE id=release),
+    'decision',jsonb_build_object('kind','adoption','body','SYNTHETIC body','instrumentType','Resolution',
+      'instrumentIdentifier','TEST-1','vote',NULL,'decidedOn','2026-10-07','effectiveOn',NULL));
+  statement:=format('SELECT public.publish_land_use_plan_version(%L,%L,%L,%L,%L,%L,%L)',workspace,plan,actor,version,content_hash,'SYNTHETIC packet',snapshot_text);
+  BEGIN
+    INSERT INTO public.land_use_plan_decisions(workspace_id,plan_id,version_id,version_content_hash,review_release_id,
+      adoption_manifest,decision_kind,decision_body,instrument_type,instrument_identifier,decided_on,supporting_document_id,created_by)
+      VALUES(workspace,plan,version,content_hash,release,jsonb_set(manifest,'{decision,body}','42'),
+        'adoption','SYNTHETIC body','Resolution','TEST-1','2026-10-07',document,actor);
+    UPDATE public.land_use_plan_versions SET state='adopted' WHERE id=version;
+    UPDATE public.land_use_plans SET current_adopted_version_id=version WHERE id=plan;
+    SET LOCAL ROLE service_role;
+    PERFORM pg_temp.report_refuses(statement,'PT409','unreadable singleton decision accepted');
+    RAISE EXCEPTION USING ERRCODE='PT498',MESSAGE='Restore malformed decision subtransaction';
+  EXCEPTION WHEN SQLSTATE 'PT498' THEN NULL; END;
+  INSERT INTO public.land_use_plan_decisions(id,workspace_id,plan_id,version_id,version_content_hash,review_release_id,
+    adoption_manifest,decision_kind,decision_body,instrument_type,instrument_identifier,decided_on,supporting_document_id,created_by)
+    VALUES(decision_id,workspace,plan,version,content_hash,release,manifest,'adoption','SYNTHETIC body','Resolution','TEST-1','2026-10-07',document,actor);
+  -- Use the existing native trigger rather than bypassing constraints to forge
+  -- a foreign decision. The public reader also refuses supplied foreign rows.
+  PERFORM pg_temp.report_refuses(format(
+    'INSERT INTO public.land_use_plan_decisions(workspace_id,plan_id,version_id,version_content_hash,review_release_id,adoption_manifest,decision_kind,decision_body,instrument_type,instrument_identifier,decided_on,supporting_document_id,created_by) SELECT workspace_id,%L,version_id,version_content_hash,review_release_id,adoption_manifest,decision_kind,decision_body,instrument_type,instrument_identifier,decided_on,supporting_document_id,created_by FROM public.land_use_plan_decisions WHERE id=%L',
+    foreign_plan,decision_id),'P0001','foreign decision entered native source');
+  UPDATE public.land_use_plan_versions SET state='adopted' WHERE id=version;
+  UPDATE public.land_use_plans SET current_adopted_version_id=version WHERE id=plan;
+  SET LOCAL ROLE service_role;
+  EXECUTE statement INTO receipt;
+  PERFORM pg_temp.report_assert(receipt->>'alreadyPublished'='false','normal adoption did not publish');
+  SELECT to_jsonb(a) INTO artifact_before FROM public.report_artifacts a WHERE id=(receipt->>'artifactId')::uuid;
+  SELECT to_jsonb(d) INTO native_before FROM public.land_use_plan_decisions d WHERE id=decision_id;
+  EXECUTE statement INTO replay;
+  PERFORM pg_temp.report_assert(replay=receipt||'{"alreadyPublished":true}'::jsonb,'publication exact replay changed identity');
+  PERFORM pg_temp.report_assert((SELECT to_jsonb(a)=artifact_before FROM public.report_artifacts a WHERE id=(receipt->>'artifactId')::uuid),'publication replay changed artifact bytes');
+  PERFORM pg_temp.report_assert((SELECT count(*)=1 FROM public.reports WHERE land_use_plan_id=plan),'publication replay duplicated report');
+  PERFORM pg_temp.report_assert(public.land_use_plan_publication_source_v1(plan)#>>'{decisions,0,id}'=decision_id::text,'public source chose another decision');
+  PERFORM pg_temp.report_assert(NOT has_function_privilege('authenticated','public.land_use_plan_publication_source_v1(uuid)','EXECUTE'),'raw publication source exposed');
+  PERFORM pg_temp.report_refuses(format('SELECT public.publish_land_use_plan_version(%L,%L,%L,%L,%L,%L,%L)',workspace,gen_random_uuid(),actor,version,content_hash,'SYNTHETIC packet',snapshot_text),'PT404','foreign plan publication accepted');
+  FOREACH competitor_kind IN ARRAY ARRAY['repeal','adoption','amendment'] LOOP
+    competitor_date:=CASE WHEN competitor_kind='repeal' THEN DATE '2026-10-08' ELSE DATE '2026-10-07' END;
+    BEGIN
+      INSERT INTO public.land_use_plan_decisions(workspace_id,plan_id,version_id,version_content_hash,review_release_id,
+        adoption_manifest,decision_kind,decision_body,instrument_type,instrument_identifier,decided_on,supporting_document_id,created_by)
+        VALUES(workspace,plan,version,content_hash,release,
+          jsonb_set(jsonb_set(manifest,'{decision,kind}',to_jsonb(competitor_kind)),'{decision,decidedOn}',to_jsonb(competitor_date::text)),
+          competitor_kind,'SYNTHETIC body','Resolution','TEST-1',competitor_date,document,actor);
+      PERFORM pg_temp.report_refuses(statement,'PT409','competing '||competitor_kind||' accepted');
+      PERFORM pg_temp.report_assert(jsonb_array_length(public.land_use_plan_publication_source_v1(plan)->'decisions')=2,'public source hid competing decision');
+      PERFORM pg_temp.report_assert((SELECT to_jsonb(a)=artifact_before FROM public.report_artifacts a WHERE id=(receipt->>'artifactId')::uuid),'conflict rewrote historical artifact');
+      PERFORM pg_temp.report_assert((SELECT to_jsonb(d)=native_before FROM public.land_use_plan_decisions d WHERE id=decision_id),'conflict rebound retained adoption');
+      RAISE EXCEPTION USING ERRCODE='PT498',MESSAGE='Restore competitor subtransaction';
+    EXCEPTION WHEN SQLSTATE 'PT498' THEN NULL; END;
+  END LOOP;
+  -- The retained artifact is independent of current authority and never repaired.
+  BEGIN
+    UPDATE public.report_artifacts SET metadata_json=jsonb_set(metadata_json,'{adoptionManifest,decision,body}','"Changed retained decision"') WHERE id=(receipt->>'artifactId')::uuid;
+    PERFORM pg_temp.report_refuses(statement,'PT409','unreadable retained decision replay accepted');
+    RAISE EXCEPTION USING ERRCODE='PT498',MESSAGE='Restore retained artifact subtransaction';
+  EXCEPTION WHEN SQLSTATE 'PT498' THEN NULL; END;
+  RESET ROLE;
+  DELETE FROM public.workspaces WHERE id=workspace;
+  DELETE FROM auth.users WHERE id=actor;
+END $publication$;
+SELECT 'publication decision boundary verified';
 SELECT 'atomic implementation report verified';
