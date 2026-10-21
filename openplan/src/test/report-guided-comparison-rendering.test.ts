@@ -66,7 +66,9 @@ describe("guided comparison HTML and portable PDF content", () => {
     expect(links[0].comparisonSnapshots).toHaveLength(1);
     const ready = buildReportGenerationReadiness({ hasGeneratedArtifact: false, sourceContext: null, driftedSourceCount: 0,
       guidedComparison: { selected: true, problem: null } });
-    expect(ready.checks.find((check) => check.id === "comparison_context")).toMatchObject({ status: "ready" });
+    expect(ready.checks.find((check) => check.id === "comparison_context")).toMatchObject({
+      status: "unknown", statusLabel: "Saved binding checked; live evidence unassessed",
+    });
     const stale = buildReportGenerationReadiness({ hasGeneratedArtifact: true, sourceContext: {}, driftedSourceCount: 0,
       guidedComparison: { selected: true, problem: "Artifact bytes changed" } });
     expect(stale.checks.find((check) => check.id === "comparison_context")).toMatchObject({ status: "blocked", detail: "Artifact bytes changed" });

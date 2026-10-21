@@ -13,7 +13,80 @@ import {
   ReportDetailControls,
 } from "@/components/reports/report-detail-controls";
 
+const generatedReport = {
+  id: "report-1", title: "Saved guided comparison", summary: null,
+  status: "generated", hasGeneratedArtifact: true,
+};
+const linkedEvidence = { headline: "Four linked worker outputs", detail: "Retained source context", hasEvidence: true };
+const noDrift = { changedCount: 0, totalCount: 4, labels: [] };
+const unassessedGuided = {
+  projectId: "project-1", snapshotId: "snapshot-1", bindingSha256: "a".repeat(64),
+  problem: null, includedRunIds: [], liveEvidenceStatus: "unassessed" as const,
+};
+
 describe("ReportDetailControls", () => {
+  it("keeps the real source-review header unassessed without inventing drift or disabling generation", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, json: async () => ({ options: [] }) })));
+    try {
+      render(<ReportDetailControls report={generatedReport} evidenceSummary={linkedEvidence}
+        driftSummary={noDrift} guidedComparison={unassessedGuided} />);
+      await waitFor(() => expect(screen.queryByText("Reading saved comparisons...")).not.toBeInTheDocument());
+      expect(describeReportSourceReviewPosture({ hasGeneratedArtifact: true, evidenceSummary: linkedEvidence,
+        driftSummary: noDrift, guidedComparison: unassessedGuided })).toMatchObject({
+        state: "unassessed", changedSourceText: null,
+      });
+      const label = screen.getByText("Comparison evidence unassessed");
+      expect(label.closest("div.rounded-xl")).toHaveClass("border-amber-300/70");
+      expect(label.closest("div.rounded-xl")).not.toHaveClass("border-emerald-300/70");
+      expect(screen.getByText("Selected comparison live evidence is unassessed")).toBeInTheDocument();
+      expect(screen.getByText(/Live artifact bytes and custody remain unassessed on this page/)).toBeInTheDocument();
+      expect(screen.queryByText("Current / ready")).not.toBeInTheDocument();
+      expect(screen.queryByText("Evidence chain current")).not.toBeInTheDocument();
+      expect(screen.queryByText(/Changed sources:|live source changes detected/i)).not.toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Generate PDF packet" })).toBeEnabled();
+      expect(screen.queryByRole("button", { name: "Regenerate PDF packet" })).not.toBeInTheDocument();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it.each([
+    { name: "known drift", driftSummary: { changedCount: 1, totalCount: 4, labels: ["Project records"] },
+      problem: null, label: "Changed source context", headline: "1 source area needs review" },
+    { name: "invalid binding", driftSummary: noDrift, problem: "Stored digest changed",
+      label: "Saved comparison binding is invalid", headline: "Selected comparison needs review" },
+  ])("keeps $name ahead of the unassessed header", async ({ driftSummary, problem, label, headline }) => {
+    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, json: async () => ({ options: [] }) })));
+    try {
+      render(<ReportDetailControls report={generatedReport} evidenceSummary={linkedEvidence}
+        driftSummary={driftSummary} guidedComparison={{ ...unassessedGuided, problem }} />);
+      await waitFor(() => expect(screen.queryByText("Reading saved comparisons...")).not.toBeInTheDocument());
+      expect(screen.getByText(label).closest("div.rounded-xl")).toHaveClass("border-amber-300/70");
+      expect(screen.getByText(headline)).toBeInTheDocument();
+      expect(screen.queryByText("Comparison evidence unassessed")).not.toBeInTheDocument();
+      expect(screen.queryByText("Current / ready")).not.toBeInTheDocument();
+      expect(screen.queryByText("Evidence chain current")).not.toBeInTheDocument();
+      if (problem) expect(screen.getByText(/Stored digest changed.*Review and save/)).toBeInTheDocument();
+      else expect(screen.getByText("Changed sources: Project records.")).toBeInTheDocument();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("keeps an ordinary unselected guided picker on the current source-review path", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, json: async () => ({ options: [] }) })));
+    try {
+      render(<ReportDetailControls report={generatedReport} evidenceSummary={linkedEvidence} driftSummary={noDrift}
+        guidedComparison={{ ...unassessedGuided, snapshotId: null, bindingSha256: null, liveEvidenceStatus: undefined }} />);
+      await waitFor(() => expect(screen.queryByText("Reading saved comparisons...")).not.toBeInTheDocument());
+      expect(screen.getByText("Current / ready").closest("div.rounded-xl")).toHaveClass("border-emerald-300/70");
+      expect(screen.getByText("Evidence chain current")).toBeInTheDocument();
+      expect(screen.queryByText("Comparison evidence unassessed")).not.toBeInTheDocument();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
   it("edits saved review metadata without model controls or a generation request", async () => {
     const fetchMock = vi.fn(async () => ({ ok: true, json: async () => ({}) }));
     vi.stubGlobal("fetch", fetchMock);

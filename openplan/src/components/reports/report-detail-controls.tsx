@@ -74,7 +74,7 @@ function sourceReviewPostureClassName(state: ReportSourceReviewPosture["state"])
   if (state === "ready") {
     return "border-emerald-300/70 bg-emerald-50 text-emerald-950 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-100";
   }
-  if (state === "needs-review") {
+  if (state === "needs-review" || state === "unassessed") {
     return "border-amber-300/70 bg-amber-50 text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100";
   }
   return "border-slate-300/80 bg-slate-50 text-slate-950 dark:border-slate-800 dark:bg-slate-950/30 dark:text-slate-100";
@@ -136,7 +136,7 @@ export function ReportDetailControls({
   safetyIngestOptions?: ReportSafetyIngestOption[];
   safetyIngestSelections?: ReportSafetyIngestSelection[];
   initialSafetyIngestId?: string | null;
-  guidedComparison?: { projectId: string; snapshotId: string | null; bindingSha256: string | null; problem: string | null; includedRunIds: string[] };
+  guidedComparison?: { projectId: string; snapshotId: string | null; bindingSha256: string | null; problem: string | null; includedRunIds: string[]; liveEvidenceStatus?: "unassessed" };
 }) {
   const router = useRouter();
   const [guidedSnapshotId, setGuidedSnapshotId] = useState(guidedComparison?.snapshotId ?? null);
@@ -203,6 +203,7 @@ export function ReportDetailControls({
     hasGeneratedArtifact: report.hasGeneratedArtifact,
     evidenceSummary,
     driftSummary,
+    guidedComparison,
   });
 
   async function handleSave(event: React.FormEvent<HTMLFormElement>) {

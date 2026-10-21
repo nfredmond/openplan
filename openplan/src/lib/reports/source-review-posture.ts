@@ -24,7 +24,7 @@ export type ReportEvidenceSummary = {
 } | null;
 
 export type ReportSourceReviewPosture = {
-  state: "ready" | "needs-review" | "missing";
+  state: "ready" | "needs-review" | "missing" | "unassessed";
   label: string;
   headline: string;
   detail: string;
@@ -35,10 +35,12 @@ export function describeReportSourceReviewPosture({
   hasGeneratedArtifact,
   evidenceSummary,
   driftSummary,
+  guidedComparison,
 }: {
   hasGeneratedArtifact: boolean;
   evidenceSummary?: ReportEvidenceSummary;
   driftSummary?: ReportDriftSummary;
+  guidedComparison?: { liveEvidenceStatus?: "unassessed"; problem: string | null };
 }): ReportSourceReviewPosture {
   const changedCount = driftSummary?.changedCount ?? 0;
   const changedSourceText =
@@ -79,6 +81,16 @@ export function describeReportSourceReviewPosture({
     };
   }
 
+  if (guidedComparison?.problem) {
+    return {
+      state: "needs-review",
+      label: "Saved comparison binding is invalid",
+      headline: "Selected comparison needs review",
+      detail: `${guidedComparison.problem} Review and save the exact comparison again, or clear the selection. Historical artifacts retain their original evidence limits.`,
+      changedSourceText,
+    };
+  }
+
   if (changedCount > 0) {
     return {
       state: "needs-review",
@@ -87,6 +99,18 @@ export function describeReportSourceReviewPosture({
       detail:
         "The packet still has linked evidence, but live source context has changed since generation. Review the changed source areas and regenerate before relying on this packet outside supervised draft review.",
       changedSourceText,
+    };
+  }
+
+  // Stored integrity does not establish current worker bytes or custody.
+  if (guidedComparison?.liveEvidenceStatus === "unassessed") {
+    return {
+      state: "unassessed",
+      label: "Comparison evidence unassessed",
+      headline: "Selected comparison live evidence is unassessed",
+      detail:
+        "The saved comparison binding is checked. Live artifact bytes and custody remain unassessed on this page. Save and generation verify them before accepting the comparison. Review the scientific caveats before release use.",
+      changedSourceText: null,
     };
   }
 

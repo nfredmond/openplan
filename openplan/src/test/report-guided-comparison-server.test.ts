@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { guidedManagedReportFixture, guidedReportFixture, REPORT_PROJECT, REPORT_SET, REPORT_SNAPSHOT, REPORT_WORKSPACE, reportId, encodeRecord, hashBytes, type EvidenceRow } from "@/test/fixtures/guided-report-evidence";
+import { guidedManagedReportFixture, guidedReportFixture, guidedReportSelectionFixture, REPORT_PROJECT, REPORT_SET, REPORT_SNAPSHOT, REPORT_WORKSPACE, reportId, encodeRecord, hashBytes, type EvidenceRow } from "@/test/fixtures/guided-report-evidence";
+import { guidedReportDigest, readScopedGuidedComparisonBinding } from "@/lib/reports/guided-comparison-binding";
 const mocks = vi.hoisted(() => ({ rpc: vi.fn(), bytes: vi.fn() }));
 vi.mock("server-only", () => ({}));
 vi.mock("@/lib/supabase/server", () => ({ createServiceRoleClient: () => ({ rpc: mocks.rpc }) }));
@@ -101,9 +102,97 @@ function editAssessment(f: ReturnType<typeof setup>, edit: (document: EvidenceRo
   artifact.content_hash = hashBytes(bytes); artifact.file_size_bytes = bytes.byteLength;
 }
 
+/** Keep newer retained rows visible in the query while the authority rejects them. */
+function retainSameNameKpis(f: ReturnType<typeof setup>) {
+  const retained = f.tables.model_run_kpis.map((kpi, index) => ({ ...kpi,
+    id: reportId(7000 + index), attempt_id: reportId(8000 + index), value: 999999, created_at: "2099-01-01" }));
+  const retainedIds = new Set(retained.map((kpi) => kpi.id));
+  f.tables.model_run_kpis.push(...retained);
+  const original = mocks.rpc.getMockImplementation()!;
+  mocks.rpc.mockImplementation(async (name, args) => {
+    const result = await original(name, args);
+    if (name === "read_model_attempt_outputs") {
+      for (const output of result.data.outputs) if (retainedIds.has(output.record.id)) output.ownership_state = "retained_inactive";
+    }
+    return result;
+  });
+  return retainedIds;
+}
+
+function bindingInput(selection = guidedReportSelectionFixture()) {
+  return { reportId: reportId(400), report: { id: reportId(400), workspace_id: REPORT_WORKSPACE,
+    project_id: REPORT_PROJECT, report_type: "analysis_summary", rtp_cycle_id: null as string | null,
+    engagement_campaign_id: null as string | null, metadata_json: { guidedComparisonSelectionV1: selection } },
+  project: { id: REPORT_PROJECT, workspace_id: REPORT_WORKSPACE } };
+}
+
 beforeEach(() => vi.clearAllMocks());
 
 describe("exact saved guided comparison report verifier", () => {
+  it("retains the exact managed seal with one current and one newer retained KPI per engine, role and name", async () => {
+    const f = setup(true);
+    const saved = await f.verify();
+    retainSameNameKpis(f);
+    expect(f.tables.model_run_kpis).toHaveLength(16);
+    const generated = await verifyGuidedComparisonReport({ ...f.input, saved });
+    expect(generated).toEqual(saved);
+    expect(generated.payload.sources.flatMap((source) => source.kpis.map((kpi) => kpi.id)))
+      .toEqual(saved.payload.sources.flatMap((source) => source.kpis.map((kpi) => kpi.id)));
+    expect(mocks.rpc.mock.calls.some(([name]) => name === "read_guided_comparison_report_kpi_custody")).toBe(false);
+    expect(f.db.log).toContainEqual(expect.objectContaining({ table: "model_run_kpis", columns: GUIDED_REPORT_KPI_COLUMNS }));
+  });
+
+  it.each(["total_trips", "daily_vmt", "activitysim_trips", "activitysim_daily_vmt"].flatMap((name) =>
+    ["no current", "duplicate current", "bad projection", "wrong producer"].map((fault) => ({ name, fault }))))(
+    "requires unique exact current custody for $name: $fault", async ({ name, fault }) => {
+      const f = setup(true);
+      const kpi = f.tables.model_run_kpis.find((row) => row.kpi_name === name)!;
+      const retainedIds = retainSameNameKpis(f);
+      // Give the no-current case one authority-rejected row per name, so an
+      // unsafe ownership fallback cannot hide behind duplicate-row refusal.
+      if (fault === "no current") f.tables.model_run_kpis = f.tables.model_run_kpis.filter((row) => !retainedIds.has(String(row.id)));
+      const original = mocks.rpc.getMockImplementation()!;
+      if (fault === "duplicate current") f.tables.model_run_kpis.push({ ...kpi, id: reportId(9000) });
+      if (fault === "wrong producer") {
+        kpi.attempt_id = reportId(9001);
+        f.tables.model_run_stages.push({ id: reportId(9002), run_id: kpi.run_id, stage_name: "Unrelated producer",
+          attempt_managed: true, active_attempt_id: kpi.attempt_id, status: "succeeded" });
+      }
+      mocks.rpc.mockImplementation(async (rpc, args) => {
+        const result = await original(rpc, args);
+        if (rpc === "read_model_attempt_outputs") result.data.outputs = result.data.outputs.map((output: EvidenceRow) => {
+          const record = output.record as EvidenceRow;
+          if (output.kind !== "kpi" || record.id !== kpi.id) return output;
+          if (fault === "no current") return { ...output, ownership_state: "retained_inactive" };
+          if (fault === "bad projection") return { ...output, record: { ...record, value: Number(record.value) + 1 } };
+          return output;
+        });
+        return result;
+      });
+      await expect(f.verify()).rejects.toThrow(fault === "wrong producer"
+        ? "wrong producer stage" : "headline KPI is missing or ambiguous");
+    });
+
+  it("checks bytes on save and generation while a bounded reopen cannot assert fresh custody", async () => {
+    const f = setup();
+    const saved = await f.verify();
+    expect(mocks.bytes).toHaveBeenCalledWith(f.outputs[0].file_url, expect.anything());
+    mocks.bytes.mockClear();
+    const queryCount = f.db.log.length;
+    const input = bindingInput(saved);
+    expect(readScopedGuidedComparisonBinding(input)).toEqual(saved);
+    expect(mocks.bytes).not.toHaveBeenCalled();
+    expect(f.db.log).toHaveLength(queryCount);
+    await expect(verifyGuidedComparisonReport({ ...f.input, saved })).resolves.toEqual(saved);
+    expect(mocks.bytes).toHaveBeenCalledWith(f.outputs[0].file_url, expect.anything());
+    f.bytes.set(f.outputs[0].file_url, new TextEncoder().encode("changed retained output"));
+    mocks.bytes.mockClear();
+    expect(readScopedGuidedComparisonBinding(input)).toEqual(saved);
+    expect(mocks.bytes).not.toHaveBeenCalled();
+    await expect(verifyGuidedComparisonReport({ ...f.input, saved })).rejects.toThrow("retained artifact bytes differ");
+    await expect(f.verify()).rejects.toThrow("retained artifact bytes differ");
+  });
+
   it("reports an exact current managed instrument at prototype/inconclusive without legacy scientific projections", async () => {
     const f = setup(true);
     const sealed = await f.verify();
@@ -294,4 +383,71 @@ describe("exact saved guided comparison report verifier", () => {
     await expect(loadGuidedReportOptions(f.input.client, REPORT_WORKSPACE, REPORT_PROJECT)).resolves.toEqual([{ id: REPORT_SNAPSHOT, projectId: REPORT_PROJECT, label: "Exact saved packet" }]);
     expect(f.db.log.some((query) => query.table === "scenario_comparison_snapshots" && query.range?.[0] === 1)).toBe(true);
   });
+});
+
+describe("bounded saved guided comparison binding", () => {
+  it("preserves genuinely unselected metadata and refuses a selected binding without a loaded project", () => {
+    const input = bindingInput();
+    for (const metadata_json of [null, {}, { guidedComparisonSelectionV1: null }]) {
+      expect(readScopedGuidedComparisonBinding({ ...input, report: { ...input.report, metadata_json } })).toBeNull();
+    }
+    expect(() => readScopedGuidedComparisonBinding({ ...input, project: null })).toThrow("does not match this report");
+    expect(mocks.rpc).not.toHaveBeenCalled();
+    expect(mocks.bytes).not.toHaveBeenCalled();
+  });
+
+  it("checks a valid stored seal without model queries, RPCs or worker-byte reads", () => {
+    const input = bindingInput();
+    expect(readScopedGuidedComparisonBinding(input)).toBe(input.report.metadata_json.guidedComparisonSelectionV1);
+    expect(mocks.rpc).not.toHaveBeenCalled();
+    expect(mocks.bytes).not.toHaveBeenCalled();
+  });
+
+  it.each(["version", "digest", "report", "target", "campaign", "RTP target", "workspace", "project", "loaded project", "loaded workspace",
+    "snapshot", "snapshot state", "missing snapshot record", "missing set record", "scenario set", "entry", "duplicate entry", "role",
+    "duplicate run", "duplicate output", "link snapshot", "link run", "link method", "link role", "link artifact", "output run"])(
+    "refuses inconsistent stored %s without repairing or downloading evidence", (fault) => {
+      const input = bindingInput();
+      const saved = input.report.metadata_json.guidedComparisonSelectionV1;
+      if (fault === "report") input.reportId = reportId(999);
+      if (fault === "target") input.report.report_type = "project_status";
+      if (fault === "campaign") input.report.engagement_campaign_id = reportId(999);
+      if (fault === "RTP target") input.report.rtp_cycle_id = reportId(999);
+      if (fault === "workspace") saved.payload.workspaceId = reportId(999);
+      if (fault === "project") saved.payload.projectId = reportId(999);
+      if (fault === "loaded project") input.project.id = reportId(999);
+      if (fault === "loaded workspace") input.project.workspace_id = reportId(999);
+      if (fault === "snapshot") saved.payload.snapshot.id = reportId(999);
+      if (fault === "snapshot state") saved.payload.snapshot.status = "draft";
+      if (fault === "missing snapshot record") saved.payload.snapshot = {};
+      if (fault === "missing set record") Object.assign(saved.payload, { scenarioSet: null });
+      if (fault === "scenario set") saved.payload.scenarioSet.id = reportId(999);
+      if (fault === "entry") saved.payload.entries.pop();
+      if (fault === "duplicate entry") saved.payload.snapshot.candidate_entry_id = saved.payload.snapshot.baseline_entry_id;
+      if (fault === "role") saved.payload.sources[0].role = "build";
+      if (fault === "duplicate run") {
+        saved.payload.sources[1].runId = saved.payload.sources[0].runId;
+        saved.payload.sources[1].link.model_run_id = saved.payload.sources[0].runId;
+        saved.payload.sources[1].output.run_id = saved.payload.sources[0].runId;
+      }
+      if (fault === "duplicate output") {
+        saved.payload.sources[1].output.id = saved.payload.sources[0].output.id;
+        saved.payload.sources[1].link.model_run_artifact_id = saved.payload.sources[0].output.id;
+      }
+      if (fault === "link snapshot") saved.payload.sources[0].link.comparison_snapshot_id = reportId(999);
+      if (fault === "link run") saved.payload.sources[0].link.model_run_id = reportId(999);
+      if (fault === "link method") saved.payload.sources[0].link.method = "activitysim";
+      if (fault === "link role") saved.payload.sources[0].link.scenario_role = "build";
+      if (fault === "link artifact") saved.payload.sources[0].link.model_run_artifact_id = reportId(999);
+      if (fault === "output run") saved.payload.sources[0].output.run_id = reportId(999);
+      // Rehash scope faults so only the scope guard can reject them.
+      saved.bindingSha256 = guidedReportDigest(saved.payload);
+      if (fault === "digest") saved.bindingSha256 = "f".repeat(64);
+      if (fault === "version") Object.assign(saved, { version: 2 });
+      expect(() => readScopedGuidedComparisonBinding(input)).toThrow(fault === "version" ? "unsupported version"
+        : fault === "digest" ? "binding digest changed" : ["report", "target", "campaign", "RTP target", "workspace", "project", "loaded project", "loaded workspace"].includes(fault)
+          ? "does not match this report" : "inconsistent snapshot, scenario or output scopes");
+      expect(mocks.rpc).not.toHaveBeenCalled();
+      expect(mocks.bytes).not.toHaveBeenCalled();
+    });
 });

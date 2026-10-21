@@ -404,6 +404,23 @@ describe("/api/reports/[reportId]", () => {
     expect(reportUpdateMock).toHaveBeenLastCalledWith({ metadata_json: { ...previous, guidedComparisonSelectionV1: null } });
   });
 
+  it("keeps full exact-evidence verification on save and refuses reported byte drift before writing", async () => {
+    const row = { id: "11111111-1111-4111-8111-111111111111", workspace_id: "33333333-3333-4333-8333-333333333333",
+      project_id: "44444444-4444-4444-8444-444444444444", report_type: "analysis_summary", metadata_json: {}, updated_at: "2026-10-20T07:00:00.123456+00:00" };
+    const snapshotId = "99999999-9999-4999-8999-999999999999";
+    reportMaybeSingleMock.mockResolvedValue({ data: row, error: null });
+    verifyGuidedReportMock.mockRejectedValue(new Error("retained artifact bytes differ from the selected size or SHA-256"));
+    const response = await patchWith({ guidedComparisonSelectionV1: { snapshotId } });
+    expect(response.status).toBe(409);
+    expect(await response.json()).toMatchObject({ error: expect.stringContaining("retained artifact bytes differ") });
+    expect(verifyGuidedReportMock).toHaveBeenCalledOnce();
+    expect(verifyGuidedReportMock).toHaveBeenCalledWith(expect.objectContaining({ workspaceId: row.workspace_id,
+      projectId: row.project_id, reportType: row.report_type, snapshotId }));
+    expect(reportUpdateMock).not.toHaveBeenCalled();
+    expect(reportRunsDeleteMock).not.toHaveBeenCalled();
+    expect(reportRunsInsertMock).not.toHaveBeenCalled();
+  });
+
   it("refuses a concurrent selection save rather than overwriting newer metadata", async () => {
     const compareMetadata = vi.fn(() => ({ select: vi.fn(() => ({ maybeSingle: vi.fn(async () => ({ data: null, error: null })) })) }));
     reportUpdateEqMock.mockImplementation(() => ({ eq: compareMetadata }));

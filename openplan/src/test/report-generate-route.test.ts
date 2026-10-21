@@ -1224,11 +1224,16 @@ describe("POST /api/reports/[reportId]/generate", () => {
     reportRunsOrderMock.mockResolvedValueOnce({ data: [], error: null });
     modelRunsInMock.mockResolvedValueOnce({ data: selection.payload.sources.map((source) => ({ id: source.runId, run_title: source.method,
       engine_key: source.method === "aequilibrae" ? "aequilibrae" : "behavioral_demand", status: "succeeded", result_summary_json: {} })), error: null });
-    verifyGuidedReportMock.mockResolvedValueOnce(selection).mockRejectedValueOnce(new Error("Source changed before storage"));
+    verifyGuidedReportMock.mockResolvedValueOnce(selection).mockRejectedValueOnce(new Error("retained artifact bytes differ before storage"));
     const response = await postGenerate(new NextRequest("http://localhost/api/reports/1/generate", { method: "POST", headers: { "content-type": "application/json" },
       body: JSON.stringify({ format: "html" }) }), { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) });
     expect(response.status).toBe(409);
     expect(verifyGuidedReportMock).toHaveBeenCalledTimes(2);
+    for (const [input] of verifyGuidedReportMock.mock.calls) expect(input).toMatchObject({
+      saved: selection, snapshotId: selection.snapshotId, reportType: "analysis_summary",
+      workspaceId: "33333333-3333-4333-8333-333333333333", projectId: "44444444-4444-4444-8444-444444444444",
+    });
+    expect(await response.json()).toMatchObject({ error: expect.stringContaining("retained artifact bytes differ") });
     expect(serviceStorageUploadMock).not.toHaveBeenCalled();
     expect(artifactsInsertMock).not.toHaveBeenCalled();
     expect(serviceArtifactsInsertMock).not.toHaveBeenCalled();

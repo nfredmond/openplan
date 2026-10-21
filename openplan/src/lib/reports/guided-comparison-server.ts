@@ -15,7 +15,9 @@ import { isGuidedProjectComparisonModel, usesGuidedWorkerNetwork, parseGuidedBui
 import { isModelingClaimStatus, resolveModelingClaimDecision } from "@/lib/models/evidence-backbone";
 import { readAttemptInstruments } from "@/lib/models/attempt-instrument-read";
 import { buildGuidedComparisonResults, type GuidedComparisonDecision } from "@/lib/models/guided-comparison-results";
-import { GUIDED_REPORT_CAVEATS, guidedReportCanonicalJson, objectRecord, type GuidedComparisonOption, type GuidedComparisonReportPayload, type GuidedComparisonSelectionV1 } from "./guided-comparison";
+import { GUIDED_REPORT_CAVEATS, objectRecord, type GuidedComparisonOption, type GuidedComparisonReportPayload, type GuidedComparisonSelectionV1 } from "./guided-comparison";
+import { guidedReportDigest } from "./guided-comparison-binding";
+export { guidedReportDigest } from "./guided-comparison-binding";
 
 type Client = Awaited<ReturnType<typeof createClient>>;
 type Row = Record<string, unknown>;
@@ -37,10 +39,6 @@ function exactlyOne<T>(rows: T[], reason: string): T {
   requireEvidence(rows.length === 1, reason);
   return rows[0];
 }
-export function guidedReportDigest(value: unknown): string {
-  return createHash("sha256").update(guidedReportCanonicalJson(value)).digest("hex");
-}
-
 /** Page every query that can contain repeated evidence. No latest-run lookup. */
 async function allRows<T>(fetch: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: { message: string } | null }>): Promise<T[]> {
   const result = await readEveryPage(fetch);
@@ -226,7 +224,11 @@ export async function verifyGuidedComparisonReport(input: {
     const names = link.method === "aequilibrae" ? ["total_trips", "daily_vmt"] : ["activitysim_trips", "activitysim_daily_vmt"];
     const chosen: Kpi[] = [];
     for (const name of names) {
-      const kpi = exactlyOne(kpis.filter((row) => row.run_id === run.id && row.kpi_name === name), "headline KPI is missing or ambiguous.");
+      // Retained attempts may share a name. Uniqueness applies only after the
+      // authority returns an exact current-completed projection for this row.
+      const candidates = kpis.filter((row) => row.run_id === run.id && row.kpi_name === name &&
+        (!run.attempt_managed || projectedCurrent("kpi", run.id, row)));
+      const kpi = exactlyOne(candidates, "headline KPI is missing or ambiguous.");
       const unit = name.endsWith("daily_vmt") ? "vehicle-miles/day" : name === "activitysim_trips" ? "trips" : "trips/day";
       requireEvidence(kpi.geometry_ref === null && typeof kpi.value === "number" && Number.isFinite(kpi.value) && kpi.value >= 0 && kpi.unit === unit, "headline KPI has a null value, unknown unit, or nonaggregate scope.");
       if (run.attempt_managed) {

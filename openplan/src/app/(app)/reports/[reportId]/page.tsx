@@ -1,6 +1,6 @@
 import { reportJurisdictionState } from "@/lib/reports/jurisdiction-freshness";
-import { objectRecord, readGuidedComparisonSelection, type GuidedComparisonSelectionV1 } from "@/lib/reports/guided-comparison";
-import { verifyGuidedComparisonReport } from "@/lib/reports/guided-comparison-server";
+import { objectRecord, type GuidedComparisonSelectionV1 } from "@/lib/reports/guided-comparison";
+import { readScopedGuidedComparisonBinding } from "@/lib/reports/guided-comparison-binding";
 import { getReportPacketFreshness } from "@/lib/reports/catalog";
 import { artifactGenerationWritebackIsCurrent } from "@/lib/reports/report-registry-freshness";
 import { notFound, redirect } from "next/navigation";
@@ -381,17 +381,14 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
   let guidedSelection: GuidedComparisonSelectionV1 | null = null;
   let guidedProblem: string | null = null;
   try {
-    guidedSelection = readGuidedComparisonSelection(report.metadata_json);
-    if (guidedSelection && project) await verifyGuidedComparisonReport({ client: supabase,
-      workspaceId: report.workspace_id, projectId: project.id, reportType: report.report_type,
-      snapshotId: guidedSelection.snapshotId, saved: guidedSelection });
-    else if (guidedSelection) throw new Error("The selected comparison has no project target.");
+    guidedSelection = readScopedGuidedComparisonBinding({ reportId, report, project });
   } catch (error) {
-    guidedProblem = error instanceof Error ? error.message : "The selected comparison could not be verified.";
+    guidedProblem = error instanceof Error ? error.message : "The saved comparison binding could not be checked.";
   }
   const guidedPanel = project && report.report_type === "analysis_summary" ? {
     projectId: project.id, snapshotId: guidedSelection?.snapshotId ?? null,
     bindingSha256: guidedSelection?.bindingSha256 ?? null, problem: guidedProblem,
+    liveEvidenceStatus: guidedSelection ? "unassessed" as const : undefined,
     includedRunIds: guidedSelection?.payload.sources.map((source) => source.runId) ?? [],
   } : undefined;
   const aerialOrthoCatalog = project ? await loadReportAerialOrthoCatalog({ supabase, workspaceId: report.workspace_id, projectId: project.id }) : { state: "absent" as const, layers: [], notes: [] };
@@ -1065,7 +1062,7 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
     status: guidedProblem || frozenGuided?.bindingSha256 !== guidedSelection?.bindingSha256 ? "updated" : "unchanged",
     detail: guidedProblem ?? (frozenGuided?.bindingSha256 !== guidedSelection?.bindingSha256
       ? "The saved report selection differs from the retained artifact. Historical downloads keep their original comparison."
-      : "The selected four outputs, KPI receipts, assumptions, population and artifact bytes match the saved binding.") });
+      : "The saved binding digest matches the digest recorded on the retained artifact. Live artifact bytes and custody are unassessed on this page; generation verifies them again.") });
 
   const packetGeneratedAt = latestArtifact?.generated_at ?? report.generated_at;
   const artifactSafetyDriftItem = buildArtifactSafetyReadDriftItem(latestArtifact?.metadata_json);
@@ -1246,10 +1243,11 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
             .join(" "),
         }
       : {
-          label: PACKET_FRESHNESS_LABELS.CURRENT,
-          tone: "success" as const,
-          detail:
-            "No live source drift is currently visible against the latest packet snapshot.",
+          label: guidedSelection ? "Comparison evidence unassessed" : PACKET_FRESHNESS_LABELS.CURRENT,
+          tone: guidedSelection ? "warning" as const : "success" as const,
+          detail: guidedSelection
+            ? "The saved comparison binding is intact. Live artifact bytes and custody are unassessed on this page; generation verifies them again."
+            : "No live source drift is currently visible against the latest packet snapshot.",
         }
     : {
         label: PACKET_FRESHNESS_LABELS.NO_PACKET,
@@ -1262,7 +1260,7 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
     sourceContext,
     driftedSourceCount: driftedItems.length,
     comparisonAggregate: currentReportComparisonAggregate,
-    guidedComparison: guidedPanel ? { selected: Boolean(guidedSelection), problem: guidedProblem } : undefined,
+    guidedComparison: guidedPanel || guidedProblem ? { selected: Boolean(guidedSelection), problem: guidedProblem } : undefined,
     fundingSnapshot,
     datasetOutputContexts,
     // Refresh-log rows are operator-recorded, never executed by OpenPlan; a

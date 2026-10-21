@@ -3,7 +3,18 @@ import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readines
 import { PROJECT_JURISDICTION_COLUMNS } from "@/lib/projects/project-jurisdiction";
 import { cleanup, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { guidedReportSelectionFixture, reportId } from "@/test/fixtures/guided-report-evidence";
+import { guidedReportDigest } from "@/lib/reports/guided-comparison-binding";
 vi.mock("server-only", () => ({}));
+const guidedPageMocks = vi.hoisted(() => ({ verify: vi.fn(), bytes: vi.fn(), controls: vi.fn() }));
+vi.mock("@/lib/reports/guided-comparison-server", async (importOriginal) => ({
+  ...await importOriginal<typeof import("@/lib/reports/guided-comparison-server")>(),
+  verifyGuidedComparisonReport: guidedPageMocks.verify,
+}));
+vi.mock("@/lib/models/artifact-source", async (importOriginal) => ({
+  ...await importOriginal<typeof import("@/lib/models/artifact-source")>(),
+  loadArtifactBytes: guidedPageMocks.bytes,
+}));
 
 const createClientMock = vi.fn();
 const notFoundMock = vi.fn(() => {
@@ -294,7 +305,10 @@ vi.mock("@/lib/operations/workspace-summary", async () => {
 });
 
 vi.mock("@/components/reports/report-detail-controls", () => ({
-  ReportDetailControls: () => <div data-testid="report-detail-controls" />,
+  ReportDetailControls: (props: { guidedComparison?: unknown }) => {
+    guidedPageMocks.controls(props);
+    return <div data-testid="report-detail-controls" />;
+  },
 }));
 
 import ReportDetailPage from "@/app/(app)/reports/[reportId]/page";
@@ -317,6 +331,40 @@ async function renderReport(tab: ReportTabKey) {
       searchParams: Promise.resolve({ tab }),
     })
   );
+}
+
+/** Rebind only synthetic report scope; no live files or custody are consulted. */
+function selectGuidedPageFixture(fault?: string) {
+  const saved = guidedReportSelectionFixture();
+  saved.payload.workspaceId = "workspace-1";
+  saved.payload.projectId = "project-1";
+  if (fault === "workspace") saved.payload.workspaceId = "foreign-workspace";
+  if (fault === "project") saved.payload.projectId = "foreign-project";
+  if (fault === "snapshot") saved.payload.snapshot.id = reportId(999);
+  saved.bindingSha256 = guidedReportDigest(saved.payload);
+  if (fault === "digest") saved.bindingSha256 = "f".repeat(64);
+  if (fault === "version") Object.assign(saved, { version: 2 });
+  reportMaybeSingleMock.mockResolvedValueOnce({ data: { id: "report-1", workspace_id: "workspace-1", project_id: "project-1",
+    report_type: "analysis_summary", title: "Saved guided comparison", status: "generated", summary: null,
+    rtp_cycle_id: null, engagement_campaign_id: null, generated_at: "2026-03-28T18:00:00Z",
+    latest_artifact_kind: "html", latest_artifact_url: null, created_at: "2026-03-28T17:00:00Z", updated_at: "2026-03-28T18:05:00Z",
+    metadata_json: { guidedComparisonSelectionV1: saved } }, error: null });
+  const frozen = structuredClone(saved);
+  if (fault === "stale artifact") frozen.bindingSha256 = "e".repeat(64);
+  artifactsOrderMock.mockResolvedValueOnce({ data: [{ id: "artifact-1", artifact_kind: "html", storage_path: null,
+    generated_at: "2026-03-28T18:00:00Z", metadata_json: { guidedComparisonSelectionV1: frozen,
+      sourceContext: { guidedComparisonSelectionV1: frozen } } }], error: null });
+  return saved;
+}
+
+function expectNoGuidedWorkerReads() {
+  expect(guidedPageMocks.verify).not.toHaveBeenCalled();
+  expect(guidedPageMocks.bytes).not.toHaveBeenCalled();
+  for (const table of ["model_run_artifacts", "model_run_kpis", "model_run_stages", "model_attempt_instrument_custody"]) {
+    expect(fromMock).not.toHaveBeenCalledWith(table);
+  }
+  expect(reportSelectMock).toHaveBeenCalledWith(expect.stringContaining("metadata_json"));
+  expect(reportEqMock).toHaveBeenCalledWith("id", "report-1");
 }
 
 function expectLinkByHref(name: RegExp, href: string) {
@@ -356,6 +404,8 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     // the NEXT test's first read instead. Proven by the pair of tests at the
     // end of this file.
     vi.resetAllMocks();
+    guidedPageMocks.verify.mockRejectedValue(new Error("Full guided verification must not run on ordinary page load"));
+    guidedPageMocks.bytes.mockRejectedValue(new Error("Worker artifact downloads must not run on ordinary page load"));
 
     authGetUserMock.mockResolvedValue({
       data: {
@@ -920,6 +970,35 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
    * where to look. Keep new assertions in the group they belong to rather than
    * appending them to whichever test is nearest.
    */
+  it.each(["packet", "evidence", "history"] as const)("loads a saved guided comparison on %s without full verification or worker bytes", async (tab) => {
+    const saved = selectGuidedPageFixture();
+    await renderReport(tab);
+    expectNoGuidedWorkerReads();
+    expect(guidedPageMocks.controls).toHaveBeenCalledWith(expect.objectContaining({
+      guidedComparison: expect.objectContaining({ snapshotId: saved.snapshotId, bindingSha256: saved.bindingSha256,
+        problem: null, liveEvidenceStatus: "unassessed" }),
+    }));
+    expect(screen.queryByText(/Exact four-output selection verified/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/KPI receipts, assumptions, population and artifact bytes match/)).not.toBeInTheDocument();
+    if (tab === "packet") expect(screen.getByText("Saved binding checked; live evidence unassessed")).toBeInTheDocument();
+    if (tab === "history") expect(screen.getByText(/Live artifact bytes and custody are unassessed on this page/)).toBeInTheDocument();
+  });
+
+  it.each(["version", "digest", "workspace", "project", "snapshot"])("blocks the stored %s binding without downloading or repairing evidence", async (fault) => {
+    selectGuidedPageFixture(fault);
+    await renderReport("packet");
+    expect(screen.getByText("Saved comparison binding is invalid")).toBeInTheDocument();
+    expect(screen.queryByText("Saved binding checked; live evidence unassessed")).not.toBeInTheDocument();
+    expectNoGuidedWorkerReads();
+  });
+
+  it("reports a changed stored artifact binding without asserting a fresh byte audit", async () => {
+    selectGuidedPageFixture("stale artifact");
+    await renderReport("history");
+    expect(screen.getByText(/The saved report selection differs from the retained artifact/)).toBeInTheDocument();
+    expectNoGuidedWorkerReads();
+  });
+
   it("flags a retained jurisdiction snapshot after the live context changes", async () => {
     const oldProject = { id: "project-1", jurisdiction_context: null, place_country_code: "US" };
     const snapshot = buildProjectJurisdictionReadinessExportPayload(oldProject, jurisdictionReadinessRegistrySha256());

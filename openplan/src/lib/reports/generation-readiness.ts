@@ -309,13 +309,13 @@ export function buildReportGenerationReadiness(input: {
     sourceContextCheck,
     input.guidedComparison?.problem ? {
       id: "comparison_context" as const, label: "Selected guided comparison", status: "blocked" as const,
-      statusLabel: "Selected evidence cannot be verified", detail: input.guidedComparison.problem,
+      statusLabel: "Saved comparison binding is invalid", detail: input.guidedComparison.problem,
       nextAction: "Review and save the exact comparison again, or clear the selection. Historical artifacts remain available.",
     } : input.guidedComparison?.selected ? {
-      id: "comparison_context" as const, label: "Selected guided comparison", status: "ready" as const,
-      statusLabel: "Exact four-output selection verified",
-      detail: "The selected snapshot supplies separate worker outputs. Analysis Studio attachments are not required for this comparison.",
-      nextAction: "Generate after reviewing the retained assumptions and scientific caveats.",
+      id: "comparison_context" as const, label: "Selected guided comparison", status: "unknown" as const,
+      statusLabel: "Saved binding checked; live evidence unassessed",
+      detail: "The saved snapshot binds four separate worker outputs. This page does not recheck live artifact bytes or custody. Analysis Studio attachments are not required.",
+      nextAction: "Review the retained assumptions and scientific caveats. Save and generation verify the exact files and custody before accepting the comparison.",
     } : comparisonContextCheck(input.comparisonAggregate),
     fundingCheck(fundingProfileScan, fundingSnapshotIncomplete),
     dataLineageCheck(dataLineageSummary, input.refreshLogNote ?? null),
@@ -326,6 +326,8 @@ export function buildReportGenerationReadiness(input: {
   const hasBlocked = checks.some((check) => check.status === "blocked");
   const hasAttention = checks.some((check) => check.status === "attention");
   const hasNotStarted = checks.some((check) => check.status === "not_started");
+  // Optional unknown checks keep their existing behavior on unselected reports.
+  const hasUnassessedGuidedComparison = Boolean(input.guidedComparison?.selected && !input.guidedComparison.problem);
   const allReadyOrUnknown = checks.every(
     (check) => check.status === "ready" || check.status === "unknown"
   );
@@ -335,9 +337,14 @@ export function buildReportGenerationReadiness(input: {
       ? "attention"
       : hasNotStarted
         ? "not_started"
-        : allReadyOrUnknown
-          ? "ready"
-          : "unknown";
+        : hasUnassessedGuidedComparison
+          ? "unknown"
+          : allReadyOrUnknown
+            ? "ready"
+            : "unknown";
+
+  const attentionCount = checks.filter((check) => check.status === "attention" || check.status === "blocked" ||
+    (hasUnassessedGuidedComparison && check.id === "comparison_context" && check.status === "unknown")).length;
 
   return {
     status,
@@ -347,8 +354,10 @@ export function buildReportGenerationReadiness(input: {
         ? "Generation readiness needs review"
         : hasNotStarted
           ? "Generation readiness needs first packet"
-          : "Generation readiness reviewed",
-    detail: `${checks.filter((check) => check.status === "ready").length}/${checks.length} checks ready; ${checks.filter((check) => check.status === "attention" || check.status === "blocked").length} need operator attention before release use.`,
+          : hasUnassessedGuidedComparison
+            ? "Generation readiness unassessed"
+            : "Generation readiness reviewed",
+    detail: `${checks.filter((check) => check.status === "ready").length}/${checks.length} checks ready; ${attentionCount} need operator attention before release use.${hasUnassessedGuidedComparison ? " Selected comparison live artifact bytes and custody remain unassessed." : ""}`,
     nextAction:
       firstAction?.nextAction ??
       "Review source context, funding, and dataset lineage before generating or releasing this packet.",
