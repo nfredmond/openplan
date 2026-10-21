@@ -27,3 +27,11 @@ Maintained application TypeScript passes with zero diagnostics. Its 4,969-file p
 No hosted migration, release, tag or v1 completion follows from these ordinary results. Preserve the historical publication migration and prior evidence. A later integration checkpoint must retain these limits and inspect its own GitHub CI separately.
 
 The first TypeScript attempt omitted sibling worker files from its private copy and failed with 54 missing-module diagnostics. A separately identified copy correction includes the actual 615 tracked worker files. It changes no application type, module alias or compiler rule. The failed attempt remains in the evidence record.
+
+## Dependency audit correction
+
+The October 21 dependency audit reports two high vulnerabilities and one moderate vulnerability in the inherited lock. The correction changes `version`, `resolved` and `integrity` for three nodes: `follow-redirects` 1.16.0 to 1.16.1, `hono` 4.13.7 to 4.13.11, and `vite` 7.3.6 to 7.3.7. All other fields in the 1,144-node graph remain identical. `package.json` remains unchanged.
+
+A clean private install succeeds with lifecycle scripts disabled. The maintained dependency audit passes all 19 vendor checks and reports zero vulnerabilities. That window remains failed because an unsupported Bubblewrap argument prevents Vitest from starting. The separately identified focused window uses supported namespace options and passes the exact 420-test, 12-file inventory. It does not replay the install or audit. Candidate source bytes and modes remain exact; the private dependency link is removed after terminal process and cgroup checks. Both windows retain zero swap and zero memory events.
+
+No production code or test changes accompany this lock correction. The earlier TypeScript result predates the patched dependency graph; full TypeScript on that graph remains unrun. Full QA, generated route types, the production build, native database behavior, browser acceptance and hosted rollout remain unverified. Neither this maintenance checkpoint nor passing CI declares a release.
