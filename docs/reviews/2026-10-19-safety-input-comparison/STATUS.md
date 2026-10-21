@@ -109,3 +109,24 @@ execute the added native service-role positive-count assertion, SQL/RLS, native
 locking, a build or a browser journey. The changed report link still needs
 identified-build visual evidence. Fresh full CI remains pending for this source
 checkpoint. No migration body or scientific claim changes. PR357 stays a draft.
+
+October 21, 2026. GitHub CI on 36d3beb passes shuffled tests, live RLS isolation
+and the restore drill. The QA job passes 24,192 tests, then stops at dependency
+audit findings in follow-redirects, Hono and Vite. Its raw output remains at
+`/home/nathaniel/.local/state/openplan/pr357-current-qa-36d3beb-20261021/`.
+Those CI outcomes do not establish browser, hosted or scientific acceptance.
+
+A bounded correction updates only the lockfile version, archive URL and integrity
+for follow-redirects 1.16.1, Hono 4.13.11 and Vite 7.3.7. The other 1,141 entries,
+dependency requirements, licenses and package declarations remain unchanged.
+One root-owned window installs the exact lockfile with lifecycle scripts
+disabled. The maintained dependency audit returns 0, including 19 braces
+checks, and reports zero vulnerabilities. Twelve full focused test files pass
+122 tests and skip exactly 21 native cases. Installation, audit, tests and the
+manager each return 0; the dependency link is removed before unlock/close.
+Logs and graph comparison remain at
+`/home/nathaniel/.local/state/openplan/pr357-dependency-audit-20261021-01/`.
+No production code, test, guard or migration changes. Known-advisory checking
+does not prove exploit resistance, Windows behavior, lifecycle scripts, a full
+configured build, browser behavior or native execution in this local window.
+Fresh CI remains pending after this checkpoint. The PR remains draft.
