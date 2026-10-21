@@ -26,6 +26,12 @@ separate from reading history. Manual chapter copies retain source authorship;
 review and saving remain explicit. Apply
 `20261019000002_rtp_manual_source_page_proposals.sql` before deploying this capability.
 
+**BCA project place:** Apply
+`20261019000003_bca_project_place_snapshot.sql` before deploying the BCA update.
+The migration accepts new analysis versions with a retained project place and
+checks that place against the current project when saving. Existing saved
+analyses remain unchanged.
+
 ## 0.69.0 (2026-10-19)
 
 **Development release candidate, prepared for final release checks.** This

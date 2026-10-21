@@ -412,7 +412,7 @@ export function BcaWorkbench({
         ))}
       </nav>
       <aside aria-label="Project place and retained analysis place" className="space-y-3 rounded border p-4 text-sm">
-        <h2 className="text-lg font-semibold">Project place of record</h2>
+        <h2 className="text-lg font-semibold">Project place</h2>
         <p>Analysis place status: {bcaPlaceReviewLabel(placeReview.status)}.</p>
         {placeReview.retained ? <div>
           <p>Retained analysis place: {bcaPlaceDescription(placeReview.retained)}</p>
@@ -427,7 +427,7 @@ export function BcaWorkbench({
             {currentPlace.snapshot.jurisdiction?.entries.map(entry => ` ${entry.label} (${entry.scope}; ${entry.identity}; ${entry.reference ?? "no reference"}).`).join("")}</p>
         </div> : <p role="alert">Current project place {currentPlace.status}: {currentPlace.message}</p>}
         <p>{BCA_PLACE_LIMIT}</p>
-        <p>Describe the affected area and users separately below. Set or correct the place through <Link className="underline" href={`/projects/${projectId}`}>the project record</Link>.</p>
+        <p>Describe the affected area and users separately below. Set or correct the place through <Link className="underline" href={`/projects/${projectId}`}>the project page</Link>.</p>
         <button className={buttonClass} disabled={busy} onClick={() => void history()}>Refresh project place and history</button>
         <button className={buttonClass} disabled={!!pending || busy || !!storageProblem || currentPlace.status !== "available" || placeReview.status === "matched-at-read"}
           onClick={() => {

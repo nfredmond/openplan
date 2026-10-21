@@ -41,3 +41,19 @@ PostgreSQL/PostgREST parity remain unproved. Real HTTP retry/recovery, desktop
 and 390px navigation, console review, downloaded artifacts and GitHub CI remain
 pending. This note declares no milestone completion, release, hosted, legal or
 scientific acceptance. Publication and CI follow root's separate coordination.
+
+October 20, 2026. Two source corrections remove the new workbench jargon and
+name `20261019000003_bca_project_place_snapshot.sql` in the Unreleased operator
+steps. One bounded ordinary window runs both maintained planner-copy and
+release-ordering test files in four states. Harmless-first and final restored
+states each pass all 10 tests. Restoring the wrong copy fails only the ledger
+assertion, with 230 expected and 232 actual. Removing the BCA operator note fails
+only the migration-name assertion, naming that exact file. All 36 source pins
+and modes restore exactly; the dependency link is removed and the manager exits
+before unlock and close return. Outer, manager and inner exit 0. Private logs
+remain at
+`/home/nathaniel/.local/state/openplan/v1-bca-ci-source-correction-20261020-r11/check01/`.
+The earlier QA and shuffled failures remain preserved. Fresh CI remains pending.
+These source-reading guards do not prove all copy paths, complete release-table
+coverage, installed SQL, runtime behavior, browser layout or scientific accuracy.
+This window does not rerun or extend native, browser or hosted evidence.
