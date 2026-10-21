@@ -47,6 +47,7 @@ type MockMapInstance = {
 const { mapboxMocks, maplibreMocks, libraryLoad } = vi.hoisted(() => {
   function engineDouble() {
     const instances: MockMapInstance[] = [];
+    const popupBehavior = { closeOnAdd: false };
 
     const MapCtor = vi.fn(function MockMap(options: Record<string, unknown>) {
       let styleLoaded = false;
@@ -103,12 +104,15 @@ const { mapboxMocks, maplibreMocks, libraryLoad } = vi.hoisted(() => {
     });
 
     const Popup = vi.fn(function MockPopup() {
-      const element = document.createElement("div");
+      let element: HTMLElement | undefined = document.createElement("div");
       const self = {
         setLngLat: vi.fn(() => self),
         setDOMContent: vi.fn(() => self),
-        addTo: vi.fn(() => self),
-        remove: vi.fn(),
+        addTo: vi.fn(() => {
+          if (popupBehavior.closeOnAdd) self.remove();
+          return self;
+        }),
+        remove: vi.fn(() => { element = undefined; }),
         getElement: vi.fn(() => element),
       };
       return self;
@@ -128,6 +132,7 @@ const { mapboxMocks, maplibreMocks, libraryLoad } = vi.hoisted(() => {
       NavigationControl: vi.fn(),
       AttributionControl: vi.fn(),
       Popup,
+      popupBehavior,
       LngLatBounds,
       addProtocol: vi.fn(),
       setWorkerUrl: vi.fn(),
@@ -238,6 +243,8 @@ beforeEach(() => {
   vi.clearAllMocks();
   mapboxMocks.instances.length = 0;
   maplibreMocks.instances.length = 0;
+  mapboxMocks.popupBehavior.closeOnAdd = false;
+  maplibreMocks.popupBehavior.closeOnAdd = false;
   libraryLoad.wait = null;
   libraryLoad.error = null;
   vi.doMock("maplibre-gl", async () => {
@@ -585,13 +592,55 @@ describe("RtpCycleProjectMap", () => {
     expect(gl.Popup).toHaveBeenCalledTimes(1);
     expect(gl.Popup).toHaveBeenCalledWith({ offset: 12, maxWidth: "min(280px, calc(100% - 24px))" });
     const popup = gl.Popup.mock.results[0].value;
-    expect(popup.getElement().style.zIndex).toBe("3");
+    const element = popup.getElement();
+    expect(element).toBeDefined();
+    if (!element) throw new Error("the popup has no element after opening");
+    expect(element.style.zIndex).toBe("3");
     const content = popup.setDOMContent.mock.calls[0][0] as HTMLElement;
     expect({ minWidth: content.style.minWidth, overflowWrap: content.style.overflowWrap }).toEqual({
       minWidth: "0px", overflowWrap: "anywhere",
     });
     expect(content.textContent).toContain("No cost recorded in this plan");
     expect(map.addControl).toHaveBeenCalledWith(gl.NavigationControl.mock.instances[0], "top-right");
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  it.each(["mapbox", "maplibre"] as const)("tolerates a popup closed during addTo and opens the next popup with %s", async (engine) => {
+    if (engine === "maplibre") {
+      vi.stubEnv("NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN", "");
+      vi.stubEnv("NEXT_PUBLIC_MAPBOX_TOKEN", "");
+      vi.stubEnv("NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL", OPEN_STYLE);
+    }
+    const data = collection({ features: [feature()] });
+    global.fetch = vi.fn();
+    const { RtpCycleProjectMap } = await importPanel();
+    render(<RtpCycleProjectMap collection={data} audience="public" />);
+
+    const gl = engine === "maplibre" ? maplibreMocks : mapboxMocks;
+    await waitFor(() => expect(gl.Map).toHaveBeenCalledTimes(1));
+    const map = gl.instances[0];
+    act(() => map.fire("load"));
+    const click = () => map.fire("click:rtp-cycle-projects-circle", {
+      features: [{ properties: data.features[0].properties }],
+      lngLat: { lng: -82.5, lat: 39.5 },
+    });
+
+    gl.popupBehavior.closeOnAdd = true;
+    expect(() => act(click)).not.toThrow();
+    expect(gl.Popup).toHaveBeenCalledTimes(1);
+    const closed = gl.Popup.mock.results[0].value;
+    expect(closed.remove).toHaveBeenCalledTimes(1);
+    expect(closed.getElement).toHaveBeenCalledTimes(1);
+    expect(closed.getElement()).toBeUndefined();
+
+    gl.popupBehavior.closeOnAdd = false;
+    expect(() => act(click)).not.toThrow();
+    expect(gl.Popup).toHaveBeenCalledTimes(2);
+    const element = gl.Popup.mock.results[1].value.getElement();
+    expect(element).toBeDefined();
+    if (!element) throw new Error("the next popup has no element after opening");
+    expect(element.style.zIndex).toBe("3");
+    expect(map.remove).not.toHaveBeenCalled();
     expect(global.fetch).not.toHaveBeenCalled();
   });
 

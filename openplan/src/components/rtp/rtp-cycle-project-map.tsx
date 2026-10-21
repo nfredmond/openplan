@@ -382,8 +382,11 @@ export function RtpCycleProjectMap(props: RtpCycleProjectMapProps) {
           .setLngLat(event.lngLat)
           .setDOMContent(buildPopupContent((feature.properties ?? {}) as Record<string, unknown>))
           .addTo(map);
+        const popupElement = popup.getElement();
+        // A native open handler can close the popup before addTo returns.
+        if (!popupElement) return;
         // Controls use z-index 2. Keep the popup close button reachable above them.
-        popup.getElement().style.zIndex = "3";
+        popupElement.style.zIndex = "3";
       };
       const onProjectEnter = () => {
         map.getCanvas().style.cursor = "pointer";
