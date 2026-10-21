@@ -20,11 +20,44 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-**Source-page plan proposals:** Document review can stage quoted records from a
+No changes recorded after the v0.70.0 candidate below.
+
+## 0.70.0 (2026-10-21)
+
+**Development candidate, not yet tagged.** This packages merged main
+`981446636dc28a2ac61cfeb676e0156bdfbf22b9`. Final release checks and the new
+identified Safety journey remain pending. It does not declare a current hosted
+deployment or completed v1 milestone.
+
+**Source-page plan proposals.** Document review can stage quoted records from a
 retained page without an AI account. Pending proposals have their own pages,
 separate from reading history. Manual chapter copies retain source authorship;
-review and saving remain explicit. Apply
-`20261019000002_rtp_manual_source_page_proposals.sql` before deploying this capability.
+review and saving remain explicit. Existing isolated native and identified
+browser records retain their exact source/build scope and prior failed attempts.
+
+**Exact crash-year selection.** High-injury network reads apply each requested
+year, intersected with any range bounds, and refuse invalid or disjoint inputs.
+Sparse-year disclosures list the selected years. Focusing a ranked road also
+reveals and focuses the existing map. Ordinary query/DOM controls do not prove
+provider completeness or physical map behavior; the release journey must cover
+that visible correction at desktop and 390px.
+
+**Upgrade before dependent code.** This tree has 429 migration files. The single
+addition since v0.69.0 is
+`20261019000002_rtp_manual_source_page_proposals.sql`. Compare installed history
+and apply the pending additive migration before deploying this capability. Do
+not replay an already applied version or rewrite migration history. Keep the
+previous compatible build and follow the self-hosting and recovery guidance.
+
+**Remaining release and v1 boundaries.** Exact-candidate QA/build, shuffled,
+worker and isolated RLS evidence, release-order checks and the identified
+Safety journey must be recorded before tagging. Hosted acceptance requires its
+own identified deployment and schema record. Source-page proposals do not prove
+complete predecessor coverage, OCR accuracy, adoption or legal applicability.
+Requested crash years do not establish complete observations, zero crashes in
+unavailable years, a valid annual denominator, treatment effects or scientific
+validity. Full RTP, Safety, nationwide AequilibraE and ActivitySim validation,
+and all remaining v1 requirements stay open.
 
 ## 0.69.0 (2026-10-19)
 
