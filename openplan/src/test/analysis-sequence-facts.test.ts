@@ -14,7 +14,7 @@ type Row = Record<string, unknown>;
 type TableData = { rows?: Row[]; single?: Row | null; error?: { message: string } | null };
 
 /** Records the projection each table was read with, so it can be asserted. */
-type Recorded = { selects: Record<string, string>; eqs: Record<string, Array<[string, unknown]>> };
+type Recorded = { selects: Record<string, string>; eqs: Record<string, Array<[string, unknown]>>; ins: Record<string, Array<[string, readonly unknown[]]>> };
 
 function fakeSupabase(tables: Record<string, TableData>, recorded: Recorded): SupabaseClient {
   const client = {
@@ -30,7 +30,10 @@ function fakeSupabase(tables: Record<string, TableData>, recorded: Recorded): Su
           (recorded.eqs[table] ??= []).push([column, value]);
           return chain;
         },
-        in: () => chain,
+        in: (column: string, values: readonly unknown[]) => {
+          (recorded.ins[table] ??= []).push([column, values]);
+          return chain;
+        },
         order: () => chain,
         maybeSingle: async () => ({ data: data.single ?? null, error: data.error ?? null }),
         then: (resolve: (value: typeof result) => unknown) => Promise.resolve(result).then(resolve),
@@ -180,8 +183,21 @@ function guidedTables(): Record<string, TableData> {
   };
 }
 
+/** A separate generic set has its own model, run, entries and unlinked ready row. */
+function addGenericComparison(tables: Record<string, TableData>) {
+  tables.scenario_sets.rows?.push({ id: "set-generic", baseline_entry_id: "generic-base" });
+  tables.scenario_entries.rows?.push(
+    { id: "generic-base", scenario_set_id: "set-generic", entry_type: "baseline", assumptions_json: {} },
+    { id: "generic-build", scenario_set_id: "set-generic", entry_type: "alternative", assumptions_json: { horizonYear: 2050 } },
+  );
+  tables.models.rows?.push({ id: "model-generic", scenario_set_id: "set-generic", model_family: "other", config_json: {} });
+  tables.model_runs.rows?.push({ id: "run-generic", model_id: "model-generic", scenario_entry_id: "generic-base", status: "succeeded" });
+  tables.scenario_comparison_snapshots.rows?.push({ id: "snapshot-generic", scenario_set_id: "set-generic", status: "ready",
+    metadata_json: { commonPopulation: { schema: "openplan.future-population.v1", comparisonPolicy: "population_changing" } } });
+}
+
 async function load(tables: Record<string, TableData>, projectId?: string) {
-  const recorded: Recorded = { selects: {}, eqs: {} };
+  const recorded: Recorded = { selects: {}, eqs: {}, ins: {} };
   const facts = await loadAnalysisSequenceFacts(fakeSupabase(tables, recorded), "ws-1", projectId);
   return { facts, recorded };
 }
@@ -234,6 +250,258 @@ describe("what the analysis sequence counts as a checked run", () => {
     expect(facts.nonPrototypeCheckedRunCount).toBe(4);
     expect(facts.guidedComparisonCheckedCount).toBe(1);
     expect(facts.comparisonPacketCount).toBe(1);
+  });
+
+  it.each([
+    ["absent assumptions", undefined], ["null assumptions", null],
+    ["scalar assumptions", "malformed"], ["array assumptions", []],
+    ["absent change", {}], ["null change", { guidedProjectChange: null }],
+    ["scalar change", { guidedProjectChange: "malformed" }],
+    ["missing kind", { guidedProjectChange: {} }],
+    ["future policy", { guidedProjectChange: { kind: "future_population_change" } }],
+  ] as Array<[string, unknown]>)("retains historical rows without current guided counts for %s", async (_name, assumptions) => {
+    for (const retainPopulation of [true, false]) {
+      for (const claim of [undefined, null, "malformed", { schema: "openplan.future-population.v1" }, populationFixture().snapshot]) {
+        const tables = guidedTables();
+        const entry = tables.scenario_entries.rows?.find((row) => row.id === "entry-build");
+        if (!entry) throw new Error("Missing supplied build entry");
+        entry.assumptions_json = assumptions;
+        for (const run of tables.model_runs.rows ?? []) {
+          if (run.scenario_entry_id === "entry-build") run.assumption_snapshot_json = assumptions;
+        }
+        for (const link of tables.scenario_comparison_model_run_links.rows ?? []) {
+          if (link.scenario_role === "build") link.scenario_assumptions_json = assumptions ?? {};
+        }
+        if (!retainPopulation) {
+          for (const artifact of tables.model_run_artifacts.rows ?? []) {
+            const metadata = { ...(artifact.metadata_json as Record<string, unknown>) };
+            for (const key of ["population_custody", "population_basis", "population_basis_payload_json", "population_basis_digest"]) delete metadata[key];
+            artifact.metadata_json = metadata;
+          }
+        }
+        const snapshot = tables.scenario_comparison_snapshots.rows?.[0];
+        if (!snapshot) throw new Error("Missing supplied ready history");
+        snapshot.metadata_json = claim === undefined ? {} : { commonPopulation: claim };
+        const links = tables.scenario_comparison_model_run_links.rows ?? [];
+        expect(links).toHaveLength(4);
+        expect(new Set(links.map((link) => `${link.method}:${link.scenario_role}`)).size).toBe(4);
+        expect(tables.modeling_claim_decisions.rows).toHaveLength(4);
+        const before = structuredClone(tables);
+        const { facts } = await load(tables);
+        // These nonzero counts prove all four exact outputs and track decisions
+        // reach the consumers even for the matching unsupported assumptions.
+        expect(facts.guidedProjectComparison).toBe(true);
+        expect(facts.aequilibraeRunCount).toBe(2);
+        expect(facts.activitySimRunCount).toBe(2);
+        expect(facts.checkedRunCount).toBe(4);
+        expect(facts.nonPrototypeCheckedRunCount).toBe(4);
+        expect(facts.guidedComparisonCheckedCount).toBe(0);
+        expect(facts.comparisonPacketCount).toBe(0);
+        expect(facts.savedComparisonPacketCount).toBe(1);
+        expect(resolveAnalysisSequence(facts).find((step) => step.id === "check")?.state).not.toBe("done");
+        expect(tables).toEqual(before);
+      }
+    }
+  });
+
+  it("keeps genuinely generic ready history current without borrowing guided evidence", async () => {
+    const tables = withCountyRuns([]);
+    tables.models = { rows: [{ id: "model-1", model_family: "other", scenario_set_id: "set-1", config_json: {} }] };
+    tables.model_runs = { rows: [{ id: "run-generic", model_id: "model-1", scenario_entry_id: "generic-base", status: "succeeded" }] };
+    tables.scenario_entries = { rows: [
+      { id: "generic-base", scenario_set_id: "set-1", entry_type: "baseline", assumptions_json: {} },
+      { id: "generic-build", scenario_set_id: "set-1", entry_type: "alternative", assumptions_json: { horizonYear: 2050 } },
+    ] };
+    tables.scenario_comparison_snapshots = { rows: [{ id: "generic-ready", scenario_set_id: "set-1", status: "ready",
+      metadata_json: { commonPopulation: { schema: "openplan.future-population.v1", comparisonPolicy: "population_changing" } } }] };
+    tables.scenario_comparison_model_run_links = { rows: [] };
+    const before = structuredClone(tables);
+    const { facts } = await load(tables);
+    expect(facts.guidedProjectComparison).toBe(false);
+    expect(facts.modelCount).toBe(1);
+    expect(facts.runCount).toBe(1);
+    expect(facts.guidedComparisonCheckedCount).toBe(0);
+    expect(facts.comparisonPacketCount).toBe(1);
+    expect(facts.savedComparisonPacketCount).toBe(1);
+    expect(tables).toEqual(before);
+  });
+
+  it.each([
+    ["absent build policy", {}],
+    ["unsupported build policy", { guidedProjectChange: { kind: "future_population_change" } }],
+  ] as Array<[string, Row]>)("keeps linked ready history noncurrent after all model declarations are removed: %s", async (_name, assumptions) => {
+    for (const populationState of ["present", "absent", "malformed"]) {
+      for (const claim of [undefined, null, "malformed", [], { schema: "openplan.future-population.v1" }, populationFixture().snapshot]) {
+        const tables = guidedTables();
+        const entry = tables.scenario_entries.rows?.find((row) => row.id === "entry-build");
+        const snapshot = tables.scenario_comparison_snapshots.rows?.[0];
+        if (!entry || !snapshot) throw new Error("Missing supplied historical comparison");
+        entry.assumptions_json = assumptions;
+        for (const run of tables.model_runs.rows ?? []) {
+          if (run.scenario_entry_id === "entry-build") run.assumption_snapshot_json = assumptions;
+        }
+        for (const link of tables.scenario_comparison_model_run_links.rows ?? []) {
+          if (link.scenario_role === "build") link.scenario_assumptions_json = assumptions;
+        }
+        for (const artifact of tables.model_run_artifacts.rows ?? []) {
+          const metadata = { ...(artifact.metadata_json as Row) };
+          if (populationState === "absent") {
+            for (const key of ["population_custody", "population_basis", "population_basis_payload_json", "population_basis_digest"]) delete metadata[key];
+          } else if (populationState === "malformed") {
+            metadata.population_basis = "malformed";
+          }
+          artifact.metadata_json = metadata;
+        }
+        snapshot.metadata_json = claim === undefined ? {} : { commonPopulation: claim };
+        const artifacts = tables.model_run_artifacts.rows ?? [];
+        const links = tables.scenario_comparison_model_run_links.rows ?? [];
+        expect(artifacts).toHaveLength(4);
+        expect(links).toHaveLength(4);
+        expect(new Set(links.map((link) => `${link.method}:${link.scenario_role}`)).size).toBe(4);
+        expect(tables.modeling_claim_decisions.rows).toHaveLength(4);
+        expect(tables.model_run_stages.rows).toHaveLength(4);
+        for (const [index, artifact] of artifacts.entries()) {
+          const metadata = artifact.metadata_json as Row;
+          expect(artifact.content_hash).toBe(HASH);
+          expect(metadata.assignment_profile_digest).toBe(PROFILE_HASH);
+          expect(metadata.network_settings_digest).toBe(SETTINGS_HASH);
+          expect(metadata.network_state_digest).toBe(STATE_HASH);
+          expect(links[index]).toMatchObject({ comparison_snapshot_id: "snapshot-1", model_run_id: artifact.run_id,
+            model_run_artifact_id: artifact.id, artifact_type: artifact.artifact_type, artifact_sha256: HASH,
+            assignment_profile_sha256: PROFILE_HASH, network_settings_sha256: SETTINGS_HASH, network_state_sha256: STATE_HASH });
+        }
+        // Before the historical model edit, the actual collector reaches all
+        // four exact outputs and track decisions under these same raw inputs.
+        const declaredBefore = structuredClone(tables);
+        const declared = (await load(tables)).facts;
+        expect(declared.aequilibraeRunCount).toBe(2);
+        expect(declared.activitySimRunCount).toBe(2);
+        expect(declared.checkedRunCount).toBe(4);
+        expect(declared.comparisonPacketCount).toBe(0);
+        expect(tables).toEqual(declaredBefore);
+
+        for (const model of tables.models.rows ?? []) model.config_json = {};
+        expect(tables.models.rows?.map((model) => model.config_json)).toEqual([{}, {}]);
+        const before = structuredClone(tables);
+        const { facts, recorded } = await load(tables);
+        expect(facts.guidedProjectComparison).toBe(false);
+        expect(facts.modelCount).toBe(2);
+        expect(facts.runCount).toBe(4);
+        expect(facts.aequilibraeRunCount).toBe(2);
+        expect(facts.activitySimRunCount).toBe(2);
+        // Current jobs cannot be reconstructed from erased declarations.
+        // Retained decisions and output rows are not rewritten to supply them.
+        expect(facts.checkedRunCount).toBe(0);
+        expect(facts.guidedComparisonCheckedCount).toBe(0);
+        expect(facts.comparisonPacketCount).toBe(0);
+        expect(facts.savedComparisonPacketCount).toBe(1);
+        expect(recorded.ins.scenario_comparison_model_run_links).toEqual([["comparison_snapshot_id", ["snapshot-1"]]]);
+        expect(tables).toEqual(before);
+      }
+    }
+  });
+
+  it.each(["malformed links", "one malformed link", "deleted models", "damaged models"])("does not reinterpret guided history as generic with %s", async (damage) => {
+    const tables = guidedTables();
+    for (const model of tables.models.rows ?? []) model.config_json = {};
+    const snapshot = tables.scenario_comparison_snapshots.rows?.[0];
+    if (!snapshot) throw new Error("Missing supplied ready history");
+    snapshot.metadata_json = {};
+    if (damage === "deleted models") tables.models.rows = [];
+    else if (damage === "damaged models") {
+      for (const model of tables.models.rows ?? []) model.config_json = "malformed";
+    } else {
+      for (const link of tables.scenario_comparison_model_run_links.rows ?? []) {
+        link.method = "unsupported";
+        link.scenario_role = null;
+        link.artifact_sha256 = "malformed";
+      }
+      if (damage === "one malformed link") tables.scenario_comparison_model_run_links.rows = tables.scenario_comparison_model_run_links.rows?.slice(0, 1);
+    }
+    expect(tables.model_run_artifacts.rows).toHaveLength(4);
+    expect(tables.modeling_claim_decisions.rows).toHaveLength(4);
+    expect(tables.scenario_comparison_model_run_links.rows).toHaveLength(damage === "one malformed link" ? 1 : 4);
+    const before = structuredClone(tables);
+    const { facts } = await load(tables);
+    expect(facts.guidedProjectComparison).toBe(false);
+    expect(facts.guidedComparisonCheckedCount).toBe(0);
+    expect(facts.comparisonPacketCount).toBe(0);
+    expect(facts.savedComparisonPacketCount).toBe(1);
+    expect(tables).toEqual(before);
+  });
+
+  it.each([true, false])("preserves the separate generic snapshot beside invalid guided history, current intent=%s", async (retainIntent) => {
+    const tables = guidedTables();
+    const snapshot = tables.scenario_comparison_snapshots.rows?.[0];
+    if (!snapshot) throw new Error("Missing supplied ready history");
+    snapshot.metadata_json = {};
+    if (!retainIntent) for (const model of tables.models.rows ?? []) model.config_json = {};
+    addGenericComparison(tables);
+    expect(tables.scenario_comparison_snapshots.rows?.map((row) => row.scenario_set_id)).toEqual(["set-1", "set-generic"]);
+    expect(tables.scenario_comparison_model_run_links.rows).toHaveLength(4);
+    expect(tables.scenario_comparison_model_run_links.rows?.every((link) => link.comparison_snapshot_id === "snapshot-1")).toBe(true);
+    const before = structuredClone(tables);
+    const { facts, recorded } = await load(tables, "project-1");
+    expect(facts.guidedProjectComparison).toBe(retainIntent);
+    expect(facts.scenarioSetCount).toBe(2);
+    expect(facts.modelCount).toBe(3);
+    expect(facts.runCount).toBe(5);
+    expect(facts.guidedComparisonCheckedCount).toBe(retainIntent ? 1 : 0);
+    expect(facts.comparisonPacketCount).toBe(1);
+    expect(facts.savedComparisonPacketCount).toBe(2);
+    expect(recorded.ins.scenario_comparison_model_run_links).toEqual([["comparison_snapshot_id", ["snapshot-1", "snapshot-generic"]]]);
+    expect(recorded.eqs.models).toContainEqual(["project_id", "project-1"]);
+    expect(recorded.eqs.scenario_sets).toContainEqual(["project_id", "project-1"]);
+    expect(tables).toEqual(before);
+  });
+
+  it("preserves both supported fixed-population and generic current packets in separate sets", async () => {
+    const tables = guidedTables();
+    addGenericComparison(tables);
+    const before = structuredClone(tables);
+    const { facts } = await load(tables);
+    expect(facts.guidedProjectComparison).toBe(true);
+    expect(facts.guidedComparisonCheckedCount).toBe(1);
+    expect(facts.comparisonPacketCount).toBe(2);
+    expect(facts.savedComparisonPacketCount).toBe(2);
+    expect(tables).toEqual(before);
+  });
+
+  it.each([
+    { schema: "openplan.common-population-comparison.v1" },
+    { comparisonPolicy: "fixed_population_auto_trip_change" },
+    { schema: "openplan.common-population-comparison.v1", comparisonPolicy: "unsupported" },
+    { schema: "unsupported", comparisonPolicy: "fixed_population_auto_trip_change" },
+  ])("requires strict evidence when an unlinked generic-model snapshot carries either fixed marker: %j", async (claim) => {
+    const tables = guidedTables();
+    for (const model of tables.models.rows ?? []) model.config_json = {};
+    tables.scenario_comparison_model_run_links.rows = [];
+    const snapshot = tables.scenario_comparison_snapshots.rows?.[0];
+    if (!snapshot) throw new Error("Missing supplied ready row");
+    snapshot.metadata_json = { commonPopulation: claim };
+    addGenericComparison(tables);
+    const before = structuredClone(tables);
+    const { facts } = await load(tables);
+    expect(facts.guidedProjectComparison).toBe(false);
+    expect(facts.runCount).toBe(5);
+    expect(facts.guidedComparisonCheckedCount).toBe(0);
+    expect(facts.comparisonPacketCount).toBe(1);
+    expect(facts.savedComparisonPacketCount).toBe(2);
+    expect(tables).toEqual(before);
+  });
+
+  it.each(["models", "scenario_comparison_model_run_links"])("does not infer generic current packets from a failed %s classification read", async (table) => {
+    const tables = guidedTables();
+    for (const model of tables.models.rows ?? []) model.config_json = {};
+    tables.scenario_comparison_snapshots.rows?.forEach((snapshot) => { snapshot.metadata_json = {}; });
+    tables.scenario_comparison_model_run_links.rows = [];
+    tables[table].error = { message: "permission denied" };
+    const before = structuredClone(tables);
+    const { facts } = await load(tables);
+    expect(facts.comparisonPacketCount).toBe(0);
+    expect(facts.savedComparisonPacketCount).toBe(1);
+    expect(facts.unreadable).toContain(table === "models" ? "model" : "packet");
+    expect(tables).toEqual(before);
   });
 
   it("does not let a workspace-wide county result satisfy a project step", async () => {
@@ -381,19 +649,19 @@ describe("what the analysis sequence counts as a checked run", () => {
     expect(facts.guidedComparisonCheckedCount).toBe(0);
   });
 
-  it("projects the hashes, sizes, tracks, and snapshot binding fields it checks", async () => {
+  it("projects the exact current assumptions, population, tracks, and snapshot bindings it checks", async () => {
     const { recorded } = await load(guidedTables());
-    expect(recorded.selects.model_run_artifacts).toContain("content_hash");
-    expect(recorded.selects.model_run_artifacts).toContain("file_size_bytes");
-    expect(recorded.selects.model_run_artifacts).toContain("metadata_json");
-    expect(recorded.selects.model_run_stages).toContain("stage_name");
-    expect(recorded.selects.model_run_stages).toContain("attempt_managed");
-    expect(recorded.selects.model_run_stages).toContain("active_attempt_id");
-    expect(recorded.selects.model_run_artifacts).toContain("attempt_id");
-    expect(recorded.selects.model_runs).toContain("input_snapshot_json");
-    expect(recorded.selects.scenario_comparison_snapshots).toContain("metadata_json");
-    expect(recorded.selects.modeling_claim_decisions).toContain("claim_status");
-    expect(recorded.selects.scenario_comparison_model_run_links).toContain("artifact_sha256");
+    for (const [table, columns] of Object.entries({
+      scenario_sets: "id, baseline_entry_id",
+      models: "id, scenario_set_id, model_family, config_json",
+      scenario_entries: "id, scenario_set_id, entry_type, assumptions_json",
+      model_runs: "id, model_id, scenario_entry_id, engine_key, status, attempt_managed, assumption_snapshot_json, input_snapshot_json, created_at",
+      model_run_artifacts: "id, run_id, stage_id, attempt_id, artifact_type, file_url, file_size_bytes, content_hash, metadata_json, created_at",
+      model_run_stages: "id, run_id, stage_name, status, attempt_managed, active_attempt_id",
+      modeling_claim_decisions: "model_run_id, track, claim_status",
+      scenario_comparison_snapshots: "id, scenario_set_id, status, metadata_json",
+      scenario_comparison_model_run_links: "comparison_snapshot_id, model_run_id, model_run_artifact_id, method, scenario_role, artifact_type, artifact_sha256, assignment_profile_sha256, network_settings_sha256, network_state_sha256, scenario_assumptions_json",
+    })) expect(recorded.selects[table], table).toBe(columns);
   });
 
   it("pins scenario sets, models, and project geography to the launched project", async () => {

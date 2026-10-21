@@ -34,6 +34,8 @@
  *   carries it through to the worker's evidence.
  */
 
+import { populationSourceRegistry, type PopulationProfilePurpose, type PopulationProfileResult } from "@/lib/geographies/population-source-registry";
+
 import { censusApiKey, withCensusApiKey } from "@/lib/data-sources/census-api-key";
 import { workspaceIntegrationKey } from "@/lib/integrations/context";
 import { fetchJsonWithRetry } from "@/lib/data-sources/http";
@@ -125,6 +127,8 @@ export type ZoneAttributeSourceFetch = {
 
 export type ZoneAttributeSourceAdapter = {
   descriptor: ZoneAttributeSourceDescriptor;
+  /** Technical population support is separate from availability of zone tables. */
+  retainedPopulation?: { profile(purpose: PopulationProfilePurpose): PopulationProfileResult };
   /**
    * Fetch the tables covering `bbox`. Returns tables that are a SUPERSET of the
    * worker's own study-area clip: the worker still decides which geographies
@@ -408,6 +412,7 @@ function usMeasureProvenance(
 }
 
 export const usCensusZoneAttributeAdapter: ZoneAttributeSourceAdapter = {
+  retainedPopulation: { profile: (purpose) => populationSourceRegistry.forDescriptor(US_CENSUS_ACS_DESCRIPTOR, purpose) },
   descriptor: US_CENSUS_ACS_DESCRIPTOR,
 
   async fetch({ bbox, equityLevel }) {

@@ -154,7 +154,7 @@ def _request(snapshot, common):
             raise PopulationHandoffError('Unsupported registered population replacement request')
         _uuid(request['checkpoint']['id'])
         _hash(request['checkpoint']['sha256'])
-        common.validate_source_profile(request['sourceProfile'])
+        common.validate_source_profile(request['sourceProfile'], canonical=True)
         source = request['source']
         if source is not None:
             if not isinstance(source, dict) or set(source) != {'modelRunId', 'artifactId', 'stageId', 'attemptId', 'sha256', 'sizeBytes'} or source['attemptId'] is not None:
@@ -171,7 +171,7 @@ def _request(snapshot, common):
         raise PopulationHandoffError('Unsupported common-population request')
     request = json.loads(_stable(request))
     if mode == 'generate':
-        request['sourceProfile'] = common.validate_source_profile(request['sourceProfile'])
+        request['sourceProfile'] = common.validate_source_profile(request['sourceProfile'], canonical=True)
     else:
         source = request['source']
         if not isinstance(source, dict) or set(source) != {'modelRunId', 'artifactId', 'stageId', 'attemptId', 'sha256', 'sizeBytes'}:
@@ -374,6 +374,9 @@ def _resolve(writer, common):
 
 
 def _zone_payload(run, profile, payload):
+    from population_source_registry import registered_source_descriptor
+
+    descriptor = registered_source_descriptor(profile)
     stamp = run['input_snapshot_json'].get('zoneAttributes')
     if (not isinstance(stamp, dict) or stamp.get('status') != 'supplied'
             or stamp.get('storageRef') != 'storage://run-artifacts/model-runs/' + run['id'] + '/zone-attributes.json'
@@ -381,9 +384,9 @@ def _zone_payload(run, profile, payload):
             or payload.get('run_id') != run['id'] or not isinstance(payload.get('source'), dict)):
         raise PopulationHandoffError('Population source requires its actual run-scoped app zone payload')
     source = payload['source']
-    if (source.get('id') != 'us_census_acs5' or stamp.get('sourceId') != source['id']
-            or source.get('vintage') != str(profile['income_dollar_year']) or stamp.get('vintage') != source['vintage']
-            or source.get('retrieval_url') != profile['acs_summary_endpoint']
+    if (source.get('id') != descriptor['id'] or stamp.get('sourceId') != source['id']
+            or source.get('vintage') != descriptor['vintage'] or stamp.get('vintage') != source['vintage']
+            or source.get('retrieval_url') != descriptor['retrievalUrl']
             or not isinstance(payload.get('tables'), dict)
             or not isinstance(payload['tables'].get('demographics'), dict)
             or payload['tables']['demographics'].get('status') != 'supplied'):

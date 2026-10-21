@@ -20,6 +20,8 @@ SHARED = "workers/hosted-models"
 REQUIRED = (
     f"{WORKER}/model_common_population_package.py",
     "scripts/modeling/common_population.py",
+    "scripts/modeling/population_source_registry.py",
+    "scripts/modeling/population_source_profiles.v1.json",
     "scripts/modeling/synthetic_population.py",
     "scripts/modeling/census_pums.py",
     "scripts/modeling/population_synthesis.py",
@@ -83,6 +85,11 @@ class PopulationImagePackagingTests(unittest.TestCase):
                     + IMPORTS + "; "
                     + f"assert Path(population_library().__file__).resolve() == Path({str(image / 'app/scripts/modeling/common_population.py')!r}); "
                     + f"import synthetic_population; assert Path(synthetic_population.__file__).resolve() == Path({str(image / 'app/scripts/modeling/synthetic_population.py')!r})"
+                    + "; import population_source_registry as registry; "
+                    + f"assert Path(registry.__file__).resolve() == Path({str(image / 'app/scripts/modeling/population_source_registry.py')!r}); "
+                    + f"assert registry.CATALOG_PATH.resolve() == Path({str(image / 'app/scripts/modeling/population_source_profiles.v1.json')!r}); "
+                    + "assert len(registry._catalog()) == 2; "
+                    + "assert registry.PRODUCTION_REGISTRY.validate(registry._catalog()[1]['profile'], 'new_guided_launch') == registry._catalog()[1]['profile']"
                 )
                 result = subprocess.run([sys.executable, "-I", "-B", "-c", code],
                     cwd=image, capture_output=True, text=True, timeout=30)

@@ -7,10 +7,12 @@ import { LIVE_RLS } from "./local-supabase-env";
 import { resolveLocalDbContainer } from "./helpers/live-catalog";
 
 const fixture = readFileSync("src/test/fixtures/modeling/common-population-comparisons.sql", "utf8");
+const admissionFixture = readFileSync("src/test/fixtures/modeling/common-population-admission.sql", "utf8");
+const profileFixture = readFileSync("src/test/fixtures/modeling/common-population-profiles.sql", "utf8");
 const signature = "public.validate_common_population_comparison()";
 const stageSignature = "public.read_common_population_stage_custody(uuid,uuid,uuid,uuid)";
 const ordinaryStageSignature = "public.read_common_population_stage_custody_before_replacement(uuid,uuid,uuid,uuid)";
-type TrialOptions = { source?: string; output?: string; guard?: string; custody?: "managed_attempt" | "legacy_stage_snapshot" };
+type TrialOptions = { profileSql?: string; source?: string; output?: string; guard?: string; custody?: "managed_attempt" | "legacy_stage_snapshot" };
 const owner = "SET LOCAL ROLE authenticated;";
 const sourceFault = "UPDATE cp_probe SET source_metadata=source_metadata-'population_basis';";
 const missingOutput = (position: number) => `UPDATE cp_jobs SET metadata=metadata-ARRAY['population_basis','population_basis_payload_json','population_basis_digest'] WHERE position=${position};`;
@@ -33,9 +35,9 @@ const linkRefusal = (position: number) => `${owner} DO $$ DECLARE s uuid; BEGIN 
   function trial(body: string, options: TrialOptions = {}) {
     return spawnSync("docker", ["exec", "-i", container, "psql", "-X", "-U", "postgres", "-d", "postgres", "-qAt", "-v", "ON_ERROR_STOP=1"], {
       input: `BEGIN; SET LOCAL statement_timeout='15s'; SET LOCAL lock_timeout='2s';\n${options.guard ?? ""}\n` +
-        fixture.replace("-- CUSTODY SEAM", `UPDATE cp_probe SET custody='${options.custody ?? "managed_attempt"}';`)
+        fixture.replace("-- CUSTODY SEAM", `UPDATE cp_probe SET custody='${options.custody ?? "managed_attempt"}';${options.profileSql ?? ""}`)
           .replace("-- SOURCE PUBLICATION SEAM", options.source ?? "").replace("-- OUTPUT PUBLICATION SEAM", options.output ?? "") +
-        `\n${body}\nSELECT 'COMMON_POPULATION_NATIVE_ASSERTIONS_REACHED'; ROLLBACK;`,
+        `${admissionFixture}\n${body}\nSELECT 'COMMON_POPULATION_NATIVE_ASSERTIONS_REACHED'; ROLLBACK;`,
       encoding: "utf8", timeout: 60_000, maxBuffer: 2 * 1024 * 1024,
     });
   }
@@ -282,18 +284,117 @@ const linkRefusal = (position: number) => `${owner} DO $$ DECLARE s uuid; BEGIN 
   it("refuses viewer snapshot writes before protected attempt reads", () => accepts(`
     SELECT set_config('request.jwt.claim.sub',viewer_id::text,true) FROM cp_probe;
     ${owner} SELECT pg_temp.cp_expect_refusal('SELECT pg_temp.cp_snapshot()'); RESET ROLE;`));
-  it("retains the original invoker refusal for an outsider snapshot write", () => accepts(`
+  it("refuses an outsider at parent authorization before private custody reads", () => accepts(`
     SELECT set_config('request.jwt.claim.sub',outsider_id::text,true) FROM cp_probe;
-    ${owner} DO $$ BEGIN BEGIN PERFORM pg_temp.cp_snapshot(); RAISE EXCEPTION 'Outsider snapshot accepted';
-      EXCEPTION WHEN raise_exception THEN
-      IF SQLERRM<>'baseline_entry_id must reference a baseline entry in the same scenario set' THEN RAISE; END IF;
-      END; END $$; RESET ROLE;`));
-  it.each(["{}", '{"commonPopulation":{"schema":"openplan.future-population.v1","comparisonPolicy":"population_changing"}}'])
-    ("preserves prior and different population policies %s without retrofitting a shared-population claim", (metadata) => accepts(`
+    ${owner} SELECT pg_temp.cp_expect_refusal('SELECT pg_temp.cp_snapshot()'); RESET ROLE;`));
+
+  it.each(["{}", '{"commonPopulation":null}', '{"commonPopulation":[]}', '{"commonPopulation":"bad"}',
+    '{"commonPopulation":{"schema":"openplan.future-population.v1","comparisonPolicy":"population_changing"}}'])
+    ("refuses guided links and ready publication without an exact supported claim: %s", (metadata) => accepts(`
       ${owner} DO $$ DECLARE s uuid; BEGIN s:=pg_temp.cp_snapshot('${metadata}'::jsonb);
-        PERFORM pg_temp.cp_all_links(s); PERFORM pg_temp.cp_ready(s); END $$; RESET ROLE; SELECT pg_temp.cp_unchanged();`,
+        PERFORM pg_temp.cp_expect_refusal(format('SELECT pg_temp.cp_link(%L,0)',s));
+        PERFORM pg_temp.cp_expect_refusal(format('SELECT pg_temp.cp_ready(%L)',s));
+        PERFORM pg_temp.cp_expect_refusal('SELECT pg_temp.cp_snapshot(''${metadata}''::jsonb, ''ready'')');
+      END $$; RESET ROLE; SELECT pg_temp.cp_unchanged();`,
       { output: "UPDATE cp_jobs SET metadata=metadata-ARRAY['population_basis','population_basis_payload_json','population_basis_digest'];" },
     ));
+
+  it.each(["{}", '{"commonPopulation":{"schema":"openplan.future-population.v1","comparisonPolicy":"population_changing"}}'])
+    ("preserves genuinely generic ready creation and same-claim updates: %s", (metadata) => accepts(`
+      ${owner} DO $$ DECLARE s uuid; BEGIN s:=pg_temp.cp_generic_snapshot('${metadata}'::jsonb);
+        UPDATE public.scenario_comparison_snapshots SET status='ready' WHERE id=s;
+        IF EXISTS(SELECT 1 FROM public.scenario_comparison_model_run_links WHERE comparison_snapshot_id=s) THEN
+          RAISE EXCEPTION 'Generic survivor borrowed guided links'; END IF;
+      END $$; RESET ROLE; SELECT pg_temp.cp_unchanged();`));
+
+  it.each(['{"commonPopulation":{"schema":"openplan.common-population-comparison.v1"}}',
+    '{"commonPopulation":{"comparisonPolicy":"fixed_population_auto_trip_change"}}'])
+    ("makes either exact fixed-population marker opt into full validation: %s", (metadata) => accepts(`
+      ${owner} SELECT pg_temp.cp_expect_refusal('SELECT pg_temp.cp_generic_snapshot(''${metadata}''::jsonb,''draft'')'); RESET ROLE;`));
+
+  it("refuses an unchanged-claim ready scope move into a guided set", () => accepts(`
+    ${owner} DO $$ DECLARE s uuid; g cp_groups%ROWTYPE; BEGIN
+      s:=pg_temp.cp_generic_snapshot(); SELECT * INTO g FROM cp_groups WHERE name='main';
+      PERFORM pg_temp.cp_expect_refusal(format('UPDATE public.scenario_comparison_snapshots SET scenario_set_id=%L,baseline_entry_id=%L,candidate_entry_id=%L WHERE id=%L',
+        g.scenario_set_id,g.baseline_id,g.build_id,s)); END $$; RESET ROLE;`));
+
+  it("rechecks complete ordinary source receipts on unchanged-claim ready updates and permits inert archival", () => accepts(`
+    ${owner} SELECT set_config('cp.snapshot',pg_temp.cp_snapshot()::text,true);
+    SELECT pg_temp.cp_all_links(current_setting('cp.snapshot')::uuid); SELECT pg_temp.cp_ready(current_setting('cp.snapshot')::uuid); RESET ROLE;
+    UPDATE public.model_legacy_artifact_receipts SET response_payload=response_payload-'metadata_json' WHERE artifact_id IN (
+      SELECT artifact.id FROM public.model_run_artifacts artifact JOIN cp_groups g ON g.run_id=artifact.run_id AND g.name='main'
+      WHERE artifact.artifact_type='common_population_source_manifest');
+    ${owner} SELECT pg_temp.cp_expect_refusal(format('SELECT pg_temp.cp_ready(%L)',current_setting('cp.snapshot')));
+    UPDATE public.scenario_comparison_snapshots SET status='archived' WHERE id=current_setting('cp.snapshot')::uuid;
+    DO $$ BEGIN IF NOT EXISTS(SELECT 1 FROM public.scenario_comparison_snapshots
+      WHERE id=current_setting('cp.snapshot')::uuid AND status='archived') THEN RAISE EXCEPTION 'Inert archive failed'; END IF; END $$;
+    RESET ROLE;`, { custody: "legacy_stage_snapshot" }));
+
+  it.each(['{"guidedProjectComparison":"openplan.project_comparison.v1"}', '{"guidedProjectComparison":null}',
+    '{"guidedProjectComparison":"openplan.project_comparison.v999"}', '{"method":"activitysim","networkBasis":{"kind":"worker_osm_snapshot"}}'])
+    ("refuses guided intent introduction into a ready generic set: %s", (config) => accepts(`
+      ${owner} SELECT pg_temp.cp_generic_snapshot(); RESET ROLE;
+      SELECT pg_temp.cp_expect_refusal('SELECT pg_temp.cp_generic_model(''${config}''::jsonb)');
+      DO $$ BEGIN IF EXISTS(SELECT 1 FROM public.models WHERE scenario_set_id=(SELECT set_id FROM cp_generic_scope)) THEN
+        RAISE EXCEPTION 'Refused guided insert retained a model'; END IF; END $$;`));
+
+  it.each(["NULL", "'\"openplan.project_comparison.v999\"'::jsonb"])("refuses unsupported actual marker %s at guided ready admission", (marker) => accepts(`
+    UPDATE public.models SET config_json=jsonb_build_object('guidedProjectComparison',${marker})
+      WHERE scenario_set_id=(SELECT scenario_set_id FROM cp_groups WHERE name='main');
+    ${owner} SELECT pg_temp.cp_expect_refusal('SELECT pg_temp.cp_snapshot(NULL,''ready'')'); RESET ROLE;`));
+
+  it("refuses config removal, DELETE and OLD/NEW scope moves affecting bound evidence", () => accepts(`
+    ${owner} DO $$ DECLARE s uuid; BEGIN s:=pg_temp.cp_snapshot(); PERFORM pg_temp.cp_all_links(s); PERFORM pg_temp.cp_ready(s); END $$; RESET ROLE;
+    DO $$ DECLARE m uuid; g cp_generic_scope%ROWTYPE; BEGIN
+      SELECT model_id INTO m FROM cp_groups WHERE name='main'; SELECT * INTO g FROM cp_generic_scope;
+      PERFORM pg_temp.cp_expect_refusal(format('UPDATE public.models SET config_json=''{}'' WHERE id=%L',m));
+      PERFORM pg_temp.cp_expect_refusal(format('UPDATE public.models SET scenario_set_id=%L WHERE id=%L',g.set_id,m));
+      PERFORM pg_temp.cp_expect_refusal(format('DELETE FROM public.models WHERE id=%L',m));
+      UPDATE public.models SET title='Harmless model label',config_json=config_json WHERE id=m;
+    END $$; SELECT pg_temp.cp_unchanged();`));
+
+  it("refuses guided moves into ready sets and foreign project/workspace attachment", () => accepts(`
+    ${owner} SELECT pg_temp.cp_generic_snapshot(); RESET ROLE;
+    SELECT pg_temp.cp_expect_refusal('UPDATE public.models SET scenario_set_id=(SELECT set_id FROM cp_generic_scope) WHERE id=(SELECT model_id FROM cp_groups WHERE name=''main'')');
+    SELECT pg_temp.cp_expect_refusal('UPDATE public.models SET project_id=(SELECT project_id FROM cp_groups WHERE name=''same_workspace_other_project'') WHERE id=(SELECT model_id FROM cp_groups WHERE name=''main'')');
+    SELECT pg_temp.cp_expect_refusal('UPDATE public.models SET workspace_id=(SELECT workspace_id FROM cp_groups WHERE name=''other_workspace'') WHERE id=(SELECT model_id FROM cp_groups WHERE name=''main'')');`));
+
+  it("preserves generic model writes in ready sets and guided edits in unbound unfinished drafts", () => accepts(`
+    ${owner} SELECT pg_temp.cp_generic_snapshot(); SELECT pg_temp.cp_snapshot('{}'); RESET ROLE;
+    SELECT pg_temp.cp_generic_model();
+    UPDATE public.models SET config_json='{"generic":"updated"}' WHERE id=(SELECT model_id FROM cp_generic_scope);
+    UPDATE public.models SET config_json='{}' WHERE scenario_set_id=(SELECT scenario_set_id FROM cp_groups WHERE name='main');
+    DO $$ BEGIN IF EXISTS(SELECT 1 FROM public.models WHERE scenario_set_id=(SELECT scenario_set_id FROM cp_groups WHERE name='main')
+      AND config_json <> '{}') THEN RAISE EXCEPTION 'Unfinished model edit did not reach both methods'; END IF; END $$;`));
+
+  it("rolls back every row of a mixed multi-row guided introduction", () => accepts(`
+    ${owner} SELECT pg_temp.cp_generic_snapshot(); RESET ROLE;
+    SELECT pg_temp.cp_expect_refusal('INSERT INTO public.models(workspace_id,project_id,scenario_set_id,title,model_family,config_json)
+      SELECT g.workspace_id,g.project_id,s.set_id,''Synthetic multi-row'',''other'',x.config
+      FROM cp_groups g,cp_generic_scope s,(VALUES (''{}''::jsonb),(''{"guidedProjectComparison":null}''::jsonb)) x(config) WHERE g.name=''main''');
+    DO $$ BEGIN IF EXISTS(SELECT 1 FROM public.models WHERE scenario_set_id=(SELECT set_id FROM cp_generic_scope)) THEN
+      RAISE EXCEPTION 'Mixed statement retained an earlier generic row'; END IF; END $$;`));
+
+  it("retains both models after refused multi-row intent removal or deletion", () => accepts(`
+    ${owner} DO $$ DECLARE s uuid; BEGIN s:=pg_temp.cp_snapshot(); PERFORM pg_temp.cp_all_links(s); PERFORM pg_temp.cp_ready(s); END $$; RESET ROLE;
+    DO $$ DECLARE before_rows jsonb; after_rows jsonb; BEGIN
+      SELECT jsonb_agg(to_jsonb(model) ORDER BY model.id) INTO before_rows FROM public.models model
+        WHERE scenario_set_id=(SELECT scenario_set_id FROM cp_groups WHERE name='main');
+      IF jsonb_array_length(before_rows)<>2 THEN RAISE EXCEPTION 'Two guided models were not in scope'; END IF;
+      PERFORM pg_temp.cp_expect_refusal('UPDATE public.models SET config_json=''{}'' WHERE scenario_set_id=(SELECT scenario_set_id FROM cp_groups WHERE name=''main'')');
+      PERFORM pg_temp.cp_expect_refusal('DELETE FROM public.models WHERE scenario_set_id=(SELECT scenario_set_id FROM cp_groups WHERE name=''main'')');
+      SELECT jsonb_agg(to_jsonb(model) ORDER BY model.id) INTO after_rows FROM public.models model
+        WHERE scenario_set_id=(SELECT scenario_set_id FROM cp_groups WHERE name='main');
+      IF after_rows IS DISTINCT FROM before_rows THEN RAISE EXCEPTION 'Refused model statement changed rows'; END IF;
+    END $$; SELECT pg_temp.cp_unchanged();`));
+
+  it("permits generic model deletion beside a generic ready snapshot", () => accepts(`
+    ${owner} SELECT pg_temp.cp_generic_snapshot(); RESET ROLE; SELECT pg_temp.cp_generic_model();
+    DELETE FROM public.models WHERE id=(SELECT model_id FROM cp_generic_scope);
+    DO $$ BEGIN IF EXISTS(SELECT 1 FROM public.models WHERE scenario_set_id=(SELECT set_id FROM cp_generic_scope)) THEN
+      RAISE EXCEPTION 'Generic deletion did not execute'; END IF;
+      IF (SELECT count(*) FROM public.scenario_comparison_snapshots WHERE scenario_set_id=(SELECT set_id FROM cp_generic_scope) AND status='ready')<>1 THEN
+        RAISE EXCEPTION 'Generic deletion changed ready evidence'; END IF; END $$;`));
 
   it.each(["managed_attempt", "legacy_stage_snapshot"] as const)("detects disabling the population link trigger under %s", (custody) => {
     const result = trial(linkRefusal(1), { output: missingOutput(1),
@@ -337,4 +438,41 @@ const linkRefusal = (position: number) => `${owner} DO $$ DECLARE s uuid; BEGIN 
     expect(result.error).toBeUndefined(); expect(result.status).not.toBe(0);
     expect(result.stderr).toContain("Invalid population claim was accepted");
   });
+
+  // P2 additions leave every P1 case and its default fixture path unchanged.
+  it("checks native profile membership, installed callers and effective private ACLs", () => accepts(profileFixture));
+  it.each(["managed_attempt", "legacy_stage_snapshot"] as const)("retains canonical 2022 comparisons without enabling new guided launch under %s", (custody) => accepts(positive, {
+    custody, profileSql: `UPDATE cp_probe SET profile='{"adapter":"us_census_acs5_pums","acs_summary_endpoint":"https://api.census.gov/data/2022/acs/acs5","pums_endpoint":"https://api.census.gov/data/2022/acs/acs5/pums","sample_years":[2018,2022],"income_dollar_year":2022,"puma_fields":{"2020":"PUMA20","2010":"PUMA10"}}';`,
+  }));
+  const profileFaults = [
+    `profile||'{"extra":true}'::jsonb`, `profile||'{"adapter":"unknown"}'::jsonb`,
+    `profile||'{"income_dollar_year":2024}'::jsonb`, `profile||'{"sample_years":[2018,2023]}'::jsonb`,
+    `profile||'{"puma_fields":{"2020":"PUMA20","2010":"PUMA10"}}'::jsonb`,
+    `profile||'{"pums_endpoint":"https://api.census.gov/data/2022/acs/acs5/pums"}'::jsonb`,
+    `profile||'{"pums_endpoint":"https://api.census.gov/data/2023/acs/acs5/pums/"}'::jsonb`,
+  ];
+  it.each(profileFaults)("refuses an exactly propagated but unregistered profile at comparison admission: %s", (fault) => accepts(
+    `${owner} SELECT pg_temp.cp_expect_refusal('SELECT pg_temp.cp_snapshot()'); RESET ROLE;`,
+    { profileSql: `UPDATE cp_probe SET profile=${fault};` },
+  ));
+  it("reaches the actual renamed ordinary profile caller with supported and extra-field inputs", () => accepts(`${profileFixture}
+    SELECT pg_temp.cp_profile_ordinary_probe((SELECT profile FROM cp_probe),true);
+    SELECT pg_temp.cp_profile_ordinary_probe((SELECT profile||'{"extra":true}'::jsonb FROM cp_probe),false);`));
+  it.each(["comparison", "ordinary"])("detects removing the installed %s profile call at its acceptance sentinel", (caller) => {
+    const target = caller === "comparison" ? signature : ordinaryStageSignature;
+    const guard = `DO $$ DECLARE definition text; broken text; BEGIN
+      definition:=pg_get_functiondef('${target}'::regprocedure);
+      broken:=replace(definition,$anchor$public.model_common_population_profile_allowed(v_profile,'retained_validation') IS DISTINCT FROM true$anchor$,'false');
+      IF broken=definition THEN RAISE EXCEPTION 'Profile mutation anchor missing'; END IF; EXECUTE broken;
+    END $$;`;
+    const result = caller === "comparison" ? trial(
+      `${owner} SELECT pg_temp.cp_expect_refusal('SELECT pg_temp.cp_snapshot()'); RESET ROLE;`,
+      { guard, profileSql: `UPDATE cp_probe SET profile=profile||'{"extra":true}'::jsonb;` },
+    ) : trial(`${profileFixture}
+      ${guard}
+      SELECT pg_temp.cp_profile_ordinary_probe((SELECT profile||'{"extra":true}'::jsonb FROM cp_probe),false);`);
+    expect(result.error).toBeUndefined(); expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain(caller === "comparison" ? "Invalid population claim was accepted" : "Invalid registered profile stage custody accepted");
+  });
+
 });

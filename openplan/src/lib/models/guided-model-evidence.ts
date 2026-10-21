@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
+import { isRetainedPopulationSourceProfile } from "@/lib/geographies/population-source-registry";
 import { validStageCustodyAttestation, type ReadStageCustody, type CommonPopulationCustody } from "@/lib/models/common-population-launch";
 
 import {
@@ -96,21 +97,7 @@ const SHA256 = /^[0-9a-f]{64}$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const safeCount = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 const descriptor = z.object({ path: z.string(), sha256: z.string().regex(SHA256), bytes: safeCount }).strict();
-const sourceProfile = z.object({
-  adapter: z.literal("us_census_acs5_pums"),
-  acs_summary_endpoint: z.string(),
-  pums_endpoint: z.string(),
-  sample_years: z.tuple([z.number().int(), z.number().int()]),
-  income_dollar_year: z.number().int(),
-  puma_fields: z.record(z.string(), z.string()),
-}).strict().refine((profile) => {
-  const year = profile.income_dollar_year;
-  return [2022, 2023].includes(year) &&
-    profile.acs_summary_endpoint === `https://api.census.gov/data/${year}/acs/acs5` &&
-    profile.pums_endpoint === `${profile.acs_summary_endpoint}/pums` &&
-    jsonValuesEqual(profile.sample_years, [year - 4, year]) &&
-    jsonValuesEqual(profile.puma_fields, year === 2023 ? { "2020": "PUMA" } : { "2020": "PUMA20", "2010": "PUMA10" });
-});
+const sourceProfile = z.custom<Record<string, unknown>>(isRetainedPopulationSourceProfile);
 const identitySchema = z.object({
   schema: z.literal("openplan.common-population-identity.v1"),
   manifest: descriptor.refine((file) => file.path === "common_population.json" && file.bytes > 0),
@@ -520,8 +507,11 @@ export function snapshotHasExactGuidedEvidence(
 ): boolean {
   if (!guidedEvidenceSharesExactNetwork(current)) return false;
   const population = guidedPopulationComparison(current, current);
-  if (population.state !== "not_required" && (population.state !== "ready" ||
-      !jsonValuesEqual(metadata?.commonPopulation, guidedPopulationSnapshotMetadata(population)))) return false;
+  // Current guided snapshots require a supported population policy, including
+  // historical rows that predate admission enforcement. Generic callers retain
+  // the classifier's separate not_required result.
+  if (population.state !== "ready" ||
+      !jsonValuesEqual(metadata?.commonPopulation, guidedPopulationSnapshotMetadata(population))) return false;
   const snapshotLinks = links.filter((link) => link.comparison_snapshot_id === snapshotId);
   if (snapshotLinks.length !== 4) return false;
   return current.every((item) => snapshotLinks.some((link) =>

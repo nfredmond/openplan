@@ -2,9 +2,10 @@ import { createHash } from "node:crypto";
 import { describe, expect, it, vi } from "vitest";
 import {
   collectGuidedRunEvidence, guidedPopulationComparison, guidedPopulationSnapshotMetadata,
-  guidedPopulationRerun, readGuidedStageCustody,
+  guidedPopulationRerun, readGuidedStageCustody, snapshotHasExactGuidedEvidence, guidedEvidenceSharesExactNetwork,
   verifiedGuidedArtifact, verifiedGuidedPopulation,
   type GuidedRunJob, type GuidedRunRow, type ModelRunArtifactRow, type ModelRunStageRow,
+  type GuidedRunEvidence, type ScenarioComparisonModelRunLinkRow,
 } from "@/lib/models/guided-model-evidence";
 import { sortedCompactJson } from "@/lib/models/demand-agreement-artifact";
 import { populationFixture, POPULATION_ATTEMPT_ID } from "@/test/fixtures/common-population-evidence";
@@ -43,6 +44,18 @@ function fixture() {
   stages.push({ id: population.source.stageId, run_id: runs[0].id, stage_name: "AequilibraE Setup",
     status: "succeeded", attempt_managed: true, active_attempt_id: population.source.attemptId });
   return { population, jobs, runs, artifacts, stages, evidence: () => collectGuidedRunEvidence(jobs, runs, artifacts, stages) };
+}
+
+/** Four exact links keep policy refusal distinct from missing-output refusal. */
+function exactSnapshotLinks(evidence: readonly GuidedRunEvidence[]): ScenarioComparisonModelRunLinkRow[] {
+  return evidence.map((item) => ({
+    comparison_snapshot_id: "historical-ready",
+    model_run_id: item.runId, model_run_artifact_id: item.artifactId,
+    method: item.method, scenario_role: item.scenario, artifact_type: item.artifactType,
+    artifact_sha256: item.artifactSha256, assignment_profile_sha256: item.assignmentProfileSha256,
+    network_settings_sha256: item.networkSettingsSha256, network_state_sha256: item.networkStateSha256,
+    scenario_assumptions_json: item.scenarioAssumptionsJson,
+  }));
 }
 
 function restoredFixture() {
@@ -85,6 +98,56 @@ describe("consumed population identity", () => {
     expect(comparison.state).toBe("ready");
     if (comparison.state !== "ready") throw new Error("Expected verified supplied comparison");
     expect(guidedPopulationSnapshotMetadata(comparison)).toEqual(f.population.snapshot);
+  });
+
+  it("reads the exact fixed-population snapshot and tolerates unrelated metadata", () => {
+    const f = fixture();
+    const evidence = f.evidence();
+    const links = exactSnapshotLinks(evidence);
+    expect(evidence).toHaveLength(4);
+    expect(guidedEvidenceSharesExactNetwork(evidence)).toBe(true);
+    expect(snapshotHasExactGuidedEvidence("historical-ready", links, evidence,
+      { commonPopulation: f.population.snapshot, note: "Harmless historical note" })).toBe(true);
+    expect(snapshotHasExactGuidedEvidence("historical-ready", links, evidence, {})).toBe(false);
+    expect(snapshotHasExactGuidedEvidence("historical-ready", links, evidence,
+      { commonPopulation: { ...f.population.snapshot, populationBasisDigest: "0".repeat(64) } })).toBe(false);
+  });
+
+  it.each([
+    {}, { guidedProjectChange: null }, { guidedProjectChange: "malformed" },
+    { guidedProjectChange: [] }, { guidedProjectChange: {} },
+    { guidedProjectChange: { kind: "future_population_change" } },
+  ] as Record<string, unknown>[])("withholds guided current-read acceptance for matching unsupported assumptions %j", (assumptions) => {
+    for (const retainPopulation of [true, false]) {
+      const f = fixture();
+      f.jobs.forEach((job, index) => {
+        if (job.scenario === "build") {
+          job.assumptionsJson = assumptions;
+          f.runs[index].assumption_snapshot_json = assumptions;
+        }
+      });
+      if (!retainPopulation) f.artifacts.forEach((artifact) => { artifact.metadata_json = network; });
+      const evidence = f.evidence();
+      const links = exactSnapshotLinks(evidence);
+      expect(evidence).toHaveLength(4);
+      expect(guidedEvidenceSharesExactNetwork(evidence)).toBe(true);
+      expect(links).toHaveLength(4);
+      expect(new Set(links.map((link) => `${link.method}:${link.scenario_role}`)).size).toBe(4);
+      expect(guidedPopulationComparison(f.jobs, evidence)).toEqual({ state: "not_required" });
+      expect(evidence.every((item) => item.population.state === (retainPopulation ? "verified" : "unassessed"))).toBe(true);
+      for (const claim of [undefined, null, "malformed", { schema: "openplan.future-population.v1" }, f.population.snapshot]) {
+        const metadata = claim === undefined ? {} : { commonPopulation: claim };
+        const before = structuredClone({ evidence, links, metadata });
+        expect(snapshotHasExactGuidedEvidence("historical-ready", links, evidence, metadata)).toBe(false);
+        expect({ evidence, links, metadata }).toEqual(before);
+      }
+    }
+  });
+
+  it("keeps the generic low-level population classification without guided readiness", () => {
+    const genericJob: GuidedRunJob = { method: "aequilibrae", scenario: "build", modelId: "generic",
+      scenarioEntryId: "generic-build", assumptionsJson: { horizonYear: 2050 } };
+    expect(guidedPopulationComparison([genericJob], [])).toEqual({ state: "not_required" });
   });
 
   it("keeps absent legacy population unassessed while preserving standalone artifact eligibility", () => {

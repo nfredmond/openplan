@@ -42,8 +42,11 @@ const comparisonSnapshotInsertMock = vi.fn(() => ({ select: comparisonSnapshotIn
 const comparisonDeltaInsertSelectMock = vi.fn();
 const comparisonDeltaInsertMock = vi.fn(() => ({ select: comparisonDeltaInsertSelectMock }));
 const guidedModelsResultMock = vi.fn().mockResolvedValue({ data: [], error: null });
-const guidedModelsEqProjectMock = vi.fn(() => guidedModelsResultMock());
-const guidedModelsEqSetMock = vi.fn(() => ({ eq: guidedModelsEqProjectMock }));
+const guidedModelsExtraEqMock = vi.fn(() => orderedResult(guidedModelsResultMock));
+const guidedModelsEqSetMock = vi.fn(() => ({
+  eq: guidedModelsExtraEqMock,
+  then: (resolve: (value: unknown) => unknown) => Promise.resolve(guidedModelsResultMock()).then(resolve),
+}));
 const guidedModelsSelectMock = vi.fn(() => ({ eq: guidedModelsEqSetMock }));
 const guidedRunsResultMock = vi.fn();
 const guidedArtifactsResultMock = vi.fn();
@@ -330,6 +333,10 @@ describe("/api/scenarios/[scenarioSetId]/spine/comparison-snapshots", () => {
         }),
       })
     );
+    expect(guidedModelsSelectMock).toHaveBeenCalledWith("id, workspace_id, project_id, scenario_set_id, config_json");
+    expect(guidedModelsExtraEqMock).not.toHaveBeenCalled();
+    expect(guidedLinksInsertMock).not.toHaveBeenCalled();
+    expect(comparisonSnapshotUpdateMock).not.toHaveBeenCalled();
     const [persistedSnapshot] = comparisonSnapshotInsertMock.mock.calls[0] as unknown as [
       { metadata_json?: { sourceContext?: unknown } },
     ];
@@ -359,6 +366,23 @@ describe("/api/scenarios/[scenarioSetId]/spine/comparison-snapshots", () => {
     );
   });
 
+  it.each([null, "openplan.project_comparison.v999"])("refuses an explicit unsupported marker %j before writes", async (marker) => {
+    guidedModelsResultMock.mockResolvedValue({ data: [{ id: "damaged", workspace_id: "33333333-3333-4333-8333-333333333333",
+      project_id: "44444444-4444-4444-8444-444444444444", scenario_set_id: "11111111-1111-4111-8111-111111111111",
+      config_json: { guidedProjectComparison: marker } }], error: null });
+    const response = await postComparisonSnapshot(new NextRequest("http://localhost/api/scenarios/1/spine/comparison-snapshots", {
+      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({
+        baselineEntryId: "55555555-5555-4555-8555-555555555555", candidateEntryId: "77777777-7777-4777-8777-777777777777",
+        label: "Unsupported declaration", status: "ready",
+      }),
+    }), { params: Promise.resolve({ scenarioSetId: "11111111-1111-4111-8111-111111111111" }) });
+    expect(response.status).toBe(409);
+    expect(await response.json()).toMatchObject({ repairState: "guided_contract_invalid" });
+    expect(comparisonSnapshotInsertMock).not.toHaveBeenCalled();
+    expect(guidedLinksInsertMock).not.toHaveBeenCalled();
+    expect(comparisonSnapshotUpdateMock).not.toHaveBeenCalled();
+  });
+
   it("binds a ready guided snapshot to the exact four artifacts, network digests, and scenario assumptions", async () => {
     const digest = (value: string) => createHash("sha256").update(value, "utf8").digest("hex");
     const profilePayload = '{"engine":"aequilibrae"}';
@@ -380,8 +404,10 @@ describe("/api/scenarios/[scenarioSetId]/spine/comparison-snapshots", () => {
     });
     guidedModelsResultMock.mockResolvedValue({
       data: [
-        { id: "model-aeq", config_json: config("aequilibrae") },
-        { id: "model-asim", config_json: config("activitysim") },
+        { id: "model-aeq", workspace_id: "33333333-3333-4333-8333-333333333333",
+          project_id: "44444444-4444-4444-8444-444444444444", scenario_set_id: "11111111-1111-4111-8111-111111111111", config_json: config("aequilibrae") },
+        { id: "model-asim", workspace_id: "33333333-3333-4333-8333-333333333333",
+          project_id: "44444444-4444-4444-8444-444444444444", scenario_set_id: "11111111-1111-4111-8111-111111111111", config_json: config("activitysim") },
       ],
       error: null,
     });
@@ -411,7 +437,7 @@ describe("/api/scenarios/[scenarioSetId]/spine/comparison-snapshots", () => {
       ["run-asim-base", "model-asim", "55555555-5555-4555-8555-555555555555", "behavioral_demand", baselineAssumptions],
       ["run-asim-build", "model-asim", "77777777-7777-4777-8777-777777777777", "behavioral_demand", buildAssumptions],
     ].map(([id, model_id, scenario_entry_id, engine_key, assumption_snapshot_json], index) => ({
-      id, model_id, scenario_entry_id, engine_key, assumption_snapshot_json, status: "succeeded", attempt_managed: true,
+      id, model_id, scenario_entry_id, engine_key, assumption_snapshot_json: assumption_snapshot_json as unknown, status: "succeeded", attempt_managed: true,
       input_snapshot_json: { commonPopulation: index === 0 ? population.generate : population.reuse },
     }));
     const metadata = {
@@ -496,9 +522,67 @@ describe("/api/scenarios/[scenarioSetId]/spine/comparison-snapshots", () => {
     expect(comparisonSnapshotInsertMock).toHaveBeenCalledWith(expect.objectContaining({
       metadata_json: expect.objectContaining({ commonPopulation: population.snapshot }),
     }));
+    expect(guidedModelsSelectMock).toHaveBeenCalledWith("id, workspace_id, project_id, scenario_set_id, config_json");
+    expect(guidedModelsExtraEqMock).not.toHaveBeenCalled();
+    expect(guidedModelsEqSetMock).toHaveBeenCalledWith("scenario_set_id", "11111111-1111-4111-8111-111111111111");
     expect(guidedRunsSelectMock).toHaveBeenCalledWith("id, model_id, scenario_entry_id, engine_key, status, attempt_managed, assumption_snapshot_json, input_snapshot_json, created_at");
     expect(guidedArtifactsSelectMock).toHaveBeenCalledWith("id, run_id, stage_id, attempt_id, artifact_type, file_url, file_size_bytes, content_hash, metadata_json, created_at");
     expect(guidedStagesSelectMock).toHaveBeenCalledWith("id, run_id, stage_name, status, attempt_managed, active_attempt_id");
+
+    for (const scope of [
+      { workspace_id: "foreign-workspace", project_id: "44444444-4444-4444-8444-444444444444", scenario_set_id: "11111111-1111-4111-8111-111111111111" },
+      { workspace_id: "33333333-3333-4333-8333-333333333333", project_id: "foreign-project", scenario_set_id: "11111111-1111-4111-8111-111111111111" },
+    ]) {
+      guidedModelsResultMock.mockResolvedValueOnce({ data: [
+        { id: "model-aeq", ...scope, config_json: config("aequilibrae") },
+        { id: "model-asim", workspace_id: "33333333-3333-4333-8333-333333333333",
+          project_id: "44444444-4444-4444-8444-444444444444", scenario_set_id: "11111111-1111-4111-8111-111111111111", config_json: config("activitysim") },
+      ], error: null });
+      readCurrentEntries();
+      comparisonSnapshotInsertMock.mockClear(); guidedLinksInsertMock.mockClear(); comparisonSnapshotUpdateMock.mockClear();
+      guidedRunsSelectMock.mockClear();
+      const corruptScope = await postComparisonSnapshot(new NextRequest("http://localhost/api/scenarios/1/spine/comparison-snapshots", {
+        method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({
+          baselineEntryId: "55555555-5555-4555-8555-555555555555", candidateEntryId: "77777777-7777-4777-8777-777777777777",
+          label: "Corrupt model scope", status: "ready",
+        }),
+      }), { params: Promise.resolve({ scenarioSetId: "11111111-1111-4111-8111-111111111111" }) });
+      expect(corruptScope.status).toBe(409);
+      expect(await corruptScope.json()).toMatchObject({ repairState: "guided_contract_invalid" });
+      expect(guidedRunsSelectMock).not.toHaveBeenCalled();
+      expect(comparisonSnapshotInsertMock).not.toHaveBeenCalled();
+      expect(guidedLinksInsertMock).not.toHaveBeenCalled();
+      expect(comparisonSnapshotUpdateMock).not.toHaveBeenCalled();
+    }
+
+    for (const change of [undefined, null, { kind: "future_population_change" }, "malformed"]) {
+      const supportedChange = buildAssumptions.guidedProjectChange;
+      const unsupportedAssumptions = { ...buildAssumptions, guidedProjectChange: change };
+      for (const run of runs.filter((item) => item.scenario_entry_id === "77777777-7777-4777-8777-777777777777")) {
+        run.assumption_snapshot_json = unsupportedAssumptions;
+      }
+      entryMaybeSingleMock.mockReset();
+      for (const [id, type, assumptions] of [
+        ["55555555-5555-4555-8555-555555555555", "baseline", baselineAssumptions],
+        ["77777777-7777-4777-8777-777777777777", "alternative", unsupportedAssumptions],
+      ] as const) entryMaybeSingleMock.mockResolvedValueOnce({ data: { id, scenario_set_id: "11111111-1111-4111-8111-111111111111",
+        entry_type: type, label: type, assumptions_json: assumptions, attached_run_id: null }, error: null });
+      comparisonSnapshotInsertMock.mockClear(); guidedLinksInsertMock.mockClear(); comparisonSnapshotUpdateMock.mockClear();
+      const unsupported = await postComparisonSnapshot(new NextRequest("http://localhost/api/scenarios/1/spine/comparison-snapshots", {
+        method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({
+          baselineEntryId: "55555555-5555-4555-8555-555555555555", candidateEntryId: "77777777-7777-4777-8777-777777777777",
+          label: "Unsupported current guided policy", status: "ready",
+        }),
+      }), { params: Promise.resolve({ scenarioSetId: "11111111-1111-4111-8111-111111111111" }) });
+      expect(unsupported.status).toBe(409);
+      expect(await unsupported.json()).toMatchObject({ repairState: "guided_contract_invalid" });
+      expect(comparisonSnapshotInsertMock).not.toHaveBeenCalled();
+      expect(guidedLinksInsertMock).not.toHaveBeenCalled();
+      expect(comparisonSnapshotUpdateMock).not.toHaveBeenCalled();
+      for (const run of runs.filter((item) => item.scenario_entry_id === "77777777-7777-4777-8777-777777777777")) {
+        run.assumption_snapshot_json = { ...buildAssumptions, guidedProjectChange: supportedChange };
+      }
+    }
 
     comparisonSnapshotInsertMock.mockClear();
     const original = structuredClone(artifacts[3].metadata_json);

@@ -87,24 +87,22 @@ def _integer(value: Any, label: str, *, positive: bool = False, zone: bool = Fal
 
 
 def census_source_profile(acs_summary_endpoint: str, pums_endpoint: str) -> dict[str, Any]:
-    """Build an explicit supported adapter descriptor from retained endpoints."""
-    import census_pums as cp
+    """Retain the lower-level Census endpoint spelling and catalog profile facts."""
+    from population_source_registry import PopulationSourceError, census_endpoint_profile
 
-    if not isinstance(acs_summary_endpoint, str) or not isinstance(pums_endpoint, str):
-        raise CommonPopulationError("Both explicit source endpoint strings are required.")
-    profile = cp.census_vintage_profile(acs_summary_endpoint, pums_endpoint)
-    return {"adapter": "us_census_acs5_pums", "acs_summary_endpoint": acs_summary_endpoint,
-            "pums_endpoint": pums_endpoint, "sample_years": [profile.first_year, profile.final_year],
-            "income_dollar_year": profile.final_year, "puma_fields": dict(profile.puma_fields)}
+    try:
+        return census_endpoint_profile(acs_summary_endpoint, pums_endpoint)
+    except PopulationSourceError as exc:
+        raise CommonPopulationError(str(exc)) from exc
 
 
-def validate_source_profile(profile: Mapping[str, Any]) -> dict[str, Any]:
-    if not isinstance(profile, Mapping) or profile.get("adapter") != "us_census_acs5_pums":
-        raise CommonPopulationError("Unknown common-population source adapter.")
-    expected = census_source_profile(profile.get("acs_summary_endpoint"), profile.get("pums_endpoint"))
-    if dict(profile) != expected:
-        raise CommonPopulationError("Source profile window/schema differs from supported endpoint pair.")
-    return expected
+def validate_source_profile(profile: Mapping[str, Any], *, canonical: bool = False) -> dict[str, Any]:
+    from population_source_registry import PopulationSourceError, validate_source_profile as validate
+
+    try:
+        return validate(profile, canonical=canonical)
+    except PopulationSourceError as exc:
+        raise CommonPopulationError(str(exc)) from exc
 
 
 def selected_zone_map(zone_rows: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
