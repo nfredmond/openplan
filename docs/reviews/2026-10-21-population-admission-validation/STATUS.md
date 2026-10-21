@@ -35,3 +35,28 @@ none executes, and no retry or accepted concurrency packet follows.
 
 Private full evidence:
 `/home/nathaniel/.local/state/openplan/pr350-native-census-20261021-05/RESULT.md`
+
+## Lockfile advisory correction
+
+October 21, 2026. A separate read-only npm lockfile audit reports three known
+advisories on the original graph, two high and one moderate. The corrected
+private graph reports zero vulnerabilities. Both commands use the Population
+manifest, package-lock-only mode and audit level low. They install or execute
+no dependency code. The comparison returns overall zero in 2.441 seconds.
+
+Only version, archive URL and integrity change in three lockfile records:
+follow-redirects 1.16.1, Hono 4.13.11 and Vite 7.3.7. Fresh official npm metadata
+matches their archives, integrity, licenses, engines and dependency requirements.
+The other 1,141 records and all top-level lockfile fields remain identical.
+Population's package.json and its common-population native-test registration
+remain unchanged. An initial private preparation stops before metadata/audit
+when a cross-branch manifest-equality assumption fails; that record is retained.
+
+This is a lockfile advisory check. It does not rerun the maintained braces
+suite, install or import the corrected packages, or establish runtime, full QA,
+configured build, browser or native behavior. Current-head CI remains separate.
+The earlier source, Python and SQL evidence keeps its recorded scope and source
+identity. The PR remains draft, without a hosted or scientific promotion.
+
+Private metadata, full audit JSON and exact graph comparison:
+`/home/nathaniel/.local/state/openplan/pr350-dependency-lock-audit-20261021-02/`
