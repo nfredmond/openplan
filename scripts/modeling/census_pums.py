@@ -96,23 +96,22 @@ class CensusVintageProfile:
     puma_fields: tuple[tuple[str, str], ...]
 
 
-# Census PUMS user guides, section VIII.C: 2022 retains dual PUMA vintages;
-# 2023 crosswalks the entire five-year sample to the 2020-based PUMA field.
-# https://www2.census.gov/programs-surveys/acs/tech_docs/pums/2019_2023ACS_PUMS_User_Guide.pdf
+# Source-specific schema facts come from the same catalog used by app readers.
+# Keep the legacy endpoint grammar below at this adapter boundary.
+from population_source_registry import CENSUS_ADAPTER, PopulationSourceError, census_endpoint_profile, _catalog
+
 CENSUS_VINTAGE_PROFILES = {
-    2022: CensusVintageProfile(2022, 2018, (("2020", "PUMA20"), ("2010", "PUMA10"))),
-    2023: CensusVintageProfile(2023, 2019, (("2020", "PUMA"),)),
+    entry['profile']['income_dollar_year']: CensusVintageProfile(
+        entry['profile']['income_dollar_year'], entry['profile']['sample_years'][0],
+        tuple(entry['profile']['puma_fields'].items()))
+    for entry in _catalog() if entry['profile']['adapter'] == CENSUS_ADAPTER
 }
 
 
 def census_vintage_profile(
     acs5_url: str | None = None, pums_url: str | None = None
 ) -> CensusVintageProfile:
-    """Resolve one supported summary/microdata product pair before any fetch.
-
-    Endpoint overrides select an explicit supported profile; they cannot mix
-    years, substitute a one-year product, or imply an unverified PUMA schema.
-    """
+    """Resolve the existing optional-slash Census contract before any fetch."""
     summary = ACS_5_URL if acs5_url is None else acs5_url
     microdata = PUMS_URL if pums_url is None else pums_url
     summary_match = re.fullmatch(r"https://api\.census\.gov/data/(\d{4})/acs/acs5/?", summary)
@@ -122,9 +121,11 @@ def census_vintage_profile(
     year = int(summary_match.group(1))
     if year != int(pums_match.group(1)):
         raise CensusPumsError("ACS summary and PUMS endpoint years must match for population inputs.")
-    if year not in CENSUS_VINTAGE_PROFILES:
-        raise CensusPumsError(f"ACS {year} population inputs have no verified Census vintage profile.")
-    return CENSUS_VINTAGE_PROFILES[year]
+    try:
+        profile = census_endpoint_profile(summary, microdata, purpose='aequilibrae_production')
+    except PopulationSourceError as exc:
+        raise CensusPumsError(f"ACS {year} population inputs have no verified Census vintage profile.") from exc
+    return CensusVintageProfile(profile['income_dollar_year'], profile['sample_years'][0], tuple(profile['puma_fields'].items()))
 
 
 # --------------------------------------------------------------------------

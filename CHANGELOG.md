@@ -20,6 +20,22 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Guided comparison admission:** apply
+`20261021000001_model_common_population_admission.sql` after the two population
+migrations below and before deploying the route correction. Guided links and
+ready snapshots require current fixed-population custody even when their claim
+is missing or unchanged. Model intent and scope changes serialize with admission
+and refuse changes affecting ready or evidence-bound snapshots. Admissions also
+touch the scenario-set modification timestamp. This source correction awaits
+native migration and concurrency verification; scientific claim limits stay unchanged.
+
+**Population source profiles:** the source-only adapter correction adds
+`20261021000002_model_common_population_profiles.sql` after the admission migration.
+The catalog keeps the exact 2022 and 2023 retained profiles; new guided launches
+use the selected adapter's admitted 2023 descriptor. Missing technical capabilities
+remain unassessed. Native installation, worker images and scientific acceptance
+remain unverified by this source correction.
+
 **Common population comparisons and replacement runs:** guided comparisons retain
 the same realized population across the separate AequilibraE and ActivitySim
 tracks. An explicit replacement run can reuse a prospectively retained population

@@ -17,6 +17,7 @@ import {
   usesGuidedWorkerNetwork,
 } from "@/lib/models/project-comparison";
 import {
+  GUIDED_FIXED_POPULATION_POLICY,
   collectGuidedRunEvidence,
   readGuidedStageCustody,
   guidedEvidenceSharesExactNetwork,
@@ -250,7 +251,9 @@ export async function loadAnalysisSequenceFacts(
     const setEvidence = guidedEvidence.filter((item) => setModelIds.has(item.modelId));
     if (!guidedEvidenceSharesExactNetwork(setEvidence)) return false;
     const population = guidedPopulationComparison(setEvidence, setEvidence);
-    if (population.state !== "not_required" && population.state !== "ready") return false;
+    // Individual outputs and decisions remain historical facts. A checked
+    // guided comparison also requires the supported, ready population basis.
+    if (population.state !== "ready") return false;
     return setEvidence.every((item) => exactTrackDecisions.some((decision) => decision.model_run_id === item.runId));
   }).length;
 
@@ -267,22 +270,34 @@ export async function loadAnalysisSequenceFacts(
     : { data: [], error: null };
   if (failed(snapshotLinksResult)) unreadable.push("packet");
   const snapshotLinks = (snapshotLinksResult.data ?? []) as ScenarioComparisonModelRunLinkRow[];
-  const comparisonPacketCount = guidedProjectComparison
-    ? readySnapshots.filter((snapshot) => {
-        const setJobs = guidedJobs.filter((job) => {
-          const model = modelRows.find((row) => row.id === job.modelId);
-          return model?.scenario_set_id === snapshot.scenario_set_id;
-        });
-        const setEvidence = collectGuidedRunEvidence(
-          setJobs,
-          runRows,
-          (artifactsResult.data ?? []) as ModelRunArtifactRow[],
-          (stagesResult.data ?? []) as ModelRunStageRow[],
-          eligibleStageArtifacts,
-        );
-        return snapshotHasExactGuidedEvidence(snapshot.id, snapshotLinks, setEvidence, snapshot.metadata_json);
-      }).length
-    : readySnapshots.length;
+  const comparisonPacketCount = readySnapshots.filter((snapshot) => {
+    // A failed classification read cannot establish that a snapshot is generic.
+    if (failed(snapshotLinksResult) || failed(modelsResult)) return false;
+    const claim = snapshot.metadata_json?.commonPopulation;
+    const claimRecord = claim && typeof claim === "object" && !Array.isArray(claim)
+      ? claim as Record<string, unknown> : null;
+    // Saved links declare guided history even when current models are gone or
+    // damaged. Inspect every link, before any validity check. Current intent is
+    // scoped to this set; either fixed claim marker opts this snapshot in too.
+    const requiresGuidedRead = snapshotLinks.some((link) => link.comparison_snapshot_id === snapshot.id) ||
+      modelRows.some((model) => model.scenario_set_id === snapshot.scenario_set_id &&
+        hasGuidedProjectComparisonIntent(model.config_json)) ||
+      claimRecord?.schema === "openplan.common-population-comparison.v1" ||
+      claimRecord?.comparisonPolicy === GUIDED_FIXED_POPULATION_POLICY;
+    if (!requiresGuidedRead) return true;
+    const setJobs = guidedJobs.filter((job) => {
+      const model = modelRows.find((row) => row.id === job.modelId);
+      return model?.scenario_set_id === snapshot.scenario_set_id;
+    });
+    const setEvidence = collectGuidedRunEvidence(
+      setJobs,
+      runRows,
+      (artifactsResult.data ?? []) as ModelRunArtifactRow[],
+      (stagesResult.data ?? []) as ModelRunStageRow[],
+      eligibleStageArtifacts,
+    );
+    return snapshotHasExactGuidedEvidence(snapshot.id, snapshotLinks, setEvidence, snapshot.metadata_json);
+  }).length;
   const savedComparisonPacketCount = readySnapshots.length;
 
   return {

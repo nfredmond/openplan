@@ -336,28 +336,30 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const guidedModelsResult = await supabase
       .from("models")
-      .select("id, config_json")
-      .eq("scenario_set_id", access.scenarioSet.id)
-      .eq("project_id", access.scenarioSet.project_id);
+      .select("id, workspace_id, project_id, scenario_set_id, config_json")
+      .eq("scenario_set_id", access.scenarioSet.id);
     if (guidedModelsResult.error) {
       return NextResponse.json({ error: "Failed to verify guided comparison models" }, { status: 500 });
     }
-    const guidedModels = (guidedModelsResult.data ?? []) as Array<{ id: string; config_json: unknown }>;
+    const guidedModels = (guidedModelsResult.data ?? []) as Array<{
+      id: string; workspace_id: string; project_id: string | null; scenario_set_id: string; config_json: unknown;
+    }>;
     const aequilibraeModel = guidedModels.find((model) =>
       isGuidedProjectComparisonModel(model.config_json, "aequilibrae"),
     );
     const activitysimModel = guidedModels.find((model) =>
       isGuidedProjectComparisonModel(model.config_json, "activitysim"),
     );
-    const guidedIntent = guidedModels.some((model) => hasGuidedProjectComparisonIntent(model.config_json));
-    const isGuidedReadyRequest = parsed.data.status === "ready" && guidedIntent;
+    const guidedModelsWithIntent = guidedModels.filter((model) => hasGuidedProjectComparisonIntent(model.config_json));
+    const isGuidedReadyRequest = parsed.data.status === "ready" && guidedModelsWithIntent.length > 0;
+    const invalidGuidedModel = guidedModelsWithIntent.some((model) =>
+      model.workspace_id !== access.scenarioSet.workspace_id ||
+      model.project_id !== access.scenarioSet.project_id || model.scenario_set_id !== access.scenarioSet.id ||
+      (!isGuidedProjectComparisonModel(model.config_json, "aequilibrae") &&
+        !isGuidedProjectComparisonModel(model.config_json, "activitysim")) || !usesGuidedWorkerNetwork(model.config_json),
+    );
     let guidedEvidence: ReturnType<typeof collectGuidedRunEvidence> = [];
-    if (
-      isGuidedReadyRequest &&
-      (!aequilibraeModel || !activitysimModel ||
-        !usesGuidedWorkerNetwork(aequilibraeModel.config_json) ||
-        !usesGuidedWorkerNetwork(activitysimModel.config_json))
-    ) {
+    if (isGuidedReadyRequest && (invalidGuidedModel || !aequilibraeModel || !activitysimModel)) {
       return NextResponse.json(
         { error: "The guided model contract is incomplete or corrupt and cannot be treated as a generic ready snapshot.", repairState: "guided_contract_invalid" },
         { status: 409 },
@@ -445,10 +447,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
         );
       }
       const population = guidedPopulationComparison(jobs, guidedEvidence);
-      if (population.state !== "not_required" && population.state !== "ready") {
+      if (population.state !== "ready") {
         return NextResponse.json({
           error: "A ready fixed-population comparison requires the same verified retained household population and baseline reference on all four outputs.",
-          repairState: "repairState" in population ? population.repairState : "needs_model_outputs",
+          repairState: "repairState" in population ? population.repairState : "guided_contract_invalid",
         }, { status: 409 });
       }
       if (population.state === "ready") {

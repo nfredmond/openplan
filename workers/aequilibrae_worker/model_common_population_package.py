@@ -80,11 +80,12 @@ def validate_selection_coverage(note):
 def prepare_generated_population(zones, output_dir, prepared, *, coverage_note, census_api_key=None, synthesize=None):
     """Fit once using the explicit source profile, then verify retained bytes."""
     common = population_library()
-    from synthetic_population import synthesize_study_area
+    from population_source_registry import registered_population_producer
 
     if prepared.get('mode') != 'generate':
         raise ValueError('Population generation requires its scoped generate decision')
-    profile = common.validate_source_profile(prepared['source_profile'])
+    profile = common.validate_source_profile(prepared['source_profile'], canonical=True)
+    producer = registered_population_producer(profile)
     key = census_api_key if census_api_key is not None else os.getenv('CENSUS_API_KEY', '')
     if not isinstance(key, str) or not key:
         raise ValueError('Common population needs a Census key on the modeling worker; no scaffold fallback is allowed')
@@ -98,7 +99,7 @@ def prepare_generated_population(zones, output_dir, prepared, *, coverage_note, 
     source_zones = output / 'population_source_zones.csv'
     zones.to_csv(source_zones, index=False)
     rows = zones.to_dict('records')
-    result = (synthesize or synthesize_study_area)(rows, census_api_key=key,
+    result = producer(rows, census_api_key=key, synthesize=synthesize,
         source_profile=profile, include_school_enrollment=True)
     directory = output / 'common_population'
     manifest = common.retain_population(directory, rows, result,

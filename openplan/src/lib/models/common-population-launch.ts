@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isRetainedPopulationSourceProfile } from "@/lib/geographies/population-source-registry";
 import { resolveZoneAttributeSource, type ZoneAttributeSourceDescriptor } from "@/lib/geographies/zone-attribute-source";
 import { jsonValuesEqual } from "@/lib/models/demand-agreement-artifact";
 import {
@@ -13,6 +14,7 @@ const SCHEMA = "openplan.common-population-request.v1";
 const POLICY = "fixed_population_auto_trip_change";
 const uuid = z.string().uuid();
 const record = z.record(z.string(), z.unknown());
+const retainedProfile = z.custom<Record<string, unknown>>(isRetainedPopulationSourceProfile);
 
 export type CommonPopulationCustody = "legacy_stage_snapshot" | "managed_attempt";
 type PopulationSource = { modelRunId: string; artifactId: string; stageId: string; sha256: string; sizeBytes: number };
@@ -68,10 +70,10 @@ const stageSchema = z.object({
   attempt_managed: z.boolean(), active_attempt_id: uuid.nullable(),
 });
 const generateSchema = z.object({
-  schema: z.literal(SCHEMA), custody: z.enum(["legacy_stage_snapshot", "managed_attempt"]), mode: z.literal("generate"), comparisonPolicy: z.literal(POLICY), sourceProfile: record,
+  schema: z.literal(SCHEMA), custody: z.enum(["legacy_stage_snapshot", "managed_attempt"]), mode: z.literal("generate"), comparisonPolicy: z.literal(POLICY), sourceProfile: retainedProfile,
 }).strict();
 const restoredSchema = z.object({ schema: z.literal(SCHEMA), custody: z.literal('legacy_stage_snapshot'),
-  mode: z.literal('restore_checkpoint'), comparisonPolicy: z.literal(POLICY), sourceProfile: record,
+  mode: z.literal('restore_checkpoint'), comparisonPolicy: z.literal(POLICY), sourceProfile: retainedProfile,
   checkpoint: z.object({ id: uuid, sha256: z.string().regex(/^[a-f0-9]{64}$/) }).strict(),
   source: z.null(),
 }).strict();
@@ -90,21 +92,6 @@ export function validStageCustodyAttestation(data: unknown, workspaceId: string,
 function single<T>(schema: z.ZodType<T>, data: unknown): T | null {
   const rows = z.array(schema).length(1).safeParse(data);
   return rows.success ? rows.data[0] : null;
-}
-
-/** Source-specific population profiles stay behind adapter identity and tested vintage. */
-function populationSourceProfile(descriptor: ZoneAttributeSourceDescriptor): Record<string, unknown> | null {
-  if (descriptor.id !== "us_census_acs5" || descriptor.vintage !== "2023" ||
-      descriptor.retrievalUrl !== `https://api.census.gov/data/${descriptor.vintage}/acs/acs5`) return null;
-  const year = Number(descriptor.vintage);
-  return {
-    adapter: "us_census_acs5_pums",
-    acs_summary_endpoint: descriptor.retrievalUrl,
-    pums_endpoint: `${descriptor.retrievalUrl}/pums`,
-    sample_years: [year - 4, year],
-    income_dollar_year: year,
-    puma_fields: { "2020": "PUMA" },
-  };
 }
 
 function hasCurrentChange(value: unknown): boolean {
@@ -178,9 +165,19 @@ async function resolveCommonPopulationLaunch(args: CommonPopulationLaunchArgs): 
     return repair("common_population_comparison_scope_invalid", "Repair the designated baseline and the single fixed-population build assumption before launching.");
   }
 
-  const descriptor = args.sourceDescriptor ?? resolveZoneAttributeSource().descriptor;
-  const sourceProfile = populationSourceProfile(descriptor);
-  if (!sourceProfile) return repair("common_population_source_unsupported", "This zone-attribute adapter or vintage has no supported retained-population profile.");
+  const adapter = resolveZoneAttributeSource();
+  const descriptor = adapter.descriptor;
+  if (args.sourceDescriptor && (args.sourceDescriptor.id !== descriptor.id ||
+      args.sourceDescriptor.vintage !== descriptor.vintage || args.sourceDescriptor.retrievalUrl !== descriptor.retrievalUrl)) {
+    return repair("common_population_source_unsupported", "The requested descriptor differs from the selected source adapter.");
+  }
+  const profileResult = adapter.retainedPopulation?.profile("new_guided_launch") ?? {
+    status: "unassessed" as const, reason: "This source adapter has no assessed retained-population capability.",
+  };
+  if (profileResult.status !== "supported") {
+    return repair(`common_population_source_${profileResult.status}`, profileResult.reason);
+  }
+  const sourceProfile = profileResult.profile;
   const stamp = args.zoneAttributes;
   if (!stamp || stamp.status !== "supplied" || stamp.demographics.status !== "supplied" ||
       stamp.demographics.geographies <= 0 || !stamp.storageRef || stamp.geographyIndexTruncated) {
