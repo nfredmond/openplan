@@ -590,3 +590,23 @@ The [context CLI release](../reviews/2026-09-30-synthesis-generation/CONTEXT_CLI
 A native custom-format dump of the synthetic recovery acceptance database fails during default `pg_restore`: `model_runs_project_workspace_match` checks for a project before that project's table data has loaded. The failed single-transaction restore rolls back. Explicitly loading the projects data entry first permits this fixture to restore with its constraint intact, and original-column comparisons cover 339 tables and 966 rows. This is an acceptance setup workaround, not a general recovery repair. M3 must cover these cross-table checks in the maintained restore procedure. See [integration evidence](../reviews/2026-10-09-recovery-integration/VERIFICATION.md).
 
 The [project-scope migration candidate](../reviews/2026-10-09-run-project-restore/VERIFICATION.md) replaces this four-constraint family with validated foreign keys. Its native nonempty archive now restores with default ordering and retains all compared records. It remains pending integration and CI; other cross-table CHECK families and whole-installation recovery are not closed by this result.
+
+October 20, 2026, KI-026 CI follow-through. Codex review on 43ce4a4 completes
+with no findings. QA passes 24,028 tests, then fails the dependency audit on
+follow-redirects, Hono and Vite. That failure remains preserved. A bounded
+correction changes only the lockfile version, archive URL and integrity for
+follow-redirects 1.16.1, Hono 4.13.11 and Vite 7.3.7. All other 1,141 entries,
+dependency requirements, licenses and package declarations remain unchanged.
+
+One bounded window installs the exact lockfile with lifecycle scripts disabled.
+The maintained dependency audit returns 0, including all 19 braces checks, and
+reports zero vulnerabilities. Three complete map/runner test files pass all
+68 tests, including the 48 RTP map cases. Parent, manager and inner return 0.
+The owned dependency link is removed before the single lease is released.
+Private logs and the graph comparison remain under
+`/home/nathaniel/.local/state/openplan/pr360-dependency-audit-20261020-01/`.
+No application code, tests, guards, migrations or map configuration change.
+This audit covers known advisories at query time. It does not prove exploit
+resistance, Windows behavior, lifecycle scripts, a new build or a new browser
+journey. The earlier staff journey retains its original build provenance;
+public desktop/mobile acceptance and KI-026 remain open. Fresh CI is pending.
