@@ -201,6 +201,13 @@ const DEDICATED_LIVE_RLS_PROBES = new Set([
   // ss4a-safety-seed-rls: owner/viewer reads, outsider/anon isolation, direct-write refusal and service custody.
   "funding_opportunity_safety_seeds",
   "report_safety_snapshot_persistence",
+  // ss4a-safety-seed-rls, "checks v2 caller privileges...": populated service/owner
+  // reads, viewer reads except actor-only requests, outsider/anon refusal,
+  // direct-write privileges and immutable history for all four comparison tables.
+  "report_safety_comparison_revisions",
+  "report_safety_comparison_members",
+  "report_safety_comparison_requests",
+  "report_safety_comparison_generations",
   // attempt-instrument-member-read-rls: both methods, membership, parent visibility and private writes.
   "model_attempt_instrument_custody",
   "project_bca_versions",
@@ -1770,6 +1777,10 @@ describe("workspace RLS isolation inventory", () => {
       "funding_opportunity_deadline_changes",
       "funding_opportunity_safety_seeds",
       "report_safety_snapshot_persistence",
+      "report_safety_comparison_revisions",
+      "report_safety_comparison_members",
+      "report_safety_comparison_requests",
+      "report_safety_comparison_generations",
       "model_attempt_instrument_custody",
       "project_bca_versions",
       "engagement_decision_request_resolutions",

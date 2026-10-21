@@ -84,3 +84,28 @@ plans, qualified effects, full geographic coverage, exact-year SS4A mapping,
 hosted operation and separate model acceptance are unfinished. M6 is in progress.
 
 PR357 CI schema inventory correction: four comparison tables and their four SELECT policies are now counted. Three internal columns have SQL-read or write-only explanations; the existing content_text explanation moves to name collisions. The source guard cohort passes all 37 tests in baseline, harmless and restored runs. Seven targeted faults fail for their intended assertions; restoration and scoped lint pass. The ordinary outer exits zero in 39.835 seconds. Reviewed application and migration bytes remain unchanged. These source controls do not establish installed catalogue, browser or scientific acceptance. Private logs remain outside the repository.
+
+
+## October 20 CI integration correction
+
+The read route now audits completed, refused and degraded reads without logging
+private database messages. Crash dimensions use the shared vocabulary registry.
+Project deletion lists retained Safety comparison revisions as blocking, and the
+four comparison tables name their dedicated native isolation coverage. Public
+copy uses planning terms without increasing the jargon baseline.
+
+One finite ordinary check exits zero in 56.124 seconds. Harmless and restored
+cohorts each pass 94 ordinary cases, with exactly 21 gated native cases skipped.
+The separate report-detail file passes all 28 cases in both runs. Fifteen named
+wrong behaviors fail at their intended assertions; five synthetic report-reader
+controls preserve exact skip identities and counts. Strict scoped lint passes
+with no output. All twelve source files restore exact bytes and modes. The
+owned dependency link is removed, the unit and cgroup are absent, and the one
+compiler lock is released. Peak memory is 634,454,016 bytes, with zero swap and
+zero memory-limit events.
+
+Earlier preflight and ordinary failures remain preserved. These checks do not
+execute the added native service-role positive-count assertion, SQL/RLS, native
+locking, a build or a browser journey. The changed report link still needs
+identified-build visual evidence. Fresh full CI remains pending for this source
+checkpoint. No migration body or scientific claim changes. PR357 stays a draft.

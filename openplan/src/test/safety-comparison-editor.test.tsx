@@ -20,7 +20,7 @@ describe("Safety input review editor",()=>{
    fireEvent.change(screen.getByLabelText("Retained acquisition"), { target: { value: comparisonId(25) } });
    expect(screen.getByLabelText("Requested observation years, separated by commas")).toHaveValue("");
    fireEvent.change(screen.getByLabelText("Requested observation years, separated by commas"), { target: { value: "2021" } });
-   fireEvent.click(screen.getByRole("button", { name: "Save immutable input review" }));
+   fireEvent.click(screen.getByRole("button", { name: "Save immutable evidence review" }));
    await waitFor(() => expect(fetchMock.mock.calls.some(([,init]) => init?.method === "PATCH")).toBe(true));
    const command = JSON.parse(fetchMock.mock.calls.find(([,init]) => init?.method === "PATCH")![1].body).safetyComparison;
    expect(command.inputs.influenceArea).toEqual(source.comparison.payload.inputs.influenceArea);
@@ -36,7 +36,7 @@ describe("Safety input review editor",()=>{
    await screen.findByDisplayValue("Synthetic input review");
    fireEvent.change(screen.getByLabelText("Retained acquisition"), { target: { value: comparisonId(25) } });
    fireEvent.change(screen.getByLabelText("Requested observation years, separated by commas"), { target: { value: "2020" } });
-   fireEvent.click(screen.getByRole("button", { name: "Save immutable input review" }));
+   fireEvent.click(screen.getByRole("button", { name: "Save immutable evidence review" }));
    expect(await screen.findByRole("alert")).toHaveTextContent("does not cover the retained influence polygon");
    expect(fetchMock.mock.calls.some(([,init]) => init?.method === "PATCH")).toBe(false);
  });
@@ -48,14 +48,14 @@ describe("Safety input review editor",()=>{
    fetchMock.mockImplementation(async (_url: string, init?: RequestInit) => init?.method ? response({ error: "Outcome unknown", outcome: "outcome_unknown" }, 500) : response(source));
    render(<SafetyCandidateComparisonEditor reportId={comparisonId(4)} />);
    await screen.findByDisplayValue("Synthetic input review");
-   fireEvent.click(screen.getByRole("button", { name: "Save immutable input review" }));
+   fireEvent.click(screen.getByRole("button", { name: "Save immutable evidence review" }));
    await waitFor(() => expect(fetchMock.mock.calls.some(([,init]) => init?.method === "PATCH")).toBe(true));
    const inputs = JSON.parse(fetchMock.mock.calls.find(([,init]) => init?.method === "PATCH")![1].body).safetyComparison.inputs;
    expect(inputs.influenceArea).toEqual(source.comparison.payload.inputs.influenceArea);
    expect(inputs.analysisGeometry).toEqual(source.comparison.payload.inputs.analysisGeometry);
  });
  it("reopens saved values, missing price year, exact estimate and revision-specific CSV",async()=>{render(<SafetyCandidateComparisonEditor reportId={comparisonId(4)}/>);await screen.findByDisplayValue("Synthetic input review");expect(screen.getByText(/99,999,999,999,999.91/)).toBeTruthy();expect(screen.getByText(/Price year: Unknown/)).toBeTruthy();expect(screen.getByRole("link",{name:"Download exact revision CSV"}).getAttribute("href")).toContain(`revisionId=${comparisonId(6)}`);expect(screen.getByText(/Missing source: the exact selected fiscal-year SS4A NOFO/)).toBeTruthy();});
- it("locks editing and replays exactly the retained command after an unknown outcome",async()=>{render(<SafetyCandidateComparisonEditor reportId={comparisonId(4)}/>);await screen.findByDisplayValue("Synthetic input review");fireEvent.click(screen.getByRole("button",{name:"Save immutable input review"}));await screen.findByRole("button",{name:"Retry retained request"});const first=fetchMock.mock.calls.find(([,init])=>init?.method==="PATCH")![1].body;expect(screen.getByLabelText("Study title")).toBeDisabled();fireEvent.click(screen.getByRole("button",{name:"Retry retained request"}));await waitFor(()=>expect(fetchMock.mock.calls.filter(([,init])=>init?.method==="PATCH")).toHaveLength(2));const writes=fetchMock.mock.calls.filter(([,init])=>init?.method==="PATCH");expect(writes[1][1].body).toBe(first);expect(sessionStorage.length).toBe(1);});
+ it("locks editing and replays exactly the retained command after an unknown outcome",async()=>{render(<SafetyCandidateComparisonEditor reportId={comparisonId(4)}/>);await screen.findByDisplayValue("Synthetic input review");fireEvent.click(screen.getByRole("button",{name:"Save immutable evidence review"}));await screen.findByRole("button",{name:"Retry retained request"});const first=fetchMock.mock.calls.find(([,init])=>init?.method==="PATCH")![1].body;expect(screen.getByLabelText("Study title")).toBeDisabled();fireEvent.click(screen.getByRole("button",{name:"Retry retained request"}));await waitFor(()=>expect(fetchMock.mock.calls.filter(([,init])=>init?.method==="PATCH")).toHaveLength(2));const writes=fetchMock.mock.calls.filter(([,init])=>init?.method==="PATCH");expect(writes[1][1].body).toBe(first);expect(sessionStorage.length).toBe(1);});
  it("generates the saved revision while unsaved text stays outside the generation command",async()=>{render(<SafetyCandidateComparisonEditor reportId={comparisonId(4)}/>);await screen.findByDisplayValue("Synthetic input review");fireEvent.change(screen.getByLabelText("Study title"),{target:{value:"Unsaved display edit"}});fireEvent.click(screen.getByRole("button",{name:"Generate frozen HTML"}));await waitFor(()=>expect(fetchMock.mock.calls.some(([,init])=>init?.method==="POST")).toBe(true));const body=JSON.parse(fetchMock.mock.calls.find(([,init])=>init?.method==="POST")![1].body);expect(body.safetyComparison.revisionId).toBe(comparisonId(6));expect(body.safetyComparison).not.toHaveProperty("inputs");expect(body.safetyComparison).not.toHaveProperty("generatedAt");});
- it("keeps viewer reads while disabling save and generation",async()=>{fetchMock.mockResolvedValue(response({...context(),canWrite:false}));render(<SafetyCandidateComparisonEditor reportId={comparisonId(4)}/>);await screen.findByDisplayValue("Synthetic input review");expect(screen.getByRole("button",{name:"Save immutable input review"})).toBeDisabled();expect(screen.getByRole("button",{name:"Generate frozen PDF"})).toBeDisabled();});
+ it("keeps viewer reads while disabling save and generation",async()=>{fetchMock.mockResolvedValue(response({...context(),canWrite:false}));render(<SafetyCandidateComparisonEditor reportId={comparisonId(4)}/>);await screen.findByDisplayValue("Synthetic input review");expect(screen.getByRole("button",{name:"Save immutable evidence review"})).toBeDisabled();expect(screen.getByRole("button",{name:"Generate frozen PDF"})).toBeDisabled();});
 });

@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
-import { safetyComparisonRecordSchema, type SafetyComparisonRecord } from "@/lib/safety/candidate-comparison";
+import { SAFETY_COMPARISON_MEMBER_FIELDS, safetyComparisonRecordSchema, type SafetyComparisonRecord } from "@/lib/safety/candidate-comparison";
 import { readSafetyPlanSnapshot, safetySeedHash } from "./safety-plan-snapshot";
 
 export const SAFETY_COMPARISON_RECORD_SELECT = "id, workspace_id, project_id, report_id, parent_revision_id, created_by, created_at, content_hash, content_text, payload";
@@ -21,7 +21,7 @@ export function readSafetyComparisonRecord(value: unknown): SafetyComparisonReco
   const row = parsed.data;
   try {
     if (createHash("sha256").update(row.content_text).digest("hex") !== row.content_hash || safetySeedHash(JSON.parse(row.content_text)) !== safetySeedHash(row.payload)) return null;
-    if (row.payload.capture.projection.join(",") !== "id,workspace_id,ingest_id,source_id,external_id,collision_date,collision_year,longitude,latitude,severity,pedestrian_involved,bicyclist_involved,motorcyclist_involved,collision_type,lighting,weather") return null;
+    if (row.payload.capture.projection.join(",") !== SAFETY_COMPARISON_MEMBER_FIELDS.join(",")) return null;
     if (row.payload.capture.stored !== row.payload.capture.included + row.payload.capture.excluded + row.payload.capture.indeterminate) return null;
     const reasons = Object.entries(row.payload.capture.reasonCounts);
     if (reasons.reduce((sum, [, count]) => sum + count, 0) !== row.payload.capture.stored

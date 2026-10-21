@@ -231,7 +231,7 @@ export function ReportStandardDetail({
 
   return (
     <section className="module-page space-y-6">
-    {report.project_id && report.report_type === "project_status" ? <Link className="mb-4 inline-block underline" href={`/reports/${report.id}?safetyComparison=1`}>Open Safety input and applicability comparison</Link> : null}
+    {report.project_id && report.report_type === "project_status" ? <Link className="mb-4 inline-block underline" href={`/reports/${report.id}?safetyComparison=1`}>Open Safety evidence and applicability comparison</Link> : null}
       {engagementCampaign ? <EngagementReviewFiles campaignId={engagementCampaign.id} reportId={report.id} /> : null}
       <CartographicSurfaceWide />
       <RecordHubHeader

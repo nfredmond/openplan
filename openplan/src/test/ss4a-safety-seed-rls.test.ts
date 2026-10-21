@@ -401,6 +401,12 @@ import { readSafetyArtifactSnapshot, readSafetyComparisonRecord } from "@/lib/re
         ARRAY['artifact_versions','immutable','report_fence','report_revision','source_fence']::text[]
         FROM pg_proc p JOIN pg_namespace s ON s.oid=p.pronamespace WHERE s.nspname='safety_comparison_private'),'Private helper inventory differs');
       PERFORM pg_temp.assert_safety(NOT EXISTS(SELECT FROM safety_comparison_private.entries WHERE report_id='__REPORT__'),'Private transaction entry leaked');
+      SET LOCAL ROLE service_role;
+      FOREACH ledger IN ARRAY ARRAY['report_safety_comparison_revisions','report_safety_comparison_members','report_safety_comparison_requests','report_safety_comparison_generations'] LOOP
+        EXECUTE format('SELECT count(*) FROM public.%I WHERE workspace_id=$1',ledger) INTO n USING workspace;
+        PERFORM pg_temp.assert_safety(n=1,'Missing service-readable v2 isolation fixture: '||ledger);
+      END LOOP;
+      RESET ROLE;
       FOREACH role_name IN ARRAY ARRAY['anon','authenticated','service_role'] LOOP
         PERFORM pg_temp.assert_safety(NOT has_schema_privilege(role_name,'safety_comparison_private','USAGE'),'Private helper schema exposed to '||role_name);
         FOR fn IN SELECT p.oid FROM pg_proc p JOIN pg_namespace s ON s.oid=p.pronamespace WHERE s.nspname='safety_comparison_private' LOOP
