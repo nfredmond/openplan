@@ -30,6 +30,13 @@ Historical report decisions remain dated history. Operators must apply additive
 the dependent public reader. This source patch does not establish migration,
 concurrency, RLS or browser acceptance.
 
+**Land-use review release cascades:** Apply additive
+`20261021182747_land_use_review_release_cascade_guards.sql` to correct workspace
+deletion when restored foreign keys reach review releases before their plan.
+The guard continues to refuse direct release deletion while its owning plan
+and workspace exist. Insert, frozen identity, close and withdrawal rules remain
+unchanged. Representative restored-schema native controls pass, including direct-delete faults and rollback restoration. Full fresh-chain and restore-procedure acceptance remain open.
+
 **Source-page plan proposals:** Document review can stage quoted records from a
 retained page without an AI account. Pending proposals have their own pages,
 separate from reading history. Manual chapter copies retain source authorship;

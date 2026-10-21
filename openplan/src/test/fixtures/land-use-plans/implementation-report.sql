@@ -168,8 +168,16 @@ DECLARE
   decision_id uuid:=gen_random_uuid(); snapshot_text text; content_hash text; manifest jsonb;
   statement text; receipt jsonb; replay jsonb; artifact_before jsonb; native_before jsonb;
   competitor_kind text; competitor_date date;
+  signup_workspace uuid; cleanup_count integer; workspaces_before jsonb;
 BEGIN
+  SELECT coalesce(jsonb_agg(to_jsonb(w) ORDER BY w.id),'[]'::jsonb)
+    INTO workspaces_before FROM public.workspaces w;
   INSERT INTO auth.users(id,email) VALUES(actor,actor||'@synthetic.invalid');
+  -- Bind the signup hook's separate workspace before creating the plan scope.
+  SELECT w.id INTO STRICT signup_workspace
+    FROM public.workspaces w JOIN public.workspace_members m ON m.workspace_id=w.id
+    WHERE w.name=actor::text AND w.slug=actor::text||'-'||substring(actor::text,1,8)
+      AND m.user_id=actor AND m.role='owner';
   INSERT INTO public.workspaces(id,name,slug) VALUES(workspace,'SYNTHETIC publication boundary',workspace::text);
   INSERT INTO public.workspace_members(workspace_id,user_id,role) VALUES(workspace,actor,'owner');
   INSERT INTO public.kb_documents(id,workspace_id,title,source_kind,status)
@@ -249,7 +257,21 @@ BEGIN
   EXCEPTION WHEN SQLSTATE 'PT498' THEN NULL; END;
   RESET ROLE;
   DELETE FROM public.workspaces WHERE id=workspace;
-  DELETE FROM auth.users WHERE id=actor;
+  -- Delete only the captured synthetic signup scope before removing its owner.
+  DELETE FROM public.workspaces w
+    WHERE w.id=signup_workspace AND w.name=actor::text
+      AND w.slug=actor::text||'-'||substring(actor::text,1,8)
+      AND EXISTS (SELECT 1 FROM public.workspace_members m
+        WHERE m.workspace_id=w.id AND m.user_id=actor AND m.role='owner')
+      AND NOT EXISTS (SELECT 1 FROM public.workspace_members m
+        WHERE m.workspace_id=w.id AND m.user_id<>actor);
+  GET DIAGNOSTICS cleanup_count=ROW_COUNT;
+  PERFORM pg_temp.report_assert(cleanup_count=1,'publication signup workspace cleanup must remove exactly its captured scope');
+  DELETE FROM auth.users WHERE id=actor AND email=actor::text||'@synthetic.invalid';
+  GET DIAGNOSTICS cleanup_count=ROW_COUNT;
+  PERFORM pg_temp.report_assert(cleanup_count=1,'publication actor cleanup must remove exactly its synthetic user');
+  PERFORM pg_temp.report_assert((SELECT coalesce(jsonb_agg(to_jsonb(w) ORDER BY w.id),'[]'::jsonb)=workspaces_before
+    FROM public.workspaces w),'publication cleanup must preserve unrelated workspace rows');
 END $publication$;
 SELECT 'publication decision boundary verified';
 SELECT 'atomic implementation report verified';
