@@ -199,7 +199,7 @@ export function describeRtpCycleProjectMapCoverage(
  */
 function buildPopupContent(properties: Record<string, unknown>): HTMLElement {
   const content = document.createElement("div");
-  content.style.cssText = "padding: 4px; color: #0f172a; min-width: 160px;";
+  content.style.cssText = "padding: 4px; color: #0f172a; min-width: 0px; overflow-wrap: anywhere;";
 
   const title = document.createElement("strong");
   title.style.cssText = "display: block; font-size: 13px;";
@@ -378,10 +378,12 @@ export function RtpCycleProjectMap(props: RtpCycleProjectMapProps) {
         const feature = event.features?.[0];
         if (!feature) return;
         popup?.remove();
-        popup = new gl.Popup({ offset: 12, maxWidth: "280px" })
+        popup = new gl.Popup({ offset: 12, maxWidth: "min(280px, calc(100% - 24px))" })
           .setLngLat(event.lngLat)
           .setDOMContent(buildPopupContent((feature.properties ?? {}) as Record<string, unknown>))
           .addTo(map);
+        // Controls use z-index 2. Keep the popup close button reachable above them.
+        popup.getElement().style.zIndex = "3";
       };
       const onProjectEnter = () => {
         map.getCanvas().style.cursor = "pointer";

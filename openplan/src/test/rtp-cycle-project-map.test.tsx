@@ -103,11 +103,13 @@ const { mapboxMocks, maplibreMocks, libraryLoad } = vi.hoisted(() => {
     });
 
     const Popup = vi.fn(function MockPopup() {
+      const element = document.createElement("div");
       const self = {
         setLngLat: vi.fn(() => self),
         setDOMContent: vi.fn(() => self),
         addTo: vi.fn(() => self),
         remove: vi.fn(),
+        getElement: vi.fn(() => element),
       };
       return self;
     });
@@ -555,6 +557,42 @@ describe("RtpCycleProjectMap", () => {
     expect(node.querySelector("img")).toBeNull();
     // The name is still SHOWN — escaped, not swallowed.
     expect(node.textContent).toContain(hostile);
+  });
+
+  // These doubles check sizing/stacking intent, not browser geometry or hit testing.
+  it.each(["mapbox", "maplibre"] as const)("bounds the RTP popup and raises it above controls with %s", async (engine) => {
+    if (engine === "maplibre") {
+      vi.stubEnv("NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN", "");
+      vi.stubEnv("NEXT_PUBLIC_MAPBOX_TOKEN", "");
+      vi.stubEnv("NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL", OPEN_STYLE);
+    }
+    const data = collection({ features: [feature({ estimatedCost: null })] });
+    global.fetch = vi.fn();
+    const { RtpCycleProjectMap } = await importPanel();
+    render(<RtpCycleProjectMap collection={data} audience="public" />);
+
+    const gl = engine === "maplibre" ? maplibreMocks : mapboxMocks;
+    await waitFor(() => expect(gl.Map).toHaveBeenCalledTimes(1));
+    const map = gl.instances[0];
+    act(() => {
+      map.fire("load");
+      map.fire("click:rtp-cycle-projects-circle", {
+        features: [{ properties: data.features[0].properties }],
+        lngLat: { lng: -82.5, lat: 39.5 },
+      });
+    });
+
+    expect(gl.Popup).toHaveBeenCalledTimes(1);
+    expect(gl.Popup).toHaveBeenCalledWith({ offset: 12, maxWidth: "min(280px, calc(100% - 24px))" });
+    const popup = gl.Popup.mock.results[0].value;
+    expect(popup.getElement().style.zIndex).toBe("3");
+    const content = popup.setDOMContent.mock.calls[0][0] as HTMLElement;
+    expect({ minWidth: content.style.minWidth, overflowWrap: content.style.overflowWrap }).toEqual({
+      minWidth: "0px", overflowWrap: "anywhere",
+    });
+    expect(content.textContent).toContain("No cost recorded in this plan");
+    expect(map.addControl).toHaveBeenCalledWith(gl.NavigationControl.mock.instances[0], "top-right");
+    expect(global.fetch).not.toHaveBeenCalled();
   });
 
   /**
