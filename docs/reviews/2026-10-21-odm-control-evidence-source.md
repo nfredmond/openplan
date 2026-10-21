@@ -142,3 +142,32 @@ preservation on an actual timed-out child, not passing worker acceptance.
 Private raw artifacts, exception, source manifest and terminal receipts:
 
 `/home/nathaniel/.local/state/openplan/odm-worker-baseline-evidence-20261021-02/RESULT.md`
+
+## Dependency lockfile advisory correction
+
+October 21, 2026. A separate read-only npm comparison uses this branch's actual
+manifest and exact original/corrected lockfiles. The original returns exit 1
+with three advisories, two high and one moderate. The corrected returns exit 0
+with zero vulnerabilities. Both calls use package-lock-only mode and audit level
+low. Overall comparison returns zero in 2.279 seconds.
+
+Only version, archive URL and integrity change for follow-redirects 1.16.1,
+Hono 4.13.11 and Vite 7.3.7. The complete corrected lockfile matches the graph
+already checked for PR350 against fresh official npm metadata. All other 1,141
+records and root fields remain identical. This branch's package.json and native
+test registrations remain byte-identical. No worker, test, verifier, assertion,
+timeout, census or classifier bytes change.
+
+An earlier private preparation stops before source mutation or audit on an
+incorrect cross-branch manifest-equality assumption. The Population branch's
+live-test list differs. Root preserves this branch's own list and performs the
+separate comparison above. The failed preparation is not regraded.
+
+No install, lifecycle script, dependency link, compiler lease, worker/application
+test, native operation or build runs in this check. The maintained braces suite,
+installed runtime, full QA and current-head CI remain separate. The full worker
+baseline and original CI classification cause remain unresolved. PR362 stays
+draft, without a release, hosted or scientific promotion.
+
+Private audit JSON, graph comparison and retained preparation failure:
+`/home/nathaniel/.local/state/openplan/pr362-dependency-lock-transfer-20261021-02/`
