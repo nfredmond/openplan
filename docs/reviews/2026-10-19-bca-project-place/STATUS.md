@@ -57,3 +57,26 @@ The earlier QA and shuffled failures remain preserved. Fresh CI remains pending.
 These source-reading guards do not prove all copy paths, complete release-table
 coverage, installed SQL, runtime behavior, browser layout or scientific accuracy.
 This window does not rerun or extend native, browser or hosted evidence.
+
+October 20, 2026. The pushed copy and migration-note correction passes the full
+shuffled CI suite. The separate QA job on `3e55e52` passes 24,032 tests, then
+stops at the dependency audit with three affected packages. Those raw failures
+remain preserved. A bounded dependency update changes only version, archive URL
+and integrity for follow-redirects 1.16.1, Hono 4.13.11 and Vite 7.3.7 in the
+lockfile. Dependency requirements, package declarations and all other 1,141
+lockfile entries remain unchanged. The upstream advisories identify the fixes:
+[follow-redirects](https://github.com/advisories/GHSA-q3jh-wrc6-jgq8),
+[Hono](https://github.com/advisories/GHSA-5r4p-p66f-jhc7) and
+[Vite](https://github.com/advisories/GHSA-698v-4r3x-3vcv).
+
+One bounded window installs the exact corrected lockfile with lifecycle scripts
+disabled, runs the maintained dependency audit including all 19 braces checks,
+and runs 10 complete focused test files with 56 passing tests. The audit reports
+zero vulnerabilities. Installation, audit, tests and the manager each return 0.
+The dependency link is removed before the single compiler lease is released.
+Private logs and the exact graph comparison remain at
+`/home/nathaniel/.local/state/openplan/pr358-dependency-audit-20261020-01/`.
+No tests, guards, production code, migrations or package declarations change.
+The audit checks known advisories at query time; these checks do not prove
+exploit resistance, Windows behavior, lifecycle scripts, a full configured build
+or browser acceptance. Fresh GitHub CI remains pending after the checkpoint.
