@@ -42,8 +42,10 @@ after an uncertain result.
 ## Current synthetic connector check
 
 A private copy of all 51 tracked connector MJS and JSON inputs matches this
-source base. `CONNECTOR_SOURCE.sha256` binds those bytes. Node v24.22.0 runs the
-unchanged `connector-worker.test.mjs` file on Linux. Model execution uses the
+source base. `CONNECTOR_SOURCE.sha256` binds those bytes. The retained commands
+invoke `/usr/bin/node` on Linux. A later root readback reports v24.22.0; its
+version during these runs is not independently attested. The test file is
+unchanged. Model execution uses the
 file's synthetic callbacks. Its HTTP test uses an owned loopback server. No
 installed provider, account profile, credential or external model is used.
 
