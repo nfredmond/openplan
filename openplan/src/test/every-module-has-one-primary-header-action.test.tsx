@@ -495,7 +495,7 @@ describe("the slot's own stylesheet", () => {
    *
    * This recomputes that in arithmetic rather than trusting the two spot
    * measurements, because the failure this guards against is a FUTURE one: a
-   * sixth palette whose accent is lighter than the five here would ship an
+   * future palette whose accent is lighter than the ones here would ship an
    * unreadable primary button and nothing else would notice. `color-mix(in
    * srgb, …)` interpolates linearly on gamma-encoded channels, which is why
    * plain interpolation below reproduces Chrome's [196, 76, 49] exactly.
@@ -547,10 +547,15 @@ describe("the slot's own stylesheet", () => {
       ink: body.match(/--ink:\s*(#[0-9a-f]{6})/i)?.[1] ?? null,
     }));
 
-    // Ten today: default light and dark, plus slate/harbor/meadow/plum in each.
-    // An equality, so a palette added without a contrast check fails here
-    // instead of quietly widening what this test does not look at.
-    expect(themes).toHaveLength(10);
+    // Six palettes, each in light and dark. Pin both the count and identities
+    // so a missing Signal block or a duplicate cannot satisfy the census.
+    expect(themes).toHaveLength(12);
+    expect(themes.map(({ selector }) => selector)).toEqual([
+      ":root", ".dark",
+      ...["slate", "harbor", "meadow", "plum", "signal"].flatMap((id) => [
+        `:root:not(.dark)[data-palette="${id}"]`, `.dark[data-palette="${id}"]`,
+      ]),
+    ]);
 
     // `--primary-foreground` is stated only on the two base blocks; the palettes
     // inherit whichever of the two they sit under.

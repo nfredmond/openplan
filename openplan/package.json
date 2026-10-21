@@ -107,6 +107,7 @@
     "eslint-config-next": "16.3.8",
     "jsdom": "^28.1.0",
     "knip": "^6.29.0",
+    "postcss": "8.5.23",
     "shadcn": "^3.8.5",
     "supabase": "^2.76.11",
     "tailwindcss": "^4",
