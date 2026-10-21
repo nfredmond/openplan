@@ -25,8 +25,8 @@ No changes recorded after the v0.70.0 candidate below.
 ## 0.70.0 (2026-10-21)
 
 **Development candidate, not yet tagged.** This packages merged main
-`981446636dc28a2ac61cfeb676e0156bdfbf22b9`. Final release checks and the new
-identified Safety journey remain pending. It does not declare a current hosted
+`981446636dc28a2ac61cfeb676e0156bdfbf22b9`. Final release checks and an affected
+final-candidate view remain pending. It does not declare a current hosted
 deployment or completed v1 milestone.
 
 **Source-page plan proposals.** Document review can stage quoted records from a
@@ -38,9 +38,16 @@ browser records retain their exact source/build scope and prior failed attempts.
 **Exact crash-year selection.** High-injury network reads apply each requested
 year, intersected with any range bounds, and refuse invalid or disjoint inputs.
 Sparse-year disclosures list the selected years. Focusing a ranked road also
-reveals and focuses the existing map. Ordinary query/DOM controls do not prove
-provider completeness or physical map behavior; the release journey must cover
-that visible correction at desktop and 390px.
+reveals and focuses the existing map. Later identified desktop/390px receipts
+cover the corrected map focus; sparse-year browser selection remains unassessed.
+Ordinary query/DOM controls do not prove provider completeness.
+
+**Dependency corrections.** The lockfile updates follow-redirects to 1.16.1,
+Hono to 4.13.11 and Vite to 7.3.7. A fresh audit then identifies two
+moderate findings through Vitest mocker. Vitest is pinned to 4.1.12 with its
+matching packages; npm also updates Chai to 6.3.0 and tinyrainbow to 3.2.0.
+The corrected lock-only audit reports zero advisories. A fresh install and full
+QA/build on this final graph remain pending.
 
 **Upgrade before dependent code.** This tree has 429 migration files. The single
 addition since v0.69.0 is
@@ -50,8 +57,8 @@ not replay an already applied version or rewrite migration history. Keep the
 previous compatible build and follow the self-hosting and recovery guidance.
 
 **Remaining release and v1 boundaries.** Exact-candidate QA/build, shuffled,
-worker and isolated RLS evidence, release-order checks and the identified
-Safety journey must be recorded before tagging. Hosted acceptance requires its
+worker and isolated RLS evidence, release-order checks and the affected final-build
+view must be recorded before tagging. Hosted acceptance requires its
 own identified deployment and schema record. Source-page proposals do not prove
 complete predecessor coverage, OCR accuracy, adoption or legal applicability.
 Requested crash years do not establish complete observations, zero crashes in

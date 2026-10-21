@@ -32,9 +32,9 @@ artifact correctness, recovery, UI behavior or a release publication.
 All five bounded units finish. Their post-terminal MainPID values are zero and
 current cgroup fields are empty. All 676 owned dependency links are removed;
 private Vite caches and full logs remain outside the repository. No dependency
-installation occurs. The 969 installed donor package records match the candidate
-lockfile's version, resolved archive and integrity values. This is not a fresh
-dependency audit or full install/build proof.
+installation occurs. At that metadata window, the 969 installed donor package records match the
+then-current lockfile's version, resolved archive and integrity values. That
+window does not establish the later corrected graph's installation or runtime.
 
 ## Existing feature evidence retains its original scope
 
@@ -46,9 +46,11 @@ the actual merge. No historical failure is regraded.
 
 The [HIN record](../2026-10-19-hin-requested-years/STATUS.md) includes ordinary
 membership/projection/disclosure controls and the map-focus request/focus cases.
-Those query doubles and jsdom checks do not establish a physical map journey,
-provider completeness or scientific accuracy. A new identified build and
-desktop/390px Safety/map/report journey remain required for the visible claim.
+The later release audit recovers HIN build LzYWMO4KtJSlgPfNQvDtX at
+158641188174c5609642a3580ff8d3f4b837d9b3. Its desktop/390px receipts exercise
+painted road movement, map reveal/focus and keyboard continuation to zoom.
+The original mobile failure stays failed. Sparse-year browser selection,
+provider completeness and scientific accuracy remain unassessed.
 
 ## Tagging remains pending
 
@@ -58,7 +60,8 @@ maintained workflows and retained exact-source evidence proportionately. Resolve
 real failures in the promised increment; unrelated unfinished v1 work does not
 become a new gate for this development release.
 
-Verify the identified Safety journey and usable artifacts at desktop and 390px.
+Confirm the affected final-candidate view and usable artifacts, reusing the
+exact-source RTP and HIN receipts where they cover unchanged behavior.
 Bind any upgrade and hosted claim to its actual source, history and deployment.
 Then land the verified candidate, inspect final CI and publish the matching tag.
 No version-only tag or unchanged-review-date promotion is authorized by this note.
@@ -67,3 +70,29 @@ Full RTP and Safety, complete nationwide/territory/tribal workflow coverage,
 separate AequilibraE and ActivitySim validation, and all other v1 requirements
 stay open. The stale capability ledger needs evidence-based reconciliation;
 release numbers are not a completion tally.
+
+
+## Dependency audit follow-up
+
+The exact-main release audit finds all seven required CI contexts passing and
+a representative v0.69-to-main upgrade that applies the single RTP migration.
+It identifies a current advisory blocker in main's lockfile. This candidate
+selects the reviewed follow-redirects, Hono and Vite corrections from PR362
+without importing its unrelated diagnostic changes. Every other node remains
+unchanged at that transfer step.
+
+A fresh lock-only audit then exits one with two moderate findings through
+Vitest mocker. That failed audit remains preserved. The current
+[manual-registration advisory](https://github.com/advisories/GHSA-qxg6-89mg-rqv8)
+and [Windows-path advisory](https://github.com/advisories/GHSA-xp26-3454-mjgp)
+identify 4.1.12 as the patched version on the4.x line. An explicit
+package-lock-only, ignore-scripts update pins Vitest4.1.12 and matching Vitest
+packages. Npm also selects Chai6.3.0 and tinyrainbow3.2.0. No dependency code is
+installed or lifecycle script executed by that lock-only command.
+
+The following fresh lock-only audit exits zero and reports zero vulnerabilities.
+This supersedes only the current advisory disposition, not the failed audit or
+previous runtime results. The old metadata test cohorts use the old installed
+framework; they do not establish new-framework runtime compatibility. A fresh
+install, full QA/build, shuffled and applicable native/worker checks on the
+final release commit remain pending. There is no push, tag or hosted claim.
