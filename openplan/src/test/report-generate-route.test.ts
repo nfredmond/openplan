@@ -9,6 +9,7 @@ import { SAFETY_PLAN_PERSISTENCE_VERSION, type SafetyPlanPersistence } from "@/l
 import { safetySeedFixture } from "./fixtures/grants/safety-seed";
 import { readSafetyPlanSnapshot } from "@/lib/reports/safety-plan-snapshot";
 import * as safetyPlanBuilder from "@/lib/reports/safety-action-plan";
+import type { HighInjuryNetworkCrashQuery } from "@/lib/safety/high-injury-network-loader";
 import { PROJECT_PLACE_COLUMN_NAMES } from "@/lib/projects/project-place";
 import { collectSupabaseSelectSites } from "./supabase-call-sites";
 import Database from "better-sqlite3";
@@ -1483,7 +1484,11 @@ describe("POST /api/reports/[reportId]/generate", () => {
     );
   });
 
-  it("freezes the exact typed Safety builder result and composes generation's own revisions into seed preview", async () => {
+  it.each([
+    { requestedYears: [2022, 2020, 2022], selectedYears: [2020, 2022], count: 2 },
+    { requestedYears: [2024], selectedYears: [2024], count: 0 },
+    { requestedYears: [], selectedYears: null, count: null },
+  ])("freezes exact Safety membership and period labels for $requestedYears through generation and seed preview", async ({ requestedYears, selectedYears, count }) => {
     const fixture = safetySeedFixture();
     const projectId = "44444444-4444-4444-8444-444444444444";
     const reportId = "11111111-1111-4111-8111-111111111111";
@@ -1493,8 +1498,54 @@ describe("POST /api/reports/[reportId]/generate", () => {
       report_type: "project_status", status: "draft", created_at: "2026-03-14T00:00:00.000Z", generated_at: null,
       metadata_json: fixture.report.metadata_json };
     reportMaybeSingleMock.mockResolvedValueOnce({ data: report, error: null });
-    const acquisition = { ...fixture.acquisition, project_id: projectId };
+    // Deliberate out-of-period and undated fixture rows challenge the query.
+    // They do not assert that a real acquisition contains out-of-period rows.
+    const crashRows = [2019, 2020, 2021, 2022, 2023, null].map((year, index) => ({
+      id: `crash-${index}`, workspace_id: workspaceId, ingest_id: fixture.acquisition.id,
+      longitude: 0, latitude: 0, severity: "fatal", collision_year: year,
+    }));
+    const predicates: Array<{ method: string; column: string; value: unknown }> = [];
+    const crashSelect = vi.fn((_columns: string, _options?: { count: "exact" }) => {
+      const filters: Array<(row: typeof crashRows[number]) => boolean> = [];
+      let start = 0;
+      let end = 999;
+      const query: HighInjuryNetworkCrashQuery = {
+        eq: (column, value) => {
+          predicates.push({ method: "eq", column, value });
+          filters.push((row) => row[column as keyof typeof row] === value);
+          return query;
+        },
+        gte: (column, value) => {
+          predicates.push({ method: "gte", column, value });
+          filters.push((row) => row[column as keyof typeof row] !== null && Number(row[column as keyof typeof row]) >= Number(value));
+          return query;
+        },
+        lte: (column, value) => {
+          predicates.push({ method: "lte", column, value });
+          filters.push((row) => row[column as keyof typeof row] !== null && Number(row[column as keyof typeof row]) <= Number(value));
+          return query;
+        },
+        in: (column, values) => {
+          predicates.push({ method: "in", column, value: values });
+          filters.push((row) => values.includes(row[column as keyof typeof row]));
+          return query;
+        },
+        order: () => query,
+        range: (from, to) => { start = from; end = to; return query; },
+        then(resolve, reject) {
+          const matching = crashRows.filter((row) => filters.every((filter) => filter(row)));
+          return Promise.resolve({ data: matching.slice(start, end + 1).map(({ id, longitude, latitude, severity }) => ({ id, longitude, latitude, severity })), count: matching.length, error: null }).then(resolve, reject);
+        },
+      };
+      return query;
+    });
+    const member = await createClientMock();
+    createClientMock.mockResolvedValue({ ...member, from: (table: string) => table === "safety_crashes" ? { select: crashSelect } : fromMock(table) });
+    const acquisition: typeof fixture.acquisition = { ...fixture.acquisition, project_id: projectId, min_lon: -1, min_lat: -1, max_lon: 1, max_lat: 1,
+      years_requested: requestedYears, crash_count: crashRows.length, geocoded_count: crashRows.length, stored_count: crashRows.length };
     safetyIngestOrderMock.mockResolvedValueOnce({ data: [acquisition], error: null });
+    rpcMock.mockImplementation(async (name: string) => ({ data: name === "safety_crash_evidence_counts"
+      ? [{ ingest_id: acquisition.id, dimension: "severity", value: "fatal", record_count: crashRows.length }] : [], error: null }));
     const effects: string[] = [];
     const persisted: Array<{ artifact: { id: string; report_id: string; generated_at: string; metadata_json: Record<string, unknown> }; reportUpdatedAt: string; projectUpdatedAt: string; persistence: SafetyPlanPersistence }> = [];
     const service = createServiceRoleClientMock.getMockImplementation()!();
@@ -1524,6 +1575,27 @@ describe("POST /api/reports/[reportId]/generate", () => {
       const snapshot = readSafetyPlanSnapshot(result.artifact.metadata_json.safetyPlanSnapshotV1)!;
       expect(snapshot).not.toBeNull(); expect(snapshot.draft).toEqual(builder.mock.results.at(-1)!.value);
       expect(snapshot.selection).toEqual(fixture.report.metadata_json.safetyActionPlan);
+      expect(snapshot.acquisition.years_requested).toEqual(requestedYears);
+      if (selectedYears === null) {
+        expect(crashSelect).not.toHaveBeenCalled();
+        expect(snapshot.draft.network).toMatchObject({ kind: "unavailable", reason: expect.stringContaining("Requested crash years are missing") });
+      } else {
+        expect(crashSelect).toHaveBeenCalledWith("id, longitude, latitude, severity", { count: "exact" });
+        expect(predicates).toContainEqual({ method: "in", column: "collision_year", value: selectedYears });
+        expect(predicates).toContainEqual({ method: "eq", column: "workspace_id", value: workspaceId });
+        expect(predicates).toContainEqual({ method: "eq", column: "ingest_id", value: acquisition.id });
+        expect(builder.mock.calls.at(-1)![0].network).toMatchObject({ status: "computed", years: selectedYears, crashesConsidered: count });
+        const network = snapshot.draft.network;
+        if (network.kind !== "computed") throw new Error("expected generated network");
+        expect(network.years).toBe(`Requested crash years: ${selectedYears.join(", ")}`);
+        expect(network.rows.reduce((sum, row) => sum + row.crashCount, 0)).toBe(count);
+        expect(network.coverage).toContain("do not establish complete observation coverage or an annual denominator");
+        expect(result.artifact.metadata_json.htmlContent).toContain(network.years);
+        expect(result.artifact.metadata_json.htmlContent).toContain("do not establish complete observation coverage");
+        expect(network.sourceLine).not.toContain("2020–2022");
+        expect(network.measureLabel).toContain("fatal crashes only");
+        expect(network.rows.every((row) => row.seriousInjuryCrashCount === null)).toBe(true);
+      }
       expect(effects).toEqual(["artifact insert: P1", "report writeback: P2", "artifact receipt: P3"]);
       const rows = { ...fixture, opportunity: { ...fixture.opportunity, project_id: projectId, workspace_id: workspaceId },
         project: { ...fixture.project, id: projectId, workspace_id: workspaceId, updated_at: result.projectUpdatedAt },
@@ -4706,7 +4778,9 @@ describe("POST /api/reports/[reportId]/generate", () => {
     ].join(", ");
     expect((await generatePendingSchemaReport()).status).toBe(200);
     expect(projectSelectMock.mock.calls[0][0], "Actual initial projection retains every group in order").toBe(expected);
-    const sites = collectSupabaseSelectSites().filter(site =>
+    const sites = collectSupabaseSelectSites({
+      files: ["src/app/api/reports/[reportId]/generate/route.ts"],
+    }).filter(site =>
       site.file === "src/app/api/reports/[reportId]/generate/route.ts" && site.table === "projects"
     );
     expect(sites.filter(site => site.projection !== null).map(site => site.projection), "Source guard resolves the actual initial projection").toEqual([expected]);

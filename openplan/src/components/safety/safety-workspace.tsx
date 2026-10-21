@@ -457,6 +457,7 @@ export function SafetyWorkspace({
    * its own "no map key" notice and nothing is painted anyway.
    */
   const crashMapRef = useRef<mapboxgl.Map | null>(null);
+  const mapStageRef = useRef<HTMLDivElement>(null);
   const [crashMapReady, setCrashMapReady] = useState(false);
   /**
    * The crash map has finished building (or has been torn down).
@@ -1074,6 +1075,11 @@ export function SafetyWorkspace({
           */
           className="relative h-[max(16rem,45svh)] shrink-0 lg:h-auto lg:min-h-0 lg:flex-1"
           data-testid="safety-map-stage"
+          ref={mapStageRef}
+          role="region"
+          aria-label="Safety map"
+          tabIndex={-1}
+          style={{ outlineOffset: "-3px" }}
         >
           <SafetyCrashMap
             collection={collection}
@@ -1583,7 +1589,13 @@ export function SafetyWorkspace({
                 onShowOnMapChange={setShowHighInjuryNetwork}
                 onFocusSegment={(segment) => {
                   const instruction = fitInstructionFromGeometry(segment.geometry);
-                  if (instruction) setMapFocus(instruction);
+                  if (!instruction) return;
+                  setMapFocus(instruction);
+                  // Reveal the map in the existing scroll containers. Nearest
+                  // alignment leaves the desktop map in place; focus lets a
+                  // keyboard user continue through its controls.
+                  mapStageRef.current?.scrollIntoView?.({ block: "nearest", inline: "nearest" });
+                  mapStageRef.current?.focus({ preventScroll: true });
                 }}
                 ingestId={ingest.id ?? null}
                 reports={projectId

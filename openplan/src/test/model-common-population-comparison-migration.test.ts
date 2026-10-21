@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-const sql = readFileSync("supabase/migrations/20261019000001_model_common_population_comparisons.sql", "utf8");
+const sql = readFileSync("supabase/migrations/20261019000003_model_common_population_comparisons.sql", "utf8");
 const fixture = readFileSync("src/test/fixtures/modeling/common-population-comparisons.sql", "utf8");
 const packageSource = readFileSync("package.json", "utf8");
 const nativeTestPath = "src/test/model-common-population-comparison-rls.test.ts";

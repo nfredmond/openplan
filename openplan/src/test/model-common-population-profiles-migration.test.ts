@@ -7,7 +7,7 @@ import { populationSourceRegistry, POPULATION_PROFILE_PURPOSES, type PopulationS
 const name = "20261021000002_model_common_population_profiles.sql";
 const current = readFileSync(`supabase/migrations/${name}`, "utf8");
 const admission = readFileSync("supabase/migrations/20261021000001_model_common_population_admission.sql", "utf8");
-const ordinarySource = readFileSync("supabase/migrations/20261019000001_model_common_population_comparisons.sql", "utf8");
+const ordinarySource = readFileSync("supabase/migrations/20261019000003_model_common_population_comparisons.sql", "utf8");
 const replacement = readFileSync("supabase/migrations/20261019051430_model_population_replacement.sql", "utf8");
 const catalog = JSON.parse(readFileSync("../scripts/modeling/population_source_profiles.v1.json", "utf8")) as { profiles: PopulationSourceRegistration[] };
 const comparisonStart = "CREATE OR REPLACE FUNCTION public.validate_common_population_comparison()";

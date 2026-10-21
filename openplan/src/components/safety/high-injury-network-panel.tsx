@@ -5,6 +5,7 @@ import {
   describeHighInjuryNetworkCoverage,
   describeHighInjuryNetworkMethod,
   describeHighInjuryNetworkUnavailable,
+  describeHighInjuryNetworkYears,
   highInjuryNetworkMeasureLabel,
   type HighInjuryNetwork,
   type HighInjuryNetworkSegment,
@@ -40,11 +41,6 @@ type Props = {
   /** Injected for tests; defaults to `fetch`. */
   saveRequest?: (reportId: string, body: unknown) => Promise<{ ok: boolean; error?: string }>;
 };
-
-function yearsText(years: readonly number[]): string {
-  if (years.length === 0) return "years not recorded";
-  return years.length === 1 ? String(years[0]) : `${years[0]}–${years[years.length - 1]}`;
-}
 
 async function patchReport(reportId: string, body: unknown): Promise<{ ok: boolean; error?: string }> {
   const response = await fetch(`/api/reports/${reportId}`, {
@@ -229,7 +225,7 @@ export function HighInjuryNetworkPanel({
         <dt className="font-medium text-foreground">Method</dt>
         <dd>{describeHighInjuryNetworkMethod(network.method, network.parameters)}</dd>
         <dt className="font-medium text-foreground">Years</dt>
-        <dd>{yearsText(network.years)}</dd>
+        <dd>{describeHighInjuryNetworkYears(network.years)}</dd>
         <dt className="font-medium text-foreground">Source</dt>
         <dd>
           {sourceLabel ?? "Crash source not recorded"}
