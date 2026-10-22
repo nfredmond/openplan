@@ -118,3 +118,23 @@ Configured compilation and a renewed identified-build desktop/390px retained
 report and catalog journey remain pending. This source checkpoint does not
 promote the earlier partial browser outcome or declare publication. The complete
 v1 contract and sole roadmap remain binding.
+
+
+## October 22 UTC: complete existing assistant summary fixtures
+
+The first corrected-journey build at ac79365 stops after webpack compilation.
+Configured TypeScript reports three TS2741 errors because existing assistant
+fixtures omit the newly required unassessed count. The failed build, original
+07 packet and Boq3 build remain preserved in the private round-12 packet. No
+server or browser journey follows that failure.
+
+Three existing known-state fixture objects now include unassessed: 0 across
+two test files. Production types, logic and all assertions remain unchanged.
+Both complete files pass 49 cases with zero skips using one serial worker.
+Strict scoped lint and diff checks pass. This compatibility correction adds no
+new guard or intended-fault claim. Its checks cover existing assistant behavior;
+they do not establish configured compilation or a visible Reports journey.
+
+Root retains the first failure and admits a separate identified-build round
+after this checkpoint. Native, browser, hosted, scientific and release evidence
+remain separate. The complete v1 contract and sole roadmap remain binding.
