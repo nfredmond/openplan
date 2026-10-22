@@ -63,7 +63,6 @@ import {
   setCachedGrantsGovResult,
 } from "@/lib/grants/grants-gov-cache";
 import { randomUUID } from "node:crypto";
-import { canonicalizeActionPayload } from "@/lib/runtime/action-metadata";
 import { executableProjectSubmittalAction } from "./project-submittal-receipt";
 import { hashAssistantActionPayload } from "./action-approval-server";
 import { CHAT_PROJECTION, chatToolInputs, chatDraftSchema, type AssistantChatAcceptedGrantV1, type ChatToolName } from "./provider-chat-task";

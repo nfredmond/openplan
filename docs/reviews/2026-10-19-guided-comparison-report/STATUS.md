@@ -551,3 +551,10 @@ reminders remain unchanged. Private conflict/receipt reader errors are retained.
 This checkpoint does not establish installed parity, concurrent authority,
 current Reports accepting handlers, scientific preparation or a release. A
 fresh populated installation and actual Reports handler calls remain next.
+
+
+The first joined configured typecheck exits 2 on duplicate imports of
+canonicalizeActionPayload. The automatic merge retained both branches' imports.
+Root removes the redundant single import and keeps the existing grouped import;
+both Model and A0 call sites remain unchanged. The first diagnostics stay
+retained. A separately admitted repeat checks the corrected input state.
