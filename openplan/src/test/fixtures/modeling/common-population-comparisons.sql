@@ -24,7 +24,7 @@ CREATE TEMP TABLE cp_groups(name text, workspace_id uuid, project_id uuid DEFAUL
 INSERT INTO cp_groups(name,workspace_id) SELECT 'main',workspace_id FROM cp_probe UNION ALL
  SELECT 'same_workspace_other_project',workspace_id FROM cp_probe UNION ALL SELECT 'other_workspace',other_workspace FROM cp_probe;
 CREATE TEMP TABLE cp_jobs(position integer, method text, role text, model_id uuid, entry_id uuid,
- run_id uuid DEFAULT gen_random_uuid(), stage_id uuid DEFAULT gen_random_uuid(), artifact_id uuid DEFAULT gen_random_uuid(), attempt_id uuid, metadata jsonb);
+ run_id uuid DEFAULT gen_random_uuid(), stage_id uuid DEFAULT gen_random_uuid(), artifact_id uuid DEFAULT gen_random_uuid(), attempt_id uuid, metadata jsonb, omit_instrument boolean NOT NULL DEFAULT false, instrument_output_id uuid, instrument_method text, duplicate_instrument boolean NOT NULL DEFAULT false, instrument_bytes bigint NOT NULL DEFAULT 1);
 GRANT SELECT,UPDATE ON cp_probe,cp_groups,cp_jobs,cp_source_files TO service_role;
 GRANT SELECT ON cp_probe,cp_groups,cp_jobs TO authenticated,anon;
 INSERT INTO auth.users(id,email) SELECT u,u||'@example.test' FROM cp_probe,LATERAL unnest(ARRAY[owner_id,viewer_id,outsider_id]) u;
@@ -76,12 +76,37 @@ DO $$ DECLARE g cp_groups%ROWTYPE; p cp_probe%ROWTYPE; BEGIN
    INSERT INTO cp_jobs(position,method,role,model_id,entry_id,run_id) VALUES(0,'aequilibrae','baseline',g.model_id,g.baseline_id,g.run_id);
    INSERT INTO public.model_run_stages(id,run_id,stage_name,status,sort_order)
     SELECT stage_id,run_id,'Artifact Extraction','queued',1 FROM cp_jobs WHERE position=0;
-   -- Explicitly supplied synthetic decision exercises the existing requirement.
-   -- This is not an observed-count assessment or a scientific acceptance result.
-   INSERT INTO public.modeling_claim_decisions(workspace_id,model_run_id,track,claim_status,status_reason)
-    VALUES(g.workspace_id,g.run_id,'assignment','prototype_only','Synthetic fixture, no scientific validation');
+   -- Legacy readiness retains its original explicit decision. Managed readiness
+   -- uses the actual attempt command below, without fabricated legacy claims.
+   IF p.custody='legacy_stage_snapshot' THEN
+    INSERT INTO public.modeling_claim_decisions(workspace_id,model_run_id,track,claim_status,status_reason)
+     VALUES(g.workspace_id,g.run_id,'assignment','prototype_only','Synthetic fixture, no scientific validation');
+   END IF;
   END IF;
  END LOOP;
+END $$;
+-- Descriptors exercise installed custody, not bytes or scientific validity.
+CREATE FUNCTION pg_temp.cp_instrument(attempt uuid, method text, output uuid, output_hash text, artifact_bytes bigint DEFAULT 1)
+RETURNS uuid LANGUAGE plpgsql AS $$
+DECLARE item record; artifact jsonb; payload jsonb; result jsonb;
+BEGIN
+ payload:=jsonb_build_object('demand_method',method,'scientific_outcome','inconclusive',
+  'model_output_artifact_id',output,'model_output_sha256',output_hash);
+ FOR item IN SELECT * FROM (VALUES
+  ('input_bundle','validation_input_bundle_v2','openplan.validation-input-bundle.v2'),
+  ('match_audit','pre_volume_match_audit_v2','openplan.pre-volume-observation-match-audit.v2'),
+  ('comparison_basis','model_comparison_basis_v2','openplan.model-comparison-basis.v2'),
+  ('assessment','model_validation_assessment_v2','openplan.model-validation-assessment.v2'),
+  ('diagnosis','model_validation_structural_diagnosis_v2','openplan.model-validation-structural-diagnosis.v2')
+ ) AS refs(prefix,kind,schema) LOOP
+  artifact:=public.write_model_attempt_artifact(gen_random_uuid(),attempt,jsonb_build_object(
+   'artifact_type',item.kind,'file_url','local://synthetic-instrument/'||attempt||'/'||item.prefix,
+   'file_size_bytes',artifact_bytes,'content_hash',repeat('f',64),
+   'metadata_json',jsonb_build_object('schema',item.schema,'demand_method',method)));
+  payload:=payload||jsonb_build_object(item.prefix||'_artifact_id',artifact->>'id',item.prefix||'_sha256',artifact->>'content_hash');
+ END LOOP;
+ result:=public.record_model_attempt_instrument(gen_random_uuid(),attempt,payload);
+ RETURN (result->>'id')::uuid;
 END $$;
 -- SOURCE PUBLICATION SEAM
 DO $$ DECLARE g cp_groups%ROWTYPE; p cp_probe%ROWTYPE; f cp_source_files%ROWTYPE; response jsonb; attempt uuid; n integer; published record; BEGIN
@@ -148,9 +173,11 @@ DO $$ DECLARE g cp_groups%ROWTYPE; p cp_probe%ROWTYPE; j cp_jobs%ROWTYPE; BEGIN
     FROM public.scenario_entries entry WHERE entry.id=j.entry_id;
   INSERT INTO public.model_run_stages(id,run_id,stage_name,status,sort_order) VALUES(j.stage_id,j.run_id,
    CASE j.method WHEN 'aequilibrae' THEN 'Artifact Extraction' ELSE 'ActivitySim Network Assignment' END,'queued',1);
-  INSERT INTO public.modeling_claim_decisions(workspace_id,model_run_id,track,claim_status,status_reason)
-   VALUES(g.workspace_id,j.run_id,CASE j.method WHEN 'aequilibrae' THEN 'assignment' ELSE 'behavioral_demand' END,
-    'prototype_only','Synthetic fixture, no scientific validation');
+  IF p.custody='legacy_stage_snapshot' THEN
+   INSERT INTO public.modeling_claim_decisions(workspace_id,model_run_id,track,claim_status,status_reason)
+    VALUES(g.workspace_id,j.run_id,CASE j.method WHEN 'aequilibrae' THEN 'assignment' ELSE 'behavioral_demand' END,
+     'prototype_only','Synthetic fixture, no scientific validation');
+  END IF;
  END LOOP;
 END $$;
 UPDATE cp_jobs SET metadata=(SELECT network_metadata||source_metadata||jsonb_build_object('population_custody',custody) FROM cp_probe);
@@ -165,7 +192,18 @@ DO $$ DECLARE j cp_jobs%ROWTYPE; p cp_probe%ROWTYPE; response jsonb; attempt uui
   attempt:=(response->>'attempt_id')::uuid;
   PERFORM public.write_model_attempt_artifact(gen_random_uuid(),attempt,jsonb_build_object('id',j.artifact_id,
    'artifact_type',CASE j.method WHEN 'aequilibrae' THEN 'link_volumes' ELSE 'activitysim_link_volumes' END,
-   'file_url','local://synthetic/output.csv','file_size_bytes',99,'content_hash',repeat((j.position+1)::text,64),'metadata_json',j.metadata));
+   'file_url','local://synthetic/output.csv','file_size_bytes',99,'content_hash',repeat((j.position+1)::text,64),'metadata_json',j.metadata||jsonb_build_object('demand_method',COALESCE(j.instrument_method,j.method))));
+  IF NOT j.omit_instrument THEN
+   IF j.instrument_output_id IS NOT NULL THEN
+    PERFORM public.write_model_attempt_artifact(gen_random_uuid(),attempt,jsonb_build_object('id',j.instrument_output_id,
+     'artifact_type','synthetic_other_output','file_url','local://synthetic/other-output','file_size_bytes',1,
+     'content_hash',repeat((j.position+1)::text,64),'metadata_json',jsonb_build_object('demand_method',COALESCE(j.instrument_method,j.method))));
+   END IF;
+   PERFORM pg_temp.cp_instrument(attempt,COALESCE(j.instrument_method,j.method),COALESCE(j.instrument_output_id,j.artifact_id),repeat((j.position+1)::text,64),j.instrument_bytes);
+   IF j.duplicate_instrument THEN
+    PERFORM pg_temp.cp_instrument(attempt,j.method,j.artifact_id,repeat((j.position+1)::text,64),j.instrument_bytes);
+   END IF;
+  END IF;
   PERFORM public.write_model_stage_attempt(gen_random_uuid(),attempt,'succeeded','Synthetic output only',NULL);
   UPDATE cp_jobs SET attempt_id=attempt WHERE position=j.position;
   ELSE

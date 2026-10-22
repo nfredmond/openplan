@@ -70,7 +70,7 @@ liveDescribe("guided model truth live RLS and trigger enforcement", () => {
     expect(state.rows.runs.every((row) => row.workspace_id === workspaceA && row.attempt_managed === true && row.status === "succeeded")).toBe(true);
     expect(state.rows.enrollment.map((row) => row.run_id).sort()).toEqual([...runIds].sort());
     expect(state.rows.enrollment.every((row) => row.provenance === "new_run")).toBe(true);
-    expect(state.rows.artifacts).toHaveLength(11);
+    expect(state.rows.artifacts).toHaveLength(31);
     expect(state.rows.artifacts.filter((row) => artifactIds.includes(String(row.id))).map((row) => row.id).sort()).toEqual([...artifactIds].sort());
     expect(state.rows.links).toHaveLength(4);
     expect(state.rows.links.map((row) => row.model_run_id).sort()).toEqual([...runIds].sort());
@@ -235,15 +235,8 @@ liveDescribe("guided model truth live RLS and trigger enforcement", () => {
         created_by: memberId,
       });
       if (run.error) throw new Error(run.error.message);
-      // Supply the existing fixture decisions before the first managed claim,
-      // as the maintained native population fixture does. No ingestion is forged.
-      const decision = await service.from("modeling_claim_decisions").insert({
-        workspace_id: workspaceA, model_run_id: runId,
-        track: job.method === "aequilibrae" ? "assignment" : "behavioral_demand",
-        claim_status: index === 3 ? "prototype_only" : "screening_grade",
-        status_reason: index === 3 ? "Recorded, but evidence remains prototype-only." : "Live fixture screening decision.",
-      });
-      if (decision.error) throw new Error(decision.error.message);
+      // Managed readiness requires exact inconclusive instrument custody.
+      // No legacy scientific decision is inserted for these managed runs.
       const stage = await service.from("model_run_stages").insert([
         ...(index === 0 ? [{ id: sourceStageId, run_id: runId, stage_name: "AequilibraE Setup", status: "queued", sort_order: 0 }] : []),
         { id: stageId, run_id: runId, stage_name: job.method === "aequilibrae" ? "Artifact Extraction" : "ActivitySim Network Assignment", status: "queued", sort_order: 1 },
@@ -278,9 +271,33 @@ liveDescribe("guided model truth live RLS and trigger enforcement", () => {
         p_payload: { id: artifactId,
           artifact_type: job.method === "aequilibrae" ? "link_volumes" : "activitysim_link_volumes",
           file_url: `local://synthetic/${runId}/output.csv`, file_size_bytes: 100,
-          content_hash: `${index + 1}`.repeat(64), metadata_json: { ...metadata, ...population.metadata } },
+          content_hash: `${index + 1}`.repeat(64), metadata_json: { ...metadata, ...population.metadata, demand_method: job.method } },
       });
       if (artifact.error) throw new Error(artifact.error.message);
+      const instrumentPayload: Record<string, string> = {
+        demand_method: job.method, scientific_outcome: "inconclusive",
+        model_output_artifact_id: artifactId, model_output_sha256: `${index + 1}`.repeat(64),
+      };
+      for (const [prefix, kind, schema] of [
+        ["input_bundle", "validation_input_bundle_v2", "openplan.validation-input-bundle.v2"],
+        ["match_audit", "pre_volume_match_audit_v2", "openplan.pre-volume-observation-match-audit.v2"],
+        ["comparison_basis", "model_comparison_basis_v2", "openplan.model-comparison-basis.v2"],
+        ["assessment", "model_validation_assessment_v2", "openplan.model-validation-assessment.v2"],
+        ["diagnosis", "model_validation_structural_diagnosis_v2", "openplan.model-validation-structural-diagnosis.v2"],
+      ]) {
+        const reference = await service.rpc("write_model_attempt_artifact", {
+          p_request_id: randomUUID(), p_attempt_id: attemptId,
+          p_payload: { artifact_type: kind, file_url: `local://synthetic/${runId}/${prefix}.json`,
+            file_size_bytes: 1, content_hash: "f".repeat(64), metadata_json: { schema, demand_method: job.method } },
+        });
+        if (reference.error || !reference.data?.id) throw new Error(reference.error?.message ?? "Instrument artifact missing");
+        instrumentPayload[`${prefix}_artifact_id`] = reference.data.id;
+        instrumentPayload[`${prefix}_sha256`] = reference.data.content_hash;
+      }
+      const instrument = await service.rpc("record_model_attempt_instrument", {
+        p_request_id: randomUUID(), p_attempt_id: attemptId, p_payload: instrumentPayload,
+      });
+      if (instrument.error || !instrument.data?.id) throw new Error(instrument.error?.message ?? "Instrument custody missing");
       await finishStage(attemptId);
     }
 

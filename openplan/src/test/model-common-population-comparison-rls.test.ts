@@ -7,6 +7,7 @@ import { LIVE_RLS } from "./local-supabase-env";
 import { resolveLocalDbContainer } from "./helpers/live-catalog";
 
 const fixture = readFileSync("src/test/fixtures/modeling/common-population-comparisons.sql", "utf8");
+const readinessRetry = readFileSync("src/test/fixtures/modeling/managed-comparison-readiness-retry.sql", "utf8");
 const admissionFixture = readFileSync("src/test/fixtures/modeling/common-population-admission.sql", "utf8");
 const profileFixture = readFileSync("src/test/fixtures/modeling/common-population-profiles.sql", "utf8");
 const signature = "public.validate_common_population_comparison()";
@@ -79,7 +80,88 @@ const linkRefusal = (position: number) => `${owner} DO $$ DECLARE s uuid; BEGIN 
     END LOOP;
     IF EXISTS(SELECT FROM pg_proc WHERE oid IN ('public.validate_scenario_comparison_model_run_link()'::regprocedure,
       'public.refuse_bound_comparison_snapshot_change()'::regprocedure) AND prosecdef) THEN RAISE EXCEPTION 'Original invoker guard became a definer'; END IF;
+    IF NOT (SELECT prosecdef AND proconfig=ARRAY['search_path=""'] AND pg_get_userbyid(proowner)='postgres'
+      FROM pg_proc WHERE oid='public.validate_managed_comparison_readiness()'::regprocedure) THEN RAISE EXCEPTION 'Readiness private authority is not confined'; END IF;
+    FOREACH r IN ARRAY ARRAY['anon','authenticated','service_role'] LOOP
+      IF has_function_privilege(r,'public.validate_managed_comparison_readiness()','EXECUTE') THEN RAISE EXCEPTION 'Private readiness trigger became callable'; END IF;
+      IF has_table_privilege(r,'public.model_attempt_instrument_receipts','SELECT') THEN RAISE EXCEPTION 'Private instrument receipts became readable'; END IF;
+    END LOOP;
   END $$;`;
+
+  // Prepared native cases. Ordinary Vitest collection skips these unless the
+  // existing isolated-stack opt-in is set. SQL descriptors do not verify bytes.
+  const noLegacyClaims = `DO $$ BEGIN
+    IF EXISTS(SELECT 1 FROM public.modeling_claim_decisions WHERE model_run_id IN(SELECT run_id FROM cp_jobs))
+      THEN RAISE EXCEPTION 'Managed readiness fabricated legacy decisions'; END IF;
+    IF (SELECT count(*) FROM public.model_run_relaunch_receipts WHERE request_payload->>'run_id'=(SELECT run_id::text FROM cp_jobs WHERE position=0))<>1
+      THEN RAISE EXCEPTION 'Actual same-run retry receipt missing'; END IF;
+    IF EXISTS(SELECT 1 FROM bridge_retained retained WHERE NOT EXISTS(SELECT 1 FROM public.model_run_artifacts artifact WHERE to_jsonb(artifact)=retained.artifact))
+      THEN RAISE EXCEPTION 'Retained first-attempt artifacts changed'; END IF;
+    IF EXISTS(SELECT 1 FROM bridge_retained retained WHERE NOT EXISTS(
+      SELECT 1 FROM jsonb_array_elements(public.read_model_attempt_outputs((SELECT run_id FROM cp_jobs WHERE position=0),(SELECT workspace_id FROM cp_probe))->'outputs') projected
+      WHERE projected->>'kind'='artifact' AND projected->>'ownership_state'='retained_inactive' AND projected->'record'=retained.artifact))
+      THEN RAISE EXCEPTION 'Old evidence became current'; END IF;
+  END $$;`;
+  const instrumentRefusal = `${owner} DO $$ DECLARE s uuid; BEGIN
+    s:=pg_temp.cp_snapshot(); PERFORM pg_temp.cp_all_links(s);
+    BEGIN PERFORM pg_temp.cp_ready(s);
+      RAISE EXCEPTION 'Invalid managed instrument was accepted';
+    EXCEPTION WHEN raise_exception THEN
+      IF SQLERRM<>'managed comparison requires exact current inconclusive instrument custody' THEN RAISE; END IF;
+    END;
+    IF (SELECT status FROM public.scenario_comparison_snapshots WHERE id=s)<>'draft'
+      OR (SELECT count(*) FROM public.scenario_comparison_model_run_links WHERE comparison_snapshot_id=s)<>4
+      THEN RAISE EXCEPTION 'Managed readiness refusal was not atomic'; END IF;
+  END $$; RESET ROLE; SELECT pg_temp.cp_unchanged();`;
+
+  it("managed readiness bridge: current retry without legacy decisions", () => accepts(positive + noLegacyClaims, { source: readinessRetry }));
+  it("matches the exact instrument receipt across session time zones", () => accepts("SET LOCAL TIME ZONE 'America/Los_Angeles';" + positive + noLegacyClaims, { source: readinessRetry }));
+  it("managed readiness bridge survives harmless trigger commentary", () => accepts(positive + noLegacyClaims, {
+    source: readinessRetry, guard: "COMMENT ON FUNCTION public.validate_managed_comparison_readiness() IS 'Harmless native control';",
+  }));
+  it.each([
+    ["missing current custody", "UPDATE cp_jobs SET omit_instrument=true WHERE position=1;"],
+    ["revoked retained-only custody", "UPDATE cp_jobs SET omit_instrument=true WHERE position=0;"],
+    ["other output identity", "UPDATE cp_jobs SET instrument_output_id=gen_random_uuid() WHERE position=1;"],
+    ["wrong demand method", "UPDATE cp_jobs SET instrument_method='activitysim' WHERE position=1;"],
+    ["ambiguous exact instruments", "UPDATE cp_jobs SET duplicate_instrument=true WHERE position=1;"],
+    ["empty instrument descriptor", "UPDATE cp_jobs SET instrument_bytes=0 WHERE position=1;"],
+  ])("managed readiness refuses %s without changing the draft or retained records", (_name, output) => accepts(instrumentRefusal + noLegacyClaims, { source: readinessRetry, output }));
+  it("keeps the existing snapshot UPDATE policy for members and outsiders", () => accepts(`${owner}
+    DO $$ DECLARE s uuid; n integer; before_snapshot jsonb; before_links jsonb; BEGIN
+      s:=pg_temp.cp_snapshot(); PERFORM pg_temp.cp_all_links(s);
+      SELECT to_jsonb(snapshot) INTO before_snapshot FROM public.scenario_comparison_snapshots snapshot WHERE snapshot.id=s;
+      SELECT jsonb_agg(to_jsonb(link) ORDER BY link.id) INTO before_links FROM public.scenario_comparison_model_run_links link WHERE link.comparison_snapshot_id=s;
+      PERFORM set_config('request.jwt.claim.sub',(SELECT outsider_id::text FROM cp_probe),true);
+      UPDATE public.scenario_comparison_snapshots SET status='ready' WHERE id=s;
+      GET DIAGNOSTICS n=ROW_COUNT; IF n<>0 THEN RAISE EXCEPTION 'Outsider updated snapshot'; END IF;
+      PERFORM set_config('request.jwt.claim.sub',(SELECT viewer_id::text FROM cp_probe),true);
+      UPDATE public.scenario_comparison_snapshots SET status='ready' WHERE id=s;
+      GET DIAGNOSTICS n=ROW_COUNT; IF n<>0 THEN RAISE EXCEPTION 'Viewer updated snapshot'; END IF;
+      IF (SELECT to_jsonb(snapshot) FROM public.scenario_comparison_snapshots snapshot WHERE snapshot.id=s) IS DISTINCT FROM before_snapshot
+        OR (SELECT jsonb_agg(to_jsonb(link) ORDER BY link.id) FROM public.scenario_comparison_model_run_links link WHERE link.comparison_snapshot_id=s) IS DISTINCT FROM before_links
+        THEN RAISE EXCEPTION 'Viewer readiness attempt changed persisted evidence'; END IF;
+      IF (SELECT status FROM public.scenario_comparison_snapshots WHERE id=s) IS DISTINCT FROM 'draft'
+        OR (SELECT count(*) FROM public.scenario_comparison_model_run_links WHERE comparison_snapshot_id=s)<>4
+        THEN RAISE EXCEPTION 'Viewer readiness no-op changed draft or four links'; END IF;
+      PERFORM set_config('request.jwt.claim.sub',(SELECT owner_id::text FROM cp_probe),true);
+      PERFORM pg_temp.cp_ready(s);
+      IF (SELECT status FROM public.scenario_comparison_snapshots WHERE id=s) IS DISTINCT FROM 'ready'
+        OR (SELECT count(*) FROM public.scenario_comparison_model_run_links WHERE comparison_snapshot_id=s)<>4
+        THEN RAISE EXCEPTION 'Owner readiness did not persist ready with four links'; END IF;
+    END $$; RESET ROLE; SELECT pg_temp.cp_unchanged();`));
+
+  it("detects bypass of the private managed readiness guard", () => {
+    const bypass = `DO $fault$ DECLARE definition text; BEGIN
+      SELECT pg_get_functiondef('public.validate_managed_comparison_readiness()'::regprocedure) INTO definition;
+      IF position('IF NOT v_run.attempt_managed THEN CONTINUE; END IF;' IN definition)=0 THEN RAISE EXCEPTION 'Readiness mutation anchor missing'; END IF;
+      EXECUTE replace(definition,'IF NOT v_run.attempt_managed THEN CONTINUE; END IF;','RETURN NEW;');
+    END $fault$;`;
+    const result = trial(instrumentRefusal, { source: readinessRetry, output: "UPDATE cp_jobs SET omit_instrument=true WHERE position=0;", guard: bypass });
+    expect(result.error).toBeUndefined();
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("Invalid managed instrument was accepted");
+  });
 
   it.each(["managed_attempt", "legacy_stage_snapshot"] as const)("accepts four exact %s outputs with existing writer/viewer/tenant/immutability boundaries", (custody) => accepts(positive, { custody }));
   it.each(["managed_attempt", "legacy_stage_snapshot"] as const)("survives harmless comments under %s", (custody) => accepts(positive, {

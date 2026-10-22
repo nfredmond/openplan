@@ -111,7 +111,9 @@ describe("bounded native common-population comparison source", () => {
     expect(fixture).toContain("Synthetic fixture, no scientific validation");
     expect(fixture).toContain("Comparison changed retained runs or artifacts");
     expect(fixture.match(/status='running',started_at=clock_timestamp\(\).*status='queued'/g)).toHaveLength(2);
-    expect(fixture).toContain("Explicitly supplied synthetic decision");
+    expect(fixture).toContain("IF p.custody='legacy_stage_snapshot' THEN\n    INSERT INTO public.modeling_claim_decisions");
+    expect(fixture).toContain("PERFORM pg_temp.cp_instrument(attempt,COALESCE(j.instrument_method,j.method)");
+    expect(fixture).toContain("result:=public.record_model_attempt_instrument(gen_random_uuid(),attempt,payload)");
     expect(fixture.match(/FOR f IN SELECT \* FROM cp_source_files LOOP/g)).toHaveLength(2);
   });
   it("survives a harmless source comment", () => {

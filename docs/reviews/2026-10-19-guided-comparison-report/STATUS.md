@@ -396,3 +396,104 @@ or new CI acceptance. Root owns the exact checkpoint push and subsequent checks.
 Private reports: pr355-ci-fixture-status-repair-20261022-26/REPORT.md and
 pr355-ci-fixture-status-repair-20261022-26-continuation-01/REPORT.md under the
 OpenPlan state directory. Original failures and all wider v1 requirements remain.
+
+
+## October 22 UTC: managed comparison procedural readiness bridge
+
+The source candidate adds `20261022070000_managed_comparison_readiness.sql`
+after corrected migration435 at `9c3766c8f7008a385d139aac2a484056400858ae`.
+The original invoker trigger retains snapshot immutability, the four-link
+requirement and track-matched decisions for legacy runs. Managed runs instead
+require exact current instrument custody. No legacy decision is inserted to
+make managed evidence ready. All435 prior migration files retain their bytes
+and modes. This candidate is not installed or natively accepted.
+
+A separate private trigger runs after the existing full population validator.
+That validator continues to own source/population, project, scenario, method,
+role, producer and writer-role admission. Its viewer refusal precedes private
+custody reads. The bridge also binds the pending snapshot and current workspace
+membership, using the actual SQL role. Legacy comparisons retain their existing
+access path. The private trigger has owner postgres, an empty search path and
+EXECUTE revoked from PUBLIC, anon, authenticated and service_role. It returns
+the unchanged pending row. No private-table grant, RLS policy or callable RPC
+is added. Independent security/source review remains required before root
+admits native execution.
+
+For each managed link, the bridge calls the installed current-output selector.
+It requires exactly one inconclusive instrument for the selected method,
+output identity and hash, plus its immutable command receipt. The installed
+instrument command and insert validator retain their admission authority.
+All six referenced artifacts must be current_completed and match their full
+projected descriptor, run, stage, attempt and hash, with nonempty descriptors.
+Receipt timestamps compare the same instant across session time zones.
+Missing, ambiguous, retained-only or mismatched custody cannot satisfy these
+source predicates. No scientific decision or claim tier changes. Procedural
+ready does not establish scientific validity. Reports retains its complete
+Save/Generate and pre-Storage byte verification.
+
+The ordinary final cohort passes122 tests across three executed files. Two
+native files collect145 skipped cases and execute zero native assertions.
+Scoped ESLint passes for the four changed TypeScript files. Source mutations
+include harmless survivors, intended binding/access failures and exact byte
+and mode restoration. The private packet retains the initial three authoring
+failures, stopped classifier windows and a corrected fixture-call guard.
+Source checks cannot establish PostgreSQL compilation, installed trigger order,
+ACL/RLS behavior, races, immutable bytes or scientific validity.
+
+Native fixture support now records managed instruments through the existing
+commands while preserving legacy decisions on the legacy branch. Eleven new
+native cases are authored and UNRUN, including same-run failed-attempt retry,
+retained-only/missing/other-output/wrong-method/ambiguous/empty custody, ordinary
+role refusals, harmless commentary, timestamp representation and guard bypass.
+The model-truth fixture changes only its guided setup and expected artifact
+census. Root must join those hunks with its separately owned cancellation
+fixture changes. This candidate neither uses target61421 nor claims that root's
+unchanged-target run tests the new migration.
+
+Private packet: `managed-comparison-readiness-bridge-20261022-30` under the
+OpenPlan state directory. Compiler, build, database/Supabase/migration apply,
+HTTP, browser, worker, model/provider, hosted, CI and release execution remain
+UNRUN. No commit, push or PR occurs. The R29 Reports route preparation, general
+prepared-science service, complete M3/S1 and full v1 obligations remain open.
+
+
+## October 22 UTC: R31 viewer-fixture response, source only
+
+Independent R31 returns REVISE with one P2 in the new native viewer case. The
+restrictive snapshot UPDATE USING policy filters a viewer's row before any row
+trigger runs. The earlier R30 description of a population-trigger23514 refusal
+is incorrect for this case. R31 identifies no additional reachable production
+or security P1/P2 in its frozen SQL source review. That review does not establish
+installed or native behavior, and root owns final admission of this response.
+
+The case now uses direct UPDATE and GET DIAGNOSTICS to require zero affected
+viewer rows. Full snapshot and ordered link-row readbacks must equal their
+before images. The snapshot must stay draft with four links. The case then
+restores the owner, keeps the strict cp_ready helper, and requires persisted
+ready status with four links. The existing cp_unchanged readback still protects
+retained runs and artifacts. Shared fixture helpers, policies and production
+SQL remain unchanged. This is an authored native correction, not an executed
+RLS result.
+
+The narrow ordinary source guard and existing population migration cohort pass
+19 tests, with zero failures or skips. Scoped ESLint passes for the two affected
+TypeScript files. A harmless source mutation survives; seven targeted faults
+produce seven named source assertion failures. Exact bytes and modes restore.
+The guard protects target-case row-count, state, full readback and owner checks.
+It cannot establish SQL semantics, effective policies or successful native
+execution. No prior33-predicate campaign or unchanged Reports cohort repeats.
+
+Migration436 remains exact SHA256
+`b2b9e1f11984a9820ee04d1d9a4094f20e2b45afcfe922c39e2cf79f31a18557`.
+All435 historical migrations and the other R30 source paths remain frozen.
+Root will join the bounded native-case response and guided-setup hunks with
+model3a11cf9812064989bdcbb2351a7e1a2d87b66aef. This response does not copy an
+older whole model-truth test over root's cancellation/race work. Root R62 owns
+the configured compiler; no compiler runs here. Native, database, migration
+apply, HTTP/browser, workers/models/providers, CI and release remain UNRUN.
+Migration436 is not installed, and targets59921/61421 remain excluded from the
+future fresh-target recipe until root grants admission. Full M3/S1, prepared
+science, accepting Reports routes and full v1 remain open.
+
+Private response: `managed-comparison-viewer-response-20261022-32` under the
+OpenPlan state directory. R31 and all R30 records remain unchanged.
