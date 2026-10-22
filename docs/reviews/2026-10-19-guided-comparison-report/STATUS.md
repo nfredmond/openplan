@@ -838,3 +838,53 @@ Configured types, native behavior and sensitivity remain separately admitted
 work. The four KPI-after-Save transitions remain blocked under the reviewed
 legitimate commands. No authority, producer, retention or scientific rule is
 weakened to create coverage. Hosted, race, M3/S1 and full v1 remain open.
+
+
+## R124 records bounded native admission and the retained exception, October 22, 2026
+
+R112's complete six-case native baseline passes at fixture664c3f9. It reaches
+real verifier/Create/Save/HTML Generate/download/reopen, four distinct KPI
+verifier/Create/Save refusals and exact owned-file restoration after the entry
+refusal. R113 adds harmless/current-candidate fault/restored sensitivity for
+that positive pipeline. Those dated results do not become a seven-case pass.
+
+At fixture31494cb/app15abf90, R120's focused seventh case passes once; the other
+six titles are selector-skipped. A real successful project report_sections
+read follows the pinned awaited entry verifier. Its mandatory hook moves one
+owned file, the real reader returns the exact ENOENT, and Generate refuses409
+before Storage. The file restores exactly. No report artifact or Storage
+object is created. R120's later private all-files0600 packaging gate fails on
+four controller text modes inside a0700 directory and remains recorded.
+
+R121 stops before controls on a private controller-authoring SyntaxError. Root
+then runs R122 directly: harmless passes with six selector-skips; deleting
+only the two HTML pre-Storage recheck/refusal lines makes the selected case
+fail its expected409 assertion with actual200; restored passes with six skips.
+The fault produces one real generated audit, HTML artifact and Storage object,
+all retained in its synthetic scope. Entry and PDF checks remain unchanged.
+All source bytes/modes, current raw index, dependencies, prior rows/files and
+437 installed authorities/history remain exact at terminal custody. All three
+owned files restore, including after the intended assertion failure.
+
+R122 also contains a root orchestration exception. An optional saved-digest
+reader uses the wrong JSON key and exits1 after30 preflight checks pass. The
+parent tool batch nevertheless starts the already authorized controls. Later
+saved-data comparison confirms the digest with no new SQL or subject run.
+This does not erase the error. Strict first-private-failure compliance and
+clean orchestration fail and must not be claimed. Future dependent dispatch
+must be conditional on the preceding tool exit.
+
+R123 independently audits the retained evidence and accepts bounded
+observations WITH that orchestration exception. It finds no new reachable
+P1/P2 and awards exactly one intended HTML-guard kill. Its614 comparisons are
+inert evidence comparisons, not runtime tests. It requests no cosmetic rerun.
+The full private R122 and R123 reports preserve raw results, objections,
+restorations, actual effects, custody and scope limits.
+
+The named deterministic file-availability boundary is supported. This is not
+a full seven-case baseline, a numeric verifier/upload-call count, an inode or
+no-clobber guarantee, general TOCTOU/race protection, or full Auth/Storage-volume
+census. Four KPI-after-Save transitions remain blocked under the reviewed
+legitimate lifecycle; no revocation or terminal-state bypass is invented.
+Legacy/cross-account, PDF/RTP/campaign, identified browser/hosted, independent
+scientific M3/S1, full v1 and release acceptance remain separate and open.
