@@ -655,3 +655,22 @@ usability. No compiler, native, browser, model or worker runs occur. Earlier
 CI failures and native12/native16 evidence remain retained at their own tiers.
 Full M3/S1, general prepared science and Reports accepting-handler evidence
 remain open. Reports accepting KPI handler and Save/Generate counts stay zero.
+
+
+### Exact worker publication census, October 22, 2026 UTC
+
+PR367's worker job119854381100 tests the same retained worker source and
+fails the old three-call census. Managed Artifact Extraction adds a fourth
+write_run_state call. The test now requires the four named stage owners,
+checks full retained setup/package/assignment records, and keeps the
+Artifact Extraction call inside its managed-only guard. Production main.py
+is byte-identical to R126's admitted preimage.
+
+This exact test backport passes all five unit cases on the Model parent.
+R126 separately records a harmless survivor, four named census/scope/payload
+faults and exact restoration against identical test/production bodies.
+The wider R126 unit cohort passes35 tests across three files. Those are
+ordinary source/local-publication checks, with no new engine, scientific,
+SQL/native/HTTP, compiler, build or browser execution. Existing native
+results retain their dated scope. The full prepared scientific lifecycle,
+worker acceptance and M3/S1 remain unfinished. Current-head CI is pending.
