@@ -177,3 +177,146 @@ Root reviewed both full reports and inspected desktop and phone captures. This
 records bounded local compilation and affected retained-view admission, not
 current-main, hosted, full A0 or release acceptance. Fresh exact-head CI remains
 required. All admissions remain disabled. The 430 SQL bodies remain unchanged.
+
+
+## R80 source repair stops at its first ordinary assertion failure, October 22
+
+R80 owns the isolated `t3-477a98ae` checkout at
+`13fe1eac5fe4c47867ceec0659273d0ed22dc391`, app tree
+`37f2169f11ff61203f87259691815e0099fa3915`. Live T3 settings confirm
+GPT-6.1 Sol, high reasoning and priority. The raw index backup precedes Git
+status. No root foreign file enters this patch.
+
+The retained PR365 live RLS job `119700898321`, run `39741716281`, tests
+synthetic merge `125b23fd3f643ae6f758da661a4c17bbf8084376` for that head.
+It reports 119 passing files, 1,610 passing tests and 134 skipped tests.
+The HTTP suite fails in beforeAll on the missing workdir label; its nine cases
+do not execute. Root's explicit private-log scrub preserves these failure
+frames. The current scrubbed log SHA256 is
+`06ab009fefc8e84e8c40331468954025594a80bf60c1637b9ba05aa41e3969bf`.
+R80 fetches no CI log and performs no GitHub/CI polling.
+
+The lockfile and installed CLI identify version 2.111.0. Its local command help
+supports explicit workdir on start, reset, status and stop. The exact upstream
+tag's Go DockerStart writes CLI-project and Compose-project labels without a
+workdir label. The TypeScript start path also writes the workdir label. Source
+does not establish that adding explicit workdir makes the Go path emit it.
+The unfinished candidate binds an explicit config path, config project/ports,
+CLI status endpoints, DB and gateway project labels, published ports, network
+IDs and running state. A present workdir label must match. It also passes the
+same explicit CI workdir to start, reset and stop. Both native opt-ins and all
+nine HTTP cases, budgets and cleanup remain unchanged.
+
+The first ordinary run applies a harmless comment mutation before any fault
+control. It reports two files, 47 passing assertions, one failed assertion,
+and zero skipped, pending or todo assertions. The new helper suite reports
+40 passes and one failure; the package-script contract reports seven passes.
+The failure is `refuses wrong database`: its fixture replaces the first
+`/postgres` occurrence in a database URL, changing the username rather than
+the `/postgres` database path. It therefore does not construct its named
+fault. This is an actual baseline assertion failure. R80 stops without fixing
+or rerunning the subject. The harmless edit restores exact prepared bytes and
+mode in finally; it does not establish a surviving control.
+
+Four planned fault controls, the final affected/adjacent cohort, scoped lint,
+compiler, native and new CI remain PENDING or NOT RUN. This patch is unfinished
+and is not accepted for landing. No runtime, Docker operation, SQL, application
+HTTP, browser, provider, worker, build, install, commit, push, PR change or
+release occurs. The CLI help/version reads and upstream source downloads are
+documentary inspection only. Root owns the next authorized repair/review and
+all compiler/native/CI work.
+
+The pure guard cannot prove historical startup-directory provenance when an
+older container has no workdir label and two directories share identical
+project/config identity. Its checks also cannot prove service health, SQL/RLS
+behavior, HTTP custody or race-free target identity after inspection. The
+source wiring contract checks source text, not execution order or runtime
+behavior. These limits remain explicit; missing required project, port,
+network or running evidence refuses admission.
+
+The private R80 packet retains the first failure, exact restoration, source
+research, source/index pins, unfinished patch and actual ownership handback.
+R66's artifact and R75's evidence remain immutable. Ordinary Vitest cache
+accounting stays separate from those artifacts.
+
+### Root's dated R75 acceptance remains bounded
+
+Root reports full reading of R75's report, chain and handback, visual review
+of three receipt/Delivery images, and independent verification of 224 manifest
+pins. `R75_ROOT_ACCEPTANCE.json` in the root private packet records bounded
+local after-effect reply-loss acceptance on the same source/app tree and R66
+BUILD_ID. It records one business POST, one approval, two SDK requests, one
+automatic metadata POST and no effect replay. Current unread reconcile-body
+and other abort limits, and the ignored next-env intake gap, remain explicit.
+This records root's dated finding. It grants no further R75 operation, runtime
+work, hosted result, current-main result or release acceptance.
+
+
+## R80 continuation 01 completes bounded ordinary checks, October 22
+
+Root admits this continuation after reading the original R80 report, patch,
+CLI research and controls. The original failed run and private R80 packet stay
+unchanged. The new private packet is
+`a0-ci-container-binding-repair-20261022-r80-continuation-01`.
+The checkout remains `t3-477a98ae` at
+`13fe1eac5fe4c47867ceec0659273d0ed22dc391`; the base app tree remains
+`37f2169f11ff61203f87259691815e0099fa3915`. The starting six-path delta matches
+R80's frozen handback. Live settings confirm GPT-6.1 Sol, high and priority.
+The new raw index backup precedes status.
+
+The sole test correction constructs a URL from the existing DB_URL, sets
+pathname to `/other`, then serializes it. It preserves username and the other
+status fields. The original replace operation changed the username; that
+failed baseline remains recorded above. No binding-helper behavior changes
+accommodate the mistaken input. The source helper, native HTTP file, workflow
+and script contract restore to the exact frozen R80 candidate after controls.
+
+The harmless comment control runs first and survives: two files, 48 passes,
+zero failures/skips/pending/todo. Five precise faults then run separately:
+
+| Fault | Actual result | Intended failed assertion |
+|---|---|---|
+| Accept absent CLI project label | 46 pass, 2 fail | Database and gateway missing supported labels |
+| Remove DB status/config port comparison | 46 pass, 2 fail | Wrong configured DB port and wrong status DB port |
+| Remove final network-ID comparison | 47 pass, 1 fail | Different network IDs |
+| Remove only actual assertChatHttpTargetBinding invocation | 47 pass, 1 fail | Native wiring contract requires that invocation |
+| Remove only explicit CI start workdir | 47 pass, 1 fail | Lifecycle contract requires that start command |
+
+Each fault has zero skipped, pending or todo assertions, no unknown status and
+no suite error. The DB-config fault admits the wrong configured port. The
+wrong-status-port assertion instead encounters the later published-port
+refusal, exposing loss of the required earlier config comparison. The two
+wiring faults run independently, so an earlier workflow failure cannot hide
+the missing native invocation. Exact prepared bytes and filesystem mode
+restore in finally after every run. No unexpected behavior, survivor, restore
+failure or subject retry occurs in this continuation.
+
+The final affected and adjacent ordinary cohort covers target binding,
+package scripts, chat RPC, chat task and chat transport. It reports five
+files and 76 passes, with zero failures/skips/pending/todo or unknown statuses.
+All ordinary runs use serial files, maxWorkers=1, no file parallelism, a 6 GiB
+Node heap and no cache. Both native opt-ins are removed from their subprocess
+environment. Scoped strict ESLint exits 0; whitespace diff checks exit 0.
+No compiler, build, install, Docker, SQL, application HTTP, native, browser,
+provider, worker, CI, PR operation, commit, push or delegation runs here.
+
+These controls cover five specific seams. They do not mutation-test the
+remaining workdir/config, project value, Compose label, malformed config,
+API transport, published-port or running-state guards. The absent-label cases
+remove both supported project labels; they do not independently isolate each
+single missing label. Reset/stop workdir checks stay ordinary source assertions
+without separate fault controls. The final network comparison is mutation-tested;
+stopped-target refusal has ordinary coverage only. The wiring contract detects
+source text, not actual invocation order or runtime execution. Real Docker
+shapes, service health, historical workdir provenance for unlabeled containers
+with duplicated config, identity races, SQL/RLS behavior and HTTP effects remain
+unproved. Root's pinned Go/TS label diagnosis remains a bounded source finding.
+
+Full source/index ownership returns to root before private packaging. Root
+owns configured types, independent source review, native admission, commit and
+new CI. All 430 migration SQL bodies, authority, package and lock stay exact.
+R66's captured .next artifact and R75's source evidence retain their existing
+limits; this continuation performs no runtime or R75 operation. Ordinary Vitest
+cache accounting remains separate. The earlier unread reconcile-body, other
+abort and ignored next-env intake limits remain explicit. This ordinary result
+does not grant current-main, hosted, native, full A0 or release acceptance.

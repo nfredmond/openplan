@@ -3,6 +3,8 @@ import { parseChatRpcResult } from "@/lib/assistant/provider-chat-rpc";
 import { execFileSync } from "node:child_process";
 import { createHmac, randomUUID } from "node:crypto";
 import { isAbsolute } from "node:path";
+import { readFileSync, realpathSync } from "node:fs";
+import { join } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { getLocalSupabaseEnv, liveClient, LIVE_RLS, type LocalSupabaseEnv } from "./local-supabase-env";
@@ -13,6 +15,7 @@ import { chatSessionRpc, chatTranscript, readChatSnapshot } from "@/lib/assistan
 import { checkChatStream } from "@/lib/assistant/provider-chat-transport";
 import { invokeReservedChatTool, retainChatToolReservation } from "@/lib/assistant/chat-tools";
 import { executableProjectSubmittalAction } from "@/lib/assistant/project-submittal-receipt";
+import { assertChatHttpTargetBinding } from "./helpers/chat-http-target-binding";
 
 // Synthetic local identities and HTTP only. Neither admission alone starts SQL.
 // No provider exchange, mounted approval route or installed backend is exercised.
@@ -30,11 +33,11 @@ live("saved API chat custody over signed local HTTP", () => {
   const workdir = process.env.OPENPLAN_SUPABASE_WORKDIR ?? "";
   if (!isAbsolute(workdir)) throw new Error("Chat HTTP fixtures require an explicit isolated stack path.");
   env = getLocalSupabaseEnv(); container = resolveLocalDbContainer();
-  const inspected = JSON.parse(execFileSync("docker", ["inspect", container], { encoding: "utf8" }))[0];
-  expect(inspected.Config.Labels["com.supabase.cli.workdir"]).toBe(workdir);
-  expect(inspected.State.Running).toBe(true);
-  expect(inspected.NetworkSettings.Ports["5432/tcp"].some((binding: { HostPort: string }) => binding.HostPort === new URL(env.DB_URL).port)).toBe(true);
-  if (!["127.0.0.1", "localhost"].includes(new URL(env.API_URL).hostname)) throw new Error("Chat HTTP fixtures require a local API.");
+  const inspect = (name: string) => JSON.parse(execFileSync("docker", ["inspect", "--format",
+   '{"Name":{{json .Name}},"Config":{"Labels":{{json .Config.Labels}}},"State":{"Running":{{json .State.Running}}},"NetworkSettings":{{json .NetworkSettings}}}', name], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }));
+  const configPath = realpathSync(join(workdir, "supabase/config.toml"));
+  assertChatHttpTargetBinding({ workdir, configPath, configText: readFileSync(configPath, "utf8"), status: env, container,
+   database: inspect(container), gateway: inspect(container.replace(/^supabase_db_/, "supabase_kong_")) });
   // The CLI returns local signing material into memory only, never evidence logs.
   const status = execFileSync("npm", ["exec", "--", "supabase", "status", "-o", "env", "--workdir", workdir], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
   const value = status.split(/\r?\n/).find(line => line.startsWith("JWT_SECRET="))?.slice("JWT_SECRET=".length);

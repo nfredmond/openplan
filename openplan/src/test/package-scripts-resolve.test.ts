@@ -188,6 +188,9 @@ describe("package.json scripts: every path they name resolves", () => {
     const nextJob = following.findIndex(line => /^  \S/.test(line));
     const job = nextJob < 0 ? following : following.slice(0, nextJob);
     expect(job.join("\n")).toContain("      run:\n        working-directory: ./openplan");
+    for (const command of ["start", "db reset", "stop"]) {
+      expect(job.filter(line => line === `        run: npm exec -- supabase ${command} --workdir "\${{ github.workspace }}/openplan"`)).toHaveLength(1);
+    }
     const steps = job.flatMap((line, index) => line === "      - name: Run live RLS isolation proof" ? [index] : []);
     expect(steps).toHaveLength(1);
     const followingStep = job.slice(steps[0] + 1);
@@ -208,6 +211,11 @@ describe("package.json scripts: every path they name resolves", () => {
       const source = stripSourceComments(readFileSync(path.join(APP_ROOT, file), "utf8"));
       expect(source).toMatch(/^const live = LIVE_RLS && process\.env\.OPENPLAN_CHAT_NATIVE_FIXTURE === "1" \? describe : describe\.skip;/m);
       expect(source).toMatch(/if \(!isAbsolute\((?:workdir|process\.env\.OPENPLAN_SUPABASE_WORKDIR \?\? "")\)\)/);
+      if (file.endsWith("-http-native.test.ts")) {
+        expect(source).toContain('const configPath = realpathSync(join(workdir, "supabase/config.toml"))');
+        expect(source).toContain('assertChatHttpTargetBinding({ workdir, configPath, configText: readFileSync(configPath, "utf8"), status: env, container,');
+        expect(source).toContain('database: inspect(container), gateway: inspect(container.replace(/^supabase_db_/, "supabase_kong_"))');
+      }
     }
   });
 
