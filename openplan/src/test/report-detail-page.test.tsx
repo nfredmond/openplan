@@ -1009,7 +1009,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     expect(screen.queryByText(/Exact four-output selection verified/)).not.toBeInTheDocument();
     expect(screen.queryByText(/KPI receipts, assumptions, population and artifact bytes match/)).not.toBeInTheDocument();
     if (tab === "packet") expect(screen.getByText("Saved binding checked; live evidence unassessed")).toBeInTheDocument();
-    if (tab === "history") expect(screen.getByText(/Live artifact bytes and custody are unassessed on this page/)).toBeInTheDocument();
+    if (tab === "history") expect(screen.getByText(/Live files and their source history are unassessed on this page/)).toBeInTheDocument();
   });
 
   it.each(["legacy", "explicit zero", "explicit unchanged", "set timestamp", "snapshot timestamp", "snapshot removed", "assumption timestamp", "assumption count", "package count", "indicator count", "comparison removed"])(

@@ -1062,7 +1062,7 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
     status: guidedProblem || frozenGuided?.bindingSha256 !== guidedSelection?.bindingSha256 ? "updated" : "unchanged",
     detail: guidedProblem ?? (frozenGuided?.bindingSha256 !== guidedSelection?.bindingSha256
       ? "The saved report selection differs from the retained artifact. Historical downloads keep their original comparison."
-      : "The saved binding digest matches the digest recorded on the retained artifact. Live artifact bytes and custody are unassessed on this page; generation verifies them again.") });
+      : "The saved binding digest matches the digest recorded on the retained artifact. Live files and their source history are unassessed on this page; generation checks them again.") });
 
   const packetGeneratedAt = latestArtifact?.generated_at ?? report.generated_at;
   const artifactSafetyDriftItem = buildArtifactSafetyReadDriftItem(latestArtifact?.metadata_json);
@@ -1239,7 +1239,7 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
           label: guidedSelection ? "Comparison evidence unassessed" : unassessedItems.length > 0 ? "Source evidence unassessed" : PACKET_FRESHNESS_LABELS.CURRENT,
           tone: guidedSelection || unassessedItems.length > 0 ? "warning" as const : "success" as const,
           detail: guidedSelection
-            ? "The saved comparison binding is intact. Live artifact bytes and custody are unassessed on this page; generation verifies them again."
+            ? "The saved comparison binding is intact. Live files and their source history are unassessed on this page; generation checks them again."
             : unassessedItems.length > 0 ? "Historical source baselines are incomplete. Missing fields do not establish a source change or unchanged evidence."
             : "No live source drift is currently visible against the latest packet snapshot.",
         }

@@ -1,6 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+// The real server-page binding helper retains its production server boundary.
+vi.mock("server-only", () => ({}));
+
 // This suite owns a different report path. An unexpected guided verification
 // must fail instead of reaching private artifact readers or service credentials.
 vi.mock("@/lib/reports/guided-comparison-server", () => ({

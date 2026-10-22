@@ -386,7 +386,7 @@ export default async function ReportsPage({
           ? { label: PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED, tone: "warning" as const,
               detail: guidedComparison.problem ?? "The saved guided comparison differs from the retained artifact." }
           : { label: "Comparison evidence unassessed", tone: "warning" as const,
-              detail: "The saved comparison binding is checked. Live artifact bytes and custody remain unassessed; save and generation verify them again." }
+              detail: "The saved comparison binding is checked. Live files and their source history remain unassessed; save and generation check them again." }
         : trackedPacketFreshness;
       const grantsFollowThrough = resolveRtpFundingFollowThrough(fundingSnapshot);
       const sourceReviewDriftSummary = buildReportRegistryDriftSummary({
