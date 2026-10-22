@@ -251,8 +251,15 @@ live("chat custody native fixtures", () => {
     PERFORM public.assistant_chat_session('finish_tool','${id.turn}',jsonb_build_object('callId',c->>'callId','handle',c->>'handle','result',jsonb_build_object('envelope',${literal(JSON.stringify(envelope))}::jsonb),'envelopes',jsonb_build_array(${literal(JSON.stringify(envelope))}::jsonb)));
    END $$;`;
   }
-  sql += `DO $$ BEGIN IF ${dispatch(7, randomUUID())}->>'released' IS DISTINCT FROM 'false' THEN RAISE EXCEPTION 'Seventh invocation admitted'; END IF; END $$;
-   RESET ROLE; DO $$ BEGIN
+  // Check the sixth terminal before probing dispatch with its retained request.
+  // Building another transcript would reject the deliberately unfinished tool.
+  sql += `RESET ROLE; DO $$ DECLARE retained_request text; BEGIN
+    IF (SELECT model_steps FROM public.assistant_chat_turns WHERE id='${id.turn}')<>6 OR (SELECT count(*) FROM public.assistant_chat_steps WHERE turn_id='${id.turn}')<>6 THEN RAISE EXCEPTION 'Model-step count is not six'; END IF;
+    IF (SELECT state FROM public.assistant_chat_turns WHERE id='${id.turn}')<>'interrupted' THEN RAISE EXCEPTION 'Tool-bearing sixth response became success'; END IF;
+    SELECT request_canonical INTO STRICT retained_request FROM public.assistant_chat_steps WHERE turn_id='${id.turn}' AND sequence=6;
+    SET LOCAL ROLE authenticated;
+    IF public.assistant_chat_session('dispatch','${id.turn}',jsonb_build_object('sequence',7,'stepId','${randomUUID()}','request',retained_request))->>'released' IS DISTINCT FROM 'false' THEN RAISE EXCEPTION 'Seventh invocation admitted'; END IF;
+    RESET ROLE;
     IF (SELECT model_steps FROM public.assistant_chat_turns WHERE id='${id.turn}')<>6 OR (SELECT count(*) FROM public.assistant_chat_steps WHERE turn_id='${id.turn}')<>6 THEN RAISE EXCEPTION 'Model-step count is not six'; END IF;
     IF (SELECT state FROM public.assistant_chat_turns WHERE id='${id.turn}')<>'interrupted' THEN RAISE EXCEPTION 'Tool-bearing sixth response became success'; END IF;
    END $$;`;

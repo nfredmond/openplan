@@ -226,3 +226,78 @@ cache-failure iteration remain historical failures. Profile admission stays
 CLOSED, with no admission seed. All 19 contexts, API choice, installed Codex,
 Claude Code and OpenCode, the full v1 contract and the sole roadmap remain
 binding. The join establishes source and ordinary evidence only.
+
+
+## R30 repairs the six-step fixture reachability and retains native limits
+
+October 22, 2026 UTC. The bounded fixture repair passes its one admitted full
+native invocation: **21 registered, 21 passed, zero failed/skipped/todo**, exit 0,
+9.615 seconds process wall. The named saved-API product outcome remains
+unaccepted. Profile admission stays CLOSED. R29's 20-pass/one-failure result and
+`Tool result is uncertain` frames remain unchanged historical evidence.
+
+Only `openplan/src/test/provider-chat-custody-native.test.ts` changes before this
+append. HEAD remains `2cef50b6a362117cec717917a4b29e97a677b05d` on
+`work/v1-a0-chat-provider-scope-20261021`. Live T3 settings confirm GPT-6.1 Sol,
+high reasoning and priority service. Production TypeScript, all 430 migration
+sources, locks, connectors and original approval/receipt authority stay exact.
+No compiler, build, browser, real provider/account/profile operation, commit,
+push, PR/CI operation or delegation runs.
+
+The old six-step case deliberately completes tools one through five and leaves
+the sixth tool reserved. Exact production SQL interrupts the tool-bearing sixth
+terminal, and the production drive stops before executing that tool or requesting
+another model step. The old final expression constructs a new transcript before
+calling dispatch. `expected_messages` correctly refuses that unfinished tool,
+so the public refusal and later state/count assertions were unreachable.
+
+The repaired case checks the original six-step ledger and interrupted state
+immediately after the sixth terminal. An installer-authorized read obtains the
+actual sixth `request_canonical` into a local variable. The case switches back
+to authenticated and calls the public dispatch RPC with sequence seven and those
+retained bytes. It requires actual `released=false`, then repeats both original
+ledger/state checks. It constructs no seventh transcript or tool result and
+makes no seventh provider call. No exception becomes a passing assertion. All
+other 20 cases, helpers, receipts, vectors, 20-second threshold, 60-second lease,
+6/7 model boundary and 12/13 tool boundary remain unchanged.
+
+The focused baseline, comment-only survivor and exact-restored focused run each
+pass one selected case with 20 selector skips. They are not full-suite passes.
+Temporary installed `assistant_chat_private.session` body controls run only on
+the admitted R28/R29 port-59722 stack. The state fault fails with
+`Tool-bearing sixth response became success`; counter corruption fails with
+`Model-step count is not six`; changing the actual interrupted-dispatch refusal
+flag fails with `Seventh invocation admitted`. Each named failure has one failed
+selected case and 20 selector skips. The last control earns authorization-flag
+credit only, with no seventh model exchange.
+
+The first refusal-control attempt changes the later non-running guard and
+survives because `require_access` returns earlier. That survivor and the private
+assertion stop remain retained with no kill credit. Correcting the same refusal
+control to target the earlier actual return produces the named failure above.
+No fixture oracle changes for that correction. After every temporary body,
+ordinary restore transactions reinstate the actual baseline pg_get_functiondef.
+OID, owner, ACL, signature and search path remain exact. All 430 history rows,
+eleven seed bodies, catalogue/privilege/identity bridge captures and all nine
+empty chat tables match R29 after each restoration. Strict scoped lint exits 0.
+The full invocation follows the restored focused pass and lint, without retry.
+
+The private R30 packet is
+`/home/nathaniel/.local/state/openplan/a0-six-step-fixture-reachability-20261022-r30/`.
+It retains REPAIR.patch, source pins, raw runner frames, command terminals,
+controls, restoration/custody captures and the prior failure references.
+The fixture changes from SHA-256
+`0f9490f0409319d7629a2b658293a185b857c99ad540c727617b7a77f3bf45a4` to
+`376b18bef5b304df07a3b42ba4db3f4829943819513acb5f3b3b0be7f064c695`, with mode 0664 unchanged.
+The SQL remains SHA-256
+`abb28f9d4454851d5da435a8034d3b2d0d13dbc7ab944ce5fe37c0dfb0b53da8`.
+The six owned containers and two volumes stay running; no fixture rows or open
+fixture transactions remain.
+
+This establishes the bounded native fixture and these three oracle sensitivities.
+It does not establish HTTP/PostgREST identity/NUL transport, mounted human
+approval/registry/record navigation, real provider/account/billing, every one of
+19 contexts or installed Codex/Claude Code/OpenCode, races/staff contention,
+upgrade/restore, desktop/390px/practitioner journeys, hosted, science, release or
+full-v1 acceptance. Full v1 and API/installed provider choice remain binding.
+PR363 priority and profile admission remain with root. No human decision is missing.
