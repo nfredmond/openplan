@@ -146,3 +146,56 @@ previous runtime results. The old metadata test cohorts use the old installed
 framework; they do not establish new-framework runtime compatibility. A fresh
 install, full QA/build, shuffled and applicable native/worker checks on the
 final release commit remain pending. There is no push, tag or hosted claim.
+
+## Final-main ODM publication-clock test repair, October 22 UTC
+
+Final-main ODM run `39705830586`, job `119585529008`, fails at
+`fa4ffb634f0e1a930eb028e221385b8937d32447`. The maintained intake driver's
+`expired-settings-accepted` fault attempt receives `Source custody deadline
+exceeded` instead of reaching `Expired settings reached source intake`.
+The saved log does not distinguish the outer intake writer from the source
+installation writer. Both check time before settings publication. The test's
+30-millisecond wall-clock budget can expire there before its intended oracle.
+The earlier successful candidate run does not supersede this failure.
+
+The test now holds monotonic time within its own context and advances it by the
+same 50 milliseconds only after the real `plan.json` publication returns. The
+30-millisecond deadline, exact refusal expression, real publication, no-fetch
+assertion and absent source-request-directory assertion remain. An added
+assertion reads back the saved original settings. Production checks, cancellation,
+limits, refusal text and the maintained driver remain unchanged.
+
+Original and repaired full-file baselines each pass 39 tests with zero skips.
+A harmless test comment survives all 39. A private copy of the actual intake
+source with exactly the post-publication deadline check removed fails the named
+test at `Expired settings reached source intake`. Checkout production bytes
+stay unchanged. Exact test bytes and mode restore; the focused restored case
+passes. A separate identity assertion confirms the shared monotonic callable
+restores after the test.
+
+One full maintained `verify_controls.py` invocation passes its four positive
+cohorts, 52 intended fault detections across 39 test names, and eight failure
+oracle controls. Every test invocation reports zero skips. Adjacent retained
+source, runtime preparation and URL custody suites pass 44, 25 and 40 tests,
+respectively, with zero skips. Local execution uses Python 3.14.4 and bytecode
+writes disabled. Full-file ext4 baselines take 15.755 and 15.691 seconds, so
+the remaining controls use a private tmpfs fixture directory within the
+driver's unchanged 15-second child bound. Logs remain in the private
+`v070-publication-clock-repair-20261022-03` state directory. No unexpected local
+test failure or driver retry occurs; deliberate fault exits remain failures.
+
+Two handback custody audits fail their raw-index-byte assertion. Diagnosis finds
+two refreshed stat-cache entries for the driver's restored production files;
+staged paths, object IDs, flags and index extensions remain identical. The
+final Git inspection refreshes those entries again despite optional-lock
+suppression. The initial raw index is restored after the last Git inspection
+and checked directly. Both custody-audit failures remain recorded separately
+and receive no test or driver retry.
+
+The repaired test isolates the deadline after publication. It does not measure
+real elapsed time or prove earlier writer expiry, filesystem stall interruption
+or crash durability. The adjacent suites retain separate writer and cancellation
+checks. This repair provides local unit/control evidence, not CI, native engine,
+database, browser, hosted-alias, scientific or release acceptance. No CI rerun,
+build, service, tag or publication occurs. Full v1, the sole roadmap, scientific
+requirements and the existing 19-context review scope remain unchanged.
