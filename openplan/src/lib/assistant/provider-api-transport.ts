@@ -125,7 +125,18 @@ function createProtectedApiRequest<T>(args: ProviderApiRequestOptions, limits: R
     for (const key of headers.keys()) if (!["content-type", "authorization", "user-agent"].includes(key)) fail("api_request_headers_invalid");
     if (headers.get("content-type") !== "application/json" || headers.get("authorization") !==
       (apiKey === null ? null : `Bearer ${apiKey}`)) fail("api_request_headers_invalid");
-    const resolved = await resolveEndpoint(endpoint, policy, lookup, signal);
+    return pinnedProviderExchange({ endpoint, model, apiKey, signal, timeoutMs, policy, lookup }, body, exchange);
+  };
+}
+
+// Policy-neutral exchange only. Callers must own their strict request and
+// response profile and single-use reservation. No profile bypass is accepted.
+export async function pinnedProviderExchange<T>(args: ProviderApiRequestOptions, body: string,
+  exchange: (request: ClientRequest, agent: HttpAgent, signal: AbortSignal) => Promise<T>): Promise<T> {
+    const { endpoint, apiKey, lookup = defaultLookup } = args;
+    const signal = AbortSignal.any([args.signal, AbortSignal.timeout(args.timeoutMs ?? 55_000)]);
+    if (apiKey !== null && (!apiKey.length || apiKey.length > 8192 || /[^\x21-\x7e]/.test(apiKey))) fail("api_connection_invalid");
+    const resolved = await resolveEndpoint(endpoint, args.policy ?? providerApiNetworkPolicy(), lookup, signal);
     if (signal.aborted) fail("api_request_interrupted");
     // New non-global agents do not inherit NODE_USE_ENV_PROXY or global pools.
     const agent = resolved.target.protocol === "https:" ? new HttpsAgent({ keepAlive: false }) : new HttpAgent({ keepAlive: false });
@@ -143,7 +154,6 @@ function createProtectedApiRequest<T>(args: ProviderApiRequestOptions, limits: R
     const pending = exchange(request, agent, signal);
     request.end(body);
     return pending;
-  };
 }
 
 // A fresh closure belongs to one saved project attempt. Preserve this strict

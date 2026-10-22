@@ -37,12 +37,15 @@ import { getActionMetadata, resolveQuickLinkApproval } from "@/lib/runtime/actio
 import { renderChapterMarkdownToHtml } from "@/lib/markdown/render";
 import type { AssistantActionApprovalEvidence } from "@/lib/runtime/action-registry";
 import {
+  ChatReviewCancelled,
   consumeAssistantChatStream,
   describeAssistantChatToolActivity,
 } from "@/lib/assistant/chat-stream";
 import type { AssistantChatProposal } from "@/lib/assistant/chat-tools";
 import type { AnalysisCostThresholdWarning } from "@/lib/ai/cost-threshold";
 import { ProjectProviderPanel, type ProviderProposalReview } from "./project-provider-panel";
+import { ProviderChatPanel } from "./provider-chat-panel";
+import type { ChatApprovalBinding, ChatIntentReview } from "@/lib/assistant/provider-chat-intents";
 
 type AppCopilotProps = {
   workspaceId: string | null;
@@ -307,7 +310,8 @@ async function requestActionExecutionFingerprint(args: {
   workspaceId: string | null;
   action: AssistantQuickLinkExecuteAction;
   requireApproval?: boolean;
-}): Promise<AssistantActionApprovalEvidence> {
+  chatBinding?: ChatApprovalBinding;
+}): Promise<AssistantActionApprovalEvidence & { replayed?: boolean }> {
   const response = await fetch("/api/assistant/actions/approvals", {
     method: "POST",
     headers: { "content-type": "application/json", accept: "application/json" },
@@ -315,10 +319,11 @@ async function requestActionExecutionFingerprint(args: {
       workspaceId: args.workspaceId,
       action: args.action,
       requireApproval: Boolean(args.requireApproval),
+      ...(args.chatBinding ? { chatBinding: args.chatBinding } : {}),
     }),
   });
   const payload = (await response.json().catch(() => null)) as
-    | { approvalId?: string | null; inputHash?: string; error?: string }
+    | { approvalId?: string | null; inputHash?: string; error?: string; replayed?: boolean }
     | null;
   if (!response.ok || !payload?.inputHash) {
     throw new Error(payload?.error ?? "Failed to prepare Planner Agent approval evidence");
@@ -327,6 +332,7 @@ async function requestActionExecutionFingerprint(args: {
     approvalId: payload.approvalId ?? null,
     inputHash: payload.inputHash,
     executionSource: "planner_agent_quick_link",
+    ...(payload.replayed !== undefined ? { replayed: payload.replayed } : {}),
   };
 }
 
@@ -1566,7 +1572,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
 
   function cancelPendingApproval() {
     setPendingApproval((current) => {
-      current?.reject(new Error("Planner Agent action approval was cancelled."));
+      current?.reject(new ChatReviewCancelled());
       return null;
     });
   }
@@ -1585,7 +1591,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
       if (event.key === "Escape") {
         event.stopPropagation();
         setPendingApproval((current) => {
-          current?.reject(new Error("Planner Agent action approval was cancelled."));
+          current?.reject(new ChatReviewCancelled());
           return null;
         });
       }
@@ -1600,7 +1606,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
   useEffect(() => {
     if (open) return;
     setPendingApproval((current) => {
-      current?.reject(new Error("Planner Agent action approval was cancelled."));
+      current?.reject(new ChatReviewCancelled());
       return null;
     });
   }, [open]);
@@ -1609,11 +1615,12 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
     workspaceId: string | null;
     action: AssistantQuickLinkExecuteAction;
     label: string;
-  }): Promise<AssistantActionApprovalEvidence> {
+    chatBinding?: ChatApprovalBinding;
+  }): Promise<AssistantActionApprovalEvidence & { replayed?: boolean }> {
     await new Promise<void>((resolve, reject) => {
       setPendingApproval({ label: args.label, action: args.action, resolve, reject });
     });
-    return requestActionExecutionFingerprint({ workspaceId: args.workspaceId, action: args.action, requireApproval: true });
+    return requestActionExecutionFingerprint({ workspaceId: args.workspaceId, action: args.action, requireApproval: true, chatBinding: args.chatBinding });
   }
 
   async function requestDeterministicResponse(args: {
@@ -2127,6 +2134,30 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
 
   const summaryLabel = preview?.title ?? workspaceName;
 
+  async function reviewRetainedChatIntent(review: ChatIntentReview) {
+    const approvalEvidence = await requestActionApproval({ workspaceId: review.workspaceId, action: review.action,
+      label: "Create one draft project submittal", chatBinding: { intentId: review.intentId, approvalRequestId: crypto.randomUUID(),
+        expectedExecutableHash: review.executableHash, expectedGrantDigest: review.grantDigest } });
+    // A replayed issuance is recovery-only, including a lost original reply.
+    if (approvalEvidence.replayed || !approvalEvidence.approvalId) return;
+    const claimResponse = await fetch("/api/assistant/providers/chat/intents", { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ operation: "claim_execution", intentId: review.intentId, originalApprovalId: approvalEvidence.approvalId, expectedExecutableHash: review.executableHash }) });
+    const claim = await claimResponse.json() as { dispatch?: boolean; error?: string };
+    if (!claimResponse.ok) throw new Error(claim.error ?? "Check the retained original approval before continuing.");
+    if (!claim.dispatch) return;
+    try {
+      await dispatchRegistryAction(review.action, { onCompleted: () => {}, refreshAssistantPreview: async () => {
+        const refreshed = await refreshAssistantPreview(); return { quickLinks: refreshed.quickLinks };
+      } }, { approvalEvidence });
+    } finally {
+      // Registry void success and follow-up failures both require the original
+      // receipt. This request never retries the domain effect or mints consent.
+      const response = await fetch("/api/assistant/providers/chat/intents", { method: "POST", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ operation: "reconcile", intentId: review.intentId }) });
+      if (!response.ok) throw new Error("The original submittal result is uncertain. Open approved-submittal recovery.");
+    }
+  }
+
   function reviewProviderProposal(review: ProviderProposalReview) {
     const entryId = `provider-${review.id}`;
     setMessages(current => current.some(entry => entry.id === entryId) ? current : [...current, {
@@ -2210,6 +2241,10 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
             <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 grid-rows-[minmax(0,1fr)_auto]">
               <div role="region" aria-label="Planner Agent conversation" tabIndex={0} className="min-h-0 min-w-0 overflow-y-auto px-5 py-4 sm:px-6">
                 <div className="space-y-4 pb-2">
+                  {(target.kind === "workspace" || target.kind === "project" && target.id) && (target.workspaceId ?? workspaceId) ? (
+                    <ProviderChatPanel key={`chat:${target.workspaceId ?? workspaceId}:${target.kind}:${target.id ?? "workspace"}`} workspaceId={(target.workspaceId ?? workspaceId)!}
+                      projectId={target.kind === "project" ? target.id ?? null : null} onReview={reviewRetainedChatIntent} />
+                  ) : null}
                   {target.kind === "project" && target.id && (target.workspaceId ?? workspaceId) ? (
                     <ProjectProviderPanel key={`${target.workspaceId ?? workspaceId}:${target.id}`} workspaceId={(target.workspaceId ?? workspaceId)!} projectId={target.id} busy={responding} onReview={reviewProviderProposal} />
                   ) : null}

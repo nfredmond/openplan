@@ -1,5 +1,37 @@
 import type { AssistantChatProposal } from "@/lib/assistant/chat-tools";
 
+// The existing human sheet rejects before issuance when deliberately dismissed.
+// This typed result is distinct from a lost approval or execution response.
+export class ChatReviewCancelled extends Error {
+  constructor() { super("Planner Agent action approval was cancelled."); this.name = "ChatReviewCancelled"; }
+}
+
+export type RetainedChatProgress = { turnId: string; released: boolean; state: string; cursor: number; complete?: boolean;
+  question?: string; capturedAt?: string; modelSteps?: number; usageUnknown?: boolean; reportedOutputTokens?: number;
+  checkedResponses?: number; unconfirmedReservations?: number;
+  texts?: Array<{ stepId: string; text: string; terminal: "stop" | "tool_calls"; receiptHash: string }>;
+  events?: Array<{ sequence: number; kind: string; body: unknown; bodyHash: string; previousHash: string | null }>;
+  intents?: Array<{ intentId: string; state: string; executionState: string; receiptState: string; executableHash: string; originalApprovalId: string | null; recoveryHref: string }>;
+  recoveryHref?: string; failureCode?: string };
+
+/** Reconnect reads retained progress. Network EOF and text never confer success. */
+export function advanceRetainedChatProgress(previous: RetainedChatProgress | null, next: RetainedChatProgress): RetainedChatProgress {
+  if (!next || typeof next.turnId !== "string" || typeof next.state !== "string" || typeof next.released !== "boolean" ||
+    !Number.isSafeInteger(next.cursor) || next.cursor < 0) throw new Error("chat_progress_invalid");
+  if (previous && previous.turnId !== next.turnId) throw new Error("chat_progress_turn_mismatch");
+  if (!next.released) return { turnId: next.turnId, released: false, state: next.state, cursor: next.cursor, recoveryHref: next.recoveryHref, failureCode: next.failureCode };
+  const events = next.events ?? [];
+  for (let n = 0; n < events.length; n++) {
+    if (!Number.isSafeInteger(events[n].sequence) || events[n].sequence < 1 || (n > 0 && (events[n].sequence !== events[n - 1].sequence + 1 || events[n].previousHash !== events[n - 1].bodyHash))) throw new Error("chat_progress_chain_invalid");
+  }
+  if (previous?.released && next.cursor < previous.cursor) return previous;
+  if (previous?.released && previous.events?.length && events.length && (events[0].sequence !== previous.cursor + 1 || events[0].previousHash !== previous.events.at(-1)?.bodyHash)) throw new Error("chat_progress_cursor_gap");
+  const terminal = next.texts?.at(-1);
+  if (next.texts?.some(t => typeof t.text !== "string" || !["stop", "tool_calls"].includes(t.terminal) || !/^[a-f0-9]{64}$/.test(t.receiptHash))) throw new Error("chat_progress_terminal_invalid");
+  if (next.complete && (next.state !== "succeeded" || terminal?.terminal !== "stop" || !/^[a-f0-9]{64}$/.test(terminal.receiptHash))) throw new Error("chat_progress_terminal_missing");
+  return { ...next, events: [...(previous?.released ? previous.events ?? [] : []), ...events], complete: next.complete === true && next.state === "succeeded" };
+}
+
 /**
  * Pure client-side parser for the Planner Agent chat stream.
  *
