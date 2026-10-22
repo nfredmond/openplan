@@ -320,3 +320,83 @@ limits; this continuation performs no runtime or R75 operation. Ordinary Vitest
 cache accounting remains separate. The earlier unread reconcile-body, other
 abort and ignored next-env intake limits remain explicit. This ordinary result
 does not grant current-main, hosted, native, full A0 or release acceptance.
+
+
+## R89 binds each published host address to its status endpoint, October 22
+
+R89 responds to R85's one P2 source finding. A correct numeric host port alone
+does not establish that the selected DB or gateway publishes on the address
+used by its status URL. R85's interface-specific example can pass the earlier
+port-only guard. This is an admission defect at the source tier, not an
+observed native misroute or successful access to another database.
+
+The assigned checkout is `t3-477a98ae`, clean at
+`2c1e915efe48d42354bd1a09b125376498019480`, app tree
+`c9ec1b494ca4270907aa58c1552e9c276f516358`. Live settings confirm GPT-6.1 Sol,
+high reasoning and priority. Raw index backup precedes status. The previous
+R80, continuation, R85 and R86 packets stay unchanged. Root's prior configured
+type result belongs to the previous source; it does not admit this new delta.
+
+The test-only binding helper now retains optional HostIp evidence and requires
+the correct HostPort and a covering HostIp in the same published binding.
+Database and gateway each bind their own status URL. Literal IPv4 loopback
+`127.0.0.1` and IPv4 wildcard `0.0.0.0` bindings cover the supported loopback
+status endpoint. Missing, empty, unknown or noncovering addresses refuse.
+The fixture refuses localhost status hostnames because it performs no DNS
+resolution. IPv6 wildcard, IPv6 loopback, mapped IPv6 and IPv6 status URLs
+remain unsupported; no IPv6 publication implies IPv4 coverage here. This is a
+narrow fixture contract, not a production network restriction.
+
+The ordinary suite calls the real guard. New positive cases cover literal
+loopback, IPv4 wildcard and multiple bindings with one complete correct pair.
+Negative cases cover each target independently, including the cross-pair trap
+of correct address/wrong port plus wrong address/correct port. Unsupported
+status hostnames and address families refuse. Existing wrong-port cases now
+supply valid IPv4 address evidence so they continue to isolate a port error.
+Project, workdir, config-port, running-state and network guards remain intact.
+Both native opt-ins, the invocation, all nine HTTP bodies, budgets and cleanup
+remain unchanged.
+
+The harmless comment runs first and survives: two files, 78 passes and zero
+failures/skips/pending/todo. Four precise host-address faults run one at a time:
+
+| Fault | Actual pass/fail count | Intended failed assertions |
+|---|---|---|
+| Omit HostIp constraint | 60 pass, 18 fail | Database/gateway wrong, unsupported, missing and split-pair address cases |
+| Allow missing HostIp | 76 pass, 2 fail | Database/gateway missing HostIp at the correct port |
+| Check address and port with independent some calls | 76 pass, 2 fail | Database/gateway address and port split across bindings |
+| Accept IPv6 wildcard for IPv4 endpoint | 76 pass, 2 fail | Database/gateway IPv6 wildcard at the correct port |
+
+Each mutant has zero skipped, pending or todo assertions, no unknown statuses
+and no suite errors. Every failed assertion reports that the guard wrongly
+stops throwing. Exact prepared bytes and filesystem modes restore in finally.
+No unexpected behavior, survivor, restore mismatch, authoring diagnostic or
+subject retry occurs.
+
+The final affected and adjacent ordinary cohort covers target binding,
+package scripts, chat RPC, chat task and chat transport. It reports five files,
+106 passes and zero failures/skips/pending/todo, unknown statuses or suite
+errors. Every run uses maxWorkers=1, serial files, no file parallelism, a 6 GiB
+Node heap and no cache. Both native opt-ins are removed from the subprocess.
+Scoped strict ESLint and the final scoped whitespace diff checks exit 0.
+
+The four controls address HostIp omission, missing evidence, cross-pair
+matching and unsupported-family acceptance. Hostname refusal has ordinary
+coverage without a separate mutation. No current fault control re-proves all
+pre-existing identity/config/workdir/running/network conditions. Real Docker
+shapes, actual listeners, host routing, service health, post-inspection races,
+historical launch-directory provenance for unlabeled duplicate projects,
+SQL/RLS and HTTP effects remain unproved. The helper performs no DNS or
+network call. Root must freshly review this source, run configured types and
+admit any native target after handback.
+
+Full source/index ownership returns to root before private packaging under
+`a0-host-address-binding-response-20261022-r89`. Only this helper, its ordinary
+test and this appended STATUS section change. All production, authority, 430
+migration SQL bodies, package and lock remain exact. R66's .next artifact and
+private R75 evidence remain unchanged; ordinary Vitest cache accounting stays
+separate. The existing unread reconcile-body, other abort and ignored next-env
+intake limits remain explicit. No compiler, build, install, Docker, SQL,
+application HTTP, native, browser, provider, worker, CI, PR, commit, push or
+delegation runs. This is no new runtime, current-main, hosted, scientific,
+full A0 or release acceptance.

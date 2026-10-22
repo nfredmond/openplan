@@ -6,7 +6,7 @@ type ContainerEvidence = {
   Config?: { Labels?: Record<string, string> | null };
   State?: { Running?: boolean };
   NetworkSettings?: {
-    Ports?: Record<string, { HostPort: string }[] | null>;
+    Ports?: Record<string, { HostIp?: string; HostPort: string }[] | null>;
     Networks?: Record<string, { NetworkID?: string }>;
   };
 };
@@ -39,14 +39,16 @@ export function assertChatHttpTargetBinding(input: ChatHttpTargetEvidence): void
   const apiPort = (apiConfig as Record<string, unknown>).port, dbPort = (dbConfig as Record<string, unknown>).port;
   if (![apiPort, dbPort].every(port => typeof port === "number" && Number.isInteger(port) && port > 0 && port <= 65535)) refuse("missing API/DB ports");
   const api = new URL(input.status.API_URL), db = new URL(input.status.DB_URL);
-  if (api.protocol !== "http:" || !["127.0.0.1", "localhost"].includes(api.hostname) || api.pathname !== "/" || api.search || api.hash || api.username || api.password) refuse("nonlocal API");
-  if (!["postgres:", "postgresql:"].includes(db.protocol) || !["127.0.0.1", "localhost"].includes(db.hostname) || db.pathname !== "/postgres" || db.search || db.hash) refuse("nonlocal database");
+  // Literal IPv4 only: localhost needs resolution, and an IPv6 wildcard does
+  // not prove IPv4 coverage. This fixture makes neither assumption.
+  if (api.protocol !== "http:" || api.hostname !== "127.0.0.1" || api.pathname !== "/" || api.search || api.hash || api.username || api.password) refuse("nonlocal API");
+  if (!["postgres:", "postgresql:"].includes(db.protocol) || db.hostname !== "127.0.0.1" || db.pathname !== "/postgres" || db.search || db.hash) refuse("nonlocal database");
   if (api.port !== String(apiPort) || db.port !== String(dbPort)) refuse("status/config port mismatch");
   const network = `supabase_network_${project}`;
   const networkIds: string[] = [];
-  for (const [kind, inspected, service, port, hostPort] of [
-    ["database", input.database, "db", "5432/tcp", db.port],
-    ["gateway", input.gateway, "kong", "8000/tcp", api.port],
+  for (const [kind, inspected, service, port, hostPort, hostAddress] of [
+    ["database", input.database, "db", "5432/tcp", db.port, db.hostname],
+    ["gateway", input.gateway, "kong", "8000/tcp", api.port, api.hostname],
   ] as const) {
     const name = `supabase_${service}_${project}`;
     if (inspected.Name !== `/${name}` || (kind === "database" && input.container !== name)) refuse(`${kind} project name mismatch`);
@@ -55,7 +57,8 @@ export function assertChatHttpTargetBinding(input: ChatHttpTargetEvidence): void
     const labeledWorkdir = labels?.["com.supabase.cli.workdir"];
     if (labeledWorkdir !== undefined && labeledWorkdir !== input.workdir) refuse(`${kind} workdir label mismatch`);
     if (inspected.State?.Running !== true) refuse(`${kind} is not running`);
-    if (!inspected.NetworkSettings?.Ports?.[port]?.some(binding => binding.HostPort === hostPort)) refuse(`${kind} published port mismatch`);
+    if (!inspected.NetworkSettings?.Ports?.[port]?.some(binding => binding.HostPort === hostPort
+      && (binding.HostIp === hostAddress || binding.HostIp === "0.0.0.0"))) refuse(`${kind} published endpoint mismatch`);
     const id = inspected.NetworkSettings?.Networks?.[network]?.NetworkID;
     if (!id) refuse(`${kind} project network missing`);
     networkIds.push(id as string);

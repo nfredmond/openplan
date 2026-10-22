@@ -47,8 +47,8 @@ for (const kind of ["database", "gateway"] as const) {
     [`${kind} wrong workdir label`, f => { f[kind].Config!.Labels!["com.supabase.cli.workdir"] = "/other/openplan"; }, `${kind} workdir label mismatch`],
     [`${kind} stopped`, f => { f[kind].State!.Running = false; }, `${kind} is not running`],
     [`${kind} missing running evidence`, f => { delete f[kind].State; }, `${kind} is not running`],
-    [`${kind} wrong published port`, f => { f[kind].NetworkSettings!.Ports = { "5432/tcp": [{ HostPort: "59999" }], "8000/tcp": [{ HostPort: "59999" }] }; }, `${kind} published port mismatch`],
-    [`${kind} missing port evidence`, f => { f[kind].NetworkSettings!.Ports = {}; }, `${kind} published port mismatch`],
+    [`${kind} wrong published port`, f => { f[kind].NetworkSettings!.Ports = { "5432/tcp": [{ HostIp: "0.0.0.0", HostPort: "59999" }], "8000/tcp": [{ HostIp: "0.0.0.0", HostPort: "59999" }] }; }, `${kind} published endpoint mismatch`],
+    [`${kind} missing port evidence`, f => { f[kind].NetworkSettings!.Ports = {}; }, `${kind} published endpoint mismatch`],
     [`${kind} missing project network`, f => { f[kind].NetworkSettings!.Networks = {}; }, `${kind} project network missing`],
   );
 }
@@ -73,4 +73,55 @@ describe("chat HTTP target binding before SQL", () => {
     const f = evidence(); f.configText = "[api";
     expect(() => assertChatHttpTargetBinding(f)).toThrow();
   });
+});
+
+describe("chat HTTP published host address binding", () => {
+  it.each(["127.0.0.1", "0.0.0.0"])("admits IPv4 binding %s for both literal loopback URLs", address => {
+    const f = evidence();
+    f.database.NetworkSettings!.Ports!["5432/tcp"] = [{ HostIp: address, HostPort: "54322" }];
+    f.gateway.NetworkSettings!.Ports!["8000/tcp"] = [{ HostIp: address, HostPort: "54321" }];
+    expect(() => assertChatHttpTargetBinding(f)).not.toThrow();
+  });
+  for (const [kind, port, hostPort] of [["database", "5432/tcp", "54322"], ["gateway", "8000/tcp", "54321"]] as const) {
+    it(`${kind} admits multiple bindings with one complete correct pair`, () => {
+      const f = evidence();
+      f[kind].NetworkSettings!.Ports![port] = [
+        { HostIp: "192.168.1.100", HostPort: hostPort },
+        { HostIp: "127.0.0.1", HostPort: "59999" },
+        { HostIp: "127.0.0.1", HostPort: hostPort },
+      ];
+      expect(() => assertChatHttpTargetBinding(f)).not.toThrow();
+    });
+    it.each([
+      ["noncovering IPv4", "192.168.1.100"],
+      ["different loopback", "127.0.0.2"],
+      ["empty HostIp", ""],
+      ["hostname HostIp", "localhost"],
+      ["IPv6 wildcard", "::"],
+      ["IPv6 loopback", "::1"],
+      ["IPv4-mapped IPv6", "::ffff:127.0.0.1"],
+    ])(`${kind} refuses %s at the correct port`, (_name, address) => {
+      const f = evidence();
+      f[kind].NetworkSettings!.Ports![port] = [{ HostIp: address, HostPort: hostPort }];
+      expect(() => assertChatHttpTargetBinding(f)).toThrow(`${kind} published endpoint mismatch`);
+    });
+    it(`${kind} refuses missing HostIp at the correct port`, () => {
+      const f = evidence();
+      f[kind].NetworkSettings!.Ports![port] = [{ HostPort: hostPort }];
+      expect(() => assertChatHttpTargetBinding(f)).toThrow(`${kind} published endpoint mismatch`);
+    });
+    it(`${kind} refuses a correct address and port split across bindings`, () => {
+      const f = evidence();
+      f[kind].NetworkSettings!.Ports![port] = [
+        { HostIp: "127.0.0.1", HostPort: "59999" },
+        { HostIp: "192.168.1.100", HostPort: hostPort },
+      ];
+      expect(() => assertChatHttpTargetBinding(f)).toThrow(`${kind} published endpoint mismatch`);
+    });
+    it.each(["localhost", "[::1]", "0.0.0.0", "127.0.0.2"])(`${kind} refuses unsupported status hostname %s`, hostname => {
+      const f = evidence(), key = kind === "database" ? "DB_URL" : "API_URL";
+      const url = new URL(f.status[key]); url.hostname = hostname; f.status[key] = url.toString();
+      expect(() => assertChatHttpTargetBinding(f)).toThrow(kind === "database" ? "nonlocal database" : "nonlocal API");
+    });
+  }
 });
