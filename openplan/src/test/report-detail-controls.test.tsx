@@ -55,7 +55,7 @@ describe("ReportDetailControls", () => {
     expect(describeReportSourceReviewPosture({ hasGeneratedArtifact: true, evidenceSummary: linkedEvidence, driftSummary }))
       .toMatchObject({ state: "unassessed", label: "Source evidence unassessed", changedSourceText: null });
     render(<ReportDetailControls report={generatedReport} evidenceSummary={linkedEvidence} driftSummary={driftSummary} />);
-    expect(screen.getByText("Historical source baselines are incomplete")).toBeInTheDocument();
+    expect(screen.getByText("Source comparison is incomplete")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Generate PDF packet" })).toBeEnabled();
     expect(screen.queryByRole("button", { name: "Regenerate PDF packet" })).not.toBeInTheDocument();
     expect(screen.queryByText("Current / ready")).not.toBeInTheDocument();

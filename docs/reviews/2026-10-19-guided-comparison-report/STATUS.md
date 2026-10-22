@@ -361,3 +361,38 @@ failures and exact restoration. No new test or code change follows this source
 review. Browser acceptance, native Reports KPI authority, Save/Generate and
 Storage-byte acceptance remain open. The published v0.70 Reports limitation
 and original hosted R8 partial failure are unchanged. Full v1 remains binding.
+
+
+Reports retained-read and CI fixture reconciliation, October 22, 2026 UTC.
+R25's identified build TPmA_Oa-fNP-Dnt0gFbBt at e1eb798775ca passes the bounded
+1440px/390px retained catalog-to-detail view. Controls, Packet, History and grant
+advice retain unassessed comparison evidence and Monitor guidance. Retained PDF
+and HTML downloads match the earlier R14 hashes. The run retains 57 aborted
+requests, one CSP report and one corrected private locator error. It does not
+exercise Save/Generate, current KPI handlers, pre-Storage checks or worker bytes.
+The hosted R8 known-jurisdiction contradiction remains PARTIAL; R25 does not
+observe that changed input. The full R25 report preserves these limits.
+
+R49 reads the completed QA and shuffled jobs at e1. Both have the same three
+failed assertions, not evidence of order dependence. R26 corrects only two test
+files. Cases claiming comparable jurisdiction history now use the real v4
+payload helper and matching live/saved inputs; that comparison does not establish
+legal authority or resolved jurisdiction. Explicit missing and invalid baseline
+cases remain unassessed and retain combined source-review/governance advice.
+The artifact-time fallback and older governance-held recommendation remain
+protected. The controls headline assertion follows current production copy.
+No production file, threshold, baseline ledger, migration or dependency changes.
+
+The restored four-file cohort passes 236 tests, zero skips or todo. A harmless
+control survives 102 cases. Six fault rounds produce nine intended failures,
+with 449 selector skips and exact byte/mode restoration. The initial four
+authoring failures remain recorded. Root's two-file scoped ESLint exits zero.
+One separately admitted configured TypeScript check exits zero at
+05:06:30.198564 UTC in 65.479 seconds, with empty stdout/stderr, actual tsconfig
+and retained Next declarations. No compiler retry, build or browser replay runs.
+These are ordinary/fixture/type results, not native, browser, hosted, scientific
+or new CI acceptance. Root owns the exact checkpoint push and subsequent checks.
+
+Private reports: pr355-ci-fixture-status-repair-20261022-26/REPORT.md and
+pr355-ci-fixture-status-repair-20261022-26-continuation-01/REPORT.md under the
+OpenPlan state directory. Original failures and all wider v1 requirements remain.
