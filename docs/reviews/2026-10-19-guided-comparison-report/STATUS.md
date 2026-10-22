@@ -529,3 +529,25 @@ including the separate bridge's setup/test hunks. Prior native results bind the
 old source and installed history; this allocation adds no native evidence.
 No database, compiler/build, HTTP, browser, provider, worker or model runs here.
 Private source/check handback: `reports-model-forward-allocation-20261022-34`.
+
+
+## Root joins current A0 source and forward allocation, October 22
+
+The normal source merge retains the v0.71 release history, the five forward
+population/Reports allocations, corrected model retry and the managed readiness
+bridge. The candidate has 437 migration files. All 429 released files remain
+exact. The full model result-reader body remains exact to the reviewed model
+source, and A0 retains its single-use WeakMap reservation and approval boundaries.
+
+The joined focused cohort passes 153 ordinary assertions with 27 native cases
+explicitly skipped. Adjacent source checks pass 47 with three live cases skipped.
+The combined schema inventory retains both additions: nine chat custody tables
+and three private population tables. A harmless comment passes all 30 inventory
+cases. Omitting either table group fails the named relation-census assertion;
+the restored file passes all 30 again. Source bytes and modes restore exactly.
+Scoped lint, diff checks and product direction checks pass. Dated direction
+reminders remain unchanged. Private conflict/receipt reader errors are retained.
+
+This checkpoint does not establish installed parity, concurrent authority,
+current Reports accepting handlers, scientific preparation or a release. A
+fresh populated installation and actual Reports handler calls remain next.

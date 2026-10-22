@@ -199,3 +199,43 @@ checks. This repair provides local unit/control evidence, not CI, native engine,
 database, browser, hosted-alias, scientific or release acceptance. No CI rerun,
 build, service, tag or publication occurs. Full v1, the sole roadmap, scientific
 requirements and the existing 19-context review scope remain unchanged.
+
+## Post-publication delivery receipt, October 22, 2026 UTC
+
+This entry records completed publication after the earlier candidate and pending
+records above. Those records retain their original dates, failures and limits.
+The [v0.70.0 GitHub release](https://github.com/nfredmond/openplan/releases/tag/v0.70.0)
+publishes at 03:51:22 UTC on October 22 from final main
+`12bc5957a395f409d9e9c59ae8d4e412dd316bed`. Annotated tag object
+`0a078ebe54e4d2c10137c9c067d25ccf80cf011b` peels to that commit.
+
+The retained final-main results report success for
+[CI 39713458653](https://github.com/nfredmond/openplan/actions/runs/39713458653),
+[live RLS 39713458788](https://github.com/nfredmond/openplan/actions/runs/39713458788)
+and [ODM 39713458782](https://github.com/nfredmond/openplan/actions/runs/39713458782).
+QA records 24,002 passes and 1,689 skips. Live RLS records 1,586 passes and
+125 explicit skips. Shuffled seed 708965 succeeds; the retained log exposes no
+separate final count summary. Earlier failed runs remain failed.
+
+Canonical deployment `dpl_CcBzAvjXyC21v7iw5XgcxC3DPCnV` serves that commit.
+Fresh ordinary cookie login and Dashboard/RTP navigation complete at desktop
+and 390px after promotion. The bounded error/fatal runtime window records zero
+entries; 12 browser aborts and one CSP submission remain recorded. The first
+automatic build's OOM remains failed. The successful cold-cache rebuild does
+not establish its cause. Hosted RTP is an empty registry, so this evidence does
+not establish hosted proposal staging or chapter saving. Earlier local
+data-bearing journeys and exported artifacts retain their own identities.
+
+The publication explicitly discloses the preexisting Reports jurisdiction
+freshness P2. Reports readiness remains unaccepted; its staged journey remains
+partial, with narrow-layout behavior and retained downloads uninspected. The
+bounded RTP/HIN release disposition does not accept Reports. Managed hosting
+contains the 429 release migration records plus one separately applied Award
+migration, 430 total. That schema superset is not exact-schema or full Award
+acceptance. Complete RTP/Safety, legal applicability, nationwide geography,
+separate scientific validation and every remaining v1 obligation stay open.
+
+The private `v070-release-lead-20261021-02` publication admission, published-release
+readback and final notes support this historical receipt. This appearance
+preparation round reads those records; it does not rerun CI, operate hosting,
+republish v0.70 or promote its scientific claim tier.

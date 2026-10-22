@@ -39,6 +39,16 @@ type DestructiveKind =
  * still fails.
  */
 const ALLOWLIST: ReadonlyArray<{ file: string; kind: DestructiveKind; reason: string }> = [
+  {
+    file: "20261021215752_assistant_chat_turns.sql",
+    kind: "update",
+    reason:
+      "Technical lead authorizes this ordinary release change: source_policy_pins belongs to the private schema/table " +
+      "newly created in the same BEGIN migration. Eight rows inserted earlier capture policy sets; only their fresh " +
+      "fingerprints are recomputed after seven cloned policies and five explicit policies. No preexisting tenant or " +
+      "history data changes. An existing schema fails creation rather than replaying. The scoped assertion below " +
+      "pins the single exact UPDATE, fresh schema/table and creation/seed/policy order.",
+  },
   { file: "20260908000005_engagement_report_delivery.sql", kind: "update", reason: "Adds XLSX and ZIP to the existing private report-artifacts bucket MIME list, preserving every existing type and unrestricted null settings. Changes no user files." },
   { file: "20260907000004_work_program_export_custody.sql", kind: "update", reason: "Adds text/html to the existing private Documents bucket MIME list; preserves all existing types and unrestricted null configuration. Does not modify user files." },
   { file: "20260907000005_work_program_recovery_forward_repair.sql", kind: "update", reason: "Idempotent forward repair of the same additive private-bucket MIME extension; no content or financial rows changed." },
@@ -194,6 +204,58 @@ function destructiveStatementsIn(file: string): DestructiveKind[] {
 
 describe("no migration destroys data without a reviewed allowlist entry", () => {
   const files = migrationFiles();
+
+  it("limits the chat UPDATE allowance to one exact refresh of freshly created private policy pins", () => {
+    const sql = blankComments(readMigration("20261021215752_assistant_chat_turns.sql"));
+    const normalize = (statement: string) => statement.trim().replace(/\s+/g, " ");
+    const topLevel = blankDollarQuoted(sql);
+    const parts = splitTopLevel(topLevel, ";");
+    const statements = parts.map(normalize).filter(Boolean);
+    const offsetOf = (statement: string) => {
+      const part = parts.find(candidate => normalize(candidate) === statement);
+      expect(part, "The ordered statement must exist at top level").toBeDefined();
+      return topLevel.indexOf(part!) + part!.search(/\S/);
+    };
+    const refresh = "UPDATE assistant_chat_private.source_policy_pins SET fingerprint=assistant_chat_private.policy_fingerprint(table_oid)";
+    expect(statements.filter(statement => classifyDestructive(statement) === "update"),
+      "The chat allowance admits only the single reviewed private fingerprint UPDATE").toEqual([refresh]);
+    expect(statements[0]).toBe("BEGIN");
+    expect(statements.at(-1)).toBe("COMMIT");
+    expect(statements.filter(statement => /^(?:BEGIN|COMMIT|ROLLBACK|START TRANSACTION)\b/i.test(statement)))
+      .toEqual(["BEGIN", "COMMIT"]);
+    const schema = "CREATE SCHEMA assistant_chat_private";
+    const table = "CREATE TABLE assistant_chat_private.source_policy_pins(table_oid oid PRIMARY KEY, fingerprint text NOT NULL)";
+    expect(statements.filter(statement => /^CREATE SCHEMA\b/i.test(statement))).toEqual([schema]);
+    expect(statements.filter(statement => /^CREATE TABLE assistant_chat_private\.source_policy_pins\b/i.test(statement))).toEqual([table]);
+    expect(statements.indexOf(schema)).toBeLessThan(statements.indexOf(table));
+    expect(statements.indexOf(table)).toBeLessThan(statements.indexOf(refresh));
+
+    // Inspect the seed block without changing the shared SQL parser. Runtime
+    // bodies elsewhere remain outside this migration-time UPDATE guard.
+    const seeds = [...sql.matchAll(/DO \$body\$([\s\S]*?)END \$body\$/g)]
+      .filter(match => match[1].includes("INSERT INTO assistant_chat_private.source_policy_pins"));
+    expect(seeds).toHaveLength(1);
+    const seed = seeds[0];
+    expect(seed.index).toBeGreaterThan(offsetOf(table));
+    const relations = seed[1].match(/FOREACH t IN ARRAY ARRAY\[([\s\S]*?)\] LOOP/);
+    expect(relations).not.toBeNull();
+    expect(relations![1].replace(/\s+/g, "")).toBe([
+      "public.workspaces", "public.workspace_members", "public.projects",
+      "public.workspace_provider_api_connections", "public.workspace_provider_api_revisions",
+      "public.usage_events", "public.assistant_action_approvals", "public.assistant_action_executions",
+    ].map(name => "'" + name + "'::regclass").join(","));
+    expect(normalize(seed[1])).toContain("INSERT INTO assistant_chat_private.source_policy_pins VALUES(t,assistant_chat_private.policy_fingerprint(t));");
+    const seedEnd = seed.index! + seed[0].length;
+    const policyNames = ["assistant_chat_approval_insert", "assistant_chat_usage_insert", "assistant_chat_usage_read",
+      "assistant_chat_approval_read", "assistant_chat_execution_read"];
+    for (const name of policyNames) {
+      const declarations = statements.filter(statement => statement.startsWith("CREATE POLICY " + name + " "));
+      expect(declarations, name + " is one top-level policy").toHaveLength(1);
+      const policy = offsetOf(declarations[0]);
+      expect(policy, name + " follows the fresh seed").toBeGreaterThan(seedEnd);
+      expect(policy, name + " precedes the fingerprint refresh").toBeLessThan(offsetOf(refresh));
+    }
+  });
 
   it("scans a real migration set (guard is not vacuous)", () => {
     expect(files.length).toBeGreaterThan(150);

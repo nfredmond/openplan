@@ -2,6 +2,7 @@ import { fireEvent, render } from "@testing-library/react";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
@@ -193,6 +194,7 @@ vi.mock("@/components/cartographic/cartographic-selection-link", () => ({
 }));
 
 import EngagementPage from "@/app/(app)/engagement/page";
+import { AppCopilot } from "@/components/assistant/app-copilot";
 import LandUsePlansPage from "@/app/(app)/land-use-plans/page";
 import ModelsPage from "@/app/(app)/models/page";
 import PlansPage from "@/app/(app)/plans/page";
@@ -453,6 +455,25 @@ describe("every module list page offers one primary action in its header", () =>
 describe("the slot's own stylesheet", () => {
   const globals = readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
 
+  // Inspect the real launcher after Button merges its classes. Theme text must
+  // keep its matching fill on hover, and the icon must inherit that same ink.
+  // This guards rendered classes, not computed CSS or browser contrast.
+  it("pairs the Planner Agent launcher's theme text and background at rest and on hover", () => {
+    const markup = renderToStaticMarkup(<AppCopilot workspaceId="00000000-0000-4000-8000-000000000001" workspaceName="Workspace" />);
+    const container = document.createElement("div");
+    container.innerHTML = markup;
+    const launcher = container.querySelector('button.op-cart-copilot-launch[aria-label="Planner Agent"]');
+    expect(launcher).not.toBeNull();
+    expect(Array.from(launcher!.classList).filter((name) => /^(?:hover:)?bg-/.test(name))).toEqual([
+      "bg-background", "hover:bg-background",
+    ]);
+    expect(launcher).toHaveClass("text-foreground", "hover:text-foreground");
+    const icon = launcher!.querySelector("svg");
+    expect(icon).toHaveAttribute("stroke", "currentColor");
+    expect(icon?.getAttribute("class")).not.toMatch(/(?:^|\s)(?:text-|stroke-|fill-)/);
+    expect(icon).not.toHaveAttribute("style");
+  });
+
   /**
    * The focus ring on this control comes from the one global `:focus-visible`
    * rule; the only way a header action loses its visible focus state is by
@@ -495,7 +516,7 @@ describe("the slot's own stylesheet", () => {
    *
    * This recomputes that in arithmetic rather than trusting the two spot
    * measurements, because the failure this guards against is a FUTURE one: a
-   * sixth palette whose accent is lighter than the five here would ship an
+   * future palette whose accent is lighter than the ones here would ship an
    * unreadable primary button and nothing else would notice. `color-mix(in
    * srgb, …)` interpolates linearly on gamma-encoded channels, which is why
    * plain interpolation below reproduces Chrome's [196, 76, 49] exactly.
@@ -547,10 +568,15 @@ describe("the slot's own stylesheet", () => {
       ink: body.match(/--ink:\s*(#[0-9a-f]{6})/i)?.[1] ?? null,
     }));
 
-    // Ten today: default light and dark, plus slate/harbor/meadow/plum in each.
-    // An equality, so a palette added without a contrast check fails here
-    // instead of quietly widening what this test does not look at.
-    expect(themes).toHaveLength(10);
+    // Six palettes, each in light and dark. Pin both the count and identities
+    // so a missing Signal block or a duplicate cannot satisfy the census.
+    expect(themes).toHaveLength(12);
+    expect(themes.map(({ selector }) => selector)).toEqual([
+      ":root", ".dark",
+      ...["slate", "harbor", "meadow", "plum", "signal"].flatMap((id) => [
+        `:root:not(.dark)[data-palette="${id}"]`, `.dark[data-palette="${id}"]`,
+      ]),
+    ]);
 
     // `--primary-foreground` is stated only on the two base blocks; the palettes
     // inherit whichever of the two they sit under.

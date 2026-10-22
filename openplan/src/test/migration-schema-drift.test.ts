@@ -41,7 +41,26 @@ describe("migration inventory (offline)", () => {
     // Without this the live half could pass against an empty inventory.
     expect(schema.tables().length).toBeGreaterThan(110);
     expect(policies.all().length).toBeGreaterThan(500);
-    expect(policies.all().filter((policy) => policy.origin === "expanded").length).toBe(286);
+    const chatMigration = "20261021215752_assistant_chat_turns.sql";
+    const expanded = policies.all().filter((policy) => policy.origin === "expanded");
+    const predecessor = loadPolicyInventory({ beforeFile: chatMigration }).all()
+      .filter((policy) => policy.origin === "expanded");
+    // Preserve the 429-migration census and every predecessor body. Chat adds
+    // seven SELECT copies and nine custody policies, all for its private role.
+    expect(predecessor).toHaveLength(286);
+    expect(expanded.filter((policy) => policy.file !== chatMigration)).toEqual(predecessor);
+    expect(expanded.filter((policy) => policy.file === chatMigration).map((policy) =>
+      `${policy.table}.${policy.policy} ${policy.command} ${policy.kind} ${policy.roles.join(",")}`,
+    ).sort()).toEqual([
+      ...[
+        "workspaces", "workspace_members", "projects", "workspace_provider_api_connections",
+        "workspace_provider_api_revisions", "usage_events", "assistant_action_executions",
+      ].map((table, index) => `${table}.assistant_chat_source_${index + 1} SELECT PERMISSIVE openplan_chat_authorizer`),
+      ...[
+        "admissions", "grants", "turns", "sources", "steps", "tool_calls", "events", "access_checks", "proposal_intents",
+      ].map((table) => `assistant_chat_${table}.custody ALL PERMISSIVE openplan_chat_authorizer`),
+    ].sort());
+    expect(expanded).toHaveLength(286 + 16);
   });
 
   it("compacts writer policies for every Land Use Plans table", () => {
