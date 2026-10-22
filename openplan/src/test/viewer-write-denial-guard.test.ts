@@ -397,7 +397,25 @@ describe("viewer write denial", () => {
     expect(needing.size).toBe(EXPECTED_GATED_TABLES - RETAINED_RPC_ONLY_GATES.length);
     expect(gated.size).toBe(EXPECTED_GATED_TABLES);
     expect(inventory.all().filter((p) => p.kind === "RESTRICTIVE")).toHaveLength(EXPECTED_RESTRICTIVE_POLICIES);
-    expect(permissiveWritePolicies()).toHaveLength(EXPECTED_PERMISSIVE_WRITE_POLICIES);
+    const chatMigration = "20261021215752_assistant_chat_turns.sql";
+    const writes = permissiveWritePolicies();
+    const predecessorWrites = loadPolicyInventory({ beforeFile: chatMigration }).all()
+      .filter((policy) => policy.kind === "PERMISSIVE" && isWriteCommand(policy));
+    // Keep all 278 predecessor writes in scope. The twelve chat additions are
+    // counted and checked by identity/role, then classified by the same guards.
+    expect(predecessorWrites).toHaveLength(EXPECTED_PERMISSIVE_WRITE_POLICIES);
+    expect(writes.filter((policy) => policy.file !== chatMigration)).toEqual(predecessorWrites);
+    expect(writes.filter((policy) => policy.file === chatMigration).map((policy) =>
+      `${policy.table}.${policy.policy} ${policy.command} ${policy.roles.join(",")}`,
+    ).sort()).toEqual([
+      "assistant_action_approvals.assistant_chat_approval_insert INSERT openplan_chat_authorizer",
+      "usage_events.assistant_chat_usage_insert INSERT openplan_chat_authorizer",
+      "assistant_chat_admissions.operator_admission ALL service_role",
+      ...[
+        "admissions", "grants", "turns", "sources", "steps", "tool_calls", "events", "access_checks", "proposal_intents",
+      ].map((table) => `assistant_chat_${table}.custody ALL openplan_chat_authorizer`),
+    ].sort());
+    expect(writes).toHaveLength(EXPECTED_PERMISSIVE_WRITE_POLICIES + 12);
 
     // Every gated table must be gated for all three commands.
     for (const [table, commands] of gated) {
