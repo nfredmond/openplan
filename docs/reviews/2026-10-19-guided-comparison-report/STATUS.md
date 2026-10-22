@@ -138,3 +138,43 @@ they do not establish configured compilation or a visible Reports journey.
 Root retains the first failure and admits a separate identified-build round
 after this checkpoint. Native, browser, hosted, scientific and release evidence
 remain separate. The complete v1 contract and sole roadmap remain binding.
+
+
+## October 22 UTC: corrected retained comparison reopens truthfully
+
+The separately admitted production build at 674e216dc passes configured
+TypeScript and generates 146 static pages. Its BUILD_ID is
+-EqIhfuZ0JuSy4fOn3q7W. It uses the exact installed release lock. The preceding
+round-12 TS2741 failure and partial build remain preserved. No second build
+runs in the successful round.
+
+Normal front-door sign-in and Reports navigation reopen the existing selected
+comparison at 1440px and 390px. The catalog and detail preserve live artifact
+bytes and custody as unassessed. Missing historical totals remain unknown,
+without the former false zero-to-one change. History distinguishes an unchanged
+stored binding from unassessed live evidence. Grant support recommends evidence
+review and Monitor. Other funding and data-lineage warnings remain visible.
+Root inspects the actual desktop and phone captures before accepting this
+bounded outcome. Controls remain keyboard reachable without activating writes.
+
+Retained PDF and HTML downloads match the original hashes. They retain their
+October 19 generation date. This reopening journey does not repeat Save,
+Generate, actual KPI-route authority, full accepting verification or worker-byte
+checks. The read-only domain capture remains exact on the shared 437-migration
+schema superset. This is not an exact-schema installation test or an exhaustive
+side-effect census. The earlier 116-case populated native result retains its
+separate source and execution boundary.
+
+The sealed browser log retains 49 aborted requests, two driver navigation
+timeouts and one report-only CSP info, with zero observed page errors and no
+captured HTTP status of 400 or above. Corrected normal navigation completes;
+the failed actions remain failed. The provisional 48-abort handback count is
+corrected against the sealed raw log. No empty-console claim follows.
+
+All 18,652 tracked entries and the complete index remain exact through the
+journey. All owned browser/server processes terminate, and port 3432 is free.
+The new build and prior failed and completed builds remain separately retained.
+Evidence is indexed in the private pr355-corrected-identified-reopen-20261022-14
+packet. Final-main ancestry, exact-head CI, hosted delivery, scientific and
+release acceptance remain open. This checkpoint follows the v0.70 release
+priority and does not add these capabilities to that release.
