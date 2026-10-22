@@ -558,3 +558,41 @@ canonicalizeActionPayload. The automatic merge retained both branches' imports.
 Root removes the redundant single import and keeps the existing grouped import;
 both Model and A0 call sites remain unchanged. The first diagnostics stay
 retained. A separately admitted repeat checks the corrected input state.
+
+
+## October 22, 2026 R74 literal SQL fixture assembly response
+
+R70 installs the exact populated 437-migration candidate and records 27 passing
+modeltruth cases. Its first common-population readiness case fails before the
+readiness trigger: string replacement converts the injected SQL `$$` delimiter
+to `$`. The other 118 common-population cases remain pending under bail1.
+That actual native failure remains unchanged in the R70 private packet.
+
+The maintained native test now calls one pure fixture assembly function. Its
+three custody/profile, source and output replacements use callbacks, preserving
+injected SQL literally. Three ordinary tests call that same function. They
+compare the complete assembled fixture against literal marker boundaries from
+the unchanged fixture bytes. The tests cover the actual readiness retry script
+and profile/output strings containing dollar quotes, replacement match tokens
+and backreferences. All 119 native case bodies, assertions, options, role paths,
+guard mutations and timeouts remain exact. All 437 migration bodies and the
+original SQL fixture files remain unchanged. The three assembly tests do not
+register when native mode is enabled.
+
+The bounded five-file ordinary cohort passes 61 assertions and explicitly skips
+119 native cases, with no other pending or todo cases. A harmless assembly
+comment survives all three ordinary assembly tests. Restoring string replacement
+separately at each of the three seams fails its named literal-output assertion;
+the other two assembly tests pass. Each control restores exact source bytes and
+mode. The final restored cohort again passes 61 with 119 native cases skipped.
+Scoped lint and diff checks pass. A private receipt classifier initially expects
+R70 bail-pending status for the skipped cases; its error remains retained and
+the existing report is reclassified without rerunning that baseline.
+
+R74 runs source and ordinary checks only. It does not access R70's six running
+containers, change installed SQL or repeat native tests. The source correction
+does not establish retried readiness, the viewer native case, Reports accepting
+Save/Generate routes, actual model bytes, workers or scientific validation.
+The full M3/S1 and general prepared-science scope remain open. Root owns any
+separately admitted native repeat. Private source/control receipts are in
+`managed-readiness-literal-fixture-repair-20261022-r74`.

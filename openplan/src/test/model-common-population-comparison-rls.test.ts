@@ -22,6 +22,38 @@ const sourceCompanionKinds = ["common_population_households", "common_population
 const linkRefusal = (position: number) => `${owner} DO $$ DECLARE s uuid; BEGIN s:=pg_temp.cp_snapshot();
  PERFORM pg_temp.cp_expect_refusal(format('SELECT pg_temp.cp_link(%L,${position})',s)); END $$; RESET ROLE;`;
 
+// Copy injected SQL literally, including dollar quotes and replacement tokens.
+function assembleFixture(options: TrialOptions = {}) {
+  return fixture.replace("-- CUSTODY SEAM", () => `UPDATE cp_probe SET custody='${options.custody ?? "managed_attempt"}';${options.profileSql ?? ""}`)
+    .replace("-- SOURCE PUBLICATION SEAM", () => options.source ?? "")
+    .replace("-- OUTPUT PUBLICATION SEAM", () => options.output ?? "");
+}
+
+// Ordinary assembly checks execute no SQL and do not register in native mode.
+if (!LIVE_RLS) describe("common-population fixture literal SQL assembly", () => {
+  const spans = fixture.split(/-- CUSTODY SEAM|-- SOURCE PUBLICATION SEAM|-- OUTPUT PUBLICATION SEAM/);
+  const metacharacters = "$$ $& $` $' $1 $2 $<capture>";
+  function literalFixture(custody: string, source: string, output: string) {
+    expect(spans).toHaveLength(4);
+    return [spans[0], custody, spans[1], source, spans[2], output, spans[3]].join("");
+  }
+
+  it("preserves the actual readiness retry source SQL literally", () => {
+    expect(assembleFixture({ source: readinessRetry }), "literal readiness retry source SQL").toBe(
+      literalFixture("UPDATE cp_probe SET custody='managed_attempt';", readinessRetry, ""));
+  });
+  it("preserves output SQL replacement metacharacters literally", () => {
+    const output = `-- Output literals: ${metacharacters}\nDO $$ BEGIN NULL; END $$;`;
+    expect(assembleFixture({ output }), "literal output SQL").toBe(
+      literalFixture("UPDATE cp_probe SET custody='managed_attempt';", "", output));
+  });
+  it("preserves custody profile SQL replacement metacharacters literally", () => {
+    const profileSql = `\n-- Profile literals: ${metacharacters}\nDO $$ BEGIN NULL; END $$;`;
+    expect(assembleFixture({ custody: "legacy_stage_snapshot", profileSql }), "literal custody profile SQL").toBe(
+      literalFixture(`UPDATE cp_probe SET custody='legacy_stage_snapshot';${profileSql}`, "", ""));
+  });
+});
+
 // Real native commands and database roles. Synthetic descriptors/decisions do not
 // establish byte availability, worker consumption, observation quality or accuracy.
 (LIVE_RLS ? describe : describe.skip)("explicit common-population native comparison boundary", () => {
@@ -36,8 +68,7 @@ const linkRefusal = (position: number) => `${owner} DO $$ DECLARE s uuid; BEGIN 
   function trial(body: string, options: TrialOptions = {}) {
     return spawnSync("docker", ["exec", "-i", container, "psql", "-X", "-U", "postgres", "-d", "postgres", "-qAt", "-v", "ON_ERROR_STOP=1"], {
       input: `BEGIN; SET LOCAL statement_timeout='15s'; SET LOCAL lock_timeout='2s';\n${options.guard ?? ""}\n` +
-        fixture.replace("-- CUSTODY SEAM", `UPDATE cp_probe SET custody='${options.custody ?? "managed_attempt"}';${options.profileSql ?? ""}`)
-          .replace("-- SOURCE PUBLICATION SEAM", options.source ?? "").replace("-- OUTPUT PUBLICATION SEAM", options.output ?? "") +
+        assembleFixture(options) +
         `${admissionFixture}\n${body}\nSELECT 'COMMON_POPULATION_NATIVE_ASSERTIONS_REACHED'; ROLLBACK;`,
       encoding: "utf8", timeout: 60_000, maxBuffer: 2 * 1024 * 1024,
     });
