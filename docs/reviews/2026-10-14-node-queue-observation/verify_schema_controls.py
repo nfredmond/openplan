@@ -30,7 +30,7 @@ def oracle_controls(out):
 def run(repo,out):
     os.umask(0o077);out.mkdir(parents=True,mode=0o700)
     app=repo/'openplan';route=app/'supabase/migrations/20261017000015_node_queue_process_observations.sql'
-    population=app/'supabase/migrations/20261019051430_model_population_replacement.sql'
+    population=app/'supabase/migrations/20261022010001_model_population_replacement.sql'
     manual=app/'supabase/migrations/20261019000002_rtp_manual_source_page_proposals.sql'
     test=app/'src/test/migrations/inventory.test.ts';columns=app/'src/test/a-column-nothing-reads-is-a-question.test.ts';original={path:path.read_bytes() for path in (route,test,columns,population,manual)}
     oracle_controls(out)
