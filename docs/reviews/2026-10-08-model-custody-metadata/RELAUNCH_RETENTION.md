@@ -674,3 +674,16 @@ ordinary source/local-publication checks, with no new engine, scientific,
 SQL/native/HTTP, compiler, build or browser execution. Existing native
 results retain their dated scope. The full prepared scientific lifecycle,
 worker acceptance and M3/S1 remain unfinished. Current-head CI is pending.
+
+
+## 2026-10-22 R133: exact retention refusals after restore
+
+PR367 restore job119875454145 at3f208f8 refused workspace deletion through the exact model_attempt_instrument_custody workspace foreign key (23503) before the cascade reached the managed-run trigger. The original assertion expected that trigger's P0001. It failed after 1,740 passes, with 158 skips. The failed run and diagnostic remain retained. This observation does not establish a lost row or weakened installed retention.
+
+The fixture now checks managed-run deletion directly, requiring its original P0001 and exact message plus persisted-state equality. Workspace deletion accepts only that original trigger refusal or the exact instrument-custody FK identity with details bound to the same workspace. Unknown SQL states, unrelated constraints, wrong workspace details and successful deletion fail. The independent unclaimed-run enrollment-FK case remains unchanged. No SQL, trigger, authority or production source changes.
+
+Initial and restored ordinary cohorts pass 21 assertions across three files with27 native-gated skips. A harmless comment survives. Omitting FK identity, workspace details, the managed SQL state or the direct trigger assertion produces five named failures across four fault variants; all source bytes/modes restore exactly. Scoped lint, diff and one configured TypeScript invocation pass. The two affected native cases pass once on the existing isolated R70 target at61521/61522, with25 selector-skips and no pending/todo. This focused run does not replace the whole restore drill. Fresh corrected-head CI remains pending.
+
+All437 installed history rows, captured catalogue/function/privilege definitions and every prior complete-row digest across360 public/private/Auth/Storage tables remain exact. The146 added synthetic rows remain retained, including three new Auth users; authored sign-out leaves no new session/token rows. Six existing containers remain running, with no active query at final capture. No reset, schema repair, retention bypass, engine/model execution or new resource occurs. Root's native checks preserve the existing captured-row boundary; they do not independently prove general scientific preparation, completed-parent races or whole-system restore. R122's orchestration exception and previous raw-index exceptions remain historical.
+
+Private evidence: $HOME/.local/state/openplan/pr367-restore-retention-layer-repair-20261022-r133.

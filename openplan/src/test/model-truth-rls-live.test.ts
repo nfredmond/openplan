@@ -13,6 +13,46 @@ import { resolveLocalDbContainer } from "./helpers/live-catalog";
 const liveDescribe = LIVE_RLS ? describe : describe.skip;
 const digest = (value: string) => createHash("sha256").update(value, "utf8").digest("hex");
 
+// A restored database may reach the direct workspace RESTRICT constraint before
+// the cascade reaches the managed-run trigger. Both must preserve every row.
+function expectManagedWorkspaceDeletionRefusal(error: { code: string; message: string; details: string } | null, workspaceId: string) {
+  if (error?.code === "23503") {
+    expect(error).toMatchObject({
+      code: "23503",
+      message: 'update or delete on table "workspaces" violates foreign key constraint "model_attempt_instrument_custody_workspace_id_fkey" on table "model_attempt_instrument_custody"',
+      details: `Key (id)=(${workspaceId}) is still referenced from table "model_attempt_instrument_custody".`,
+    });
+  } else {
+    expect(error).toMatchObject({ code: "P0001", message: "Managed model run deletion requires an explicit retention command" });
+  }
+}
+
+if (!LIVE_RLS) describe("managed workspace deletion refusal identities", () => {
+  const workspaceId = "11111111-1111-4111-8111-111111111111";
+  const managed = { code: "P0001", message: "Managed model run deletion requires an explicit retention command", details: "" };
+  const instrument = {
+    code: "23503",
+    message: 'update or delete on table "workspaces" violates foreign key constraint "model_attempt_instrument_custody_workspace_id_fkey" on table "model_attempt_instrument_custody"',
+    details: `Key (id)=(${workspaceId}) is still referenced from table "model_attempt_instrument_custody".`,
+  };
+  it("accepts the exact managed-run retention refusal", () => {
+    expectManagedWorkspaceDeletionRefusal(managed, workspaceId);
+  });
+  it("accepts the exact instrument custody FK bound to this workspace", () => {
+    expectManagedWorkspaceDeletionRefusal(instrument, workspaceId);
+  });
+  it.each([
+    ["successful deletion", null],
+    ["unrelated SQL state", { ...managed, code: "42501" }],
+    ["different managed refusal", { ...managed, message: "Other retention failure" }],
+    ["another foreign key", { ...instrument, message: instrument.message.replace("model_attempt_instrument_custody_workspace_id_fkey", "unrelated_workspace_id_fkey") }],
+    ["another workspace", { ...instrument, details: instrument.details.replace(workspaceId, "22222222-2222-4222-8222-222222222222") }],
+    ["missing FK details", { ...instrument, details: "" }],
+  ])("rejects %s", (_name, error) => {
+    expect(() => expectManagedWorkspaceDeletionRefusal(error as typeof managed | null, workspaceId)).toThrow();
+  });
+});
+
 // Ordinary guards protect the native fixture's executable setup and mandatory
 // hook. They do not establish installed command or user-session behavior.
 if (!LIVE_RLS) describe("model truth race fixture source preconditions", () => {
@@ -73,6 +113,19 @@ if (!LIVE_RLS) describe("model truth race fixture source preconditions", () => {
     expect(body).toContain('expect(user.reason).toBe("Current model output custody could not be verified. Retained records are not current results.");');
     expect(body).toContain('expect(persistedWorkspace(ws).bytes, "mixed-stage read refusal changes no retained row").toBe(before.bytes);');
     expect(body).not.toContain('abandon_model_run_execution');
+  });
+
+  it("checks the managed-run trigger directly before either workspace refusal", () => {
+    const body = caseBody("preserves managed comparison artifacts, links, enrolled runs, and workspace after deletion refusal");
+    const direct = body.indexOf('const removedRun = await service.from("model_runs").delete().eq("id", runIds[0]);');
+    const directAssertion = body.indexOf('expect(removedRun.error).toMatchObject({ code: "P0001", message: "Managed model run deletion requires an explicit retention command" });');
+    const workspace = body.indexOf('const removed = await service.from("workspaces").delete().eq("id", workspaceA);');
+    expect(direct).toBeGreaterThan(-1);
+    expect(directAssertion).toBeGreaterThan(direct);
+    expect(workspace).toBeGreaterThan(directAssertion);
+    expect(body).toContain('expect(persistedWorkspace(workspaceA).bytes, "direct managed-run refusal preserves all committed evidence").toBe(before.bytes);');
+    expect(body).toContain('expectManagedWorkspaceDeletionRefusal(removed.error, workspaceA);');
+    expect(body).toContain('expect(persistedWorkspace(workspaceA).bytes, "managed deletion refusal preserves all committed evidence").toBe(before.bytes);');
   });
 });
 
@@ -481,8 +534,11 @@ liveDescribe("guided model truth live RLS and trigger enforcement", () => {
 
   it("preserves managed comparison artifacts, links, enrolled runs, and workspace after deletion refusal", async () => {
     const before = guidedPersistedState();
+    const removedRun = await service.from("model_runs").delete().eq("id", runIds[0]);
+    expect(removedRun.error).toMatchObject({ code: "P0001", message: "Managed model run deletion requires an explicit retention command" });
+    expect(persistedWorkspace(workspaceA).bytes, "direct managed-run refusal preserves all committed evidence").toBe(before.bytes);
     const removed = await service.from("workspaces").delete().eq("id", workspaceA);
-    expect(removed.error).toMatchObject({ code: "P0001", message: "Managed model run deletion requires an explicit retention command" });
+    expectManagedWorkspaceDeletionRefusal(removed.error, workspaceA);
     expect(persistedWorkspace(workspaceA).bytes, "managed deletion refusal preserves all committed evidence").toBe(before.bytes);
     const retained = await service.from("model_runs").select("id,workspace_id").in("id", runIds);
     expect(retained.error).toBeNull();
