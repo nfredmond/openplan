@@ -596,3 +596,46 @@ Save/Generate routes, actual model bytes, workers or scientific validation.
 The full M3/S1 and general prepared-science scope remain open. Root owns any
 separately admitted native repeat. Private source/control receipts are in
 `managed-readiness-literal-fixture-repair-20261022-r74`.
+
+
+## October 22, 2026 R79 canonical preservation fixture response
+
+R77's actual native result remains one passing case, one failing timezone case
+and 117 pending cases. The failing preservation comparison serializes full row
+timestamps under two session timezones. R79 corrects that fixture boundary only.
+No production migration, installed helper, authority or scientific gate changes.
+
+A temporary invoker function serializes each complete row with function-local
+UTC. Both before and after run/artifact snapshots use it, preserving every
+field, timestamp, scope and stable ID ordering. The strict full-row equality
+check remains. The two retained first-attempt artifact checks also canonicalize
+complete typed artifact rows, including projected retained evidence. The retry
+fixture's original JSON capture file remains unchanged.
+
+The Los Angeles production case stays in place. Caller-timezone assertions now
+surround its production readiness and retained-evidence checks. The serializer's
+UTC setting applies only within its capture call. It does not reset the caller
+timezone before invoking production. Five native checks are authored but UNRUN:
+one covers full typed-row and field-key preservation with caller-timezone
+restoration, and four mutate actual timestamp/content values in temporary row
+copies while checking the untouched row and original public evidence. These
+additions bring the common-population native declaration count from 119 to 124.
+
+Seven ordinary checks cover literal assembly and the canonical source contract.
+A harmless comment survives all seven. Four separate faults remove local UTC,
+elide an after-capture timestamp, restore raw retained projection JSON, or reset
+the LA production case to UTC. Each fails its named source assertion, with the
+other six passing. Every fault restores exact source bytes and modes. The
+baseline and final restored five-file cohorts each pass 65 ordinary assertions,
+with 124 native cases explicitly skipped and no pending or todo cases. Scoped
+lint and diff checks pass. These source guards do not execute PostgreSQL or
+prove native GUC restoration, mutation detection, roles or readiness behavior.
+
+R79 accesses no database, container, runtime, HTTP, browser, worker or provider.
+It runs no compiler/build, install, CI, commit or push. All 437 migration bodies
+and modes, original scientific holds and prior evidence packets remain exact.
+Root owns any configured typecheck, source join and separately admitted native
+continuation. Retried readiness's complete native gate, Reports accepting
+Save/Generate routes, actual bytes, full M3/S1/general prepared science and full
+v1 acceptance remain unproved. Private source/control handback is in
+`managed-readiness-timezone-fixture-repair-20261022-r79`.

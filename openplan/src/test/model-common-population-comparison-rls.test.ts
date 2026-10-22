@@ -54,6 +54,48 @@ if (!LIVE_RLS) describe("common-population fixture literal SQL assembly", () => 
   });
 });
 
+// These source contracts do not execute SQL or establish native GUC behavior.
+if (!LIVE_RLS) describe("common-population canonical capture source contract", () => {
+  const assembled = assembleFixture({ source: readinessRetry });
+  const nativeSource = readFileSync("src/test/model-common-population-comparison-rls.test.ts", "utf8");
+  const native = nativeSource.slice(nativeSource.indexOf("\n(LIVE_RLS ? describe : describe.skip)"));
+  it("confines every row field to function-local UTC serialization", () => {
+    const start = assembled.indexOf("CREATE FUNCTION pg_temp.cp_row_json(");
+    const end = assembled.indexOf("$$;", start) + 3;
+    expect(start, "temporary canonical capture exists").toBeGreaterThan(0);
+    expect(assembled.slice(start, end), "full-row function-local UTC capture").toBe(`CREATE FUNCTION pg_temp.cp_row_json(row_value anyelement)
+RETURNS jsonb LANGUAGE sql SECURITY INVOKER SET TimeZone = 'UTC' AS $$
+ SELECT pg_catalog.to_jsonb(row_value);
+$$;`);
+    expect(assembled.slice(0, start) + assembled.slice(end), "no caller timezone reset in fixture").not.toMatch(/SET\s+TimeZone|set_config\('TimeZone'/i);
+  });
+  it("captures both full ordered row sets before and after with strict equality", () => {
+    expect(assembled.match(/jsonb_agg\(pg_temp\.cp_row_json\(run\) ORDER BY run\.id\)/g), "both full ordered run captures").toHaveLength(2);
+    expect(assembled.match(/jsonb_agg\(pg_temp\.cp_row_json\(artifact\) ORDER BY artifact\.id\)/g), "both full ordered artifact captures").toHaveLength(2);
+    expect(assembled.match(/WHERE run\.id IN\(SELECT run_id FROM cp_groups UNION SELECT run_id FROM cp_jobs\)/g), "unchanged full run scope").toHaveLength(2);
+    expect(assembled.match(/WHERE artifact\.run_id IN\(SELECT run_id FROM cp_groups UNION SELECT run_id FROM cp_jobs\)/g), "unchanged full artifact scope").toHaveLength(2);
+    expect(assembled, "strict complete before/after comparison").toContain("IF r IS DISTINCT FROM (SELECT runs FROM cp_before) OR a IS DISTINCT FROM (SELECT artifacts FROM cp_before) THEN RAISE EXCEPTION 'Comparison changed retained runs or artifacts'; END IF;");
+  });
+  it("canonicalizes both retained artifact comparisons as complete typed rows", () => {
+    const retained = native.slice(native.indexOf("  const noLegacyClaims ="), native.indexOf("  const instrumentRefusal ="));
+    expect(retained, "retained full artifact row").toContain("pg_temp.cp_row_json(artifact)=pg_temp.cp_row_json(jsonb_populate_record(NULL::public.model_run_artifacts,retained.artifact))");
+    expect(retained, "retained projection full row").toContain("pg_temp.cp_row_json(jsonb_populate_record(NULL::public.model_run_artifacts,projected->'record'))=pg_temp.cp_row_json(jsonb_populate_record(NULL::public.model_run_artifacts,retained.artifact))");
+    expect(retained, "retained state stays explicit").toContain("projected->>'ownership_state'='retained_inactive'");
+  });
+  it("keeps the LA production case and authors timestamp and content mutation probes", () => {
+    const timezone = native.slice(native.indexOf('  it("matches the exact instrument receipt across session time zones"'), native.indexOf('  it("managed readiness bridge survives harmless trigger commentary"'));
+    expect(timezone, "production stays in LA before and after captures").toContain('"SET LOCAL TIME ZONE \'America/Los_Angeles\';" + laContext + positive + noLegacyClaims + laContext');
+    const probes = native.slice(native.indexOf('  it("canonical capture preserves full rows and restores the LA caller timezone"'), native.indexOf('  it("managed readiness bridge survives harmless trigger commentary"'));
+    for (const mutation of ["SET created_at=created_at+interval '1 second'", "SET run_title=run_title||' changed'", "SET file_url=file_url||'/changed'"]) {
+      expect(probes, "authored actual timestamp/content mutations").toContain(mutation);
+    }
+    expect(probes, "four native mutation declarations").toContain(')("canonical full-row capture detects %s"');
+    expect(probes, "changed target must differ").toContain("IS NOT DISTINCT FROM before_rows.");
+    expect(probes, "other row must remain exact").toContain("IS DISTINCT FROM before_rows.");
+    expect(probes, "caller GUC restoration assertion").toContain("Canonical capture changed caller timezone");
+  });
+});
+
 // Real native commands and database roles. Synthetic descriptors/decisions do not
 // establish byte availability, worker consumption, observation quality or accuracy.
 (LIVE_RLS ? describe : describe.skip)("explicit common-population native comparison boundary", () => {
@@ -126,11 +168,11 @@ if (!LIVE_RLS) describe("common-population fixture literal SQL assembly", () => 
       THEN RAISE EXCEPTION 'Managed readiness fabricated legacy decisions'; END IF;
     IF (SELECT count(*) FROM public.model_run_relaunch_receipts WHERE request_payload->>'run_id'=(SELECT run_id::text FROM cp_jobs WHERE position=0))<>1
       THEN RAISE EXCEPTION 'Actual same-run retry receipt missing'; END IF;
-    IF EXISTS(SELECT 1 FROM bridge_retained retained WHERE NOT EXISTS(SELECT 1 FROM public.model_run_artifacts artifact WHERE to_jsonb(artifact)=retained.artifact))
+    IF EXISTS(SELECT 1 FROM bridge_retained retained WHERE NOT EXISTS(SELECT 1 FROM public.model_run_artifacts artifact WHERE pg_temp.cp_row_json(artifact)=pg_temp.cp_row_json(jsonb_populate_record(NULL::public.model_run_artifacts,retained.artifact))))
       THEN RAISE EXCEPTION 'Retained first-attempt artifacts changed'; END IF;
     IF EXISTS(SELECT 1 FROM bridge_retained retained WHERE NOT EXISTS(
       SELECT 1 FROM jsonb_array_elements(public.read_model_attempt_outputs((SELECT run_id FROM cp_jobs WHERE position=0),(SELECT workspace_id FROM cp_probe))->'outputs') projected
-      WHERE projected->>'kind'='artifact' AND projected->>'ownership_state'='retained_inactive' AND projected->'record'=retained.artifact))
+      WHERE projected->>'kind'='artifact' AND projected->>'ownership_state'='retained_inactive' AND pg_temp.cp_row_json(jsonb_populate_record(NULL::public.model_run_artifacts,projected->'record'))=pg_temp.cp_row_json(jsonb_populate_record(NULL::public.model_run_artifacts,retained.artifact))))
       THEN RAISE EXCEPTION 'Old evidence became current'; END IF;
   END $$;`;
   const instrumentRefusal = `${owner} DO $$ DECLARE s uuid; BEGIN
@@ -146,7 +188,45 @@ if (!LIVE_RLS) describe("common-population fixture literal SQL assembly", () => 
   END $$; RESET ROLE; SELECT pg_temp.cp_unchanged();`;
 
   it("managed readiness bridge: current retry without legacy decisions", () => accepts(positive + noLegacyClaims, { source: readinessRetry }));
-  it("matches the exact instrument receipt across session time zones", () => accepts("SET LOCAL TIME ZONE 'America/Los_Angeles';" + positive + noLegacyClaims, { source: readinessRetry }));
+  const laContext = `DO $$ BEGIN IF current_setting('TimeZone')<>'America/Los_Angeles'
+    THEN RAISE EXCEPTION 'Canonical capture changed caller timezone'; END IF; END $$;`;
+  it("matches the exact instrument receipt across session time zones", () => accepts("SET LOCAL TIME ZONE 'America/Los_Angeles';" + laContext + positive + noLegacyClaims + laContext, { source: readinessRetry }));
+  it("canonical capture preserves full rows and restores the LA caller timezone", () => accepts(`SET LOCAL TIME ZONE 'America/Los_Angeles';
+    DO $$ DECLARE run public.model_runs%ROWTYPE; artifact public.model_run_artifacts%ROWTYPE; captured jsonb; BEGIN
+      SELECT * INTO STRICT run FROM public.model_runs WHERE id=(SELECT run_id FROM cp_jobs WHERE position=0);
+      SELECT * INTO STRICT artifact FROM public.model_run_artifacts WHERE id=(SELECT artifact_id FROM cp_jobs WHERE position=0);
+      captured:=pg_temp.cp_row_json(run);
+      IF jsonb_populate_record(NULL::public.model_runs,captured) IS DISTINCT FROM run
+        OR ARRAY(SELECT jsonb_object_keys(captured) ORDER BY 1) IS DISTINCT FROM ARRAY(SELECT jsonb_object_keys(to_jsonb(run)) ORDER BY 1)
+        THEN RAISE EXCEPTION 'Canonical capture lost a full run field or timestamp instant'; END IF;
+      captured:=pg_temp.cp_row_json(artifact);
+      IF jsonb_populate_record(NULL::public.model_run_artifacts,captured) IS DISTINCT FROM artifact
+        OR ARRAY(SELECT jsonb_object_keys(captured) ORDER BY 1) IS DISTINCT FROM ARRAY(SELECT jsonb_object_keys(to_jsonb(artifact)) ORDER BY 1)
+        THEN RAISE EXCEPTION 'Canonical capture lost a full artifact field or timestamp instant'; END IF;
+      PERFORM pg_temp.cp_unchanged();
+      IF current_setting('TimeZone')<>'America/Los_Angeles' THEN RAISE EXCEPTION 'Canonical capture changed caller timezone'; END IF;
+    END $$;`));
+  const captureMutationSetup = `SET LOCAL TIME ZONE 'America/Los_Angeles';
+    CREATE TEMP TABLE cp_capture_run AS SELECT run.* FROM public.model_runs run WHERE run.id=(SELECT run_id FROM cp_jobs WHERE position=0);
+    CREATE TEMP TABLE cp_capture_artifact AS SELECT artifact.* FROM public.model_run_artifacts artifact WHERE artifact.id=(SELECT artifact_id FROM cp_jobs WHERE position=0);
+    CREATE TEMP TABLE cp_capture_before AS SELECT pg_temp.cp_row_json(run) runs,pg_temp.cp_row_json(artifact) artifacts FROM cp_capture_run run CROSS JOIN cp_capture_artifact artifact;`;
+  it.each([
+    ["run timestamp", "runs", "UPDATE cp_capture_run SET created_at=created_at+interval '1 second';"],
+    ["run content", "runs", "UPDATE cp_capture_run SET run_title=run_title||' changed';"],
+    ["artifact timestamp", "artifacts", "UPDATE cp_capture_artifact SET created_at=created_at+interval '1 second';"],
+    ["artifact content", "artifacts", "UPDATE cp_capture_artifact SET file_url=file_url||'/changed';"],
+  ] as const)("canonical full-row capture detects %s", (_name, target, mutation) => accepts(captureMutationSetup + mutation + `
+    DO $$ DECLARE before_rows cp_capture_before%ROWTYPE; r jsonb; a jsonb; BEGIN
+      SELECT * INTO STRICT before_rows FROM cp_capture_before;
+      SELECT pg_temp.cp_row_json(run) INTO STRICT r FROM cp_capture_run run;
+      SELECT pg_temp.cp_row_json(artifact) INTO STRICT a FROM cp_capture_artifact artifact;
+      IF ${target === "runs" ? "r IS NOT DISTINCT FROM before_rows.runs" : "a IS NOT DISTINCT FROM before_rows.artifacts"}
+        THEN RAISE EXCEPTION 'Canonical capture missed a changed full row'; END IF;
+      IF ${target === "runs" ? "a IS DISTINCT FROM before_rows.artifacts" : "r IS DISTINCT FROM before_rows.runs"}
+        THEN RAISE EXCEPTION 'Canonical capture changed the untouched full row'; END IF;
+      IF current_setting('TimeZone')<>'America/Los_Angeles' THEN RAISE EXCEPTION 'Canonical capture changed caller timezone'; END IF;
+      PERFORM pg_temp.cp_unchanged();
+    END $$;`));
   it("managed readiness bridge survives harmless trigger commentary", () => accepts(positive + noLegacyClaims, {
     source: readinessRetry, guard: "COMMENT ON FUNCTION public.validate_managed_comparison_readiness() IS 'Harmless native control';",
   }));

@@ -85,6 +85,13 @@ DO $$ DECLARE g cp_groups%ROWTYPE; p cp_probe%ROWTYPE; BEGIN
   END IF;
  END LOOP;
 END $$;
+-- Serialize every field under a function-local timezone. PostgreSQL restores
+-- the caller timezone when this capture returns; production keeps its context.
+CREATE FUNCTION pg_temp.cp_row_json(row_value anyelement)
+RETURNS jsonb LANGUAGE sql SECURITY INVOKER SET TimeZone = 'UTC' AS $$
+ SELECT pg_catalog.to_jsonb(row_value);
+$$;
+
 -- Descriptors exercise installed custody, not bytes or scientific validity.
 CREATE FUNCTION pg_temp.cp_instrument(attempt uuid, method text, output uuid, output_hash text, artifact_bytes bigint DEFAULT 1)
 RETURNS uuid LANGUAGE plpgsql AS $$
@@ -221,8 +228,8 @@ DO $$ DECLARE j cp_jobs%ROWTYPE; p cp_probe%ROWTYPE; response jsonb; attempt uui
  RESET ROLE;
 END $$;
 CREATE TEMP TABLE cp_before AS SELECT
- (SELECT jsonb_agg(to_jsonb(run) ORDER BY run.id) FROM public.model_runs run WHERE run.id IN(SELECT run_id FROM cp_groups UNION SELECT run_id FROM cp_jobs)) runs,
- (SELECT jsonb_agg(to_jsonb(artifact) ORDER BY artifact.id) FROM public.model_run_artifacts artifact WHERE artifact.run_id IN(SELECT run_id FROM cp_groups UNION SELECT run_id FROM cp_jobs)) artifacts;
+ (SELECT jsonb_agg(pg_temp.cp_row_json(run) ORDER BY run.id) FROM public.model_runs run WHERE run.id IN(SELECT run_id FROM cp_groups UNION SELECT run_id FROM cp_jobs)) runs,
+ (SELECT jsonb_agg(pg_temp.cp_row_json(artifact) ORDER BY artifact.id) FROM public.model_run_artifacts artifact WHERE artifact.run_id IN(SELECT run_id FROM cp_groups UNION SELECT run_id FROM cp_jobs)) artifacts;
 
 CREATE FUNCTION pg_temp.cp_snapshot(metadata jsonb DEFAULT NULL, desired_status text DEFAULT 'draft') RETURNS uuid LANGUAGE plpgsql AS $$
 DECLARE result uuid; BEGIN
@@ -263,8 +270,8 @@ BEGIN BEGIN EXECUTE statement;
 END $$;
 CREATE FUNCTION pg_temp.cp_unchanged() RETURNS void LANGUAGE plpgsql AS $$
 DECLARE r jsonb; a jsonb; BEGIN
- SELECT jsonb_agg(to_jsonb(run) ORDER BY run.id) INTO r FROM public.model_runs run WHERE run.id IN(SELECT run_id FROM cp_groups UNION SELECT run_id FROM cp_jobs);
- SELECT jsonb_agg(to_jsonb(artifact) ORDER BY artifact.id) INTO a FROM public.model_run_artifacts artifact WHERE artifact.run_id IN(SELECT run_id FROM cp_groups UNION SELECT run_id FROM cp_jobs);
+ SELECT jsonb_agg(pg_temp.cp_row_json(run) ORDER BY run.id) INTO r FROM public.model_runs run WHERE run.id IN(SELECT run_id FROM cp_groups UNION SELECT run_id FROM cp_jobs);
+ SELECT jsonb_agg(pg_temp.cp_row_json(artifact) ORDER BY artifact.id) INTO a FROM public.model_run_artifacts artifact WHERE artifact.run_id IN(SELECT run_id FROM cp_groups UNION SELECT run_id FROM cp_jobs);
  IF r IS DISTINCT FROM (SELECT runs FROM cp_before) OR a IS DISTINCT FROM (SELECT artifacts FROM cp_before) THEN RAISE EXCEPTION 'Comparison changed retained runs or artifacts'; END IF;
 END $$;
 SELECT set_config('request.jwt.claim.sub',owner_id::text,true) FROM cp_probe;
