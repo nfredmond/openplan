@@ -400,3 +400,24 @@ intake limits remain explicit. No compiler, build, install, Docker, SQL,
 application HTTP, native, browser, provider, worker, CI, PR, commit, push or
 delegation runs. This is no new runtime, current-main, hosted, scientific,
 full A0 or release acceptance.
+
+
+## Direct parser dependency follow-up, October 22, 2026 UTC
+
+PR367's completed QA job119854381084 identifies the shared HTTP fixture
+helper's smol-toml import as an unlisted dependency. This A0 branch contains
+the same import. Package and root lock metadata now declare the already
+locked version1.9.0 as a direct development dependency. No installed package
+or nonroot lock entry changes. The helper, target-binding assertions and
+all430 SQL files remain unchanged.
+
+The maintained dead-code command passes here. The local HTTP-binding and
+package-script cohort passes78 tests across two files with no skips or
+pending/todo. R126 separately proves a harmless survivor and the exact
+missing-declaration error with the same import and parser version. No
+warning category, native target guard or QA step is disabled.
+
+This checkpoint adds no compiler, build, native/HTTP, managed installation
+or browser run. Earlier R66/R67/R75/R99 evidence retains its original source
+and limits. Current-head CI remains pending under T3's watch. Broad admission,
+real-provider, independent restore, hosted and full A0/v1 gates remain open.
