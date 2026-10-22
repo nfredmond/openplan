@@ -675,3 +675,91 @@ refusal and race, browser/hosted workflows, M3/S1 science and full v1 remain ope
 No native, browser, provider, model, worker, build, CI or release operation runs
 in R96. A later native round must retain all original target rows and files,
 record actual reach and stop at its first real setup or assertion failure.
+
+
+## R102 binds Reports package conditions, October 22, 2026
+
+R100's first actual Reports native invocation registers six cases. It records
+zero passes, one setup failure and five bail-pending records. The throwing
+server-only package export resolves during beforeEach despite the parent Node
+react-server flag. Ordinary signup and its default workspace remain retained;
+its session count returns to zero. No accepting Reports call occurs. Root's
+pinned Vitest review identifies worker condition propagation as runner setup,
+without establishing a Reports product or readiness defect.
+
+A separate vitest.reports-native.config.ts extends the unchanged maintained
+config. It retains Vite's default server conditions, adds react-server through
+ssr.resolve.conditions, and includes only the actual Reports native file and a
+pure package-condition guard. Its expected-condition marker grants no live mode
+or target admission. The original server-only package remains unmodified. No
+shim, alias, empty-module substitute or additional subject mock is introduced.
+
+The package-only guard passes two tests under the unchanged default config and
+two under the new config. Default conditions resolve and refuse the original
+index.js; the Reports config resolves and loads the original empty.js. A comment
+control survives with two passes. Removing only the SSR react-server condition,
+while retaining the expected-condition marker, produces both named failures:
+Node createRequire resolves index.js instead of empty.js, and Vitest dynamic
+import rejects with the package's actual server-only error. All runs use LIVE0,
+one worker, no file parallelism, no cache and unchanged 20-second budgets. The
+Reports native file is not collected.
+
+The private control result-reader then fails its own assertion. It expects full
+paths in abbreviated JSON failure messages; raw stderr retains the full path
+difference and original import error. The config restores exact bytes and mode
+0664 in finally. R102 stops without repairing or retrying this private reader.
+The final restored ordinary cohort, enumeration checks and scoped lint remain
+unrun. These package results do not constitute a completed validation sequence.
+The full failure and source/custody handback remain in the private packet
+reports-native-server-conditions-repair-20261022-r102.
+
+The original six-case test, fixture, base config, product authority, packages,
+locks and all 437 migration bodies remain unchanged. R100 and earlier failures
+retain their dated counts and limits. Compiler and Reports native execution stay
+closed. Root owns independent review, types, a new checkpoint and any later
+native admission. Reports Save/Generate, current-versus-retained authority, four
+KPI refusals, quarantine restoration, separate pre-Storage/TOCTOU, M3/S1 science,
+hosted behavior and full v1 remain unproved by this response.
+
+
+## R105 and R106 wire the explicit Reports native command, October 22
+
+R103 retains the ordinary live-file census failure: the new Reports suite has
+no maintained npm command. The correction keeps the census and its old anchors.
+The original default live command stays byte-exact. A dedicated command names
+the actual Reports native file and reviewed condition config, enables live mode,
+and retains serial execution, both 6 GiB caps, bail1, no cache and 20-second
+budgets. It supplies no workdir or lifetime. The unchanged fixture still requires
+the caller's separately admitted disposable-target manifest. Default CI does
+not start this retained-data fixture.
+
+The command contract binds the executable runner, file, config and flags. Its
+single-file route covers only this fixture. Every older live test still needs
+the original command. Removing an old live filename fails the named census.
+The detector, non-vacuity anchors and path-resolution guard remain intact.
+
+R105's harmless whitespace control passes eight tests. Missing command, missing
+configuration and disabled live mode each fail the named command contract,
+with four passes, one failure and three pending cases. A hardcoded nonexistent
+lifetime instead fails the earlier missing-file guard, with two passes, one
+failure and five pending cases. It earns zero credit for the later lifetime
+assertion and stops that round. Exact bytes/modes restore. The earlier guard
+is retained; the fault is not enlarged or repeated for a score.
+
+R106 runs only the remaining checks. Removing an older live filename yields
+five passes, one named census failure and two pending cases, then restores
+exactly. The restored default cohort passes 17 tests and explicitly skips six
+native cases. The dedicated project passes two package guards and skips six
+native cases, collecting exactly two declared files. Scoped lint and diff
+checks pass. No native pass credit follows from collection. R102's condition
+faults and reader stop, R103's census failure and R104's source-only acceptance
+remain separate dated evidence. One private precommit classifier compares
+against the wrong baseline expectation; it is corrected without subject replay.
+
+No production, base runner, package lock, authority, original six-case body,
+fixture factory or migration changes. All 437 SQL bodies remain exact. Command
+source checks cannot prove shell execution or full product imports. Configured
+types, checkpoint review and actual native admission remain pending here.
+Reports accepting calls remain zero. Save/Generate, four KPI-after-Save states,
+separate pre-Storage refusal/races, scientific validation, hosted operation and
+full v1 remain open.
