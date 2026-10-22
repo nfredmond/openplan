@@ -619,3 +619,39 @@ including the separate bridge's setup/test hunks. Prior native results bind the
 old source and installed history; this allocation adds no native evidence.
 No database, compiler/build, HTTP, browser, provider, worker or model runs here.
 Private source/check handback: `reports-model-forward-allocation-20261022-34`.
+
+
+### 2026-10-22 R69 bounded ordinary CI source repair
+
+R68 retains four actual PR366 CI failures at head 3a11cf9. This response
+changes three existing source files. The unread-column ledger individually
+accounts for relaunch prior_attempts as an audit snapshot with no current
+application reader, and retry_transaction_id as the transaction identity read
+by guard_retained_model_outputs in migration 20261022050000. Strict unread and
+stale-entry assertions remain. The agreement route test expects the existing
+literal run_id and attempt_id projection, with byte, hash, scope and header
+assertions unchanged. Model file copy says Saved files outside current results
+in both visible and accessible labels, and states that current results could
+not be verified while saved files remain available. Original file identities,
+links, hashes and the distinction from current completed results remain.
+
+The four affected test files pass 40 assertions. After exact restoration of
+all controls, the final seven-file ordinary cohort passes 76 assertions with
+zero skips, pending cases or todo. It includes retained-download, current-result
+custody and mounted elapsed-clock checks. Scoped lint and diff checks pass.
+A harmless comment change survives all four affected files. Removing either
+new ledger entry, omitting either custody field from the exact expected
+projection, restoring the counted original copy or restoring the old custody
+alert each fails its named assertion. Every edit restores exact bytes and modes.
+A private result-reader error expected column diff text absent from the Vitest
+JSON. It is preserved and corrected using retained results, without repeating
+the harmless or first fault subject. No product assertion is relaxed.
+
+These checks establish ordinary source compatibility only. Ledger accounting
+does not prove SQL execution or audit usefulness. The agreement fixture uses
+the legacy/unmanaged branch; its strict query check does not establish managed
+custody, live RLS or Storage behavior. Copy guards do not prove rendered
+usability. No compiler, native, browser, model or worker runs occur. Earlier
+CI failures and native12/native16 evidence remain retained at their own tiers.
+Full M3/S1, general prepared science and Reports accepting-handler evidence
+remain open. Reports accepting KPI handler and Save/Generate counts stay zero.

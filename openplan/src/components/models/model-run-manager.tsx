@@ -2020,10 +2020,10 @@ function ModelRunStagingAndArtifacts({
         </div>
       ) : null}
 
-      {run.outputCustodyUnavailable ? <p role="alert">Current output custody could not be verified. Stored file identities remain available below.</p> : null}
-      {run.retainedArtifacts?.length ? <section className="space-y-2" aria-label="Recorded files outside current results">
-        <h4 className="font-semibold">Recorded files outside current results</h4>
-        <p>These original file records remain available by their original identity. Their status does not establish current completed run results.</p>
+      {run.outputCustodyUnavailable ? <p role="alert">Current results could not be verified. Saved files remain available below.</p> : null}
+      {run.retainedArtifacts?.length ? <section className="space-y-2" aria-label="Saved files outside current results">
+        <h4 className="font-semibold">Saved files outside current results</h4>
+        <p>These original files remain available by their original identity. Their status does not establish current completed run results.</p>
         <ul>{run.retainedArtifacts.map(artifact => <li key={artifact.id} className="break-words">
           <a className="underline" href={`/api/models/${modelId}/runs/${run.id}/artifacts/${artifact.id}/download`}>Download {labelForArtifactType(artifact.artifact_type)}</a>
           <span className="break-all"> · Artifact {artifact.id} · SHA-256 {artifact.content_hash ?? "unknown"}</span>
