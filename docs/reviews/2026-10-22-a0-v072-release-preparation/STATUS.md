@@ -148,3 +148,32 @@ watch later reports actual QA119668675514 and shuffled119668675563 failures
 for PR365 at2ab80e0. Release integration remains held while R62 diagnoses and
 repairs those failures on an isolated source branch. This metadata checkpoint
 does not override them or establish a v0.72.0 build, hosted outcome or release.
+
+
+## Root records the final identified candidate, October 22
+
+The normal metadata/CI-repair join is b296416556310481c5922c79336be8d1b94561db,
+app tree 37f2169f11ff61203f87259691815e0099fa3915. R66's sole maintained
+production build passes in 138.049 seconds, with webpack, configured TypeScript
+and 147 static pages. Its BUILD_ID is btMlKhEDdbURkhJpreR7S. The original SQLite
+prerequisite failure, authorized native rebuild and passing memory-only probe
+remain separately retained. Source, index and dependency records remain exact.
+
+R67's affected retained view passes at 1440px and 390px on that same artifact.
+Fresh cookie login reaches the original saved connection and both original
+Delivery drafts. Light/dark chat entry text remains readable and ordinary close
+returns focus. With admission disabled, the original chat bodies stay withheld.
+No prepare, approval, provider or business action repeats. The actual handback
+at 07:32:27 UTC supersedes a premature private handback message; the sequencing
+error remains retained. Source/index/dependencies and all 576 static files match;
+47 documented runtime cache entries are added without changing original bytes.
+
+The final view retains 49 aborted RSC GETs, report-only CSP information and
+autocomplete advisories. It records no captured API error, POST failure, body
+reader failure or page error. R60's two unread reconcile bodies and later POST
+aborts remain unresolved. No clean-network or deliberate reply-loss claim follows.
+
+Root reviewed both full reports and inspected desktop and phone captures. This
+records bounded local compilation and affected retained-view admission, not
+current-main, hosted, full A0 or release acceptance. Fresh exact-head CI remains
+required. All admissions remain disabled. The 430 SQL bodies remain unchanged.

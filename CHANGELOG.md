@@ -71,8 +71,17 @@ messages, two advisories and zero page errors. All 4,187 original build entries
 and static bytes remain exact; 47 normal server/route-cache entries are added,
 so whole-tree equality is false. This is not a clean-network claim.
 
-A new final 0.72.0 build, current native/current-main checks, exact-head CI and
-hosted acceptance remain PENDING. Intent-read audit pairing, audit-failure
+The identified 0.72.0 build `btMlKhEDdbURkhJpreR7S` at `b2964165` passes
+webpack and configured TypeScript. A final read-only view at 1440px and 390px
+reaches the saved connection, readable light/dark Planner Agent entry and both
+original Delivery drafts. Admission stays disabled and retained chat bodies
+remain withheld. All original artifact entries and static bytes remain exact;
+47 runtime cache entries are added. That pass retains 49 aborted RSC GETs and
+report-only CSP information, with zero captured page errors or API errors.
+It does not repeat or extend the synthetic approval outcome above.
+
+At this recorded checkpoint, exact-head integration, current-main and hosted
+acceptance remain pending. Intent-read audit pairing, audit-failure
 atomicity, revocation races, deliberate after-effect reply loss and independent
 restore remain unproved. All 19 contexts, general provider and installed-backend
 acceptance, full A0, complete M2c and separate nationwide AequilibraE and
