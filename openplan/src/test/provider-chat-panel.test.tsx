@@ -1,4 +1,4 @@
-import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ProviderChatPanel } from "@/components/assistant/provider-chat-panel";
 import { canonicalChat, chatGrantDigest, chatHash } from "@/lib/assistant/provider-chat-task";
@@ -62,6 +62,143 @@ describe("normal saved API chat panel", () => {
   fireEvent.change(screen.getByLabelText("Retained chat turns"), { target: { value: id.turn } });
   await waitFor(() => expect(screen.getByText(/No complete answer is confirmed/)).toBeInTheDocument());
   expect(screen.queryByText("Checked completion retained.")).toBeNull();
+ });
+});
+
+// These mounted checks use mocked transport. They do not establish native
+// select painting, browser focus, live access decisions or provider behavior.
+describe("active retained history identity", () => {
+ const olderId = "88888888-8888-4888-8888-888888888888";
+ const older = { id: olderId, state: "cancelled" };
+ const retained = (state = "running", turnId = id.turn) => ({ released: true, turnId, state, cursor: 0, events: [] });
+ const posts = () => fetchMock.mock.calls.filter(([, init]) => init?.method === "POST").map(([, init]) => JSON.parse(String(init.body)));
+ function deferred() {
+  let resolve!: (response: Response) => void;
+  const promise = new Promise<Response>(done => { resolve = done; });
+  return { promise, resolve };
+ }
+ async function start({ saved = [older], lost = "", read = async () => reply(retained()) }: {
+  saved?: Array<{ id: string; state: string }>; lost?: string; read?: (turnId: string) => Promise<Response>;
+ } = {}) {
+  const grant = chatFixture();
+  const onReview = vi.fn();
+  fetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
+   if (url.includes("operation=options")) return reply({ options: [{ id: id.capability, selection: grant.selection }] });
+   if (url.includes("operation=history")) return reply({ turns: saved });
+   if (init?.method === "POST") {
+    const body = JSON.parse(String(init.body));
+    if (body.operation === lost) throw new Error(`Synthetic lost ${lost} reply`);
+    if (body.operation === "prepare") return reply({ canonical: canonicalChat(grant), digest: chatGrantDigest(grant), turnId: id.turn });
+    if (body.operation === "accept") return reply({ released: true, turnId: id.turn, state: "accepted" });
+    if (body.operation === "drive") return reply({ turnId: id.turn, state: "running" });
+    throw new Error("Unexpected chat write");
+   }
+   return read(new URL(url, "http://localhost").searchParams.get("turnId")!);
+  });
+  render(<ProviderChatPanel workspaceId={id.workspace} projectId={id.project} onReview={onReview} />);
+  fireEvent.click(screen.getByRole("button", { name: /Saved API chat · workspace/ }));
+  await screen.findByRole("option", { name: /synthetic-model/ });
+  fireEvent.change(screen.getByLabelText("Saved API and model"), { target: { value: id.capability } });
+  fireEvent.change(screen.getByLabelText("Saved API chat question"), { target: { value: grant.packet.question } });
+  fireEvent.click(screen.getByRole("button", { name: "Preview exact disclosure" }));
+  await screen.findByLabelText("Exact API chat disclosure");
+  fireEvent.click(screen.getByRole("checkbox", { name: /I accept this exact disclosure/ }));
+  fireEvent.click(screen.getByRole("button", { name: "Accept disclosure and start once" }));
+  return onReview;
+ }
+ async function expectSelected(state: string) {
+  const turns = await screen.findByLabelText("Retained chat turns");
+  await waitFor(() => {
+   expect(turns, "the exact new retained ID stays visibly selected").toHaveValue(id.turn);
+   expect(within(turns).getByRole("option", { name: `${id.turn} · ${state}`, selected: true })).toBeInTheDocument();
+  });
+  return turns;
+ }
+ function expectWrites(lost = "") {
+  expect(posts().map(body => body.operation)).toEqual(lost === "accept" ? ["prepare", "accept"] : ["prepare", "accept", "drive"]);
+  for (const body of posts().filter(body => body.operation !== "prepare")) expect(body.turnId).toBe(id.turn);
+ }
+ it.each(["older history", "empty history"])("keeps the new exact ID and read state with %s and preserves prior options", async history => {
+  const onReview = await start({ saved: history === "older history" ? [older] : [], read: async turn => reply(retained(turn === olderId ? "cancelled" : "running", turn)) });
+  const turns = await expectSelected("running");
+  if (history === "older history") {
+   expect(within(turns).getByRole("option", { name: `${olderId} · cancelled` })).toBeInTheDocument();
+   fireEvent.change(turns, { target: { value: olderId } });
+   await screen.findByText(/Status: cancelled/);
+   expect(turns).toHaveValue(olderId);
+   expect(within(turns).getByRole("option", { name: `${id.turn} · running` })).toBeInTheDocument();
+   fireEvent.change(turns, { target: { value: id.turn } });
+   await expectSelected("running");
+  }
+  expectWrites(); expect(onReview).not.toHaveBeenCalled();
+ });
+ it.each(["accept", "drive"])("uses retained state after an uncertain %s reply without another POST", async lost => {
+  const state = lost === "accept" ? "prepared" : "uncertain";
+  const onReview = await start({ lost, read: async () => reply(retained(state)) });
+  await expectSelected(state);
+  expect(screen.getByRole("alert")).toHaveTextContent("Possible provider usage remains unknown");
+  fireEvent.click(screen.getByRole("button", { name: /Saved API chat · workspace/ }));
+  fireEvent.click(screen.getByRole("button", { name: /Saved API chat · workspace/ }));
+  await expectSelected(state);
+  expectWrites(lost); expect(onReview).not.toHaveBeenCalled();
+ });
+ it("keeps the exact pending ID without claiming acceptance or completion before its retained read", async () => {
+  const pending = deferred();
+  await start({ saved: [], read: () => pending.promise });
+  await expectSelected("unassessed");
+  expect(screen.queryByText(/Checked completion retained/)).toBeNull();
+  expect(screen.queryByRole("option", { name: `${id.turn} · accepted` })).toBeNull();
+  await act(async () => pending.resolve(reply(retained("running"))));
+  await expectSelected("running"); expectWrites();
+ });
+ it("keeps newer authorized read state when an older history listing arrives later", async () => {
+  await start(); await expectSelected("running");
+  const pendingHistory = deferred(); const prior = fetchMock.getMockImplementation()!;
+  fetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
+   if (url.includes("operation=history")) return pendingHistory.promise;
+   if (!init?.method && url.includes("?turnId=")) return reply({ ...retained("succeeded"), complete: true,
+    texts: [{ stepId: id.step, text: "Checked retained answer", terminal: "stop", receiptHash: "a".repeat(64) }] });
+   return prior(url, init);
+  });
+  fireEvent.click(screen.getByRole("button", { name: /Saved API chat · workspace/ }));
+  fireEvent.click(screen.getByRole("button", { name: /Saved API chat · workspace/ }));
+  await expectSelected("succeeded");
+  await act(async () => pendingHistory.resolve(reply({ turns: [older] })));
+  const turns = await expectSelected("succeeded");
+  expect(screen.getByText("Checked retained answer")).toBeInTheDocument();
+  expect(within(turns).getAllByRole("option").map(option => (option as HTMLOptionElement).value)).toEqual(["", olderId, id.turn]);
+  expectWrites();
+ });
+ it.each(["released_false", "failed", "wrong_identity"])("keeps truthful selected metadata and withholds bodies after a %s read", async failure => {
+  await start({ read: async () => {
+   if (failure === "failed") throw new Error("Synthetic failed retained read");
+   return reply({ ...retained("access_lost", failure === "wrong_identity" ? olderId : id.turn), released: failure !== "released_false",
+    texts: [{ stepId: id.step, text: "Withheld history canary", terminal: "stop", receiptHash: "a".repeat(64) }], intents: [{ intentId: id.call }] });
+  } });
+  await expectSelected(failure === "released_false" ? "access_lost" : "unavailable");
+  expect(screen.getByText(/Source text, answers and draft bodies are withheld/)).toBeInTheDocument();
+  expect(screen.queryByText("Withheld history canary")).toBeNull();
+  expect(screen.queryByLabelText("Exact API chat disclosure")).toBeNull();
+  expect(screen.queryByRole("button", { name: "Review exact draft submittal" })).toBeNull();
+  expect(within(screen.getByLabelText("Retained chat turns")).getByRole("option", { name: `${olderId} · cancelled` })).toBeInTheDocument();
+  expectWrites();
+ });
+ it.each(["released", "failed"])("ignores a late %s read for the earlier selected turn", async outcome => {
+  const pending = deferred(); let holdOlder = false, olderRead = false;
+  await start({ read: async turn => {
+   if (turn === olderId && holdOlder) { olderRead = true; return pending.promise; }
+   return reply(retained(turn === olderId ? "cancelled" : "running", turn));
+  } });
+  const turns = await expectSelected("running"); holdOlder = true;
+  fireEvent.change(turns, { target: { value: olderId } });
+  await waitFor(() => expect(olderRead).toBe(true));
+  fireEvent.change(turns, { target: { value: id.turn } });
+  await act(async () => pending.resolve(outcome === "released" ? reply(retained("succeeded", olderId)) : new Response(JSON.stringify({ error: "Synthetic late denied read" }), { status: 403 })));
+  await expectSelected("running");
+  expect(screen.queryByText(/Status: succeeded/)).toBeNull();
+  expect(screen.queryByText(/Synthetic late denied read/)).toBeNull();
+  expect(within(turns).getByRole("option", { name: `${olderId} · cancelled` })).toBeInTheDocument();
+  expectWrites();
  });
 });
 

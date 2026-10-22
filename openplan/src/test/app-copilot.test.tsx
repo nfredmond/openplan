@@ -589,10 +589,18 @@ describe("AppCopilot", () => {
     await waitFor(() => expect(intentReadCount).toBe(2));
     expect(reviewButton, "review stays disabled while cancellation status is pending").toBeDisabled();
     expect(reviewButton).not.toHaveFocus();
+    const retainedPanel = screen.getByRole("region", { name: "Saved API Planner Agent chat" });
+    expect(retainedPanel, "pending cancellation has a programmatic focus target").toHaveAttribute("tabindex", "-1");
+    expect(retainedPanel, "status-pending focus stays on the retained panel").toHaveFocus();
+    expect(parent, "status-pending focus stays inside the native parent").toContainElement(document.activeElement as HTMLElement);
+    expect(sheetElement).not.toContainElement(document.activeElement as HTMLElement);
     holdCancellationRefresh = true;
     await act(async () => finishCancellationStatus(jsonResponse({ status, review })));
     await waitFor(() => expect(cancellationRefreshStarted).toBe(true));
     expect(reviewButton, "review stays disabled while the retained refresh is pending").toBeDisabled();
+    expect(retainedPanel, "refresh-pending focus stays on the retained panel").toHaveFocus();
+    expect(parent, "refresh-pending focus stays inside the native parent").toContainElement(document.activeElement as HTMLElement);
+    expect(sheetElement).not.toContainElement(document.activeElement as HTMLElement);
     await act(async () => finishCancellationRefresh());
     await waitFor(() => expect(reviewButton).toBeEnabled());
     await waitFor(() => expect(reviewButton, "cancellation restores the original enabled review control").toHaveFocus());

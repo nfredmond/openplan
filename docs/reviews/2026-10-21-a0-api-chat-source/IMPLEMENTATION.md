@@ -739,3 +739,55 @@ change and its failed strict-custody receipt. It changes runner results state,
 not installed library code, package records, lockfiles or the reviewed source.
 The missing preimage remains unavailable. This narrower exception permits the
 source checkpoint; it grants no blanket dependency-byte or native acceptance.
+
+
+## R44 keeps the selected retained ID and pending cancellation focus at source
+
+October 22, 2026 UTC. The bounded panel repair retains minimal ID/state
+summaries from validated, identity-matched retained GETs. These summaries
+supplement the existing history listing and survive a later older listing.
+Earlier retained options remain selectable. A newly selected prepared ID has
+an explicit unassessed option until its read settles. No optimistic accepted
+or succeeded state is inferred from acceptance, drive, transport loss or text.
+An authorized released=false reply supplies its actual minimal state, with
+bodies withheld. A failed or mismatched read displays unavailable and keeps
+the existing disclosure/answer/proposal withholding. The existing selected-turn
+race checks remain. Acceptance and drive code, POST counts, scope, consent,
+provider/model calls and action authority stay unchanged.
+
+Root's adjacent R43 source deduction extends this round narrowly. Typed review
+cancellation commits a ref-backed, programmatically focusable retained section
+inside the native parent while the original status and progress reads remain
+pending. Once both reads settle and React enables the original connected review
+button, the existing turn-bound restoration returns focus to that exact button.
+No timeout, DOM query, request or Escape suppression is added. AppCopilot
+production and shared ModalDialog stay exact. This addresses a source gap;
+R43's narrower prior results and R42's native failures remain historical evidence.
+
+Enhanced tests on original source fail eleven cases: ten history selection
+cases and the missing pending-focus target. Repaired focused tests pass 52
+cases in two files. The restored ordinary cohort passes 239 cases in 18 files,
+zero skips/todo. A harmless comment control passes all 12 selected cases, with
+40 explicit selector skips. Nine targeted faults fail the named summary,
+pending-ID, late-history, response-identity, stale-response, extra-POST,
+status-pending focus, refresh-pending focus and settled-focus assertions.
+Every mutation restores exact production bytes and mode. Scoped lint and
+whitespace checks pass. Every ordinary test command disables Vitest caching,
+uses one worker, no file parallelism and a 6 GiB heap. No native suite runs.
+
+These checks use jsdom and mocked fetch. They do not prove browser select
+painting, native modal timing/focus containment, keyboard scrolling, desktop
+or 390px usability, live authorization, SQL/HTTP/provider behavior, action
+effects or receipts. Root owns source review, commit and the later single
+identified-build full native approval/receipt journey. No compiler, build,
+server, browser, HTTP/native/database, provider, admission, commit, push, PR or
+delegation operation occurs here. Profile CLOSED, all 19 contexts, all APIs,
+installed backends, science and the complete v1 contract remain unchanged.
+
+Evidence packet:
+/home/nathaniel/.local/state/openplan/a0-active-history-repair-20261022-r44.
+Intake HEAD is b0b8ee6e4b8ada79e1a4ab41881e815f11a76b23; HEAD app tree is
+b7abd87d61ed948c64e7d0aec99b05ea6f13209e. The raw index backup precedes
+status. The final report records exact source, index, dependency and prior-build
+custody separately from unexecuted runtime acceptance. R43's generated-cache
+exception remains preserved and dispositioned; no old cache is reconstructed.

@@ -24,6 +24,7 @@ export function ProviderChatPanel({ workspaceId, projectId, onReview }: { worksp
   const [prepared, setPrepared] = useState<Prepared | null>(null), [acknowledged, setAcknowledged] = useState(false);
   const [active, setActive] = useState<string | null>(null), [view, setView] = useState<RetainedChatProgress | null>(null);
   const [history, setHistory] = useState<Array<{ id: string; state: string }>>([]), [busy, setBusy] = useState(false), [error, setError] = useState<string | null>(null);
+  const [readTurns, setReadTurns] = useState<Array<{ id: string; state: string; workspaceId: string }>>([]);
   const [statuses, setStatuses] = useState<Record<string, IntentStatus>>({}), [uncertain, setUncertain] = useState<Record<string, boolean>>({});
   const [repeatAcknowledged, setRepeatAcknowledged] = useState<Record<string, boolean>>({});
   const [showRecovery, setShowRecovery] = useState(false);
@@ -31,15 +32,24 @@ export function ProviderChatPanel({ workspaceId, projectId, onReview }: { worksp
   const retainedCursor = useRef<{ turnId: string; sequence: number } | null>(null);
   const reading = useRef(false);
   const selectedTurn = useRef<string | null>(null), retainedView = useRef<RetainedChatProgress | null>(null);
-  const cancelledReviewFocus = useRef<{ control: HTMLButtonElement; turnId: string | null } | null>(null);
-  // The invoking control is disabled during review. Restore it only after the
-  // cancellation reads settle and React commits the enabled retained control.
+  const panelRef = useRef<HTMLElement | null>(null);
+  const [cancelledReviewFocus, setCancelledReviewFocus] = useState<{ control: HTMLButtonElement; turnId: string | null } | null>(null);
+  // Keep cancellation focus in the retained parent while reads disable review.
+  // Restore the original control after React commits its enabled state.
   useEffect(() => {
-    if (busy) return;
-    const target = cancelledReviewFocus.current;
-    cancelledReviewFocus.current = null;
+    const target = cancelledReviewFocus;
+    if (busy) {
+      if (target && selectedTurn.current === target.turnId && panelRef.current?.isConnected) panelRef.current.focus();
+      return;
+    }
+    if (target) setCancelledReviewFocus(null);
     if (target?.control.isConnected && !target.control.disabled && selectedTurn.current === target.turnId) target.control.focus();
-  }, [busy]);
+  }, [busy, cancelledReviewFocus]);
+  // Retain summaries from actual reads separately so a late history listing
+  // cannot replace their newer states or remove a newly selected retained ID.
+  const rememberRead = useCallback((turnId: string, state: string) => {
+    setReadTurns(old => [...old.filter(t => t.id !== turnId), { id: turnId, state, workspaceId }]);
+  }, [workspaceId]);
   function chooseTurn(turnId: string | null) {
     if (selectedTurn.current !== turnId) { retainedCursor.current = null; retainedView.current = null; setView(null); }
     selectedTurn.current = turnId; setActive(turnId);
@@ -52,19 +62,22 @@ export function ProviderChatPanel({ workspaceId, projectId, onReview }: { worksp
       const afterSequence = retainedCursor.current?.turnId === turnId ? retainedCursor.current.sequence : 0;
       const next = await json<RetainedChatProgress>(`${chatUrl}?turnId=${turnId}&afterSequence=${afterSequence}`);
       if (selectedTurn.current !== turnId) return;
+      if (next.turnId !== turnId) throw new Error("Retained chat response identity changed.");
       const merged = advanceRetainedChatProgress(retainedView.current?.turnId === turnId ? retainedView.current : null, next);
       retainedView.current = merged; setView(merged);
+      rememberRead(turnId, merged.state);
       retainedCursor.current = next.released ? { turnId, sequence: next.cursor } : null;
       if (!next.released) { setPrepared(null); setAcknowledged(false); }
     } catch (reason) {
       if (selectedTurn.current !== turnId) return;
       const withheld = { turnId, released: false, state: "unavailable", cursor: 0, recoveryHref: `/assistant-activity?workspaceId=${workspaceId}` };
       retainedView.current = withheld; setView(withheld);
+      rememberRead(turnId, withheld.state);
       retainedCursor.current = null;
       setPrepared(null); setAcknowledged(false);
       setError(reason instanceof Error ? reason.message : "Retained chat could not be read.");
     } finally { reading.current = false; }
-  }, [workspaceId]);
+  }, [workspaceId, rememberRead]);
   useEffect(() => {
     if (!opened) return; let current = true;
     Promise.all([json<{ options: Option[] }>(`${chatUrl}?operation=options&workspaceId=${workspaceId}`),
@@ -128,7 +141,7 @@ export function ProviderChatPanel({ workspaceId, projectId, onReview }: { worksp
       await onReview(response.review);
     } catch (reason) {
       if (reason instanceof ChatReviewCancelled) {
-        cancelledReviewFocus.current = { control, turnId };
+        setCancelledReviewFocus({ control, turnId });
       } else {
         setUncertain(old => ({ ...old, [intentId]: true }));
         setError(reason instanceof Error ? reason.message : "Check the original approval and result.");
@@ -142,7 +155,10 @@ export function ProviderChatPanel({ workspaceId, projectId, onReview }: { worksp
     finally { setBusy(false); await checkIntent(intentId); }
   }
   const grant = prepared ? JSON.parse(prepared.canonical) as AssistantChatAcceptedGrantV1 : null;
-  return <section aria-label="Saved API Planner Agent chat" className="min-w-0 rounded-lg border border-border bg-background p-3 text-sm text-foreground">
+  const retainedTurns = new Map(history.map(t => [t.id, t]));
+  for (const turn of readTurns) if (turn.workspaceId === workspaceId) retainedTurns.set(turn.id, turn);
+  if (active && !retainedTurns.has(active)) retainedTurns.set(active, { id: active, state: "unassessed" });
+  return <section ref={panelRef} tabIndex={-1} aria-label="Saved API Planner Agent chat" className="min-w-0 rounded-lg border border-border bg-background p-3 text-sm text-foreground">
     <button type="button" aria-expanded={opened} onClick={() => setOpened(v => !v)}>Saved API chat · workspace and selected projects</button>
     {opened ? <div className="mt-3 min-w-0 space-y-3">
       <p>This first profile excludes runs, financial records, documents, history and searches. Installed Codex, Claude Code, OpenCode and the remaining contexts and tools remain unfinished.</p>
@@ -169,7 +185,7 @@ export function ProviderChatPanel({ workspaceId, projectId, onReview }: { worksp
         <label className="flex gap-2"><input type="checkbox" checked={acknowledged} onChange={e => setAcknowledged(e.target.checked)} />I accept this exact disclosure and possible unknown provider charges for this selected API/model and installation.</label>
         <button type="button" disabled={busy || !acknowledged} onClick={() => { void accept(); }}>Accept disclosure and start once</button>
       </div> : null}
-      {history.length ? <label className="block">Retained chat turns<select aria-label="Retained chat turns" value={active ?? ""} onChange={e => { chooseTurn(e.target.value || null); invalidate(); }} className="block w-full border border-border bg-background text-foreground"><option value="">Choose a retained turn</option>{history.map(t => <option key={t.id} value={t.id}>{t.id} · {t.state}</option>)}</select></label> : null}
+      {retainedTurns.size ? <label className="block">Retained chat turns<select aria-label="Retained chat turns" value={active ?? ""} onChange={e => { chooseTurn(e.target.value || null); invalidate(); }} className="block w-full border border-border bg-background text-foreground"><option value="">Choose a retained turn</option>{[...retainedTurns.values()].map(t => <option key={t.id} value={t.id}>{t.id} · {t.state}</option>)}</select></label> : null}
       {view ? <div aria-live="polite" className="space-y-2"><p>Status: {view.state}. {view.complete ? "Checked completion retained." : "No complete answer is confirmed."}</p>
         {view.released && view.state === "accepted" && active ? <button type="button" disabled={busy} onClick={() => { setBusy(true); void post(chatUrl, { operation: "drive", turnId: active }).catch(() => setError("Start outcome is uncertain. Read retained status.")).finally(() => setBusy(false)); }}>Start this accepted turn once</button> : null}
         {active ? <button type="button" onClick={() => { void post(chatUrl, { operation: "cancel", turnId: active }).then(() => refresh(active)).catch(() => setError("Cancellation could not be confirmed. Read retained status.")); }}>Cancel further work</button> : null}
