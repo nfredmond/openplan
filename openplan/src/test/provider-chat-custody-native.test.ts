@@ -23,6 +23,14 @@ afterEach(() => { vi.unstubAllEnvs(); vi.clearAllMocks(); });
 // explicit isolated-stack admission is required before invoking this file.
 const live = LIVE_RLS && process.env.OPENPLAN_CHAT_NATIVE_FIXTURE === "1" ? describe : describe.skip;
 const literal = (s: string) => "'" + s.replaceAll("'", "''") + "'";
+// These rows are exercised inside both original approval/receipt fixture variants.
+const CHAT_DIRECT_RLS_TABLES = [
+ "assistant_action_approvals",
+ "assistant_chat_access_checks",
+ "assistant_chat_grants",
+ "assistant_chat_proposal_intents",
+ "assistant_chat_turns",
+] as const;
 live("chat custody native fixtures", () => {
  let container: string;
  beforeAll(() => {
@@ -85,6 +93,159 @@ live("chat custody native fixtures", () => {
   if (!("executableCanonical" in output) || !output.executableCanonical || !("intentId" in output.result) || typeof output.result.intentId !== "string" || typeof output.result.executableHash !== "string") throw new Error("Actual reserved draft output missing");
   return { ...output, executableCanonical: output.executableCanonical, intentId: output.result.intentId, executableHash: output.result.executableHash };
  }
+ // Probe real retained rows after original approval issuance, before receipt recovery.
+ // The postgres insert controls roll back successful valid copies. A constraint
+ // error is never accepted as access denial, and no helper grants are installed.
+ function directRlsBoundaries(approvalId: string, intentId: string) {
+  const outsiderId = randomUUID(), spareGrantId = randomUUID();
+  const grantPatch = () => ({ id: randomUUID(), prepare_request_id: randomUUID(), acceptance_request_id: randomUUID(), turn_request_id: randomUUID() });
+  const patches: Record<typeof CHAT_DIRECT_RLS_TABLES[number], Record<string, string | null>> = {
+   assistant_action_approvals: { id: randomUUID() },
+   assistant_chat_access_checks: { id: randomUUID() },
+   assistant_chat_grants: grantPatch(),
+   assistant_chat_proposal_intents: { id: randomUUID(), attempt_id: randomUUID(), original_approval_id: null },
+   assistant_chat_turns: { id: randomUUID(), grant_id: spareGrantId, attempt_id: randomUUID() },
+  };
+  const actors = [
+   { role: "authenticated", user: id.user },
+   { role: "authenticated", user: outsiderId },
+   { role: "anon", user: null },
+  ];
+  const tables = CHAT_DIRECT_RLS_TABLES.map(literal).join(",");
+  return `
+   DO $$ DECLARE r jsonb; BEGIN
+    IF current_user<>'authenticated' OR auth.uid() IS DISTINCT FROM '${id.user}'::uuid THEN RAISE EXCEPTION 'Owner probe identity differs'; END IF;
+    r:=((public.assistant_chat_session('read','${id.turn}','{}')->>'canonicalResult')::json)::jsonb;
+    IF r->>'released' IS DISTINCT FROM 'true' OR r->>'turnId' IS DISTINCT FROM '${id.turn}' THEN RAISE EXCEPTION 'Owner session read failed'; END IF;
+    r:=((public.assistant_chat_intent('read','${intentId}','{}')->>'canonicalResult')::json)::jsonb;
+    IF r->>'released' IS DISTINCT FROM 'true' OR r->'intent'->>'id' IS DISTINCT FROM '${intentId}' THEN RAISE EXCEPTION 'Owner intent read failed'; END IF;
+    r:=((public.assistant_chat_intent('status','${intentId}','{}')->>'canonicalResult')::json)::jsonb;
+    IF r->>'originalApprovalId' IS DISTINCT FROM '${approvalId}' THEN RAISE EXCEPTION 'Owner original approval missing'; END IF;
+   END $$;
+   RESET ROLE;
+   INSERT INTO auth.users(id,email) VALUES('${outsiderId}','${outsiderId}@example.test');
+   INSERT INTO public.assistant_chat_grants
+    SELECT (jsonb_populate_record(NULL::public.assistant_chat_grants,to_jsonb(g)||${literal(canonicalChat({ ...grantPatch(), id: spareGrantId }))}::jsonb)).*
+    FROM public.assistant_chat_grants g WHERE id='${id.grant}';
+   DO $$ DECLARE relation_name text; actor jsonb; snapshot jsonb; baseline jsonb:='{}'; copies jsonb:='{}';
+    patches jsonb:=${literal(canonicalChat(patches))}::jsonb; candidate jsonb; seen bigint; affected bigint; probes int:=0; refusals int:=0;
+   BEGIN
+    IF current_user<>'postgres' THEN RAISE EXCEPTION 'Fixture precheck is not postgres'; END IF;
+    IF EXISTS(SELECT 1 FROM public.workspace_members WHERE workspace_id='${id.workspace}' AND user_id='${outsiderId}') THEN RAISE EXCEPTION 'Outsider unexpectedly has membership'; END IF;
+    FOREACH relation_name IN ARRAY ARRAY[${tables}] LOOP
+     EXECUTE format('SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY t.id),''[]'') FROM public.%I t WHERE workspace_id=$1',relation_name)
+      INTO snapshot USING '${id.workspace}'::uuid;
+     IF jsonb_array_length(snapshot)=0 THEN RAISE EXCEPTION 'Direct probe has no existing rows: %',relation_name; END IF;
+     baseline:=baseline||jsonb_build_object(relation_name,snapshot);
+     candidate:=(snapshot->0)||(patches->relation_name);
+     copies:=copies||jsonb_build_object(relation_name,candidate);
+     -- Success followed by this private sentinel rolls back just the insert.
+     -- Any FK, unique, type, check or trigger failure escapes instead.
+     BEGIN
+      EXECUTE format('INSERT INTO public.%I SELECT (jsonb_populate_record(NULL::public.%I,$1)).*',relation_name,relation_name) USING candidate;
+      GET DIAGNOSTICS affected=ROW_COUNT;
+      IF affected<>1 THEN RAISE EXCEPTION 'Postgres copy did not insert one row: %',relation_name; END IF;
+      RAISE EXCEPTION 'Valid insert control' USING ERRCODE='P0052';
+     EXCEPTION WHEN SQLSTATE 'P0052' THEN NULL; END;
+    END LOOP;
+    FOR actor IN SELECT value FROM jsonb_array_elements(${literal(canonicalChat(actors))}::jsonb) LOOP
+     EXECUTE format('SET LOCAL ROLE %I',actor->>'role');
+     PERFORM set_config('request.jwt.claims',jsonb_build_object('sub',actor->'user','role',actor->>'role','is_anonymous',actor->>'role'='anon')::text,true);
+     IF current_user IS DISTINCT FROM actor->>'role' OR auth.uid() IS DISTINCT FROM (actor->>'user')::uuid
+      OR auth.role() IS DISTINCT FROM actor->>'role' THEN RAISE EXCEPTION 'Direct probe target role or actor differs'; END IF;
+     FOREACH relation_name IN ARRAY ARRAY[${tables}] LOOP
+      BEGIN
+       EXECUTE format('SELECT count(*) FROM public.%I WHERE workspace_id=$1',relation_name) INTO seen USING '${id.workspace}'::uuid;
+       IF seen<>0 THEN RAISE EXCEPTION 'Direct SELECT exposed retained rows: %',relation_name; END IF;
+      EXCEPTION WHEN SQLSTATE '42501' THEN NULL; END;
+      probes:=probes+1;
+      BEGIN
+       EXECUTE format('INSERT INTO public.%I SELECT (jsonb_populate_record(NULL::public.%I,$1)).*',relation_name,relation_name) USING copies->relation_name;
+       RAISE EXCEPTION 'Direct INSERT succeeded: %',relation_name;
+      EXCEPTION WHEN SQLSTATE '42501' THEN NULL; END;
+      probes:=probes+1;
+      BEGIN
+       EXECUTE format('UPDATE public.%I SET workspace_id=$1 WHERE id=$2',relation_name) USING '${id.workspace}'::uuid,(baseline->relation_name->0->>'id')::uuid;
+       GET DIAGNOSTICS affected=ROW_COUNT;
+       IF affected<>0 THEN RAISE EXCEPTION 'Direct UPDATE reached retained row: %',relation_name; END IF;
+      EXCEPTION WHEN SQLSTATE '42501' THEN NULL; END;
+      probes:=probes+1;
+      BEGIN
+       EXECUTE format('DELETE FROM public.%I WHERE id=$1',relation_name) USING (baseline->relation_name->0->>'id')::uuid;
+       GET DIAGNOSTICS affected=ROW_COUNT;
+       IF affected<>0 THEN RAISE EXCEPTION 'Direct DELETE reached retained row: %',relation_name; END IF;
+      EXCEPTION WHEN SQLSTATE '42501' THEN NULL; END;
+      probes:=probes+1;
+     END LOOP;
+     IF actor->>'user' IS DISTINCT FROM '${id.user}' THEN
+      BEGIN
+       PERFORM public.assistant_chat_session('read','${id.turn}','{}');
+       RAISE EXCEPTION 'Nonowner session read succeeded';
+      EXCEPTION WHEN SQLSTATE '42501' THEN NULL; END;
+      refusals:=refusals+1;
+      BEGIN
+       PERFORM public.assistant_chat_intent('read','${intentId}','{}');
+       RAISE EXCEPTION 'Nonowner intent read succeeded';
+      EXCEPTION WHEN SQLSTATE '42501' THEN NULL; END;
+      refusals:=refusals+1;
+     END IF;
+     RESET ROLE;
+     IF current_user<>'postgres' THEN RAISE EXCEPTION 'Fixture comparison is not postgres'; END IF;
+     FOREACH relation_name IN ARRAY ARRAY[${tables}] LOOP
+      EXECUTE format('SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY t.id),''[]'') FROM public.%I t WHERE workspace_id=$1',relation_name)
+       INTO snapshot USING '${id.workspace}'::uuid;
+      IF snapshot IS DISTINCT FROM baseline->relation_name THEN RAISE EXCEPTION 'Direct probes changed retained rows: %',relation_name; END IF;
+     END LOOP;
+    END LOOP;
+    IF probes<>60 OR refusals<>4 THEN RAISE EXCEPTION 'Direct/RPC probe census differs: %/%',probes,refusals; END IF;
+   END $$;
+   SET LOCAL ROLE authenticated;
+   SELECT set_config('request.jwt.claims',${literal(canonicalChat({ sub: id.user, role: "authenticated", is_anonymous: false }))},true);
+   SELECT 'CHAT_DIRECT_RLS_ASSERTIONS_REACHED:60:4';`;
+ }
+ // New pagination cases are authored only. Run later on a fresh 429-to-corrected-430 stack.
+ it.each([100, 101, 205])("drains %i real retained events without skipping a page or hash link", total => {
+  const raw = frame({ role: "assistant", content: "x".repeat(total - 2) }, "stop") + "data: [DONE]\n\n";
+  const receipt = checkChatStream(raw, "synthetic-model", []);
+  const read = (after: string) => `(((public.assistant_chat_session('read','${id.turn}',jsonb_build_object('afterSequence',${after}))->>'canonicalResult')::json)::jsonb)`;
+  const progress = (sequence: string) => `public.assistant_chat_session('progress','${id.turn}',jsonb_build_object('stepId','${id.step}','frameSequence',${sequence},'text','x'))`;
+  exercise(rpc => `SELECT ${dispatch(1, id.step)};
+   DO $$ DECLARE p jsonb; replay jsonb; ev jsonb; after_seq bigint:=0; prev text; i int; BEGIN
+    IF (${rpc("read")}->>'cursor')::int<>3 THEN RAISE EXCEPTION 'Pagination seed cursor differs'; END IF;
+    FOR i IN 1..${total - 3} LOOP PERFORM ${progress("i")}; END LOOP;
+    LOOP
+     p:=${read("after_seq")}; replay:=${read("after_seq")};
+     IF p IS DISTINCT FROM replay THEN RAISE EXCEPTION 'Same page replay differs'; END IF;
+     IF jsonb_array_length(p->'events')>100 THEN RAISE EXCEPTION 'Event page limit widened'; END IF;
+     EXIT WHEN jsonb_array_length(p->'events')=0;
+     FOR ev IN SELECT value FROM jsonb_array_elements(p->'events') LOOP
+      IF (ev->>'sequence')::bigint<>after_seq+1 OR ev->>'previous_hash' IS DISTINCT FROM prev
+      THEN RAISE EXCEPTION 'Retained page chain skipped or changed'; END IF;
+      after_seq:=(ev->>'sequence')::bigint; prev:=ev->>'body_hash';
+     END LOOP;
+     IF (p->>'cursor')::bigint<>after_seq THEN RAISE EXCEPTION 'Page cursor skipped returned events'; END IF;
+    END LOOP;
+    IF after_seq<>${total} OR (p->>'cursor')::bigint<>after_seq THEN RAISE EXCEPTION 'Empty last page lost boundary'; END IF;
+    PERFORM ${progress(String(total - 2))};
+    p:=${read("after_seq")};
+    IF jsonb_array_length(p->'events')<>1 OR (p->>'cursor')::int<>${total + 1}
+     OR p->'events'->0->>'previous_hash' IS DISTINCT FROM prev THEN RAISE EXCEPTION 'Later append was skipped'; END IF;
+   END $$;
+   SELECT ${rpc("finish_step", { stepId: id.step, receipt, receiptHash: chatHash(canonicalChat(receipt)) })};
+   DO $$ DECLARE p jsonb; ev jsonb; after_seq bigint:=0; prev text; BEGIN
+    LOOP
+     p:=${read("after_seq")};
+     IF p->>'state'<>'succeeded' THEN RAISE EXCEPTION 'Terminal turn lost succeeded state'; END IF;
+     EXIT WHEN jsonb_array_length(p->'events')=0;
+     FOR ev IN SELECT value FROM jsonb_array_elements(p->'events') LOOP
+      IF (ev->>'sequence')::bigint<>after_seq+1 OR ev->>'previous_hash' IS DISTINCT FROM prev THEN RAISE EXCEPTION 'Reconnect chain differs'; END IF;
+      after_seq:=(ev->>'sequence')::bigint; prev:=ev->>'body_hash';
+     END LOOP;
+     IF (p->>'cursor')::bigint<>after_seq THEN RAISE EXCEPTION 'Terminal page cursor skipped events'; END IF;
+    END LOOP;
+    IF after_seq<>${total + 3} OR (p->>'cursor')::bigint<>after_seq THEN RAISE EXCEPTION 'Reconnect lost terminal events'; END IF;
+   END $$;`);
+ });
  it("matches JS trim, UTF-16 length, UTF-8 bytes and hashes across lossless strings", () => {
   const whitespace = "\u0009\u000a\u000b\u000c\u000d \u00a0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u2028\u2029\u202f\u205f\u3000\ufeff";
   const values = ["", `${whitespace}Draft${whitespace}`, "\u0085Draft\u0085", "\u0000", "\u0000\u0000", "😀\u0000x", "literal \\u0000", "$openplan_chat_nul_v1", "Line 1\nLine 2\tend\b\f\rinside"];
@@ -271,7 +432,7 @@ live("chat custody native fixtures", () => {
   const grant = chatFixture();
   const draft = { projectId: id.project, title: "Synthetic draft", ...fields };
   const broker = await reservedDraft(grant, draft, "proposal_1");
-  exercise((rpc, intent) => {
+  const output = exercise((rpc, intent) => {
   const stepId = randomUUID(), finalStep = randomUUID(), approvalId = randomUUID();
   const actionCanonical = broker.executableCanonical, hash = broker.executableHash;
   return `SELECT ${dispatch(1, stepId)}; SELECT ${terminal(rpc, stepId, [{ name: "propose_create_project_record", input: draft, id: "proposal_1" }])};
@@ -291,6 +452,7 @@ live("chat custody native fixtures", () => {
     claim:=${intent("claim_execution", { originalApprovalId: approvalId, expectedExecutableHash: hash })};
     IF claim->>'dispatch'<>'true' OR ${intent("claim_execution", { originalApprovalId: approvalId, expectedExecutableHash: hash })}->>'dispatch'<>'false' THEN RAISE EXCEPTION 'Execution claim replayed'; END IF;
    END $$;
+   ${directRlsBoundaries(approvalId, broker.intentId)}
    RESET ROLE; SELECT public.record_assistant_project_submittal('${approvalId}','${id.user}','${id.workspace}',${literal(actionCanonical)});
    UPDATE public.workspace_members SET role='viewer' WHERE workspace_id='${id.workspace}' AND user_id='${id.user}'; UPDATE public.projects SET workspace_id='${id.pool}' WHERE id='${id.project}';
    SET LOCAL ROLE authenticated;
@@ -300,5 +462,6 @@ live("chat custody native fixtures", () => {
    END $$;
    RESET ROLE; DO $$ BEGIN IF (SELECT count(*) FROM public.assistant_action_approvals WHERE id='${approvalId}')<>1 THEN RAISE EXCEPTION 'Approval association changed'; END IF; END $$;`;
  }, grant, broker.intentId);
+  expect(output).toContain("CHAT_DIRECT_RLS_ASSERTIONS_REACHED:60:4");
  });
 });

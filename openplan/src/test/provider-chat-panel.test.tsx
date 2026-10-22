@@ -16,7 +16,7 @@ async function open(saved: unknown[] = [], progress: unknown = {}) {
   return reply(progress);
  });
  const review = vi.fn(); render(<ProviderChatPanel workspaceId={id.workspace} projectId={id.project} onReview={review} />);
- fireEvent.click(screen.getByRole("button", { name: /Saved API chat · workspace/ }));
+ fireEvent.click(screen.getByRole("button", { name: /Saved API chat · shared context/ }));
  await screen.findByText(/No saved API\/model has an admitted/); return review;
 }
 describe("normal saved API chat panel", () => {
@@ -38,7 +38,7 @@ describe("normal saved API chat panel", () => {
  });
  it("requires an explicit admitted selection and defaults the workspace index off", async () => {
   await open(); expect(screen.getByRole("button", { name: "Preview exact disclosure" })).toBeDisabled();
-  expect(screen.getByRole("checkbox", { name: /separate workspace-wide project index/ })).not.toBeChecked();
+  expect(screen.getByRole("checkbox", { name: /separate project list here/ })).not.toBeChecked();
   expect(fetchMock.mock.calls.every(([, init]) => !init?.method || init.method === "GET")).toBe(true);
  });
  it("reopens retained progress using GET without new generation or approval", async () => {
@@ -96,7 +96,7 @@ describe("active retained history identity", () => {
    return read(new URL(url, "http://localhost").searchParams.get("turnId")!);
   });
   render(<ProviderChatPanel workspaceId={id.workspace} projectId={id.project} onReview={onReview} />);
-  fireEvent.click(screen.getByRole("button", { name: /Saved API chat · workspace/ }));
+  fireEvent.click(screen.getByRole("button", { name: /Saved API chat · shared context/ }));
   await screen.findByRole("option", { name: /synthetic-model/ });
   fireEvent.change(screen.getByLabelText("Saved API and model"), { target: { value: id.capability } });
   fireEvent.change(screen.getByLabelText("Saved API chat question"), { target: { value: grant.packet.question } });
@@ -137,8 +137,8 @@ describe("active retained history identity", () => {
   const onReview = await start({ lost, read: async () => reply(retained(state)) });
   await expectSelected(state);
   expect(screen.getByRole("alert")).toHaveTextContent("Possible provider usage remains unknown");
-  fireEvent.click(screen.getByRole("button", { name: /Saved API chat · workspace/ }));
-  fireEvent.click(screen.getByRole("button", { name: /Saved API chat · workspace/ }));
+  fireEvent.click(screen.getByRole("button", { name: /Saved API chat · shared context/ }));
+  fireEvent.click(screen.getByRole("button", { name: /Saved API chat · shared context/ }));
   await expectSelected(state);
   expectWrites(lost); expect(onReview).not.toHaveBeenCalled();
  });
@@ -160,8 +160,8 @@ describe("active retained history identity", () => {
     texts: [{ stepId: id.step, text: "Checked retained answer", terminal: "stop", receiptHash: "a".repeat(64) }] });
    return prior(url, init);
   });
-  fireEvent.click(screen.getByRole("button", { name: /Saved API chat · workspace/ }));
-  fireEvent.click(screen.getByRole("button", { name: /Saved API chat · workspace/ }));
+  fireEvent.click(screen.getByRole("button", { name: /Saved API chat · shared context/ }));
+  fireEvent.click(screen.getByRole("button", { name: /Saved API chat · shared context/ }));
   await expectSelected("succeeded");
   await act(async () => pendingHistory.resolve(reply({ turns: [older] })));
   const turns = await expectSelected("succeeded");
@@ -223,7 +223,7 @@ describe("prepared disclosure release and same-intent recovery", () => {
    return reply(progress);
   });
   render(<ProviderChatPanel workspaceId={id.workspace} projectId={id.project} onReview={vi.fn()} />);
-  fireEvent.click(screen.getByRole("button", { name: /Saved API chat · workspace/ }));
+  fireEvent.click(screen.getByRole("button", { name: /Saved API chat · shared context/ }));
   await screen.findByRole("option", { name: /synthetic-model/ });
   fireEvent.change(screen.getByLabelText("Saved API and model"), { target: { value: id.capability } });
   fireEvent.change(screen.getByLabelText("Saved API chat question"), { target: { value: "Synthetic request" } });
@@ -264,8 +264,8 @@ describe("prepared disclosure release and same-intent recovery", () => {
   });
   // Remount the polling effect by toggling its own visibility, without changing
   // turn selection or invalidating the prepared disclosure through navigation.
-  fireEvent.click(screen.getByRole("button", { name: /Saved API chat · workspace/ }));
-  fireEvent.click(screen.getByRole("button", { name: /Saved API chat · workspace/ }));
+  fireEvent.click(screen.getByRole("button", { name: /Saved API chat · shared context/ }));
+  fireEvent.click(screen.getByRole("button", { name: /Saved API chat · shared context/ }));
   await act(async () => { await vi.advanceTimersByTimeAsync(2000); });
   expect(screen.queryByLabelText("Exact API chat disclosure")).toBeNull();
   expect(screen.queryByText("Retained answer canary")).toBeNull();
@@ -283,7 +283,7 @@ describe("prepared disclosure release and same-intent recovery", () => {
    return reply(progress);
   });
   render(<ProviderChatPanel workspaceId={id.workspace} projectId={id.project} onReview={onReview} />);
-  fireEvent.click(screen.getByRole("button", { name: /Saved API chat · workspace/ }));
+  fireEvent.click(screen.getByRole("button", { name: /Saved API chat · shared context/ }));
   await screen.findByLabelText("Retained chat turns");
   fireEvent.change(screen.getByLabelText("Retained chat turns"), { target: { value: id.turn } });
   await screen.findByRole("button", { name: "Review exact draft submittal" });
@@ -327,6 +327,50 @@ describe("prepared disclosure release and same-intent recovery", () => {
    else expect(screen.queryByRole("button", { name: "Review exact draft submittal" })).toBeNull();
   });
   expect(onReview).toHaveBeenCalledTimes(1);
+  expect(fetchMock.mock.calls.filter(([, init]) => init?.method === "POST")).toEqual([]);
+ });
+});
+
+describe("retained page polling", () => {
+ it.each([100, 101, 205])("drains %i events after terminal state, replay, append and reconnect with GET only", async total => {
+  let count = total, replayed = false;
+  const offsets: number[] = [];
+  const event = (sequence: number) => ({ sequence, kind: "retained_event", body: { sequence },
+   bodyHash: sequence.toString(16).padStart(64, "0"), previousHash: sequence > 1 ? (sequence - 1).toString(16).padStart(64, "0") : null });
+  fetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
+   if (init?.method === "POST") throw new Error("Unexpected POST during page draining");
+   if (url.includes("operation=options")) return reply({ options: [] });
+   if (url.includes("operation=history")) return reply({ turns: [{ id: id.turn, state: "succeeded" }] });
+   const requested = Number(new URL(url, "http://localhost").searchParams.get("afterSequence")); offsets.push(requested);
+   // A delayed duplicate response must not duplicate the chain or poison polling.
+   const after = requested === 100 && !replayed ? (replayed = true, 0) : requested;
+   const events = Array.from({ length: Math.min(100, Math.max(0, count - after)) }, (_, n) => event(after + n + 1));
+   return reply({ released: true, turnId: id.turn, state: "succeeded", complete: true, cursor: events.at(-1)?.sequence ?? after, events,
+    texts: [{ stepId: id.step, text: "Checked terminal remains available", terminal: "stop", receiptHash: "a".repeat(64) }] });
+  });
+  const onReview = vi.fn();
+  async function mount() {
+   const mounted = render(<ProviderChatPanel workspaceId={id.workspace} projectId={id.project} onReview={onReview} />);
+   fireEvent.click(screen.getByRole("button", { name: /Saved API chat · shared context/ }));
+   await act(async () => { await Promise.resolve(); });
+   await act(async () => { fireEvent.change(screen.getByLabelText("Retained chat turns"), { target: { value: id.turn } }); });
+   return mounted;
+  }
+  vi.useFakeTimers();
+  const first = await mount();
+  for (let n = 0; n < 5; n++) await act(async () => { await vi.advanceTimersByTimeAsync(2000); });
+  expect(within(screen.getByRole("list", { name: "Retained tool and model progress" })).getAllByRole("listitem")).toHaveLength(total);
+  expect(screen.queryByRole("alert")).toBeNull();
+  expect(offsets[0]).toBe(0); expect(offsets).toContain(total);
+  count++;
+  await act(async () => { await vi.advanceTimersByTimeAsync(2000); });
+  expect(within(screen.getByRole("list", { name: "Retained tool and model progress" })).getAllByRole("listitem")).toHaveLength(total + 1);
+  first.unmount(); const beforeReconnect = offsets.length;
+  await mount();
+  for (let n = 0; n < 3; n++) await act(async () => { await vi.advanceTimersByTimeAsync(2000); });
+  expect(offsets[beforeReconnect], "a new mount drains from the original chain start").toBe(0);
+  expect(within(screen.getByRole("list", { name: "Retained tool and model progress" })).getAllByRole("listitem")).toHaveLength(total + 1);
+  expect(screen.queryByRole("alert")).toBeNull(); expect(onReview).not.toHaveBeenCalled();
   expect(fetchMock.mock.calls.filter(([, init]) => init?.method === "POST")).toEqual([]);
  });
 });

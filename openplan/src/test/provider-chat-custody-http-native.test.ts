@@ -138,6 +138,48 @@ live("saved API chat custody over signed local HTTP", () => {
   expect(await chatSessionRpc(f.owner, "finish_step", f.grant.turnId, { stepId, receipt, receiptHash })).toMatchObject({ released: true });
   return { receipt, receiptHash };
  }
+ // Authored only. Historical R36 installed430 is not this corrected installation.
+ it.each([100, 101, 205])("pages %i events over signed HTTP with replay, later append and terminal reconnect", async total => {
+  await fixture("Read every retained event page", async f => {
+   await start(f); const stepId = randomUUID(); await dispatch(f, 1, stepId);
+   const seed = await readChatSnapshot(f.owner, f.grant.turnId);
+   expect(seed.snapshot.cursor).toBe(3);
+   // Seed real progress through the same public RPC under the fixture owner.
+   // Page observations below still cross actual PostgREST and the locked decoder.
+   sql(`BEGIN; SET LOCAL ROLE authenticated;
+    SELECT set_config('request.jwt.claims',${literal(JSON.stringify({ sub: f.grant.owner.userId, role: "authenticated", is_anonymous: false }))},true);
+    DO $$ DECLARE n int; BEGIN FOR n IN 1..${total - 3} LOOP
+     PERFORM public.assistant_chat_session('progress','${f.grant.turnId}',jsonb_build_object('stepId','${stepId}','frameSequence',n,'text','x'));
+    END LOOP; END $$; COMMIT;`);
+   let after = 0, previousHash: string | null = null;
+   const sequences: number[] = [];
+   async function readPage() {
+    const { snapshot } = await readChatSnapshot(f.owner, f.grant.turnId, after);
+    expect(snapshot.events.length).toBeLessThanOrEqual(100);
+    expect((await readChatSnapshot(f.owner, f.grant.turnId, after)).snapshot).toEqual(snapshot);
+    for (const event of snapshot.events) {
+     expect(event.sequence).toBe(after + 1); expect(event.previous_hash).toBe(previousHash);
+     expect(event.body_hash).toBe(chatHash(canonicalChat(event.body)));
+     after = event.sequence; previousHash = event.body_hash; sequences.push(after);
+    }
+    expect(snapshot.cursor, "HTTP cursor stops at the last event actually returned").toBe(after);
+    return snapshot;
+   }
+   for (let n = 0; n < Math.ceil(total / 100); n++) await readPage();
+   expect(sequences).toEqual(Array.from({ length: total }, (_, n) => n + 1));
+   expect((await readPage()).events).toEqual([]);
+   expect(await chatSessionRpc(f.owner, "progress", f.grant.turnId, { stepId, frameSequence: total - 2, text: "x" })).toMatchObject({ released: true });
+   expect((await readPage()).events).toHaveLength(1);
+   const raw = chatStreamFrame({ role: "assistant", content: "x".repeat(total - 2) }, "stop") + "data: [DONE]\n\n";
+   await finish(f, stepId, raw);
+   const terminal = await readPage(); expect(terminal.state).toBe("succeeded"); expect(terminal.events).toHaveLength(2);
+   expect(after).toBe(total + 3); expect((await readPage()).events).toEqual([]);
+   after = 0; previousHash = null; sequences.length = 0;
+   for (let n = 0; n < Math.ceil((total + 3) / 100); n++) expect((await readPage()).state).toBe("succeeded");
+   expect(sequences).toEqual(Array.from({ length: total + 3 }, (_, n) => n + 1));
+   expect((await readPage()).events).toEqual([]);
+  });
+ });
  it.each(["Plain question", "\u0000", "literal \\u0000", "\ue000😀\n\u0000\t\b\f\r"])("round-trips exact canonical question %j through PostgREST", async question => {
   await fixture(question, async f => {
    await start(f);

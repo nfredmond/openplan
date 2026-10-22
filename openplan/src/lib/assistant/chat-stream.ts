@@ -24,12 +24,21 @@ export function advanceRetainedChatProgress(previous: RetainedChatProgress | nul
   for (let n = 0; n < events.length; n++) {
     if (!Number.isSafeInteger(events[n].sequence) || events[n].sequence < 1 || (n > 0 && (events[n].sequence !== events[n - 1].sequence + 1 || events[n].previousHash !== events[n - 1].bodyHash))) throw new Error("chat_progress_chain_invalid");
   }
+  const retained = previous?.released ? previous.events ?? [] : [];
+  const boundary = previous?.released ? previous.cursor : 0;
+  if (events.length ? next.cursor !== events.at(-1)!.sequence : next.cursor > boundary) throw new Error("chat_progress_cursor_gap");
+  const fresh = events.filter(event => event.sequence > boundary);
+  for (const event of events.filter(event => event.sequence <= boundary)) {
+    const prior = retained.find(saved => saved.sequence === event.sequence);
+    if (!prior || prior.bodyHash !== event.bodyHash || prior.previousHash !== event.previousHash || prior.kind !== event.kind ||
+      JSON.stringify(prior.body) !== JSON.stringify(event.body)) throw new Error("chat_progress_chain_invalid");
+  }
+  if (fresh.length && (fresh[0].sequence !== boundary + 1 || fresh[0].previousHash !== (retained.at(-1)?.bodyHash ?? null))) throw new Error("chat_progress_cursor_gap");
   if (previous?.released && next.cursor < previous.cursor) return previous;
-  if (previous?.released && previous.events?.length && events.length && (events[0].sequence !== previous.cursor + 1 || events[0].previousHash !== previous.events.at(-1)?.bodyHash)) throw new Error("chat_progress_cursor_gap");
   const terminal = next.texts?.at(-1);
   if (next.texts?.some(t => typeof t.text !== "string" || !["stop", "tool_calls"].includes(t.terminal) || !/^[a-f0-9]{64}$/.test(t.receiptHash))) throw new Error("chat_progress_terminal_invalid");
   if (next.complete && (next.state !== "succeeded" || terminal?.terminal !== "stop" || !/^[a-f0-9]{64}$/.test(terminal.receiptHash))) throw new Error("chat_progress_terminal_missing");
-  return { ...next, events: [...(previous?.released ? previous.events ?? [] : []), ...events], complete: next.complete === true && next.state === "succeeded" };
+  return { ...next, events: [...retained, ...fresh], complete: next.complete === true && next.state === "succeeded" };
 }
 
 /**

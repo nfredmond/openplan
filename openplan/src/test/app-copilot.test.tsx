@@ -559,7 +559,7 @@ describe("AppCopilot", () => {
     await openPanel();
     const parent = screen.getByRole("dialog");
     expect(parent.tagName).toBe("DIALOG");
-    fireEvent.click(screen.getByRole("button", { name: /Saved API chat · workspace/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Saved API chat · shared context/ }));
     const turns = await screen.findByLabelText("Retained chat turns");
     fireEvent.change(turns, { target: { value: turnId } });
     const reviewButton = await screen.findByRole("button", { name: "Review exact draft submittal" });

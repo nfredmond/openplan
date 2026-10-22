@@ -48,6 +48,9 @@ jobs:
         run: npm exec -- supabase db reset
 
       - name: Run live RLS isolation proof
+        env:
+          OPENPLAN_CHAT_NATIVE_FIXTURE: '1'
+          OPENPLAN_SUPABASE_WORKDIR: '${{ github.workspace }}/openplan'
         run: npm run test:rls-live
 
       - name: Stop Supabase

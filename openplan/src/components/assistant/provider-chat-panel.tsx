@@ -159,9 +159,9 @@ export function ProviderChatPanel({ workspaceId, projectId, onReview }: { worksp
   for (const turn of readTurns) if (turn.workspaceId === workspaceId) retainedTurns.set(turn.id, turn);
   if (active && !retainedTurns.has(active)) retainedTurns.set(active, { id: active, state: "unassessed" });
   return <section ref={panelRef} tabIndex={-1} aria-label="Saved API Planner Agent chat" className="min-w-0 rounded-lg border border-border bg-background p-3 text-sm text-foreground">
-    <button type="button" aria-expanded={opened} onClick={() => setOpened(v => !v)}>Saved API chat · workspace and selected projects</button>
+    <button type="button" aria-expanded={opened} onClick={() => setOpened(v => !v)}>Saved API chat · shared context and selected projects</button>
     {opened ? <div className="mt-3 min-w-0 space-y-3">
-      <p>This first profile excludes runs, financial records, documents, history and searches. Installed Codex, Claude Code, OpenCode and the remaining contexts and tools remain unfinished.</p>
+      <p>This first profile excludes runs, financial data, documents, history and searches. Installed Codex, Claude Code, OpenCode and the remaining contexts and tools remain unfinished.</p>
       {error ? <p role="alert">{error}</p> : null}
       <button type="button" onClick={() => setShowRecovery(v => !v)}>Read original approved-submittal results</button>
       {showRecovery ? <div><p>This recovery uses original approval permissions, separately from chat-body access.</p><ApprovedSubmittalRecovery workspaceId={workspaceId} /></div> : null}
@@ -169,7 +169,7 @@ export function ProviderChatPanel({ workspaceId, projectId, onReview }: { worksp
       <label className="block">Saved API and model<select aria-label="Saved API and model" value={selected} disabled={busy} className="block w-full border border-border bg-background text-foreground" onChange={e => { setSelected(e.target.value); invalidate(); }}>
         <option value="">Choose an admitted saved API/model</option>{options.map(o => <option key={o.id} value={o.id}>{o.selection.modelId} · {o.selection.endpoint} · {o.selection.authMode}</option>)}</select></label>
       <label className="block">Additional selected project IDs, optional<input aria-label="Additional selected project IDs" className="block w-full border border-border bg-background text-foreground" value={additionalIds} disabled={busy} onChange={e => { setAdditionalIds(e.target.value); invalidate(); }} /></label>
-      <label className="flex gap-2"><input type="checkbox" checked={includeIndex} disabled={busy} onChange={e => { setIncludeIndex(e.target.checked); invalidate(); }} />Allow the separate workspace-wide project index, at most 25 names/statuses. Listing does not authorize deeper reads.</label>
+      <label className="flex gap-2"><input type="checkbox" checked={includeIndex} disabled={busy} onChange={e => { setIncludeIndex(e.target.checked); invalidate(); }} />Allow the separate project list here, at most 25 names/statuses. Listing does not authorize deeper reads.</label>
       <label className="block">Saved API chat question<textarea aria-label="Saved API chat question" className="block w-full border border-border bg-background text-foreground" maxLength={2000} value={question} disabled={busy} onChange={e => { setQuestion(e.target.value); invalidate(); }} /></label>
       <button type="button" disabled={busy || !selected || !question.trim()} onClick={() => { void prepare(); }}>Preview exact disclosure</button>
       {prepared && grant ? <div aria-label="Exact API chat disclosure" className="space-y-2 border border-border p-2">

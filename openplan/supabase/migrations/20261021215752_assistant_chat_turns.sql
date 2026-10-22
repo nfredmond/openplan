@@ -678,10 +678,14 @@ BEGIN
  END IF;
  IF p_operation='read' THEN
   SELECT * INTO t FROM public.assistant_chat_turns WHERE id=t.id;
-  result:=jsonb_build_object('released',true,'turnId',t.id,'attemptId',t.attempt_id,'state',t.state,'revision',t.revision,'cursor',t.cursor,
+  -- Advance only through this page. Empty reads retain the requested boundary;
+  -- a later append remains reachable even when the turn is already terminal.
+  SELECT coalesce(jsonb_agg(to_jsonb(x) ORDER BY sequence),'[]'),coalesce(max(sequence),coalesce((p_payload->>'afterSequence')::bigint,0)) INTO e,n
+   FROM (SELECT * FROM public.assistant_chat_events WHERE turn_id=t.id AND sequence>coalesce((p_payload->>'afterSequence')::bigint,0) ORDER BY sequence LIMIT 100) x;
+  result:=jsonb_build_object('released',true,'turnId',t.id,'attemptId',t.attempt_id,'state',t.state,'revision',t.revision,'cursor',n,
    'leaseExpiresAt',t.lease_expires_at,'canonical',g.canonical,'digest',g.digest,'modelSteps',t.model_steps,'usageUnknown',t.usage_unknown,
    'reportedOutputTokens',t.reported_output_tokens,'responseBytes',t.response_bytes,
-   'events',coalesce((SELECT jsonb_agg(to_jsonb(x) ORDER BY sequence) FROM (SELECT * FROM public.assistant_chat_events WHERE turn_id=t.id AND sequence>coalesce((p_payload->>'afterSequence')::bigint,0) ORDER BY sequence LIMIT 100) x),'[]'),
+   'events',e,
    'steps',coalesce((SELECT jsonb_agg(to_jsonb(x) ORDER BY sequence) FROM public.assistant_chat_steps x WHERE turn_id=t.id),'[]'),
    'calls',coalesce((SELECT jsonb_agg(to_jsonb(x) ORDER BY step_id,call_id) FROM public.assistant_chat_tool_calls x WHERE turn_id=t.id),'[]'),
    'sources',coalesce((SELECT jsonb_agg(envelope ORDER BY id) FROM public.assistant_chat_sources WHERE turn_id=t.id),'[]'),

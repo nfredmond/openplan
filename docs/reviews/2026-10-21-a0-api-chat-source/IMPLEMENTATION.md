@@ -838,3 +838,269 @@ mounted project journey. Real-provider authentication, terms, billing and
 usefulness, installed Codex/Claude Code/OpenCode, remaining APIs and all 19
 contexts, races, independent restore, hosted operation and full A0/v1 remain
 open. Broad and production profiles stay CLOSED. No scientific claim changes.
+
+## R47 repairs bounded pagination and maintained schema accounting
+
+October 22, 2026 UTC. PR365 review finding r4344503884 identifies a new reachable
+P2 after R46's bounded admission. Migration 430 returns at most 100 events but
+previously reports the full turn cursor. R46's dated findings remain preserved;
+they do not establish acceptance of this later pagination boundary.
+
+The unmerged read branch now aggregates the page and its maximum sequence from
+one limited query. Empty pages retain afterSequence. The result keeps the same
+fields, current turn state, consent/access checks and canonical response envelope.
+The existing Panel continues GET polling after terminal state. The retained
+reducer requires the cursor to match its page, accepts identical overlapping
+replays without duplication and refuses changed replay bodies or chain gaps.
+No new protocol field, stored canonical bytes, approved-action hash, custody
+limit, provider call, retry or admission change enters this repair.
+
+The focused maintained schema reproduction reports six passes, one unread-column
+failure with 40 unaccounted fields, and an inventory collection failure at the
+actual policy-copy format arguments. The repair adds only bounded support in
+existing migration helpers: prior-policy replay for the authenticated/public
+SELECT-copy query, regclass array literals and dynamic literal-array RLS ALTERs.
+Unknown query shapes still throw. Every new unread field has its own actual
+SQL-read, uniqueness or retained-write reason and source anchor. No migration,
+statement, column or policy is exempted. Strict equality remains: 336 relations,
+322 tables, 14 views, 322 RLS tables, 786 policies, 535 permissive, 251 restrictive,
+290 permissive writes, 302 expanded policies and 242 policy-bearing tables.
+The nine new custody tables and the first authorizer policies on the original
+approval table account for ten additional policy-bearing tables. R36's saved
+catalogue independently retains seven copied SELECT qualifications equal to
+original qualifications. These are dated catalogue comparisons and current
+source counts, not a fresh installation or effective-permission proof.
+
+The first repair run retains 34 passes and three inventory failures while the
+exact census, FOR ALL list and standalone parser caller are brought into line.
+A later focused run retains 74 passes and one test-authoring failure because
+Vitest rewrites import.meta.url to a non-file URL. Reading the actual package
+migration path fixes that test seam. The final focused cohort passes 75 cases.
+The restored relevant ordinary cohort passes 288 cases in 21 files, with zero
+failures, skipped, pending or todo cases. Strict scoped lint and diff checks pass.
+
+A harmless comment survives all 75 focused cases. Ten separately restored faults
+reach named failures for the old SQL cursor, accepting an oversized cursor,
+duplicate replay append, changed replay body, stopping terminal polling,
+permissive/restrictive copy corruption, wrong copy audience, missing dynamic RLS,
+a newly unaccounted column and removal of one new field explanation. Actual
+fault runners retain 14 failed assertions and 158 selector skips in total; none
+is counted as a baseline pass. Exact bytes and filesystem modes restore.
+The existing maintained schema driver runs once: its actual 37-case baseline,
+harmless and restored checks pass, and all five original intended faults fail
+for their original diagnostics. Driver source, thresholds, test identities and
+oracles remain unchanged. A private invocation wrapper adds only --no-cache and
+--pool=forks; every run remains serial with one worker and a 6144 MiB heap cap.
+
+Three added cases in each existing native file cover 100, 101 and 205 real
+events, replay, empty tail, later append, terminal state and reconnect. All
+original 21 native and six HTTP cases and their assertions remain intact.
+Neither file is imported or executed here. Native/SQL/signed-HTTP behavior stays
+UNRUN for this corrected source. R36 installed430 remains correct historical
+old-source evidence and receives no operation. Any later native acceptance needs
+a fresh populated 429-to-corrected-430 installation, separately authorized.
+
+The private packet is a0-pagination-schema-repair-20261022-r47. At this note's
+source freeze, the single configured compiler check remains pending. Its actual
+terminal receipt in that packet governs compiler evidence. No build or repeat
+is authorized. Source/index/compiler/runtime ownership returns before private
+final packaging. Root retains all commit, push, PR, CI and integration authority.
+The other QA failures are outside this repair and receive no fix here.
+
+These ordinary and source checks cannot establish installed SQL semantics,
+PostgREST transport, effective RLS, races, native/browser behavior or a clean
+network. R45's unread reconcile bodies and missing intentional after-effect
+reply-loss case remain limitations. Broad and production admissions remain
+CLOSED. The original R4 contract, all 19 contexts, all required APIs and installed
+Codex/Claude Code/OpenCode, independent recovery, hosted operation, science and
+full A0/v1 requirements remain unchanged. No capability grade or roadmap changes.
+
+The precompiler freeze initially stops on changed raw-index bytes, with mode
+0664 and size unchanged. Independent staged-mode/blob comparison and HEAD remain
+exact. The original raw preimage exists in this packet, so restoring those exact
+bytes succeeds and is verified. Both observed indices and the failed assertion
+remain retained. The process that refreshed the index is unassessed; no source,
+staged-content or historical R36 custody failure is recast as repaired by this.
+
+
+## R48 prepares bounded non-SQL integration repairs; joined acceptance stays open
+
+October 22, 2026 UTC. This isolated implementation starts at the prepared
+05dd3e8da4a4572437f06e771b0a2477873e681f branch, fetches the exact local
+candidate commit, and fast-forwards normally to
+d9e5f78de31aef6db38febe53c36cba58f9e4313. The clean base app tree is
+3997e6d12b4e1b1bcb53f5f22605609168c1d473. Worktree is
+/home/nathaniel/.t3/worktrees/openplan/t3-19e815b4, branch
+t3/pr365-non-sql-integration-repair. Live settings identify codex,
+gpt-6.1-sol, high reasoning and priority service. Root owns the join after
+R47 and R48 handbacks; this note is a separate append after R47's note.
+
+The two new chat routes call the actual API audit logger for successful,
+withheld and refused outcomes. Context contains fixed outcome names, closed
+operation names, numeric statuses and release booleans. Questions, canonical
+payloads, draft bodies, credentials and backend error text are not audit
+context. Cookie authentication, browser origin checks, existing consent,
+current-access helpers, canonical wire and original action authority remain.
+The three runtime installation/pool settings now appear as commented examples
+with honest unset/refusal behavior. The maintained live RLS test list names
+both chat native files. Package dependencies, version and lock stay exact.
+The actual new copy removes two planner-facing workspace modifiers and the
+financial-record noun. Existing baseline counts and ledger terms stay exact.
+The matching panel and mounted-copilot test selectors follow the changed label.
+
+The role guard declares only the exact chat route as personal disclosure and
+custody transport. A bounded command-inventory assertion refuses a new command
+under that exception; no chat endpoint family is exempted. Original business
+approval and write gates remain. The reference guard's 182-less-than-182 failure
+comes from four imported frozen-object projection properties that the TypeScript
+query-site scanner leaves unknown. It now resolves direct frozen literal
+properties, keeps mutable/computed/spread/getter/shadowed cases unknown, and
+anchors all four actual chat reads to their tables and expressions. An invalid
+project column fails the schema assertion. The existing unknown ceiling remains
+less than 182; no threshold, view exception or case is removed. SQL schema and
+policy parsers, inventory and unread-column sources receive no edit.
+
+The restored ordinary run passes 133 tests across 12 files, zero failures,
+skips or todo. Strict scoped lint passes nine TypeScript files; diff checking
+passes. The harmless cohort passes 77 cases, with zero skips. Thirteen targeted
+faults fail the intended audit, access/origin, projection, command, copy,
+selection, setting, live-registration and launcher assertions. The mounted
+harmless control passes one case with 26 selector skips. Its launcher fault
+fails that case with the same 26 skips; the checkbox fault has 24 selector
+skips. Every mutation restores exact bytes and filesystem mode. Initial
+expectation failures, the first role-inventory control's accidental inclusion
+of GET operations, and the original CI failures remain in the private packet.
+All ordinary runs use one worker, no file parallelism, a 6 GiB heap and disabled
+Vitest caching. No native fixture is discovered or executed by these commands.
+
+Two integration boundaries remain with root. The unchanged destructive guard
+still flags migration430 line 56, UPDATE of the freshly created private policy
+pins after the additional policies are installed. R48 changes neither that
+statement nor its allowance. At this base there is no flagged public-wrapper
+DROP to approve. Both newly registered native files still require their existing
+OPENPLAN_CHAT_NATIVE_FIXTURE opt-in and an absolute isolated stack path. The
+maintained workflow does not supply those inputs; its wiring is outside this
+lane's package-test-list-only permission. Registration alone does not establish
+native execution. R47 owns the separate SQL, event pagination, schema inventory,
+unread-column and PL/pgSQL failures. They are neither duplicated nor waived.
+
+All 430 SQL sources, including the 429 released migrations, and all six original
+authority bodies remain byte-exact. The private exact-lock install has 969
+matching installed records and package versions. No dependency is borrowed and
+no prior build exists in this worktree. chat-tools.ts and the separate model
+retry lane stay untouched. Compiler remains CLOSED. No database/native/HTTP,
+provider/account/model, browser, build, commit, push, PR/CI operation or delegation
+runs. Full CI remains failed at the retained d9e5 checkpoint and joined checks
+remain unrun. This is source preparation with ordinary controls, not a release
+or repaired-source visible acceptance. Broad and production admissions remain
+CLOSED. Full A0 across all 19 contexts, API and installed backends, the scientific
+floor and complete v1 contract stay binding. No Nathaniel decision is assumed
+missing.
+
+Private packet:
+/home/nathaniel/.local/state/openplan/a0-ci-product-integration-repair-20261022-r48.
+
+
+## R48 continuation-01 closes the two authorized source integration boundaries
+
+October 22, 2026 UTC. Root accepts the narrow migration430 UPDATE rationale
+and authorizes the maintained RLS test-step inputs. This continuation changes
+only .github/workflows/rls-isolation.yml, no-destructive-migration.test.ts,
+package-scripts-resolve.test.ts and this separate append. All other R48 source
+bodies and the complete original R48 packet retain exact bytes and modes.
+Worktree remains /home/nathaniel/.t3/worktrees/openplan/t3-19e815b4 on branch
+t3/pr365-non-sql-integration-repair, HEAD
+d9e5f78de31aef6db38febe53c36cba58f9e4313. R47 is not joined. Live settings
+remain codex/gpt-6.1-sol, high reasoning and priority service.
+
+One file-and-kind UPDATE entry records the technical lead's authorized
+rationale. The private schema/table are newly created in the same BEGIN
+migration; eight earlier rows capture policy sets, and their fresh fingerprints
+are recomputed after seven cloned and five explicit policies. No preexisting
+tenant/history data changes; an existing schema fails creation rather than
+replaying. Historical test-comment wording about human review stays exact and
+is not recast as a new human-review claim. The accompanying assertion permits
+only the exact single top-level source_policy_pins/policy_fingerprint(table_oid)
+UPDATE. It pins fresh schema/table creation, transaction boundaries, the eight
+seeded relations and seed/policy/refresh order. The coarse file/kind entry cannot
+alone admit an added tenant UPDATE, a retargeted tenant UPDATE or another private
+UPDATE in that file. Shared parsers and production SQL remain unchanged.
+
+The existing live RLS test step now supplies OPENPLAN_CHAT_NATIVE_FIXTURE='1'
+and OPENPLAN_SUPABASE_WORKDIR='${{ github.workspace }}/openplan'. Its job still
+uses ./openplan as the CLI cwd. Both native gates and the actual two-file test
+list remain. The new package-script assertion anchors the exact maintained job,
+test step, environment, cwd, script gate, file list and existing native source
+gates. Supabase start/reset/stop, other environment, restore-drill workflow,
+profile enablement, native clocks, privileges and fixture assertions stay exact.
+No native or remote workflow execution follows from this source wiring.
+
+The restored ordinary cohort passes 139 tests across 13 files, with zero
+failures, skips or todo. Scoped lint passes all 11 changed TypeScript files
+across R48 and this continuation; diff checks pass. A harmless SQL comment and
+workflow comment survive all 11 focused guard cases. Five targeted faults each
+fail exactly one named assertion: added tenant UPDATE, retargeted tenant UPDATE,
+added private UPDATE, missing native opt-in and wrong native workdir. Every
+control restores exact source bytes and filesystem modes. All ordinary runs
+remain serial with one worker, no file parallelism, no Vitest cache and a 6 GiB
+heap. The controls only mutate source text read by ordinary tests. No SQL is
+executed, and no native file is invoked even for skipped discovery.
+
+The original CI failures and original R48 boundary report remain historical
+records. This note supersedes only those two unresolved source boundaries.
+Statement scanning does not prove runtime SQL, RLS or effective privileges;
+workflow source assertions do not prove GitHub execution or the installed stack.
+Root owns the R47/R48 join and the single later joined compiler admission.
+Compiler remains CLOSED here. No database/native/HTTP, provider/account/model,
+browser, build, PR/CI operation, commit, push or delegation runs. Broad and
+production admissions stay CLOSED; full A0 across all 19 contexts and API/installed
+backends, scientific validation and the complete v1 contract remain binding.
+No Nathaniel decision is missing. This remains source preparation with ordinary
+controls, not a release or joined native/visible acceptance.
+
+Continuation packet:
+/home/nathaniel/.local/state/openplan/a0-ci-product-integration-repair-20261022-r48/continuation-01.
+
+
+## R52 source continuation: dedicated chat custody census
+
+R49 identifies five live catalogue names absent from the dedicated registry. R52 adds those exact names and the exact expected set, with no exception or uncovered-census relaxation. Both existing original approval/receipt native variants now author populated direct SELECT/INSERT/UPDATE/DELETE checks as owner, outsider and anon, role/actor identity checks, owner session/intent positive reads, nonowner RPC refusals and complete persisted-row comparisons. Valid postgres INSERT copies are proven and rolled back before denial probes; only 42501 or intended zero-row behavior counts as denial. The actual five-table list, registry, operation loop and fixture call are bound by an ordinary package-script guard.
+
+Authored totals remain 24 native and nine signed HTTP cases. R47 pagination cases and all original native assertions remain exact after removing R52's finite additions. R52 executes no SQL/native/HTTP or compiler. Its restored ordinary source cohort passes eight assertions, with 21 gated live cases skipped and no pass credit. Harmless comments survive; wrong registry, omitted probe table and omitted actual INSERT each reach their intended source assertions, followed by exact bytes/mode restoration. Scoped three-file lint passes. Source, staged entries, raw index, dependency pins and existing prebuild inventory remain exact outside the three authorized files. Broad/production profiles stay CLOSED. The private R52 report and SOURCE.patch hold the exact pins and limits. Root owns compiler, commit and subsequent explicit runtime admission.
+
+
+## Root joins pagination and operational repairs before corrected native admission
+
+October 22, 2026 UTC. R47 and R48 continuation source join normally without a
+production conflict. R47's appended mounted pagination test retained the old
+launcher label. The first joined cohort records 357 passes and three failures
+at that locator. A one-literal correction follows the actual shared-context
+label, preserving all pagination, reconnect and no-extra-POST assertions. The
+restored 29-file cohort passes 360 cases, zero skips or todo. R51 independently
+accepts the bounded joined production/security/census source and identifies the
+same test seam. It performs no execution and grants no native acceptance.
+
+R49's completed old RLS/restore logs separately identify five uncovered live
+catalogue tables. R52 supplies the dedicated populated-row probe source and
+exact registry mapping described above. Root reviews its three-file delta. The
+final joined ordinary cohort passes 362 cases across 30 files, with 21 gated
+RLS cases skipped and no todo. No skipped case becomes native evidence. Scoped
+lint and direction checks pass, with existing direction reminders retained.
+
+One configured compiler exits zero at 05:09:51.534141 UTC, using the actual
+tsconfig, retained Next declarations, no emit, no incremental cache and a
+6 GiB Node heap. Stdout and stderr are empty. All 18,616 captured source/link
+records remain exact during the compiler. A private precompiler snapshot first
+follows a tracked skill symlink and fails before any compiler invocation; the
+corrected snapshot records link text without traversing it. That preparation
+failure is retained and earns no compiler credit. Exactly one compiler runs.
+
+Root commits this source/ordinary/type checkpoint for a fresh populated
+429-to-corrected430 native and signed-HTTP admission. The authored totals remain
+24 native and nine signed-HTTP cases, all unrun on this corrected source. Old
+R36's installed430 and historical outcomes remain untouched. Broad/production
+admissions remain closed. No new build/browser/provider, full CI, scientific,
+full A0 or v1 acceptance follows. R45's prior mounted outcome keeps its original
+source, unread-reconcile-body and later-abort limits. All 19 contexts and required
+API/installed backends remain binding. Root's private receipts are under
+a0-r47-r48-joined-20261022-r50 on this host.
