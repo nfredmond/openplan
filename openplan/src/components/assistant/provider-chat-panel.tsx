@@ -31,6 +31,15 @@ export function ProviderChatPanel({ workspaceId, projectId, onReview }: { worksp
   const retainedCursor = useRef<{ turnId: string; sequence: number } | null>(null);
   const reading = useRef(false);
   const selectedTurn = useRef<string | null>(null), retainedView = useRef<RetainedChatProgress | null>(null);
+  const cancelledReviewFocus = useRef<{ control: HTMLButtonElement; turnId: string | null } | null>(null);
+  // The invoking control is disabled during review. Restore it only after the
+  // cancellation reads settle and React commits the enabled retained control.
+  useEffect(() => {
+    if (busy) return;
+    const target = cancelledReviewFocus.current;
+    cancelledReviewFocus.current = null;
+    if (target?.control.isConnected && !target.control.disabled && selectedTurn.current === target.turnId) target.control.focus();
+  }, [busy]);
   function chooseTurn(turnId: string | null) {
     if (selectedTurn.current !== turnId) { retainedCursor.current = null; retainedView.current = null; setView(null); }
     selectedTurn.current = turnId; setActive(turnId);
@@ -109,7 +118,8 @@ export function ProviderChatPanel({ workspaceId, projectId, onReview }: { worksp
     }
     catch { setUncertain(old => ({ ...old, [intentId]: true })); setError("Checking the original approval is unavailable. No replacement approval or execution is offered."); }
   }
-  async function reviewIntent(intentId: string) {
+  async function reviewIntent(intentId: string, control: HTMLButtonElement) {
+    const turnId = selectedTurn.current;
     setBusy(true); setError(null);
     try {
       const response = await json<{ review: ChatIntentReview | null; status: IntentStatus }>(`${chatUrl}/intents?intentId=${intentId}&review=true`);
@@ -117,11 +127,13 @@ export function ProviderChatPanel({ workspaceId, projectId, onReview }: { worksp
       if (!response.review || response.review.intentId !== intentId || response.status.intentId !== intentId || response.status.state !== "proposed" || response.status.originalApprovalId !== null || response.status.executionState !== "not_requested") return;
       await onReview(response.review);
     } catch (reason) {
-      if (!(reason instanceof ChatReviewCancelled)) {
+      if (reason instanceof ChatReviewCancelled) {
+        cancelledReviewFocus.current = { control, turnId };
+      } else {
         setUncertain(old => ({ ...old, [intentId]: true }));
         setError(reason instanceof Error ? reason.message : "Check the original approval and result.");
       }
-    } finally { setBusy(false); await checkIntent(intentId); if (active) await refresh(active); }
+    } finally { await checkIntent(intentId); if (active) await refresh(active); setBusy(false); }
   }
   async function reconcile(intentId: string) {
     setBusy(true);
@@ -170,7 +182,7 @@ export function ProviderChatPanel({ workspaceId, projectId, onReview }: { worksp
           {view.intents?.map(i => { const status = statuses[i.intentId], state = status?.state ?? i.state, bound = Boolean(status?.originalApprovalId ?? i.originalApprovalId);
             const reviewable = view.complete && state === "proposed" && !bound && (status?.executionState ?? i.executionState) === "not_requested" && !uncertain[i.intentId];
             return <div key={i.intentId} className="space-y-2 border border-border p-2"><p>Draft proposal {i.intentId}. State: {state}. Receipt: {status?.receiptState ?? i.receiptState}.</p>
-              {reviewable ? <button type="button" disabled={busy} onClick={() => { void reviewIntent(i.intentId); }}>Review exact draft submittal</button> : <p>Recovering the original approval/result. No fresh approval or execution is offered.</p>}
+              {reviewable ? <button type="button" disabled={busy} onClick={event => { void reviewIntent(i.intentId, event.currentTarget); }}>Review exact draft submittal</button> : <p>Recovering the original approval/result. No fresh approval or execution is offered.</p>}
               <button type="button" disabled={busy} onClick={() => { void checkIntent(i.intentId); }}>Check original approval</button>
               <button type="button" disabled={busy || !bound} onClick={() => { void reconcile(i.intentId); }}>Reconcile original result</button>
               <a className="block underline" href={status?.recoveryHref ?? i.recoveryHref}>Open approved-submittal recovery</a>

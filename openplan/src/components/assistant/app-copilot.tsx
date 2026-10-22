@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { ModalDialog } from "@/components/ui/modal-dialog";
 import { ArrowUpRight, Bot, ChevronDown, ChevronRight, Eye, EyeOff, Loader2, Pin, Send, Sparkles, User, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -567,7 +567,7 @@ function ApprovalPayloadDisclosure({ action }: { action: AssistantQuickLinkExecu
       <p className="border-b border-border px-3 py-2 text-label font-semibold text-muted-foreground">
         Exactly what you are approving
       </p>
-      <dl className="max-h-56 space-y-2.5 overflow-y-auto px-3 py-2.5">
+      <dl tabIndex={0} aria-label="Full action payload" className="max-h-56 space-y-2.5 overflow-y-auto px-3 py-2.5">
         {fields.map(([key, value]) => (
           <div key={key}>
             <dt className="text-label font-semibold text-muted-foreground">{key}</dt>
@@ -1457,6 +1457,8 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
   const drawerTitleId = useId();
+  const approvalTitleId = useId();
+  const approvalCancelRef = useRef<HTMLButtonElement | null>(null);
   const [basePreview, setBasePreview] = useState<AssistantPreview | null>(null);
   const [liveConsoleState, setLiveConsoleState] = useState<AssistantLocalConsoleState | null>(null);
   const [operationStatus, setOperationStatus] = useState<OperationInvocationState | null>(null);
@@ -2713,43 +2715,47 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
             </div>
 
             {pendingApproval ? (
-              <div
-                className="absolute inset-0 z-30 flex items-end justify-center bg-slate-950/62 p-5 backdrop-blur-[2px]"
-                role="dialog"
-                aria-modal="true"
-                aria-label="Approve Planner Agent action"
+              <ModalDialog
+                titleId={approvalTitleId}
+                onRequestClose={cancelPendingApproval}
+                initialFocusRef={approvalCancelRef}
+                className="fixed inset-y-0 left-auto right-0 m-0 h-dvh max-h-none w-full max-w-[560px] rounded-none border-0 bg-transparent backdrop:bg-slate-950/62 backdrop:backdrop-blur-[2px]"
               >
-                <div className="w-full max-w-[480px] rounded-[0.75rem] border border-[color:color-mix(in_srgb,var(--status-warn)_35%,transparent)] bg-background px-5 py-4">
-                  <p className="text-label font-semibold text-[color:var(--status-warn)]">Approval required</p>
-                  <h3 className="mt-2 text-base font-semibold text-foreground">{pendingApproval.label}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-foreground">
-                    {getActionMetadata(pendingApproval.action.kind).description}
-                  </p>
-                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                    Approving records audit evidence ({getActionMetadata(pendingApproval.action.kind).auditEvent}) and then makes a real change in OpenPlan. Press Esc or choose Cancel to stop.
-                  </p>
-                  <ApprovalPayloadDisclosure action={pendingApproval.action} />
-                  <div className="mt-4 flex items-center justify-end gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="border-border bg-foreground/[0.04] text-foreground hover:bg-foreground/[0.04] hover:text-foreground"
-                      onClick={cancelPendingApproval}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      className="bg-[color:var(--status-warn)] text-background hover:opacity-90"
-                      onClick={approvePendingApproval}
-                    >
-                      Approve action
-                    </Button>
+                <div className="flex h-full items-end justify-center p-5">
+                  <p id={approvalTitleId} className="sr-only">Approve Planner Agent action</p>
+                  <div className="w-full max-w-[480px] rounded-[0.75rem] border border-[color:color-mix(in_srgb,var(--status-warn)_35%,transparent)] bg-background px-5 py-4">
+                    <p className="text-label font-semibold text-[color:var(--status-warn)]">Approval required</p>
+                    <h3 className="mt-2 text-base font-semibold text-foreground">{pendingApproval.label}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-foreground">
+                      {getActionMetadata(pendingApproval.action.kind).description}
+                    </p>
+                    <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                      Approving records audit evidence ({getActionMetadata(pendingApproval.action.kind).auditEvent}) and then makes a real change in OpenPlan. Press Esc or choose Cancel to stop.
+                    </p>
+                    <ApprovalPayloadDisclosure action={pendingApproval.action} />
+                    <div className="mt-4 flex items-center justify-end gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="border-border bg-foreground/[0.04] text-foreground hover:bg-foreground/[0.04] hover:text-foreground"
+                        ref={approvalCancelRef}
+                        onClick={cancelPendingApproval}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="bg-[color:var(--status-warn)] text-background hover:opacity-90"
+                        onClick={approvePendingApproval}
+                      >
+                        Approve action
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </ModalDialog>
             ) : null}
           </aside>
         </ModalDialog>

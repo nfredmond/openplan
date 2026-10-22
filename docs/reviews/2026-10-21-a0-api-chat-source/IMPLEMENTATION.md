@@ -668,3 +668,74 @@ commit, push, PR operation or CI polling runs. The six R36 containers receive
 no operation or fresh state assertion. Root owns the next source review,
 commit, identified build and retained-intent journey. Reports and release work
 remain separate. A0 broadly stays closed; wider acceptance remains unproved.
+
+## R43 repairs approval focus at source; native acceptance stays open
+
+October 22, 2026 UTC. This bounded source response addresses R42's initial
+BODY focus and cancellation focus loss. AppCopilot uses the existing native
+ModalDialog for the full-payload approval sheet, with explicit initial focus
+on Cancel. The unchanged original payload list gains a keyboard focus stop
+for scrolling. The shared modal supplies its existing Tab boundary handling
+and native dialog semantics. Shared ModalDialog itself stays unchanged.
+R41's pending-approval-only Escape preventDefault and the native parent close
+path stay exact. No global Escape suppression, timeout or control lookup is
+added.
+
+ProviderChatPanel receives the invoking button directly from its click event
+and retains that exact control and turn identity on typed cancellation. Review
+stays busy through the existing authorized intent check and retained refresh.
+An effect restores focus after React enables the original connected control,
+provided the selected turn still matches. Cancellation still issues no approval
+or effect. An absent, disabled or disconnected control receives no forced focus.
+The action payload, approval/hash/grant authority, registry, receipt paths,
+SQL, codec, provider configuration and all limits stay unchanged.
+
+The intake and restored ordinary cohorts each pass 228 tests in 18 files,
+with zero skips. The two focused component files pass 41 tests after repair.
+The pre-repair regression is retained: one failure at the missing native-modal
+assertion, one passing ordinary-Escape case and 25 selector skips. A harmless
+comment survives both changed cases. Six targeted faults fail the intended
+initial-focus, cancellation-restoration, premature-enable, ordinary-Escape,
+R41 default-cancellation and keyboard-payload assertions. The global-Escape
+fault fails both selected cases; each other fault fails one. Every control
+restores exact source bytes and modes. Selector skips are not passes. Strict
+scoped lint exits 0. These are jsdom and mocked-boundary checks, not browser
+proof of native defaults, top-layer containment, focus timing, geometry or
+keyboard scrolling. Compiler and build remain closed.
+
+The separate history defect is diagnosed without repair. Options/history load
+only on panel opening or workspace change. Acceptance selects the new turn
+and refreshes its progress, but does not update history. A select with earlier
+history options can therefore display an empty value while the internal active
+turn and checked proposal remain retained. The next separately owned repair
+must keep a newly accepted turn represented in history, including uncertain
+accept/drive replies, without adding a drive or approval retry. This round
+changes none of that history or acceptance code.
+
+Private evidence lives at
+/home/nathaniel/.local/state/openplan/a0-approval-focus-repair-20261022-r43.
+Candidate HEAD remains 9b337e9e5d1d8d7098635f1fe29412806e30c34f and HEAD app
+tree remains 150c71ffd84163f12573959bdd45ec824850bb8f. The raw index backup
+precedes Git status, and all Git uses GIT_OPTIONAL_LOCKS=0. Live inherited
+settings select codex/gpt-6.1-sol, high reasoning and priority service.
+
+One custody failure remains explicit. Vitest's default results cache writes
+node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/results.json.
+The intake census captures its hash and mode, but no raw preimage. The changed
+cache is retained privately. Exact restoration is unavailable, so this round
+cannot claim all dependency-directory bytes are preserved. Installed package
+records and versions are a separate narrower check. This generated-cache
+failure is not a source test failure and is not erased by passing tests.
+Future ordinary runs must isolate or disable that cache before execution.
+
+No database, HTTP, native suite, browser, server, provider, profile, admission,
+compiler, build, commit, push, PR operation or delegation runs. No native or
+390px acceptance follows. Full v1, all 19 contexts, every required API and
+installed backend, scientific validation and the CLOSED profile stay binding.
+Root owns source review and any later identified-build journey.
+
+Root disposition after exact-source review: retain the generated Vitest cache
+change and its failed strict-custody receipt. It changes runner results state,
+not installed library code, package records, lockfiles or the reviewed source.
+The missing preimage remains unavailable. This narrower exception permits the
+source checkpoint; it grants no blanket dependency-byte or native acceptance.
