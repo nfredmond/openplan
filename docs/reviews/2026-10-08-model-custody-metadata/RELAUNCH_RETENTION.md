@@ -466,3 +466,56 @@ concurrency, late writes, actual worker execution and identified desktop/390px
 acceptance remain unproved. General AequilibraE prepared scientific inputs and
 the full second-assignment/agreement lifecycle remain unfinished M3/S1 scope.
 This source checkpoint does not declare completed recovery or model accuracy.
+
+
+### Native protocol failure and bounded source response, October 22
+
+Owned native round08 installs the populated 429-migration release, applies the
+five existing migrations and then the sole model migration once. All 434
+predecessor history rows and original representative seed rows remain exact.
+Installed candidate function bodies and scoped ACLs match source. The single
+maintained model-truth baseline records five passes, one failed-run retry
+timeout at the unchanged 20-second limit, and 20 bail-unreached cases. No native
+producer-parity or completed retry acceptance follows from that run.
+
+The failed case reaches the deliberate stale expected-state refusal. Custom
+SQLSTATE 40001 causes PostgREST 14.15 to retry it indefinitely after the runner
+exits, matching the official Supabase KB. The exact owned residual backend is
+terminated and its absence verified after cancellation alone does not stop it.
+The running isolated 435 target, original rows/history, failure, cancellation
+and stop receipts remain retained in native08. No source correction is applied
+to that historical target.
+
+The separately admitted source09 response changes only the six-argument
+relaunch stale refusal code to PT409. Its predicate, exact message, request
+identity/replay, locks, authorization and retained-output decisions stay as
+before. The existing route returns the same HTTP 409 review-again response for PT409 while
+retaining genuine and historical 40001 handling. Unknown errors stay unconfirmed,
+and an error never becomes a successful receipt. The native fixture now
+asserts PT409, actual HTTP 409, exact message and unchanged persisted rows,
+including KPIs and retry receipts. Those new native assertions are unexecuted.
+
+The five-file ordinary recovery cohort records 153 passes with zero failed,
+skipped/pending or todo cases. A harmless comment survives. Reverting the code,
+reversing the stale predicate, removing either conflict mapping, or accepting
+an unknown error with a success-shaped payload fails the named ordinary
+assertions. Every temporary edit restores exactly. An initial source-guard
+file-URL error remains recorded; the corrected guard uses the maintained
+app-relative path. Source guards and mocked route results do not prove an
+installed PostgreSQL body, PostgREST response or live RLS.
+
+Other deliberate 40001 sites remain separately scoped. Population replacement
+uses another recovery decision branch and is not called by retry_execution.
+Reports/Safety writeback and access-request conflicts are outside this response.
+Their historical migrations remain byte-exact. General prepared science,
+second assignment/agreement, full same-run recovery, native selector parity
+and identified visible acceptance remain unfinished or unproved M3/S1 work.
+Compiler and all runtime/native admissions remain closed for source09.
+
+Reference: https://supabase.com/kb/troubleshooting/high-cpu-and-infinite-transaction-retries-when-using-custom-error-codes-in-rpc-functions
+
+The separately admitted configured compiler10 runs once and exits zero at
+2026-10-22T06:02:14.223846Z with empty stdout and stderr. Source, raw index
+and the absent Next declarations remain unchanged. This adds configured type
+evidence only. The corrected migration still requires a new isolated
+installation and native HTTP-conflict/state-preservation acceptance.

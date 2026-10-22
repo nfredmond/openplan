@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 const { rpc, createService } = vi.hoisted(() => ({ rpc: vi.fn(), createService: vi.fn() }));
 vi.mock("@/lib/supabase/server", () => ({ createServiceRoleClient: createService }));
@@ -117,4 +118,13 @@ it("refuses current rows lost behind a disclosed query cap instead of reporting 
   expect((await currentModelResultRows(runReader(true).client, workspace, [run], "kpi", [])).error).not.toBeNull();
   expect(await currentModelResultRows(runReader(true).client, workspace, [run], "kpi", [], false, ["unrequested_metric"]))
     .toEqual({ data: [], error: null });
+});
+
+it("keeps the scoped retry stale-state predicate and message with nonretry PT409", () => {
+  const sql = readFileSync("supabase/migrations/20261022050000_model_output_preserving_relaunch.sql", "utf8");
+  const command = sql.match(/CREATE FUNCTION public\.relaunch_model_run_attempts\(p_request_id uuid,p_workspace_id uuid,p_run_id uuid,p_actor_id uuid,p_expected_state jsonb,p_reason text\)[\s\S]*?AS \$\$([\s\S]*?)\$\$;/)?.[1];
+  expect(command, "The scoped six-argument retry command must remain present").toBeDefined();
+  if (!command) throw new Error("Missing scoped six-argument retry command");
+  expect(command.replace(/\s+/g, " ")).toContain("IF p_expected_state IS DISTINCT FROM public.model_recovery_expected_state(p_run_id) THEN RAISE EXCEPTION 'Model recovery state changed' USING ERRCODE='PT409'; END IF;");
+  expect(command).not.toMatch(/ERRCODE\s*=\s*'40001'/);
 });

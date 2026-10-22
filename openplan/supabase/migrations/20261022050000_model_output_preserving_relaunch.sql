@@ -86,7 +86,7 @@ BEGIN
   RETURN saved.response_payload;
  END IF;
  PERFORM id FROM public.model_run_stages WHERE run_id=p_run_id ORDER BY id FOR UPDATE;
- IF p_expected_state IS DISTINCT FROM public.model_recovery_expected_state(p_run_id) THEN RAISE EXCEPTION 'Model recovery state changed' USING ERRCODE='40001'; END IF;
+ IF p_expected_state IS DISTINCT FROM public.model_recovery_expected_state(p_run_id) THEN RAISE EXCEPTION 'Model recovery state changed' USING ERRCODE='PT409'; END IF;
  refusal:=public.model_output_retry_refusal(p_run_id);
  IF refusal IS NOT NULL THEN RAISE EXCEPTION '%',refusal USING ERRCODE='55000'; END IF;
  SELECT jsonb_agg(to_jsonb(s) ORDER BY s.id) INTO stages FROM public.model_run_stages s WHERE run_id=p_run_id;

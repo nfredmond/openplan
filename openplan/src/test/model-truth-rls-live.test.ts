@@ -51,13 +51,15 @@ liveDescribe("guided model truth live RLS and trigger enforcement", () => {
           'stages',(SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY t.id),'[]') FROM public.model_run_stages t WHERE t.run_id IN (SELECT id FROM runs)),
           'attempts',(SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY t.id),'[]') FROM public.model_stage_attempts t WHERE t.run_id IN (SELECT id FROM runs)),
           'artifacts',(SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY t.id),'[]') FROM public.model_run_artifacts t WHERE t.run_id IN (SELECT id FROM runs)),
+          'kpis',(SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY t.id),'[]') FROM public.model_run_kpis t WHERE t.run_id IN (SELECT id FROM runs)),
+          'retry_receipts',(SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY t.request_id),'[]') FROM public.model_run_relaunch_receipts t WHERE t.request_payload->>'run_id' IN (SELECT id::text FROM runs)),
           'snapshots',(SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY t.id),'[]') FROM snapshots t),
           'deltas',(SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY t.id),'[]') FROM public.scenario_comparison_indicator_deltas t WHERE t.comparison_snapshot_id IN (SELECT id FROM snapshots)),
           'links',(SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY t.id),'[]') FROM public.scenario_comparison_model_run_links t WHERE t.comparison_snapshot_id IN (SELECT id FROM snapshots)));
         COMMIT;`,
       encoding: "utf8", stdio: ["pipe", "pipe", "pipe"], timeout: 15_000,
     }).trim();
-    const rows = JSON.parse(bytes) as Record<"workspaces" | "members" | "models" | "runs" | "enrollment" | "stages" | "attempts" | "artifacts" | "snapshots" | "deltas" | "links", Record<string, unknown>[]>;
+    const rows = JSON.parse(bytes) as Record<"workspaces" | "members" | "models" | "runs" | "enrollment" | "stages" | "attempts" | "artifacts" | "kpis" | "retry_receipts" | "snapshots" | "deltas" | "links", Record<string, unknown>[]>;
     return { bytes, rows };
   }
 
@@ -494,7 +496,12 @@ liveDescribe("guided model truth live RLS and trigger enforcement", () => {
     expect(retried[0].error).toBeNull(); expect(retried[1]).toEqual(retried[0]);
     expect(retried[0].data).toMatchObject({ run_id: run, outcome: "fresh_attempt_queued", outputs_preserved: true, scientific_claim_changed: false, model_resumed: false });
     expect((await service.rpc("relaunch_model_run_attempts", { ...args, p_reason: "Changed payload" })).error?.code).toBe("23505");
-    expect((await service.rpc("relaunch_model_run_attempts", { ...args, p_request_id: randomUUID() })).error?.code).toBe("40001");
+    const beforeStale = persistedWorkspace(ws);
+    const stale = await service.rpc("relaunch_model_run_attempts", { ...args, p_request_id: randomUUID() });
+    expect(stale.status).toBe(409);
+    expect(stale.error).toMatchObject({ code: "PT409", message: "Model recovery state changed" });
+    expect(stale.data).toBeNull();
+    expect(persistedWorkspace(ws).bytes, "stale retry refusal preserves original rows, snapshots and receipts").toBe(beforeStale.bytes);
     const secondClaim = await service.rpc("claim_model_stage_attempt", { p_request_id: randomUUID(), p_stage_id: stage, p_worker_id: "synthetic-second" });
     expect(secondClaim.error).toBeNull(); expect(secondClaim.data.outcome).toBe("claimed");
     const second = secondClaim.data.attempt_id as string; expect(second).not.toBe(first);

@@ -169,7 +169,7 @@ async function retryExecution(decision: ModelOutputRetryDecision, access: Author
   const args = modelOutputRetryRpcArguments(decision, access.workspaceId, access.runId, access.actorId);
   const { data, error } = await createServiceRoleClient().rpc("relaunch_model_run_attempts", args);
   if (error?.code === "42501") return response("Recovery authority changed. Review workspace access.", 403);
-  if (error && ["40001", "23505", "55000"].includes(error.code ?? "")) return response("This retry was refused. Review the retained execution and scientific records before another decision.", 409);
+  if (error && ["PT409", "40001", "23505", "55000"].includes(error.code ?? "")) return response("This retry was refused. Review the retained execution and scientific records before another decision.", 409);
   const receipt = modelOutputRetryReceipt(data, args);
   if (error || !receipt) return response("Retry is unconfirmed. Retry the exact saved decision to recover its receipt.", 503);
   audit.info("model_output_retry_receipt", { requestId: decision.requestId, workspaceId: access.workspaceId, runId: access.runId, actorId: access.actorId });
