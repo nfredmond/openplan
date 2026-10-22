@@ -20,6 +20,22 @@ async function open(saved: unknown[] = [], progress: unknown = {}) {
  await screen.findByText(/No saved API\/model has an admitted/); return review;
 }
 describe("normal saved API chat panel", () => {
+ // This checks rendered semantic tokens. jsdom cannot assess computed CSS,
+ // contrast, native control painting, scrolling or geometry in either theme.
+ it("pairs the actual panel and form controls with semantic theme tokens", async () => {
+  await open([{ id: id.turn, state: "succeeded" }]);
+  const panel = screen.getByRole("region", { name: "Saved API Planner Agent chat" });
+  expect(panel.tagName).toBe("SECTION");
+  expect(panel).toHaveClass("bg-background", "text-foreground", "border-border");
+  expect(panel).not.toHaveClass("text-slate-200");
+  for (const [name, tag] of [["Saved API and model", "SELECT"], ["Additional selected project IDs", "INPUT"], ["Saved API chat question", "TEXTAREA"], ["Retained chat turns", "SELECT"]]) {
+   const control = screen.getByLabelText(name);
+   expect(control.tagName).toBe(tag);
+   expect(panel).toContainElement(control);
+   expect(control).toHaveClass("bg-background", "text-foreground", "border", "border-border");
+   expect(control).not.toHaveClass("bg-slate-900");
+  }
+ });
  it("requires an explicit admitted selection and defaults the workspace index off", async () => {
   await open(); expect(screen.getByRole("button", { name: "Preview exact disclosure" })).toBeDisabled();
   expect(screen.getByRole("checkbox", { name: /separate workspace-wide project index/ })).not.toBeChecked();
@@ -81,6 +97,22 @@ describe("prepared disclosure release and same-intent recovery", () => {
   await screen.findByText("Retained answer canary");
   await waitFor(() => expect(screen.getByRole("button", { name: "Review exact draft submittal" })).not.toBeDisabled());
  }
+ it("retains semantic borders and inherited foreground for disclosure, progress and draft review", async () => {
+  await prepareAndAccept();
+  const panel = screen.getByRole("region", { name: "Saved API Planner Agent chat" });
+  expect(panel).toHaveClass("bg-background", "text-foreground", "border-border");
+  const disclosure = screen.getByLabelText("Exact API chat disclosure");
+  expect(panel).toContainElement(disclosure);
+  expect(disclosure).toHaveClass("border", "border-border");
+  expect(disclosure).not.toHaveClass("border-white/20");
+  const progress = screen.getByRole("list", { name: "Retained tool and model progress" });
+  expect(panel).toContainElement(progress);
+  expect(progress.parentElement).toHaveAttribute("aria-live", "polite");
+  const draft = screen.getByRole("button", { name: "Review exact draft submittal" }).closest("div");
+  expect(panel).toContainElement(draft);
+  expect(draft).toHaveClass("border", "border-border");
+  expect(draft).not.toHaveClass("border-white/15");
+ });
  it.each(["rejected", "401", "released_false"])("withholds both prepared sources and answers after %s", async failure => {
   await prepareAndAccept();
   // Begin fake time after the initial real-timer poll. Its first successor

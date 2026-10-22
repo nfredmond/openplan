@@ -535,3 +535,62 @@ R36 populated upgrade and signed HTTP, October 22, 2026 UTC. A wholly new owned 
 The R36 report preserves its earlier setup and private census failures. Its exact raw-index custody check also fails after a stat-cache refresh changes index bytes and filesystem mode. Root independently confirms all 18,615 tracked records against intake and every staged blob and Git mode against HEAD ad63e937. Root retains the terminal raw index and restores mode 0664. The original byte-custody check remains failed; no original raw preimage is available and no byte-restoration claim follows. R36 stays sealed. Root disposition is /home/nathaniel/.local/state/openplan/a0-r36-root-index-disposition-20261022-01/REPORT.md.
 
 R36 evidence is /home/nathaniel/.local/state/openplan/a0-corrected-response-native-20261022-r36/REPORT.md. Its six owned containers and two volumes remain running; nine chat tables are empty, and source, dependency records, installed catalogue, full history and seed bodies remain exact. Earlier failures stay preserved. Profile admission stays CLOSED. Mounted browser/approval/action recovery, real APIs, installed backends, all 19 contexts, races, independent recovery, scientific and release acceptance remain open. This bounded native and HTTP checkpoint does not complete A0.
+
+
+## R39 repairs fixed chat colors at source and ordinary-check tier
+
+October 22, 2026 UTC. R38 stops at its first actual 1440px product blocker:
+RGB 226,232,240 text on RGB 244,241,236, measured contrast 1.094:1.
+Its complete report, screenshot and computed-color receipt remain unchanged.
+R38 never admits chat, prepares disclosure, accepts, drives or reaches 390px.
+Its successful build LK2G4ByeQnpL8INJ6XMcI belongs to the prior source.
+
+This bounded repair changes seven class attributes in ProviderChatPanel.
+The section pairs bg-background with text-foreground and border-border.
+The four existing select/input/textarea controls use the same semantic pair
+and border. Disclosure and draft containers use border-border and inherit
+the section foreground. Existing labels, errors, progress, recovery, wrapping,
+scrolling, radius, HTML controls and disabled conditions remain intact.
+Question, canonical consent, requests, hashes, selection and recovery logic
+receive no change. No mock response or existing behavioral assertion changes.
+
+Two added cases in the existing panel test render the real component. They
+check its actual section, saved-model select, additional-project input,
+question textarea and retained-turn select. The existing preparation flow
+also exposes disclosure, retained progress and draft review for token and
+containment assertions. No stylesheet parser or jsdom contrast claim is added.
+
+Initial and fully restored serial cohorts each pass 83 tests across ten files,
+with zero failures, skips or todo. This is the nine other maintained ordinary
+chat files plus the changed panel test. Scoped ESLint passes both changed
+TypeScript files with zero warnings. No compiler or build runs.
+
+A harmless comment control survives both selected tests. Restoring the original
+section colors fails both new tests at the actual section class assertion.
+Restoring the four original dark form surfaces fails the rendered control
+class assertion; the disclosure/progress/draft case survives that fault.
+Each control selects two of 14 panel cases and reports 12 selector skips.
+Production bytes and filesystem mode restore exactly after every control.
+The first private wrapper expects pending instead of Vitest's actual skipped
+status and fails after the harmless runner passes. Its original script,
+receipts and restoration remain preserved. Corrected accounting rejects
+unknown statuses and repeats the harmless control before the two faults.
+
+The guard's blind category is actual computed CSS, contrast, native control
+painting, geometry and scrolling in light/dark mounted journeys. Token presence
+and DOM containment do not prove visual acceptance or live authorization.
+Root separately owns any new identified build, both widths and both themes.
+
+Candidate remains HEAD 517a807ce61bac15fdda7df8ffea04fce27b85ad and app tree
+7f5a37d18af935a9acc1aa9e7d5114343d1cc9b2. Only this append, the panel and its
+existing test change. Source/index/dependency/build custody and exact pins are
+in /home/nathaniel/.local/state/openplan/a0-chat-theme-contrast-repair-20261022-r39.
+The raw index backup precedes edits and ordinary checks; Git status/diff use
+GIT_OPTIONAL_LOCKS=0. The prior build remains untouched, without repaired-source
+acceptance. Live orchestration settings confirm codex/gpt-6.1-sol, high reasoning
+and priority service. No subagent, server, browser, database, provider, profile,
+account, admission, native command, commit, push or PR operation runs.
+A0 profile stays broadly CLOSED. R36 native/HTTP proof remains dated evidence
+for its source pins. JSON wire logic, all SQL and action authority stay exact.
+All wider A0, hosted, scientific, release and full-v1 boundaries remain open.
+No Nathaniel decision is missing.

@@ -130,7 +130,7 @@ export function ProviderChatPanel({ workspaceId, projectId, onReview }: { worksp
     finally { setBusy(false); await checkIntent(intentId); }
   }
   const grant = prepared ? JSON.parse(prepared.canonical) as AssistantChatAcceptedGrantV1 : null;
-  return <section aria-label="Saved API Planner Agent chat" className="min-w-0 rounded-lg border border-white/15 p-3 text-sm text-slate-200">
+  return <section aria-label="Saved API Planner Agent chat" className="min-w-0 rounded-lg border border-border bg-background p-3 text-sm text-foreground">
     <button type="button" aria-expanded={opened} onClick={() => setOpened(v => !v)}>Saved API chat · workspace and selected projects</button>
     {opened ? <div className="mt-3 min-w-0 space-y-3">
       <p>This first profile excludes runs, financial records, documents, history and searches. Installed Codex, Claude Code, OpenCode and the remaining contexts and tools remain unfinished.</p>
@@ -138,13 +138,13 @@ export function ProviderChatPanel({ workspaceId, projectId, onReview }: { worksp
       <button type="button" onClick={() => setShowRecovery(v => !v)}>Read original approved-submittal results</button>
       {showRecovery ? <div><p>This recovery uses original approval permissions, separately from chat-body access.</p><ApprovedSubmittalRecovery workspaceId={workspaceId} /></div> : null}
       {!options.length ? <p role="status">No saved API/model has an admitted chat capability for this installation. Status: unassessed.</p> : null}
-      <label className="block">Saved API and model<select aria-label="Saved API and model" value={selected} disabled={busy} className="block w-full bg-slate-900" onChange={e => { setSelected(e.target.value); invalidate(); }}>
+      <label className="block">Saved API and model<select aria-label="Saved API and model" value={selected} disabled={busy} className="block w-full border border-border bg-background text-foreground" onChange={e => { setSelected(e.target.value); invalidate(); }}>
         <option value="">Choose an admitted saved API/model</option>{options.map(o => <option key={o.id} value={o.id}>{o.selection.modelId} · {o.selection.endpoint} · {o.selection.authMode}</option>)}</select></label>
-      <label className="block">Additional selected project IDs, optional<input aria-label="Additional selected project IDs" className="block w-full bg-slate-900" value={additionalIds} disabled={busy} onChange={e => { setAdditionalIds(e.target.value); invalidate(); }} /></label>
+      <label className="block">Additional selected project IDs, optional<input aria-label="Additional selected project IDs" className="block w-full border border-border bg-background text-foreground" value={additionalIds} disabled={busy} onChange={e => { setAdditionalIds(e.target.value); invalidate(); }} /></label>
       <label className="flex gap-2"><input type="checkbox" checked={includeIndex} disabled={busy} onChange={e => { setIncludeIndex(e.target.checked); invalidate(); }} />Allow the separate workspace-wide project index, at most 25 names/statuses. Listing does not authorize deeper reads.</label>
-      <label className="block">Saved API chat question<textarea aria-label="Saved API chat question" className="block w-full bg-slate-900" maxLength={2000} value={question} disabled={busy} onChange={e => { setQuestion(e.target.value); invalidate(); }} /></label>
+      <label className="block">Saved API chat question<textarea aria-label="Saved API chat question" className="block w-full border border-border bg-background text-foreground" maxLength={2000} value={question} disabled={busy} onChange={e => { setQuestion(e.target.value); invalidate(); }} /></label>
       <button type="button" disabled={busy || !selected || !question.trim()} onClick={() => { void prepare(); }}>Preview exact disclosure</button>
-      {prepared && grant ? <div aria-label="Exact API chat disclosure" className="space-y-2 border border-white/20 p-2">
+      {prepared && grant ? <div aria-label="Exact API chat disclosure" className="space-y-2 border border-border p-2">
         <p>Destination: {grant.selection.endpoint}. Model: {grant.selection.modelId}. Authentication: {grant.selection.authMode}.</p>
         <p>Saved connection {grant.selection.connectionId}, revision {grant.selection.revisionId}. Credential source: {grant.selection.credentialSource.kind}.</p>
         <p>Executing installation {grant.selection.execution.installationId}, pool {grant.selection.execution.poolId}, configuration {grant.selection.execution.poolConfigurationRevision}.</p>
@@ -157,7 +157,7 @@ export function ProviderChatPanel({ workspaceId, projectId, onReview }: { worksp
         <label className="flex gap-2"><input type="checkbox" checked={acknowledged} onChange={e => setAcknowledged(e.target.checked)} />I accept this exact disclosure and possible unknown provider charges for this selected API/model and installation.</label>
         <button type="button" disabled={busy || !acknowledged} onClick={() => { void accept(); }}>Accept disclosure and start once</button>
       </div> : null}
-      {history.length ? <label className="block">Retained chat turns<select aria-label="Retained chat turns" value={active ?? ""} onChange={e => { chooseTurn(e.target.value || null); invalidate(); }} className="block w-full bg-slate-900"><option value="">Choose a retained turn</option>{history.map(t => <option key={t.id} value={t.id}>{t.id} · {t.state}</option>)}</select></label> : null}
+      {history.length ? <label className="block">Retained chat turns<select aria-label="Retained chat turns" value={active ?? ""} onChange={e => { chooseTurn(e.target.value || null); invalidate(); }} className="block w-full border border-border bg-background text-foreground"><option value="">Choose a retained turn</option>{history.map(t => <option key={t.id} value={t.id}>{t.id} · {t.state}</option>)}</select></label> : null}
       {view ? <div aria-live="polite" className="space-y-2"><p>Status: {view.state}. {view.complete ? "Checked completion retained." : "No complete answer is confirmed."}</p>
         {view.released && view.state === "accepted" && active ? <button type="button" disabled={busy} onClick={() => { setBusy(true); void post(chatUrl, { operation: "drive", turnId: active }).catch(() => setError("Start outcome is uncertain. Read retained status.")).finally(() => setBusy(false)); }}>Start this accepted turn once</button> : null}
         {active ? <button type="button" onClick={() => { void post(chatUrl, { operation: "cancel", turnId: active }).then(() => refresh(active)).catch(() => setError("Cancellation could not be confirmed. Read retained status.")); }}>Cancel further work</button> : null}
@@ -169,7 +169,7 @@ export function ProviderChatPanel({ workspaceId, projectId, onReview }: { worksp
           <ol aria-label="Retained tool and model progress">{view.events?.filter(e => !["scope_checked", "text_delta"].includes(e.kind)).map(e => <li key={e.sequence}>{e.sequence}. {e.kind.replace(/_/g, " ")}</li>)}</ol>
           {view.intents?.map(i => { const status = statuses[i.intentId], state = status?.state ?? i.state, bound = Boolean(status?.originalApprovalId ?? i.originalApprovalId);
             const reviewable = view.complete && state === "proposed" && !bound && (status?.executionState ?? i.executionState) === "not_requested" && !uncertain[i.intentId];
-            return <div key={i.intentId} className="space-y-2 border border-white/15 p-2"><p>Draft proposal {i.intentId}. State: {state}. Receipt: {status?.receiptState ?? i.receiptState}.</p>
+            return <div key={i.intentId} className="space-y-2 border border-border p-2"><p>Draft proposal {i.intentId}. State: {state}. Receipt: {status?.receiptState ?? i.receiptState}.</p>
               {reviewable ? <button type="button" disabled={busy} onClick={() => { void reviewIntent(i.intentId); }}>Review exact draft submittal</button> : <p>Recovering the original approval/result. No fresh approval or execution is offered.</p>}
               <button type="button" disabled={busy} onClick={() => { void checkIntent(i.intentId); }}>Check original approval</button>
               <button type="button" disabled={busy || !bound} onClick={() => { void reconcile(i.intentId); }}>Reconcile original result</button>
