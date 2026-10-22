@@ -89,7 +89,7 @@ describe.skipIf(!LIVE_RLS)("Reports actual managed current KPI authority with re
   async function createPlain(f: Fixture, selection = false): Promise<string> {
     const response = await createReport(request("http://localhost/api/reports", "POST", {
       projectId: f.projectId, reportType: "analysis_summary", title: "SYNTHETIC Reports authority, no scientific acceptance", sections: [],
-      ...(selection ? { guidedComparisonSelectionV1: { version: 1, snapshotId: f.snapshotId } } : {}),
+      ...(selection ? { guidedComparisonSelectionV1: { snapshotId: f.snapshotId } } : {}),
     }));
     expect(response.status, await response.clone().text()).toBe(201);
     const result = createdSchema.parse(await response.json()); native.recordReport(result.reportId); return result.reportId;
@@ -137,7 +137,7 @@ describe.skipIf(!LIVE_RLS)("Reports actual managed current KPI authority with re
     expect(native.persisted(f).models).toEqual(original.models);
 
     const saved = await saveReport(request(`http://localhost/api/reports/${reportId}`, "PATCH", {
-      guidedComparisonSelectionV1: { version: 1, snapshotId: f.snapshotId },
+      guidedComparisonSelectionV1: { snapshotId: f.snapshotId },
       summary: "SYNTHETIC current-result selection; old evidence remains retained; scientific status inconclusive.",
     }), context(reportId));
     expect(saved.status, await saved.clone().text()).toBe(200);
@@ -200,12 +200,12 @@ describe.skipIf(!LIVE_RLS)("Reports actual managed current KPI authority with re
       expect(native.persisted(f)).toEqual(before);
       const create = await createReport(request("http://localhost/api/reports", "POST", {
         projectId: f.projectId, reportType: "analysis_summary", title: "SYNTHETIC refused selected input", sections: [],
-        guidedComparisonSelectionV1: { version: 1, snapshotId: f.snapshotId },
+        guidedComparisonSelectionV1: { snapshotId: f.snapshotId },
       }));
       expect(create.status).toBe(409); expect(await create.json()).toEqual({ error: refusal });
       expect(native.persisted(f)).toEqual(before);
       const save = await saveReport(request(`http://localhost/api/reports/${reportId}`, "PATCH", {
-        guidedComparisonSelectionV1: { version: 1, snapshotId: f.snapshotId },
+        guidedComparisonSelectionV1: { snapshotId: f.snapshotId },
       }), context(reportId));
       expect(save.status).toBe(409); expect(await save.json()).toEqual({ error: refusal });
       expect(native.persisted(f)).toEqual(before);
@@ -223,7 +223,7 @@ describe.skipIf(!LIVE_RLS)("Reports actual managed current KPI authority with re
     const created = await persistedSelection(reportId);
     expect(created.selection).toEqual(selection);
     const save = await saveReport(request(`http://localhost/api/reports/${reportId}`, "PATCH", {
-      guidedComparisonSelectionV1: { version: 1, snapshotId: f.snapshotId },
+      guidedComparisonSelectionV1: { snapshotId: f.snapshotId },
       summary: "SYNTHETIC file availability refusal; no KPI or scientific authority mutation.",
     }), context(reportId));
     expect(save.status, await save.clone().text()).toBe(200);

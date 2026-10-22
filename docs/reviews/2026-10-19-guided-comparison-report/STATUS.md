@@ -763,3 +763,48 @@ types, checkpoint review and actual native admission remain pending here.
 Reports accepting calls remain zero. Save/Generate, four KPI-after-Save states,
 separate pre-Storage refusal/races, scientific validation, hosted operation and
 full v1 remain open.
+
+
+## R110 corrects only the native fixture request shape, October 22, 2026
+
+R109 retains its failed six-case baseline: zero passes, one Create assertion
+failure and five bail-pending records. The real standalone verifier and eight
+current-headline assertions complete before Create returns 400 for the unknown
+request field guidedComparisonSelectionV1.version. No successful Create, Save,
+Generate or reopen follows. R109's synthetic rows, 55 files, ordinary-session
+handback and inherited-HOME limitation remain unchanged.
+
+The native test removes version only from its five actual request payloads.
+Each retains f.snapshotId. The production request schema stays strict and
+unchanged. Verified and persisted versioned selections, exact current KPI
+values/IDs, producer and custody assertions, four negative categories, six-case
+membership and quarantine finally restoration remain byte-identical elsewhere.
+No fixture factory, product, helper, config, package, lock or SQL change occurs.
+
+A new ordinary guard reads the actual native source through the installed
+TypeScript parser. It requires exactly five static inline request objects,
+checks each snapshot initializer binds f.snapshotId, refuses unsupported object
+members and validates inert samples against the real pure request schema.
+Current snapshot-only syntax passes; the original versioned wire shape refuses.
+It does not import or evaluate the native test, factory or server-only product
+subjects. Static inline source coverage does not execute serialized requests or
+cover indirect builders, new serialization paths or full native behavior.
+
+A harmless source comment survives all eight guard tests. Each of five separate
+faults restores version at one actual request site only. Every variant has seven
+passes and one failure in its named site's real schema assertion. Each finally
+restores exact corrected bytes and mode. No fault is enlarged or repeated.
+The restored ordinary cohort passes 25 tests across the request guard, package
+conditions, runner isolation and package/census contract. Per-case records have
+zero skipped, pending or todo results. The native file is not collected; its six
+cases remain unrun this round and receive no skip or pass credit. Scoped ESLint
+passes for the two changed TypeScript files. Final diff and custody results are
+retained in reports-native-request-shape-repair-20261022-r110.
+
+No target, Docker, SQL, Auth, HTTP, browser/server, model/provider/worker/science,
+compiler/build/install, CI/PR, commit/push or archive operation occurs. Compiler
+and native execution stay closed. Root owns independent review, configured
+types, a new checkpoint and a separately admitted baseline using the retained
+R109 state. Full Reports Save/Generate/reopen, four native refusals, quarantine,
+KPI-after-Save transitions, separate pre-Storage/TOCTOU, hosted operation, M3/S1
+science and full v1 remain unproved by this source response.
