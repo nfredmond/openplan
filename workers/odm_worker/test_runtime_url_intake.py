@@ -384,12 +384,17 @@ class Checks(unittest.TestCase):
         self.assertLessEqual(max(seen),shared[0],'Nested fetch cannot extend the original intake deadline')
 
     def test_expired_plan_publication_refuses_before_source_creation(self):
-        publish=module.publish;self.intake.timeout=.03
-        def slow(root,name,raw):result=publish(root,name,raw);time.sleep(.05);return result
+        publish=module.publish;self.intake.timeout=.03;now=[time.monotonic()]
+        # Expire only after real plan publication, keeping earlier writer checks in budget.
+        def slow(root,name,raw):
+            result=publish(root,name,raw)
+            if name=='plan.json':now[0]+=.05
+            return result
         with self.runtime.owner(),patch.object(module.UrlSources,'prepare',side_effect=AssertionError('Expired settings reached source intake')):
             self.start()
-            with patch('runtime_url_intake.publish',side_effect=slow),self.assertRaisesRegex(TimeoutError,'Original runtime URL intake deadline exceeded'):
+            with patch('time.monotonic',side_effect=lambda:now[0]),patch('runtime_url_intake.publish',side_effect=slow),self.assertRaisesRegex(TimeoutError,'Original runtime URL intake deadline exceeded'):
                 self.intake.resume(self.request['requestId'])
+        self.assertEqual(self.read(self.root/'plan.json')['settings'],self.spec)
         self.assertEqual(self.calls,[])
         self.assertFalse((self.source_root/('request-'+hashlib.sha256(self.request['requestId'].encode()).hexdigest())).exists(),'Expired plan cannot start source byte intake')
 

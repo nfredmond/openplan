@@ -20,7 +20,36 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-No changes recorded after v0.70.0.
+No changes recorded after v0.71.0.
+
+## 0.71.0 (2026-10-22)
+
+**Signal palette and independent corners.** Appearance adds Signal beside the
+five existing palettes. Rounded and Square remain separate from palette and
+light/dark mode. Defaults remain Cartographic, Rounded and device mode.
+Preferences persist across reloads and propagate between tabs. Square applies
+to the shared application surfaces while selected status symbols stay round.
+The Planner Agent launcher uses matching theme text, icon and background colors.
+
+**No new migrations since v0.70.0.** The tree retains all 429 migration files,
+with the same high-water version `20261019000002`. An installation already at
+v0.70.0 needs no schema addition for this increment. Older installations still
+compare their applied history and follow the earlier upgrade instructions.
+The dependency graph remains unchanged from the joined appearance candidate.
+
+**Verification and limits.** The appearance record retains identified local
+1440x900 and 390x844 observations for independent choices, settled Square and
+Rounded radii, keyboard focus, reload, cross-tab propagation and mobile menu
+reachability. Signal launcher text/icon contrast measures 17.94:1 at rest and
+hover in light/dark modes; Cartographic exceeds 15.44:1. The original controller
+failure and separate remaining-mobile continuation retain distinct outcomes on
+that one build. These observations predate the final v0.70 merge and 0.71.0
+metadata. Final integration checks and an identified candidate view remain
+release prerequisites; this entry does not declare publication or hosted delivery.
+First paint, browser storage-disabled use, mobile keyboard, map/chart geometry,
+universal control coverage and other-palette dark contrast remain unassessed.
+Complete M2c, all other roadmap requirements and separate nationwide AequilibraE
+and ActivitySim validation remain open.
 
 ## 0.70.0 (2026-10-21)
 

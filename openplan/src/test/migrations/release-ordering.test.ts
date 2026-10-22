@@ -509,6 +509,11 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20261019000002_rtp_manual_source_page_proposals.sql",
     migrationsAtRelease: 429,
   },
+  {
+    tag: "0.71.0",
+    lastMigration: "20261019000002_rtp_manual_source_page_proposals.sql",
+    migrationsAtRelease: 429,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");

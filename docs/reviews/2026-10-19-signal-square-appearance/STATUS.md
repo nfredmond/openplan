@@ -76,3 +76,43 @@ Joined-build local appearance observations, October 22, 2026 UTC. The single R7 
 The original private controller exits one because a generic zero-padding rounded-full selector wrongly includes the intentionally square mobile launcher. Its failure remains recorded. A separate remaining-mobile continuation exits zero on the same server/build/profile after narrowing the observer to actual dashboard status spans. No desktop/authentication replay, source fix, second build or server restart occurs. The packet retains 107 aborted-request observations, four server CSP reports and three unavailable static-response-body captures; 126 successful static comparisons have zero mismatches. This is bounded local evidence, not a single green original controller or universal UI acceptance.
 
 The complete packet is /home/nathaniel/.local/state/openplan/pr359-fixture-corrected-identified-browser-20261022-07/REPORT.md. Both earlier valid and failed artifacts remain exact, source/index stay unchanged through the journey, owned runtime is closed and port 3430 is free. Other-palette dark contrast, first paint, disabled storage, mobile keyboard, maps/charts, all-controls readability, complete M2c, hosted delivery and release acceptance remain unassessed. Final-main ancestry is retained through fa4ffb6; PR364's later release correction and future final release integration remain separate.
+
+Post-v0.70 release preparation, October 22, 2026 UTC. A normal no-commit merge
+imports exact published main `12bc5957a395f409d9e9c59ae8d4e412dd316bed` into
+appearance HEAD `d0e6c82f11650840e8afe5d24b65af72f4ac87f1`, without conflicts.
+The merge carries PR364's exact worker test correction and release history.
+The candidate remains uncommitted with MERGE_HEAD at 12bc5957. Package and lock
+root versions, four current-release markers and the changelog now prepare the
+literal minor 0.71.0. The release-order row retains 429 migration files and
+high-water version 20261019000002. All released SQL and dependency records stay
+unchanged. The v0.70 STATUS adds a dated post-publication delivery receipt.
+No review date, frozen assessment, capability grade or roadmap queue changes.
+
+One bounded ordinary-check unit uses one Vitest worker, no file parallelism,
+no cache and a configured 6 GiB memory limit with zero swap. The harmless
+release-test comment survives all six release-ordering cases, and the direction
+check passes. Changing the new 0.71 count from 429 to 428 causes the two named
+high-water/partition AssertionErrors, with four other passes and zero skips.
+Changing the new release tag to 0.71.1 causes the named missing-changelog-heading
+AssertionError, with five other passes and zero skips. A stale contract release
+marker causes the direction check's exact package-release mismatch refusal.
+Exact bytes and modes restore. Nine complete maintained focused files then pass
+69 tests with zero failures, skips or todo. Final direction and release-test lint
+pass. Two SafetyWorkspace act warnings, one ThemeProvider act warning and the
+existing direction reminders remain in raw stderr. The future-clock guard's
+2099 reminder is test-generated; no review date is refreshed.
+
+These checks protect release accounting, document bindings, source CSS contracts
+and jsdom preference behavior. They do not execute SQL, prove installed history,
+resolve actual CSS or browser timing, establish advisory completeness, or accept
+the joined 0.71 candidate in a browser. The private installed tree retains its
+969 matching records; no install, donor link or lock dependency update occurs.
+R7's one-build observations, original controller failure, separate mobile
+continuation, warnings and unassessed cells retain their exact scope. No new
+compiler, build, browser, server, database, provider, worker or CI operation runs.
+
+Root owns final source review, commit/push, one identified candidate view,
+integration CI and any 0.71 tag/publication. This prepares the bounded appearance
+increment after published v0.70; it does not close M2c, science or v1. Private
+commands, control failures and restoration receipts remain under
+`pr359-current-main-v071-preparation-20261022-08` on this host.
