@@ -250,3 +250,12 @@ pr355-ci-repair-configured-types-20261022-20/TERMINAL.json. Ordinary 565-case
 and native 5-case evidence retain their separate boundaries. Actual Reports
 KPI handlers, save/generation, lower masked artifact guard, fresh restore,
 current-build browser and scientific acceptance remain open.
+
+October 22 follow-up from staged v0.70 hosting: the catalog/detail jurisdiction
+freshness contradiction is recorded in docs/ops/KNOWN_ISSUES.md. Fourteen
+relevant paths match published v0.69. Controls omits the separate jurisdiction
+state from its source summary; generation source-context guidance has the
+same source omission but was not observed ready in that hosted run. The
+Reports/A3 lane retains this correction and its focused/browser evidence as
+open. The held Reports outcome is not promoted by the bounded RTP/HIN release
+scope disposition. Original hosted evidence remains partial.
