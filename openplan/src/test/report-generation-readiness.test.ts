@@ -1,3 +1,4 @@
+import { completeReportSourceReviewSummary } from "@/lib/reports/source-review-posture";
 import { describe, expect, it } from "vitest";
 import { createElement } from "react";
 import { render, screen, within } from "@testing-library/react";
@@ -76,6 +77,33 @@ function generatedInputs() {
 }
 
 describe("report generation readiness", () => {
+  it.each(["current", "changed", "unavailable", "untracked"] as const)("retains the shared jurisdiction assessment with every other check ready: %s", (jurisdictionState) => {
+    const sourceReviewSummary = completeReportSourceReviewSummary({ changedCount: 0, totalCount: 0, labels: [] }, { jurisdictionState });
+    const result = buildReportGenerationReadiness({ ...generatedInputs(), sourceReviewSummary });
+    expect(result.checks.slice(1).every((check) => check.status === "ready")).toBe(true);
+    expect(result.status).toBe(jurisdictionState === "current" ? "ready" : jurisdictionState === "changed" ? "attention" : "unknown");
+    expect(result.checks[0].status).toBe(jurisdictionState === "current" ? "ready" : jurisdictionState === "changed" ? "attention" : "unknown");
+    if (jurisdictionState === "changed") expect(result.checks[0].statusLabel).toBe("1 source change");
+    if (jurisdictionState === "unavailable" || jurisdictionState === "untracked") {
+      expect(result.checks[0].detail).toContain(jurisdictionState === "unavailable" ? "Jurisdiction inputs unavailable" : "Jurisdiction baseline historically untracked");
+      expect(result.checks[0].statusLabel).toBe("Source evidence unassessed");
+      expect(result.checks[0].nextAction).not.toMatch(/regenerate/i);
+      expect(result.label).toBe("Generation readiness unassessed");
+      expect(result.detail).toContain("3/4 checks ready; 1 need operator attention");
+    }
+  });
+
+  it.each(["writeback", "live read"] as const)("does not call whole-source generation ready with %s incomplete", (state) => {
+    const sourceReviewSummary = completeReportSourceReviewSummary({ changedCount: 0, totalCount: 0, labels: [] }, {
+      jurisdictionState: "current", ...(state === "writeback" ? { generationWritebackCurrent: false } : { unassessedLabels: ["Live funding evidence unavailable"] }),
+    });
+    const result = buildReportGenerationReadiness({ ...generatedInputs(), sourceReviewSummary });
+    expect(sourceReviewSummary.changedCount).toBe(0);
+    expect(result.checks[0].status).toBe(state === "writeback" ? "attention" : "unknown");
+    expect(result.status).toBe(state === "writeback" ? "attention" : "unknown");
+    expect(result.checks[0].nextAction).not.toMatch(/regenerate/i);
+  });
+
   it("keeps a missing historical source baseline unknown when all other checks are ready", () => {
     const readiness = buildReportGenerationReadiness({ ...generatedInputs(), unassessedSourceCount: 1 });
     expect(readiness.checks.find((check) => check.id === "source_context")).toMatchObject({

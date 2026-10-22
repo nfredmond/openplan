@@ -1,3 +1,4 @@
+import { completeReportSourceReviewSummary } from "@/lib/reports/source-review-posture";
 import { reportJurisdictionState } from "@/lib/reports/jurisdiction-freshness";
 import { objectRecord, type GuidedComparisonSelectionV1 } from "@/lib/reports/guided-comparison";
 import { readScopedGuidedComparisonBinding } from "@/lib/reports/guided-comparison-binding";
@@ -1202,62 +1203,59 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
 
   const unassessedItems = driftItems.filter((item) => item.status === "unassessed");
   const driftedItems = driftItems.filter((item) => item.status !== "unchanged" && item.status !== "unassessed");
-  // "Refresh recommended" is a RECOMMENDATION, not a claim that anything moved,
-  // which is why an unreadable live gate log lands here rather than on "packet
-  // current": one of the sources this check covers was never checked, so the
-  // packet cannot be called clean, and the detail says plainly that no change
-  // was observed — only that observation failed.
+  // A failed live read leaves that source unassessed. It does not establish
+  // a source change or justify calling the packet current.
+  const jurisdictionState = artifactsUnreadable ? "unavailable" : reportJurisdictionState(latestArtifact?.metadata_json, project);
+  const generationWritebackCurrent = artifactGenerationWritebackIsCurrent(latestArtifact?.metadata_json, report.updated_at);
+  const sourceReviewSummary = completeReportSourceReviewSummary({ changedCount: driftedItems.length, totalCount: driftItems.length,
+    labels: driftedItems.map((item) => item.label), unassessedLabels: unassessedItems.map((item) => item.label),
+  }, { jurisdictionState, generationWritebackCurrent, unassessedLabels: [
+    ...(stageGateLiveReadFailure ? ["Live stage gates unavailable"] : []), ...(safetyEvidenceLiveReadFailure ? ["Live crash evidence unavailable"] : []),
+    ...(artifactsUnreadable ? ["Retained artifacts unavailable"] : []), ...(projectFundingRows.unreadable ? ["Live funding evidence unavailable"] : []),
+    ...(projectRecordReadFailures.size ? ["Live project records unavailable"] : []), ...(liveEngagementReadFailure ? ["Live engagement evidence unavailable"] : []), ...(liveScenarioReadFailure ? ["Live scenario evidence unavailable"] : []),
+  ] });
+  const sourceUnassessedLabels = sourceReviewSummary.unassessedLabels ?? [];
   const jurisdictionFreshness = getReportPacketFreshness({ latestArtifactKind: report.latest_artifact_kind,
-    generatedAt: latestArtifact?.generated_at ?? report.generated_at, updatedAt: null,
-    jurisdictionState: reportJurisdictionState(latestArtifact?.metadata_json, project) });
+    generatedAt: latestArtifact?.generated_at ?? report.generated_at, updatedAt: null, jurisdictionState });
   const jurisdictionNeedsRefresh = jurisdictionFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED;
-  const writebackNotCurrent = artifactGenerationWritebackIsCurrent(latestArtifact?.metadata_json, report.updated_at) === false;
-  const currentReportPacketFreshness = artifactsUnreadable
-    ? PACKET_FRESHNESS_WHEN_ARTIFACTS_UNREADABLE
+  const currentReportPacketFreshness = artifactsUnreadable ? PACKET_FRESHNESS_WHEN_ARTIFACTS_UNREADABLE
     : latestArtifact?.generated_at ?? report.generated_at
-    ? driftedItems.length > 0 || stageGateLiveReadFailure || safetyEvidenceLiveReadFailure || writebackNotCurrent || jurisdictionNeedsRefresh
+    ? driftedItems.length > 0 || (generationWritebackCurrent === false) || jurisdictionNeedsRefresh
       ? {
-          label: PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED,
-          tone: "warning" as const,
+          label: PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED, tone: "warning" as const,
           detail: [
-            jurisdictionNeedsRefresh ? jurisdictionFreshness.detail : null,
-            writebackNotCurrent ? "The report revision differs from its completed generation writeback, or generation did not finish recording it." : null,
+            jurisdictionNeedsRefresh ? jurisdictionFreshness.detail : null, sourceUnassessedLabels.length ? `${sourceUnassessedLabels.join("; ")}. These inputs remain unassessed.` : null,
+            (generationWritebackCurrent === false) ? "The report revision differs from its completed generation writeback, or generation did not finish recording it." : null,
             driftedItems.length > 0
               ? "Live source changes are visible against the latest packet snapshot, so refresh this packet before leaning on it for grant prioritization or release review."
               : "Do not treat this packet as verified against live sources yet.",
-            stageGateLiveReadFailure
-              ? `The live stage-gate board could not be checked (${stageGateLiveReadFailure}), so this check did not cover stage gates. That is an unchecked source, not a finding that gates changed.`
-              : null,
-            safetyEvidenceLiveReadFailure
-              ? `The project's linked crash evidence could not be checked (${safetyEvidenceLiveReadFailureReason}), so this is an unchecked source rather than a finding that no newer crash acquisition exists.`
-              : null,
+            stageGateLiveReadFailure ? `The live stage-gate board could not be checked (${stageGateLiveReadFailure}), so this check did not cover stage gates. That is an unchecked source, not a finding that gates changed.` : null,
+            safetyEvidenceLiveReadFailure ? `The project's linked crash evidence could not be checked (${safetyEvidenceLiveReadFailureReason}), so this is an unchecked source rather than a finding that no newer crash acquisition exists.` : null,
           ]
             .filter((value): value is string => Boolean(value))
             .join(" "),
         }
       : {
-          label: guidedSelection ? "Comparison evidence unassessed" : unassessedItems.length > 0 ? "Source evidence unassessed" : PACKET_FRESHNESS_LABELS.CURRENT,
-          tone: guidedSelection || unassessedItems.length > 0 ? "warning" as const : "success" as const,
+          label: guidedSelection ? "Comparison evidence unassessed" : sourceUnassessedLabels.length > 0 ? "Source evidence unassessed" : PACKET_FRESHNESS_LABELS.CURRENT,
+          tone: guidedSelection || sourceUnassessedLabels.length > 0 ? "warning" as const : "success" as const,
           detail: guidedSelection
             ? "The saved comparison binding is intact. Live files and their source history are unassessed on this page; generation checks them again."
-            : unassessedItems.length > 0 ? "Historical source baselines are incomplete. Missing fields do not establish a source change or unchanged evidence."
+            : sourceUnassessedLabels.length > 0 ? [`${sourceUnassessedLabels.join("; ")}. Missing evidence does not establish a source change or unchanged evidence.`,
+                stageGateLiveReadFailure ? `The live stage-gate board could not be checked (${stageGateLiveReadFailure}).` : null,
+                safetyEvidenceLiveReadFailure ? `The project's linked crash evidence could not be checked (${safetyEvidenceLiveReadFailureReason}).` : null].filter(Boolean).join(" ")
             : "No live source drift is currently visible against the latest packet snapshot.",
         }
     : {
         label: PACKET_FRESHNESS_LABELS.NO_PACKET,
         tone: "warning" as const,
-        detail:
-          "Generate the first packet before treating this report as release-review evidence for grants or packet signoff.",
+        detail: "Generate the first packet before treating this report as release-review evidence for grants or packet signoff.",
       };
   const generationReadiness = buildReportGenerationReadiness({
-    hasGeneratedArtifact: Boolean(latestArtifact?.generated_at ?? report.generated_at),
-    sourceContext,
-    driftedSourceCount: driftedItems.length,
-    unassessedSourceCount: unassessedItems.length,
+    hasGeneratedArtifact: Boolean(latestArtifact?.generated_at ?? report.generated_at), sourceContext,
+    driftedSourceCount: sourceReviewSummary.changedCount, sourceReviewSummary, unassessedSourceCount: unassessedItems.length,
     comparisonAggregate: currentReportComparisonAggregate,
     guidedComparison: guidedPanel || guidedProblem ? { selected: Boolean(guidedSelection), problem: guidedProblem } : undefined,
-    fundingSnapshot,
-    datasetOutputContexts,
+    fundingSnapshot, datasetOutputContexts,
     // Refresh-log rows are operator-recorded, never executed by OpenPlan; a
     // latest entry still reading "queued"/"running" is said so in readiness.
     refreshLogNote: buildReportRefreshLogNote(projectDatasetRefreshJobs),
@@ -1285,8 +1283,7 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
       runs={runs}
       latestArtifact={latestArtifact}
       fundingSnapshot={fundingSnapshot}
-      driftItems={driftItems}
-      driftedItems={driftedItems}
+      sourceReviewSummary={sourceReviewSummary}
       evidenceSummaryDigest={evidenceSummaryDigest}
       fundingSummaryDigest={fundingSummaryDigest}
       engagementCampaign={engagementCampaign}

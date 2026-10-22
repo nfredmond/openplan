@@ -615,3 +615,32 @@ Reports journey and downloads remain unperformed. Dated source and evidence
 review: `v070-hosted-finding-admission-20261022-09`, with original observation
 in `v070-staged-hosted-verification-20261022-08`, under local OpenPlan state.
 This limitation does not establish consistent Reports readiness or full v1.
+
+
+October 22 source-repair follow-up: the existing Reports/A3 candidate at base
+`a8d35bbc` now carries explicit jurisdiction assessment through catalog,
+Controls, packet freshness and generation source-context guidance. Confirmed
+change stays distinct from unavailable input and historical untracked evidence.
+Known incomplete writeback and source-read failures prevent whole-source
+currency claims. The final six-file ordinary cohort passes 219 cases with zero
+skips; scoped lint passes and targeted faults fail before exact restoration.
+This uncommitted source repair does not close Reports acceptance. The original
+R8 retained packet and partial hosted outcome remain unchanged. Root still owns
+the corrected identified-build desktop and 390px journey and artifact review.
+No fresh compiler, build, native, browser, hosted or scientific evidence follows
+from this repair. Private packet: `pr355-jurisdiction-readiness-repair-20261022-21`.
+
+
+October 22 R23 source continuation addresses the three accepted R22 seams:
+ordinary scenario read failures no longer disappear from the shared unknown
+assessment; catalog preserves known source/writeback refresh alongside unknown
+jurisdiction limits; and gate/crash read failures alone remain unassessed through
+packet and grant guidance. A retained failed crash read is unassessed rather
+than changed. Positive current, exact completed writeback and known-change
+refresh behavior remain covered. The final six-file ordinary run passes 246
+cases with zero failures/skips, with targeted faults and exact restoration.
+This source-only follow-up does not close Reports acceptance or change the
+published v0.70 limitation. R8, R21 and R22 evidence remains retained at its
+original scope. Compiler/build and browser evidence remain unexecuted here.
+Root still owns the later identified-build journey and acceptance disposition.
+Private packet: `pr355-readiness-failure-mixed-state-repair-20261022-23`.

@@ -340,11 +340,13 @@ export default async function ReportsPage({
       const safetyUpdatedAt = report.project_id
         ? latestSafetyAtByProjectId.get(report.project_id) ?? null
         : null;
+      const jurisdictionState = artifactsReadFailed ? "unavailable" : reportJurisdictionState(latestArtifact?.metadata_json,
+        (projectsData ?? []).find((project) => project.id === report.project_id));
+      const generationWritebackCurrent = artifactGenerationWritebackIsCurrent(latestArtifact?.metadata_json, report.updated_at);
       const computedPacketFreshness = getReportPacketFreshness({
         latestArtifactKind: report.latest_artifact_kind,
-        jurisdictionState: artifactsReadFailed ? "unavailable" : reportJurisdictionState(latestArtifact?.metadata_json,
-          (projectsData ?? []).find((project) => project.id === report.project_id)),
-        generationWritebackCurrent: artifactGenerationWritebackIsCurrent(latestArtifact?.metadata_json, report.updated_at),
+        jurisdictionState,
+        generationWritebackCurrent,
         generatedAt: packetGeneratedAt,
         updatedAt: resolveTrackedReportSourceUpdatedAt({
           generatedAt: packetGeneratedAt,
@@ -370,18 +372,18 @@ export default async function ReportsPage({
       } catch (error) {
         guidedComparison = { problem: error instanceof Error ? error.message : "The saved comparison binding cannot be checked." };
       }
-      const trackedPacketFreshness =
-        (packetSafetyEvidenceReadFailed || (safetyIngestReadFailed && report.project_id)) &&
-        computedPacketFreshness.label === PACKET_FRESHNESS_LABELS.CURRENT
-          ? {
-              label: PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED,
-              tone: "warning" as const,
-              detail: packetSafetyEvidenceReadFailed
-                ? "This packet recorded a failed project crash-evidence read and is not ready until it regenerates successfully."
-                : "Project-linked crash evidence could not be checked, so this packet is not verified against every live source.",
-            }
-          : computedPacketFreshness;
-      const packetFreshness = trackedPacketFreshness.label === PACKET_FRESHNESS_LABELS.CURRENT && guidedComparison
+      const safetyReadLimitation = packetSafetyEvidenceReadFailed
+        ? "This packet recorded a failed project crash-evidence read. Review the unavailable evidence; that failure does not establish a source change."
+        : safetyIngestReadFailed && report.project_id
+          ? "Project-linked crash evidence could not be checked. This is an unassessed source, not an observed change."
+          : null;
+      const trackedPacketFreshness = safetyReadLimitation && computedPacketFreshness.label !== PACKET_FRESHNESS_LABELS.NO_PACKET
+        ? { ...computedPacketFreshness,
+            label: computedPacketFreshness.label === PACKET_FRESHNESS_LABELS.CURRENT ? "Source evidence unassessed" : computedPacketFreshness.label,
+            tone: "warning" as const,
+            detail: `${computedPacketFreshness.label === PACKET_FRESHNESS_LABELS.CURRENT ? "" : `${computedPacketFreshness.detail} `}${safetyReadLimitation}` }
+        : computedPacketFreshness;
+      const packetFreshness = (trackedPacketFreshness.label === PACKET_FRESHNESS_LABELS.CURRENT || trackedPacketFreshness.label === "Source evidence unassessed") && guidedComparison
         ? guidedComparison.problem || guidedSelectionChanged
           ? { label: PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED, tone: "warning" as const,
               detail: guidedComparison.problem ?? "The saved guided comparison differs from the retained artifact." }
@@ -396,6 +398,9 @@ export default async function ReportsPage({
         rtpCycleUpdatedAt: rtpCycle?.updated_at ?? null,
         safetyUpdatedAt,
         safetyEvidenceReadFailed: packetSafetyEvidenceReadFailed,
+        jurisdictionState,
+        generationWritebackCurrent,
+        unassessedLabels: safetyIngestReadFailed && report.project_id ? ["Live crash evidence unavailable"] : [],
       });
       if (guidedSelectionChanged) {
         sourceReviewDriftSummary.labels.push("Selected guided comparison");

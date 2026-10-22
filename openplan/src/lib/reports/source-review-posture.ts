@@ -1,3 +1,5 @@
+import type { ReportJurisdictionState } from "./catalog";
+
 export function formatDriftLabelList(labels: string[]) {
   if (labels.length <= 1) {
     return labels[0] ?? "";
@@ -15,7 +17,26 @@ export type ReportDriftSummary = {
   totalCount: number;
   labels: string[];
   unassessedLabels?: string[];
+  reviewLabels?: string[];
+  jurisdictionState?: ReportJurisdictionState;
 };
+
+/** Add separately assessed sources without turning missing evidence into drift. */
+export function completeReportSourceReviewSummary(
+  summary: ReportDriftSummary,
+  input: { jurisdictionState?: ReportJurisdictionState; generationWritebackCurrent?: boolean; unassessedLabels?: string[] },
+): ReportDriftSummary {
+  const labels = [...summary.labels];
+  const unassessedLabels = [...(summary.unassessedLabels ?? []), ...(input.unassessedLabels ?? [])];
+  const reviewLabels = [...(summary.reviewLabels ?? [])];
+  if (input.jurisdictionState === "changed") labels.push("Jurisdiction inputs");
+  if (input.jurisdictionState === "unavailable") unassessedLabels.push("Jurisdiction inputs unavailable");
+  if (input.jurisdictionState === "untracked") unassessedLabels.push("Jurisdiction baseline historically untracked");
+  if (input.generationWritebackCurrent === false) reviewLabels.push("Generation writeback incomplete or report revision changed");
+  return { ...summary, changedCount: labels.length, labels, unassessedLabels, reviewLabels,
+    totalCount: summary.totalCount + labels.length - summary.labels.length + unassessedLabels.length - (summary.unassessedLabels?.length ?? 0) + reviewLabels.length - (summary.reviewLabels?.length ?? 0),
+    jurisdictionState: input.jurisdictionState };
+}
 
 export type ReportEvidenceSummary = {
   headline: string;
@@ -103,6 +124,13 @@ export function describeReportSourceReviewPosture({
     };
   }
 
+  if (driftSummary?.reviewLabels?.length) {
+    return { state: "needs-review", label: "Packet completion needs review",
+      headline: "Packet freshness needs review",
+      detail: `${formatDriftLabelList(driftSummary.reviewLabels)}. Review the report revision and generation completion before using the retained packet. This does not establish that a source changed.`,
+      changedSourceText: null };
+  }
+
   // Stored integrity does not establish current worker bytes or custody.
   if (guidedComparison?.liveEvidenceStatus === "unassessed") {
     return {
@@ -117,8 +145,8 @@ export function describeReportSourceReviewPosture({
 
   if (driftSummary?.unassessedLabels?.length) {
     return { state: "unassessed", label: "Source evidence unassessed",
-      headline: "Historical source baselines are incomplete",
-      detail: `${formatDriftLabelList(driftSummary.unassessedLabels)} cannot be fully compared with the retained packet. Missing baseline fields do not establish zero, a change or unchanged evidence.`,
+      headline: "Source comparison is incomplete",
+      detail: `${formatDriftLabelList(driftSummary.unassessedLabels)} cannot be fully compared with the retained packet. Review the unavailable inputs or historical baselines before release use. Missing evidence does not establish zero, a change or unchanged evidence.`,
       changedSourceText: null };
   }
 

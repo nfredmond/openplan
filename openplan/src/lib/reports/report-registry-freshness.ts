@@ -1,6 +1,6 @@
 import { getReportPacketFreshness, resolveReportPacketSourceUpdatedAt, type ReportJurisdictionState } from "./catalog";
 import { PACKET_FRESHNESS_LABELS } from "./packet-labels";
-import type { ReportDriftSummary } from "./source-review-posture";
+import { completeReportSourceReviewSummary, type ReportDriftSummary } from "./source-review-posture";
 import { guidedReportCanonicalJson, readGuidedComparisonSelection } from "./guided-comparison";
 
 function asRecord(value: unknown): Record<string, unknown> | null {
@@ -56,20 +56,27 @@ export function buildReportRegistryDriftSummary(input: {
   rtpCycleUpdatedAt: string | null | undefined;
   safetyUpdatedAt?: string | null;
   safetyEvidenceReadFailed?: boolean;
+  jurisdictionState?: ReportJurisdictionState;
+  generationWritebackCurrent?: boolean;
+  unassessedLabels?: string[];
 }): ReportDriftSummary {
-  if (input.packetFreshnessLabel !== PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED) {
-    return { changedCount: 0, totalCount: 0, labels: [] };
-  }
-
   const labels: string[] = [];
   if (isTimestampAfter(input.rtpCycleUpdatedAt, input.generatedAt)) labels.push("RTP cycle");
   if (isTimestampAfter(input.safetyUpdatedAt, input.generatedAt)) labels.push("Crash evidence");
-  if (input.safetyEvidenceReadFailed) labels.push("Crash evidence read");
-  if (hasMaterialReportWritebackAfterGeneration(input.generatedAt, input.reportUpdatedAt)) {
+
+  if (input.generationWritebackCurrent !== true && hasMaterialReportWritebackAfterGeneration(input.generatedAt, input.reportUpdatedAt)) {
     labels.push("Report metadata");
   }
-  if (labels.length === 0) labels.push("Tracked source context");
-  return { changedCount: labels.length, totalCount: labels.length, labels };
+  const summary = completeReportSourceReviewSummary({ changedCount: labels.length, totalCount: labels.length, labels }, {
+    jurisdictionState: input.jurisdictionState,
+    generationWritebackCurrent: input.generationWritebackCurrent,
+    unassessedLabels: [...(input.unassessedLabels ?? []), ...(input.safetyEvidenceReadFailed ? ["Retained crash evidence read failed"] : [])],
+  });
+  if (input.packetFreshnessLabel === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED &&
+      !summary.changedCount && !summary.unassessedLabels?.length && !summary.reviewLabels?.length) {
+    summary.reviewLabels = ["Packet freshness requires review"];
+  }
+  return summary;
 }
 
 export function resolveTrackedReportSourceUpdatedAt(input: {

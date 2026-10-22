@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { guidedReportSelectionFixture, reportId } from "@/test/fixtures/guided-report-evidence";
 import { guidedReportDigest } from "@/lib/reports/guided-comparison-binding";
 vi.mock("server-only", () => ({}));
-const guidedPageMocks = vi.hoisted(() => ({ verify: vi.fn(), bytes: vi.fn(), controls: vi.fn() }));
+const guidedPageMocks = vi.hoisted(() => ({ verify: vi.fn(), bytes: vi.fn(), controls: vi.fn(), realControls: false }));
 vi.mock("@/lib/reports/guided-comparison-server", async (importOriginal) => ({
   ...await importOriginal<typeof import("@/lib/reports/guided-comparison-server")>(),
   verifyGuidedComparisonReport: guidedPageMocks.verify,
@@ -304,12 +304,13 @@ vi.mock("@/lib/operations/workspace-summary", async () => {
   };
 });
 
-vi.mock("@/components/reports/report-detail-controls", () => ({
-  ReportDetailControls: (props: { guidedComparison?: unknown }) => {
+vi.mock("@/components/reports/report-detail-controls", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/components/reports/report-detail-controls")>();
+  return { ReportDetailControls: (props: import("react").ComponentProps<typeof actual.ReportDetailControls>) => {
     guidedPageMocks.controls(props);
-    return <div data-testid="report-detail-controls" />;
-  },
-}));
+    return guidedPageMocks.realControls ? <actual.ReportDetailControls {...props} /> : <div data-testid="report-detail-controls" />;
+  } };
+});
 
 import ReportDetailPage from "@/app/(app)/reports/[reportId]/page";
 
@@ -353,7 +354,7 @@ function selectGuidedPageFixture(fault?: string, sourceContext: Record<string, u
   if (fault === "stale artifact") frozen.bindingSha256 = "e".repeat(64);
   artifactsOrderMock.mockResolvedValueOnce({ data: [{ id: "artifact-1", artifact_kind: "html", storage_path: null,
     generated_at: "2026-03-28T18:00:00Z", metadata_json: { guidedComparisonSelectionV1: frozen,
-      sourceContext: { ...sourceContext, guidedComparisonSelectionV1: frozen } } }], error: null });
+      sourceContext: { jurisdictionReadiness: buildProjectJurisdictionReadinessExportPayload({ id: "project-1", jurisdiction_context: null }, jurisdictionReadinessRegistrySha256()), ...sourceContext, guidedComparisonSelectionV1: frozen } } }], error: null });
   return saved;
 }
 
@@ -376,6 +377,37 @@ function selectRetainedScenarioFixture(summary: "legacy" | "explicit") {
   scenarioSetsInMock.mockResolvedValue({ data: [{ id: "scenario-set-1", updated_at: setAt }], error: null });
   scenarioComparisonSnapshotsInMock.mockResolvedValue({ data: [{ id: "comparison-1", scenario_set_id: "scenario-set-1",
     updated_at: snapshotAt }], error: null });
+}
+
+/** Isolate the named source seams without a selected guided comparison or unrelated drift. */
+function selectReadinessSeamFixture(state: string) {
+  const at = "2026-10-18T00:00:00Z";
+  const sourceAt = "2026-10-17T00:00:00.000Z";
+  const project = { id: "project-1", workspace_id: "workspace-1", name: "Synthetic source review", jurisdiction_context: null, updated_at: sourceAt };
+  const jurisdiction = buildProjectJurisdictionReadinessExportPayload(project, jurisdictionReadinessRegistrySha256());
+  const updatedAt = state === "complete-writeback" ? "2026-10-18T01:00:00Z" : at;
+  projectMaybeSingleMock.mockResolvedValueOnce({ data: project, error: null });
+  reportMaybeSingleMock.mockResolvedValueOnce({ data: { id: "report-1", workspace_id: "workspace-1", project_id: "project-1",
+    title: "Synthetic source review packet", report_type: "project_status", status: "generated", summary: null,
+    engagement_campaign_id: null, rtp_cycle_id: null, metadata_json: {}, latest_artifact_kind: "html", generated_at: at,
+    updated_at: updatedAt, created_at: at }, error: null });
+  artifactsOrderMock.mockResolvedValueOnce({ data: [{ id: "artifact-1", artifact_kind: "html", generated_at: at,
+    metadata_json: { ...(state.includes("writeback") ? { generationWriteback: { schema: "openplan.report-generation-writeback.v1", reportUpdatedAt: state === "complete-writeback" ? updatedAt : sourceAt } } : {}),
+      sourceContext: { evidenceChainSummary: { linkedRunCount: 1 },
+        ...(state.includes("untracked") ? {} : { jurisdictionReadiness: state.includes("unavailable") ? { ...jurisdiction, payloadSha256: "f".repeat(64) } : jurisdiction }),
+        ...(state === "retained-crash-failed" ? { safetyEvidenceReadStatus: "failed" } : {}),
+        ...(state === "gate-failed" ? { stageGateSnapshot: { templateId: "ca_stage_gates_v0_1", templateVersion: "0.1.0", passCount: 0, holdCount: 0, notStartedCount: 9, blockedGate: null, nextGate: null } } : {}),
+        scenarioSetLinks: [{ scenarioSetId: "scenario-set-1", scenarioSetTitle: "Synthetic retained comparison", matchedEntries: [],
+          comparisonSummary: { label: "Synthetic retained comparison", totalAlternatives: 0, readyAlternatives: 0, blockedAlternatives: 0, baselineEntryPresent: true, baselineRunPresent: true },
+          scenarioSetUpdatedAt: sourceAt, comparisonSnapshots: [{ comparisonSnapshotId: "comparison-1", status: "ready", indicatorDeltaCount: 3, updatedAt: sourceAt }],
+          sharedSpine: { schemaPending: false, assumptionSetCount: 0, dataPackageCount: 0, indicatorSnapshotCount: 0, comparisonSnapshotCount: 1,
+            latestAssumptionSetUpdatedAt: null, latestDataPackageUpdatedAt: null, latestIndicatorSnapshotAt: null, latestComparisonSnapshotUpdatedAt: sourceAt } }],
+      } } }], error: null });
+  scenarioSetsInMock.mockResolvedValue({ data: [{ id: "scenario-set-1", updated_at: sourceAt }], error: null });
+  scenarioComparisonSnapshotsInMock.mockResolvedValue({ data: [{ id: "comparison-1", scenario_set_id: "scenario-set-1", updated_at: sourceAt }], error: null });
+  if (state === "live-crash-failed") safetyIngestLimitMock.mockResolvedValueOnce({ data: null, error: { message: "Synthetic crash query denied" } });
+  if (state === "gate-failed") stageGateLimitMock.mockResolvedValueOnce({ data: null, error: { message: "Synthetic gate query denied" } });
+  if (state.includes("new-safety")) safetyIngestLimitMock.mockResolvedValueOnce({ data: [{ id: "new-safety", created_at: "2026-10-19T00:00:00Z" }], error: null });
 }
 
 const pendingScenarioReads = (["legacy", "explicit"] as const).flatMap((summary) => [
@@ -432,6 +464,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     // the NEXT test's first read instead. Proven by the pair of tests at the
     // end of this file.
     vi.resetAllMocks();
+    guidedPageMocks.realControls = false;
     guidedPageMocks.verify.mockRejectedValue(new Error("Full guided verification must not run on ordinary page load"));
     guidedPageMocks.bytes.mockRejectedValue(new Error("Worker artifact downloads must not run on ordinary page load"));
 
@@ -502,6 +535,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
 
     projectMaybeSingleMock.mockResolvedValue({
       data: {
+        jurisdiction_context: null,
         id: "project-1",
         workspace_id: "workspace-1",
         name: "Downtown Mobility Plan",
@@ -1185,6 +1219,137 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     expectNoGuidedWorkerReads();
   });
 
+  it.each((["current", "changed", "unavailable", "untracked", "legacy", "writeback", "unreadable", "live-unavailable"] as const).flatMap((state) =>
+    (["packet", "history"] as const).map((tab) => ({ state, tab }))))(
+    "carries jurisdiction assessment into real Controls and $tab: $state", async ({ state, tab }) => {
+      guidedPageMocks.realControls = true;
+      const at = "2026-10-18T00:00:00Z";
+      const project = { id: "project-1", workspace_id: "workspace-1", name: "Synthetic jurisdiction project",
+        jurisdiction_context: null, place_country_code: "US", updated_at: at };
+      const snapshot = buildProjectJurisdictionReadinessExportPayload(project, jurisdictionReadinessRegistrySha256());
+      const retained = state === "unavailable" ? { ...snapshot, payloadSha256: "f".repeat(64) }
+        : state === "legacy" ? { ...snapshot, schema: "historical.v3" } : snapshot;
+      projectMaybeSingleMock.mockResolvedValueOnce({ data: state === "changed" ? { ...project, place_country_code: "CA" } : project, error: null });
+      reportMaybeSingleMock.mockResolvedValueOnce({ data: { id: "report-1", workspace_id: "workspace-1", project_id: "project-1",
+        title: "Synthetic jurisdiction packet", report_type: "project_status", status: "generated", summary: null,
+        latest_artifact_kind: "html", generated_at: at, updated_at: at, created_at: at }, error: null });
+      artifactsOrderMock.mockResolvedValueOnce(state === "unreadable" ? { data: null, error: { message: "Artifact read unavailable" } }
+        : { data: [{ id: "artifact-1", artifact_kind: "html", generated_at: at,
+          metadata_json: { ...(state === "writeback" ? { generationWriteback: { schema: "openplan.report-generation-writeback.v1", reportUpdatedAt: "2026-10-17T00:00:00Z" } } : {}),
+            sourceContext: { evidenceChainSummary: { linkedRunCount: 1 },
+              ...(state === "untracked" ? {} : { jurisdictionReadiness: retained }) } } }], error: null });
+      if (state === "live-unavailable") fundingAwardsOrderMock.mockResolvedValueOnce({ data: null, error: { message: "Funding read unavailable" } });
+      await renderReport(tab);
+      expect(projectSelectMock).toHaveBeenCalledWith(expect.stringContaining(PROJECT_JURISDICTION_COLUMNS));
+      expect(artifactsSelectMock).toHaveBeenCalledWith(expect.stringContaining("metadata_json"));
+      const controls = document.getElementById("report-controls")!;
+      if (state === "current") {
+        expect(within(controls).getByText("Current / ready")).toBeInTheDocument();
+        if (tab === "packet") expect(screen.getByText("Context captured")).toBeInTheDocument();
+      } else {
+        expect(within(controls).queryByText("Current / ready")).not.toBeInTheDocument();
+        expect(screen.queryByText("Evidence chain current")).not.toBeInTheDocument();
+        if (state === "changed") {
+          expect(within(controls).getByText("Changed sources: Jurisdiction inputs.")).toBeInTheDocument();
+          if (tab === "packet") {
+            expect(screen.getByText("1 source change")).toBeInTheDocument();
+            expect(screen.getAllByText(/Project jurisdiction context or registry inputs changed/).length).toBeGreaterThan(0);
+          }
+        } else {
+          expect(within(controls).queryByText(/Changed sources:/)).not.toBeInTheDocument();
+          if (state === "writeback") expect(within(controls).getByText("Packet completion needs review")).toBeInTheDocument();
+          else if (state !== "unreadable") {
+            expect(within(controls).getByText("Source evidence unassessed")).toBeInTheDocument();
+            expect(within(controls).getByText(state === "unavailable" ? /Jurisdiction inputs unavailable/ : state === "live-unavailable" ? /Live funding evidence unavailable/ : /Jurisdiction baseline historically untracked/)).toBeInTheDocument();
+            expect(within(controls).queryByText(/regenerate/i)).not.toBeInTheDocument();
+          }
+          if (tab === "packet") expect(screen.queryByText("Context captured")).not.toBeInTheDocument();
+        }
+      }
+      expectNoGuidedWorkerReads();
+    });
+
+  it.each([
+    { query: "sets", read: scenarioSetsInMock, select: scenarioSetsSelectMock, columns: "id, updated_at" },
+    { query: "assumptions", read: scenarioAssumptionSetsInMock, select: scenarioAssumptionSetsSelectMock, columns: "scenario_set_id, updated_at" },
+    { query: "packages", read: scenarioDataPackagesInMock, select: scenarioDataPackagesSelectMock, columns: "scenario_set_id, updated_at" },
+    { query: "indicators", read: scenarioIndicatorSnapshotsInMock, select: scenarioIndicatorSnapshotsSelectMock, columns: "scenario_set_id, snapshot_at" },
+    { query: "comparisons", read: scenarioComparisonSnapshotsInMock, select: scenarioComparisonSnapshotsSelectMock, columns: "id, scenario_set_id, updated_at" },
+  ])("keeps ordinary failed scenario $query unknown in real Controls, Packet and grant advice", async ({ read, select, columns }) => {
+    selectReadinessSeamFixture("current");
+    guidedPageMocks.realControls = true;
+    read.mockResolvedValue({ data: null, error: { message: "Synthetic ordinary scenario query denied" } });
+    await renderReport("packet");
+    expect(select).toHaveBeenCalledWith(columns);
+    expect(projectSelectMock).toHaveBeenCalledWith(expect.stringContaining(PROJECT_JURISDICTION_COLUMNS));
+    expect(artifactsSelectMock).toHaveBeenCalledWith(expect.stringContaining("metadata_json"));
+    const controls = document.getElementById("report-controls")!;
+    expect(within(controls).getByText("Source evidence unassessed")).toBeInTheDocument();
+    expect(within(controls).getByText(/Live scenario evidence unavailable/)).toBeInTheDocument();
+    expect(within(controls).queryByText(/Current \/ ready|Changed sources:/)).not.toBeInTheDocument();
+    expect(screen.getByText("How current the generated file is").parentElement!).toHaveTextContent("Source evidence unassessed");
+    expect(screen.queryByText("Context captured")).not.toBeInTheDocument();
+    expect(screen.getByText("Analysis behind a grant case").parentElement!).toHaveTextContent("Modeling evidence unassessed");
+    expect(screen.getByText("Review unassessed supporting evidence")).toBeInTheDocument();
+    expect(screen.queryByText("Refresh supporting packet before final pursue language")).not.toBeInTheDocument();
+    expect(screen.queryByText("Refresh recommended")).not.toBeInTheDocument();
+    expectNoGuidedWorkerReads();
+  });
+
+  it.each(["current", "live-crash-failed", "retained-crash-failed", "gate-failed", "jur-unavailable-new-safety", "jur-untracked-new-safety", "jur-unavailable-writeback", "jur-untracked-writeback", "complete-writeback"])(
+    "keeps the detail mixed/failure assessment consistent: %s", async (state) => {
+      selectReadinessSeamFixture(state);
+      guidedPageMocks.realControls = true;
+      await renderReport("packet");
+      expect(projectSelectMock).toHaveBeenCalledWith(expect.stringContaining(PROJECT_JURISDICTION_COLUMNS));
+      expect(artifactsSelectMock).toHaveBeenCalledWith(expect.stringContaining("metadata_json"));
+      expect(safetyIngestSelectMock).toHaveBeenCalledWith("id, created_at");
+      expect(safetyIngestEqProjectMock).toHaveBeenCalledWith("project_id", "project-1");
+      const controls = document.getElementById("report-controls")!;
+      const packet = screen.getByText("How current the generated file is").parentElement!;
+      const grants = screen.getByText("Analysis behind a grant case").parentElement!;
+      if (state === "current" || state === "complete-writeback") {
+        expect(within(controls).getByText("Current / ready")).toBeInTheDocument();
+        expect(packet).toHaveTextContent("Packet current");
+        expect(screen.getByText("Context captured")).toBeInTheDocument();
+      } else if (state.includes("new-safety") || state.includes("writeback")) {
+        expect(within(controls).queryByText("Current / ready")).not.toBeInTheDocument();
+        expect(packet).toHaveTextContent("Refresh recommended");
+        expect(packet).toHaveTextContent(state.includes("unavailable") ? "Jurisdiction inputs unavailable" : "Jurisdiction baseline historically untracked");
+        expect(grants).toHaveTextContent("Refresh recommended");
+        expect(screen.getByText("Refresh supporting packet before final pursue language")).toBeInTheDocument();
+        if (state.includes("new-safety")) {
+          expect(within(controls).getByText("Changed sources: Crash evidence.")).toBeInTheDocument();
+          expect(screen.getByText("1 source change")).toBeInTheDocument();
+        } else expect(within(controls).getByText("Packet completion needs review")).toBeInTheDocument();
+      } else {
+        expect(within(controls).getByText("Source evidence unassessed")).toBeInTheDocument();
+        expect(within(controls).queryByText(/Changed sources:/)).not.toBeInTheDocument();
+        expect(packet).toHaveTextContent("Source evidence unassessed");
+        expect(packet).not.toHaveTextContent(/Refresh recommended|regenerat/i);
+        expect(screen.queryByText("Context captured")).not.toBeInTheDocument();
+        expect(grants).toHaveTextContent("Modeling evidence unassessed");
+        expect(grants).not.toHaveTextContent(/should be refreshed|Appears decision-ready/);
+        expect(screen.getByText("Review unassessed supporting evidence")).toBeInTheDocument();
+        expect(screen.queryByText("Refresh supporting packet before final pursue language")).not.toBeInTheDocument();
+        if (state === "gate-failed") {
+          expect(stageGateSelectMock).toHaveBeenCalledWith(expect.stringContaining("project_id"));
+          expect(stageGateEqProjectMock).toHaveBeenCalledWith("project_id", "project-1");
+        }
+      }
+      expectNoGuidedWorkerReads();
+    });
+
+  it("keeps the retained failed crash-read History row unassessed", async () => {
+    selectReadinessSeamFixture("retained-crash-failed");
+    guidedPageMocks.realControls = true;
+    await renderReport("history");
+    const row = screen.getByText("Crash evidence read").parentElement!;
+    expect(row).toHaveTextContent("unassessed");
+    expect(row).not.toHaveTextContent("updated");
+    expect(row).not.toHaveTextContent(/regenerat/i);
+  });
+
   it("flags a retained jurisdiction snapshot after the live context changes", async () => {
     const oldProject = { id: "project-1", jurisdiction_context: null, place_country_code: "US" };
     const snapshot = buildProjectJurisdictionReadinessExportPayload(oldProject, jurisdictionReadinessRegistrySha256());
@@ -1315,13 +1480,15 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     await renderReport("history");
 
     expect(screen.getByText("Crash evidence read")).toBeInTheDocument();
-    expect(screen.getByText(/not current or ready until regeneration completes/i)).toBeInTheDocument();
+    expect(screen.getByText(/a failed read does not establish a source change or unchanged inputs/i)).toBeInTheDocument();
+    expect(screen.getByText("Crash evidence read").parentElement!).toHaveTextContent("unassessed");
 
     cleanup();
     stageFailedCrashReadArtifact();
     await renderReport("packet");
 
-    expect(screen.getAllByText(/Refresh recommended/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Source evidence unassessed").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Refresh recommended")).not.toBeInTheDocument();
   });
 
   it("shows the project records and scenario basis the packet was built from", async () => {

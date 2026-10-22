@@ -227,6 +227,7 @@ describe("ReportsPage", () => {
     projectsOrderMock.mockResolvedValue({
       data: [
         {
+          jurisdiction_context: null,
           id: "project-1",
           workspace_id: "workspace-1",
           name: "Downtown Mobility Plan",
@@ -362,6 +363,90 @@ describe("ReportsPage", () => {
     });
   });
 
+  it.each(["current", "changed", "unavailable", "untracked", "legacy", "writeback"] as const)(
+    "carries jurisdiction assessment into the catalog: %s", async (state) => {
+      const at = "2026-10-18T00:00:00Z";
+      const project = { id: "project-1", name: "Synthetic jurisdiction project", jurisdiction_context: null, place_country_code: "US" };
+      const snapshot = buildProjectJurisdictionReadinessExportPayload(project, jurisdictionReadinessRegistrySha256());
+      projectsOrderMock.mockResolvedValueOnce({ data: [state === "changed" ? { ...project, place_country_code: "CA" } : project], error: null });
+      reportsOrderMock.mockResolvedValueOnce({ data: [{ id: "report-1", workspace_id: "workspace-1", project_id: "project-1",
+        title: "Synthetic jurisdiction packet", report_type: "project_status", status: "generated", summary: null,
+        latest_artifact_kind: "html", generated_at: at, updated_at: at, created_at: at, projects: project, rtp_cycles: null }], error: null });
+      reportArtifactsOrderMock.mockResolvedValueOnce({ data: [{ report_id: "report-1", generated_at: at, metadata_json: {
+        ...(state === "writeback" ? { generationWriteback: { schema: "openplan.report-generation-writeback.v1", reportUpdatedAt: "2026-10-17T00:00:00Z" } } : {}),
+        sourceContext: { evidenceChainSummary: { linkedRunCount: 1 }, ...(state === "untracked" ? {} : {
+          jurisdictionReadiness: state === "unavailable" ? { ...snapshot, payloadSha256: "f".repeat(64) }
+            : state === "legacy" ? { ...snapshot, schema: "historical.v3" } : snapshot }) } } }], error: null });
+      await renderPage();
+      expect(projectsSelectMock).toHaveBeenCalledWith(expect.stringContaining(PROJECT_JURISDICTION_COLUMNS));
+      expect(reportArtifactsSelectMock).toHaveBeenCalledWith("report_id, generated_at, metadata_json");
+      if (state === "current") expect(screen.getByText("Current / ready")).toBeInTheDocument();
+      else {
+        expect(screen.queryByText("Current / ready")).not.toBeInTheDocument();
+        expect(screen.queryByText("Evidence chain current")).not.toBeInTheDocument();
+        if (state === "changed") {
+          expect(screen.getByText("Changed sources: Jurisdiction inputs.")).toBeInTheDocument();
+          expect(screen.getAllByText("Refresh recommended").length).toBeGreaterThan(0);
+          expect(screen.getAllByText(/Project jurisdiction context or registry inputs changed/).length).toBeGreaterThan(0);
+          expect(screen.getByText(/Next action: open this report and regenerate the packet/)).toBeInTheDocument();
+        }
+        else {
+          expect(screen.queryByText(/Changed sources:/)).not.toBeInTheDocument();
+          if (state === "writeback") expect(screen.getByText("Packet completion needs review")).toBeInTheDocument();
+          else {
+            expect(screen.getAllByText("Source evidence unassessed").length).toBeGreaterThan(0);
+            expect(screen.getByText(/Next action: open this report and review the unassessed source evidence/)).toBeInTheDocument();
+            expect(screen.queryByText("Release review ready")).not.toBeInTheDocument();
+            expect(screen.queryByText(/Next action:.*regenerate/)).not.toBeInTheDocument();
+          }
+        }
+      }
+    });
+
+  it.each(["current", "live-crash-failed", "retained-crash-failed", "jur-unavailable-new-safety", "jur-untracked-new-safety", "jur-unavailable-writeback", "jur-untracked-writeback", "complete-writeback"])(
+    "keeps catalog packet and grant guidance consistent for mixed/failure state: %s", async (state) => {
+      const at = "2026-10-18T00:00:00Z";
+      const project = { id: "project-1", name: "Synthetic source review", jurisdiction_context: null };
+      const jurisdiction = buildProjectJurisdictionReadinessExportPayload(project, jurisdictionReadinessRegistrySha256());
+      const updatedAt = state === "complete-writeback" ? "2026-10-18T01:00:00Z" : at;
+      projectsOrderMock.mockResolvedValueOnce({ data: [project], error: null });
+      reportsOrderMock.mockResolvedValueOnce({ data: [{ id: "report-1", workspace_id: "workspace-1", project_id: "project-1",
+        title: "Synthetic source review packet", report_type: "project_status", status: "generated", summary: null,
+        rtp_cycle_id: null, latest_artifact_kind: "html", generated_at: at, updated_at: updatedAt, created_at: at, projects: project }], error: null });
+      reportArtifactsOrderMock.mockResolvedValueOnce({ data: [{ report_id: "report-1", generated_at: at, metadata_json: {
+        ...(state.includes("writeback") ? { generationWriteback: { schema: "openplan.report-generation-writeback.v1", reportUpdatedAt: state === "complete-writeback" ? updatedAt : "2026-10-17T00:00:00Z" } } : {}),
+        sourceContext: { evidenceChainSummary: { linkedRunCount: 1 },
+          ...(state.includes("untracked") ? {} : { jurisdictionReadiness: state.includes("unavailable") ? { ...jurisdiction, payloadSha256: "f".repeat(64) } : jurisdiction }),
+          ...(state === "retained-crash-failed" ? { safetyEvidenceReadStatus: "failed" } : {}),
+          scenarioSetLinks: [{ comparisonSnapshots: [{ status: "ready", indicatorDeltaCount: 3 }] }],
+        } } }], error: null });
+      if (state === "live-crash-failed") safetyIngestOrderMock.mockResolvedValueOnce({ data: null, error: { message: "Synthetic crash query denied" } });
+      if (state.includes("new-safety")) safetyIngestOrderMock.mockResolvedValueOnce({ data: [{ project_id: "project-1", created_at: "2026-10-19T00:00:00Z" }], error: null });
+      await renderPage();
+      expect(projectsSelectMock).toHaveBeenCalledWith(expect.stringContaining(PROJECT_JURISDICTION_COLUMNS));
+      expect(reportArtifactsSelectMock).toHaveBeenCalledWith("report_id, generated_at, metadata_json");
+      expect(safetyIngestSelectMock).toHaveBeenCalledWith("project_id, created_at");
+      if (state === "current" || state === "complete-writeback") {
+        expect(screen.getByText("Current / ready")).toBeInTheDocument();
+        expect(screen.getByText(/Grant release review: Appears decision-ready/)).toBeInTheDocument();
+      } else if (state.includes("new-safety") || state.includes("writeback")) {
+        expect(screen.getAllByText("Refresh recommended").length).toBeGreaterThan(0);
+        expect(screen.getByText(/Grant release review: Refresh recommended/)).toBeInTheDocument();
+        expect(screen.getByText(/Next action: open this report and regenerate the packet/)).toBeInTheDocument();
+        expect(screen.getAllByText(state.includes("unavailable") ? /jurisdiction assessment could not be checked/ : /historical packet did not track/).length).toBeGreaterThan(0);
+        expect(screen.getByRole("link", { name: /^Needs refresh\s*1$/ })).toBeInTheDocument();
+        if (state.includes("new-safety")) expect(screen.getByText("Changed sources: Crash evidence.")).toBeInTheDocument();
+        else expect(screen.getByText("Packet completion needs review")).toBeInTheDocument();
+      } else {
+        expect(screen.getAllByText("Source evidence unassessed").length).toBeGreaterThan(0);
+        expect(screen.getByText(/Grant release review: Modeling evidence unassessed/)).toBeInTheDocument();
+        expect(screen.getByText(/Next action: open this report and review the unassessed source evidence/)).toBeInTheDocument();
+        expect(screen.queryByText(/Changed sources:|should be refreshed/)).not.toBeInTheDocument();
+        expect(screen.queryByText("Current / ready")).not.toBeInTheDocument();
+        expect(screen.queryByText("Refresh recommended")).not.toBeInTheDocument();
+      }
+    });
+
   it("flags a retained jurisdiction snapshot after the live context changes", async () => {
     const oldProject = { id: "project-1", jurisdiction_context: null, place_country_code: "US" };
     const snapshot = buildProjectJurisdictionReadinessExportPayload(oldProject, jurisdictionReadinessRegistrySha256());
@@ -447,6 +532,7 @@ describe("ReportsPage", () => {
         generated_at: "2026-03-28T20:00:00.000Z",
         metadata_json: {
           sourceContext: {
+            jurisdictionReadiness: buildProjectJurisdictionReadinessExportPayload({ id: "project-1", jurisdiction_context: null }, jurisdictionReadinessRegistrySha256()),
             projectUpdatedAt: "2026-03-28T19:00:00.000Z",
             safetyEvidenceReadStatus: "failed",
           },
@@ -457,8 +543,10 @@ describe("ReportsPage", () => {
 
     await renderPage();
 
-    expect(screen.getAllByText("Refresh recommended").length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Crash evidence read/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Source evidence unassessed").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Refresh recommended")).not.toBeInTheDocument();
+    expect(screen.getAllByText(/recorded a failed project crash-evidence read/).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Changed sources:/)).not.toBeInTheDocument();
     expect(screen.queryByText("Current / ready")).not.toBeInTheDocument();
   });
 
@@ -679,6 +767,7 @@ describe("ReportsPage", () => {
           generated_at: "2026-03-28T20:00:00.000Z",
           metadata_json: {
             sourceContext: {
+              jurisdictionReadiness: buildProjectJurisdictionReadinessExportPayload({ id: "project-1", jurisdiction_context: null }, jurisdictionReadinessRegistrySha256()),
               evidenceChainSummary: {
                 linkedRunCount: 1,
                 scenarioSetLinkCount: 0,

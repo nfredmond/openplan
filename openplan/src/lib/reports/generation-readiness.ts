@@ -1,3 +1,5 @@
+import type { ReportDriftSummary } from "./source-review-posture";
+import { formatDriftLabelList } from "./source-review-posture";
 import type { DatasetDependentOutputContext } from "@/lib/data-sources/dataset-dependent-output-context";
 import {
   buildProjectFundingProfileScan,
@@ -242,6 +244,7 @@ export function buildReportGenerationReadiness(input: {
   sourceContext: Record<string, unknown> | null;
   driftedSourceCount: number;
   unassessedSourceCount?: number;
+  sourceReviewSummary?: ReportDriftSummary;
   comparisonAggregate?: ReportComparisonSnapshotAggregate | null;
   guidedComparison?: { selected: boolean; problem: string | null };
   fundingSnapshot?: ReportFundingSnapshot | null;
@@ -271,7 +274,14 @@ export function buildReportGenerationReadiness(input: {
         })
       : null;
   const dataLineageSummary = summarizeDataLineage(input.datasetOutputContexts ?? []);
-  const sourceContextCheck: ReportGenerationReadinessCheck = !hasSourceContext(input.sourceContext)
+  const driftedSourceCount = input.sourceReviewSummary?.changedCount ?? input.driftedSourceCount;
+  const unassessedSourceCount = input.sourceReviewSummary?.unassessedLabels?.length ?? input.unassessedSourceCount;
+  const reviewLabels = input.sourceReviewSummary?.reviewLabels ?? [];
+  const sourceContextCheck: ReportGenerationReadinessCheck = input.hasGeneratedArtifact && unassessedSourceCount && !hasSourceContext(input.sourceContext)
+    ? { id: "source_context", label: "Packet source context", status: "unknown",
+        statusLabel: "Source evidence unassessed", detail: "Retained source context is unavailable or historically untracked. Missing evidence does not establish zero, a source change or unchanged inputs.",
+        nextAction: "Review the unavailable inputs and retained evidence before release use." }
+    : !hasSourceContext(input.sourceContext)
     ? {
         id: "source_context",
         label: "Packet source context",
@@ -284,21 +294,28 @@ export function buildReportGenerationReadiness(input: {
           : "No generated artifact exists yet, so the packet has not captured report origin, linked evidence, funding, or lineage snapshots.",
         nextAction: "Generate a packet after reviewing funding, comparison, and dataset lineage posture.",
       }
-    : input.driftedSourceCount > 0
+    : driftedSourceCount > 0
       ? {
           id: "source_context",
           label: "Packet source context",
           status: "attention",
-          statusLabel: `${input.driftedSourceCount} source change${input.driftedSourceCount === 1 ? "" : "s"}`,
+          statusLabel: `${driftedSourceCount} source change${driftedSourceCount === 1 ? "" : "s"}`,
           detail:
             "The latest artifact has compact source context, but live source state has changed since generation.",
           nextAction:
             "Review changed source areas and regenerate before using the packet outside supervised draft review.",
         }
-      : input.unassessedSourceCount ? {
+      : reviewLabels.length ? {
+          id: "source_context", label: "Packet source context", status: "attention",
+          statusLabel: "Generation writeback needs review",
+          detail: `${formatDriftLabelList(reviewLabels)}. This does not establish that a source changed.`,
+          nextAction: "Review the report revision and generation completion before using the retained packet.",
+        } : unassessedSourceCount ? {
           id: "source_context", label: "Packet source context", status: "unknown",
-          statusLabel: "Historical source baseline unassessed",
-          detail: "Some historical source totals were not recorded. Missing fields do not establish a source change or unchanged evidence.",
+          statusLabel: input.sourceReviewSummary ? "Source evidence unassessed" : "Historical source baseline unassessed",
+          detail: input.sourceReviewSummary?.unassessedLabels?.length
+            ? `${formatDriftLabelList(input.sourceReviewSummary.unassessedLabels)}. Missing evidence does not establish a source change or unchanged evidence.`
+            : "Some historical source totals were not recorded. Missing fields do not establish a source change or unchanged evidence.",
           nextAction: "Review the retained source records and the unassessed baseline before release use.",
         } : {
           id: "source_context",
@@ -334,7 +351,7 @@ export function buildReportGenerationReadiness(input: {
   const hasNotStarted = checks.some((check) => check.status === "not_started");
   // Optional unknown checks keep their existing behavior on unselected reports.
   const hasUnassessedGuidedComparison = Boolean(input.guidedComparison?.selected && !input.guidedComparison.problem);
-  const hasUnassessedSources = Boolean(input.unassessedSourceCount);
+  const hasUnassessedSources = Boolean(unassessedSourceCount);
   const allReadyOrUnknown = checks.every(
     (check) => check.status === "ready" || check.status === "unknown"
   );

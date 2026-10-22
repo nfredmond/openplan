@@ -259,3 +259,105 @@ same source omission but was not observed ready in that hosted run. The
 Reports/A3 lane retains this correction and its focused/browser evidence as
 open. The held Reports outcome is not promoted by the bounded RTP/HIN release
 scope disposition. Original hosted evidence remains partial.
+
+
+October 22 jurisdiction readiness source repair, R21: intake is clean Reports
+HEAD `a8d35bbcbbf7c4f3dc438d622bc32923fff894c1`, committed application tree
+`37c6395cde710d24a56e64cb23ac0c5c6c5ac612`. The uncommitted correction adds one
+small pure summary builder in the existing source-review helper. Catalog,
+detail Controls and generation source-context guidance receive the separately
+assessed jurisdiction state. Packet freshness uses that same explicit state.
+Confirmed jurisdiction change requires review and refresh. Unavailable inputs
+and historical untracked baselines stay unassessed, with no invented zero,
+confirmed change, current badge or automatic regeneration advice. The summary
+also carries known incomplete generation writeback and source-read failures.
+An exact completed generation writeback does not become report-metadata drift.
+Saved comparison integrity, live-evidence warnings and full save/generation
+verification semantics remain unchanged. No artifact is regenerated or edited.
+
+The final restored ordinary cohort passes six existing test files and 219
+cases, with zero failed or skipped cases, no cache, one worker and a 6 GiB heap.
+Actual page cases render real Controls, packet guidance and catalog consumers
+for current, jurisdiction-only changed, unavailable and historical untracked
+inputs. They assert jurisdiction and artifact query projections. Existing
+scenario/grant unknown-consumer cases remain in the passing cohort. A harmless
+comment survives 218 cases. Six focused fault rounds produce 45 intended
+assertion failures for omitted jurisdiction, false change/current treatment of
+unknown evidence, omitted generation assessment, omitted writeback review and
+false drift from completed writeback. All source bytes and modes restore
+exactly. Scoped lint and diff checks pass. Earlier interim test/lint failures
+and a corrected private receipt-format validator remain in the private packet;
+they receive no intentional-fault credit. React act warnings remain retained.
+
+This is source repair and ordinary mocked/component evidence only. No compiler,
+build, native database, HTTP, browser, server, provider, CI or PR operation runs;
+there is no commit, push or delegation. The A0 build window and separate v0.70
+release remain untouched. R8's original hosted failure remains partial and its
+original packet stays retained. Consistent Reports acceptance still needs the
+root-owned identified-build desktop and 390px catalog-to-detail, Controls and
+Packet journey, console review and appropriate artifact evidence. Generation
+readiness was not observed ready in R8. Full v1, all 19 contexts and separate
+scientific requirements remain unchanged. The private source/index/runtime
+handback and exact patch are in local packet
+`pr355-jurisdiction-readiness-repair-20261022-21`.
+
+
+October 22 R23 admitted readiness-seam continuation: root accepts the three P2
+findings in independent packet `pr355-jurisdiction-independent-20261022-22`.
+Intake exactly matches R21's 14 dirty-path pins and full tracked manifest at
+HEAD `a8d35bbcbbf7c4f3dc438d622bc32923fff894c1`. This continuation changes only
+the named seams. Ordinary live scenario query failures enter the shared
+unassessed summary for Controls, Packet and generation guidance. The existing
+pending-schema path and independently established changes remain intact.
+Catalog evaluates known newer sources and incomplete writeback before an
+unknown-only jurisdiction result, and retains the jurisdiction limitation with
+refresh guidance. Failure-only live gate/crash reads remain unassessed in
+detail and catalog packet/grant consumers. A retained failed crash read now
+has unassessed drift status, rather than updated. Actual known change still
+requires refresh; exact completed writeback remains current.
+
+The final restored ordinary run passes 246 cases across the same six existing
+files, with zero failures or skips, no cache, one worker and a 6 GiB heap.
+New cases exercise actual Controls, Packet, catalog and grant advice for all
+five ordinary scenario query failures with current jurisdiction; mixed unknown
+jurisdiction with a successful newer crash acquisition or incomplete writeback;
+failure-only gate/crash inputs; and the retained failed crash-read row. Required
+query projections and project scope are asserted. Positive current and exact
+completed-writeback cases pass. The unchanged pending-schema and known-change
+cases remain active. A harmless comment survives all 246 cases. Five focused
+fault rounds produce 32 intended assertion failures, all with zero skips and
+exact source/mode restoration. Scoped lint and diff checks pass. Interim
+fixture, matcher and private edit-script errors remain retained and receive no
+control credit. React act warnings remain in the raw ordinary logs.
+
+R21/R22 packets remain exact, including their raw failures and control-credit
+limits. The cumulative candidate has 15 dirty paths relative to HEAD; this
+continuation changes nine paths relative to R21, including append-only STATUS
+and KNOWN_ISSUES and the newly admitted existing `_safety-drift.ts` path.
+All other tracked source, SQL, authority, native fixtures, accepting verifier
+and saved-binding code remain byte/mode exact to R21. No artifact generation,
+metadata rewrite, native/DB, HTTP, browser, compiler, build, server, provider,
+CI/PR operation, commit, push or delegation occurs. The Appearance R9 build
+window remains exclusive. Published v0.70's Reports limitation and R8's partial
+outcome remain unchanged until actual Reports acceptance. Root owns exact
+review of these three dispositions and the later identified-build journey.
+Full v1, all 19 contexts and separate scientific requirements remain in full.
+Private evidence: `pr355-readiness-failure-mixed-state-repair-20261022-23`.
+
+
+Root source disposition, October 22, 2026 UTC. The subsequent single configured
+compiler passes at 04:13:24.082881, using the actual tsconfig, noEmit and
+incremental false. Its program contains 5,453 files, including 448 retained
+Next inputs. This does not establish a fresh build. Source and index remain
+exact through the compiler. Root reads the full R22 findings and R23 response,
+reviews the three corrections and their consumer tests, and admits the bounded
+source checkpoint for one identified build and retained catalog-to-detail view.
+The pre-note cumulative patch is c804f9cc37d43fe3bc6f7887c8eb65eaf182d469a8ae2e7ad255e8187ab843fd.
+
+Earlier notes' compiler-pending language records their original source phase;
+the later R23 compiler packet supplies this separate result. Ordinary source
+coverage remains 246 passes across six files, zero skips, with 32 named fault
+failures and exact restoration. No new test or code change follows this source
+review. Browser acceptance, native Reports KPI authority, Save/Generate and
+Storage-byte acceptance remain open. The published v0.70 Reports limitation
+and original hosted R8 partial failure are unchanged. Full v1 remains binding.

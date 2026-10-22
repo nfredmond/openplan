@@ -34,7 +34,6 @@ import { ReportNavigationPreview } from "./report-navigation-preview";
 import { ReportPacketReview } from "./report-packet-review";
 import { ReportProvenanceAudit } from "./report-provenance-audit";
 import type {
-  DriftItem,
   EngagementCampaignLinkRow,
   LinkedRunRow,
   ReportArtifact,
@@ -105,8 +104,7 @@ type ReportStandardDetailProps = {
   initialSafetyIngestId?: string | null;
   latestArtifact: ReportArtifact | null;
   fundingSnapshot: ReportFundingSnapshot | null;
-  driftItems: DriftItem[];
-  driftedItems: DriftItem[];
+  sourceReviewSummary: ComponentProps<typeof ReportDetailControls>["driftSummary"];
   evidenceSummaryDigest: ReportEvidenceChainDigest | null;
   fundingSummaryDigest: ReportFundingDigest | null;
   engagementCampaign: EngagementCampaignLinkRow | null;
@@ -142,8 +140,7 @@ export function ReportStandardDetail({
   initialSafetyIngestId = null,
   latestArtifact,
   fundingSnapshot,
-  driftItems,
-  driftedItems,
+  sourceReviewSummary,
   evidenceSummaryDigest,
   fundingSummaryDigest,
   engagementCampaign,
@@ -276,12 +273,7 @@ export function ReportStandardDetail({
             status: report.status,
             hasGeneratedArtifact: Boolean(report.latest_artifact_kind),
           }}
-          driftSummary={{
-            changedCount: driftedItems.length,
-            totalCount: driftItems.length,
-            labels: driftedItems.map((item) => item.label),
-            unassessedLabels: driftItems.filter((item) => item.status === "unassessed").map((item) => item.label),
-          }}
+          driftSummary={sourceReviewSummary}
           evidenceSummary={evidenceSummaryDigest}
           fundingSummary={fundingSummaryDigest}
           modelRunOptions={citeableModelRuns}
