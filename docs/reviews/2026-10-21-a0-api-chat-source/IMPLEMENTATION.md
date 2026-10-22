@@ -791,3 +791,50 @@ b7abd87d61ed948c64e7d0aec99b05ea6f13209e. The raw index backup precedes
 status. The final report records exact source, index, dependency and prior-build
 custody separately from unexecuted runtime acceptance. R43's generated-cache
 exception remains preserved and dispositioned; no old cache is reconstructed.
+
+## R45 observes the bounded mounted draft outcome at both widths
+
+October 22, 2026 UTC. Root reviews the complete R45 report and the actual
+390px payload, desktop Delivery and original reload-recovery screenshots.
+The single production build at source `602587f7` passes, including configured
+TypeScript, in 66.272672 seconds. BUILD_ID is `V4TsRYnSvCPIiDjCDcQ1_`.
+The ordinary-cookie journey runs at 1440px and 390px against the exact isolated
+R36 stack and the unchanged product-saved keyless synthetic API revision.
+
+Each fresh canonically consented turn sends two actual SDK requests and retains
+two checked responses and one proposal. Initial approval focus is Cancel.
+One Escape removes only the sheet, preserves the native parent and keeps focus
+on the retained section across the real status/progress reads. Focus then
+returns to the exact enabled review control. The active history option keeps
+the original turn ID and truthful state. Renewed review retains the same intent
+and payload hash. One Approve click per width uses the original approval,
+claim and action registry to create exactly one Draft progress report.
+Delivery and GET-only subject reload/recovery retain that original record and
+verified receipt without another provider request or business POST. Ordinary
+Escape without approval returns to the launcher.
+
+The two new records remain synthetic and unissued. The sole new evaluation
+admission is disabled, all older admissions and rows remain unchanged, owned
+Next/SSE/Chrome/T3 resources close, and the six R36 containers remain running.
+All tracked source, raw index, 969 lock records, the full intake dependency tree
+and complete prior build match their frozen inventories. R43's older generated
+cache exception remains historical and is not retroactively restored.
+
+Raw diagnostics remain material: 238 application API requests receive 238
+responses without observed 400+ status; 95 RSC GET aborts and two reconcile POST
+aborts remain. The two reconcile response bodies are unread despite 200
+headers. Original dispatch bodies, committed native rows, verified receipts
+and independent GET recovery match. Eight report-only CSP messages and one
+autocomplete suggestion remain, with no observed page error. Private locator,
+body-reader and packaging failures remain in the packet. This is no clean
+network result or proof that those reconcile bodies completed. No intentional
+after-effect reply-loss case runs.
+
+The local packet `a0-focus-history-mounted-journey-20261022-r45` retains exact
+IDs, canonical hashes, wire/SSE, original approval/action/receipt chains,
+screenshots, diagnostics and terminal custody. Operational handback occurs at
+03:53:21 UTC before private packaging. This accepts only the named synthetic
+mounted project journey. Real-provider authentication, terms, billing and
+usefulness, installed Codex/Claude Code/OpenCode, remaining APIs and all 19
+contexts, races, independent restore, hosted operation and full A0/v1 remain
+open. Broad and production profiles stay CLOSED. No scientific claim changes.
