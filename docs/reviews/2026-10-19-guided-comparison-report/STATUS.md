@@ -639,3 +639,39 @@ continuation. Retried readiness's complete native gate, Reports accepting
 Save/Generate routes, actual bytes, full M3/S1/general prepared science and full
 v1 acceptance remain unproved. Private source/control handback is in
 `managed-readiness-timezone-fixture-repair-20261022-r79`.
+
+
+## R96 joins the reviewed actual Reports route fixture, October 22, 2026
+
+The two R82 fixture files enter the maintained source after R90's independent
+source-preparation acceptance. Their bodies remain byte-exact to that reviewed
+packet, including its dated preparation comments. This entry records the current
+installed source tier. Those comments are historical draft provenance.
+
+The readiness prerequisite has a separate 124-pass native baseline at R84 and
+two restored refusal passes at R94, with 122 selector skips. The relaxed-count
+mutation still has zero invalid-acceptance kill credit because independent
+STRICT enforcement refuses it. R91's historical cached-timestamp index exception
+remains preserved without rewriting the index. No scientific claim changes.
+
+Ordinary collection with native mode off and normal Node export conditions
+exits 0 with all six cases explicitly skipped. This confirms collection, with
+zero product-behavior pass credit. Scoped ESLint passes for both new files. One
+configured compiler exits 0 at 2026-10-22T09:18:09.021201Z with empty logs. The
+tracked source, two new file bodies, raw index and captured Next declaration
+state remain exact through that invocation. Next declarations remain absent.
+
+Product, verifier, byte reader, Storage and reused helper inputs remain exact
+to the reviewed frozen source. Only the previously reviewed R79 common-population
+fixture differs among the 40 pinned inputs. No production, migration, package
+or lock change belongs to this join. The enumerated live command remains
+unchanged; the six-case direct native invocation requires its own target-bound
+lifetime and root admission. No default CI native membership is claimed.
+
+Actual Reports accepting calls remain zero at this checkpoint. Native fixture
+setup, real verifier/Create/Save/Generate/reopen, file restoration and controls
+remain unrun. The four KPI-after-Save Generate categories, separate pre-Storage
+refusal and race, browser/hosted workflows, M3/S1 science and full v1 remain open.
+No native, browser, provider, model, worker, build, CI or release operation runs
+in R96. A later native round must retain all original target rows and files,
+record actual reach and stop at its first real setup or assertion failure.
