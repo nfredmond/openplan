@@ -565,3 +565,25 @@ This adds typecheck evidence only. Native12 remains 25 passes and one failed
 hook assertion; the corrected 27-case cohort remains unrun at this checkpoint.
 General prepared science, actual worker and Reports accepting-route evidence
 remain open.
+
+
+### October 22, 2026 native16 retained retry checkpoint
+
+The maintained 27-case native cohort passes on the unchanged installed435
+target. It covers failed and cancelled retained-output retry, original replay,
+late-write refusal, PT409 with HTTP409 and exact persisted state, all nine
+user/native producer policies, mixed-stage refusal and a real nonterminal
+cancellation recheck. The harmless focused control survives. Omitting the real
+cancellation and ignoring the user recheck refusal each fail the named race
+assertion. Restored focus passes two cases with 25 explicit selector skips.
+
+All prior history, authorities and rows remain retained. New fixture records
+remain on the isolated target. Raw index bytes change in cached timestamps
+during the round; staged blobs/modes and source stay exact. The failed custody
+assertion remains preserved. Root later restores the captured raw preimage
+after confirming identical staged entries and clean source. The actor remains
+unassessed. Neither restoration nor these tests establishes complete worker
+recovery, prepared science, completed-parent races or Reports accepting routes.
+
+Native12 retains its earlier 25-pass/one-failure result. The separate additive
+managed-readiness bridge is unreviewed and uninstalled at this checkpoint.
