@@ -594,3 +594,77 @@ A0 profile stays broadly CLOSED. R36 native/HTTP proof remains dated evidence
 for its source pins. JSON wire logic, all SQL and action authority stay exact.
 All wider A0, hosted, scientific, release and full-v1 boundaries remain open.
 No Nathaniel decision is missing.
+
+
+## R41 consumes approval Escape before dismissing the sheet, October 21, 2026
+
+R40's identified build 2UhAI3NehHm3ZQlMoQ1ih reaches the full original draft
+approval sheet, but one Escape closes both that sheet and the native parent.
+R40 stops with no approval or effect. Its retained intent is
+c7bd0f55-7681-41c0-8a98-928d5edbe22e on turn
+b5595ed0-24ec-412e-8ac3-f7b4e8a54263. Its admission is disabled and its owned
+Next, SSE and browser resources are closed at runtime handback. Those are
+R40's dated receipts, not new database or browser observations in this round.
+
+The active-approval window capture handler in app-copilot.tsx stops keydown
+propagation but leaves its default action enabled. It clears pendingApproval,
+which supplies the parent ModalDialog's closeBlocked value. The native cancel
+handler closes an unblocked parent. This source supports the reported cause;
+the precise browser event ordering remains an inference from R40's outcome.
+The repair calls event.preventDefault() before propagation stops and before
+pending approval is rejected and cleared. A comment explains that ordering.
+The original ChatReviewCancelled path, full payload, requestActionApproval,
+approved-payload hashes, binding, registry and receipt logic remain unchanged.
+The capture listener still exists only while approval is pending. Native cancel,
+Close, backdrop and focus-return code receive no edits.
+
+The existing app-copilot.test.tsx remains the sole changed test path. Two added
+cases render real AppCopilot and ModalDialog. The retained saved-API case reads
+a succeeded turn through the existing fetch mock seam, opens the original
+full-payload sheet and checks every action value. It dispatches a real,
+cancelable KeyboardEvent from the sheet's Cancel button and directly asserts
+Escape defaultPrevented. It checks sheet dismissal, the retained native dialog
+element, the same selected turn and answer, renewed review of the same intent,
+and zero POSTs throughout. It cancels renewed review through the existing Cancel
+button and checks ordinary Escape remains unconsumed. The second case checks
+ordinary Escape without pending approval and separately exercises the actual
+ModalDialog cancel callback. Existing fixtures, mock subjects and behavioral
+assertions remain unchanged. No native default action is invented by these tests.
+
+Initial and fully restored cohorts each pass 228 tests across 18 maintained
+ordinary files, with zero failures, skips or todo. Both use npm, one worker,
+no file parallelism and a 6144 MiB Node heap cap. The cohort includes all ten
+ordinary provider-chat files, AppCopilot, action-approval-server,
+assistant-submittal-approval-route and the five related assistant chat files.
+Native/database suites are not invoked. Strict scoped ESLint and diff checks
+are recorded in the private packet; no compiler or build runs.
+
+A harmless production-comment mutation survives both selected new cases.
+Removing the actual preventDefault fails the named active-approval cancellation
+assertion, while the ordinary-Escape case passes. Removing the pending-approval
+listener boundary fails both ordinary-Escape assertions. These are assertion
+failures, not collection or startup failures. Each selected control discovers
+27 AppCopilot cases and reports 25 selector skips. Every control restores exact
+production bytes and mode before the next operation. The full restored cohort
+has no selector or explicit skips. Raw runner outputs remain retained.
+
+The blind category is actual native Escape default ordering, focus return,
+modality, CSS, sheet geometry and scrolling. The existing jsdom dialog shim
+cannot prove those browser facts. The repaired source still needs a new
+identified-build journey at desktop and 390px. R40's prior build and screenshots
+remain evidence for prior source. This round does not reopen, approve, retry or
+resume its retained intent and makes no new approval or receipt claim.
+
+Candidate intake remains HEAD 2862b34195894f5fb62bffe86124f7d59bc07cd4 and HEAD
+app tree 4e6d52073e93f3dd9bcc16807509226e9bb2b0a8. Ownership is limited to the
+AppCopilot component, its existing test and this append. Private receipts live
+at /home/nathaniel/.local/state/openplan/a0-approval-escape-repair-20261022-r41.
+The raw index backup precedes Git status; Git uses GIT_OPTIONAL_LOCKS=0.
+Live inherited settings select codex/gpt-6.1-sol, high reasoning and priority
+service. No source outside the three paths, SQL, contract, credential, RPC,
+package, lock or action-authority edit occurs. No compiler, build, server,
+browser, database, provider, profile, account, admission, native command,
+commit, push, PR operation or CI polling runs. The six R36 containers receive
+no operation or fresh state assertion. Root owns the next source review,
+commit, identified build and retained-intent journey. Reports and release work
+remain separate. A0 broadly stays closed; wider acceptance remains unproved.

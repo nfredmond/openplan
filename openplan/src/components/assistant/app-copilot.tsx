@@ -1589,6 +1589,8 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
 
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
+        // Consume native Escape before clearing the approval that blocks closing.
+        event.preventDefault();
         event.stopPropagation();
         setPendingApproval((current) => {
           current?.reject(new ChatReviewCancelled());
