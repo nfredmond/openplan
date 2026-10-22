@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
+import { readFileSync } from "node:fs";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
@@ -11,6 +12,69 @@ import { resolveLocalDbContainer } from "./helpers/live-catalog";
 
 const liveDescribe = LIVE_RLS ? describe : describe.skip;
 const digest = (value: string) => createHash("sha256").update(value, "utf8").digest("hex");
+
+// Ordinary guards protect the native fixture's executable setup and mandatory
+// hook. They do not establish installed command or user-session behavior.
+if (!LIVE_RLS) describe("model truth race fixture source preconditions", () => {
+  const source = readFileSync("src/test/model-truth-rls-live.test.ts", "utf8");
+  function caseBody(name: string) {
+    const start = source.indexOf(`\n  it("${name}", async () => {`);
+    expect(start, "native case exists").toBeGreaterThan(-1);
+    const end = source.indexOf("\n  });", start);
+    expect(end).toBeGreaterThan(start);
+    return source.slice(start, end).replace(/^\s*\/\/.*$/gm, "");
+  }
+  const race = () => caseBody("refuses a real active-authority change between the user's stage projection and recheck");
+
+  it("requires a real second-stage claim after its completed predecessor", () => {
+    const body = race();
+    const completed = body.indexOf('p_status: "succeeded"');
+    const predecessor = body.indexOf('expect(predecessor.data).toEqual({ id: producer, run_id: run, status: "succeeded", attempt_managed: true, active_attempt_id: claim.data.attempt_id });');
+    const claim = body.indexOf('const secondClaim = await service.rpc("claim_model_stage_attempt", { p_request_id: randomUUID(), p_stage_id: agreement, p_worker_id: "synthetic-changing-authority-agreement" });');
+    expect(completed).toBeGreaterThan(-1); expect(predecessor).toBeGreaterThan(completed);
+    expect(claim, "real agreement claim follows the completed predecessor").toBeGreaterThan(predecessor);
+    expect(body).toContain('expect(secondClaim.error).toBeNull(); expect(secondClaim.data.outcome).toBe("claimed");');
+    expect(body).toContain('expect(secondClaim.data.attempt_id).not.toBe(claim.data.attempt_id);');
+    expect(body).not.toMatch(/\.update\(|attempt_managed:\s*false|active_attempt_id:\s*null/);
+  });
+
+  it("requires actual readable managed parent, stages and empty running-parent selection before the hook", () => {
+    const body = race();
+    const preflight = body.slice(body.indexOf('const parentBefore = await member.from("model_runs")'), body.indexOf("    let changed = false"));
+    expect(preflight).toContain('expect(parentBefore.data).toEqual({ id: run, workspace_id: ws, status: "running", attempt_managed: true });');
+    expect(preflight).toContain('const stagesBefore = await member.from("model_run_stages").select("id, run_id, stage_name, status, attempt_managed, active_attempt_id")');
+    expect(preflight).toContain('expect(stagesBefore.data).toEqual([');
+    expect(preflight).toContain('status: "succeeded", attempt_managed: true, active_attempt_id: claim.data.attempt_id');
+    expect(preflight).toContain('status: "running", attempt_managed: true, active_attempt_id: secondClaim.data.attempt_id');
+    expect(preflight).toContain('expect(initial.data.outputs).toEqual([{ kind: "kpi", ownership_state: "current_completed", record: kpi.data }]);');
+    expect(preflight).toContain('expect(prepared.rows.attempts.find(row => row.id === secondClaim.data.attempt_id)).toMatchObject({');
+    expect(preflight).toContain('stage_id: agreement, run_id: run, worker_id: "synthetic-changing-authority-agreement", revoked_at: null');
+    expect(preflight).toContain('const userBefore = await userCurrentResults(ws, run);');
+    expect(preflight).toContain('expect(userBefore.status).toBe("ok");');
+    expect(preflight).toContain('expect(userBefore.kpis).toEqual([]);');
+    expect(preflight.indexOf('const reviewed = await service.rpc("inspect_model_run_recovery"')).toBeGreaterThan(preflight.indexOf('expect(userBefore.kpis).toEqual([]);'));
+  });
+
+  it("requires the third-query real cancellation, mandatory hook and exact changed-authority refusal", () => {
+    const body = race();
+    expect(body).toContain('table === "model_run_stages" && ++stageQueries === 3 ? afterChange(query) : query');
+    expect(body).toContain('await service.rpc("abandon_model_run_execution"');
+    expect(body).toContain('p_expected_state: reviewed.data.expected_state');
+    expect(body).toContain('expect(changed).toBe(true); expect(stageQueries).toBeGreaterThanOrEqual(3);');
+    expect(body).toContain('expect(user.reason).toBe("Model execution changed while its results were read. Refresh and read it again; no current values are confirmed.");');
+    expect(body).toContain('expect(after.data.run_status).toBe("cancelled");');
+    expect(body).toContain('expect(after.data.outputs).toEqual([{ kind: "kpi", ownership_state: "retained_inactive", record: kpi.data }]);');
+  });
+
+  it("keeps mixed-stage custody refusal separate from the race case", () => {
+    const body = caseBody("refuses mixed managed and unclaimed stages before any authority recheck");
+    expect(body).toContain('status: "queued", attempt_managed: false, active_attempt_id: null');
+    expect(body).toContain('expect(user.status).toBe("refused"); expect(user.kpis).toBeUndefined();');
+    expect(body).toContain('expect(user.reason).toBe("Current model output custody could not be verified. Retained records are not current results.");');
+    expect(body).toContain('expect(persistedWorkspace(ws).bytes, "mixed-stage read refusal changes no retained row").toBe(before.bytes);');
+    expect(body).not.toContain('abandon_model_run_execution');
+  });
+});
 
 liveDescribe("guided model truth live RLS and trigger enforcement", () => {
   let container = "";
@@ -579,24 +643,82 @@ liveDescribe("guided model truth live RLS and trigger enforcement", () => {
     }
   });
 
+  it("refuses mixed managed and unclaimed stages before any authority recheck", async () => {
+    const ws = randomUUID(), model = randomUUID(), run = randomUUID(), producer = randomUUID(), agreement = randomUUID();
+    expect((await service.from("workspaces").insert({ id: ws, name: "Synthetic mixed stage custody", slug: `mixed-stage-${randomUUID()}` })).error).toBeNull();
+    expect((await service.from("workspace_members").insert({ workspace_id: ws, user_id: memberId, role: "owner" })).error).toBeNull();
+    expect((await service.from("models").insert({ id: model, workspace_id: ws, title: "Synthetic mixed stage custody", model_family: "travel_demand", created_by: memberId })).error).toBeNull();
+    expect((await service.from("model_runs").insert({ id: run, model_id: model, workspace_id: ws, engine_key: "aequilibrae", run_title: "Synthetic mixed stage custody", created_by: memberId })).error).toBeNull();
+    expect((await service.from("model_run_stages").insert([
+      { id: producer, run_id: run, stage_name: "Artifact Extraction", sort_order: 0, status: "queued" },
+      { id: agreement, run_id: run, stage_name: "Demand Model Agreement", sort_order: 1, status: "queued" },
+    ])).error).toBeNull();
+    const claim = await service.rpc("claim_model_stage_attempt", { p_request_id: randomUUID(), p_stage_id: producer, p_worker_id: "synthetic-mixed-stage" });
+    expect(claim.error).toBeNull(); expect(claim.data.outcome).toBe("claimed");
+    const kpi = await service.rpc("write_model_attempt_kpi", { p_request_id: randomUUID(), p_attempt_id: claim.data.attempt_id,
+      p_payload: { kpi_name: "daily_vmt", kpi_label: "Synthetic mixed stage custody", value: 20, unit: "vehicle-miles/day", kpi_category: "assignment" } });
+    expect(kpi.error).toBeNull();
+    expect((await service.rpc("write_model_stage_attempt", { p_request_id: randomUUID(), p_attempt_id: claim.data.attempt_id, p_status: "succeeded", p_log_tail: "Synthetic producer completed", p_error: null })).error).toBeNull();
+    const stages = await member.from("model_run_stages").select("id, status, attempt_managed, active_attempt_id").eq("run_id", run).order("sort_order");
+    expect(stages.error).toBeNull();
+    expect(stages.data).toEqual([
+      { id: producer, status: "succeeded", attempt_managed: true, active_attempt_id: claim.data.attempt_id },
+      { id: agreement, status: "queued", attempt_managed: false, active_attempt_id: null },
+    ]);
+    const native = await service.rpc("read_model_attempt_outputs", { p_workspace_id: ws, p_run_id: run });
+    expect(native.error).toBeNull(); expect(native.data.run_status).toBe("running");
+    expect(native.data.outputs).toEqual([{ kind: "kpi", ownership_state: "current_completed", record: kpi.data }]);
+    const before = persistedWorkspace(ws);
+    const user = await userCurrentResults(ws, run);
+    expect(user.status).toBe("refused"); expect(user.kpis).toBeUndefined();
+    expect(user.reason).toBe("Current model output custody could not be verified. Retained records are not current results.");
+    expect(persistedWorkspace(ws).bytes, "mixed-stage read refusal changes no retained row").toBe(before.bytes);
+  });
+
   it("refuses a real active-authority change between the user's stage projection and recheck", async () => {
-    const ws = randomUUID(), model = randomUUID(), run = randomUUID(), producer = randomUUID();
+    const ws = randomUUID(), model = randomUUID(), run = randomUUID(), producer = randomUUID(), agreement = randomUUID();
     expect((await service.from("workspaces").insert({ id: ws, name: "Synthetic active change", slug: `active-change-${randomUUID()}` })).error).toBeNull();
     expect((await service.from("workspace_members").insert({ workspace_id: ws, user_id: memberId, role: "owner" })).error).toBeNull();
     expect((await service.from("models").insert({ id: model, workspace_id: ws, title: "Synthetic active change", model_family: "travel_demand", created_by: memberId })).error).toBeNull();
     expect((await service.from("model_runs").insert({ id: run, model_id: model, workspace_id: ws, engine_key: "aequilibrae", run_title: "Synthetic active change", created_by: memberId })).error).toBeNull();
     expect((await service.from("model_run_stages").insert([
       { id: producer, run_id: run, stage_name: "Artifact Extraction", sort_order: 0, status: "queued" },
-      { id: randomUUID(), run_id: run, stage_name: "Demand Model Agreement", sort_order: 1, status: "queued" },
+      { id: agreement, run_id: run, stage_name: "Demand Model Agreement", sort_order: 1, status: "queued" },
     ])).error).toBeNull();
     const claim = await service.rpc("claim_model_stage_attempt", { p_request_id: randomUUID(), p_stage_id: producer, p_worker_id: "synthetic-changing-authority" });
     expect(claim.error).toBeNull(); expect(claim.data.outcome).toBe("claimed");
-    expect((await service.rpc("write_model_attempt_kpi", { p_request_id: randomUUID(), p_attempt_id: claim.data.attempt_id,
-      p_payload: { kpi_name: "daily_vmt", kpi_label: "Synthetic active change", value: 20, unit: "vehicle-miles/day", kpi_category: "assignment" } })).error).toBeNull();
+    const kpi = await service.rpc("write_model_attempt_kpi", { p_request_id: randomUUID(), p_attempt_id: claim.data.attempt_id,
+      p_payload: { kpi_name: "daily_vmt", kpi_label: "Synthetic active change", value: 20, unit: "vehicle-miles/day", kpi_category: "assignment" } });
+    expect(kpi.error).toBeNull();
     expect((await service.rpc("write_model_stage_attempt", { p_request_id: randomUUID(), p_attempt_id: claim.data.attempt_id, p_status: "succeeded", p_log_tail: "Synthetic producer completed", p_error: null })).error).toBeNull();
+    const predecessor = await member.from("model_run_stages").select("id, run_id, status, attempt_managed, active_attempt_id").eq("id", producer).single();
+    expect(predecessor.error).toBeNull();
+    expect(predecessor.data).toEqual({ id: producer, run_id: run, status: "succeeded", attempt_managed: true, active_attempt_id: claim.data.attempt_id });
+    const secondClaim = await service.rpc("claim_model_stage_attempt", { p_request_id: randomUUID(), p_stage_id: agreement, p_worker_id: "synthetic-changing-authority-agreement" });
+    expect(secondClaim.error).toBeNull(); expect(secondClaim.data.outcome).toBe("claimed");
+    expect(secondClaim.data.attempt_id).toEqual(expect.any(String));
+    expect(secondClaim.data.attempt_id).not.toBe(claim.data.attempt_id);
+    const parentBefore = await member.from("model_runs").select("id, workspace_id, status, attempt_managed").eq("id", run).eq("workspace_id", ws).single();
+    expect(parentBefore.error).toBeNull();
+    expect(parentBefore.data).toEqual({ id: run, workspace_id: ws, status: "running", attempt_managed: true });
+    const stagesBefore = await member.from("model_run_stages").select("id, run_id, stage_name, status, attempt_managed, active_attempt_id").eq("run_id", run).order("sort_order");
+    expect(stagesBefore.error).toBeNull();
+    expect(stagesBefore.data).toEqual([
+      { id: producer, run_id: run, stage_name: "Artifact Extraction", status: "succeeded", attempt_managed: true, active_attempt_id: claim.data.attempt_id },
+      { id: agreement, run_id: run, stage_name: "Demand Model Agreement", status: "running", attempt_managed: true, active_attempt_id: secondClaim.data.attempt_id },
+    ]);
     const initial = await service.rpc("read_model_attempt_outputs", { p_workspace_id: ws, p_run_id: run });
     expect(initial.error).toBeNull(); expect(initial.data.run_status).toBe("running");
-    expect(initial.data.outputs[0].ownership_state).toBe("current_completed");
+    expect(initial.data.outputs).toEqual([{ kind: "kpi", ownership_state: "current_completed", record: kpi.data }]);
+    const prepared = persistedWorkspace(ws);
+    expect(prepared.rows.attempts.find(row => row.id === secondClaim.data.attempt_id)).toMatchObject({
+      stage_id: agreement, run_id: run, worker_id: "synthetic-changing-authority-agreement", revoked_at: null,
+    });
+    // A running parent exposes no completed-run KPIs. This preflight proves
+    // readable custody, not current-KPI availability on an unfinished run.
+    const userBefore = await userCurrentResults(ws, run);
+    expect(userBefore.status).toBe("ok"); expect(userBefore.run).toMatchObject({ id: run, status: "running" });
+    expect(userBefore.kpis).toEqual([]);
     const reviewed = await service.rpc("inspect_model_run_recovery", { p_workspace_id: ws, p_run_id: run, p_actor_id: memberId });
     expect(reviewed.error).toBeNull();
     let changed = false, stageQueries = 0;
@@ -623,9 +745,12 @@ liveDescribe("guided model truth live RLS and trigger enforcement", () => {
       return table === "model_run_stages" && ++stageQueries === 3 ? afterChange(query) : query;
     } } as unknown as BuildAssistantChatToolsParams["supabase"];
     const user = await userCurrentResults(ws, run, client);
-    expect(changed).toBe(true); expect(user.status).toBe("refused"); expect(user.kpis).toBeUndefined();
+    expect(changed).toBe(true); expect(stageQueries).toBeGreaterThanOrEqual(3);
+    expect(user.status).toBe("refused"); expect(user.kpis).toBeUndefined();
+    expect(user.reason).toBe("Model execution changed while its results were read. Refresh and read it again; no current values are confirmed.");
     const after = await service.rpc("read_model_attempt_outputs", { p_workspace_id: ws, p_run_id: run });
     expect(after.error).toBeNull(); expect(after.data.run_status).toBe("cancelled");
+    expect(after.data.outputs).toEqual([{ kind: "kpi", ownership_state: "retained_inactive", record: kpi.data }]);
     expect(after.data.outputs.every((output: { ownership_state: string }) => output.ownership_state === "retained_inactive")).toBe(true);
   });
 

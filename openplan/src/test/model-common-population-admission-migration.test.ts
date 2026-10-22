@@ -1,9 +1,9 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-const current = readFileSync("supabase/migrations/20261021000001_model_common_population_admission.sql", "utf8");
-const previous = readFileSync("supabase/migrations/20261019051430_model_population_replacement.sql", "utf8");
-const original = readFileSync("supabase/migrations/20261019000003_model_common_population_comparisons.sql", "utf8");
+const current = readFileSync("supabase/migrations/20261022010003_model_common_population_admission.sql", "utf8");
+const previous = readFileSync("supabase/migrations/20261022010001_model_population_replacement.sql", "utf8");
+const original = readFileSync("supabase/migrations/20261022010000_model_common_population_comparisons.sql", "utf8");
 const native = readFileSync("src/test/model-common-population-comparison-rls.test.ts", "utf8");
 const admissionFixture = readFileSync("src/test/fixtures/modeling/common-population-admission.sql", "utf8");
 const tailStart = "  -- Resolve the actual parent and authorize before reading protected source rows.";

@@ -519,3 +519,103 @@ The separately admitted configured compiler10 runs once and exits zero at
 and the absent Next declarations remain unchanged. This adds configured type
 evidence only. The corrected migration still requires a new isolated
 installation and native HTTP-conflict/state-preservation acceptance.
+
+
+### 2026-10-22 native race fixture precondition response13
+
+Native12 remains a failed checkpoint: 25 pass, one mandatory race-hook
+assertion fails, and no case skips. Its installed 435 functions, migration
+history, fixture rows and complete private packet remain unchanged. The
+queued agreement stage was unclaimed, so the user reader correctly refused
+mixed-stage custody before reaching the intended third stage query.
+
+This test-only response claims the agreement stage through the existing
+claim_model_stage_attempt command after its predecessor succeeds. Before
+injecting cancellation, the fixture asserts the actual running parent,
+managed stage identities, owned unrevoked second attempt, native output
+record and successful user read with no completed-run KPIs. The third-query
+hook still invokes the real abandon command. Its execution, exact changed
+execution refusal, cancelled parent and original retained KPI remain mandatory.
+A separate native case preserves the legitimate mixed-stage early refusal
+and asserts that reading changes no persisted row. All 26 original cases
+remain, with this separate case bringing the authored native count to 27.
+
+The focused ordinary cohort passes 68 assertions and explicitly skips all
+27 native cases with both live gates disabled. Scoped lint passes. A harmless
+comment survives; six faults fail named source guards for a missing real
+claim, accepted early refusal, premature transition, optional hook, missing
+real cancellation or accepted mixed-stage custody. Every fault restores
+exactly. These source guards do not execute the native commands or establish
+RLS, installed behavior or cancellation. The repaired native cases and
+configured compiler remain unexecuted in this response.
+
+The race fixture addresses a nonterminal cancellation recheck. It does not
+prove current-KPI availability on an unfinished parent, a completed-parent
+authority transition, worker execution, general prepared science, full M3/S1
+or Reports acceptance. Reports accepting KPI handler and Save/Generate counts
+remain zero. Root owns any later types, review and native admission.
+
+
+### October 22, 2026 configured types14 checkpoint
+
+The single configured TypeScript check for the real second-stage race fixture
+passes at 06:40:30.668787 UTC with no diagnostics. Next declarations remain
+absent. The private absent-next-env preflight copy failure remains recorded.
+This adds typecheck evidence only. Native12 remains 25 passes and one failed
+hook assertion; the corrected 27-case cohort remains unrun at this checkpoint.
+General prepared science, actual worker and Reports accepting-route evidence
+remain open.
+
+
+### October 22, 2026 native16 retained retry checkpoint
+
+The maintained 27-case native cohort passes on the unchanged installed435
+target. It covers failed and cancelled retained-output retry, original replay,
+late-write refusal, PT409 with HTTP409 and exact persisted state, all nine
+user/native producer policies, mixed-stage refusal and a real nonterminal
+cancellation recheck. The harmless focused control survives. Omitting the real
+cancellation and ignoring the user recheck refusal each fail the named race
+assertion. Restored focus passes two cases with 25 explicit selector skips.
+
+All prior history, authorities and rows remain retained. New fixture records
+remain on the isolated target. Raw index bytes change in cached timestamps
+during the round; staged blobs/modes and source stay exact. The failed custody
+assertion remains preserved. Root later restores the captured raw preimage
+after confirming identical staged entries and clean source. The actor remains
+unassessed. Neither restoration nor these tests establishes complete worker
+recovery, prepared science, completed-parent races or Reports accepting routes.
+
+Native12 retains its earlier 25-pass/one-failure result. The separate additive
+managed-readiness bridge is unreviewed and uninstalled at this checkpoint.
+
+
+### October 22, 2026 source-only forward allocation after the pending A0 high-water
+
+The pending A0 candidate adds `20261021215752_assistant_chat_turns.sql`.
+Before that candidate joins, the five unreleased population/Reports migrations
+receive the ordered names below. Each new version sorts after that A0
+high-water and before `20261022050000_model_output_preserving_relaunch.sql`.
+This changes pending filenames and active test locators. It does not repair
+installed history or change SQL contents, modes, authorities or scientific gates.
+
+Old filename | New filename | Unchanged SQL SHA-256
+--- | --- | ---
+`20261019000003_model_common_population_comparisons.sql` | `20261022010000_model_common_population_comparisons.sql` | `259baaf52c6e0d5f16e0f92d569670026cc2946e8cdf18c4f2d65efe4f382337`
+`20261019051430_model_population_replacement.sql` | `20261022010001_model_population_replacement.sql` | `956b3f6665272c2c7cad2e1311e25f2e330d61b7b3cc33086d24b6b9b8ff6765`
+`20261019070000_guided_comparison_report_evidence.sql` | `20261022010002_guided_comparison_report_evidence.sql` | `efc8ddee8680386bf251842815034ac494d90709a49fed0b997e5c6cb39140e5`
+`20261021000001_model_common_population_admission.sql` | `20261022010003_model_common_population_admission.sql` | `c39287e185cd3e344a368345cc4459aae815d4ee67523dfb6942b7dd812e0799`
+`20261021000002_model_common_population_profiles.sql` | `20261022010004_model_common_population_profiles.sql` | `0718e14ae0bc69bf753e63aca57435db8f9318ac114ab6b6877ea34805be91f1`
+
+All five retain Git mode `100644` and their prior filesystem modes. The model
+relaunch SQL retains its existing name, bytes and modes. The current source
+contains 435 migrations, without A0 or the separate readiness bridge. All 429
+released paths and SQL remain exact to `945a78b`; the v0.70 ledger remains 429.
+Released changelog entries and earlier review records remain unchanged.
+
+The future join would contain A0's 430 plus these five, then the model relaunch
+as 436, then the separate `20261022070000` readiness migration as 437. These
+are future source counts, not installed or released claims. Root owns that join,
+including the separate bridge's setup/test hunks. Prior native results bind the
+old source and installed history; this allocation adds no native evidence.
+No database, compiler/build, HTTP, browser, provider, worker or model runs here.
+Private source/check handback: `reports-model-forward-allocation-20261022-34`.

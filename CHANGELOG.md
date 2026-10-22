@@ -20,6 +20,12 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Managed comparison readiness source candidate:** apply
+`20261022070000_managed_comparison_readiness.sql` after the managed retry
+migration. Ready snapshots can use current attempt-bound instruments while
+retaining owner review and existing scope checks. Installation and native
+authority checks remain pending; scientific acceptance is unchanged.
+
 **Managed model recovery source candidate:** the proposed
 `20261022050000_model_output_preserving_relaunch.sql` precedes its matching
 recovery controls. It prepares an owner/admin decision to queue a fresh attempt
@@ -33,7 +39,7 @@ acceptance remain unproved.
 
 **Selected model comparisons in Reports.** Reports can retain an explicitly
 selected comparison with separate method values, source identities and caveats.
-Apply `20261019070000_guided_comparison_report_evidence.sql` before deploying
+Apply `20261022010002_guided_comparison_report_evidence.sql` before deploying
 this path. New selected artifacts retain their identity, rendered body, selection
 and writeback receipt. Ordinary writes cannot replace or delete that history,
 including through report, project or workspace cascades. Legacy unselected
@@ -41,7 +47,7 @@ artifacts keep their existing behavior. These safeguards do not validate model
 accuracy or establish project benefits.
 
 **Guided comparison admission:** apply
-`20261021000001_model_common_population_admission.sql` after the two population
+`20261022010003_model_common_population_admission.sql` after the two population
 migrations below and before deploying the route correction. Guided links and
 ready snapshots require current fixed-population custody even when their claim
 is missing or unchanged. Model intent and scope changes serialize with admission
@@ -50,7 +56,7 @@ touch the scenario-set modification timestamp. This source correction awaits
 native migration and concurrency verification; scientific claim limits stay unchanged.
 
 **Population source profiles:** the source-only adapter correction adds
-`20261021000002_model_common_population_profiles.sql` after the admission migration.
+`20261022010004_model_common_population_profiles.sql` after the admission migration.
 The catalog keeps the exact 2022 and 2023 retained profiles; new guided launches
 use the selected adapter's admitted 2023 descriptor. Missing technical capabilities
 remain unassessed. Native installation, worker images and scientific acceptance
@@ -60,8 +66,8 @@ remain unverified by this source correction.
 the same realized population across the separate AequilibraE and ActivitySim
 tracks. An explicit replacement run can reuse a prospectively retained population
 checkpoint while preserving the original failed run. Apply
-`20261019000003_model_common_population_comparisons.sql` and
-`20261019051430_model_population_replacement.sql` before deploying these paths.
+`20261022010000_model_common_population_comparisons.sql` and
+`20261022010001_model_population_replacement.sql` before deploying these paths.
 Managed replacement and hosted snapshot transport remain unsupported. These
 changes do not establish model accuracy or nationwide validation.
 

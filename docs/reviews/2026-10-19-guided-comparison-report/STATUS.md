@@ -497,3 +497,35 @@ science, accepting Reports routes and full v1 remain open.
 
 Private response: `managed-comparison-viewer-response-20261022-32` under the
 OpenPlan state directory. R31 and all R30 records remain unchanged.
+
+
+### October 22, 2026 source-only forward allocation after the pending A0 high-water
+
+The pending A0 candidate adds `20261021215752_assistant_chat_turns.sql`.
+Before that candidate joins, the five unreleased population/Reports migrations
+receive the ordered names below. Each new version sorts after that A0
+high-water and before `20261022050000_model_output_preserving_relaunch.sql`.
+This changes pending filenames and active test locators. It does not repair
+installed history or change SQL contents, modes, authorities or scientific gates.
+
+Old filename | New filename | Unchanged SQL SHA-256
+--- | --- | ---
+`20261019000003_model_common_population_comparisons.sql` | `20261022010000_model_common_population_comparisons.sql` | `259baaf52c6e0d5f16e0f92d569670026cc2946e8cdf18c4f2d65efe4f382337`
+`20261019051430_model_population_replacement.sql` | `20261022010001_model_population_replacement.sql` | `956b3f6665272c2c7cad2e1311e25f2e330d61b7b3cc33086d24b6b9b8ff6765`
+`20261019070000_guided_comparison_report_evidence.sql` | `20261022010002_guided_comparison_report_evidence.sql` | `efc8ddee8680386bf251842815034ac494d90709a49fed0b997e5c6cb39140e5`
+`20261021000001_model_common_population_admission.sql` | `20261022010003_model_common_population_admission.sql` | `c39287e185cd3e344a368345cc4459aae815d4ee67523dfb6942b7dd812e0799`
+`20261021000002_model_common_population_profiles.sql` | `20261022010004_model_common_population_profiles.sql` | `0718e14ae0bc69bf753e63aca57435db8f9318ac114ab6b6877ea34805be91f1`
+
+All five retain Git mode `100644` and their prior filesystem modes. The model
+relaunch SQL retains its existing name, bytes and modes. The current source
+contains 435 migrations, without A0 or the separate readiness bridge. All 429
+released paths and SQL remain exact to `945a78b`; the v0.70 ledger remains 429.
+Released changelog entries and earlier review records remain unchanged.
+
+The future join would contain A0's 430 plus these five, then the model relaunch
+as 436, then the separate `20261022070000` readiness migration as 437. These
+are future source counts, not installed or released claims. Root owns that join,
+including the separate bridge's setup/test hunks. Prior native results bind the
+old source and installed history; this allocation adds no native evidence.
+No database, compiler/build, HTTP, browser, provider, worker or model runs here.
+Private source/check handback: `reports-model-forward-allocation-20261022-34`.

@@ -4,11 +4,11 @@ import { describe, expect, it } from "vitest";
 import { sortedCompactJson } from "@/lib/models/demand-agreement-artifact";
 import { populationSourceRegistry, POPULATION_PROFILE_PURPOSES, type PopulationSourceRegistration } from "@/lib/geographies/population-source-registry";
 
-const name = "20261021000002_model_common_population_profiles.sql";
+const name = "20261022010004_model_common_population_profiles.sql";
 const current = readFileSync(`supabase/migrations/${name}`, "utf8");
-const admission = readFileSync("supabase/migrations/20261021000001_model_common_population_admission.sql", "utf8");
-const ordinarySource = readFileSync("supabase/migrations/20261019000003_model_common_population_comparisons.sql", "utf8");
-const replacement = readFileSync("supabase/migrations/20261019051430_model_population_replacement.sql", "utf8");
+const admission = readFileSync("supabase/migrations/20261022010003_model_common_population_admission.sql", "utf8");
+const ordinarySource = readFileSync("supabase/migrations/20261022010000_model_common_population_comparisons.sql", "utf8");
+const replacement = readFileSync("supabase/migrations/20261022010001_model_population_replacement.sql", "utf8");
 const catalog = JSON.parse(readFileSync("../scripts/modeling/population_source_profiles.v1.json", "utf8")) as { profiles: PopulationSourceRegistration[] };
 const comparisonStart = "CREATE OR REPLACE FUNCTION public.validate_common_population_comparison()";
 const comparisonEnd = "REVOKE ALL ON FUNCTION public.validate_common_population_comparison() FROM PUBLIC, anon, authenticated, service_role;";
@@ -81,7 +81,7 @@ describe("latest population profile DDL source and frozen projection", () => {
     expect(current).toContain("THEN false ELSE EXISTS (");
     expect(current).toContain("REVOKE ALL ON FUNCTION public.model_common_population_profile_allowed(pg_catalog.jsonb,pg_catalog.text) FROM PUBLIC, anon, authenticated, service_role;");
     expect(current).not.toMatch(/\bGRANT\b|CREATE TABLE|CREATE POLICY|CREATE TRIGGER|ALTER TABLE|ALTER OWNER|EXECUTE format|DISABLE TRIGGER/i);
-    expect(readdirSync("supabase/migrations").filter((path) => path.startsWith("20261021000002_"))).toEqual([name]);
+    expect(readdirSync("supabase/migrations").filter((path) => path.startsWith("20261022010004_"))).toEqual([name]);
   });
   it.each(["comparison", "ordinary"])("detects removing the actual %s helper call in the complete source", (caller) => {
     const anchor = caller === "comparison" ? "  IF public.model_common_population_profile_allowed(v_profile,'retained_validation') IS DISTINCT FROM true THEN"
