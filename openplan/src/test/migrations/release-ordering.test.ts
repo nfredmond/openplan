@@ -514,6 +514,12 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
     lastMigration: "20261019000002_rtp_manual_source_page_proposals.sql",
     migrationsAtRelease: 429,
   },
+  // Prepared candidate accounting; publication still requires exact-head checks.
+  {
+    tag: "0.72.0",
+    lastMigration: "20261021215752_assistant_chat_turns.sql",
+    migrationsAtRelease: 430,
+  },
 ];
 
 const CHANGELOG_PATH = path.join(process.cwd(), "..", "CHANGELOG.md");
