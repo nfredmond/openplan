@@ -888,3 +888,31 @@ census. Four KPI-after-Save transitions remain blocked under the reviewed
 legitimate lifecycle; no revocation or terminal-state bypass is invented.
 Legacy/cross-account, PDF/RTP/campaign, identified browser/hosted, independent
 scientific M3/S1, full v1 and release acceptance remain separate and open.
+
+
+## Root joins current saved API source, October 22, 2026 UTC
+
+The normal merge joins exact PR365 head
+`d8c8dd99588d8dd646e703fb357b2380625fa1ef` into the Reports checkpoint
+`bd47dcb234d88f7945c531bf937f9185bab74bf1`. Only CHANGELOG conflicts. Its
+resolution retains pending Models/Reports entries and the incoming v0.72.0
+candidate record. It distinguishes this 437-migration integration tree from
+the prepared 430-migration saved API candidate. Publication remains held.
+
+The incoming HTTP guard and its source tests retain their reviewed host/port
+pairing and exact workdir/config/project/network chain. The workflow carries
+its explicit workdir on start, reset and stop. The existing Reports native
+command and real SSR export conditions remain present. No production body,
+SQL byte or mode, nonroot dependency record or authority changes in this join.
+
+The joined ordinary cohort passes 244 tests across 15 files, with zero failures,
+skips, pending or todo. Scoped lint, diff checks and the maintained direction
+check pass. Direction-age reminders remain dated. One configured TypeScript
+invocation exits zero at 13:27:41.700111 UTC, with empty output. No build,
+SQL/native/HTTP, browser, worker or scientific execution occurs in this join.
+Prior source fault controls and native results remain separate dated evidence.
+
+The prior R123 admission and root orchestration exception remain unchanged.
+Strict first-private-failure compliance for R122 remains false. This source
+join adds no kill credit or native acceptance. Exact joined CI and an identified
+current visible journey remain pending; no release or full M3/S1 claim follows.

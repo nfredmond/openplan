@@ -42,10 +42,10 @@ jobs:
         run: npm ci
 
       - name: Start Supabase
-        run: npm exec -- supabase start
+        run: npm exec -- supabase start --workdir "${{ github.workspace }}/openplan"
 
       - name: Reset local database
-        run: npm exec -- supabase db reset
+        run: npm exec -- supabase db reset --workdir "${{ github.workspace }}/openplan"
 
       - name: Run live RLS isolation proof
         env:
@@ -55,4 +55,4 @@ jobs:
 
       - name: Stop Supabase
         if: always()
-        run: npm exec -- supabase stop
+        run: npm exec -- supabase stop --workdir "${{ github.workspace }}/openplan"
