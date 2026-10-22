@@ -2,6 +2,7 @@ import { fireEvent, render } from "@testing-library/react";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
@@ -193,6 +194,7 @@ vi.mock("@/components/cartographic/cartographic-selection-link", () => ({
 }));
 
 import EngagementPage from "@/app/(app)/engagement/page";
+import { AppCopilot } from "@/components/assistant/app-copilot";
 import LandUsePlansPage from "@/app/(app)/land-use-plans/page";
 import ModelsPage from "@/app/(app)/models/page";
 import PlansPage from "@/app/(app)/plans/page";
@@ -452,6 +454,25 @@ describe("every module list page offers one primary action in its header", () =>
 
 describe("the slot's own stylesheet", () => {
   const globals = readFileSync(path.join(process.cwd(), "src/app/globals.css"), "utf8");
+
+  // Inspect the real launcher after Button merges its classes. Theme text must
+  // keep its matching fill on hover, and the icon must inherit that same ink.
+  // This guards rendered classes, not computed CSS or browser contrast.
+  it("pairs the Planner Agent launcher's theme text and background at rest and on hover", () => {
+    const markup = renderToStaticMarkup(<AppCopilot workspaceName="Workspace" />);
+    const container = document.createElement("div");
+    container.innerHTML = markup;
+    const launcher = container.querySelector('button.op-cart-copilot-launch[aria-label="Planner Agent"]');
+    expect(launcher).not.toBeNull();
+    expect(Array.from(launcher!.classList).filter((name) => /^(?:hover:)?bg-/.test(name))).toEqual([
+      "bg-background", "hover:bg-background",
+    ]);
+    expect(launcher).toHaveClass("text-foreground", "hover:text-foreground");
+    const icon = launcher!.querySelector("svg");
+    expect(icon).toHaveAttribute("stroke", "currentColor");
+    expect(icon?.getAttribute("class")).not.toMatch(/(?:^|\s)(?:text-|stroke-|fill-)/);
+    expect(icon).not.toHaveAttribute("style");
+  });
 
   /**
    * The focus ring on this control comes from the one global `:focus-visible`
