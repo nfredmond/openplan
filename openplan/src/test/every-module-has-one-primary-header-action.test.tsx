@@ -459,7 +459,7 @@ describe("the slot's own stylesheet", () => {
   // keep its matching fill on hover, and the icon must inherit that same ink.
   // This guards rendered classes, not computed CSS or browser contrast.
   it("pairs the Planner Agent launcher's theme text and background at rest and on hover", () => {
-    const markup = renderToStaticMarkup(<AppCopilot workspaceName="Workspace" />);
+    const markup = renderToStaticMarkup(<AppCopilot workspaceId="00000000-0000-4000-8000-000000000001" workspaceName="Workspace" />);
     const container = document.createElement("div");
     container.innerHTML = markup;
     const launcher = container.querySelector('button.op-cart-copilot-launch[aria-label="Planner Agent"]');
