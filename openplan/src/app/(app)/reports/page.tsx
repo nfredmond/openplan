@@ -1,3 +1,4 @@
+import { readScopedGuidedComparisonBinding } from "@/lib/reports/guided-comparison-binding";
 import { reportJurisdictionState } from "@/lib/reports/jurisdiction-freshness";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import Link from "next/link";
@@ -356,7 +357,20 @@ export default async function ReportsPage({
       const packetSafetyEvidenceReadFailed = artifactSafetyEvidenceReadFailed(
         latestArtifact?.metadata_json
       );
-      const packetFreshness =
+      let guidedComparison: { liveEvidenceStatus?: "unassessed"; problem: string | null } | undefined;
+      let guidedSelectionChanged = false;
+      try {
+        const scope = { ...report, metadata_json: report.metadata_json ?? null };
+        const projectScope = report.project_id ? { id: report.project_id, workspace_id: report.workspace_id } : null;
+        const saved = readScopedGuidedComparisonBinding({ reportId: report.id, report: scope, project: projectScope });
+        const retained = readScopedGuidedComparisonBinding({ reportId: report.id,
+          report: { ...scope, metadata_json: latestArtifact?.metadata_json ?? null }, project: projectScope });
+        guidedSelectionChanged = Boolean(packetGeneratedAt && saved?.bindingSha256 !== retained?.bindingSha256);
+        if (saved || retained) guidedComparison = { liveEvidenceStatus: "unassessed" as const, problem: null };
+      } catch (error) {
+        guidedComparison = { problem: error instanceof Error ? error.message : "The saved comparison binding cannot be checked." };
+      }
+      const trackedPacketFreshness =
         (packetSafetyEvidenceReadFailed || (safetyIngestReadFailed && report.project_id)) &&
         computedPacketFreshness.label === PACKET_FRESHNESS_LABELS.CURRENT
           ? {
@@ -367,20 +381,33 @@ export default async function ReportsPage({
                 : "Project-linked crash evidence could not be checked, so this packet is not verified against every live source.",
             }
           : computedPacketFreshness;
+      const packetFreshness = trackedPacketFreshness.label === PACKET_FRESHNESS_LABELS.CURRENT && guidedComparison
+        ? guidedComparison.problem || guidedSelectionChanged
+          ? { label: PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED, tone: "warning" as const,
+              detail: guidedComparison.problem ?? "The saved guided comparison differs from the retained artifact." }
+          : { label: "Comparison evidence unassessed", tone: "warning" as const,
+              detail: "The saved comparison binding is checked. Live artifact bytes and custody remain unassessed; save and generation verify them again." }
+        : trackedPacketFreshness;
       const grantsFollowThrough = resolveRtpFundingFollowThrough(fundingSnapshot);
       const sourceReviewDriftSummary = buildReportRegistryDriftSummary({
-        packetFreshnessLabel: packetFreshness.label,
+        packetFreshnessLabel: trackedPacketFreshness.label,
         generatedAt: packetGeneratedAt,
         reportUpdatedAt: report.updated_at,
         rtpCycleUpdatedAt: rtpCycle?.updated_at ?? null,
         safetyUpdatedAt,
         safetyEvidenceReadFailed: packetSafetyEvidenceReadFailed,
       });
+      if (guidedSelectionChanged) {
+        sourceReviewDriftSummary.labels.push("Selected guided comparison");
+        sourceReviewDriftSummary.changedCount = sourceReviewDriftSummary.labels.length;
+        sourceReviewDriftSummary.totalCount = sourceReviewDriftSummary.labels.length;
+      }
       const evidenceChainDigest = describeEvidenceChainSummary(evidenceChainSummary);
       const sourceReviewPosture = describeReportSourceReviewPosture({
         hasGeneratedArtifact: Boolean(report.latest_artifact_kind),
         evidenceSummary: evidenceChainDigest,
         driftSummary: sourceReviewDriftSummary,
+        guidedComparison,
       });
       const rtpReleaseReviewSummary = storedRtpPublicReviewSummary
         ? buildRtpReleaseReviewSummary({

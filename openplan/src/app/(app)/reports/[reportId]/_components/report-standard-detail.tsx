@@ -280,6 +280,7 @@ export function ReportStandardDetail({
             changedCount: driftedItems.length,
             totalCount: driftItems.length,
             labels: driftedItems.map((item) => item.label),
+            unassessedLabels: driftItems.filter((item) => item.status === "unassessed").map((item) => item.label),
           }}
           evidenceSummary={evidenceSummaryDigest}
           fundingSummary={fundingSummaryDigest}

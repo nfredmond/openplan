@@ -45,3 +45,46 @@ The corrected ordinary cohort passes all 205 cases in ten files with zero failur
 The preceding exact dependency-graph join passes 348 Reports cases, 181 admission/registry cases and 91 HIN cases, all without skips; release ordering separately retains its original three failures. Scoped lint passes 42 paths. That join binds the exact release lock and installed Vitest 4.1.12. Its one configured compiler run exits zero on October 21 at 23:26:40 UTC in 64.738 seconds, listing 5453 existing paths without diagnostics. All fourteen accepted Reports source files retain those exact compiler-input bytes. This allocation-only follow-up does not rerun Reports, HIN, the full suite, compiler or build. The retained Next declarations are not a fresh build. Earlier source findings, failed controls and native gaps keep their historical scope.
 
 The local merge checkpoint remains unpushed. Root must join final main ancestry and decide stack publication. Native fresh installation and the 429-to-434 migration upgrade under the new allocation remain open, as do RPC/RLS/role/retention, admission/recovery/concurrency, identified-build Reports navigation at desktop and 390px, console review and usable retained HTML/PDF. Historical private fixtures may retain the old allocation; no history repair, reset or replay occurs. Root separately reports a hosted read-only inventory of the released 429 plus Award only, with the old common-population allocation absent; this lane does not refresh hosted evidence. Scientific acceptance remains separate and unproved for both AequilibraE and ActivitySim. Full private diffs, preservation manifests, commands, controls and prior-evidence links remain in `/home/nathaniel/.local/state/openplan/pr355-forward-migration-20261021-05/REPORT.md` and its companion receipts.
+
+
+## October 22 UTC: retained-format and pending-read warnings
+
+The identified desktop and 390px reopen at local checkpoint 37671d0 remains
+partial on build Boq3RaiuFwJASYBlXh-f2. Its retained selected report already
+contains the same comparison ID, timestamp and binding. The legacy source
+snapshot omits shared-spine totals. Treating that absence as zero incorrectly
+reports comparisons changing from zero to one. The catalog also presents live
+selected evidence as current despite the detail page's unassessed disclosure.
+Those observed failures remain preserved.
+
+The source correction compares recorded totals, separate source timestamps and
+retained snapshot identities. Missing historical totals stay unassessed and do
+not force regeneration. Known changes retain review precedence. The catalog
+checks stored selection scope and digest through the existing pure reader,
+then preserves unassessed live bytes and custody in its status and next action.
+The accepting save/generation verifier remains unchanged.
+
+Independent review finds a further pending-read defect. Classified schema
+failures discard live rows, which the new member lookup then mistakes for a
+removed snapshot. The bounded response withholds counts, shared timing and
+member absence until those reads succeed. A separately successful scenario-set
+read can still establish a changed timestamp. Historical and live uncertainty
+have separate explanations. Actual removal or a different set remains detected
+after successful reads.
+
+The final maintained Reports cohort passes 445 cases in eleven files, with
+zero failures or skips. Strict scoped lint passes. The first correction retains
+423 baseline/restored passes, a 116-case harmless survivor and 17 behavioral
+faults producing 23 named failures. The pending-read response retains a 70-case
+harmless survivor and seven faults producing 42 named failures, with 448
+explicit unrelated selector skips. Exact restoration and the later whitespace
+bridge are retained. Test-authoring, lint and receipt-classifier failures remain
+failed in their original evidence packets; no skip becomes a pass.
+
+This is a source and ordinary-test checkpoint. The prior build does not contain
+these changes. Configured compilation, a new identified build and renewed
+normal-navigation desktop/390px evidence remain pending. Root also identifies
+an unchanged shared grant-support helper that maps unassessed packet evidence
+to stale evidence and refresh advice. That reachable consumer needs correction
+before the named truthful-warning outcome can close. No new generation, native,
+hosted, scientific or release acceptance is claimed. Full v1 remains unchanged.

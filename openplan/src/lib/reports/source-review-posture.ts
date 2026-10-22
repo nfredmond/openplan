@@ -14,6 +14,7 @@ export type ReportDriftSummary = {
   changedCount: number;
   totalCount: number;
   labels: string[];
+  unassessedLabels?: string[];
 };
 
 export type ReportEvidenceSummary = {
@@ -112,6 +113,13 @@ export function describeReportSourceReviewPosture({
         "The saved comparison binding is checked. Live artifact bytes and custody remain unassessed on this page. Save and generation verify them before accepting the comparison. Review the scientific caveats before release use.",
       changedSourceText: null,
     };
+  }
+
+  if (driftSummary?.unassessedLabels?.length) {
+    return { state: "unassessed", label: "Source evidence unassessed",
+      headline: "Historical source baselines are incomplete",
+      detail: `${formatDriftLabelList(driftSummary.unassessedLabels)} cannot be fully compared with the retained packet. Missing baseline fields do not establish zero, a change or unchanged evidence.`,
+      changedSourceText: null };
   }
 
   return {

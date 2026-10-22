@@ -50,6 +50,18 @@ describe("ReportDetailControls", () => {
     }
   });
 
+  it("keeps an unknown historical baseline out of changed-source and regeneration claims", () => {
+    const driftSummary = { ...noDrift, unassessedLabels: ["Scenario basis"] };
+    expect(describeReportSourceReviewPosture({ hasGeneratedArtifact: true, evidenceSummary: linkedEvidence, driftSummary }))
+      .toMatchObject({ state: "unassessed", label: "Source evidence unassessed", changedSourceText: null });
+    render(<ReportDetailControls report={generatedReport} evidenceSummary={linkedEvidence} driftSummary={driftSummary} />);
+    expect(screen.getByText("Historical source baselines are incomplete")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Generate PDF packet" })).toBeEnabled();
+    expect(screen.queryByRole("button", { name: "Regenerate PDF packet" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Current / ready")).not.toBeInTheDocument();
+    expect(screen.queryByText(/Changed sources:/)).not.toBeInTheDocument();
+  });
+
   it.each([
     { name: "known drift", driftSummary: { changedCount: 1, totalCount: 4, labels: ["Project records"] },
       problem: null, label: "Changed source context", headline: "1 source area needs review" },

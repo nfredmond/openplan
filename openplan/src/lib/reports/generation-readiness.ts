@@ -241,6 +241,7 @@ export function buildReportGenerationReadiness(input: {
   hasGeneratedArtifact: boolean;
   sourceContext: Record<string, unknown> | null;
   driftedSourceCount: number;
+  unassessedSourceCount?: number;
   comparisonAggregate?: ReportComparisonSnapshotAggregate | null;
   guidedComparison?: { selected: boolean; problem: string | null };
   fundingSnapshot?: ReportFundingSnapshot | null;
@@ -294,7 +295,12 @@ export function buildReportGenerationReadiness(input: {
           nextAction:
             "Review changed source areas and regenerate before using the packet outside supervised draft review.",
         }
-      : {
+      : input.unassessedSourceCount ? {
+          id: "source_context", label: "Packet source context", status: "unknown",
+          statusLabel: "Historical source baseline unassessed",
+          detail: "Some historical source totals were not recorded. Missing fields do not establish a source change or unchanged evidence.",
+          nextAction: "Review the retained source records and the unassessed baseline before release use.",
+        } : {
           id: "source_context",
           label: "Packet source context",
           status: "ready",
@@ -328,6 +334,7 @@ export function buildReportGenerationReadiness(input: {
   const hasNotStarted = checks.some((check) => check.status === "not_started");
   // Optional unknown checks keep their existing behavior on unselected reports.
   const hasUnassessedGuidedComparison = Boolean(input.guidedComparison?.selected && !input.guidedComparison.problem);
+  const hasUnassessedSources = Boolean(input.unassessedSourceCount);
   const allReadyOrUnknown = checks.every(
     (check) => check.status === "ready" || check.status === "unknown"
   );
@@ -337,14 +344,14 @@ export function buildReportGenerationReadiness(input: {
       ? "attention"
       : hasNotStarted
         ? "not_started"
-        : hasUnassessedGuidedComparison
+        : hasUnassessedGuidedComparison || hasUnassessedSources
           ? "unknown"
           : allReadyOrUnknown
             ? "ready"
             : "unknown";
 
   const attentionCount = checks.filter((check) => check.status === "attention" || check.status === "blocked" ||
-    (hasUnassessedGuidedComparison && check.id === "comparison_context" && check.status === "unknown")).length;
+    ((hasUnassessedGuidedComparison && check.id === "comparison_context" || hasUnassessedSources && check.id === "source_context") && check.status === "unknown")).length;
 
   return {
     status,
@@ -354,7 +361,7 @@ export function buildReportGenerationReadiness(input: {
         ? "Generation readiness needs review"
         : hasNotStarted
           ? "Generation readiness needs first packet"
-          : hasUnassessedGuidedComparison
+          : hasUnassessedGuidedComparison || hasUnassessedSources
             ? "Generation readiness unassessed"
             : "Generation readiness reviewed",
     detail: `${checks.filter((check) => check.status === "ready").length}/${checks.length} checks ready; ${attentionCount} need operator attention before release use.${hasUnassessedGuidedComparison ? " Selected comparison live artifact bytes and custody remain unassessed." : ""}`,

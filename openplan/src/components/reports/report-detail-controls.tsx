@@ -110,6 +110,7 @@ export function ReportDetailControls({
     changedCount: number;
     totalCount: number;
     labels: string[];
+    unassessedLabels?: string[];
   };
   evidenceSummary?: {
     headline: string;

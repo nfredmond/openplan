@@ -76,6 +76,19 @@ function generatedInputs() {
 }
 
 describe("report generation readiness", () => {
+  it("keeps a missing historical source baseline unknown when all other checks are ready", () => {
+    const readiness = buildReportGenerationReadiness({ ...generatedInputs(), unassessedSourceCount: 1 });
+    expect(readiness.checks.find((check) => check.id === "source_context")).toMatchObject({
+      status: "unknown", statusLabel: "Historical source baseline unassessed" });
+    expect(readiness.checks.filter((check) => check.id !== "source_context").every((check) => check.status === "ready")).toBe(true);
+    expect(readiness.status).toBe("unknown");
+    expect(readiness.label).toBe("Generation readiness unassessed");
+    expect(readiness.detail).toContain("3/4 checks ready; 1 need operator attention");
+    const changed = buildReportGenerationReadiness({ ...generatedInputs(), unassessedSourceCount: 1, driftedSourceCount: 1 });
+    expect(changed.status).toBe("attention");
+    expect(changed.checks.find((check) => check.id === "source_context")?.statusLabel).toBe("1 source change");
+  });
+
   it("keeps a checked saved binding distinct from unassessed live evidence", () => {
     const readiness = buildReportGenerationReadiness({ ...generatedInputs(),
       guidedComparison: { selected: true, problem: null } });

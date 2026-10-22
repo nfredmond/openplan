@@ -152,6 +152,9 @@ export function getReportPacketWorkStatus(
   freshnessLabel: string
 ): ReportPacketWorkStatus {
   switch (freshnessLabel) {
+    case "Comparison evidence unassessed":
+      return { key: "release-review", label: "Review comparison evidence", tone: "warning",
+        detail: "The retained comparison binding is checked; live artifact bytes and custody remain unassessed. Open the report to review its evidence limits." };
     case PACKET_FRESHNESS_LABELS.NO_PACKET:
       return {
         key: "generate-first",
@@ -180,6 +183,7 @@ export function getReportPacketWorkStatus(
 }
 
 export function getReportPacketActionLabel(freshnessLabel: string) {
+  if (freshnessLabel === "Comparison evidence unassessed") return "Next action: open this report and review the unassessed comparison evidence.";
   switch (getReportPacketWorkStatus(freshnessLabel).key) {
     case "refresh":
       return "Next action: open this report and regenerate the packet.";

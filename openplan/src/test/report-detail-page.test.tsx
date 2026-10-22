@@ -1,7 +1,7 @@
 import { buildProjectJurisdictionReadinessExportPayload } from "@/lib/jurisdiction-readiness/payload";
 import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
 import { PROJECT_JURISDICTION_COLUMNS } from "@/lib/projects/project-jurisdiction";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { guidedReportSelectionFixture, reportId } from "@/test/fixtures/guided-report-evidence";
 import { guidedReportDigest } from "@/lib/reports/guided-comparison-binding";
@@ -334,7 +334,7 @@ async function renderReport(tab: ReportTabKey) {
 }
 
 /** Rebind only synthetic report scope; no live files or custody are consulted. */
-function selectGuidedPageFixture(fault?: string) {
+function selectGuidedPageFixture(fault?: string, sourceContext: Record<string, unknown> = {}) {
   const saved = guidedReportSelectionFixture();
   saved.payload.workspaceId = "workspace-1";
   saved.payload.projectId = "project-1";
@@ -353,9 +353,37 @@ function selectGuidedPageFixture(fault?: string) {
   if (fault === "stale artifact") frozen.bindingSha256 = "e".repeat(64);
   artifactsOrderMock.mockResolvedValueOnce({ data: [{ id: "artifact-1", artifact_kind: "html", storage_path: null,
     generated_at: "2026-03-28T18:00:00Z", metadata_json: { guidedComparisonSelectionV1: frozen,
-      sourceContext: { guidedComparisonSelectionV1: frozen } } }], error: null });
+      sourceContext: { ...sourceContext, guidedComparisonSelectionV1: frozen } } }], error: null });
   return saved;
 }
+
+/** Retain the same selected member while varying availability of the live spine. */
+function selectRetainedScenarioFixture(summary: "legacy" | "explicit") {
+  const setAt = "2026-03-28T17:35:00.000Z";
+  const snapshotAt = "2026-03-28T17:42:00.000Z";
+  selectGuidedPageFixture(undefined, {
+    evidenceChainSummary: { linkedRunCount: 4 },
+    scenarioSetLinks: [{ scenarioSetId: "scenario-set-1", scenarioSetTitle: "Retained comparison",
+      matchedEntries: [], comparisonSummary: { label: "Retained comparison", readyAlternatives: 0, baselineEntryPresent: true },
+      scenarioSetUpdatedAt: setAt,
+      comparisonSnapshots: [{ comparisonSnapshotId: "comparison-1", updatedAt: snapshotAt }],
+      ...(summary === "legacy" ? {} : { sharedSpine: {
+        schemaPending: false, assumptionSetCount: 0, dataPackageCount: 0, indicatorSnapshotCount: 0, comparisonSnapshotCount: 1,
+        latestAssumptionSetUpdatedAt: null, latestDataPackageUpdatedAt: null, latestIndicatorSnapshotAt: null,
+        latestComparisonSnapshotUpdatedAt: snapshotAt,
+      } }) }],
+  });
+  scenarioSetsInMock.mockResolvedValue({ data: [{ id: "scenario-set-1", updated_at: setAt }], error: null });
+  scenarioComparisonSnapshotsInMock.mockResolvedValue({ data: [{ id: "comparison-1", scenario_set_id: "scenario-set-1",
+    updated_at: snapshotAt }], error: null });
+}
+
+const pendingScenarioReads = (["legacy", "explicit"] as const).flatMap((summary) => [
+  { query: "assumptions", read: scenarioAssumptionSetsInMock },
+  { query: "packages", read: scenarioDataPackagesInMock },
+  { query: "indicators", read: scenarioIndicatorSnapshotsInMock },
+  { query: "comparisons", read: scenarioComparisonSnapshotsInMock },
+].map((query) => ({ summary, ...query })));
 
 function expectNoGuidedWorkerReads() {
   expect(guidedPageMocks.verify).not.toHaveBeenCalled();
@@ -983,6 +1011,164 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     if (tab === "packet") expect(screen.getByText("Saved binding checked; live evidence unassessed")).toBeInTheDocument();
     if (tab === "history") expect(screen.getByText(/Live artifact bytes and custody are unassessed on this page/)).toBeInTheDocument();
   });
+
+  it.each(["legacy", "explicit zero", "explicit unchanged", "set timestamp", "snapshot timestamp", "snapshot removed", "assumption timestamp", "assumption count", "package count", "indicator count", "comparison removed"])(
+    "compares a retained scenario baseline truthfully: %s", async (basis) => {
+      const setAt = "2026-03-28T17:35:00.000Z";
+      const snapshotAt = "2026-03-28T17:42:00.000Z";
+      const sharedSpine = {
+        schemaPending: false, assumptionSetCount: basis === "assumption timestamp" ? 1 : 0, dataPackageCount: 0, indicatorSnapshotCount: 0,
+        comparisonSnapshotCount: basis === "explicit zero" ? 0 : basis === "comparison removed" ? 2 : 1,
+        latestAssumptionSetUpdatedAt: basis === "assumption timestamp" ? "2026-03-28T17:39:00.000Z" : null, latestDataPackageUpdatedAt: null, latestIndicatorSnapshotAt: null,
+        latestComparisonSnapshotUpdatedAt: snapshotAt,
+      };
+      const legacy = basis === "legacy" || basis.startsWith("snapshot") || basis === "set timestamp";
+      selectGuidedPageFixture(undefined, {
+        evidenceChainSummary: { linkedRunCount: 4 },
+        scenarioSetLinks: [{ scenarioSetId: "scenario-set-1", scenarioSetTitle: "Retained comparison",
+          matchedEntries: [], comparisonSummary: { label: "Retained comparison", readyAlternatives: 0, baselineEntryPresent: true },
+          scenarioSetUpdatedAt: setAt,
+          comparisonSnapshots: [{ comparisonSnapshotId: "comparison-1", updatedAt: snapshotAt }],
+          ...(legacy ? {} : { sharedSpine }) }],
+      });
+      scenarioSetsInMock.mockResolvedValue({ data: [{ id: "scenario-set-1",
+        updated_at: basis === "set timestamp" ? "2026-03-28T17:36:00.000Z" : setAt }], error: null });
+      scenarioComparisonSnapshotsInMock.mockResolvedValue({ data: basis === "snapshot removed" ? [] : [{
+        id: "comparison-1", scenario_set_id: "scenario-set-1",
+        updated_at: basis === "snapshot timestamp" ? "2026-03-28T17:43:00.000Z" : snapshotAt }], error: null });
+      if (basis === "assumption timestamp") scenarioAssumptionSetsInMock.mockResolvedValue({
+        data: [{ scenario_set_id: "scenario-set-1", updated_at: "2026-03-28T17:40:00.000Z" }], error: null });
+      if (basis === "assumption count") scenarioAssumptionSetsInMock.mockResolvedValue({ data: [{ scenario_set_id: "scenario-set-1", updated_at: null }], error: null });
+      if (basis === "package count") scenarioDataPackagesInMock.mockResolvedValue({ data: [{ scenario_set_id: "scenario-set-1", updated_at: null }], error: null });
+      if (basis === "indicator count") scenarioIndicatorSnapshotsInMock.mockResolvedValue({ data: [{ scenario_set_id: "scenario-set-1", snapshot_at: null }], error: null });
+      await renderReport("history");
+      expect(scenarioComparisonSnapshotsSelectMock).toHaveBeenCalledWith("id, scenario_set_id, updated_at");
+      expectNoGuidedWorkerReads();
+      const row = within(document.getElementById("drift-since-generation")!).getByText("Scenario basis").parentElement!.parentElement!;
+      if (basis === "legacy") {
+        expect(row).toHaveTextContent("unassessed");
+        expect(row).toHaveTextContent("missing fields do not establish zero or a source change");
+        expect(row).not.toHaveTextContent("comparisons 0 -> 1");
+        expect(row).not.toHaveTextContent("unchanged");
+        expect(screen.queryByText(/Changed sources:.*Scenario basis/)).not.toBeInTheDocument();
+        expect(guidedPageMocks.controls).toHaveBeenCalledWith(expect.objectContaining({
+          driftSummary: expect.objectContaining({ changedCount: 0, unassessedLabels: ["Scenario basis"] }),
+          guidedComparison: expect.objectContaining({ liveEvidenceStatus: "unassessed", problem: null }),
+        }));
+      } else if (basis === "explicit unchanged") {
+        expect(row).toHaveTextContent("unchanged");
+        expect(row).not.toHaveTextContent("unassessed");
+        expect(screen.queryByText(/Changed sources:.*Scenario basis/)).not.toBeInTheDocument();
+      } else {
+        expect(row).toHaveTextContent("updated");
+        expect(guidedPageMocks.controls).toHaveBeenCalledWith(expect.objectContaining({
+          driftSummary: expect.objectContaining({ changedCount: 1, labels: ["Scenario basis"] }),
+        }));
+        if (basis === "explicit zero") expect(row).toHaveTextContent("comparisons 0 -> 1");
+      }
+    }
+  );
+
+  it.each(pendingScenarioReads)("keeps pending $query live reads unassessed with a $summary summary", async ({ summary, query, read }) => {
+    for (const tab of ["history", "packet"] as const) {
+      selectRetainedScenarioFixture(summary);
+      read.mockResolvedValue({ data: null, error: { message: `Could not find the table scenario_${query} in the schema cache` } });
+      await renderReport(tab);
+      expectNoGuidedWorkerReads();
+      expect(scenarioSetsSelectMock).toHaveBeenCalledWith("id, updated_at");
+      expect(scenarioSetsInMock).toHaveBeenCalledWith("id", ["scenario-set-1"]);
+      expect(scenarioComparisonSnapshotsSelectMock).toHaveBeenCalledWith("id, scenario_set_id, updated_at");
+      for (const scopedRead of [scenarioAssumptionSetsInMock, scenarioDataPackagesInMock, scenarioIndicatorSnapshotsInMock, scenarioComparisonSnapshotsInMock]) {
+        expect(scopedRead).toHaveBeenCalledWith("scenario_set_id", ["scenario-set-1"]);
+      }
+      expect(guidedPageMocks.controls).toHaveBeenLastCalledWith(expect.objectContaining({
+        driftSummary: expect.objectContaining({ changedCount: 0, labels: [], unassessedLabels: ["Scenario basis"] }),
+        guidedComparison: expect.objectContaining({ liveEvidenceStatus: "unassessed", problem: null }),
+      }));
+      expect(screen.queryByText(/Changed sources:/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Review changed source areas and regenerate/)).not.toBeInTheDocument();
+      if (tab === "history") {
+        const row = within(document.getElementById("drift-since-generation")!).getByText("Scenario basis").parentElement!.parentElement!;
+        expect(row).toHaveTextContent("unassessed");
+        expect(row).not.toHaveTextContent(/updated|unchanged|snapshot changed/);
+        expect(row).toHaveTextContent("Live shared-spine queries are pending");
+        expect(row).toHaveTextContent("Live counts, shared-spine timing and retained snapshot presence remain unassessed");
+        if (summary === "explicit") expect(row).not.toHaveTextContent("Historical shared-spine totals are not recorded");
+        else expect(row).toHaveTextContent("Historical shared-spine totals are not recorded");
+      } else {
+        const freshness = screen.getByText("How current the generated file is").parentElement!;
+        expect(freshness).toHaveTextContent("Comparison evidence unassessed");
+        expect(freshness).not.toHaveTextContent("Refresh recommended");
+        expect(screen.getByText("Live scenario evidence unassessed")).toBeInTheDocument();
+        expect(screen.getByText(/Live shared-spine queries are pending/)).toBeInTheDocument();
+        expect(screen.queryByText("Historical source baseline unassessed")).not.toBeInTheDocument();
+        expect(screen.queryByText(/Some historical source totals were not recorded/)).not.toBeInTheDocument();
+      }
+      cleanup();
+    }
+  });
+
+  it.each(pendingScenarioReads)("keeps a known set timestamp change during pending $query reads with a $summary summary", async ({ summary, query, read }) => {
+    for (const tab of ["history", "packet"] as const) {
+      selectRetainedScenarioFixture(summary);
+      read.mockResolvedValue({ data: null, error: { message: `relation scenario_${query} does not exist` } });
+      scenarioSetsInMock.mockResolvedValue({ data: [{ id: "scenario-set-1", updated_at: "2026-03-28T17:36:00.000Z" }], error: null });
+      await renderReport(tab);
+      expect(guidedPageMocks.controls).toHaveBeenLastCalledWith(expect.objectContaining({
+        driftSummary: expect.objectContaining({ changedCount: 1, labels: ["Scenario basis"] }),
+      }));
+      if (tab === "history") {
+        const row = within(document.getElementById("drift-since-generation")!).getByText("Scenario basis").parentElement!.parentElement!;
+        expect(row).toHaveTextContent("updated");
+        expect(row).toHaveTextContent("Live shared-spine queries are pending");
+      } else {
+        expect(screen.getByText("How current the generated file is").parentElement!).toHaveTextContent("Refresh recommended");
+        expect(screen.getByText("1 source change")).toBeInTheDocument();
+        expect(screen.getByText(/Review changed source areas and regenerate/)).toBeInTheDocument();
+      }
+      cleanup();
+    }
+  });
+
+  it.each(["legacy", "explicit"] as const)("requires a successful set read to claim changed timing during pending spine reads: %s", async (summary) => {
+    selectRetainedScenarioFixture(summary);
+    scenarioAssumptionSetsInMock.mockResolvedValue({ data: null, error: { message: "schema cache unavailable" } });
+    scenarioSetsInMock.mockResolvedValue({ data: [{ id: "scenario-set-1", updated_at: "2026-03-28T17:36:00.000Z" }],
+      error: { message: "scenario set read failed" } });
+    await renderReport("history");
+    expect(guidedPageMocks.controls).toHaveBeenCalledWith(expect.objectContaining({
+      driftSummary: expect.objectContaining({ changedCount: 0, labels: [], unassessedLabels: ["Scenario basis"] }),
+    }));
+    expect(screen.queryByText("Refresh recommended")).not.toBeInTheDocument();
+  });
+
+  it.each((["legacy", "explicit"] as const).flatMap((summary) => ["removed", "moved"].map((change) => ({ summary, change }))))(
+    "detects a $change retained snapshot after the pending read clears with a $summary summary", async ({ summary, change }) => {
+      selectRetainedScenarioFixture(summary);
+      scenarioAssumptionSetsInMock.mockResolvedValue({ data: null, error: { message: "schema cache unavailable" } });
+      await renderReport("history");
+      expect(guidedPageMocks.controls).toHaveBeenLastCalledWith(expect.objectContaining({
+        driftSummary: expect.objectContaining({ changedCount: 0, unassessedLabels: ["Scenario basis"] }),
+      }));
+      cleanup();
+      selectRetainedScenarioFixture(summary);
+      scenarioAssumptionSetsInMock.mockResolvedValue({ data: [], error: null });
+      // Preserve the explicit census and latest time so membership is the only changed fact.
+      scenarioComparisonSnapshotsInMock.mockResolvedValue({ data: [{
+        id: "replacement-comparison", scenario_set_id: "scenario-set-1",
+        updated_at: "2026-03-28T17:42:00.000Z",
+      }, ...(change === "moved" ? [{ id: "comparison-1", scenario_set_id: "different-set",
+        updated_at: "2026-03-28T17:42:00.000Z" }] : [])], error: null });
+      await renderReport("history");
+      expect(scenarioComparisonSnapshotsInMock).toHaveBeenLastCalledWith("scenario_set_id", ["scenario-set-1"]);
+      const row = within(document.getElementById("drift-since-generation")!).getByText("Scenario basis").parentElement!.parentElement!;
+      expect(row).toHaveTextContent("updated");
+      expect(row).not.toHaveTextContent("Live shared-spine queries are pending");
+      expect(guidedPageMocks.controls).toHaveBeenLastCalledWith(expect.objectContaining({
+        driftSummary: expect.objectContaining({ changedCount: 1, labels: ["Scenario basis"] }),
+      }));
+    }
+  );
 
   it.each(["version", "digest", "workspace", "project", "snapshot"])("blocks the stored %s binding without downloading or repairing evidence", async (fault) => {
     selectGuidedPageFixture(fault);

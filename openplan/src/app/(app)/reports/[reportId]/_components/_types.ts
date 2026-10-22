@@ -102,7 +102,7 @@ export type ProjectRecordSnapshotKey =
   | "decisions"
   | "meetings";
 
-export type DriftStatus = "unchanged" | "updated" | "count changed" | "gate changed";
+export type DriftStatus = "unassessed" | "unchanged" | "updated" | "count changed" | "gate changed";
 
 export type DriftItem = {
   key: string;
@@ -128,6 +128,7 @@ export type StageGateSnapshotControlHealth =
   ProjectStageGateSnapshot["controlHealth"];
 
 export type ScenarioSpineRow = {
+  id?: string;
   scenario_set_id?: string | null;
   updated_at?: string | null;
   snapshot_at?: string | null;
