@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   collectGuidedRunEvidence, guidedPopulationComparison, guidedPopulationSnapshotMetadata,
   guidedPopulationRerun, readGuidedStageCustody, snapshotHasExactGuidedEvidence, guidedEvidenceSharesExactNetwork,
-  verifiedGuidedArtifact, verifiedGuidedPopulation,
+  verifiedGuidedArtifact, verifiedGuidedPopulation, verifiedActivitySimPreflight,
   type GuidedRunJob, type GuidedRunRow, type ModelRunArtifactRow, type ModelRunStageRow,
   type GuidedRunEvidence, type ScenarioComparisonModelRunLinkRow,
 } from "@/lib/models/guided-model-evidence";
@@ -305,4 +305,25 @@ describe("consumed population identity", () => {
     expect(await readGuidedStageCustody(args)).toEqual(new Set()); expect(readStageCustody).not.toHaveBeenCalled();
   });
 
+});
+
+
+it("chooses current attempt evidence before recency while retaining the original rows", () => {
+  const f = fixture();
+  const original = structuredClone(f.artifacts[0]);
+  const stale = { ...original, id: "retained-old-output", attempt_id: "99999999-9999-4999-8999-999999999999", created_at: "2099-01-01" };
+  f.artifacts.push(stale);
+  expect(verifiedGuidedArtifact(f.artifacts, f.stages, f.runs[0].id, "aequilibrae")?.id).toBe(original.id);
+  expect(f.artifacts).toContainEqual(stale);
+  f.artifacts.splice(0, 1);
+  expect(verifiedGuidedArtifact(f.artifacts, f.stages, f.runs[0].id, "aequilibrae")?.producerManaged).toBe(false);
+});
+it("binds managed ActivitySim runtime evidence and its KPI to the same active preflight attempt", () => {
+  const f = fixture(), run = f.runs[2], stage = { ...f.stages[2], stage_name: "ActivitySim Bundle & Preflight" };
+  const evidence = { ...f.artifacts[2], artifact_type: "evidence_packet", metadata_json: { kind: "behavioral_demand_preflight_evidence" } };
+  const current = { id: "runtime-current", run_id: run.id, attempt_id: POPULATION_ATTEMPT_ID, kpi_name: "activitysim_runtime_mode", breakdown_json: { mode: "executed" }, created_at: "2026-10-18" };
+  const stale = { ...current, id: "runtime-retained", attempt_id: "99999999-9999-4999-8999-999999999999", breakdown_json: { mode: "preflight_only" }, created_at: "2099-01-01" };
+  expect(verifiedActivitySimPreflight({ run, stages: [stage], artifacts: [evidence], kpis: [stale, current] })).toBe("executed");
+  expect(verifiedActivitySimPreflight({ run, stages: [stage], artifacts: [evidence], kpis: [stale] })).toBeNull();
+  expect(verifiedActivitySimPreflight({ run, stages: [stage], artifacts: [{ ...evidence, attempt_id: stale.attempt_id }], kpis: [current] })).toBeNull();
 });

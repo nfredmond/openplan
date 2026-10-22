@@ -64,6 +64,7 @@ export default async function BcaPage({
     supabase,
     reads,
     candidates.map((s) => s.id),
+    project.workspace_id,
   );
   const models: BcaModelEvidence[] = reads.any
     ? []

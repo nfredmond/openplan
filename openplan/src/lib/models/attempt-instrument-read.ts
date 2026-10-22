@@ -43,3 +43,25 @@ export async function readAttemptInstruments(
     return { records: [], readFailed: true };
   }
 }
+
+export type CurrentModelStageAttempt = { stage_name: string; id: string; run_id: string; status: string; attempt_managed: boolean; active_attempt_id: string | null };
+/** Read the existing user-visible active-stage projection after run authorization.
+ * Managed commands own revocation and active pointers atomically. This reader
+ * grants no access to private attempts, receipts or additional workspaces.
+ */
+export async function readCurrentModelStageAttempts(client: unknown, runId: string): Promise<{ records: CurrentModelStageAttempt[]; readFailed: boolean }> {
+  type StageQuery = PromiseLike<{ data: CurrentModelStageAttempt[] | null; error: ReadError | null }> & {
+    eq(column: string, value: string): StageQuery; order(column: string): StageQuery; range(from: number, to: number): StageQuery;
+  };
+  try {
+    const db = client as { from(table: string): { select(columns: string): StageQuery } };
+    const read = await readEveryPage<CurrentModelStageAttempt, ReadError>((from, to) => db.from("model_run_stages")
+      .select("id, run_id, stage_name, status, attempt_managed, active_attempt_id").eq("run_id", runId).order("id").range(from, to));
+    if (!read.complete || !read.rows.length || new Set(read.rows.map(row => row.id)).size !== read.rows.length ||
+      read.rows.some(row => row.run_id !== runId || row.attempt_managed !== true || typeof row.id !== "string" || typeof row.stage_name !== "string" ||
+        !["queued", "running", "succeeded", "failed", "cancelled", "skipped"].includes(row.status) ||
+        (row.active_attempt_id !== null && typeof row.active_attempt_id !== "string"))) return { records: [], readFailed: true };
+    return { records: read.rows.map(row => ({ id: row.id, run_id: row.run_id, stage_name: row.stage_name,
+      status: row.status, attempt_managed: row.attempt_managed, active_attempt_id: row.active_attempt_id })), readFailed: false };
+  } catch { return { records: [], readFailed: true }; }
+}

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { readAttemptInstruments } from "@/lib/models/attempt-instrument-read";
+import { readAttemptInstruments, readCurrentModelStageAttempts } from "@/lib/models/attempt-instrument-read";
 import { z } from "zod";
 import { tool, type Tool, type ToolSet } from "ai";
 import type { AssistantContext } from "@/lib/assistant/context";
@@ -16,6 +16,7 @@ import {
 import { getReportPacketFreshness } from "@/lib/reports/catalog";
 import {
   ACTION_METADATA,
+  canonicalizeActionPayload,
   resolveQuickLinkApproval,
   type ActionApproval,
 } from "@/lib/runtime/action-metadata";
@@ -719,7 +720,7 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
 
         const { data: run, error: runError } = await supabase
           .from("model_runs")
-          .select("id, run_title, status, engine_key, error_message, started_at, completed_at, updated_at")
+          .select("id, run_title, status, engine_key, error_message, started_at, completed_at, updated_at, attempt_managed")
           .eq("id", input.modelRunId)
           .eq("workspace_id", workspaceId)
           .maybeSingle();
@@ -731,17 +732,45 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
               "No model run with that id is visible in this workspace. It may not exist or may belong to a workspace this planner is not a member of.",
           };
         }
-        const runRow = run as Record<string, unknown>;
+        const runRow = { ...(run as Record<string, unknown>) };
 
-        const { data: kpiData, error: kpiError } = await supabase
-          .from("model_run_kpis")
-          .select("kpi_name, kpi_label, kpi_category, value, unit, geometry_ref, breakdown_json")
-          .eq("run_id", input.modelRunId)
-          .order("kpi_category", { ascending: true })
-          .order("kpi_name", { ascending: true })
-          .limit(ASSISTANT_CHAT_TOOL_KPI_LIMIT);
+        const stageAttempts = runRow.attempt_managed === true ? await readCurrentModelStageAttempts(supabase, input.modelRunId) : null;
+        if (stageAttempts?.readFailed) return refusal("Current model output custody could not be verified. Retained records are not current results.");
+        const currentAttemptIds = stageAttempts ? runRow.status === "succeeded"
+          ? stageAttempts.records.filter(stage => stage.status === "succeeded" && typeof stage.active_attempt_id === "string").map(stage => stage.active_attempt_id!) : [] : null;
+        let kpiQuery = supabase.from("model_run_kpis")
+          .select("id, run_id, attempt_id, kpi_name, kpi_label, kpi_category, value, unit, geometry_ref, breakdown_json")
+          .eq("run_id", input.modelRunId);
+        if (currentAttemptIds) kpiQuery = kpiQuery.in("attempt_id", currentAttemptIds);
+        const { data: kpiData, error: kpiError } = currentAttemptIds?.length === 0 ? { data: [], error: null }
+          : await kpiQuery.order("kpi_category", { ascending: true }).order("kpi_name", { ascending: true }).limit(ASSISTANT_CHAT_TOOL_KPI_LIMIT);
         if (kpiError) throw new Error(kpiError.message ?? "model_run_kpis query failed");
-        const kpiRows = (kpiData ?? []) as Array<Record<string, unknown>>;
+        const storedKpiRows = (kpiData ?? []) as Array<Record<string, unknown>>;
+        const kpiRows = currentAttemptIds ? storedKpiRows.filter(row => typeof row.attempt_id === "string" && currentAttemptIds.includes(row.attempt_id)) : storedKpiRows;
+        if (stageAttempts) {
+          const refreshed = await readCurrentModelStageAttempts(supabase, input.modelRunId);
+          const parentRead = await supabase.from("model_runs")
+            .select("id, workspace_id, status, attempt_managed, updated_at").eq("id", input.modelRunId).eq("workspace_id", workspaceId).maybeSingle();
+          const parent = parentRead.data as Record<string, unknown> | null;
+          // This is an optimistic recheck under the same user session, not an
+          // atomic native projection. Attempt identities are never reused.
+          if (refreshed.readFailed || canonicalizeActionPayload(refreshed.records) !== canonicalizeActionPayload(stageAttempts.records) ||
+            parentRead.error || !parent || parent.id !== runRow.id || parent.workspace_id !== workspaceId ||
+            parent.status !== runRow.status || parent.attempt_managed !== true || parent.updated_at !== runRow.updated_at) {
+            return refusal("Model execution changed while its results were read. Refresh and read it again; no current values are confirmed.");
+          }
+          const headlineProducer: Record<string, string> = {
+            total_trips: "Artifact Extraction", daily_vmt: "Artifact Extraction",
+            resident_vmt_per_capita: "Artifact Extraction", vmt_per_capita: "Artifact Extraction",
+            co2e_metric_tons_year: "Artifact Extraction", co2e_kg_per_capita_day: "Artifact Extraction",
+            activitysim_trips: "ActivitySim Bundle & Preflight", activitysim_runtime_mode: "ActivitySim Bundle & Preflight",
+            activitysim_daily_vmt: "ActivitySim Network Assignment",
+          };
+          if (kpiRows.some(row => typeof row.kpi_name === "string" && headlineProducer[row.kpi_name] &&
+            !stageAttempts.records.some(stage => stage.stage_name === headlineProducer[String(row.kpi_name)] && stage.active_attempt_id === row.attempt_id && stage.status === "succeeded"))) {
+            return refusal("A headline KPI does not belong to its expected successful producer stage. No current values are confirmed.");
+          }
+        }
         const kpiItems = normalizeModelRunKpiComparisonItems(kpiRows);
 
         // Zone resolution: the verdict is banded HERE from the stored share, via
@@ -885,7 +914,7 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
           truncated: kpiRows.length === ASSISTANT_CHAT_TOOL_KPI_LIMIT,
           note:
             kpiRows.length === 0
-              ? "No KPIs are recorded for this run. That is a recorded absence, not a failed read."
+              ? stageAttempts ? "No current completed KPIs are available. Original attempt records remain retained." : "No KPIs are recorded for this run. That is a recorded absence, not a failed read."
               : "Report each value with its unit and its caveats verbatim; never round a caveat away.",
           kpis: kpiItems.map((item, index) => ({
             name: item.name,
@@ -945,7 +974,13 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
             }),
             attemptInstrumentCustody: {
               status: attemptResult.readFailed ? "read_failed" : "available",
-              records: attemptResult.records,
+              records: attemptResult.records.map(record => ({ ...record,
+                output_ownership: stageAttempts ? (() => {
+                  const stage = stageAttempts.records.find(stage => stage.id === record.stage_id && stage.active_attempt_id === record.attempt_id);
+                  return !stage || !["running", "succeeded"].includes(String(runRow.status)) ? "retained_inactive"
+                    : runRow.status === "succeeded" && stage.status === "succeeded" ? "current_completed" : "current_in_progress";
+                })() : "legacy_unassessed",
+              })),
               note: "Each method and attempt remains separate and inconclusive. Retained custody does not establish accuracy. A failed read is not an absence of evidence.",
             },
             comparableObservationCustody: comparableRows.map((row) => ({

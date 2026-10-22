@@ -57,6 +57,7 @@ export type ModelRunStageRow = {
 };
 
 export type ModelRunKpiRow = {
+  attempt_id?: string | null;
   id: string;
   run_id: string;
   kpi_name: string;
@@ -420,9 +421,13 @@ export function verifiedGuidedArtifact(
   producerManaged: boolean;
 }) | null {
   const expectedType = guidedArtifactType(method);
-  const latest = artifacts
-    .filter((artifact) => artifact.run_id === runId && artifact.artifact_type === expectedType)
-    .sort(newestFirst)[0];
+  const candidates = artifacts.filter(artifact => artifact.run_id === runId && artifact.artifact_type === expectedType).sort(newestFirst);
+  const current = candidates.filter(artifact => stages.some(stage => stage.id === artifact.stage_id && stage.run_id === runId &&
+    stage.status === "succeeded" && stage.stage_name === guidedArtifactStageName(method) &&
+    stage.attempt_managed === true && typeof artifact.attempt_id === "string" && stage.active_attempt_id === artifact.attempt_id));
+  // Preserve a mismatched retained binding for the existing invalid-custody
+  // refusal when no current producer exists. It never gains producerManaged.
+  const latest = current[0] ?? candidates[0];
   if (!latest || !validArtifactBytes(latest) || !latest.stage_id) return null;
   const stage = stages.find((candidate) => candidate.id === latest.stage_id && candidate.run_id === runId);
   if (!stage || stage.status !== "succeeded" || stage.stage_name !== guidedArtifactStageName(method)) return null;
@@ -537,14 +542,18 @@ export function verifiedActivitySimPreflight(params: {
   const { run, artifacts, stages, kpis } = params;
   if (run.status !== "succeeded" || run.engine_key !== "behavioral_demand") return null;
   const evidence = artifacts
-    .filter((artifact) => artifact.run_id === run.id && artifact.artifact_type === "evidence_packet")
+    .filter((artifact) => artifact.run_id === run.id && artifact.artifact_type === "evidence_packet" &&
+      (run.attempt_managed !== true || stages.some(stage => stage.id === artifact.stage_id && stage.run_id === run.id &&
+        stage.attempt_managed === true && stage.active_attempt_id === artifact.attempt_id && typeof artifact.attempt_id === "string")))
     .sort(newestFirst)[0];
   if (!evidence || !validArtifactBytes(evidence) || !evidence.stage_id) return null;
   if (evidence.metadata_json?.kind !== "behavioral_demand_preflight_evidence") return null;
   const stage = stages.find((candidate) => candidate.id === evidence.stage_id && candidate.run_id === run.id);
   if (!stage || stage.stage_name !== "ActivitySim Bundle & Preflight" || stage.status !== "succeeded") return null;
   const kpi = kpis
-    .filter((candidate) => candidate.run_id === run.id && candidate.kpi_name === "activitysim_runtime_mode")
+    .filter((candidate) => candidate.run_id === run.id && candidate.kpi_name === "activitysim_runtime_mode" &&
+      (run.attempt_managed !== true || (stage.attempt_managed === true && typeof candidate.attempt_id === "string" &&
+        candidate.attempt_id === stage.active_attempt_id && candidate.attempt_id === evidence.attempt_id)))
     .sort(newestFirst)[0];
   const mode = kpi?.breakdown_json?.mode;
   return mode === "preflight_only" || mode === "executed" ? mode : null;

@@ -20,6 +20,17 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Managed model recovery source candidate:** the proposed
+`20261022050000_model_output_preserving_relaunch.sql` precedes its matching
+recovery controls. It prepares an owner/admin decision to queue a fresh attempt
+on the same failed or cancelled managed run with unchanged recorded inputs.
+Original outputs, receipts and attempt-bound scientific records stay retained.
+Unbound scientific records and registered population replacements retain their
+reconciliation holds. Current-reader and worker admission joins are prepared in
+source. General prepared scientific retry remains unfinished. A queued receipt
+is not completed recovery; native installation, full worker execution and visible
+acceptance remain unproved.
+
 **Selected model comparisons in Reports.** Reports can retain an explicitly
 selected comparison with separate method values, source identities and caveats.
 Apply `20261019070000_guided_comparison_report_evidence.sql` before deploying

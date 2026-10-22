@@ -1,3 +1,4 @@
+import { readModelAttemptOutputs, currentCompletedModelOutputs, filterCompletedAttemptRows } from "@/lib/models/attempt-output-read";
 import { setupPendingSentence } from "@/lib/ui/setup-pending";
 import { loadModelRecoveryStatuses } from "@/lib/models/recovery-status-server";
 import { modelRecoveryNeedsReview, type ModelRecoveryStatus } from "@/lib/models/recovery-status";
@@ -226,7 +227,7 @@ export default async function ModelDetailPage({
       supabase
         .from("model_runs")
         .select(
-          "id, model_id, scenario_entry_id, source_analysis_run_id, engine_key, status, run_title, result_summary_json, error_message, failure_count, last_failure_message, corridor_geojson, started_at, completed_at, created_at, updated_at, stages:model_run_stages(id, stage_name, status, sort_order, started_at, completed_at, updated_at, error_message, log_tail), artifacts:model_run_artifacts(id, artifact_type, file_url, file_size_bytes, content_hash, metadata_json)"
+          "id, attempt_managed, model_id, scenario_entry_id, source_analysis_run_id, engine_key, status, run_title, result_summary_json, error_message, failure_count, last_failure_message, corridor_geojson, started_at, completed_at, created_at, updated_at, stages:model_run_stages(id, stage_name, status, sort_order, started_at, completed_at, updated_at, error_message, log_tail), artifacts:model_run_artifacts(id, run_id, attempt_id, stage_id, artifact_type, file_url, file_size_bytes, content_hash, metadata_json)"
         )
         .eq("model_id", model.id)
         .order("created_at", { ascending: false })
@@ -676,6 +677,10 @@ export default async function ModelDetailPage({
         modelRunIds: ((modelRunsResult.data ?? []) as Array<{ id: string }>).map((r) => r.id),
       });
 
+  const outputCustody = new Map<string, Awaited<ReturnType<typeof readModelAttemptOutputs>>>();
+  if (!modelRunsSchemaPending && !modelRunsUnreadable) for (const run of modelRunsResult.data ?? []) {
+    if (run.attempt_managed === true) outputCustody.set(run.id, await readModelAttemptOutputs(model.workspace_id, run.id));
+  }
   const modelRuns = modelRunsSchemaPending ? [] : ((modelRunsResult.data ?? []) as unknown as Array<{
     id: string;
     status: string;
@@ -693,17 +698,27 @@ export default async function ModelDetailPage({
     stages: ModelRunStage[];
     artifacts: ModelRunArtifact[];
   }>).map((r) => {
+    const custody = outputCustody.get(r.id);
+    const originalArtifacts = r.artifacts;
+    if (custody) r = { ...r, artifacts: custody.available ? filterCompletedAttemptRows(custody, "artifact", originalArtifacts) : [] };
+    const outputCustodyUnavailable = Boolean(custody && (!custody.available || r.artifacts.length !== currentCompletedModelOutputs(custody, "artifact").length));
+    if (outputCustodyUnavailable) r = { ...r, artifacts: [] };
+    const retainedArtifacts = custody ? originalArtifacts.filter(artifact => !r.artifacts.some(current => current.id === artifact.id)).map(artifact => ({
+      ...artifact, outputOwnership: custody.available ? custody.outputs.find(output => output.kind === "artifact" && output.record.id === artifact.id)?.ownership_state ?? "unassessed" : "unassessed",
+    })) : [];
     const engine_key = r.engine_key ?? "deterministic_corridor_v1";
     const claimDecision = modelRunClaimStatuses.get(r.id) ?? null;
     const recovery = modelRecoveryStatuses.get(r.id);
     const reapMessage = reapedRunMessages.get(r.id);
-    if (!reapMessage) return { ...r, engine_key, claimDecision, recovery };
+    if (!reapMessage) return { ...r, retainedArtifacts, outputCustodyUnavailable, engine_key, claimDecision, recovery };
     // Reflect the reap in the rendered payload without a re-query. completed_at
     // is set by the DB write and picked up on the next poll — omitting it here
     // keeps the loader pure.
     return {
       ...r,
       engine_key,
+      retainedArtifacts,
+      outputCustodyUnavailable,
       claimDecision,
       recovery,
       status: "failed",

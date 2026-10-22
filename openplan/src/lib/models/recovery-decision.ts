@@ -15,6 +15,10 @@ export const recoveryExpectedStateSchema = z.object({
 export const recoveryInspectionSchema = z.object({
   expected_state: recoveryExpectedStateSchema,
   process_termination_verified: z.literal(false), continuation_authorized: z.literal(false), model_resumed: z.literal(false),
+  retry: z.discriminatedUnion('state', [
+    z.object({ state: z.literal('available') }).strict(),
+    z.object({ state: z.literal('unavailable'), reason: z.string().min(1) }).strict(),
+  ]).optional(),
   replacement: z.discriminatedUnion('state', [
     z.object({ state: z.literal('available'), checkpointId: recoveryIdentitySchema,
       checkpointSha256: z.string().regex(/^[a-f0-9]{64}$/), engineKey: z.enum(['aequilibrae', 'behavioral_demand']) }).strict(),
@@ -47,8 +51,14 @@ export const populationReplacementDecisionSchema = z.object({
   acknowledgedNewRun: z.literal(true),
 }).strict();
 export type PopulationReplacementDecision = z.infer<typeof populationReplacementDecisionSchema>;
-export const savedRecoveryDecisionSchema = z.discriminatedUnion('decision', [recoveryDecisionSchema, populationReplacementDecisionSchema]);
-export const recoveryRequestSchema = z.discriminatedUnion("decision", [recoveryDecisionSchema, historicalRunDecisionSchema, populationReplacementDecisionSchema]);
+export const modelOutputRetryDecisionSchema = z.object({
+  requestId: recoveryIdentitySchema, decision: z.literal('retry_execution'),
+  expectedState: recoveryExpectedStateSchema.refine(state => state.attempt_managed && (state.status === 'failed' || state.status === 'cancelled')),
+  reason: z.string().min(1).max(2000).refine(value => value.trim().length > 0),
+}).strict();
+export type ModelOutputRetryDecision = z.infer<typeof modelOutputRetryDecisionSchema>;
+export const savedRecoveryDecisionSchema = z.discriminatedUnion('decision', [recoveryDecisionSchema, populationReplacementDecisionSchema, modelOutputRetryDecisionSchema]);
+export const recoveryRequestSchema = z.discriminatedUnion("decision", [recoveryDecisionSchema, historicalRunDecisionSchema, populationReplacementDecisionSchema, modelOutputRetryDecisionSchema]);
 
 export function replacementRpcArguments(decision: PopulationReplacementDecision, workspaceId: string, runId: string, actorId: string) {
   return { p_request_id: decision.requestId, p_workspace_id: workspaceId, p_run_id: runId, p_actor_id: actorId,
@@ -70,6 +80,7 @@ export function replacementReceipt(value: unknown, args: ReturnType<typeof repla
 }
 
 export function matchesSavedRecoveryReceipt(value: unknown, decision: z.infer<typeof savedRecoveryDecisionSchema>, workspaceId: string, runId: string, actorId: string) {
+  if (decision.decision === 'retry_execution') return modelOutputRetryReceipt(value, modelOutputRetryRpcArguments(decision, workspaceId, runId, actorId)) !== null;
   return decision.decision === 'create_population_replacement'
     ? replacementReceipt(value, replacementRpcArguments(decision, workspaceId, runId, actorId)) !== null
     : matchesRecoveryReceipt(value, recoveryRpcArguments(decision, workspaceId, runId, actorId));
@@ -110,4 +121,18 @@ export function matchesHistoricalDecisionReceipt(value: unknown, args: ReturnTyp
       expected_state: args.p_expected_state, outcome: args.p_outcome, reason: args.p_reason },
   };
   return canonicalizeActionPayload(value) === canonicalizeActionPayload(expected);
+}
+
+export function modelOutputRetryRpcArguments(decision: ModelOutputRetryDecision, workspaceId: string, runId: string, actorId: string) {
+  return { p_request_id: decision.requestId, p_workspace_id: workspaceId, p_run_id: runId, p_actor_id: actorId,
+    p_expected_state: decision.expectedState, p_reason: decision.reason };
+}
+
+export function modelOutputRetryReceipt(value: unknown, args: ReturnType<typeof modelOutputRetryRpcArguments>) {
+  const expected = { schema: 'openplan.model-output-retry.v1', request_id: args.p_request_id,
+    request_payload: { workspace_id: args.p_workspace_id, run_id: args.p_run_id, actor_id: args.p_actor_id,
+      expected_state: args.p_expected_state, reason: args.p_reason, decision: 'retry_execution' },
+    outcome: 'fresh_attempt_queued', run_id: args.p_run_id, run_status: 'queued', outputs_preserved: true,
+    scientific_claim_changed: false, process_termination_verified: false, model_resumed: false };
+  return canonicalizeActionPayload(value) === canonicalizeActionPayload(expected) ? expected : null;
 }

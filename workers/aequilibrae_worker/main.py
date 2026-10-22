@@ -832,19 +832,55 @@ def upload_immutable_structural_demand_json(run_id: str, diagnosis_id: str, path
 
 
 def sb_get_run_artifacts(run_id: str) -> list[dict]:
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    current = None
+    if writer is not None:
+        try:
+            writer.read_run(run_id)
+            response = requests.post(SUPABASE_URL + '/rest/v1/rpc/read_model_attempt_outputs',
+                headers=HEADERS, json={'p_run_id': run_id, 'p_workspace_id': writer.context.workspace_id},
+                timeout=(5, 30), allow_redirects=False)
+            try:
+                projection = response.json() if response.status_code == 200 else None
+                if not isinstance(projection, dict) or projection.get('run_id') != run_id or projection.get('run_status') != 'running' or not isinstance(projection.get('outputs'), list):
+                    raise ValueError('Current predecessor projection is unavailable')
+                current = [output['record'] for output in projection['outputs']
+                    if output['kind'] == 'artifact' and output['ownership_state'] == 'current_completed']
+                if any(row['run_id'] != run_id or not row.get('attempt_id') or str(uuid.UUID(row['id'])) != row['id'] for row in current) or len({row['id'] for row in current}) != len(current):
+                    raise ValueError('Current predecessor identities differ')
+            finally:
+                response.close()
+            if not current:
+                return []
+        except Exception as error:
+            writer.stopped = True
+            raise WorkerStateWriteUnconfirmed('Managed predecessor output read requires reconciliation') from error
     url = (
         f"{SUPABASE_URL}/rest/v1/model_run_artifacts?run_id=eq.{run_id}"
         "&select=id,run_id,stage_id,attempt_id,artifact_type,file_url,file_size_bytes,content_hash,metadata_json,created_at"
         ",model_run_stages(id,run_id,status,attempt_managed,active_attempt_id)"
         "&order=created_at.desc"
     )
+    if current is not None:
+        url += '&id=in.(' + ','.join(row['id'] for row in current) + ')'
     response = requests.get(url, headers=HEADERS, timeout=30)
     if response.status_code != 200:
         raise RuntimeError(
             f"Failed to load model artifacts for {run_id}: "
             f"{response.status_code} {response.text[:200]}"
         )
-    return response.json()
+    rows = response.json()
+    if current is not None:
+        try:
+            expected = {row['id']: row for row in current}
+            if not isinstance(rows, list) or len(rows) != len(expected) or len({row['id'] for row in rows}) != len(expected) or any(
+                row['id'] not in expected or any(expected[row['id']].get(key) != value for key, value in row.items() if key != 'model_run_stages') for row in rows):
+                raise ValueError('Current predecessor records are incomplete or changed')
+        except Exception as error:
+            writer.stopped = True
+            raise WorkerStateWriteUnconfirmed('Managed predecessor output read requires reconciliation') from error
+    return rows
 
 
 def select_managed_predecessor_input(artifact_type: str, *, method: str | None = None) -> dict:
@@ -7258,6 +7294,18 @@ def process_stage(stage: dict) -> bool:
     """
     with _STAGE_EXECUTION_LOCK:
         try:
+            if stage.get('attempt_managed') is True:
+                from pathlib import Path
+                import model_attempt_invocation
+                try:
+                    result = model_attempt_invocation.dispatch_queued_stage(
+                        Path(RUN_WORK_ROOT) / 'runs' / stage['run_id'] / 'attempt-commands' / stage['id'], stage,
+                        base_url=SUPABASE_URL, deployment_id=os.environ.get('OPENPLAN_DEPLOYMENT_ID', ''),
+                        service_key=SUPABASE_KEY, worker_id=os.environ.get('OPENPLAN_WORKER_INSTANCE_ID') or 'aequilibrae-' + str(os.getpid()),
+                        handler=_claim_and_run_stage, post=requests.post, get=requests.get)
+                    return result is True
+                except Exception as error:
+                    raise WorkerStateWriteUnconfirmed('Managed dispatch requires reconciliation; no legacy claim fallback') from error
             return _claim_and_run_stage(stage)
         finally:
             # Releasing the lease is not a status write. A stage left running
@@ -7374,23 +7422,32 @@ def _claim_and_run_stage(stage: dict) -> bool:
     if stage_name != "AequilibraE Setup" and not os.path.exists(work_dir) and os.path.exists(os.path.join(RUN_WORK_ROOT, "runs", run_id[:12])):
         raise RuntimeError("Legacy model scratch needs explicit full-run identity reconciliation before this stage can be claimed")
 
-    # Atomic claim: only one worker may transition this stage queued -> running.
-    claimed = sb_claim_stage(
-        stage_id,
-        {"status": "running", "started_at": now_iso, "log_tail": stage_claim_placeholder(stage_name)},
-    )
-    if not claimed:
-        print(f"[{time.strftime('%X')}] ⏭️ Lost claim race for {stage_name} (run={run_id[:8]}…); another worker owns it.")
-        return False
-    # Only a confirmed claim is leased; the heartbeat renews it from here on.
-    _CUSTODY.hold(stage, now_iso)
-    sb_patch_run(run_id, {"status": "running"})
+    import model_attempt_writer
+    admitted = model_attempt_writer.current()
+    if admitted is not None:
+        if admitted.context.stage_id != stage_id or admitted.context.run_id != run_id:
+            raise WorkerStateWriteUnconfirmed('Managed stage crosses invocation scope')
+        admitted.read_run(run_id, expected_stage_name=stage_name)
+    else:
+        # Legacy claims remain conditional and never substitute for admission.
+        claimed = sb_claim_stage(
+            stage_id,
+            {"status": "running", "started_at": now_iso, "log_tail": stage_claim_placeholder(stage_name)},
+        )
+        if not claimed:
+            return False
+        _CUSTODY.hold(stage, now_iso)
+        sb_patch_run(run_id, {"status": "running"})
 
     # Each run gets its own working directory
     os.makedirs(work_dir, exist_ok=True)
     state_file = os.path.join(work_dir, f"state.json")
 
     try:
+        if admitted is not None and stage_name != 'AequilibraE Setup':
+            prepared = retain_managed_state_and_package(include_project=True,
+                include_outputs=stage_name in ('Artifact Extraction', 'ActivitySim Network Assignment', 'Demand Model Agreement'))
+            admitted.materialize_working_state(work_dir, prepared['package_mapped_state'])
         if stage_name != 'AequilibraE Setup':
             current_run = sb_get_run(run_id)
             if ((current_run.get('input_snapshot_json') or {}).get('commonPopulation') or {}).get('mode') == 'restore_checkpoint':
@@ -7420,6 +7477,9 @@ def _claim_and_run_stage(stage: dict) -> bool:
                 publish_common_population(run_id, stage_id, pkg_dir, package_meta)
             os.makedirs(os.path.join(work_dir, "run_output"), exist_ok=True)
             write_run_state(work_dir, {"setup": result, "package": package_meta})
+            if admitted is not None:
+                admitted.retain_package(pkg_dir)
+                admitted.retain_project(os.path.join(work_dir, 'aeq_project'))
             sb_patch_stage(stage_id, {
                 "status": "succeeded",
                 "completed_at": datetime.now(timezone.utc).isoformat(),
@@ -7433,6 +7493,10 @@ def _claim_and_run_stage(stage: dict) -> bool:
             result = stage_assignment(run_id, stage_id, work_dir, state["setup"], pkg_dir)
             state["assignment"] = result
             write_run_state(work_dir, state)
+            if admitted is not None:
+                admitted.retain_package(pkg_dir)
+                admitted.retain_project(project_work_directory(work_dir))
+                admitted.retain_assignment_outputs(os.path.join(work_dir, 'run_output'))
             sb_patch_stage(stage_id, {
                 "status": "succeeded",
                 "completed_at": datetime.now(timezone.utc).isoformat(),
@@ -7445,6 +7509,11 @@ def _claim_and_run_stage(stage: dict) -> bool:
             log = stage_artifacts(
                 run_id, stage_id, work_dir, state["setup"], state["assignment"], state.get("package")
             )
+            if admitted is not None:
+                write_run_state(work_dir, state)
+                admitted.retain_package(state['package']['package_dir'])
+                admitted.retain_project(project_work_directory(work_dir))
+                admitted.retain_assignment_outputs(output_work_directory(work_dir))
             sb_patch_stage(stage_id, {
                 "status": "succeeded",
                 "completed_at": datetime.now(timezone.utc).isoformat(),
@@ -7926,6 +7995,9 @@ def _claim_and_run_stage(stage: dict) -> bool:
         # attempt and leave the persisted state for reconciliation.
         raise
     except Exception as e:
+        if admitted is not None:
+            admitted.stopped = True
+            raise WorkerStateWriteUnconfirmed('Managed stage stopped; reconcile retained commands before retry') from e
         error_msg = f"{type(e).__name__}: {e}"
         print(f"[{time.strftime('%X')}] ❌ {stage_name} failed: {error_msg}")
         failure_patch = {
@@ -7950,6 +8022,10 @@ def _claim_and_run_stage(stage: dict) -> bool:
         # True: this worker owned the stage and reached a terminal answer for it.
         # Only a LOST CLAIM is False, because only that means someone else is
         # carrying the run.
+        return True
+
+    if admitted is not None:
+        # The terminal attempt command owns parent completion in its transaction.
         return True
 
     # Check if run is complete
@@ -8083,7 +8159,7 @@ def fetch_queued_stages(run_id: str | None = None, limit: int = 25) -> list[dict
     if run_id:
         url += f"&run_id=eq.{urllib.parse.quote(run_id, safe='')}"
     url += (
-        "&select=id,run_id,stage_name,status,sort_order,created_at,updated_at"
+        "&select=id,run_id,stage_name,status,sort_order,created_at,updated_at,attempt_managed"
         f"&order=created_at.asc,sort_order.asc&limit={int(limit)}"
     )
     res = requests.get(url, headers=HEADERS, timeout=30)

@@ -335,3 +335,134 @@ existing proof root. The corrected migration SHA-256 is
 A new GitHub database-reset run must still confirm its actual fresh-install path.
 Earlier exact-byte migration and full-QA results remain evidence for their
 recorded heads; they do not automatically certify this corrected candidate.
+
+## October 22, 2026 source checkpoint for output-preserving retry
+
+This checkpoint advances existing roadmap M3/S1. It does not close recovery,
+scientific preparation, Reports R16 acceptance or full v1. The isolated source
+is `/home/nathaniel/.t3/worktrees/openplan/t3-69f56da6`, branch
+`t3/model-output-preserving-relaunch`, HEAD
+`e1eb798775caa19648264680f0027976f5d6d2f7`. The clean prepared parent was
+`05dd3e8da4a4572437f06e771b0a2477873e681f`. The first local fetch used that exact
+HEAD from `t3-1ae80e46`, followed by an ordinary fast-forward-only merge. The
+application tree at this binding is `57d7a1740579299c6e63dbe66e2666b46b090e39`.
+The retained 31-path delta was reconciled after context compaction. No foreign
+source change was adopted. Codex selection is GPT-6.1 Sol, high, priority.
+
+The proposed additive migration is
+`20261022050000_model_output_preserving_relaunch.sql`. All 434 existing SQL
+files, including the 429 released files and five Reports migrations, remain
+byte-identical to the bound HEAD. The proposed timestamp is unused elsewhere
+in the registered worktrees and follows their observed highwater,
+`20261021215752`. No released SQL or release version changes.
+
+The existing recovery route and panel retain a fresh request identity, exact
+replay, reviewed expected state, existing owner/admin authority and audit. The
+new six-argument overload of `relaunch_model_run_attempts` snapshots the original
+run, stages and attempts, revokes previous ownership, and queues the same run.
+It does not delete outputs, rewrite scientific rows or change recorded inputs.
+The immutable receipt authorizes the retained-output guard within its own
+transaction. First-start records remain original; subsequent starts require a
+new owned attempt and the retained retry decision. The old launch route and
+five-argument refusal remain unchanged.
+
+The existing native output projection retains its shape and privileges. Named
+result KPIs and primary output artifacts with the wrong producer classify as
+invalid bindings. Frontend result readers additionally require a completed
+parent. Literal projections remain scoped to their original caller; incomplete
+current row sets refuse rather than become zero. The assistant tool uses only
+its user session, filters successful active attempts before its disclosed cap,
+and rechecks the parent and detached stage identities after reading KPIs. This
+is an optimistic recheck, not an atomic native projection. It depends on
+nonreused attempt identities and existing command ownership rules. No private
+attempt SELECT or hidden service read was added to the assistant.
+
+Models, Projects/RTP and current scenario consumers select current completed
+outputs. Recorded files preserve their original artifact IDs and hashes, with
+separate inactive, legacy-unassessed and in-progress labels. A saved comparison
+keeps its original pinned output; an unpinned public citation refuses across
+retained attempts instead of redirecting to new results. Original published,
+attested, evidence-bundle and artifact-download records remain historical reads.
+The original public authorization boundaries remain in place. Reports pages,
+readiness and guided-comparison verification remain unchanged.
+
+Normal worker entrypoints now join the existing fresh admission and bound
+writer. Queued versions retain separate command journals; uncertainty within a
+version blocks a new claim. Managed dispatch checks actual scope, stage label
+and queued version. AequilibraE keeps process serialization, retained predecessor
+state/package/project/output handoffs and fenced terminal commands. Current
+worker predecessor reads select native current IDs before a table cap and
+refuse an incomplete projection. Managed failures do not fall back to legacy
+claims or parent PATCH operations. This is source integration, not proof of an
+executed prepared retry. In particular, the general AequilibraE prepared
+instrument and the full assignment/extraction/second-assignment/agreement
+lifecycle remain unfinished or unexecuted here. No general scientific preparation
+service was added. Legacy unbound scientific records and registered population
+replacement publications remain explicit M3/S1 holds, not completed recovery.
+
+Ordinary checks use one worker, a 6 GiB Node heap and no test cache. The final
+16-file run records 379 passing, two failing and zero pending tests. Both failures
+are inherited Projects/Reports posture assumptions, reproduced with the original
+Projects source restored. Root assigns their repair to Reports R26. This lane
+does not duplicate it. Eight injected-transport/AST worker unit cases pass;
+they exercise a real local command journal and synthetic handlers, not models.
+Scoped lint and diff checks accompany the private source packet. Direction
+checks pass with the original expired-registry/matrix and version reminders.
+No authority date or capability grade was renewed.
+
+Harmless controls survive. Targeted ordinary faults expose retained output
+selection, unfinished parents, changed projected values, incomplete current
+sets, assistant cap ordering, state rechecks, wrong producers, the scoped retry
+RPC, acknowledgement, page projection, file ownership labels, guided recency,
+worker scope/version/pending admission, writer binding, managed entry, retained
+package handoff and capped predecessor reads. Each temporary edit is restored
+byte-exactly. The first worker entry fault hit a missing extraction-fixture
+helper; that result gets no credit. The corrected control reaches and fails the
+forbidden legacy claim. Native SQL guard mutations, real role/concurrency
+behavior, byte custody and full lifecycle execution remain blind categories.
+Earlier wrong-directory ordinary invocations and the two inherited failures
+remain recorded in the private packet; none is relabeled as a passing check.
+
+Maintained native cases are authored for failed/cancelled same-run retained and
+current outputs, exact replay/concurrency, late old writes, unchanged inputs,
+user-session versus service selection, wrong producers and an authority change
+during the user's stage recheck. They have not executed. No database install,
+SQL/native command, model run, runtime stack, browser, compiler, build, worker
+process, PR, CI, commit or push is admitted by this checkpoint. R16 Save/Generate
+and actual Reports verification remain zero. Root owns independent review,
+separate types/native admission, identified visible acceptance, join and release.
+The unrelated release remains independent of this unfinished product work.
+
+
+### Response checkpoint and configured types, October 22
+
+The normal fast-forward to Reports fixture checkpoint
+`bae2748d1d32af4a2e118295f9fd6eabd62fbd4b` resolves the inherited posture
+fixture failures without changing the model production delta. Independent
+review identifies two source defects: initial working-state preparation seals
+the outgoing handoff too early, and the assistant omits five native KPI
+producer names. The response separates mutable working-state materialization
+from the existing immutable final handoff and applies all nine native producer
+rules through the original user session. The nonreplacement hard-link guard
+and service-only native projection authority stay intact. A fresh bounded
+independent response review accepts both fixes at source tier.
+
+The restored ordinary cohort records 401 passing tests with zero skips or todo.
+Twelve selected worker tests use the actual writer, journal and temporary
+filesystem with injected stage handlers. Harmless controls survive; the original
+double-publication call causes actual FileExistsError, omitted producer rules
+fail their named refusals, and foreign working directories refuse. All
+temporary source edits restore exactly. These checks do not execute a model.
+
+The first configured compiler fails on three possibly-undefined test responses.
+Explicit fixture guards resolve those diagnostics. The single admitted repeat
+passes with empty stdout and stderr at 2026-10-22T05:40:39.186043Z. Actual Next
+declarations remain absent. This establishes configured checking, not a fresh
+Next build. Original failures and source-review objections remain retained in
+the dated private response, review and compiler records.
+
+Installed 434-to-435 upgrade, native retry and current-projection parity,
+concurrency, late writes, actual worker execution and identified desktop/390px
+acceptance remain unproved. General AequilibraE prepared scientific inputs and
+the full second-assignment/agreement lifecycle remain unfinished M3/S1 scope.
+This source checkpoint does not declare completed recovery or model accuracy.

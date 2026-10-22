@@ -87,9 +87,9 @@ describe("authorized model recovery page join", () => {
     expect(queries).toContainEqual({ table: "models", method: "eq", args: ["id", model] });
     expect(queries).toContainEqual({ table: "model_runs", method: "eq", args: ["model_id", model] });
     const projection = queries.find((query) => query.table === "model_runs" && query.method === "select")?.args[0];
-    expect(projection).toEqual(expect.stringContaining("id, model_id"));
+    expect(projection).toEqual(expect.stringContaining("id, attempt_managed, model_id"));
     expect(projection).toEqual(expect.stringContaining("engine_key, status"));
-    expect(projection).toEqual(expect.stringContaining("artifacts:model_run_artifacts(id, artifact_type, file_url, file_size_bytes, content_hash, metadata_json)"));
+    expect(projection).toEqual(expect.stringContaining("artifacts:model_run_artifacts(id, run_id, attempt_id, stage_id, artifact_type, file_url, file_size_bytes, content_hash, metadata_json)"));
   });
   it.each(["kept_as_record", "closed_for_fresh_run"])("keeps a historical run with a %s decision out of reaping", async (outcome) => {
     const decision = { request_id: "50000000-0000-4000-8000-000000000001", outcome, actor_id: "40000000-0000-4000-8000-000000000001", reason: "Synthetic review", recorded_at: stamp };
@@ -137,4 +137,16 @@ describe("recovery decision permission props", () => {
     results.set("workspace_members", { data: null, error: { message: "Synthetic read failure" } });
     expect(managerProps(await load())?.recoveryPermission).toBe("unavailable");
   });
+});
+
+it.each(["retained_inactive", "legacy_unknown", "current_in_progress"])("keeps %s file identity and its distinct ownership outside current result panels", async ownership => {
+  const artifact = { id: "60000000-0000-4000-8000-000000000001", run_id: run, attempt_id: ownership === "legacy_unknown" ? null : "70000000-0000-4000-8000-000000000001", stage_id: model,
+    artifact_type: "evidence_packet", file_url: "local:///synthetic/original.json", file_size_bytes: 1, content_hash: "a".repeat(64), metadata_json: {} };
+  results.set("model_runs", { data: [{ id: run, model_id: model, attempt_managed: true, engine_key: "aequilibrae", status: "running", run_title: "Synthetic retained files", stages: [], artifacts: [artifact] }], error: null });
+  mocks.rpc.mockImplementation(async (name: string) => ({ data: name === "read_model_attempt_outputs"
+    ? { run_id: run, run_status: "running", outputs: [{ kind: "artifact", ownership_state: ownership, record: artifact }] }
+    : response, error: null }));
+  const props = managerProps(await load());
+  expect(props?.modelRuns[0].artifacts).toEqual([]);
+  expect(props?.modelRuns[0].retainedArtifacts).toEqual([{ ...artifact, outputOwnership: ownership }]);
 });

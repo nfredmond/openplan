@@ -404,7 +404,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         : { data: [], error: null };
       const kpisResult = runIds.length
         ? await supabase.from("model_run_kpis")
-            .select("id, run_id, kpi_name, breakdown_json, created_at")
+            .select("id, run_id, attempt_id, kpi_name, breakdown_json, created_at")
             .in("run_id", runIds)
             .eq("kpi_name", "activitysim_runtime_mode")
             .order("created_at", { ascending: false })

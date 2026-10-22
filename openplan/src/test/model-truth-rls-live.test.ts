@@ -3,6 +3,7 @@ import { createHash, randomUUID } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
+import { buildAssistantChatTools, createChatToolBudget, type BuildAssistantChatToolsParams } from "@/lib/assistant/chat-tools";
 import { sortedCompactJson } from "@/lib/models/demand-agreement-artifact";
 import { populationFixture } from "./fixtures/common-population-evidence";
 import { LIVE_RLS, getLocalSupabaseEnv, liveClient } from "./local-supabase-env";
@@ -440,4 +441,168 @@ liveDescribe("guided model truth live RLS and trigger enforcement", () => {
     });
     expect(persistedWorkspace(workspaceId).bytes, "enrollment FK refusal retains the workspace, model, member, run and enrollment").toBe(before.bytes);
   });
+
+  async function userCurrentResults(workspaceId: string, runId: string, client: BuildAssistantChatToolsParams["supabase"] = member as unknown as BuildAssistantChatToolsParams["supabase"]) {
+    const tools = buildAssistantChatTools({
+      supabase: client,
+      context: { kind: "workspace", workspace: { id: workspaceId, name: "Synthetic retry workspace", plan: null, role: "owner" } } as unknown as BuildAssistantChatToolsParams["context"],
+      userId: memberId, budget: createChatToolBudget(), audit: { info() {}, warn() {}, error() {} },
+    });
+    const tool = tools.get_model_run_results as { execute: (input: { modelRunId: string }, options: { toolCallId: string; messages: [] }) => Promise<Record<string, unknown>> };
+    return tool.execute({ modelRunId: runId }, { toolCallId: randomUUID(), messages: [] });
+  }
+
+  // Maintained native preparation only for the output-preserving retry increment.
+  // Synthetic descriptor bytes are not file-byte or scientific acceptance.
+  it.each(["failed", "cancelled"])("retains original same-run outputs while a %s managed execution gets a fresh attempt", async terminal => {
+    const ws = randomUUID(), model = randomUUID(), run = randomUUID(), stage = randomUUID();
+    expect((await service.from("workspaces").insert({ id: ws, name: `Managed retry ${terminal} ${suffix}`, slug: `managed-retry-${randomUUID()}` })).error).toBeNull();
+    expect((await service.from("workspace_members").insert({ workspace_id: ws, user_id: memberId, role: "owner" })).error).toBeNull();
+    expect((await service.from("models").insert({ id: model, workspace_id: ws, title: "Managed retry integrity fixture", model_family: "travel_demand", created_by: memberId })).error).toBeNull();
+    const input = { integrityFixture: "retained-inputs", scientificAcceptance: "unassessed" };
+    expect((await service.from("model_runs").insert({ id: run, model_id: model, workspace_id: ws, engine_key: "aequilibrae", run_title: "Same-run retained output fixture", input_snapshot_json: input, created_by: memberId })).error).toBeNull();
+    expect((await service.from("model_run_stages").insert({ id: stage, run_id: run, stage_name: "Artifact Extraction", sort_order: 0, status: "queued" })).error).toBeNull();
+    const claim = await service.rpc("claim_model_stage_attempt", { p_request_id: randomUUID(), p_stage_id: stage, p_worker_id: "synthetic-first" });
+    expect(claim.error).toBeNull(); expect(claim.data.outcome).toBe("claimed");
+    const first = claim.data.attempt_id as string;
+    const kpiRequest = randomUUID();
+    const kpiPayload = { kpi_name: "daily_vmt", kpi_label: "Daily VMT", kpi_category: "assignment", value: 900, unit: "vehicle-miles/day" };
+    const oldKpi = await service.rpc("write_model_attempt_kpi", { p_request_id: kpiRequest, p_attempt_id: first, p_payload: kpiPayload });
+    expect(oldKpi.error).toBeNull();
+    const artifactPayload = { artifact_type: "link_volumes", file_url: `local:///integrity-fixture/${run}/attempts/${first}/links.csv`, content_hash: "a".repeat(64), file_size_bytes: 1, metadata_json: { integrity_fixture: true } };
+    const oldArtifact = await service.rpc("write_model_attempt_artifact", { p_request_id: randomUUID(), p_attempt_id: first, p_payload: artifactPayload });
+    expect(oldArtifact.error).toBeNull();
+    if (terminal === "failed") {
+      expect((await service.rpc("write_model_stage_attempt", { p_request_id: randomUUID(), p_attempt_id: first, p_status: "failed", p_log_tail: "Synthetic failure", p_error: "Synthetic failure" })).error).toBeNull();
+    } else {
+      const inspected = await service.rpc("inspect_model_run_recovery", { p_workspace_id: ws, p_run_id: run, p_actor_id: memberId });
+      expect(inspected.error).toBeNull();
+      expect((await service.rpc("abandon_model_run_execution", { p_request_id: randomUUID(), p_workspace_id: ws, p_run_id: run, p_actor_id: memberId,
+        p_expected_state: inspected.data.expected_state, p_reason: "Synthetic cancellation", p_evidence: { process_termination: "unconfirmed" } })).error).toBeNull();
+    }
+    const before = await service.rpc("read_model_attempt_outputs", { p_workspace_id: ws, p_run_id: run });
+    expect(before.error).toBeNull(); expect(before.data.outputs.every((o: { ownership_state: string }) => o.ownership_state === "retained_inactive")).toBe(true);
+    const staleUser = await userCurrentResults(ws, run);
+    expect(staleUser.status).toBe("ok"); expect(staleUser.kpis).toEqual([]);
+    const inspected = await service.rpc("inspect_model_run_recovery", { p_workspace_id: ws, p_run_id: run, p_actor_id: memberId });
+    expect(inspected.error).toBeNull(); expect(inspected.data.expected_state.status).toBe(terminal);
+    const requestId = randomUUID();
+    const args = { p_request_id: requestId, p_workspace_id: ws, p_run_id: run, p_actor_id: memberId, p_expected_state: inspected.data.expected_state, p_reason: "Fresh same-run attempt with retained originals" };
+    expect((await service.rpc("relaunch_model_run_attempts", { ...args, p_actor_id: outsiderId })).error?.code).toBe("42501");
+    expect((await member.rpc("relaunch_model_run_attempts", args)).error).not.toBeNull();
+    const retried = await Promise.all([service.rpc("relaunch_model_run_attempts", args), service.rpc("relaunch_model_run_attempts", args)]);
+    expect(retried[0].error).toBeNull(); expect(retried[1]).toEqual(retried[0]);
+    expect(retried[0].data).toMatchObject({ run_id: run, outcome: "fresh_attempt_queued", outputs_preserved: true, scientific_claim_changed: false, model_resumed: false });
+    expect((await service.rpc("relaunch_model_run_attempts", { ...args, p_reason: "Changed payload" })).error?.code).toBe("23505");
+    expect((await service.rpc("relaunch_model_run_attempts", { ...args, p_request_id: randomUUID() })).error?.code).toBe("40001");
+    const secondClaim = await service.rpc("claim_model_stage_attempt", { p_request_id: randomUUID(), p_stage_id: stage, p_worker_id: "synthetic-second" });
+    expect(secondClaim.error).toBeNull(); expect(secondClaim.data.outcome).toBe("claimed");
+    const second = secondClaim.data.attempt_id as string; expect(second).not.toBe(first);
+    const late = await service.rpc("write_model_attempt_kpi", { p_request_id: randomUUID(), p_attempt_id: first, p_payload: { ...kpiPayload, value: 999 } });
+    expect(late.error?.message).toBe("Model KPI attempt no longer owns work");
+    const currentKpi = await service.rpc("write_model_attempt_kpi", { p_request_id: randomUUID(), p_attempt_id: second, p_payload: { ...kpiPayload, value: 20 } });
+    expect(currentKpi.error).toBeNull(); expect(currentKpi.data.id).not.toBe(oldKpi.data.id);
+    expect((await service.rpc("write_model_stage_attempt", { p_request_id: randomUUID(), p_attempt_id: second, p_status: "succeeded", p_log_tail: "Synthetic completion", p_error: null })).error).toBeNull();
+    const after = await service.rpc("read_model_attempt_outputs", { p_workspace_id: ws, p_run_id: run });
+    expect(after.error).toBeNull(); expect(after.data.run_status).toBe("succeeded");
+    expect(after.data.outputs).toContainEqual({ kind: "kpi", ownership_state: "retained_inactive", record: oldKpi.data });
+    expect(after.data.outputs).toContainEqual({ kind: "artifact", ownership_state: "retained_inactive", record: oldArtifact.data });
+    expect(after.data.outputs).toContainEqual({ kind: "kpi", ownership_state: "current_completed", record: currentKpi.data });
+    const currentUser = await userCurrentResults(ws, run);
+    expect(currentUser.status).toBe("ok");
+    expect(currentUser.kpis).toEqual([expect.objectContaining({ name: "daily_vmt", value: currentKpi.data.value })]);
+    const userProjection = await member.from("model_run_kpis").select("id,run_id,attempt_id,kpi_name,value")
+      .eq("run_id", run).in("attempt_id", [second]);
+    expect(userProjection.error).toBeNull();
+    expect(userProjection.data).toEqual([{ id: currentKpi.data.id, run_id: run, attempt_id: second, kpi_name: "daily_vmt", value: currentKpi.data.value }]);
+    expect((await service.rpc("write_model_attempt_kpi", { p_request_id: kpiRequest, p_attempt_id: first, p_payload: kpiPayload })).data).toEqual(oldKpi.data);
+    expect((await service.rpc("relaunch_model_run_attempts", args)).data).toEqual(retried[0].data);
+    const preservedInput = await member.from("model_runs").select("input_snapshot_json").eq("id", run).single();
+    expect(preservedInput.error).toBeNull(); expect(preservedInput.data?.input_snapshot_json).toEqual(input);
+    // Retain this wholly synthetic workspace with its immutable records until
+    // the isolated native target is discarded. No DELETE or fixture forgery.
+  });
+
+  it.each([
+    ["total_trips", "Artifact Extraction"], ["daily_vmt", "Artifact Extraction"],
+    ["resident_vmt_per_capita", "Artifact Extraction"], ["vmt_per_capita", "Artifact Extraction"],
+    ["co2e_metric_tons_year", "Artifact Extraction"], ["co2e_kg_per_capita_day", "Artifact Extraction"],
+    ["activitysim_trips", "ActivitySim Bundle & Preflight"], ["activitysim_runtime_mode", "ActivitySim Bundle & Preflight"],
+    ["activitysim_daily_vmt", "ActivitySim Network Assignment"],
+  ].flatMap(([name, producer]) => [{ name, producer, correct: false }, { name, producer, correct: true }]))(
+    "keeps actual user/native producer parity for $name with correct=$correct", async ({ name, producer, correct }) => {
+    const ws = randomUUID(), model = randomUUID(), run = randomUUID(), stage = randomUUID();
+    expect((await service.from("workspaces").insert({ id: ws, name: "Synthetic wrong producer", slug: `wrong-producer-${randomUUID()}` })).error).toBeNull();
+    expect((await service.from("workspace_members").insert({ workspace_id: ws, user_id: memberId, role: "owner" })).error).toBeNull();
+    expect((await service.from("models").insert({ id: model, workspace_id: ws, title: "Synthetic producer boundary", model_family: "travel_demand", created_by: memberId })).error).toBeNull();
+    expect((await service.from("model_runs").insert({ id: run, model_id: model, workspace_id: ws, engine_key: "aequilibrae", run_title: "Synthetic producer boundary", created_by: memberId })).error).toBeNull();
+    expect((await service.from("model_run_stages").insert({ id: stage, run_id: run, stage_name: correct ? producer : "AequilibraE Setup", sort_order: 0, status: "queued" })).error).toBeNull();
+    const claim = await service.rpc("claim_model_stage_attempt", { p_request_id: randomUUID(), p_stage_id: stage, p_worker_id: "synthetic-wrong-producer" });
+    expect(claim.error).toBeNull(); expect(claim.data.outcome).toBe("claimed");
+    const kpi = await service.rpc("write_model_attempt_kpi", { p_request_id: randomUUID(), p_attempt_id: claim.data.attempt_id,
+      p_payload: { kpi_name: name, kpi_label: "Synthetic named producer policy", value: 900, unit: "vehicle-miles/day", kpi_category: "assignment" } });
+    expect(kpi.error).toBeNull();
+    expect((await service.rpc("write_model_stage_attempt", { p_request_id: randomUUID(), p_attempt_id: claim.data.attempt_id, p_status: "succeeded", p_log_tail: "Synthetic producer completed", p_error: null })).error).toBeNull();
+    const native = await service.rpc("read_model_attempt_outputs", { p_workspace_id: ws, p_run_id: run });
+    expect(native.error).toBeNull(); expect(native.data.outputs).toEqual([{ kind: "kpi", ownership_state: correct ? "current_completed" : "invalid_binding", record: kpi.data }]);
+    const user = await userCurrentResults(ws, run);
+    if (correct) {
+      expect(user.status).toBe("ok");
+      expect(user.kpis).toEqual([expect.objectContaining({ name, value: kpi.data.value })]);
+    } else {
+      expect(user.status).toBe("refused"); expect(user.kpis).toBeUndefined();
+      expect(user.reason).toContain("expected successful producer stage");
+    }
+  });
+
+  it("refuses a real active-authority change between the user's stage projection and recheck", async () => {
+    const ws = randomUUID(), model = randomUUID(), run = randomUUID(), producer = randomUUID();
+    expect((await service.from("workspaces").insert({ id: ws, name: "Synthetic active change", slug: `active-change-${randomUUID()}` })).error).toBeNull();
+    expect((await service.from("workspace_members").insert({ workspace_id: ws, user_id: memberId, role: "owner" })).error).toBeNull();
+    expect((await service.from("models").insert({ id: model, workspace_id: ws, title: "Synthetic active change", model_family: "travel_demand", created_by: memberId })).error).toBeNull();
+    expect((await service.from("model_runs").insert({ id: run, model_id: model, workspace_id: ws, engine_key: "aequilibrae", run_title: "Synthetic active change", created_by: memberId })).error).toBeNull();
+    expect((await service.from("model_run_stages").insert([
+      { id: producer, run_id: run, stage_name: "Artifact Extraction", sort_order: 0, status: "queued" },
+      { id: randomUUID(), run_id: run, stage_name: "Demand Model Agreement", sort_order: 1, status: "queued" },
+    ])).error).toBeNull();
+    const claim = await service.rpc("claim_model_stage_attempt", { p_request_id: randomUUID(), p_stage_id: producer, p_worker_id: "synthetic-changing-authority" });
+    expect(claim.error).toBeNull(); expect(claim.data.outcome).toBe("claimed");
+    expect((await service.rpc("write_model_attempt_kpi", { p_request_id: randomUUID(), p_attempt_id: claim.data.attempt_id,
+      p_payload: { kpi_name: "daily_vmt", kpi_label: "Synthetic active change", value: 20, unit: "vehicle-miles/day", kpi_category: "assignment" } })).error).toBeNull();
+    expect((await service.rpc("write_model_stage_attempt", { p_request_id: randomUUID(), p_attempt_id: claim.data.attempt_id, p_status: "succeeded", p_log_tail: "Synthetic producer completed", p_error: null })).error).toBeNull();
+    const initial = await service.rpc("read_model_attempt_outputs", { p_workspace_id: ws, p_run_id: run });
+    expect(initial.error).toBeNull(); expect(initial.data.run_status).toBe("running");
+    expect(initial.data.outputs[0].ownership_state).toBe("current_completed");
+    const reviewed = await service.rpc("inspect_model_run_recovery", { p_workspace_id: ws, p_run_id: run, p_actor_id: memberId });
+    expect(reviewed.error).toBeNull();
+    let changed = false, stageQueries = 0;
+    const afterChange = (query: object): object => new Proxy(query, { get(target, key) {
+      const value: unknown = Reflect.get(target, key, target);
+      if (typeof value !== "function") return value;
+      if (key === "then") return (...args: unknown[]) => {
+        const pending = (async () => {
+          if (!changed) {
+            changed = true;
+            expect((await service.rpc("abandon_model_run_execution", { p_request_id: randomUUID(), p_workspace_id: ws, p_run_id: run, p_actor_id: memberId,
+              p_expected_state: reviewed.data.expected_state, p_reason: "Synthetic authority change", p_evidence: { process_termination: "unconfirmed" } })).error).toBeNull();
+          }
+          return await (target as PromiseLike<unknown>);
+        })();
+        return Reflect.apply(pending.then, pending, args);
+      };
+      return (...args: unknown[]) => afterChange(Reflect.apply(value, target, args) as object);
+    } });
+    const client = { from(table: string) {
+      const query = member.from(table);
+      // Two initial pages establish the projected stage set. The third read
+      // starts the optimistic recheck, after the KPI selection boundary.
+      return table === "model_run_stages" && ++stageQueries === 3 ? afterChange(query) : query;
+    } } as unknown as BuildAssistantChatToolsParams["supabase"];
+    const user = await userCurrentResults(ws, run, client);
+    expect(changed).toBe(true); expect(user.status).toBe("refused"); expect(user.kpis).toBeUndefined();
+    const after = await service.rpc("read_model_attempt_outputs", { p_workspace_id: ws, p_run_id: run });
+    expect(after.error).toBeNull(); expect(after.data.run_status).toBe("cancelled");
+    expect(after.data.outputs.every((output: { ownership_state: string }) => output.ownership_state === "retained_inactive")).toBe(true);
+  });
+
 });

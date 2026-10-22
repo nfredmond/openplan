@@ -1268,6 +1268,17 @@ def process_stage(stage: dict) -> None:
     admitted = model_attempt_writer.current()
     if admitted is not None:
         return _process_admitted_stage(stage, admitted)
+    if stage.get('attempt_managed') is True:
+        import model_attempt_invocation
+        from pathlib import Path
+        try:
+            return model_attempt_invocation.dispatch_queued_stage(
+                Path(ACTIVITYSIM_WORK_DIR) / stage['run_id'] / 'attempt-commands' / stage['id'], stage,
+                base_url=SUPABASE_URL, deployment_id=os.environ.get('OPENPLAN_DEPLOYMENT_ID', ''),
+                service_key=SUPABASE_KEY, worker_id=os.environ.get('OPENPLAN_WORKER_INSTANCE_ID') or 'activitysim-' + str(os.getpid()),
+                handler=process_stage, post=requests.post, get=requests.get)
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed('Managed dispatch requires reconciliation; no legacy claim fallback') from error
     stage_id = stage["id"]
     run_id = stage["run_id"]
     stage_name = stage["stage_name"]
@@ -1363,7 +1374,7 @@ def _poll_until_stopped() -> None:
             url = (
                 f"{SUPABASE_URL}/rest/v1/model_run_stages"
                 f"?status=eq.queued&{_STAGE_FILTER}"
-                "&select=id,run_id,stage_name,status,sort_order,created_at,updated_at"
+                "&select=id,run_id,stage_name,status,sort_order,created_at,updated_at,attempt_managed"
                 "&order=created_at.asc,sort_order.asc&limit=25"
             )
             res = requests.get(url, headers=HEADERS, timeout=30)

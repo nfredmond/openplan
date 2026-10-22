@@ -1,3 +1,4 @@
+import { modelOutputRetryRpcArguments, modelOutputRetryReceipt, type ModelOutputRetryDecision } from "@/lib/models/recovery-decision";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireProviderBrowserOrigin } from "@/lib/assistant/provider-server";
@@ -55,10 +56,14 @@ export async function GET(request: NextRequest, context: Context) {
       return response("Recovery inspection is unavailable", 503);
     }
     if (['failed', 'cancelled'].includes(parsed.data.expected_state.status)) {
+      const retry = await createServiceRoleClient().rpc('inspect_model_output_retry', {
+        p_workspace_id: access.workspaceId, p_run_id: access.runId, p_actor_id: access.actorId,
+      });
       const inspected = await createServiceRoleClient().rpc('inspect_model_population_replacement', {
         p_workspace_id: access.workspaceId, p_run_id: access.runId, p_actor_id: access.actorId,
       });
-      const candidate = recoveryInspectionSchema.safeParse({ ...parsed.data, replacement: inspected.error
+      const candidate = recoveryInspectionSchema.safeParse({ ...parsed.data, retry: retry.error
+        ? { state: 'unavailable', reason: 'Output-preserving retry is unavailable on this installation.' } : retry.data, replacement: inspected.error
         ? { state: 'unavailable', reason: 'Population checkpoint registration is unavailable on this installation.' } : inspected.data });
       if (!candidate.success) return response('Population recovery inspection is unavailable', 503);
       return NextResponse.json(candidate.data, { headers: { 'Cache-Control': 'no-store' } });
@@ -91,6 +96,7 @@ export async function POST(request: NextRequest, context: Context) {
     const decision = parsed.data;
     if (decision.expectedState.workspace_id !== access.workspaceId || decision.expectedState.run_id !== access.runId
         || decision.expectedState.model_id !== access.modelId) return response("Recovery observation belongs to another model run", 409);
+    if (decision.decision === 'retry_execution') return await retryExecution(decision, access, audit);
     if (decision.decision === 'create_population_replacement') return await createReplacement(decision, access);
     if (decision.decision !== "abandon_execution") return await decideHistoricalRun(decision, access, audit);
     const args = recoveryRpcArguments(decision, access.workspaceId, access.runId, access.actorId);
@@ -154,4 +160,18 @@ async function decideHistoricalRun(decision: HistoricalRunDecision, access: Auth
   }
   audit.info("historical_run_decision_receipt", { requestId: decision.requestId, runId: access.runId, workspaceId: access.workspaceId, actorId: access.actorId, outcome: args.p_outcome });
   return NextResponse.json(data, { headers: { "Cache-Control": "no-store" } });
+}
+
+/** Owner/admin recovery retains the exact browser decision and native receipt.
+ * Polling workers claim fresh attempts; replaying this decision never computes.
+ */
+async function retryExecution(decision: ModelOutputRetryDecision, access: Authorized, audit: ReturnType<typeof createApiAuditLogger>) {
+  const args = modelOutputRetryRpcArguments(decision, access.workspaceId, access.runId, access.actorId);
+  const { data, error } = await createServiceRoleClient().rpc("relaunch_model_run_attempts", args);
+  if (error?.code === "42501") return response("Recovery authority changed. Review workspace access.", 403);
+  if (error && ["40001", "23505", "55000"].includes(error.code ?? "")) return response("This retry was refused. Review the retained execution and scientific records before another decision.", 409);
+  const receipt = modelOutputRetryReceipt(data, args);
+  if (error || !receipt) return response("Retry is unconfirmed. Retry the exact saved decision to recover its receipt.", 503);
+  audit.info("model_output_retry_receipt", { requestId: decision.requestId, workspaceId: access.workspaceId, runId: access.runId, actorId: access.actorId });
+  return NextResponse.json(receipt, { headers: { "Cache-Control": "no-store" } });
 }
