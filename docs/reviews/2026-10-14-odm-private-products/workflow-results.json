@@ -1,0 +1,247 @@
+[
+  {
+    "stage": "workflow-00",
+    "returncode": 0,
+    "seconds": 80.464
+  },
+  {
+    "stage": "workflow-01",
+    "returncode": 0,
+    "seconds": 5.434
+  },
+  {
+    "stage": "workflow-02",
+    "returncode": 0,
+    "seconds": 0.471
+  },
+  {
+    "stage": "workflow-03",
+    "returncode": 0,
+    "seconds": 4.693
+  },
+  {
+    "stage": "workflow-04",
+    "returncode": 0,
+    "seconds": 2.038
+  },
+  {
+    "stage": "workflow-05",
+    "returncode": 0,
+    "seconds": 5.191
+  },
+  {
+    "stage": "workflow-06",
+    "returncode": 0,
+    "seconds": 0.799
+  },
+  {
+    "stage": "workflow-07",
+    "returncode": 0,
+    "seconds": 3.615
+  },
+  {
+    "stage": "workflow-08",
+    "returncode": 0,
+    "seconds": 4.451
+  },
+  {
+    "stage": "workflow-09",
+    "returncode": 0,
+    "seconds": 0.544
+  },
+  {
+    "stage": "workflow-10",
+    "returncode": 0,
+    "seconds": 2.598
+  },
+  {
+    "stage": "workflow-11",
+    "returncode": 0,
+    "seconds": 0.924
+  },
+  {
+    "stage": "workflow-12",
+    "returncode": 0,
+    "seconds": 5.491
+  },
+  {
+    "stage": "workflow-13",
+    "returncode": 0,
+    "seconds": 1.514
+  },
+  {
+    "stage": "workflow-14",
+    "returncode": 0,
+    "seconds": 4.301
+  },
+  {
+    "stage": "workflow-15",
+    "returncode": 0,
+    "seconds": 1.218
+  },
+  {
+    "stage": "workflow-16",
+    "returncode": 0,
+    "seconds": 5.988
+  },
+  {
+    "stage": "workflow-17",
+    "returncode": 0,
+    "seconds": 5.348
+  },
+  {
+    "stage": "workflow-18",
+    "returncode": 0,
+    "seconds": 31.806
+  },
+  {
+    "stage": "workflow-19",
+    "returncode": 0,
+    "seconds": 5.717
+  },
+  {
+    "stage": "workflow-20",
+    "returncode": 0,
+    "seconds": 0.881
+  },
+  {
+    "stage": "workflow-21",
+    "returncode": 0,
+    "seconds": 35.784
+  },
+  {
+    "stage": "workflow-22",
+    "returncode": 0,
+    "seconds": 1.078
+  },
+  {
+    "stage": "workflow-23",
+    "returncode": 0,
+    "seconds": 9.193
+  },
+  {
+    "stage": "workflow-24",
+    "returncode": 0,
+    "seconds": 1.672
+  },
+  {
+    "stage": "workflow-25",
+    "returncode": 0,
+    "seconds": 14.628
+  },
+  {
+    "stage": "workflow-26",
+    "returncode": 0,
+    "seconds": 8.497
+  },
+  {
+    "stage": "workflow-27",
+    "returncode": 0,
+    "seconds": 98.057
+  },
+  {
+    "stage": "workflow-28",
+    "returncode": 0,
+    "seconds": 6.565
+  },
+  {
+    "stage": "workflow-29",
+    "returncode": 0,
+    "seconds": 25.132
+  },
+  {
+    "stage": "workflow-30",
+    "returncode": 0,
+    "seconds": 1.749
+  },
+  {
+    "stage": "workflow-31",
+    "returncode": 0,
+    "seconds": 3.058
+  },
+  {
+    "stage": "workflow-32",
+    "returncode": 0,
+    "seconds": 4.461
+  },
+  {
+    "stage": "workflow-33",
+    "returncode": 0,
+    "seconds": 5.355
+  },
+  {
+    "stage": "workflow-34",
+    "returncode": 0,
+    "seconds": 17.075
+  },
+  {
+    "stage": "workflow-35",
+    "returncode": 0,
+    "seconds": 7.25
+  },
+  {
+    "stage": "workflow-36",
+    "returncode": 0,
+    "seconds": 12.661
+  },
+  {
+    "stage": "workflow-37",
+    "returncode": 0,
+    "seconds": 6.893
+  },
+  {
+    "stage": "workflow-38",
+    "returncode": 0,
+    "seconds": 10.143
+  },
+  {
+    "stage": "workflow-39",
+    "returncode": 0,
+    "seconds": 6.404
+  },
+  {
+    "stage": "workflow-40",
+    "returncode": 0,
+    "seconds": 30.8
+  },
+  {
+    "stage": "workflow-41",
+    "returncode": 0,
+    "seconds": 2.957
+  },
+  {
+    "stage": "workflow-42",
+    "returncode": 0,
+    "seconds": 0.702
+  },
+  {
+    "stage": "workflow-43",
+    "returncode": 0,
+    "seconds": 5.105
+  },
+  {
+    "stage": "workflow-44",
+    "returncode": 0,
+    "seconds": 13.753
+  },
+  {
+    "stage": "workflow-45",
+    "returncode": 0,
+    "seconds": 99.866
+  },
+  {
+    "stage": "workflow-46",
+    "returncode": 0,
+    "seconds": 69.019
+  },
+  {
+    "stage": "documentation",
+    "returncode": 0,
+    "seconds": 5.004
+  },
+  {
+    "stage": "product-direction",
+    "returncode": 0,
+    "seconds": 0.429
+  }
+]

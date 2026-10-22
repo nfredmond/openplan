@@ -1,8 +1,9 @@
 import { spawn } from "node:child_process";
 import { StringDecoder } from "node:string_decoder";
+import { codexUsageLimitTracker } from "./codex-usage-limit.mjs";
 
 export class NativeProviderError extends Error {
-  constructor(code) { super(code); this.name = "NativeProviderError"; this.code = code; }
+  constructor(code, usageLimit = null) { super(code); this.name = "NativeProviderError"; this.code = code; this.usageLimit = usageLimit; }
 }
 
 // Own one stdio process. Only complete, correlated JSON-RPC responses and final
@@ -12,6 +13,8 @@ export function startCodexSession(launch, { onToolCall = async () => ({ success:
   const pending = new Map();
   const waiters = new Set();
   const notifications = [];
+  const limits = codexUsageLimitTracker();
+  const finalLimits = new WeakMap();
   const decoder = new StringDecoder("utf8");
   let nextId = 1, buffer = "", bytes = 0, stderrBytes = 0, failure = null, closed = false;
   let closeResolve;
@@ -59,11 +62,18 @@ export function startCodexSession(launch, { onToolCall = async () => ({ success:
       if (!Object.hasOwn(message, "result") && !message.error) return fail("native_protocol_invalid");
       pending.delete(message.id);
       if (message.error) call.reject(new NativeProviderError("native_request_failed"));
-      else if (Object.hasOwn(message, "result")) call.resolve(message.result);
+      else if (Object.hasOwn(message, "result")) {
+        if (call.method === "account/rateLimits/read") limits.merge(message.result?.rateLimits);
+        call.resolve(message.result);
+      }
       else return fail("native_protocol_invalid");
       return;
     }
     if (typeof message.method !== "string" || !Object.hasOwn(message, "params")) return fail("native_protocol_invalid");
+    if (message.method === "account/rateLimits/updated") limits.merge(message.params?.rateLimits);
+    if (message.method === "turn/completed" && message.params && typeof message.params === "object") {
+      finalLimits.set(message.params, limits.signal(message.params.turn?.error?.codexErrorInfo));
+    }
     const matches = [...waiters].filter((waiter) => waiter.method === message.method && waiter.matches(message.params));
     if (matches.length) {
       for (const waiter of matches) { waiters.delete(waiter); waiter.resolve(message.params); }
@@ -109,11 +119,12 @@ export function startCodexSession(launch, { onToolCall = async () => ({ success:
       if (failure) return Promise.reject(failure);
       const id = nextId++;
       return new Promise((resolve, reject) => {
-        pending.set(id, { resolve, reject });
+        pending.set(id, { resolve, reject, method });
         try { send({ method, params, id }); } catch (error) { pending.delete(id); reject(error); }
       });
     },
     notify(method, params) { send({ method, ...(params === undefined ? {} : { params }) }); },
+    usageLimit(code, final) { return final ? finalLimits.get(final) ?? null : limits.signal(code); },
     waitFor(method, matches = () => true) {
       if (failure) return Promise.reject(failure);
       const index = notifications.findIndex((item) => item.method === method && matches(item.params));

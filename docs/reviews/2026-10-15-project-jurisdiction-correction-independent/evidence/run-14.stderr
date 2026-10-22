@@ -1,0 +1,11 @@
+{
+  "mode": "sovereign",
+  "result": "AssertionError",
+  "diagnostic": "The expression evaluated to a falsy value:\n\n  assert.ok(payload.entries[i].assessment.reports.every(r=>r.status==='unassessed'))\n",
+  "checked": [
+    "minimized external actor with internal custody",
+    "strict storage parse before external conversion",
+    "external canonical material hashed after minimization",
+    "null unresolved invalid missing remain distinct"
+  ]
+}

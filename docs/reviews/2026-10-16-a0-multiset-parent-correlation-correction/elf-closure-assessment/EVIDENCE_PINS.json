@@ -1,0 +1,79 @@
+{
+  "fixtureLaunchable": false,
+  "handoffPin": {
+    "bytes": 8468,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "b8d82d24d1801710c423225eab40fd906da265ff7ee8be1342e180c13036c44b",
+    "uid": 1000
+  },
+  "noWrapperRequestOrRuntimeGrant": true,
+  "privateHandoff": "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/elf-closure-assessment/HANDOFF.json",
+  "source": {
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/elf-closure-assessment/ADDED_FILES.tsv": {
+      "bytes": 3643,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "b7c747a1f01231cc67638070e1949731a698e5c68f8b51394c58f824f8aa50a1",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/elf-closure-assessment/ADDED_SYMLINKS.tsv": {
+      "bytes": 1728,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "86e65689ceb91c01b4502fa2de6bcabba5cc1a3a4960f0b0489158495142aeca",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/elf-closure-assessment/ASSESSMENT.md": {
+      "bytes": 9031,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "95caa35292e495a8941751f98e642c5e5a0ff5b04b476f357744d342a13b9680",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/elf-closure-assessment/FOOTPRINT.md": {
+      "bytes": 1911,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "e5cba0ca869af6d0648cc5941f5af1d5e0f126d6fddf0598012bc418d9589564",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/elf-closure-assessment/ROOT_COMPARISON.md": {
+      "bytes": 2645,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "5a60c5b735c9978bc4627f8c76889d2db99646d1c308e838b637f443accf0e97",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/elf-closure-assessment/STATUS.md": {
+      "bytes": 1417,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "4ec8cc4b3a637e4dfdbc51a8486d38bd9b672e0a1478c6cb31f5576ff6552ea3",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/elf-closure-assessment/inspect_elf_data.py": {
+      "bytes": 17720,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "5c70e8efa2d8e5a48c0737b66a2e1c353260c9c12e86f2f5727aab6ef77c99c7",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/elf-closure-assessment/inspect_elf_data_v02.py": {
+      "bytes": 18014,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "eeab4a3a8c93eec6fd8b03882c9e01da40ac39f6f790d80827e115e041b7d289",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/elf-closure-assessment/parser02.delta.patch": {
+      "bytes": 1378,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "e023d5b2cf3504afbde2eaabaca37609351cf2a0e4cd19a19085cab5a2201551",
+      "uid": 1000
+    }
+  },
+  "sourceClosureComplete": false,
+  "stage": "BINARY_SOURCE_DATA_ASSESSMENT_ONLY_ROOT_DISPOSITION_REQUIRED"
+}

@@ -1,0 +1,137 @@
+{
+  "absentPaths": {
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/admissions": "ENOENT",
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/admissions/observe.json": "ENOENT",
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/publications": "ENOENT",
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/publications/observe.json": "ENOENT",
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/reviews": "ENOENT",
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/reviews/observe.md": "ENOENT",
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/stages": "ENOENT",
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/stages/observe": "ENOENT",
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/windows": "ENOENT",
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/windows/observe.json": "ENOENT",
+    "/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016/native-observe-parent": "ENOENT",
+    "/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016/root-observe-outer-intent.json": "ENOENT",
+    "/home/nathaniel/.local/state/openplan/budget-settings-observe-proposal-20261016/parent": "ENOENT",
+    "/home/nathaniel/.local/state/openplan/budget-settings-observe-proposal-20261016/run-observe-window.sh": "ENOENT"
+  },
+  "actionableP1": [],
+  "actionableP2": [],
+  "currentInputGroups": {
+    "actualReferences106": 106,
+    "materialized4": 4,
+    "privateSource14": 14,
+    "publicCopies14": 14,
+    "request547": 547
+  },
+  "disposition": "approve-conditional-OP-proposal",
+  "donorApp": "44e638d6d79378042343bf5b18408f09ee991d57",
+  "donorSource": "3f3639f54243f40dfe7ff093dbb7f4e982a18cbc",
+  "limits": "Selected current bytes and retained outcomes only. No operational authority, native acceptance, backend death or complete historical corpus comparison.",
+  "migrationFiles": 422,
+  "mismatches": [],
+  "nativeOperationGranted": false,
+  "packageSHA256": "b9c0e7c418df4a295f44f1374a539e6e33dbd242a210c2840dd07831a6b1a35c",
+  "privateReviewRecords": {
+    "/home/nathaniel/.local/state/openplan/budget-observe-combined-operation-independent-20261016/binding.json": {
+      "bytes": 663,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "17323e33f171d9c559df2773d0984813be50695d28496e55fb13e8d6069fbd3b",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-observe-combined-operation-independent-20261016/metadata-readback.json": {
+      "bytes": 400809,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "546124ba5acd152f4ce037d2c41607d27b9cc7de54eae85750609d497b8fa8ba",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-observe-combined-operation-independent-20261016/metadata-reader-error-01.json": {
+      "bytes": 421,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "65455d23744a0522ef7eb83b6752a1dcac2b9a2d2b47822c11774e1b179d555e",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-observe-combined-operation-independent-20261016/selected-joins.json": {
+      "bytes": 1407,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "4e411206e631c74f63f7e2ea9007233edf50e16a007df6b88b50c60213cc7eaa",
+      "uid": 1000
+    }
+  },
+  "publicInputRecords": 118,
+  "runtimeSubject": "e894f895c7f0e4a1a328a80d4ea8abeb5a8be9a9",
+  "schema": 1,
+  "selectedSubjectPins": {
+    "/home/nathaniel/.local/state/openplan/budget-catalog-outer-transport-20261016/collector.py": {
+      "bytes": 11991,
+      "gid": 1000,
+      "mode": 384,
+      "regular": true,
+      "sha256": "05bc862604ebc65bf52ae5f58565cf30f765080d8df5bc14b142ba481d8066cc",
+      "symlink": false,
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/observe-proposal.json": {
+      "bytes": 108628,
+      "gid": 1000,
+      "mode": 384,
+      "regular": true,
+      "sha256": "06650edf2b6f311ed21603bdc5b6d1fde32652ba1a2d3aec9698e44f81851b81",
+      "symlink": false,
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016/result-readback.json": {
+      "bytes": 219179,
+      "gid": 1000,
+      "mode": 384,
+      "regular": true,
+      "sha256": "5cd8bb1e18228ec2531e72df08aa672f1caf64e3e5f856433723e4d2e6ccf8b5",
+      "symlink": false,
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016/result-seal.json": {
+      "bytes": 6452,
+      "gid": 1000,
+      "mode": 384,
+      "regular": true,
+      "sha256": "7d4b72ddaf6690d437d7a59ebb03509bc13c084fa18db53f9db7018cc8a3be1e",
+      "symlink": false,
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016/source-pins.json": {
+      "bytes": 10279,
+      "gid": 1000,
+      "mode": 384,
+      "regular": true,
+      "sha256": "65c27c3142d539db7a3115c724eb4ebd9d0ce7c59e0f1025231593d6daf565fb",
+      "symlink": false,
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-observe-preparation-root-decision-20261016/acceptance.json": {
+      "bytes": 1764,
+      "gid": 1000,
+      "mode": 384,
+      "regular": true,
+      "sha256": "eede6ccd6ed7afb3c67a178c2e7110d1fb88d06cc929fb220e3d805b5ae96b57",
+      "symlink": false,
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-settings-native-capture-root-decision-20261016/acceptance.json": {
+      "bytes": 2617,
+      "gid": 1000,
+      "mode": 384,
+      "regular": true,
+      "sha256": "1358666689e0346bb888d5b55631d194c737e79245258a8ab3b64b34e29bc2a7",
+      "symlink": false,
+      "uid": 1000
+    }
+  },
+  "sourceOnly": true,
+  "subjectCommit": "59105b0ac8b87276f674ee493c13cf091ef9e410",
+  "subjectParent": "a97f479bc9294870ca0fcb38f2329c9f801b626d",
+  "successorGranted": false
+}

@@ -1,4 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+// The workspace storage limit (storage-quota.ts). Room by default; a test that
+// is about the limit sets the answer and checks what the route asked.
+const checkWorkspaceStorageRoomMock = vi.hoisted(() => vi.fn());
+vi.mock("@/lib/workspaces/storage-quota", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/workspaces/storage-quota")>()),
+  checkWorkspaceStorageRoom: (...args: unknown[]) =>
+    checkWorkspaceStorageRoomMock(...args) ?? Promise.resolve({ status: "room", usedBytes: 0, quotaBytes: 5 * 1024 ** 3 }),
+}));
+// Every test starts from the default (room), whatever ran before it.
+beforeEach(() => checkWorkspaceStorageRoomMock.mockReset());
 import { NextRequest } from "next/server";
 
 /**
@@ -701,5 +712,47 @@ describe("POST /api/gtfs/feeds", () => {
     );
 
     expect(response.status).toBe(201);
+  });
+});
+
+describe("POST /api/gtfs/feeds: the workspace storage limit", () => {
+  // The fetched archive's size is unknown until it arrives, so the route asks
+  // with 0 bytes: only a workspace already at its limit is refused.
+  it("refuses a workspace already at its limit before anything is fetched", async () => {
+    checkWorkspaceStorageRoomMock.mockResolvedValueOnce({
+      status: "full",
+      usedBytes: 5 * 1024 ** 3,
+      quotaBytes: 5 * 1024 ** 3,
+      message: "This workspace has reached its 5 GiB storage limit (5 GiB used).",
+    });
+
+    const response = await POST(createRequest({ source: "url", workspaceId: WORKSPACE_ID, url: SOURCE_URL }));
+
+    expect(response.status).toBe(413);
+    expect((await response.json()).error).toBe("This workspace has reached its 5 GiB storage limit (5 GiB used).");
+    expect(runGtfsIngestMock).not.toHaveBeenCalled();
+    expect(checkWorkspaceStorageRoomMock).toHaveBeenCalledWith(expect.anything(), WORKSPACE_ID, 0);
+  });
+
+  it("refuses when the workspace's use cannot be read", async () => {
+    checkWorkspaceStorageRoomMock.mockResolvedValueOnce({
+      status: "unreadable",
+      message: "Storage use could not be checked, so nothing was uploaded. Try again in a minute.",
+      detail: "permission denied",
+    });
+
+    const response = await POST(createRequest({ source: "url", workspaceId: WORKSPACE_ID, url: SOURCE_URL }));
+
+    expect(response.status).toBe(503);
+    expect(runGtfsIngestMock).not.toHaveBeenCalled();
+  });
+
+  it("ingests while the workspace has room", async () => {
+    checkWorkspaceStorageRoomMock.mockResolvedValueOnce({ status: "room", usedBytes: 0, quotaBytes: 5 * 1024 ** 3 });
+
+    const response = await POST(createRequest({ source: "url", workspaceId: WORKSPACE_ID, url: SOURCE_URL }));
+
+    expect(response.status).toBe(200);
+    expect(runGtfsIngestMock).toHaveBeenCalledTimes(1);
   });
 });

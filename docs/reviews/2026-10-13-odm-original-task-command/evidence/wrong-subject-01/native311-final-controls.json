@@ -1,0 +1,96 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "producer-label-changed",
+    "outcome": "intended_failure",
+    "reason": "Actual engine must belong to this producer",
+    "exitCode": 1
+  },
+  {
+    "control": "native-port-changed",
+    "outcome": "intended_failure",
+    "reason": "Pinned native task port must remain exact",
+    "exitCode": 1
+  },
+  {
+    "control": "actual-attestor-check-refused",
+    "outcome": "intended_failure",
+    "reason": "Original live engine check must succeed",
+    "exitCode": 1
+  },
+  {
+    "control": "read-child-observation-lost",
+    "outcome": "intended_failure",
+    "reason": "Actual read and both native checks must launch their owned children",
+    "exitCode": 1
+  },
+  {
+    "control": "engine-child-observation-lost",
+    "outcome": "intended_failure",
+    "reason": "Actual read and both native checks must launch their owned children",
+    "exitCode": 1
+  },
+  {
+    "control": "actual-reply-changed",
+    "outcome": "intended_failure",
+    "reason": "Actual supervised read must equal the independent failed-task reply",
+    "exitCode": 1
+  },
+  {
+    "control": "loaded-reply-changed",
+    "outcome": "intended_failure",
+    "reason": "Actual retained task reply must reopen",
+    "exitCode": 1
+  },
+  {
+    "control": "native-check-census-lost",
+    "outcome": "intended_failure",
+    "reason": "One actual task read must have both engine checks",
+    "exitCode": 1
+  },
+  {
+    "control": "producer-running-projection",
+    "outcome": "intended_failure",
+    "reason": "Owned engine must stop before capture",
+    "exitCode": 1
+  },
+  {
+    "control": "snapshot-manifest-changed",
+    "outcome": "intended_failure",
+    "reason": "Actual task record root must verify",
+    "exitCode": 1
+  },
+  {
+    "control": "relocated-reply-changed",
+    "outcome": "intended_failure",
+    "reason": "Relocated read must recover exact actual reply bytes",
+    "exitCode": 1
+  },
+  {
+    "control": "original-root-changed",
+    "outcome": "intended_failure",
+    "reason": "Original selected root must remain unchanged",
+    "exitCode": 1
+  },
+  {
+    "control": "retained-snapshot-changed",
+    "outcome": "intended_failure",
+    "reason": "Retained snapshot must remain unchanged",
+    "exitCode": 1
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

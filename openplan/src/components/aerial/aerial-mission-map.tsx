@@ -36,6 +36,7 @@ import { hasInvalidPublicMapboxToken, resolvePublicMapboxToken } from "@/lib/map
 import { keepMapSizedToContainer } from "@/lib/mapbox/keep-map-sized";
 import { extractArtifactGeoref } from "@/lib/aerial/artifact-custody";
 import { isAoiPolygonGeoJson } from "@/lib/aerial/dji-export";
+import { MapUnavailableNotice } from "@/components/ui/map-unavailable-notice";
 import { OperatorDetail } from "@/components/ui/read-failure-notice";
 import { useAerialOrthoLayers } from "@/components/cartographic/aerial-ortho-layer-context";
 
@@ -450,20 +451,14 @@ export function AerialMissionMap({
       ) : null}
 
       {!MAPBOX_ACCESS_TOKEN ? (
-        <div className="rounded-[0.5rem] border border-dashed border-border/70 bg-muted/20 px-4 py-4 text-sm text-muted-foreground">
-          <p className="font-medium text-foreground">No map key is configured on this deployment</p>
-          <p className="mt-1.5">
-            {HAS_UNUSABLE_MAPBOX_TOKEN
-              ? "A Mapbox token is set but is not a public key. Set NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to a token beginning with pk. — a secret sk. token is deliberately refused rather than sent to the browser."
-              : "Set NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to a public Mapbox token (it begins with pk.) and this map will draw."}
-          </p>
+        <MapUnavailableNotice unusableToken={HAS_UNUSABLE_MAPBOX_TOKEN}>
           {bounds ? (
             <p className="mt-1.5">
               This mission has a placed orthomosaic preview that would be drawn. Nothing about the
-              imagery is missing — only the basemap.
+              imagery is missing, only the map behind it.
             </p>
           ) : null}
-        </div>
+        </MapUnavailableNotice>
       ) : !hasSomethingToDraw ? (
         <div className="rounded-[0.5rem] border border-dashed border-border/70 bg-muted/20 px-4 py-6 text-center">
           <p className="text-sm font-semibold text-foreground">Nothing to place on a map yet</p>

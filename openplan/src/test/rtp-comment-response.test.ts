@@ -28,6 +28,13 @@ import {
 // A mocked Supabase client hands back the fixture whatever columns were asked
 // for, so only the `.select()` string can catch a dropped column and only the
 // recorded filters can catch a moderation filter that was removed.
+//
+// It also holds the server's row cap. PostgREST stops every response at
+// `max_rows` (1,000 on this deployment) with no error, ranged or not. A fake
+// that returned the whole fixture would be a server with no row cap, the one
+// server on which a read that stops after its first request looks correct.
+
+const SERVER_MAX_ROWS = 1000;
 
 type RecordedQuery = {
   table: string;
@@ -35,18 +42,38 @@ type RecordedQuery = {
   eq: Array<[string, string]>;
   in: Array<[string, readonly string[]]>;
   order: Array<[string, boolean]>;
+  range: [number, number] | null;
 };
 
-function fakeClient(byTable: Record<string, RtpCommentResponseQueryResult>): {
+/** A table's answer, or one answer per page request in the order they arrive. */
+type FakeTable = RtpCommentResponseQueryResult | { pages: RtpCommentResponseQueryResult[] };
+
+function capped(result: RtpCommentResponseQueryResult, from: number, toInclusive: number) {
+  if (result.error || !Array.isArray(result.data)) return result;
+  const allowed = Math.min(toInclusive - from + 1, SERVER_MAX_ROWS);
+  return { data: result.data.slice(from, from + allowed), error: null };
+}
+
+function fakeClient(byTable: Record<string, FakeTable>): {
   client: RtpCommentResponseSupabaseLike;
   queries: RecordedQuery[];
 } {
   const queries: RecordedQuery[] = [];
+  const pageRequests = new Map<string, number>();
+  const answer = (table: string, from: number, toInclusive: number): RtpCommentResponseQueryResult => {
+    const entry = byTable[table] ?? { data: [], error: null };
+    if ("pages" in entry) {
+      const index = pageRequests.get(table) ?? 0;
+      pageRequests.set(table, index + 1);
+      return entry.pages[index] ?? { data: [], error: null };
+    }
+    return capped(entry, from, toInclusive);
+  };
   const client = {
     from(table: string) {
       return {
         select(columns: string) {
-          const recorded: RecordedQuery = { table, columns, eq: [], in: [], order: [] };
+          const recorded: RecordedQuery = { table, columns, eq: [], in: [], order: [], range: null };
           queries.push(recorded);
           const builder = {
             eq(column: string, value: string) {
@@ -61,8 +88,14 @@ function fakeClient(byTable: Record<string, RtpCommentResponseQueryResult>): {
               recorded.order.push([column, options.ascending]);
               return builder;
             },
+            range(from: number, toInclusive: number) {
+              recorded.range = [from, toInclusive];
+              return Promise.resolve(answer(table, from, toInclusive));
+            },
+            // An unranged read is capped too: PostgREST applies `max_rows` to a
+            // request that names no range at all.
             then(onfulfilled: (value: RtpCommentResponseQueryResult) => unknown) {
-              return Promise.resolve(byTable[table] ?? { data: [], error: null }).then(onfulfilled);
+              return Promise.resolve(answer(table, 0, Number.MAX_SAFE_INTEGER)).then(onfulfilled);
             },
           };
           return builder;
@@ -502,6 +535,87 @@ describe("a read that failed is never an agency that heard nothing", () => {
     // It may not answer the question it could not answer.
     expect(sentence).not.toMatch(/\b0 (has|have|is|are)\b/);
     expect(sentence).not.toMatch(/outstanding/);
+  });
+});
+
+describe("a plan with more comments than one server response holds", () => {
+  const COMMENT_TOTAL = 1234;
+  const RESPONSE_TOTAL = 1050;
+  const CAMPAIGN_TOTAL = 1001;
+
+  it("reads every campaign, comment and response past the server's 1,000-row cap", async () => {
+    const campaigns = Array.from({ length: CAMPAIGN_TOTAL }, (_, index) =>
+      campaignRow({ id: `campaign-${index + 1}` })
+    );
+    const comments = Array.from({ length: COMMENT_TOTAL }, (_, index) =>
+      commentRow({ id: `comment-${index + 1}` })
+    );
+    const responses = Array.from({ length: RESPONSE_TOTAL }, (_, index) =>
+      responseRow({ id: `response-${index + 1}`, source_item_ids: [`comment-${index + 1}`], sort_order: index })
+    );
+    const { client, queries } = fakeClient({
+      engagement_campaigns: { data: campaigns, error: null },
+      engagement_items: { data: comments, error: null },
+      engagement_closeloop_entries: { data: responses, error: null },
+    });
+
+    const loaded = await loadRtpCommentResponseRecord(client, "cycle-1");
+
+    expect(loaded.campaigns).toHaveLength(CAMPAIGN_TOTAL);
+    expect(loaded.comments).toHaveLength(COMMENT_TOTAL);
+    expect(loaded.responses).toHaveLength(RESPONSE_TOTAL);
+    expect(rtpCommentResponseUnreadableFrom(loaded.results)).toEqual({
+      campaigns: false,
+      comments: false,
+      responses: false,
+    });
+
+    const summary = buildRtpCommentResponseRecord({
+      ...loaded,
+      unreadable: rtpCommentResponseUnreadableFrom(loaded.results),
+    });
+    expect(summary.approvedCommentCount).toBe(COMMENT_TOTAL);
+    expect(summary.answeredCount).toBe(RESPONSE_TOTAL);
+    expect(summary.unansweredCount).toBe(COMMENT_TOTAL - RESPONSE_TOTAL);
+
+    // Paging is only safe on a total order, so every paged read ends on `id`.
+    for (const table of ["engagement_campaigns", "engagement_items", "engagement_closeloop_entries"]) {
+      const pages = queries.filter((query) => query.table === table);
+      expect(pages.length, table).toBeGreaterThan(1);
+      for (const page of pages) {
+        expect(page.range, table).not.toBeNull();
+        expect(page.order.at(-1)?.[0], table).toBe("id");
+      }
+    }
+    // The moderation filter rides on every page, not only the first.
+    for (const page of queries.filter((query) => query.table === "engagement_items")) {
+      expect(page.eq).toContainEqual(["status", "approved"]);
+    }
+  });
+
+  it("reports a comment read that failed part way as a failed read, not a short count", async () => {
+    const firstPage = Array.from({ length: 500 }, (_, index) => commentRow({ id: `comment-${index + 1}` }));
+    const { client } = fakeClient({
+      engagement_campaigns: { data: [campaignRow()], error: null },
+      engagement_items: {
+        pages: [
+          { data: firstPage, error: null },
+          { data: null, error: { message: "canceling statement due to statement timeout" } },
+        ],
+      },
+      engagement_closeloop_entries: { data: [responseRow()], error: null },
+    });
+
+    const loaded = await loadRtpCommentResponseRecord(client, "cycle-1");
+
+    expect(loaded.comments).toEqual([]);
+    expect(loaded.results.comments.error?.message).toBe("canceling statement due to statement timeout");
+    const summary = buildRtpCommentResponseRecord({
+      ...loaded,
+      unreadable: rtpCommentResponseUnreadableFrom(loaded.results),
+    });
+    expect(summary.approvedCommentCount).toBeNull();
+    expect(describeRtpCommentResponse(summary)).not.toContain("500");
   });
 });
 

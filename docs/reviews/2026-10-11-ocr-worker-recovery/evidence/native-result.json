@@ -1,0 +1,37 @@
+{
+  "verified": true,
+  "nativeMode": "text",
+  "pages": 3,
+  "blankMiddlePage": true,
+  "terminalDeliveries": 2,
+  "logicalResults": 1,
+  "sourceDownloads": 1,
+  "recoveryExtractionReentry": false,
+  "controls": 33,
+  "nativeBrokenSavedResult": "intended_refusal",
+  "completedAdmissionReplay": 200,
+  "changedRequestRefusal": 409,
+  "durationSeconds": 0.919,
+  "claimLimits": [
+    "synthetic_loopback_consumer",
+    "no_scanned_ocr_accuracy",
+    "no_openplan_callback_or_rls",
+    "no_installation_wide_cut",
+    "no_long_job",
+    "no_hardware_loss",
+    "no_browser",
+    "no_public_readiness"
+  ],
+  "service": {
+    "InvocationID": "d87297ffccb948a3915ea54219f3604e",
+    "Result": "success",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "38776832",
+    "CPUUsageNSec": "449236000",
+    "MemoryMax": "536870912",
+    "MemorySwapMax": "0",
+    "ExecMainStartTimestamp": "Sun 2026-10-11 12:17:46 PDT",
+    "ExecMainExitTimestamp": "Sun 2026-10-11 12:17:47 PDT"
+  },
+  "baseCommit": "3c38b728521e6f630f8aa8008e9a7e165c9093a7"
+}

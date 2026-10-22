@@ -1,0 +1,12 @@
+[
+  {
+    "control": "preceding-config",
+    "outcome": "intended_failure",
+    "sourceSha256": "9c3c0a5a9ac169ae5045178a0dd6f7cef8e3fdca182d3c01663925bfda79ffa6"
+  },
+  {
+    "control": "restored-config",
+    "outcome": "survived",
+    "sourceSha256": "85201c2c294a4575c004ab13676a7b2bcc0eae3af3cf5480537978f8e94fd373"
+  }
+]

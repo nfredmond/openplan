@@ -61,7 +61,7 @@ export function AerialCustodyRetry({
         return;
       }
 
-      setDone(body?.detail ?? "Custody was attempted again for this job's outputs.");
+      setDone(body?.detail ?? "Saving this job's outputs was tried again.");
       // The custody ledger is read server-side; without this the panel keeps
       // showing the posture from before the retry.
       router.refresh();

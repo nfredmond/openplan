@@ -1,3 +1,4 @@
+import { observeNodeQueue } from "../../src/lib/ops/node-queue-observation";
 import { processNextEngagementReport } from "../../src/lib/engagement/review-export-worker";
 /** Run with npm run worker:document-exports. Jobs and completed files remain in Documents. */
 import { randomUUID, createHash } from "node:crypto";
@@ -7,14 +8,15 @@ import { homedir } from "node:os";
 import { setTimeout as delay } from "node:timers/promises";
 import { createServiceRoleClient } from "../../src/lib/supabase/server";
 import { loadWorkProgramExportIdentity, renderWorkProgramExport } from "../../src/lib/programs/work-program/export-job";
+import { storeWorkProgramExport, workProgramExportFailureDetail } from "../../src/lib/programs/work-program/export-storage";
 
-async function main() {
+async function main(noticeStopping: () => void) {
 const service = createServiceRoleClient();
 const root = process.env.OPENPLAN_DOCUMENT_EXPORT_WORK_DIR || join(homedir(), ".local/state/openplan/document-exports");
 await mkdir(root, { recursive: true, mode: 0o700 });
 let stopping = false;
-process.on("SIGTERM", () => { stopping = true; });
-process.on("SIGINT", () => { stopping = true; });
+process.on("SIGTERM", () => { stopping = true; noticeStopping(); });
+process.on("SIGINT", () => { stopping = true; noticeStopping(); });
 while (!stopping) {
   const token = randomUUID();
   const claimed = await service.rpc("claim_work_program_export", { p_token: token });
@@ -44,20 +46,16 @@ while (!stopping) {
       await rename(join(folder,"artifact.json.partial"),join(folder,"artifact.json"));
     }
     const objectPath = `${identity.workspaceId}/${identity.documentId}/${artifact.checksum}.${identity.format}`;
-    const uploaded = await service.storage.from("kb-documents").upload(objectPath,artifact.bytes,{contentType:identity.contentType,upsert:false});
-    if (uploaded.error) {
-      // A restart after storage commit must prove the retained bytes, not overwrite them.
-      const existing = await service.storage.from("kb-documents").download(objectPath);
-      if(existing.error || !existing.data || createHash("sha256").update(Buffer.from(await existing.data.arrayBuffer())).digest("hex")!==artifact.checksum) throw new Error("Artifact storage unavailable");
-    }
+    // Checks the workspace storage limit, then stores or proves the retained bytes.
+    await storeWorkProgramExport(service, { workspaceId: identity.workspaceId, objectPath, bytes: artifact.bytes, checksum: artifact.checksum, contentType: identity.contentType });
     const finished = await service.rpc("finish_work_program_export", {p_job:job.id,p_token:token,p_checksum:artifact.checksum,p_bytes:artifact.bytes.length,p_storage_ref:`storage://kb-documents/${objectPath}`,p_engine:artifact.engine});
     if(finished.error) throw new Error("Export custody could not be committed");
     console.log(`Retained document export ${job.id}`);
-  } catch {
-    await service.from("kb_ocr_jobs").update({status:"failed",failure_detail:"Review file could not be completed. Retry preparation; the saved revision and completed render remain retained."}).eq("id",job.id).eq("lease_token",token).eq("status","running");
+  } catch (error) {
+    await service.from("kb_ocr_jobs").update({status:"failed",failure_detail:workProgramExportFailureDetail(error)}).eq("id",job.id).eq("lease_token",token).eq("status","running");
     console.error(`Document export ${job.id} needs retry.`);
   } finally { clearInterval(heartbeat); }
 }
 
 }
-void main().catch(()=>{console.error("Document export worker could not start.");process.exitCode=1;});
+void observeNodeQueue("document-exports", main).catch(()=>{console.error("Document export worker could not start.");process.exitCode=1;});

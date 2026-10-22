@@ -1,6 +1,7 @@
 import { describe, expect, it, vi, beforeAll, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
 import sharp from "sharp";
+import { createFakePublicInputDatabase, type FakePublicInputDatabase } from "@/test/helpers/fake-public-input-tables";
 
 const createServiceRoleClientMock = vi.fn();
 
@@ -12,10 +13,15 @@ const campaignSelectMock = vi.fn(() => ({ eq: campaignEqTokenMock }));
 const storageUploadMock = vi.fn();
 const storageFromMock = vi.fn(() => ({ upload: storageUploadMock }));
 
+// The upload limits are counted in `usage_events`; a fake that evaluates the
+// filters keeps those counts honest here. engagement-photo-upload-shared-limit
+// covers the limits themselves.
+let usageDb: FakePublicInputDatabase;
 const fromMock = vi.fn((table: string) => {
   if (table === "engagement_campaigns") {
     return { select: campaignSelectMock };
   }
+  if (table === "usage_events") return usageDb.client.from(table);
   throw new Error(`Unexpected table: ${table}`);
 });
 
@@ -27,12 +33,10 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 
 import { POST } from "@/app/api/engage/[shareToken]/photo-upload/route";
-import {
-  PUBLIC_PHOTO_UPLOAD_MAX_PER_WINDOW,
-  resetEngagementPhotoUploadRateLimiter,
-} from "@/lib/engagement/photo";
+import { PUBLIC_PHOTO_UPLOAD_MAX_PER_WINDOW } from "@/lib/engagement/photo";
 
 const CAMPAIGN_ID = "11111111-1111-4111-8111-111111111111";
+const WORKSPACE_ID = "99999999-9999-4999-8999-999999999999";
 const SHARE_TOKEN = "test-share-token-12345";
 
 // Magic bytes with no image behind them: they pass sniffing but not decoding.
@@ -87,7 +91,7 @@ describe("POST /api/engage/[shareToken]/photo-upload", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    resetEngagementPhotoUploadRateLimiter();
+    usageDb = createFakePublicInputDatabase();
 
     createServiceRoleClientMock.mockReturnValue({
       from: fromMock,
@@ -97,6 +101,7 @@ describe("POST /api/engage/[shareToken]/photo-upload", () => {
     campaignMaybeSingleMock.mockResolvedValue({
       data: {
         id: CAMPAIGN_ID,
+        workspace_id: WORKSPACE_ID,
         status: "active",
         allow_public_submissions: true,
         submissions_closed_at: null,
@@ -204,6 +209,23 @@ describe("POST /api/engage/[shareToken]/photo-upload", () => {
     expect(storageUploadMock).not.toHaveBeenCalled();
   });
 
+  it("rejects uploads when staff have closed submissions", async () => {
+    campaignMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: CAMPAIGN_ID,
+        status: "active",
+        allow_public_submissions: true,
+        submissions_closed_at: "2026-04-02T09:30:00.000Z",
+      },
+      error: null,
+    });
+
+    const response = await POST(photoRequest(JPEG_BYTES, "image/jpeg"), routeContext());
+
+    expect(response.status).toBe(403);
+    expect(storageUploadMock).not.toHaveBeenCalled();
+  });
+
   it("returns 404 for an unknown share token", async () => {
     campaignMaybeSingleMock.mockResolvedValueOnce({ data: null, error: null });
 
@@ -222,7 +244,7 @@ describe("POST /api/engage/[shareToken]/photo-upload", () => {
     });
   }
   it("accepts photos during a configured participation window",async()=>{
-    campaignMaybeSingleMock.mockResolvedValue({data:{id:CAMPAIGN_ID,status:"active",allow_public_submissions:true,participation_starts_at:"2000-01-01T00:00:00Z",participation_ends_at:"2099-01-01T00:00:00Z"},error:null});
+    campaignMaybeSingleMock.mockResolvedValue({data:{id:CAMPAIGN_ID,workspace_id:WORKSPACE_ID,status:"active",allow_public_submissions:true,participation_starts_at:"2000-01-01T00:00:00Z",participation_ends_at:"2099-01-01T00:00:00Z"},error:null});
     expect((await POST(photoRequest(JPEG_BYTES,"image/jpeg"),routeContext())).status).toBe(201);
   });
 

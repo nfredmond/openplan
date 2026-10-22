@@ -1,0 +1,58 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "cases": 6
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived",
+    "cases": 6
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived",
+    "cases": 6
+  },
+  {
+    "control": "malformed-dsn",
+    "test": "refuses malformed DSN encoding without throwing",
+    "outcome": "intended_failure",
+    "reason": "URI malformed"
+  },
+  {
+    "control": "encoded-valid-key",
+    "test": "keeps a valid encoded DSN key and self-hosted path",
+    "outcome": "intended_failure",
+    "reason": "Valid encoded DSN must retain its original decoded key"
+  },
+  {
+    "control": "configured-report",
+    "test": "does not reject reporting when the configured DSN has malformed encoding",
+    "outcome": "intended_failure",
+    "reason": "URI malformed"
+  },
+  {
+    "control": "uuid-parent",
+    "test": "scrubs UUID-shaped tokens under each known public token parent",
+    "outcome": "intended_failure",
+    "reason": "Known public token parents must scrub UUID-shaped tokens"
+  },
+  {
+    "control": "normalized-report",
+    "test": "removes UUID-shaped public path tokens from the actual normalized report",
+    "outcome": "intended_failure",
+    "reason": "Normalized reports must remove UUID-shaped public tokens"
+  },
+  {
+    "control": "record-identity",
+    "test": "keeps ordinary record identity outside public token parents",
+    "outcome": "intended_failure",
+    "reason": "Ordinary record identity must survive report scrubbing"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived",
+    "cases": 6
+  }
+]

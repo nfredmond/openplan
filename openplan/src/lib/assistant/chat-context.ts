@@ -8,6 +8,14 @@ import { excerptPageLabel, type KnowledgeBaseExcerpt } from "@/lib/knowledge-bas
 import { KB_OCR_PROVENANCE_NOTICE } from "@/lib/knowledge-base/ocr-availability";
 import { FUNDING_CLOSING_SOON_WINDOW_DAYS } from "@/lib/operations/funding-decision-status";
 import { formatMoney } from "@/lib/money/format";
+import { validTimeZone } from "@/lib/work/deadlines";
+import {
+  calendarDayOf,
+  todayIn,
+  UTC_TIME_ZONE,
+  type WorkspaceCalendar,
+  type WorkspaceTimeZoneSource,
+} from "@/lib/time/workspace-calendar";
 
 /**
  * Pure serialization of an RLS-scoped AssistantContext into a compact,
@@ -37,11 +45,25 @@ function fmtCurrency(value: number | null | undefined): string | null {
   return formatMoney(value, { precision: "whole" });
 }
 
-function fmtDate(value: string | null | undefined): string | null {
+/**
+ * The calendar day of a stored date or instant, in the zone the prompt's
+ * TODAY line uses, so the model compares like with like. A date-only value is
+ * returned as stored.
+ */
+function fmtDate(value: string | null | undefined, timeZone: string = UTC_TIME_ZONE): string | null {
   if (!value) return null;
+  const day = calendarDayOf(value, timeZone);
+  if (day) return day;
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return null;
-  return parsed.toISOString().slice(0, 10);
+  return todayIn(timeZone, parsed);
+}
+
+type DayFormatter = (value: string | null | undefined) => string | null;
+
+function dayFormatter(timeZone: string | null | undefined): DayFormatter {
+  const zone = validTimeZone(timeZone) ?? UTC_TIME_ZONE;
+  return (value) => fmtDate(value, zone);
 }
 
 function compactJson(value: Record<string, unknown>, maxChars: number): string {
@@ -60,7 +82,8 @@ function workspaceLine(workspace: AssistantContext["workspace"]): string {
 }
 
 function fundingSummaryLines(
-  fundingSummary: ProjectAssistantContext["fundingSummary"] | ProgramAssistantContext["fundingSummary"]
+  fundingSummary: ProjectAssistantContext["fundingSummary"] | ProgramAssistantContext["fundingSummary"],
+  day: DayFormatter
 ): string[] {
   const lines: string[] = [];
   lines.push(
@@ -79,7 +102,7 @@ function fundingSummaryLines(
 
   if (fundingSummary.leadOpportunity) {
     const lead = fundingSummary.leadOpportunity;
-    const closes = fmtDate(lead.closesAt);
+    const closes = day(lead.closesAt);
     lines.push(
       `Lead funding opportunity: "${lead.title}" (status ${lead.status ?? "unknown"}, decision ${lead.decisionState ?? "undecided"}${closes ? `, closes ${closes}` : ""})`
     );
@@ -100,7 +123,7 @@ function laneUnreadableLine(subject: string): string {
   return `${subject} could not be read while this context was assembled — treat those figures as missing, not zero.`;
 }
 
-function moduleLaneLines(context: WorkspaceAssistantContext): string[] {
+function moduleLaneLines(context: WorkspaceAssistantContext, day: DayFormatter): string[] {
   const lane = context.moduleLane;
   if (!lane) return [];
   const lines: string[] = [];
@@ -116,7 +139,7 @@ function moduleLaneLines(context: WorkspaceAssistantContext): string[] {
         );
         if (opp.lead) {
           lines.push(
-            `Next closing opportunity: "${opp.lead.title}" (status ${opp.lead.status ?? "unknown"}, decision ${opp.lead.decisionState ?? "undecided"}${fmtDate(opp.lead.closesAt) ? `, closes ${fmtDate(opp.lead.closesAt)}` : ""})`
+            `Next closing opportunity: "${opp.lead.title}" (status ${opp.lead.status ?? "unknown"}, decision ${opp.lead.decisionState ?? "undecided"}${day(opp.lead.closesAt) ? `, closes ${day(opp.lead.closesAt)}` : ""})`
           );
         }
       }
@@ -292,7 +315,11 @@ function operationsSummaryLines(operationsSummary: WorkspaceAssistantContext["op
   return lines;
 }
 
-export function buildAssistantChatContextLines(context: AssistantContext): string[] {
+export function buildAssistantChatContextLines(
+  context: AssistantContext,
+  options: { timeZone?: string | null } = {}
+): string[] {
+  const day = dayFormatter(options.timeZone);
   const lines: string[] = [`Current surface: ${context.kind.replace(/_/g, " ")}`, workspaceLine(context.workspace)];
 
   switch (context.kind) {
@@ -305,7 +332,7 @@ export function buildAssistantChatContextLines(context: AssistantContext): strin
     case "data_hub": {
       // A module lane is workspace-shaped (see AssistantModuleLaneKind in
       // context.ts): its own summary leads, the portfolio posture follows.
-      lines.push(...moduleLaneLines(context));
+      lines.push(...moduleLaneLines(context, day));
       lines.push(...operationsSummaryLines(context.operationsSummary));
       break;
     }
@@ -314,14 +341,14 @@ export function buildAssistantChatContextLines(context: AssistantContext): strin
     case "analysis_studio": {
       if (context.recentProject) {
         lines.push(
-          `Most recent project: "${context.recentProject.name}" (status ${context.recentProject.status}, ${context.recentProject.planType}, phase ${context.recentProject.deliveryPhase}, updated ${fmtDate(context.recentProject.updatedAt) ?? "unknown"})`
+          `Most recent project: "${context.recentProject.name}" (status ${context.recentProject.status}, ${context.recentProject.planType}, phase ${context.recentProject.deliveryPhase}, updated ${day(context.recentProject.updatedAt) ?? "unknown"})`
         );
       }
       if (context.recentRuns.length) {
         lines.push(
           `Recent analysis runs: ${context.recentRuns
             .slice(0, 3)
-            .map((run) => `"${run.title}" (${fmtDate(run.createdAt) ?? "unknown date"})`)
+            .map((run) => `"${run.title}" (${day(run.createdAt) ?? "unknown date"})`)
             .join(", ")}`
         );
       }
@@ -341,7 +368,7 @@ export function buildAssistantChatContextLines(context: AssistantContext): strin
 
     case "project": {
       lines.push(
-        `Project: "${context.project.name}" — status ${context.project.status}, type ${context.project.planType}, phase ${context.project.deliveryPhase}, updated ${fmtDate(context.project.updatedAt) ?? "unknown"}`
+        `Project: "${context.project.name}" — status ${context.project.status}, type ${context.project.planType}, phase ${context.project.deliveryPhase}, updated ${day(context.project.updatedAt) ?? "unknown"}`
       );
       if (context.project.summary) lines.push(`Project summary: ${context.project.summary}`);
       if (context.jurisdictionReadiness) {
@@ -365,7 +392,7 @@ export function buildAssistantChatContextLines(context: AssistantContext): strin
       lines.push(
         `Project counts: ${context.counts.deliverables} deliverables · ${context.counts.risks} risks · ${context.counts.issues} issues · ${context.counts.decisions} decisions · ${context.counts.meetings} meetings · ${context.counts.linkedDatasets} linked datasets (${context.counts.overlayReadyDatasets} overlay-ready) · ${context.counts.recentRuns} recent runs`
       );
-      lines.push(...fundingSummaryLines(context.fundingSummary));
+      lines.push(...fundingSummaryLines(context.fundingSummary, day));
       if (context.recentRuns.length) {
         lines.push(
           `Recent runs: ${context.recentRuns
@@ -401,7 +428,7 @@ export function buildAssistantChatContextLines(context: AssistantContext): strin
       const horizon =
         cycle.horizonStartYear && cycle.horizonEndYear ? `${cycle.horizonStartYear}–${cycle.horizonEndYear}` : null;
       lines.push(
-        `RTP cycle: "${cycle.title}" — status ${cycle.status}${horizon ? `, horizon ${horizon}` : ""}${cycle.geographyLabel ? `, geography ${cycle.geographyLabel}` : ""}${cycle.adoptionTargetDate ? `, adoption target ${fmtDate(cycle.adoptionTargetDate)}` : ""}`
+        `RTP cycle: "${cycle.title}" — status ${cycle.status}${horizon ? `, horizon ${horizon}` : ""}${cycle.geographyLabel ? `, geography ${cycle.geographyLabel}` : ""}${cycle.adoptionTargetDate ? `, adoption target ${day(cycle.adoptionTargetDate)}` : ""}`
       );
       if (cycle.summary) lines.push(`Cycle summary: ${cycle.summary}`);
       lines.push(
@@ -433,7 +460,7 @@ export function buildAssistantChatContextLines(context: AssistantContext): strin
       );
       if (context.program.summary) lines.push(`Program summary: ${context.program.summary}`);
       if (context.project) lines.push(`Parent project: "${context.project.name}"`);
-      lines.push(...fundingSummaryLines(context.fundingSummary));
+      lines.push(...fundingSummaryLines(context.fundingSummary, day));
       lines.push(
         `Program linkages: ${context.linkageCounts.plans} plans · ${context.linkageCounts.reports} reports · ${context.linkageCounts.engagementCampaigns} engagement campaigns`
       );
@@ -483,7 +510,7 @@ export function buildAssistantChatContextLines(context: AssistantContext): strin
     case "report":
     case "rtp_packet_report": {
       lines.push(
-        `Report: "${context.report.title}" — status ${context.report.status}, type ${context.report.reportType}, ${context.enabledSections}/${context.sectionCount} sections enabled, ${context.artifactCount} artifacts${context.latestArtifact ? `, latest artifact ${context.latestArtifact.artifactKind} generated ${fmtDate(context.latestArtifact.generatedAt)}` : ", no artifact generated yet"}`
+        `Report: "${context.report.title}" — status ${context.report.status}, type ${context.report.reportType}, ${context.enabledSections}/${context.sectionCount} sections enabled, ${context.artifactCount} artifacts${context.latestArtifact ? `, latest artifact ${context.latestArtifact.artifactKind} generated ${day(context.latestArtifact.generatedAt)}` : ", no artifact generated yet"}`
       );
       if (context.report.summary) lines.push(`Report summary: ${context.report.summary}`);
       if (context.project) lines.push(`Linked project: "${context.project.name}"`);
@@ -501,7 +528,7 @@ export function buildAssistantChatContextLines(context: AssistantContext): strin
 
     case "run": {
       lines.push(
-        `Analysis run: "${context.run.title}" (created ${fmtDate(context.run.createdAt) ?? "unknown"})${context.run.queryText ? ` — query: ${context.run.queryText}` : ""}`
+        `Analysis run: "${context.run.title}" (created ${day(context.run.createdAt) ?? "unknown"})${context.run.queryText ? ` — query: ${context.run.queryText}` : ""}`
       );
       if (context.run.summary) lines.push(`Run summary: ${context.run.summary}`);
       lines.push(`Run metrics: ${compactJson(context.run.metrics, 900)}`);
@@ -531,12 +558,65 @@ export function renderKnowledgeBaseExcerptLines(excerpts: KnowledgeBaseExcerpt[]
   });
 }
 
+/** Where the prompt's TODAY came from: the workspace's own calendar, the planner's browser, or UTC. */
+export type AssistantTodaySource = WorkspaceTimeZoneSource | "browser";
+
+/**
+ * Today's date for the planner asking. The workspace's zone comes first when
+ * it has one (a saved setting, or the single zone of its home country), then
+ * the browser's reported zone when `Intl` accepts it, then the UTC date. The
+ * UTC date runs a day ahead of the Americas every evening, which is how a
+ * planner was told at 5 p.m. that a deadline due that day had passed.
+ */
+export function assistantToday(
+  now: Date,
+  requestedTimeZone?: string | null,
+  workspace?: WorkspaceCalendar | null
+): { today: string; timeZone: string | null; timeZoneSource: AssistantTodaySource } {
+  if (workspace && workspace.source !== "utc_fallback") {
+    const workspaceZone = validTimeZone(workspace.timeZone);
+    if (workspaceZone) {
+      return { today: todayIn(workspaceZone, now), timeZone: workspaceZone, timeZoneSource: workspace.source };
+    }
+  }
+  const timeZone = validTimeZone(requestedTimeZone);
+  return timeZone
+    ? { today: todayIn(timeZone, now), timeZone, timeZoneSource: "browser" }
+    : { today: todayIn(UTC_TIME_ZONE, now), timeZone: null, timeZoneSource: "utc_fallback" };
+}
+
+/**
+ * The line that tells the model what day it is. Without it the model dates
+ * itself from training and called a funding call that closed eleven days
+ * earlier "still open for about three more weeks" (live test, 2026-10-11).
+ * A deadline dated today stays open: most records carry a date, not a close
+ * time.
+ */
+export function assistantTodayLine(
+  today: string,
+  timeZone: string | null = null,
+  source: AssistantTodaySource = timeZone ? "browser" : "utc_fallback"
+): string {
+  const sameDay = "A deadline dated today is still open unless its recorded close time has passed.";
+  if (timeZone) {
+    const whose = source === "workspace_setting" || source === "home_country" ? "the workspace's time zone" : "the planner's time zone";
+    return `TODAY: ${today} (calendar date in ${timeZone}, ${whose}). Compare every date you report with today: a deadline, close date or due date before today has passed, so say it has passed and never call it upcoming. ${sameDay}`;
+  }
+  return `TODAY: ${today} (UTC calendar date). The planner's time zone is not known. Compare every date you report with today: a deadline, close date or due date before today has passed, so say it has passed and never call it upcoming, except that one dated the day before today may still be open where the planner is, so say it may have passed. ${sameDay}`;
+}
+
 export function buildAssistantChatSystemPrompt(
   context: AssistantContext,
-  options?: { maxContextChars?: number; knowledgeBaseExcerpts?: KnowledgeBaseExcerpt[] }
+  options: {
+    today: string;
+    timeZone?: string | null;
+    timeZoneSource?: AssistantTodaySource;
+    maxContextChars?: number;
+    knowledgeBaseExcerpts?: KnowledgeBaseExcerpt[];
+  }
 ): string {
-  const maxContextChars = options?.maxContextChars ?? ASSISTANT_CHAT_CONTEXT_MAX_CHARS;
-  const lines = buildAssistantChatContextLines(context);
+  const maxContextChars = options.maxContextChars ?? ASSISTANT_CHAT_CONTEXT_MAX_CHARS;
+  const lines = buildAssistantChatContextLines(context, { timeZone: options.timeZone ?? null });
 
   const kept: string[] = [];
   let used = 0;
@@ -558,12 +638,13 @@ export function buildAssistantChatSystemPrompt(
 
   const sections = [
     ASSISTANT_CHAT_INSTRUCTIONS,
+    assistantTodayLine(options.today, options.timeZone ?? null, options.timeZoneSource),
     "",
     "WORKSPACE CONTEXT (RLS-scoped, current surface):",
     ...kept.map((line) => `- ${line}`),
   ];
 
-  const kbLines = renderKnowledgeBaseExcerptLines(options?.knowledgeBaseExcerpts ?? []);
+  const kbLines = renderKnowledgeBaseExcerptLines(options.knowledgeBaseExcerpts ?? []);
   if (kbLines.length > 0) {
     sections.push(
       "",

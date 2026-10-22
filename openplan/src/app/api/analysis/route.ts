@@ -109,6 +109,20 @@ function formatCurrency(n: number | null): string {
   return "$" + n.toLocaleString("en-US");
 }
 
+// An ACS estimate needs observed population. A jobs/resident ratio also needs
+// a positive observed denominator, even when the jobs came from real WAC data.
+function reportedEmployment(
+  census: Awaited<ReturnType<typeof fetchCensusForCorridor>>,
+  lodes: Awaited<ReturnType<typeof fetchLODESForCorridor>>,
+) {
+  const jobsAvailable = lodes.source !== "acs-estimate" || census.measured.population;
+  return {
+    totalJobs: jobsAvailable ? lodes.totalJobs : null,
+    jobsPerResident: jobsAvailable && census.measured.population && census.totalPopulation > 0
+      ? lodes.jobsPerResident : null,
+  };
+}
+
 function generateSummary(
   census: Awaited<ReturnType<typeof fetchCensusForCorridor>>,
   lodes: Awaited<ReturnType<typeof fetchLODESForCorridor>>,
@@ -116,7 +130,7 @@ function generateSummary(
   crashes: Awaited<ReturnType<typeof fetchCrashesForBbox>>,
   equity: ReturnType<typeof screenEquity>,
   scores: ReturnType<typeof computeCorridorScores>,
-  walkBikeAccess: ReturnType<typeof classifyWalkBikeAccess>
+  walkBikeAccess: ReturnType<typeof classifyWalkBikeAccess> | null
 ): string {
   const lines: string[] = [];
   const scorePresentation = resolveScorePresentation(scores);
@@ -176,10 +190,13 @@ function generateSummary(
   );
 
   // Employment
-  lines.push(
-    `**Employment:** ~${lodes.totalJobs.toLocaleString("en-US")} jobs in the corridor area ` +
-      `(${lodes.jobsPerResident} jobs per resident). Source: ${lodes.source}.`
-  );
+  const employment = reportedEmployment(census, lodes);
+  lines.push(employment.totalJobs === null
+    ? "**Employment:** Not measured. The ACS estimate requires population data that is unavailable."
+    : `**Employment:** ~${employment.totalJobs.toLocaleString("en-US")} jobs in the corridor area. ` +
+      (employment.jobsPerResident === null ? "Jobs per resident not measured. " : `${employment.jobsPerResident} jobs per resident. `) +
+      `Source: ${lodes.source}.`);
+
 
   // Transit access. The line is built by the transit lane itself, beside the
   // numbers, exactly as the crash lane does — the version that used to live here
@@ -189,7 +206,9 @@ function generateSummary(
   // so rather than narrating nulls, and must never be summarized as an area with
   // no transit.
   lines.push(transit.narrativeLine);
-  lines.push(`**Walk/Bike Access (baseline):** Tier ${walkBikeAccess.tier}. ${walkBikeAccess.rationale}`);
+  lines.push(walkBikeAccess
+    ? `**Walk/Bike Access (baseline):** Tier ${walkBikeAccess.tier}. ${walkBikeAccess.rationale}`
+    : "**Walk/Bike Access (baseline):** Not measured. Commute mode and vehicle-access data are required; no tier is assigned.");
 
   // Safety — the crash lane writes its own line so an unobserved run cannot be
   // narrated here as "0 fatal crashes".
@@ -448,12 +467,12 @@ export async function POST(request: NextRequest) {
       const scores = computeCorridorScores(census, lodes, transit, crashes, equity);
       const scorePresentation = resolveScorePresentation(scores);
       const presentedScores = presentableScoreMetrics(scorePresentation);
-      const walkBikeAccess = classifyWalkBikeAccess({
+      const walkBikeAccess = census.measured.commuteMode && census.measured.vehicleAccess ? classifyWalkBikeAccess({
         pctWalk: census.pctWalk,
         pctBike: census.pctBike,
         pctZeroVehicle: census.pctZeroVehicle,
         transitStopsPerSqMile: transit.stopsPerSqMile,
-      });
+      }) : null;
 
       const tractOverlayFeatures = await fetchTractOverlayFeatures(bbox, census.tracts);
       // Points come from the same fetch that produced the counts, so the map and
@@ -542,8 +561,7 @@ export async function POST(request: NextRequest) {
         pctZeroVehicle: reportedCensus.pctZeroVehicle,
 
         // Employment
-        totalJobs: lodes.totalJobs,
-        jobsPerResident: lodes.jobsPerResident,
+        ...reportedEmployment(census, lodes),
 
         // Transit access
         totalTransitStops: transit.totalStops,
@@ -557,9 +575,9 @@ export async function POST(request: NextRequest) {
         frequentServiceShare: transit.frequentServiceShare,
         frequentServiceStops: transit.frequentServiceStops,
         frequentServiceHeadwayMinutes: transit.frequentServiceHeadwayMinutes,
-        walkBikeAccessTier: walkBikeAccess.tier,
-        walkBikeAccessScoreBoost: walkBikeAccess.scoreBoost,
-        walkBikeAccessRationale: walkBikeAccess.rationale,
+        walkBikeAccessTier: walkBikeAccess?.tier ?? null,
+        walkBikeAccessScoreBoost: walkBikeAccess?.scoreBoost ?? null,
+        walkBikeAccessRationale: walkBikeAccess?.rationale ?? "Not measured: commute mode and vehicle-access data are required.",
 
         // Safety. null (not 0) whenever no source answered OR the source hit the
         // record cap: consumers render null as "N/A", and

@@ -20,6 +20,520 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Saved API chat adds custody source for workspace and selected-project captures,
+retained turns, draft intents, and separate human approval and result recovery.
+For a future deployment of this increment, apply
+`20261021215752_assistant_chat_turns.sql` before deploying dependent code. The
+migration seeds no admission; profile admission remains CLOSED. Source review
+and ordinary checks do not establish native database, provider, or browser
+acceptance. This entry records pending work, with no new v0.70.0 capability claim.
+
+## 0.70.0 (2026-10-21)
+
+**Manual source-page plan proposals.** Document review stages quoted records
+from a retained page without an AI account. Pending proposals have separate
+pagination from reading history. Manual chapter copies retain source authorship;
+review and saving remain explicit.
+
+**Exact crash-year selection and map focus.** High-injury network reads apply
+each requested year, intersected with any range bounds, and refuse invalid or
+disjoint inputs. Sparse-year disclosures list the selected years. Selecting a
+ranked road reveals and focuses the existing map. The bounded desktop and 390px
+map-focus checks retain their identified builds and earlier failed attempts.
+Sparse-year browser selection remains unassessed.
+
+**Dependency corrections.** The installed lockfile updates follow-redirects to
+1.16.1, Hono to 4.13.11 and Vite to 7.3.7. Vitest and its matching packages use
+4.1.12; Chai uses 6.3.0 and tinyrainbow uses 3.2.0. The maintained dependency
+audit reports zero vulnerabilities at the final local QA checkpoint.
+
+**Upgrade before dependent code.** This tree has 429 migration files. The single
+addition since v0.69.0 is
+`20261019000002_rtp_manual_source_page_proposals.sql`. Compare installed history
+and apply the pending additive migration before deploying this capability. Do
+not replay an already applied version or rewrite migration history. Keep the
+previous compatible build and follow the self-hosting and recovery guidance.
+
+**Verification and limits.** The release record identifies the tested source,
+ordinary QA/build, shuffled order, applicable isolated RLS and worker checks,
+affected local views and representative upgrade evidence. The GitHub release
+records the final commit and publication. Hosted acceptance requires its own
+identified deployment and schema record. Local synthetic source-page workflows
+do not prove complete predecessor coverage, scanned OCR, source authority,
+adoption or legal applicability. Requested crash years do not establish
+complete observations, zero crashes in unavailable years, a valid annual
+denominator, treatment effects or scientific validity. Full RTP, Safety,
+nationwide AequilibraE and ActivitySim validation, and all remaining v1
+requirements stay open.
+
+## 0.69.0 (2026-10-19)
+
+**Development release candidate, prepared for final release checks.** This
+packages the already-main history through `99dfde596d0cf4f12c46965379cc832204a99254`.
+It does not declare a tag, current hosted deployment or completed v1 milestone.
+Open PRs #347, #350 and #352 remain outside this candidate.
+
+**Project evidence into grant pursuit.** Report and evidence-bundle choices show
+file formats, generation times and artifact IDs. Report generation retains its
+writeback revision and jurisdiction snapshot; changed context requests a refresh.
+The estimate editor retrieves the exact saved supporting document. Grant catalog
+search filters recorded programs. Opportunity cards edit or clear recorded dates,
+and My Work retains notices of those OpenPlan edits. The SS4A workspace prepares
+six source-bound working drafts from a same-project Safety artifact, retaining
+prior drafts, final text, checklist states and source caveats.
+
+**Source reading and text inspection.** RTP document review now offers an
+explicit policy-and-goal reading scope and identifies matching passages left
+unread. Numeric reading remains the default; chapter text still passes through
+draft staging and review. Engagement text inspection exposes hidden formatting
+without changing the stored contribution or moderation decision. Neither change
+adds a migration.
+
+**Exercised outcomes and limits.** The dated records below retain agent-run
+desktop and 390px interactions, report/bundle downloads, exact estimate-source
+bytes and an inspected SS4A DRAFT PDF. These checks cover different identified
+builds. The [first-week record](docs/ops/FIRST_WEEK_2026-10-17.md) remains nine
+reached and three partial across builds, with its failed outcome gate intact.
+Search does not establish eligibility or an open call; estimate retrieval does
+not establish a current estimating basis. Notices describe saved OpenPlan edits,
+not verified funder amendments. SS4A drafts are not a complete Safety journey,
+grant-ready analysis, finalization or submission. Full v1, nationwide scientific
+validation and human acceptance are not claimed. Planner feedback is post-v1
+under the development release policy and does not gate this increment.
+
+**Operator steps before deployment or tagging.** This tree contains 428 migration
+files, including the 29 additions since v0.68.0 listed below. Compare exact file
+and applied-history inventories, definitions and dependencies on the intended
+installation. Apply the required additive migrations in order before deploying
+dependent code, following [self-hosting](openplan/docs/SELF_HOSTING.md) and the
+[runbook](openplan/docs/ops/RUNBOOK.md). Keep the previous compatible build.
+Confirm the documented npm lockfile/webpack install and build path, applicable
+QA, shuffled, isolated RLS and worker checks, and a populated v0.68.0 upgrade
+that preserves representative records and artifact custody. Confirm separate
+[restore evidence](openplan/docs/ops/BACKUP_AND_RESTORE.md) where affected.
+This packaging change performs none of those installation or recovery operations.
+
+The supplied hosted rollout record has 429 applied-history rows, including an
+open-PR RTP migration, while this candidate has 428 files. Counts and the largest
+version cannot establish compatibility. Do not blindly reapply migrations or
+rewrite history. A saved backup readback reports `restorePerformed=false` and
+`activeWritersExcluded=false`; it does not prove restoration or an atomic capture.
+No current hosted Git/build/alias, managed schema or affected authenticated
+workflow acceptance is established by this candidate. Bind those checks to the
+actual deployment before claiming it runs this release.
+
+Reminder transport still needs exact installed RPC and ordinary API evidence,
+including inserted, duplicate and deferred results and preserved existing reminder
+behavior. Application reminders and full reminder-kind coexistence remain pending
+separate activation. Land-use publication, retained geography and public viewport
+corrections retain their source-only limits and open native/browser boundaries.
+Assignment-image and supported worker-install receipts remain separate; compact
+graph and interpreter controls do not establish model accuracy. ActivitySim's
+publication refusal remains under correction outside this release's claims.
+
+### Migrations added since v0.68.0
+
+- `20261016000028_gtfs_managed_execution.sql`
+- `20261016000029_gtfs_submission_status.sql`
+- `20261016000030_gtfs_human_review.sql`
+- `20261016000031_gtfs_request_cancellation.sql`
+- `20261016000032_model_kpi_receipt_float_precision.sql`
+- `20261017000001_project_map_packages.sql`
+- `20261017000002_engagement_survey_question_counts.sql`
+- `20261017000003_aerial_private_dispatch_custody.sql`
+- `20261017000005_money_integrity_corrections.sql`
+- `20261017000006_permission_integrity.sql`
+- `20261017000007_workspace_time_zone.sql`
+- `20261017000008_historical_run_decisions.sql`
+- `20261017000009_owp_program_type.sql`
+- `20261017000010_workspace_storage_quota.sql`
+- `20261017000011_aerial_preserve_held_custody.sql`
+- `20261017000012_aerial_delivery_authority.sql`
+- `20261017000013_artifact_storage_server_writes.sql`
+- `20261017000014_work_program_evidence_date_workspace_calendar.sql`
+- `20261017000015_node_queue_process_observations.sql`
+- `20261017000016_project_jurisdiction_context.sql`
+- `20261017000017_portfolio_skip_invalid_classifications.sql`
+- `20261017000018_assistant_usage_limit_receipts.sql`
+- `20261017000019_project_budget_complete_inputs.sql`
+- `20261017000020_engagement_billed_summaries.sql`
+- `20261017014010_land_use_plan_context_geography.sql`
+- `20261017030608_land_use_plan_publication_transaction.sql`
+- `20261017052401_public_designation_query_viewport.sql`
+- `20261018000001_grant_deadline_changes.sql`
+- `20261018000002_ss4a_safety_seed.sql`
+
+### Retained development notes
+
+The base tree's notes follow unchanged. Candidate, unapplied and pending labels
+record each lane's dated evidence boundary; they are not a current installation
+inventory or a claim that every included component is activated. Later evidence
+must close the relevant boundary before deployment. Prior failures remain in
+the linked records.
+
+**Engagement text inspection:** staff can inspect hidden formatting characters in
+comments, restricted history, survey answers and saved synthesis sources. The
+optional view shows counts, code points and escaped text while preserving the
+readable contribution. It does not change moderation or infer intent. No
+migration is required.
+
+**Linked estimate sources:** the project estimate editor opens its exact saved
+supporting document, including one older than the recent-document list. Read
+failures, unavailable originals and missing price years stay visible. The link
+uses the existing authorized document download route. No migration is required.
+
+**Recorded grant deadline changes:** My Work retains notices when an opportunity's
+application or decision deadline is added, changed or cleared in OpenPlan. Each
+notice preserves the old and new dates and identifies an unknown actor when
+needed. These notices describe OpenPlan edits, not verified changes to a funder's
+official notice. The initial rollout keeps the deployed reminder key and leaves
+application reminders explicitly pending. Complete decision/application reminder
+coexistence needs a separate activation after older writers retire. The existing
+opportunity card now edits or clears its recorded dates, shows the browser time
+zone, and sends only changed fields so untouched timestamp precision remains.
+Failed saves keep the draft visible. Apply
+`20261018000001_grant_deadline_changes.sql` before deploying this capability.
+
+**Safety plan seeds:** the existing SS4A application workspace previews six
+source-bound working drafts from an exact same-project Safety artifact. Source
+snapshots, draft origin and export caveats stay attached; final text, prior
+drafts and checklist states remain. Review each section and its missing inputs
+before finalizing. Apply `20261018000002_ss4a_safety_seed.sql` before deploying
+this capability. The [source status](docs/reviews/2026-10-18-ss4a-safety-seed/STATUS.md)
+records the separate native, browser and artifact checks and retained failures.
+
+**Compact assignment graph preparation:** a worker-owned adapter checks complete
+car-eligible link incidence before excluding a proved nontraversable sink chain.
+It retains the native compressor's IDs and checks signed path correspondence
+before skimming. Unsupported or ambiguous graphs still refuse. Assignment image
+builds now require the reviewed CPython 3.11 Linux x86_64 engine bytes; other
+wheels are not accepted by version alone. This correction does not validate
+earlier exclusions or establish model accuracy. No migration is required.
+
+**Grant catalog search:** find programs by name, administering agency, project
+type or displayed catalog details. Results show a count, a clear control and an
+empty state. Jurisdiction coverage remains visible while filtering. A search
+match does not confirm eligibility or an open call. No migration is required.
+
+**Local model interpreter checks:** AequilibraE launchers check the repository's
+numerical dependency requirements before worker entry. Import success alone no
+longer admits an incompatible environment. `OPENPLAN_AEQUILIBRAE_PYTHON` binds an
+external absolute interpreter path, including paths with spaces; an invalid
+explicit selection stops without fallback. Install the updated worker
+requirements, which include `packaging` for version parsing. ActivitySim retains
+its existing execution and preflight-only selection. These checks do not prove
+model behavior or scientific validity. No migration is required.
+
+**Safety road context:** the crash view and report generation use the retained
+acquisition's registered source capability to select road context, including for
+uploaded or drawn study areas without a Census place. Missing provenance does
+not become a country claim. Failed cache reads stay unavailable, and reports
+still exclude road facts whose cache write fails. No migration is required.
+
+**Safety source restoration:** the current study area's retained crash acquisition
+loads independently of the eight most recent workspace imports. Newer pulls for
+other projects or extents no longer hide its source and coverage. A failed current
+lookup is disclosed and withholds the fallback map read; a history-only failure
+still permits the verified acquisition to load. No migration is required.
+
+**Evidence bundle file selection:** report candidates show their file format,
+generation time and artifact ID, including in checkbox labels. Files with the
+same report title can be distinguished before freezing a bundle. A missing
+generation time stays unavailable; generation order does not establish source
+freshness. No migration is required.
+
+**Report handoff consistency:** date-only deliverable deadlines keep their
+calendar day in report previews and exports. New v4 jurisdiction snapshots are
+checked against current jurisdiction and registry inputs; a change requests a
+refresh, and an unreadable assessment is disclosed separately. Historical
+snapshots retain their existing treatment. No migration is required.
+
+**Report generation and jurisdiction handoff:** completed report generation now
+records its exact writeback revision. A later report edit or interrupted
+writeback still requires a refresh. The external jurisdiction-readiness payload
+uses schema v4 and fingerprints jurisdiction context and registry inputs, so
+creating a PDF no longer changes that assessment hash. Full project revisions
+and evidence-bundle freshness checks remain separate. No migration is required;
+existing v3 artifacts retain their original bytes and schema.
+
+**Project-budget snapshot and land-use publication, source candidates:**
+`20261017000019_project_budget_complete_inputs.sql` supplies the caller-scoped
+complete budget snapshot. `20261017030608_land_use_plan_publication_transaction.sql`
+saves a publication packet and its pointer within one transaction. Operators must
+apply each migration before deploying its dependent application code, after the
+installation's migration and recovery checks are accepted. This source correction
+does not apply either migration or establish native, hosted or release acceptance.
+See the [budget source record](docs/reviews/2026-10-16-project-budget-classification-joined/STATUS.md)
+and [publication source record](docs/reviews/2026-10-16-land-use-publication-transaction/REPORT.md)
+for their separate evidence limits.
+
+**Public designation viewport correction, source candidate:** wrapped map views
+retain both longitude intervals, unreadable views clear earlier shapes, and
+blank coordinates refuse instead of becoming zero. The loader uses one dedicated
+viewport RPC and rejects incomplete or duplicate replies. Additive migration
+`20261017052401_public_designation_query_viewport.sql` is unapplied. Source review
+and focused checks pass; native SQL/RLS, performance and identified-build browser
+acceptance remain open. Do not deploy this code before its migration and relevant
+checks are accepted. See the [source checkpoint](docs/reviews/2026-10-17-viewport-reviewed-root-integration/STATUS.md).
+
+**Land-use saved geography, unchecked source candidate:** the candidate PATCH
+guard directs study-area changes through the existing context editor. Additive
+migration `20261017014010_land_use_plan_context_geography.sql` guards retained
+context/geography agreement across table writers. The CLI-generated filename is
+allocated; the migration is unapplied and focused checks remain pending. Deploy
+the app only with the migration installed and the relevant checks accepted.
+Historical context and frozen snapshots are not backfilled. See the
+[preparation record](docs/reviews/2026-10-16-land-use-context-geography-correction/STATUS.md).
+
+**Engagement invoice-summary completeness, source candidate:** candidate migration
+`20261017000020_engagement_billed_summaries.sql` adds a caller-scoped stable
+snapshot of gross sent/paid subtotals and separate draft subtotals. Dashboard
+engagement totals no longer depend on the 500-row register. Invoice warnings
+and PDF/evidence assembly use the same reader and disclose an unavailable or
+pending source without inventing zero totals. Authorized draft creation stays
+warn-only. Aggregate currency and legacy agreement terms remain unassessed.
+SQL20 is unapplied and unreleased. Native role/RLS, raw SDK precision,
+upgrade/recovery, atomicity and identified-build browser/PDF proof remain open.
+It adds one source migration after the existing 422-file history; it does not
+change the existing SQL19 native controller's source binding. See the
+[candidate record](docs/reviews/2026-10-16-engagement-summary-completeness/STATUS.md).
+
+**Planner Agent CLI and usage-limit candidates:** the configured connector's
+`install-check` command offers inspected, version-pinned npm guidance without
+running an update. Structured Codex usage-limit failures retain a scoped receipt
+and appear as limited. A generic failure has no reported reset because the
+current protocol cannot bind its quota bucket. Tokens, cost and recovery stay
+unknown when unreported. Candidate migration
+`20261017000018_assistant_usage_limit_receipts.sql` preserves service-only
+execution and the effective temporary-schema ordering. It remains unapplied in
+this lane. Native SQL/RLS, consented provider recordings and identified-build
+browser acceptance remain open. See the [source review](docs/reviews/2026-10-16-a0-corrections-and-install-check-independent/REVIEW.md).
+
+**Portfolio import skip correction, candidate:** migration
+`20261017000017_portfolio_skip_invalid_classifications.sql` lets skipped rows
+retain invalid source status and delivery phase in immutable audit records.
+Selected rows still pass project classification, cost, confirmation, source
+custody and duplicate checks in the same transaction. Apply the migration before
+claiming this correction on an installation. Native rollback checks pass on an
+isolated test target; browser retry remains pending. See the [candidate evidence](docs/reviews/2026-10-15-portfolio-skip-invalid-transaction-fix/STATUS.md).
+
+**Integration secret rotation, candidate:** the optional private
+`OPENPLAN_INTEGRATION_KEY_PREVIOUS_SECRET` reads retained workspace keys and
+sealed worker credentials while new writes use the primary. Prepare both
+secrets on every reader before switching the primary. Do not overwrite an
+occupied second slot while retained records need it. Reads do not re-encrypt
+records, and no hosted secret is changed. Follow the
+[rotation procedure](openplan/docs/SELF_HOSTING.md#rotate-the-integration-encryption-secret)
+and retain the [verification limits](docs/reviews/2026-10-15-integration-secret-rotation/STATUS.md).
+
+**Node queue process observations, candidate:** eight existing queue commands record private process states under one captured instance and build. Deep health keeps missing, stale, stopped and unavailable observations separate from job completion. Candidate migration `20261017000015_node_queue_process_observations.sql` must precede deployment; hosted application is pending. Existing worker handlers retain shutdown ownership. The caller checker allows 30 seconds for three serial probes. See the [scope and proof limits](docs/reviews/2026-10-14-node-queue-observation/STATUS.md).
+
+**Project jurisdiction context, candidate:** the existing project editor separates
+human-declared jurisdictions from study geometry. Multiple declarations and explicit
+unresolved state carry through project readiness, new reports and evidence exports.
+Workspace readiness keeps its single-place contract. Candidate migration
+`20261017000016_project_jurisdiction_context.sql` is additive and unapplied by this
+lane. Isolated native authorization, upgrade/restore, build and browser evidence
+remain required before rollout. See the [implementation record](docs/reviews/2026-10-15-project-jurisdiction/implementation/STATUS.md).
+
+**Explicit owned worker command, candidate:** private operator settings, credential
+roles and preset options start the existing owned service through
+`workers/odm_worker/runtime_service_cli.py`. The command preserves original
+admissions and shutdown ownership, restores signal handlers and keeps private
+inputs out of diagnostics. It does not replace the legacy command, activate a
+hosted worker, adopt unsealed roots or establish processing acceptance. See the
+[operator instructions](docs/reviews/2026-10-14-owned-worker-cli/INSTALLATION.md).
+
+**Explicit original worker assembly, candidate:** joins the existing input,
+processing, observation, artifact and callback journals under sealed settings.
+Source and callback address policies are explicit. Changed transports, roles and
+resource settings refuse before operation. Actual local cancellation checks have
+separate native and default-worker limits. See the [assembly record](docs/reviews/2026-10-14-runtime-assembly/STATUS.md).
+
+**Explicit operator configuration, candidate:** a new private worker root binds
+its installation, target, application, engine and resource settings before
+admission. Exact replay preserves the original seal. Existing unsealed roots
+require separate adoption. This candidate does not activate the default worker.
+See the [configuration record](docs/reviews/2026-10-14-runtime-binding/STATUS.md).
+
+**Original recovery scheduling, candidate:** an explicit supplied worker graph
+attempts old-outcome repair, held original recovery and new admission in that
+order. Each attempted stage ends its step. Lifetime ownership and pinned
+component joins must remain unchanged. The default worker still does not select
+this scheduler. See the [scheduling proof](docs/reviews/2026-10-14-recovery-execution/STATUS.md).
+
+**Original local outcome recovery, candidate:** an explicit worker adapter preserves
+an older failure record and binds a separate recovery receipt to acknowledged
+original delivery. Saved acknowledgements repair bookkeeping without another
+callback POST. Pending sends retain original engine facts and require current
+actor access plus the saved command hash. Default worker selection remains
+pending. See the [recovery proof](docs/reviews/2026-10-14-outcome-recovery/STATUS.md).
+
+**Aerial held-file custody, candidate:** migration
+`20261017000011_aerial_preserve_held_custody.sql` prevents a later write from
+replacing the original facts of a held file. Attempt counts and timestamps can
+still advance. Deploy the callback recovery code first, then take a fresh backup
+and apply this migration before merging the dependent guard. On the hosted installation, this migration is applied and independently read
+back before the candidate merge. Full worker integration remains pending. See the
+[guard proof](docs/reviews/2026-10-14-aerial-held-custody/STATUS.md).
+
+**Original aerial delivery authority, candidate:** migration
+`20261017000012_aerial_delivery_authority.sql` adds a service-only observation
+for original artifact access and terminal delivery. Processing access stays
+limited to active jobs. Completed terminal replay must match the callback
+actually applied to the original job. The retained download adapter keeps its
+original token and expiry; default worker wiring remains pending. The hosted migration is applied and
+independently read back before the candidate merge; this does not activate a
+worker.
+
+**Operating the live site.** `/api/health` now reports how many migrations
+the deployed build expects and the latest one, read from
+`openplan/supabase/migrations` at build time. A new token-protected
+`/api/health/deep` reads the database and Storage once each, gives each
+modeling worker's heartbeat age, and lists every expected migration; it is off
+until you set `OPENPLAN_HEALTH_TOKEN`. The Production Health workflow also
+runs after each successful Vercel production deployment, and a second step
+fails when the deployed code expects a migration the hosted database has not
+applied. It compares whole sets, because hosted migrations may be applied out
+of order. That step needs the repository variable
+`OPENPLAN_SUPABASE_PROJECT_REF` and the secrets `OPENPLAN_HEALTH_TOKEN` and
+`SUPABASE_ACCESS_TOKEN`; until they are set it prints a notice. Error pages
+now send a scrubbed report (path with share tokens replaced, error type,
+message, digest and stack; no user, cookie or query string) to
+`/api/client-errors`, which logs it and, only when `OPENPLAN_SENTRY_DSN` is
+set, forwards it and server request errors to Sentry from the server. The site
+serves `robots.txt` (public pages open; app, API and account pages
+disallowed), drops the `X-Powered-By` header, and sends a report-only
+content-security policy without `'unsafe-eval'` beside the enforced one, so
+violations are reported before anything is blocked. Hosted operators: see
+`openplan/docs/ops/HOSTED_OPERATIONS.md` for monitoring, rollback, key rotation
+and where each secret lives. Deep-health deadlines cancel the actual SDK reads;
+malformed error-reporting configuration does not reject reporting, and public
+UUID-shaped link tokens are scrubbed. No migration.
+
+**My Work dates on the workspace calendar.** Grant decision dates,
+application close times and award obligation deadlines on My Work now show the
+day they fall on in the workspace time zone, not the UTC day. An obligation
+due at 11 p.m. Pacific on October 20 reads October 20, and the dashboard's
+date windows keep it on the 20th. Dates stored without a time do not move.
+
+**Work program authority dates follow the workspace's day.** An adoption,
+external acceptance, spending authorization or withdrawal can be dated today
+on the workspace's calendar. Before, the database compared the date with the
+UTC day, so a workspace far east of UTC was told today was in the future, and
+one far west could record tomorrow's date. With no workspace time zone saved,
+the database uses UTC as before. Apply migration
+`20261017000014_work_program_evidence_date_workspace_calendar.sql`; it changes
+one database function, and the app works the same before or after it runs.
+
+**Dates on the workspace calendar.** More planner dates now follow the
+workspace time zone instead of the server's UTC day, which turns over at 5 p.m.
+Pacific. Engagement participation open and close times are entered and shown
+in the workspace zone, and the form names it; with no zone set it says UTC.
+These also use the workspace calendar: review-file and Documents date filters,
+the daily intake chart, dashboard dates, weekly comments and runs this year,
+contract and work program form dates, a spend entry saved with no date, and
+contract and receivable invoice aging. The reminder digest counts "due in the
+next N days" and "waiting N days" on each workspace's calendar. Record lanes,
+invoice registers and grant invoice badges no longer call a record overdue the
+evening before it is due; they use the same rule as the overdue counts. No
+migration.
+
+**Account and storage limits:** one person may own 5 workspaces and one workspace may store 5 GiB unless the operator sets `OPENPLAN_MAX_OWNED_WORKSPACES` or `OPENPLAN_WORKSPACE_STORAGE_QUOTA_BYTES`. Apply migration `20261017000010_workspace_storage_quota.sql` before deploying; workspace creation and uploads fail until it runs.
+
+**Generated reports and exports count against the storage limit.** Report PDF and HTML files, grant application exports and engagement review files are now refused when they would put a workspace over its storage limit, with the same message uploads give. Signed-in members can no longer upload straight into the report and grant export file stores with their own sign-in, which let them pass the limit; the server now stores those files. Existing files stay readable. Apply migration `20261017000013_artifact_storage_server_writes.sql` together with this code: older code fails to store report PDFs once the migration runs, and this code works before or after it.
+
+**Evidence bundles and work program exports count against the storage limit.** Freezing a project evidence bundle and preparing a work program export now refuse with the same storage message when the file would put the workspace over its limit, or when storage use cannot be read; the bundle is recorded as failed and nothing is stored. A retried engagement review or work program export is charged only for files not already stored from its earlier attempt, so a retry near the limit is no longer refused for its own files. No migration.
+
+**Close comments on a live engagement page.** Staff can now close and reopen
+public comments from the campaign's Publish panel. The public page stays up as
+view only, and comment, photo and survey submissions are refused while closed.
+The close time is recorded from the server clock. Until now nothing in the app
+set it, so the view-only state could not be reached. No migration.
+
+**Publish checklist map step.** The "Choose where the map opens" step now counts
+the linked project's area, which the resident map already opens on when the
+campaign has no area of its own. It no longer tells staff a pin will land in the
+middle of the country in that case. It also counts the workspace home area, the
+resident map's next fallback, and names it.
+
+**Reopening comments after the participation end date.** The public page, the
+submit routes and the database refuse comments once the participation end date
+has passed, but the console still said "accepting submissions" after a reopen.
+The console now says "Comments are closed because the participation period ended
+on <date>", in the workspace's time zone, and links to the end date. A reopen
+request after that date is refused with the same sentence; the end date is never
+moved for you. No migration.
+
+**RTP comment record counts every comment.** The comment-response record on
+the RTP cycle page and in the exported packet read approved comments, responses
+and consultations in one request each, so a plan with more than 1,000 comments
+showed only the first 1,000. It now reads every page, and a read that stops part
+way is shown as a failed read, not a short count. The Grants queue now says how
+many projects have no funding target, or have an invoice to link to their
+award, instead of counting "funding lanes". No migration.
+
+**Safety action plan, first part:** Safety now ranks a high-injury network from
+the project's stored crashes and road lines, draws it on the map, and lists it
+with method, years, source and coverage. A source with only deaths gives a
+network labeled "fatal crashes only". Planners can attach countermeasures from a
+cited FHWA list (crash modification factors left out and marked [VERIFY]) and
+save them to a project report, which prints a "Safety action plan (draft)"
+section listing the SS4A components it does not cover. No migration.
+
+**Aerial journal correction:** tolerate a retired SQLite companion only after a
+fresh lookup confirms its name is gone. Keep owner, mode, type and link checks
+for present files, including dangling or reappeared aliases. See the
+[dated proof](docs/reviews/2026-10-13-odm-retired-sqlite-companions/STATUS.md).
+
+**Planner Agent funding words.** The assistant panel's funding answers, quick
+links and the prompts it sends after an action counted "project funding lanes"
+and "reimbursement lanes" and offered to "Create funding need anchor". They now
+count projects, one or many, and name the funding target, the invoice or the
+Grants page. The panel summary no longer reads "3 missing a funding targets".
+Action ids, kinds and payload fields are unchanged. No migration.
+
+**Native engine observer, candidate:** add an explicit Linux NodeODM observer
+for the configured original container, image, process-mounted configuration and
+private endpoint. It requires the same host PID namespace and permission to read
+that process root. Keep shared deadlines, ownership and parent lifetime. Defaults
+and processing commit remain held. See the
+[dated evidence](docs/reviews/2026-10-12-odm-native-engine-attestation/STATUS.md).
+
+**Money record corrections.** Apply `20261017000005_money_integrity_corrections.sql`
+before deploying. Work-program labor can no longer be counted twice, an issued
+report rechecks its adoption, a second amendment cannot overwrite one in
+progress, a voided contract draft releases its billed sources, finance approves
+only reviewed consultant invoices, and client invoices past draft can change only
+their status, enforced in the database for every writer. Existing records are not
+rewritten; the rules apply to new writes.
+
+**Overall Work Program type.** Apply `20261017000009_owp_program_type.sql` before deploying; programs can now be typed Overall Work Program (OWP/UPWP), and the Work program entry shows on those programs and on any program that already has work program records.
+
+Apply `20261017000008_historical_run_decisions.sql` before deploying. Owners and admins can now keep a model run recorded before recovery tracking as a read-only record, or close it and start a new run; either choice saves an audited receipt and leaves the run and its results unchanged.
+
+**Action for single-agency installations that use `ANTHROPIC_API_KEY`:** a
+production build no longer lets workspaces without their own key spend the
+deployment's Anthropic key unless `OPENPLAN_SHARED_AI_KEY=allow` is also set. On
+a deployment with public signup, leave it unset; each workspace adds its own key.
+Development runs keep the old behavior. Sign-in and sign-up now refuse redirect
+values that only look local, the sign-up confirmation notice says to check spam
+and can resend the link, and the pages no longer promise a workspace before the
+email is confirmed.
+
+The aerial private-dispatch candidate adds
+`20261017000003_aerial_private_dispatch_custody.sql`. It retains exact original
+application request text and its actor, workspace, project, mission and job scope.
+The worker-only read reports current access separately from saved custody and
+does not grant engine permission. Apply this additive migration before enabling
+dependent reader code. It remains a candidate, with hosted rollout and default
+worker activation pending. See the [producer evidence](docs/reviews/2026-10-11-odm-private-dispatch-producer/STATUS.md).
+
+The local control panel keeps its update/recovery caption visible at the
+minimum window size and double display scale by reducing the summary gap.
+The [combined worker integration evidence](docs/reviews/2026-10-12-m3-owned-stack-integration/STATUS.md)
+records its layout controls and the retained worker candidate's verification limits.
+
 The managed transit import candidate moves URL, catalog, ZIP and refresh imports
 to an installed worker when the installation explicitly enables it. The worker
 retains exact private bytes, recovers interrupted attempts and leaves completed
@@ -73,6 +587,12 @@ configuration now sets `file_size_limit = "1GiB"`; restart a running local
 stack (`npm exec -- supabase stop`, then `start`) to pick it up. A hosted
 project needs the same limit in its storage settings.
 `OPENPLAN_MAP_PACKAGE_MAX_BYTES` lowers the ZIP size the app accepts.
+
+Apply `20261017000006_permission_integrity.sql` before deploying the app. It
+stops signed-in users from asking about another person's contract access,
+requires a map package's grant application to belong to its project and refuses
+retries that change the client or practice marking, and limits census tract
+loads to workspace writers at 20 counties per person per hour.
 
 **Maps.** A new Maps page lists map packages for every project in a workspace:
 figures as PDF, PNG and SVG, map books, a web map, a Google Earth file, a QGIS
@@ -183,6 +703,38 @@ could not be read. The public-claims guard now follows relative imports.
 Not done: a map that works without a Mapbox key, replying from the map, and
 observation with residents. See
 `docs/reviews/2026-10-10-engagement-map-sweep/README.md`.
+
+Apply `20261017000002_engagement_survey_question_counts.sql` before deploying
+this change. It adds a function that returns a campaign's approved survey
+response count and per-question answer counts, with no answers, to members of
+the campaign's workspace. The Planner Agent reads survey counts through it; its
+survey read failed on every campaign before, because survey answers are closed
+to every client role.
+
+Apply `20261017000007_workspace_time_zone.sql` so owners and admins can set a workspace time zone in Workspace setup; claims, allocations, invoices, statements, grant facts and the Planner Agent then date "today" in that zone instead of UTC (without it, dates stay UTC).
+
+AI moderation flags comments that try to instruct the screen, under a new
+"Instructions to the screen" label, and sends them to a person for review.
+Before, such a comment fit no category and came out "approve" even when the
+rationale asked for review.
+
+The Planner Agent can now set a funding opportunity's closing date when it
+proposes the record. Before, a planner who gave it a due date had to enter the
+date again on the record. The date is part of what the planner approves; a
+request carrying a different date is refused.
+
+Corridor crash density now divides by every year the crash source answered,
+including years with no crash in the study area. It divided by the years that
+returned a crash, so an empty year raised the annual rate: a downtown test area
+read a third too high, and one crash in four years read as one a year. The run
+summary also states the non-fatal injury crash count, which the Planner Agent
+reads; without it the agent said injury crashes were not recorded.
+
+RTP document extraction now returns project costs. The prompt told the model
+that a figure's exact digits must appear in its quote, so it left out costs a
+plan prints as "$24 million" rather than risk losing the project row. The
+prompt now states the rule the checker applies: "$24 million", "$24M" and
+"24,000,000" are the same figure.
 
 ## 0.68.0 (2026-10-09)
 

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { pagingFake } from "./helpers/paging-fake";
 
 const USER_ID = "22222222-2222-4222-8222-222222222222";
 const WORKSPACE_ID = "33333333-3333-4333-8333-333333333333";
@@ -32,6 +33,13 @@ type ReportRow = {
 let reportRow: ReportRow | null = null;
 const reportUpdatePayloads: Array<Record<string, unknown>> = [];
 const reportInsertPayloads: Array<Record<string, unknown>> = [];
+let artifactMetadata: Record<string, unknown> = {};
+const writeQueries: Array<{ table: string; filters: Array<[string, unknown]>; projection: string | null }> = [];
+type WriteQuery<T> = {
+  eq(column: string, value: unknown): WriteQuery<T>;
+  select(columns: string): WriteQuery<T>;
+  maybeSingle(): Promise<{ data: T | null; error: null }>;
+};
 
 function createSupabase() {
   return {
@@ -73,18 +81,24 @@ function buildTableMock(table: string) {
         }),
       }),
       update(payload: Record<string, unknown>) {
-        reportUpdatePayloads.push(payload);
-        if (reportRow) {
-          reportRow = {
-            ...reportRow,
-            ...(payload as Partial<ReportRow>),
-            metadata_json:
-              (payload.metadata_json as Record<string, unknown> | undefined) ?? reportRow.metadata_json,
-          };
-        }
-        return {
-          eq: async () => ({ error: null }),
+        const call = { table, filters: [] as Array<[string, unknown]>, projection: null as string | null };
+        writeQueries.push(call);
+        const query: WriteQuery<{ updated_at: string }> = {
+          eq(column, value) { call.filters.push([column, value]); return query; },
+          select(columns) { call.projection = columns; return query; },
+          async maybeSingle() {
+            if (!reportRow || !call.filters.every(([column, value]) => reportRow?.[column as keyof ReportRow] === value)) {
+              return { data: null, error: null };
+            }
+            reportUpdatePayloads.push(payload);
+            reportRow = { ...reportRow, ...(payload as Partial<ReportRow>),
+              metadata_json: (payload.metadata_json as Record<string, unknown> | undefined) ?? reportRow.metadata_json,
+              updated_at: new Date(Date.parse(reportRow.updated_at) + 1000).toISOString(),
+            };
+            return { data: { updated_at: reportRow.updated_at }, error: null };
+          },
         };
+        return query;
       },
     };
   }
@@ -160,10 +174,15 @@ function buildTableMock(table: string) {
     };
   }
 
+  // The packet awaits its campaign list and the comment-response record pages
+  // the same table, so this one answers both, held to the server's row cap.
+  if (table === "engagement_campaigns") {
+    return { select: () => pagingFake(() => ({ data: [], error: null }), { serverCap: 1000 }).chain };
+  }
+
   if (
     table === "rtp_cycle_chapters"
     || table === "project_rtp_cycle_links"
-    || table === "engagement_campaigns"
   ) {
     return {
       select: () => ({
@@ -176,20 +195,38 @@ function buildTableMock(table: string) {
 
   if (table === "report_artifacts") {
     return {
-      insert: () => ({
-        select: () => ({
-          single: async () => ({
-            data: {
-              id: ARTIFACT_ID,
-              report_id: REPORT_ID,
-              artifact_kind: "html",
-              generated_at: new Date().toISOString(),
-              metadata_json: {},
-            },
-            error: null,
+      insert: (payload: Record<string, unknown>) => {
+        artifactMetadata = payload.metadata_json as Record<string, unknown>;
+        return {
+          select: () => ({
+            single: async () => ({
+              data: {
+                id: ARTIFACT_ID,
+                report_id: REPORT_ID,
+                artifact_kind: "html",
+                generated_at: new Date().toISOString(),
+                metadata_json: artifactMetadata,
+              },
+              error: null,
+            }),
           }),
-        }),
-      }),
+        };
+      },
+      update(payload: Record<string, unknown>) {
+        const call = { table, filters: [] as Array<[string, unknown]>, projection: null as string | null };
+        writeQueries.push(call);
+        const query: WriteQuery<{ id: string }> = {
+          eq(column, value) { call.filters.push([column, value]); return query; },
+          select(columns) { call.projection = columns; return query; },
+          async maybeSingle() {
+            const row: Record<string, unknown> = { id: ARTIFACT_ID, report_id: REPORT_ID };
+            if (!call.filters.every(([column, value]) => row[column] === value)) return { data: null, error: null };
+            artifactMetadata = payload.metadata_json as Record<string, unknown>;
+            return { data: { id: ARTIFACT_ID }, error: null };
+          },
+        };
+        return query;
+      },
     };
   }
 
@@ -269,6 +306,8 @@ function buildTableMock(table: string) {
     }
     empty.then = (resolve: (value: unknown) => unknown) =>
       Promise.resolve({ data: [], error: null }).then(resolve);
+    // The comment-response record pages its responses; an empty table ends on the first page.
+    empty.range = async () => ({ data: [], error: null });
     return empty;
   }
 
@@ -309,6 +348,8 @@ describe("RTP packet lifecycle: create → generate → review posture", () => {
     reportRow = null;
     reportUpdatePayloads.length = 0;
     reportInsertPayloads.length = 0;
+    writeQueries.length = 0;
+    artifactMetadata = {};
 
     createApiAuditLoggerMock.mockReturnValue({ info: vi.fn(), warn: vi.fn(), error: vi.fn() });
     authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
@@ -352,6 +393,11 @@ describe("RTP packet lifecycle: create → generate → review posture", () => {
       latestArtifactUrl: `/reports/${REPORT_ID}#artifact-${ARTIFACT_ID}`,
     });
 
+    expect(writeQueries).toEqual([
+      { table: "reports", filters: [["id", REPORT_ID], ["updated_at", "2026-04-16T00:00:00.000Z"]], projection: "updated_at" },
+      { table: "report_artifacts", filters: [["id", ARTIFACT_ID], ["report_id", REPORT_ID]], projection: "id" },
+    ]);
+    expect(artifactMetadata.generationWriteback).toEqual({ schema: "openplan.report-generation-writeback.v1", reportUpdatedAt: reportRow?.updated_at });
     expect(reportUpdatePayloads).toHaveLength(1);
     const firstUpdate = reportUpdatePayloads[0];
     expect(firstUpdate).toMatchObject({
@@ -373,6 +419,8 @@ describe("RTP packet lifecycle: create → generate → review posture", () => {
     });
     expect(refreshResponse.status).toBe(200);
     expect(reportUpdatePayloads).toHaveLength(2);
+    expect(writeQueries[2]).toEqual({ table: "reports", filters: [["id", REPORT_ID], ["updated_at", "2026-04-16T00:00:01.000Z"]], projection: "updated_at" });
+    expect(artifactMetadata.generationWriteback).toEqual({ schema: "openplan.report-generation-writeback.v1", reportUpdatedAt: reportRow?.updated_at });
     const secondQueueTrace = (reportUpdatePayloads[1].metadata_json as {
       queueTrace?: { action?: string; source?: string };
     } | undefined)?.queueTrace;

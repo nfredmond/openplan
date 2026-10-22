@@ -1,0 +1,32 @@
+[
+  {
+    "stage": "application-and-documentation",
+    "returncode": 0,
+    "seconds": 30.51
+  },
+  {
+    "stage": "scoped-types",
+    "returncode": 0,
+    "seconds": 1.297
+  },
+  {
+    "stage": "changed-file-lint",
+    "returncode": 0,
+    "seconds": 1.609
+  },
+  {
+    "stage": "product-direction",
+    "returncode": 0,
+    "seconds": 0.339
+  },
+  {
+    "stage": "wrapper-controls",
+    "returncode": 0,
+    "seconds": 0.022
+  },
+  {
+    "stage": "native-uncertainty-current",
+    "returncode": 0,
+    "seconds": 49.034
+  }
+]

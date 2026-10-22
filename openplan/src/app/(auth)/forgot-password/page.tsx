@@ -5,6 +5,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { recoveryErrorLooksLikeSuccess } from "@/lib/auth/recovery-reply";
 
 function noticeClass(tone: "info" | "success" | "danger") {
   const toneMap = {
@@ -41,10 +42,9 @@ function ForgotPasswordForm() {
     setLoading(false);
 
     // Deliberately NOT branching the visible outcome on whether the address
-    // exists: a different message for a real vs unknown email turns this form
-    // into an account-enumeration oracle. Real failures (network, rate limit)
-    // still surface, because those are actionable.
-    if (resetError && !/user not found|invalid/i.test(resetError.message)) {
+    // exists, including the rate-limit refusal only a real account gets.
+    // Network and server failures still surface, because those are actionable.
+    if (resetError && !recoveryErrorLooksLikeSuccess(resetError)) {
       setError(resetError.message);
       return;
     }
@@ -71,7 +71,7 @@ function ForgotPasswordForm() {
             <p className="font-semibold">Check your email.</p>
             <p className="mt-1.5">
               If an account exists for {email || "that address"}, a reset link is on its way. It can take
-              a minute to arrive — check spam before requesting another.
+              a few minutes to arrive. Check spam before asking for another.
             </p>
           </article>
         ) : (

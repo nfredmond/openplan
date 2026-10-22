@@ -449,3 +449,94 @@ describe("ATP disadvantaged-community bonus — every qualifying category", () =
     }
   });
 });
+
+describe("ATP scores the run did not record", () => {
+  // p3 has no safety score and no total score in project_scores.csv.
+  const UNSCORED_ROW: AtpScoreRow = {
+    project_id: "p3",
+    name: "Creek trail gap closure",
+    safety_score: "",
+    equity_score: "50",
+    climate_score: null,
+    feasibility_score: "40",
+    sensitivity_flag: "HIGH",
+  };
+  // p4 records a real zero safety score and a real zero total.
+  const ZERO_ROW: AtpScoreRow = {
+    project_id: "p4",
+    name: "Alley lighting",
+    safety_score: "0",
+    equity_score: "10",
+    climate_score: "0",
+    feasibility_score: "20",
+    total_score: "0",
+    sensitivity_flag: "HIGH",
+  };
+
+  it("keeps a missing score null and a recorded zero as zero", () => {
+    const result = computeAtpPacket([UNSCORED_ROW, ZERO_ROW], { runId: "r-unknown" });
+    const [unscored, zero] = result.applications;
+
+    expect(unscored.safety_score).toBeNull();
+    expect(unscored.climate_score).toBeNull();
+    expect(unscored.total_score).toBeNull();
+    expect(unscored.equity_score).toBe(50);
+    expect(zero.safety_score).toBe(0);
+    expect(zero.total_score).toBe(0);
+  });
+
+  it("leaves an unscored application out of the mean and says the mean is partial", () => {
+    const result = computeAtpPacket([SCORE_ROWS[0], UNSCORED_ROW], {
+      runId: "r-partial",
+      agency: "City of Grass Valley",
+      cycle: "ATP Cycle 7",
+    });
+
+    // 78 alone, not (78 + 0) / 2 = 39.
+    expect(result.summary?.mean_total_score).toBe(78);
+    expect(result.summary?.scored_application_count).toBe(1);
+    expect(result.summary?.application_count).toBe(2);
+
+    const blocks = atpGrantFactBlocks(result, "/tmp/atp_packet.csv");
+    expect(blocks[1].claim_text).toContain(
+      "total screening score not recorded (safety not recorded, equity 50.0, climate not recorded, feasibility 40.0)"
+    );
+    expect(blocks[2].claim_text).toContain(
+      "mean total score 78.0/100 (partial: 1 of 2 applications scored)"
+    );
+
+    const markdown = renderAtpPacketMarkdown(result, { runId: "r-partial", engineVersion: "1.0.0" });
+    expect(markdown).toContain("| Safety | Not recorded |");
+    expect(markdown).toContain("| **Total (weighted 30/25/25/20)** | **Not recorded** |");
+    expect(markdown).toContain(
+      "- Mean screening total score: **78.0** (partial: 1 of 2 applications scored)"
+    );
+    expect(markdown).not.toContain("| Safety | 0.0 |");
+  });
+
+  it("reports no mean when no application has a total score", () => {
+    const result = computeAtpPacket([UNSCORED_ROW], { runId: "r-none" });
+
+    expect(result.summary?.mean_total_score).toBeNull();
+    expect(atpGrantFactBlocks(result, "/tmp/atp_packet.csv")[1].claim_text).toContain(
+      "mean total score not recorded"
+    );
+    expect(renderAtpPacketMarkdown(result, { runId: "r-none", engineVersion: "1.0.0" })).toContain(
+      "- Mean screening total score: **Not recorded**\n"
+    );
+  });
+
+  it("shows a recorded zero as 0.0 and counts it in the mean", () => {
+    const result = computeAtpPacket([SCORE_ROWS[0], ZERO_ROW], { runId: "r-zero" });
+
+    expect(result.summary?.mean_total_score).toBe(39);
+    expect(result.summary?.scored_application_count).toBe(2);
+    const markdown = renderAtpPacketMarkdown(result, { runId: "r-zero", engineVersion: "1.0.0" });
+    expect(markdown).toContain("| Safety | 0.0 |");
+    expect(markdown).toContain("| **Total (weighted 30/25/25/20)** | **0.0** |");
+    expect(markdown).toContain("- Mean screening total score: **39.0**\n");
+    expect(atpGrantFactBlocks(result, "/tmp/atp_packet.csv")[1].claim_text).toContain(
+      "total screening score 0.0/100 (safety 0.0,"
+    );
+  });
+});

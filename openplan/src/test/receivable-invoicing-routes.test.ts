@@ -1,5 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { WORKSPACE_CALENDAR_COLUMNS } from "@/lib/time/workspace-calendar";
 
 const createClientMock = vi.fn();
 const createServiceRoleClientMock = vi.fn();
@@ -80,7 +81,7 @@ type InvoiceQueryChain = {
   then: (resolve: (value: unknown) => void) => void;
 };
 const invoiceQueryChain: InvoiceQueryChain = {
-  eq: () => invoiceQueryChain,
+  eq: vi.fn(() => invoiceQueryChain),
   order: () => ({ limit: invoiceLimitMock }),
   single: invoiceDetailSingleMock,
   then: (resolve) => resolve(invoiceListResultMock()),
@@ -108,6 +109,11 @@ const lineSelectMock = vi.fn(() => ({ eq: lineSelectEqMock }));
 const lineDeleteEqMock = vi.fn();
 const lineDeleteMock = vi.fn(() => ({ eq: lineDeleteEqMock }));
 
+// replace_client_invoice_lines: rpc().select(projection) resolves the new line rows.
+const rpcSelectMock = vi.fn();
+const summaryRpcMock = vi.fn<() => { data: unknown; error: { code?: string; message: string } | null }>();
+const rpcMock = vi.fn((name: string, _args: unknown) => name === "engagement_billed_summaries_v1" ? Promise.resolve(summaryRpcMock()) : { select: rpcSelectMock });
+
 // service-role client: the compensating delete of a half-created invoice.
 const serviceInvoiceDeleteEqMock = vi.fn();
 const serviceInvoiceDeleteMock = vi.fn(() => ({ eq: serviceInvoiceDeleteEqMock }));
@@ -118,7 +124,27 @@ const serviceFromMock = vi.fn((table: string) => {
   throw new Error(`Unexpected service table: ${table}`);
 });
 
+// workspaces: the calendar read (time zone) behind sent and paid dates.
+const workspaceCalendarMaybeSingleMock = vi.fn(
+  async (): Promise<{ data: unknown; error: { message: string } | null }> => ({
+    data: { time_zone: null, home_country_code: null },
+    error: null,
+  })
+);
+const workspaceCalendarEqMock = vi.fn((column: string, value: string) => {
+  void column;
+  void value;
+  return { maybeSingle: workspaceCalendarMaybeSingleMock };
+});
+const workspaceCalendarSelectMock = vi.fn((columns: string) => {
+  void columns;
+  return { eq: workspaceCalendarEqMock };
+});
+
 const fromMock = vi.fn((table: string) => {
+  if (table === "workspaces") {
+    return { select: workspaceCalendarSelectMock };
+  }
   if (table === "workspace_members") {
     return { select: membersSelectMock };
   }
@@ -212,9 +238,16 @@ const invoicePayload = {
   ],
 };
 
+function summarySnapshot(ceiling: string | null = null, billed = "0.00", draft = "0.00", billedMissing = "0") {
+  return { data: { version: 1, workspace_id: WORKSPACE, engagement_id: ENGAGEMENT, exclude_invoice_id: null, complete: true, error: null,
+    data: [{ engagement_id: ENGAGEMENT, not_to_exceed_amount: ceiling,
+      billed: { amount: billed, missing: billedMissing, invalid: "0" }, draft: { amount: draft, missing: "0", invalid: "0" } }] }, error: null };
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
   createApiAuditLoggerMock.mockReturnValue(mockAudit);
+  summaryRpcMock.mockReset().mockReturnValue(summarySnapshot());
 
   authGetUserMock.mockResolvedValue({ data: { user: { id: USER } } });
 
@@ -317,9 +350,15 @@ beforeEach(() => {
 
   serviceInvoiceDeleteEqMock.mockResolvedValue({ error: null });
 
+  rpcSelectMock.mockResolvedValue({
+    data: [{ id: LINE_ITEM_2, invoice_id: INVOICE, position: 0, description: "Revised scope", amount: 250 }],
+    error: null,
+  });
+
   createClientMock.mockResolvedValue({
     auth: { getUser: authGetUserMock },
     from: fromMock,
+    rpc: rpcMock,
   });
   createServiceRoleClientMock.mockReturnValue({ from: serviceFromMock });
 });
@@ -746,7 +785,7 @@ describe("POST /api/invoicing/client-invoices", () => {
     expect(lineInsertMock).not.toHaveBeenCalled();
   });
 
-  it("warns — and does not block — when the invoice pushes the engagement over its not-to-exceed", async () => {
+  it("warns without blocking when the invoice pushes the engagement over its not-to-exceed", async () => {
     engagementSingleMock.mockResolvedValueOnce({
       data: {
         id: ENGAGEMENT,
@@ -757,20 +796,7 @@ describe("POST /api/invoicing/client-invoices", () => {
       },
       error: null,
     });
-    invoiceListResultMock.mockReturnValueOnce({
-      data: [
-        {
-          id: "prior",
-          status: "sent",
-          engagement_id: ENGAGEMENT,
-          subtotal_amount: 8000,
-          retention_percent: 0,
-          retention_amount: 0,
-          total_amount: 8000,
-        },
-      ],
-      error: null,
-    });
+    summaryRpcMock.mockReturnValueOnce(summarySnapshot("10000", "8000"));
 
     const response = await postClientInvoice(
       jsonRequest("http://localhost/api/invoicing/client-invoices", "POST", {
@@ -782,9 +808,86 @@ describe("POST /api/invoicing/client-invoices", () => {
     expect(response.status).toBe(201);
     const body = await response.json();
     // 8000 billed + 5000 this invoice = 13000 against a 10000 ceiling.
-    expect(body.nteWarning).toEqual({ basis: "legacy_terms_unassessed", billedToDate: 8000, notToExceed: 10000, overBy: 3000 });
+    expect(body.nteWarning).toEqual({ basis: "legacy_terms_unassessed", billedToDate: 8000, projectedBilledToDate: 13000, notToExceed: 10000, overBy: 3000 });
     expect(body.invoice).toMatchObject({ id: INVOICE });
+    expect(body.ntePositionSource).toEqual({ state: "complete" });
+    expect(rpcMock).toHaveBeenCalledWith("engagement_billed_summaries_v1", { p_workspace_id: WORKSPACE, p_engagement_id: ENGAGEMENT, p_exclude_invoice_id: null });
+    expect(rpcMock.mock.invocationCallOrder[0]).toBeLessThan(invoiceInsertMock.mock.invocationCallOrder[0]);
   });
+  for (const [count, projectedCents, overCents] of [
+    [45, "4500000000000056", "4400000000000057"],
+    [91, "9100000000000010", "9000000000000011"],
+    [100, "10000000000000001", "9900000000000002"],
+  ] as const) {
+    it(`serializes exact projected warning cents from ${count} legitimate rows`, async () => {
+      engagementSingleMock.mockResolvedValueOnce({ data: { id: ENGAGEMENT, workspace_id: WORKSPACE, client_id: CLIENT, project_id: null, not_to_exceed_amount: "999999999999.99" }, error: null });
+      const totals = { 45: "44999999999999.55", 91: "90999999999999.09", 100: "99999999999999.00" };
+      summaryRpcMock.mockReturnValueOnce(summarySnapshot("999999999999.99", totals[count]));
+      const response = await postClientInvoice(jsonRequest("http://localhost/api/invoicing/client-invoices", "POST", { ...invoicePayload, currencyCode: "EUR", lineItems: [{ description: "New work", amount: 1.01 }] }));
+      expect(response.status).toBe(201);
+      const body = await response.json();
+      // Parse the JSON decimal spelling independently, without production money helpers.
+      function cents(value: number | string) {
+        expect(String(value)).toMatch(/^\d+(?:\.\d{1,2})?$/);
+        const [whole, fraction = ""] = String(value).split(".");
+        return BigInt(whole + fraction.padEnd(2, "0"));
+      }
+      expect(cents(body.nteWarning.projectedBilledToDate)).toBe(BigInt(projectedCents));
+      expect(cents(body.nteWarning.overBy)).toBe(BigInt(overCents));
+      expect(body.nteWarning.basis).toBe("legacy_terms_unassessed");
+      expect(body.nteWarning).not.toHaveProperty("currencyCode");
+      expect(rpcMock).toHaveBeenCalledWith("engagement_billed_summaries_v1", { p_workspace_id: WORKSPACE, p_engagement_id: ENGAGEMENT, p_exclude_invoice_id: null });
+      expect(invoiceSelectMock).not.toHaveBeenCalled();
+      expect(engagementSelectMock).toHaveBeenCalledWith("id, workspace_id, client_id, project_id, not_to_exceed_amount");
+      expect(invoiceInsertMock).toHaveBeenCalled();
+    });
+  }
+
+  it.each(["EUR", "JPY"])("keeps %s on the invoice without asserting a warning currency", async (currencyCode) => {
+    engagementSingleMock.mockResolvedValueOnce({ data: { id: ENGAGEMENT, workspace_id: WORKSPACE, client_id: CLIENT, project_id: null, not_to_exceed_amount: "10.00" }, error: null });
+    summaryRpcMock.mockReturnValueOnce(summarySnapshot("10.00", "10.01"));
+    const response = await postClientInvoice(jsonRequest("http://localhost/api/invoicing/client-invoices", "POST", { ...invoicePayload, currencyCode, lineItems: [{ description: "New work", amount: 1.01 }] }));
+    expect(response.status).toBe(201);
+    expect((await response.json()).nteWarning).toEqual({ basis: "legacy_terms_unassessed", billedToDate: 10.01, projectedBilledToDate: 11.02, notToExceed: 10, overBy: 1.02 });
+    expect(invoiceInsertMock).toHaveBeenCalledWith(expect.objectContaining({ currency_code: currencyCode }));
+    expect(rpcMock).toHaveBeenCalledWith("engagement_billed_summaries_v1", { p_workspace_id: WORKSPACE, p_engagement_id: ENGAGEMENT, p_exclude_invoice_id: null });
+    expect(invoiceSelectMock).not.toHaveBeenCalled();
+    expect(engagementSelectMock).toHaveBeenCalledWith("id, workspace_id, client_id, project_id, not_to_exceed_amount");
+  });
+
+  it("audits unavailable billed position and still accepts invoice creation", async () => {
+    engagementSingleMock.mockResolvedValueOnce({ data: { id: ENGAGEMENT, workspace_id: WORKSPACE, client_id: CLIENT, project_id: null, not_to_exceed_amount: 10 }, error: null });
+    summaryRpcMock.mockReturnValueOnce(summarySnapshot("10", "0", "0", "1"));
+    const response = await postClientInvoice(jsonRequest("http://localhost/api/invoicing/client-invoices", "POST", invoicePayload));
+    expect(response.status).toBe(201);
+    expect((await response.json()).nteWarning).toBeUndefined();
+    expect(mockAudit.warn).toHaveBeenCalledWith("nte_position_unavailable", expect.objectContaining({ unavailable: { billedToDate: "missing" } }));
+  });
+
+  it("audits an invalid ceiling and still accepts invoice creation", async () => {
+    engagementSingleMock.mockResolvedValueOnce({ data: { id: ENGAGEMENT, workspace_id: WORKSPACE, client_id: CLIENT, project_id: null, not_to_exceed_amount: "10junk" }, error: null });
+    summaryRpcMock.mockReturnValueOnce(summarySnapshot("10junk"));
+    const response = await postClientInvoice(jsonRequest("http://localhost/api/invoicing/client-invoices", "POST", invoicePayload));
+    expect(response.status).toBe(201);
+    expect((await response.json()).nteWarning).toBeUndefined();
+    expect(mockAudit.warn).toHaveBeenCalledWith("nte_position_unavailable", expect.objectContaining({ unavailable: { notToExceed: "invalid" } }));
+  });
+
+  it.each([
+    ["PGRST202", "Could not find the function public.engagement_billed_summaries_v1(p_engagement_id, p_exclude_invoice_id, p_workspace_id) in the schema cache", "pending"],
+    ["42501", "permission denied for table client_invoices", "unavailable"],
+    ["XX000", "summary dependency failed", "unavailable"],
+  ])("ESComplete preserves %s failure while creating an authorized draft", async (code, message, state) => {
+    summaryRpcMock.mockReturnValueOnce({ data: null, error: { code, message } });
+    const response = await postClientInvoice(jsonRequest("http://localhost/api/invoicing/client-invoices", "POST", invoicePayload));
+    expect(response.status).toBe(201);
+    const body = await response.json();
+    expect(body.ntePositionSource).toEqual({ state });
+    expect(body.nteWarning).toBeUndefined();
+    expect(invoiceInsertMock).toHaveBeenCalled();
+    expect(mockAudit.warn).toHaveBeenCalledWith("nte_position_read_failed", expect.objectContaining({ state, code, message }));
+  });
+
 });
 
 describe("GET /api/invoicing/client-invoices", () => {
@@ -877,6 +980,7 @@ describe("PATCH /api/invoicing/client-invoices/[invoiceId]", () => {
       error: expect.stringContaining("void it and reissue"),
     });
     expect(lineDeleteMock).not.toHaveBeenCalled();
+    expect(rpcMock).not.toHaveBeenCalled();
     expect(invoiceUpdateMock).not.toHaveBeenCalled();
   });
 
@@ -944,7 +1048,7 @@ describe("PATCH /api/invoicing/client-invoices/[invoiceId]", () => {
     expect(timeEntryUpdateInMock).toHaveBeenCalledWith("billed_line_item_id", [LINE_ITEM_1, LINE_ITEM_2]);
   });
 
-  it("replaces a draft invoice's line set and recomputes the stored totals", async () => {
+  it("replaces a draft invoice's lines, links and totals through one database function call", async () => {
     const response = await patchClientInvoice(
       jsonRequest(`http://localhost/api/invoicing/client-invoices/${INVOICE}`, "PATCH", {
         workspaceId: WORKSPACE,
@@ -954,24 +1058,143 @@ describe("PATCH /api/invoicing/client-invoices/[invoiceId]", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(lineDeleteEqMock).toHaveBeenCalledWith("invoice_id", INVOICE);
-    expect(lineInsertMock).toHaveBeenCalledWith([
-      expect.objectContaining({ invoice_id: INVOICE, description: "Revised scope", amount: 250 }),
-    ]);
-    expect(invoiceUpdateMock).toHaveBeenCalledWith(
-      expect.objectContaining({ subtotal_amount: 250, retention_amount: 0, total_amount: 250 })
+    expect(rpcMock).toHaveBeenCalledTimes(1);
+    expect(rpcMock).toHaveBeenCalledWith("replace_client_invoice_lines", {
+      p_invoice_id: INVOICE,
+      p_lines: [
+        {
+          description: "Revised scope",
+          quantity: null,
+          unit_label: null,
+          unit_amount: null,
+          amount: 250,
+          deliverable_id: null,
+          milestone_id: null,
+          source_time_entry_ids: [],
+        },
+      ],
+      p_subtotal_amount: 250,
+      p_retention_amount: 0,
+      p_total_amount: 250,
+    });
+    // The response lines carry the full line projection.
+    expect(rpcSelectMock).toHaveBeenCalledWith(
+      "id, invoice_id, position, description, quantity, unit_label, unit_amount, amount, deliverable_id, milestone_id, created_at, updated_at"
     );
+    // No piecewise writes: the old delete, insert, stamp and restore sequence is gone.
+    expect(lineDeleteMock).not.toHaveBeenCalled();
+    expect(lineInsertMock).not.toHaveBeenCalled();
+    expect(timeEntryUpdateMock).not.toHaveBeenCalled();
+    // The function stored the totals, so the route only reads the invoice back.
+    expect(invoiceUpdateMock).not.toHaveBeenCalled();
+    expect(invoiceSelectMock).toHaveBeenLastCalledWith(
+      expect.stringContaining("subtotal_amount, retention_percent, retention_amount, total_amount")
+    );
+    expect(await response.json()).toMatchObject({
+      lineItems: [expect.objectContaining({ id: LINE_ITEM_2, amount: 250 })],
+    });
   });
 
-  it("restores the previous line set when the replacement insert fails", async () => {
-    // The stamp snapshot: one time entry was billed on the old line.
-    timeEntrySelectInMock.mockResolvedValueOnce({
-      data: [{ id: TIME_ENTRY, billed_line_item_id: LINE_ITEM_1 }],
+  it("passes computed line amounts, time links and retention totals to the function", async () => {
+    invoiceDetailSingleMock.mockResolvedValueOnce({
+      data: {
+        id: INVOICE,
+        workspace_id: WORKSPACE,
+        engagement_id: ENGAGEMENT,
+        project_id: PROJECT,
+        status: "draft",
+        retention_percent: 10,
+      },
       error: null,
     });
-    lineInsertSelectMock.mockResolvedValueOnce({
+
+    const response = await patchClientInvoice(
+      jsonRequest(`http://localhost/api/invoicing/client-invoices/${INVOICE}`, "PATCH", {
+        workspaceId: WORKSPACE,
+        lineItems: [
+          {
+            description: "Corridor study, August",
+            quantity: 10,
+            unitLabel: " hours ",
+            unitAmount: 150,
+            amount: 1,
+            deliverableId: DELIVERABLE,
+            sourceTimeEntryIds: [TIME_ENTRY],
+          },
+        ],
+      }),
+      context
+    );
+
+    expect(response.status).toBe(200);
+    expect(rpcMock).toHaveBeenCalledWith("replace_client_invoice_lines", {
+      p_invoice_id: INVOICE,
+      p_lines: [
+        {
+          description: "Corridor study, August",
+          quantity: 10,
+          unit_label: "hours",
+          unit_amount: 150,
+          amount: 1500,
+          deliverable_id: DELIVERABLE,
+          milestone_id: null,
+          source_time_entry_ids: [TIME_ENTRY],
+        },
+      ],
+      p_subtotal_amount: 1500,
+      p_retention_amount: 150,
+      p_total_amount: 1350,
+    });
+  });
+
+  it("reports that nothing changed when the database function fails", async () => {
+    rpcSelectMock.mockResolvedValueOnce({
       data: null,
       error: { message: "numeric field overflow", code: "22003" },
+    });
+
+    const response = await patchClientInvoice(
+      jsonRequest(`http://localhost/api/invoicing/client-invoices/${INVOICE}`, "PATCH", {
+        workspaceId: WORKSPACE,
+        lineItems: [{ description: "Revised scope", amount: 250 }],
+        status: "sent",
+      }),
+      context
+    );
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({
+      error: "Failed to replace the invoice's line items; nothing was changed",
+    });
+    // A failed replacement stops the request: no compensating writes and no send.
+    expect(lineInsertMock).not.toHaveBeenCalled();
+    expect(timeEntryUpdateMock).not.toHaveBeenCalled();
+    expect(invoiceUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("answers 409 with the function's refusal when a concurrent invoice billed a time entry", async () => {
+    rpcSelectMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: "One or more time entries are already billed on another invoice", code: "PT409" },
+    });
+
+    const response = await patchClientInvoice(
+      jsonRequest(`http://localhost/api/invoicing/client-invoices/${INVOICE}`, "PATCH", {
+        workspaceId: WORKSPACE,
+        lineItems: [{ description: "Corridor study", amount: 100, sourceTimeEntryIds: [TIME_ENTRY] }],
+      }),
+      context
+    );
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({ error: "One or more time entries are already billed on another invoice" });
+    expect(invoiceUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("answers 403 when the function refuses the caller's role", async () => {
+    rpcSelectMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: "Owner or admin role required for invoice writes", code: "42501" },
     });
 
     const response = await patchClientInvoice(
@@ -982,22 +1205,26 @@ describe("PATCH /api/invoicing/client-invoices/[invoiceId]", () => {
       context
     );
 
-    expect(response.status).toBe(500);
-    expect(await response.json()).toMatchObject({
-      error: expect.stringContaining("previous line items were restored"),
-    });
-    // Snapshot → delete → failed insert of the new set → compensating
-    // re-insert of the snapshot, original ids preserved.
-    expect(lineInsertMock).toHaveBeenCalledTimes(2);
-    expect(lineInsertMock).toHaveBeenLastCalledWith([
-      expect.objectContaining({ id: LINE_ITEM_1, description: "Old line", amount: 100 }),
-    ]);
-    // The billed time entry is re-stamped to the restored line: the delete's
-    // ON DELETE SET NULL cleared it, and leaving it looking unbilled would
-    // invite double-billing.
-    expect(timeEntryUpdateMock).toHaveBeenCalledWith({ billed_line_item_id: LINE_ITEM_1 });
-    expect(timeEntryUpdateInMock).toHaveBeenCalledWith("id", [TIME_ENTRY]);
+    expect(response.status).toBe(403);
     expect(invoiceUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("sends after a replacement with a status-only update, because the function stored the totals", async () => {
+    const response = await patchClientInvoice(
+      jsonRequest(`http://localhost/api/invoicing/client-invoices/${INVOICE}`, "PATCH", {
+        workspaceId: WORKSPACE,
+        lineItems: [{ description: "Revised scope", amount: 250 }],
+        status: "sent",
+      }),
+      context
+    );
+
+    expect(response.status).toBe(200);
+    expect(rpcMock).toHaveBeenCalledTimes(1);
+    expect(invoiceUpdateMock).toHaveBeenCalledWith({
+      status: "sent",
+      sent_date: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+    });
   });
 
   it("names a policy refusal when the status update matches no rows, rather than 'Failed to update invoice'", async () => {
@@ -1026,27 +1253,89 @@ describe("PATCH /api/invoicing/client-invoices/[invoiceId]", () => {
     expect(mockAudit.error).not.toHaveBeenCalledWith("client_invoice_update_failed", expect.anything());
   });
 
-  it("keeps the stale-totals warning when the lines were replaced and the invoice update matched no rows", async () => {
+  it("says the lines and totals were saved when only the status change matched no rows", async () => {
     invoiceUpdateSingleMock.mockResolvedValueOnce({ data: null, error: null });
 
     const response = await patchClientInvoice(
       jsonRequest(`http://localhost/api/invoicing/client-invoices/${INVOICE}`, "PATCH", {
         workspaceId: WORKSPACE,
         lineItems: [{ description: "Revised scope", amount: 250 }],
+        status: "sent",
       }),
       context
     );
 
-    // The replacement landed, so "nothing was saved" would be a lie; what the
-    // caller has to act on is the invoice's now-stale stored totals.
+    // The replacement landed with its totals, so "nothing was saved" would be
+    // a lie; what the caller has to act on is the status change.
     expect(response.status).toBe(500);
     expect(await response.json()).toMatchObject({
-      error: "The line items were replaced, but the invoice record was not updated",
-      details: expect.stringContaining("stored totals may be stale"),
+      error: "The line items and totals were saved, but the status change was not",
+      details: expect.stringContaining("saved together"),
     });
     expect(mockAudit.error).toHaveBeenCalledWith(
       "client_invoice_update_matched_no_rows",
       expect.objectContaining({ invoiceId: INVOICE, lineItemsReplaced: true })
     );
+  });
+});
+
+/**
+ * SENT AND PAID DATES ARE THE WORKSPACE'S DAY (KI-2026-10-12-016).
+ *
+ * 01:00 UTC on Oct 13 is 6 p.m. Oct 12 in Los Angeles; the UTC date already
+ * reads Oct 13, which is what an invoice sent that evening was stamped with.
+ */
+describe("PATCH /api/invoicing/client-invoices/[invoiceId]: the date stamped", () => {
+  const context = { params: Promise.resolve({ invoiceId: INVOICE }) };
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-10-13T01:00:00Z"));
+    // Reset, not clear: a zone queued for a case that never read it must not
+    // leak into the next case.
+    workspaceCalendarMaybeSingleMock.mockReset();
+    workspaceCalendarMaybeSingleMock.mockResolvedValue({ data: { time_zone: null, home_country_code: null }, error: null });
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  function send(status: "sent" | "paid") {
+    return patchClientInvoice(
+      jsonRequest(`http://localhost/api/invoicing/client-invoices/${INVOICE}`, "PATCH", { workspaceId: WORKSPACE, status }),
+      context
+    );
+  }
+
+  it("stamps sent_date with the workspace's calendar day", async () => {
+    workspaceCalendarMaybeSingleMock.mockResolvedValueOnce({
+      data: { time_zone: "America/Los_Angeles", home_country_code: "US" },
+      error: null,
+    });
+    const response = await send("sent");
+    expect(response.status).toBe(200);
+    expect(invoiceUpdateMock).toHaveBeenCalledWith(expect.objectContaining({ status: "sent", sent_date: "2026-10-12" }));
+    expect(workspaceCalendarSelectMock).toHaveBeenCalledWith(WORKSPACE_CALENDAR_COLUMNS);
+    expect(workspaceCalendarEqMock).toHaveBeenCalledWith("id", WORKSPACE);
+  });
+
+  it("stamps paid_date with the workspace's calendar day", async () => {
+    invoiceDetailSingleMock.mockResolvedValueOnce({
+      data: { id: INVOICE, workspace_id: WORKSPACE, engagement_id: ENGAGEMENT, project_id: PROJECT, status: "sent", retention_percent: 0 },
+      error: null,
+    });
+    workspaceCalendarMaybeSingleMock.mockResolvedValueOnce({
+      data: { time_zone: "America/Los_Angeles", home_country_code: "US" },
+      error: null,
+    });
+    const response = await send("paid");
+    expect(response.status).toBe(200);
+    expect(invoiceUpdateMock).toHaveBeenCalledWith(expect.objectContaining({ status: "paid", paid_date: "2026-10-12" }));
+  });
+
+  it("stamps the UTC day when no zone is recorded", async () => {
+    const response = await send("sent");
+    expect(response.status).toBe(200);
+    expect(invoiceUpdateMock).toHaveBeenCalledWith(expect.objectContaining({ sent_date: "2026-10-13" }));
   });
 });

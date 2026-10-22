@@ -1,0 +1,191 @@
+{
+  "sourceSha256": "8238247654cc0ac58fdf96451704b06357e448c16242490ec9b47fbbeeb14fe1",
+  "records": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    },
+    {
+      "function": "verify_post",
+      "reason": "stagepoint-post-method",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_post",
+      "reason": "stagepoint-post-path",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_post",
+      "reason": "stagepoint-post-size",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_post",
+      "reason": "stagepoint-post-size",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_post",
+      "reason": "stagepoint-post-size",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_post",
+      "reason": "stagepoint-authorization",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_read",
+      "reason": "stagepoint-read-method",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_read",
+      "reason": "stagepoint-read-size",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_read",
+      "reason": "stagepoint-read-path",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_read",
+      "reason": "stagepoint-read-query",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_read",
+      "reason": "stagepoint-read-query",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_read",
+      "reason": "stagepoint-read-query",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_read",
+      "reason": "stagepoint-read-scope",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_read",
+      "reason": "stagepoint-read-scope",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_read",
+      "reason": "stagepoint-read-scope",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_read",
+      "reason": "stagepoint-read-projection",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_read",
+      "reason": "stagepoint-authorization",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_body",
+      "reason": "stagepoint-body-length",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_response",
+      "reason": "stagepoint-response-size",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_post",
+      "reason": "stagepoint-post-method",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_post",
+      "reason": "stagepoint-post-path",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_post",
+      "reason": "stagepoint-post-size",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_post",
+      "reason": "stagepoint-authorization",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_read",
+      "reason": "stagepoint-read-method",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_read",
+      "reason": "stagepoint-read-size",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "str subclass with over-limit length observation and unchanged valid decoded query; isolated from later query/scope guards"
+    },
+    {
+      "function": "verify_read",
+      "reason": "stagepoint-read-path",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_read",
+      "reason": "stagepoint-read-query",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_read",
+      "reason": "stagepoint-read-scope",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_read",
+      "reason": "stagepoint-read-projection",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_read",
+      "reason": "stagepoint-authorization",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_body",
+      "reason": "stagepoint-body-length",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_response",
+      "reason": "stagepoint-response-size",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    }
+  ],
+  "limits": "Pure request/size/projection predicates, copied AST mutations. No real HTTP, server commit, socket drop, redirect behavior, time bound or native ownership acceptance."
+}

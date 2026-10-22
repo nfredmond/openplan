@@ -1,0 +1,7 @@
+{
+  "docs/reviews/2026-10-11-coordinated-worker-point/worker_root.py": "5785a629453489501b2dca6c1bd33d8c40e3cca3ba2cbed743e4619cc439286d",
+  "docs/reviews/2026-10-11-odm-admission-journal/native_recovery.py": "c8085da7dde8eec1567f93304a818e61bd28e7ac299bce354cc26bfb223b8ece",
+  "openplan/scripts/ops/worker_journal_snapshot.py": "7e5570eec9861b44abfe1138b0eb31bf0a982e7b13b8b179a174e1007fe05ebb",
+  "openplan/scripts/ops/worker_root_snapshot.py": "4ea3f9d9c084e0de5b45dee2b371f2ce6fcb5182ea6c2a0f2eac8a6a83040d24",
+  "workers/odm_worker/admission_journal.py": "d14e9b05ba1cc21115ca844f4949bb1566d46d40fe5493ce57f7cc71163121ba"
+}

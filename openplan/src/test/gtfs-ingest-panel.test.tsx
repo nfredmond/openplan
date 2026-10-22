@@ -85,6 +85,19 @@ function respond(method: string, match: RegExp, handler: Handler): void {
   handlers.push({ match, method, handler });
 }
 
+const STAGED_OBJECT = `${WORKSPACE_ID}/staged/user/upload.zip`;
+const SIGNED_UPLOAD_URL = `https://storage.example.test/object/upload/sign/gtfs-uploads/${STAGED_OBJECT}?token=t`;
+
+/** The three calls of one upload: sign, put the file in Storage, ingest. */
+function respondToStagedUpload(ingestBody: unknown, ingestStatus = 201): void {
+  respond("POST", /\/api\/gtfs\/feeds\/upload\/start$/, () => ({
+    status: 200,
+    body: { uploadUrl: SIGNED_UPLOAD_URL, objectPath: STAGED_OBJECT, contentType: "application/zip" },
+  }));
+  respond("PUT", /storage\.example\.test/, () => ({ status: 200, body: { Key: STAGED_OBJECT } }));
+  respond("POST", /\/api\/gtfs\/feeds\/upload\/complete$/, () => ({ status: ingestStatus, body: ingestBody }));
+}
+
 function feedRow(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return {
     id: "feed-1",
@@ -1082,10 +1095,7 @@ describe("GtfsIngestPanel — upload and read-only access", () => {
   });
 
   it("sends the archive with its filename to the upload door", async () => {
-    respond("POST", /\/api\/gtfs\/feeds\/upload/, () => ({
-      status: 201,
-      body: { feedId: "feed-2", versionId: "version-2", adoption: { adopted: true }, displayName: "feed" },
-    }));
+    respondToStagedUpload({ feedId: "feed-2", versionId: "version-2", adoption: { adopted: true }, displayName: "feed" });
 
     await renderPanel();
     await click(screen.getByRole("tab", { name: /Upload a GTFS \.zip/i }));
@@ -1095,11 +1105,49 @@ describe("GtfsIngestPanel — upload and read-only access", () => {
     await click(screen.getByRole("button", { name: /Upload and read this archive/i }));
 
     await waitFor(() => {
-      const upload = requests.find((request) => request.url.includes("/api/gtfs/feeds/upload"));
-      expect(upload).toBeDefined();
-      expect(upload?.url).toContain("filename=mountain-gtfs.zip");
-      expect(upload?.url).toContain(`workspaceId=${WORKSPACE_ID}`);
+      const begin = requests.find((request) => request.url.endsWith("/api/gtfs/feeds/upload/start"));
+      expect(begin?.body).toMatchObject({ workspaceId: WORKSPACE_ID, filename: "mountain-gtfs.zip", byteSize: 16 });
+      const done = requests.find((request) => request.url.endsWith("/api/gtfs/feeds/upload/complete"));
+      expect(done?.body).toMatchObject({ workspaceId: WORKSPACE_ID, objectPath: STAGED_OBJECT, byteSize: 16, filename: "mountain-gtfs.zip" });
     });
+  });
+
+  /**
+   * HOSTED FUNCTIONS REFUSE A BODY OVER ABOUT 4.5 MB, so a 94 MiB feed must go
+   * from the browser to Storage and never to an app route. The file object may
+   * appear in exactly one request: the PUT to the signed Storage URL.
+   */
+  it("never sends a large file's bytes to an app route", async () => {
+    respondToStagedUpload({ feedId: "feed-2", versionId: "version-2", adoption: { adopted: true } });
+
+    await renderPanel();
+    await click(screen.getByRole("tab", { name: /Upload a GTFS \.zip/i }));
+
+    const file = new File([new Uint8Array(16)], "cta.zip", { type: "application/zip" });
+    Object.defineProperty(file, "size", { value: 94 * 1024 * 1024 });
+    await chooseFile(screen.getByLabelText(/GTFS archive/i), file);
+    await click(screen.getByRole("button", { name: /Upload and read this archive/i }));
+
+    await waitFor(() => expect(requests.some((request) => request.url.endsWith("/upload/complete"))).toBe(true));
+    const carryingFile = requests.filter((request) => request.body === file);
+    expect(carryingFile).toEqual([{ url: SIGNED_UPLOAD_URL, method: "PUT", body: file }]);
+    for (const request of requests.filter((entry) => entry.url.startsWith("/api/"))) {
+      expect(request.body instanceof Blob).toBe(false);
+    }
+    expect(requests.find((request) => request.url.endsWith("/upload/start"))?.body).toMatchObject({ byteSize: 94 * 1024 * 1024 });
+  });
+
+  it("reads nothing when Storage refuses the file", async () => {
+    respondToStagedUpload({ feedId: "feed-2" });
+    respond("PUT", /storage\.example\.test/, () => ({ status: 413, body: { error: "Payload too large" } }));
+
+    await renderPanel();
+    await click(screen.getByRole("tab", { name: /Upload a GTFS \.zip/i }));
+    await chooseFile(screen.getByLabelText(/GTFS archive/i), new File([new Uint8Array(16)], "feed.zip", { type: "application/zip" }));
+    await click(screen.getByRole("button", { name: /Upload and read this archive/i }));
+
+    expect(await screen.findByText(/archive could not be stored/i)).toBeInTheDocument();
+    expect(requests.some((request) => request.url.endsWith("/upload/complete"))).toBe(false);
   });
 
   /* ------------------------------------------------------------------------ */
@@ -1126,16 +1174,13 @@ describe("GtfsIngestPanel — upload and read-only access", () => {
       status: 200,
       body: registryBody([feedRow({ source_kind: "upload", feed_url: null })], [versionRow()]),
     }));
-    respond("POST", /\/api\/gtfs\/feeds\/upload/, () => ({
-      status: 200,
-      body: {
-        feedId: "feed-1",
-        versionId: "version-2",
-        createdFeed: false,
-        adoption: { adopted: true },
-        displayName: "Mountain Transit",
-      },
-    }));
+    respondToStagedUpload({
+      feedId: "feed-1",
+      versionId: "version-2",
+      createdFeed: false,
+      adoption: { adopted: true },
+      displayName: "Mountain Transit",
+    });
 
     await renderPanel();
 
@@ -1144,12 +1189,11 @@ describe("GtfsIngestPanel — upload and read-only access", () => {
     await click(screen.getByRole("button", { name: /Upload a newer archive to this feed/i }));
 
     await waitFor(() => {
-      const upload = requests.find((request) => request.url.includes("/api/gtfs/feeds/upload"));
-      expect(upload).toBeDefined();
-      // The parameter whose absence created the duplicate feed.
-      expect(upload?.url).toContain("feedId=feed-1");
-      expect(upload?.url).toContain(`workspaceId=${WORKSPACE_ID}`);
-      expect(upload?.url).toContain("filename=mountain-2026.zip");
+      // The parameter whose absence created the duplicate feed, on both calls.
+      const begin = requests.find((request) => request.url.endsWith("/api/gtfs/feeds/upload/start"));
+      expect(begin?.body).toMatchObject({ feedId: "feed-1", workspaceId: WORKSPACE_ID, filename: "mountain-2026.zip" });
+      const done = requests.find((request) => request.url.endsWith("/api/gtfs/feeds/upload/complete"));
+      expect(done?.body).toMatchObject({ feedId: "feed-1", workspaceId: WORKSPACE_ID, filename: "mountain-2026.zip" });
     });
   });
 
@@ -1160,10 +1204,7 @@ describe("GtfsIngestPanel — upload and read-only access", () => {
    * to an existing agency's record.
    */
   it("does not send a feedId from the door that creates a feed", async () => {
-    respond("POST", /\/api\/gtfs\/feeds\/upload/, () => ({
-      status: 201,
-      body: { feedId: "feed-2", versionId: "version-2", createdFeed: true, adoption: { adopted: true } },
-    }));
+    respondToStagedUpload({ feedId: "feed-2", versionId: "version-2", createdFeed: true, adoption: { adopted: true } });
 
     await renderPanel();
     await click(screen.getByRole("tab", { name: /Upload a GTFS \.zip/i }));
@@ -1173,9 +1214,12 @@ describe("GtfsIngestPanel — upload and read-only access", () => {
     await click(screen.getByRole("button", { name: /Upload and read this archive/i }));
 
     await waitFor(() => {
-      const upload = requests.find((request) => request.url.includes("/api/gtfs/feeds/upload"));
-      expect(upload).toBeDefined();
-      expect(upload?.url).not.toContain("feedId=");
+      const begin = requests.find((request) => request.url.endsWith("/api/gtfs/feeds/upload/start"));
+      const done = requests.find((request) => request.url.endsWith("/api/gtfs/feeds/upload/complete"));
+      expect(begin?.body).toBeDefined();
+      expect(done?.body).toBeDefined();
+      expect(begin?.body).not.toHaveProperty("feedId");
+      expect(done?.body).not.toHaveProperty("feedId");
     });
   });
 

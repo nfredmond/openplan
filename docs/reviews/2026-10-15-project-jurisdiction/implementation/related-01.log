@@ -1,0 +1,1160 @@
+Running as unit: openplan-jurisdiction-related-01.service; invocation ID: 0b662241f7b649cc916c7885576ccc48
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan[39m
+
+ [31m❯[39m src/test/report-generate-route.test.ts [2m([22m[2m71 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 211[2mms[22m[39m
+     [32m✓[39m rejects invalid optional project generation approval before any artifact write[32m 11[2mms[22m[39m
+     [32m✓[39m retains a generated project artifact when its audit transport throws[32m 15[2mms[22m[39m
+     [32m✓[39m rejects invalid optional rtp generation approval before any artifact write[32m 1[2mms[22m[39m
+     [32m✓[39m retains a generated rtp artifact when its audit transport throws[32m 11[2mms[22m[39m
+     [32m✓[39m rejects invalid optional campaign generation approval before any artifact write[32m 1[2mms[22m[39m
+     [32m✓[39m retains a generated campaign artifact when its audit transport throws[32m 2[2mms[22m[39m
+     [32m✓[39m freezes the planner-selected held orthophoto into packet metadata and rendered HTML[32m 4[2mms[22m[39m
+     [32m✓[39m persists a pdf artifact with storage_path + sets latest_artifact_kind to pdf[32m 2[2mms[22m[39m
+     [32m✓[39m rejects oversized generation requests before auth lookup[32m 2[2mms[22m[39m
+     [32m✓[39m still produces a packet when no browser engine is available, recording the tier[32m 2[2mms[22m[39m
+     [32m✓[39m prints a safety action plan saved against another acquisition as a stale notice, and no plan section without one[32m 3[2mms[22m[39m
+     [32m✓[39m returns 500 when PDF storage upload fails[32m 1[2mms[22m[39m
+       [32m✓[39m stores a pdf packet with the service role after checking the limit with its byte count[32m 2[2mms[22m[39m
+       [32m✓[39m refuses a pdf packet that would pass the limit, naming the limit and current use, and stores nothing[32m 2[2mms[22m[39m
+       [32m✓[39m refuses a pdf packet when storage use cannot be read[32m 2[2mms[22m[39m
+       [32m✓[39m stores a html packet with the service role after checking the limit with its byte count[32m 2[2mms[22m[39m
+       [32m✓[39m refuses a html packet that would pass the limit, naming the limit and current use, and stores nothing[32m 2[2mms[22m[39m
+       [32m✓[39m refuses a html packet when storage use cannot be read[32m 2[2mms[22m[39m
+       [32m✓[39m stores a rtp pdf packet with the service role after checking the limit[32m 4[2mms[22m[39m
+       [32m✓[39m refuses a rtp pdf packet at the limit and stores nothing[32m 3[2mms[22m[39m
+       [32m✓[39m stores no file and checks no limit for a rtp html packet, which lives in the artifact record[32m 1[2mms[22m[39m
+       [32m✓[39m stores a campaign pdf packet with the service role after checking the limit[32m 1[2mms[22m[39m
+       [32m✓[39m refuses a campaign pdf packet at the limit and stores nothing[32m 1[2mms[22m[39m
+       [32m✓[39m stores no file and checks no limit for a campaign html packet, which lives in the artifact record[32m 1[2mms[22m[39m
+       [32m✓[39m refuses before copying a selected aerial preview into a workspace already at its limit[32m 1[2mms[22m[39m
+     [32m✓[39m returns 403 when workspace role is unsupported[32m 0[2mms[22m[39m
+[31m     [31m×[31m persists an html artifact and updates report status[39m[32m 14[2mms[22m[39m
+     [32m✓[39m carries project-linked KSI concentration ranks into the generated packet[32m 5[2mms[22m[39m
+     [32m✓[39m keeps crash counts when the optional concentration calculation throws[32m 3[2mms[22m[39m
+     [32m✓[39m renders cited model and county runs with honest engine, status, and screening framing[32m 5[2mms[22m[39m
+     [32m✓[39m blocks generation when an attached agreement artifact cannot be read[32m 1[2mms[22m[39m
+     [32m✓[39m persists project funding profile scan and source-context readiness in artifact metadata[32m 3[2mms[22m[39m
+     [32m✓[39m adds modeling evidence claim posture to project report artifacts[32m 3[2mms[22m[39m
+     [32m✓[39m reads only the county run the report names, never the workspace's recent runs[32m 2[2mms[22m[39m
+     [32m✓[39m persists compact project-record provenance in artifact metadata and html[32m 2[2mms[22m[39m
+     [32m✓[39m composes the RTP packet from its report's section selection, and says so[32m 3[2mms[22m[39m
+     [32m✓[39m adds modeling evidence claim posture to RTP packet artifacts[32m 1[2mms[22m[39m
+     [32m✓[39m persists RTP linked-project funding scans and funding source-context readiness[32m 2[2mms[22m[39m
+     [32m✓[39m refuses the RTP packet when a linked-project funding read fails, instead of totalling it to zero[32m 1[2mms[22m[39m
+     [32m✓[39m refuses the RTP packet when the cycle's engagement read fails, instead of reporting no comments[32m 1[2mms[22m[39m
+     [32m✓[39m still generates the RTP packet when the engagement read succeeds with no rows[32m 1[2mms[22m[39m
+       [32m✓[39m counts every comment past the 1,000-row server cap[32m 3[2mms[22m[39m
+       [32m✓[39m refuses the packet when a later page of comments fails[32m 1[2mms[22m[39m
+       [32m✓[39m refuses the packet when the comment read stops before it is finished[32m 21[2mms[22m[39m
+     [32m✓[39m persists a compact stage-gate snapshot in artifact metadata and html[32m 2[2mms[22m[39m
+     [32m✓[39m freezes the snapshot on the workspace's BOUND template and asks the workspaces read for the binding columns[32m 1[2mms[22m[39m
+     [32m✓[39m freezes a DIFFERENTLY-bound workspace's snapshot under ITS template, so no caller can hardcode one[32m 2[2mms[22m[39m
+     [32m✓[39m refuses generation when the workspace names a stage-gate template this deployment does not register[32m 1[2mms[22m[39m
+     [32m✓[39m names the missing migration when the decision log cannot be scoped yet, instead of a generic 500[32m 1[2mms[22m[39m
+     [32m✓[39m still refuses generically when the decision log fails for a reason a migration will not fix[32m 1[2mms[22m[39m
+     [32m✓[39m persists scenario-set provenance derived from linked report runs[32m 1[2mms[22m[39m
+     [32m✓[39m includes configured engagement handoff context when the section is enabled[32m 6[2mms[22m[39m
+     [32m✓[39m generates a campaign-targeted packet from engagement records[32m 2[2mms[22m[39m
+       [32m✓[39m counts every comment in a project packet[32m 4[2mms[22m[39m
+       [32m✓[39m counts every comment in a campaign packet[32m 3[2mms[22m[39m
+       [32m✓[39m refuses a project packet when a later page of comments fails[32m 1[2mms[22m[39m
+       [32m✓[39m refuses a campaign packet when the comment read stops before it is finished[32m 21[2mms[22m[39m
+     [32m✓[39m renders disclosed not-applicable blocks for project-scoped sections on a campaign packet[32m 1[2mms[22m[39m
+     [32m✓[39m renders cited typed runs on a campaign packet[32m 1[2mms[22m[39m
+     [32m✓[39m answers 503 with the migration hint when a targetless row hides a campaign target[32m 1[2mms[22m[39m
+     [32m✓[39m records the project's aerial evidence packages in artifact provenance[32m 3[2mms[22m[39m
+     [32m✓[39m records an unreadable aerial source as unreadable, not as an absent one[32m 2[2mms[22m[39m
+     [32m✓[39m refuses the RTP packet when the county-run read fails, instead of counting zero modeling evidence[32m 1[2mms[22m[39m
+     [32m✓[39m refuses the project packet when a county run's modeling evidence cannot be read[32m 1[2mms[22m[39m
+     [32m✓[39m names the pending migration when the modeling evidence read hits a column this deployment lacks[32m 1[2mms[22m[39m
+     [32m✓[39m still generates when the named county run is gone, and counts zero without reading any other run[32m 1[2mms[22m[39m
+     [32m✓[39m refuses the project packet when a funding read fails, instead of totalling it to zero[32m 1[2mms[22m[39m
+     [32m✓[39m names the pending migration when the project's funding schema is not there yet[32m 1[2mms[22m[39m
+     [32m✓[39m does not launder an unclassifiable thrown read into an empty accepted-narrative list[32m 1[2mms[22m[39m
+     [32m✓[39m actually asks the database for the report's accepted narrative drafts[32m 1[2mms[22m[39m
+     [32m✓[39m leaves aerial provenance absent when the project genuinely has no aerial work[32m 1[2mms[22m[39m
+ [32m✓[39m src/test/project-identity-editor.test.tsx [2m([22m[2m18 tests[22m[2m)[22m[33m 1420[2mms[22m[39m
+ [32m✓[39m src/test/project-evidence-bundle-route.test.ts [2m([22m[2m15 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m src/test/project-evidence-generated-pagination.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 49[2mms[22m[39m
+ [32m✓[39m src/test/project-geopackage.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [31m❯[39m src/test/project-jurisdiction-artifacts.test.ts [2m([22m[2m2 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 20[2mms[22m[39m
+   [32m✓[39m exports a separate jurisdiction manifest without changing project_area attributes or WKB[32m 15[2mms[22m[39m
+[31m   [31m×[31m renders each declaration and its payload hash with escaped labels and no authority inference[39m[32m 4[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 2 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/test/project-jurisdiction-artifacts.test.ts[2m > [22mrenders each declaration and its payload hash with escaped labels and no authority inference
+[31m[1mTypeError[22m: Cannot read properties of undefined (reading 'length')[39m
+[36m [2m❯[22m buildReportHtml src/lib/reports/html.ts:[2m2007:50[22m[39m
+    [90m2005|[39m       data.engagement?.counts.moderationQueue.readyForHandoffCount ?? …
+    [90m2006|[39m     stageGateSnapshot: data.stageGateSnapshot,
+    [90m2007|[39m     modelingEvidenceCount: data.modelingEvidence.length,
+    [90m   |[39m                                                  [31m^[39m
+    [90m2008|[39m     modelingEvidenceClaimStatuses: data.modelingEvidence
+    [90m2009|[39m       .map((item) => item.evidence?.claimDecision?.claimStatus ?? null)
+[90m [2m❯[22m src/test/project-jurisdiction-artifacts.test.ts:[2m29:16[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m src/test/report-generate-route.test.ts[2m > [22mPOST /api/reports/[reportId]/generate[2m > [22mpersists an html artifact and updates report status
+[31m[1mAssertionError[22m[39m: expected "vi.fn()" to be called with arguments: [ ObjectContaining{…} ][90m
+
+Received:
+
+[1m  1st vi.fn() call:
+
+[22m[2m  [[22m
+[32m-   ObjectContaining {[90m
+[31m+   {[90m
+[2m      "artifact_kind": "html",[22m
+[31m+     "generated_at": "2026-10-15T05:17:00.150Z",[90m
+[2m      "generated_by": "22222222-2222-4222-8222-222222222222",[22m
+[32m-     "metadata_json": ObjectContaining {[90m
+[31m+     "id": "30bf3a27-b0a5-435d-b069-27f86e0732d6",[90m
+[31m+     "metadata_json": {[90m
+[31m+       "aerialOrthoSnapshotsV1": [],[90m
+[31m+       "auditability": {[90m
+[31m+         "note": "This output assembles structured records and linked run evidence as a review packet with explicit provenance.",[90m
+[31m+         "posture": "structured_packet_v1",[90m
+[31m+       },[90m
+[31m+       "dualDemandAgreementSnapshotsV1": [],[90m
+[31m+       "generatedAt": "2026-10-15T05:17:00.150Z",[90m
+[2m        "generationMode": "structured_html_packet",[22m
+[32m-       "sourceContext": ObjectContaining {[90m
+[32m-         "evidenceChainSummary": ObjectContaining {[90m
+[31m+       "htmlContent": "<!doctype html>[90m
+[31m+ <html lang=\"en\">[90m
+[31m+   <head>[90m
+[31m+     <meta charset=\"utf-8\" />[90m
+[31m+     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />[90m
+[31m+     <title>Project Status Packet</title>[90m
+[31m+     <style>[90m
+[31m+       :root { color-scheme: light; }[90m
+[31m+       * { box-sizing: border-box; }[90m
+[31m+       body { margin: 0; background: #f3f0e8; color: #13222b; font-family: Georgia, \"Times New Roman\", serif; }[90m
+[31m+       main { max-width: 1040px; margin: 0 auto; padding: 40px 24px 80px; }[90m
+[31m+       .hero { border: 1px solid rgba(19, 34, 43, 0.12); border-radius: 28px; padding: 32px; background: linear-gradient(180deg, #fefcf7, #f5efe3); box-shadow: 0 30px 70px rgba(19, 34, 43, 0.08); }[90m
+[31m+       .eyebrow { font: 600 11px/1.2 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.22em; text-transform: uppercase; color: #965c2a; }[90m
+[31m+       h1, h2, h3 { margin: 0; }[90m
+[31m+       h1 { margin-top: 12px; font-size: 42px; line-height: 1.05; }[90m
+[31m+       .hero p { max-width: 760px; font-size: 17px; line-height: 1.6; }[90m
+[31m+       section { margin-top: 24px; border: 1px solid rgba(19, 34, 43, 0.12); border-radius: 24px; padding: 24px; background: rgba(255, 255, 255, 0.8); }[90m
+[31m+       .section-title { margin-bottom: 16px; font-size: 24px; }[90m
+[31m+       .two-col { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }[90m
+[31m+       .facts, .metrics-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }[90m
+[31m+       .facts div, .metrics-grid div, .transparency-item, .metric-card { border: 1px solid rgba(19, 34, 43, 0.1); border-radius: 18px; padding: 14px; background: #fffdf8; }[90m
+[31m+       dt, .metric-label, .meta { display: block; font: 600 11px/1.4 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; color: #6d7479; }[90m
+[31m+       dd, strong { margin: 6px 0 0; font-size: 18px; }[90m
+[31m+       .record-list, .timeline { margin: 0; padding-left: 20px; display: grid; gap: 12px; }[90m
+[31m+       .record-list li, .timeline li { padding-left: 4px; }[90m
+[31m+       .run-card { border: 1px solid rgba(19, 34, 43, 0.12); border-radius: 22px; padding: 18px; background: #fffdf8; }[90m
+[31m+       .run-head { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }[90m
+[31m+       .pill { display: inline-flex; align-items: center; border-radius: 999px; padding: 6px 10px; font: 700 11px/1 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; }[90m
+[31m+       .pill-pass { background: #d8f3df; color: #15653a; }[90m
+[31m+       .pill-hold { background: #fde2d2; color: #9a3412; }[90m
+[31m+       .warning-box { border-radius: 18px; padding: 14px 16px; background: #fff3df; border: 1px solid rgba(150, 92, 42, 0.2); }[90m
+[31m+       .transparency-grid, .metrics-stack { display: grid; gap: 12px; margin-top: 14px; }[90m
+[31m+       .empty { color: #6d7479; font-style: italic; }[90m
+[31m+       .geo-figure { margin: 0; }[90m
+[31m+       .geo-svg { display: block; width: 100%; height: auto; border-radius: 18px; }[90m
+[31m+       .geo-plate { fill: #fbf7ee; stroke: rgba(19, 34, 43, 0.16); stroke-width: 1; }[90m
+[31m+       .geo-area { fill: rgba(21, 101, 58, 0.14); stroke: #15653a; stroke-width: 2; stroke-linejoin: round; }[90m
+[31m+       .geo-extent-box { fill: none; stroke: #15653a; stroke-width: 2; stroke-dasharray: 9 7; stroke-linejoin: round; }[90m
+[31m+       .geo-corridor-halo { fill: none; stroke: #fbf7ee; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }[90m
+[31m+       .geo-corridor { fill: none; stroke: #9a3412; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }[90m
+[31m+       .geo-marker-halo { fill: #fbf7ee; stroke: #13222b; stroke-width: 1.5; }[90m
+[31m+       .geo-marker { fill: #13222b; }[90m
+[31m+       .geo-badge-disc { fill: #9a3412; stroke: #fbf7ee; stroke-width: 1.5; }[90m
+[31m+       .geo-badge-text { fill: #fffdf8; font: 700 11px/1 ui-sans-serif, system-ui, sans-serif; text-anchor: middle; }[90m
+[31m+       .geo-chrome-plate { fill: rgba(251, 247, 238, 0.88); stroke: rgba(19, 34, 43, 0.14); stroke-width: 1; }[90m
+[31m+       .geo-chrome-text { fill: #13222b; font: 600 11px/1 ui-sans-serif, system-ui, sans-serif; letter-spacing: 0.08em; }[90m
+[31m+       .geo-north-arrow { fill: #13222b; }[90m
+[31m+       .geo-scale-line { stroke: #13222b; stroke-width: 2; }[90m
+[31m+       .geo-figure figcaption { margin-top: 12px; font-size: 14px; line-height: 1.55; color: #3b4952; }[90m
+[31m+       .geo-figure figcaption p { margin: 6px 0 0; }[90m
+[31m+       @media (max-width: 700px) { main { padding: 20px 14px 56px; } h1 { font-size: 34px; } }[90m
+[31m+     </style>[90m
+[31m+   </head>[90m
+[31m+   <body>[90m
+[31m+     <main>[90m
+[31m+       <header class=\"hero\">[90m
+[31m+         <span class=\"eyebrow\">OpenPlan Reports</span>[90m
+[31m+         <h1>Project Status Packet</h1>[90m
+[31m+         <p>Packet summary</p>[90m
+[31m+         <div class=\"facts\" style=\"margin-top: 18px;\">[90m
+[31m+           <div><dt>Project</dt><dd>Nevada County Safety Action Program</dd></div>[90m
+[31m+           <div><dt>Report Type</dt><dd>Project Status Packet</dd></div>[90m
+[31m+           <div><dt>Created</dt><dd>3/13/2026, 5:00:00 PM</dd></div>[90m
+[31m+           <div><dt>Linked Runs</dt><dd>1</dd></div>[90m
+[31m+         </div>[90m
+[31m+         <p><strong>Planning-level estimated project cost:</strong> Not recorded.</p>[90m
+[31m+       </header>[90m
+[31m+       <section id=\"project_geography\">[90m
+[31m+     <h2 class=\"section-title\">Where this project is</h2>[90m
+[31m+     <div class=\"warning-box\">[90m
+[31m+       <strong>Nothing to draw</strong>[90m
+[31m+       <p>Nothing is drawn here, and the packet cannot say whether that is because this project has no geography or because the records could not be read. Treat this section as unanswered, not as empty.</p>[90m
+[31m+       <p>Open the project record to see whether a study area is set, then generate this packet again.</p>[90m
+[31m+       <p>This project&#39;s corridors could not be read at generation time. That is not the same as there being none — the packet does not know.</p>[90m
+[31m+       <p><a href=\"/projects/44444444-4444-4444-8444-444444444444#project-identity\">Open the project record</a></p>[90m
+[31m+     </div>[90m
+[31m+   </section>[90m
+[31m+       <section>[90m
+[31m+     <h2 class=\"section-title\">Evidence chain summary</h2>[90m
+[31m+     <p>This packet summarizes the current planning evidence chain captured at generation time so reviewers can quickly see what source surfaces support the artifact.</p>[90m
+[31m+     <div class=\"metrics-grid\">[90m
+[31m+       <div><span class=\"metric-label\">Linked runs</span><strong>1</strong></div>[90m
+[31m+       <div><span class=\"metric-label\">Scenario sets</span><strong>1</strong></div>[90m
+[31m+       <div><span class=\"metric-label\">Scenario assumptions</span><strong>0</strong></div>[90m
+[31m+       <div><span class=\"metric-label\">Scenario data packages</span><strong>0</strong></div>[90m
+[31m+       <div><span class=\"metric-label\">Indicator snapshots</span><strong>0</strong></div>[90m
+[31m+       <div><span class=\"metric-label\">Project record groups</span><strong>0</strong></div>[90m
+[31m+       <div><span class=\"metric-label\">Project records</span><strong>0</strong></div>[90m
+[31m+       <div><span class=\"metric-label\">Engagement posture</span><strong>Not linked</strong></div>[90m
+[31m+       <div><span class=\"metric-label\">Handoff-ready input</span><strong>0/0</strong></div>[90m
+[31m+       <div><span class=\"metric-label\">Stage-gate posture</span><strong>In progress</strong></div>[90m
+[31m+       <div><span class=\"metric-label\">Governance counts</span><strong>0 pass • 0 hold</strong></div>[90m
+[31m+       <div><span class=\"metric-label\">Modeling evidence</span><strong>0</strong></div>[90m
+[31m+       <div><span class=\"metric-label\">Modeling claim posture</span><strong>Not linked</strong></div>[90m
+[31m+       <div><span class=\"metric-label\">Crash acquisitions</span><strong>0</strong></div>[90m
+[31m+     </div>[90m
+[31m+     <p class=\"meta\" style=\"margin-top: 14px;\">Scenario shared-spine schema was pending for 1 linked set at generation.</p>[90m
+[31m+     [90m
+[31m+   </section>[90m
+[31m+       <section id=\"project-jurisdiction-context\"><h2>Project jurisdiction context</h2><p>Legacy study-place context only. No separate jurisdiction has been declared. Adopting authority and legal applicability remain unresolved.</p>[90m
+[31m+       <p>Project revision: 2026-03-14T01:00:00.000Z. Readiness payload SHA-256: efa99c8fe2324144cba1499756f823b0d457cc630051ffbaf5b212f43df4ecf3. Study geometry retains its own identity and coordinates.</p>[90m
+[31m+       <article><h3>Legacy study-place context</h3><p>legacy study-place context</p>[90m
+[31m+         [90m
+[31m+         <section id=\"jurisdiction-readiness\">[90m
+[31m+     <h2 class=\"section-title\">Jurisdiction readiness</h2>[90m
+[31m+     <p>Can OpenPlan do this here? This packet records the current evidence-backed answer for Nevada County, California. Unassessed work does not inherit another jurisdiction's claim.</p>[90m
+[31m+     <p class=\"meta\">Registry 2026-10-11.1 • sha256:531dca87cc6621786d4cff27b0fb52dd5b99105c3a78c6307a9a35322201c158</p>[90m
+[31m+     <div class=\"metrics-stack\"><article class=\"run-card\">[90m
+[31m+       <div class=\"run-head\">[90m
+[31m+         <div>[90m
+[31m+           <h3>Project record and evidence handoff</h3>[90m
+[31m+           <p class=\"meta\">Supported here</p>[90m
+[31m+         </div>[90m
+[31m+       </div>[90m
+[31m+       <p>The jurisdiction-neutral project record and immutable handoff are available. California-specific legal sufficiency is outside this claim.</p>[90m
+[31m+       <ul class=\"record-list\"><li>The evidence package is a retained snapshot, not approval, adoption, publication, or a backup.</li></ul>[90m
+[31m+       [90m
+[31m+       <div class=\"transparency-grid\"><div class=\"transparency-item\">[90m
+[31m+             <strong>docs/ops/2026-08-28-v0.37-governed-decision-handoff-correction-proof.md</strong>[90m
+[31m+             <span class=\"meta\">sha256:fc9d0f47bbebd61e572d30ab58c6c9c3372dddb5b4dd168a44daf9bc7d9d981a</span>[90m
+[31m+           </div></div>[90m
+[31m+     </article><article class=\"run-card\">[90m
+[31m+       <div class=\"run-head\">[90m
+[31m+         <div>[90m
+[31m+           <h3>Land-use plan</h3>[90m
+[31m+           <p class=\"meta\">Partly supported</p>[90m
+[31m+         </div>[90m
+[31m+       </div>[90m
+[31m+       <p>A configured California general-plan descriptor supplies cited statewide requirements and process steps.</p>[90m
+[31m+       <ul class=\"record-list\"><li>The descriptor is scoped, does not determine legal sufficiency, and does not replace counsel or qualified planning review.</li><li>The installed workflow still uses the general-plan checklist for specific plans. Separate specific-plan rules are prepared but are not yet connected to production routes and forms.</li><li>The October 7 source review covers selected specific-plan provisions only. Earlier descriptor review dates remain unchanged; inherited duties, local overlays and complete legal applicability need further review.</li><li>Frozen versions preserve their retained rules. Earlier drafts still need explicit checklist reconciliation that preserves existing content.</li></ul>[90m
+[31m+       <div class=\"transparency-grid\"><div class=\"transparency-item\">[90m
+[31m+             <strong>California Government Code, Article 5: Authority for and Scope of General Plans</strong>[90m
+[31m+             <span class=\"meta\">California Legislative Information • https://leginfo.legislature.ca.gov/faces/codes_displayText.xhtml?article=5.&amp;chapter=3.&amp;division=1.&amp;lawCode=GOV&amp;part=&amp;title=7.</span>[90m
+[31m+           </div><div class=\"transparency-item\">[90m
+[31m+             <strong>California Government Code, Article 6: Preparation, Adoption, and Amendment</strong>[90m
+[31m+             <span class=\"meta\">California Legislative Information • https://leginfo.legislature.ca.gov/faces/codes_displayText.xhtml?article=6.&amp;chapter=3.&amp;division=1.&amp;lawCode=GOV&amp;part=&amp;title=7.</span>[90m
+[31m+           </div><div class=\"transparency-item\">[90m
+[31m+             <strong>California Government Code, Article 8: Specific Plans</strong>[90m
+[31m+             <span class=\"meta\">California Legislative Information • https://leginfo.legislature.ca.gov/faces/codes_displayText.xhtml?article=8.&amp;chapter=3.&amp;division=1.&amp;lawCode=GOV&amp;part=&amp;title=7.</span>[90m
+[31m+           </div></div>[90m
+[31m+       <div class=\"transparency-grid\"><div class=\"transparency-item\">[90m
+[31m+             <strong>openplan/src/lib/land-use-plans/registry.ts</strong>[90m
+[31m+             <span class=\"meta\">sha256:770f857cae683b406fd1bc803b5807b7c1d18b53a757fdaee3044788dddc207e</span>[90m
+[31m+           </div><div class=\"transparency-item\">[90m
+[31m+             <strong>docs/reviews/2026-10-07-land-use-authority/PLAN_KIND_RULES.md</strong>[90m
+[31m+             <span class=\"meta\">sha256:d7639a4bea24e16706737dbb790595246ba963501633f7f7561fef2b3f4c6a46</span>[90m
+[31m+           </div></div>[90m
+[31m+     </article><article class=\"run-card\">[90m
+[31m+       <div class=\"run-head\">[90m
+[31m+         <div>[90m
+[31m+           <h3>Safety analysis</h3>[90m
+[31m+           <p class=\"meta\">Partly supported</p>[90m
+[31m+         </div>[90m
+[31m+       </div>[90m
+[31m+       <p>CCRS supplies statewide reported collisions and FARS supplies a fatal-crash backstop where its coverage applies.</p>[90m
+[31m+       <ul class=\"record-list\"><li>CCRS records do not by themselves establish complete serious-injury coverage. Source and geocoding gaps remain visible.</li></ul>[90m
+[31m+       <div class=\"transparency-grid\"><div class=\"transparency-item\">[90m
+[31m+             <strong>Road Safety Data Resources and California Crash Reporting System</strong>[90m
+[31m+             <span class=\"meta\">California Department of Transportation • https://dot.ca.gov/programs/safety-programs/shsp/road-safety-data</span>[90m
+[31m+           </div><div class=\"transparency-item\">[90m
+[31m+             <strong>Fatality Analysis Reporting System</strong>[90m
+[31m+             <span class=\"meta\">National Highway Traffic Safety Administration • https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system</span>[90m
+[31m+           </div></div>[90m
+[31m+       <div class=\"transparency-grid\"><div class=\"transparency-item\">[90m
+[31m+             <strong>openplan/src/lib/safety/sources/registry.ts</strong>[90m
+[31m+             <span class=\"meta\">sha256:32c3689d27c7992399c402bd4d87e69523c929e560a9adefe85d27e330f59d8c</span>[90m
+[31m+           </div><div class=\"transparency-item\">[90m
+[31m+             <strong>openplan/src/lib/safety/sources/ccrs.ts</strong>[90m
+[31m+             <span class=\"meta\">sha256:f1294bf77bff997b325203dcb26ff66dbf528e58c043fed119cfc1745b4f8bed</span>[90m
+[31m+           </div><div class=\"transparency-item\">[90m
+[31m+             <strong>openplan/src/lib/safety/sources/fars.ts</strong>[90m
+[31m+             <span class=\"meta\">sha256:fa6fc3c807e4cabc7eb3941f64964fdaa54505256344889492ef7bf80bec000e</span>[90m
+[31m+           </div></div>[90m
+[31m+     </article><article class=\"run-card\">[90m
+[31m+       <div class=\"run-head\">[90m
+[31m+         <div>[90m
+[31m+           <h3>Grants and reimbursement</h3>[90m
+[31m+           <p class=\"meta\">Partly supported</p>[90m
+[31m+         </div>[90m
+[31m+       </div>[90m
+[31m+       <p>Federal and California program descriptors can be matched to the workspace jurisdiction and carried into project funding records.</p>[90m
+[31m+       <ul class=\"record-list\"><li>The catalog is orientation material, not a live solicitation feed. Current cycles and terms require source review.</li></ul>[90m
+[31m+       <div class=\"transparency-grid\"><div class=\"transparency-item\">[90m
+[31m+             <strong>California Transportation Commission programs</strong>[90m
+[31m+             <span class=\"meta\">California Transportation Commission • https://catc.ca.gov/programs</span>[90m
+[31m+           </div></div>[90m
+[31m+       <div class=\"transparency-grid\"><div class=\"transparency-item\">[90m
+[31m+             <strong>openplan/src/lib/grants/programs/registry.ts</strong>[90m
+[31m+             <span class=\"meta\">sha256:ed7138242b1158297f84c931c95b1e298eb96fbaabbf57fa3bbbb252ce0d1d7f</span>[90m
+[31m+           </div><div class=\"transparency-item\">[90m
+[31m+             <strong>openplan/src/lib/grants/programs/us-federal.ts</strong>[90m
+[31m+             <span class=\"meta\">sha256:232ab428804b141ec462d7d2bfb3f11b8406f1e3b1c3c7d790ed868958fc0a3f</span>[90m
+[31m+           </div><div class=\"transparency-item\">[90m
+[31m+             <strong>openplan/src/lib/grants/programs/us-ca.ts</strong>[90m
+[31m+             <span class=\"meta\">sha256:db35063a2d9be22bd4641e9db792b451d495e51efd0fe06fef370ad703c94280</span>[90m
+[31m+           </div></div>[90m
+[31m+     </article><article class=\"run-card\">[90m
+[31m+       <div class=\"run-head\">[90m
+[31m+         <div>[90m
+[31m+           <h3>Model validation evidence</h3>[90m
+[31m+           <p class=\"meta\">Partly supported</p>[90m
+[31m+         </div>[90m
+[31m+       </div>[90m
+[31m+       <p>The seven-county development instrument exposes comparable observations and separate method assessments.</p>[90m
+[31m+       <ul class=\"record-list\"><li>The result is inconclusive, the modeled quantity is synthetic expanded daily traffic, and neither method is validated for planner accuracy claims.</li></ul>[90m
+[31m+       [90m
+[31m+       <div class=\"transparency-grid\"><div class=\"transparency-item\">[90m
+[31m+             <strong>docs/ops/V041_COMPARABLE_OBSERVATION_PROOF_2026-08-28.md</strong>[90m
+[31m+             <span class=\"meta\">sha256:d3e3b79737df7ef4fda5003a383212c05faf8df12d8609bef392160b59fcfe4d</span>[90m
+[31m+           </div></div>[90m
+[31m+     </article></div>[90m
+[31m+   </section>[90m
+[31m+         </article>[90m
+[31m+       </section>[90m
+[31m+       [90m
+[31m+       [90m
+[31m+       [90m
+[31m+       [90m
+[31m+       <section>[90m
+[31m+     <h2 class=\"section-title\">Governance and stage-gate provenance</h2>[90m
+[31m+     <p>This artifact includes a compact stage-gate snapshot captured at generation time using the active OpenPlan stage-gate summary.</p>[90m
+[31m+     <div class=\"metrics-stack\">[90m
+[31m+       <article class=\"metric-card\">[90m
+[31m+         <span class=\"metric-label\">Template</span>[90m
+[31m+         <strong>ca_stage_gates_v0_1</strong>[90m
+[31m+         <p>Version 0.1.0 • 0 pass • 0 hold • 9 not started</p>[90m
+[31m+         <p><a href=\"/projects/44444444-4444-4444-8444-444444444444#project-governance\">Open governance</a></p>[90m
+[31m+       </article>[90m
+[31m+       <article class=\"metric-card\">[90m
+[31m+         <span class=\"metric-label\">Blocked gate</span>[90m
+[31m+         <strong>No gate on hold</strong>[90m
+[31m+         <p>No formal HOLD decision is recorded in this snapshot.</p>[90m
+[31m+       </article>[90m
+[31m+       <article class=\"metric-card\">[90m
+[31m+         <span class=\"metric-label\">Next gate</span>[90m
+[31m+         <strong>G01_INITIATION_AUTHORIZATION · Initiation &amp; Project Authorization</strong>[90m
+[31m+         <p>4 required evidence items • 0 operator control profiles</p>[90m
+[31m+       </article>[90m
+[31m+       <article class=\"metric-card\">[90m
+[31m+         <span class=\"metric-label\">Control health</span>[90m
+[31m+         <strong>5</strong>[90m
+[31m+         <p>4 gates in this template include operator control evidence.</p>[90m
+[31m+       </article>[90m
+[31m+     </div>[90m
+[31m+   </section>[90m
+[31m+       <section>[90m
+[31m+     <h2 class=\"section-title\">Project records provenance</h2>[90m
+[31m+     <p>This artifact includes a compact snapshot of attached project records captured at generation time so reviewers can see the latest named evidence behind the packet.</p>[90m
+[31m+     <div class=\"metrics-stack\">[90m
+[31m+       <article class=\"metric-card\">[90m
+[31m+             <span class=\"metric-label\">Deliverables</span>[90m
+[31m+             <strong>0</strong>[90m
+[31m+             <p>No attached records in this snapshot.</p>[90m
+[31m+             <p><a href=\"/projects/44444444-4444-4444-8444-444444444444#project-deliverables\">Open deliverables</a></p>[90m
+[31m+           </article><article class=\"metric-card\">[90m
+[31m+             <span class=\"metric-label\">Risks</span>[90m
+[31m+             <strong>0</strong>[90m
+[31m+             <p>No attached records in this snapshot.</p>[90m
+[31m+             <p><a href=\"/projects/44444444-4444-4444-8444-444444444444#project-risks\">Open risks</a></p>[90m
+[31m+           </article><article class=\"metric-card\">[90m
+[31m+             <span class=\"metric-label\">Issues</span>[90m
+[31m+             <strong>0</strong>[90m
+[31m+             <p>No attached records in this snapshot.</p>[90m
+[31m+             <p><a href=\"/projects/44444444-4444-4444-8444-444444444444#project-issues\">Open issues</a></p>[90m
+[31m+           </article><article class=\"metric-card\">[90m
+[31m+             <span class=\"metric-label\">Decisions</span>[90m
+[31m+             <strong>0</strong>[90m
+[31m+             <p>No attached records in this snapshot.</p>[90m
+[31m+             <p><a href=\"/projects/44444444-4444-4444-8444-444444444444#project-decisions\">Open decisions</a></p>[90m
+[31m+           </article><article class=\"metric-card\">[90m
+[31m+             <span class=\"metric-label\">Meetings</span>[90m
+[31m+             <strong>0</strong>[90m
+[31m+             <p>No attached records in this snapshot.</p>[90m
+[31m+             <p><a href=\"/projects/44444444-4444-4444-8444-444444444444#project-meetings\">Open meetings</a></p>[90m
+[31m+           </article>[90m
+[31m+     </div>[90m
+[31m+   </section>[90m
+[31m+       <section>[90m
+[31m+     <h2 class=\"section-title\">Scenario basis</h2>[90m
+[31m+     <p>This packet includes scenario provenance derived from report-linked runs and scenario entries.</p>[90m
+[31m+     <div class=\"metrics-stack\">[90m
+[31m+       <article class=\"metric-card\">[90m
+[31m+             <h3>Downtown alternatives</h3>[90m
+[31m+             <p>Comparison posture: <strong>Ready to compare</strong></p>[90m
+[31m+             <p>Baseline: <strong>Existing conditions</strong> • Existing conditions baseline</p>[90m
+[31m+             <p class=\"meta\">Scenario set updated 3/13/2026, 6:15:00 PM • Matched entries updated 3/13/2026, 6:30:00 PM</p>[90m
+[31m+             <p class=\"meta\">Shared scenario spine schema pending at generation</p>[90m
+[31m+             [90m
+[31m+             <p><a href=\"/scenarios/scenario-set-1\">Open scenario set</a></p>[90m
+[31m+             <ul class=\"record-list\" style=\"margin-top: 12px;\"><li>[90m
+[31m+                 <strong>Protected bike package</strong>[90m
+[31m+                 <p>Alternative • Ready to compare</p>[90m
+[31m+                 <span class=\"meta\">Run A • Run 3/11/2026, 5:00:00 PM</span>[90m
+[31m+               </li></ul>[90m
+[31m+           </article>[90m
+[31m+     </div>[90m
+[31m+   </section>[90m
+[31m+       <section id=\"project_overview\">[90m
+[31m+             <h2 class=\"section-title\">Project overview</h2>[90m
+[31m+             <div class=\"two-col\">[90m
+[31m+       <div>[90m
+[31m+         <h3>Nevada County Safety Action Program</h3>[90m
+[31m+         <p>Project summary</p>[90m
+[31m+         <div class=\"warning-box\" style=\"margin-top: 18px;\">[90m
+[31m+     <strong>Funding posture at generation</strong>[90m
+[31m+     <p>Funding posture unknown • Funding pipeline unknown • Reimbursement posture unknown</p>[90m
+[31m+     <p>0 awards • 0 pursued opportunities • $0 committed</p>[90m
+[31m+     <p>No remaining funding gap was recorded in this snapshot.</p>[90m
+[31m+     [90m
+[31m+   </div>[90m
+[31m+       </div>[90m
+[31m+       <dl class=\"facts\">[90m
+[31m+         <div><dt>Report type</dt><dd>Project Status Packet</dd></div>[90m
+[31m+         <div><dt>Workspace</dt><dd>Nevada County Safety Action Program</dd></div>[90m
+[31m+         <div><dt>Generated basis</dt><dd>Project records + linked runs</dd></div>[90m
+[31m+         <div><dt>Scenario basis</dt><dd>1 linked set</dd></div>[90m
+[31m+         <div><dt>Scenario spine</dt><dd>1 pending</dd></div>[90m
+[31m+       </dl>[90m
+[31m+     </div>[90m
+[31m+             [90m
+[31m+           </section>[90m
+[31m+       [90m
+[31m+     </main>[90m
+[31m+   </body>[90m
+[31m+ </html>",[90m
+[31m+       "metadata_schema_version": "2026-04",[90m
+[31m+       "pdfEngine": null,[90m
+[31m+       "runAudit": [[90m
+[31m+         {[90m
+[31m+           "gate": {[90m
+[31m+             "decision": "PASS",[90m
+[31m+             "missingArtifacts": [],[90m
+[31m+           },[90m
+[31m+           "runId": "55555555-5555-4555-8555-555555555555",[90m
+[31m+           "transparency": [[90m
+[31m+             {[90m
+[31m+               "detail": "Population and demographic indicators are sourced from Census tables.",[90m
+[31m+               "key": "census",[90m
+[31m+               "label": "Census / ACS 5-Year",[90m
+[31m+               "status": "Live",[90m
+[31m+               "tone": "success",[90m
+[31m+             },[90m
+[31m+             {[90m
+[31m+               "detail": "Fatal crash indicators were retrieved from the configured source for this run.",[90m
+[31m+               "key": "crashes",[90m
+[31m+               "label": "Crash Safety Data",[90m
+[31m+               "status": "Live",[90m
+[31m+               "tone": "success",[90m
+[31m+             },[90m
+[31m+             {[90m
+[31m+               "detail": "Transit stop source could not be verified in this run metadata.",[90m
+[31m+               "key": "transit",[90m
+[31m+               "label": "Transit Stop Inventory",[90m
+[31m+               "status": "Unknown",[90m
+[31m+               "tone": "neutral",[90m
+[31m+             },[90m
+[31m+             {[90m
+[31m+               "detail": "Employment opportunity metrics were derived from Lodes.",[90m
+[31m+               "key": "lodes",[90m
+[31m+               "label": "LODES Employment",[90m
+[31m+               "status": "Lodes",[90m
+[31m+               "tone": "info",[90m
+[31m+             },[90m
+[31m+             {[90m
+[31m+               "detail": "Equity flags are an ACS income + burden PROXY (Cejst Proxy Census, corridor-level tract aggregation) — a screening proxy, NOT the federal CEJST/Justice40 or California SB 535 disadvantaged-community designation.",[90m
+[31m+               "key": "equity",[90m
+[31m+               "label": "Equity Screening",[90m
+[31m+               "status": "Cejst Proxy Census",[90m
+[31m+               "tone": "info",[90m
+[31m+             },[90m
+[31m+             {[90m
+[31m+               "detail": "Narrative drafting used the AI interpretation layer; human review is required before release.",[90m
+[31m+               "key": "ai",[90m
+[31m+               "label": "AI Narrative Layer",[90m
+[31m+               "status": "AI-assisted",[90m
+[31m+               "tone": "info",[90m
+[31m+             },[90m
+[31m+           ],[90m
+[31m+         },[90m
+[31m+       ],[90m
+[31m+       "sourceContext": {[90m
+[31m+         "acceptedAiNarrativeCount": 0,[90m
+[31m+         "acceptedAiNarratives": [],[90m
+[31m+         "aerialEvidenceSourceContext": null,[90m
+[31m+         "auditWarningCount": 0,[90m
+[31m+         "citedCountyRunCount": 0,[90m
+[31m+         "citedCountyRuns": [],[90m
+[31m+         "citedModelRunCount": 0,[90m
+[31m+         "citedModelRuns": [],[90m
+[31m+         "decisionCount": 0,[90m
+[31m+         "deliverableCount": 0,[90m
+[31m+         "engagementCampaignCurrent": null,[90m
+[31m+         "engagementCampaignId": null,[90m
+[31m+         "engagementCampaignSnapshot": null,[90m
+[31m+         "engagementCountsSnapshot": null,[90m
+[31m+         "engagementItemCount": 0,[90m
+[31m+         "engagementReadyForHandoffCount": 0,[90m
+[31m+         "engagementSnapshotCapturedAt": null,[90m
+[31m+         "evidenceChainSummary": {[90m
+[31m+           "engagementItemCount": 0,[90m
+[31m+           "engagementLabel": "Not linked",[90m
+[31m+           "engagementReadyForHandoffCount": 0,[90m
+[2m            "linkedRunCount": 1,[22m
+[31m+           "modelingEvidenceClaimLabel": "Not linked",[90m
+[31m+           "modelingEvidenceCount": 0,[90m
+[31m+           "projectRecordGroupCount": 0,[90m
+[31m+           "safetyAcquisitionCount": 0,[90m
+[31m+           "scenarioAssumptionSetCount": 0,[90m
+[31m+           "scenarioDataPackageCount": 0,[90m
+[31m+           "scenarioIndicatorSnapshotCount": 0,[90m
+[2m            "scenarioSetLinkCount": 1,[22m
+[31m+           "scenarioSharedSpinePendingCount": 1,[90m
+[31m+           "stageGateBlockedGateLabel": null,[90m
+[31m+           "stageGateHoldCount": 0,[90m
+[31m+           "stageGateLabel": "In progress",[90m
+[31m+           "stageGatePassCount": 0,[90m
+[31m+           "totalProjectRecordCount": 0,[90m
+[2m          },[22m
+[32m-         "jurisdictionReadiness": ObjectContaining {[90m
+[32m-           "jurisdiction": ObjectContaining {[90m
+[31m+         "fundingSourceContextReadiness": {[90m
+[31m+           "capturedAt": "2026-10-15T05:17:00.150Z",[90m
+[31m+           "detail": "Generation captured the funding scan, but unresolved funding setup or governance holds must be reviewed before relying on the packet outside OpenPlan.",[90m
+[31m+           "engagementReadyForHandoffCount": 0,[90m
+[31m+           "fundingScanStatus": "not_started",[90m
+[31m+           "hasComparisonEvidence": true,[90m
+[31m+           "label": "Funding source context has review blockers",[90m
+[31m+           "linkedRunCount": 1,[90m
+[31m+           "modelingEvidenceCount": 0,[90m
+[31m+           "operatorReviewCaveat": "Operator review required. This funding/source-context scan supports planning packet review only; it is not legal compliance automation, award prediction, or autonomous approval.",[90m
+[31m+           "stageGateHoldCount": 0,[90m
+[31m+           "status": "blocked",[90m
+[31m+         },[90m
+[31m+         "issueCount": 0,[90m
+[31m+         "jurisdictionReadiness": {[90m
+[31m+           "context": null,[90m
+[31m+           "contextSource": "legacy_study_place",[90m
+[31m+           "disclosure": "Legacy study-place context only. No separate jurisdiction has been declared. Adopting authority and legal applicability remain unresolved.",[90m
+[31m+           "entries": [[90m
+[31m+             {[90m
+[31m+               "administrativeGuidance": null,[90m
+[31m+               "assessment": {[90m
+[31m+                 "jurisdiction": {[90m
+[31m+                   "assessmentKind": "configured-exemplar",[90m
+[31m+                   "country": "US",[90m
+[2m                    "id": "US-CA",[22m
+[31m+                   "label": "Nevada County, California",[90m
+[31m+                   "subdivision": "CA",[90m
+[2m                  },[22m
+[32m-           "reports": ArrayContaining [[90m
+[32m-             ObjectContaining {[90m
+[32m-               "job": ObjectContaining {[90m
+[31m+                 "registrySha256": "531dca87cc6621786d4cff27b0fb52dd5b99105c3a78c6307a9a35322201c158",[90m
+[31m+                 "registryVersion": "2026-10-11.1",[90m
+[31m+                 "reports": [[90m
+[31m+                   {[90m
+[31m+                     "adapterIds": [[90m
+[31m+                       "project-place-of-record",[90m
+[31m+                       "project-evidence-bundle-v2",[90m
+[31m+                     ],[90m
+[31m+                     "applicability": "The jurisdiction-neutral project record and immutable handoff are available. California-specific legal sufficiency is outside this claim.",[90m
+[31m+                     "authorities": [],[90m
+[31m+                     "job": {[90m
+[31m+                       "artifactIds": [[90m
+[31m+                         "project-record",[90m
+[31m+                         "interoperable-geospatial-exchange",[90m
+[31m+                       ],[90m
+[31m+                       "description": "Carry one project record, its geography, linked evidence, review state, and exact files into a retained evidence package.",[90m
+[2m                        "id": "project-evidence-handoff",[22m
+[31m+                       "label": "Project record and evidence handoff",[90m
+[31m+                       "organizationIds": [[90m
+[31m+                         "local-and-county-government",[90m
+[31m+                         "consultancies",[90m
+[31m+                       ],[90m
+[31m+                       "plannerIds": [[90m
+[31m+                         "transportation-planner",[90m
+[31m+                         "land-use-planner",[90m
+[31m+                         "gis-data-and-records-planner",[90m
+[31m+                       ],[90m
+[31m+                     },[90m
+[31m+                     "jurisdiction": {[90m
+[31m+                       "assessmentKind": "configured-exemplar",[90m
+[31m+                       "country": "US",[90m
+[31m+                       "id": "US-CA",[90m
+[31m+                       "label": "Nevada County, California",[90m
+[31m+                       "subdivision": "CA",[90m
+[31m+                     },[90m
+[31m+                     "limitations": [[90m
+[31m+                       "The evidence package is a retained snapshot, not approval, adoption, publication, or a backup.",[90m
+[31m+                     ],[90m
+[31m+                     "registrySha256": "531dca87cc6621786d4cff27b0fb52dd5b99105c3a78c6307a9a35322201c158",[90m
+[31m+                     "registryVersion": "2026-10-11.1",[90m
+[31m+                     "reviewBy": "2026-09-28",[90m
+[31m+                     "reviewedAt": "2026-08-28",[90m
+[31m+                     "schema": "openplan.jurisdiction-readiness-report.v1",[90m
+[31m+                     "sources": [[90m
+[31m+                       {[90m
+[31m+                         "id": "project-handoff-proof-v037",[90m
+[31m+                         "path": "docs/ops/2026-08-28-v0.37-governed-decision-handoff-correction-proof.md",[90m
+[31m+                         "sha256": "fc9d0f47bbebd61e572d30ab58c6c9c3372dddb5b4dd168a44daf9bc7d9d981a",[90m
+[2m                        },[22m
+[31m+                     ],[90m
+[2m                      "status": "supported",[22m
+[31m+                     "statusLabel": "Supported here",[90m
+[2m                    },[22m
+[31m+                   {[90m
+[31m+                     "adapterIds": [[90m
+[31m+                       "us-ca-general-plan",[90m
+[31m+                     ],[90m
+[31m+                     "applicability": "A configured California general-plan descriptor supplies cited statewide requirements and process steps.",[90m
+[31m+                     "authorities": [[90m
+[31m+                       {[90m
+[31m+                         "agency": "California Legislative Information",[90m
+[31m+                         "kind": "statute",[90m
+[31m+                         "label": "California Government Code, Article 5: Authority for and Scope of General Plans",[90m
+[31m+                         "url": "https://leginfo.legislature.ca.gov/faces/codes_displayText.xhtml?article=5.&chapter=3.&division=1.&lawCode=GOV&part=&title=7.",[90m
+[31m+                       },[90m
+[31m+                       {[90m
+[31m+                         "agency": "California Legislative Information",[90m
+[31m+                         "kind": "statute",[90m
+[31m+                         "label": "California Government Code, Article 6: Preparation, Adoption, and Amendment",[90m
+[31m+                         "url": "https://leginfo.legislature.ca.gov/faces/codes_displayText.xhtml?article=6.&chapter=3.&division=1.&lawCode=GOV&part=&title=7.",[90m
+[31m+                       },[90m
+[31m+                       {[90m
+[31m+                         "agency": "California Legislative Information",[90m
+[31m+                         "kind": "statute",[90m
+[31m+                         "label": "California Government Code, Article 8: Specific Plans",[90m
+[31m+                         "url": "https://leginfo.legislature.ca.gov/faces/codes_displayText.xhtml?article=8.&chapter=3.&division=1.&lawCode=GOV&part=&title=7.",[90m
+[31m+                       },[90m
+[31m+                     ],[90m
+[31m+                     "job": {[90m
+[31m+                       "artifactIds": [[90m
+[31m+                         "adopted-plan",[90m
+[31m+                         "report-and-print-export",[90m
+[2m                        ],[22m
+[31m+                       "description": "Author, review, adopt, publish, and retain a statutory land-use plan under the applicable jurisdiction bundle.",[90m
+[31m+                       "id": "land-use-plan",[90m
+[31m+                       "label": "Land-use plan",[90m
+[31m+                       "organizationIds": [[90m
+[31m+                         "local-and-county-government",[90m
+[31m+                       ],[90m
+[31m+                       "plannerIds": [[90m
+[31m+                         "land-use-planner",[90m
+[31m+                       ],[90m
+[31m+                     },[90m
+[31m+                     "jurisdiction": {[90m
+[31m+                       "assessmentKind": "configured-exemplar",[90m
+[31m+                       "country": "US",[90m
+[31m+                       "id": "US-CA",[90m
+[31m+                       "label": "Nevada County, California",[90m
+[31m+                       "subdivision": "CA",[90m
+[2m                      },[22m
+[31m+                     "limitations": [[90m
+[31m+                       "The descriptor is scoped, does not determine legal sufficiency, and does not replace counsel or qualified planning review.",[90m
+[31m+                       "The installed workflow still uses the general-plan checklist for specific plans. Separate specific-plan rules are prepared but are not yet connected to production routes and forms.",[90m
+[31m+                       "The October 7 source review covers selected specific-plan provisions only. Earlier descriptor review dates remain unchanged; inherited duties, local overlays and complete legal applicability need further review.",[90m
+[31m+                       "Frozen versions preserve their retained rules. Earlier drafts still need explicit checklist reconciliation that preserves existing content.",[90m
+[31m+                     ],[90m
+[31m+                     "registrySha256": "531dca87cc6621786d4cff27b0fb52dd5b99105c3a78c6307a9a35322201c158",[90m
+[31m+                     "registryVersion": "2026-10-11.1",[90m
+[31m+                     "reviewBy": "2026-09-28",[90m
+[31m+                     "reviewedAt": "2026-08-28",[90m
+[31m+                     "schema": "openplan.jurisdiction-readiness-report.v1",[90m
+[31m+                     "sources": [[90m
+[31m+                       {[90m
+[31m+                         "id": "land-use-plan-registry",[90m
+[31m+                         "path": "openplan/src/lib/land-use-plans/registry.ts",[90m
+[31m+                         "sha256": "770f857cae683b406fd1bc803b5807b7c1d18b53a757fdaee3044788dddc207e",[90m
+[31m+                       },[90m
+[31m+                       {[90m
+[31m+                         "id": "land-use-plan-kind-review-20261007",[90m
+[31m+                         "path": "docs/reviews/2026-10-07-land-use-authority/PLAN_KIND_RULES.md",[90m
+[31m+                         "sha256": "d7639a4bea24e16706737dbb790595246ba963501633f7f7561fef2b3f4c6a46",[90m
+[31m+                       },[90m
+[31m+                     ],[90m
+[31m+                     "status": "partial",[90m
+[31m+                     "statusLabel": "Partly supported",[90m
+[31m+                   },[90m
+[31m+                   {[90m
+[31m+                     "adapterIds": [[90m
+[31m+                       "ccrs-ca",[90m
+[31m+                       "fars-national",[90m
+[31m+                     ],[90m
+[31m+                     "applicability": "CCRS supplies statewide reported collisions and FARS supplies a fatal-crash backstop where its coverage applies.",[90m
+[31m+                     "authorities": [[90m
+[31m+                       {[90m
+[31m+                         "agency": "California Department of Transportation",[90m
+[31m+                         "kind": "data_source",[90m
+[31m+                         "label": "Road Safety Data Resources and California Crash Reporting System",[90m
+[31m+                         "url": "https://dot.ca.gov/programs/safety-programs/shsp/road-safety-data",[90m
+[31m+                       },[90m
+[31m+                       {[90m
+[31m+                         "agency": "National Highway Traffic Safety Administration",[90m
+[31m+                         "kind": "data_source",[90m
+[31m+                         "label": "Fatality Analysis Reporting System",[90m
+[31m+                         "url": "https://www.nhtsa.gov/crash-data-systems/fatality-analysis-reporting-system",[90m
+[31m+                       },[90m
+[31m+                     ],[90m
+[31m+                     "job": {[90m
+[31m+                       "artifactIds": [[90m
+[31m+                         "safety-evidence",[90m
+[31m+                         "report-and-print-export",[90m
+[31m+                       ],[90m
+[31m+                       "description": "Acquire observed crash records for a project area, disclose source coverage, and retain the safety evidence.",[90m
+[31m+                       "id": "safety-analysis",[90m
+[31m+                       "label": "Safety analysis",[90m
+[31m+                       "organizationIds": [[90m
+[31m+                         "local-and-county-government",[90m
+[31m+                         "regional-and-metropolitan-organizations",[90m
+[31m+                       ],[90m
+[31m+                       "plannerIds": [[90m
+[31m+                         "transportation-planner",[90m
+[31m+                       ],[90m
+[31m+                     },[90m
+[31m+                     "jurisdiction": {[90m
+[31m+                       "assessmentKind": "configured-exemplar",[90m
+[31m+                       "country": "US",[90m
+[31m+                       "id": "US-CA",[90m
+[31m+                       "label": "Nevada County, California",[90m
+[31m+                       "subdivision": "CA",[90m
+[31m+                     },[90m
+[31m+                     "limitations": [[90m
+[31m+                       "CCRS records do not by themselves establish complete serious-injury coverage. Source and geocoding gaps remain visible.",[90m
+[31m+                     ],[90m
+[31m+                     "registrySha256": "531dca87cc6621786d4cff27b0fb52dd5b99105c3a78c6307a9a35322201c158",[90m
+[31m+                     "registryVersion": "2026-10-11.1",[90m
+[31m+                     "reviewBy": "2026-09-28",[90m
+[31m+                     "reviewedAt": "2026-08-28",[90m
+[31m+                     "schema": "openplan.jurisdiction-readiness-report.v1",[90m
+[31m+                     "sources": [[90m
+[31m+                       {[90m
+[31m+                         "id": "crash-source-registry",[90m
+[31m+                         "path": "openplan/src/lib/safety/sources/registry.ts",[90m
+[31m+                         "sha256": "32c3689d27c7992399c402bd4d87e69523c929e560a9adefe85d27e330f59d8c",[90m
+[31m+                       },[90m
+[31m+                       {[90m
+[31m+                         "id": "ccrs-source-adapter",[90m
+[31m+                         "path": "openplan/src/lib/safety/sources/ccrs.ts",[90m
+[31m+                         "sha256": "f1294bf77bff997b325203dcb26ff66dbf528e58c043fed119cfc1745b4f8bed",[90m
+[31m+                       },[90m
+[31m+                       {[90m
+[31m+                         "id": "fars-source-adapter",[90m
+[31m+                         "path": "openplan/src/lib/safety/sources/fars.ts",[90m
+[31m+                         "sha256": "fa6fc3c807e4cabc7eb3941f64964fdaa54505256344889492ef7bf80bec000e",[90m
+[31m+                       },[90m
+[31m+                     ],[90m
+[31m+                     "status": "partial",[90m
+[31m+                     "statusLabel": "Partly supported",[90m
+[31m+                   },[90m
+[31m+                   {[90m
+[31m+                     "adapterIds": [[90m
+[31m+                       "us-federal",[90m
+[31m+                       "us-ca",[90m
+[31m+                     ],[90m
+[31m+                     "applicability": "Federal and California program descriptors can be matched to the workspace jurisdiction and carried into project funding records.",[90m
+[31m+                     "authorities": [[90m
+[31m+                       {[90m
+[31m+                         "agency": "California Transportation Commission",[90m
+[31m+                         "kind": "program_catalog",[90m
+[31m+                         "label": "California Transportation Commission programs",[90m
+[31m+                         "url": "https://catc.ca.gov/programs",[90m
+[31m+                       },[90m
+[31m+                     ],[90m
+[31m+                     "job": {[90m
+[31m+                       "artifactIds": [[90m
+[31m+                         "grant-application",[90m
+[31m+                         "delivery-and-reimbursement-record",[90m
+[31m+                       ],[90m
+[31m+                       "description": "Find applicable programs, preserve source limits, and carry an award through delivery and reimbursement records.",[90m
+[31m+                       "id": "grants-and-reimbursement",[90m
+[31m+                       "label": "Grants and reimbursement",[90m
+[31m+                       "organizationIds": [[90m
+[31m+                         "local-and-county-government",[90m
+[31m+                         "consultancies",[90m
+[31m+                       ],[90m
+[31m+                       "plannerIds": [[90m
+[31m+                         "capital-programming-and-grants-planner",[90m
+[31m+                       ],[90m
+[31m+                     },[90m
+[31m+                     "jurisdiction": {[90m
+[31m+                       "assessmentKind": "configured-exemplar",[90m
+[31m+                       "country": "US",[90m
+[31m+                       "id": "US-CA",[90m
+[31m+                       "label": "Nevada County, California",[90m
+[31m+                       "subdivision": "CA",[90m
+[31m+                     },[90m
+[31m+                     "limitations": [[90m
+[31m+                       "The catalog is orientation material, not a live solicitation feed. Current cycles and terms require source review.",[90m
+[31m+                     ],[90m
+[31m+                     "registrySha256": "531dca87cc6621786d4cff27b0fb52dd5b99105c3a78c6307a9a35322201c158",[90m
+[31m+                     "registryVersion": "2026-10-11.1",[90m
+[31m+                     "reviewBy": "2026-09-28",[90m
+[31m+                     "reviewedAt": "2026-08-28",[90m
+[31m+                     "schema": "openplan.jurisdiction-readiness-report.v1",[90m
+[31m+                     "sources": [[90m
+[31m+                       {[90m
+[31m+                         "id": "grant-program-registry",[90m
+[31m+                         "path": "openplan/src/lib/grants/programs/registry.ts",[90m
+[31m+                         "sha256": "ed7138242b1158297f84c931c95b1e298eb96fbaabbf57fa3bbbb252ce0d1d7f",[90m
+[31m+                       },[90m
+[31m+                       {[90m
+[31m+                         "id": "federal-grant-adapter",[90m
+[31m+                         "path": "openplan/src/lib/grants/programs/us-federal.ts",[90m
+[31m+                         "sha256": "232ab428804b141ec462d7d2bfb3f11b8406f1e3b1c3c7d790ed868958fc0a3f",[90m
+[31m+                       },[90m
+[31m+                       {[90m
+[31m+                         "id": "california-grant-adapter",[90m
+[31m+                         "path": "openplan/src/lib/grants/programs/us-ca.ts",[90m
+[31m+                         "sha256": "db35063a2d9be22bd4641e9db792b451d495e51efd0fe06fef370ad703c94280",[90m
+[31m+                       },[90m
+[31m+                     ],[90m
+[31m+                     "status": "partial",[90m
+[31m+                     "statusLabel": "Partly supported",[90m
+[31m+                   },[90m
+[31m+                   {[90m
+[31m+                     "adapterIds": [[90m
+[31m+                       "comparable-observation-instrument-v2",[90m
+[31m+                     ],[90m
+[31m+                     "applicability": "The seven-county development instrument exposes comparable observations and separate method assessments.",[90m
+[31m+                     "authorities": [],[90m
+[31m+                     "job": {[90m
+[31m+                       "artifactIds": [[90m
+[31m+                         "model-validation-record",[90m
+[31m+                         "scenario-comparison",[90m
+[31m+                       ],[90m
+[31m+                       "description": "Open a genuine baseline, inspect separate AequilibraE and ActivitySim assessments, and download exact scientific evidence.",[90m
+[31m+                       "id": "model-validation-evidence",[90m
+[31m+                       "label": "Model validation evidence",[90m
+[31m+                       "organizationIds": [[90m
+[31m+                         "local-and-county-government",[90m
+[31m+                         "regional-and-metropolitan-organizations",[90m
+[31m+                         "consultancies",[90m
+[31m+                       ],[90m
+[31m+                       "plannerIds": [[90m
+[31m+                         "transportation-planner",[90m
+[31m+                       ],[90m
+[31m+                     },[90m
+[31m+                     "jurisdiction": {[90m
+[31m+                       "assessmentKind": "configured-exemplar",[90m
+[31m+                       "country": "US",[90m
+[31m+                       "id": "US-CA",[90m
+[31m+                       "label": "Nevada County, California",[90m
+[31m+                       "subdivision": "CA",[90m
+[31m+                     },[90m
+[31m+                     "limitations": [[90m
+[31m+                       "The result is inconclusive, the modeled quantity is synthetic expanded daily traffic, and neither method is validated for planner accuracy claims.",[90m
+[31m+                     ],[90m
+[31m+                     "registrySha256": "531dca87cc6621786d4cff27b0fb52dd5b99105c3a78c6307a9a35322201c158",[90m
+[31m+                     "registryVersion": "2026-10-11.1",[90m
+[31m+                     "reviewBy": "2026-09-28",[90m
+[31m+                     "reviewedAt": "2026-08-28",[90m
+[31m+                     "schema": "openplan.jurisdiction-readiness-report.v1",[90m
+[31m+                     "sources": [[90m
+[31m+                       {[90m
+[31m+                         "id": "comparable-observation-proof-v041",[90m
+[31m+                         "path": "docs/ops/V041_COMPARABLE_OBSERVATION_PROOF_2026-08-28.md",[90m
+[31m+                         "sha256": "d3e3b79737df7ef4fda5003a383212c05faf8df12d8609bef392160b59fcfe4d",[90m
+[31m+                       },[90m
+[31m+                     ],[90m
+[31m+                     "status": "partial",[90m
+[31m+                     "statusLabel": "Partly supported",[90m
+[31m+                   },[90m
+[31m+                 ],[90m
+[31m+                 "schema": "openplan.jurisdiction-readiness-response.v1",[90m
+[31m+               },[90m
+[31m+               "assessmentScope": "legacy study-place context",[90m
+[31m+               "declaration": null,[90m
+[31m+             },[90m
+[31m+           ],[90m
+[31m+           "payloadSha256": "efa99c8fe2324144cba1499756f823b0d457cc630051ffbaf5b212f43df4ecf3",[90m
+[31m+           "projectId": "44444444-4444-4444-8444-444444444444",[90m
+[31m+           "projectRevision": "2026-03-14T01:00:00.000Z",[90m
+[31m+           "registrySha256": "531dca87cc6621786d4cff27b0fb52dd5b99105c3a78c6307a9a35322201c158",[90m
+[31m+           "schema": "openplan.project-jurisdiction-readiness-response.v2",[90m
+[31m+         },[90m
+[2m          "linkedRunCount": 1,[22m
+[31m+         "meetingCount": 0,[90m
+[31m+         "modelingEvidence": [],[90m
+[31m+         "modelingEvidenceClaimStatuses": [],[90m
+[31m+         "modelingEvidenceCount": 0,[90m
+[31m+         "projectFundingProfileScan": {[90m
+[31m+           "generatedAt": "2026-10-15T05:17:00.150Z",[90m
+[31m+           "label": "Funding profile needs setup",[90m
+[31m+           "lanes": [[90m
+[31m+             {[90m
+[31m+               "amount": null,[90m
+[31m+               "detail": "No project-level funding need has been recorded yet.",[90m
+[31m+               "id": "funding_target",[90m
+[31m+               "label": "Funding target",[90m
+[31m+               "nextAction": "Set the funding need and local match target before using this project in grant or RTP funding tables.",[90m
+[31m+               "status": "not_started",[90m
+[31m+               "statusLabel": "Target not set",[90m
+[31m+             },[90m
+[31m+             {[90m
+[31m+               "amount": null,[90m
+[31m+               "detail": "No local match need is recorded on the funding profile.",[90m
+[31m+               "id": "local_match",[90m
+[31m+               "label": "Local match",[90m
+[31m+               "nextAction": "Record a match target when the funding source requires local or partner match.",[90m
+[31m+               "status": "unknown",[90m
+[31m+               "statusLabel": "Match target not set",[90m
+[2m              },[22m
+[31m+             {[90m
+[31m+               "amount": null,[90m
+[31m+               "detail": "No award records are attached, so obligation pressure cannot be computed.",[90m
+[31m+               "id": "obligation",[90m
+[31m+               "label": "Obligation timing",[90m
+[31m+               "nextAction": "Create award records when funding is committed, then add obligation dates for operations review.",[90m
+[31m+               "status": "unknown",[90m
+[31m+               "statusLabel": "No awards yet",[90m
+[2m              },[22m
+[31m+             {[90m
+[31m+               "amount": 0,[90m
+[31m+               "detail": "$0 requested, $0 paid, and $0 outstanding.",[90m
+[31m+               "id": "reimbursement",[90m
+[31m+               "label": "Reimbursement chain",[90m
+[31m+               "nextAction": "Link award-backed invoice requests to compute reimbursement posture.",[90m
+[31m+               "status": "unknown",[90m
+[31m+               "statusLabel": "Reimbursement posture unknown",[90m
+[31m+             },[90m
+[31m+             {[90m
+[31m+               "amount": null,[90m
+[31m+               "detail": "Closeout posture starts after an award and linked reimbursement chain exist.",[90m
+[31m+               "id": "closeout",[90m
+[31m+               "label": "Closeout posture",[90m
+[31m+               "nextAction": "Create award and invoice records before evaluating closeout readiness.",[90m
+[31m+               "status": "unknown",[90m
+[31m+               "statusLabel": "No award closeout chain",[90m
+[31m+             },[90m
+[31m+             {[90m
+[31m+               "amount": null,[90m
+[31m+               "detail": "A comparison-backed report is available as planning evidence for grant narrative review. It is not an award prediction.",[90m
+[31m+               "id": "evidence_support",[90m
+[31m+               "label": "Planning evidence support",[90m
+[31m+               "nextAction": "Review source context and funding-source criteria before reusing the evidence in a grant package.",[90m
+[31m+               "status": "ready",[90m
+[31m+               "statusLabel": "Evidence linked",[90m
+[31m+             },[90m
+[31m+           ],[90m
+[31m+           "nextAction": "Set the funding need and local match target before using this project in grant or RTP funding tables.",[90m
+[31m+           "status": "not_started",[90m
+[31m+         },[90m
+[31m+         "projectFundingSnapshot": {[90m
+[31m+           "awardCount": 0,[90m
+[31m+           "awardRiskCount": 0,[90m
+[31m+           "awardedOpportunityCount": 0,[90m
+[31m+           "capturedAt": "2026-10-15T05:17:00.150Z",[90m
+[31m+           "closingSoonOpportunityCount": 0,[90m
+[31m+           "committedFundingAmount": 0,[90m
+[31m+           "committedMatchAmount": 0,[90m
+[31m+           "coverageRatio": null,[90m
+[31m+           "draftReimbursementAmount": 0,[90m
+[31m+           "fundingNeedAmount": 0,[90m
+[31m+           "hasTargetNeed": false,[90m
+[31m+           "label": "Funding posture unknown",[90m
+[31m+           "latestSourceUpdatedAt": null,[90m
+[31m+           "likelyFundingAmount": 0,[90m
+[31m+           "localMatchNeedAmount": 0,[90m
+[31m+           "nextObligationAt": null,[90m
+[31m+           "openOpportunityCount": 0,[90m
+[31m+           "opportunityCount": 0,[90m
+[31m+           "outstandingReimbursementAmount": 0,[90m
+[31m+           "paidReimbursementAmount": 0,[90m
+[31m+           "paidReimbursementCoverageRatio": null,[90m
+[31m+           "pipelineCoverageRatio": null,[90m
+[31m+           "pipelineLabel": "Funding pipeline unknown",[90m
+[31m+           "pipelineReason": "Add a project funding need, pursued opportunity amount, or award records to compute pipeline posture.",[90m
+[31m+           "pipelineStatus": "unknown",[90m
+[31m+           "projectUpdatedAt": "2026-03-14T01:00:00.000Z",[90m
+[31m+           "pursuedOpportunityCount": 0,[90m
+[31m+           "reason": "Add a project funding need or award records to compute funding posture.",[90m
+[31m+           "reimbursementCoverageRatio": null,[90m
+[31m+           "reimbursementLabel": "Reimbursement posture unknown",[90m
+[31m+           "reimbursementPacketCount": 0,[90m
+[31m+           "reimbursementReason": "Link award-backed invoice requests to compute reimbursement posture.",[90m
+[31m+           "reimbursementStatus": "unknown",[90m
+[31m+           "remainingFundingGap": 0,[90m
+[31m+           "remainingMatchGap": 0,[90m
+[31m+           "requestedReimbursementAmount": 0,[90m
+[31m+           "status": "unknown",[90m
+[31m+           "totalPotentialFundingAmount": 0,[90m
+[31m+           "unfundedAfterLikelyAmount": 0,[90m
+[31m+           "uninvoicedAwardAmount": 0,[90m
+[31m+         },[90m
+[31m+         "projectRecordsSnapshot": {[90m
+[31m+           "decisions": {[90m
+[31m+             "count": 0,[90m
+[31m+             "latestAt": null,[90m
+[31m+             "latestTitle": null,[90m
+[31m+           },[90m
+[31m+           "deliverables": {[90m
+[31m+             "count": 0,[90m
+[31m+             "latestAt": null,[90m
+[31m+             "latestTitle": null,[90m
+[31m+           },[90m
+[31m+           "issues": {[90m
+[31m+             "count": 0,[90m
+[31m+             "latestAt": null,[90m
+[31m+             "latestTitle": null,[90m
+[31m+           },[90m
+[31m+           "meetings": {[90m
+[31m+             "count": 0,[90m
+[31m+             "latestAt": null,[90m
+[31m+             "latestTitle": null,[90m
+[31m+           },[90m
+[31m+           "risks": {[90m
+[31m+             "count": 0,[90m
+[31m+             "latestAt": null,[90m
+[31m+             "latestTitle": null,[90m
+[31m+           },[90m
+[31m+         },[90m
+[31m+         "projectUpdatedAt": "2026-03-14T01:00:00.000Z",[90m
+[31m+         "reportOrigin": "report_builder",[90m
+[31m+         "reportReason": null,[90m
+[31m+         "riskCount": 0,[90m
+[31m+         "safetyAcquisitionCount": 0,[90m
+[31m+         "safetyEvidenceReadStatus": "readable",[90m
+[31m+         "safetyKsiConcentrationReadStatus": "readable",[90m
+[31m+         "safetyKsiEquityReadStatus": "readable",[90m
+[31m+         "scenarioSetLinkCount": 1,[90m
+[31m+         "scenarioSetLinks": [[90m
+[31m+           {[90m
+[31m+             "baselineEntryId": "scenario-entry-baseline",[90m
+[31m+             "baselineLabel": "Existing conditions",[90m
+[31m+             "baselineRunCreatedAt": "2026-03-10T00:00:00.000Z",[90m
+[31m+             "baselineRunId": "66666666-6666-4666-8666-666666666666",[90m
+[31m+             "baselineRunTitle": "Existing conditions baseline",[90m
+[31m+             "comparisonSnapshots": [],[90m
+[31m+             "comparisonSummary": {[90m
+[31m+               "baselineEntryPresent": true,[90m
+[31m+               "baselineRunPresent": true,[90m
+[31m+               "blockedAlternatives": 0,[90m
+[31m+               "blockerCounts": {},[90m
+[31m+               "label": "Ready to compare",[90m
+[31m+               "primaryBlocker": null,[90m
+[31m+               "readyAlternatives": 1,[90m
+[31m+               "totalAlternatives": 1,[90m
+[31m+             },[90m
+[31m+             "latestMatchedEntryUpdatedAt": "2026-03-14T01:30:00.000Z",[90m
+[31m+             "latestMatchedRunCreatedAt": "2026-03-12T00:00:00.000Z",[90m
+[31m+             "matchedEntries": [[90m
+[31m+               {[90m
+[31m+                 "attachedRunId": "55555555-5555-4555-8555-555555555555",[90m
+[31m+                 "attachedRunTitle": "Run A",[90m
+[31m+                 "comparisonLabel": "Ready to compare",[90m
+[31m+                 "comparisonReady": true,[90m
+[31m+                 "comparisonStatus": "ready",[90m
+[31m+                 "entryId": "scenario-entry-alt",[90m
+[31m+                 "entryType": "alternative",[90m
+[31m+                 "entryUpdatedAt": "2026-03-14T01:30:00.000Z",[90m
+[31m+                 "label": "Protected bike package",[90m
+[31m+                 "runCreatedAt": "2026-03-12T00:00:00.000Z",[90m
+[31m+               },[90m
+[31m+             ],[90m
+[31m+             "matchedRunIds": [[90m
+[31m+               "55555555-5555-4555-8555-555555555555",[90m
+[31m+             ],[90m
+[31m+             "scenarioSetId": "scenario-set-1",[90m
+[31m+             "scenarioSetTitle": "Downtown alternatives",[90m
+[31m+             "scenarioSetUpdatedAt": "2026-03-14T01:15:00.000Z",[90m
+[31m+             "sharedSpine": {[90m
+[31m+               "assumptionSetCount": 0,[90m
+[31m+               "comparisonSnapshotCount": 0,[90m
+[31m+               "dataPackageCount": 0,[90m
+[31m+               "indicatorSnapshotCount": 0,[90m
+[31m+               "latestAssumptionSetUpdatedAt": null,[90m
+[31m+               "latestComparisonSnapshotUpdatedAt": null,[90m
+[31m+               "latestDataPackageUpdatedAt": null,[90m
+[31m+               "latestIndicatorSnapshotAt": null,[90m
+[31m+               "schemaPending": true,[90m
+[31m+             },[90m
+[31m+           },[90m
+[31m+         ],[90m
+[31m+         "scenarioSpineSummary": {[90m
+[31m+           "assumptionSetCount": 0,[90m
+[31m+           "dataPackageCount": 0,[90m
+[31m+           "indicatorSnapshotCount": 0,[90m
+[31m+           "latestAssumptionSetUpdatedAt": null,[90m
+[31m+           "latestDataPackageUpdatedAt": null,[90m
+[31m+           "latestIndicatorSnapshotAt": null,[90m
+[31m+           "pendingCount": 1,[90m
+[31m+         },[90m
+[31m+         "stageGateSnapshot": {[90m
+[31m+           "blockedGate": null,[90m
+[31m+           "controlHealth": {[90m
+[31m+             "gatesWithOperatorControlsCount": 4,[90m
+[31m+             "totalOperatorControlEvidenceCount": 5,[90m
+[31m+           },[90m
+[31m+           "holdCount": 0,[90m
+[31m+           "nextGate": {[90m
+[31m+             "gateId": "G01_INITIATION_AUTHORIZATION",[90m
+[31m+             "missingArtifacts": [],[90m
+[31m+             "name": "Initiation & Project Authorization",[90m
+[31m+             "operatorControlEvidenceCount": 0,[90m
+[31m+             "rationale": "No gate decision has been recorded for this gate. That is an absence of a decision, not a failure to pass.",[90m
+[31m+             "requiredEvidenceCount": 4,[90m
+[31m+             "sequence": 1,[90m
+[31m+             "workflowState": "not_started",[90m
+[31m+           },[90m
+[31m+           "notStartedCount": 9,[90m
+[31m+           "passCount": 0,[90m
+[31m+           "templateId": "ca_stage_gates_v0_1",[90m
+[31m+           "templateVersion": "0.1.0",[90m
+[31m+         },[90m
+[31m+       },[90m
+[31m+     },[90m
+[2m      "report_id": "11111111-1111-4111-8111-111111111111",[22m
+[31m+     "storage_path": "33333333-3333-4333-8333-333333333333/11111111-1111-4111-8111-111111111111/30bf3a27-b0a5-435d-b069-27f86e0732d6.html",[90m
+[2m    },[22m
+[2m  ][22m
+[39m[90m
+
+Number of calls: [1m1[22m
+[39m
+[36m [2m❯[22m src/test/report-generate-route.test.ts:[2m1539:33[22m[39m
+    [90m1537|[39m       format: "html",
+    [90m1538|[39m     });
+    [90m1539|[39m     expect(artifactsInsertMock).toHaveBeenCalledWith(
+    [90m   |[39m                                 [31m^[39m
+    [90m1540|[39m       expect.objectContaining({
+    [90m1541|[39m         report_id: "11111111-1111-4111-8111-111111111111",
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m4 passed[39m[22m[90m (6)[39m
+[2m      Tests [22m [1m[31m2 failed[39m[22m[2m | [22m[1m[32m112 passed[39m[22m[90m (114)[39m
+[2m   Start at [22m 22:16:58
+[2m   Duration [22m 6.65s[2m (transform 1.10s, setup 205ms, import 1.87s, tests 1.74s, environment 2.19s)[22m
+
+          Finished with result: exit-code
+Main processes terminated with: code=exited, status=1/FAILURE
+               Service runtime: 6.990s
+             CPU time consumed: 10.027s
+                   Memory peak: 355.7M (swap: 0B)

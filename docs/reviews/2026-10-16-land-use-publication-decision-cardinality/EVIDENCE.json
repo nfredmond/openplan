@@ -1,0 +1,284 @@
+{
+  "parent": "eb4e2a4328880d2650251347a8629a6ad3c0ab27",
+  "reviewCommit": "2da034a2189c99e5538b56f62cd96ed135d5823b",
+  "reviewTarget": "ac9c74a80b1de7b402cc54e7c216107a79aaaaed",
+  "reviewREPORTSHA256": "10ecfbc853efbd34e707fb9efcc4a79970e083b99bc977a0f1a8d5d41be501b6",
+  "reviewVerdict": "REQUEST_CHANGES_ONE_NEW_P2",
+  "sourcePins": {
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/lib/land-use-plans/publication.ts": {
+      "sha256": "b6cbf6830b652d7cd17580384797010f5c03903c1b00ca1fcc6b41389a5887bb",
+      "bytes": 2757,
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/app/api/land-use-plans/[planId]/decisions/route.ts": {
+      "sha256": "81a161a2f399130f05ba1e10cec537d352f46e7bb1d7b23a9fa626f0112e22ca",
+      "bytes": 13030,
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/supabase/migrations/20261017030608_land_use_plan_publication_transaction.sql": {
+      "sha256": "8f63aeece4cf8a33c4af41fbbe5df371c21633e5f025d6a56e0cc0ae0e204436",
+      "bytes": 11005,
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/land-use-publication-transaction.test.ts": {
+      "sha256": "55f577fbfb8f346ecfece77f84edefc0caec4954638017aaff386d1e3e922014",
+      "bytes": 11038,
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts": {
+      "sha256": "32786d886395ea0547b56d409641e6d85805eb33059f2c170a94d1e3d46ce80e",
+      "bytes": 35072,
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/setup.ts": {
+      "sha256": "70d7fbd3e6d08caa4ca508bb6bdca213deb4a58da22a840ff646a5862c05067a",
+      "bytes": 283,
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/guided-flow-jsdom-dialog-shim.ts": {
+      "sha256": "d6f84fa247152ded90a7b63e97e6385e2def6169618e4163da99b4ed2359566b",
+      "bytes": 3140,
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/tsconfig.json": {
+      "sha256": "cb3404493257250c77d7145c9825ed31f79246b640eb30a59b8069d39091bf29",
+      "bytes": 735,
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/lib/land-use-plans/report-adoption.ts": {
+      "sha256": "057735f0c2d5667c8af38a8980977d97cdbec1d467a155fa439791b3a4ed790d",
+      "bytes": 2636,
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/land-use-publication-retained-validation.test.ts": {
+      "sha256": "4907896c47ea88d19ef8ff9201150076f2426525ae14d89e08317da003b2a2ea",
+      "bytes": 8176,
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    }
+  },
+  "priorSQLSHA256": "fd3b9979cad3acdff2dc74bee4765f85bdea601bdd9fa9d4696edd774735abba",
+  "priorTestSHA256": "ed9c43470afe67a8a41d7c1de435b8a832b41aade6816909314040339fcd44d6",
+  "privateRoot": "/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016",
+  "privateFilesAtSeal": 2530,
+  "privateManifestSHA256": "2314e644d5b286d4954e938a1f71b406c4b90b3834d9c83f5418484dcc1cc75a",
+  "oldProofs": [
+    {
+      "path": "/home/nathaniel/.local/state/openplan/land-use-publication-retained-validator-correction-20261016/PRIVATE_MANIFEST.json",
+      "sha256": "79e819b24f873de2ce9750bde9591c1d30ec25d1c308653997548572ab9bc830",
+      "entries": 2601,
+      "allExact": true
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/land-use-publication-transaction-correction-20261016/PRIVATE_MANIFEST.json",
+      "sha256": "3473de431240c2b3b9f94e9d06ad10de5dbe30a62d9288aa2cc9bb07c50c4ce8",
+      "entries": 3119,
+      "allExact": true
+    }
+  ],
+  "preparedSHA256": "610c78ebf7a4d4a104174d9f53afe7cb96b81dd7f1160bd37dc6da2618c4dc43",
+  "grantSHA256": "a9d5dc98f65a9a73dcdc8281976db021d071ef876c3c70b25b2a3a80a43ab2a3",
+  "unit": "openplan-land-use-publication-cardinality-checks-20261016-01",
+  "invocationFromEntry": "054acb06e2744bcea9afced5eb2c06ec",
+  "parentTerminal": {
+    "backendDeath": "UNASSESSED",
+    "classification": "terminal-zero",
+    "deadlineSeconds": 140,
+    "elapsedSeconds": 28.511573330964893,
+    "failure": null,
+    "parentPID": 345641,
+    "returncode": 0,
+    "streams": {
+      "stderr": {
+        "limit": 65536,
+        "observedBytes": 367,
+        "retainedBytes": 367,
+        "sha256": "4ca601fc5189f45874583393092e4f88c12c6c30a1eb752bd9f42d7c3873a884"
+      },
+      "stdout": {
+        "limit": 1048576,
+        "observedBytes": 0,
+        "retainedBytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "wrapperPID": 345647
+  },
+  "result": {
+    "status": "FOCUSED_SOURCE_CHECKS_COMPLETE",
+    "baseline": 4,
+    "restored": 4,
+    "harmless": "SURVIVED",
+    "namedFaults": 4,
+    "stages": [
+      {
+        "name": "harmless",
+        "exit": 0,
+        "stdoutSHA256": "540310a8bc63cda4b09f1ab2516520bfa681133302fc655ae4253a2f146033bd",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "baseline",
+        "exit": 0,
+        "stdoutSHA256": "59f6fa3133e584522c78856e50cd27145e9b8d4f49e0a1ccda53552d9d9dc90a",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "missing-native-count",
+        "exit": 1,
+        "stdoutSHA256": "6a1af35e5542023ca6ae9965b8fae2dca6aaaef2cd674b326777c7218482d008",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "narrow-native-count",
+        "exit": 1,
+        "stdoutSHA256": "ef8ba71c7e305f3e1e08ecc5048e2b9f2e296823c6e2e849e1fcecbcf3171f8e",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "late-native-count",
+        "exit": 1,
+        "stdoutSHA256": "67c7dc7866cd3484a6b29773b3185ffb6bb8aa6340ddf8e2921482fa5db77d79",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "reader-duplicate-status",
+        "exit": 1,
+        "stdoutSHA256": "dbaafb530c61b4806d2a167f5bf4cc754f4aa9e6175402330f464476ec2ec419",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "restored",
+        "exit": 0,
+        "stdoutSHA256": "d5cd394c88f7d58ffcac30a39f906644ec82c46192d8b4f5d2be238980bc28d6",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "types",
+        "exit": 0,
+        "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "lint",
+        "exit": 0,
+        "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "direction",
+        "exit": 0,
+        "stdoutSHA256": "2d21f390f2609c705836afd80f7e9059cb7633f9b87fe51c3e19eed02579d912",
+        "stderrSHA256": "f68445367cddf2dc482988cce2c102768990039ee4d491468a145718612a4640"
+      }
+    ],
+    "nativeSQLExecuted": false,
+    "SQLAssertions": "TEXT_INTENT_ONLY_NOT_DATABASE_TRANSACTION_PROOF",
+    "browserAccepted": false,
+    "elapsedSeconds": 28.337730997009203
+  },
+  "faults": [
+    {
+      "outcome": "KILLED",
+      "exactFullName": "retained publication SQL composition, not database execution requires one native decision in the exact reader plan version and hash scope",
+      "failureMessages": [
+        "AssertionError: expected '' to contain 'IF (SELECT count(*) FROM public.land_\u2026'\n    at /home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/land-use-publication-retained-validation.test.ts:72:27\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+      ],
+      "failedAssertions": 2,
+      "id": "missing-native-count",
+      "testJSONSHA256": "39ed365554ed3584453a4b100eff1dff5af06ff66aaa8d0e648afefb6571cacb"
+    },
+    {
+      "outcome": "KILLED",
+      "exactFullName": "retained publication SQL composition, not database execution requires one native decision in the exact reader plan version and hash scope",
+      "failureMessages": [
+        "AssertionError: expected 'IF (SELECT count(*) FROM public.land_\u2026' to contain 'IF (SELECT count(*) FROM public.land_\u2026'\n    at /home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/land-use-publication-retained-validation.test.ts:72:27\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+      ],
+      "failedAssertions": 1,
+      "id": "narrow-native-count",
+      "testJSONSHA256": "260210641ff24634874b9e9c736ba833eedb1a15b238df5b3cc71a83cd34f00d"
+    },
+    {
+      "outcome": "KILLED",
+      "exactFullName": "retained publication SQL composition, not database execution places the native cardinality refusal before either publication branch",
+      "failureMessages": [
+        "AssertionError: expected 10014 to be less than 6332\n    at /home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/land-use-publication-retained-validation.test.ts:79:19\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+      ],
+      "failedAssertions": 2,
+      "id": "late-native-count",
+      "testJSONSHA256": "bd3b1299865d63993211859fe5cb8fbcc50916161f87e4f93e9f508177c380c0"
+    },
+    {
+      "outcome": "KILLED",
+      "exactFullName": "retained publication decision reader boundary refuses the supplied multiple-native-rows query error for a valid decision",
+      "failureMessages": [
+        "AssertionError: expected 'absent' to be 'invalid' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/land-use-publication-retained-validation.test.ts:45:27\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      ],
+      "failedAssertions": 1,
+      "id": "reader-duplicate-status",
+      "testJSONSHA256": "1a69daf47525a685275e8160686ca77f52f5536e30009636ad90f75ee126260d"
+    }
+  ],
+  "lateResources": {
+    "memory.peak": "286007296",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.swap.current": "0",
+    "pids.peak": "42",
+    "pids.events": "max 0"
+  },
+  "all10SourcePinsExact": true,
+  "allPreservationPinsExact": true,
+  "limits": {
+    "memory.max": "1073741824",
+    "memory.swap.max": "0",
+    "cpu.max": "50000 100000",
+    "pids.max": "64"
+  },
+  "namedMounts": [
+    {
+      "path": "/",
+      "mount": "/",
+      "options": "ro,nosuid,nodev,relatime"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan",
+      "mount": "/",
+      "options": "ro,nosuid,nodev,relatime"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules",
+      "mount": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules",
+      "options": "ro,nosuid,nodev,relatime"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016",
+      "mount": "/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016",
+      "options": "rw,nosuid,nodev,relatime"
+    }
+  ],
+  "hostwideConfinementClaim": false,
+  "old21and12Reexecuted": false,
+  "nativeSQLExecuted": false,
+  "migration425Applied": false,
+  "browserArtifactPractitionerAccepted": false,
+  "freshIndependentFinalSourceReviewRequired": true
+}

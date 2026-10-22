@@ -556,7 +556,7 @@ function ScenarioEntryCard({
           <div>
             <p className="text-xs font-semibold text-muted-foreground">Operator actions</p>
             <p className="mt-2 text-sm text-muted-foreground">
-              Use the attached evidence in Analysis Studio, launch a new managed run from the linked model lane, or move directly into a report workflow when the comparison is ready.
+              Use the attached evidence in Analysis Studio, launch a new managed run from the linked model, or move directly into a report workflow when the comparison is ready.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">

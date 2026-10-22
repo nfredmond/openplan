@@ -1,0 +1,54 @@
+[
+  {
+    "control": "harmless-comment",
+    "outcome": "survived",
+    "summary": {
+      "allOwnedEnginesStopped": true,
+      "claimLimits": [
+        "owned synthetic permission adapter, actual supervised HTTP transport",
+        "observed reply deliberately omitted from worker journal, not native network loss",
+        "no processing/result/callback recovery",
+        "no independent planner or browser acceptance"
+      ],
+      "controls": 87,
+      "imageDecodingOrReconstructionExecuted": false,
+      "liveApplicationAuthorityVerified": false,
+      "nativeOriginalDraftCommands": 5,
+      "observations": 28,
+      "processingCommitExecuted": false,
+      "responseControls": 14,
+      "seconds": 9.917,
+      "workerRecoveryAccepted": false
+    },
+    "sourceSha256": "0ea8b83e78368217512caad1c045bf62f64f569bc4a2a0288ac2c6aa4eb2fd68"
+  },
+  {
+    "control": "old-urlencoded-initialization",
+    "outcome": "intended_failure",
+    "reason": "Captured draft metadata differs from original initialization",
+    "sourceSha256": "958af0afe4d25242e62081d5620e174be6253018bf153355ae2876e20eb31e37"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived",
+    "summary": {
+      "allOwnedEnginesStopped": true,
+      "claimLimits": [
+        "owned synthetic permission adapter, actual supervised HTTP transport",
+        "observed reply deliberately omitted from worker journal, not native network loss",
+        "no processing/result/callback recovery",
+        "no independent planner or browser acceptance"
+      ],
+      "controls": 87,
+      "imageDecodingOrReconstructionExecuted": false,
+      "liveApplicationAuthorityVerified": false,
+      "nativeOriginalDraftCommands": 5,
+      "observations": 28,
+      "processingCommitExecuted": false,
+      "responseControls": 14,
+      "seconds": 9.493,
+      "workerRecoveryAccepted": false
+    },
+    "sourceSha256": "6fc61d35a82e8b05a6b2ed13ddd7a6553bd84e434e0b387ce16feaa23dec3f86"
+  }
+]

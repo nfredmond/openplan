@@ -341,6 +341,21 @@ remain no-ops. This does not switch normal stage claims to managed attempts or
 authorize model restart. Both existing ActivitySim image builds include the
 repository tree containing the shared command modules.
 
+## Retained KPI and artifact writes
+
+Before updating this worker, apply
+`20261016000016_legacy_artifact_command_receipts.sql` and
+`20261016000017_legacy_kpi_command_receipts.sql` and set the installation's
+stable `OPENPLAN_DEPLOYMENT_ID`. The stage's KPI and artifact rows use the same
+saved request commands as the AequilibraE worker. Each complete request is saved
+in `<ACTIVITYSIM_WORK_DIR>/<run-uuid>/stage-journals/<stage-uuid>/` before it is
+sent. A lost reply stops the stage and leaves the request pending; inspect it
+with `model_command_recovery.py --journal <that directory> --list-pending` and
+recover its original receipt with `--request-id`. A resend returns the original
+row instead of inserting a second one, and changed values under the same KPI or
+artifact identity are refused. Retain that directory with the database. Recovering
+a receipt does not resume the stage.
+
 ## Started-run recovery boundary
 
 Migration `20261016000022_model_reaper_recovery_boundary.sql` also protects

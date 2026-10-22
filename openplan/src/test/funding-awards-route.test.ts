@@ -51,6 +51,9 @@ function jsonRequest(payload: unknown) {
   });
 }
 
+let workspaceTimeZone: string | null = null;
+let workspaceReads: string[] = [];
+
 describe("/api/funding-awards", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -117,6 +120,21 @@ describe("/api/funding-awards", () => {
         if (table === "project_milestones") {
           return {
             insert: (...args: unknown[]) => milestonesInsertMock(...args),
+          };
+        }
+        if (table === "workspaces") {
+          return {
+            select: (columns: string) => {
+              workspaceReads.push(columns);
+              return {
+                eq: (column: string, value: string) => ({
+                  maybeSingle: async () => {
+                    workspaceReads.push(`${column}=${value}`);
+                    return { data: { time_zone: workspaceTimeZone, home_country_code: null }, error: null };
+                  },
+                }),
+              };
+            },
           };
         }
         throw new Error(`Unexpected table: ${table}`);
@@ -412,5 +430,21 @@ describe("/api/funding-awards", () => {
         closure_note: null,
       })
     );
+  });
+
+  it("dates the obligation milestone on the workspace's calendar day", async () => {
+    // 05:00 UTC Jul 1 is 10 p.m. Jun 30 in Los Angeles, the day the planner picked.
+    workspaceTimeZone = "America/Los_Angeles";
+    workspaceReads = [];
+    try {
+      const response = await postFundingAwards(
+        jsonRequest({ projectId: PROJECT_ID, title: "ATP award", awardedAmount: 1750000, obligationDueAt: "2026-07-01T05:00:00.000Z" })
+      );
+      expect(response.status).toBe(201);
+      expect(milestonesInsertMock).toHaveBeenCalledWith(expect.objectContaining({ target_date: "2026-06-30" }));
+      expect(workspaceReads).toEqual(["time_zone, home_country_code", `id=${WORKSPACE_ID}`]);
+    } finally {
+      workspaceTimeZone = null;
+    }
   });
 });

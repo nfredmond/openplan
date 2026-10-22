@@ -1,0 +1,37 @@
+{
+  "claim": "Conditional source support only. Root must recheck fresh prerequisites. No admission or operation.",
+  "privateManifest": {
+    "bytes": 1696,
+    "entries": 9,
+    "gid": 1000,
+    "mode": "0o600",
+    "path": "review-private-pins.json",
+    "sha256": "69e86caec6d6af8665d3e1878342e6b7227d72fe482c691b2245d382ff08bbdb",
+    "uid": 1000
+  },
+  "privateRoot": "/home/nathaniel/.local/state/openplan/a0-r6-observe-admission-independent-20261016",
+  "public": {
+    "REVIEW.md": {
+      "bytes": 17553,
+      "gid": 1000,
+      "mode": "0o664",
+      "sha256": "7668b4eb93b871ea98d44db4819123427ea4db2ac71e323de2291c7dfbc576f8",
+      "uid": 1000
+    },
+    "checks.json": {
+      "bytes": 1341,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "11527cf51d8c1393629e17edda0b442c8031f0e5675c4c5a14399d4877a21a8c",
+      "uid": 1000
+    },
+    "source-pins.json": {
+      "bytes": 2561,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "683f21255d129b362b4ad3d6a717efe312aa368e6ca0b78a3b05f720ada0c2ae",
+      "uid": 1000
+    }
+  },
+  "subjectCommit": "b35dd7126939d7e1ad24e9ddbf887653275317c1"
+}

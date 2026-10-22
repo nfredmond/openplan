@@ -885,8 +885,23 @@ describe("get_engagement_responses", () => {
     };
   }
 
+  // Survey answers are revoked from every client role; the tool reads counts
+  // through the definer function in 20261017000002, under the planner's session.
+  function withSurveyCounts(supabase: FilteringSupabaseMock, result: { data: unknown; error: unknown }) {
+    const rpc = vi.fn(async () => result);
+    Object.assign(supabase.client, { rpc });
+    return rpc;
+  }
+
   it("returns truncated approved excerpts, moderation counts, and survey COUNTS — never raw answers", async () => {
     const supabase = createFilteringSupabaseMock(campaignFixture());
+    const rpc = withSurveyCounts(supabase, {
+      data: {
+        approvedResponseCount: 1,
+        questions: [{ configurationVersionId: null, questionId: "q1", questionType: "single_choice", prompt: "Which improvement matters most?", answeredCount: 1 }],
+      },
+      error: null,
+    });
     const { tools } = buildTools(supabase);
 
     const result = await toolExecute(tools, "get_engagement_responses")({ campaignId: CAMPAIGN_ID }, CALL_OPTIONS);
@@ -916,19 +931,21 @@ describe("get_engagement_responses", () => {
     };
     expect(survey.status).toBe("ok");
     expect(survey.approvedResponseCount).toBe(1);
+    expect(rpc).toHaveBeenCalledWith("engagement_campaign_survey_question_counts", { p_campaign_id: CAMPAIGN_ID });
     expect(survey.questions).toEqual([
-      { prompt: "Historical question prompt unavailable", questionType: "single_choice", answeredCount: 1 },
+      { prompt: "Which improvement matters most?", questionType: "single_choice", answeredCount: 1 },
     ]);
     // Counts only: the resident's own words never appear anywhere in the payload.
     expect(JSON.stringify(result)).not.toContain(RESIDENT_ANSWER_TEXT);
     expect(JSON.stringify(result)).not.toContain("Sidewalks");
   });
 
-  it("reports survey counts as unavailable — not zero — when the confined response tables refuse the read", async () => {
-    const supabase = createFilteringSupabaseMock(campaignFixture(), {
-      engagement_survey_answers: { message: "permission denied for table engagement_survey_answers" },
-      engagement_survey_response_sessions: { message: "permission denied for table engagement_survey_response_sessions" },
-    });
+  it.each([
+    ["the function refuses the caller", { data: null, error: { message: "Survey counts are not available for this campaign" } }],
+    ["the function answers in an unexpected shape", { data: { approvedResponseCount: "1", questions: [] }, error: null }],
+  ])("reports survey counts as unavailable — not zero — when %s", async (_label, answer) => {
+    const supabase = createFilteringSupabaseMock(campaignFixture());
+    withSurveyCounts(supabase, answer);
     const { tools } = buildTools(supabase);
 
     const result = await toolExecute(tools, "get_engagement_responses")({ campaignId: CAMPAIGN_ID }, CALL_OPTIONS);

@@ -1,0 +1,911 @@
+66	closed-unmerged		Persist chat image previews and migrate web persistence schema to v8
+92	merged		Improve active thread visual emphasis in sidebar
+108	merged		Sync diff renderer and worker theme with resolved app theme
+113	merged		Persist projected message image attachments and serve them via `/attachments`
+135	merged		Add tagged multi-platform desktop release workflow and unified artifact builder
+167	merged		Make chat timeline height estimates width-aware with attachment-aware tests
+172	merged		Render changed files as expandable tree with aggregated diff stats
+278	closed-unmerged		docs: add Star History chart to README
+279	merged		Fix crash when rendering code blocks with unsupported languages (#266 & #210)
+280	closed-unmerged	XL	Fix desktop context menu rendering
+320	merged		fix: everything AICodeKing reported
+337	closed-unmerged		Fix Linux Codex PATH resolution and tagged desktop artifact version
+552	closed-unmerged		Browser preview panel, terminal labels & toggle preservation
+553	closed-unmerged		Fix implement-plan follow-ups and markdown heading rendering
+572	closed-unmerged		Fix checkpoint diff history corruption from provider preview events
+589	closed-unmerged		Codex/add visualization tool for effect event lifecycle
+751	merged		Defer proposed plan markdown rendering until users expand in ChatView
+760	closed-unmerged		fix(web): render user markdown and shorten implement-plan messages
+828	closed-unmerged		Visually distinguish plan mode from chat mode in composer
+933	merged		chore(release): align package versions before building artifacts
+946	closed-unmerged		Cache sidebar content for instant render on subsequent launches
+1090	closed-unmerged	L	feat(editor): add system editor option from VISUAL/EDITOR
+1102	closed-unmerged	L	feat(editor): add system editor option from VISUAL/EDITOR
+1109	merged	S	fix(github): fix bug report issue template for screenshots
+1153	merged	M	fix(web): avoid false draft attachment persistence warnings
+1187	closed-unmerged	L	fix: smooth streaming markdown rendering
+1305	closed-unmerged	M	fix(web): verify composer attachment persistence after flush
+1427	closed-unmerged	L	Improve desktop update button with status-based visuals
+1836	closed-unmerged	M	fix(web): fall back to persisted draft bytes for transient image attachments
+1843	closed-unmerged	L	fix: renderer OOM crash recovery and memory management
+1856	merged	L	feat(web): add configurable sidebar thread preview count
+1857	merged	XXL	Extract ChatComposer to fix composer keystroke re-renders
+1890	closed-unmerged	XXL	Refactor sidebar and chat boundaries to reduce rerenders
+1984	closed-unmerged	XL	Enhances submodule support and enables image attachments
+2006	closed-unmerged	XL	Fix Codex prolite support and trust reported model availability
+2016	closed-unmerged	XS	Enables image attachments in plan follow-ups
+2094	closed-unmerged	M	fix(server): expose persisted image attachment paths to provider models
+2174	closed-unmerged	XXL	feat(web): Appearance settings tab with font-size slider + live preview
+2288	closed-unmerged	S	fix: lower toast z-index so dropdowns render above toasts
+2298	closed-unmerged	XXL	feat: add a file explorer and file preview
+2349	closed-unmerged	XXL	feat(marketing): add interactive app preview
+2355	closed-unmerged	XXL	fix(ui): break second render loop in useSettings selector (React #185)
+2417	closed-unmerged	M	Enables image attachments in plan follow-up messages
+2432	closed-unmerged	L	feat(desktop): add Cmd+Option+V shortcut to paste clipboard text as file attachment
+2474	closed-unmerged	S	Add Ubuntu deb release artifact
+2479	merged	M	Fix markdown highlight render stability
+2498	merged	L	Reduce timeline row rerenders
+2560	merged	S	Reduce sidebar selection rerenders
+2566	closed-unmerged	XXL	feat(kanban): add phase 7 product artifacts
+2572	merged		feat(web): render skill calls as inline chips
+2580	merged	M	Avoid timeline timer rerender commits
+2582	closed-unmerged	L	Avoid extra SSH prompt expiry renders
+2587	merged	XS	[codex] Fix sidebar preview settings reset
+2600	closed-unmerged	L	Optimize chat composer render hot path
+2618	closed-unmerged	XS	Stabilize discovered SSH host row renders
+2647	closed-unmerged	L	Avoid WebSocket coordinator countdown rerenders
+2660	merged	M	Reduce chat timeline activity rerenders
+2675	closed-unmerged	M	Reduce provider instance dialog rerenders
+2715	closed-unmerged	M	Optimize expanded image dialog rerenders
+2731	closed-unmerged	L	Reduce SSH password prompt rerenders
+2741	closed-unmerged	M	Avoid extra expanded image dialog rerenders
+2753	closed-unmerged	L	Isolate command palette renders
+2763	closed-unmerged	L	Avoid reconnect countdown rerenders
+2772	closed-unmerged	M	Avoid effect-driven renders in image preview dialog
+2776	closed-unmerged	M	Stabilize root app shell renders
+2784	closed-unmerged	XS	Stabilize composer model picker renders
+2792	closed-unmerged	L	Optimize settings sidebar nav rerenders
+2793	closed-unmerged	XXL	[codex] Fix Kiro ACP image attachment errors
+2794	closed-unmerged	M	Avoid extra composer menu highlight renders
+2802	closed-unmerged	L	Reduce provider update pill rerenders
+2816	closed-unmerged	M	Reduce terminal drawer resize rerenders
+2827	closed-unmerged	M	Optimize provider instance dialog renders
+2845	closed-unmerged	M	Optimize composer banner dismissal renders
+2862	closed-unmerged	M	Optimize sidebar PR status rerenders
+2876	closed-unmerged	L	Optimize expanded image preview rerenders
+2888	closed-unmerged	L	Reduce chat composer rerenders during streaming
+2943	merged	XS	fix(release): preserve desktop artifact arch
+2982	closed-unmerged	L	Optimize chat timeline render stability
+3001	closed-unmerged	L	Optimize sidebar thread rename rerenders
+3031	closed-unmerged	L	Optimize add provider dialog render flow
+3043	closed-unmerged	XL	Render command and file-change details inline
+3048	closed-unmerged	XL	Optimize command palette open rerenders
+3053	merged	XXL	[codex] Add integrated browser preview, annotations, and agent automation
+3082	closed-unmerged	M	Refactor preview port scanner Effect patterns
+3087	merged	XXL	Add workspace file browser and preview panel
+3111	closed-unmerged	S	Defer streaming chat markdown rendering
+3115	merged	XXL	Add file preview comments and task toggles
+3118	merged	L	Render the plan surface in the inline right panel
+3121	merged	L	Improve inline panel, file preview, and MCP session handling
+3134	closed-unmerged	M	Render path-like inline code as file chips
+3150	closed-unmerged	L	Optimize composer menu highlight rerenders
+3160	closed-unmerged	L	[codex] fix: Support iframe preview annotations
+3172	merged	XL	Harden preview ownership and option-based secret handling
+3191	merged	L	[codex] normalize server process and preview Effect services
+3199	merged	L	[codex] Align desktop preview Effect services
+3209	merged	L	[codex] finish server process and preview Effect cleanup
+3237	closed-unmerged	XL	fix: support preview annotations in same-origin iframes
+3244	merged	XXL	[codex] structure desktop preview failures
+3259	closed-unmerged	L	feat(web): preview workspace images from chat and diffs
+3271	merged	M	[codex] Structure preview config failures
+3272	merged	L	[codex] Structure preview automation errors
+3275	merged	M	[codex] Structure preview URL failures
+3333	merged	L	[codex] Structure preview automation failures
+3351	merged	L	[codex] Report preview action failures
+3355	merged	L	[codex] Report markdown interaction failures
+3367	merged	M	[codex] Preserve terminal preview link failure context
+3388	merged	S	[codex] Structure preview session key errors
+3397	closed-unmerged	M	[codex] Structure mobile file rendering errors
+3399	merged	L	[codex] Structure preview asset URL failures
+3435	merged	M	[codex] Fix desktop preview event delivery errors
+3436	merged	L	[codex] Structure preview automation boundary failures
+3454	merged	S	[codex] Structure preview capability errors
+3499	merged	S	[codex] fix: preserve localhost preview hosts
+3536	merged	S	Reduce ChatMarkdown settings rerenders
+3544	closed-unmerged	L	Reduce chat timeline work-row rerenders
+3548	merged	XXL	Route preview automation through live owner streams
+3556	closed-unmerged	S	Avoid rerendering suggested SSH host rows
+3557	merged	XXL	Fix Electron dev and packaged renderer startup
+3561	merged	M	[codex] Fix preview automation edge cases
+3565	merged	XL	Stabilize preview browser surfaces, automation, and recording
+3602	closed-unmerged	XS	Stabilize composer model picker rerenders
+3619	closed-unmerged	L	Optimize model picker search rerenders
+3634	closed-unmerged	L	Optimize model picker whitespace search rerenders
+3659	closed-unmerged	L	Optimize model picker search rerenders
+3669	closed-unmerged	L	Fix Cursor ACP thread rendering, thought output, and cancel delivery
+3676	closed-unmerged	L	Reduce model picker whitespace search rerenders
+3681	closed-unmerged	XXL	Render Mosaic artifacts as native interactive UI
+3690	closed-unmerged	L	Reduce model picker rerenders for whitespace search input
+3708	closed-unmerged	L	Reduce model picker search rerenders
+3739	closed-unmerged	S	fix(desktop): grant clipboard permissions in preview browser
+3745	closed-unmerged	M	Optimize client settings selector rerenders
+3766	closed-unmerged	M	Add "Disable browser WebSecurity" toggle to the preview browser
+3770	closed-unmerged	L	Optimize provider update pill renders
+3782	closed-unmerged	XS	Re-encode production splash PNG for GitHub preview
+3802	closed-unmerged	XL	feat(mobile): add Android Live Update mock preview
+3811	closed-unmerged	L	Optimize provider update pill renders
+3823	merged	XXL	fix(mobile): embed fonts and render project favicons reliably
+3835	closed-unmerged	L	Optimize sidebar provider update pill renders
+3842	merged	M	Fix project action preview settings persistence
+3844	closed-unmerged	XS	fix: Action preview url was clearing on save. This fixes that.
+3858	closed-unmerged	XS	Avoid discovered SSH row rerenders
+3888	closed-unmerged	L	Optimize provider update pill renders
+3889	merged	S	fix(desktop): allow clipboard writes in the preview browser
+3915	closed-unmerged	L	Optimize provider update sidebar pill renders
+3920	closed-unmerged	XXL	Support text file attachments in chat
+3923	closed-unmerged	XXL	[orchestrator-v2] fix(mobile): Stabilize iOS draft attachments, Hermes sort, and Home
+3927	closed-unmerged	XS	t3code/support non-image chat attachments
+3939	merged	M	fix(preview): preserve direct localhost navigation
+3941	closed-unmerged	L	Optimize provider update pill rerenders
+3968	closed-unmerged	L	Stop preview loading progress from rerendering the preview
+3970	merged	XS	Remove unused code parameter from describePreviewError
+3984	closed-unmerged	L	Render generated images inline in chat
+3996	merged	M	fix(web): preview workspace images in the file panel
+4011	merged	L	Resolve localhost preview URLs for remote environments
+4013	closed-unmerged	L	Avoid rerendering the branch picker while scrolling
+4036	closed-unmerged	L	fix(mobile): Stabilize thread feed layout and Markdown rendering
+4039	closed-unmerged	XXL	Add scoped SSH preview port forwarding
+4044	merged	S	Allow preview panel to grow on wide displays
+4052	closed-unmerged	S	Prevent unrelated client settings rerenders
+4058	closed-unmerged	L	feat(chat): support non-image file attachments in the composer
+4158	closed-unmerged	M	Avoid extra terminal drawer render when opening
+4187	closed-unmerged	L	perf(server): cut idle preview port scans by 85%
+4200	closed-unmerged	L	[Bug]: Unsupported attachment (e.g. HEIC) permanently wedges the turn in "working" with a dead stop button
+4321	closed-unmerged	XXL	Render saved screenshots and recordings in chat markdown
+4341	closed-unmerged	M	fix(web): roll back timed-out preview resizes
+4349	closed-unmerged	M	perf(web): coalesce streaming Markdown renders
+4369	closed-unmerged	L	fix(terminal): answer DA1 queries before client attachment
+4385	merged	L	Add preview color scheme controls and simplify project grouping
+4397	merged	XXL	Add background preview capture and picture-in-picture support
+4436	merged	L	feat: render Image View outputs in chat
+4446	merged	M	[codex] Fix glass hover compositing artifacts
+4468	merged	S	Keep block code plain when copying from rendered markdown
+4492	closed-unmerged	M	fix(web): render provider status banner using alert
+4572	closed-unmerged	L	feat(opencode): report context window usage
+4577	closed-unmerged	XXL	Make preview automation bounded and recoverable
+4603	closed-unmerged	M	fix(shared): stop reporting "not a worktree" when .git cannot be read
+4631	closed-unmerged	L	fix(web): render markdown images from workspace files
+4633	closed-unmerged	L	fix(web): render inline and display LaTeX math in chat
+4661	merged	XL	fix(preview): stabilize PiP viewport identity
+4663	closed-unmerged	XXL	feat(web): visualize workflows — agents panel, run cards, stop control (3/4)
+4665	merged	S	Add glass styling for thread tooltips and simplify preview tab handling
+4675	merged	XXL	fix(mobile): match react version to react-native 0.85.3 vendored renderer (19.2.3)
+4685	merged	L	fix(preview): bound automation waits and screenshot captures
+4701	closed-unmerged	L	Render shortcuts with Apple's modifier and key glyphs
+4740	closed-unmerged	L	feat(web): preview workspace images from chat and diffs
+4751	closed-unmerged	XL	fix(diff-panel): keep live previews synchronized
+4785	closed-unmerged	L	Fix inline Markdown image previews in chat
+4821	closed-unmerged	M	fix(server): stop replayed history from re-arming mouse reporting
+4853	merged	M	fix(web): remember the rendered-markdown choice across threads
+4854	merged	S	fix(git): disable external diff for review diff previews
+4859	closed-unmerged	L	Persist assistant image attachments in chat
+4860	merged	XXL	feat(web): render terminals with libghostty-vt
+4872	closed-unmerged	XXL	feat: render saved media in chat across clients
+4989	closed-unmerged	XXL	feat(web): render Mermaid diagrams in markdown
+5017	closed-unmerged	L	fix: refresh sidebar file and image previews
+5026	closed-unmerged	XS	fix(shared): formatDuration renders "60s" instead of "1m" at the sub-minute boundary
+5047	closed-unmerged	XXL	feat(chat): preview agent media on web and mobile
+5112	closed-unmerged	L	fix(web): render HTML files in file preview
+5114	closed-unmerged	L	fix(web): render local images inline
+5121	closed-unmerged	M	fix(web): settle the connection database open when IndexedDB reports "blocked"
+5126	closed-unmerged	S	fix(server): preview external files
+5128	merged	S	fix(mcp): unblock Kimi models in OpenCode with preview tools
+5148	merged	M	fix(desktop,web): contain renderer memory growth and recover from renderer OOM crashes
+5161	closed-unmerged	XXL	feat(mobile): add live preview and markup
+5177	closed-unmerged	L	fix(web): separate image attachments from message text
+5223	closed-unmerged	S	fix(web): honor autoOpenPreview when running a project action
+5229	closed-unmerged	L	fix(server): transcode HEIC attachments instead of failing the turn
+5261	closed-unmerged	XS	ci: temporary theme demo artifact
+5325	closed-unmerged	XL	feat(github): render pull request checks in threads
+5378	closed-unmerged	XXL	feat(infra): add Render cloud environment
+5381	closed-unmerged	L	feat(settings): default agents to provider-native visual tools
+5428	merged	L	Enrich terminal font previews
+5465	merged	L	ci: label-gated hosted-web preview deploys
+5491	merged	XL	perf(swift-ios): fix streaming markdown that never rendered and stop per-publish rework
+5607	open	M	fix(web): render powerline separators at cell edges
+5683	closed-unmerged	L	fix(server): report OpenCode skills in the provider snapshot
+5691	merged	M	fix(desktop): zoom shortcuts no longer die when the preview browser has focus
+5697	merged	L	fix(web): usage chart no longer makes Claude look like the bigger spender
+5704	closed-unmerged	XL	feat(usage): add Grok and OpenCode reporting
+5711	closed-unmerged	L	fix(server): cap background-work deferral and report session-teardown losses
+5772	merged	L	fix(web): usage totals no longer jump while devices report in
+5812	closed-unmerged	L	fix(server): report incomplete usage scans
+5830	closed-unmerged	L	feat(usage): add Grok reports to desktop and mobile
+5837	closed-unmerged	XS	fix(mobile): report markdown link open failures
+5867	closed-unmerged	L	feat(web): render AskUserQuestion exchanges as a stylized Q&A list
+5871	closed-unmerged	M	feat(web): render color swatches next to color literals in chat markdown
+5937	closed-unmerged	XS	fix(web): preserve preview annotations across reloads
+5966	merged	S	fix(server): return valid preview action results
+5999	closed-unmerged	S	fix(web): render color swatches only on exact inline code matches
+6021	merged	XL	fix(preview): only show browser-ready local servers
+6029	closed-unmerged	L	feat(web): preview generated images in right panel
+6040	closed-unmerged	L	feat(usage): add OpenCode usage reporting
+6099	closed-unmerged	L	feat(web): render inline hex color swatches in chat messages
+6103	closed-unmerged	L	feat(web): render Codex file-citation chips
+6112	closed-unmerged	L	feat(preview): agents can set cookies in the collaborative browser
+6123	merged	M	fix(web): thread error banner dismiss survives reconnect and rerenders
+6132	closed-unmerged	XL	feat(swift-ios): add file preview navigation and info
+6156	closed-unmerged	XS	fix(preview): validate popup URLs before loading
+6165	merged	S	fix(web): render dropdowns above toasts
+6191	closed-unmerged	XL	fix(web): render Mermaid diagrams in Markdown
+6202	closed-unmerged	XL	Support arbitrary file attachments across provider workflows
+6241	merged	XS	fix(web): render tooltips above dropdowns
+6242	closed-unmerged	M	fix(web): attach preview annotation screenshots in the desktop app
+6243	closed-unmerged	XS	fix(desktop): focus the preview guest when annotation starts
+6244	closed-unmerged	M	fix(desktop): report the component source file when picking an element
+6255	closed-unmerged	XS	fix(web): distinguish imported theme variant previews
+6261	closed-unmerged	S	fix(web): open automation previews in thread browser panel
+6317	closed-unmerged	S	fix(desktop): keep preview automation alive on macOS close
+6357	closed-unmerged	XXL	feat(usage): add subscription allowance reporting
+6370	merged	S	Fix mobile command popover glass rendering
+6409	merged	XS	fix(server): serve html assets with utf-8 charset
+6433	merged	L	fix: render workspace images in chat markdown
+6464	closed-unmerged	XL	fix(mobile): iOS home screen widgets render instead of a containerBackground error
+6495	merged	S	fix(mobile): prevent invalid HTML entities from crashing markdown
+6505	closed-unmerged	XS	fix(web): preserve inline attachment image bounds
+6514	closed-unmerged	XL	fix(preview): discover named dev server URLs
+6528	closed-unmerged	XL	fix(desktop): open chat artifacts in native apps
+6541	closed-unmerged	M	fix(desktop): keep preview zoom independent
+6547	merged	M	fix(web): keep floating preview anchored after panel closes
+6558	closed-unmerged	XL	fix(chat): render assistant-generated images inline
+6580	closed-unmerged	XL	fix(web): make preview notes readable and cancellable
+6620	closed-unmerged	L	fix(desktop): support OAuth popups in browser previews
+6649	merged	M	fix(desktop): app zoom no longer zooms the preview browser
+6676	closed-unmerged	S	fix(desktop): exclude msgpackr-extract build artifacts on Windows ARM64
+7098	closed-unmerged	XS	fix(desktop): always evaluate preview expressions by value
+7110	merged	S	fix(desktop): keep the native preview User-Agent so Turnstile passes
+7127	closed-unmerged	XL	fix(preview): make in-app browser automation work on real app pages
+7166	closed-unmerged	L	fix(web): render LaTeX math in chat
+7184	closed-unmerged	L	fix(web): render persisted bash tool output in expanded turns
+7200	closed-unmerged	L	fix(desktop): keep preview automation when leaving a thread
+7220	closed-unmerged	XL	fix(web): render Codex visualizations inline
+7236	closed-unmerged	L	fix(preview): failed tabs no longer sit as a blank floating panel
+7254	merged	XXL	feat(desktop): browser profiles for the preview browser
+7275	closed-unmerged	L	feat(web): navigate files from the file preview breadcrumbs
+7287	closed-unmerged	L	fix(claude): report subagent model and effort
+7289	closed-unmerged	L	fix(server): report line counts for untracked files
+7300	merged	XS	fix(preview): open local environment ports on localhost
+7301	closed-unmerged	L	fix(preview): name hidden, disabled, and ambiguous click failures
+7302	closed-unmerged	L	fix(preview): keep snapshots slim unless the agent asks
+7303	closed-unmerged	L	fix(preview): apply viewport changes when the panel is hidden
+7309	closed-unmerged	XL	feat(web): support PDF message attachments
+7357	closed-unmerged	M	fix(web): revalidate file previews on reopen
+7375	closed-unmerged	L	fix(mobile): support Android image attachments
+7395	closed-unmerged	L	feat(web): chat text contrast slider with live preview in Typography
+7408	closed-unmerged	M	fix(server): bound preview snapshot metadata
+7423	closed-unmerged	XL	fix(server,web): render Claude thinking blocks as live reasoning items
+7445	merged	M	fix(desktop): throttle hidden preview rendering
+7497	closed-unmerged	XXL	feat(web): add mermaid rendering to chat UI + zoom and pan
+7561	merged	M	perf(web): stop preview loading rerenders
+7574	closed-unmerged	M	fix(web): render Hebrew/Arabic chat markdown right-to-left
+7591	closed-unmerged	S	fix(claude): report busy heartbeats only while a turn owns them
+7600	closed-unmerged	XXL	feat(opencode): support OpenCode 2.0 preview
+7616	closed-unmerged	L	feat(server): report OpenCode token usage for the context window meter
+7632	closed-unmerged	L	feat(server): render model reasoning as timeline activities
+7639	closed-unmerged	L	fix(preview): harden SSH forwarding lifecycle
+7641	closed-unmerged	L	fix(web): let web clients open chat HTML/PDF file links in the system browser
+7654	closed-unmerged	XXL	Wp6 report
+7683	closed-unmerged	L	fix(mobile): stop spinning forever on failed asset previews
+7691	closed-unmerged	M	fix(server): report Claude authentication accurately
+7692	closed-unmerged	XXL	feat(mobile): preview GLB models on Android
+7724	closed-unmerged	L	feat(client): render viewed images in expanded tool entries
+7739	closed-unmerged	L	feat(web): add LaTeX math rendering support to ChatMarkdown
+7809	merged	S	fix(web): render oversized terminal graphemes without crashing
+7845	merged	M	perf(web): dedupe terminal mouse motion reports
+7857	closed-unmerged	XL	fix(web/mobile): render project images in nested markdown file previews and harden markdown images
+7941	merged	L	fix(server): keep attachments until the command commits
+7943	closed-unmerged	XS	fix(web): stop rendering healthy ready providers as auth failures
+7979	closed-unmerged	L	feat(web): preview colors in code blocks
+8020	closed-unmerged	XXL	feat(mobile): preview localhost dev servers with screenshot annotation
+8047	closed-unmerged	XL	feat: panel side setting, hidden-file browsing, media previews, and video attachments
+8048	merged	XXL	feat(web): upload image attachments before sending
+8092	closed-unmerged	XXL	feat: let agents work with PDFs, ZIPs, and other files
+8101	closed-unmerged	L	feat(desktop): serve packaged renderer locally
+8152	closed-unmerged	S	fix(web): dialogs and palettes no longer render under the composer slash menu
+8156	closed-unmerged	L	feat(web): convert HEIC photo attachments to JPEG
+8180	closed-unmerged	L	fix(mobile): stop image attachments from dropping connections
+8182	merged	L	feat(desktop): build macOS previews from a PR label
+8192	closed-unmerged	M	fix(client-runtime): stop resubscribing threads the server reports missing
+8202	closed-unmerged	L	feat(markdown): render frontmatter in file previews
+8217	closed-unmerged	XL	feat(web): accept PDF and text files in composer drag and drop
+8235	merged	L	feat(server): accept PDF, ZIP, and other file uploads up to 50MB
+8236	merged	XXL	feat(web): attach PDFs, ZIPs, and other files to a turn
+8243	merged	L	feat(ci): download macOS preview DMGs without signing in
+8256	closed-unmerged	L	fix(desktop): preview cookies no longer leak across projects
+8261	closed-unmerged	L	feat(web): surface pull request deployments with one-click preview links
+8271	closed-unmerged	S	fix(claude): expand slash commands when a message has attachments
+8272	closed-unmerged	L	fix(preview): let overlay-timeout errors reach automation callers
+8275	closed-unmerged	L	fix(claude): report unauthenticated Claude instances honestly
+8291	closed-unmerged	S	fix(desktop): stop granting preview content clipboard-read and geolocation
+8306	closed-unmerged	XS	fix(clients): render Codex file citations as links
+8310	closed-unmerged	L	fix(server): git status reports the real path for renamed and non-ASCII files
+8413	closed-unmerged	L	fix(desktop): support OAuth popups in browser previews
+8435	merged	M	fix(desktop): oauth popups open from the browser preview
+8446	closed-unmerged	L	fix(pull-requests): render private GitHub images in PR bodies
+8456	closed-unmerged	XL	feat(usage): add OpenCode usage reporting
+8460	closed-unmerged	L	feat(desktop): embed UA Control Center in preview pane
+8469	open	XL	fix(preview): resize hidden browser tabs reliably
+8477	closed-unmerged	L	fix(web): assistant images open in preview
+8481	merged	XL	feat(analytics): report connected client platforms
+8483	merged	S	fix(desktop): allow preview automation in agent-created threads
+8486	closed-unmerged	XXL	fix(desktop): recover preview automation after snapshot timeouts
+8494	open	XXL	fix(desktop): isolate preview keyboard input
+8495	closed-unmerged	XXL	fix(desktop): reject clicks in hidden previews
+8501	merged	L	fix(web): render nested markdown images correctly
+8515	closed-unmerged	XXL	feat(usage): add subscription limit reporting for Claude, Codex, Grok, and OpenCode
+8523	closed-unmerged	M	fix(server): render local images outside the worktree
+8533	closed-unmerged	XXL	feat(web): render mermaid fences as diagrams in chat
+8567	merged	M	fix(desktop): stop hidden previews draining battery
+8584	merged	XL	fix(web,mobile): render Codex citations and artifact templates
+8588	closed-unmerged	L	fix(desktop): show newest changes in nightly previews
+8624	merged	L	fix(mobile): prevent header overflow and back-button artifacts
+8688	merged	XL	feat(web): play video attachments in chat
+8700	closed-unmerged	XL	feat(mcp): support thread attachments
+8724	closed-unmerged	XL	feat(mcp): list and close preview tabs
+8752	closed-unmerged	M	fix(preview): preserve completed navigation results
+8769	merged	L	fix(mobile): render workspace images in markdown file previews
+8771	closed-unmerged	L	feat(server): clean worktree build artifacts when threads settle
+8786	closed-unmerged	M	fix(web): preserve file attachments after input reset
+8807	merged	M	fix(web): open agent images in expanded preview
+8811	merged	XS	fix(web): keep image preview above sidebar control
+8839	merged	XL	fix(preview): improve browser recording quality
+8841	closed-unmerged	XXL	feat(preview): route remote ports through t3 connect
+8843	merged	XL	Add mobile composer attachment menu with video support
+8848	closed-unmerged	M	fix(relay): stop reporting environment credential rejections as unreachable
+8902	merged	M	fix(web): preserve explicit preview navigation URLs
+8931	closed-unmerged	S	fix(web): stop rejecting client-local localhost previews on T3 Connect
+8936	merged	L	feat(client): render viewed images in work logs
+8957	closed-unmerged	L	fix(preview): restore browser tab recording via display media handler
+8959	merged	XL	feat(mobile): add native image and PDF previews
+8972	closed-unmerged	L	fix(web): render chat math with KaTeX
+8975	merged	L	fix(desktop): check artifact build prerequisites
+8978	merged	XXL	feat(mobile): upload attachments while composing
+8981	closed-unmerged	L	fix(preview): stabilize background browser automation
+9001	merged	XL	fix(preview): restore recording and macOS rendering after Electron 43
+9014	closed-unmerged	L	feat(web): zoom usage charts and select custom date ranges
+9023	merged	XXL	fix(media): preview host files and stream videos across clients
+9061	merged	S	fix(web): restore file comment focus in editable preview
+9068	merged	M	fix(desktop): preview CDP sessions no longer hard-crash the app
+9082	closed-unmerged	S	fix(desktop): stop preview element capture from hanging
+9119	merged	M	fix(claude): preview images read from the workspace
+9122	merged	S	fix(claude): expand slash commands when a message has attachments
+9123	merged	L	fix(mobile): show an error instead of an endless preview spinner
+9126	merged	M	fix(web): render assistant images inline in chat
+9127	merged	L	fix(web): unlock the composer when preview capture fails
+9133	closed-unmerged	XS	fix(web): render data URI images in chat markdown
+9138	merged	L	fix(desktop): show newest changes in nightly previews
+9140	merged	L	feat(files): open markdown, HTML, and PDF files outside the workspace
+9143	merged	L	feat(web): render HTML and PDF files in the file viewer
+9166	merged	M	feat(web): copy the full error report from the error page
+9193	closed-unmerged	S	fix(preview): preserve Fill panel when agents open tabs
+9204	closed-unmerged	L	fix(web): render chat math with KaTeX
+9209	closed-unmerged	XS	fix(desktop): reject opaque-origin renderer navigations
+9215	closed-unmerged	L	fix(server): raise review diff preview limit
+9227	closed-unmerged	S	fix(server): render async Codex messages
+9249	closed-unmerged	XS	fix(web): record browser previews as H.264 MP4 so mobile can play them
+9251	closed-unmerged	S	fix(mobile): render voice levels without smoothing
+9253	merged	XXL	refactor(media): unify file and media previews across clients
+9260	closed-unmerged	S	fix(server): scope PDF asset links to exact file
+9261	closed-unmerged	L	feat(mcp): save preview snapshots to disk on request
+9262	closed-unmerged	L	feat(chat): render standalone media links inline
+9292	merged	L	feat(web): preview document attachments in the file viewer
+9305	closed-unmerged	XS	fix(server): report missing thread workspaces
+9310	closed-unmerged	S	fix(web): key ChatMarkdown renderers on thread ids, not object identity
+9356	open	L	fix(settings): report rejected shared-settings writes on every environment
+9358	merged	XS	fix(web): stop usage summary requests reporting slow RPCs
+9382	closed-unmerged	L	feat(web): preview pull request links on hover
+9391	closed-unmerged	XL	fix(server): settle background agents the provider stopped reporting
+9404	closed-unmerged	L	fix(pull-requests): render private GitHub images in PR bodies
+9406	open	S	fix(desktop): make the annotation editor border and shadow actually render
+9412	closed-unmerged	M	fix(triage): file reports through the issue form so via-triage sticks
+9438	merged	S	fix(server): keep a/ and b/ prefixes in rendered git patches
+9444	closed-unmerged	M	fix(desktop): allow separate preview window to fullscreen and maximize
+9463	merged	XS	fix(web): render transparent previews on white
+9484	merged	L	fix(web): keep agent browser preview visible
+9505	closed-unmerged	L	fix(server): bound preview_snapshot metadata sent to the agent
+9513	merged	S	fix(web): return focus to the composer after closing a media preview
+9522	closed-unmerged	XXL	fix(desktop): isolate preview keyboard input
+9530	closed-unmerged	L	fix(web): preserve composer focus during preview presses
+9533	closed-unmerged	M	feat(web): open HTML files in the browser from the files context menu
+9537	merged	L	fix(web): render draft PRs in gray
+9563	merged	M	fix(web): render settings sidebar immediately
+9605	open	XL	fix(chat): render Codex source citations
+9621	closed-unmerged	XXL	fix(web): render Mermaid diagrams in Markdown
+9631	merged	L	feat(web): preview pull request links
+9704	closed-unmerged	L	feat(preview): let agents open tabs in a specific browser profile
+9718	merged	M	perf(web): stop rendering hidden terminals
+9735	closed-unmerged	XS	fix(web): preserve preview annotations across reloads
+9741	merged	XS	fix(desktop): keep preview picking active across subframe navigation
+9752	merged	L	perf(mobile): defer file preview highlighter startup
+9789	merged	L	feat(auth): separate browser preview control permissions
+9794	merged	XS	fix(web): center pull request link previews
+9817	closed-unmerged	L	feat(connect): share dev apps and remote browser previews through existing tunnels
+9822	closed-unmerged	L	fix(client-runtime): stop resubscribing threads the server reports missing
+9838	closed-unmerged	L	fix(web): render LaTeX in chat messages
+9840	merged	M	fix(desktop): isolate preview keyboard shortcuts from the host
+9848	closed-unmerged	S	fix(desktop): preserve user focus during preview presses
+9849	closed-unmerged	L	fix(web): restore renderer focus after preview presses
+9860	merged	L	fix(web): render and filter usage as environments respond
+9910	merged	XS	fix(web): reset markdown widgets when the previewed file changes
+9916	open	M	fix(desktop): preserve screenshot detail in scaled previews
+9928	merged	M	fix(web): preserve file attachments when editing queued runs
+9929	merged	XS	fix(mobile): render generic message attachments
+9956	merged	L	refactor(web): remove obsolete changed-files preview helpers
+9989	merged	S	refactor(shared): remove unused preview URL predicate
+9997	merged	XS	test(web): keep the preview profile label helper private
+10009	merged	M	refactor(web): remove unused terminal context preview formatter
+10049	merged	XS	refactor(web): remove unused preview thread reset helper
+10064	merged	S	refactor(web): observe preview tests through the live registry
+10088	merged	XS	fix(ssh): report remote package installation failures accurately
+10104	closed-unmerged	XXL	feat(web): render mermaid diagrams in pull request bodies
+10105	merged	L	fix(ssh): report remote stop failures without losing ownership
+10119	closed-unmerged	XL	fix(preview): replace guests after browser command timeouts
+10141	closed-unmerged	L	fix(preview): preserve detail in browser screenshots
+10198	merged	L	feat(server): report image dimensions with signed asset URLs
+10200	merged	S	fix(web): size the chat image slot from server-reported dimensions
+10216	merged	M	fix(client-runtime): report terminated thread loads
+10232	merged	S	fix(mcp): allow text-only preview snapshots
+10236	closed-unmerged	XXL	feat(web): unify context chip presentation and previews
+10268	merged	S	refactor(desktop): classify preview exports
+10281	merged	S	refactor(server): classify preview toolkit exports
+10303	merged	XS	docs: link the repository security reporting policy
+10305	merged	M	fix(marketing): show a real preview card when t3.codes is shared
+10311	merged	XS	fix(shared): classify workspace previews by literal filenames
+10328	closed-unmerged	L	fix(settings): preview shared preference differences before applying
+10329	closed-unmerged	XL	feat(web): image previews enhance
+10335	closed-unmerged	XS	fix(web): keep text rendering stable when dropdowns open
+10338	merged	M	fix(web): retry failed attachment uploads after reconnect
+10342	closed-unmerged	XXL	fix(server): prune worktree artifacts when chats settle
+10350	closed-unmerged	L	fix(mobile): render the home screen activity widget
+10374	closed-unmerged	M	fix(web): keep screenshots when attaching preview annotations
+10401	closed-unmerged	M	fix(server): harden opencode sessions when preview registration fails
+10403	merged	S	fix(web): improve preview recording frame delivery
+10404	merged	M	feat(mobile): queue a message while its attachment is still uploading
+10429	open	L	fix(web): render stored HEIC attachments
+10467	merged	L	fix(web): resize the floating preview from any edge
+10469	closed-unmerged	M	fix(claude): report a signed-out Claude CLI as unauthenticated
+10475	merged	M	fix: use Pierre icons consistently for attachments
+10495	open	M	fix(web): keep preview recordings valid across viewport resizing
+10501	merged	L	fix(mcp): keep preview snapshots usable by the agent and let it save them
+10511	closed-unmerged	M	fix(desktop): route preview clipboard shortcuts to guest
+10536	open	S	fix(desktop): preserve preview viewport when app is zoomed
+10541	closed-unmerged	XS	fix(desktop): allow PDF previews from connected environments
+10549	merged	XS	fix(claude): report usage limits on retried turns
+10559	merged	M	feat(mcp): expose preview list and close
+10564	merged	L	feat(mcp): expose attachment upload and send
+10572	merged	L	fix(preview): transfer recordings to the agent environment
+10580	merged	L	refactor(server): share attachment message intake
+10581	open	M	test(git): cover review previews before the first commit
+10599	merged	XS	fix(web): correct pending question attachment message
+10616	closed-unmerged	S	fix(server): report capped content searches as truncated
+10630	closed-unmerged	XL	feat(mobile): add iOS recent-photo attachment shortcut
+10648	closed-unmerged	M	feat(mobile): add markdown preview toggle to the file header
+10650	closed-unmerged	L	feat(web): preview linked pull requests from the sidebar footer
+10651	closed-unmerged	L	feat(web): preview spend and subscription limits from the sidebar footer
+10695	closed-unmerged	XL	feat(usage): report Antigravity conversations in usage
+10698	closed-unmerged	XXL	feat(chat): render math across web and mobile
+10770	closed-unmerged	M	fix(chat): render Claude insight fences as blockquotes
+10795	closed-unmerged	S	fix(contracts): tolerate an unreadable snap-shot source on persisted image attachments
+10803	closed-unmerged	XXL	feat(server): open preview tabs in installed gecko, webkit, and blink engines
+10823	closed-unmerged	XL	feat(composer): fold large pastes into attachments
+10833	closed-unmerged	XS	feat(web): open the preview page in the system browser from the menu
+10841	closed-unmerged	L	feat(web): preview provider limits from the Usage icon
+10909	merged	L	fix(web): folder links from chat open the file tree instead of a broken preview
+10915	merged	S	fix(web): align floating browser preview corners
+11013	open	S	fix(connect): stop reporting a loading cloud session as a sign-in change
+11032	merged	L	fix(preview): render website favicons for browser tool activity
+11038	closed-unmerged	XL	feat(web): render Mermaid diagrams in chat
+11050	merged	M	fix(server): pass Codex image attachments by path to avoid oversized requests
+11070	closed-unmerged	L	fix(web): use selected endpoint for remote previews
+11102	merged	S	fix(preview): return to pip when closing the right panel
+11128	merged	L	refactor(mobile): name shared markdown renderer without iOS suffixes
+11129	closed-unmerged	XXL	feat(web): support Mermaid and LikeC4 diagrams in markdown renderer
+11141	closed-unmerged	L	fix(desktop): render Markdown throughout question cards
+11151	closed-unmerged	XS	fix(server): report the missing forced restart capability
+11156	closed-unmerged	XS	fix(orchestrator): report terminal runs after wait timeout
+11178	closed-unmerged	L	feat(server): report Z.ai coding quota through OpenCode
+11181	merged	L	perf(web): format minimap previews only when opened
+11183	closed-unmerged	L	fix(server): bootstrap attachment cleanup without decoding the event log
+11189	closed-unmerged	XXL	feat(web): render Mermaid code fences
+11265	merged	XXL	feat: add inline file previews and attachment chips across surfaces
+11284	closed-unmerged	M	fix(server): report Grok context window usage
+11290	merged	L	fix(web): floating preview can use the margins beside the composer
+11312	merged	S	feat(web): show recording status on floating previews
+11318	merged	XL	feat(server): install preview runtimes from release archives
+11319	merged	L	feat(ssh): run preview builds on remotes from the release archive
+11321	closed-unmerged	L	fix(usage): report incomplete transcript scans
+11324	merged	M	fix(web): keep large image previews from stalling composer typing
+11330	closed-unmerged	XXL	feat(web): unify context chip presentation and previews
+11333	closed-unmerged	XXL	feat: add inline file previews and attachment chips across surfaces
+11350	closed-unmerged	XXL	chore(deps): upgrade Effect to rc.115 and Alchemy to its rc.115 preview build
+11351	closed-unmerged	XXL	chore(refs): sync Effect and Alchemy references to rc.115 and the preview commit
+11354	merged	XL	fix(desktop): keep preview keystrokes out of the composer
+11355	closed-unmerged	L	fix(chat): render Codex follow-up suggestions
+11380	closed-unmerged	S	fix(server): require explicit inline preview screenshots
+11381	merged	XS	fix(server): release preview hosts after unanswered requests
+11425	merged	XS	fix(shared): preserve final quoted empty CSV records
+11429	merged	XS	fix(web): preserve snapshot preview size in sent messages
+11433	merged	L	feat(web): subagent spawns render as an expandable work row
+11440	merged	L	fix(mobile): render photo library picks to a bounded JPEG off the JS thread
+11442	merged	XXL	feat(composer): fold large pastes into text attachments
+11444	merged	XS	fix(web): preserve preview focus on window return
+11460	closed-unmerged	L	feat(chat): render themed HTML visualizations inline
+11472	closed-unmerged	XL	feat(server): report OpenCode usage alongside Codex and Claude Code
+11482	closed-unmerged	L	fix(server): report Claude Team and Enterprise usage limits
+11557	merged	M	fix(server): roll back question attachment copies when respond preparation fails
+11565	merged	XS	fix(server): report missing interrupt-and-restart capability for forced restarts
+11574	merged	XS	fix(orchestrator): report terminal runs after wait timeout
+11586	closed-unmerged	XS	fix(codex): keep browser tasks on T3 preview
+11588	closed-unmerged	M	fix(web): show an error when a file preview frame fails to load
+11612	closed-unmerged	M	fix(mobile): render markdown in question cards
+11624	closed-unmerged	S	fix(server): prevent preview_snapshot from bricking sessions with oversized images
+11625	closed-unmerged	M	fix(server): correctly report usage limits with multi-account Codex routing
+11634	closed-unmerged	XXL	feat: show HTML artifacts inline in assistant replies
+11637	closed-unmerged	L	feat(web): add in-place lexical markdown editor to file preview
+11638	closed-unmerged	L	feat(web): quote selected markdown preview text into chat composer
+11680	closed-unmerged	XL	fix(grok): close background tasks when grok reports task completion
+11689	merged	L	feat(swift-ios): show native crash reports in settings
+11734	merged	M	fix(web): open video attachment thumbnails in the viewer
+11751	closed-unmerged	M	feat(web): copy a chat table as HTML
+11753	merged	S	fix(desktop): keep preview releases out of the nightly update changelog
+11760	merged	XXL	ci(desktop): sign fork PR macOS previews without exposing signing secrets
+11783	closed-unmerged	XL	feat(usage): report OpenCode history and Go quota
+11801	closed-unmerged	L	fix(mobile): render GitHub alerts in markdown
+11825	merged	XL	fix(web): speed up PR previews with fewer GitHub requests
+11831	merged	L	fix(web): keep the preview mini-player clear of the inline thread details card
+11946	closed-unmerged	M	fix(server): report stalled SSH key authorization during fetch
+11966	merged	M	feat(mobile): add v2 preview store builds
+12019	closed-unmerged	M	fix(web): keep folder drops out of attachment uploads
+12046	merged	XL	feat(mobile): render the Android subscription widget with expo-widgets
+12070	closed-unmerged	L	fix(server): recover OpenCode chats with unsupported text attachments
+12108	closed-unmerged	L	feat(mobile): add camera option to attachment menu
+12116	merged	L	perf(mobile): skip unchanged thread row renders
+12125	merged	XS	fix(web): show author avatars in pull request previews
+12143	merged	L	feat(web): choose themes from chat with color previews
+12232	merged	L	fix(mobile): preview queued message order during drag
+12254	closed-unmerged	L	feat(usage): report OpenCode spend and tokens from its local store
+12267	closed-unmerged	M	fix(web): keep screenshots attached to preview annotations
+12279	closed-unmerged	XS	fix(server): keep preview hosts when optional page metadata times out
+12312	closed-unmerged	S	fix(mcp): default preview_snapshot to text-only output
+12318	closed-unmerged	L	fix(web): render queued message attachments
+12343	closed-unmerged	S	fix(preview): reconnect automation hosts after stream eviction
+12368	merged	L	refactor(mobile): share file preview feedback
+12377	merged	M	fix(web): show plain text in collapsed thought previews
+12388	merged	XXL	refactor(mobile): centralize platform header rendering
+12403	merged	XS	fix(web): render citations in queued messages
+12423	closed-unmerged	S	fix(web): queued messages render quotes as chips instead of raw links
+12492	merged	XS	fix(ci): accept V2 transfer reports without cross-scenario comparisons
+12524	open	S	fix(desktop): resolve snapshot windows when macOS reports an invalid PID
+12533	closed-unmerged	M	fix(server): report session exits when a provider instance is torn down
+12535	merged	M	fix(preview): recover host registration after request timeouts
+12548	merged	M	fix(preview): restore v2 sizing and project access
+12557	closed-unmerged	XXL	feat(mobile): preview native iPhone Duo workspace
+12558	merged	XS	chore(mobile): add dev client script with preview environment
+12588	merged	M	fix(server): report the Grok account email so usage limits merge across environments
+12604	closed-unmerged	XXL	feat(web): preview worktree storage before saving cleanup rules
+12610	open	S	fix(mobile): a stuck attachment upload no longer holds the whole outbox
+12613	merged	S	fix(server): preserve racy edits in review diff previews
+12620	merged	M	fix: allow more attachments without raising the image payload budget
+12664	closed-unmerged	S	fix(server): report dead-session approval and user-input answers as stale failures
+12666	closed-unmerged	M	docs: define preview write authority invariant
+12706	closed-unmerged	XXL	fix(preview): recover automation after timeouts and paused rendering
+12707	closed-unmerged	XXL	refactor(web): separate prompt rendering from work activity
+12709	closed-unmerged	XL	perf(server): cut idle preview port scans by 85%
+12718	closed-unmerged	M	fix(desktop): account for main-window zoom in preview_resize
+12719	merged	L	fix(web): pull request chips share the link hover preview
+12768	open	L	fix(desktop): align bundled versions with the artifact version
+12779	merged	XL	fix(desktop): align preview recording cursors and show input feedback
+12781	closed-unmerged	XXL	feat(mobile): prototype Enriched Markdown as the sole renderer
+12810	merged	L	fix(mobile): render assigned project icons in chat list
+12815	closed-unmerged	L	fix: render images whose destination has spaces
+12820	merged	XS	fix(web): hide raw image markup in queue previews
+12866	closed-unmerged	L	fix(clients): report clipboard outcomes accurately
+12870	closed-unmerged	L	fix(web): prevent writes from incomplete file previews
+12899	closed-unmerged	S	fix(server): keep preview hosts that report a waitFor miss at the deadline
+12982	merged	XXL	chore(lint): report className restyling of components/ui exports
+13009	closed-unmerged	M	refactor(web): render menu and popover triggers through Button
+13016	closed-unmerged	S	fix(opencode): report the installed CLI version when the owned server lags behind
+13042	merged	M	refactor(web): render menu and popover triggers through Button
+13062	closed-unmerged	XL	feat(chat): show Claude context reports above the composer
+13064	merged	M	fix(preview): use the visible browser for new agent sessions
+13067	merged	L	fix(orchestration): report subagent models and use live model choices
+13114	closed-unmerged	M	fix(codex): report the stored login email when a custom provider hides the account
+13145	closed-unmerged	XL	fix(mobile): recover from render errors in-place with scoped boundaries
+13150	closed-unmerged	L	test(mobile): give component tests a real renderer and a react-native test host
+13181	closed-unmerged	S	fix(web): refresh chat image previews when the file changes
+13190	closed-unmerged	XS	fix(codex): preview generated images from saved paths
+13192	merged	XL	refactor(web): context chips render through one ContextChip component
+13197	merged	L	fix(mobile): recover from screen render errors
+13338	closed-unmerged	M	fix(server): stop stranding late delegated task reports
+13345	closed-unmerged	L	fix(server): report delegated tasks stopped by a server restart
+13348	open	S	fix(desktop): restore visible Google sign-in popups in previews
+13377	closed-unmerged	XL	feat(web): cite image regions from the image preview
+13383	closed-unmerged	L	fix(cli): report the running server version from t3 triage
+13386	merged	M	fix(acp): keep one answer when a running tool reports progress
+13394	closed-unmerged	L	fix(cli): report the running server version from t3 triage
+13395	merged	XS	perf(server): avoid rereading unchanged files in review previews
+13418	closed-unmerged	S	fix(web): project actions open their preview URL again
+13429	closed-unmerged	XS	fix(contracts): read large file attachments from newer clients
+13542	closed-unmerged	XS	fix(web): typing into the device preview no longer goes to the composer
+13558	merged	M	fix(mcp): preview snapshots fit in the agent's tool output again
+13559	merged	S	fix(mcp): preview errors tell agents what to do instead
+13577	merged	XS	fix(clients): a preview app no longer knocks the desktop's own server offline
+13600	open	L	fix(desktop): capture fresh preview frames in background windows
+13646	closed-unmerged	XL	feat(web): render mermaid diagrams in pull request bodies
+13705	merged	XS	perf(mobile): render Home rows further ahead while scrolling
+13761	merged	M	fix(observability): the renderer trace proxy stops tracing itself
+13772	closed-unmerged	M	fix(preview): sessions stay on the desktop that owns the tab
+13773	closed-unmerged	M	fix(preview): new tabs open on the window showing the thread
+13791	closed-unmerged	M	fix(web): floating preview no longer letterboxes its content
+13799	open	XS	fix(preview): browser tabs no longer go blank when the tab list reorders
+13823	closed-unmerged	XXL	refactor(web): move the Ghostty terminal renderer into packages/ghostty-terminal
+13857	closed-unmerged	L	fix(desktop): preview browser passkeys unlock with Touch ID on macOS
+13859	open	L	fix(mobile): resize Android image previews with the window
+13867	merged	M	fix(build): validate Linux node-pty prebuilds in Windows artifacts
+13874	closed-unmerged	XXL	feat(web): annotate PDF regions in the file sidebar
+13913	open	L	feat(server): list Claude models reported by Claude Code
+13914	closed-unmerged	M	fix(preview): agent clicks no longer take the user's typing focus
+13924	closed-unmerged	S	fix(web): floating preview page follows its frame when the sidebar toggles
+13954	closed-unmerged	L	fix(desktop): target=_blank links in a preview tab open a new preview tab
+13957	closed-unmerged	XL	fix(desktop): support existing passkeys in the preview browser
+13970	closed-unmerged	XL	fix(web): render Mermaid diagrams as images
+13971	closed-unmerged	M	fix(web): markdown preview table of contents stays in the thread
+14019	closed-unmerged	XS	fix(tasks): classify artifact watchers as monitors
+14039	open	M	fix(web): preview viewports keep their size when the main window is zoomed
+14084	closed-unmerged	M	fix(preview): reclaim hidden tabs after automation timeouts
+14108	merged	M	fix(orchestration-v2): show reported subagent models
+14156	closed-unmerged	S	fix(desktop): keep retrying preview snapshot captures on UnknownVizError for a time budget
+14157	open	S	fix(server): stop reporting a separate git dir as a branch's worktree
+14172	closed-unmerged	M	fix(preview): move agent sessions to the desktop showing their tab
+14174	closed-unmerged	XS	fix(desktop): chat videos no longer render black on hybrid NVIDIA Linux laptops
+14238	closed-unmerged	L	fix(claude): render AskUserQuestion option previews
+14270	merged	L	feat(server): report OpenCode 2 usage, context windows, models and history
+14279	closed-unmerged	M	feat(desktop): setting to mute new browser previews
+14281	closed-unmerged	M	fix(web): browser preview viewport no longer scales with window zoom
+14315	closed-unmerged	M	feat(web): floating preview opens in the system browser
+14324	closed-unmerged	XXL	feat(browser): keep remote previews running without a desktop client
+14345	open	M	fix(server): report spawn ENOTDIR as a spawn error instead of a defect
+14360	open	S	fix(desktop): preview annotations no longer replace each other after a reload
+14363	closed-unmerged	XS	fix(server): allow downloads from HTML previews
+14368	merged	M	fix(server): preview builds keep their bundled OpenCode 2 compatibility policy
+14372	open	XS	fix(web): keep attachment errors above question replies
+14436	closed-unmerged	M	fix(web): preserve Files tab when opening file previews
+14459	closed-unmerged	XXL	feat(browser): share local and headless previews with agents
+14503	closed-unmerged	S	fix(desktop): deny about:blank popups without navigating preview
+14533	closed-unmerged	S	fix(desktop): blank preview popups no longer replace the opener page
+14534	open	XS	fix(web): typing into the device preview no longer goes to the composer
+14552	closed-unmerged	S	fix(server): keep the preview host after an optional status timeout
+14574	open	XL	feat(web): opt-in LaTeX math rendering in chat
+14601	merged	S	fix(desktop): markdown pages no longer render invisible in the dark-mode browser
+14612	closed-unmerged	S	fix(mobile): stop offering an iOS Agent Activity widget that always renders blank
+14652	closed-unmerged	L	fix(web): show attempted path and specific reason on file preview read errors (#14491)
+14653	closed-unmerged	XXL	feat(web): preview worktree storage before saving cleanup rules
+14659	merged	XS	fix(ci): pin eas-cli so mobile PR previews deploy again
+14680	closed-unmerged	M	feat(web): add preview.annotate keybinding
+14721	open	L	feat: add on-demand static mermaid previews
+14775	closed-unmerged	XL	fix(preview): apply native viewport sizes without resize hangs
+14777	closed-unmerged	XL	refactor(web): extract the Ghostty browser terminal renderer
+14826	closed-unmerged	XXL	fix(preview): recover automation after timeouts and paused rendering
+14830	closed-unmerged	XL	fix(mobile): render agent widgets and expire stale timelines
+14885	closed-unmerged	XS	fix(server): Claude artifact watchers show as monitors, not agents
+14937	closed-unmerged	XS	fix(mobile): round Android device preview content corners
+14955	open	S	fix(web): keep known preview tabs while the session list refreshes
+14968	closed-unmerged	M	fix(web): floating portrait previews no longer crash beside the details card
+14970	closed-unmerged	XS	fix(web): center previews for single-appearance theme collections
+14985	closed-unmerged	L	fix(server): deleting a thread closes its preview sessions
+15008	merged	M	fix(preview): agent browser clicks no longer steal your composer focus
+15022	merged	XS	test(server): replay checks a Claude subagent's thread takes its reported model
+15034	merged	L	fix(web): Woke dismiss syncs, preview mute is back, and subscription retries back off
+15067	merged	XXL	feat(web): render mermaid code blocks as diagrams
+15091	open	L	fix(web): preserve composer focus during preview Tab automation
+15198	closed-unmerged	L	feat(antigravity): report subscription usage limits
+15199	closed-unmerged	M	fix(web): open remote preview files correctly on orchestrator V2
+15205	open	M	fix(contracts): read large file attachments from newer clients
+15217	open	XXL	feat(chat): reuse context reports across providers
+15252	closed-unmerged	L	fix(chat): Codex follow-up suggestions render as chips instead of raw markup
+15270	closed-unmerged	L	fix(web): render private GitLab uploads in merge request descriptions
+15284	closed-unmerged	L	feat(usage): Antigravity reports weekly limits for each model group
+15296	closed-unmerged	L	feat(usage): Antigravity reports weekly limits for each model group
+15299	closed-unmerged	L	feat(usage): Antigravity reports weekly limits for each model group
+15328	merged	XXL	feat(preview): run the browser on the environment server
+15333	merged	L	feat(usage): fold preview model IDs into the model they belong to
+15338	closed-unmerged	S	fix(preview): keep browsers that answer at their own deadline
+15368	open	S	fix(server): Pi extension notifications render as notices, not tool calls
+15369	closed-unmerged	L	fix(preview): keep typed desktop automation errors across IPC
+15386	open	L	fix(desktop): report updater install failures on the first click
+15399	closed-unmerged	L	feat(web): preview the pull request before linking it
+15459	merged	M	fix(server): a logged-out Claude CLI no longer reports as authenticated
+15490	merged	S	fix(web): restore project action preview opening
+15499	closed-unmerged	L	fix(web): make floating browser previews easier to drag
+15526	closed-unmerged	XXL	chore: update development skills and preview workflows
+15530	closed-unmerged	XXL	feat(web): preview common 3D model formats with background parsing
+15533	closed-unmerged	M	fix(mobile): stop connected attachment uploads from failing
+15537	merged	XS	fix(web): attachments on an open question are visible again
+15556	merged	XS	fix(web): unpin preview dragging on narrow chat canvases
+15590	closed-unmerged	L	fix(chat): unclosed Codex angle-bracket links render as file chips
+15628	merged	M	fix(web): show attempted paths in file preview errors
+15633	open	L	fix(claude): show question option previews
+15639	closed-unmerged	L	fix(server): discover linux preview ports without lsof
+15640	closed-unmerged	L	fix(opencode): report context window usage in v2 threads
+15643	open	XXL	fix(preview): keep scroll context and read loaded text in memory
+15661	merged	M	fix(server): report incomplete transcript usage scans
+15715	open	M	fix(web): show minimap previews as plain text, not raw markdown
+15738	open	XS	fix(web): keep reporting client activity after an interrupted report
+15740	closed-unmerged	M	fix(mobile): preview local images in pending messages
+15804	merged	S	fix(server): PR watch reports a required check that first appears already passed
+15829	closed-unmerged	XXL	feat(desktop): forward SSH environment ports for browser previews
+15863	closed-unmerged	S	fix(mobile): round usage chart bars at the top instead of the bottom
+15916	closed-unmerged	XXL	feat: agents can show HTML pages inline in threads
+15968	merged	XXL	feat: agents can show HTML pages inline in threads
+15998	merged	S	fix(mobile): full-screen HTML renders keep a side gutter
+16032	merged	L	fix(desktop): bound preview inspector retention and record renderer identity
+16033	merged	L	perf(web): diff panel no longer re-renders every file header each time a patch arrives
+16038	open	XL	refactor(web): register the Preview side panel
+16052	open	S	fix(mobile): crash report shows the store build number
+16109	closed-unmerged	S	fix(web): remote Open in VS Code from a file preview opens the file
+16178	merged		ci: run the transfer report job on Blacksmith
+16196	merged	M	refactor: HTML render frames speak the MCP Apps bridge protocol
+16205	closed-unmerged	XS	chore(deps): bump next from 16.2.10 to 16.3.6 in /.repos/alchemy-effect/packages/alchemy/test/Prisma/fixtures/website-artifact/next in the npm_and_yarn group across 1 directory
+16209	closed-unmerged	L	fix(mobile): only a few inline HTML renders keep a live WebView
+16221	closed-unmerged	M	fix(web): render completed Mermaid blocks while streaming
+16234	closed-unmerged	L	feat: visual replies become an opt-in beta setting
+16236	merged	XXL	feat: MCP apps render and run inline in threads
+16240	closed-unmerged	S	fix(mobile): resolve Android SymbolView tint so composer icons render
+16275	merged	L	feat(desktop): the renderer's bootstrap token rotates every 12 hours
+16283	merged	L	fix(web): inline HTML renders no longer trap the thread's scroll
+16325	merged	S	fix(web): pass hex theme colors to HTML renders
+16383	closed-unmerged	S	fix(build): desktop artifacts resolve versioned override selectors
+16420	open	XL	feat: minimize inline HTML renders
+16433	closed-unmerged	S	fix(web): bare inline code paths in file previews resolve from workspace root
+16469	closed-unmerged	L	feat(web): add opt-in double-dollar math rendering
+16509	closed-unmerged	L	fix(preview): failed floating previews show retry controls
+16555	closed-unmerged	M	fix(server): a child killed with unread input no longer crashes the server on html_render
+16617	closed-unmerged	M	feat(desktop): configure the preview User-Agent per profile
+16645	closed-unmerged	XL	fix(ui): prevent clipped focus and preview selection borders
+16659	closed-unmerged	L	feat(web): convert DNG image attachments to PNG
+16687	merged	M	fix(server): probe only owned preview listeners
+16702	open	XXL	feat(clients): Explain links a known issue or a pre-filled report
+16724	closed-unmerged	L	feat(web): render LaTeX equations in chat
+16728	closed-unmerged	L	fix(server): desktop-drawn preview snapshots match the page's scale and viewport
+16752	merged	XS	fix(mcp): agent HTML pages stop painting slab backgrounds
+16756	closed-unmerged	M	fix(web): resolve preview inline code paths from the workspace root
+16765	closed-unmerged	XS	fix(server): server browser input follows the preview control permission
+16806	open	M	fix(server): report stalled Antigravity sign-in sooner
+16830	closed-unmerged	M	fix(web): 7-day usage chart shows hourly variation
+16831	closed-unmerged	XXL	fix(web): stabilize floating preview movement and resizing
+16835	closed-unmerged	L	feat(server,desktop): browser tools report why a page failed to load
+16865	closed-unmerged	S	fix(preview): avoid CIM queries for Windows listeners
+16870	open	M	fix(server): report unroutable OpenCode child requests
+16872	open	S	fix(server): html previews say how their browser exited
+16936	open	M	fix(web,mobile): limit bars use each provider's chart color
+16941	open	M	fix(server): queued preview actions no longer start after their deadline, except recording stop
+16950	merged	L	fix(web): file previews handle downloads, in-page links, and repo paths, and favicons stop leaking internal hosts
+16955	open	S	fix(web): Open in → Finder in the file preview opened the file in its default app instead of revealing it
+16971	open	S	fix(desktop): prevent preview annotation ID collisions
+16975	open	L	fix(cua): stabilize Linux window previews and turn cleanup
+16979	merged	XXL	feat(mobile): replace custom Markdown rendering with Enriched
+16996	closed-unmerged	L	feat(server): report retained Cargo build artifacts
+17023	open	XL	fix(web): cite text inside inline HTML renders
+17024	closed-unmerged	XL	feat(web): add opt-in rendering for TeX equations
+17026	merged	M	fix(client): apply host color scheme to saved MCP apps
+17027	merged	S	fix(client): tolerate blocked cookies in MCP app sandboxes
+17031	open	M	fix: html_render pages show inline when OpenCode or ACP agents wrap the call
+17040	merged	M	fix(mobile): size inline MCP apps to their content
+17062	closed-unmerged	M	fix(server): report actionable Grok usage-limit probe failures
+17065	open	M	fix(web): scrolling over an inline HTML render no longer snaps back to the bottom
+17081	closed-unmerged	L	feat(preview): add automatic browser control preference
+17134	merged	M	fix(server): settle every OpenCode subagent call one report answers
+17193	open	L	perf(mobile): render terminal output at display cadence
+17211	merged	L	fix(mobile): HTML pages in a thread no longer trap scrolling on Android
+17217	closed-unmerged	XL	feat: render LaTeX formulas in Markdown
+17235	open	L	feat: HTML renders can send the reader's answer to the thread
+17242	closed-unmerged	L	fix(desktop): capture fresh pixels from background previews
+17243	closed-unmerged	XL	fix(desktop): recover preview recording startup when native capture fails
+17244	open	L	fix(preview): preserve actionable native capture errors
+17272	open	M	fix(opencode): directory reads no longer render raw XML tags
+17294	closed-unmerged	XL	feat(web): add opt-in LaTeX rendering setting with Off, Readable and On modes
+17330	merged	L	refactor(provider-core): share attachment prompts, notifications, and event loggers
+17336	closed-unmerged	M	fix(server): agent preview tabs follow the desktop page when it mounts late
+17344	merged	S	fix(server): PR watch no longer reports passed while a second run of a check is still going
+17352	merged	M	fix(web): images, video, HTML and PDF preview in a thread before its first message
+17361	merged	L	fix(mobile): restore chat image previews in the v5 stack
+17429	open	XS	fix(server): t3_preview_close reports the server browser's refusal
+17454	open	M	fix(server): MCP thread list and read report every linked pull request
+17464	open	L	feat(web): add Copy action to file previews
+17494	open	XS	fix(desktop): WSL runtime install reports why t3 cannot run
+17555	merged	L	fix(desktop): copy images from HTML previews
+17561	merged	L	feat(web): view visual replies full screen with zoom
+17575	closed-unmerged	XL	fix(desktop): keep preview keyboard input in its guest
+17667	merged	M	feat(pull-requests): hosts can report edit and resolve permissions per item
+17693	merged	S	fix(server): keep preview browser connected after operation timeouts
+17715	merged	S	fix(server): keep Claude workflows alive while they report progress
+17736	open	M	fix(web): preserve HTML input when preview URLs renew
+17772	merged	M	fix(server): check the specific scope for scripts, preview input, and full-access MCP grants
+17831	closed-unmerged	L	feat(server): PR watch reports missing required checks and behind-base
+17848	merged	L	feat(pi): include native sessions in usage reports
+17871	open	L	fix(preview): keep browser sessions available after action timeouts
+17943	open	XS	fix(shared): preview addresses containing another URL open instead of searching
+17951	merged	M	fix(web): media preview centers its content and pins the close button
+17962	merged	S	fix(web): MCP app permission prompts no longer overflow the screen
+18054	closed-unmerged	S	fix(web): Cmd+R right after entering a preview URL reloads the page, not the app
+18077	merged	M	perf(web): panel toggles no longer re-render the timeline and composer
+18105	closed-unmerged	XL	feat(clients): MCP app approvals say what the tool does instead of printing raw JSON
+18109	open	XS	fix(server): disabled providers no longer report missing executables
+18146	open	XS	fix(preview): isolate tabs for threads sharing a provider session
+18147	open	S	fix(preview): keep desktop-rendered tabs out of idle cleanup
+18148	closed-unmerged	M	fix(web): report browser profiles only to connected environments
+18150	closed-unmerged	L	fix(web): report browser profiles only to connected environments
+18177	open	M	fix(web): 7-day usage chart shows hourly variation
+18202	open	XL	feat(web): add opt-in rendering for TeX equations
+18203	open	S	fix(mobile): usage chart legend wraps instead of pushing the end date off-screen
+18214	closed-unmerged	M	fix(web): clip the hosted browser webview to the preview's rounded frame
+18215	closed-unmerged	L	fix(web): preserve remote preview file and folder intent
+18220	open	XXL	perf: large threads open from a viewport snapshot, and typing and streaming render less
+18239	open	XS	fix(server): signed PDF links open only the linked file
+18276	closed-unmerged	L	fix(server): report a pending SSH key approval instead of a generic fetch timeout
+18308	open	M	fix(web): render completed Mermaid blocks while streaming
+18347	merged	M	fix(mobile): keep bot badges out of PR attachments
+18422	open	M	fix(desktop): retain links and HTML files that launch the macOS app
+18431	open	M	fix(preview): reserve tab capacity before concurrent opens
+18435	open	XS	fix(preview): release original browser downloads after saving copies
+18449	merged	XS	fix(mobile): keep preview count badges inside the working pill
+18460	open	L	fix(web): render Markdown in pending question cards
+18462	closed-unmerged	XS	fix(agents): guide typeset math through inline HTML
+18463	merged	XS	fix(server): Forgejo pull requests report their head commit
+18502	merged	M	fix(devices): report agent tool startup failures
+18517	open	XL	fix(mobile): render Markdown in pending questions
+18528	closed-unmerged	L	feat(server): html_preview and html_render reuse a previewed page by id
+18548	open	M	fix(client): MCP apps can no longer trap you in full screen; it opens only after a tap
+18556	open	L	fix(desktop): agent typing in a preview tab no longer lands in the app
+18568	closed-unmerged	XL	feat(mobile): render Appearance with native settings controls
+18584	open	L	fix(preview): agents see your browser page, and keep working while you're in another thread
+18588	open	L	fix(server,desktop): browser tools report why a page failed to load
+18608	merged	XS	fix(gitlab): merge request details report their head commit
+18622	open	M	fix(server): custom Codex providers no longer report native quota
+18633	open	L	fix(server): service launcher reports and aborts its pre-update database backup
+18647	open	M	fix(web): refresh embedded assets in markdown file previews
+18657	open	S	fix(mobile): usage chart legend no longer hides the period's end date
+18684	closed-unmerged	M	feat(web): annotate the browser preview with mod+alt+c
+18696	closed-unmerged	M	fix(mobile): stop Android logging "Unsupported FontVariant value" on every tabular-nums render
+18703	closed-unmerged	M	test(preview): cover desktop attach during headless startup
+18735	open	XXL	feat(markdown): render LaTeX across web and native mobile
+18739	closed-unmerged	L	fix(deps): marketing site images no longer render with a vulnerable sharp
+18759	open	L	fix(azure-devops): report build results to PR watches
+18761	merged	S	fix(mobile): hide Claude Read image placeholders when previews exist
+18784	open	M	fix(server): Android readiness reports a missing ffmpeg
+18824	merged	L	fix(mobile): attachment images no longer re-download on every reconnect
+18873	open	L	fix(preview): keep one browser page across thread switches
+18897	merged	M	fix(web): links in HTML renders open like chat links
+18898	merged	L	fix(web): app shortcuts keep working after clicking into an HTML render
+18900	merged	M	fix(server): review guides find Bitbucket heads reported by short hash
+18920	open	M	fix(opencode): a running background shell keeps its session until it reports
+18950	closed-unmerged	L	fix(server): report a root preview browser as root, not AppArmor
+19012	open	S	fix(client): inline code URL paths no longer render as file chips
+19029	closed-unmerged	L	fix(server): show html_render pages that Code Mode scripts publish
+19062	closed-unmerged	S	fix(server): HTML attachments no longer fail OpenCode turns as native file parts
+19093	open	XXL	feat(mobile): report crashes to Axiom with symbolicated stacks
+19104	closed-unmerged	S	feat(mobile): toggle the on-screen keyboard in the iOS device preview
+19114	closed-unmerged	XXL	feat(files): preview Word documents and Excel workbooks
+19116	closed-unmerged	M	fix(web): identify noisy preview threads in the sidebar
+19300	open	L	fix(desktop): stop blocking the renderer during topology polling
+19319	merged	XS	fix(server): HTML and Markdown attachments no longer fail OpenCode turns
+19359	merged	L	fix(cli): t3 triage reports the server's version, not its own, as the user's build
+19427	closed-unmerged	XS	fix(codex): distinguish bundled browser errors from T3 preview
+19457	closed-unmerged	XS	perf(server): skip idle preview port scans on Linux and macOS
+19463	open	XL	feat(web): preview ZIP attachments
+19484	closed-unmerged	XXL	feat(web): add Excel (.xlsx, .xls) and PowerPoint (.pptx, .ppt) preview support
+19495	open	L	fix(preview): report desktop-rendered server tabs as visible
+19548	closed-unmerged	L	fix(desktop): keep preview automation from stealing chat focus
+19561	merged	L	fix(server): preview copy only forwards text from the viewer's copy keys
+19654	open	L	perf(web): HTML renders load behind a layout skeleton and open full screen from cache
+19691	open	M	fix(acp): report signals when agent processes exit

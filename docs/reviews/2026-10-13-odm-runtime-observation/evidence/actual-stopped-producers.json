@@ -1,0 +1,156 @@
+[
+  {
+    "cohort": "native314-final",
+    "control": "application-read-census-lost-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native314-final",
+    "control": "baseline-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native314-final",
+    "control": "body-hash-summary-changed-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native314-final",
+    "control": "copied-reply-projection-changed-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native314-final",
+    "control": "engine-check-census-lost-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native314-final",
+    "control": "harmless-comment-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native314-final",
+    "control": "processing-permission-promoted-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native314-final",
+    "control": "read-child-census-lost-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native314-final",
+    "control": "reported-failure-promoted-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native314-final",
+    "control": "restored-after-harmless-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native314-final",
+    "control": "restored-final-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native311-final",
+    "control": "application-read-census-lost-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native311-final",
+    "control": "baseline-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native311-final",
+    "control": "body-hash-summary-changed-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native311-final",
+    "control": "copied-reply-projection-changed-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native311-final",
+    "control": "engine-check-census-lost-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native311-final",
+    "control": "harmless-comment-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native311-final",
+    "control": "processing-permission-promoted-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native311-final",
+    "control": "read-child-census-lost-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native311-final",
+    "control": "reported-failure-promoted-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native311-final",
+    "control": "restored-after-harmless-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native311-final",
+    "control": "restored-final-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  }
+]

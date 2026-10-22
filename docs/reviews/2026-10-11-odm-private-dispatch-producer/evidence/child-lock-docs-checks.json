@@ -1,0 +1,7 @@
+{
+  "testsPassed": 14,
+  "testsFailed": 0,
+  "directionCheckPassed": true,
+  "cwd": "openplan/",
+  "scope": "Nested documentation references, sole roadmap and product-direction guard. No browser or product acceptance."
+}

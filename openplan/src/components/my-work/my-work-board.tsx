@@ -66,6 +66,8 @@ export type MyWorkBoardProps = {
   isViewer: boolean;
   /** Caller-specific package work that is waiting behind another active workspace. */
   otherWorkspaceDecisionPackageWork?: OtherWorkspaceDecisionPackageWork[];
+  /** The workspace's IANA zone; a TIMESTAMPTZ due date is shown as its day there. */
+  timeZone: string;
 };
 
 const BLOCK_HEADINGS: Record<MyWorkBlockId, string> = {
@@ -84,7 +86,7 @@ const BLOCK_NOTES: Record<MyWorkBlockId, string> = {
   needs_review:
     "Work awaiting a review or decision. Contract items appear only when your designated role can take that next step.",
   workspace_deadlines:
-    "Grant decisions, award obligations and invoice windows. Nobody is assigned to these, so nothing here is shown as belonging to anyone.",
+    "Grant decisions, application due dates, award obligations and invoice windows. Nobody is assigned to these, so nothing here is shown as belonging to anyone.",
 };
 
 /** Which sources feed which block — used to answer "empty, or unreadable?". */
@@ -93,7 +95,7 @@ const BLOCK_SOURCES: Record<MyWorkBlockId, readonly MyWorkSourceId[]> = {
   undated: ["issues", "land_use_plan_actions", "contract_tasks"],
   blocked_projects: ["stage_gate_holds"],
   needs_review: ["engagement_moderation", "failed_model_runs", "narrative_drafts", "decision_package_reviews", "contract_work_reviews", "contract_pending_reviews"],
-  workspace_deadlines: ["grant_decisions", "award_obligations", "invoice_windows"],
+  workspace_deadlines: ["grant_decisions", "grant_application_due", "award_obligations", "invoice_windows"],
 };
 
 /**
@@ -119,8 +121,8 @@ const PERSON_SCOPED_SOURCES: readonly MyWorkSourceId[] = [
   "issues",
 ];
 
-function WorkItemRow({ item, roster }: { item: MyWorkItem; roster: ProjectAssigneeRoster }) {
-  const due = formatWorkDeadlineDate(item.dueOn);
+function WorkItemRow({ item, roster, timeZone }: { item: MyWorkItem; roster: ProjectAssigneeRoster; timeZone: string }) {
+  const due = formatWorkDeadlineDate(item.dueOn, timeZone);
   return (
     <div className="module-record-row scroll-mt-24">
       <div className="module-record-main">
@@ -161,6 +163,7 @@ export function MyWorkBoard({
   isViewer,
   otherWorkspaceDecisionPackageWork = [],
   participantWork,
+  timeZone,
 }: MyWorkBoardProps) {
   const blocks = groupMyWorkItemsByBlock(items);
 
@@ -249,7 +252,7 @@ export function MyWorkBoard({
         {blocks.deadlines.length > 0 ? (
           <div className="module-record-list">
             {blocks.deadlines.map((item) => (
-              <WorkItemRow key={`${item.sourceId}-${item.id}`} item={item} roster={roster} />
+              <WorkItemRow key={`${item.sourceId}-${item.id}`} item={item} roster={roster} timeZone={timeZone} />
             ))}
           </div>
         ) : personalIsUnreadable ? (
@@ -289,7 +292,7 @@ export function MyWorkBoard({
           {blocks.undated.length > 0 ? (
             <div className="module-record-list">
               {blocks.undated.map((item) => (
-                <WorkItemRow key={`${item.sourceId}-${item.id}`} item={item} roster={roster} />
+                <WorkItemRow key={`${item.sourceId}-${item.id}`} item={item} roster={roster} timeZone={timeZone} />
               ))}
             </div>
           ) : blockHasUnreadableSource("undated") ? (
@@ -308,7 +311,7 @@ export function MyWorkBoard({
         {blocks.blocked_projects.length > 0 ? (
           <div className="module-record-list">
             {blocks.blocked_projects.map((item) => (
-              <WorkItemRow key={`${item.sourceId}-${item.id}`} item={item} roster={roster} />
+              <WorkItemRow key={`${item.sourceId}-${item.id}`} item={item} roster={roster} timeZone={timeZone} />
             ))}
           </div>
         ) : blockHasUnreadableSource("blocked_projects") ? (
@@ -330,7 +333,7 @@ export function MyWorkBoard({
         {blocks.needs_review.length > 0 ? (
           <div className="module-record-list">
             {blocks.needs_review.map((item) => (
-              <WorkItemRow key={`${item.sourceId}-${item.id}`} item={item} roster={roster} />
+              <WorkItemRow key={`${item.sourceId}-${item.id}`} item={item} roster={roster} timeZone={timeZone} />
             ))}
           </div>
         ) : null}
@@ -356,7 +359,7 @@ export function MyWorkBoard({
         {blocks.workspace_deadlines.length > 0 ? (
           <div className="module-record-list">
             {blocks.workspace_deadlines.map((item) => (
-              <WorkItemRow key={`${item.sourceId}-${item.id}`} item={item} roster={roster} />
+              <WorkItemRow key={`${item.sourceId}-${item.id}`} item={item} roster={roster} timeZone={timeZone} />
             ))}
           </div>
         ) : blockHasUnreadableSource("workspace_deadlines") ? (

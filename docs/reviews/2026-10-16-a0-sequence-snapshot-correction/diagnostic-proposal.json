@@ -1,0 +1,70 @@
+{
+  "status": "UNADMITTED SELECT/READ ONLY PROPOSAL; root-owned independent review/decision required",
+  "scope": "One fixed sequence on the exclusively owned failed R5 target; no stage repair, adoption, reuse or restore acceptance",
+  "target": "openplan_a0_limit_c2e1f4598374c1bf439baa3b",
+  "targetOID": 6212363,
+  "systemIdentifier": "7683856985084612646",
+  "sequence": "net.http_request_queue_id_seq",
+  "argv": [
+    "/usr/bin/docker",
+    "exec",
+    "-i",
+    "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce",
+    "psql",
+    "-XqAt",
+    "-h",
+    "/var/run/postgresql",
+    "-p",
+    "5432",
+    "-w",
+    "-U",
+    "supabase_admin",
+    "-d",
+    "openplan_a0_limit_c2e1f4598374c1bf439baa3b",
+    "-v",
+    "ON_ERROR_STOP=1"
+  ],
+  "processes": "Two separate new exclusive journal requests, original error then corrected read. No request or stage replay.",
+  "protocol": "Journal intent/input first. Start each fixed psql request with prelude only. Preserve returned PID/streams; wait a finite deadline for the exact prelude marker. Validate unchanged strict native policy, readOnly on, known database/OID/system/roles and same returned backend PID before sending the separately journaled body to that same process. Missing/mismatched prefix refuses without sending body.",
+  "originalExpected": "Nonzero exit with the named no-composite-type sequence error. Actual full stderr hash may differ from the old DO-block context; retain it rather than inventing equality. No automatic retry.",
+  "correctedExpected": "Two explicit three-field state reads, same positive PID/target/system/roles and readOnly on; unchanged state and originalScope; terminal zero after rollback. No backend-lifetime assumption.",
+  "transactionScope": "Read-only repeatable-read sees one transaction snapshot, not all concurrent commits. Root must exclude other native/catalog operations and compare fresh scope prefixes across both requests; any discrepancy fences the diagnostic.",
+  "noWrites": [
+    "no DDL/DML/temp objects/functions/triggers/RLS changes",
+    "no nextval/setval/increment/reset",
+    "no old receipt/admission/stage mutation",
+    "no credential discovery"
+  ],
+  "parentBounds": {
+    "memoryBytes": 1073741824,
+    "swapBytes": 0,
+    "cpuPercent": 50,
+    "RuntimeMaxSec": 120
+  },
+  "nativeDispatches": 0,
+  "admission": null,
+  "review": null,
+  "files": {
+    "prelude.sql": {
+      "sha256": "43550bd797479d1807b82830ee411362051502f7e44051a327ca6a37c6101a88",
+      "bytes": 1892,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    "original-error.sql": {
+      "sha256": "250256011da3ac5352be91cb25a82b17c55c79bd28b06910c4818b2b89bc1b9e",
+      "bytes": 140,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    "corrected-fields.sql": {
+      "sha256": "2b2935073d5b5c2edcac56774a6d03dfd8a25f380c179343c758dd722905b1a6",
+      "bytes": 2022,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000
+    }
+  }
+}

@@ -1,3 +1,4 @@
+import { artifactGenerationWritebackIsCurrent, resolveTrackedReportSourceUpdatedAt } from "@/lib/reports/report-registry-freshness";
 import Link from "next/link";
 import { ReportArtifactPreview } from "@/app/(app)/reports/[reportId]/_components/report-artifact-preview";
 import { ArrowRight, BookOpenText, FileOutput, Route as RouteIcon } from "lucide-react";
@@ -135,6 +136,7 @@ export function RtpReportDetail({
     id: string;
     artifact_kind: string;
     generated_at: string;
+    metadata_json?: Record<string, unknown> | null;
   }>;
   comparisonDigest: {
     headline: string;
@@ -200,10 +202,14 @@ export function RtpReportDetail({
 }) {
   const enabledSections = sections.filter((section) => section.enabled).length;
   const latestArtifactGeneratedAt = artifacts[0]?.generated_at ?? report.generated_at;
+  const writebackCurrent = artifactGenerationWritebackIsCurrent(artifacts[0]?.metadata_json, report.updated_at);
   const packetFreshness = getReportPacketFreshness({
     latestArtifactKind: report.latest_artifact_kind,
     generatedAt: latestArtifactGeneratedAt,
-    updatedAt: cycle?.updated_at ?? report.updated_at,
+    generationWritebackCurrent: writebackCurrent,
+    updatedAt: writebackCurrent === undefined ? cycle?.updated_at ?? report.updated_at : resolveTrackedReportSourceUpdatedAt({ generatedAt: latestArtifactGeneratedAt,
+      reportUpdatedAt: report.updated_at, cycleUpdatedAt: cycle?.updated_at ?? null,
+      artifactMetadata: artifacts[0]?.metadata_json ?? null }),
   });
   const currentPublicReviewSummary = currentContext.publicReviewLabel
     ? {
@@ -583,7 +589,7 @@ export function RtpReportDetail({
                   </p>
                   <p className="mt-2 text-sm font-semibold text-foreground">{grantsFollowThrough.title}</p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Funding posture changed outside the packet itself, so release review should reopen the shared grants lane before this RTP artifact is treated as fully settled.
+                    Funding posture changed outside the packet itself, so release review should reopen Grants before this RTP report is treated as fully settled.
                   </p>
                   <Link
                     href={grantsFollowThrough.href}

@@ -1,0 +1,5 @@
+{
+  "workers/odm_worker/application_processing_authority.py": "3ac30c91e42467886fd5ee9fb3343f188c448830576926f5e9b0cc618cd11b84",
+  "workers/odm_worker/test_application_processing_authority.py": "fbfe34d70adc5caa75a2e0b4072f1192edc6830044ebdbc8449a06ce995a7150",
+  "docs/reviews/2026-10-13-odm-original-processing-commit/verify_authority_controls.py": "9022b2aa15a976a942f28735c121ed761f94c6446b87f4e94dc287169a871b10"
+}

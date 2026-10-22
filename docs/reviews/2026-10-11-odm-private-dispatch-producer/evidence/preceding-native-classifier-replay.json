@@ -1,0 +1,7 @@
+{
+  "classifierSha256": "d2a76ef7a123bed61ab629745fea4eb0d7b9a58efa6240803186d912caae2ba6",
+  "migrationSha256": "bebf2a1cf0f8d5ace5af56250f449742264586ab14c91fef7cb4748edae79ee8",
+  "realNativeFailuresReclassified": 29,
+  "state": "passed-current-classifier",
+  "scope": "Rechecks retained actual native failures using the stronger current classifier. It does not rerun SQL or create new native observations."
+}

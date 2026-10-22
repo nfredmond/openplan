@@ -1,0 +1,32 @@
+[
+  {
+    "check": "controls314-final-window",
+    "returncode": 0,
+    "seconds": 7.858
+  },
+  {
+    "check": "controls311-final-window",
+    "returncode": 0,
+    "seconds": 7.045
+  },
+  {
+    "check": "native314-final-window",
+    "returncode": 0,
+    "seconds": 68.88
+  },
+  {
+    "check": "native311-final-window",
+    "returncode": 0,
+    "seconds": 67.432
+  },
+  {
+    "check": "legacy314-final-window",
+    "returncode": 0,
+    "seconds": 6.031
+  },
+  {
+    "check": "legacy311-final-window",
+    "returncode": 0,
+    "seconds": 5.092
+  }
+]

@@ -136,11 +136,12 @@ export type AtpProjectApplication = {
   name: string;
   agency: string;
   cycle: string;
-  total_score: number;
-  safety_score: number;
-  equity_score: number;
-  climate_score: number;
-  feasibility_score: number;
+  /** Screening scores are null when project_scores.csv did not record them, never 0. */
+  total_score: number | null;
+  safety_score: number | null;
+  equity_score: number | null;
+  climate_score: number | null;
+  feasibility_score: number | null;
   sensitivity_flag: string;
   location_note: string;
   description: string;
@@ -148,6 +149,12 @@ export type AtpProjectApplication = {
   estimated_cost_usd: number | null;
   schedule_note: string;
   ceqa_determination: string;
+  /**
+   * Whether the equity lens supplied a row for this project. Without one, the
+   * DAC, low-income and tribal fields below are false by default, not findings,
+   * and every surface says "not recorded" instead of "No".
+   */
+  equity_recorded: boolean;
   dac_sb535: boolean;
   low_income_ab1550: boolean;
   tribal_area: boolean;
@@ -162,8 +169,13 @@ export type AtpPortfolioSummary = {
   dac_application_count: number;
   low_income_application_count: number;
   tribal_application_count: number;
+  /** Applications with an equity-lens row; the DAC, low-income and tribal counts cover only these. */
+  equity_recorded_count: number;
   dac_share: number;
-  mean_total_score: number;
+  /** Applications with a recorded total score; the mean covers only these. */
+  scored_application_count: number;
+  /** Null when no application has a recorded total score. */
+  mean_total_score: number | null;
 };
 
 export type AtpGrantResult = {

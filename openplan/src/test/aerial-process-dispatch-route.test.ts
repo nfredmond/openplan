@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { createHash } from "node:crypto";
 
 const createClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
@@ -15,7 +16,16 @@ const storageFromMock = vi.fn(() => ({ createSignedUrls: storageSignedUrlsMock }
 const jobInsertSingleMock = vi.fn();
 const jobInsertMock = vi.fn();
 const jobUpdateEqMock = vi.fn();
+const jobUpdateIsMock = vi.fn();
+const jobUpdateSelectMock = vi.fn();
+const acceptedLedgerInsertMock = vi.fn();
+const acceptedLedgerReadMock = vi.fn();
+const acceptedLedgerSelectMock = vi.fn();
 const jobUpdateMock = vi.fn();
+const custodyRpcMock = vi.fn();
+const missionSelectMock = vi.fn();
+const membershipSelectMock = vi.fn();
+const jobInsertSelectMock = vi.fn();
 
 const mockAudit = {
   info: vi.fn(),
@@ -26,23 +36,23 @@ const mockAudit = {
 const fromMock = vi.fn((table: string) => {
   if (table === "aerial_missions") {
     return {
-      select: () => ({
+      select: (columns: string) => { missionSelectMock(columns); return ({
         eq: () => ({
           maybeSingle: missionMaybeSingleMock,
         }),
-      }),
+      }); },
     };
   }
 
   if (table === "workspace_members") {
     return {
-      select: () => ({
+      select: (columns: string) => { membershipSelectMock(columns); return ({
         eq: () => ({
           eq: () => ({
             maybeSingle: membershipMaybeSingleMock,
           }),
         }),
-      }),
+      }); },
     };
   }
 
@@ -75,6 +85,12 @@ const fromMock = vi.fn((table: string) => {
     };
   }
 
+  if (table === "aerial_processing_callbacks") {
+    return { insert: acceptedLedgerInsertMock, select: (columns: string) => {
+      acceptedLedgerSelectMock(columns);
+      return { eq: () => ({ maybeSingle: acceptedLedgerReadMock }) };
+    } };
+  }
   throw new Error(`Unexpected table: ${table}`);
 });
 
@@ -83,7 +99,7 @@ vi.mock("@/lib/supabase/server", () => ({
   // The dispatch route writes aerial_processing_jobs with the service role
   // (member RLS is SELECT-only) and mints signed imagery URLs through the
   // service client's storage API; route both clients at the same fromMock.
-  createServiceRoleClient: () => ({ from: fromMock, storage: { from: storageFromMock } }),
+  createServiceRoleClient: () => ({ from: fromMock, storage: { from: storageFromMock }, rpc: custodyRpcMock }),
 }));
 
 vi.mock("@/lib/observability/audit", () => ({
@@ -158,6 +174,9 @@ describe("POST /api/aerial/missions/[missionId]/process", () => {
     delete process.env.OPENPLAN_AERIAL_PROCESSING_CALLBACK_URL;
     delete process.env.OPENPLAN_AERIAL_PROCESSING_WORKER_CONTRACT;
     delete process.env.OPENPLAN_AERIAL_IMAGERY_URL_TTL_SECONDS;
+    vi.stubEnv("OPENPLAN_AERIAL_DISPATCH_CUSTODY", "");
+    vi.stubEnv("OPENPLAN_AERIAL_DISPATCH_INSTALLATION_ID", "");
+    vi.stubEnv("OPENPLAN_AERIAL_DISPATCH_TARGET_ID", "");
 
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
     createClientMock.mockResolvedValue({
@@ -183,13 +202,156 @@ describe("POST /api/aerial/missions/[missionId]/process", () => {
       data: { id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" },
       error: null,
     });
-    jobInsertMock.mockReturnValue({ select: () => ({ single: jobInsertSingleMock }) });
-    jobUpdateEqMock.mockResolvedValue({ error: null });
-    jobUpdateMock.mockReturnValue({ eq: jobUpdateEqMock });
+    jobInsertMock.mockReturnValue({ select: (columns: string) => {
+      jobInsertSelectMock(columns); return { single: jobInsertSingleMock };
+    } });
+    const updateChain = { eq: jobUpdateEqMock, is: jobUpdateIsMock, select: jobUpdateSelectMock,
+      then: (resolve: (value: { error: null }) => void) => Promise.resolve({ error: null }).then(resolve) };
+    jobUpdateEqMock.mockReturnValue(updateChain);
+    jobUpdateIsMock.mockReturnValue(updateChain);
+    jobUpdateSelectMock.mockResolvedValue({ data: [{ id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }], error: null });
+    jobUpdateMock.mockReturnValue(updateChain);
+    acceptedLedgerInsertMock.mockResolvedValue({ error: null });
+    acceptedLedgerReadMock.mockResolvedValue({ data: null, error: null });
+    custodyRpcMock.mockReset();
   });
 
   afterEach(() => {
     vi.unstubAllGlobals();
+  });
+
+  describe("optional private original request storage", () => {
+    function configure() {
+      process.env.OPENPLAN_AERIAL_PROCESSING_WORKER_URL = "https://worker.example.com";
+      process.env.OPENPLAN_AERIAL_PROCESSING_WORKER_TOKEN = "worker-secret";
+      vi.stubEnv("OPENPLAN_AERIAL_DISPATCH_CUSTODY", "1");
+      vi.stubEnv("OPENPLAN_AERIAL_DISPATCH_INSTALLATION_ID", "installation-local-1");
+      vi.stubEnv("OPENPLAN_AERIAL_DISPATCH_TARGET_ID", "database-local-1");
+      membershipMaybeSingleMock.mockResolvedValue({ data: { role: "member" }, error: null });
+      let saved: Record<string, unknown> | null = null;
+      custodyRpcMock.mockImplementation((name: string, parameters: Record<string, string>) => ({
+        abortSignal: () => {
+          if (name === "record_aerial_original_dispatch") {
+            const inserted = jobInsertMock.mock.calls[0][0];
+            saved = { format: "openplan.odm-application-dispatch.v1",
+              installationId: parameters.p_installation, targetId: parameters.p_target,
+              applicationJob: { id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", request_id: inserted.request_id,
+                workspace_id: inserted.workspace_id, project_id: inserted.project_id, mission_id: inserted.mission_id,
+                created_by: inserted.created_by, preset_id: inserted.preset_id, imagery_type: inserted.imagery_type ?? "zip_url" },
+              payloadText: parameters.p_payload_text, payloadBytes: Buffer.byteLength(parameters.p_payload_text, "utf8"),
+              payloadSha256: createHash("sha256").update(parameters.p_payload_text).digest("hex"), engineTransportPermission: false };
+            return Promise.resolve({ data: saved, error: null });
+          }
+          if (name === "read_aerial_original_dispatch") return Promise.resolve({ data: {
+            ...saved, authorizedNow: true, authorityObservedAt: "2026-10-12T03:30:00Z" }, error: null });
+          throw new Error("Unexpected original dispatch RPC");
+        },
+      }));
+      const fetchMock = vi.fn(async (_url: string, init: RequestInit) => ({ status: 202,
+        json: async () => acceptedWorkerResponse(JSON.parse(String(init.body)).requestId), text: async () => "" }));
+      vi.stubGlobal("fetch", fetchMock);
+      return fetchMock;
+    }
+
+    it("stores and reads exact original bytes before sending the same worker body", async () => {
+      const fetchMock = configure();
+      const response = await postProcessMission(request(), routeContext());
+      expect(response.status).toBe(202);
+      expect(custodyRpcMock.mock.calls.map((call) => call[0])).toEqual([
+        "record_aerial_original_dispatch", "read_aerial_original_dispatch",
+      ]);
+      const stored = custodyRpcMock.mock.calls[0][1];
+      expect(stored).toEqual({ p_job: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", p_actor: USER_ID,
+        p_installation: "installation-local-1", p_target: "database-local-1",
+        p_payload_text: fetchMock.mock.calls[0][1].body });
+      expect(custodyRpcMock.mock.invocationCallOrder[1]).toBeLessThan(fetchMock.mock.invocationCallOrder[0]);
+      expect(missionSelectMock).toHaveBeenCalledWith("id, workspace_id, project_id, title");
+      expect(membershipSelectMock).toHaveBeenCalledWith("role");
+      expect(jobInsertSelectMock).toHaveBeenCalledWith("id");
+    });
+
+    it("keeps the default external dispatch independent of candidate RPCs", async () => {
+      const fetchMock = configure(); vi.stubEnv("OPENPLAN_AERIAL_DISPATCH_CUSTODY", "");
+      const response = await postProcessMission(request(), routeContext());
+      expect(response.status).toBe(202); expect(fetchMock).toHaveBeenCalledOnce();
+      expect(custodyRpcMock).not.toHaveBeenCalled();
+    });
+
+    it("saves original signed photo URLs privately before a v1.1 dispatch", async () => {
+      const fetchMock = configure(); process.env.OPENPLAN_AERIAL_PROCESSING_WORKER_CONTRACT = "v1.1";
+      imageryListMock.mockResolvedValue({ data: storedImageryRows(), error: null });
+      storageSignedUrlsMock.mockResolvedValue({ data: [
+        { signedUrl: "https://storage.example.test/first.jpg?private=signed" },
+        { signedUrl: "https://storage.example.test/second.jpg?private=signed" },
+      ], error: null });
+      const response = await postProcessMission(request({ presetId: "balanced" }), routeContext());
+      expect(response.status).toBe(202);
+      const text = custodyRpcMock.mock.calls[0][1].p_payload_text;
+      expect(text).toBe(fetchMock.mock.calls[0][1].body);
+      expect(JSON.parse(text).imagery.photos[0].url).toContain("private=signed");
+      expect(JSON.parse(text).schemaVersion).toBe("natford-aerial-processing.v1.1");
+      expect(JSON.stringify(jobInsertMock.mock.calls[0][0])).not.toContain("private=signed");
+    });
+
+    it("refuses incomplete settings before inserting a job or dispatching", async () => {
+      const fetchMock = configure(); vi.stubEnv("OPENPLAN_AERIAL_DISPATCH_TARGET_ID", "");
+      const response = await postProcessMission(request(), routeContext());
+      expect(response.status).toBe(500); expect(jobInsertMock).not.toHaveBeenCalled();
+      expect(custodyRpcMock).not.toHaveBeenCalled(); expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it("records a dispatch failure and refuses external work after an uncertain storage reply", async () => {
+      const fetchMock = configure();
+      custodyRpcMock.mockImplementationOnce(() => ({ abortSignal: () => Promise.resolve({ data: null, error: { message: "private source" } }) }));
+      const response = await postProcessMission(request(), routeContext());
+      expect(response.status).toBe(503); expect(fetchMock).not.toHaveBeenCalled();
+      expect(custodyRpcMock).toHaveBeenCalledTimes(1);
+      expect(jobUpdateMock).toHaveBeenCalledWith({ status: "dispatch_failed",
+        dispatch_error: "The original request could not be saved and checked. Nothing was dispatched." });
+      expect(JSON.stringify(await response.json())).not.toContain("private source");
+    });
+
+    it("refuses a revoked current scope without sending saved bytes", async () => {
+      const fetchMock = configure(); const normal = custodyRpcMock.getMockImplementation()!;
+      custodyRpcMock.mockImplementation((name: string, parameters: Record<string, string>) => {
+        if (name !== "read_aerial_original_dispatch") return normal(name, parameters);
+        const reply = normal(name, parameters);
+        return { abortSignal: async () => {
+          const data = await reply.abortSignal();
+          return { ...data, data: { ...data.data, authorizedNow: false } };
+        } };
+      });
+      const response = await postProcessMission(request(), routeContext());
+      expect(response.status).toBe(503); expect(fetchMock).not.toHaveBeenCalled();
+      expect(jobUpdateMock).toHaveBeenCalledWith(expect.objectContaining({ status: "dispatch_failed" }));
+    });
+
+    it("waits for the storage receipt before reading scope or dispatching", async () => {
+      const fetchMock = configure(); const normal = custodyRpcMock.getMockImplementation()!;
+      let release: () => void = () => {};
+      const pending = new Promise<void>((resolve) => { release = resolve; });
+      custodyRpcMock.mockImplementation((name: string, parameters: Record<string, string>) => {
+        if (name !== "record_aerial_original_dispatch") return normal(name, parameters);
+        return { abortSignal: async () => { await pending; return normal(name, parameters).abortSignal(); } };
+      });
+      const running = postProcessMission(request(), routeContext());
+      try {
+        await vi.waitFor(() => expect(custodyRpcMock).toHaveBeenCalledTimes(1));
+        expect(custodyRpcMock.mock.calls[0][0]).toBe("record_aerial_original_dispatch");
+        expect(fetchMock).not.toHaveBeenCalled();
+      } finally { release(); }
+      expect((await running).status).toBe(202);
+    });
+
+    it("refuses an uncertain current read after a saved storage receipt", async () => {
+      const fetchMock = configure(); const normal = custodyRpcMock.getMockImplementation()!;
+      custodyRpcMock.mockImplementation((name: string, parameters: Record<string, string>) => name === "read_aerial_original_dispatch"
+        ? { abortSignal: () => Promise.resolve({ data: null, error: { message: "private read" } }) } : normal(name, parameters));
+      const response = await postProcessMission(request(), routeContext());
+      expect(response.status).toBe(503); expect(fetchMock).not.toHaveBeenCalled();
+      expect(custodyRpcMock).toHaveBeenCalledTimes(2);
+      expect(JSON.stringify(await response.json())).not.toContain("private read");
+    });
   });
 
   it("returns the 501 boundary when the worker env vars are unset", async () => {
@@ -363,6 +525,75 @@ describe("POST /api/aerial/missions/[missionId]/process", () => {
         last_callback_at: "2026-07-21T12:00:00Z",
       })
     );
+  });
+
+  describe("synchronous accepted callback custody", () => {
+    function configure() {
+      process.env.OPENPLAN_AERIAL_PROCESSING_WORKER_URL = "https://worker.example.com";
+      process.env.OPENPLAN_AERIAL_PROCESSING_WORKER_TOKEN = "worker-secret";
+      vi.stubGlobal("fetch", vi.fn(async (_url: string, init: RequestInit) => ({ status: 202,
+        json: async () => acceptedWorkerResponse(JSON.parse(String(init.body)).requestId), text: async () => "" })));
+    }
+
+    it("retains the original accepted payload before installing its ordering pointer", async () => {
+      configure();
+      const response = await postProcessMission(request(), routeContext());
+      expect(response.status).toBe(202);
+      const row = acceptedLedgerInsertMock.mock.calls[0]?.[0];
+      expect(row, "Accepted response reaches the private ledger").toEqual({
+        processing_job_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", workspace_id: WORKSPACE_ID,
+        callback_id: "cb-accept-01", status: "accepted", occurred_at: "2026-07-21T12:00:00Z",
+        payload: acceptedWorkerResponse(row?.payload.requestId),
+      });
+      expect(acceptedLedgerInsertMock.mock.invocationCallOrder[0], "Ledger precedes ordering pointer").toBeLessThan(jobUpdateMock.mock.invocationCallOrder[0]);
+      expect(jobUpdateEqMock, "Accepted response cannot overwrite running callback state").toHaveBeenCalledWith("status", "requested");
+      expect(jobUpdateIsMock).toHaveBeenCalledWith("job_reference", null);
+      expect(jobUpdateIsMock).toHaveBeenCalledWith("last_callback_id", null);
+      expect(jobUpdateIsMock).toHaveBeenCalledWith("last_callback_at", null);
+      expect(jobUpdateSelectMock).toHaveBeenCalledWith("id");
+    });
+
+    it("refuses an unavailable accepted ledger without installing an unreadable pointer", async () => {
+      configure(); acceptedLedgerInsertMock.mockResolvedValue({ error: { message: "Synthetic ledger unavailable" } });
+      const response = await postProcessMission(request(), routeContext());
+      expect(response.status, "Missing accepted custody remains visible").toBe(503);
+      expect(jobUpdateMock, "No ordering pointer without original accepted custody").not.toHaveBeenCalled();
+    });
+
+    it("accepts only an exact scoped retained accepted response after a unique conflict", async () => {
+      configure(); acceptedLedgerInsertMock.mockResolvedValue({ error: { code: "23505" } });
+      acceptedLedgerReadMock.mockImplementation(async () => {
+        const row = acceptedLedgerInsertMock.mock.calls.at(-1)?.[0];
+        return { data: { processing_job_id: row.processing_job_id, workspace_id: row.workspace_id, payload: row.payload }, error: null };
+      });
+      expect((await postProcessMission(request(), routeContext())).status).toBe(202);
+      expect(acceptedLedgerSelectMock, "Read every binding needed for accepted replay").toHaveBeenCalledWith("processing_job_id, workspace_id, payload");
+      for (const field of ["processing_job_id", "workspace_id", "payload"] as const) {
+        jobUpdateMock.mockClear();
+        acceptedLedgerReadMock.mockImplementation(async () => {
+          const row = acceptedLedgerInsertMock.mock.calls.at(-1)?.[0];
+          return { data: { processing_job_id: row.processing_job_id,
+            workspace_id: row.workspace_id, payload: row.payload, [field]: "foreign-value" }, error: null };
+        });
+        expect((await postProcessMission(request(), routeContext())).status,
+          "Foreign accepted receipt cannot supply a pointer: " + field).toBe(503);
+        expect(jobUpdateMock).not.toHaveBeenCalled();
+      }
+      for (const error of [null, { message: "Synthetic receipt read unavailable" }]) {
+        jobUpdateMock.mockClear();
+        acceptedLedgerReadMock.mockResolvedValue({ data: null, error });
+        expect((await postProcessMission(request(), routeContext())).status,
+          "Missing accepted receipt cannot supply a pointer").toBe(503);
+        expect(jobUpdateMock).not.toHaveBeenCalled();
+      }
+    });
+
+    it("refuses an accepted response for a different request", async () => {
+      configure(); vi.stubGlobal("fetch", vi.fn(async () => ({ status: 202,
+        json: async () => acceptedWorkerResponse("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"), text: async () => "" })));
+      expect((await postProcessMission(request(), routeContext())).status, "Accepted response belongs to the original request").toBe(502);
+      expect(acceptedLedgerInsertMock).not.toHaveBeenCalled();
+    });
   });
 
   it("marks the job dispatch_failed and returns 502 on worker failure", async () => {

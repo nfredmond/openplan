@@ -1,0 +1,327 @@
+{
+  "sourceSha256": "4b0814b6f4e426261c8e3651b89812b50cc1c8226fd7ed2ec493c3b7f23d73f9",
+  "driverSha256": "0e18708a047c5a391094497b914903f1a156ffcb8a9882bba6c1185ecdb02fee",
+  "controls": [
+    {
+      "name": "baseline-workspace_id",
+      "boundary": "workspace_id",
+      "result": "survived",
+      "workerExit": 3,
+      "laterPayloadRefusal": false,
+      "database": "dispatch_snapshot_6cf4a8fca0804d5480907a10c4d76d5c"
+    },
+    {
+      "name": "baseline-project_id",
+      "boundary": "project_id",
+      "result": "survived",
+      "workerExit": 3,
+      "laterPayloadRefusal": false,
+      "database": "dispatch_snapshot_6cf4a8fca0804d5480907a10c4d76d5c"
+    },
+    {
+      "name": "baseline-mission_id",
+      "boundary": "mission_id",
+      "result": "survived",
+      "workerExit": 3,
+      "laterPayloadRefusal": false,
+      "database": "dispatch_snapshot_6cf4a8fca0804d5480907a10c4d76d5c"
+    },
+    {
+      "name": "baseline-request_id",
+      "boundary": "request_id",
+      "result": "survived",
+      "workerExit": 3,
+      "laterPayloadRefusal": false,
+      "database": "dispatch_snapshot_6cf4a8fca0804d5480907a10c4d76d5c"
+    },
+    {
+      "name": "baseline-created_by",
+      "boundary": "created_by",
+      "result": "survived",
+      "workerExit": 3,
+      "laterPayloadRefusal": false,
+      "database": "dispatch_snapshot_6cf4a8fca0804d5480907a10c4d76d5c"
+    },
+    {
+      "name": "baseline-preset_id",
+      "boundary": "preset_id",
+      "result": "survived",
+      "workerExit": 3,
+      "laterPayloadRefusal": false,
+      "database": "dispatch_snapshot_6cf4a8fca0804d5480907a10c4d76d5c"
+    },
+    {
+      "name": "baseline-imagery_type",
+      "boundary": "imagery_type",
+      "result": "survived",
+      "workerExit": 3,
+      "laterPayloadRefusal": false,
+      "database": "dispatch_snapshot_6cf4a8fca0804d5480907a10c4d76d5c"
+    },
+    {
+      "name": "baseline-id",
+      "boundary": "id",
+      "result": "survived",
+      "workerExit": 3,
+      "laterPayloadRefusal": false,
+      "database": "dispatch_snapshot_6cf4a8fca0804d5480907a10c4d76d5c"
+    },
+    {
+      "name": "baseline-status",
+      "boundary": "status",
+      "result": "survived",
+      "workerExit": 3,
+      "laterPayloadRefusal": false,
+      "database": "dispatch_snapshot_6cf4a8fca0804d5480907a10c4d76d5c"
+    },
+    {
+      "name": "baseline-deleted",
+      "boundary": "deleted",
+      "result": "survived",
+      "workerExit": 3,
+      "laterPayloadRefusal": false,
+      "database": "dispatch_snapshot_6cf4a8fca0804d5480907a10c4d76d5c"
+    },
+    {
+      "name": "harmless-workspace_id",
+      "boundary": "workspace_id",
+      "result": "survived",
+      "workerExit": 3,
+      "laterPayloadRefusal": false,
+      "database": "dispatch_snapshot_1edf73bdcf6a437caa53ef3ff36be459"
+    },
+    {
+      "name": "harmless-project_id",
+      "boundary": "project_id",
+      "result": "survived",
+      "workerExit": 3,
+      "laterPayloadRefusal": false,
+      "database": "dispatch_snapshot_1edf73bdcf6a437caa53ef3ff36be459"
+    },
+    {
+      "name": "harmless-mission_id",
+      "boundary": "mission_id",
+      "result": "survived",
+      "workerExit": 3,
+      "laterPayloadRefusal": false,
+      "database": "dispatch_snapshot_1edf73bdcf6a437caa53ef3ff36be459"
+    },
+    {
+      "name": "harmless-request_id",
+      "boundary": "request_id",
+      "result": "survived",
+      "workerExit": 3,
+      "laterPayloadRefusal": false,
+      "database": "dispatch_snapshot_1edf73bdcf6a437caa53ef3ff36be459"
+    },
+    {
+      "name": "harmless-created_by",
+      "boundary": "created_by",
+      "result": "survived",
+      "workerExit": 3,
+      "laterPayloadRefusal": false,
+      "database": "dispatch_snapshot_1edf73bdcf6a437caa53ef3ff36be459"
+    },
+    {
+      "name": "harmless-preset_id",
+      "boundary": "preset_id",
+      "result": "survived",
+      "workerExit": 3,
+      "laterPayloadRefusal": false,
+      "database": "dispatch_snapshot_1edf73bdcf6a437caa53ef3ff36be459"
+    },
+    {
+      "name": "harmless-imagery_type",
+      "boundary": "imagery_type",
+      "result": "survived",
+      "workerExit": 3,
+      "laterPayloadRefusal": false,
+      "database": "dispatch_snapshot_1edf73bdcf6a437caa53ef3ff36be459"
+    },
+    {
+      "name": "harmless-id",
+      "boundary": "id",
+      "result": "survived",
+      "workerExit": 3,
+      "laterPayloadRefusal": false,
+      "database": "dispatch_snapshot_1edf73bdcf6a437caa53ef3ff36be459"
+    },
+    {
+      "name": "harmless-status",
+      "boundary": "status",
+      "result": "survived",
+      "workerExit": 3,
+      "laterPayloadRefusal": false,
+      "database": "dispatch_snapshot_1edf73bdcf6a437caa53ef3ff36be459"
+    },
+    {
+      "name": "harmless-deleted",
+      "boundary": "deleted",
+      "result": "survived",
+      "workerExit": 3,
+      "laterPayloadRefusal": false,
+      "database": "dispatch_snapshot_1edf73bdcf6a437caa53ef3ff36be459"
+    },
+    {
+      "name": "missing-snapshot-guard-workspace_id",
+      "boundary": "workspace_id",
+      "result": "intended snapshot assertion failure",
+      "workerExit": 3,
+      "laterPayloadRefusal": true,
+      "database": "dispatch_snapshot_dd5ccd8cd1874d5197e7c2222ade381d"
+    },
+    {
+      "name": "missing-snapshot-guard-project_id",
+      "boundary": "project_id",
+      "result": "intended snapshot assertion failure",
+      "workerExit": 3,
+      "laterPayloadRefusal": true,
+      "database": "dispatch_snapshot_dd5ccd8cd1874d5197e7c2222ade381d"
+    },
+    {
+      "name": "missing-snapshot-guard-mission_id",
+      "boundary": "mission_id",
+      "result": "intended snapshot assertion failure",
+      "workerExit": 3,
+      "laterPayloadRefusal": true,
+      "database": "dispatch_snapshot_dd5ccd8cd1874d5197e7c2222ade381d"
+    },
+    {
+      "name": "missing-snapshot-guard-request_id",
+      "boundary": "request_id",
+      "result": "intended snapshot assertion failure",
+      "workerExit": 3,
+      "laterPayloadRefusal": true,
+      "database": "dispatch_snapshot_dd5ccd8cd1874d5197e7c2222ade381d"
+    },
+    {
+      "name": "missing-snapshot-guard-created_by",
+      "boundary": "created_by",
+      "result": "intended snapshot assertion failure",
+      "workerExit": 0,
+      "laterPayloadRefusal": false,
+      "database": "dispatch_snapshot_dd5ccd8cd1874d5197e7c2222ade381d"
+    },
+    {
+      "name": "missing-snapshot-guard-preset_id",
+      "boundary": "preset_id",
+      "result": "intended snapshot assertion failure",
+      "workerExit": 3,
+      "laterPayloadRefusal": true,
+      "database": "dispatch_snapshot_dd5ccd8cd1874d5197e7c2222ade381d"
+    },
+    {
+      "name": "missing-snapshot-guard-imagery_type",
+      "boundary": "imagery_type",
+      "result": "intended snapshot assertion failure",
+      "workerExit": 3,
+      "laterPayloadRefusal": true,
+      "database": "dispatch_snapshot_dd5ccd8cd1874d5197e7c2222ade381d"
+    },
+    {
+      "name": "missing-snapshot-guard-id",
+      "boundary": "id",
+      "result": "intended snapshot assertion failure",
+      "workerExit": 3,
+      "laterPayloadRefusal": true,
+      "database": "dispatch_snapshot_dd5ccd8cd1874d5197e7c2222ade381d"
+    },
+    {
+      "name": "missing-snapshot-guard-status",
+      "boundary": "status",
+      "result": "intended snapshot assertion failure",
+      "workerExit": 0,
+      "laterPayloadRefusal": false,
+      "database": "dispatch_snapshot_dd5ccd8cd1874d5197e7c2222ade381d"
+    },
+    {
+      "name": "missing-snapshot-guard-deleted",
+      "boundary": "deleted",
+      "result": "intended snapshot assertion failure",
+      "workerExit": 3,
+      "laterPayloadRefusal": true,
+      "database": "dispatch_snapshot_dd5ccd8cd1874d5197e7c2222ade381d"
+    },
+    {
+      "name": "restored-workspace_id",
+      "boundary": "workspace_id",
+      "result": "survived",
+      "workerExit": 3,
+      "laterPayloadRefusal": false,
+      "database": "dispatch_snapshot_ef0b793dcb6c4b459e9beae66da551fe"
+    },
+    {
+      "name": "restored-project_id",
+      "boundary": "project_id",
+      "result": "survived",
+      "workerExit": 3,
+      "laterPayloadRefusal": false,
+      "database": "dispatch_snapshot_ef0b793dcb6c4b459e9beae66da551fe"
+    },
+    {
+      "name": "restored-mission_id",
+      "boundary": "mission_id",
+      "result": "survived",
+      "workerExit": 3,
+      "laterPayloadRefusal": false,
+      "database": "dispatch_snapshot_ef0b793dcb6c4b459e9beae66da551fe"
+    },
+    {
+      "name": "restored-request_id",
+      "boundary": "request_id",
+      "result": "survived",
+      "workerExit": 3,
+      "laterPayloadRefusal": false,
+      "database": "dispatch_snapshot_ef0b793dcb6c4b459e9beae66da551fe"
+    },
+    {
+      "name": "restored-created_by",
+      "boundary": "created_by",
+      "result": "survived",
+      "workerExit": 3,
+      "laterPayloadRefusal": false,
+      "database": "dispatch_snapshot_ef0b793dcb6c4b459e9beae66da551fe"
+    },
+    {
+      "name": "restored-preset_id",
+      "boundary": "preset_id",
+      "result": "survived",
+      "workerExit": 3,
+      "laterPayloadRefusal": false,
+      "database": "dispatch_snapshot_ef0b793dcb6c4b459e9beae66da551fe"
+    },
+    {
+      "name": "restored-imagery_type",
+      "boundary": "imagery_type",
+      "result": "survived",
+      "workerExit": 3,
+      "laterPayloadRefusal": false,
+      "database": "dispatch_snapshot_ef0b793dcb6c4b459e9beae66da551fe"
+    },
+    {
+      "name": "restored-id",
+      "boundary": "id",
+      "result": "survived",
+      "workerExit": 3,
+      "laterPayloadRefusal": false,
+      "database": "dispatch_snapshot_ef0b793dcb6c4b459e9beae66da551fe"
+    },
+    {
+      "name": "restored-status",
+      "boundary": "status",
+      "result": "survived",
+      "workerExit": 3,
+      "laterPayloadRefusal": false,
+      "database": "dispatch_snapshot_ef0b793dcb6c4b459e9beae66da551fe"
+    },
+    {
+      "name": "restored-deleted",
+      "boundary": "deleted",
+      "result": "survived",
+      "workerExit": 3,
+      "laterPayloadRefusal": false,
+      "database": "dispatch_snapshot_ef0b793dcb6c4b459e9beae66da551fe"
+    }
+  ],
+  "scope": "Actual concurrent changes after the original read: eight job projection fields, active status and deletion. Four fresh retained clones, forty cases. Removing the snapshot guard often reaches the later payload refusal, which is recorded separately. All interleavings, engine permission, hosted operation and full recovery remain unproved."
+}

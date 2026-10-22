@@ -73,10 +73,14 @@ export type GrantProgramCatalogEntry = {
   key: string;
   /** Program name as an operator would track it. */
   name: string;
-  /** Who administers the program (as encountered by a California applicant). */
+  /**
+   * Who administers the program. A federal entry names the federal agency and
+   * the usual state or regional route in terms true in every state; a state
+   * bundle's `federalProgramAdministration` names its own agency.
+   */
   administeringAgency: string;
   level: GrantProgramLevel;
-  /** Who typically applies from a small/rural CA agency perspective. */
+  /** Who typically applies, from a small or rural agency's perspective. */
   typicalApplicants: string;
   /** Short list of eligible project types. */
   eligibleProjectTypes: string[];
@@ -129,6 +133,38 @@ export type GrantProgramJurisdiction = {
 };
 
 /**
+ * How one state runs a federal program: who to apply to there, its call
+ * cycle, its match rate and its own guidance for the application.
+ *
+ * A federal entry is read by planners in every state, so it may not name one
+ * state's agency or tools. The state bundle carries those facts instead, keyed
+ * to the federal entry, and `resolveGrantProgramForJurisdiction` lays them
+ * over the federal entry only for a workspace in that state. Every field is
+ * optional: an omitted field keeps the federal text.
+ */
+export type GrantProgramStateAdministration = {
+  /** Key of the federal catalog entry this state administers. */
+  programKey: string;
+  administeringAgency?: string;
+  typicalApplicants?: string;
+  cycleNote?: string;
+  matchRequirement?: string;
+  url?: string;
+  summary?: string;
+  bcaNote?: string;
+  /** The state's guidance (and title, when it differs) by section key. */
+  sections?: Readonly<Record<string, GrantProgramStateTemplateText>>;
+  /** The state's guidance (and title, when it differs) by attachment key. */
+  attachments?: Readonly<Record<string, GrantProgramStateTemplateText>>;
+};
+
+/** A state's wording for one federal section or attachment. Keys never change. */
+export type GrantProgramStateTemplateText = {
+  title?: string;
+  guidance: string;
+};
+
+/**
  * One jurisdiction's slice of the grant program catalog. Bundles are the unit
  * of registration: adding another state or country means authoring a sibling
  * bundle module and registering it in `./index.ts` — call sites never change.
@@ -146,4 +182,10 @@ export type GrantProgramBundle = {
   /** Where these programs are open to applicants. */
   jurisdiction: GrantProgramJurisdiction;
   programs: readonly GrantProgramCatalogEntry[];
+  /**
+   * How this jurisdiction administers federal programs from the nationwide
+   * bundle. Only a subdivision-scoped bundle may carry these, and they reach
+   * only workspaces in that subdivision.
+   */
+  federalProgramAdministration?: readonly GrantProgramStateAdministration[];
 };

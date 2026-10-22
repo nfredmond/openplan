@@ -1,0 +1,162 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "cases": 16
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived",
+    "cases": 16
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived",
+    "cases": 16
+  },
+  {
+    "control": "original-route-changed",
+    "outcome": "intended_failure",
+    "case": "test_fixed_original_get_streams_exact_bytes_with_two_engine_checks",
+    "diagnostic": "Only the original task archive route may be requested",
+    "kind": "failures"
+  },
+  {
+    "control": "credential-query-omitted",
+    "outcome": "intended_failure",
+    "case": "test_token_is_encoded_for_only_the_fixed_original_endpoint",
+    "diagnostic": "Credential must remain a query value on the original endpoint",
+    "kind": "failures"
+  },
+  {
+    "control": "different-plan-accepted",
+    "outcome": "intended_failure",
+    "case": "test_changed_plan_refuses_before_engine_or_network",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "pre-cancellation-accepted",
+    "outcome": "intended_failure",
+    "case": "test_pre_cancelled_call_refuses_before_resolution_and_engine",
+    "diagnostic": "InterruptedError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "ended-owner-accepted",
+    "outcome": "intended_failure",
+    "case": "test_ended_owner_refuses_before_resolution_and_engine",
+    "diagnostic": "InterruptedError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "ownership-type-unchecked",
+    "outcome": "intended_failure",
+    "case": "test_ownership_and_cancellation_require_boolean_values",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "cancellation-type-unchecked",
+    "outcome": "intended_failure",
+    "case": "test_ownership_and_cancellation_require_boolean_values",
+    "diagnostic": "InterruptedError: Original archive download cancelled",
+    "kind": "errors"
+  },
+  {
+    "control": "deadline-extended",
+    "outcome": "intended_failure",
+    "case": "test_deadline_and_writer_bound_precede_engine_or_child",
+    "diagnostic": "Invalid writer or limits must be refused before engine checks",
+    "kind": "failures"
+  },
+  {
+    "control": "writer-bound-unchecked",
+    "outcome": "intended_failure",
+    "case": "test_deadline_and_writer_bound_precede_engine_or_child",
+    "diagnostic": "does not match",
+    "kind": "failures"
+  },
+  {
+    "control": "engine-confirmation-unchecked",
+    "outcome": "intended_failure",
+    "case": "test_engine_check_requires_exact_true",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "post-transfer-engine-not-checked",
+    "outcome": "intended_failure",
+    "case": "test_revoked_engine_after_body_refuses_success",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "invalid-credentials-forwarded",
+    "outcome": "intended_failure",
+    "case": "test_bad_credential_and_resolver_error_do_not_launch_request",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "credential-resolution-detail-leaked",
+    "outcome": "intended_failure",
+    "case": "test_bad_credential_and_resolver_error_do_not_launch_request",
+    "diagnostic": "does not match",
+    "kind": "failures"
+  },
+  {
+    "control": "stream-byte-limit-expanded",
+    "outcome": "intended_failure",
+    "case": "test_redirect_partial_and_oversized_bodies_refuse",
+    "diagnostic": "does not match \"Original archive complete byte count differs\"",
+    "kind": "failures"
+  },
+  {
+    "control": "cancellation-during-body-ignored",
+    "outcome": "intended_failure",
+    "case": "test_cancelled_body_closes_the_actual_response",
+    "diagnostic": "Cancelled archive request must physically close its response before deadline",
+    "kind": "failures"
+  },
+  {
+    "control": "ownership-during-body-ignored",
+    "outcome": "intended_failure",
+    "case": "test_owner_loss_during_body_closes_the_actual_response",
+    "diagnostic": "Ended archive ownership must physically close its response before deadline",
+    "kind": "failures"
+  },
+  {
+    "control": "empty-body-success",
+    "outcome": "intended_failure",
+    "case": "test_empty_complete_http_body_is_not_archive_success",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "constructor-adapters-unchecked",
+    "outcome": "intended_failure",
+    "case": "test_constructor_requires_adapters_and_captured_literal_address",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "uncaptured-hostname-accepted",
+    "outcome": "intended_failure",
+    "case": "test_constructor_requires_adapters_and_captured_literal_address",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "boolean-local-write-accepted",
+    "outcome": "intended_failure",
+    "case": "test_boolean_local_write_cannot_confirm_a_one_byte_body",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived",
+    "cases": 16
+  }
+]

@@ -1744,12 +1744,16 @@ body[data-map-reading="true"] .op-cart-surface {
    library's clothes.
 
    Everything below is scoped by `:has(.op-map-popup)` so it reaches OpenPlan's
-   popups only. Five other components construct `mapboxgl.Popup`s with their own
-   markup (safety crashes, traffic volumes, engagement heatmap, location display,
-   the RTP cycle project map); those keep the default look until they opt in by
+   popups only. Each Mapbox selector has a `maplibregl-` twin, because a
+   deployment without a Mapbox key draws the same popups with MapLibre, whose
+   classes carry its own prefix and whose card is just as white. Five other
+   components construct `mapboxgl.Popup`s with their own markup (safety
+   crashes, traffic volumes, engagement heatmap, location display, the RTP
+   cycle project map); those keep the default look until they opt in by
    using this family, rather than being restyled from underneath. */
 
-.mapboxgl-popup-content:has(.op-map-popup) {
+.mapboxgl-popup-content:has(.op-map-popup),
+.maplibregl-popup-content:has(.op-map-popup) {
   /* `--panel-solid`, not `--panel`: the tip is a CSS triangle and cannot carry a
      backdrop filter, so a translucent body would sit above an opaque arrow. */
   background: var(--panel-solid);
@@ -1763,26 +1767,35 @@ body[data-map-reading="true"] .op-cart-surface {
 /* Mapbox paints the tip `#fff` per anchor direction, and only the one border
    facing the content is coloured — so each direction has to be named. */
 .mapboxgl-popup-anchor-top:has(.op-map-popup) .mapboxgl-popup-tip,
+.maplibregl-popup-anchor-top:has(.op-map-popup) .maplibregl-popup-tip,
 .mapboxgl-popup-anchor-top-left:has(.op-map-popup) .mapboxgl-popup-tip,
-.mapboxgl-popup-anchor-top-right:has(.op-map-popup) .mapboxgl-popup-tip {
+.maplibregl-popup-anchor-top-left:has(.op-map-popup) .maplibregl-popup-tip,
+.mapboxgl-popup-anchor-top-right:has(.op-map-popup) .mapboxgl-popup-tip,
+.maplibregl-popup-anchor-top-right:has(.op-map-popup) .maplibregl-popup-tip {
   border-bottom-color: var(--panel-solid);
 }
 
 .mapboxgl-popup-anchor-bottom:has(.op-map-popup) .mapboxgl-popup-tip,
+.maplibregl-popup-anchor-bottom:has(.op-map-popup) .maplibregl-popup-tip,
 .mapboxgl-popup-anchor-bottom-left:has(.op-map-popup) .mapboxgl-popup-tip,
-.mapboxgl-popup-anchor-bottom-right:has(.op-map-popup) .mapboxgl-popup-tip {
+.maplibregl-popup-anchor-bottom-left:has(.op-map-popup) .maplibregl-popup-tip,
+.mapboxgl-popup-anchor-bottom-right:has(.op-map-popup) .mapboxgl-popup-tip,
+.maplibregl-popup-anchor-bottom-right:has(.op-map-popup) .maplibregl-popup-tip {
   border-top-color: var(--panel-solid);
 }
 
-.mapboxgl-popup-anchor-left:has(.op-map-popup) .mapboxgl-popup-tip {
+.mapboxgl-popup-anchor-left:has(.op-map-popup) .mapboxgl-popup-tip,
+.maplibregl-popup-anchor-left:has(.op-map-popup) .maplibregl-popup-tip {
   border-right-color: var(--panel-solid);
 }
 
-.mapboxgl-popup-anchor-right:has(.op-map-popup) .mapboxgl-popup-tip {
+.mapboxgl-popup-anchor-right:has(.op-map-popup) .mapboxgl-popup-tip,
+.maplibregl-popup-anchor-right:has(.op-map-popup) .maplibregl-popup-tip {
   border-left-color: var(--panel-solid);
 }
 
-.mapboxgl-popup-content:has(.op-map-popup) .mapboxgl-popup-close-button {
+.mapboxgl-popup-content:has(.op-map-popup) .mapboxgl-popup-close-button,
+.maplibregl-popup-content:has(.op-map-popup) .maplibregl-popup-close-button {
   top: 4px;
   right: 6px;
   width: 22px;
@@ -1793,7 +1806,8 @@ body[data-map-reading="true"] .op-cart-surface {
   line-height: 1;
 }
 
-.mapboxgl-popup-content:has(.op-map-popup) .mapboxgl-popup-close-button:hover {
+.mapboxgl-popup-content:has(.op-map-popup) .mapboxgl-popup-close-button:hover,
+.maplibregl-popup-content:has(.op-map-popup) .maplibregl-popup-close-button:hover {
   background: color-mix(in srgb, var(--ink) 8%, transparent);
   color: var(--ink);
 }
@@ -2238,7 +2252,8 @@ body[data-page-flush="true"] .op-cart-shell .op-cart-surface__body > .analysis-e
   the bottom bar.
 */
 @media (min-width: 721px) {
-  body[data-map-fills-surface="true"] .op-cart-surface .mapboxgl-ctrl-bottom-left {
+  body[data-map-fills-surface="true"] .op-cart-surface .mapboxgl-ctrl-bottom-left,
+  body[data-map-fills-surface="true"] .op-cart-surface .maplibregl-ctrl-bottom-left {
     left: var(--op-cart-rail-edge);
     bottom: var(--op-cart-safe-bottom);
   }

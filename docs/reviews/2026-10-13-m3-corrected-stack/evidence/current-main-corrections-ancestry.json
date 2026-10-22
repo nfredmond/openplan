@@ -1,0 +1,195 @@
+{
+  "candidateMergeCommit": "09890ae9edfaffbfabbf7a931db7d91a1a166445",
+  "joinedMain": "eac9cee05d1c7b78994a00edfc43d78d551d200f",
+  "ownedPrHeads": 33,
+  "additionalNativeSource": "aeb33fa36f468eefa14db4892d945c2aef8b5ffb",
+  "pullRequests": [
+    {
+      "number": 262,
+      "headRefOid": "e5e6b2fb24c42684d3de82be0fa73e05b6b99c3a",
+      "headIncluded": true
+    },
+    {
+      "number": 261,
+      "headRefOid": "1b4c4c4c7f6c04c1c131cc40f69e6b3ec48f1f9c",
+      "headIncluded": true
+    },
+    {
+      "number": 260,
+      "headRefOid": "8d89d2398f4a27ea9591b5249a293b9dce556ce3",
+      "headIncluded": true
+    },
+    {
+      "number": 256,
+      "headRefOid": "279556a55dc192d631958a65bfaf176276f784c3",
+      "headIncluded": true
+    },
+    {
+      "number": 241,
+      "headRefOid": "665f790805e23d9e90ca89497dc5c78040a34d8f",
+      "headIncluded": true
+    },
+    {
+      "number": 239,
+      "headRefOid": "26a4f6fe930bf5c039eb1a3475c173c6bbf1ed38",
+      "headIncluded": true
+    },
+    {
+      "number": 238,
+      "headRefOid": "2d86972114ba7446248c19ed3468b6ba1f19050c",
+      "headIncluded": true
+    },
+    {
+      "number": 237,
+      "headRefOid": "b0b96841a2bb6f0f816b53f2419024c80b7609a2",
+      "headIncluded": true
+    },
+    {
+      "number": 236,
+      "headRefOid": "27e36ca0677676debbba8c6e3ed60f40729c6590",
+      "headIncluded": true
+    },
+    {
+      "number": 233,
+      "headRefOid": "95ba54395635010d059d429c553f9b214f1ab947",
+      "headIncluded": true
+    },
+    {
+      "number": 227,
+      "headRefOid": "04421a6b60c720964345c656f33e25465d371fa7",
+      "headIncluded": true
+    },
+    {
+      "number": 226,
+      "headRefOid": "200b92d234dd036517e3b583838e2ee7b3dcda6d",
+      "headIncluded": true
+    },
+    {
+      "number": 225,
+      "headRefOid": "5055fe5a5383374a907f2672c64d90bc95539916",
+      "headIncluded": true
+    },
+    {
+      "number": 224,
+      "headRefOid": "6e15a9678234c8f2ef566788c4b52eba1c1c07bc",
+      "headIncluded": true
+    },
+    {
+      "number": 223,
+      "headRefOid": "850e936563cb6f10fab7416aa7d2c0c299c91f1c",
+      "headIncluded": true
+    },
+    {
+      "number": 219,
+      "headRefOid": "f8d64a3528d0a1f8f87d3ba6b893f47618e3ef22",
+      "headIncluded": true
+    },
+    {
+      "number": 216,
+      "headRefOid": "45f5af5416f4b28735da8c60241cc2b624c7af52",
+      "headIncluded": true
+    },
+    {
+      "number": 215,
+      "headRefOid": "e928e7aab169fbf92a74974ec5099fe5222ea910",
+      "headIncluded": true
+    },
+    {
+      "number": 214,
+      "headRefOid": "f3bf1cf8d0766b74d6da8f70b0025b2ce857bddd",
+      "headIncluded": true
+    },
+    {
+      "number": 213,
+      "headRefOid": "90d865ffa4f5b01e7627b50117b81d2786325fb7",
+      "headIncluded": true
+    },
+    {
+      "number": 212,
+      "headRefOid": "4ef5d5e97d29e4e429d0b36e60c6d45c5d8ed29e",
+      "headIncluded": true
+    },
+    {
+      "number": 211,
+      "headRefOid": "8d93435e0203fea47ff258c825e079f109f0c75d",
+      "headIncluded": true
+    },
+    {
+      "number": 210,
+      "headRefOid": "3cfa0250575431608c2440e49b3df7aef07666fd",
+      "headIncluded": true
+    },
+    {
+      "number": 209,
+      "headRefOid": "4ae1c9964015fb28feef92bf3509f418ce587cda",
+      "headIncluded": true
+    },
+    {
+      "number": 208,
+      "headRefOid": "8f123ea0a45979e177d65cec8042e29a11ff0f04",
+      "headIncluded": true
+    },
+    {
+      "number": 205,
+      "headRefOid": "e4e793dfe9cf5c3cd352a3f8d537683b9482b223",
+      "headIncluded": true
+    },
+    {
+      "number": 264,
+      "headRefOid": "b59c764f5591dd63a5d3cbee7954ad086d617b27",
+      "headIncluded": true
+    },
+    {
+      "number": 266,
+      "headRefOid": "b0cc393384098392188463a7018a68012e168238",
+      "headIncluded": true
+    },
+    {
+      "number": 269,
+      "headRefOid": "02c5b4932a50d299dd4748714d477723c33e809d",
+      "headIncluded": true
+    },
+    {
+      "number": 270,
+      "headRefOid": "ca4435d755a32b965ed39f87e99a92f33acf1032",
+      "headIncluded": true
+    },
+    {
+      "number": 271,
+      "headRefOid": "886369c5531621509d35420f46d7c6a93933a317",
+      "headIncluded": true
+    },
+    {
+      "number": 279,
+      "headRefOid": "72578f0438f83108865500f362b08a43c0e92e21",
+      "headIncluded": true
+    },
+    {
+      "number": 280,
+      "headRefOid": "79d4a5768b1165a42cbbcf618ea9c70a5dd85274",
+      "headIncluded": true
+    }
+  ],
+  "controls": [
+    {
+      "control": "baseline",
+      "outcome": "survived",
+      "reason": null
+    },
+    {
+      "control": "harmless-label",
+      "outcome": "survived",
+      "reason": null
+    },
+    {
+      "control": "preceding-ebf",
+      "outcome": "intended_failure",
+      "reason": "Missing recorded PR 279"
+    },
+    {
+      "control": "restored",
+      "outcome": "survived",
+      "reason": null
+    }
+  ]
+}

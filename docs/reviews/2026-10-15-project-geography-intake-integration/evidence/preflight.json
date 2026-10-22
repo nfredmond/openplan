@@ -1,0 +1,10 @@
+{
+  "assignedWorktree": "/home/nathaniel/.t3/worktrees/openplan/t3-0f743997",
+  "branch": "t3/project-geography-intake-integration",
+  "initialHead": "05dd3e8da4a4572437f06e771b0a2477873e681f",
+  "initialPorcelain": "",
+  "fetchedMain": "b259d73e56d22d4935ef2789874cf69901786b33",
+  "designParity": true,
+  "coordinationReadOnly": true,
+  "databaseAccess": false
+}

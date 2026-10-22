@@ -8,6 +8,8 @@ const workspaceEq = vi.fn(() => ({ maybeSingle: workspaceMaybeSingle }));
 const workspaceSelect = vi.fn(() => ({ eq: workspaceEq }));
 const loadWorkerFacts = vi.fn();
 const loadWorkerHealth = vi.fn();
+const storageRpc = vi.fn();
+const serviceRoleClient = vi.fn(() => ({ rpc: storageRpc }));
 
 vi.mock("next/navigation", () => ({
   redirect: vi.fn(() => {
@@ -23,6 +25,7 @@ vi.mock("@/lib/supabase/server", () => ({
       return { select: workspaceSelect };
     },
   }),
+  createServiceRoleClient: () => serviceRoleClient(),
 }));
 
 vi.mock("@/lib/workspaces/current", () => ({
@@ -90,6 +93,9 @@ describe("WorkspacePage", () => {
     });
     workspaceMaybeSingle.mockResolvedValue({ data: { id: "workspace-1" }, error: null });
     loadWorkerFacts.mockResolvedValue({ declared: true });
+    storageRpc.mockResolvedValue({ data: 1288490189, error: null });
+    serviceRoleClient.mockImplementation(() => ({ rpc: storageRpc }));
+    vi.unstubAllEnvs();
     loadWorkerHealth.mockResolvedValue({
       aequilibrae: { kind: "aequilibrae", state: "fresh", reason: "fresh" },
       activitysim: { kind: "activitysim", state: "fresh", reason: "fresh" },
@@ -126,5 +132,44 @@ describe("WorkspacePage", () => {
     expect(screen.queryByTestId("deployment-health")).not.toBeInTheDocument();
     expect(loadWorkerFacts).not.toHaveBeenCalled();
     expect(loadWorkerHealth).not.toHaveBeenCalled();
+  });
+
+  it("states the workspace's storage use and limit in one plain line", async () => {
+    vi.stubEnv("OPENPLAN_WORKSPACE_STORAGE_QUOTA_BYTES", String(10 * 1024 ** 3));
+
+    render(await WorkspacePage());
+
+    expect(screen.getByText("Storage: 1.2 GiB of 10 GiB used.")).toBeInTheDocument();
+    // Only the workspace this person was confirmed to belong to.
+    expect(storageRpc).toHaveBeenCalledWith("workspace_storage_bytes", { p_workspace_id: "workspace-1" });
+  });
+
+  it("says so when storage use cannot be read, rather than showing zero", async () => {
+    storageRpc.mockResolvedValue({ data: null, error: { message: "permission denied" } });
+
+    render(await WorkspacePage());
+
+    expect(screen.getByText("Storage use could not be read.")).toBeInTheDocument();
+    expect(screen.queryByText(/^Storage: /)).not.toBeInTheDocument();
+  });
+
+  it("says so when the service role is not configured, and still renders the page", async () => {
+    // Every service-role call on the page fails, as with a missing key.
+    serviceRoleClient.mockImplementation(() => {
+      throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY");
+    });
+
+    render(await WorkspacePage());
+
+    expect(screen.getByText("Storage use could not be read.")).toBeInTheDocument();
+    expect(screen.getByTestId("workspace-team")).toBeInTheDocument();
+  });
+
+  it("reads no storage use for someone with no workspace", async () => {
+    loadMembership.mockResolvedValueOnce({ membership: null, workspace: null });
+
+    render(await WorkspacePage());
+
+    expect(storageRpc).not.toHaveBeenCalled();
   });
 });

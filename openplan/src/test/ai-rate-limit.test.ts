@@ -1,9 +1,19 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { runWithWorkspaceIntegrationKeys } from "@/lib/integrations/context";
+import type { IntegrationProviderId } from "@/lib/integrations/providers";
 import {
   AI_RATE_LIMIT_MAX_PER_WINDOW,
+  AiUsageMeterUnavailableError,
   checkAiUsageRateLimit,
   recordAiUsageEvent,
+  reserveAiUsage,
 } from "@/lib/runtime/ai-rate-limit";
+
+/** Run `fn` as a request whose workspace stored its own Anthropic key. */
+function withWorkspaceKey<T>(fn: () => Promise<T>): Promise<T> {
+  const keys = new Map<IntegrationProviderId, string>([["anthropic", "sk-workspace-own"]]);
+  return runWithWorkspaceIntegrationKeys("ws-1", keys, fn) as Promise<T>;
+}
 
 function supabaseReturning(result: { count?: number | null; error?: unknown }) {
   const gte = vi.fn(async () => result);
@@ -45,10 +55,39 @@ describe("checkAiUsageRateLimit", () => {
     expect(gte).toHaveBeenCalledWith("occurred_at", new Date(1_000_000_000_000 - 300_000).toISOString());
   });
 
-  it("fails open (allows) on a lookup error so AI never goes offline", async () => {
-    const { supabase } = supabaseReturning({ error: { message: "boom" } });
-    const result = await checkAiUsageRateLimit("ws-1", { serviceSupabase: supabase });
-    expect(result.allowed).toBe(true);
+  describe("on a lookup error", () => {
+    afterEach(() => {
+      vi.unstubAllEnvs();
+    });
+
+    it("fails open (allows) when the workspace's own key pays, so its AI never goes offline", async () => {
+      vi.stubEnv("ANTHROPIC_API_KEY", "sk-deployment");
+      const { supabase } = supabaseReturning({ error: { message: "boom" } });
+      const result = await withWorkspaceKey(() => checkAiUsageRateLimit("ws-1", { serviceSupabase: supabase }));
+      expect(result.allowed).toBe(true);
+    });
+
+    it("fails open when no deployment key is shared", async () => {
+      vi.stubEnv("ANTHROPIC_API_KEY", "");
+      const { supabase } = supabaseReturning({ error: { message: "boom" } });
+      const result = await checkAiUsageRateLimit("ws-1", { serviceSupabase: supabase });
+      expect(result.allowed).toBe(true);
+    });
+
+    it("fails closed when the deployment's shared key would pay", async () => {
+      // The operator pays for every workspace on a shared key; an uncounted
+      // call is unbounded spend, so the limiter refuses rather than guess.
+      vi.stubEnv("ANTHROPIC_API_KEY", "sk-deployment");
+      const { supabase } = supabaseReturning({ error: { message: "boom" } });
+      await expect(checkAiUsageRateLimit("ws-1", { serviceSupabase: supabase })).rejects.toBeInstanceOf(
+        AiUsageMeterUnavailableError
+      );
+
+      const throwing = { from: vi.fn(() => { throw new Error("no network"); }) } as never;
+      await expect(checkAiUsageRateLimit("ws-1", { serviceSupabase: throwing })).rejects.toBeInstanceOf(
+        AiUsageMeterUnavailableError
+      );
+    });
   });
 });
 
@@ -98,6 +137,18 @@ describe("recordAiUsageEvent", () => {
     );
   });
 
+  it("reports a recorded event as true", async () => {
+    const insert = vi.fn(async () => ({ error: null }));
+    await expect(
+      recordAiUsageEvent({
+        workspaceId: "ws-1",
+        bucketKey: "assistant_chat",
+        eventKey: "assistant_chat_reply",
+        serviceSupabase: { from: vi.fn(() => ({ insert })) } as never,
+      })
+    ).resolves.toBe(true);
+  });
+
   it("swallows a thrown insert — metering must never fail the user's request", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
     const from = vi.fn(() => ({
@@ -113,7 +164,7 @@ describe("recordAiUsageEvent", () => {
         eventKey: "assistant_chat_reply",
         serviceSupabase: { from } as never,
       })
-    ).resolves.toBeUndefined();
+    ).resolves.toBe(false);
     expect(warn).toHaveBeenCalledTimes(1);
   });
 
@@ -128,7 +179,7 @@ describe("recordAiUsageEvent", () => {
         eventKey: "assistant_chat_reply",
         serviceSupabase: { from } as never,
       })
-    ).resolves.toBeUndefined();
+    ).resolves.toBe(false);
     expect(warn).toHaveBeenCalledTimes(1);
   });
 });
@@ -215,5 +266,65 @@ describe("the loop closes: recorded events are what the limiter counts", () => {
 
     const result = await checkAiUsageRateLimit("ws-1", { serviceSupabase: supabase });
     expect(result.count).toBe(0);
+  });
+});
+
+describe("reserveAiUsage", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.restoreAllMocks();
+  });
+
+  /** usage_events with a count answer and an insert outcome chosen per test. */
+  function usageEvents(options: { count: number; insertError?: { message: string } | null }) {
+    const insert = vi.fn(async () => ({ error: options.insertError ?? null }));
+    const gte = vi.fn(async () => ({ count: options.count, error: null }));
+    const from = vi.fn(() => ({
+      insert,
+      select: () => ({ eq: () => ({ in: () => ({ gte }) }) }),
+    }));
+    return { insert, supabase: { from } as never };
+  }
+
+  const reservation = (serviceSupabase: never) => ({
+    workspaceId: "ws-1",
+    bucketKey: "assistant_chat",
+    eventKey: "assistant_chat_reply",
+    sourceRoute: "/api/assistant/chat",
+    serviceSupabase,
+  });
+
+  it("records the call before returning an allowed verdict", async () => {
+    vi.stubEnv("ANTHROPIC_API_KEY", "sk-deployment");
+    const { insert, supabase } = usageEvents({ count: 0 });
+    const result = await reserveAiUsage(reservation(supabase));
+    expect(result).toMatchObject({ allowed: true, count: 0 });
+    expect(insert).toHaveBeenCalledTimes(1);
+    expect(insert).toHaveBeenCalledWith(
+      expect.objectContaining({ workspace_id: "ws-1", bucket_key: "assistant_chat", event_key: "assistant_chat_reply" })
+    );
+  });
+
+  it("records nothing when the limit refuses the call", async () => {
+    vi.stubEnv("ANTHROPIC_API_KEY", "sk-deployment");
+    const { insert, supabase } = usageEvents({ count: AI_RATE_LIMIT_MAX_PER_WINDOW });
+    const result = await reserveAiUsage(reservation(supabase));
+    expect(result.allowed).toBe(false);
+    expect(insert).not.toHaveBeenCalled();
+  });
+
+  it("refuses when the event cannot be recorded and the shared key would pay", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    vi.stubEnv("ANTHROPIC_API_KEY", "sk-deployment");
+    const { supabase } = usageEvents({ count: 0, insertError: { message: "denied" } });
+    await expect(reserveAiUsage(reservation(supabase))).rejects.toBeInstanceOf(AiUsageMeterUnavailableError);
+  });
+
+  it("allows an unrecorded call when the workspace's own key pays", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    vi.stubEnv("ANTHROPIC_API_KEY", "sk-deployment");
+    const { supabase } = usageEvents({ count: 0, insertError: { message: "denied" } });
+    const result = await withWorkspaceKey(() => reserveAiUsage(reservation(supabase)));
+    expect(result.allowed).toBe(true);
   });
 });

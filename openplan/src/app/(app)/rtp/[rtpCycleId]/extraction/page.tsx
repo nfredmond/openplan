@@ -67,11 +67,13 @@ import {
   ExtractionRunLauncher,
   type ExtractionSourceDocument,
 } from "./_components/extraction-run-launcher";
+import { ManualSourceIntake } from "./_components/manual-source-intake";
+import { MAX_READING_HISTORY_PAGE, PENDING_REVIEW_PAGE_SIZE, READING_HISTORY_PAGE_SIZE, pendingReviewAfterFilter, readReviewPagination, reviewPageHref, type ReviewSearch } from "@/lib/rtp/extraction/review-pagination";
 
-type RouteContext = { params: Promise<{ rtpCycleId: string }> };
+type RouteContext = { params: Promise<{ rtpCycleId: string }>; searchParams?: Promise<ReviewSearch> };
 
 const RUN_COLUMNS =
-  "id, kb_document_id, model, extraction_source, status, candidate_count, discarded_count, failure_reason, created_at, kb_documents(id, title)";
+  "id, kb_document_id, model, source_method, document_extraction_id, original_checksum, extraction_content_sha256, extraction_source, status, candidate_count, discarded_count, failure_reason, created_at, kb_documents(id, title)";
 
 const CANDIDATE_COLUMNS =
   "id, run_id, target_kind, proposed_json, source_page, source_quote, status, created_at";
@@ -82,6 +84,10 @@ type RunRow = {
   id: string;
   kb_document_id: string | null;
   model: string | null;
+  source_method: string | null;
+  document_extraction_id: string | null;
+  original_checksum: string | null;
+  extraction_content_sha256: string | null;
   extraction_source: string | null;
   status: string;
   candidate_count: number | null;
@@ -162,8 +168,9 @@ function unreadableReason(document: DocumentRow, workerConfigured: boolean): str
   return byStatus[document.status] ?? `it is not ready to be read (status: ${document.status})`;
 }
 
-export default async function RtpExtractionReviewPage({ params }: RouteContext) {
+export default async function RtpExtractionReviewPage({ params, searchParams }: RouteContext) {
   const { rtpCycleId } = await params;
+  const pagination = readReviewPagination((await searchParams) ?? {});
   const supabase = await createClient();
   const {
     data: { user },
@@ -228,18 +235,35 @@ export default async function RtpExtractionReviewPage({ params }: RouteContext) 
   const canWrite = canAccessWorkspaceAction("plans.write", membership.role);
   const reads = new ReadFailureLog();
 
-  const [runsResult, candidatesResult, linksResult, projectsResult, documentsResult] = await Promise.all([
+  let pendingQuery = supabase.from("rtp_extraction_candidates")
+    .select(CANDIDATE_COLUMNS, { count: "exact" })
+    .eq("rtp_cycle_id", cycle.id)
+    .eq("workspace_id", membership.workspace_id)
+    .eq("status", "pending")
+    .neq("target_kind", "chapter_block")
+    .order("created_at", { ascending: true })
+    .order("id", { ascending: true });
+  if (pagination.cursor) pendingQuery = pendingQuery.or(pendingReviewAfterFilter(pagination.cursor));
+  const historyOffset = (pagination.historyPage - 1) * READING_HISTORY_PAGE_SIZE;
+  const [historyResult, candidatesResult, chapterCountResult, linksResult, projectsResult, documentsResult] = await Promise.all([
+    pagination.invalidHistory ? { data: null, count: null, error: { message: "Invalid reading-history page" } } :
     supabase
       .from("rtp_extraction_runs")
-      .select(RUN_COLUMNS)
+      .select(RUN_COLUMNS, { count: "exact" })
       .eq("rtp_cycle_id", cycle.id)
+      .eq("workspace_id", membership.workspace_id)
       .order("created_at", { ascending: false })
-      .limit(50),
+      .order("id", { ascending: false })
+      .range(historyOffset, historyOffset + READING_HISTORY_PAGE_SIZE),
+    pagination.invalidCursor ? { data: null, count: null, error: { message: "Invalid pending-review cursor" } } :
+      pendingQuery.limit(PENDING_REVIEW_PAGE_SIZE + 1),
     supabase
       .from("rtp_extraction_candidates")
-      .select(CANDIDATE_COLUMNS)
+      .select("id", { count: "exact", head: true })
       .eq("rtp_cycle_id", cycle.id)
-      .order("created_at", { ascending: true }),
+      .eq("workspace_id", membership.workspace_id)
+      .eq("status", "pending")
+      .eq("target_kind", "chapter_block"),
     supabase
       .from("project_rtp_cycle_links")
       .select(
@@ -260,8 +284,25 @@ export default async function RtpExtractionReviewPage({ params }: RouteContext) 
       .limit(100),
   ]);
 
-  const runsFailed = reads.check("the readings of documents for this plan", runsResult);
+  const historyFailed = reads.check("the readings of documents for this plan", historyResult);
   const candidatesFailed = reads.check("what was copied out of those documents", candidatesResult);
+  const chapterCountFailed = reads.check("the count of copied chapter blocks", chapterCountResult);
+  const candidateRows = candidatesFailed ? [] : (candidatesResult.data ?? []) as CandidateRow[];
+  const pendingCount = candidatesResult.count;
+  const candidatePageIncomplete = !candidatesFailed && (pendingCount === null || !Number.isSafeInteger(pendingCount)
+    || pendingCount < 0 || candidateRows.length !== Math.min(pendingCount, PENDING_REVIEW_PAGE_SIZE + 1));
+  const candidates = candidateRows.slice(0, PENDING_REVIEW_PAGE_SIZE);
+  const hasMorePending = !candidatesFailed && !candidatePageIncomplete && candidateRows.length > PENDING_REVIEW_PAGE_SIZE;
+  const runIds = [...new Set(candidates.flatMap((candidate) => candidate.run_id ? [candidate.run_id] : []))];
+  const runsResult = runIds.length ? await supabase.from("rtp_extraction_runs")
+    .select(RUN_COLUMNS)
+    .eq("rtp_cycle_id", cycle.id)
+    .eq("workspace_id", membership.workspace_id)
+    .in("id", runIds)
+    .order("created_at", { ascending: true })
+    .order("id", { ascending: true })
+    .limit(PENDING_REVIEW_PAGE_SIZE) : { data: [], error: null };
+  const runsFailed = reads.check("the source readings for this proposal page", runsResult);
   reads.check("the projects in this plan", linksResult);
   reads.check("this workspace's projects", projectsResult);
   const documentsFailed = reads.check("this workspace's document library", documentsResult);
@@ -319,7 +360,17 @@ export default async function RtpExtractionReviewPage({ params }: RouteContext) 
   };
 
   const runs = (runsResult.data ?? []) as unknown as RunRow[];
-  const candidates = (candidatesResult.data ?? []) as CandidateRow[];
+  const historyRows = (historyResult.data ?? []) as unknown as RunRow[];
+  const historyRuns = historyRows.slice(0, READING_HISTORY_PAGE_SIZE);
+  const historyCount = historyResult.count;
+  const historyIncomplete = !historyFailed && (historyCount === null || !Number.isSafeInteger(historyCount)
+    || historyCount < 0 || historyRows.length !== Math.min(Math.max(historyCount - historyOffset, 0), READING_HISTORY_PAGE_SIZE + 1));
+  const historyUnavailable = historyFailed || historyIncomplete;
+  const hasMoreHistory = !historyUnavailable && historyRows.length > READING_HISTORY_PAGE_SIZE;
+  const runIdSet = new Set(runs.map((run) => run.id));
+  const incompleteSources = candidates.some((candidate) => !candidate.run_id || !runIdSet.has(candidate.run_id)
+    || typeof candidate.source_page !== "number" || typeof candidate.source_quote !== "string");
+  const queueUnavailable = candidatesFailed || candidatePageIncomplete || runsFailed || incompleteSources;
 
   /*
     CHAPTER BLOCKS ARE REVIEWED SOMEWHERE ELSE (Lane 6 seam, 2026-08-11).
@@ -330,11 +381,9 @@ export default async function RtpExtractionReviewPage({ params }: RouteContext) 
     Leaving those cards here would offer a "Save into the plan" button whose only
     possible answer is a refusal. They are counted and linked instead.
   */
-  const chapterBlocksWaiting = candidates.filter(
-    (candidate) => candidate.status === "pending" && candidate.target_kind === "chapter_block"
-  ).length;
+  const chapterBlocksWaiting = chapterCountFailed ? null : chapterCountResult.count ?? null;
 
-  const pending = candidates.filter(
+  const pending = queueUnavailable ? [] : candidates.filter(
     (candidate) =>
       candidate.status === "pending" &&
       candidate.target_kind !== "chapter_block" &&
@@ -422,6 +471,7 @@ export default async function RtpExtractionReviewPage({ params }: RouteContext) 
           ) : null}
 
           <div className="mt-4">
+            <ManualSourceIntake rtpCycleId={cycle.id} actorId={user.id} documents={sourceDocuments} canWrite={canWrite} />
             <ExtractionRunLauncher
               rtpCycleId={cycle.id}
               documents={sourceDocuments}
@@ -436,8 +486,9 @@ export default async function RtpExtractionReviewPage({ params }: RouteContext) 
             repository's shipped-invisible defect wearing a helpful face.
           */}
           <p className="mt-4 text-sm text-muted-foreground">
-            {chapterBlocksWaiting > 0
+            {chapterBlocksWaiting !== null && chapterBlocksWaiting > 0
               ? `${chapterBlocksWaiting} block${chapterBlocksWaiting === 1 ? "" : "s"} of the plan's own policy and goal text ${chapterBlocksWaiting === 1 ? "is" : "are"} waiting too.`
+              : chapterBlocksWaiting === null ? "The count of waiting chapter text is unavailable. Chapter review remains separate."
               : "Policy and goal text copied out of a document is handled separately."}{" "}
             That text goes into a chapter you choose rather than into the plan&apos;s ledger.{" "}
             <Link href={`/rtp/${cycle.id}/extraction/chapters`} className="underline underline-offset-2">
@@ -447,13 +498,14 @@ export default async function RtpExtractionReviewPage({ params }: RouteContext) 
           </p>
         </article>
 
-        <article className="module-section-surface">
+        <article className="module-section-surface" aria-label="Pending numeric proposals">
           <div className="module-section-header">
             <div className="module-section-heading">
-              <h2 className="module-section-title">{describeReconciliationRollup(rollup)}</h2>
+              <h2 className="module-section-title">{queueUnavailable ? "Pending review unavailable" : pending.length ? describeReconciliationRollup(rollup) : "Pending numeric proposals"}</h2>
               <p className="module-section-description">
-                Compared against what this plan already records — by name, by period, and by figure.
-                The comparison is made here in OpenPlan, never by the model that read the document.
+                Reconciliation covers only the proposals displayed on this page, up to {PENDING_REVIEW_PAGE_SIZE} at a time.
+                Compare them against this plan by name, period and figure. Use the next page to continue reviewing.
+                The oldest pending proposals appear first. The list can change as proposals are reviewed.
               </p>
             </div>
             <span className="flex h-11 w-11 items-center justify-center rounded-[0.6rem] border border-border/70 bg-muted/40 text-muted-foreground">
@@ -461,19 +513,17 @@ export default async function RtpExtractionReviewPage({ params }: RouteContext) 
             </span>
           </div>
 
-          {runs.length === 0 ? (
-            runsFailed ? (
+          {queueUnavailable ? (
               <StateBlock
                 tone="danger"
-                title="The readings of this plan's documents could not be listed"
-                description="This is not a finding that no document has been read for this plan."
+                title={pagination.invalidCursor ? "This pending-review link is invalid" : "This proposal page could not be read completely"}
+                description="The proposals or their source details could not be read, so nothing is listed here. This is not an empty-queue finding. Restart pending review or retry this page."
               />
-            ) : (
+          ) : pending.length === 0 ? (
               <EmptyState
-                title="No document has been read for this plan yet"
-                description="Choose a document above and OpenPlan will read it, page by page, and stage what it finds here for you to check."
+                title="No pending numeric proposals on this page"
+                description={pagination.cursor ? "No pending proposals follow this point in the current list. Restart pending review to check earlier work." : "No numeric proposals are waiting in the current list. Chapter text has its own review link above; retained readings appear in history below."}
               />
-            )
           ) : (
             <div className="space-y-6">
               {runs.map((run) => {
@@ -482,8 +532,6 @@ export default async function RtpExtractionReviewPage({ params }: RouteContext) 
                   (candidate) =>
                     candidate.status === "pending" && candidate.target_kind !== "chapter_block"
                 );
-                const saved = runCandidates.filter((candidate) => candidate.status === "accepted").length;
-                const setAside = runCandidates.filter((candidate) => candidate.status === "rejected").length;
                 const documentId = documentIdByRunId.get(run.id) ?? null;
                 const documentHref = documentId
                   ? `/api/knowledge-base/documents/${documentId}/download`
@@ -501,6 +549,7 @@ export default async function RtpExtractionReviewPage({ params }: RouteContext) 
                         and conceals how much of it the model got wrong.
                       */}
                       <p className="text-xs text-muted-foreground">
+                        Source reading outcome: {" "}
                         {describeRunOutcome({
                           status: run.status,
                           candidateCount: run.candidate_count,
@@ -509,11 +558,14 @@ export default async function RtpExtractionReviewPage({ params }: RouteContext) 
                         })}
                       </p>
                       <p className="text-label text-muted-foreground">
+                        {run.source_method === "manual_retained_page" ? "Manually entered from a retained source page · " : ""}
                         Read {new Date(run.created_at).toLocaleString("en-US")}
                         {run.extraction_source === "ocr" ? " · text recognised from a scan" : ""}
-                        {saved > 0 ? ` · ${saved} saved into the plan` : ""}
-                        {setAside > 0 ? ` · ${setAside} set aside` : ""}
                       </p>
+                      {run.source_method === "manual_retained_page" ? <details className="text-xs text-muted-foreground">
+                        <summary>Retained source identity</summary>
+                        <p className="break-all">Version {run.document_extraction_id}<br />Original checksum {run.original_checksum}<br />Content checksum {run.extraction_content_sha256}</p>
+                      </details> : null}
                     </header>
 
                     {waiting.length === 0 ? (
@@ -578,6 +630,34 @@ export default async function RtpExtractionReviewPage({ params }: RouteContext) 
               })}
             </div>
           )}
+          <nav aria-label="Pending proposal pages" className="mt-4 flex flex-wrap gap-4 text-sm">
+            <Link href={reviewPageHref(cycle.id, null, pagination.historyPage)} className="underline">Restart pending review</Link>
+            {!queueUnavailable && hasMorePending && candidates.length ? <Link
+              href={reviewPageHref(cycle.id, { createdAt: candidates[candidates.length - 1].created_at, id: candidates[candidates.length - 1].id }, pagination.historyPage)}
+              className="underline">Next pending proposals</Link> : null}
+          </nav>
+          {!queueUnavailable ? <p className="mt-2 text-sm text-muted-foreground">
+            {pending.length} proposals displayed. {hasMorePending ? "More pending proposals follow; this is not the complete pending list." : "End of the current pending list. Restart review to check earlier pages."}
+          </p> : null}
+        </article>
+
+        <article className="module-section-surface" aria-label="Reading history">
+          <h2 className="module-section-title">Reading history</h2>
+          <p className="text-sm text-muted-foreground">History page {pagination.historyPage}, up to {READING_HISTORY_PAGE_SIZE} readings, newest first. Pending proposals are reviewed independently above.</p>
+          {historyUnavailable ? <StateBlock tone="danger" title="Reading history is unavailable" description="This history query did not complete or could not confirm its page bounds. It does not establish that no documents have been read." />
+            : historyRuns.length === 0 ? <p>No readings on this history page.</p> : <ul className="mt-3 space-y-3">
+              {historyRuns.map((run) => <li key={run.id} className="border-b pb-2">
+                <p className="font-medium">{firstOf(run.kb_documents)?.title?.trim() || "A document in this library"}</p>
+                <p className="text-sm">{describeRunOutcome({ status: run.status, candidateCount: run.candidate_count, discardedCount: run.discarded_count, failureReason: run.failure_reason })}</p>
+                <p className="text-xs text-muted-foreground">{new Date(run.created_at).toLocaleString("en-US")}{run.source_method === "manual_retained_page" ? " · manual retained-page proposal" : ""}</p>
+              </li>)}
+            </ul>}
+          <nav aria-label="Reading history pages" className="mt-4 flex flex-wrap gap-4 text-sm">
+            {pagination.invalidHistory ? <Link href={reviewPageHref(cycle.id, pagination.cursor)} className="underline">Restart reading history</Link> : null}
+            {!pagination.invalidHistory && pagination.historyPage > 1 ? <Link href={reviewPageHref(cycle.id, pagination.cursor, pagination.historyPage - 1)} className="underline">Newer readings</Link> : null}
+            {hasMoreHistory && pagination.historyPage < MAX_READING_HISTORY_PAGE ? <Link href={reviewPageHref(cycle.id, pagination.cursor, pagination.historyPage + 1)} className="underline">Older readings</Link> : null}
+          </nav>
+          {hasMoreHistory && pagination.historyPage === MAX_READING_HISTORY_PAGE ? <p className="mt-2 text-sm">More history exists beyond this navigation limit. Pending proposals remain reachable through their separate review pages.</p> : null}
         </article>
       </div>
     </section>

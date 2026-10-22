@@ -1,0 +1,27 @@
+[
+  {
+    "stage": "ledger311",
+    "returncode": 0,
+    "seconds": 4.292
+  },
+  {
+    "stage": "runtime314-current",
+    "returncode": 0,
+    "seconds": 12.261
+  },
+  {
+    "stage": "runtime311-current",
+    "returncode": 0,
+    "seconds": 11.013
+  },
+  {
+    "stage": "native314-current",
+    "returncode": 0,
+    "seconds": 48.933
+  },
+  {
+    "stage": "native311-current",
+    "returncode": 0,
+    "seconds": 48.027
+  }
+]

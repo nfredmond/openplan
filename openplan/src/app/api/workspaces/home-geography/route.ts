@@ -16,6 +16,7 @@ import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { ingestCensusTractsForCounty } from "@/lib/data-sources/census-tract-ingest";
+import { reserveCensusTractIngest } from "@/lib/data-sources/census-tract-ingest-limit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { placeKindSchema } from "@/lib/api/place-geographies";
 import { resolvePlaceBoundary } from "@/lib/geographies/place-resolver";
@@ -37,6 +38,7 @@ import {
   parseWorkspaceHomeGeography,
   tigerwebCountyFipsFromHomeGeography,
 } from "@/lib/workspaces/home-geography";
+import { validTimeZone } from "@/lib/work/deadlines";
 
 // Resolving a boundary calls out to TIGERweb.
 export const runtime = "nodejs";
@@ -359,7 +361,18 @@ export async function PATCH(request: NextRequest) {
       try {
         after(async () => {
           try {
-            await ingestCensusTractsForCounty(createServiceRoleClient(), {
+            // The same per-person allowance as the ingest route, so changing
+            // the home geography in a loop cannot drive unlimited loads. A
+            // refused or unchecked reservation skips the load.
+            const service = createServiceRoleClient();
+            const reservation = await reserveCensusTractIngest(service, {
+              userId: user.id,
+              workspaceId: parsed.data.workspaceId,
+              counties: [county],
+              sourceRoute: "/api/workspaces/home-geography",
+            });
+            if (reservation.status !== "reserved") return;
+            await ingestCensusTractsForCounty(service, {
               stateFips: county.stateFips,
               countyFips: county.countyFips,
             });
@@ -559,5 +572,106 @@ export async function DELETE(request: NextRequest) {
       { error: "Unexpected error while clearing the home geography" },
       { status: 500 }
     );
+  }
+}
+
+const setTimeZoneSchema = z.object({
+  workspaceId: z.string().uuid(),
+  /** An IANA zone name, or null to clear the setting. */
+  timeZone: z.string().trim().max(64).nullable(),
+});
+
+/**
+ * Set or clear the workspace's TIME ZONE, the zone its records are dated in
+ * (`src/lib/time/workspace-calendar.ts`).
+ *
+ * It lives beside the home geography because both answer "where does this
+ * agency work", and both are the same `workspace.configure` action. The write
+ * goes through `set_workspace_time_zone` (20261017000007) with the caller's own
+ * session, so the database checks the role too and refuses a name that is not
+ * an IANA zone. The route checks first only to answer with a clear message.
+ */
+export async function PUT(request: NextRequest) {
+  const audit = createApiAuditLogger("workspaces.time_zone.set", request);
+  const startedAt = Date.now();
+
+  try {
+    const bodyResult = await readJsonWithLimit(request, BODY_LIMITS.smallJson);
+    if (!bodyResult.ok) {
+      return bodyResult.response;
+    }
+    if (bodyResult.parseError) {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+    }
+
+    const parsed = setTimeZoneSchema.safeParse(bodyResult.data);
+    if (!parsed.success) {
+      return NextResponse.json({ error: "Invalid time zone parameters" }, { status: 400 });
+    }
+    const requested = parsed.data.timeZone ? parsed.data.timeZone : null;
+    if (requested !== null && validTimeZone(requested) === null) {
+      return NextResponse.json({ error: "That is not a time zone name. Pick one from the list." }, { status: 400 });
+    }
+
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const membership = await checkWorkspaceMembership(supabase, user.id, parsed.data.workspaceId);
+    if (!membership.ok) {
+      return membershipErrorResponse(membership);
+    }
+
+    if (!canAccessWorkspaceAction(HOME_GEOGRAPHY_WRITE_ACTION, membership.role)) {
+      return NextResponse.json(
+        { error: "Only a workspace owner or admin can set the time zone" },
+        { status: 403 }
+      );
+    }
+
+    const { data, error } = await supabase.rpc("set_workspace_time_zone", {
+      p_workspace_id: parsed.data.workspaceId,
+      p_time_zone: requested,
+    });
+
+    if (error) {
+      if (looksLikePendingSchema(error.message)) {
+        return NextResponse.json(
+          { error: "Workspace time zone is not available yet", hint: "Apply the latest Supabase migrations." },
+          { status: 503 }
+        );
+      }
+      if (error.code === "22023") {
+        return NextResponse.json({ error: "That is not a time zone name. Pick one from the list." }, { status: 400 });
+      }
+      if (error.code === "42501") {
+        audit.warn("time_zone_set_refused", { workspaceId: parsed.data.workspaceId });
+        return NextResponse.json(
+          { error: "Only a workspace owner or admin can set the time zone" },
+          { status: 403 }
+        );
+      }
+      audit.error("time_zone_set_failed", { workspaceId: parsed.data.workspaceId, error });
+      return NextResponse.json({ error: "Failed to set the time zone" }, { status: 500 });
+    }
+
+    const stored = typeof data === "string" ? data : null;
+    audit.info("time_zone_set", {
+      workspaceId: parsed.data.workspaceId,
+      timeZone: stored,
+      durationMs: Date.now() - startedAt,
+    });
+    return NextResponse.json({ workspaceId: parsed.data.workspaceId, timeZone: stored }, { status: 200 });
+  } catch (error) {
+    audit.error("time_zone_set_unhandled_error", {
+      durationMs: Date.now() - startedAt,
+      error,
+    });
+    return NextResponse.json({ error: "Unexpected error while setting the time zone" }, { status: 500 });
   }
 }

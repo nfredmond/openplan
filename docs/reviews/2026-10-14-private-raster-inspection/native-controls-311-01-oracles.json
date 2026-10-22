@@ -1,0 +1,322 @@
+[
+  {
+    "case": "final-access-read-omitted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "final-access-read-omitted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "final-access-read-omitted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "final-access-read-omitted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "final-access-read-omitted",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "final-access-read-omitted",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "final-access-read-omitted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "final-access-read-omitted",
+    "oracle": "later-error",
+    "accepted": false
+  },
+  {
+    "case": "post-read-revocation-swallowed",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "post-read-revocation-swallowed",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "post-read-revocation-swallowed",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "post-read-revocation-swallowed",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "post-read-revocation-swallowed",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "post-read-revocation-swallowed",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "post-read-revocation-swallowed",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "post-read-revocation-swallowed",
+    "oracle": "later-error",
+    "accepted": false
+  },
+  {
+    "case": "saved-native-report-altered",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "saved-native-report-altered",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "saved-native-report-altered",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "saved-native-report-altered",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "saved-native-report-altered",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "saved-native-report-altered",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "saved-native-report-altered",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "saved-native-report-altered",
+    "oracle": "later-error",
+    "accepted": false
+  },
+  {
+    "case": "native-delivery-promoted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "native-delivery-promoted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "native-delivery-promoted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "native-delivery-promoted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "native-delivery-promoted",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "native-delivery-promoted",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "native-delivery-promoted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "native-delivery-promoted",
+    "oracle": "later-error",
+    "accepted": false
+  },
+  {
+    "case": "native-quality-promoted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "native-quality-promoted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "native-quality-promoted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "native-quality-promoted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "native-quality-promoted",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "native-quality-promoted",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "native-quality-promoted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "native-quality-promoted",
+    "oracle": "later-error",
+    "accepted": false
+  },
+  {
+    "case": "child-does-not-interrupt",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "child-does-not-interrupt",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "child-does-not-interrupt",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "child-does-not-interrupt",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "child-does-not-interrupt",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "child-does-not-interrupt",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "child-does-not-interrupt",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "child-does-not-interrupt",
+    "oracle": "later-error",
+    "accepted": false
+  },
+  {
+    "case": "native-scale-doubled",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "native-scale-doubled",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "native-scale-doubled",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "native-scale-doubled",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "native-scale-doubled",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "native-scale-doubled",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "native-scale-doubled",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "native-scale-doubled",
+    "oracle": "later-error",
+    "accepted": false
+  },
+  {
+    "case": "saved-native-report-reparsed",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "saved-native-report-reparsed",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "saved-native-report-reparsed",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "saved-native-report-reparsed",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "saved-native-report-reparsed",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "saved-native-report-reparsed",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "saved-native-report-reparsed",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "saved-native-report-reparsed",
+    "oracle": "later-error",
+    "accepted": false
+  }
+]

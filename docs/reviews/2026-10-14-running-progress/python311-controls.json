@@ -1,0 +1,210 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "initial-temporary-cleanup-omitted",
+    "test": "test_runtime_running_pipeline.test_initial_publisher_temporary_recovers_before_progress",
+    "outcome": "intended_failure",
+    "reason": "Owned publisher temporary must recover initial progress"
+  },
+  {
+    "control": "unsafe-temporary-cleared",
+    "test": "test_runtime_running_pipeline.test_unsafe_publisher_temporaries_hold_before_progress",
+    "outcome": "intended_failure",
+    "reason": "Unsafe progress temporaries cannot begin work"
+  },
+  {
+    "control": "progress-gate-skipped",
+    "test": "test_runtime_running_pipeline.test_initial_running_event_precedes_source_fetch_and_engine_commands",
+    "outcome": "intended_failure",
+    "reason": "Exact initial event must precede input fetch"
+  },
+  {
+    "control": "pending-event-authorizes-input",
+    "test": "test_runtime_running_pipeline.test_pending_progress_holds_before_any_source_or_engine_work",
+    "outcome": "intended_failure",
+    "reason": "Unconfirmed running event remains pending"
+  },
+  {
+    "control": "refused-event-retried",
+    "test": "test_runtime_running_pipeline.test_refused_progress_stops_retries_and_computation",
+    "outcome": "intended_failure",
+    "reason": "Historical refusal cannot reenter progress delivery"
+  },
+  {
+    "control": "uncertain-body-rebuilt",
+    "test": "test_runtime_running_pipeline.test_lost_reply_replays_exact_body_before_input",
+    "outcome": "intended_failure",
+    "reason": "Running retry cannot rebuild event"
+  },
+  {
+    "control": "cached-ack-posted-again",
+    "test": "test_runtime_running_pipeline.test_saved_acknowledgement_suppresses_second_progress_post",
+    "outcome": "intended_failure",
+    "reason": "Historical acknowledgement cannot reenter progress delivery"
+  },
+  {
+    "control": "cached-ack-authority-skipped",
+    "test": "test_runtime_running_pipeline.test_revoked_actor_after_cached_ack_cannot_start_next_input_step",
+    "outcome": "intended_failure",
+    "reason": "Cached progress cannot advance without current access"
+  },
+  {
+    "control": "terminal-reenters-progress",
+    "test": "test_runtime_running_pipeline.test_completed_terminal_replay_skips_active_progress_authority",
+    "outcome": "intended_failure",
+    "reason": "Terminal replay cannot reenter active progress"
+  },
+  {
+    "control": "foreign-reader-accepted",
+    "test": "test_runtime_running_pipeline.test_foreign_progress_reader_refuses_at_constructor",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "accepted-event-allowed",
+    "test": "test_runtime_running_pipeline.test_reserved_event_refuses_accepted_projection",
+    "outcome": "intended_failure",
+    "reason": "Reserved event cannot accept another progress projection"
+  },
+  {
+    "control": "percentage-event-allowed",
+    "test": "test_runtime_running_pipeline.test_reserved_event_refuses_invented_percentage",
+    "outcome": "intended_failure",
+    "reason": "Reserved event cannot accept another progress projection"
+  },
+  {
+    "control": "changed-message-allowed",
+    "test": "test_runtime_running_pipeline.test_reserved_event_refuses_another_message",
+    "outcome": "intended_failure",
+    "reason": "Reserved event cannot accept another progress projection"
+  },
+  {
+    "control": "ignored-reply-authorizes",
+    "test": "test_runtime_running_pipeline.test_ignored_running_reply_holds_and_never_retries",
+    "outcome": "intended_failure",
+    "reason": "Ignored running event cannot authorize work"
+  },
+  {
+    "control": "wrong-status-authorizes",
+    "test": "test_runtime_running_pipeline.test_wrong_status_reply_stays_pending_before_input",
+    "outcome": "intended_failure",
+    "reason": "Wrong running acknowledgement stays pending"
+  },
+  {
+    "control": "missing-status-authorizes",
+    "test": "test_runtime_running_pipeline.test_missing_status_reply_stays_pending",
+    "outcome": "intended_failure",
+    "reason": "Missing running acknowledgement stays pending"
+  },
+  {
+    "control": "known-facts-dropped",
+    "test": "test_runtime_running_pipeline.test_known_completed_fact_survives_later_progress_refusal",
+    "outcome": "intended_failure",
+    "reason": "Progress refusal preserves known original completion"
+  },
+  {
+    "control": "history-current-authority",
+    "test": "test_progress_historical_receipt.test_saved_acknowledgement_is_historical_without_access_or_transport",
+    "outcome": "intended_failure",
+    "reason": "Historical receipt cannot request current permission"
+  },
+  {
+    "control": "history-permission-promoted",
+    "test": "test_progress_historical_receipt.test_saved_acknowledgement_is_historical_without_access_or_transport",
+    "outcome": "intended_failure",
+    "reason": "Historical receipt grants no transport permission"
+  },
+  {
+    "control": "history-no-reply-promoted",
+    "test": "test_progress_historical_receipt.test_no_saved_reply_is_explicit",
+    "outcome": "intended_failure",
+    "reason": "Missing reply remains distinct from acknowledgement"
+  },
+  {
+    "control": "history-refusal-promoted",
+    "test": "test_progress_historical_receipt.test_refused_reply_remains_historical_refusal",
+    "outcome": "intended_failure",
+    "reason": "Historical explicit refusal stays refused"
+  },
+  {
+    "control": "history-ack-attempt-substituted",
+    "test": "test_progress_historical_receipt.test_uncertain_reply_then_ack_keeps_original_sequence",
+    "outcome": "intended_failure",
+    "reason": "Historical receipt keeps original acknowledged attempt"
+  },
+  {
+    "control": "history-orphan-reply-allowed",
+    "test": "test_progress_historical_receipt.test_orphan_reply_without_attempt_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "history-attempt-gap-allowed",
+    "test": "test_progress_historical_receipt.test_attempt_sequence_gap_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "history-intent-binding-allowed",
+    "test": "test_progress_historical_receipt.test_changed_attempt_binding_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "history-reply-not-validated",
+    "test": "test_progress_historical_receipt.test_changed_reply_binding_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "history-command-not-validated",
+    "test": "test_progress_historical_receipt.test_foreign_command_without_attempts_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "capture-starts-input",
+    "test": "test_dispatch_capture_only.test_capture_has_no_input_or_engine_effect",
+    "outcome": "intended_failure",
+    "reason": "Capture cannot start input fetch"
+  },
+  {
+    "control": "capture-requeries-original",
+    "test": "test_dispatch_capture_only.test_equal_replay_never_calls_capture_again",
+    "outcome": "intended_failure",
+    "reason": "Saved capture cannot requery dispatch"
+  },
+  {
+    "control": "capture-loses-parent-deadline",
+    "test": "test_dispatch_capture_only.test_public_deadline_reaches_capture_transport",
+    "outcome": "intended_failure",
+    "reason": "Public capture preserves supplied earlier deadline"
+  },
+  {
+    "control": "capture-ignores-invalid-deadline",
+    "test": "test_dispatch_capture_only.test_invalid_deadline_refuses_before_capture_transport",
+    "outcome": "intended_failure",
+    "reason": "Invalid capture deadline cannot reach transport"
+  },
+  {
+    "control": "history-unowned-read",
+    "test": "test_progress_historical_receipt.test_unowned_history_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

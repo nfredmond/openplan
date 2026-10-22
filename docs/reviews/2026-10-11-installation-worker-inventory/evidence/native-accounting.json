@@ -1,0 +1,20 @@
+{
+  "unit": "openplan-installation-worker-inventory-native-20261011-02.service",
+  "invocationId": "f70f96b3d7754cebb2d1fe2f4bceca43",
+  "exitCode": 0,
+  "wallSeconds": 30.337,
+  "cpuSeconds": 14.139,
+  "memoryLimitBytes": 1073741824,
+  "journalRoundedPeak": "1G, cap reached",
+  "extraSwapBytes": 0,
+  "cpuQuotaPercent": 100,
+  "tasksMax": 128,
+  "installationCoverage": "unassessed",
+  "publicReadiness": "unassessed",
+  "servicesStarted": false,
+  "sourcePointUnchanged": true,
+  "knownFamiliesAssessedInterpretation": "15 operator declaration entries, all remain unassessed",
+  "sourceSnapshotId": "679c4c31d435042f1712c8f8b43e1e05e2baf700aa39c027a9f86b911de5e3c6",
+  "sourceSoftwareProofHead": "93b052a2ee3a8f8232510fbd478208722014fa7f",
+  "currentOperatorBase": "8f123ea0a45979e177d65cec8042e29a11ff0f04"
+}

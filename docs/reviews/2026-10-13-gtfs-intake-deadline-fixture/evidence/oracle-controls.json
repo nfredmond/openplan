@@ -1,0 +1,74 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "case": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived"
+  },
+  {
+    "case": "wrong-count-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "wrong-error-kind",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "reason-only-in-source",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "zero-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "extra-unhandled-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "case": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived"
+  },
+  {
+    "case": "wrong-count-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "wrong-error-kind",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "reason-only-in-source",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "zero-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "extra-unhandled-error",
+    "outcome": "intended_refusal"
+  }
+]

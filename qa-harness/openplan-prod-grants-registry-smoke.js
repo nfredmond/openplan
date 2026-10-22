@@ -608,7 +608,7 @@ async function main() {
     await page.goto(`${productionBaseUrl}/grants`, { waitUntil: 'networkidle' });
     await page.getByRole('heading', { name: /^grants$/i }).waitFor({ timeout: 30000 });
 
-    const programFundingLink = page.getByRole('link', { name: /Open program funding lane/i }).first();
+    const programFundingLink = page.getByRole('link', { name: /Open program funding/i }).first();
     await programFundingLink.waitFor({ timeout: 30000 });
     await Promise.all([
       page.waitForURL(new RegExp(`/programs/${ids.programId}#program-funding-opportunities$`, 'i'), { timeout: 30000 }),

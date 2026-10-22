@@ -1,0 +1,6 @@
+{
+  "docs/reviews/2026-10-14-odm-output-schema-recovery/native_upgrade_restore.py": "5c8e53d09c9a0d2cb2433b07576c83efb7599d3dd6ba2286f3ed497236a5c4f6",
+  "workers/odm_worker/runtime_observation.py": "cb567b77b5b6688c6533577c641069c3dd43068f59369e899db352f4de7d1f19",
+  "workers/odm_worker/runtime_output_intake.py": "d8d0e89d2d1a218601f9f2ebec170d8fc7bf495950224dd8f5a9b0940ae214b4",
+  "docs/reviews/2026-10-14-odm-output-schema-recovery/verify_native_upgrade_controls.py": "61d4206f1f7115a0776ef579bfcfa3bfe7d59c653dabb7f656597bedc6c1b5f4"
+}

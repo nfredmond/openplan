@@ -1,0 +1,202 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived",
+    "tests": 12
+  },
+  {
+    "case": "harmless-comment",
+    "outcome": "survived",
+    "tests": 12
+  },
+  {
+    "case": "restored-after-harmless",
+    "outcome": "survived",
+    "tests": 12
+  },
+  {
+    "case": "original-task-rebound",
+    "outcome": "intended_failure",
+    "test": "test_original_scope_and_descriptors_remain_exact",
+    "diagnostic": "Preparation keeps every original job and actor binding"
+  },
+  {
+    "case": "selected-census-truncated",
+    "outcome": "intended_failure",
+    "test": "test_original_scope_and_descriptors_remain_exact",
+    "diagnostic": "Preparation preserves the selected ordered product census"
+  },
+  {
+    "case": "unselected-kinds-erased",
+    "outcome": "intended_failure",
+    "test": "test_original_scope_and_descriptors_remain_exact",
+    "diagnostic": "Unselected contract kinds cannot disappear or become delivered"
+  },
+  {
+    "case": "native-reading-promoted",
+    "outcome": "intended_failure",
+    "test": "test_original_scope_and_descriptors_remain_exact",
+    "diagnostic": "Preparation preserves each native inspection state"
+  },
+  {
+    "case": "original-checksum-replaced",
+    "outcome": "intended_failure",
+    "test": "test_original_scope_and_descriptors_remain_exact",
+    "diagnostic": "Preparation checksums identify actual original bytes"
+  },
+  {
+    "case": "original-size-doubled",
+    "outcome": "intended_failure",
+    "test": "test_original_scope_and_descriptors_remain_exact",
+    "diagnostic": "Preparation sizes identify actual original bytes"
+  },
+  {
+    "case": "tiff-mime-replaced",
+    "outcome": "intended_failure",
+    "test": "test_original_scope_and_descriptors_remain_exact",
+    "diagnostic": "Original file descriptors use their supported content types"
+  },
+  {
+    "case": "absent-size-becomes-zero",
+    "outcome": "intended_failure",
+    "test": "test_original_scope_and_descriptors_remain_exact",
+    "diagnostic": "Absent products cannot become zero bytes"
+  },
+  {
+    "case": "download-url-issued",
+    "outcome": "intended_failure",
+    "test": "test_original_scope_and_descriptors_remain_exact",
+    "diagnostic": "Private preparation issues no bearer URLs"
+  },
+  {
+    "case": "native-tags-become-map-placement",
+    "outcome": "intended_failure",
+    "test": "test_original_scope_and_descriptors_remain_exact",
+    "diagnostic": "Native declarations cannot become map placement"
+  },
+  {
+    "case": "productReceiptSha256-not-bound",
+    "outcome": "intended_failure",
+    "test": "test_original_scope_and_descriptors_remain_exact",
+    "diagnostic": "Preparation binds exact original productReceiptSha256"
+  },
+  {
+    "case": "inspectionReceiptSha256-not-bound",
+    "outcome": "intended_failure",
+    "test": "test_original_scope_and_descriptors_remain_exact",
+    "diagnostic": "Preparation binds exact original inspectionReceiptSha256"
+  },
+  {
+    "case": "inspectionReportSha256-not-bound",
+    "outcome": "intended_failure",
+    "test": "test_original_scope_and_descriptors_remain_exact",
+    "diagnostic": "Preparation binds exact original inspectionReportSha256"
+  },
+  {
+    "case": "manifest-hash-replaced",
+    "outcome": "intended_failure",
+    "test": "test_original_scope_and_descriptors_remain_exact",
+    "diagnostic": "Completion binds exact manifest bytes"
+  },
+  {
+    "case": "callback-promoted",
+    "outcome": "intended_failure",
+    "test": "test_original_scope_and_descriptors_remain_exact",
+    "diagnostic": "Preparation cannot promote "
+  },
+  {
+    "case": "publication-promoted",
+    "outcome": "intended_failure",
+    "test": "test_original_scope_and_descriptors_remain_exact",
+    "diagnostic": "Preparation cannot promote "
+  },
+  {
+    "case": "quality-promoted",
+    "outcome": "intended_failure",
+    "test": "test_original_scope_and_descriptors_remain_exact",
+    "diagnostic": "Preparation cannot promote "
+  },
+  {
+    "case": "completeness-promoted",
+    "outcome": "intended_failure",
+    "test": "test_original_scope_and_descriptors_remain_exact",
+    "diagnostic": "Preparation cannot promote "
+  },
+  {
+    "case": "placement-promoted",
+    "outcome": "intended_failure",
+    "test": "test_original_scope_and_descriptors_remain_exact",
+    "diagnostic": "Preparation cannot promote "
+  },
+  {
+    "case": "replay-overwrites-original-manifest",
+    "outcome": "intended_failure",
+    "test": "test_replay_keeps_original_records_without_fetch_or_parse",
+    "diagnostic": "Preparation replay keeps original record inodes"
+  },
+  {
+    "case": "interrupted-preparation-changes-identity",
+    "outcome": "intended_failure",
+    "test": "test_interrupted_manifest_recovers_original_bytes",
+    "diagnostic": "Existing source custody record differs"
+  },
+  {
+    "case": "existing-manifest-not-compared",
+    "outcome": "intended_failure",
+    "test": "test_altered_manifest_refuses_replacement",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "existing-completion-not-compared",
+    "outcome": "intended_failure",
+    "test": "test_altered_completion_refuses_replacement",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "missing-manifest-inferred",
+    "outcome": "intended_failure",
+    "test": "test_lost_manifest_cannot_be_inferred_from_completion",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "product-receipt-not-bound",
+    "outcome": "intended_failure",
+    "test": "test_product_receipt_change_between_inspection_and_preparation_refuses",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "post-inspection-access-omitted",
+    "outcome": "intended_failure",
+    "test": "test_revoked_actor_after_inspection_refuses_manifest",
+    "diagnostic": "Current actor access precedes artifact preparation"
+  },
+  {
+    "case": "post-manifest-access-omitted",
+    "outcome": "intended_failure",
+    "test": "test_revoked_actor_after_manifest_refuses_completion",
+    "diagnostic": "PermissionError not raised"
+  },
+  {
+    "case": "preparation-cancellation-ignored",
+    "outcome": "intended_failure",
+    "test": "test_cancellation_after_manifest_refuses_completion",
+    "diagnostic": "InterruptedError not raised"
+  },
+  {
+    "case": "unsupported-descriptor-accepted",
+    "outcome": "intended_failure",
+    "test": "test_unsupported_descriptor_refuses",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "invalid-constructor-accepted",
+    "outcome": "intended_failure",
+    "test": "test_constructor_requires_original_inspection_and_finite_timeout",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived",
+    "tests": 12
+  }
+]

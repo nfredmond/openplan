@@ -1,0 +1,150 @@
+[
+  {
+    "control": "baseline-capture",
+    "outcome": "survived",
+    "rpcReads": 2,
+    "sourceFetches": 1,
+    "nativeEngineCommands": 1,
+    "nativeTaskUuid": "675ceded-203d-4bd7-8f3a-0db14e0f9ba6",
+    "payloadSha256": "42c8b056dba969941e996a9002e490aeb2ca89e6d9780ff1681bfde22de57300",
+    "engineTransportPermission": false,
+    "engineAttestations": 1
+  },
+  {
+    "control": "baseline-relocated-recovery",
+    "outcome": "survived",
+    "rpcReads": 2,
+    "sourceFetches": 0,
+    "nativeEngineCommands": 2,
+    "nativeTaskUuid": "675ceded-203d-4bd7-8f3a-0db14e0f9ba6",
+    "commitHeld": true,
+    "engineAttestations": 2
+  },
+  {
+    "control": "harmless-capture",
+    "outcome": "survived",
+    "rpcReads": 2,
+    "sourceFetches": 1,
+    "nativeEngineCommands": 1,
+    "nativeTaskUuid": "6c3952e6-8fe0-45cb-95ea-e696abd1e51d",
+    "payloadSha256": "42c8b056dba969941e996a9002e490aeb2ca89e6d9780ff1681bfde22de57300",
+    "engineTransportPermission": false,
+    "engineAttestations": 1
+  },
+  {
+    "control": "harmless-relocated-recovery",
+    "outcome": "survived",
+    "rpcReads": 2,
+    "sourceFetches": 0,
+    "nativeEngineCommands": 2,
+    "nativeTaskUuid": "6c3952e6-8fe0-45cb-95ea-e696abd1e51d",
+    "commitHeld": true,
+    "engineAttestations": 2
+  },
+  {
+    "control": "restored-capture",
+    "outcome": "survived",
+    "rpcReads": 2,
+    "sourceFetches": 1,
+    "nativeEngineCommands": 1,
+    "nativeTaskUuid": "ec6c7bf6-d8b2-4145-908e-2a6805fdf476",
+    "payloadSha256": "42c8b056dba969941e996a9002e490aeb2ca89e6d9780ff1681bfde22de57300",
+    "engineTransportPermission": false,
+    "engineAttestations": 1
+  },
+  {
+    "control": "restored-relocated-recovery",
+    "outcome": "survived",
+    "rpcReads": 2,
+    "sourceFetches": 0,
+    "nativeEngineCommands": 2,
+    "nativeTaskUuid": "ec6c7bf6-d8b2-4145-908e-2a6805fdf476",
+    "commitHeld": true,
+    "engineAttestations": 2
+  },
+  {
+    "control": "changed-original-before-fetch",
+    "outcome": "intended_failure",
+    "reason": "Native private original must precede source fetching"
+  },
+  {
+    "control": "current-revoked-observation",
+    "outcome": "survived",
+    "rpcReads": 2,
+    "authorizedNow": false,
+    "engineTransportPermission": false,
+    "originalUnchanged": true,
+    "deniedBeforeNextIntent": true,
+    "nativeEngineCommands": 0,
+    "engineAttestations": 0
+  },
+  {
+    "control": "revoked-first",
+    "outcome": "survived",
+    "rpcReads": 1,
+    "originalSaved": false,
+    "sourceFetches": 0,
+    "nativeEngineCommands": 0
+  },
+  {
+    "control": "wrong-target",
+    "outcome": "survived",
+    "rpcReads": 1,
+    "originalSaved": false,
+    "sourceFetches": 0,
+    "nativeEngineCommands": 0
+  },
+  {
+    "control": "anonymous",
+    "outcome": "survived",
+    "rpcReads": 1,
+    "originalSaved": false,
+    "sourceFetches": 0,
+    "nativeEngineCommands": 0
+  },
+  {
+    "control": "revoked-observation-promoted",
+    "outcome": "intended_failure",
+    "reason": "Native private observation must preserve revoked access"
+  },
+  {
+    "control": "native-changed-engine-refused",
+    "outcome": "survived",
+    "rpcReads": 1,
+    "engineAttestations": 1,
+    "nativeEngineCommands": 0,
+    "originalUnchanged": true,
+    "nextIntentAbsent": true,
+    "engineRefused": true,
+    "restoredAuthority": false
+  },
+  {
+    "control": "native-restored-engine-authority",
+    "outcome": "survived",
+    "rpcReads": 1,
+    "engineAttestations": 1,
+    "nativeEngineCommands": 0,
+    "originalUnchanged": true,
+    "nextIntentAbsent": true,
+    "engineRefused": false,
+    "restoredAuthority": true
+  },
+  {
+    "control": "installed-stalled-read-shared-deadline",
+    "outcome": "survived",
+    "rpcReads": 1,
+    "deadlineSeconds": 0.8,
+    "originalUnchanged": true
+  },
+  {
+    "control": "restored-current-observation",
+    "outcome": "survived",
+    "rpcReads": 2,
+    "authorizedNow": false,
+    "engineTransportPermission": false,
+    "originalUnchanged": true,
+    "deniedBeforeNextIntent": true,
+    "nativeEngineCommands": 0,
+    "engineAttestations": 0
+  }
+]

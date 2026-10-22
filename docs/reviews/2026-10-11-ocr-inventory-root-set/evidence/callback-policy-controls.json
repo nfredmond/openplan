@@ -1,0 +1,34 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-fragment",
+    "outcome": "survived"
+  },
+  {
+    "control": "foreign-host",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-scheme",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-path",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-port",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-port",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "oversized-port",
+    "outcome": "intended_refusal"
+  }
+]

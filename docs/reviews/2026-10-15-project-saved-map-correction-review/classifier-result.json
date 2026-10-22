@@ -1,0 +1,344 @@
+{
+  "head": "ffd21964f38fb9a391e26e89a4cb705d409af6f8",
+  "controllerSha256": "f2043a8bd7e0bb398e0aa57f2f4332fa3e134b02c86dee3dd0b8df48af612417",
+  "liveClassifierFixtures": [
+    {
+      "name": "declared-assertion",
+      "result": "accepted intended assertion"
+    },
+    {
+      "name": "unrelated-assertion",
+      "result": "refused"
+    },
+    {
+      "name": "runtime-in-selected-test",
+      "result": "refused"
+    },
+    {
+      "name": "different-test",
+      "result": "refused"
+    },
+    {
+      "name": "runtime-suite",
+      "result": "refused"
+    },
+    {
+      "name": "unhandled-runtime",
+      "result": "refused"
+    },
+    {
+      "name": "import-failure",
+      "result": "refused"
+    },
+    {
+      "name": "compiler-failure",
+      "result": "refused"
+    },
+    {
+      "name": "empty-failed-suite",
+      "result": "refused"
+    },
+    {
+      "name": "signal-exit",
+      "result": "refused"
+    },
+    {
+      "name": "inconsistent-count",
+      "result": "refused"
+    },
+    {
+      "name": "multiple-diagnostics",
+      "result": "refused"
+    },
+    {
+      "name": "missing-diagnostic",
+      "result": "refused"
+    },
+    {
+      "name": "unhandled-runner-output",
+      "result": "refused"
+    }
+  ],
+  "harmlessClassifier": "survived",
+  "liveClassifierFaults": [
+    {
+      "name": "classifier-wrong-diagnostic",
+      "fixture": "unrelated-assertion",
+      "diagnostic": "classifier-reject:unrelated-assertion"
+    },
+    {
+      "name": "classifier-wrong-name",
+      "fixture": "different-test",
+      "diagnostic": "classifier-reject:different-test"
+    },
+    {
+      "name": "classifier-runtime",
+      "fixture": "runtime-suite",
+      "diagnostic": "classifier-reject:runtime-suite"
+    },
+    {
+      "name": "classifier-runner-output",
+      "fixture": "unhandled-runner-output",
+      "diagnostic": "classifier-reject:unhandled-runner-output"
+    },
+    {
+      "name": "classifier-suite-error",
+      "fixture": "compiler-failure",
+      "diagnostic": "classifier-reject:compiler-failure"
+    },
+    {
+      "name": "classifier-unattributed-suite",
+      "fixture": "empty-failed-suite",
+      "diagnostic": "classifier-reject:empty-failed-suite"
+    },
+    {
+      "name": "classifier-exit",
+      "fixture": "signal-exit",
+      "diagnostic": "classifier-reject:signal-exit"
+    },
+    {
+      "name": "classifier-count",
+      "fixture": "inconsistent-count",
+      "diagnostic": "classifier-reject:inconsistent-count"
+    },
+    {
+      "name": "classifier-messages",
+      "fixture": "multiple-diagnostics",
+      "diagnostic": "classifier-reject:multiple-diagnostics"
+    }
+  ],
+  "restoredClassifier": "survived",
+  "campaignBindings": {
+    "docs/reviews/2026-10-15-project-saved-map-correction/faults.json": true,
+    "docs/reviews/2026-10-15-project-saved-map-correction/verify_controls.py": true,
+    "openplan/src/app/(app)/projects/[projectId]/_components/project-map-presence-panel.tsx": true,
+    "openplan/src/components/projects/project-saved-map.tsx": true,
+    "openplan/src/lib/cartographic/geometry-bbox.ts": true,
+    "openplan/src/lib/cartographic/saved-geometry-frame.ts": true,
+    "openplan/src/lib/geo/wgs84-bounds.ts": true,
+    "openplan/src/lib/mapbox/keep-map-sized.ts": true,
+    "openplan/src/lib/maps/map-engine.ts": true,
+    "openplan/src/lib/maps/when-style-accepts.ts": true,
+    "openplan/src/lib/projects/project-geopackage.ts": true,
+    "openplan/src/test/project-saved-map.test.tsx": true,
+    "openplan/src/test/saved-geometry-frame.test.ts": true
+  },
+  "behaviorFaults": [
+    {
+      "name": "missing-site",
+      "expectedAssertions": 2
+    },
+    {
+      "name": "drop-saved-holes",
+      "expectedAssertions": 2
+    },
+    {
+      "name": "wrong-area-filter",
+      "expectedAssertions": 2
+    },
+    {
+      "name": "pending-corridors-hide-map",
+      "expectedAssertions": 1
+    },
+    {
+      "name": "invalid-area-bypass",
+      "expectedAssertions": 1
+    },
+    {
+      "name": "drop-global-site",
+      "expectedAssertions": 6
+    },
+    {
+      "name": "hide-unconfigured-notice",
+      "expectedAssertions": 1
+    },
+    {
+      "name": "ignore-late-mount",
+      "expectedAssertions": 1
+    },
+    {
+      "name": "stale-style-data",
+      "expectedAssertions": 1
+    },
+    {
+      "name": "skip-source-refresh",
+      "expectedAssertions": 1
+    },
+    {
+      "name": "skip-style-recovery",
+      "expectedAssertions": 1
+    },
+    {
+      "name": "leak-pending-paint",
+      "expectedAssertions": 1
+    },
+    {
+      "name": "skip-sizing",
+      "expectedAssertions": 1
+    },
+    {
+      "name": "skip-visible-framing",
+      "expectedAssertions": 1
+    },
+    {
+      "name": "fit-hidden-container",
+      "expectedAssertions": 1
+    },
+    {
+      "name": "stale-async-data",
+      "expectedAssertions": 1
+    },
+    {
+      "name": "leak-async-build",
+      "expectedAssertions": 1
+    },
+    {
+      "name": "leak-setup-map",
+      "expectedAssertions": 1
+    },
+    {
+      "name": "ignore-style-error",
+      "expectedAssertions": 1
+    },
+    {
+      "name": "no-wrapped-gap",
+      "expectedAssertions": 2
+    },
+    {
+      "name": "vertex-only-crop",
+      "expectedAssertions": 4
+    },
+    {
+      "name": "unmerged-nested-spans",
+      "expectedAssertions": 1
+    },
+    {
+      "name": "no-camera-instruction",
+      "expectedAssertions": 9
+    },
+    {
+      "name": "invent-empty-camera",
+      "expectedAssertions": 1
+    },
+    {
+      "name": "rewrite-source-order",
+      "expectedAssertions": 1
+    },
+    {
+      "name": "date-line-panel-camera",
+      "expectedAssertions": 1
+    },
+    {
+      "name": "wrapped-async-visible-camera",
+      "expectedAssertions": 1
+    },
+    {
+      "name": "date-line-source-parity",
+      "expectedAssertions": 1
+    }
+  ],
+  "regressionBindings": {
+    "openplan/src/test/geometry-bbox.test.ts": true,
+    "openplan/src/test/project-detail-page.test.tsx": true,
+    "openplan/src/test/project-geography-upload.test.tsx": true,
+    "openplan/src/test/project-geopackage-reachability.test.tsx": true,
+    "openplan/src/test/project-map-presence-routes.test.ts": true,
+    "openplan/src/test/project-saved-map.test.tsx": true,
+    "openplan/src/test/saved-geometry-frame.test.ts": true,
+    "openplan/src/test/wgs84-bounds.test.ts": true
+  },
+  "historyBindings": {
+    "prove.py": true,
+    "invalid-area-bypass.log": true,
+    "leak-setup-map.json": true,
+    "skip-style-recovery.log": true,
+    "leak-pending-paint.json": true,
+    "stale-style-data.log": true,
+    "missing-site.log": true,
+    "fit-hidden-container.log": true,
+    "invalid-area-bypass.json": true,
+    "skip-visible-framing.log": true,
+    "missing-site.json": true,
+    "skip-sizing.json": true,
+    "skip-visible-framing.json": true,
+    "stale-async-data.json": true,
+    "leak-async-build.log": true,
+    "leak-async-build.json": true,
+    "ignore-style-error.log": true,
+    "baseline.json": true,
+    "skip-source-refresh.log": true,
+    "ignore-late-mount.log": true,
+    "drop-global-site.log": true,
+    "stale-async-data.log": true,
+    "skip-style-recovery.json": true,
+    "controls.json": true,
+    "final-regression.json": true,
+    "pending-corridors-hide-map.json": true,
+    "drop-global-site.json": true,
+    "wrong-area-filter.json": true,
+    "wrong-area-filter.log": true,
+    "restored.json": true,
+    "pending-corridors-hide-map.log": true,
+    "harmless-comment.json": true,
+    "skip-source-refresh.json": true,
+    "skip-sizing.log": true,
+    "hide-unconfigured-notice.json": true,
+    "baseline.log": true,
+    "drop-saved-holes.log": true,
+    "leak-setup-map.log": true,
+    "stale-style-data.json": true,
+    "hide-unconfigured-notice.log": true,
+    "first-campaign.json": true,
+    "leak-pending-paint.log": true,
+    "ignore-style-error.json": true,
+    "harmless-comment.log": true,
+    "fit-hidden-container.json": true,
+    "before-visible-framing.json": true,
+    "ignore-late-mount.json": true,
+    "restored.log": true,
+    "drop-saved-holes.json": true
+  },
+  "independentReviewUnchanged": true,
+  "trials": [
+    {
+      "trial": 1,
+      "sourceRestored": true,
+      "refused": []
+    },
+    {
+      "trial": 2,
+      "sourceRestored": true,
+      "refused": [
+        "invalid-area-bypass",
+        "skip-sizing",
+        "leak-async-build",
+        "leak-setup-map"
+      ]
+    },
+    {
+      "trial": 3,
+      "sourceRestored": true,
+      "refused": [
+        "no-wrapped-gap",
+        "vertex-only-crop",
+        "unmerged-nested-spans",
+        "no-camera-instruction",
+        "invent-empty-camera",
+        "rewrite-source-order"
+      ]
+    },
+    {
+      "trial": 4,
+      "sourceRestored": true,
+      "refused": [
+        "no-wrapped-gap",
+        "no-camera-instruction"
+      ]
+    }
+  ],
+  "limits": [
+    "No application/Vitest campaign rerun",
+    "Retained records checked against manifests and exact source bytes",
+    "No Git source writes; classifier edits occur in memory"
+  ]
+}

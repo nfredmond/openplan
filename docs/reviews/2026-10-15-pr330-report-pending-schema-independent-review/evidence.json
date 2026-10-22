@@ -1,0 +1,114 @@
+{
+  "schema": "openplan.pr330-report-pending-schema-independent-review.v1",
+  "reviewedHead": "bba8ceb6893243322a0fab06710bde3ec418a776",
+  "implementationCommit": "f956f414ffd1e286163e6c111a3b5314b404cd6f",
+  "disposition": "No reproducible P1/P2 or material correctness regression in the assigned source scope.",
+  "freshExecution": [
+    "npm run product:direction:check from nested openplan: exit 0",
+    "Private read-only receipt/source audit with harmless metadata, wrong digest and restoration controls"
+  ],
+  "retainedEvidenceOnly": {
+    "implementationEvidence": "docs/reviews/2026-10-15-pr330-report-pending-schema-fix/evidence.json",
+    "sourceBindings": {
+      "openplan/src/app/api/reports/[reportId]/generate/route.ts": {
+        "candidate": "182bf5775780a5c79c29bf2983e803900c8822aeda6dec2685634c46e1600a96",
+        "reviewedHead": "182bf5775780a5c79c29bf2983e803900c8822aeda6dec2685634c46e1600a96",
+        "sameAtReviewedHead": true
+      },
+      "openplan/src/lib/reports/project-jurisdiction.ts": {
+        "candidate": "5270629e46498e6fe08f20e3c42c58529980a07f77e2f0946283ee4e5655f01e",
+        "reviewedHead": "5270629e46498e6fe08f20e3c42c58529980a07f77e2f0946283ee4e5655f01e",
+        "sameAtReviewedHead": true
+      },
+      "openplan/src/lib/reports/html.ts": {
+        "candidate": "5e794504a8dac9d990618caab92d7c626241f0503628815a873ea9ddbd79e740",
+        "reviewedHead": "5e794504a8dac9d990618caab92d7c626241f0503628815a873ea9ddbd79e740",
+        "sameAtReviewedHead": true
+      },
+      "openplan/src/test/report-generate-route.test.ts": {
+        "candidate": "3f581e9dbfd6110ff64d3a08eb49eaaacc56f987e14480cd818f1a19e9ebca2b",
+        "reviewedHead": "3f581e9dbfd6110ff64d3a08eb49eaaacc56f987e14480cd818f1a19e9ebca2b",
+        "sameAtReviewedHead": true
+      },
+      "openplan/src/lib/projects/project-jurisdiction.ts": {
+        "candidate": "471e271740a66dd314637b0378513f5eb035b896774f5bf2916a774aefd6c24d",
+        "reviewedHead": "471e271740a66dd314637b0378513f5eb035b896774f5bf2916a774aefd6c24d",
+        "sameAtReviewedHead": true
+      },
+      "openplan/src/lib/jurisdiction-readiness/payload.ts": {
+        "candidate": "e16cd5539dac55e13b4c889fc897bd8ed2429b6ece7caeda7031d17edbaf805c",
+        "reviewedHead": "e16cd5539dac55e13b4c889fc897bd8ed2429b6ece7caeda7031d17edbaf805c",
+        "sameAtReviewedHead": true
+      },
+      "openplan/src/app/(app)/projects/[projectId]/page.tsx": {
+        "candidate": "1dae1462e32857bcea2ff737d6ab2061ffb0aa4d94308c32b0d1df99801c0710",
+        "reviewedHead": "667898934b278b1d8f68a4b5d95f472da364c718bfd63f8a498e8f12468db1d8",
+        "sameAtReviewedHead": false
+      },
+      "openplan/src/app/api/projects/export/workbook/route.ts": {
+        "candidate": "64fd96d9caae5f8808b5825dbabc23f788fb9883d5a52ff9b974275884304265",
+        "reviewedHead": "05d66697f949a34058c36fd3598ba2ce0e5bb1ce5876d3ed8028d8201b485045",
+        "sameAtReviewedHead": false
+      },
+      "openplan/package-lock.json": {
+        "candidate": "e93237b82fea6899fe67c18e2e4e0ed2d6f66a295cea420cab7c05ec61535420",
+        "reviewedHead": "e93237b82fea6899fe67c18e2e4e0ed2d6f66a295cea420cab7c05ec61535420",
+        "sameAtReviewedHead": true
+      },
+      "openplan/vitest.config.ts": {
+        "candidate": "2af1a9ecbe50bde256b20197cfbff00f34cfc57534a86234c83ee55425cb8da5",
+        "reviewedHead": "2af1a9ecbe50bde256b20197cfbff00f34cfc57534a86234c83ee55425cb8da5",
+        "sameAtReviewedHead": true
+      },
+      "openplan/tsconfig.json": {
+        "candidate": "cb3404493257250c77d7145c9825ed31f79246b640eb30a59b8069d39091bf29",
+        "reviewedHead": "cb3404493257250c77d7145c9825ed31f79246b640eb30a59b8069d39091bf29",
+        "sameAtReviewedHead": true
+      }
+    },
+    "finalProcessReceipts": [
+      {
+        "label": "final-runtime",
+        "receiptSha256": "0c9d63451b2a7007c124ff1836d9bc0966a3c8798f94f89c157625d8af8e7033",
+        "exitCode": 0,
+        "memoryPeakBytes": "396681216"
+      },
+      {
+        "label": "final-types",
+        "receiptSha256": "af01bc23e598aec06e06e4987cee3b8735b626e0c564de2a2ad0bd0ad98635d2",
+        "exitCode": 0,
+        "memoryPeakBytes": "782708736"
+      },
+      {
+        "label": "final-eslint",
+        "receiptSha256": "f3b69bd584230b916b27f8e51e441c136f93dbd868449059c482f98c6df9603e",
+        "exitCode": 0,
+        "memoryPeakBytes": "407855104"
+      }
+    ],
+    "runtimeTests": {
+      "report-generate-route.test.ts": 87,
+      "report-html-accepted-narrative.test.ts": 14
+    },
+    "uniqueBrokenBehaviors": 21,
+    "harmlessExecutions": 2,
+    "acceptedExecutions": 23,
+    "runtimeCampaignsRerunByReviewer": false
+  },
+  "independentAuditControls": {
+    "harmlessMetadata": "SURVIVED",
+    "wrongDigest": "FAILED: retained digest mismatch",
+    "restoration": "original in-memory sample and retained evidence bytes unchanged"
+  },
+  "privateAuditSha256": {
+    "audit_receipts.py": "7cb0982f1b8530acdb25424f49b6b245863baf62432603c62562777600169891",
+    "receipt-audit.json": "2d04691792070588133f456c8f74aeaebdb9c0ff95f3b23ed3ea298085e1051d",
+    "direction-check.log": "39c69ae83f2b5e8fd42b88184ff9da1bc1794740931f4c7928f595606029abb0"
+  },
+  "limits": [
+    "No live database or native PostgreSQL/PostgREST message proof",
+    "No browser, mobile, PDF, live Storage or downloaded-artifact acceptance",
+    "No compiler/build/full-suite or parent combined-check execution",
+    "No hosted acceptance, legal applicability, scientific or practitioner acceptance"
+  ]
+}

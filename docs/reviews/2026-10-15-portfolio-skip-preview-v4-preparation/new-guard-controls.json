@@ -1,0 +1,58 @@
+{
+  "scope": "Preparation admission and old runtime identity stand-ins only. No DB, Docker, services, build, start, attest or browser operation.",
+  "cases": [
+    {
+      "case": "root-already-reserved",
+      "outcome": "REFUSED",
+      "reason": "new-root-reserved"
+    },
+    {
+      "case": "preparation-port-occupied",
+      "outcome": "REFUSED",
+      "reason": "new-ports-occupied"
+    },
+    {
+      "case": "protected-web-harmless-note",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "protected-web-active",
+      "outcome": "REFUSED",
+      "reason": "protected-web:ActiveState"
+    },
+    {
+      "case": "protected-web-invocation",
+      "outcome": "REFUSED",
+      "reason": "protected-web:InvocationID"
+    },
+    {
+      "case": "protected-web-host",
+      "outcome": "REFUSED",
+      "reason": "protected-web:socket"
+    },
+    {
+      "case": "protected-web-cwd",
+      "outcome": "REFUSED",
+      "reason": "protected-web:cwd"
+    },
+    {
+      "case": "protected-web-group",
+      "outcome": "REFUSED",
+      "reason": "protected-web:cgroup"
+    },
+    {
+      "case": "protected-web-env",
+      "outcome": "REFUSED",
+      "reason": "protected-web-env:digest"
+    },
+    {
+      "case": "protected-web-restored",
+      "outcome": "SURVIVED"
+    }
+  ],
+  "restoredInFinally": true,
+  "blindCategories": [
+    "Occupied-name/port races require parent last-moment acquisition.",
+    "Runtime stand-ins do not prove current old or new web process state."
+  ]
+}

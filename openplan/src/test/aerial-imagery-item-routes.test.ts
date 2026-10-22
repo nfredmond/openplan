@@ -262,6 +262,7 @@ describe("GET /api/aerial/missions/[missionId]/imagery/[imageryId]/download", ()
     expect(response.headers.get("location")).toBe(
       "https://storage.example.test/signed/photo.jpg?token=abc"
     );
+    expect(response.headers.get("cache-control")).toBe("private, no-store");
     expect(capturedSignRequests).toEqual([
       {
         bucket: "aerial-imagery",

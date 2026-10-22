@@ -1,0 +1,10 @@
+{
+  "openplan/src/lib/aerial/artifact-custody-server.ts": "69fa289343c1150f3f6312dc9af855c08d1df33ed9cdecdb44ff6489cf6b782c",
+  "openplan/src/lib/supabase/server.ts": "9433f9e861a24a47d70f5e744a3321b1769298a3f04374c3c54bfb597a432425",
+  "openplan/src/test/aerial-artifact-custody.test.ts": "d0a83804936a9ff4e1aa6b8cb8e50446aea736bb7ffa88c8d5d0d29842095fe0",
+  "openplan/src/test/aerial-custody-georef.test.ts": "521beb0d3ddd693f7974f9570340dad9a9794364160957433cacad97fd9f9b4a",
+  "openplan/src/test/aerial-processing-callback-route.test.ts": "b05e95cd5027303b39c24d0b77691ba4f63deac9f10d164a89b3836d5f851f08",
+  "openplan/src/test/aerial-artifact-custody-retry-route.test.ts": "be1531d120b9ad7dc470fdc985e58b2774d0f5736873ea7cc5a56792858c5f46",
+  "openplan/src/test/aerial-artifact-custody-reaches-a-planner.test.tsx": "6b39877d189a5a4b4e741912f87f71aab5833170c582cac9c1932cf7656da135",
+  "openplan/src/test/aerial-storage-client-factory.test.ts": "dc73da9e7be885d6b06d08a277f730f68763c32250a855639e69648731f8011a"
+}

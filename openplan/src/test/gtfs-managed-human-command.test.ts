@@ -3,6 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { mkdtemp, readFile, writeFile, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { setTimeout as realSetTimeout, clearTimeout as realClearTimeout } from "node:timers";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { executeGtfsHumanCommand, readGtfsAdoptionReview, type GtfsHumanCommand } from "@/lib/gtfs/managed-human-command";
 const id = (n: number) => `e7000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
@@ -61,7 +62,52 @@ describe("retained human GTFS commands", () => {
  it("requires a private absolute command directory", async () => { const f = await fixture(); f.options.directory = "relative-human-command"; await expect(f.run()).rejects.toThrow(); expect(f.transport).not.toHaveBeenCalled(); });
  it.each(["http://user:password@example.invalid", "http://example.invalid/?secret=1", "file:///tmp/feed", "http://example.invalid/#fragment"])("refuses an invalid transport target %s", async target => { const f = await fixture(); f.options.target = target; await expect(f.run()).rejects.toThrow("target is invalid"); expect(f.transport).not.toHaveBeenCalled(); });
  it("serializes concurrent command dispatch under the private lock", async () => { const f = await fixture(); let active = 0, peak = 0; const normal = f.transport.getMockImplementation()!; f.options.deadlineMs = 500; f.transport.mockImplementation(async (input, init) => { peak = Math.max(peak, ++active); try { await new Promise(resolve => setTimeout(resolve, 20)); return await normal(input, init); } finally { active--; } }); const results = await Promise.allSettled([f.run(), f.run()]); expect(results.filter(result => result.status === "fulfilled")).toEqual([{ status: "fulfilled", value: f.receipt }]); expect(results.filter(result => result.status === "rejected")).toHaveLength(1); expect(f.transport).toHaveBeenCalledTimes(1); expect(peak).toBe(1); });
- it("bounds acknowledgement from an uncooperative transport", async () => { const f = await fixture(); f.options.deadlineMs = 20; f.transport.mockImplementation(async () => { await new Promise(resolve => setTimeout(resolve, 200)); return Response.json(f.receipt); }); const start = Date.now(); await expect(f.run()).rejects.toThrow("acknowledgement is unavailable"); expect(Date.now() - start).toBeLessThan(150); });
+ it("bounds acknowledgement from an uncooperative transport", async () => {
+  const f = await fixture(); f.options.deadlineMs = 20;
+  let enterTransport!: () => void, releaseTransport!: () => void;
+  const entered = new Promise<void>(resolve => { enterTransport = resolve; });
+  const released = new Promise<void>(resolve => { releaseTransport = resolve; });
+  let transportSignal: AbortSignal | null | undefined;
+  f.transport.mockImplementation(async (_input, init) => {
+   transportSignal = init?.signal;
+   enterTransport();
+   await released;
+   return Response.json(f.receipt);
+  });
+  vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+  const observation: { outcome?: { status: "fulfilled"; value: unknown } | { status: "rejected"; reason: unknown } } = {};
+  const settled = f.run().then(value => { observation.outcome = { status: "fulfilled", value }; }, reason => { observation.outcome = { status: "rejected", reason }; });
+  let cleanupTimer: ReturnType<typeof realSetTimeout> | undefined;
+  try {
+   // Filesystem work stays real. Start clock assertions only after RPC dispatch.
+   await entered;
+   expect(f.transport).toHaveBeenCalledTimes(1);
+   expect(transportSignal?.aborted).toBe(false);
+   await vi.advanceTimersByTimeAsync(19);
+   expect(observation.outcome).toBeUndefined();
+   expect(transportSignal?.aborted).toBe(false);
+   await vi.advanceTimersByTimeAsync(1);
+   expect(transportSignal?.aborted).toBe(true);
+   // Releasing the filesystem lock stays asynchronous, independent of RPC time.
+   await Promise.race([settled, new Promise<never>((_, reject) => {
+    cleanupTimer = realSetTimeout(() => reject(new Error("Command still waits for uncooperative transport")), 2000);
+   })]);
+   const outcome = observation.outcome;
+   expect(outcome?.status).toBe("rejected");
+   expect(outcome && "reason" in outcome ? outcome.reason : undefined).toBeInstanceOf(Error);
+   expect(outcome && "reason" in outcome ? String(outcome.reason) : "").toContain("acknowledgement is unavailable");
+   const path = join(f.directory, "pending.json");
+   expect(JSON.parse(await readFile(path, "utf8"))).toMatchObject({ binding: { command: f.command }, receipt: null });
+   releaseTransport();
+   await vi.advanceTimersByTimeAsync(0);
+   expect(JSON.parse(await readFile(path, "utf8"))).toMatchObject({ receipt: null });
+  } finally {
+   realClearTimeout(cleanupTimer);
+   releaseTransport();
+   await settled;
+   vi.useRealTimers();
+  }
+ });
  it("stops a pre-cancelled command before files or transport", async () => { const f = await fixture(); f.controller.abort(); await expect(f.run()).rejects.toThrow(); expect(f.transport).not.toHaveBeenCalled(); await expect(readFile(join(f.directory, "pending.json"))).rejects.toMatchObject({ code: "ENOENT" }); });
 });
 describe("completed transit adoption review", () => {

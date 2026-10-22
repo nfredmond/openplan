@@ -30,6 +30,12 @@ each other's networks and validate against each other's traffic counts — a wro
 surface that decides what a run may claim. To run more at once, run more instances: separate
 processes have separate globals, and they cannot take the same stage.
 
+The image uses Python 3.11 and checks the assignment adapter's exact engine,
+source and binary identity after copying the worker. The reviewed extension is
+the CPython 3.11 Linux x86_64 wheel of AequilibraE 1.6.2. Other wheels or platforms
+refuse that build check. This is a compatibility boundary, not scientific
+validation. A fresh image build and runtime journey remain separate checks.
+
 ## Required Environment Variables
 
 Both values come from **your own** Supabase project — the same one the OpenPlan app points at.
@@ -131,13 +137,14 @@ request — and the worker refuses to serve without one for the same reason.
    `terminationGracePeriodSeconds` on Kubernetes, `docker stop --timeout`. `fly.push.toml` sets 5
    minutes, which is Fly's maximum; a longer stage can still be interrupted.
 2. **Nothing disappears when that happens, but a run is wasted.** An interrupted run's stages stay as
-   the worker left them: unclaimed stages are still `queued` and any worker can take them, and a run
-   that stops reporting progress is marked failed by OpenPlan's staleness sweep. It never silently
-   succeeds, and it never sits pretending to be alive forever.
-3. **Run the staleness sweep.** `/api/cron/reap-model-runs` (authorized by `CRON_SECRET`) is what
-   turns an abandoned run into an honest failure without a person looking; the model page also
-   reconciles stale runs when it loads. On a push-only deployment there is no poller to rescue
-   anything, so this is the safety net — schedule it.
+   the worker left them. Unclaimed stages are still `queued` and any worker can take them. A stage
+   stopped mid-run stays `running`: a polling worker marks it interrupted once its lease lapses (see
+   `model_stage_lease.py`), and an owner or administrator closes the run under Review execution
+   recovery. It never silently succeeds and is never marked as a failed computation.
+3. **Run the staleness sweep, and keep a poller somewhere.** `/api/cron/reap-model-runs` (authorized
+   by `CRON_SECRET`) fails queued runs that no worker ever started; it refuses started work by design.
+   Lapsed-lease reconciliation runs only inside a polling worker, so a push-only deployment leaves an
+   interrupted stage unmarked until an owner reviews it.
 4. **Long runs may not be worth it.** If your stages routinely exceed the grace window, set
    `auto_stop_machines = "off"` in `fly.push.toml` (the machine then stays up, which is the polling
    cost profile) or simply run polling mode.

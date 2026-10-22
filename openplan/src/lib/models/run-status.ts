@@ -1,10 +1,11 @@
-import { modelRecoveryNeedsReview, type ModelRecoveryStatus } from "./recovery-status";
+import type { ModelRecoveryStatus } from "./recovery-status";
 
 type ManagedRunStatusInput = {
   status: string;
   recovery?: ModelRecoveryStatus;
   engine_key: string;
   artifacts: Array<{ artifact_type: string }>;
+  stages?: Array<{ status: string; error_message?: string | null }> | null;
 };
 
 export type ManagedRunStatusPresentation = {
@@ -18,8 +19,12 @@ export type ManagedRunStatusPresentation = {
  * execution and must never appear to a planner as a successful model run.
  */
 export function managedRunStatusPresentation(run: ManagedRunStatusInput): ManagedRunStatusPresentation {
-  if (modelRecoveryNeedsReview(run.recovery)) {
-    return { label: run.recovery?.state === "unavailable" ? "Recovery status unavailable" : "Reconciliation required", tone: "warning" };
+  if (run.recovery?.state === "unavailable") return { label: "Recovery status unavailable", tone: "warning" };
+  if (run.recovery?.state === "historical_unassessed") {
+    const outcome = run.recovery.historicalDecision?.outcome;
+    if (outcome === "kept_as_record") return { label: "Kept as a record", tone: "neutral" };
+    if (outcome === "closed_for_fresh_run") return { label: "Closed", tone: "neutral" };
+    return { label: "Needs a decision", tone: "warning" };
   }
   if (run.status === "succeeded" && run.engine_key === "behavioral_demand") {
     const executed = run.artifacts.some(
@@ -29,6 +34,13 @@ export function managedRunStatusPresentation(run: ManagedRunStatusInput): Manage
   }
 
   if (run.status === "succeeded") return { label: "Succeeded", tone: "success" };
+  // A worker records an interruption on a stage that stays `running`, so the
+  // owner recovery decision still applies (workers/aequilibrae_worker/
+  // model_stage_lease.py). Launch and relaunch clear stage errors, so a running
+  // stage that carries one was interrupted, not merely slow.
+  if (run.status === "running" && run.stages?.some((stage) => stage.status === "running" && Boolean(stage.error_message))) {
+    return { label: "Interrupted", tone: "warning" };
+  }
   if (run.status === "running") return { label: "Running", tone: "info" };
   if (run.status === "queued") return { label: "Queued", tone: "info" };
   if (run.status === "failed") return { label: "Failed", tone: "warning" };

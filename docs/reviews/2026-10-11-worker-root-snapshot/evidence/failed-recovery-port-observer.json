@@ -1,0 +1,4 @@
+{
+  "state": "failed-before-target-start",
+  "reason": "The stopped REST container requests a Docker-assigned port and its HostConfig HostPort is empty. The wrapper incorrectly converted that request to an integer. No service started and no runtime recovery ran."
+}

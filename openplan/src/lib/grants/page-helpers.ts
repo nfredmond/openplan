@@ -10,6 +10,7 @@ import {
 import type { buildProjectFundingStackSummary } from "@/lib/projects/funding";
 import { buildInvoiceTriageHref } from "@/lib/invoicing/triage-links";
 import { formatMoney } from "@/lib/money/format";
+import { isDeadlinePast } from "@/lib/work/deadlines";
 
 export type GrantsPageSearchParams = Promise<{
   status?: string;
@@ -339,17 +340,17 @@ export function toneForInvoiceStatus(
   return "neutral";
 }
 
-export function isInvoiceOverdue(status: string, dueDate: string | null | undefined): boolean {
-  if (!dueDate || status === "paid" || status === "rejected") {
+/** Unsettled and past its due date, by the shared {@link isDeadlinePast} rule. */
+export function isInvoiceOverdue(
+  status: string,
+  dueDate: string | null | undefined,
+  now: Date = new Date()
+): boolean {
+  if (status === "paid" || status === "rejected") {
     return false;
   }
 
-  const parsed = new Date(dueDate);
-  if (Number.isNaN(parsed.getTime())) {
-    return false;
-  }
-
-  return parsed.getTime() < Date.now();
+  return isDeadlinePast(dueDate, now);
 }
 
 export function formatInvoiceQueueReason(reason: string) {

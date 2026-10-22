@@ -1,0 +1,542 @@
+{
+  "rules": {
+    "provider-integration": {
+      "relevance": "A",
+      "regex": "\\b(codex|claude|opencode|open ?code|cursor[- ]agent|cursor sdk|grok|acp\\b|antigravity|muse code|\\bpi\\b agent|provider (adapter|driver|instance)|app-server|agent sdk|provider[s]?\\b)"
+    },
+    "provider-accounts-limits": {
+      "relevance": "A",
+      "regex": "(sign[- ]?in|log ?in\\b|login|logout|sign[- ]?out|account[s]?\\b|subscription|usage limit|rate[- ]limit|quota|reset time|chatgpt plan|api key|credential)"
+    },
+    "approvals-permissions": {
+      "relevance": "A",
+      "regex": "(approv|permission|runtime mode|full access|supervised|auto-accept|sandbox|allow once|deny|escalat)"
+    },
+    "durable-orchestration-recovery": {
+      "relevance": "A",
+      "regex": "(orchestrat|event[- ]sourc|outbox|command receipt|receipt|idempot|recover|restart continu|resume|reconcil|effect worker|projection|replay|crash|interrupt|durable|at-least-once|exactly-once|lease)"
+    },
+    "delegation-subagents-handoff": {
+      "relevance": "A",
+      "regex": "(subagent|sub-agent|delegat|child thread|task_status|delegate_task|fork|merge[- ]back|handoff|context transfer)"
+    },
+    "mcp-external-agents": {
+      "relevance": "A",
+      "regex": "(\\bmcp\\b|oauth|outside agent|model context protocol|tool call|toolkit)"
+    },
+    "scheduled-automation-webhooks": {
+      "relevance": "A",
+      "regex": "(schedul|cron|webhook|automation|recurring|watch_pull_request|wake)"
+    },
+    "notifications-mobile-offline": {
+      "relevance": "A",
+      "regex": "(notification|push\\b|apns|fcm|live activit|live update|widget|offline|outbox queue|queued message)"
+    },
+    "observability-diagnostics": {
+      "relevance": "A",
+      "regex": "(trace|tracing|otel|opentelemetry|telemetry|metric|diagnostic|posthog|heap snapshot|event loop|stall|observab|log file|logging)"
+    },
+    "update-install-migration-rollback": {
+      "relevance": "A",
+      "regex": "(self-update|t3 update|update server|launcher|install(er|ation)?\\b|rollback|roll back|migration|migrate|downgrade|release channel|nightly|service install|systemd|launchd)"
+    },
+    "data-portability-export-import": {
+      "relevance": "A",
+      "regex": "(export|import|backup|restore|portab|statev2|sqlite copy|recovery copy)"
+    },
+    "usage-cost-accounting": {
+      "relevance": "A",
+      "regex": "(usage page|\\busage\\b|cost|pricing|price|token (use|usage|count)|cache hit)"
+    },
+    "evidence-artifacts-rendering": {
+      "relevance": "A",
+      "regex": "(html render|visual repl|attachment|file preview|pdf|artifact|screenshot|snapshot|image|video|csv|mcp app)"
+    },
+    "citations-context-references": {
+      "relevance": "A",
+      "regex": "(citation|cite\\b|quote|context chip|context reference|context record|mention|prompt link|t3-context)"
+    },
+    "collaboration-review": {
+      "relevance": "B",
+      "regex": "(pull request|\\bpr\\b|review guide|review comment|code review|viewed file|reviewer|stack(ed)?\\b|merge queue|comment)"
+    },
+    "remote-access-connectivity": {
+      "relevance": "B",
+      "regex": "(remote|relay|tunnel|tailscale|\\bssh\\b|pairing|t3 connect|reconnect|dpop|connection|route[s]?\\b|lan\\b)"
+    },
+    "auth-security-hardening": {
+      "relevance": "A",
+      "regex": "(security|vulnerab|xss|csrf|injection|prompt injection|secret|redact|token|scope[s]?\\b|authoriz|authenticat|invisible character|zero-width)"
+    },
+    "accessibility-i18n": {
+      "relevance": "A",
+      "regex": "(a11y|accessib|screen reader|aria|voiceover|keyboard focus|focus trap|i18n|locale|translation|rtl\\b|contrast|reduced motion)"
+    },
+    "settings-config-layering": {
+      "relevance": "B",
+      "regex": "(settings?\\b|override|inherit|project setting|environment default|preference|t3\\.json)"
+    },
+    "performance-scaling": {
+      "relevance": "B",
+      "regex": "(perf\\b|performance|memory|cpu|gpu|virtualiz|lag|jank|slow|latency|throughput|payload|bounded|pagination|paginat)"
+    },
+    "testing-verification": {
+      "relevance": "B",
+      "regex": "(test|fixture|replay fixture|e2e|regression|verif|smoke|canary|mutation)"
+    },
+    "docs-policy-process": {
+      "relevance": "B",
+      "regex": "(\\bdocs?\\b|documentation|contributing|triage|agents\\.md|readme|policy|license|notice)"
+    },
+    "ui-workflow-general": {
+      "relevance": "C",
+      "regex": "(sidebar|composer|theme|keybinding|shortcut|command palette|thread list|snooze|settle|pin(ned)?\\b|drag|toast|banner|modal|dialog)"
+    },
+    "source-control-git": {
+      "relevance": "C",
+      "regex": "(\\bgit\\b|worktree|branch|commit|checkpoint|diff|rebase|github|gitlab|bitbucket|forgejo|gitea|azure devops)"
+    },
+    "terminal-devices-browser": {
+      "relevance": "C",
+      "regex": "(terminal|\\bpty\\b|ghostty|device panel|simulator|emulator|browser panel|preview browser|headless (chrome|browser)|cua\\b|snapshot capture|snap ?shot|wayland|hyprland|niri)"
+    },
+    "voice-input": {
+      "relevance": "C",
+      "regex": "(voice|dictat|transcri|microphone|speech)"
+    },
+    "desktop-native-packaging": {
+      "relevance": "C",
+      "regex": "(electron|desktop app|dmg|appimage|\\.deb|nsis|winget|homebrew|aur\\b|codesign|notariz)"
+    },
+    "marketing-site": {
+      "relevance": "C",
+      "regex": "(marketing|landing page|website copy)"
+    }
+  },
+  "totals": {
+    "merged": 5105,
+    "closed-unmerged": 6753,
+    "open": 1341
+  },
+  "unclassified": 127,
+  "primaryThemeByStatus": {
+    "collaboration-review": {
+      "merged": 312,
+      "closed-unmerged": 266,
+      "open": 66
+    },
+    "ui-workflow-general": {
+      "merged": 629,
+      "closed-unmerged": 811,
+      "open": 115
+    },
+    "source-control-git": {
+      "merged": 456,
+      "closed-unmerged": 587,
+      "open": 141
+    },
+    "provider-integration": {
+      "closed-unmerged": 1468,
+      "merged": 849,
+      "open": 313
+    },
+    "unclassified": {
+      "closed-unmerged": 66,
+      "merged": 57,
+      "open": 4
+    },
+    "desktop-native-packaging": {
+      "merged": 114,
+      "closed-unmerged": 183,
+      "open": 45
+    },
+    "docs-policy-process": {
+      "closed-unmerged": 80,
+      "merged": 50,
+      "open": 5
+    },
+    "testing-verification": {
+      "merged": 427,
+      "closed-unmerged": 406,
+      "open": 88
+    },
+    "terminal-devices-browser": {
+      "merged": 127,
+      "closed-unmerged": 193,
+      "open": 42
+    },
+    "evidence-artifacts-rendering": {
+      "merged": 262,
+      "closed-unmerged": 424,
+      "open": 53
+    },
+    "approvals-permissions": {
+      "merged": 39,
+      "closed-unmerged": 50,
+      "open": 11
+    },
+    "settings-config-layering": {
+      "merged": 168,
+      "closed-unmerged": 238,
+      "open": 36
+    },
+    "observability-diagnostics": {
+      "closed-unmerged": 88,
+      "merged": 96,
+      "open": 11
+    },
+    "performance-scaling": {
+      "merged": 128,
+      "closed-unmerged": 117,
+      "open": 27
+    },
+    "remote-access-connectivity": {
+      "closed-unmerged": 400,
+      "merged": 292,
+      "open": 97
+    },
+    "update-install-migration-rollback": {
+      "closed-unmerged": 106,
+      "merged": 102,
+      "open": 23
+    },
+    "durable-orchestration-recovery": {
+      "merged": 250,
+      "closed-unmerged": 369,
+      "open": 55
+    },
+    "auth-security-hardening": {
+      "merged": 62,
+      "closed-unmerged": 79,
+      "open": 12
+    },
+    "citations-context-references": {
+      "merged": 24,
+      "closed-unmerged": 31,
+      "open": 10
+    },
+    "data-portability-export-import": {
+      "merged": 91,
+      "closed-unmerged": 71,
+      "open": 7
+    },
+    "provider-accounts-limits": {
+      "merged": 51,
+      "closed-unmerged": 90,
+      "open": 23
+    },
+    "marketing-site": {
+      "merged": 35,
+      "closed-unmerged": 19,
+      "open": 1
+    },
+    "scheduled-automation-webhooks": {
+      "closed-unmerged": 46,
+      "merged": 24,
+      "open": 13
+    },
+    "delegation-subagents-handoff": {
+      "closed-unmerged": 72,
+      "merged": 65,
+      "open": 26
+    },
+    "notifications-mobile-offline": {
+      "merged": 211,
+      "closed-unmerged": 182,
+      "open": 59
+    },
+    "mcp-external-agents": {
+      "closed-unmerged": 66,
+      "merged": 53,
+      "open": 16
+    },
+    "accessibility-i18n": {
+      "closed-unmerged": 49,
+      "merged": 31,
+      "open": 5
+    },
+    "usage-cost-accounting": {
+      "merged": 90,
+      "closed-unmerged": 156,
+      "open": 33
+    },
+    "voice-input": {
+      "closed-unmerged": 40,
+      "merged": 10,
+      "open": 4
+    }
+  },
+  "anyThemeByStatus": {
+    "collaboration-review": {
+      "merged": 1685,
+      "closed-unmerged": 2250,
+      "open": 294
+    },
+    "ui-workflow-general": {
+      "merged": 1416,
+      "closed-unmerged": 2075,
+      "open": 309
+    },
+    "source-control-git": {
+      "merged": 1924,
+      "closed-unmerged": 2665,
+      "open": 525
+    },
+    "testing-verification": {
+      "merged": 3419,
+      "closed-unmerged": 4354,
+      "open": 1162
+    },
+    "provider-integration": {
+      "closed-unmerged": 3054,
+      "merged": 2066,
+      "open": 805
+    },
+    "docs-policy-process": {
+      "closed-unmerged": 518,
+      "merged": 303,
+      "open": 107
+    },
+    "desktop-native-packaging": {
+      "merged": 308,
+      "closed-unmerged": 511,
+      "open": 114
+    },
+    "approvals-permissions": {
+      "closed-unmerged": 389,
+      "merged": 197,
+      "open": 112
+    },
+    "notifications-mobile-offline": {
+      "merged": 640,
+      "closed-unmerged": 619,
+      "open": 173
+    },
+    "terminal-devices-browser": {
+      "merged": 425,
+      "closed-unmerged": 601,
+      "open": 148
+    },
+    "evidence-artifacts-rendering": {
+      "merged": 1190,
+      "closed-unmerged": 2597,
+      "open": 261
+    },
+    "update-install-migration-rollback": {
+      "merged": 445,
+      "closed-unmerged": 579,
+      "open": 128
+    },
+    "settings-config-layering": {
+      "merged": 673,
+      "closed-unmerged": 1104,
+      "open": 193
+    },
+    "accessibility-i18n": {
+      "merged": 141,
+      "closed-unmerged": 179,
+      "open": 23
+    },
+    "performance-scaling": {
+      "closed-unmerged": 582,
+      "merged": 481,
+      "open": 115
+    },
+    "auth-security-hardening": {
+      "merged": 485,
+      "closed-unmerged": 940,
+      "open": 264
+    },
+    "observability-diagnostics": {
+      "closed-unmerged": 395,
+      "merged": 423,
+      "open": 106
+    },
+    "scheduled-automation-webhooks": {
+      "closed-unmerged": 196,
+      "merged": 105,
+      "open": 54
+    },
+    "remote-access-connectivity": {
+      "merged": 831,
+      "closed-unmerged": 1256,
+      "open": 279
+    },
+    "durable-orchestration-recovery": {
+      "merged": 990,
+      "closed-unmerged": 1620,
+      "open": 349
+    },
+    "data-portability-export-import": {
+      "closed-unmerged": 345,
+      "merged": 441,
+      "open": 82
+    },
+    "provider-accounts-limits": {
+      "merged": 329,
+      "closed-unmerged": 601,
+      "open": 135
+    },
+    "citations-context-references": {
+      "merged": 53,
+      "closed-unmerged": 94,
+      "open": 30
+    },
+    "marketing-site": {
+      "merged": 44,
+      "closed-unmerged": 27,
+      "open": 2
+    },
+    "delegation-subagents-handoff": {
+      "closed-unmerged": 311,
+      "merged": 219,
+      "open": 122
+    },
+    "usage-cost-accounting": {
+      "closed-unmerged": 360,
+      "merged": 174,
+      "open": 80
+    },
+    "voice-input": {
+      "closed-unmerged": 96,
+      "merged": 30,
+      "open": 10
+    },
+    "mcp-external-agents": {
+      "closed-unmerged": 207,
+      "merged": 148,
+      "open": 63
+    }
+  },
+  "bestRelevanceByStatus": {
+    "B": {
+      "merged": 844,
+      "closed-unmerged": 807,
+      "open": 133
+    },
+    "C": {
+      "merged": 122,
+      "closed-unmerged": 127,
+      "open": 5
+    },
+    "A": {
+      "closed-unmerged": 5753,
+      "merged": 4082,
+      "open": 1199
+    },
+    "-": {
+      "closed-unmerged": 66,
+      "merged": 57,
+      "open": 4
+    }
+  },
+  "typeByStatus": {
+    "untyped": {
+      "merged": 1004,
+      "closed-unmerged": 1123,
+      "open": 2
+    },
+    "feat": {
+      "merged": 677,
+      "closed-unmerged": 1869,
+      "open": 183
+    },
+    "fix": {
+      "closed-unmerged": 3380,
+      "merged": 2599,
+      "open": 1074
+    },
+    "docs": {
+      "merged": 39,
+      "closed-unmerged": 52,
+      "open": 2
+    },
+    "test": {
+      "closed-unmerged": 38,
+      "merged": 123,
+      "open": 10
+    },
+    "chore": {
+      "closed-unmerged": 41,
+      "merged": 126,
+      "open": 1
+    },
+    "draft": {
+      "closed-unmerged": 3
+    },
+    "add": {
+      "closed-unmerged": 1
+    },
+    "wip": {
+      "closed-unmerged": 3
+    },
+    "refactor": {
+      "merged": 284,
+      "closed-unmerged": 63,
+      "open": 18
+    },
+    "feature": {
+      "closed-unmerged": 6
+    },
+    "perf": {
+      "closed-unmerged": 147,
+      "merged": 211,
+      "open": 46
+    },
+    "ci": {
+      "merged": 25,
+      "closed-unmerged": 12,
+      "open": 5
+    },
+    "build": {
+      "closed-unmerged": 1,
+      "merged": 4
+    },
+    "enhancement": {
+      "closed-unmerged": 1
+    },
+    "vouched": {
+      "closed-unmerged": 1
+    },
+    "security": {
+      "closed-unmerged": 2
+    },
+    "mistake": {
+      "closed-unmerged": 1
+    },
+    "readme": {
+      "merged": 1
+    },
+    "desktop": {
+      "merged": 1
+    },
+    "finale": {
+      "merged": 1
+    },
+    "proposal": {
+      "closed-unmerged": 1
+    },
+    "style": {
+      "merged": 2,
+      "closed-unmerged": 1
+    },
+    "revert": {
+      "merged": 7
+    },
+    "spike": {
+      "closed-unmerged": 4
+    },
+    "experiment": {
+      "closed-unmerged": 1
+    },
+    "closed": {
+      "closed-unmerged": 1
+    },
+    "swiftui": {
+      "closed-unmerged": 1
+    },
+    "design": {
+      "merged": 1
+    }
+  }
+}

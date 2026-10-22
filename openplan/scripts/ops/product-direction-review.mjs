@@ -12,6 +12,7 @@ const REPO_ROOT = resolve(SCRIPT_DIR, "../../..");
 const APP_ROOT = resolve(REPO_ROOT, "openplan");
 const CONTRACT_PATH = resolve(REPO_ROOT, "docs/product/V1_PRODUCT_CONTRACT.md");
 const ROADMAP_PATH = resolve(REPO_ROOT, "docs/ROADMAP.md");
+const MILESTONES_PATH = resolve(REPO_ROOT, "docs/product/MILESTONES.md");
 const PROTOCOL_PATH = resolve(
   REPO_ROOT,
   "docs/product/PRODUCT_DIRECTION_REVIEW_PROTOCOL.md",
@@ -388,6 +389,7 @@ function runCheck() {
     MATRIX_PATH,
     CAPABILITY_REGISTRY_PATH,
     ROADMAP_PATH,
+    MILESTONES_PATH,
     PROTOCOL_PATH,
     VALIDATION_RESEARCH_PATH,
     VALIDATION_PREREGISTRATION_PATH,
@@ -651,6 +653,7 @@ function runPacket() {
   const latestReview = relative(latestReviewPath());
   const contract = readFileSync(CONTRACT_PATH, "utf8").trim();
   const roadmap = readFileSync(ROADMAP_PATH, "utf8").trim();
+  const milestones = readFileSync(MILESTONES_PATH, "utf8").trim();
   const matrix = readFileSync(MATRIX_PATH, "utf8").trim();
 
   process.stdout.write(`\n# Fresh-context OpenPlan product-direction review packet
@@ -697,6 +700,10 @@ ${contract}
 ## Current roadmap
 
 ${roadmap}
+
+## Milestone definitions
+
+${milestones}
 
 ## Current capability matrix
 

@@ -89,7 +89,7 @@ export function ProjectSpineBoard({
           <div className="module-section-heading">
             <h2 className="module-section-title">Linked outputs across this project, and whether they are current</h2>
             <p className="module-section-description">
-              One scanable rail for the downstream outputs that reuse this project record: RTP links, project reports, scenario sets, grants, engagement, analysis, and aerial evidence. Below it, whether each of those lanes is current, out of date, or not linked yet. It says what looks stale; a person decides whether it matters.
+              What this project feeds, and whether each one is current, out of date, or not linked yet. It says what looks stale; a person decides whether it matters.
             </p>
           </div>
         </div>
@@ -101,14 +101,14 @@ export function ProjectSpineBoard({
           <div>
             <p className="text-label font-semibold text-muted-foreground">
               {isLoading
-                ? "Loading state"
+                ? "Loading"
                 : summary.boardState === "unreadable"
-                  ? "Read failure"
+                  ? "Could not load"
                   : summary.boardState === "schema_pending"
-                    ? "Setup fallback"
+                    ? "Not set up yet"
                     : summary.boardState === "empty"
-                      ? "Empty state"
-                      : "Operator queue"}
+                      ? "Nothing linked yet"
+                      : "Next steps"}
             </p>
             <h3 className="mt-2 text-sm font-semibold text-foreground">
               {isLoading ? "Loading crosslink queue" : summary.stateHeadline}
@@ -274,7 +274,7 @@ export function ProjectSpineBoard({
                 <ActivitySquare className="h-4 w-4" />
               </span>
               <div>
-                <p className="text-xs font-semibold text-muted-foreground">Are these lanes up to date?</p>
+                <p className="text-xs font-semibold text-muted-foreground">Are these up to date?</p>
                 <h3 className="mt-1 text-base font-semibold text-foreground">{rollup.headline}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{rollup.detail}</p>
               </div>
@@ -312,7 +312,7 @@ export function ProjectSpineBoard({
 
           <div className="overflow-hidden rounded-[0.75rem] border border-border/70 bg-card/70">
             <div className="grid grid-cols-[1fr_auto] gap-3 border-b border-border/70 px-4 py-3 text-label font-semibold text-muted-foreground md:grid-cols-[0.62fr_0.4fr_1.1fr]">
-              <span>Lane</span>
+              <span>Output</span>
               <span>Status</span>
               <span className="hidden md:block">Operator note</span>
             </div>

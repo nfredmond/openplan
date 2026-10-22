@@ -5,9 +5,9 @@
  *
  * Resolution order at every call: the current request's workspace key (set by
  * `withWorkspaceIntegrationContext` at a route entry) first, then the
- * deployment's ANTHROPIC_API_KEY. Outside any integration context — workers,
- * unwrapped routes, tests — behavior is byte-identical to the old direct env
- * reads, so absence of the wrapper can never regress a feature.
+ * deployment's ANTHROPIC_API_KEY, when this deployment shares it (see
+ * shared-ai-key.ts). Outside any integration context (workers, unwrapped
+ * routes, tests) the shared key is the only source.
  *
  * Presence gates call {@link hasAnthropicAccess}; construction sites call
  * {@link anthropicModel}. Both are synchronous drop-ins for the previous
@@ -19,12 +19,13 @@ import { wrapLanguageModel } from "ai";
 
 import { claudeEffortFor } from "@/lib/ai/model-policy";
 import { workspaceIntegrationKey } from "./context";
+import { sharedAnthropicApiKey } from "./shared-ai-key";
 
 type WrappableModel = Parameters<typeof wrapLanguageModel>[0]["model"];
 
 /** The effective key for this request, or null when neither source has one. */
 export function anthropicApiKey(): string | null {
-  return workspaceIntegrationKey("anthropic") ?? (process.env.ANTHROPIC_API_KEY?.trim() || null);
+  return workspaceIntegrationKey("anthropic") ?? sharedAnthropicApiKey();
 }
 
 /** Whether an Anthropic call can be made at all right now. */
@@ -38,7 +39,7 @@ export function hasAnthropicAccess(): boolean {
  */
 export function anthropicKeySource(): "workspace" | "env" | null {
   if (workspaceIntegrationKey("anthropic")) return "workspace";
-  if (process.env.ANTHROPIC_API_KEY?.trim()) return "env";
+  if (sharedAnthropicApiKey()) return "env";
   return null;
 }
 

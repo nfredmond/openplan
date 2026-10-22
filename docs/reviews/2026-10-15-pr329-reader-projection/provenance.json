@@ -1,0 +1,95 @@
+{
+  "taskId": "node:delegated-task:command%3Amcp%3A3f015e30-501a-44ae-80ba-38a5ed25d5ba%3Adelegate-task%3Asol-pr329-reader-projection-fix-20261015-round1",
+  "candidate": "677369b27ef234182ce8a60598e35f7060416276",
+  "mainAtFetch": "1b2fefe0f0e98f99700fc77e99146fe697b43ee7",
+  "originCandidateAtFetch": "677369b27ef234182ce8a60598e35f7060416276",
+  "cwd": "/home/nathaniel/.t3/worktrees/openplan/t3-440ee3b4",
+  "branch": "t3/validate-collector-file-numeric-fields",
+  "sourceBindings": {
+    "docs/reviews/2026-10-15-t3code-concepts/scripts/fetch_pr_details.py": "2febd9fb6f7bdda760ed243a2511da6b44ff0eb12b49bf4de426d791c2162907",
+    "docs/reviews/2026-10-15-t3code-concepts/scripts/test_fetch_pr_details.py": "bd42edf969fc53d34308e04267b1abb8fad2919a4336257dba5eddd91027a401",
+    "docs/reviews/2026-10-15-t3code-concepts/scripts/verify_collector_controls.py": "250df40f90c8239eca68c12c9f702a7721a9a7b626d1408327897086d3c234dd",
+    "docs/reviews/2026-10-15-t3code-concepts/scripts/digest.py": "0e82efebe0f8fee5680c435b5e1989957543ecf83057f31624b5a17b3795a288",
+    "docs/reviews/2026-10-15-t3code-concepts/scripts/full_text.py": "1e859aa5c66833d4e6744c3fb22a80579aa2c20d49324c15863adb5216b17fb6",
+    "docs/reviews/2026-10-15-pr329-reader-projection/verify_controller_classifier.py": "83175a0a9ba066071445b6cf3f88661f3e41c9e34299b0ddc03544e1f7b6ac27"
+  },
+  "originalMethodCount": 19,
+  "currentMethodCount": 25,
+  "changedOriginalMethods": [
+    "test_malformed_row_is_not_dropped"
+  ],
+  "unchangedOriginalMethods": [
+    "test_all_pages_are_flattened_in_order",
+    "test_empty_page_is_available_not_failed",
+    "test_timeout_is_unavailable_without_publication",
+    "test_duplicate_selection_is_not_collected",
+    "test_api_failure_is_never_cached_at_any_endpoint",
+    "test_malformed_transport_is_refused",
+    "test_wrong_pr_identity_is_refused",
+    "test_legacy_cache_refreshes_and_failed_refresh_preserves_history",
+    "test_only_intact_complete_current_cache_is_reused",
+    "test_upstream_file_census_discrepancy_stays_explicit",
+    "test_failed_atomic_publication_preserves_previous_record",
+    "test_required_comment_fields_are_not_invented",
+    "test_nested_comment_authors_are_refused_before_signing",
+    "test_comment_field_types_are_refused",
+    "test_projected_cache_rows_are_validated_even_with_new_digest",
+    "test_prior_v2_policy_is_not_reused",
+    "test_bad_v2_failed_refresh_preserves_bytes_without_success",
+    "test_actual_full_text_reads_valid_deleted_and_empty_rows"
+  ],
+  "originalFaultTuplesPreserved": 39,
+  "originalSpecialFaultsPreserved": 3,
+  "currentTargetedFaults": 63,
+  "approvedArtifacts": [
+    {
+      "path": "docs/ROADMAP.md",
+      "sha256": "37824b7ef62898ebc42e1347717a8f6193cb93c36c7e4be2fab4142be03b7b1f",
+      "matchesCandidateAndApproval": true
+    },
+    {
+      "path": "docs/product/MILESTONES.md",
+      "sha256": "0f88f25810777d226d2f953689cf92070d41b8054f5553ee212d4c9db1e38fc4",
+      "matchesCandidateAndApproval": true
+    },
+    {
+      "path": "docs/product/CORE_REQUIREMENTS_LEDGER.md",
+      "sha256": "543d7c3c822db5bff4d3d68ab3f4a47530a7ff6252b16b39cc66b1ce7352a78e",
+      "matchesCandidateAndApproval": true
+    },
+    {
+      "path": "docs/README.md",
+      "sha256": "93e01ba7f40310e49395a444c7b2f8f466e5d9e4bb1d0d900be69ca83369e279",
+      "matchesCandidateAndApproval": true
+    },
+    {
+      "path": "docs/archive/ROADMAP_EVIDENCE_LOG_2026-08-24_TO_2026-10-12.md",
+      "sha256": "9d11d4407a3a68300e38a0d54c7dada01d8dcc1d0d4d147d62ecc238009cf59b",
+      "matchesCandidateAndApproval": true
+    },
+    {
+      "path": "docs/reviews/2026-10-15-t3-roadmap/PROPOSAL.md",
+      "sha256": "acae03fc31af72a3cfa9affcdbb46f9a2222c8140d91b8371775af18837a8efd",
+      "matchesCandidateAndApproval": true
+    },
+    {
+      "path": "docs/reviews/2026-10-15-t3-roadmap/REVIEW.md",
+      "sha256": "6a19f931b5cd7068218eb8756935ced2a3040596c7588e077d376db92ccf8a8d",
+      "matchesCandidateAndApproval": true
+    },
+    {
+      "path": "docs/reviews/2026-10-15-t3-roadmap/VALIDATION.json",
+      "sha256": "b90c0a6f9cf2cf482d159e6ccb7b8fd9995a1cdaaae38999788a3892814c7321",
+      "matchesCandidateAndApproval": true
+    }
+  ],
+  "secondReviewSha256": "4b969e0788d1171b913e0010fc43af1cb25dc81881fe33c3511495f593bbaf68",
+  "secondReviewByteIdentical": true,
+  "priorReportAndResponseByteIdentical": true,
+  "bothConsumersByteIdentical": true,
+  "currentCampaigns": [
+    "campaign-04-python311",
+    "campaign-05-python314"
+  ],
+  "schemaExtractSha256": "994dbbebdaea0044295b3642041307da5e8633c091999e33c0f610fda2d1edee"
+}

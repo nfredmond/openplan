@@ -1,3 +1,4 @@
+import { observeNodeQueue } from "../../src/lib/ops/node-queue-observation";
 import { homedir } from "node:os";
 import { createHash } from "node:crypto";
 import { join } from "node:path";
@@ -7,7 +8,7 @@ import { finishResponseEmail, processResponseEmail } from "../../src/lib/notific
 import { createResponseEmailJournal } from "../../src/lib/notifications/response-email-journal";
 
 /** Local worker; outcome replay never calls the email transport a second time. */
-async function main() {
+async function main(noticeStopping: () => void) {
   const origin = process.env.NEXT_PUBLIC_APP_URL?.trim();
   if (!origin || new URL(origin).origin !== origin || !/^https?:/.test(origin)) {
     throw new Error("Set NEXT_PUBLIC_APP_URL to this installation's public origin, without a trailing slash.");
@@ -18,8 +19,8 @@ async function main() {
   const directory = join(root, installation);
   const journal = await createResponseEmailJournal(directory);
   let stopping = false;
-  process.on("SIGTERM", () => { stopping = true; });
-  process.on("SIGINT", () => { stopping = true; });
+  process.on("SIGTERM", () => { stopping = true; noticeStopping(); });
+  process.on("SIGINT", () => { stopping = true; noticeStopping(); });
   while (!stopping) {
     // Interrupted database acknowledgements are retried from retained outcomes.
     // A malformed local file remains available for inspection and does not cause a send.
@@ -32,4 +33,4 @@ async function main() {
   }
 }
 
-void main().catch(error => { console.error(error instanceof Error ? error.message : "Email worker could not start."); process.exitCode = 1; });
+void observeNodeQueue("engagement-email", main).catch(error => { console.error(error instanceof Error ? error.message : "Email worker could not start."); process.exitCode = 1; });

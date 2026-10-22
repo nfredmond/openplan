@@ -1,0 +1,232 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived",
+    "tests": 28
+  },
+  {
+    "case": "harmless-comment",
+    "outcome": "survived",
+    "tests": 28
+  },
+  {
+    "case": "restored-after-harmless",
+    "outcome": "survived",
+    "tests": 28
+  },
+  {
+    "case": "original-replay-skipped",
+    "outcome": "intended_failure",
+    "test": "resumes an exact redelivery without a second evidence insert",
+    "diagnostic": "Exact retained retry must apply pending effects"
+  },
+  {
+    "case": "interrupted-status-skipped",
+    "outcome": "intended_failure",
+    "test": "finishes a job update after its original ledger write survived an error",
+    "diagnostic": "Interrupted ledger replay must finish status"
+  },
+  {
+    "case": "interrupted-evidence-skipped",
+    "outcome": "intended_failure",
+    "test": "finishes evidence creation after its original job update survived an error",
+    "diagnostic": "Interrupted ledger replay must finish evidence"
+  },
+  {
+    "case": "lookup-error-ignored",
+    "outcome": "intended_failure",
+    "test": "refuses a duplicate whose original callback cannot be read",
+    "diagnostic": "Unavailable original cannot acknowledge replay"
+  },
+  {
+    "case": "job-scope-ignored",
+    "outcome": "intended_failure",
+    "test": "refuses changed or missing duplicate payload and scope without applying it",
+    "diagnostic": "Changed callback originals cannot be applied"
+  },
+  {
+    "case": "workspace-scope-ignored",
+    "outcome": "intended_failure",
+    "test": "refuses changed or missing duplicate payload and scope without applying it",
+    "diagnostic": "Changed callback originals cannot be applied"
+  },
+  {
+    "case": "payload-ignored",
+    "outcome": "intended_failure",
+    "test": "refuses changed or missing duplicate payload and scope without applying it",
+    "diagnostic": "Changed callback originals cannot be applied"
+  },
+  {
+    "case": "worker-reference-refusal-ignored",
+    "outcome": "intended_failure",
+    "test": "refuses a different worker job reference before recording or applying it",
+    "diagnostic": "Different worker reference cannot be applied"
+  },
+  {
+    "case": "observed-status-not-guarded",
+    "outcome": "intended_failure",
+    "test": "requires the observed state and worker reference in the status write",
+    "diagnostic": "Write guards observed status"
+  },
+  {
+    "case": "observed-reference-not-guarded",
+    "outcome": "intended_failure",
+    "test": "requires the observed state and worker reference in the status write",
+    "diagnostic": "Write guards observed worker reference"
+  },
+  {
+    "case": "null-reference-not-guarded",
+    "outcome": "intended_failure",
+    "test": "guards an unset worker reference before assigning the first one",
+    "diagnostic": "Write guards original null reference"
+  },
+  {
+    "case": "affected-row-not-checked",
+    "outcome": "intended_failure",
+    "test": "retries a changed or missing job without applying downstream artifacts",
+    "diagnostic": "Changed or missing job cannot apply artifacts"
+  },
+  {
+    "case": "foreign-affected-row-accepted",
+    "outcome": "intended_failure",
+    "test": "retries a changed or missing job without applying downstream artifacts",
+    "diagnostic": "Changed or missing job cannot apply artifacts"
+  },
+  {
+    "case": "duplicate-affected-rows-accepted",
+    "outcome": "intended_failure",
+    "test": "retries a changed or missing job without applying downstream artifacts",
+    "diagnostic": "Changed or missing job cannot apply artifacts"
+  },
+  {
+    "case": "replay-projection-omits-original",
+    "outcome": "intended_failure",
+    "test": "resumes an exact redelivery without a second evidence insert",
+    "diagnostic": "Replay loads both scope and payload"
+  },
+  {
+    "case": "original-job-id-not-bound",
+    "outcome": "intended_failure",
+    "test": "requires the observed state and worker reference in the status write",
+    "diagnostic": "Write guards original job identity"
+  },
+  {
+    "case": "original-callback-key-not-bound",
+    "outcome": "intended_failure",
+    "test": "resumes an exact redelivery without a second evidence insert",
+    "diagnostic": "Replay loads exact original callback key"
+  },
+  {
+    "case": "affected-projection-not-bound",
+    "outcome": "intended_failure",
+    "test": "requires the observed state and worker reference in the status write",
+    "diagnostic": "Write verifies affected job projection"
+  },
+  {
+    "case": "newer-event-order-ignored",
+    "outcome": "intended_failure",
+    "test": "preserves a newer same-status event when an older original is replayed",
+    "diagnostic": "Older replay cannot replace a newer same-status callback"
+  },
+  {
+    "case": "equal-event-replay-allowed",
+    "outcome": "intended_failure",
+    "test": "preserves a newer same-status event when an older original is replayed",
+    "diagnostic": "Older replay cannot replace a newer same-status callback"
+  },
+  {
+    "case": "newer-retry-blocked",
+    "outcome": "intended_failure",
+    "test": "allows a newer original retry and guards its observed callback identity",
+    "diagnostic": "Write guards observed callback identity"
+  },
+  {
+    "case": "observed-event-id-omitted",
+    "outcome": "intended_failure",
+    "test": "allows a newer original retry and guards its observed callback identity",
+    "diagnostic": "Write guards observed callback identity"
+  },
+  {
+    "case": "observed-event-time-omitted",
+    "outcome": "intended_failure",
+    "test": "allows a newer original retry and guards its observed callback identity",
+    "diagnostic": "Write guards observed callback time"
+  },
+  {
+    "case": "empty-event-id-omitted",
+    "outcome": "intended_failure",
+    "test": "guards empty callback identity and time on the first application",
+    "diagnostic": "Write guards original empty callback identity"
+  },
+  {
+    "case": "empty-event-time-omitted",
+    "outcome": "intended_failure",
+    "test": "guards empty callback identity and time on the first application",
+    "diagnostic": "Write guards original empty callback time"
+  },
+  {
+    "case": "applied-order-read-unchecked",
+    "outcome": "intended_failure",
+    "test": "refuses unreadable callback ordering without applying it",
+    "diagnostic": "Unreadable callback order cannot apply effects"
+  },
+  {
+    "case": "applied-job-scope-ignored",
+    "outcome": "intended_failure",
+    "test": "refuses unreadable callback ordering without applying it",
+    "diagnostic": "Unreadable callback order cannot apply effects"
+  },
+  {
+    "case": "applied-workspace-scope-ignored",
+    "outcome": "intended_failure",
+    "test": "refuses unreadable callback ordering without applying it",
+    "diagnostic": "Unreadable callback order cannot apply effects"
+  },
+  {
+    "case": "applied-callback-key-ignored",
+    "outcome": "intended_failure",
+    "test": "refuses unreadable callback ordering without applying it",
+    "diagnostic": "Unreadable callback order cannot apply effects"
+  },
+  {
+    "case": "fractional-precision-lost",
+    "outcome": "intended_failure",
+    "test": "preserves fractional seconds beyond JavaScript and database precision",
+    "diagnostic": "Callback ordering keeps all fractional digits"
+  },
+  {
+    "case": "fraction-zero-normalization-lost",
+    "outcome": "intended_failure",
+    "test": "compares equal instants across offsets and trailing zeros",
+    "diagnostic": "Offsets identify the same instant"
+  },
+  {
+    "case": "timezone-offset-lost",
+    "outcome": "intended_failure",
+    "test": "compares equal instants across offsets and trailing zeros",
+    "diagnostic": "Offsets identify the same instant"
+  },
+  {
+    "case": "whole-second-order-reversed",
+    "outcome": "intended_failure",
+    "test": "orders different whole seconds before their fractional values",
+    "diagnostic": "Whole seconds order callbacks first"
+  },
+  {
+    "case": "malformed-time-invented",
+    "outcome": "intended_failure",
+    "test": "refuses invalid or unzoned instants",
+    "diagnostic": "Unknown callback time has no fabricated order"
+  },
+  {
+    "case": "nonfinite-time-accepted",
+    "outcome": "intended_failure",
+    "test": "refuses invalid or unzoned instants",
+    "diagnostic": "Unknown callback time has no fabricated order"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived",
+    "tests": 28
+  }
+]

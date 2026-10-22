@@ -1,0 +1,47 @@
+{
+  "state": "passed-native-managed-source-point",
+  "sourceHead": "93b052a2ee3a8f8232510fbd478208722014fa7f",
+  "snapshotId": "679c4c31d435042f1712c8f8b43e1e05e2baf700aa39c027a9f86b911de5e3c6",
+  "wallSeconds": 134.247,
+  "capturedFiles": 1557,
+  "capturedBytes": 644784815,
+  "managedRootFiles": 5,
+  "managedRootDirectories": 13,
+  "populatedManagedJournals": 2,
+  "callbacksBeforeCapture": {
+    "claim": 0,
+    "progress": 1
+  },
+  "nativeExecutionStartsRetained": 2,
+  "sourceRestStopped": true,
+  "sourceDatabaseStopped": true,
+  "allOriginalRowsUnchangedExceptSelectedModelTimestamp": true,
+  "sourceNativeImageUnchangedAfterCapture": true,
+  "sourceJournalBytesAndRowsUnchangedDuringCapture": true,
+  "encryptedFullReadCheck": true,
+  "originalPointUnchanged": true,
+  "helperSourceSha256": {
+    "openplan/scripts/ops/worker_journal_snapshot.py": "7e5570eec9861b44abfe1138b0eb31bf0a982e7b13b8b179a174e1007fe05ebb",
+    "workers/aequilibrae_worker/model_command_journal.py": "24949541db14eccf76eb82e551b0feb285c1479deb916860cab26254c640cad5",
+    "workers/aequilibrae_worker/model_command_client.py": "ea121468e361b0e4e7751842497928ea3bc41cf836b10f0e4177de9b0b612c37",
+    "workers/aequilibrae_worker/model_legacy_kpi_command.py": "9a7e4bf7cf4398592c715d98917ab3f9e69a3279707cd0ec0dce83661157bcaf",
+    "workers/aequilibrae_worker/model_command_recovery.py": "4200d2f3b1f25e2de16724996e04211c789c6c825b0e5fcfe3da8634c919b78c",
+    "workers/aequilibrae_worker/model_stage_computation.py": "fc091f40d8db12298fed0a9a7a80838042fca6694ecf581cab77fdd66122c369",
+    "workers/aequilibrae_worker/model_package_inputs.py": "1b0119bb66415a05f8a845088d75c7db20b4ee71aaa48298bb9f8f8a628e2ae6",
+    "workers/aequilibrae_worker/model_attempt_invocation.py": "c41877db0fc0e4665b71e127f373543cab751ef3c668adbcafc581f6ca661b37",
+    "workers/aequilibrae_worker/model_attempt_writer.py": "0740ad83c9feb904624a16ffa4d535b1802cfcab2ec72c785230f0ff0ce457c1",
+    "workers/aequilibrae_worker/model_attempt_workspace.py": "8d1f755ac6f6a7be25930c6d3dcf3d06b0297896e6a709d4f84800e7e98e6f97",
+    "workers/aequilibrae_worker/main.py": "6feb12a673993585fb61024439cad21bb93a96959c313879d9e1cd203212566c",
+    "workers/activitysim_worker/supabase_poll.py": "6bbc185f82b5ac8ec1faa9f7642a05a5306b63df9cb419c73ff100e8e765e956"
+  },
+  "executionSourceSha256": {
+    "prove_transport.py": "3e6026d8614b889f0fa2ed2e387eda19ccca02f1a0659976363ecb90ae83b45c",
+    "seed_guards.py": "bf2f2a886bd8f360c6ab2c4acc926680764277dded58e7e94d116630b035aa38",
+    "run_seed.py": "d79ce6b925238f69274611d8bebd4421c20d26108a4e3984f322c305886fe104",
+    "prove_seed_guards.py": "2e6669fd5459bab351c4660a9a8d8ae99152dce410bedf05e15bd351c8f17a4d",
+    "capture_source_point.py": "c355181785a6a0576f2f07ad7f6e694fae8b0e85814d91d7c5f709107fff5aba",
+    "transport.py": "8238247654cc0ac58fdf96451704b06357e448c16242490ec9b47fbbeeb14fe1"
+  },
+  "scientificAcceptance": "unassessed",
+  "limits": "Known synthetic admitted-stage source, fresh admission helper and bound writer only. Uncertain claim admits zero callbacks; progress occurs after one dummy callback and stops. No engine, normal poller integration, all-worker recovery, general writer fence, physical-host, browser, scientific or hosted acceptance."
+}

@@ -1,0 +1,8 @@
+{
+  "trial": "legacy-denied-read-harmless",
+  "testFile": "src/test/project-portfolio-export-route.test.ts",
+  "test": "GET /api/projects/export/workbook fails closed when the workspace-scoped read fails",
+  "exitCode": 0,
+  "marker": null,
+  "classification": "SURVIVED"
+}

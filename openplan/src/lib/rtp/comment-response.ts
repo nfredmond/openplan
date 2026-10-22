@@ -52,6 +52,7 @@
  */
 import { CLOSE_LOOP_ENTRY_COLUMNS } from "@/lib/engagement/close-loop";
 import { isInternalOrPrivateEngagementNote } from "@/lib/engagement/comment-matrix";
+import { readEveryPage } from "@/lib/supabase/paged-read";
 
 // ── The reads ────────────────────────────────────────────────────────────────
 
@@ -64,6 +65,7 @@ type QueryBuilder = PromiseLike<RtpCommentResponseQueryResult> & {
   eq(column: string, value: string): QueryBuilder;
   in(column: string, values: readonly string[]): QueryBuilder;
   order(column: string, options: { ascending: boolean }): QueryBuilder;
+  range(from: number, toInclusive: number): PromiseLike<RtpCommentResponseQueryResult>;
 };
 
 export interface RtpCommentResponseSupabaseLike {
@@ -214,6 +216,38 @@ function notQueried(reason: string): RtpCommentResponseQueryResult {
   return { data: null, error: { message: reason } };
 }
 
+type RtpCommentResponseReadError = NonNullable<RtpCommentResponseQueryResult["error"]>;
+
+/**
+ * Every row of one read, or a failed result. Never a prefix.
+ *
+ * PostgREST stops a response at `max_rows` (1,000 here) and reports no error,
+ * so a single request for a plan's comments returns the first thousand and
+ * looks complete. The record would then count the rest as never received. This
+ * pages through `readEveryPage`; a read that fails part way or stops at the
+ * page ceiling comes back as an error, so the caller reports a failed read
+ * instead of a short count. `fetchPage` must apply a total order (ending on
+ * `id`) before `.range`, or rows can shift across page boundaries.
+ */
+async function readAllRows(
+  what: string,
+  fetchPage: (from: number, toInclusive: number) => PromiseLike<RtpCommentResponseQueryResult>
+): Promise<RtpCommentResponseQueryResult> {
+  const read = await readEveryPage<unknown, RtpCommentResponseReadError>((from, toInclusive) =>
+    Promise.resolve(fetchPage(from, toInclusive)).then((page) => ({
+      data: Array.isArray(page.data) ? (page.data as unknown[]) : null,
+      error: page.error,
+    }))
+  );
+  if (read.complete) return { data: read.rows, error: null };
+  return {
+    data: null,
+    error: read.error ?? {
+      message: `${what} could not be read in full, so any count from it would understate it`,
+    },
+  };
+}
+
 /**
  * The campaigns targeting one RTP cycle, their approved public comments, and
  * every response recorded against them.
@@ -232,11 +266,15 @@ export async function loadRtpCommentResponseRecord(
   supabase: RtpCommentResponseSupabaseLike,
   rtpCycleId: string
 ): Promise<RtpCommentResponseLoadResult> {
-  const campaignsResult = await supabase
-    .from("engagement_campaigns")
-    .select(RTP_COMMENT_RESPONSE_CAMPAIGN_COLUMNS)
-    .eq("rtp_cycle_id", rtpCycleId)
-    .order("updated_at", { ascending: false });
+  const campaignsResult = await readAllRows("the engagement attached to this plan", (from, toInclusive) =>
+    supabase
+      .from("engagement_campaigns")
+      .select(RTP_COMMENT_RESPONSE_CAMPAIGN_COLUMNS)
+      .eq("rtp_cycle_id", rtpCycleId)
+      .order("updated_at", { ascending: false })
+      .order("id", { ascending: true })
+      .range(from, toInclusive)
+  );
 
   const campaignRows = (campaignsResult.data ?? []) as CampaignRow[];
   const campaigns: RtpCommentResponseCampaignInput[] = campaignRows.map((row) => ({
@@ -281,22 +319,30 @@ export async function loadRtpCommentResponseRecord(
   }
 
   const [commentsResult, responsesResult] = await Promise.all([
-    supabase
-      .from("engagement_items")
-      .select(RTP_PUBLIC_COMMENT_COLUMNS)
-      .in("campaign_id", campaignIds)
-      // Moderation is enforced in the query as well as in the builder. Neither
-      // alone is enough: the query protects callers that read rows straight out
-      // of the loader, the builder protects callers that assemble their own.
-      .eq("status", RTP_PUBLISHABLE_COMMENT_STATUS)
-      // Chronological, because a record reads as a chronology of what was said.
-      .order("created_at", { ascending: true }),
-    supabase
-      .from("engagement_closeloop_entries")
-      .select(RTP_COMMENT_RESPONSE_ENTRY_COLUMNS)
-      .in("campaign_id", campaignIds)
-      .order("sort_order", { ascending: true })
-      .order("created_at", { ascending: true }),
+    readAllRows("the public comments on this plan", (from, toInclusive) =>
+      supabase
+        .from("engagement_items")
+        .select(RTP_PUBLIC_COMMENT_COLUMNS)
+        .in("campaign_id", campaignIds)
+        // Moderation is enforced in the query as well as in the builder. Neither
+        // alone is enough: the query protects callers that read rows straight out
+        // of the loader, the builder protects callers that assemble their own.
+        .eq("status", RTP_PUBLISHABLE_COMMENT_STATUS)
+        // Chronological, because a record reads as a chronology of what was said.
+        .order("created_at", { ascending: true })
+        .order("id", { ascending: true })
+        .range(from, toInclusive)
+    ),
+    readAllRows("the agency's responses to public comments", (from, toInclusive) =>
+      supabase
+        .from("engagement_closeloop_entries")
+        .select(RTP_COMMENT_RESPONSE_ENTRY_COLUMNS)
+        .in("campaign_id", campaignIds)
+        .order("sort_order", { ascending: true })
+        .order("created_at", { ascending: true })
+        .order("id", { ascending: true })
+        .range(from, toInclusive)
+    ),
   ]);
 
   const comments = ((commentsResult.data ?? []) as CommentRow[]).map((row) => ({

@@ -1,0 +1,437 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comments",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "authority-promoted",
+    "test": "test_actual_owned_queue_freezes_original_settings_and_holds_next_job",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "URL intake cannot promote authority"
+  },
+  {
+    "control": "permission-promoted",
+    "test": "test_actual_owned_queue_freezes_original_settings_and_holds_next_job",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "URL intake cannot permit engine transport"
+  },
+  {
+    "control": "plan-after-fetch",
+    "test": "test_settings_and_context_saved_before_first_fetch",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Original settings must be durable before the first fetch"
+  },
+  {
+    "control": "supplier-entry-alias",
+    "test": "test_supplier_input_is_detached_from_original_admission",
+    "source": "intake",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "Original mapped URL source plan differs"
+  },
+  {
+    "control": "supplier-settings-alias",
+    "test": "test_settings_alias_mutation_during_fetch_cannot_change_preparation",
+    "source": "intake",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "Original mapped URL source plan differs"
+  },
+  {
+    "control": "complete-recovery-resupplied",
+    "test": "test_completed_replay_never_supplies_or_fetches_and_keeps_task",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Completed intake called changed supplier"
+  },
+  {
+    "control": "partial-recovery-resupplied",
+    "test": "test_partial_intake_uses_saved_settings_and_only_missing_original_slot",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Partial recovery called changed supplier"
+  },
+  {
+    "control": "restored-recovery-resupplied",
+    "test": "test_relocated_two_roots_keep_original_settings_and_no_refetch",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Restored intake resupplied"
+  },
+  {
+    "control": "invalid-adapters",
+    "test": "test_invalid_constructor_adapters_target_timeout_or_roots",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": [
+      "ValueError not raised",
+      "AttributeError: 'object' object has no attribute 'root'"
+    ]
+  },
+  {
+    "control": "invalid-target",
+    "test": "test_invalid_constructor_adapters_target_timeout_or_roots",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "invalid-timeout",
+    "test": "test_invalid_constructor_adapters_target_timeout_or_roots",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "overlapping-roots",
+    "test": "test_invalid_constructor_adapters_target_timeout_or_roots",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "unowned-intake",
+    "test": "test_owner_required_before_supplier_or_fetch",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Unowned intake reached supplier"
+  },
+  {
+    "control": "unstarted-intake",
+    "test": "test_original_started_admission_required",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Unstarted intake reached supplier"
+  },
+  {
+    "control": "unknown-settings",
+    "test": "test_settings_shape_and_original_target_refuse_before_fetch",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Invalid intake settings reached validator"
+  },
+  {
+    "control": "changed-target",
+    "test": "test_settings_shape_and_original_target_refuse_before_fetch",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Invalid intake settings reached validator"
+  },
+  {
+    "control": "missing-complete-plan",
+    "test": "test_missing_saved_plan_with_prepared_record_cannot_resupply",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Missing plan resupplied"
+  },
+  {
+    "control": "saved-plan-extra-fields",
+    "test": "test_saved_plan_format_and_fields_refuse_before_publication",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Malformed saved settings reached publication"
+  },
+  {
+    "control": "saved-plan-format",
+    "test": "test_saved_plan_format_and_fields_refuse_before_publication",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Malformed saved settings reached publication"
+  },
+  {
+    "control": "saved-plan-binding-replaced",
+    "test": "test_saved_plan_original_binding_refuses_before_mapping",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Changed original binding reached mapping"
+  },
+  {
+    "control": "cancellation-ignored",
+    "test": "test_pre_cancelled_and_implicit_cancellation_refuse",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "InterruptedError not raised"
+  },
+  {
+    "control": "implicit-cancellation-accepted",
+    "test": "test_pre_cancelled_and_implicit_cancellation_refuse",
+    "source": "intake",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "InterruptedError: Original runtime URL intake cancelled"
+  },
+  {
+    "control": "fetch-deadline-extended",
+    "test": "test_shared_deadline_clamps_nested_fetch_deadline",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Nested fetch cannot extend the original intake deadline"
+  },
+  {
+    "control": "expired-settings-accepted",
+    "test": "test_expired_plan_publication_refuses_before_source_creation",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Expired settings reached source intake"
+  },
+  {
+    "control": "late-fetch-cancellation-ignored",
+    "test": "test_late_fetch_and_cancellation_keep_plan_without_preparation",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "InterruptedError not raised"
+  },
+  {
+    "control": "late-preparation-cancellation-ignored",
+    "test": "test_cancellation_after_preparation_refuses_intake_completion",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "InterruptedError not raised"
+  },
+  {
+    "control": "pipeline-identity-ignored",
+    "test": "test_pipeline_identity_rejects_changed_reference_request_or_admission",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "zip-derivation-omitted",
+    "test": "test_zip_source_and_derived_slots_keep_original_settings",
+    "source": "preparation",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "ZIP source requires original derived-image custody"
+  },
+  {
+    "control": "partial-record-plan-loss",
+    "test": "test_partial_source_records_require_original_settings_plan",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Partial source records resupplied missing settings"
+  },
+  {
+    "control": "started-installation-loss",
+    "test": "test_missing_started_source_installation_never_refetches",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Missing started installation recreated"
+  },
+  {
+    "control": "mapping-after-preparation",
+    "test": "test_original_mapping_precedes_preparation",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Original URL source mapping must precede preparation"
+  },
+  {
+    "control": "completed-source-hash-ignored",
+    "test": "test_completed_source_manifest_hash_checked_before_mapping",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Changed completed source hash reached mapping"
+  },
+  {
+    "control": "mapped-recovery-resupplied",
+    "test": "test_mapped_recovery_uses_original_bytes_without_supplier_or_fetch",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Mapped recovery resupplied"
+  },
+  {
+    "control": "complete-root-recreated",
+    "test": "test_completed_retained_bytes_replay_without_download_root",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Completed replay recreated source installation"
+  },
+  {
+    "control": "prepared-mapping-loss",
+    "test": "test_missing_mapping_after_preparation_refuses_before_source",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Missing prepared mapping accessed source"
+  },
+  {
+    "control": "unavailable-byte-check-skipped",
+    "test": "test_mapped_bytes_unavailable_never_refetch",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Unavailable mapped bytes reached preparation"
+  },
+  {
+    "control": "mapping-extra-fields",
+    "test": "test_mapping_wrapper_shape_version_and_settings_hash",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "mapping-version",
+    "test": "test_mapping_wrapper_shape_version_and_settings_hash",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "mapping-settings-hash",
+    "test": "test_mapping_wrapper_shape_version_and_settings_hash",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "mapping-complete-flag",
+    "test": "test_mapping_manifest_shape_flags_count_and_whole_byte_limit",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "mapping-authority-flag",
+    "test": "test_mapping_manifest_shape_flags_count_and_whole_byte_limit",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "mapping-permission-flag",
+    "test": "test_mapping_manifest_shape_flags_count_and_whole_byte_limit",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "mapping-total-type",
+    "test": "test_mapping_manifest_shape_flags_count_and_whole_byte_limit",
+    "source": "intake",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "does not match"
+  },
+  {
+    "control": "mapping-plan-hash",
+    "test": "test_mapping_source_plan_hash_binds_original_context_and_metadata",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "mapping-slot-path",
+    "test": "test_mapping_slot_shape_paths_hashes_and_order",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "mapping-slot-order",
+    "test": "test_mapping_slot_shape_paths_hashes_and_order",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "original-declarations-skipped",
+    "test": "test_mapping_slot_original_declarations_stay_required",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "mapping-sum",
+    "test": "test_mapping_total_must_equal_actual_slot_sum",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "changed-bytes-accepted",
+    "test": "test_changed_mapped_bytes_refuse_before_preparation",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Changed mapped bytes reached preparation"
+  },
+  {
+    "control": "unknown-declaration-bytes-accepted",
+    "test": "test_mapping_without_original_declarations_still_checks_saved_byte_hash",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Undeclared changed bytes reached preparation"
+  },
+  {
+    "control": "map-cancellation-ignored",
+    "test": "test_cancellation_after_mapping_refuses_before_preparation",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Cancelled mapping reached preparation"
+  },
+  {
+    "control": "completion-cancellation-ignored",
+    "test": "test_late_intake_publication_cannot_report_success",
+    "source": "intake",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "InterruptedError not raised"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

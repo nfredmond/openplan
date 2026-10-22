@@ -1,0 +1,5 @@
+{
+  "workers/odm_worker/url_transport.py": "6461cfac3452c833ade0614b6f2bb0e80d92630d3366d3834f3ee72f11c0650b",
+  "workers/odm_worker/test_url_transport.py": "86bcce59069b2bbb111de3d7ef56d08ed243be02c735bdc781b0436f1d6e962a",
+  "docs/reviews/2026-10-11-odm-url-transport/verify_controls.py": "28cc44da9b012a37f794f17e1ee2c9a6b4e078cee8e10f0d0a74ef59c0803b76"
+}

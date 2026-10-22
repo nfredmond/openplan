@@ -1,6 +1,7 @@
+import { projectBudgetSnapshotFixture, type BudgetAnswer } from "./helpers/project-budget-snapshot";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
-import type { ComponentPropsWithoutRef } from "react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { isValidElement, type ComponentPropsWithoutRef, type ReactNode } from "react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { REPORT_EVIDENCE_CASES } from "./helpers/report-evidence-cases";
 
 const createClientMock = vi.fn();
@@ -42,6 +43,12 @@ function serviceRoleClientStub() {
     auth: { admin: { getUserById: rosterGetUserByIdMock } },
   };
 }
+
+// Caller-scoped project permission read, distinct from the service-role roster.
+const projectMembershipMaybeSingleMock = vi.fn();
+const projectMembershipUserEqMock = vi.fn(() => ({ maybeSingle: projectMembershipMaybeSingleMock }));
+const projectMembershipWorkspaceEqMock = vi.fn(() => ({ eq: projectMembershipUserEqMock }));
+const projectMembershipSelectMock = vi.fn(() => ({ eq: projectMembershipWorkspaceEqMock }));
 
 const projectSingleMock = vi.fn();
 // maybeSingle serves the budget loader's tolerant projects.budget_amount read.
@@ -163,13 +170,28 @@ const spendEntriesOrderMock = vi.fn(() => ({ limit: spendEntriesLimitMock }));
 const spendEntriesEqMock = vi.fn(() => ({ order: spendEntriesOrderMock }));
 const spendEntriesSelectMock = vi.fn(() => ({ eq: spendEntriesEqMock }));
 
-// client_invoices serves TWO lanes off the same first `.eq()`: the budget
-// loader continues `.in(status sent/paid).limit()`, the documents lane's
-// library read continues `.eq(project).order().limit()`.
+// Keep the invoice source fixture separate from the documents library lane.
+// The complete budget RPC fixture consumes clientInvoicesLimitMock directly.
 const clientInvoicesLimitMock = vi.fn();
 const clientInvoicesInMock = vi.fn(() => ({ limit: clientInvoicesLimitMock }));
 const clientInvoicesEqMock = vi.fn(() => ({ in: clientInvoicesInMock, eq: clientInvoicesLibraryEqMock }));
 const clientInvoicesSelectMock = vi.fn(() => ({ eq: clientInvoicesEqMock }));
+
+
+// RPC transport fixture preserves independently failed source lanes. SQL/RLS
+// and projections are checked separately, never inferred from these fake rows.
+const budgetRpcMock = vi.fn(async (_name: string, args: { p_project_id: string }) => {
+  const deliverables = await deliverablesLimitMock() as BudgetAnswer;
+  if (Array.isArray(deliverables.data)) {
+    deliverables.data = deliverables.data.map((row: Record<string, unknown>) => ({ assignee_user_id: null, ...row }));
+  }
+  return { data: projectBudgetSnapshotFixture({
+    project_deliverables: deliverables,
+    projects: await projectBudgetMaybeSingleMock(),
+    project_spend_entries: await spendEntriesLimitMock(),
+    client_invoices: await clientInvoicesLimitMock(),
+  }, undefined, args.p_project_id), error: null };
+});
 
 const risksLimitMock = vi.fn();
 const risksOrderMock = vi.fn(() => ({ limit: risksLimitMock }));
@@ -271,6 +293,10 @@ const kbLibraryLimitMock = vi.fn<() => Promise<ProjectReadResult>>(async () => (
 const kbLibraryOrderMock = vi.fn(() => ({ limit: kbLibraryLimitMock }));
 const kbLibraryProjectEqMock = vi.fn((_column: string, _value: string) => ({ order: kbLibraryOrderMock }));
 const kbLibraryWorkspaceEqMock = vi.fn((_column: string, _value: string) => ({ eq: kbLibraryProjectEqMock }));
+const kbEstimateSingleMock = vi.fn<() => Promise<{ data: Record<string, unknown> | null; error: null }>>();
+const kbEstimateProjectEqMock = vi.fn((_column: string, _value: string) => ({ maybeSingle: kbEstimateSingleMock }));
+const kbEstimateWorkspaceEqMock = vi.fn((_column: string, _value: string) => ({ eq: kbEstimateProjectEqMock }));
+const kbEstimateIdEqMock = vi.fn((_column: string, _value: string) => ({ eq: kbEstimateWorkspaceEqMock }));
 const reportArtifactsLibraryLimitMock = vi.fn<() => Promise<ProjectReadResult>>(async () => ({ data: [], error: null }));
 // report_artifacts' first `.eq()` off select belongs to the library (the packet
 // enrichment goes `.in()`), so the continuation is eq(project)→order→limit.
@@ -304,6 +330,9 @@ const summarizeBillingInvoiceRecordsMock = vi.fn();
 const buildProjectStageGateSummaryMock = vi.fn();
 
 const fromMock = vi.fn((table: string) => {
+  if (table === "workspace_members") {
+    return { select: projectMembershipSelectMock };
+  }
   if (table === "projects") {
     return { select: projectSelectMock };
   }
@@ -325,7 +354,11 @@ const fromMock = vi.fn((table: string) => {
     // (select→eq(workspace)→eq(project)→order→limit).
     return {
       select: vi.fn((_columns: string, options?: { head?: boolean }) =>
-        options?.head ? { eq: kbHeadCountEqMock } : { eq: kbLibraryWorkspaceEqMock }
+        options?.head ? { eq: kbHeadCountEqMock } : {
+          eq: (column: string, value: string) => column === "id"
+            ? kbEstimateIdEqMock(column, value)
+            : kbLibraryWorkspaceEqMock(column, value),
+        }
       ),
     };
   }
@@ -579,6 +612,30 @@ vi.mock("@/lib/operations/workspace-summary", async () => {
 });
 
 import ProjectDetailPage from "@/app/(app)/projects/[projectId]/page";
+import { ProjectOverviewTab } from "@/app/(app)/projects/[projectId]/_components/project-overview-tab";
+import { ProjectDeliveryBoard } from "@/app/(app)/projects/[projectId]/_components/project-delivery-board";
+import { ProjectEstimatedCostEditor } from "@/components/projects/project-estimated-cost-editor";
+import { ProjectFundingPanel } from "@/app/(app)/projects/[projectId]/_components/project-funding-panel";
+import { ProjectMapPresencePanel } from "@/app/(app)/projects/[projectId]/_components/project-map-presence-panel";
+import { ProjectDocumentsPanel } from "@/app/(app)/projects/[projectId]/_components/project-documents-panel";
+import { ProjectRiskAndDecisionLog } from "@/app/(app)/projects/[projectId]/_components/project-risk-decision-log";
+import { StateBlock } from "@/components/ui/state-block";
+
+/** Inspect the actual server page's composed props, including inactive tabs. */
+function pagePropsFor(node: ReactNode, component: unknown): Record<string, unknown> {
+  const matches: Record<string, unknown>[] = [];
+  function visit(child: ReactNode) {
+    if (Array.isArray(child)) {
+      child.forEach(visit);
+    } else if (isValidElement<{ children?: ReactNode }>(child)) {
+      if (child.type === component) matches.push(child.props);
+      visit(child.props.children);
+    }
+  }
+  visit(node);
+  expect(matches, "one composed page component").toHaveLength(1);
+  return matches[0];
+}
 
 /**
  * The page is URL-tabbed and this file renders only the open tab (`helpers/open-tab-only`), so a test
@@ -632,6 +689,7 @@ function expectLinkByHref(name: RegExp, href: string) {
 describe("ProjectDetailPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    kbEstimateSingleMock.mockResolvedValue({ data: null, error: null });
 
     authGetUserMock.mockResolvedValue({
       data: {
@@ -659,8 +717,11 @@ describe("ProjectDetailPage", () => {
       workspace: { id: "workspace-1", name: "OpenPlan QA", plan: "pilot" },
     });
 
+    projectMembershipMaybeSingleMock.mockResolvedValue({ data: { role: "owner" }, error: null });
+
     projectSingleMock.mockResolvedValue({
       data: {
+        jurisdiction_context: null,
         id: "project-1",
         workspace_id: "workspace-1",
         name: "Downtown Mobility Plan",
@@ -948,9 +1009,95 @@ describe("ProjectDetailPage", () => {
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
       from: fromMock,
+      rpc: budgetRpcMock,
     });
   });
 
+
+  it("threads the saved estimate source through the page and real documents loader", async () => {
+    const sourceId = "22222222-2222-4222-8222-222222222222";
+    projectSingleMock.mockResolvedValueOnce({ data: {
+      id: "project-1", workspace_id: "workspace-1", name: "Estimate source case", status: "active",
+      jurisdiction_context: null, plan_type: "corridor_plan", delivery_phase: "analysis",
+      created_at: "2026-10-18", updated_at: "2026-10-18",
+      estimated_cost_amount: "4200000", estimated_cost_currency: "USD",
+      estimated_cost_basis_year: null, estimated_cost_source_document_id: sourceId,
+    }, error: null });
+    kbLibraryLimitMock.mockResolvedValueOnce({ data: Array.from({ length: 20 }, (_, index) => ({
+      id: `recent-${index}`, project_id: "project-1", title: `Recent ${index}`, status: "ready",
+    })), error: null });
+    kbEstimateSingleMock.mockResolvedValueOnce({ data: {
+      id: sourceId, project_id: "project-1", title: "Saved supporting estimate.csv", status: "ready",
+      storage_ref: `storage://kb-documents/workspace-1/${sourceId}/estimate.csv`,
+    }, error: null });
+
+    const page = await ProjectDetailPage({ params: Promise.resolve({ projectId: "project-1" }) });
+    const props = pagePropsFor(page, ProjectEstimatedCostEditor);
+    expect(props.estimateSource, "saved estimate source reaches editor through actual page and loader").toMatchObject({
+      status: "readable", entry: {
+        id: sourceId, projectId: "project-1", title: "Saved supporting estimate.csv",
+        downloadHref: `/api/knowledge-base/documents/${sourceId}/download`,
+      },
+    });
+    expect(props.documents).toHaveLength(20);
+    expect(props.documents).not.toContainEqual(expect.objectContaining({ id: sourceId }));
+    expect(kbEstimateIdEqMock).toHaveBeenCalledExactlyOnceWith("id", sourceId);
+    expect(kbEstimateWorkspaceEqMock).toHaveBeenCalledExactlyOnceWith("workspace_id", "workspace-1");
+    expect(kbEstimateProjectEqMock).toHaveBeenCalledExactlyOnceWith("project_id", "project-1");
+  });
+
+  describe("project workspace permission props", () => {
+    it.each([
+      { label: "active viewer and project owner", activeRole: "viewer", projectRole: "owner", sameWorkspace: false, writable: true },
+      { label: "active owner and project viewer", activeRole: "owner", projectRole: "viewer", sameWorkspace: false, writable: false },
+      { label: "active viewer and project admin", activeRole: "viewer", projectRole: "admin", sameWorkspace: false, writable: true },
+      { label: "active viewer and project member", activeRole: "viewer", projectRole: "member", sameWorkspace: false, writable: true },
+      { label: "same workspace owner", activeRole: "owner", projectRole: "owner", sameWorkspace: true, writable: true },
+      { label: "same workspace viewer", activeRole: "viewer", projectRole: "viewer", sameWorkspace: true, writable: false },
+      { label: "missing membership", activeRole: "owner", projectRole: null, sameWorkspace: false, writable: false },
+      { label: "missing role", activeRole: "owner", projectRole: undefined, sameWorkspace: false, writable: false },
+      { label: "unknown role", activeRole: "owner", projectRole: "unexpected-role", sameWorkspace: false, writable: false },
+      { label: "read error with stale owner data", activeRole: "owner", projectRole: "owner", sameWorkspace: false, writable: false, readError: true },
+    ])("uses the project role for $label", async ({ activeRole, projectRole, sameWorkspace, writable, readError }) => {
+      const activeMembership = { workspace_id: sameWorkspace ? "workspace-1" : "workspace-active", role: activeRole };
+      loadCurrentWorkspaceMembershipMock.mockResolvedValue({ membership: activeMembership });
+      projectMembershipMaybeSingleMock.mockResolvedValue({
+        data: projectRole === null ? null : { role: projectRole },
+        error: readError ? { message: "membership read unavailable" } : null,
+      });
+
+      const page = await ProjectDetailPage({ params: Promise.resolve({ projectId: "project-1" }) });
+      const overview = pagePropsFor(page, ProjectOverviewTab);
+      const posture = overview.postureHeader as { canWriteProjects: boolean };
+      expect({
+        posture: posture.canWriteProjects,
+        stageGate: overview.canRecordDecision,
+        identity: overview.canWriteIdentity,
+        delivery: pagePropsFor(page, ProjectDeliveryBoard).canWrite,
+        cost: pagePropsFor(page, ProjectEstimatedCostEditor).canWrite,
+        funding: pagePropsFor(page, ProjectFundingPanel).canWriteAwards,
+        map: pagePropsFor(page, ProjectMapPresencePanel).canWrite,
+        documents: pagePropsFor(page, ProjectDocumentsPanel).canGenerateEvidenceBundle,
+        record: pagePropsFor(page, ProjectRiskAndDecisionLog).canWrite,
+      }, "project workspace permission props").toEqual({
+        posture: writable, stageGate: writable, identity: writable, delivery: writable,
+        cost: writable, funding: writable, map: writable, documents: writable, record: writable,
+      });
+      expect(projectMembershipSelectMock, "membership role projection").toHaveBeenCalledExactlyOnceWith("role");
+      expect(projectMembershipWorkspaceEqMock, "project workspace filter").toHaveBeenCalledExactlyOnceWith("workspace_id", "workspace-1");
+      expect(projectMembershipUserEqMock, "authenticated user filter").toHaveBeenCalledExactlyOnceWith("user_id", "user-1");
+      expect(projectSingleMock.mock.invocationCallOrder[0], "RLS project read precedes membership read")
+        .toBeLessThan(projectMembershipSelectMock.mock.invocationCallOrder[0]);
+      expect(activeMembership, "active navigation membership stays unchanged").toEqual({
+        workspace_id: sameWorkspace ? "workspace-1" : "workspace-active", role: activeRole,
+      });
+      expect(loadCurrentWorkspaceMembershipMock, "active workspace admission stays in place").toHaveBeenCalledExactlyOnceWith(expect.anything(), "user-1");
+      if (readError) {
+        expect(pagePropsFor(page, StateBlock).description, "membership read failure disclosure")
+          .toContain("your role in this project's workspace");
+      }
+    });
+  });
 
   it("renders a project that lives outside the newest-first current workspace", async () => {
     // The FIX: access is membership of the project's OWN workspace (enforced by
@@ -1221,7 +1368,7 @@ describe("ProjectDetailPage", () => {
     expect(screen.getAllByText(/Blocked gate: G02/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Packet release review/i)).toBeInTheDocument();
     expect(screen.getByText(/Linked outputs across this project/i)).toBeInTheDocument();
-    expect(screen.getByText(/RTP links, project reports, scenario sets/i)).toBeInTheDocument();
+    expect(screen.getByText(/What this project feeds, and whether each one is current/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /^Linked outputs across this project/ })).toBeInTheDocument();
     expect(screen.getByText(/Regeneration needed/i)).toBeInTheDocument();
     expect(screen.getByText(/Scenario basis visible/i)).toBeInTheDocument();
@@ -1619,8 +1766,12 @@ describe("ProjectDetailPage", () => {
     await renderPage("funding");
 
     expect(
-      screen.getByText(/award records will appear after the funding award migrations are applied/i)
+      screen.getByText(/Funding awards are not shown, which does not mean this project has none/i)
     ).toBeInTheDocument();
+    // The migration is named for whoever runs the installation, behind the disclosure.
+    expect(
+      screen.getByText(/award records appear after the funding award migrations are applied/i).closest("details")
+    ).not.toBeNull();
     expect(screen.queryByText(/No funding awards are recorded for this project yet\./i)).toBeNull();
   });
 
@@ -1855,14 +2006,32 @@ describe("ProjectDetailPage", () => {
     expect(screen.getByText(/could not read reimbursement invoices for this project/i)).toBeInTheDocument();
   });
 
+  it.each([
+    [null, "No separate declaration. Jurisdiction assessment may show labelled legacy study-place context."],
+    [{ version: 1, state: "unresolved", entries: [], recordedBy: "22222222-2222-4222-8222-222222222222", recordedAt: "2026-10-15T00:00:00.000Z" }, "Jurisdiction explicitly unresolved. Study-place fallback is disabled."],
+    [{ version: 2 }, "Saved jurisdiction is invalid or could not be read. Jurisdiction assessment is unavailable."],
+    [undefined, "Saved jurisdiction is invalid or could not be read. Jurisdiction assessment is unavailable."],
+  ])("passes selected raw jurisdiction context %j to the validating editor", async (context, disclosure) => {
+    const result = await projectSingleMock();
+    projectSingleMock.mockResolvedValueOnce({ ...result, data: { ...result.data, jurisdiction_context: context } });
+
+    await renderPage();
+
+    expect(projectSelectMock).toHaveBeenCalledWith(expect.stringContaining("jurisdiction_context"));
+    expect(within(document.getElementById("project-jurisdiction")!).getByText(disclosure)).toBeInTheDocument();
+  });
+
   it("keeps the ordinary empty states when the reads succeeded and there is nothing", async () => {
     await renderPage("delivery");
 
+    expect(projectSelectMock, "project page must read the complete geography and jurisdiction projection").toHaveBeenCalledWith(
+      "id, workspace_id, name, summary, status, plan_type, delivery_phase, estimated_cost_amount, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, estimated_cost_recorded_at, created_at, updated_at, rtp_posture, rtp_posture_updated_at, jurisdiction_context, latitude, longitude, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_geometry_geojson, place_set_at"
+    );
     expect(screen.getByText("No milestones recorded yet.")).toBeInTheDocument();
     expect(screen.getByText("No submittals recorded yet.")).toBeInTheDocument();
     // No disclosure anywhere on the record, checked on every tab.
     await expectOnEveryTab(() => {
-      expect(screen.queryByText(/could not be read/i)).toBeNull();
+      expect(screen.queryAllByText(/could not be read/i), "successful legacy-null reads must show zero unavailable disclosures").toHaveLength(0);
     });
   });
 
@@ -2091,9 +2260,12 @@ describe("ProjectDetailPage", () => {
         screen.getByText(/could not read client invoices billed to this project/i)
       ).toBeInTheDocument();
       expect(screen.getByText(/permission denied for table client_invoices/i)).toBeInTheDocument();
+      const panel = document.getElementById("project-budget-pace") as HTMLElement;
+      expect(within(panel).queryAllByText("$0.00")).toHaveLength(0);
+      expect(within(panel).getByRole("status")).toHaveTextContent(/Budget totals and pace are unavailable/);
       // And it is NOT dressed up as a migration somebody could apply.
       expect(
-        screen.queryByText(/Billed client-invoice lines will appear after the client invoicing migration/i)
+        screen.queryByText(/Billed client-invoice lines appear after the client invoicing migration/i)
       ).toBeNull();
     });
 
@@ -2110,7 +2282,7 @@ describe("ProjectDetailPage", () => {
         screen.getByText(/could not read this project's direct spend ledger/i)
       ).toBeInTheDocument();
       expect(
-        screen.queryByText(/The project spend ledger will appear after the spend-ledger migration/i)
+        screen.queryByText(/The project spend ledger appears after the spend-ledger migration/i)
       ).toBeNull();
     });
 
@@ -2131,6 +2303,59 @@ describe("ProjectDetailPage", () => {
 
       expect(screen.getByText(/could not read this project's stated budget/i)).toBeInTheDocument();
       expect(screen.getByText(/permission denied for table projects/i)).toBeInTheDocument();
+    });
+
+    it.each([
+      { label: "read failure", answer: { data: null, error: { message: "spend read failed" } } },
+      { label: "invalid required amount", answer: { data: [{ id: "s", deliverable_id: "d1", entry_date: "2026-10-16",
+        amount: null, description: "Invalid source amount", vendor_label: null, created_at: "2026-10-16" }], error: null } },
+    ])("withholds delivery pace when the direct-spend source cannot be read ($label)", async ({ answer }) => {
+      deliverablesLimitMock.mockResolvedValue({ data: [{
+        id: "d1", title: "Budgeted deliverable", summary: null, owner_label: null, due_date: null,
+        status: "in_progress", created_at: "2026-10-16", budget_amount: 1000, percent_complete: 0,
+        assignee_user_id: null,
+      }], error: null });
+      spendEntriesLimitMock.mockResolvedValue(answer);
+      await renderPage("delivery");
+      const board = document.getElementById("project-deliverables") as HTMLElement;
+      expect(within(board).getByText("Budgeted deliverable")).toBeInTheDocument();
+      expect(within(board).getByLabelText("Budget (not to exceed)")).toHaveValue(1000);
+      expect(within(board).getByLabelText("Percent complete")).toHaveValue(0);
+      expect(within(board).queryByText("On pace")).not.toBeInTheDocument();
+      expect(within(board).queryByText(/Spending below recorded progress/)).not.toBeInTheDocument();
+    });
+
+    it.each([
+      { label: "invalid stated money", answer: { data: { budget_amount: "9".repeat(400) }, error: null } },
+      { label: "permission failure", answer: { data: null, error: { code: "42501", message: "permission denied for table projects" } } },
+    ])("retains delivery work when the stated-budget source fails ($label)", async ({ answer }) => {
+      deliverablesLimitMock.mockResolvedValue({ data: [{
+        id: "d1", title: "Retained delivery work", summary: null, owner_label: null, due_date: null,
+        status: "in_progress", created_at: "2026-10-16", budget_amount: "1250.25", percent_complete: 0,
+        assignee_user_id: null,
+      }], error: null });
+      projectBudgetMaybeSingleMock.mockResolvedValue(answer);
+      await renderPage("delivery");
+      const board = document.getElementById("project-deliverables") as HTMLElement;
+      expect(within(board).getByText("Retained delivery work")).toBeInTheDocument();
+      expect(within(board).getByLabelText("Budget (not to exceed)")).toHaveValue(1250.25);
+      expect(within(board).getByLabelText("Percent complete")).toHaveValue(0);
+      expect(within(board).queryByText("No deliverables yet")).not.toBeInTheDocument();
+      expect(within(board).queryByText("On pace")).not.toBeInTheDocument();
+      expect(within(board).queryByText(/Budget \$/)).not.toBeInTheDocument();
+    });
+
+    it("retains nonzero budget and progress prefills when other financial sources are readable", async () => {
+      deliverablesLimitMock.mockResolvedValue({ data: [{
+        id: "d1", title: "Readable values", summary: null, owner_label: null, due_date: null,
+        status: "in_progress", created_at: "2026-10-16", budget_amount: "1250.25", percent_complete: "12.50",
+        assignee_user_id: null,
+      }], error: null });
+      await renderPage("delivery");
+      const board = document.getElementById("project-deliverables") as HTMLElement;
+      expect(within(board).getByLabelText("Budget (not to exceed)")).toHaveValue(1250.25);
+      expect(within(board).getByLabelText("Percent complete")).toHaveValue(12.5);
+      expect(within(board).getByText("Spending below recorded progress")).toBeInTheDocument();
     });
 
     it("discloses nothing about the budget when all four reads answer", async () => {
@@ -2264,7 +2489,7 @@ describe("ProjectDetailPage", () => {
       await renderPage();
 
       expect(
-        screen.getByText("Document count unavailable — apply the Knowledge Base migration, then reload.")
+        screen.getByText("Document count could not be read. Reload the page to try again.")
       ).toBeInTheDocument();
     });
   });
@@ -2295,17 +2520,17 @@ describe("ProjectDetailPage", () => {
       created_at: "2026-08-01T00:00:00.000Z",
     };
 
-    it("asks the database for assignee_user_id everywhere it renders one", async () => {
+    it("requests assignees through scoped snapshot and direct record projections", async () => {
       // A mocked Supabase client answers whatever columns it was asked for, so
       // a projection that stopped requesting the column would render every row
       // as unassigned with every assertion below still green. The projection
       // string itself is the only thing that can be checked here.
       await renderPage();
+      expect(budgetRpcMock).toHaveBeenCalledWith("project_budget_inputs_v1", { p_project_id: "project-1" });
 
       for (const [name, mock] of [
         ["milestones", milestonesSelectMock],
         ["submittals", submittalsSelectMock],
-        ["deliverables", deliverablesSelectMock],
         ["issues", issuesSelectMock],
       ] as const) {
         // The select mocks are declared with no parameters (they only build the
@@ -2424,6 +2649,134 @@ describe("ProjectDetailPage", () => {
       ).toBeNull();
       // The record itself still renders — silence is about the assignee only.
       expect(within(milestones).getByText("LAPM authorization packet ready")).toBeInTheDocument();
+    });
+  });
+
+  /**
+   * THE FIRST OVERDUE RECORD WAITS FOR ITS DUE DAY TO END.
+   *
+   * The "Needs attention" cards name the first overdue milestone, submittal
+   * and invoice. Their counts come from `isDeadlinePast`; the names were picked
+   * by comparing midnight UTC with now, so at 6 p.m. Pacific on the 13th a
+   * record due on the 14th was named as overdue under a count that did not
+   * include it. The counts are mocked to 1 here so every card renders; only
+   * the "First:" line is the page's own pick.
+   */
+  describe("first overdue record on the delivery board", () => {
+    // 6 p.m. Pacific on October 13; nothing due on the 13th or 14th is past.
+    const EVENING_BEFORE = new Date("2026-10-14T01:00:00Z");
+    // October 13 has ended everywhere (the end of that day at UTC-12).
+    const THE_13TH_HAS_ENDED = new Date("2026-10-14T12:00:00Z");
+
+    const milestone = (id: string, title: string, targetDate: string) => ({
+      id,
+      title,
+      summary: null,
+      milestone_type: "authorization",
+      phase_code: "initiation",
+      status: "scheduled",
+      owner_label: null,
+      assignee_user_id: null,
+      target_date: targetDate,
+      actual_date: null,
+      notes: null,
+      created_at: "2026-09-01T00:00:00.000Z",
+    });
+    const submittal = (id: string, title: string, dueDate: string) => ({
+      id,
+      title,
+      submittal_type: "design",
+      status: "submitted",
+      agency_label: null,
+      assignee_user_id: null,
+      reference_number: null,
+      due_date: dueDate,
+      submitted_at: null,
+      review_cycle: 1,
+      notes: null,
+      created_at: "2026-09-01T00:00:00.000Z",
+    });
+    const invoice = (id: string, invoiceNumber: string, dueDate: string) => ({
+      id,
+      funding_award_id: null,
+      invoice_number: invoiceNumber,
+      consultant_name: null,
+      billing_basis: "time_and_materials",
+      status: "submitted",
+      invoice_date: null,
+      due_date: dueDate,
+      amount: 1000,
+      retention_percent: 0,
+      retention_amount: 0,
+      net_amount: 1000,
+      supporting_docs_status: "pending",
+      submitted_to: null,
+      caltrans_posture: "deferred_exact_forms",
+      notes: null,
+      created_at: "2026-09-01T00:00:00.000Z",
+      funding_awards: null,
+    });
+
+    beforeEach(() => {
+      milestonesLimitMock.mockResolvedValue({
+        data: [
+          milestone("milestone-14", "Kickoff memo due the 14th", "2026-10-14"),
+          milestone("milestone-13", "Network memo due the 13th", "2026-10-13"),
+        ],
+        error: null,
+      });
+      submittalsLimitMock.mockResolvedValue({
+        data: [
+          submittal("submittal-14", "Design packet due the 14th", "2026-10-14"),
+          submittal("submittal-13", "Timing sheet due the 13th", "2026-10-13"),
+        ],
+        error: null,
+      });
+      invoicesLimitMock.mockResolvedValue({
+        data: [invoice("invoice-14", "INV-DUE-14", "2026-10-14"), invoice("invoice-13", "INV-DUE-13", "2026-10-13")],
+        error: null,
+      });
+      const summary = buildProjectControlsSummaryMock() as Record<string, unknown>;
+      buildProjectControlsSummaryMock.mockClear();
+      buildProjectControlsSummaryMock.mockReturnValue({
+        ...summary,
+        attentionSummary: {
+          reportPackets: { count: 0, targetId: null, targetRowId: null },
+          blockedMilestones: { count: 0, targetId: null, targetRowId: null },
+          overdueMilestones: { count: 1, targetId: "project-milestones", targetRowId: null },
+          overdueSubmittals: { count: 1, targetId: "project-submittals", targetRowId: null },
+          overdueInvoices: { count: 1, targetId: "project-invoices", targetRowId: null },
+        },
+      });
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("names nothing the evening before a record is due", async () => {
+      vi.useFakeTimers({ toFake: ["Date"] });
+      vi.setSystemTime(EVENING_BEFORE);
+
+      await renderPage("delivery");
+
+      // The cards render (the mocked counts), so an absent name is the pick.
+      expect(screen.getByText("Overdue milestones")).toBeInTheDocument();
+      expect(screen.getByText("Overdue submittals")).toBeInTheDocument();
+      expect(screen.getByText("Overdue invoices")).toBeInTheDocument();
+      expect(screen.queryByText(/^First: /)).toBeNull();
+    });
+
+    it("names the record due on the 13th once the 13th has ended everywhere", async () => {
+      vi.useFakeTimers({ toFake: ["Date"] });
+      vi.setSystemTime(THE_13TH_HAS_ENDED);
+
+      await renderPage("delivery");
+
+      expect(screen.getByText("First: Network memo due the 13th")).toBeInTheDocument();
+      expect(screen.getByText("First: Timing sheet due the 13th")).toBeInTheDocument();
+      expect(screen.getByText("First: INV-DUE-13")).toBeInTheDocument();
+      expect(screen.queryByText(/^First: .*14/)).toBeNull();
     });
   });
 });

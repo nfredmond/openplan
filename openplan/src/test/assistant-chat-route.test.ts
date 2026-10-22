@@ -8,8 +8,7 @@ const loadAssistantContextMock = vi.fn();
 const streamTextMock = vi.fn();
 const stepCountIsMock = vi.fn((count: number) => ({ __stepCountIs: count }));
 const anthropicMock = vi.fn((modelId: string) => ({ __modelId: modelId }));
-const checkAiUsageRateLimitMock = vi.fn();
-const recordAiUsageEventMock = vi.fn();
+const reserveAiUsageMock = vi.fn();
 const buildAssistantChatToolsMock = vi.fn();
 const createChatToolBudgetMock = vi.fn();
 
@@ -70,8 +69,7 @@ vi.mock("@ai-sdk/anthropic", () => ({
 }));
 
 vi.mock("@/lib/runtime/ai-rate-limit", () => ({
-  checkAiUsageRateLimit: (...args: unknown[]) => checkAiUsageRateLimitMock(...args),
-  recordAiUsageEvent: (...args: unknown[]) => recordAiUsageEventMock(...args),
+  reserveAiUsage: (...args: unknown[]) => reserveAiUsageMock(...args),
 }));
 
 import { POST as postAssistantChat } from "@/app/api/assistant/chat/route";
@@ -150,8 +148,7 @@ describe("/api/assistant/chat", () => {
       auth: { getUser: (...args: unknown[]) => authGetUserMock(...args) },
     });
     loadAssistantContextMock.mockResolvedValue(workspaceContextFixture());
-    checkAiUsageRateLimitMock.mockResolvedValue({ allowed: true, count: 0, retryAfterSeconds: 0 });
-    recordAiUsageEventMock.mockResolvedValue(undefined);
+    reserveAiUsageMock.mockResolvedValue({ allowed: true, count: 0, retryAfterSeconds: 0 });
     budgetFixture = freshBudgetFixture();
     createChatToolBudgetMock.mockReturnValue(budgetFixture);
     buildAssistantChatToolsMock.mockReturnValue({
@@ -267,7 +264,7 @@ describe("/api/assistant/chat", () => {
     expect(streamTextMock).toHaveBeenCalledTimes(1);
     const callArgs = streamTextMock.mock.calls[0][0] as {
       model: { __modelId: string };
-      system: string;
+      system: { role: string; content: string; providerOptions: unknown };
       messages: Array<{ role: string; content: string }>;
       maxOutputTokens: number;
       tools: Record<string, unknown>;
@@ -275,8 +272,12 @@ describe("/api/assistant/chat", () => {
     };
 
     expect(callArgs.model).toEqual({ __modelId: "claude-opus-5-5" });
-    expect(callArgs.system).toContain("Workspace: Foothill COG");
-    expect(callArgs.system).toContain("Never invent workspace data.");
+    expect(callArgs.system.role).toBe("system");
+    expect(callArgs.system.content).toContain("Workspace: Foothill COG");
+    expect(callArgs.system.content).toContain("Never invent workspace data.");
+    // The tool definitions and system prompt are cached across the steps of
+    // one question; without this every step pays full input price for them.
+    expect(callArgs.system.providerOptions).toEqual({ anthropic: { cacheControl: { type: "ephemeral" } } });
     expect(Object.keys(callArgs.tools)).toContain("list_projects");
     expect(Object.keys(callArgs.tools)).toContain("propose_generate_report_artifact");
     expect(callArgs.stopWhen).toEqual({ __stepCountIs: 6 });
@@ -287,6 +288,30 @@ describe("/api/assistant/chat", () => {
       { role: "user", content: "Where should I focus this week?" },
     ]);
     expect(callArgs.maxOutputTokens).toBeGreaterThan(0);
+  });
+
+  it("tells the model today's date, read from the clock when the question arrives", async () => {
+    // A live test on 2026-10-11 called a call that closed 2026-09-30 "still
+    // open for about three more weeks": the prompt carried no date at all.
+    // Two different clocks must give two different dates, so a hardcoded or
+    // build-time date cannot pass.
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      for (const [now, expected] of [
+        ["2026-10-11T23:30:00Z", "2026-10-11"],
+        ["2027-03-02T00:10:00Z", "2027-03-02"],
+      ] as const) {
+        vi.setSystemTime(new Date(now));
+        streamTextMock.mockClear();
+        await postAssistantChat(
+          jsonRequest({ kind: "workspace", workspaceId: WORKSPACE_ID, question: "What is due soon?" })
+        );
+        const callArgs = streamTextMock.mock.calls[0][0] as { system: { content: string } };
+        expect(callArgs.system.content).toContain(`TODAY: ${expected} (UTC calendar date).`);
+      }
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("drains the tool ledger into assistant_chat_tool_called audit events at each step boundary", async () => {
@@ -321,22 +346,20 @@ describe("/api/assistant/chat", () => {
     expect(auditCallsAfter).toBe(auditCallsBefore);
   });
 
-  it("records an assistant_chat usage event when the stream finishes (not before)", async () => {
+  it("counts the chat call before the model is called, not when the stream finishes", async () => {
+    // The provider bills a stream the planner closes mid-reply. Counting on
+    // finish left those calls out of the workspace's allowance.
+    reserveAiUsageMock.mockImplementation(async () => {
+      expect(streamTextMock).not.toHaveBeenCalled();
+      return { allowed: true, count: 0, retryAfterSeconds: 0 };
+    });
+
     await postAssistantChat(
       jsonRequest({ kind: "workspace", workspaceId: WORKSPACE_ID, question: "Where should I focus this week?" })
     );
 
-    // Nothing recorded yet — the model call has not completed, so an aborted
-    // or failed stream is never counted against the workspace.
-    expect(recordAiUsageEventMock).not.toHaveBeenCalled();
-
-    const callArgs = streamTextMock.mock.calls[0][0] as {
-      onFinish: (event: { usage?: { inputTokens?: number; outputTokens?: number } }) => void;
-    };
-    callArgs.onFinish({ usage: { inputTokens: 10, outputTokens: 20 } });
-
-    expect(recordAiUsageEventMock).toHaveBeenCalledTimes(1);
-    expect(recordAiUsageEventMock).toHaveBeenCalledWith(
+    expect(reserveAiUsageMock).toHaveBeenCalledTimes(1);
+    expect(reserveAiUsageMock).toHaveBeenCalledWith(
       expect.objectContaining({
         workspaceId: WORKSPACE_ID,
         bucketKey: "assistant_chat",
@@ -344,10 +367,29 @@ describe("/api/assistant/chat", () => {
         sourceRoute: "/api/assistant/chat",
       })
     );
+    expect(streamTextMock).toHaveBeenCalledTimes(1);
+
+    // Finishing the stream records nothing more.
+    const callArgs = streamTextMock.mock.calls[0][0] as {
+      onFinish: (event: { usage?: { inputTokens?: number; outputTokens?: number } }) => void;
+    };
+    callArgs.onFinish({ usage: { inputTokens: 10, outputTokens: 20 } });
+    expect(reserveAiUsageMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not call the model when usage cannot be metered", async () => {
+    reserveAiUsageMock.mockRejectedValue(new Error("usage_events unavailable"));
+
+    const response = await postAssistantChat(
+      jsonRequest({ kind: "workspace", workspaceId: WORKSPACE_ID, question: "Where should I focus this week?" })
+    );
+
+    expect(response.status).toBe(500);
+    expect(streamTextMock).not.toHaveBeenCalled();
   });
 
   it("returns 429 with retry-after when the workspace AI allowance is exhausted", async () => {
-    checkAiUsageRateLimitMock.mockResolvedValue({ allowed: false, count: 20, retryAfterSeconds: 300 });
+    reserveAiUsageMock.mockResolvedValue({ allowed: false, count: 20, retryAfterSeconds: 300 });
 
     const response = await postAssistantChat(
       jsonRequest({ kind: "workspace", workspaceId: WORKSPACE_ID, question: "Where should I focus this week?" })
@@ -356,7 +398,6 @@ describe("/api/assistant/chat", () => {
     expect(response.status).toBe(429);
     expect(response.headers.get("retry-after")).toBe("300");
     expect(streamTextMock).not.toHaveBeenCalled();
-    expect(recordAiUsageEventMock).not.toHaveBeenCalled();
   });
 
   it("annotates the finish frame with a cost-threshold warning only when exceeded", async () => {
@@ -409,5 +450,115 @@ describe("/api/assistant/chat", () => {
 
     expect(response.status).toBe(500);
     expect(await response.json()).toEqual({ error: "Unexpected error while streaming assistant chat reply" });
+  });
+
+  describe("today's date in the planner's time zone", () => {
+    // At 00:30 UTC on Oct 12 it is still the evening of Oct 11 in the
+    // Americas and already midday Oct 12 in East Asia. The route must use the
+    // zone the browser sends, so two zones give two dates.
+    const NOW = "2026-10-12T00:30:00Z";
+
+    async function systemPromptFor(timeZone: unknown): Promise<string> {
+      streamTextMock.mockClear();
+      await postAssistantChat(
+        jsonRequest({ kind: "workspace", workspaceId: WORKSPACE_ID, question: "What is due today?", timeZone })
+      );
+      const system = (streamTextMock.mock.calls[0][0] as { system: string | { content: string } }).system;
+      return typeof system === "string" ? system : system.content;
+    }
+
+    it("dates the prompt in the zone the browser reports", async () => {
+      vi.useFakeTimers({ toFake: ["Date"] });
+      try {
+        vi.setSystemTime(new Date(NOW));
+        expect(await systemPromptFor("America/Los_Angeles")).toContain(
+          "TODAY: 2026-10-11 (calendar date in America/Los_Angeles, the planner's time zone)."
+        );
+        expect(await systemPromptFor("Asia/Tokyo")).toContain(
+          "TODAY: 2026-10-12 (calendar date in Asia/Tokyo, the planner's time zone)."
+        );
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it("falls back to the UTC date for a zone Intl rejects, without quoting it", async () => {
+      vi.useFakeTimers({ toFake: ["Date"] });
+      try {
+        vi.setSystemTime(new Date(NOW));
+        const prompt = await systemPromptFor("Mars/Olympus_Mons");
+        expect(prompt).toContain("TODAY: 2026-10-12 (UTC calendar date).");
+        expect(prompt).toContain("may still be open where the planner is");
+        expect(prompt).not.toContain("Mars/Olympus_Mons");
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+  });
+
+  describe("today's date in the workspace's time zone", () => {
+    // 00:30 UTC Oct 12 is 5:30 p.m. Oct 11 in Los Angeles and 9:30 a.m.
+    // Oct 12 in Tokyo. A workspace that recorded its zone is dated in it,
+    // whatever zone the browser reports.
+    const NOW = "2026-10-12T00:30:00Z";
+    const workspaceSelects: string[] = [];
+    const workspaceFilters: Array<[string, unknown]> = [];
+
+    function clientWithWorkspaceZone(timeZone: string | null) {
+      createClientMock.mockResolvedValue({
+        auth: { getUser: (...args: unknown[]) => authGetUserMock(...args) },
+        from: (table: string) => {
+          if (table !== "workspaces") throw new Error(`Unexpected table ${table}`);
+          return {
+            select: (columns: string) => {
+              workspaceSelects.push(columns);
+              return {
+                eq: (column: string, value: unknown) => {
+                  workspaceFilters.push([column, value]);
+                  return { maybeSingle: async () => ({ data: { time_zone: timeZone, home_country_code: "US" }, error: null }) };
+                },
+              };
+            },
+          };
+        },
+      });
+    }
+
+    async function systemPrompt(browserZone: string): Promise<string> {
+      streamTextMock.mockClear();
+      await postAssistantChat(
+        jsonRequest({ kind: "workspace", workspaceId: WORKSPACE_ID, question: "What is due today?", timeZone: browserZone })
+      );
+      const system = (streamTextMock.mock.calls[0][0] as { system: string | { content: string } }).system;
+      return typeof system === "string" ? system : system.content;
+    }
+
+    beforeEach(() => {
+      workspaceSelects.length = 0;
+      workspaceFilters.length = 0;
+      vi.useFakeTimers({ toFake: ["Date"] });
+      vi.setSystemTime(new Date(NOW));
+    });
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("dates the prompt in the workspace's zone ahead of the browser's", async () => {
+      clientWithWorkspaceZone("America/Los_Angeles");
+      expect(await systemPrompt("Asia/Tokyo")).toContain(
+        "TODAY: 2026-10-11 (calendar date in America/Los_Angeles, the workspace's time zone)."
+      );
+      expect(workspaceSelects).toEqual(["time_zone, home_country_code"]);
+      expect(workspaceFilters).toEqual([["id", WORKSPACE_ID]]);
+      const toolArgs = buildAssistantChatToolsMock.mock.calls.at(-1)?.[0] as { timeZone?: string | null } | undefined;
+      expect(toolArgs?.timeZone).toBe("America/Los_Angeles");
+    });
+
+    it("uses the browser's zone when the workspace has none", async () => {
+      clientWithWorkspaceZone(null);
+      expect(await systemPrompt("Asia/Tokyo")).toContain(
+        "TODAY: 2026-10-12 (calendar date in Asia/Tokyo, the planner's time zone)."
+      );
+    });
   });
 });

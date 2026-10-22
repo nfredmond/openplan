@@ -1,0 +1,530 @@
+[
+  {
+    "control": "fetch-mode-guard-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "fetch-mode-guard-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "fetch-mode-guard-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "fetch-mode-guard-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "fetch-mode-guard-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "fetch-mode-guard-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "native-input-guard-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "native-input-guard-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "native-input-guard-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "native-input-guard-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "native-input-guard-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "native-input-guard-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "native-inputs-in-local-mode-exact",
+    "accepted": true
+  },
+  {
+    "control": "native-inputs-in-local-mode-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "native-inputs-in-local-mode-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "native-inputs-in-local-mode-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "native-inputs-in-local-mode-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "native-inputs-in-local-mode-success-output",
+    "accepted": false
+  },
+  {
+    "control": "initial-owner-type-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "initial-owner-type-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "initial-owner-type-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "initial-owner-type-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "initial-owner-type-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "initial-owner-type-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "initial-owner-check-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "initial-owner-check-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "initial-owner-check-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "initial-owner-check-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "initial-owner-check-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "initial-owner-check-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "credential-format-binding-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "credential-format-binding-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "credential-format-binding-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "credential-format-binding-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "credential-format-binding-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "credential-format-binding-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "credential-value-guard-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "credential-value-guard-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "credential-value-guard-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "credential-value-guard-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "credential-value-guard-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "credential-value-guard-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "duplicate-key-guard-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "duplicate-key-guard-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "duplicate-key-guard-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "duplicate-key-guard-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "duplicate-key-guard-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "duplicate-key-guard-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "credential-size-guard-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "credential-size-guard-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "credential-size-guard-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "credential-size-guard-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "credential-size-guard-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "credential-size-guard-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "credential-parent-guard-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "credential-parent-guard-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "credential-parent-guard-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "credential-parent-guard-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "credential-parent-guard-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "credential-parent-guard-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "credential-deadline-check-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "credential-deadline-check-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "credential-deadline-check-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "credential-deadline-check-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "credential-deadline-check-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "credential-deadline-check-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "native-daemon-identity-replaced-exact",
+    "accepted": true
+  },
+  {
+    "control": "native-daemon-identity-replaced-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "native-daemon-identity-replaced-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "native-daemon-identity-replaced-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "native-daemon-identity-replaced-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "native-daemon-identity-replaced-success-output",
+    "accepted": false
+  },
+  {
+    "control": "live-read-bypassed-exact",
+    "accepted": true
+  },
+  {
+    "control": "live-read-bypassed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "live-read-bypassed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "live-read-bypassed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "live-read-bypassed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "live-read-bypassed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "live-summary-hash-replaced-exact",
+    "accepted": true
+  },
+  {
+    "control": "live-summary-hash-replaced-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "live-summary-hash-replaced-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "live-summary-hash-replaced-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "live-summary-hash-replaced-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "live-summary-hash-replaced-success-output",
+    "accepted": false
+  },
+  {
+    "control": "signal-ignores-operator-exact",
+    "accepted": true
+  },
+  {
+    "control": "signal-ignores-operator-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "signal-ignores-operator-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "signal-ignores-operator-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "signal-ignores-operator-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "signal-ignores-operator-success-output",
+    "accepted": false
+  },
+  {
+    "control": "signal-handlers-not-restored-exact",
+    "accepted": true
+  },
+  {
+    "control": "signal-handlers-not-restored-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "signal-handlers-not-restored-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "signal-handlers-not-restored-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "signal-handlers-not-restored-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "signal-handlers-not-restored-success-output",
+    "accepted": false
+  },
+  {
+    "control": "actual-signal-ignored-exact",
+    "accepted": true
+  },
+  {
+    "control": "actual-signal-ignored-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "actual-signal-ignored-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "actual-signal-ignored-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "actual-signal-ignored-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "actual-signal-ignored-success-output",
+    "accepted": false
+  },
+  {
+    "control": "private-error-exposed-exact",
+    "accepted": true
+  },
+  {
+    "control": "private-error-exposed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "private-error-exposed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "private-error-exposed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "private-error-exposed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "private-error-exposed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "credential-reader-checks-bypassed-exact",
+    "accepted": true
+  },
+  {
+    "control": "credential-reader-checks-bypassed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "credential-reader-checks-bypassed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "credential-reader-checks-bypassed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "credential-reader-checks-bypassed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "credential-reader-checks-bypassed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "ownership-adapter-check-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "ownership-adapter-check-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "ownership-adapter-check-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "ownership-adapter-check-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "ownership-adapter-check-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "ownership-adapter-check-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "decoder-depth-error-exposed-exact",
+    "accepted": true
+  },
+  {
+    "control": "decoder-depth-error-exposed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "decoder-depth-error-exposed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "decoder-depth-error-exposed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "decoder-depth-error-exposed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "decoder-depth-error-exposed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "final-window-cancellation-check-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "final-window-cancellation-check-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "final-window-cancellation-check-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "final-window-cancellation-check-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "final-window-cancellation-check-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "final-window-cancellation-check-removed-success-output",
+    "accepted": false
+  }
+]

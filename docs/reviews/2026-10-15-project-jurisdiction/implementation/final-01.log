@@ -1,0 +1,23 @@
+Running as unit: openplan-jurisdiction-final-01.service; invocation ID: c3f42aad87324ca4b0a6107f525d9cec
+failed to load config from /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/docs/reviews/2026-10-15-project-jurisdiction/implementation/vitest.config.mts
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Startup Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯⎯[39m
+ReferenceError: __dirname is not defined
+    at eval (/home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/vitest.config.ts:69:57)
+    at async ESModulesEvaluator.runInlinedModule (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/module-runner.js:913:3)
+    at async ModuleRunner.directRequest (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/module-runner.js:1146:59)
+    at async ModuleRunner.cachedRequest (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/module-runner.js:1053:73)
+    at async eval (/home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/docs/reviews/2026-10-15-project-jurisdiction/implementation/vitest.config.mts:6:31)
+    at async ESModulesEvaluator.runInlinedModule (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/module-runner.js:913:3)
+    at async ModuleRunner.directRequest (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/module-runner.js:1146:59)
+    at async ModuleRunner.cachedRequest (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/module-runner.js:1053:73)
+    at async ModuleRunner.import (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/module-runner.js:1014:10)
+    at async runnerImport (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/chunks/config.js:35282:20)
+
+
+
+          Finished with result: exit-code
+Main processes terminated with: code=exited, status=1/FAILURE
+               Service runtime: 403ms
+             CPU time consumed: 483ms
+                   Memory peak: 72.7M (swap: 0B)

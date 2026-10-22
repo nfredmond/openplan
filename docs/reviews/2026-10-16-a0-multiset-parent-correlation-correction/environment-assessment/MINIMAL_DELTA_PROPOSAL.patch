@@ -1,0 +1,11 @@
+--- FROZEN_trial03/window.py
++++ PROPOSAL_ONLY_environment_constructor_no_new_wrapper
+@@ -115,7 +115,7 @@
+ def environment():
+     entry=loads(raw(ATTEMPT/'sandbox-entry.json'))
+     return {'PATH':'/usr/bin:/bin','LANG':'C','LC_ALL':'C','TZ':'UTC','HOME':str(ATTEMPT/'home'),
+-        'TMPDIR':'/tmp','PYTHONDONTWRITEBYTECODE':'1','PYTHONHASHSEED':'0','INVOCATION_ID':entry['invocation']}
++        'TMPDIR':'/tmp','PWD':str(PRIVATE),'PYTHONDONTWRITEBYTECODE':'1','PYTHONHASHSEED':'0','INVOCATION_ID':entry['invocation']}
+ 
+ 
+ def sandbox(config,expected):

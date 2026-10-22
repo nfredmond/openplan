@@ -18,7 +18,14 @@ For cloud/hosted deployment (Fly.io, Railway, Docker) see `DEPLOY.md`.
 npm run worker:aequilibrae
 ```
 
-That script `cd`s into `workers/aequilibrae_worker/` and runs `python3 main.py`.
+That script enters `workers/aequilibrae_worker/` and checks `.venv311`, then
+`.venv`, against the numerical constraints in `requirements.txt` before importing
+the numerical packages and starting `main.py`. Install the requirements in a
+dedicated environment first; the launcher does not install them.
+Set `OPENPLAN_AEQUILIBRAE_PYTHON="/absolute/path to env/bin/python"` to use an
+existing external interpreter. An invalid explicit selection stops without
+fallback. This variable also works with the combined `modeling:local` launcher.
+These checks establish dependency adherence and imports, not numerical validity.
 `main.py` loads `openplan/.env.local` automatically (via `load_dotenv`), so the
 Supabase credentials below are picked up from your existing dev env file.
 

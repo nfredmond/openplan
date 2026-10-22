@@ -1,0 +1,5019 @@
+{
+  "controls": [
+    {
+      "control": "pinned-baseline",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-harmless-template-order",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-missing-template",
+      "outcome": "intended_refusal",
+      "reason": "recovery-templates:names"
+    },
+    {
+      "control": "pinned-harmless-copy",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-harmless-hex-case",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-literal-plus",
+      "outcome": "intended_refusal",
+      "reason": "native-rest-uri:value"
+    },
+    {
+      "control": "pinned-encoded-plus",
+      "outcome": "intended_refusal",
+      "reason": "native-rest-uri:value"
+    },
+    {
+      "control": "pinned-target",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-role",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-malformed-percent",
+      "outcome": "intended_refusal",
+      "reason": "native-rest-uri:syntax"
+    },
+    {
+      "control": "pinned-config-rest",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-config-auth",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-config-storage",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-hash-rest_uri_recovery_01_policy.py",
+      "outcome": "intended_refusal",
+      "reason": "files:rest_uri_recovery_01_policy.py"
+    },
+    {
+      "control": "pinned-hash-rest-uri-recovery-01/rest-v1-private.env",
+      "outcome": "intended_refusal",
+      "reason": "files:rest-uri-recovery-01/rest-v1-private.env"
+    },
+    {
+      "control": "pinned-hash-service-receipts-private.json",
+      "outcome": "intended_refusal",
+      "reason": "files:service-receipts-private.json"
+    },
+    {
+      "control": "pinned-hash-target-identity.json",
+      "outcome": "intended_refusal",
+      "reason": "files:target-identity.json"
+    },
+    {
+      "control": "pinned-input-manifest-hash",
+      "outcome": "intended_refusal",
+      "reason": "recovery-input-manifest:sha256"
+    },
+    {
+      "control": "pinned-exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "control": "active-receipt-baseline",
+      "outcome": "survived"
+    },
+    {
+      "control": "active-receipt-harmless-note",
+      "outcome": "survived"
+    },
+    {
+      "control": "active-receipt-old-id",
+      "outcome": "intended_refusal",
+      "reason": "replacement-id:valid"
+    },
+    {
+      "control": "active-receipt-foreign-auth",
+      "outcome": "intended_refusal",
+      "reason": "files:auth"
+    },
+    {
+      "control": "active-receipt-old-active-rest",
+      "outcome": "intended_refusal",
+      "reason": "files:rest"
+    },
+    {
+      "control": "active-receipt-target",
+      "outcome": "intended_refusal",
+      "reason": "files:rest"
+    },
+    {
+      "control": "active-receipt-receipt-hash",
+      "outcome": "intended_refusal",
+      "reason": "active-binding:receiptSha256"
+    },
+    {
+      "control": "active-receipt-premature-running",
+      "outcome": "intended_refusal",
+      "reason": "replacement-started:running"
+    },
+    {
+      "control": "active-receipt-premature-missing-start",
+      "outcome": "intended_refusal",
+      "reason": "recovery-state:complete"
+    },
+    {
+      "control": "active-receipt-exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "control": "actual-premature-state",
+      "outcome": "intended_refusal",
+      "reason": "recovery-state:complete"
+    },
+    {
+      "control": "argv-baseline-0",
+      "outcome": "survived"
+    },
+    {
+      "control": "argv-baseline-1",
+      "outcome": "survived"
+    },
+    {
+      "control": "argv-baseline-2",
+      "outcome": "survived"
+    },
+    {
+      "control": "argv-start-baseline",
+      "outcome": "survived"
+    },
+    {
+      "control": "argv-global-role",
+      "outcome": "intended_refusal",
+      "reason": "recovery-command:allowed"
+    },
+    {
+      "control": "argv-remove",
+      "outcome": "intended_refusal",
+      "reason": "recovery-command:allowed"
+    },
+    {
+      "control": "argv-old-start-id",
+      "outcome": "intended_refusal",
+      "reason": "recovery-command:allowed"
+    },
+    {
+      "control": "argv-foreign-stop",
+      "outcome": "intended_refusal",
+      "reason": "recovery-command:allowed"
+    },
+    {
+      "control": "argv-name-stop",
+      "outcome": "intended_refusal",
+      "reason": "recovery-command:allowed"
+    },
+    {
+      "control": "argv-wrong-image",
+      "outcome": "intended_refusal",
+      "reason": "recovery-command:allowed"
+    },
+    {
+      "control": "argv-extra-publication",
+      "outcome": "intended_refusal",
+      "reason": "recovery-command:allowed"
+    },
+    {
+      "control": "disabled-clone",
+      "outcome": "intended_refusal",
+      "reason": "recovery-disabled:clone"
+    },
+    {
+      "control": "disabled-cli-clone",
+      "outcome": "intended_refusal",
+      "reason": "unknown-operation"
+    },
+    {
+      "control": "disabled-services",
+      "outcome": "intended_refusal",
+      "reason": "recovery-disabled:services"
+    },
+    {
+      "control": "disabled-cli-services",
+      "outcome": "intended_refusal",
+      "reason": "unknown-operation"
+    },
+    {
+      "control": "disabled-checkout",
+      "outcome": "intended_refusal",
+      "reason": "recovery-disabled:checkout"
+    },
+    {
+      "control": "disabled-cli-checkout",
+      "outcome": "intended_refusal",
+      "reason": "unknown-operation"
+    },
+    {
+      "control": "launcher-wrong-root",
+      "outcome": "intended_refusal",
+      "reason": "launcher-root:root"
+    },
+    {
+      "control": "names-baseline",
+      "outcome": "survived"
+    },
+    {
+      "control": "names-retained-collision",
+      "outcome": "intended_refusal",
+      "reason": "recovery-names:retained"
+    },
+    {
+      "control": "names-original-collision",
+      "outcome": "intended_refusal",
+      "reason": "recovery-names:original"
+    },
+    {
+      "control": "target-oid",
+      "outcome": "intended_refusal",
+      "reason": "target-identity:oid"
+    },
+    {
+      "control": "transition-baseline-and-exclusive-retry",
+      "outcome": "survived"
+    },
+    {
+      "control": "transition-lost-stop",
+      "outcome": "intended_refusal",
+      "reason": "simulated-lost-ack-stop"
+    },
+    {
+      "control": "transition-lost-rename",
+      "outcome": "intended_refusal",
+      "reason": "simulated-lost-ack-rename"
+    },
+    {
+      "control": "transition-lost-create",
+      "outcome": "intended_refusal",
+      "reason": "simulated-lost-ack-create"
+    },
+    {
+      "control": "transition-lost-start",
+      "outcome": "intended_refusal",
+      "reason": "simulated-lost-ack-start"
+    },
+    {
+      "control": "transition-old-id",
+      "outcome": "intended_refusal",
+      "reason": "retained-rest:Id"
+    },
+    {
+      "control": "transition-old-config",
+      "outcome": "intended_refusal",
+      "reason": "retained-rest:Config"
+    },
+    {
+      "control": "transition-old-running",
+      "outcome": "intended_refusal",
+      "reason": "retained-rest-state:Running"
+    },
+    {
+      "control": "transition-auth-config",
+      "outcome": "intended_refusal",
+      "reason": "service:environment"
+    },
+    {
+      "control": "start-rejects-old-build-receipt",
+      "outcome": "intended_refusal",
+      "reason": "launch:receiptHash"
+    },
+    {
+      "control": "build-start-active-receipt-consumers",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-baseline",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-harmless-template-order",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-missing-template",
+      "outcome": "intended_refusal",
+      "reason": "recovery-templates:names"
+    },
+    {
+      "control": "pinned-harmless-copy",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-harmless-hex-case",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-literal-plus",
+      "outcome": "intended_refusal",
+      "reason": "native-rest-uri:value"
+    },
+    {
+      "control": "pinned-encoded-plus",
+      "outcome": "intended_refusal",
+      "reason": "native-rest-uri:value"
+    },
+    {
+      "control": "pinned-target",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-role",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-malformed-percent",
+      "outcome": "intended_refusal",
+      "reason": "native-rest-uri:syntax"
+    },
+    {
+      "control": "pinned-config-rest",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-config-auth",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-config-storage",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-hash-rest_uri_recovery_01_policy.py",
+      "outcome": "intended_refusal",
+      "reason": "files:rest_uri_recovery_01_policy.py"
+    },
+    {
+      "control": "pinned-hash-rest-uri-recovery-01/rest-v1-private.env",
+      "outcome": "intended_refusal",
+      "reason": "files:rest-uri-recovery-01/rest-v1-private.env"
+    },
+    {
+      "control": "pinned-hash-service-receipts-private.json",
+      "outcome": "intended_refusal",
+      "reason": "files:service-receipts-private.json"
+    },
+    {
+      "control": "pinned-hash-target-identity.json",
+      "outcome": "intended_refusal",
+      "reason": "files:target-identity.json"
+    },
+    {
+      "control": "pinned-input-manifest-hash",
+      "outcome": "intended_refusal",
+      "reason": "recovery-input-manifest:sha256"
+    },
+    {
+      "control": "pinned-exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-baseline",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-harmless-template-order",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-missing-template",
+      "outcome": "intended_refusal",
+      "reason": "recovery-templates:names"
+    },
+    {
+      "control": "pinned-harmless-copy",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-harmless-hex-case",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-literal-plus",
+      "outcome": "intended_refusal",
+      "reason": "native-rest-uri:value"
+    },
+    {
+      "control": "pinned-encoded-plus",
+      "outcome": "intended_refusal",
+      "reason": "native-rest-uri:value"
+    },
+    {
+      "control": "pinned-target",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-role",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-malformed-percent",
+      "outcome": "intended_refusal",
+      "reason": "native-rest-uri:syntax"
+    },
+    {
+      "control": "pinned-config-rest",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-config-auth",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-config-storage",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-hash-rest_uri_recovery_01_policy.py",
+      "outcome": "intended_refusal",
+      "reason": "files:rest_uri_recovery_01_policy.py"
+    },
+    {
+      "control": "pinned-hash-rest-uri-recovery-01/rest-v1-private.env",
+      "outcome": "intended_refusal",
+      "reason": "files:rest-uri-recovery-01/rest-v1-private.env"
+    },
+    {
+      "control": "pinned-hash-service-receipts-private.json",
+      "outcome": "intended_refusal",
+      "reason": "files:service-receipts-private.json"
+    },
+    {
+      "control": "pinned-hash-target-identity.json",
+      "outcome": "intended_refusal",
+      "reason": "files:target-identity.json"
+    },
+    {
+      "control": "pinned-input-manifest-hash",
+      "outcome": "intended_refusal",
+      "reason": "recovery-input-manifest:sha256"
+    },
+    {
+      "control": "pinned-exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-baseline",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-harmless-template-order",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-missing-template",
+      "outcome": "intended_refusal",
+      "reason": "recovery-templates:names"
+    },
+    {
+      "control": "pinned-harmless-copy",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-harmless-hex-case",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-baseline",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-harmless-template-order",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-missing-template",
+      "outcome": "intended_refusal",
+      "reason": "recovery-templates:names"
+    },
+    {
+      "control": "pinned-harmless-copy",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-harmless-hex-case",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-literal-plus",
+      "outcome": "intended_refusal",
+      "reason": "native-rest-uri:value"
+    },
+    {
+      "control": "pinned-encoded-plus",
+      "outcome": "intended_refusal",
+      "reason": "native-rest-uri:value"
+    },
+    {
+      "control": "pinned-target",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-role",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-malformed-percent",
+      "outcome": "intended_refusal",
+      "reason": "native-rest-uri:syntax"
+    },
+    {
+      "control": "pinned-config-rest",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-config-auth",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-config-storage",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-hash-rest_uri_recovery_01_policy.py",
+      "outcome": "intended_refusal",
+      "reason": "files:rest_uri_recovery_01_policy.py"
+    },
+    {
+      "control": "pinned-hash-rest-uri-recovery-01/rest-v1-private.env",
+      "outcome": "intended_refusal",
+      "reason": "files:rest-uri-recovery-01/rest-v1-private.env"
+    },
+    {
+      "control": "pinned-hash-service-receipts-private.json",
+      "outcome": "intended_refusal",
+      "reason": "files:service-receipts-private.json"
+    },
+    {
+      "control": "pinned-hash-target-identity.json",
+      "outcome": "intended_refusal",
+      "reason": "files:target-identity.json"
+    },
+    {
+      "control": "pinned-input-manifest-hash",
+      "outcome": "intended_refusal",
+      "reason": "recovery-input-manifest:sha256"
+    },
+    {
+      "control": "pinned-exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-baseline",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-harmless-template-order",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-missing-template",
+      "outcome": "intended_refusal",
+      "reason": "recovery-templates:names"
+    },
+    {
+      "control": "pinned-harmless-copy",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-harmless-hex-case",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-baseline",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-harmless-template-order",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-missing-template",
+      "outcome": "intended_refusal",
+      "reason": "recovery-templates:names"
+    },
+    {
+      "control": "pinned-harmless-copy",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-harmless-hex-case",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-literal-plus",
+      "outcome": "intended_refusal",
+      "reason": "native-rest-uri:value"
+    },
+    {
+      "control": "pinned-encoded-plus",
+      "outcome": "intended_refusal",
+      "reason": "native-rest-uri:value"
+    },
+    {
+      "control": "pinned-target",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-role",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-malformed-percent",
+      "outcome": "intended_refusal",
+      "reason": "native-rest-uri:syntax"
+    },
+    {
+      "control": "pinned-config-rest",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-config-auth",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-config-storage",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-hash-rest_uri_recovery_01_policy.py",
+      "outcome": "intended_refusal",
+      "reason": "files:rest_uri_recovery_01_policy.py"
+    },
+    {
+      "control": "pinned-hash-rest-uri-recovery-01/rest-v1-private.env",
+      "outcome": "intended_refusal",
+      "reason": "files:rest-uri-recovery-01/rest-v1-private.env"
+    },
+    {
+      "control": "pinned-hash-service-receipts-private.json",
+      "outcome": "intended_refusal",
+      "reason": "files:service-receipts-private.json"
+    },
+    {
+      "control": "pinned-hash-target-identity.json",
+      "outcome": "intended_refusal",
+      "reason": "files:target-identity.json"
+    },
+    {
+      "control": "pinned-input-manifest-hash",
+      "outcome": "intended_refusal",
+      "reason": "recovery-input-manifest:sha256"
+    },
+    {
+      "control": "pinned-exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-baseline",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-harmless-template-order",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-missing-template",
+      "outcome": "intended_refusal",
+      "reason": "recovery-templates:names"
+    },
+    {
+      "control": "pinned-harmless-copy",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-harmless-hex-case",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-literal-plus",
+      "outcome": "intended_refusal",
+      "reason": "native-rest-uri:value"
+    },
+    {
+      "control": "pinned-encoded-plus",
+      "outcome": "intended_refusal",
+      "reason": "native-rest-uri:value"
+    },
+    {
+      "control": "pinned-baseline",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-harmless-template-order",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-missing-template",
+      "outcome": "intended_refusal",
+      "reason": "recovery-templates:names"
+    },
+    {
+      "control": "pinned-harmless-copy",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-harmless-hex-case",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-literal-plus",
+      "outcome": "intended_refusal",
+      "reason": "native-rest-uri:value"
+    },
+    {
+      "control": "pinned-encoded-plus",
+      "outcome": "intended_refusal",
+      "reason": "native-rest-uri:value"
+    },
+    {
+      "control": "pinned-target",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-role",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-malformed-percent",
+      "outcome": "intended_refusal",
+      "reason": "native-rest-uri:syntax"
+    },
+    {
+      "control": "pinned-config-rest",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-config-auth",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-config-storage",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-hash-rest_uri_recovery_01_policy.py",
+      "outcome": "intended_refusal",
+      "reason": "files:rest_uri_recovery_01_policy.py"
+    },
+    {
+      "control": "pinned-hash-rest-uri-recovery-01/rest-v1-private.env",
+      "outcome": "intended_refusal",
+      "reason": "files:rest-uri-recovery-01/rest-v1-private.env"
+    },
+    {
+      "control": "pinned-hash-service-receipts-private.json",
+      "outcome": "intended_refusal",
+      "reason": "files:service-receipts-private.json"
+    },
+    {
+      "control": "pinned-hash-target-identity.json",
+      "outcome": "intended_refusal",
+      "reason": "files:target-identity.json"
+    },
+    {
+      "control": "pinned-input-manifest-hash",
+      "outcome": "intended_refusal",
+      "reason": "recovery-input-manifest:sha256"
+    },
+    {
+      "control": "pinned-exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-baseline",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-harmless-template-order",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-missing-template",
+      "outcome": "intended_refusal",
+      "reason": "recovery-templates:names"
+    },
+    {
+      "control": "pinned-harmless-copy",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-harmless-hex-case",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-literal-plus",
+      "outcome": "intended_refusal",
+      "reason": "native-rest-uri:value"
+    },
+    {
+      "control": "pinned-encoded-plus",
+      "outcome": "intended_refusal",
+      "reason": "native-rest-uri:value"
+    },
+    {
+      "control": "pinned-target",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-role",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-malformed-percent",
+      "outcome": "intended_refusal",
+      "reason": "native-rest-uri:syntax"
+    },
+    {
+      "control": "pinned-config-rest",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-config-auth",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-config-storage",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-hash-rest_uri_recovery_01_policy.py",
+      "outcome": "intended_refusal",
+      "reason": "files:rest_uri_recovery_01_policy.py"
+    },
+    {
+      "control": "pinned-hash-rest-uri-recovery-01/rest-v1-private.env",
+      "outcome": "intended_refusal",
+      "reason": "files:rest-uri-recovery-01/rest-v1-private.env"
+    },
+    {
+      "control": "pinned-hash-service-receipts-private.json",
+      "outcome": "intended_refusal",
+      "reason": "files:service-receipts-private.json"
+    },
+    {
+      "control": "pinned-hash-target-identity.json",
+      "outcome": "intended_refusal",
+      "reason": "files:target-identity.json"
+    },
+    {
+      "control": "pinned-baseline",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-harmless-template-order",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-missing-template",
+      "outcome": "intended_refusal",
+      "reason": "recovery-templates:names"
+    },
+    {
+      "control": "pinned-harmless-copy",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-harmless-hex-case",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-literal-plus",
+      "outcome": "intended_refusal",
+      "reason": "native-rest-uri:value"
+    },
+    {
+      "control": "pinned-encoded-plus",
+      "outcome": "intended_refusal",
+      "reason": "native-rest-uri:value"
+    },
+    {
+      "control": "pinned-target",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-role",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-malformed-percent",
+      "outcome": "intended_refusal",
+      "reason": "native-rest-uri:syntax"
+    },
+    {
+      "control": "pinned-config-rest",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-config-auth",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-config-storage",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-hash-rest_uri_recovery_01_policy.py",
+      "outcome": "intended_refusal",
+      "reason": "files:rest_uri_recovery_01_policy.py"
+    },
+    {
+      "control": "pinned-hash-rest-uri-recovery-01/rest-v1-private.env",
+      "outcome": "intended_refusal",
+      "reason": "files:rest-uri-recovery-01/rest-v1-private.env"
+    },
+    {
+      "control": "pinned-hash-service-receipts-private.json",
+      "outcome": "intended_refusal",
+      "reason": "files:service-receipts-private.json"
+    },
+    {
+      "control": "pinned-hash-target-identity.json",
+      "outcome": "intended_refusal",
+      "reason": "files:target-identity.json"
+    },
+    {
+      "control": "pinned-input-manifest-hash",
+      "outcome": "intended_refusal",
+      "reason": "recovery-input-manifest:sha256"
+    },
+    {
+      "control": "pinned-exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-baseline",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-harmless-template-order",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-baseline",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-harmless-template-order",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-missing-template",
+      "outcome": "intended_refusal",
+      "reason": "recovery-templates:names"
+    },
+    {
+      "control": "pinned-harmless-copy",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-harmless-hex-case",
+      "outcome": "survived"
+    },
+    {
+      "control": "pinned-literal-plus",
+      "outcome": "intended_refusal",
+      "reason": "native-rest-uri:value"
+    },
+    {
+      "control": "pinned-encoded-plus",
+      "outcome": "intended_refusal",
+      "reason": "native-rest-uri:value"
+    },
+    {
+      "control": "pinned-target",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-role",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-malformed-percent",
+      "outcome": "intended_refusal",
+      "reason": "native-rest-uri:syntax"
+    },
+    {
+      "control": "pinned-config-rest",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-config-auth",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-config-storage",
+      "outcome": "intended_refusal",
+      "reason": "recovery-inputs:envs"
+    },
+    {
+      "control": "pinned-hash-rest_uri_recovery_01_policy.py",
+      "outcome": "intended_refusal",
+      "reason": "files:rest_uri_recovery_01_policy.py"
+    },
+    {
+      "control": "pinned-hash-rest-uri-recovery-01/rest-v1-private.env",
+      "outcome": "intended_refusal",
+      "reason": "files:rest-uri-recovery-01/rest-v1-private.env"
+    },
+    {
+      "control": "pinned-hash-service-receipts-private.json",
+      "outcome": "intended_refusal",
+      "reason": "files:service-receipts-private.json"
+    },
+    {
+      "control": "pinned-hash-target-identity.json",
+      "outcome": "intended_refusal",
+      "reason": "files:target-identity.json"
+    },
+    {
+      "control": "pinned-input-manifest-hash",
+      "outcome": "intended_refusal",
+      "reason": "recovery-input-manifest:sha256"
+    },
+    {
+      "control": "pinned-exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "control": "active-receipt-baseline",
+      "outcome": "survived"
+    },
+    {
+      "control": "active-receipt-harmless-note",
+      "outcome": "survived"
+    },
+    {
+      "control": "active-receipt-old-id",
+      "outcome": "intended_refusal",
+      "reason": "replacement-id:valid"
+    },
+    {
+      "control": "active-receipt-foreign-auth",
+      "outcome": "intended_refusal",
+      "reason": "files:auth"
+    },
+    {
+      "control": "active-receipt-old-active-rest",
+      "outcome": "intended_refusal",
+      "reason": "files:rest"
+    },
+    {
+      "control": "active-receipt-target",
+      "outcome": "intended_refusal",
+      "reason": "files:rest"
+    },
+    {
+      "control": "active-receipt-baseline",
+      "outcome": "survived"
+    },
+    {
+      "control": "active-receipt-harmless-note",
+      "outcome": "survived"
+    },
+    {
+      "control": "active-receipt-old-id",
+      "outcome": "intended_refusal",
+      "reason": "replacement-id:valid"
+    },
+    {
+      "control": "active-receipt-foreign-auth",
+      "outcome": "intended_refusal",
+      "reason": "files:auth"
+    },
+    {
+      "control": "active-receipt-old-active-rest",
+      "outcome": "intended_refusal",
+      "reason": "files:rest"
+    },
+    {
+      "control": "active-receipt-target",
+      "outcome": "intended_refusal",
+      "reason": "files:rest"
+    },
+    {
+      "control": "active-receipt-receipt-hash",
+      "outcome": "intended_refusal",
+      "reason": "active-binding:receiptSha256"
+    },
+    {
+      "control": "active-receipt-premature-running",
+      "outcome": "intended_refusal",
+      "reason": "replacement-started:running"
+    },
+    {
+      "control": "active-receipt-premature-missing-start",
+      "outcome": "intended_refusal",
+      "reason": "recovery-state:complete"
+    },
+    {
+      "control": "active-receipt-exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "control": "actual-premature-state",
+      "outcome": "intended_refusal",
+      "reason": "recovery-state:complete"
+    },
+    {
+      "control": "active-receipt-baseline",
+      "outcome": "survived"
+    },
+    {
+      "control": "active-receipt-harmless-note",
+      "outcome": "survived"
+    },
+    {
+      "control": "active-receipt-old-id",
+      "outcome": "intended_refusal",
+      "reason": "replacement-id:valid"
+    },
+    {
+      "control": "active-receipt-foreign-auth",
+      "outcome": "intended_refusal",
+      "reason": "files:auth"
+    },
+    {
+      "control": "active-receipt-old-active-rest",
+      "outcome": "intended_refusal",
+      "reason": "files:rest"
+    },
+    {
+      "control": "active-receipt-target",
+      "outcome": "intended_refusal",
+      "reason": "files:rest"
+    },
+    {
+      "control": "active-receipt-receipt-hash",
+      "outcome": "intended_refusal",
+      "reason": "active-binding:receiptSha256"
+    },
+    {
+      "control": "active-receipt-baseline",
+      "outcome": "survived"
+    },
+    {
+      "control": "active-receipt-harmless-note",
+      "outcome": "survived"
+    },
+    {
+      "control": "active-receipt-old-id",
+      "outcome": "intended_refusal",
+      "reason": "replacement-id:valid"
+    },
+    {
+      "control": "active-receipt-foreign-auth",
+      "outcome": "intended_refusal",
+      "reason": "files:auth"
+    },
+    {
+      "control": "active-receipt-old-active-rest",
+      "outcome": "intended_refusal",
+      "reason": "files:rest"
+    },
+    {
+      "control": "active-receipt-target",
+      "outcome": "intended_refusal",
+      "reason": "files:rest"
+    },
+    {
+      "control": "active-receipt-receipt-hash",
+      "outcome": "intended_refusal",
+      "reason": "active-binding:receiptSha256"
+    },
+    {
+      "control": "active-receipt-premature-running",
+      "outcome": "intended_refusal",
+      "reason": "replacement-started:running"
+    },
+    {
+      "control": "active-receipt-premature-missing-start",
+      "outcome": "intended_refusal",
+      "reason": "recovery-state:complete"
+    },
+    {
+      "control": "active-receipt-exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "control": "actual-premature-state",
+      "outcome": "intended_refusal",
+      "reason": "recovery-state:complete"
+    },
+    {
+      "control": "argv-baseline-0",
+      "outcome": "survived"
+    },
+    {
+      "control": "argv-baseline-1",
+      "outcome": "survived"
+    },
+    {
+      "control": "argv-baseline-2",
+      "outcome": "survived"
+    },
+    {
+      "control": "argv-start-baseline",
+      "outcome": "survived"
+    },
+    {
+      "control": "argv-baseline-0",
+      "outcome": "survived"
+    },
+    {
+      "control": "argv-baseline-1",
+      "outcome": "survived"
+    },
+    {
+      "control": "argv-baseline-2",
+      "outcome": "survived"
+    },
+    {
+      "control": "argv-start-baseline",
+      "outcome": "survived"
+    },
+    {
+      "control": "argv-global-role",
+      "outcome": "intended_refusal",
+      "reason": "recovery-command:allowed"
+    },
+    {
+      "control": "argv-remove",
+      "outcome": "intended_refusal",
+      "reason": "recovery-command:allowed"
+    },
+    {
+      "control": "argv-old-start-id",
+      "outcome": "intended_refusal",
+      "reason": "recovery-command:allowed"
+    },
+    {
+      "control": "argv-foreign-stop",
+      "outcome": "intended_refusal",
+      "reason": "recovery-command:allowed"
+    },
+    {
+      "control": "argv-name-stop",
+      "outcome": "intended_refusal",
+      "reason": "recovery-command:allowed"
+    },
+    {
+      "control": "argv-wrong-image",
+      "outcome": "intended_refusal",
+      "reason": "recovery-command:allowed"
+    },
+    {
+      "control": "argv-extra-publication",
+      "outcome": "intended_refusal",
+      "reason": "recovery-command:allowed"
+    },
+    {
+      "control": "disabled-clone",
+      "outcome": "intended_refusal",
+      "reason": "recovery-disabled:clone"
+    },
+    {
+      "control": "disabled-cli-clone",
+      "outcome": "intended_refusal",
+      "reason": "unknown-operation"
+    },
+    {
+      "control": "disabled-services",
+      "outcome": "intended_refusal",
+      "reason": "recovery-disabled:services"
+    },
+    {
+      "control": "disabled-cli-services",
+      "outcome": "intended_refusal",
+      "reason": "unknown-operation"
+    },
+    {
+      "control": "disabled-checkout",
+      "outcome": "intended_refusal",
+      "reason": "recovery-disabled:checkout"
+    },
+    {
+      "control": "disabled-cli-checkout",
+      "outcome": "intended_refusal",
+      "reason": "unknown-operation"
+    },
+    {
+      "control": "launcher-wrong-root",
+      "outcome": "intended_refusal",
+      "reason": "launcher-root:root"
+    },
+    {
+      "control": "names-baseline",
+      "outcome": "survived"
+    },
+    {
+      "control": "names-retained-collision",
+      "outcome": "intended_refusal",
+      "reason": "recovery-names:retained"
+    },
+    {
+      "control": "names-original-collision",
+      "outcome": "intended_refusal",
+      "reason": "recovery-names:original"
+    },
+    {
+      "control": "target-oid",
+      "outcome": "intended_refusal",
+      "reason": "target-identity:oid"
+    },
+    {
+      "control": "argv-baseline-0",
+      "outcome": "survived"
+    },
+    {
+      "control": "argv-baseline-1",
+      "outcome": "survived"
+    },
+    {
+      "control": "argv-baseline-2",
+      "outcome": "survived"
+    },
+    {
+      "control": "argv-start-baseline",
+      "outcome": "survived"
+    },
+    {
+      "control": "argv-global-role",
+      "outcome": "intended_refusal",
+      "reason": "recovery-command:allowed"
+    },
+    {
+      "control": "argv-remove",
+      "outcome": "intended_refusal",
+      "reason": "recovery-command:allowed"
+    },
+    {
+      "control": "argv-old-start-id",
+      "outcome": "intended_refusal",
+      "reason": "recovery-command:allowed"
+    },
+    {
+      "control": "argv-foreign-stop",
+      "outcome": "intended_refusal",
+      "reason": "recovery-command:allowed"
+    },
+    {
+      "control": "argv-name-stop",
+      "outcome": "intended_refusal",
+      "reason": "recovery-command:allowed"
+    },
+    {
+      "control": "argv-wrong-image",
+      "outcome": "intended_refusal",
+      "reason": "recovery-command:allowed"
+    },
+    {
+      "control": "argv-extra-publication",
+      "outcome": "intended_refusal",
+      "reason": "recovery-command:allowed"
+    },
+    {
+      "control": "disabled-clone",
+      "outcome": "intended_refusal",
+      "reason": "recovery-disabled:clone"
+    },
+    {
+      "control": "disabled-cli-clone",
+      "outcome": "intended_refusal",
+      "reason": "unknown-operation"
+    },
+    {
+      "control": "disabled-services",
+      "outcome": "intended_refusal",
+      "reason": "recovery-disabled:services"
+    },
+    {
+      "control": "disabled-cli-services",
+      "outcome": "intended_refusal",
+      "reason": "unknown-operation"
+    },
+    {
+      "control": "disabled-checkout",
+      "outcome": "intended_refusal",
+      "reason": "recovery-disabled:checkout"
+    },
+    {
+      "control": "disabled-cli-checkout",
+      "outcome": "intended_refusal",
+      "reason": "unknown-operation"
+    },
+    {
+      "control": "launcher-wrong-root",
+      "outcome": "intended_refusal",
+      "reason": "launcher-root:root"
+    },
+    {
+      "control": "names-baseline",
+      "outcome": "survived"
+    },
+    {
+      "control": "argv-baseline-0",
+      "outcome": "survived"
+    },
+    {
+      "control": "argv-baseline-1",
+      "outcome": "survived"
+    },
+    {
+      "control": "argv-baseline-2",
+      "outcome": "survived"
+    },
+    {
+      "control": "argv-start-baseline",
+      "outcome": "survived"
+    },
+    {
+      "control": "argv-global-role",
+      "outcome": "intended_refusal",
+      "reason": "recovery-command:allowed"
+    },
+    {
+      "control": "argv-remove",
+      "outcome": "intended_refusal",
+      "reason": "recovery-command:allowed"
+    },
+    {
+      "control": "argv-old-start-id",
+      "outcome": "intended_refusal",
+      "reason": "recovery-command:allowed"
+    },
+    {
+      "control": "argv-foreign-stop",
+      "outcome": "intended_refusal",
+      "reason": "recovery-command:allowed"
+    },
+    {
+      "control": "argv-name-stop",
+      "outcome": "intended_refusal",
+      "reason": "recovery-command:allowed"
+    },
+    {
+      "control": "argv-wrong-image",
+      "outcome": "intended_refusal",
+      "reason": "recovery-command:allowed"
+    },
+    {
+      "control": "argv-extra-publication",
+      "outcome": "intended_refusal",
+      "reason": "recovery-command:allowed"
+    },
+    {
+      "control": "disabled-clone",
+      "outcome": "intended_refusal",
+      "reason": "recovery-disabled:clone"
+    },
+    {
+      "control": "disabled-cli-clone",
+      "outcome": "intended_refusal",
+      "reason": "unknown-operation"
+    },
+    {
+      "control": "disabled-services",
+      "outcome": "intended_refusal",
+      "reason": "recovery-disabled:services"
+    },
+    {
+      "control": "disabled-cli-services",
+      "outcome": "intended_refusal",
+      "reason": "unknown-operation"
+    },
+    {
+      "control": "disabled-checkout",
+      "outcome": "intended_refusal",
+      "reason": "recovery-disabled:checkout"
+    },
+    {
+      "control": "disabled-cli-checkout",
+      "outcome": "intended_refusal",
+      "reason": "unknown-operation"
+    },
+    {
+      "control": "launcher-wrong-root",
+      "outcome": "intended_refusal",
+      "reason": "launcher-root:root"
+    },
+    {
+      "control": "names-baseline",
+      "outcome": "survived"
+    },
+    {
+      "control": "names-retained-collision",
+      "outcome": "intended_refusal",
+      "reason": "recovery-names:retained"
+    },
+    {
+      "control": "names-original-collision",
+      "outcome": "intended_refusal",
+      "reason": "recovery-names:original"
+    },
+    {
+      "control": "target-oid",
+      "outcome": "intended_refusal",
+      "reason": "target-identity:oid"
+    },
+    {
+      "control": "transition-baseline-and-exclusive-retry",
+      "outcome": "survived"
+    },
+    {
+      "control": "transition-lost-stop",
+      "outcome": "intended_refusal",
+      "reason": "simulated-lost-ack-stop"
+    },
+    {
+      "control": "transition-lost-rename",
+      "outcome": "intended_refusal",
+      "reason": "simulated-lost-ack-rename"
+    },
+    {
+      "control": "transition-lost-create",
+      "outcome": "intended_refusal",
+      "reason": "simulated-lost-ack-create"
+    },
+    {
+      "control": "transition-lost-start",
+      "outcome": "intended_refusal",
+      "reason": "simulated-lost-ack-start"
+    },
+    {
+      "control": "transition-old-id",
+      "outcome": "intended_refusal",
+      "reason": "retained-rest:Id"
+    },
+    {
+      "control": "transition-old-config",
+      "outcome": "intended_refusal",
+      "reason": "retained-rest:Config"
+    },
+    {
+      "control": "transition-old-running",
+      "outcome": "intended_refusal",
+      "reason": "retained-rest-state:Running"
+    },
+    {
+      "control": "transition-auth-config",
+      "outcome": "intended_refusal",
+      "reason": "service:environment"
+    },
+    {
+      "control": "transition-baseline-and-exclusive-retry",
+      "outcome": "survived"
+    },
+    {
+      "control": "transition-lost-stop",
+      "outcome": "intended_refusal",
+      "reason": "simulated-lost-ack-stop"
+    },
+    {
+      "control": "transition-lost-rename",
+      "outcome": "intended_refusal",
+      "reason": "simulated-lost-ack-rename"
+    },
+    {
+      "control": "transition-lost-create",
+      "outcome": "intended_refusal",
+      "reason": "simulated-lost-ack-create"
+    },
+    {
+      "control": "transition-lost-start",
+      "outcome": "intended_refusal",
+      "reason": "simulated-lost-ack-start"
+    },
+    {
+      "control": "transition-baseline-and-exclusive-retry",
+      "outcome": "survived"
+    },
+    {
+      "control": "transition-lost-stop",
+      "outcome": "intended_refusal",
+      "reason": "simulated-lost-ack-stop"
+    },
+    {
+      "control": "transition-lost-rename",
+      "outcome": "intended_refusal",
+      "reason": "simulated-lost-ack-rename"
+    },
+    {
+      "control": "transition-lost-create",
+      "outcome": "intended_refusal",
+      "reason": "simulated-lost-ack-create"
+    },
+    {
+      "control": "transition-lost-start",
+      "outcome": "intended_refusal",
+      "reason": "simulated-lost-ack-start"
+    },
+    {
+      "control": "transition-old-id",
+      "outcome": "intended_refusal",
+      "reason": "retained-rest:Id"
+    },
+    {
+      "control": "transition-old-config",
+      "outcome": "intended_refusal",
+      "reason": "retained-rest:Config"
+    },
+    {
+      "control": "transition-old-running",
+      "outcome": "intended_refusal",
+      "reason": "retained-rest-state:Running"
+    },
+    {
+      "control": "transition-auth-config",
+      "outcome": "intended_refusal",
+      "reason": "service:environment"
+    },
+    {
+      "control": "transition-baseline-and-exclusive-retry",
+      "outcome": "survived"
+    },
+    {
+      "control": "transition-lost-stop",
+      "outcome": "intended_refusal",
+      "reason": "simulated-lost-ack-stop"
+    },
+    {
+      "control": "transition-lost-rename",
+      "outcome": "intended_refusal",
+      "reason": "simulated-lost-ack-rename"
+    },
+    {
+      "control": "transition-lost-create",
+      "outcome": "intended_refusal",
+      "reason": "simulated-lost-ack-create"
+    },
+    {
+      "control": "transition-lost-start",
+      "outcome": "intended_refusal",
+      "reason": "simulated-lost-ack-start"
+    },
+    {
+      "control": "transition-old-id",
+      "outcome": "intended_refusal",
+      "reason": "retained-rest:Id"
+    },
+    {
+      "control": "transition-old-config",
+      "outcome": "intended_refusal",
+      "reason": "retained-rest:Config"
+    },
+    {
+      "control": "transition-old-running",
+      "outcome": "intended_refusal",
+      "reason": "retained-rest-state:Running"
+    },
+    {
+      "control": "transition-auth-config",
+      "outcome": "intended_refusal",
+      "reason": "service:environment"
+    },
+    {
+      "control": "transition-baseline-and-exclusive-retry",
+      "outcome": "survived"
+    },
+    {
+      "control": "transition-lost-stop",
+      "outcome": "intended_refusal",
+      "reason": "simulated-lost-ack-stop"
+    },
+    {
+      "control": "transition-lost-rename",
+      "outcome": "intended_refusal",
+      "reason": "simulated-lost-ack-rename"
+    },
+    {
+      "control": "transition-lost-create",
+      "outcome": "intended_refusal",
+      "reason": "simulated-lost-ack-create"
+    },
+    {
+      "control": "transition-lost-start",
+      "outcome": "intended_refusal",
+      "reason": "simulated-lost-ack-start"
+    },
+    {
+      "control": "transition-old-id",
+      "outcome": "intended_refusal",
+      "reason": "retained-rest:Id"
+    },
+    {
+      "control": "transition-old-config",
+      "outcome": "intended_refusal",
+      "reason": "retained-rest:Config"
+    },
+    {
+      "control": "transition-old-running",
+      "outcome": "intended_refusal",
+      "reason": "retained-rest-state:Running"
+    },
+    {
+      "control": "transition-auth-config",
+      "outcome": "intended_refusal",
+      "reason": "service:environment"
+    },
+    {
+      "control": "start-rejects-old-build-receipt",
+      "outcome": "intended_refusal",
+      "reason": "launch:receiptHash"
+    },
+    {
+      "control": "build-start-active-receipt-consumers",
+      "outcome": "survived"
+    },
+    {
+      "control": "start-rejects-old-build-receipt",
+      "outcome": "intended_refusal",
+      "reason": "launch:receiptHash"
+    },
+    {
+      "control": "build-start-active-receipt-consumers",
+      "outcome": "survived"
+    }
+  ],
+  "mutations": [
+    {
+      "mutation": "harmless-comment",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "harmless-comment:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "form-decoding-regression",
+      "outcome": "killed",
+      "reason": "pinned-literal-plus:unexpected-refusal:recovery-inputs:envs"
+    },
+    {
+      "mutation": "form-decoding-regression:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "skip-native-consumer",
+      "outcome": "killed",
+      "reason": "pinned-literal-plus:unexpected-refusal:recovery-inputs:envs"
+    },
+    {
+      "mutation": "skip-native-consumer:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "skip-input-equivalence",
+      "outcome": "killed",
+      "reason": "pinned-target:unexpected-refusal:configuration:endpoints"
+    },
+    {
+      "mutation": "skip-input-equivalence:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "skip-input-manifest",
+      "outcome": "killed",
+      "reason": "pinned-input-manifest-hash:missing-refusal:recovery-input-manifest:sha256"
+    },
+    {
+      "mutation": "skip-input-manifest:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "skip-template-set",
+      "outcome": "killed",
+      "reason": "pinned-missing-template:missing-refusal:recovery-templates:names"
+    },
+    {
+      "mutation": "skip-template-set:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "skip-active-hash",
+      "outcome": "killed",
+      "reason": "active-receipt-receipt-hash:missing-refusal:active-binding:receiptSha256"
+    },
+    {
+      "mutation": "skip-active-hash:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "skip-premature-state",
+      "outcome": "killed",
+      "reason": "active-receipt-premature-running:missing-refusal:replacement-started:running"
+    },
+    {
+      "mutation": "skip-premature-state:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "allow-global-command",
+      "outcome": "killed",
+      "reason": "argv-global-role:missing-refusal:recovery-command:allowed"
+    },
+    {
+      "mutation": "allow-global-command:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "skip-name-collision",
+      "outcome": "killed",
+      "reason": "names-retained-collision:missing-refusal:recovery-names:retained"
+    },
+    {
+      "mutation": "skip-name-collision:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "skip-target-before-stop",
+      "outcome": "killed",
+      "reason": "target-check-before-stop"
+    },
+    {
+      "mutation": "skip-target-before-stop:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "skip-old-identity",
+      "outcome": "killed",
+      "reason": "transition-fault:old-id:service:id"
+    },
+    {
+      "mutation": "skip-old-identity:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "skip-id-custody",
+      "outcome": "killed",
+      "reason": "start-before-id-custody"
+    },
+    {
+      "mutation": "skip-id-custody:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "overwrite-intent",
+      "outcome": "killed",
+      "reason": "retained-rest:Name"
+    },
+    {
+      "mutation": "overwrite-intent:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "build-old-receipt",
+      "outcome": "killed",
+      "reason": "build-active-receipt-hash"
+    },
+    {
+      "mutation": "build-old-receipt:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "start-old-receipt",
+      "outcome": "killed",
+      "reason": "launch:receiptHash"
+    },
+    {
+      "mutation": "start-old-receipt:exact-restoration",
+      "outcome": "survived"
+    }
+  ],
+  "historical": {
+    "controls": {
+      "scope": "Synthetic acquisition with HTTP/tool boundaries replaced; no live Docker, DB, HTTP, build or browser proof.",
+      "controls": [
+        {
+          "control": "database:harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "database:Id:wrong",
+          "outcome": "intended_refusal",
+          "reason": "database:Id"
+        },
+        {
+          "control": "database:Id:missing",
+          "outcome": "intended_refusal",
+          "reason": "database:Id"
+        },
+        {
+          "control": "database:Id:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "database:Id"
+        },
+        {
+          "control": "database:Name:wrong",
+          "outcome": "intended_refusal",
+          "reason": "database:Name"
+        },
+        {
+          "control": "database:Name:missing",
+          "outcome": "intended_refusal",
+          "reason": "database:Name"
+        },
+        {
+          "control": "database:Name:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "database:Name"
+        },
+        {
+          "control": "database:Image:wrong",
+          "outcome": "intended_refusal",
+          "reason": "database:Image"
+        },
+        {
+          "control": "database:Image:missing",
+          "outcome": "intended_refusal",
+          "reason": "database:Image"
+        },
+        {
+          "control": "database:Image:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "database:Image"
+        },
+        {
+          "control": "database:running:wrong",
+          "outcome": "intended_refusal",
+          "reason": "database:running"
+        },
+        {
+          "control": "database:running:missing",
+          "outcome": "intended_refusal",
+          "reason": "database:running"
+        },
+        {
+          "control": "database:running:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "database:running"
+        },
+        {
+          "control": "database:project:wrong",
+          "outcome": "intended_refusal",
+          "reason": "database:project"
+        },
+        {
+          "control": "database:project:missing",
+          "outcome": "intended_refusal",
+          "reason": "database:project"
+        },
+        {
+          "control": "database:project:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "database:project"
+        },
+        {
+          "control": "database:networkId:wrong",
+          "outcome": "intended_refusal",
+          "reason": "database:networkId"
+        },
+        {
+          "control": "database:networkId:missing",
+          "outcome": "intended_refusal",
+          "reason": "database:networkId"
+        },
+        {
+          "control": "database:networkId:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "database:networkId"
+        },
+        {
+          "control": "database:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "source:harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "source:database:wrong",
+          "outcome": "intended_refusal",
+          "reason": "source:database"
+        },
+        {
+          "control": "source:database:missing",
+          "outcome": "intended_refusal",
+          "reason": "source:database"
+        },
+        {
+          "control": "source:database:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "source:database"
+        },
+        {
+          "control": "source:readonly:wrong",
+          "outcome": "intended_refusal",
+          "reason": "source:readonly"
+        },
+        {
+          "control": "source:readonly:missing",
+          "outcome": "intended_refusal",
+          "reason": "source:readonly"
+        },
+        {
+          "control": "source:readonly:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "source:readonly"
+        },
+        {
+          "control": "source:historyCount:wrong",
+          "outcome": "intended_refusal",
+          "reason": "source:historyCount"
+        },
+        {
+          "control": "source:historyCount:missing",
+          "outcome": "intended_refusal",
+          "reason": "source:historyCount"
+        },
+        {
+          "control": "source:historyCount:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "source:historyCount"
+        },
+        {
+          "control": "source:latest:wrong",
+          "outcome": "intended_refusal",
+          "reason": "source:latest"
+        },
+        {
+          "control": "source:latest:missing",
+          "outcome": "intended_refusal",
+          "reason": "source:latest"
+        },
+        {
+          "control": "source:latest:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "source:latest"
+        },
+        {
+          "control": "source:foreignTables:wrong",
+          "outcome": "intended_refusal",
+          "reason": "source:foreignTables"
+        },
+        {
+          "control": "source:foreignTables:missing",
+          "outcome": "intended_refusal",
+          "reason": "source:foreignTables"
+        },
+        {
+          "control": "source:foreignTables:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "source:foreignTables"
+        },
+        {
+          "control": "source:subscriptions:wrong",
+          "outcome": "intended_refusal",
+          "reason": "source:subscriptions"
+        },
+        {
+          "control": "source:subscriptions:missing",
+          "outcome": "intended_refusal",
+          "reason": "source:subscriptions"
+        },
+        {
+          "control": "source:subscriptions:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "source:subscriptions"
+        },
+        {
+          "control": "source:cron:wrong",
+          "outcome": "intended_refusal",
+          "reason": "source:cron"
+        },
+        {
+          "control": "source:cron:missing",
+          "outcome": "intended_refusal",
+          "reason": "source:cron"
+        },
+        {
+          "control": "source:cron:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "source:cron"
+        },
+        {
+          "control": "source:databaseSettings:wrong",
+          "outcome": "intended_refusal",
+          "reason": "source:databaseSettings"
+        },
+        {
+          "control": "source:databaseSettings:missing",
+          "outcome": "intended_refusal",
+          "reason": "source:databaseSettings"
+        },
+        {
+          "control": "source:databaseSettings:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "source:databaseSettings"
+        },
+        {
+          "control": "source:delegatedGrantors:wrong",
+          "outcome": "intended_refusal",
+          "reason": "source:delegatedGrantors"
+        },
+        {
+          "control": "source:delegatedGrantors:missing",
+          "outcome": "intended_refusal",
+          "reason": "source:delegatedGrantors"
+        },
+        {
+          "control": "source:delegatedGrantors:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "source:delegatedGrantors"
+        },
+        {
+          "control": "source:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "source-fingerprint:harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "source-fingerprint:sha256:wrong",
+          "outcome": "intended_refusal",
+          "reason": "source-fingerprint:sha256"
+        },
+        {
+          "control": "source-fingerprint:sha256:missing",
+          "outcome": "intended_refusal",
+          "reason": "source-fingerprint:sha256"
+        },
+        {
+          "control": "source-fingerprint:sha256:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "source-fingerprint:sha256"
+        },
+        {
+          "control": "source-fingerprint:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "prior-input:harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "prior-input:sha256:wrong",
+          "outcome": "intended_refusal",
+          "reason": "prior-input:sha256"
+        },
+        {
+          "control": "prior-input:sha256:missing",
+          "outcome": "intended_refusal",
+          "reason": "prior-input:sha256"
+        },
+        {
+          "control": "prior-input:sha256:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "prior-input:sha256"
+        },
+        {
+          "control": "prior-input:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "prior-helper:harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "prior-helper:sha256:wrong",
+          "outcome": "intended_refusal",
+          "reason": "prior-helper:sha256"
+        },
+        {
+          "control": "prior-helper:sha256:missing",
+          "outcome": "intended_refusal",
+          "reason": "prior-helper:sha256"
+        },
+        {
+          "control": "prior-helper:sha256:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "prior-helper:sha256"
+        },
+        {
+          "control": "prior-helper:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "properties:harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "properties:owner:wrong",
+          "outcome": "intended_refusal",
+          "reason": "properties:owner"
+        },
+        {
+          "control": "properties:owner:missing",
+          "outcome": "intended_refusal",
+          "reason": "properties:owner"
+        },
+        {
+          "control": "properties:owner:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "properties:owner"
+        },
+        {
+          "control": "properties:encoding:wrong",
+          "outcome": "intended_refusal",
+          "reason": "properties:encoding"
+        },
+        {
+          "control": "properties:encoding:missing",
+          "outcome": "intended_refusal",
+          "reason": "properties:encoding"
+        },
+        {
+          "control": "properties:encoding:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "properties:encoding"
+        },
+        {
+          "control": "properties:collate:wrong",
+          "outcome": "intended_refusal",
+          "reason": "properties:collate"
+        },
+        {
+          "control": "properties:collate:missing",
+          "outcome": "intended_refusal",
+          "reason": "properties:collate"
+        },
+        {
+          "control": "properties:collate:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "properties:collate"
+        },
+        {
+          "control": "properties:ctype:wrong",
+          "outcome": "intended_refusal",
+          "reason": "properties:ctype"
+        },
+        {
+          "control": "properties:ctype:missing",
+          "outcome": "intended_refusal",
+          "reason": "properties:ctype"
+        },
+        {
+          "control": "properties:ctype:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "properties:ctype"
+        },
+        {
+          "control": "properties:localeProvider:wrong",
+          "outcome": "intended_refusal",
+          "reason": "properties:localeProvider"
+        },
+        {
+          "control": "properties:localeProvider:missing",
+          "outcome": "intended_refusal",
+          "reason": "properties:localeProvider"
+        },
+        {
+          "control": "properties:localeProvider:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "properties:localeProvider"
+        },
+        {
+          "control": "properties:connectionLimit:wrong",
+          "outcome": "intended_refusal",
+          "reason": "properties:connectionLimit"
+        },
+        {
+          "control": "properties:connectionLimit:missing",
+          "outcome": "intended_refusal",
+          "reason": "properties:connectionLimit"
+        },
+        {
+          "control": "properties:connectionLimit:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "properties:connectionLimit"
+        },
+        {
+          "control": "properties:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "old-helper:harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "old-helper:Id:wrong",
+          "outcome": "intended_refusal",
+          "reason": "old-helper:Id"
+        },
+        {
+          "control": "old-helper:Id:missing",
+          "outcome": "intended_refusal",
+          "reason": "old-helper:Id"
+        },
+        {
+          "control": "old-helper:Id:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "old-helper:Id"
+        },
+        {
+          "control": "old-helper:Image:wrong",
+          "outcome": "intended_refusal",
+          "reason": "old-helper:Image"
+        },
+        {
+          "control": "old-helper:Image:missing",
+          "outcome": "intended_refusal",
+          "reason": "old-helper:Image"
+        },
+        {
+          "control": "old-helper:Image:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "old-helper:Image"
+        },
+        {
+          "control": "old-helper:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "helper-uri:harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "helper-uri:host:wrong",
+          "outcome": "intended_refusal",
+          "reason": "helper-uri:host"
+        },
+        {
+          "control": "helper-uri:host:missing",
+          "outcome": "intended_refusal",
+          "reason": "helper-uri:host"
+        },
+        {
+          "control": "helper-uri:host:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "helper-uri:host"
+        },
+        {
+          "control": "helper-uri:port:wrong",
+          "outcome": "intended_refusal",
+          "reason": "helper-uri:port"
+        },
+        {
+          "control": "helper-uri:port:missing",
+          "outcome": "intended_refusal",
+          "reason": "helper-uri:port"
+        },
+        {
+          "control": "helper-uri:port:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "helper-uri:port"
+        },
+        {
+          "control": "helper-uri:role:wrong",
+          "outcome": "intended_refusal",
+          "reason": "helper-uri:role"
+        },
+        {
+          "control": "helper-uri:role:missing",
+          "outcome": "intended_refusal",
+          "reason": "helper-uri:role"
+        },
+        {
+          "control": "helper-uri:role:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "helper-uri:role"
+        },
+        {
+          "control": "helper-uri:query:wrong",
+          "outcome": "intended_refusal",
+          "reason": "helper-uri:query"
+        },
+        {
+          "control": "helper-uri:query:missing",
+          "outcome": "intended_refusal",
+          "reason": "helper-uri:query"
+        },
+        {
+          "control": "helper-uri:query:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "helper-uri:query"
+        },
+        {
+          "control": "helper-uri:hasPassword:wrong",
+          "outcome": "intended_refusal",
+          "reason": "helper-uri:hasPassword"
+        },
+        {
+          "control": "helper-uri:hasPassword:missing",
+          "outcome": "intended_refusal",
+          "reason": "helper-uri:hasPassword"
+        },
+        {
+          "control": "helper-uri:hasPassword:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "helper-uri:hasPassword"
+        },
+        {
+          "control": "helper-uri:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "kong-upstream:harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "kong-upstream:host:wrong",
+          "outcome": "intended_refusal",
+          "reason": "kong-upstream:host"
+        },
+        {
+          "control": "kong-upstream:host:missing",
+          "outcome": "intended_refusal",
+          "reason": "kong-upstream:host"
+        },
+        {
+          "control": "kong-upstream:host:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "kong-upstream:host"
+        },
+        {
+          "control": "kong-upstream:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "plan:harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "plan:head:wrong",
+          "outcome": "intended_refusal",
+          "reason": "plan:head"
+        },
+        {
+          "control": "plan:head:missing",
+          "outcome": "intended_refusal",
+          "reason": "plan:head"
+        },
+        {
+          "control": "plan:head:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "plan:head"
+        },
+        {
+          "control": "plan:source:wrong",
+          "outcome": "intended_refusal",
+          "reason": "plan:source"
+        },
+        {
+          "control": "plan:source:missing",
+          "outcome": "intended_refusal",
+          "reason": "plan:source"
+        },
+        {
+          "control": "plan:source:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "plan:source"
+        },
+        {
+          "control": "plan:dbId:wrong",
+          "outcome": "intended_refusal",
+          "reason": "plan:dbId"
+        },
+        {
+          "control": "plan:dbId:missing",
+          "outcome": "intended_refusal",
+          "reason": "plan:dbId"
+        },
+        {
+          "control": "plan:dbId:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "plan:dbId"
+        },
+        {
+          "control": "plan:api:wrong",
+          "outcome": "intended_refusal",
+          "reason": "plan:api"
+        },
+        {
+          "control": "plan:api:missing",
+          "outcome": "intended_refusal",
+          "reason": "plan:api"
+        },
+        {
+          "control": "plan:api:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "plan:api"
+        },
+        {
+          "control": "plan:web:wrong",
+          "outcome": "intended_refusal",
+          "reason": "plan:web"
+        },
+        {
+          "control": "plan:web:missing",
+          "outcome": "intended_refusal",
+          "reason": "plan:web"
+        },
+        {
+          "control": "plan:web:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "plan:web"
+        },
+        {
+          "control": "plan:root:wrong",
+          "outcome": "intended_refusal",
+          "reason": "plan:root"
+        },
+        {
+          "control": "plan:root:missing",
+          "outcome": "intended_refusal",
+          "reason": "plan:root"
+        },
+        {
+          "control": "plan:root:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "plan:root"
+        },
+        {
+          "control": "plan:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "clone:harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "clone:fresh:wrong",
+          "outcome": "intended_refusal",
+          "reason": "clone:fresh"
+        },
+        {
+          "control": "clone:fresh:missing",
+          "outcome": "intended_refusal",
+          "reason": "clone:fresh"
+        },
+        {
+          "control": "clone:fresh:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "clone:fresh"
+        },
+        {
+          "control": "clone:disk:wrong",
+          "outcome": "intended_refusal",
+          "reason": "clone:disk"
+        },
+        {
+          "control": "clone:disk:missing",
+          "outcome": "intended_refusal",
+          "reason": "clone:disk"
+        },
+        {
+          "control": "clone:disk:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "clone:disk"
+        },
+        {
+          "control": "clone:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "dump-bytes:harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "dump-bytes:sha256:wrong",
+          "outcome": "intended_refusal",
+          "reason": "dump-bytes:sha256"
+        },
+        {
+          "control": "dump-bytes:sha256:missing",
+          "outcome": "intended_refusal",
+          "reason": "dump-bytes:sha256"
+        },
+        {
+          "control": "dump-bytes:sha256:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "dump-bytes:sha256"
+        },
+        {
+          "control": "dump-bytes:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "dump:harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "dump:ok:wrong",
+          "outcome": "intended_refusal",
+          "reason": "dump:ok"
+        },
+        {
+          "control": "dump:ok:missing",
+          "outcome": "intended_refusal",
+          "reason": "dump:ok"
+        },
+        {
+          "control": "dump:ok:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "dump:ok"
+        },
+        {
+          "control": "dump:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "restore:harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "restore:returncode:wrong",
+          "outcome": "intended_refusal",
+          "reason": "restore:returncode"
+        },
+        {
+          "control": "restore:returncode:missing",
+          "outcome": "intended_refusal",
+          "reason": "restore:returncode"
+        },
+        {
+          "control": "restore:returncode:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "restore:returncode"
+        },
+        {
+          "control": "restore:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "restored-data:harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "restored-data:data:wrong",
+          "outcome": "intended_refusal",
+          "reason": "restored-data:data"
+        },
+        {
+          "control": "restored-data:data:missing",
+          "outcome": "intended_refusal",
+          "reason": "restored-data:data"
+        },
+        {
+          "control": "restored-data:data:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "restored-data:data"
+        },
+        {
+          "control": "restored-data:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "target-identity:harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "target-identity:oid:wrong",
+          "outcome": "intended_refusal",
+          "reason": "target-identity:oid"
+        },
+        {
+          "control": "target-identity:oid:missing",
+          "outcome": "intended_refusal",
+          "reason": "target-identity:oid"
+        },
+        {
+          "control": "target-identity:oid:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "target-identity:oid"
+        },
+        {
+          "control": "target-identity:database:wrong",
+          "outcome": "intended_refusal",
+          "reason": "target-identity:database"
+        },
+        {
+          "control": "target-identity:database:missing",
+          "outcome": "intended_refusal",
+          "reason": "target-identity:database"
+        },
+        {
+          "control": "target-identity:database:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "target-identity:database"
+        },
+        {
+          "control": "target-identity:owner:wrong",
+          "outcome": "intended_refusal",
+          "reason": "target-identity:owner"
+        },
+        {
+          "control": "target-identity:owner:missing",
+          "outcome": "intended_refusal",
+          "reason": "target-identity:owner"
+        },
+        {
+          "control": "target-identity:owner:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "target-identity:owner"
+        },
+        {
+          "control": "target-identity:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "clone-ready:harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "clone-ready:target:wrong",
+          "outcome": "intended_refusal",
+          "reason": "clone-ready:target"
+        },
+        {
+          "control": "clone-ready:target:missing",
+          "outcome": "intended_refusal",
+          "reason": "clone-ready:target"
+        },
+        {
+          "control": "clone-ready:target:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "clone-ready:target"
+        },
+        {
+          "control": "clone-ready:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "helpers:harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "helpers:kinds:wrong",
+          "outcome": "intended_refusal",
+          "reason": "helpers:kinds"
+        },
+        {
+          "control": "helpers:kinds:missing",
+          "outcome": "intended_refusal",
+          "reason": "helpers:kinds"
+        },
+        {
+          "control": "helpers:kinds:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "helpers:kinds"
+        },
+        {
+          "control": "helpers:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "receipt:harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "receipt:name:wrong",
+          "outcome": "intended_refusal",
+          "reason": "receipt:name"
+        },
+        {
+          "control": "receipt:name:missing",
+          "outcome": "intended_refusal",
+          "reason": "receipt:name"
+        },
+        {
+          "control": "receipt:name:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "receipt:name"
+        },
+        {
+          "control": "receipt:database:wrong",
+          "outcome": "intended_refusal",
+          "reason": "receipt:database"
+        },
+        {
+          "control": "receipt:database:missing",
+          "outcome": "intended_refusal",
+          "reason": "receipt:database"
+        },
+        {
+          "control": "receipt:database:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "receipt:database"
+        },
+        {
+          "control": "receipt:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "health:harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "health:auth:wrong",
+          "outcome": "intended_refusal",
+          "reason": "health:auth"
+        },
+        {
+          "control": "health:auth:missing",
+          "outcome": "intended_refusal",
+          "reason": "health:auth"
+        },
+        {
+          "control": "health:auth:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "health:auth"
+        },
+        {
+          "control": "health:rest:wrong",
+          "outcome": "intended_refusal",
+          "reason": "health:rest"
+        },
+        {
+          "control": "health:rest:missing",
+          "outcome": "intended_refusal",
+          "reason": "health:rest"
+        },
+        {
+          "control": "health:rest:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "health:rest"
+        },
+        {
+          "control": "health:storage:wrong",
+          "outcome": "intended_refusal",
+          "reason": "health:storage"
+        },
+        {
+          "control": "health:storage:missing",
+          "outcome": "intended_refusal",
+          "reason": "health:storage"
+        },
+        {
+          "control": "health:storage:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "health:storage"
+        },
+        {
+          "control": "health:ownOrigin:wrong",
+          "outcome": "intended_refusal",
+          "reason": "health:ownOrigin"
+        },
+        {
+          "control": "health:ownOrigin:missing",
+          "outcome": "intended_refusal",
+          "reason": "health:ownOrigin"
+        },
+        {
+          "control": "health:ownOrigin:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "health:ownOrigin"
+        },
+        {
+          "control": "health:oldOrigin:wrong",
+          "outcome": "intended_refusal",
+          "reason": "health:oldOrigin"
+        },
+        {
+          "control": "health:oldOrigin:missing",
+          "outcome": "intended_refusal",
+          "reason": "health:oldOrigin"
+        },
+        {
+          "control": "health:oldOrigin:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "health:oldOrigin"
+        },
+        {
+          "control": "health:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "checkout:harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "checkout:head:wrong",
+          "outcome": "intended_refusal",
+          "reason": "checkout:head"
+        },
+        {
+          "control": "checkout:head:missing",
+          "outcome": "intended_refusal",
+          "reason": "checkout:head"
+        },
+        {
+          "control": "checkout:head:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "checkout:head"
+        },
+        {
+          "control": "checkout:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "app-env:harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "app-env:sha256:wrong",
+          "outcome": "intended_refusal",
+          "reason": "app-env:sha256"
+        },
+        {
+          "control": "app-env:sha256:missing",
+          "outcome": "intended_refusal",
+          "reason": "app-env:sha256"
+        },
+        {
+          "control": "app-env:sha256:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "app-env:sha256"
+        },
+        {
+          "control": "app-env:otherEnv:wrong",
+          "outcome": "intended_refusal",
+          "reason": "app-env:otherEnv"
+        },
+        {
+          "control": "app-env:otherEnv:missing",
+          "outcome": "intended_refusal",
+          "reason": "app-env:otherEnv"
+        },
+        {
+          "control": "app-env:otherEnv:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "app-env:otherEnv"
+        },
+        {
+          "control": "app-env:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "app:harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "app:head:wrong",
+          "outcome": "intended_refusal",
+          "reason": "app:head"
+        },
+        {
+          "control": "app:head:missing",
+          "outcome": "intended_refusal",
+          "reason": "app:head"
+        },
+        {
+          "control": "app:head:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "app:head"
+        },
+        {
+          "control": "app:clean:wrong",
+          "outcome": "intended_refusal",
+          "reason": "app:clean"
+        },
+        {
+          "control": "app:clean:missing",
+          "outcome": "intended_refusal",
+          "reason": "app:clean"
+        },
+        {
+          "control": "app:clean:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "app:clean"
+        },
+        {
+          "control": "app:path:wrong",
+          "outcome": "intended_refusal",
+          "reason": "app:path"
+        },
+        {
+          "control": "app:path:missing",
+          "outcome": "intended_refusal",
+          "reason": "app:path"
+        },
+        {
+          "control": "app:path:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "app:path"
+        },
+        {
+          "control": "app:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "app-values:harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "app-values:api:wrong",
+          "outcome": "intended_refusal",
+          "reason": "app-values:api"
+        },
+        {
+          "control": "app-values:api:missing",
+          "outcome": "intended_refusal",
+          "reason": "app-values:api"
+        },
+        {
+          "control": "app-values:api:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "app-values:api"
+        },
+        {
+          "control": "app-values:web:wrong",
+          "outcome": "intended_refusal",
+          "reason": "app-values:web"
+        },
+        {
+          "control": "app-values:web:missing",
+          "outcome": "intended_refusal",
+          "reason": "app-values:web"
+        },
+        {
+          "control": "app-values:web:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "app-values:web"
+        },
+        {
+          "control": "app-values:head:wrong",
+          "outcome": "intended_refusal",
+          "reason": "app-values:head"
+        },
+        {
+          "control": "app-values:head:missing",
+          "outcome": "intended_refusal",
+          "reason": "app-values:head"
+        },
+        {
+          "control": "app-values:head:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "app-values:head"
+        },
+        {
+          "control": "app-values:gtfs:wrong",
+          "outcome": "intended_refusal",
+          "reason": "app-values:gtfs"
+        },
+        {
+          "control": "app-values:gtfs:missing",
+          "outcome": "intended_refusal",
+          "reason": "app-values:gtfs"
+        },
+        {
+          "control": "app-values:gtfs:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "app-values:gtfs"
+        },
+        {
+          "control": "app-values:values:wrong",
+          "outcome": "intended_refusal",
+          "reason": "app-values:values"
+        },
+        {
+          "control": "app-values:values:missing",
+          "outcome": "intended_refusal",
+          "reason": "app-values:values"
+        },
+        {
+          "control": "app-values:values:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "app-values:values"
+        },
+        {
+          "control": "app-values:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "build-budget:harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "build-budget:memory.max:wrong",
+          "outcome": "intended_refusal",
+          "reason": "build-budget:memory.max"
+        },
+        {
+          "control": "build-budget:memory.max:missing",
+          "outcome": "intended_refusal",
+          "reason": "build-budget:memory.max"
+        },
+        {
+          "control": "build-budget:memory.max:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "build-budget:memory.max"
+        },
+        {
+          "control": "build-budget:memory.swap.max:wrong",
+          "outcome": "intended_refusal",
+          "reason": "build-budget:memory.swap.max"
+        },
+        {
+          "control": "build-budget:memory.swap.max:missing",
+          "outcome": "intended_refusal",
+          "reason": "build-budget:memory.swap.max"
+        },
+        {
+          "control": "build-budget:memory.swap.max:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "build-budget:memory.swap.max"
+        },
+        {
+          "control": "build-budget:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "build-headroom:harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "build-headroom:memory:wrong",
+          "outcome": "intended_refusal",
+          "reason": "build-headroom:memory"
+        },
+        {
+          "control": "build-headroom:memory:missing",
+          "outcome": "intended_refusal",
+          "reason": "build-headroom:memory"
+        },
+        {
+          "control": "build-headroom:memory:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "build-headroom:memory"
+        },
+        {
+          "control": "build-headroom:disk:wrong",
+          "outcome": "intended_refusal",
+          "reason": "build-headroom:disk"
+        },
+        {
+          "control": "build-headroom:disk:missing",
+          "outcome": "intended_refusal",
+          "reason": "build-headroom:disk"
+        },
+        {
+          "control": "build-headroom:disk:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "build-headroom:disk"
+        },
+        {
+          "control": "build-headroom:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "build:harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "build:returncode:wrong",
+          "outcome": "intended_refusal",
+          "reason": "build:returncode"
+        },
+        {
+          "control": "build:returncode:missing",
+          "outcome": "intended_refusal",
+          "reason": "build:returncode"
+        },
+        {
+          "control": "build:returncode:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "build:returncode"
+        },
+        {
+          "control": "build:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "launcher-root:harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "launcher-root:root:wrong",
+          "outcome": "intended_refusal",
+          "reason": "launcher-root:root"
+        },
+        {
+          "control": "launcher-root:root:missing",
+          "outcome": "intended_refusal",
+          "reason": "launcher-root:root"
+        },
+        {
+          "control": "launcher-root:root:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "launcher-root:root"
+        },
+        {
+          "control": "launcher-root:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "candidate-migrations:harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "candidate-migrations:versions:wrong",
+          "outcome": "intended_refusal",
+          "reason": "candidate-migrations:versions"
+        },
+        {
+          "control": "candidate-migrations:versions:missing",
+          "outcome": "intended_refusal",
+          "reason": "candidate-migrations:versions"
+        },
+        {
+          "control": "candidate-migrations:versions:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "candidate-migrations:versions"
+        },
+        {
+          "control": "candidate-migrations:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "app-env-binding:harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "app-env-binding:sha256:wrong",
+          "outcome": "intended_refusal",
+          "reason": "app-env-binding:sha256"
+        },
+        {
+          "control": "app-env-binding:sha256:missing",
+          "outcome": "intended_refusal",
+          "reason": "app-env-binding:sha256"
+        },
+        {
+          "control": "app-env-binding:sha256:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "app-env-binding:sha256"
+        },
+        {
+          "control": "app-env-binding:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "service:harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "service:id:wrong",
+          "outcome": "intended_refusal",
+          "reason": "service:id"
+        },
+        {
+          "control": "service:id:missing",
+          "outcome": "intended_refusal",
+          "reason": "service:id"
+        },
+        {
+          "control": "service:id:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "service:id"
+        },
+        {
+          "control": "service:name:wrong",
+          "outcome": "intended_refusal",
+          "reason": "service:name"
+        },
+        {
+          "control": "service:name:missing",
+          "outcome": "intended_refusal",
+          "reason": "service:name"
+        },
+        {
+          "control": "service:name:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "service:name"
+        },
+        {
+          "control": "service:image:wrong",
+          "outcome": "intended_refusal",
+          "reason": "service:image"
+        },
+        {
+          "control": "service:image:missing",
+          "outcome": "intended_refusal",
+          "reason": "service:image"
+        },
+        {
+          "control": "service:image:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "service:image"
+        },
+        {
+          "control": "service:labels:wrong",
+          "outcome": "intended_refusal",
+          "reason": "service:labels"
+        },
+        {
+          "control": "service:labels:missing",
+          "outcome": "intended_refusal",
+          "reason": "service:labels"
+        },
+        {
+          "control": "service:labels:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "service:labels"
+        },
+        {
+          "control": "service:network:wrong",
+          "outcome": "intended_refusal",
+          "reason": "service:network"
+        },
+        {
+          "control": "service:network:missing",
+          "outcome": "intended_refusal",
+          "reason": "service:network"
+        },
+        {
+          "control": "service:network:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "service:network"
+        },
+        {
+          "control": "service:networkNames:wrong",
+          "outcome": "intended_refusal",
+          "reason": "service:networkNames"
+        },
+        {
+          "control": "service:networkNames:missing",
+          "outcome": "intended_refusal",
+          "reason": "service:networkNames"
+        },
+        {
+          "control": "service:networkNames:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "service:networkNames"
+        },
+        {
+          "control": "service:memory:wrong",
+          "outcome": "intended_refusal",
+          "reason": "service:memory"
+        },
+        {
+          "control": "service:memory:missing",
+          "outcome": "intended_refusal",
+          "reason": "service:memory"
+        },
+        {
+          "control": "service:memory:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "service:memory"
+        },
+        {
+          "control": "service:swap:wrong",
+          "outcome": "intended_refusal",
+          "reason": "service:swap"
+        },
+        {
+          "control": "service:swap:missing",
+          "outcome": "intended_refusal",
+          "reason": "service:swap"
+        },
+        {
+          "control": "service:swap:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "service:swap"
+        },
+        {
+          "control": "service:cpus:wrong",
+          "outcome": "intended_refusal",
+          "reason": "service:cpus"
+        },
+        {
+          "control": "service:cpus:missing",
+          "outcome": "intended_refusal",
+          "reason": "service:cpus"
+        },
+        {
+          "control": "service:cpus:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "service:cpus"
+        },
+        {
+          "control": "service:pids:wrong",
+          "outcome": "intended_refusal",
+          "reason": "service:pids"
+        },
+        {
+          "control": "service:pids:missing",
+          "outcome": "intended_refusal",
+          "reason": "service:pids"
+        },
+        {
+          "control": "service:pids:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "service:pids"
+        },
+        {
+          "control": "service:environment:wrong",
+          "outcome": "intended_refusal",
+          "reason": "service:environment"
+        },
+        {
+          "control": "service:environment:missing",
+          "outcome": "intended_refusal",
+          "reason": "service:environment"
+        },
+        {
+          "control": "service:environment:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "service:environment"
+        },
+        {
+          "control": "service:mounts:wrong",
+          "outcome": "intended_refusal",
+          "reason": "service:mounts"
+        },
+        {
+          "control": "service:mounts:missing",
+          "outcome": "intended_refusal",
+          "reason": "service:mounts"
+        },
+        {
+          "control": "service:mounts:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "service:mounts"
+        },
+        {
+          "control": "service:bindings:wrong",
+          "outcome": "intended_refusal",
+          "reason": "service:bindings"
+        },
+        {
+          "control": "service:bindings:missing",
+          "outcome": "intended_refusal",
+          "reason": "service:bindings"
+        },
+        {
+          "control": "service:bindings:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "service:bindings"
+        },
+        {
+          "control": "service:database:wrong",
+          "outcome": "intended_refusal",
+          "reason": "service:database"
+        },
+        {
+          "control": "service:database:missing",
+          "outcome": "intended_refusal",
+          "reason": "service:database"
+        },
+        {
+          "control": "service:database:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "service:database"
+        },
+        {
+          "control": "service:running:wrong",
+          "outcome": "intended_refusal",
+          "reason": "service:running"
+        },
+        {
+          "control": "service:running:missing",
+          "outcome": "intended_refusal",
+          "reason": "service:running"
+        },
+        {
+          "control": "service:running:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "service:running"
+        },
+        {
+          "control": "service:privileged:wrong",
+          "outcome": "intended_refusal",
+          "reason": "service:privileged"
+        },
+        {
+          "control": "service:privileged:missing",
+          "outcome": "intended_refusal",
+          "reason": "service:privileged"
+        },
+        {
+          "control": "service:privileged:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "service:privileged"
+        },
+        {
+          "control": "service:networkMode:wrong",
+          "outcome": "intended_refusal",
+          "reason": "service:networkMode"
+        },
+        {
+          "control": "service:networkMode:missing",
+          "outcome": "intended_refusal",
+          "reason": "service:networkMode"
+        },
+        {
+          "control": "service:networkMode:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "service:networkMode"
+        },
+        {
+          "control": "service:extraHosts:wrong",
+          "outcome": "intended_refusal",
+          "reason": "service:extraHosts"
+        },
+        {
+          "control": "service:extraHosts:missing",
+          "outcome": "intended_refusal",
+          "reason": "service:extraHosts"
+        },
+        {
+          "control": "service:extraHosts:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "service:extraHosts"
+        },
+        {
+          "control": "service:capAdd:wrong",
+          "outcome": "intended_refusal",
+          "reason": "service:capAdd"
+        },
+        {
+          "control": "service:capAdd:missing",
+          "outcome": "intended_refusal",
+          "reason": "service:capAdd"
+        },
+        {
+          "control": "service:capAdd:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "service:capAdd"
+        },
+        {
+          "control": "service:pidMode:wrong",
+          "outcome": "intended_refusal",
+          "reason": "service:pidMode"
+        },
+        {
+          "control": "service:pidMode:missing",
+          "outcome": "intended_refusal",
+          "reason": "service:pidMode"
+        },
+        {
+          "control": "service:pidMode:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "service:pidMode"
+        },
+        {
+          "control": "service:binds:wrong",
+          "outcome": "intended_refusal",
+          "reason": "service:binds"
+        },
+        {
+          "control": "service:binds:missing",
+          "outcome": "intended_refusal",
+          "reason": "service:binds"
+        },
+        {
+          "control": "service:binds:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "service:binds"
+        },
+        {
+          "control": "service:readOnlyRoot:wrong",
+          "outcome": "intended_refusal",
+          "reason": "service:readOnlyRoot"
+        },
+        {
+          "control": "service:readOnlyRoot:missing",
+          "outcome": "intended_refusal",
+          "reason": "service:readOnlyRoot"
+        },
+        {
+          "control": "service:readOnlyRoot:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "service:readOnlyRoot"
+        },
+        {
+          "control": "service:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "launch:harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "launch:head:wrong",
+          "outcome": "intended_refusal",
+          "reason": "launch:head"
+        },
+        {
+          "control": "launch:head:missing",
+          "outcome": "intended_refusal",
+          "reason": "launch:head"
+        },
+        {
+          "control": "launch:head:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "launch:head"
+        },
+        {
+          "control": "launch:clean:wrong",
+          "outcome": "intended_refusal",
+          "reason": "launch:clean"
+        },
+        {
+          "control": "launch:clean:missing",
+          "outcome": "intended_refusal",
+          "reason": "launch:clean"
+        },
+        {
+          "control": "launch:clean:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "launch:clean"
+        },
+        {
+          "control": "launch:app:wrong",
+          "outcome": "intended_refusal",
+          "reason": "launch:app"
+        },
+        {
+          "control": "launch:app:missing",
+          "outcome": "intended_refusal",
+          "reason": "launch:app"
+        },
+        {
+          "control": "launch:app:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "launch:app"
+        },
+        {
+          "control": "launch:build:wrong",
+          "outcome": "intended_refusal",
+          "reason": "launch:build"
+        },
+        {
+          "control": "launch:build:missing",
+          "outcome": "intended_refusal",
+          "reason": "launch:build"
+        },
+        {
+          "control": "launch:build:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "launch:build"
+        },
+        {
+          "control": "launch:buildHash:wrong",
+          "outcome": "intended_refusal",
+          "reason": "launch:buildHash"
+        },
+        {
+          "control": "launch:buildHash:missing",
+          "outcome": "intended_refusal",
+          "reason": "launch:buildHash"
+        },
+        {
+          "control": "launch:buildHash:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "launch:buildHash"
+        },
+        {
+          "control": "launch:envHash:wrong",
+          "outcome": "intended_refusal",
+          "reason": "launch:envHash"
+        },
+        {
+          "control": "launch:envHash:missing",
+          "outcome": "intended_refusal",
+          "reason": "launch:envHash"
+        },
+        {
+          "control": "launch:envHash:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "launch:envHash"
+        },
+        {
+          "control": "launch:sourceHash:wrong",
+          "outcome": "intended_refusal",
+          "reason": "launch:sourceHash"
+        },
+        {
+          "control": "launch:sourceHash:missing",
+          "outcome": "intended_refusal",
+          "reason": "launch:sourceHash"
+        },
+        {
+          "control": "launch:sourceHash:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "launch:sourceHash"
+        },
+        {
+          "control": "launch:receiptHash:wrong",
+          "outcome": "intended_refusal",
+          "reason": "launch:receiptHash"
+        },
+        {
+          "control": "launch:receiptHash:missing",
+          "outcome": "intended_refusal",
+          "reason": "launch:receiptHash"
+        },
+        {
+          "control": "launch:receiptHash:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "launch:receiptHash"
+        },
+        {
+          "control": "launch:api:wrong",
+          "outcome": "intended_refusal",
+          "reason": "launch:api"
+        },
+        {
+          "control": "launch:api:missing",
+          "outcome": "intended_refusal",
+          "reason": "launch:api"
+        },
+        {
+          "control": "launch:api:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "launch:api"
+        },
+        {
+          "control": "launch:web:wrong",
+          "outcome": "intended_refusal",
+          "reason": "launch:web"
+        },
+        {
+          "control": "launch:web:missing",
+          "outcome": "intended_refusal",
+          "reason": "launch:web"
+        },
+        {
+          "control": "launch:web:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "launch:web"
+        },
+        {
+          "control": "launch:disabledGTFS:wrong",
+          "outcome": "intended_refusal",
+          "reason": "launch:disabledGTFS"
+        },
+        {
+          "control": "launch:disabledGTFS:missing",
+          "outcome": "intended_refusal",
+          "reason": "launch:disabledGTFS"
+        },
+        {
+          "control": "launch:disabledGTFS:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "launch:disabledGTFS"
+        },
+        {
+          "control": "launch:absentAI:wrong",
+          "outcome": "intended_refusal",
+          "reason": "launch:absentAI"
+        },
+        {
+          "control": "launch:absentAI:missing",
+          "outcome": "intended_refusal",
+          "reason": "launch:absentAI"
+        },
+        {
+          "control": "launch:absentAI:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "launch:absentAI"
+        },
+        {
+          "control": "launch:freePort:wrong",
+          "outcome": "intended_refusal",
+          "reason": "launch:freePort"
+        },
+        {
+          "control": "launch:freePort:missing",
+          "outcome": "intended_refusal",
+          "reason": "launch:freePort"
+        },
+        {
+          "control": "launch:freePort:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "launch:freePort"
+        },
+        {
+          "control": "launch:services:wrong",
+          "outcome": "intended_refusal",
+          "reason": "launch:services"
+        },
+        {
+          "control": "launch:services:missing",
+          "outcome": "intended_refusal",
+          "reason": "launch:services"
+        },
+        {
+          "control": "launch:services:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "launch:services"
+        },
+        {
+          "control": "launch:noOom:wrong",
+          "outcome": "intended_refusal",
+          "reason": "launch:noOom"
+        },
+        {
+          "control": "launch:noOom:missing",
+          "outcome": "intended_refusal",
+          "reason": "launch:noOom"
+        },
+        {
+          "control": "launch:noOom:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "launch:noOom"
+        },
+        {
+          "control": "launch:bounded:wrong",
+          "outcome": "intended_refusal",
+          "reason": "launch:bounded"
+        },
+        {
+          "control": "launch:bounded:missing",
+          "outcome": "intended_refusal",
+          "reason": "launch:bounded"
+        },
+        {
+          "control": "launch:bounded:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "launch:bounded"
+        },
+        {
+          "control": "launch:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "files:harmless-order",
+          "outcome": "survived"
+        },
+        {
+          "control": "files:a:wrong",
+          "outcome": "intended_refusal",
+          "reason": "files:a"
+        },
+        {
+          "control": "files:a:missing",
+          "outcome": "intended_refusal",
+          "reason": "files:a"
+        },
+        {
+          "control": "files:a:wrong-type",
+          "outcome": "intended_refusal",
+          "reason": "files:a"
+        },
+        {
+          "control": "files:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "target:foreign-or-malformed",
+          "outcome": "intended_refusal",
+          "reason": "target:valid"
+        },
+        {
+          "control": "target:foreign-or-malformed",
+          "outcome": "intended_refusal",
+          "reason": "target:valid"
+        },
+        {
+          "control": "target:foreign-or-malformed",
+          "outcome": "intended_refusal",
+          "reason": "target:valid"
+        },
+        {
+          "control": "target:foreign-or-malformed",
+          "outcome": "intended_refusal",
+          "reason": "target:valid"
+        },
+        {
+          "control": "target:foreign-or-malformed",
+          "outcome": "intended_refusal",
+          "reason": "target:valid"
+        },
+        {
+          "control": "source-as-restore-target",
+          "outcome": "intended_refusal",
+          "reason": "command:allowed"
+        },
+        {
+          "control": "foreign-container",
+          "outcome": "intended_refusal",
+          "reason": "command:allowed"
+        },
+        {
+          "control": "parallel-restore",
+          "outcome": "intended_refusal",
+          "reason": "command:allowed"
+        },
+        {
+          "control": "ignore-restore-errors",
+          "outcome": "intended_refusal",
+          "reason": "command:allowed"
+        },
+        {
+          "control": "extra-file",
+          "outcome": "intended_refusal",
+          "reason": "file-set:keys"
+        },
+        {
+          "control": "source-dump-argument-0",
+          "outcome": "intended_refusal",
+          "reason": "source-dump:argv"
+        },
+        {
+          "control": "source-dump-argument-1",
+          "outcome": "intended_refusal",
+          "reason": "source-dump:argv"
+        },
+        {
+          "control": "source-dump-argument-2",
+          "outcome": "intended_refusal",
+          "reason": "source-dump:argv"
+        },
+        {
+          "control": "source-dump-argument-3",
+          "outcome": "intended_refusal",
+          "reason": "source-dump:argv"
+        },
+        {
+          "control": "source-dump-argument-4",
+          "outcome": "intended_refusal",
+          "reason": "source-dump:argv"
+        },
+        {
+          "control": "source-dump-argument-5",
+          "outcome": "intended_refusal",
+          "reason": "source-dump:argv"
+        },
+        {
+          "control": "source-dump-argument-6",
+          "outcome": "intended_refusal",
+          "reason": "source-dump:argv"
+        },
+        {
+          "control": "source-dump-argument-7",
+          "outcome": "intended_refusal",
+          "reason": "source-dump:argv"
+        },
+        {
+          "control": "source-dump-argument-8",
+          "outcome": "intended_refusal",
+          "reason": "source-dump:argv"
+        },
+        {
+          "control": "source-dump-argument-9",
+          "outcome": "intended_refusal",
+          "reason": "source-dump:argv"
+        },
+        {
+          "control": "source-dump-argument-10",
+          "outcome": "intended_refusal",
+          "reason": "source-dump:argv"
+        },
+        {
+          "control": "source-dump-argument-11",
+          "outcome": "intended_refusal",
+          "reason": "source-dump:argv"
+        },
+        {
+          "control": "source-dump-argument-12",
+          "outcome": "intended_refusal",
+          "reason": "source-dump:argv"
+        },
+        {
+          "control": "source-dump-exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "raw-docker-baseline",
+          "outcome": "survived"
+        },
+        {
+          "control": "raw-docker-harmless",
+          "outcome": "survived"
+        },
+        {
+          "control": "raw-docker-id",
+          "outcome": "intended_refusal",
+          "reason": "service:id"
+        },
+        {
+          "control": "raw-docker-name",
+          "outcome": "intended_refusal",
+          "reason": "service:name"
+        },
+        {
+          "control": "raw-docker-image",
+          "outcome": "intended_refusal",
+          "reason": "service:image"
+        },
+        {
+          "control": "raw-docker-labels",
+          "outcome": "intended_refusal",
+          "reason": "service:labels"
+        },
+        {
+          "control": "raw-docker-network",
+          "outcome": "intended_refusal",
+          "reason": "service:network"
+        },
+        {
+          "control": "raw-docker-memory",
+          "outcome": "intended_refusal",
+          "reason": "service:memory"
+        },
+        {
+          "control": "raw-docker-swap",
+          "outcome": "intended_refusal",
+          "reason": "service:swap"
+        },
+        {
+          "control": "raw-docker-cpus",
+          "outcome": "intended_refusal",
+          "reason": "service:cpus"
+        },
+        {
+          "control": "raw-docker-pids",
+          "outcome": "intended_refusal",
+          "reason": "service:pids"
+        },
+        {
+          "control": "raw-docker-environment",
+          "outcome": "intended_refusal",
+          "reason": "service:environment"
+        },
+        {
+          "control": "raw-docker-mounts",
+          "outcome": "intended_refusal",
+          "reason": "service:mounts"
+        },
+        {
+          "control": "raw-docker-bindings",
+          "outcome": "intended_refusal",
+          "reason": "service:bindings"
+        },
+        {
+          "control": "raw-docker-running",
+          "outcome": "intended_refusal",
+          "reason": "service:running"
+        },
+        {
+          "control": "raw-docker-privileged",
+          "outcome": "intended_refusal",
+          "reason": "service:privileged"
+        },
+        {
+          "control": "raw-docker-networkMode",
+          "outcome": "intended_refusal",
+          "reason": "service:networkMode"
+        },
+        {
+          "control": "raw-docker-extraHosts",
+          "outcome": "intended_refusal",
+          "reason": "service:extraHosts"
+        },
+        {
+          "control": "raw-docker-capAdd",
+          "outcome": "intended_refusal",
+          "reason": "service:capAdd"
+        },
+        {
+          "control": "raw-docker-pidMode",
+          "outcome": "intended_refusal",
+          "reason": "service:pidMode"
+        },
+        {
+          "control": "raw-docker-binds",
+          "outcome": "intended_refusal",
+          "reason": "service:binds"
+        },
+        {
+          "control": "raw-docker-readOnlyRoot",
+          "outcome": "intended_refusal",
+          "reason": "service:readOnlyRoot"
+        },
+        {
+          "control": "created-service-unassigned-network",
+          "outcome": "survived"
+        },
+        {
+          "control": "created-service-harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "created-service-network",
+          "outcome": "intended_refusal",
+          "reason": "created-service:networkIdValid"
+        },
+        {
+          "control": "created-service-networkNames",
+          "outcome": "intended_refusal",
+          "reason": "service:networkNames"
+        },
+        {
+          "control": "created-service-running",
+          "outcome": "intended_refusal",
+          "reason": "service:running"
+        },
+        {
+          "control": "created-service-exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "raw-docker-exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "configuration-baseline",
+          "outcome": "survived"
+        },
+        {
+          "control": "configuration-endpoints",
+          "outcome": "intended_refusal",
+          "reason": "configuration:endpoints"
+        },
+        {
+          "control": "configuration-jwtShared",
+          "outcome": "intended_refusal",
+          "reason": "configuration:jwtShared"
+        },
+        {
+          "control": "configuration-appKeysMatch",
+          "outcome": "intended_refusal",
+          "reason": "configuration:appKeysMatch"
+        },
+        {
+          "control": "configuration-rest",
+          "outcome": "intended_refusal",
+          "reason": "configuration:rest"
+        },
+        {
+          "control": "configuration-auth",
+          "outcome": "intended_refusal",
+          "reason": "configuration:auth"
+        },
+        {
+          "control": "configuration-mailAbsent",
+          "outcome": "intended_refusal",
+          "reason": "configuration:mailAbsent"
+        },
+        {
+          "control": "configuration-cloudAbsent",
+          "outcome": "intended_refusal",
+          "reason": "configuration:cloudAbsent"
+        },
+        {
+          "control": "configuration-storage",
+          "outcome": "intended_refusal",
+          "reason": "configuration:storage"
+        },
+        {
+          "control": "configuration-cors",
+          "outcome": "intended_refusal",
+          "reason": "configuration:cors"
+        },
+        {
+          "control": "configuration-upstreams",
+          "outcome": "intended_refusal",
+          "reason": "configuration:upstreams"
+        },
+        {
+          "control": "configuration-appSet",
+          "outcome": "intended_refusal",
+          "reason": "configuration:appSet"
+        },
+        {
+          "control": "configuration-appOrigin",
+          "outcome": "intended_refusal",
+          "reason": "configuration:appOrigin"
+        },
+        {
+          "control": "configuration-webOrigin",
+          "outcome": "intended_refusal",
+          "reason": "configuration:webOrigin"
+        },
+        {
+          "control": "configuration-appHead",
+          "outcome": "intended_refusal",
+          "reason": "configuration:appHead"
+        },
+        {
+          "control": "configuration-gtfs",
+          "outcome": "intended_refusal",
+          "reason": "configuration:gtfs"
+        },
+        {
+          "control": "configuration-exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "optional-source-harmless-binding-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "optional-configured-baseline",
+          "outcome": "survived"
+        },
+        {
+          "control": "optional-source-harmless-app-order",
+          "outcome": "survived"
+        },
+        {
+          "control": "optional-parser-format-survivor",
+          "outcome": "survived"
+        },
+        {
+          "control": "optional-source-changed-hash",
+          "outcome": "intended_refusal",
+          "reason": "optional-source-hash:sha256"
+        },
+        {
+          "control": "optional-source-wrong-path",
+          "outcome": "intended_refusal",
+          "reason": "optional-source:path"
+        },
+        {
+          "control": "optional-binding-wrong-source-hash",
+          "outcome": "intended_refusal",
+          "reason": "optional-source-hash:sha256"
+        },
+        {
+          "control": "optional-app-omission-CENSUS_API_KEY",
+          "outcome": "intended_refusal",
+          "reason": "optional-app:values"
+        },
+        {
+          "control": "optional-app-mismatch-CENSUS_API_KEY",
+          "outcome": "intended_refusal",
+          "reason": "optional-app:values"
+        },
+        {
+          "control": "optional-binding-omission-CENSUS_API_KEY",
+          "outcome": "intended_refusal",
+          "reason": "optional-source-values:values"
+        },
+        {
+          "control": "optional-source-omission-CENSUS_API_KEY",
+          "outcome": "intended_refusal",
+          "reason": "optional-source-values:values"
+        },
+        {
+          "control": "optional-config-omission-CENSUS_API_KEY",
+          "outcome": "intended_refusal",
+          "reason": "configuration:appSet"
+        },
+        {
+          "control": "optional-config-mismatch-CENSUS_API_KEY",
+          "outcome": "intended_refusal",
+          "reason": "optional-app:values"
+        },
+        {
+          "control": "optional-helper-leak-CENSUS_API_KEY",
+          "outcome": "intended_refusal",
+          "reason": "configuration:optionalHelpersAbsent"
+        },
+        {
+          "control": "optional-value-CENSUS_API_KEY-empty",
+          "outcome": "intended_refusal",
+          "reason": "optional-values:valid"
+        },
+        {
+          "control": "optional-value-CENSUS_API_KEY-null",
+          "outcome": "intended_refusal",
+          "reason": "optional-values:valid"
+        },
+        {
+          "control": "optional-value-CENSUS_API_KEY-number",
+          "outcome": "intended_refusal",
+          "reason": "optional-values:valid"
+        },
+        {
+          "control": "optional-value-CENSUS_API_KEY-newline",
+          "outcome": "intended_refusal",
+          "reason": "optional-values:valid"
+        },
+        {
+          "control": "optional-value-CENSUS_API_KEY-expansion",
+          "outcome": "intended_refusal",
+          "reason": "optional-values:valid"
+        },
+        {
+          "control": "optional-duplicate-CENSUS_API_KEY",
+          "outcome": "intended_refusal",
+          "reason": "optional-source:unique"
+        },
+        {
+          "control": "optional-app-omission-NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN",
+          "outcome": "intended_refusal",
+          "reason": "optional-app:values"
+        },
+        {
+          "control": "optional-app-mismatch-NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN",
+          "outcome": "intended_refusal",
+          "reason": "optional-app:values"
+        },
+        {
+          "control": "optional-binding-omission-NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN",
+          "outcome": "intended_refusal",
+          "reason": "optional-source-values:values"
+        },
+        {
+          "control": "optional-source-omission-NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN",
+          "outcome": "intended_refusal",
+          "reason": "optional-source-values:values"
+        },
+        {
+          "control": "optional-config-omission-NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN",
+          "outcome": "intended_refusal",
+          "reason": "configuration:appSet"
+        },
+        {
+          "control": "optional-config-mismatch-NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN",
+          "outcome": "intended_refusal",
+          "reason": "optional-app:values"
+        },
+        {
+          "control": "optional-helper-leak-NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN",
+          "outcome": "intended_refusal",
+          "reason": "configuration:optionalHelpersAbsent"
+        },
+        {
+          "control": "optional-value-NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN-empty",
+          "outcome": "intended_refusal",
+          "reason": "optional-values:valid"
+        },
+        {
+          "control": "optional-value-NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN-null",
+          "outcome": "intended_refusal",
+          "reason": "optional-values:valid"
+        },
+        {
+          "control": "optional-value-NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN-number",
+          "outcome": "intended_refusal",
+          "reason": "optional-values:valid"
+        },
+        {
+          "control": "optional-value-NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN-newline",
+          "outcome": "intended_refusal",
+          "reason": "optional-values:valid"
+        },
+        {
+          "control": "optional-value-NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN-expansion",
+          "outcome": "intended_refusal",
+          "reason": "optional-values:valid"
+        },
+        {
+          "control": "optional-duplicate-NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN",
+          "outcome": "intended_refusal",
+          "reason": "optional-source:unique"
+        },
+        {
+          "control": "optional-app-omission-OPENPLAN_INTEGRATION_KEY_SECRET",
+          "outcome": "intended_refusal",
+          "reason": "optional-app:values"
+        },
+        {
+          "control": "optional-app-mismatch-OPENPLAN_INTEGRATION_KEY_SECRET",
+          "outcome": "intended_refusal",
+          "reason": "optional-app:values"
+        },
+        {
+          "control": "optional-binding-omission-OPENPLAN_INTEGRATION_KEY_SECRET",
+          "outcome": "intended_refusal",
+          "reason": "optional-source-values:values"
+        },
+        {
+          "control": "optional-source-omission-OPENPLAN_INTEGRATION_KEY_SECRET",
+          "outcome": "intended_refusal",
+          "reason": "optional-source-values:values"
+        },
+        {
+          "control": "optional-config-omission-OPENPLAN_INTEGRATION_KEY_SECRET",
+          "outcome": "intended_refusal",
+          "reason": "configuration:appSet"
+        },
+        {
+          "control": "optional-config-mismatch-OPENPLAN_INTEGRATION_KEY_SECRET",
+          "outcome": "intended_refusal",
+          "reason": "optional-app:values"
+        },
+        {
+          "control": "optional-helper-leak-OPENPLAN_INTEGRATION_KEY_SECRET",
+          "outcome": "intended_refusal",
+          "reason": "configuration:optionalHelpersAbsent"
+        },
+        {
+          "control": "optional-value-OPENPLAN_INTEGRATION_KEY_SECRET-empty",
+          "outcome": "intended_refusal",
+          "reason": "optional-values:valid"
+        },
+        {
+          "control": "optional-value-OPENPLAN_INTEGRATION_KEY_SECRET-null",
+          "outcome": "intended_refusal",
+          "reason": "optional-values:valid"
+        },
+        {
+          "control": "optional-value-OPENPLAN_INTEGRATION_KEY_SECRET-number",
+          "outcome": "intended_refusal",
+          "reason": "optional-values:valid"
+        },
+        {
+          "control": "optional-value-OPENPLAN_INTEGRATION_KEY_SECRET-newline",
+          "outcome": "intended_refusal",
+          "reason": "optional-values:valid"
+        },
+        {
+          "control": "optional-value-OPENPLAN_INTEGRATION_KEY_SECRET-expansion",
+          "outcome": "intended_refusal",
+          "reason": "optional-values:valid"
+        },
+        {
+          "control": "optional-duplicate-OPENPLAN_INTEGRATION_KEY_SECRET",
+          "outcome": "intended_refusal",
+          "reason": "optional-source:unique"
+        },
+        {
+          "control": "optional-allowlist-extra-OPENAI_API_KEY",
+          "outcome": "intended_refusal",
+          "reason": "optional-allowlist:allowed"
+        },
+        {
+          "control": "optional-app-secret-absence-OPENAI_API_KEY",
+          "outcome": "intended_refusal",
+          "reason": "configuration:cloudAbsent"
+        },
+        {
+          "control": "optional-allowlist-extra-ANTHROPIC_API_KEY",
+          "outcome": "intended_refusal",
+          "reason": "optional-allowlist:allowed"
+        },
+        {
+          "control": "optional-app-secret-absence-ANTHROPIC_API_KEY",
+          "outcome": "intended_refusal",
+          "reason": "configuration:cloudAbsent"
+        },
+        {
+          "control": "optional-allowlist-extra-RESEND_API_KEY",
+          "outcome": "intended_refusal",
+          "reason": "optional-allowlist:allowed"
+        },
+        {
+          "control": "optional-app-secret-absence-RESEND_API_KEY",
+          "outcome": "intended_refusal",
+          "reason": "configuration:cloudAbsent"
+        },
+        {
+          "control": "optional-allowlist-extra-UNAUTHORIZED_PROVIDER_KEY",
+          "outcome": "intended_refusal",
+          "reason": "optional-allowlist:allowed"
+        },
+        {
+          "control": "optional-app-secret-absence-UNAUTHORIZED_PROVIDER_KEY",
+          "outcome": "intended_refusal",
+          "reason": "configuration:appSet"
+        },
+        {
+          "control": "optional-source-syntax-double-quote",
+          "outcome": "intended_refusal",
+          "reason": "optional-source:syntax"
+        },
+        {
+          "control": "optional-source-syntax-single-quote",
+          "outcome": "intended_refusal",
+          "reason": "optional-source:syntax"
+        },
+        {
+          "control": "optional-source-syntax-embedded-quote",
+          "outcome": "intended_refusal",
+          "reason": "optional-source:syntax"
+        },
+        {
+          "control": "optional-source-absent-survivor-3",
+          "outcome": "survived"
+        },
+        {
+          "control": "optional-config-absent-survivor-3",
+          "outcome": "survived"
+        },
+        {
+          "control": "optional-unbound-secret-injection-3",
+          "outcome": "intended_refusal",
+          "reason": "optional-app:values"
+        },
+        {
+          "control": "optional-source-absent-survivor-1",
+          "outcome": "survived"
+        },
+        {
+          "control": "optional-config-absent-survivor-1",
+          "outcome": "survived"
+        },
+        {
+          "control": "optional-unbound-secret-injection-1",
+          "outcome": "intended_refusal",
+          "reason": "optional-app:values"
+        },
+        {
+          "control": "source-anchor-harmless-note",
+          "outcome": "survived"
+        },
+        {
+          "control": "source-anchor-rebaseline",
+          "outcome": "intended_refusal",
+          "reason": "source-anchor:sha256"
+        },
+        {
+          "control": "source-anchor-current-changed",
+          "outcome": "intended_refusal",
+          "reason": "source-fingerprint:sha256"
+        },
+        {
+          "control": "source-anchor-exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "source-check-reader-baseline",
+          "outcome": "survived"
+        },
+        {
+          "control": "source-check-reader-changed",
+          "outcome": "intended_refusal",
+          "reason": "source-fingerprint:sha256"
+        },
+        {
+          "control": "source-check-reader-rebaseline",
+          "outcome": "intended_refusal",
+          "reason": "source-anchor:sha256"
+        },
+        {
+          "control": "source-check-reader-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "optional-source-reader-baseline",
+          "outcome": "survived"
+        },
+        {
+          "control": "optional-source-reader-mode",
+          "outcome": "intended_refusal",
+          "reason": "optional-source-file:private"
+        },
+        {
+          "control": "optional-source-reader-regular",
+          "outcome": "intended_refusal",
+          "reason": "optional-source-file:regular"
+        },
+        {
+          "control": "optional-source-reader-symlink",
+          "outcome": "intended_refusal",
+          "reason": "optional-source-file:regular"
+        },
+        {
+          "control": "optional-source-reader-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "optional-pinned-reader-baseline",
+          "outcome": "survived"
+        },
+        {
+          "control": "optional-pinned-source-hash",
+          "outcome": "intended_refusal",
+          "reason": "optional-source-hash:sha256"
+        },
+        {
+          "control": "optional-pinned-manifest-hash",
+          "outcome": "intended_refusal",
+          "reason": "files:configured-source-private.json"
+        },
+        {
+          "control": "optional-pinned-omission-CENSUS_API_KEY",
+          "outcome": "intended_refusal",
+          "reason": "optional-app:values"
+        },
+        {
+          "control": "optional-pinned-mismatch-CENSUS_API_KEY",
+          "outcome": "intended_refusal",
+          "reason": "optional-app:values"
+        },
+        {
+          "control": "optional-pinned-omission-NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN",
+          "outcome": "intended_refusal",
+          "reason": "optional-app:values"
+        },
+        {
+          "control": "optional-pinned-mismatch-NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN",
+          "outcome": "intended_refusal",
+          "reason": "optional-app:values"
+        },
+        {
+          "control": "optional-pinned-omission-OPENPLAN_INTEGRATION_KEY_SECRET",
+          "outcome": "intended_refusal",
+          "reason": "optional-app:values"
+        },
+        {
+          "control": "optional-pinned-mismatch-OPENPLAN_INTEGRATION_KEY_SECRET",
+          "outcome": "intended_refusal",
+          "reason": "optional-app:values"
+        },
+        {
+          "control": "optional-pinned-forbidden-secret",
+          "outcome": "intended_refusal",
+          "reason": "configuration:cloudAbsent"
+        },
+        {
+          "control": "optional-pinned-reader-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "optional-source-exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "optional-config-exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "health-http:baseline-fixed-configured",
+          "outcome": "survived"
+        },
+        {
+          "control": "health-http:harmless-response-header",
+          "outcome": "survived"
+        },
+        {
+          "control": "health-http:old-header-absent",
+          "outcome": "survived"
+        },
+        {
+          "control": "health-http:auth-status-201",
+          "outcome": "intended_refusal",
+          "reason": "health:auth"
+        },
+        {
+          "control": "health-http:auth-status-204",
+          "outcome": "intended_refusal",
+          "reason": "health:auth"
+        },
+        {
+          "control": "health-http:auth-status-503",
+          "outcome": "intended_refusal",
+          "reason": "health:auth"
+        },
+        {
+          "control": "health-http:auth-status-'200'",
+          "outcome": "intended_refusal",
+          "reason": "health:auth"
+        },
+        {
+          "control": "health-http:auth-status-None",
+          "outcome": "intended_refusal",
+          "reason": "health:auth"
+        },
+        {
+          "control": "health-http:auth-status-True",
+          "outcome": "intended_refusal",
+          "reason": "health:auth"
+        },
+        {
+          "control": "health-http:rest-status-201",
+          "outcome": "intended_refusal",
+          "reason": "health:rest"
+        },
+        {
+          "control": "health-http:rest-status-204",
+          "outcome": "intended_refusal",
+          "reason": "health:rest"
+        },
+        {
+          "control": "health-http:rest-status-503",
+          "outcome": "intended_refusal",
+          "reason": "health:rest"
+        },
+        {
+          "control": "health-http:rest-status-'200'",
+          "outcome": "intended_refusal",
+          "reason": "health:rest"
+        },
+        {
+          "control": "health-http:rest-status-None",
+          "outcome": "intended_refusal",
+          "reason": "health:rest"
+        },
+        {
+          "control": "health-http:rest-status-True",
+          "outcome": "intended_refusal",
+          "reason": "health:rest"
+        },
+        {
+          "control": "health-http:storage-status-201",
+          "outcome": "intended_refusal",
+          "reason": "health:storage"
+        },
+        {
+          "control": "health-http:storage-status-204",
+          "outcome": "intended_refusal",
+          "reason": "health:storage"
+        },
+        {
+          "control": "health-http:storage-status-503",
+          "outcome": "intended_refusal",
+          "reason": "health:storage"
+        },
+        {
+          "control": "health-http:storage-status-'200'",
+          "outcome": "intended_refusal",
+          "reason": "health:storage"
+        },
+        {
+          "control": "health-http:storage-status-None",
+          "outcome": "intended_refusal",
+          "reason": "health:storage"
+        },
+        {
+          "control": "health-http:storage-status-True",
+          "outcome": "intended_refusal",
+          "reason": "health:storage"
+        },
+        {
+          "control": "health-http:own-header-absent",
+          "outcome": "intended_refusal",
+          "reason": "health:ownOrigin"
+        },
+        {
+          "control": "health-http:own-header-old",
+          "outcome": "intended_refusal",
+          "reason": "health:ownOrigin"
+        },
+        {
+          "control": "health-http:own-header-wildcard",
+          "outcome": "intended_refusal",
+          "reason": "health:ownOrigin"
+        },
+        {
+          "control": "health-http:own-header-unrecognized",
+          "outcome": "intended_refusal",
+          "reason": "health:ownOrigin"
+        },
+        {
+          "control": "health-http:own-header-trailing-slash",
+          "outcome": "intended_refusal",
+          "reason": "health:ownOrigin"
+        },
+        {
+          "control": "health-http:own-header-null",
+          "outcome": "intended_refusal",
+          "reason": "health:ownOrigin"
+        },
+        {
+          "control": "health-http:own-header-empty",
+          "outcome": "intended_refusal",
+          "reason": "health:ownOrigin"
+        },
+        {
+          "control": "health-http:own-header-origin-list",
+          "outcome": "intended_refusal",
+          "reason": "health:ownOrigin"
+        },
+        {
+          "control": "health-http:old-header-reflected",
+          "outcome": "intended_refusal",
+          "reason": "health:oldOrigin"
+        },
+        {
+          "control": "health-http:old-header-wildcard",
+          "outcome": "intended_refusal",
+          "reason": "health:oldOrigin"
+        },
+        {
+          "control": "health-http:old-header-unrecognized",
+          "outcome": "intended_refusal",
+          "reason": "health:oldOrigin"
+        },
+        {
+          "control": "health-http:old-header-trailing-slash",
+          "outcome": "intended_refusal",
+          "reason": "health:oldOrigin"
+        },
+        {
+          "control": "health-http:old-header-null",
+          "outcome": "intended_refusal",
+          "reason": "health:oldOrigin"
+        },
+        {
+          "control": "health-http:old-header-empty",
+          "outcome": "intended_refusal",
+          "reason": "health:oldOrigin"
+        },
+        {
+          "control": "health-http:old-header-origin-list",
+          "outcome": "intended_refusal",
+          "reason": "health:oldOrigin"
+        },
+        {
+          "control": "health-http:exact-restoration",
+          "outcome": "survived"
+        },
+        {
+          "control": "health-http:verify-services-baseline",
+          "outcome": "survived"
+        },
+        {
+          "control": "health-http:verify-services-reflected-old",
+          "outcome": "intended_refusal",
+          "reason": "health:oldOrigin"
+        },
+        {
+          "control": "health-http:verify-services-restoration",
+          "outcome": "survived"
+        }
+      ]
+    },
+    "mutations": [
+      {
+        "mutation": "baseline",
+        "outcome": "survived"
+      },
+      {
+        "mutation": "harmless-comment",
+        "outcome": "survived"
+      },
+      {
+        "mutation": "harmless-comment:exact-restoration",
+        "outcome": "survived"
+      },
+      {
+        "mutation": "always-refuses",
+        "outcome": "killed",
+        "reason": "health-control:baseline-fixed-configured:unexpected-refusal:named-fault:health-always-refuses"
+      },
+      {
+        "mutation": "always-refuses:exact-restoration",
+        "outcome": "survived"
+      },
+      {
+        "mutation": "skip-health-policy",
+        "outcome": "killed",
+        "reason": "health-control:auth-status-201:expected-refusal:health:auth"
+      },
+      {
+        "mutation": "skip-health-policy:exact-restoration",
+        "outcome": "survived"
+      },
+      {
+        "mutation": "skip-health-request",
+        "outcome": "killed",
+        "reason": "health-control:baseline-fixed-configured:request-0"
+      },
+      {
+        "mutation": "skip-health-request:exact-restoration",
+        "outcome": "survived"
+      },
+      {
+        "mutation": "skip-old-request",
+        "outcome": "killed",
+        "reason": "health-control:baseline-fixed-configured:unexpected-refusal:health:oldOrigin"
+      },
+      {
+        "mutation": "skip-old-request:exact-restoration",
+        "outcome": "survived"
+      },
+      {
+        "mutation": "skip-verify-services-health",
+        "outcome": "killed",
+        "reason": "health-control:verify-services-baseline:requests-not-acquired"
+      },
+      {
+        "mutation": "skip-verify-services-health:exact-restoration",
+        "outcome": "survived"
+      },
+      {
+        "mutation": "old-none-only-regression",
+        "outcome": "killed",
+        "reason": "health-control:baseline-fixed-configured:unexpected-refusal:health:oldOrigin"
+      },
+      {
+        "mutation": "old-none-only-regression:exact-restoration",
+        "outcome": "survived"
+      },
+      {
+        "mutation": "allow-reflected-old",
+        "outcome": "killed",
+        "reason": "health-control:old-header-reflected:expected-refusal:health:oldOrigin"
+      },
+      {
+        "mutation": "allow-reflected-old:exact-restoration",
+        "outcome": "survived"
+      },
+      {
+        "mutation": "allow-wildcard-old",
+        "outcome": "killed",
+        "reason": "health-control:old-header-wildcard:expected-refusal:health:oldOrigin"
+      },
+      {
+        "mutation": "allow-wildcard-old:exact-restoration",
+        "outcome": "survived"
+      },
+      {
+        "mutation": "ignore-own-origin",
+        "outcome": "killed",
+        "reason": "health-control:own-header-absent:expected-refusal:health:ownOrigin"
+      },
+      {
+        "mutation": "ignore-own-origin:exact-restoration",
+        "outcome": "survived"
+      },
+      {
+        "mutation": "classifier:unrelated-runtime",
+        "outcome": "unclassified-runtime-error"
+      },
+      {
+        "mutation": "classifier:unrelated-value",
+        "outcome": "unclassified-runtime-error"
+      },
+      {
+        "mutation": "final-exact-restoration",
+        "outcome": "survived"
+      }
+    ],
+    "totals": {
+      "survived": 99,
+      "intended_refusal": 508
+    },
+    "restoration": {
+      "functions": true,
+      "controlRows": true,
+      "templateBytes": true,
+      "templateSha256": {
+        "historical_controls.py": "928a47af1f51ae0f566c9a47f06e75d4903ed9194e85816f5ebde2033a215f78",
+        "rest_uri_recovery_01_launcher.py": "259fd6712429fcf4b4eafea7d9eef0a07685c5d7e6cc216b6d347a06700ff5fd",
+        "rest_uri_recovery_01_policy.py": "b8cd15dd1284aef71a302a2614724b1cb34e9783ee7049028eb08e16309df156"
+      }
+    }
+  },
+  "templateHashes": {
+    "rest_uri_recovery_01_launcher.py": "259fd6712429fcf4b4eafea7d9eef0a07685c5d7e6cc216b6d347a06700ff5fd",
+    "rest_uri_recovery_01_policy.py": "b8cd15dd1284aef71a302a2614724b1cb34e9783ee7049028eb08e16309df156",
+    "rest_uri_recovery_01_controller.py": "0a2abd7530658eedb033ba4c235393612ff364210f064a32b4ff3d903134f175"
+  },
+  "commandRunnerReplacedBeforeMutation": true,
+  "restoration": {
+    "templateBytes": true,
+    "functions": true
+  },
+  "blindCategories": [
+    "Simulated Docker transitions do not prove daemon, DNS or schema-cache behavior.",
+    "Pinned input replay does not prove live HTTP health or source logical preservation.",
+    "Readiness requires actual REST 200 after parent replacement."
+  ]
+}

@@ -1,0 +1,69 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-json-spacing",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "wrong-uuid",
+    "outcome": "intended_refusal",
+    "reason": "Engine reply does not establish original command acknowledgment"
+  },
+  {
+    "control": "missing-status",
+    "outcome": "intended_refusal",
+    "reason": "Native original response envelope differs"
+  },
+  {
+    "control": "wrong-status-type",
+    "outcome": "intended_refusal",
+    "reason": "Native original response envelope differs"
+  },
+  {
+    "control": "extra-envelope",
+    "outcome": "intended_refusal",
+    "reason": "Native original response envelope differs"
+  },
+  {
+    "control": "wrong-body-type",
+    "outcome": "intended_refusal",
+    "reason": "Native original response envelope differs"
+  },
+  {
+    "control": "upload-success-integer",
+    "outcome": "intended_refusal",
+    "reason": "Engine reply does not establish original command acknowledgment"
+  },
+  {
+    "control": "upload-error",
+    "outcome": "intended_refusal",
+    "reason": "Engine reply does not establish original command acknowledgment"
+  },
+  {
+    "control": "duplicate-keys",
+    "outcome": "intended_refusal",
+    "reason": "Engine reply has duplicate JSON keys"
+  },
+  {
+    "control": "extra-fields",
+    "outcome": "intended_refusal",
+    "reason": "Native original response fields differ"
+  },
+  {
+    "control": "envelope-guard-removed",
+    "outcome": "intended_failure",
+    "reason": "Native response guard must refuse envelope-guard-removed"
+  },
+  {
+    "control": "field-guard-removed",
+    "outcome": "intended_failure",
+    "reason": "Native response guard must refuse field-guard-removed"
+  }
+]

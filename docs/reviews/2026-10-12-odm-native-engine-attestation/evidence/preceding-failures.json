@@ -1,0 +1,43 @@
+{
+  "unacceptedPrototype": true,
+  "native06Kernel": {
+    "sha256": "76ab866391ae32b0dc912eeb2b6b2ae6594955d978691a9ecc8a08ff92d34201",
+    "matchesOriginal": true,
+    "matchesHostPath": false
+  },
+  "native05ArchiveReadback": {
+    "message": "Native engine original identity differs",
+    "configurationMatches": false,
+    "mountedBytesSha256": "2ca7ef9477c5e6c3e7b6bce5c9e8a1a6b7ff5c5d1c7b860b99f08270d0cce5e4",
+    "expectedBytesSha256": "76ab866391ae32b0dc912eeb2b6b2ae6594955d978691a9ecc8a08ff92d34201"
+  },
+  "stopped": {
+    "native-02": {
+      "running": false,
+      "oomKilled": false
+    },
+    "native-03": {
+      "running": false,
+      "oomKilled": false
+    },
+    "native-04": {
+      "running": false,
+      "oomKilled": false
+    },
+    "native-05": {
+      "running": false,
+      "oomKilled": false
+    },
+    "native-06": {
+      "running": false,
+      "oomKilled": false
+    }
+  },
+  "controllerTrials": {
+    "controls-01": "Wrong unittest selector; classifier rejects unrelated error.",
+    "controls-02": "Broad launch-profile mutation also raises unrelated IndexError; rejected.",
+    "controls-03": "Duplicated frame-bound anchor is rejected before mutation.",
+    "controls-07": "Foreign child shape reaches a daemon GET before later proc refusal. Correct selected scope assertion is used."
+  },
+  "boundary": "Failed prototypes remain unaccepted. Private logs and full inspection metadata stay in retained proof."
+}

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
@@ -106,7 +106,9 @@ vi.mock("@/lib/supabase/server", () => ({
     expect(args.p_published_only).toBe(true);
     return { data: { campaignId: args.p_campaign, publishedOnly: true, count: 0, entries: [] }, error: null };
   }) }),
+  // The signed-in client reads only the workspace calendar, through the same fake.
   createClient: async () => ({
+    from: fromMock,
     auth: {
       getUser: async () => ({
         data: { user: signedInUserId ? { id: signedInUserId } : null },
@@ -221,6 +223,27 @@ describe("the operator portal preview — who may see it", () => {
     expect(notFoundMock).not.toHaveBeenCalled();
     expect(screen.getByText("This preview could not be loaded")).toBeInTheDocument();
     expect(screen.getByText(/not the same as the campaign not existing/)).toBeInTheDocument();
+  });
+});
+
+describe("the operator portal preview names dates in the workspace calendar", () => {
+  it("says comments closed on the end date, in the workspace's zone, not accepting", async () => {
+    for (const [timeZone, named] of [
+      ["America/Los_Angeles", "October 10, 2026 at 19:30 (America/Los_Angeles)"],
+      ["Pacific/Auckland", "October 11, 2026 at 15:30 (Pacific/Auckland)"],
+    ] as const) {
+      tableRows.engagement_campaigns = [
+        campaignRow({ status: "active", share_token: "tok-preview-123", participation_ends_at: "2026-10-11T02:30:00+00:00" }),
+      ];
+      tableRows.workspaces = [{ id: WORKSPACE_ID, time_zone: timeZone, home_country_code: "US" }];
+
+      await renderPreview();
+
+      expect(
+        screen.getByText(`Portal status: Live · submissions closed. Comments are closed because the participation period ended on ${named}.`)
+      ).toBeInTheDocument();
+      cleanup();
+    }
   });
 });
 

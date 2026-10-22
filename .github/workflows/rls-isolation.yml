@@ -13,6 +13,14 @@ on:
   schedule:
     - cron: "23 10 * * *"
 
+# A new push to a pull request supersedes the run still testing the old head,
+# so that run is cancelled. Every other run, including each push to main, gets
+# a group of its own and is never cancelled or queued: Vercel waits on main's
+# checks before it promotes a deployment.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   rls-isolation:
     name: live RLS isolation

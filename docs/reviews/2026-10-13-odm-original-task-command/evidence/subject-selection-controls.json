@@ -1,0 +1,60 @@
+{
+  "wrapperSha256": "6f61af36b1bbd94cd6faa8a18064be30f2e8e00ff3e120c020f203ead0f82d75",
+  "controls": [
+    {
+      "control": "baseline-source",
+      "outcome": "survived"
+    },
+    {
+      "control": "harmless-source-note",
+      "outcome": "survived"
+    },
+    {
+      "control": "wrong-casesPerPositive",
+      "outcome": "intended_refusal",
+      "reason": "Wrong command source cohort selected"
+    },
+    {
+      "control": "wrong-targetedFaults",
+      "outcome": "intended_refusal",
+      "reason": "Wrong command source cohort selected"
+    },
+    {
+      "control": "wrong-oracleControls",
+      "outcome": "intended_refusal",
+      "reason": "Wrong command source cohort selected"
+    },
+    {
+      "control": "actual-prior-source-binding",
+      "outcome": "intended_refusal",
+      "reason": "Wrong command source files selected"
+    },
+    {
+      "control": "restored-source",
+      "outcome": "survived"
+    },
+    {
+      "control": "baseline-native",
+      "outcome": "survived"
+    },
+    {
+      "control": "actual-prior-native-producer",
+      "outcome": "intended_refusal",
+      "reason": "Wrong native command producer selected"
+    },
+    {
+      "control": "wrong-native-census",
+      "outcome": "intended_refusal",
+      "reason": "Wrong native command controls selected"
+    },
+    {
+      "control": "baseline-legacy",
+      "outcome": "survived"
+    },
+    {
+      "control": "wrong-legacy-census",
+      "outcome": "intended_refusal",
+      "reason": "Wrong existing-command controls selected"
+    }
+  ]
+}

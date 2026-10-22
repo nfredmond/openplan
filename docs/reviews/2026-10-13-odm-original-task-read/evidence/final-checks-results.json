@@ -1,0 +1,22 @@
+[
+  {
+    "check": "controls314-final",
+    "returncode": 0,
+    "seconds": 18.312
+  },
+  {
+    "check": "controls311-final",
+    "returncode": 0,
+    "seconds": 16.976
+  },
+  {
+    "check": "native314-final",
+    "returncode": 0,
+    "seconds": 66.606
+  },
+  {
+    "check": "native311-final",
+    "returncode": 0,
+    "seconds": 66.653
+  }
+]

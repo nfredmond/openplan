@@ -1,0 +1,100 @@
+--- trial01/run-window.py
++++ trial02/run-window.py
+@@ -6,7 +6,7 @@
+ def intact(values):return all(digest(f)==h for f,h in values.items())
+ assert intact(pins) and intact(oldpins)
+ mountinfo=pathlib.Path('/proc/self/mountinfo').read_text();(p/'mountinfo.txt').write_text(mountinfo)
+-ro_targets=['/',str(root),'/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10','/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb','/home/nathaniel/.t3/worktrees/openplan/t3-6cab117f','/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016','/home/nathaniel/.local/state/openplan/engagement-billed-precision-probe-20261016','/home/nathaniel/.local/state/openplan/engagement-billed-exact-independent-20261016','/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016','/home/nathaniel/.t3/worktrees/openplan/t3-0f743997/openplan/node_modules',str(app/'node_modules')]
++ro_targets=['/',str(root),str(p.parent),'/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10','/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb','/home/nathaniel/.t3/worktrees/openplan/t3-6cab117f','/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016','/home/nathaniel/.local/state/openplan/engagement-billed-precision-probe-20261016','/home/nathaniel/.local/state/openplan/engagement-billed-exact-independent-20261016','/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016','/home/nathaniel/.t3/worktrees/openplan/t3-0f743997/openplan/node_modules',str(app/'node_modules')]
+ observed={}
+ for targets,mode in [(ro_targets,'ro'),([str(p),'/dev/null'],'rw')]:
+  for target in targets:
+@@ -17,6 +17,49 @@
+ r=resources();assert r['memory.max']=='1073741824' and r['memory.swap.max']=='0' and r['cpu.max']=='50000 100000' and r['pids.max']=='64'
+ (p/'runtime.json').write_text(json.dumps({'pid':os.getpid(),'cwd':os.getcwd(),'cgroup':cgroup,'resources':r,'network':os.readlink('/proc/self/ns/net'),'mounts':observed,'envKeys':sorted(os.environ),'hostWideOnlyPrivateWritableEstablished':False,'inheritedWritableMountCount':sum('rw' in line.split()[5].split(',') for line in mountinfo.splitlines())},indent=2)+'\n')
+ selection=json.loads((p/'selection.json').read_text());results=[]
++context=json.loads((p/'reuse-context.json').read_text())
++expected_names=json.loads((p/'expected-fault-names.json').read_text())
++route_oracle=json.loads((p/'route-failure-oracle.json').read_text())
++def verify_reuse():
++ assert context['originalPreparationSha256']=='fe4370c8d5a8dfe0600184758592b772fabea1709908052d483299bc0df33df9'
++ assert digest(context['originalPreparationManifest'])==context['originalPreparationSha256']
++ assert intact(context['oldTrialFiles']) and intact(context['sourcePins'])
++ assert context['sourcePins']==pins
++ for name in context['sharedByteFiles']:assert (p/name).read_bytes()==(p.parent/name).read_bytes(),name
++ assert pathlib.Path(context['trial02Config']).read_text().replace(str(p),str(p.parent))==pathlib.Path(context['originalConfig']).read_text()
++ previous=json.loads(pathlib.Path(context['originalMutations']).read_text());current=json.loads((p/'mutations.json').read_text())
++ assert previous[0]==context['originalHarmlessDefinition'] and previous[0]['survivor'] is True
++ intended=[dict(m) for m in previous if not m.get('survivor')]
++ for m in intended:
++  if m['name']=='context-zero-decimal-inference-drops-cents':m['failureText']='Not-to-exceed 50000'
++ assert current==intended
++ transform=json.loads(pathlib.Path(context['originalHarmlessTransform']).read_text());harmless=previous[0]
++ assert transform['applied'] is True and transform['file']==str(app/harmless['file'])
++ assert transform['name']==harmless['name'] and transform['find']==harmless['find'] and transform['replace']==harmless['replace']
++ expected={(x['file'],x['fullName']) for x in context['baselinePassedNames']};assert len(expected)==15
++ for item in context['baselineAndHarmless']:
++  assert digest(item['file'])==item['sha256'];data=json.loads(pathlib.Path(item['file']).read_text())
++  assert data['success'] is True and data['numPassedTests']==15 and data['numFailedTests']==0
++  passing=[(t['name'],a['fullName']) for t in data['testResults'] for a in t['assertionResults'] if a['status']=='passed']
++  assert len(passing)==15 and len(set(passing))==15 and set(passing)==expected
++ for m in current:
++  names=[(x['file'],x['fullName']) for x in expected_names[m['name']]]
++  assert len(names)==m['expectedFailed'] and len(set(names))==len(names) and set(names)<=expected
++ (p/'reused-checks.json').write_text(json.dumps({'baseline15':'REUSED_SEALED_PASS','harmless15':'REUSED_SEALED_SURVIVED','source18Match':True,'oldTrialFilesMatch':True,'original47PreparationSealRetained':True,'configPathOnlyEquality':True,'sourceTestFixtureAssertionsChanged':False,'sharedByteFilesEqual':context['sharedByteFiles'],'uniqueBaselineCases':15,'harmlessTransformMatches':True},indent=2)+'\n')
++
++def verify_route_failure(data,failed,mutation):
++ assert mutation['name']==route_oracle['mutationName']
++ assert len(data['testResults'])==1 and data['testResults'][0]['name']==route_oracle['expectedFile']
++ assert len(failed)==route_oracle['expectedCaseCount']==6
++ assert {f['title'] for f in failed}==set(route_oracle['cases'])
++ for failure in failed:
++  expected=route_oracle['cases'][failure['title']]
++  assert len(failure['messages'])==expected['messageCount']==1
++  lines=failure['messages'][0].splitlines()
++  assert lines[0]==expected['firstLine'] and lines[0].startswith('AssertionError:'),failure['title']
++  assert lines.count(expected['assertionLocationLine'])==1,failure['title']
++ for key,value in route_oracle['requiredTransform'].items():assert mutation[key]==value
++
+ def limits():resource.setrlimit(resource.RLIMIT_FSIZE,(1048576,1048576))
+ def run(name,argv,timeout,expected=0):
+  start=time.monotonic()
+@@ -36,20 +79,25 @@
+  failed=[{'title':a['fullName'],'messages':a['failureMessages']} for t in data['testResults'] for a in t['assertionResults'] if a['status']=='failed']
+  if bad:
+   assert not data['success'] and data['numFailedTests']==m['expectedFailed'] and data['numPassedTests']==0,name
+-  assert len(failed)==m['expectedFailed'] and all(any('AssertionError' in v and m['failureText'] in v for v in f['messages']) for f in failed),name
+-  receipt.update(outcome='KILLED_EXPECTED_ASSERTION',failures=failed)
++  assert len(failed)==m['expectedFailed'],name
++  expected={(x['file'],x['fullName']) for x in expected_names[name]}
++  actual=[(t['name'],a['fullName']) for t in data['testResults'] for a in t['assertionResults'] if a['status']=='failed']
++  assert len(actual)==len(set(actual)) and set(actual)==expected,name
++  if name=='route-current-invoice-currency-inheritance':verify_route_failure(data,failed,m)
++  else:assert all(any('AssertionError' in v and m['failureText'] in v for v in f['messages']) for f in failed),name
++  receipt.update(outcome='KILLED_EXPECTED_TYPED_ROUTE_ASSERTIONS' if name=='route-current-invoice-currency-inheritance' else 'KILLED_EXPECTED_ASSERTION',failures=failed)
+  else:
+   assert data['success'] and data['numFailedTests']==0 and data['numPassedTests']==m.get('expectedPassed',selection['expectedPassed']),name
+   receipt['outcome']='SURVIVED' if m.get('survivor') else 'PASS'
+  if m.get('file'):
+-  applied=json.loads((p/'results'/f'{name}.transform.json').read_text());assert applied['applied'] and applied['find']==m['find'] and applied['replace']==m['replace'],name
++  applied=json.loads((p/'results'/f'{name}.transform.json').read_text());assert applied['applied'] is True and applied['name']==name and applied['file']==str(app/m['file']) and applied['find']==m['find'] and applied['replace']==m['replace'],name
+  receipt.update(passed=data['numPassedTests'],failed=data['numFailedTests']);results.append(receipt);(p/'test-results.json').write_text(json.dumps(results,indent=2)+'\n')
+ try:
+  device=pathlib.Path('/dev/null').stat();assert stat.S_ISCHR(device.st_mode) and stat.S_IMODE(device.st_mode)==0o666 and (os.major(device.st_rdev),os.minor(device.st_rdev))==(1,3)
+  fd=os.open('/dev/null',os.O_RDWR|os.O_CLOEXEC);os.close(fd)
+  (p/'dev-null-access.json').write_text(json.dumps({'characterDevice':'1:3','mode':'0666','readWriteOpenClose':True,'payloadBytes':0})+'\n')
+- # First dependency load follows observed named RO mounts and private environment.
+- vitest({'name':'baseline'})
++ # Reuse only exact sealed baseline/harmless evidence before the first new dependency load.
++ verify_reuse()
+  for mutation in json.loads((p/'mutations.json').read_text()):vitest(mutation)
+  vitest({'name':'restored'})
+  run('focused-types',['/usr/bin/node','--max-old-space-size=640',str(app/'node_modules/typescript/bin/tsc'),'--project',str(p/'focused-tsconfig.json'),'--noEmit','--incremental','false'],60)
+@@ -60,5 +108,5 @@
+ finally:
+  (p/'active-mutation.json').write_text('{"name":"restored-finally"}\n')
+  readback={f:{'expected':h,'actual':digest(f),'matches':digest(f)==h} for f,h in pins.items()}
+- receipt={'all18Match':intact(pins),'sourceReadback':readback,'allOldPinsMatch':intact(oldpins),'oldPinCount':len(oldpins),'inMemoryMutationCleared':True,'sourceWrites':False,'resources':resources()}
+- (p/'restoration.json').write_text(json.dumps(receipt,indent=2)+'\n');assert receipt['all18Match'] and receipt['allOldPinsMatch']
++ receipt={'all18Match':intact(pins),'sourceReadback':readback,'allOldPinsMatch':intact(oldpins),'allTrial01PinsMatch':intact(context['oldTrialFiles']),'trial01PinCount':len(context['oldTrialFiles']),'oldPinCount':len(oldpins),'inMemoryMutationCleared':True,'sourceWrites':False,'resources':resources()}
++ (p/'restoration.json').write_text(json.dumps(receipt,indent=2)+'\n');assert receipt['all18Match'] and receipt['allOldPinsMatch'] and receipt['allTrial01PinsMatch']

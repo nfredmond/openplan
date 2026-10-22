@@ -1,0 +1,166 @@
+16	merged		Move pending approval derivation and thread visit tracking to shared session logic
+100	merged		Propagate runtime approval policy and sandbox mode to thread turn startup
+119	closed-unmerged		Persist provider runtime mode settings
+184	merged		Inline pending approvals into composer header and actions
+306	closed-unmerged		Fix:scroll to bottom on send / windows sandbox
+441	closed-unmerged		Fix macOS TCC permissions for apps launched from integrated terminal
+688	closed-unmerged		fix: Pending user input displays with "Pending Approval" status
+784	closed-unmerged		Fix: Add tooltip to locked sandbox mode toggle
+819	closed-unmerged	L	Implement approved plans in new worktrees
+1150	closed-unmerged	S	Fix approval/user-input events using orchestration ID instead of provider thread ID
+1587	merged	L	fix: map runtime modes to correct permission levels
+1660	closed-unmerged	S	Fix supervised approval command visibility
+1712	closed-unmerged	M	Show full command details in approval request panel
+1851	closed-unmerged	XS	Fix Claude Code Chats in Supervised Mode (rather than Full Access Mode)
+2004	merged	L	Backfill projected shell summaries and stale approval cleanup
+2051	merged	XS	fix: prevent user-input activities from leaking into pending approvals projection
+2106	merged	S	Clean up invalid pending approval projections
+2116	closed-unmerged	L	fix(web): reconcile stale approval state after responses
+2311	merged	XS	fix(request-permission): add `dynamic_tool_call` to command request
+2745	merged	M	fix(desktop): stop looping macOS TCC permission prompts
+3019	closed-unmerged	L	Use blue check for selected state in runtime mode and workspace menus
+3145	closed-unmerged	XXL	Gemini account switching, Antigravity approvals, and other main updates
+3582	closed-unmerged	XXL	Add Connect client approval mode
+3628	closed-unmerged	M	Add Claude Code auto permission mode as a 4th runtime mode
+3739	closed-unmerged	S	fix(desktop): grant clipboard permissions in preview browser
+3862	merged	M	fix(orchestrator): scope Claude MCP tool pre-approval
+3948	merged	M	feat(server): include runtime model and effort in Codex developer instructions
+4111	merged	S	[codex] show complete approval details
+4233	closed-unmerged	L	fix(grok): show Grok plan-mode plans and handle plan approvals over ACP
+4272	merged	M	feat: add "Auto" runtime mode — AI-reviewed approvals for Codex and Claude
+4381	closed-unmerged	S	fix(server): resolve orphaned OpenCode permissions on session error
+4457	merged	M	test(orchestrator): align Codex approval reviewer replays
+4510	closed-unmerged	XS	fix(claude): map 'auto' runtime mode to 'default' permission mode
+4709	closed-unmerged	S	Fix OpenCode permission approval mapping
+4929	merged	S	fix(mobile): remove unnecessary photo library permission
+5108	closed-unmerged	L	fix(desktop): Windows app now launches past Chromium GPU sandbox fatal
+5195	merged	XS	fix(server): recover stale Codex approval callbacks
+5409	closed-unmerged	L	fix(grok): surface plan mode approval in proposed plan cards
+5429	closed-unmerged	S	fix(server): interrupt turns after approval cancellation
+5430	merged	XS	fix(acp): keep unknown approvals actionable
+5431	merged	XS	fix(web): clarify auto permission fallback
+5448	closed-unmerged	S	fix(cli): repair bundled resource monitor permissions
+5593	merged	S	feat(server): record runtime mode per turn and on mode changes
+5916	merged	S	fix(server): sandbox user-provided SVGs
+5970	closed-unmerged	L	fix(swift-ios): prevent approved device build downgrades
+6503	merged	XS	fix(web): contain long approval commands
+6525	merged	S	fix(server): treat removed Bitbucket permissions endpoint as unknown, not blocking
+6626	closed-unmerged	L	fix(grok): Supervised asks and Always allow works
+7100	merged	XS	fix(server): honor auto-accept edits for the OpenCode provider
+7173	closed-unmerged	L	fix(opencode): settle pending approvals on session teardown
+7246	closed-unmerged	L	fix(server): start Claude full access without forbidden permission modes (#4927)
+7257	closed-unmerged	M	fix(mobile): Local Network permission sheet leaves pairing stuck
+7278	closed-unmerged	S	fix(cursor): stop tool-approval prompts in full access
+7448	closed-unmerged	XXL	spike: compare plugin runtime models
+7788	closed-unmerged	L	fix(providers): surface OpenCode dynamic approval requests
+7840	closed-unmerged	XL	fix(opencode): surface child-session activity and approvals in parent thread
+7861	merged	L	fix(codex): surface app permission requests as approvable
+7970	merged	XS	fix(ci): let Macroscope approve pull requests again
+8058	merged	XL	fix(codex): show app access approval prompts
+8425	closed-unmerged	M	fix(server): drop pending approvals when a thread reverts
+8480	merged	XXL	fix(opencode): handle child approvals, stops, and model catalogs
+8557	closed-unmerged	S	fix(server): treat Bitbucket permissions 404 as a removed endpoint
+8669	merged	M	fix(codex): show what a file-change approval will change
+8888	closed-unmerged	XXL	fix(claude): support full access in root workers
+9035	closed-unmerged	S	fix(server): use Bitbucket workspace permissions endpoint
+9117	closed-unmerged	L	fix(web): keep composer draft when stopping during a pending approval
+9282	merged	M	fix(server): full-access OpenCode threads no longer ask for approvals
+9283	merged	M	fix(cursor): honor auto and full access modes
+9302	closed-unmerged	XS	fix(server): accept Bitbucket permission endpoint 404
+9320	closed-unmerged	M	fix(codex): use trusted app approval labels
+9465	merged	M	fix(web): move workflow approval beside checks
+9506	closed-unmerged	L	fix(server): codex threads honor managed sandbox and approval requirements
+9531	closed-unmerged	M	ci: delete superseded pending-approval runs on fork PRs
+9596	closed-unmerged	XS	fix(mobile): surface dynamic tool approvals
+9653	merged	XL	fix(server): unblock OpenCode approvals and stop
+9786	merged	XXL	feat(auth): separate environment administration permissions
+9787	merged	XXL	feat(auth): separate source control write permissions
+9788	merged	XXL	feat(auth): separate filesystem read and write permissions
+9789	merged	L	feat(auth): separate browser preview control permissions
+9790	merged	L	feat(auth): separate diagnostics and usage permissions
+9858	open	M	fix(server): retain GitLab approval system notes
+9901	closed-unmerged	S	fix(mobile): respect notification permission when linking cloud environments
+9906	closed-unmerged	S	fix(server): bound OpenCode V2 approval and question replies
+9973	merged	XS	test(server): remove Azure permissions constant snapshot
+10204	closed-unmerged	L	feat(settings): add provider permission defaults
+10309	open	XS	fix(desktop): restore WSL resource monitor execute permissions
+10510	closed-unmerged	XS	fix(cursor): enable sandbox in auto mode
+10850	merged	XS	fix(mobile): respect notification permission when tokens rotate
+10984	merged	M	fix(server): use workspace-scoped Bitbucket permissions API
+11026	merged	S	fix(server): let Claude launch args override the derived permission mode
+11289	merged	XL	feat(desktop): share macOS permission onboarding
+11346	merged	L	feat(settings): configure default permissions for new threads
+11839	closed-unmerged	L	fix(server): dismiss orphaned approvals
+12082	merged	L	fix(web): simplify agent approval prompts
+12435	closed-unmerged	XS	fix(build): restore msgpackr build permission
+12482	merged	L	fix(mobile): synchronize native permission registry access
+12664	closed-unmerged	S	fix(server): report dead-session approval and user-input answers as stale failures
+12748	closed-unmerged	XS	docs: note that Claude full access fails when the server runs as root
+13210	merged	M	chore(web): no-restyle fails lint, and the ceiling gate goes
+13385	closed-unmerged	M	fix(antigravity): close questions and approvals the agent drops
+13562	merged	L	test(server): assert the read-only on-request write by its permission
+13571	merged	XS	fix(server): Cursor sandboxed threads find their helper when running from source
+13584	merged	L	fix(server): ACP agents can read files under on-request approval
+13616	merged	M	fix(server): V2 Grok launches in the thread's permission mode
+13629	closed-unmerged	L	feat(server): ACP registry agents run in their native permission mode
+13634	merged	M	docs: ACP agents run their own tools, and Grok has no Auto-accept edits
+13703	merged	L	fix(server): Codex subagent approvals show up in the parent thread
+13719	merged	M	fix(server): Grok no longer offers Auto-accept edits
+13726	merged	XL	fix(server): subagent approvals always land in the parent run
+13786	merged	XS	fix(server): Claude asks before commands in Auto-accept edits
+13802	merged	S	fix(server): ACP auto-approvals allow once instead of always
+13805	merged	M	fix(server): sandboxed Cursor threads keep working after a Full access thread
+13863	merged	M	fix(server): retry Cursor text generation without sandboxing
+14144	closed-unmerged	S	fix(server): retain open approvals and native questions past the activity cap
+14369	closed-unmerged	M	fix(server): stop overriding the Codex sandbox policy on every turn
+14407	merged	XXL	feat(server): OpenCode 2 approvals, questions and every runtime mode
+14416	merged	XS	fix(server): delegate_task explains that supervised runtime modes pause the child
+14880	closed-unmerged	S	fix(clients): paired devices get the permissions chosen on the pairing link
+14888	closed-unmerged	M	fix(server): codex auto turns keep configured sandbox network access
+14895	closed-unmerged	L	fix(claude): surface approval-only MCP elicitations
+14981	open	XS	fix(server): atomic writes keep the file's permission bits
+14987	open	XS	fix(server): saving settings no longer loosens file permissions
+14995	closed-unmerged	XS	docs(relay): document the account-token creation permission
+15026	closed-unmerged	S	fix(desktop): browser tabs no longer log a spurious Electron sandbox error
+15350	open	XXL	feat: threads can run in Docker sandboxes with their own ports and services
+15360	open	M	fix(server): Claude Auto mode asks before commands it escalates
+15428	closed-unmerged	L	feat(server): MCP tools for an inbox, approvals, thread diffs, and more thread actions
+15464	open	L	feat(server): MCP tools for an inbox, approvals, thread diffs, and more thread actions
+15635	closed-unmerged	M	fix(triage): use issue form without label permission
+15692	closed-unmerged	S	fix(server): preserve Claude Auto permission fallback
+15698	open	S	fix(server): preserve Claude Auto permission fallback
+15760	closed-unmerged	L	fix(server): a Pi permission granted in one thread no longer approves the next
+15777	open	S	fix(server): OpenCode forks keep the selected permission mode
+15964	open	L	fix(claude): Full access respects Claude settings that turn off bypass mode
+16047	open	XXL	feat(server): run consented local plugins in supervised child processes
+16064	open	M	fix(server): keep a user's approval answer when Pi, OpenCode or Muse confirm it
+16368	closed-unmerged	M	fix(server): Claude Full access falls back to Auto when settings disable bypass mode
+16592	closed-unmerged	L	feat(web): choose reasoning, speed, and permissions for scheduled tasks
+16765	closed-unmerged	XS	fix(server): server browser input follows the preview control permission
+16854	open	M	fix(server): stop a Pi approval from outliving its session
+16882	closed-unmerged	L	fix(server): subagent file reads stop asking under full access
+17018	merged	S	chore(review): remove the custom Approvability check
+17027	merged	S	fix(client): tolerate blocked cookies in MCP app sandboxes
+17308	closed-unmerged	M	fix(server): T3 Connect devices get new permissions after an update
+17329	merged	L	fix(muse): workflow subagents no longer stall on hidden approvals
+17341	open	S	fix(server): older clients get split permissions when they pair
+17370	merged	XL	fix(auth): show connection permissions and enforce session lifetime
+17444	closed-unmerged	M	fix(server): stop restoring Claude permission modes the CLI refused at open
+17667	merged	M	feat(pull-requests): hosts can report edit and resolve permissions per item
+17802	open	XS	fix(web): long approval commands wrap inside the composer
+17840	merged	M	fix(pi): expire and cancel extension approvals
+17852	merged	M	fix(pi): allow known read-only T3 tools without approval
+17962	merged	S	fix(web): MCP app permission prompts no longer overflow the screen
+17963	open	S	fix(claude): Plan mode asks before writes in Auto and Full access
+18065	merged	M	fix(server): delegated Muse tasks no longer ask approval for every command
+18101	open	L	fix(server): an approval answered before its card arrives no longer stays pending
+18105	closed-unmerged	XL	feat(clients): MCP app approvals say what the tool does instead of printing raw JSON
+18248	open	M	fix(server): Codex file-change approvals list the files they change
+18276	closed-unmerged	L	fix(server): report a pending SSH key approval instead of a generic fetch timeout
+18344	open	L	fix(server): codex auto turns keep configured sandbox network access
+19306	open	M	fix(provider-muse): workflow child approvals no longer flash in full access
+19350	merged	M	fix(web): an unsaved citation comment survives a question or approval
+19361	merged	S	fix(client-runtime): a new WSL backend no longer shows Limited permissions until reload
+19558	merged	M	fix(muse): Supervised threads ask before commands again
+19614	closed-unmerged	L	fix(clients): a thread comes back when its subagent needs approval
+19630	merged	L	fix(clients): a thread comes back when its subagent needs approval

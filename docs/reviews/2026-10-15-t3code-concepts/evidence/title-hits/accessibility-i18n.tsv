@@ -1,0 +1,273 @@
+49	merged		Keep chat composer focused after toolbar and mode interactions
+69	closed-unmerged		Migrate web keyboard shortcuts to TanStack hotkeys manager
+93	merged		Add diff panel keyboard toggle and shortcut hint
+188	merged		Soften chat composer focus border in ChatView
+817	closed-unmerged		Add sidebar focus mode
+912	merged		Actions dialog: autofocus script-name field
+950	closed-unmerged		fix: use ?? instead of || in localeCompare fallback
+984	merged		Fix new-thread shortcuts when terminal has focus
+1079	merged	S	fix(web): unify focus ring styles across sidebar and app
+1130	closed-unmerged	XS	Fix mobile composer focus zoom
+1156	closed-unmerged	XS	Remove redundant `preferredProvider` variable in ProviderCommandReactor
+1176	merged	XS	fix(web): fix sidebar project drag clipping with variable-height items
+1284	closed-unmerged	M	feat(web): Add high-contrast mode setting
+1344	closed-unmerged	S	fix(web): auto-scroll composer autocomplete list on keyboard navigation
+1456	merged	L	Add keyboard shortcuts for jumping to sidebar threads
+1510	closed-unmerged	XS	vouched: add AriajSarkar to vouched
+1558	closed-unmerged	L	Add keyboard access to sidebar action menus - WIP
+1561	merged	M	Show archive action on hover with confirm focus
+1562	closed-unmerged	L	fix: prevent iOS composer focus zoom
+1614	closed-unmerged	M	Add server-side workspaceRoot uniqueness invariant
+1652	merged	S	fix(web): prevent iOS Safari auto-zoom on input focus
+1666	closed-unmerged	M	Add keyboard shortcut to toggle the main sidebar
+1725	closed-unmerged	XXL	Add vault secrets and prompt variable support
+1781	closed-unmerged	S	Fix terminal color contrast
+1810	merged	XS	fix(web): prevent number-key shortcuts from hijacking input in focused editor
+1865	merged	XS	Fix composer footer focus ring overflow
+2069	closed-unmerged	L	Improve dark mode contrast and chat UX
+2142	merged	XS	fix(web): use capture-phase keydown listener so CTRL+J toggles terminal from terminal focus on Windows (#2113)
+2391	closed-unmerged	S	fix(web): prevent mobile pinch and input-focus zoom
+2434	closed-unmerged	S	fix(web): defense-in-depth against iOS Safari auto-zoom on input focus
+2488	closed-unmerged	L	feat(web): keyboard navigation between user messages in chat
+2499	closed-unmerged	L	Fix mobile composer focus race on expand
+2503	merged	M	Prevent focus-ring clipping in AnimatedHeight
+2545	merged	XXL	Split server CLI into focused submodules
+2632	closed-unmerged	L	feat(keybindings): add terminal cycling and split-focus shortcuts
+2670	closed-unmerged	S	Fix focused terminal toggle shortcut handling on Windows
+2912	closed-unmerged	L	fix: restore missing settings variable in ChatView
+3015	merged	M	Mute icons in labeled controls and suppress popup focus rings
+3018	merged	L	Composer polish: focus ring, send/stop buttons, command menu, context meter, answer panel
+3501	merged	S	[codex] fix: restore pending input keyboard activation
+3520	closed-unmerged	M	fix: auto-retry the startup error boundary on focus/online so a recovered backend un-sticks the app
+3762	merged	XS	Use variant-specific splash icons in mobile app
+3828	merged	S	Expose mobile PR indicator labels to accessibility
+3867	merged	XS	fix(web): increase contrast of question option descriptions
+3979	merged	L	Fix editable file focus and live syntax highlighting
+4038	closed-unmerged	L	fix(mobile): Keep chat pinned during Android keyboard open
+4080	merged	XXL	Refresh app icons across release variants
+4100	closed-unmerged	XXL	Redesign sidebar with focus and project navigation
+4114	closed-unmerged	S	fix(mobile): keep new thread composer above keyboard
+4118	closed-unmerged	M	fix(web): preserve composer focus during browser automation
+4166	merged	S	fix(web): improve dev sidebar backdrop contrast & remove version pills
+4271	closed-unmerged	XXL	Keyboard-select composer controls with hold-modifier hints
+4388	closed-unmerged	S	Keep Android new task composer above keyboard
+4393	closed-unmerged	S	fix(mobile): keep Android new-task composer above keyboard
+4441	merged	XS	Increase light-mode contrast for user message bubbles
+4504	closed-unmerged	XXL	Proposal: interface review remediation for apps/web (a11y, contrast, design tokens)
+4581	closed-unmerged	L	feat(web): make the right-panel resize handle keyboard operable
+4652	merged	L	feat(web): add maria's sidebar header artwork toggle
+4747	closed-unmerged	L	feat(notifications): suppress mobile activity while desktop is focused
+4757	closed-unmerged	S	fix Android new thread keyboard overlap
+4827	closed-unmerged	S	fix(server): fall back to a UTF-8 locale in terminal spawn env
+4876	closed-unmerged	M	feat(web): add thread.settle keyboard shortcut (mod+shift+s)
+4917	closed-unmerged	M	fix(mobile): fix being unable to dismiss search keyboard with no environments
+4977	closed-unmerged	S	fix(web): hide keyboard shortcuts on mobile
+5021	closed-unmerged	XS	fix(web): respect keyboard layouts for command shortcuts
+5060	closed-unmerged	S	fix(mobile): keep Android new-thread composer above keyboard
+5451	merged	M	fix(mobile): improve keyboard avoiding
+5521	merged	M	fix(web): make sidebar project actions reachable by keyboard and screen reader
+5606	closed-unmerged	XS	feat(i18n): add Brazilian Portuguese localization
+5686	merged	L	fix(mobile): keep keyboard out of model picker
+5691	merged	M	fix(desktop): zoom shortcuts no longer die when the preview browser has focus
+5829	closed-unmerged	L	fix(swift-ios): keep composer controls above keyboard
+5894	closed-unmerged	S	fix(desktop): correctly await executeJavaScript for element focus restoration
+5898	closed-unmerged	S	fix(desktop): use unique identifier for window focus restoration
+5959	closed-unmerged	M	feat(web): stop the running turn from the keyboard via chat.interrupt
+5961	closed-unmerged	M	feat(web): add terminal.focus and chat.focusComposer keybindings
+5971	merged	XS	fix(swift-ios): keep skills popup clear of the keyboard
+5979	closed-unmerged	S	fix(mobile): keep new thread controls above Android keyboard
+5993	merged	M	fix(swift-ios): improve live duration accessibility
+6000	merged	M	fix(web): improve built-in theme contrast
+6145	closed-unmerged	L	fix(swift-ios): keep composer above software keyboard
+6190	merged	M	fix(desktop): timestamps follow the OS locale instead of en-US
+6236	merged	S	fix(desktop): agent shells inherit a UTF-8 locale on macOS
+6243	closed-unmerged	XS	fix(desktop): focus the preview guest when annotation starts
+6255	closed-unmerged	XS	fix(web): distinguish imported theme variant previews
+6323	merged	L	fix(mobile): preserve keyboard suggestions while typing
+6349	closed-unmerged	M	fix(web): mod-w closes focused right panel tabs
+6351	closed-unmerged	M	fix(web): `<mod>-w` closes focused right panel tabs instead of entire window
+6454	closed-unmerged	L	feat(web): rename focused sidebar thread with f2
+6591	closed-unmerged	S	fix(desktop): ensure UTF-8 locale in macOS terminals
+6667	closed-unmerged	XS	fix(web): keep theme specificity variant-safe
+6669	merged	M	fix(web): improve Codex usage graph contrast
+7081	merged	XS	fix(web): keep timestamp date and time in the same locale
+7277	merged	M	fix(web): hide thread jump hints while the terminal is focused
+7371	merged	XL	feat(swift-ios): keep failed source control output visible with accessible Retry
+7395	closed-unmerged	L	feat(web): chat text contrast slider with live preview in Typography
+7446	closed-unmerged	XL	fix(web): collapse the composer when it is not focused
+7501	merged	M	feat(swift-ios): let readers dismiss the keyboard over a long draft
+7715	closed-unmerged	M	fix(web): keyboard hints no longer assume macOS
+7906	merged	L	feat(web): add appearance contrast control
+8073	closed-unmerged	XXL	feat(i18n): add Simplified Chinese localization for web, desktop, and mobile
+8089	merged	M	feat(web): settle and restore threads with a keyboard shortcut
+8139	merged	XS	fix(web): block type-to-focus behind open dialogs
+8212	closed-unmerged	L	fix(mobile): recover keyboard composers after Android resume
+8316	closed-unmerged	L	feat(desktop): notify on turn completion while unfocused on Windows
+8362	closed-unmerged	S	fix(mobile): send on Ctrl/Cmd+Enter from a hardware keyboard on Android
+8372	closed-unmerged	L	feat(web): setting to keep the terminal from taking focus automatically
+8440	merged	M	feat(web): toggle a thread's pin from the keyboard
+8458	closed-unmerged	L	feat(web): add explicit context-menu layout and focus options
+8494	open	XXL	fix(desktop): isolate preview keyboard input
+8637	closed-unmerged	M	feat(relay): silence mobile notifications while the desktop is focused
+8662	closed-unmerged	L	fix(web): Fix file inline comment focus and persistence
+8772	closed-unmerged	L	feat: color-code projects as an accessibility aid
+8937	closed-unmerged	L	feat(appearance): add high-contrast user messages
+9011	closed-unmerged	M	fix(clients): respect locale for next-week snooze
+9042	closed-unmerged	XXL	feat(desktop): add SSH environment variables
+9061	merged	S	fix(web): restore file comment focus in editable preview
+9231	closed-unmerged	M	feat(web): add wider scrollbar accessibility setting
+9477	closed-unmerged	L	fix(web): invisible toggles and focus rings from imported themes
+9513	merged	S	fix(web): return focus to the composer after closing a media preview
+9522	closed-unmerged	XXL	fix(desktop): isolate preview keyboard input
+9530	closed-unmerged	L	fix(web): preserve composer focus during preview presses
+9755	merged	XXL	docs: keep internal guides focused on architecture
+9756	merged	XXL	docs: focus user guides on features and workflows
+9795	merged	M	fix(web): preserve focus and prioritize picker shortcuts
+9814	open	XS	fix(web): keep font picker keyboard selection in sync
+9840	merged	M	fix(desktop): isolate preview keyboard shortcuts from the host
+9848	closed-unmerged	S	fix(desktop): preserve user focus during preview presses
+9849	closed-unmerged	L	fix(web): restore renderer focus after preview presses
+9978	merged	XS	test(server): cover thread lookup through command invariants
+10076	merged	S	fix(usage): tolerate newer provider variants
+10154	merged	M	fix(web): make composer suggestions usable with screen readers
+10158	merged	XL	feat(web): add keyboard navigation for usage
+10175	merged	XS	fix(web): prevent file tree search focus ring clipping
+10223	closed-unmerged	L	refactor(web): remove unused input component variants
+10258	merged	XS	fix(web): respect reduced motion in shared disclosures
+10262	merged	XS	fix(web): keep settings inputs focused during IME composition
+10302	merged	XS	test(web): focus command palette tests on search behavior
+10391	closed-unmerged	L	fix(web): make message link context menus usable with screen readers
+10397	closed-unmerged	S	fix(mobile): improve composer skill contrast
+10437	merged	L	fix(web): stop collapsing the composer when it loses focus
+10463	merged	M	fix(web): composer regains focus when you tab back into T3 Code
+10573	closed-unmerged	XL	feat(web): add keyboard revert picker
+10590	closed-unmerged	S	test(web): derive the snooze weekday assertion from the machine locale
+10699	closed-unmerged	L	fix(mobile): keep terminal arrows accessible for TUI navigation
+10715	closed-unmerged	M	fix(web): rest the composer again when focus leaves a scrolled thread
+10752	closed-unmerged	M	fix(swift-ios): keep terminal output accessible after VoiceOver starts
+10900	closed-unmerged	XL	feat(i18n): add Simplified-Chinese i18n framework and localize web & desktop UI
+10910	closed-unmerged	S	feat(web): add configurable composer focus shortcut
+10982	closed-unmerged	M	fix(desktop): hand keyboard focus back after an automation click
+11199	merged	M	feat(web): expose each chat message as a heading for screen readers
+11248	closed-unmerged	S	feat(web): add mark unread keyboard shortcut
+11387	closed-unmerged	S	fix(composer): keep focus after command selection
+11444	merged	XS	fix(web): preserve preview focus on window return
+11577	closed-unmerged	XXL	fix(desktop): keep browser automation from stealing chat focus
+11580	merged	XS	fix(web): switches announce their real state to screen readers
+11582	closed-unmerged	XS	fix(web): suppress desktop notifications while focused
+11666	closed-unmerged	M	fix(web): announce composer trigger menus to screen readers
+11679	merged	XXL	feat(mobile): add iPad keyboard shortcuts and command palette
+11724	closed-unmerged	XL	fix(search): match queries typed on non-Latin keyboard layouts
+11884	merged	M	fix(web): restore composer focus after closing option menus
+11905	closed-unmerged	S	feat(web): mark the active thread unread from the keyboard
+11993	merged	L	refactor: give project monograms their own icon variant
+12216	closed-unmerged	S	feat(web): mark the active thread unread from the keyboard
+12355	merged	XL	fix(web): share accessible color picker controls
+12371	merged	L	fix(mobile): share accessible connection trace controls
+12375	merged	XS	t3code/ui composition audit/worklog link variant
+12397	merged	S	fix: composer hero reads project name to screen readers
+12405	merged	XS	fix(web): allow full contrast in assistant replies
+12526	merged	M	fix(web): route keyboard submit through the primary worktree action
+12612	closed-unmerged	XXL	Buffy (Codebuff) + [ T3 Code ] Add environment variable validation at server startup
+12621	closed-unmerged	XXL	feat(observability): honor the standard OTEL_* environment variables
+12655	closed-unmerged	M	fix(swift-ios): defer composer focus until after view updates
+12660	closed-unmerged	S	docs: define consistent reduced motion behavior
+12666	closed-unmerged	M	docs: define preview write authority invariant
+12745	merged	M	fix(web): the custom snooze calendar starts the week where the locale does
+12770	merged	M	fix(mobile): preserve native send choices and keyboard
+12871	closed-unmerged	M	fix: respect reduced motion in programmatic scrolling
+12917	closed-unmerged	M	fix(mobile): review dictated drafts without opening the keyboard
+12986	closed-unmerged	L	refactor(web): give TooltipPopup width and code variants
+13000	closed-unmerged	M	refactor(web): add Alert sidebar variants and Kbd sizes
+13005	closed-unmerged	S	refactor(web): add an inline variant to Input
+13029	merged	S	refactor(web): add a label variant to Badge
+13031	merged	L	refactor(web): one wrap width for tooltips, plus a code variant
+13043	merged	L	refactor(web): sidebar alerts use the standard variants; one keycap
+13143	closed-unmerged	XXL	docs(mobile): record agent conventions for tests, variants, and file modules
+13147	closed-unmerged	L	fix(mobile): park ambient loading animations when offscreen or reduced motion
+13151	merged	L	refactor(mobile): break module cycles with focused extractions
+13161	merged	L	refactor(mobile): git sheets use uniwind platform variants instead of className ternaries
+13169	merged	L	revert(mobile): git sheets back to Platform.OS ternaries (un-guarded uniwind variants broke both platforms)
+13172	merged	L	fix(mobile): uniwind platform variants stay guarded on both platforms
+13173	closed-unmerged	M	docs(mobile): record agent conventions for tests, variants, and file modules
+13185	merged	L	refactor(mobile): git sheets use uniwind platform variants instead of className ternaries
+13188	merged	M	refactor(mobile): remaining className platform ternaries become class variants
+13191	merged	L	hatch/variant functions
+13253	open	XXL	fix(server): a zero Git fetch interval also stops the fetch on window focus
+13344	merged	XS	Show a focus ring on sidebar thread and draft rows
+13404	closed-unmerged	M	fix(web): typing with the composer unfocused reaches the composer again
+13430	closed-unmerged	L	fix(a11y): announce agent activity to screen readers
+13450	merged	M	fix(web): return focus to the composer after saving a citation note
+13491	merged	M	fix(accessibility): correct control announcements and sidebar traversal
+13492	merged	L	feat(observability): honor the standard OTLP endpoint, headers, and protocol variables
+13641	merged	L	feat(desktop): honor the standard OTLP variables in the main process and WSL backends
+13661	closed-unmerged	XS	fix(web): browser device toolbar no longer clips size field focus rings
+13708	closed-unmerged	XS	fix(web): fast typing no longer scrambles text when type-to-focus kicks in
+13809	open	M	fix(server): price Antigravity Gemini Flash effort variants
+13880	closed-unmerged	M	fix(web): timeline minimap only appears on hover or focus
+13914	closed-unmerged	M	fix(preview): agent clicks no longer take the user's typing focus
+13962	open	L	fix(web): screen readers can reach sidebar row actions
+14095	closed-unmerged	M	fix(web): Mod+B toggles the sidebar while the composer is focused
+14192	closed-unmerged	XXL	feat(marketing): translate the homepage into five languages
+14215	closed-unmerged	XXL	feat(i18n): add English and Simplified Chinese across clients
+14331	closed-unmerged	S	fix(web): agent clicks in background browsers no longer steal prompt focus
+14498	merged	L	fix(web): imported themes keep switches and focus rings visible
+14587	merged	XS	fix(web): thread status dot has an accessible name
+14595	merged	XS	fix(web): fast typing no longer scrambles text when type-to-focus kicks in
+14739	closed-unmerged	S	fix(web): Ctrl+Plus zooms in again on German keyboards
+14785	open	XS	fix(web): let keyboard users reach why reviewer/label changes are unavailable
+14786	open	M	fix(web): move keyboard interaction out of the closing right panel
+15008	merged	M	fix(preview): agent browser clicks no longer steal your composer focus
+15030	open	L	fix(mobile): restore lost iOS race fixes and Android keyboard parity
+15035	open	XL	feat(web): the right panel works like a browser from the keyboard
+15058	closed-unmerged	S	feat(web): mark the active thread unread from the keyboard
+15091	open	L	fix(web): preserve composer focus during preview Tab automation
+15188	merged	XS	fix(web): timeline divider pill shows a pointer, visible hover and focus ring
+15236	open	M	fix(mobile): review dictated drafts without opening the keyboard
+15274	merged	L	chore(lint): flag :has() variants that restyle the whole page
+15379	open	M	fix(web): keyboard hints no longer assume macOS
+15391	merged	L	feat(clients): step a new thread to the next machine from the keyboard
+15667	closed-unmerged	XS	fix(opencode): omit Reasoning when a model advertises no variants
+15684	closed-unmerged	L	fix(server): OpenCode Go threads no longer fail on an unlisted variant
+15806	closed-unmerged	L	fix(web): context menus are keyboard and screen reader accessible
+16087	closed-unmerged	XXL	feat(i18n): add a shared i18n foundation and translate the welcome wizard
+16172	closed-unmerged		fix(web): mod+z undoes a settle even when the composer has focus
+16282	merged	XXL	refactor: layer variables are named layer or layerXyz
+16440	closed-unmerged	S	fix(desktop): browser editing shortcuts work on non-Latin keyboard layouts
+16645	closed-unmerged	XL	fix(ui): prevent clipped focus and preview selection borders
+16673	closed-unmerged	XXL	feat(i18n): add opt-in Simplified Chinese settings and navigation
+16675	merged	L	fix(ui): keep focus and selection borders visible across the app
+16830	closed-unmerged	M	fix(web): 7-day usage chart shows hourly variation
+16960	merged	L	refactor(server): GitHub GraphQL batches use variables and share one pager
+17069	open	S	fix(desktop): Ctrl+Plus zooms in on Spanish and German keyboard layouts
+17102	open	M	fix(mobile): keep Android composer above keyboard after app switches
+17492	merged	XS	fix(mobile): Android composer keeps the caret in view on AOSP-based keyboards
+17524	closed-unmerged	XS	fix(web): the right-panel launcher no longer steals focus from the composer
+17575	closed-unmerged	XL	fix(desktop): keep preview keyboard input in its guest
+17702	merged	XS	fix(web): timeline divider focus ring stays inside the pill
+17859	merged	M	fix(web): focus settings search with command-f
+18066	closed-unmerged	XS	fix(web): keep font picker keyboard selection in sync
+18123	closed-unmerged	XL	fix(search): match queries typed on non-Latin keyboard layouts
+18176	closed-unmerged	M	fix(web): focus the primary action when confirmation dialogs open
+18177	open	M	fix(web): 7-day usage chart shows hourly variation
+18187	open	M	fix(web): focus the primary action when confirmation dialogs open
+18279	merged	XS	fix(web): keybinding settings label Focus URL with a capitalized acronym
+18506	merged	L	fix(mobile): preserve theme contrast across surfaces and actions
+18691	closed-unmerged	M	feat(web): keyboard shortcut for the browser Annotate button
+18696	closed-unmerged	M	fix(mobile): stop Android logging "Unsupported FontVariant value" on every tabular-nums render
+18714	open	M	fix(web): mod+z undoes a settle even when the composer has focus
+18831	open	XS	fix(web): keep expanded tool actions usable from the keyboard
+18849	open	S	fix(web): remove collapsed sidebar controls from keyboard navigation
+18850	open	S	fix(web): restore palette focus when no composer is mounted
+18876	open	L	fix(web): context menus are keyboard and screen reader accessible
+18948	closed-unmerged	M	fix(server): a zero Git fetch interval also stops the fetch on window focus
+18969	open	M	fix(server): window focus skips git fetch when the fetch interval is 0
+19104	closed-unmerged	S	feat(mobile): toggle the on-screen keyboard in the iOS device preview
+19221	closed-unmerged	XS	perf(desktop): stop decoding snapshots twice for accessibility
+19428	open	L	fix(web): screen readers can read the terminal
+19497	open	XS	fix(web): typing and window refocus no longer pull focus from the device screen
+19513	open	L	fix(web): iPhone keyboard no longer hides the composer or scrolls the header away
+19548	closed-unmerged	L	fix(desktop): keep preview automation from stealing chat focus
+19604	merged	XS	fix(desktop): import CA trust variables from the login shell
+19616	open	XS	fix(shared): T3 Connect devices connect to hosts with a Latvian, Lithuanian, Basque or Azerbaijani locale
+19669	open	XXL	feat: improve screen reader keyboard navigation

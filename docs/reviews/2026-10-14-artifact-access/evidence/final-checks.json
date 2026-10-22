@@ -1,0 +1,15 @@
+[
+  {
+    "check": "python314-artifact",
+    "returncode": 0
+  },
+  {
+    "check": "python311-artifact",
+    "returncode": 0
+  },
+  {
+    "check": "related",
+    "passed": 19,
+    "failed": 0
+  }
+]

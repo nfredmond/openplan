@@ -10,11 +10,18 @@ import { StateBlock } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { ENGAGEMENT_CAMPAIGN_STATUSES, ENGAGEMENT_TYPES, titleizeEngagementValue } from "@/lib/engagement/catalog";
 import { StudyAreaPicker } from "@/components/models/study-area-picker";
-import { parseCorridorText } from "@/lib/models/study-area";
+import { campaignPlaceFromPicker } from "@/lib/engagement/campaign-place-request";
 import type { PlaceBoundaryResponse } from "@/lib/api/place-geographies";
 // Type-only: the resolver is server-side, and an `import type` is erased before
 // this component reaches the browser.
 import type { PortalMapFraming } from "@/lib/engagement/public-portal-data";
+import {
+  dateTimeInputOf,
+  instantFromWallClock,
+  timeZoneInputLabel,
+  UTC_TIME_ZONE,
+  type WorkspaceCalendar,
+} from "@/lib/time/workspace-calendar";
 
 /**
  * The location check as the API reports it (20260730000002).
@@ -84,13 +91,21 @@ type Campaign = {
 export function EngagementCampaignControls({
   campaign,
   projects,
+  calendar,
 }: {
   campaign: Campaign;
   projects: ProjectOption[];
+  /**
+   * The workspace calendar. The participation inputs show and accept its wall
+   * clock, the same clock the staff sentences name. Absent means UTC, said so.
+   */
+  calendar?: WorkspaceCalendar;
 }) {
   const router = useRouter();
-  const [participationStartsAt, setParticipationStartsAt] = useState(campaign.participation_starts_at?.slice(0,16) ?? "");
-  const [participationEndsAt, setParticipationEndsAt] = useState(campaign.participation_ends_at?.slice(0,16) ?? "");
+  const timeZone = calendar?.timeZone ?? UTC_TIME_ZONE;
+  const zoneLabel = timeZoneInputLabel(calendar);
+  const [participationStartsAt, setParticipationStartsAt] = useState(() => dateTimeInputOf(campaign.participation_starts_at, timeZone));
+  const [participationEndsAt, setParticipationEndsAt] = useState(() => dateTimeInputOf(campaign.participation_ends_at, timeZone));
   const [title, setTitle] = useState(campaign.title);
   const [summary, setSummary] = useState(campaign.summary ?? "");
   const [status, setStatus] = useState(campaign.status);
@@ -224,23 +239,25 @@ export function EngagementCampaignControls({
 
   async function handleSaveArea() {
     // A searched place is saved by REFERENCE so the server re-resolves the
-    // boundary; a drawn one has no reference to send.
-    if (pickedPlace) {
-      await saveArea({ mode: "place", kind: pickedPlace.kind, geoid: pickedPlace.geoid });
-      return;
-    }
-
-    const drawn = parseCorridorText(areaText);
-    if (!drawn) {
+    // boundary; a drawn one has no reference to send. The publish checklist
+    // builds the same body through the same helper.
+    const place = campaignPlaceFromPicker(pickedPlace, areaText);
+    if (!place) {
       setAreaError("Search for a place or draw an area before saving.");
       return;
     }
-    await saveArea({ mode: "drawn", geometry: drawn });
+    await saveArea(place);
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
+    const startsAt = participationStartsAt ? instantFromWallClock(participationStartsAt, timeZone) : null;
+    const endsAt = participationEndsAt ? instantFromWallClock(participationEndsAt, timeZone) : null;
+    if ((participationStartsAt && !startsAt) || (participationEndsAt && !endsAt)) {
+      setError("Enter participation dates as a date and a time.");
+      return;
+    }
     setIsSubmitting(true);
 
     try {
@@ -248,8 +265,8 @@ export function EngagementCampaignControls({
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          participationStartsAt: participationStartsAt ? new Date(`${participationStartsAt}Z`).toISOString() : null,
-          participationEndsAt: participationEndsAt ? new Date(`${participationEndsAt}Z`).toISOString() : null,
+          participationStartsAt: startsAt,
+          participationEndsAt: endsAt,
           title,
           summary: summary || null,
           status,
@@ -431,7 +448,7 @@ export function EngagementCampaignControls({
                 </div>
                 <p className="text-label text-muted-foreground">
                   A corridor-wide comment window is often about several projects at once. Every
-                  checked project shows this campaign in its engagement lane and in the project
+                  checked project shows this campaign in its engagement section and in the project
                   filter on the engagement catalog. Reports and RTP comment records still follow the
                   lead project.
                 </p>
@@ -544,8 +561,8 @@ export function EngagementCampaignControls({
         ) : null}
 
         <div className="grid gap-3 sm:grid-cols-2">
-          <label className="text-sm">Participation opens, UTC<input className="block w-full rounded border p-2" type="datetime-local" value={participationStartsAt} onChange={(event) => setParticipationStartsAt(event.target.value)} /></label>
-          <label className="text-sm">Participation closes, UTC<input className="block w-full rounded border p-2" type="datetime-local" value={participationEndsAt} onChange={(event) => setParticipationEndsAt(event.target.value)} /></label>
+          <label className="text-sm">Participation opens ({zoneLabel})<input className="block w-full rounded border p-2" type="datetime-local" value={participationStartsAt} onChange={(event) => setParticipationStartsAt(event.target.value)} /></label>
+          <label className="text-sm">Participation closes ({zoneLabel})<input id="campaign-control-participation-ends" className="block w-full rounded border p-2" type="datetime-local" value={participationEndsAt} onChange={(event) => setParticipationEndsAt(event.target.value)} /></label>
         </div>
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}

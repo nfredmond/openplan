@@ -1,0 +1,53 @@
+{
+  "units": [
+    {
+      "name": "prepare-02",
+      "invocation": "bc87b6b4653a4fce92c23f5d414a3cd0",
+      "exit": 0,
+      "memoryPeak": "34.1M rounded"
+    },
+    {
+      "name": "controls-05",
+      "invocation": "60ce595c499344998e027b43c2555f28",
+      "exit": 0,
+      "memoryPeak": "21.2M rounded",
+      "cases": 64
+    },
+    {
+      "name": "newguards-01",
+      "invocation": "0a97851462794d7ebbfcd7d5f57fbd2c",
+      "exit": 0,
+      "memoryPeak": "18M rounded",
+      "cases": 10
+    },
+    {
+      "name": "final-audit-01",
+      "invocation": "3b3b92d9c959474bb4659389c5992167",
+      "exit": 0,
+      "memoryPeak": "30.3M rounded"
+    },
+    {
+      "name": "controls-06",
+      "invocation": "ab310876369c4effad255811b6059fb5",
+      "exit": 0,
+      "memoryPeak": "21.7M rounded",
+      "cases": 64,
+      "reason": "Resealed final helper docstring and hash literals; no behavioral change."
+    },
+    {
+      "name": "final-audit-02",
+      "invocation": "ecb2c3f7bf3c41a8910358b94cfe9b04",
+      "exit": 0,
+      "memoryPeak": "25.9M rounded"
+    }
+  ],
+  "resources": {
+    "MemoryMax": "512M",
+    "MemorySwapMax": "0",
+    "CPUQuota": "50%",
+    "compilerLock": "/home/nathaniel/.local/state/openplan/compiler-repair-checks-20261015.lock",
+    "pythonBytecode": false,
+    "networkPayloadOrOperationalTransport": false
+  },
+  "limits": "Rounded systemd summaries do not supply absent event counters. This records preparation units, not operating stages or the parent compiler."
+}

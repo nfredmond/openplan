@@ -1,0 +1,259 @@
+{
+  "sourceSha256": "482ab955a3096018b1eacd5a4e049ffa0fd48c25ab5feae9bd3905dc5f30a68f",
+  "cases": [
+    {
+      "case": "baseline",
+      "result": "survived"
+    },
+    {
+      "case": "harmless",
+      "result": "survived"
+    },
+    {
+      "case": "protected cluster-backup-tool",
+      "result": "refused",
+      "reason": "cluster-backup-tool"
+    },
+    {
+      "case": "omit cluster-backup-tool",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "cluster-backup-tool"
+    },
+    {
+      "case": "protected cluster-captured-point",
+      "result": "refused",
+      "reason": "cluster-captured-point"
+    },
+    {
+      "case": "omit cluster-captured-point",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "cluster-captured-point"
+    },
+    {
+      "case": "protected cluster-controls-source",
+      "result": "refused",
+      "reason": "cluster-controls-source"
+    },
+    {
+      "case": "omit cluster-controls-source",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "cluster-controls-source"
+    },
+    {
+      "case": "protected cluster-existing-container",
+      "result": "refused",
+      "reason": "cluster-existing-container"
+    },
+    {
+      "case": "omit cluster-existing-container",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "cluster-existing-container"
+    },
+    {
+      "case": "protected cluster-existing-volume",
+      "result": "refused",
+      "reason": "cluster-existing-volume"
+    },
+    {
+      "case": "omit cluster-existing-volume",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "cluster-existing-volume"
+    },
+    {
+      "case": "protected cluster-resource-headroom",
+      "result": "refused",
+      "reason": "cluster-resource-headroom"
+    },
+    {
+      "case": "omit cluster-resource-headroom",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "cluster-resource-headroom"
+    },
+    {
+      "case": "protected cluster-container-identity",
+      "result": "refused",
+      "reason": "cluster-container-identity"
+    },
+    {
+      "case": "omit cluster-container-identity",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "cluster-container-identity"
+    },
+    {
+      "case": "protected cluster-image",
+      "result": "refused",
+      "reason": "cluster-image"
+    },
+    {
+      "case": "omit cluster-image",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "cluster-image"
+    },
+    {
+      "case": "protected cluster-command",
+      "result": "refused",
+      "reason": "cluster-command"
+    },
+    {
+      "case": "omit cluster-command",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "cluster-command"
+    },
+    {
+      "case": "protected cluster-owner",
+      "result": "refused",
+      "reason": "cluster-owner"
+    },
+    {
+      "case": "omit cluster-owner",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "cluster-owner"
+    },
+    {
+      "case": "protected cluster-limits",
+      "result": "refused",
+      "reason": "cluster-limits"
+    },
+    {
+      "case": "omit cluster-limits",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "cluster-limits"
+    },
+    {
+      "case": "protected cluster-network",
+      "result": "refused",
+      "reason": "cluster-network"
+    },
+    {
+      "case": "omit cluster-network",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "cluster-network"
+    },
+    {
+      "case": "protected cluster-mount-count",
+      "result": "refused",
+      "reason": "cluster-mount-count"
+    },
+    {
+      "case": "omit cluster-mount-count",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "cluster-mount-count"
+    },
+    {
+      "case": "protected cluster-data-volume",
+      "result": "refused",
+      "reason": "cluster-data-volume"
+    },
+    {
+      "case": "omit cluster-data-volume",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "cluster-data-volume"
+    },
+    {
+      "case": "protected cluster-key-bind",
+      "result": "refused",
+      "reason": "cluster-key-bind"
+    },
+    {
+      "case": "omit cluster-key-bind",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "cluster-key-bind"
+    },
+    {
+      "case": "protected cluster-role-captured-bytes",
+      "result": "refused",
+      "reason": "cluster-role-captured-bytes"
+    },
+    {
+      "case": "omit cluster-role-captured-bytes",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "cluster-role-captured-bytes"
+    },
+    {
+      "case": "protected cluster-role-bootstrap",
+      "result": "refused",
+      "reason": "cluster-role-bootstrap"
+    },
+    {
+      "case": "omit cluster-role-bootstrap",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "cluster-role-bootstrap"
+    },
+    {
+      "case": "protected cluster-role-bootstrap-statement",
+      "result": "refused",
+      "reason": "cluster-role-bootstrap-statement"
+    },
+    {
+      "case": "omit cluster-role-bootstrap-statement",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "cluster-role-bootstrap-statement"
+    },
+    {
+      "case": "protected cluster-role-catalog",
+      "result": "refused",
+      "reason": "cluster-role-catalog"
+    },
+    {
+      "case": "omit cluster-role-catalog",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "cluster-role-catalog"
+    },
+    {
+      "case": "protected cluster-role-password-and-grants",
+      "result": "refused",
+      "reason": "cluster-role-password-and-grants"
+    },
+    {
+      "case": "omit cluster-role-password-and-grants",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "cluster-role-password-and-grants"
+    },
+    {
+      "case": "protected cluster-database-properties",
+      "result": "refused",
+      "reason": "cluster-database-properties"
+    },
+    {
+      "case": "omit cluster-database-properties",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "cluster-database-properties"
+    },
+    {
+      "case": "protected cluster-existing-database",
+      "result": "refused",
+      "reason": "cluster-existing-database"
+    },
+    {
+      "case": "omit cluster-existing-database",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "cluster-existing-database"
+    },
+    {
+      "case": "protected cluster-property-command-target",
+      "result": "refused",
+      "reason": "cluster-property-command-target"
+    },
+    {
+      "case": "omit cluster-property-command-target",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "cluster-property-command-target"
+    },
+    {
+      "case": "protected cluster-property-command-bytes",
+      "result": "refused",
+      "reason": "cluster-property-command-bytes"
+    },
+    {
+      "case": "omit cluster-property-command-bytes",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "cluster-property-command-bytes"
+    },
+    {
+      "case": "restored",
+      "result": "survived"
+    }
+  ],
+  "nativeLaunches": 0,
+  "boundary": "Pure container/role observations for this pinned fixture; no native role, key, database or disk verification."
+}

@@ -1,0 +1,78 @@
+{
+  "checks": [
+    {
+      "case": "baseline",
+      "accepted": true,
+      "expected": true
+    },
+    {
+      "case": "harmless-comment",
+      "accepted": true,
+      "expected": true
+    },
+    {
+      "case": "intended-assertion",
+      "accepted": true,
+      "expected": true
+    },
+    {
+      "case": "wrong-diagnostic",
+      "accepted": false,
+      "expected": false
+    },
+    {
+      "case": "source-echo-with-wrong-assertion",
+      "accepted": false,
+      "expected": false
+    },
+    {
+      "case": "wrong-method",
+      "accepted": false,
+      "expected": false
+    },
+    {
+      "case": "additional-unrelated-failure",
+      "accepted": false,
+      "expected": false
+    },
+    {
+      "case": "additional-error",
+      "accepted": false,
+      "expected": false
+    },
+    {
+      "case": "syntax-failure",
+      "accepted": false,
+      "expected": false
+    },
+    {
+      "case": "zero-exit-failure-text",
+      "accepted": false,
+      "expected": false
+    },
+    {
+      "case": "missing-failure-footer",
+      "accepted": false,
+      "expected": false
+    },
+    {
+      "case": "old-twelve-method-cohort",
+      "accepted": false,
+      "expected": false
+    },
+    {
+      "case": "baseline-nonzero",
+      "accepted": false,
+      "expected": false
+    },
+    {
+      "case": "baseline-without-ok",
+      "accepted": false,
+      "expected": false
+    }
+  ],
+  "controllerUnchanged": true,
+  "controllerSha256": "703b61b33fe4f4f784bf3f2a3257e01f0ec8626723eb77c68e68678f42179350",
+  "pythonVersion": "3.11.15 (main, Jun 11 2026, 04:03:40) [Clang 22.1.3 ]",
+  "blindCategory": "Synthetic transcripts do not prove the unittest runner executes intended source."
+}

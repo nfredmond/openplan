@@ -1,0 +1,17 @@
+{
+  "suitePrograms": 26,
+  "unittestSuites": 19,
+  "unittestCases": 507,
+  "scenarioRunners": 7,
+  "readerTests": 43,
+  "readerControls": 60,
+  "readerTargetedFaults": 56,
+  "custodyTests": 32,
+  "custodyControls": 44,
+  "nativeRpcRecoveryControls": 14,
+  "workflowSteps": 28,
+  "workflowSeconds": 314.417,
+  "localShell": "sh -c; final control reports and logs checked for each command, including multi-command blocks",
+  "githubCI": "separate pending acceptance",
+  "noBrowserAcceptance": true
+}

@@ -1,8 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
-import Link from "next/link";
-import { ErrorState } from "@/components/ui/state-block";
+import { ModuleError } from "@/components/ui/module-error";
 
 export default function AerialError({
   error,
@@ -11,40 +9,14 @@ export default function AerialError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  useEffect(() => {
-    console.error("[openplan/aerial-error]", {
-      message: error.message,
-      digest: error.digest ?? null,
-    });
-  }, [error]);
-
   return (
-    <div className="px-6 py-8">
-      <ErrorState
-        title="Something went wrong in Aerial Imagery."
-        description={
-          error.digest
-            ? `Reference ${error.digest}. Nothing has been deleted — this screen failed to load. Try again, or go back to the aerial missions list.`
-            : "Nothing has been deleted — this screen failed to load. Try again, or go back to the aerial missions list."
-        }
-        action={
-          <div className="flex flex-wrap gap-3 text-sm">
-            <button
-              type="button"
-              onClick={reset}
-              className="inline-flex items-center rounded border border-destructive/40 px-3 py-1.5 font-medium text-destructive hover:bg-destructive/10"
-            >
-              Try again
-            </button>
-            <Link
-              href="/aerial"
-              className="inline-flex items-center rounded border border-border px-3 py-1.5 font-medium text-foreground hover:bg-muted/40"
-            >
-              Back to Aerial Imagery
-            </Link>
-          </div>
-        }
-      />
-    </div>
+    <ModuleError
+      error={error}
+      reset={reset}
+      moduleName="Aerial Imagery"
+      backHref="/aerial"
+      backLabel="Back to Aerial Imagery"
+      logTag="aerial-error"
+    />
   );
 }

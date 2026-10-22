@@ -73,11 +73,11 @@ const OPTIONS_BY_QUESTION = new Map([
 ]);
 
 /** Only the campaign lookup runs against the client; the definition read is mocked above. */
-function campaignClient() {
+function campaignClient(campaign: Record<string, unknown> = CAMPAIGN) {
   return {
     from: (table: string) => {
       if (table === "engagement_campaigns") {
-        return { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: CAMPAIGN, error: null }) }) }) };
+        return { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: campaign, error: null }) }) }) };
       }
       throw new Error(`Unexpected table: ${table}`);
     },
@@ -112,6 +112,17 @@ describe("POST /api/engage/[shareToken]/survey/submit — an unreadable survey i
 
     expect(response.status).toBe(201);
     expect(insertSurveyResponseMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("refuses a response once staff have closed submissions", async () => {
+    createServiceRoleClientMock.mockReturnValue(
+      campaignClient({ ...CAMPAIGN, submissions_closed_at: "2026-04-02T09:30:00.000Z" })
+    );
+
+    const response = await POST(submitRequest(), ctx);
+
+    expect(response.status).toBe(403);
+    expect(insertSurveyResponseMock).not.toHaveBeenCalled();
   });
 
   /**

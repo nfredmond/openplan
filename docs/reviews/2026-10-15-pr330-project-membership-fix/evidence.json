@@ -1,0 +1,304 @@
+{
+  "schema": "openplan.pr330-project-membership-fix.v1",
+  "date": "2026-10-15",
+  "parentCommit": "401c44a0f7bfe4b54740e2c3d07e30f8ed36f169",
+  "finding": "https://github.com/nfredmond/openplan/pull/330#discussion_r4285653413",
+  "direction": {
+    "exitCode": 0,
+    "remindersRetained": true,
+    "invocation": "27133d6aa236409e8af438ff49e7fcc1"
+  },
+  "sourceSha256": {
+    "openplan/src/app/(app)/projects/[projectId]/page.tsx": "667898934b278b1d8f68a4b5d95f472da364c718bfd63f8a498e8f12468db1d8",
+    "openplan/src/test/project-detail-page.test.tsx": "1582791ca2cca2aa264fac753c246d88625feb22918f50e6d726f30ef0dc80f3"
+  },
+  "runnerSha256": {
+    "docs/reviews/2026-10-15-pr330-project-membership-fix/verify_controls.py": "9795535b3e5c9be590d47a219c806ff3e93d3276e554eef2c387a1b86daf8bcb",
+    "docs/reviews/2026-10-15-pr330-project-membership-fix/vitest.config.mts": "64ce99641a76540b24003065dffc7d5af535565682dd4f67e85698abb35aa4ea"
+  },
+  "checks": {
+    "focused-shuffled": {
+      "exitCode": 0,
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "src/test/project-detail-page.test.tsx",
+        "src/test/workspace-membership-current.test.ts",
+        "src/test/workspace-membership-required.test.tsx",
+        "src/test/workspace-membership-query-guard.test.ts",
+        "--config",
+        "../docs/reviews/2026-10-15-pr330-project-membership-fix/vitest.config.mts",
+        "--configLoader",
+        "runner",
+        "--maxWorkers",
+        "1",
+        "--no-file-parallelism",
+        "--sequence.shuffle",
+        "--sequence.seed=330",
+        "--reporter=json",
+        "--outputFile=/home/nathaniel/.local/state/openplan/privatepr330-project-membership-fix-20261015/final02/focused-shuffled.json"
+      ]
+    },
+    "lint": {
+      "exitCode": 0,
+      "command": [
+        "node",
+        "node_modules/eslint/bin/eslint.js",
+        "src/app/(app)/projects/[projectId]/page.tsx",
+        "src/test/project-detail-page.test.tsx",
+        "--max-warnings",
+        "0"
+      ]
+    },
+    "whitespace": {
+      "exitCode": 0,
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ]
+    }
+  },
+  "tests": {
+    "files": 4,
+    "passed": 92,
+    "failed": 0,
+    "seed": 330
+  },
+  "controls": [
+    {
+      "name": "harmless-comment",
+      "verdict": "survived",
+      "executed": 10,
+      "diagnostic": null
+    },
+    {
+      "name": "stale-active-role",
+      "verdict": "intended assertion failure",
+      "executed": 2,
+      "diagnostic": "project workspace permission props"
+    },
+    {
+      "name": "allow-all-controls",
+      "verdict": "intended assertion failure",
+      "executed": 1,
+      "diagnostic": "project workspace permission props"
+    },
+    {
+      "name": "scenario-active-viewer-and-project-owner",
+      "verdict": "intended assertion failure",
+      "executed": 1,
+      "diagnostic": "project workspace permission props"
+    },
+    {
+      "name": "scenario-active-owner-and-project-viewer",
+      "verdict": "intended assertion failure",
+      "executed": 1,
+      "diagnostic": "project workspace permission props"
+    },
+    {
+      "name": "scenario-active-viewer-and-project-admin",
+      "verdict": "intended assertion failure",
+      "executed": 1,
+      "diagnostic": "project workspace permission props"
+    },
+    {
+      "name": "scenario-active-viewer-and-project-member",
+      "verdict": "intended assertion failure",
+      "executed": 1,
+      "diagnostic": "project workspace permission props"
+    },
+    {
+      "name": "scenario-same-workspace-owner",
+      "verdict": "intended assertion failure",
+      "executed": 1,
+      "diagnostic": "project workspace permission props"
+    },
+    {
+      "name": "scenario-same-workspace-viewer",
+      "verdict": "intended assertion failure",
+      "executed": 1,
+      "diagnostic": "project workspace permission props"
+    },
+    {
+      "name": "scenario-missing-membership",
+      "verdict": "intended assertion failure",
+      "executed": 1,
+      "diagnostic": "project workspace permission props"
+    },
+    {
+      "name": "scenario-missing-role",
+      "verdict": "intended assertion failure",
+      "executed": 1,
+      "diagnostic": "project workspace permission props"
+    },
+    {
+      "name": "scenario-unknown-role",
+      "verdict": "intended assertion failure",
+      "executed": 1,
+      "diagnostic": "project workspace permission props"
+    },
+    {
+      "name": "scenario-read-error-with-stale-owner-data",
+      "verdict": "intended assertion failure",
+      "executed": 1,
+      "diagnostic": "project workspace permission props"
+    },
+    {
+      "name": "ignore-membership-read-error",
+      "verdict": "intended assertion failure",
+      "executed": 1,
+      "diagnostic": "project workspace permission props"
+    },
+    {
+      "name": "gate-posture",
+      "verdict": "intended assertion failure",
+      "executed": 1,
+      "diagnostic": "project workspace permission props"
+    },
+    {
+      "name": "gate-stage-gate",
+      "verdict": "intended assertion failure",
+      "executed": 1,
+      "diagnostic": "project workspace permission props"
+    },
+    {
+      "name": "gate-identity",
+      "verdict": "intended assertion failure",
+      "executed": 1,
+      "diagnostic": "project workspace permission props"
+    },
+    {
+      "name": "gate-funding",
+      "verdict": "intended assertion failure",
+      "executed": 1,
+      "diagnostic": "project workspace permission props"
+    },
+    {
+      "name": "gate-documents",
+      "verdict": "intended assertion failure",
+      "executed": 1,
+      "diagnostic": "project workspace permission props"
+    },
+    {
+      "name": "gate-delivery",
+      "verdict": "intended assertion failure",
+      "executed": 1,
+      "diagnostic": "project workspace permission props"
+    },
+    {
+      "name": "gate-cost",
+      "verdict": "intended assertion failure",
+      "executed": 1,
+      "diagnostic": "project workspace permission props"
+    },
+    {
+      "name": "gate-map",
+      "verdict": "intended assertion failure",
+      "executed": 1,
+      "diagnostic": "project workspace permission props"
+    },
+    {
+      "name": "gate-record",
+      "verdict": "intended assertion failure",
+      "executed": 1,
+      "diagnostic": "project workspace permission props"
+    },
+    {
+      "name": "projection",
+      "verdict": "intended assertion failure",
+      "executed": 1,
+      "diagnostic": "membership role projection"
+    },
+    {
+      "name": "workspace-filter",
+      "verdict": "intended assertion failure",
+      "executed": 1,
+      "diagnostic": "project workspace filter"
+    },
+    {
+      "name": "user-filter",
+      "verdict": "intended assertion failure",
+      "executed": 1,
+      "diagnostic": "authenticated user filter"
+    },
+    {
+      "name": "active-navigation-mutation",
+      "verdict": "intended assertion failure",
+      "executed": 1,
+      "diagnostic": "active navigation membership stays unchanged"
+    },
+    {
+      "name": "active-admission-removed",
+      "verdict": "intended assertion failure",
+      "executed": 1,
+      "diagnostic": "active workspace admission stays in place"
+    },
+    {
+      "name": "failure-disclosure",
+      "verdict": "intended assertion failure",
+      "executed": 1,
+      "diagnostic": "membership read failure disclosure"
+    },
+    {
+      "name": "missing-composed-panel",
+      "verdict": "intended assertion failure",
+      "executed": 1,
+      "diagnostic": "one composed page component"
+    },
+    {
+      "name": "membership-before-rls-project",
+      "verdict": "intended assertion failure",
+      "executed": 1,
+      "diagnostic": "RLS project read precedes membership read"
+    }
+  ],
+  "sourceRestored": true,
+  "controlCounts": {
+    "harmlessTrials": 1,
+    "harmlessExecutedTests": 10,
+    "intendedFaultTrials": 30
+  },
+  "resources": {
+    "memoryMaxBytes": 1610612736,
+    "memorySwapMaxBytes": 0,
+    "nodeHeapMiB": 1024,
+    "vitestWorkers": 1,
+    "fileParallelism": false,
+    "sharedFlock": "/home/nathaniel/.local/state/openplan/compiler-repair-checks-20261015.lock",
+    "configLoader": "runner",
+    "cache": ".tmp/pr330-project-membership-cache",
+    "finalCheckInvocation": "4fc38a9020f842a09f302c6a9dbbf140",
+    "controlInvocation": "4fd1ce4ed73c447183a9c80c9dafa31e",
+    "finalCheckReportedMemoryPeak": "546.1M",
+    "controlReportedMemoryPeak": "399M",
+    "reportedSwap": "0B",
+    "finalCgroupEventCountersCaptured": false
+  },
+  "retainedFailedTrials": [
+    {
+      "name": "baseline",
+      "reason": "TypeError from nonexistent ReadFailureLog.collect; corrected to check"
+    },
+    {
+      "name": "controls01",
+      "reason": "quoted parameterized labels made selector execute zero tests; classifier rejected it"
+    },
+    {
+      "name": "first-final-checks",
+      "reason": "92 tests passed; page lint rejected 1205 counted lines against 1200; query compacted without behavior change"
+    }
+  ],
+  "privateReceipts": "/home/nathaniel/.local/state/openplan/privatepr330-project-membership-fix-20261015",
+  "limits": [
+    "mocked database/auth/workspace boundaries",
+    "composed flags do not prove all child behavior",
+    "no live RLS or database permission proof",
+    "no changed-head native or browser journey",
+    "no application build or whole-application type check",
+    "no full suite or hosted/provider operation",
+    "no fresh protected-state audit",
+    "no push, merge or release"
+  ]
+}

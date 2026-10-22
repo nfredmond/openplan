@@ -1,0 +1,8 @@
+{
+  "trial": "legacy-fake-order-fault",
+  "testFile": "src/test/project-portfolio-export-route.test.ts",
+  "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+  "exitCode": 1,
+  "marker": "legacy workbook must retain ordered scoped original metadata",
+  "classification": "KILLED"
+}

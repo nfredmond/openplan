@@ -1,0 +1,118 @@
+{
+  "privateManifest": {
+    "bytes": 3236,
+    "gid": 1000,
+    "mode": 384,
+    "path": "/home/nathaniel/.local/state/openplan/a0-native18-continuation-independent-20261016/private-manifest.json",
+    "sha256": "20caa5c6407c3fe1b73a2b3c890039d99339938958fa43d8d8a30be122cda1b1",
+    "uid": 1000
+  },
+  "proofBoundary": "Retained author execution remains attributed. Independent reviewer executes file/hash/JSON/Git readers only; complete REPORT and VALIDATION govern.",
+  "receipts": {
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-independent-20261016/absence-before.json": {
+      "bytes": 408,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "30d674a9cef7b4d4f3d5d0432c11acb8dc8b1c7d87e0b7017b09eb7c319a1fd6",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-independent-20261016/boundary-traces.json": {
+      "bytes": 2935,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "af9939542ebc87047b666868ee90c3a18d00bb12d79ae4939577671ebbc2a5ed",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-independent-20261016/collect_metadata.py": {
+      "bytes": 7780,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "eca3731681ad09aaa81ca9a2bc7662ae47ca43bb1de9b3820c6ed18b1401dc6e",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-independent-20261016/comparisons.json": {
+      "bytes": 3237520,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "3f140e46f81202d29d8d315a51eb895a26777e91db9d523b9f31b32e325e06ba",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-independent-20261016/git-identity.json": {
+      "bytes": 650,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "377eeb40cb34b0411d110ef5ac94002cf96c0f7a603f30410b3344f4ceee4879",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-independent-20261016/input-custody-after.json": {
+      "bytes": 561,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "8b28a3f55ab29229c07ed664eb32a09f7bface7b4869806eeb3384e3efa88c60",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-independent-20261016/input-pins-before.json": {
+      "bytes": 1480117,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "0bf1617fff55188092dd4c240ee985dd24805b20cea5e112ce79c94b89e7b58a",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-independent-20261016/metadata-summary.json": {
+      "bytes": 20968,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "7ee497c32f975f9cf7a9f13bfc54473298c009e6b64f6ecd7b1dff49a5ca58e3",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-independent-20261016/read_relations.py": {
+      "bytes": 10196,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "f55b8fc6d6580061bf8a77550cf0393243e2f2000a43f25e9e65d628600a49fd",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-independent-20261016/retained-relations.json": {
+      "bytes": 195468,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "be9c2e4409c3d0aac2ea83f9d27f238ecb98f556ef77846650fdc26ea4fdb306",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-independent-20261016/retained-semantics.json": {
+      "bytes": 684,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "d3b01034c827e2b5bdb50cbebcb05dbcb4356375e4f2008a20c9276823072d4b",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-independent-20261016/review-scope.json": {
+      "bytes": 774,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "a5a1ee621e73560786b33c15d9ba403ecc8c836ec8f13457485752abd87b25f4",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-independent-20261016/supplemental-input-pins.json": {
+      "bytes": 606164,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "ea01ba8d8f2721da78c714efb74c3ae2316a161ad706926851a045b38648d20b",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-independent-20261016/supplemental-summary.json": {
+      "bytes": 82,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "9be39533b2ae2782c42ece8c9339d64b4c5cec28d695e4034e1e09f1eefeed36",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-independent-20261016/t3-identity.json": {
+      "bytes": 8205,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "1d4bd5611b6d68f53d3e3ec3f0dc47ea488cd88a1e3a31060a79517fe6af591c",
+      "uid": 1000
+    }
+  }
+}

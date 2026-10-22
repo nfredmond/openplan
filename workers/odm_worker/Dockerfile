@@ -18,9 +18,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # startup. Test scripts ride along harmlessly (CMD runs only main.py).
 COPY *.py ./
 
-# Where per-job working directories and published outputs live. Container-local
-# scratch; mount a volume here if outputs should survive a container rebuild
-# (OpenPlan takes custody of the bytes on the succeeded callback either way).
+# Per-job outputs use container scratch. Managed admission separately requires
+# ODM_WORKER_MANAGED_STATE_DIR on retained storage, outside this scratch tree.
+# No managed-state default is set in the image. See MANAGED_STATE.md.
 ENV ODM_WORKER_WORK_DIR=/tmp/odm_worker_jobs
 
 # NodeODM's address inside the docker-compose network. Point it elsewhere to

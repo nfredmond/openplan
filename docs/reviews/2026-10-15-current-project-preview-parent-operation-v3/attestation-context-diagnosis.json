@@ -1,0 +1,129 @@
+{
+  "host": {
+    "uid": 1000,
+    "euid": 1000,
+    "groups": [
+      4,
+      24,
+      27,
+      29,
+      30,
+      46,
+      100,
+      111,
+      115,
+      119,
+      974,
+      975,
+      991,
+      1000
+    ],
+    "selfNamespaces": {
+      "pid": "pid:[4026531836]",
+      "net": "net:[4026531833]",
+      "user": "user:[4026531837]",
+      "mnt": "mnt:[4026531832]"
+    },
+    "procMounts": [
+      "53 44 0:25 / /proc rw,nosuid,nodev,noexec,relatime shared:12 - proc proc rw"
+    ],
+    "ss": {
+      "exit": 0,
+      "stdout": "LISTEN 0      511    127.74.19.10:3585 0.0.0.0:* users:((\"next-server (v1\",pid=4104299,fd=21))\n",
+      "stderr": ""
+    },
+    "cwd": "/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/candidate/openplan",
+    "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-current-project-preview-app-21510042e-v3-web.service\n",
+    "environ": "e01f8862797c560ebc302feb7fabff25ba6c53c3157fb6be41ac12a224707c21"
+  },
+  "wrapped": {
+    "uid": 1000,
+    "euid": 1000,
+    "groups": [
+      65534,
+      65534,
+      65534,
+      65534,
+      65534,
+      65534,
+      65534,
+      65534,
+      65534,
+      65534,
+      65534,
+      65534,
+      65534,
+      1000
+    ],
+    "selfNamespaces": {
+      "pid": "pid:[4026531836]",
+      "net": "net:[4026531833]",
+      "user": "user:[4026540332]",
+      "mnt": "mnt:[4026540331]"
+    },
+    "procMounts": [
+      "19483 19467 0:25 / /proc ro,nosuid,nodev,noexec,relatime master:12 - proc proc rw",
+      "19753 19483 0:25 / /proc rw,nosuid,nodev,noexec,relatime master:12 - proc proc rw"
+    ],
+    "ss": {
+      "exit": 0,
+      "stdout": "LISTEN 0      511    127.74.19.10:3585 0.0.0.0:*\n",
+      "stderr": ""
+    },
+    "cwd": "/proc/4104299/cwd",
+    "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-current-project-preview-app-21510042e-v3-web.service\n",
+    "environ": {
+      "error": "PermissionError",
+      "errno": 13
+    }
+  },
+  "wrapperCommand": [
+    "/usr/bin/systemd-run",
+    "--user",
+    "--wait",
+    "--pipe",
+    "--unit=openplan-current-project-preview-v3-attest-diagnose-02",
+    "-p",
+    "MemoryMax=512M",
+    "-p",
+    "MemorySwapMax=0",
+    "-p",
+    "CPUQuota=50%",
+    "-p",
+    "UMask=0077",
+    "/usr/bin/bwrap",
+    "--die-with-parent",
+    "--ro-bind",
+    "/",
+    "/",
+    "--dev",
+    "/dev",
+    "--proc",
+    "/proc",
+    "--bind",
+    "/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3",
+    "/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3",
+    "--bind",
+    "/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/tmp",
+    "/tmp",
+    "/usr/bin/env",
+    "-i",
+    "PATH=/usr/bin:/bin",
+    "HOME=/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/home",
+    "PYTHONDONTWRITEBYTECODE=1",
+    "/usr/bin/python3",
+    "-B",
+    "/home/nathaniel/.local/state/openplan/current-project-preview-parent-operation-20261015-v3/attest-diagnosis.py"
+  ],
+  "wrapperJournal": "Running as unit: openplan-current-project-preview-v3-attest-diagnose-02.service; invocation ID: bcc9b7668c484efaa288a6ab7493901c\n          Finished with result: success\nMain processes terminated with: code=exited, status=0/SUCCESS\n               Service runtime: 251ms\n             CPU time consumed: 138ms\n                   Memory peak: 9.4M (swap: 0B)\n",
+  "scriptSha256": "78e0338c1ba4fb831781f971046dfe22b80fc64cd101dccf4509041ea4d77bdd",
+  "firstFailedAttestation": {
+    "unit": "openplan-current-project-preview-app-21510042e-v3-attest.service",
+    "invocation": "be8cba835bbe4c14af8ed007cd61bbb2",
+    "exit": 1,
+    "reason": "attest-listener-pid",
+    "seconds": 13.653
+  },
+  "conclusion": "Observed wrapper creates different user namespace; exact same host listener has PID and environment visibility outside it, absent/denied inside. No host protection setting changed.",
+  "runtimeAttestationExists": false
+}

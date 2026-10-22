@@ -82,6 +82,37 @@ the native process exits; the saved request/result remains in OpenPlan and its
 pending-delivery journal. No daemon, paid service, API fallback or global process
 termination is installed by these commands.
 
+### Inspect the configured installation before updating it
+
+`install-check` uses the binary and provider saved in your private connection.
+It reads bounded package metadata and the package's binary entry. It does not run
+that binary, inspect the native account, contact OpenPlan or update anything.
+Without an explicit npm declaration and a matching package entry, it reports the
+installer as unknown:
+
+```sh
+node workers/planner_agent_connector/connector.mjs install-check \
+  --config "$HOME/.local/state/openplan-connectors/project/connection.json"
+```
+
+If npm owns this installation, obtain its global package root separately with
+`npm root --global`. Supply that root and an explicit npm declaration:
+
+```sh
+node workers/planner_agent_connector/connector.mjs install-check \
+  --config "$HOME/.local/state/openplan-connectors/project/connection.json" \
+  --installer npm --npm-root /absolute/npm/prefix/lib/node_modules
+```
+
+A matching supported layout returns an inert command with the inspected prefix
+and OpenPlan's tested version. Review its executable and arguments, confirm the
+installer, and stop sessions that use the binary before running it yourself.
+The inspector does not authenticate your npm declaration. Metadata version does
+not establish native compatibility or account access. Standalone binaries,
+other installers, linked packages and unsupported layouts stay unknown.
+If you have not configured a connection, the separate
+`installer-guidance-cli.mjs --help` command explains the same read-only inspection.
+
 The no-cost native isolation tests are named skips unless a tested standalone
 binary is explicitly supplied:
 

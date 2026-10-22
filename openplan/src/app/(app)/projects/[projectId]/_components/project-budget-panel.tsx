@@ -1,4 +1,6 @@
+import { compareMoney } from "@/lib/money/optional-amount";
 import { Wallet } from "lucide-react";
+import { SetupPendingNotice } from "@/components/ui/setup-pending-notice";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { ProjectSpendEntryForm } from "@/components/projects/project-spend-entry-form";
 import {
@@ -9,6 +11,7 @@ import {
 import { fmtCurrency } from "./_helpers";
 
 export type ProjectBudgetPanelPendingSchema = {
+  snapshot?: boolean;
   deliverableBudgetColumns: boolean;
   spendEntries: boolean;
   clientInvoices: boolean;
@@ -18,22 +21,24 @@ type ProjectBudgetPanelProps = {
   projectId: string;
   snapshot: ProjectBudgetSnapshot;
   pendingSchema: ProjectBudgetPanelPendingSchema;
+  inputsUnavailable?: boolean;
   deliverableOptions: Array<{ id: string; title: string }>;
 };
 
 /**
- * Budget & pace panel — money going OUT against entered budgets. Everything
- * here is decomposed fact (billed client-invoice lines + direct spend) or an
- * explicit refusal; nothing extrapolates. Coverage copy names how many
- * deliverables actually carry budgets so a partial total is never read as a
- * project total.
+ * Complete direct-spend and client-billing measures, kept separate. Withhold
+ * totals and pace when any required financial input is unavailable. Coverage
+ * copy names deliverables with entered budgets; it does not imply full coverage.
  */
 export function ProjectBudgetPanel({
   projectId,
   snapshot,
   pendingSchema,
   deliverableOptions,
+  inputsUnavailable = false,
 }: ProjectBudgetPanelProps) {
+  const unavailable = inputsUnavailable || [pendingSchema.snapshot, pendingSchema.deliverableBudgetColumns,
+    pendingSchema.spendEntries, pendingSchema.clientInvoices].some(Boolean);
   const budgetedCount = snapshot.deliverables.filter((summary) => summary.budgetAmount !== null).length;
   const deliverableCount = snapshot.deliverables.length;
   const coverageCopy =
@@ -62,22 +67,32 @@ export function ProjectBudgetPanel({
         </div>
       </div>
 
-      {pendingSchema.deliverableBudgetColumns ? (
-        <div className="module-alert mt-5 text-sm">
-          Deliverable budget fields will appear after the deliverable-budgets migration is applied to the database.
-        </div>
+      {pendingSchema.snapshot ? (
+        <SetupPendingNotice className="mt-5" consequence="Complete project budget inputs are not available yet.">
+          Apply the project budget complete-inputs migration before reading financial totals.
+        </SetupPendingNotice>
       ) : null}
-      {pendingSchema.spendEntries ? (
-        <div className="module-alert mt-5 text-sm">
-          The project spend ledger will appear after the spend-ledger migration is applied to the database.
-        </div>
+      {!pendingSchema.snapshot && pendingSchema.deliverableBudgetColumns ? (
+        <SetupPendingNotice className="mt-5" consequence="Deliverable budgets are not shown.">
+          Deliverable budget fields appear after the deliverable-budgets migration is applied to the database.
+        </SetupPendingNotice>
       ) : null}
-      {pendingSchema.clientInvoices ? (
-        <div className="module-alert mt-5 text-sm">
-          Billed client-invoice lines will appear after the client invoicing migration is applied to the database.
-        </div>
+      {!pendingSchema.snapshot && pendingSchema.spendEntries ? (
+        <SetupPendingNotice className="mt-5" consequence="Project spending is not shown.">
+          The project spend ledger appears after the spend-ledger migration is applied to the database.
+        </SetupPendingNotice>
+      ) : null}
+      {!pendingSchema.snapshot && pendingSchema.clientInvoices ? (
+        <SetupPendingNotice className="mt-5" consequence="Billed client invoice lines are not shown.">
+          Billed client-invoice lines appear after the client invoicing migration is applied to the database.
+        </SetupPendingNotice>
       ) : null}
 
+      {unavailable ? (
+        <p className="module-alert mt-5 text-sm" role="status">
+          Budget totals and pace are unavailable until every financial source can be read completely.
+        </p>
+      ) : <>
       <div className="module-summary-grid cols-5 mt-5">
         <div className="module-summary-card">
           <p className="module-summary-label">Stated project budget</p>
@@ -153,7 +168,7 @@ export function ProjectBudgetPanel({
                     <p className="mt-1.5 text-label text-muted-foreground">
                       Billed {fmtCurrency(summary.billedToDate)} · Spend {fmtCurrency(summary.spendToDate)}
                       {summary.remaining !== null ? ` · Remaining ${fmtCurrency(summary.remaining)}` : ""}
-                      {summary.draftedAmount > 0 ? ` · Drafted (not billed) ${fmtCurrency(summary.draftedAmount)}` : ""}
+                      {compareMoney(summary.draftedAmount, 0) > 0 ? ` · Drafted (not billed) ${fmtCurrency(summary.draftedAmount)}` : ""}
                     </p>
                   </div>
                 </div>
@@ -168,6 +183,7 @@ export function ProjectBudgetPanel({
       <p className="mt-4 text-label text-muted-foreground">
         Draft client invoices are disclosed separately and never counted as billed.
       </p>
+      </>}
     </article>
   );
 }

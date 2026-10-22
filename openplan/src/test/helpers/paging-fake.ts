@@ -58,12 +58,20 @@ export function pagingFake(
   // one — the campaign detail page awaits the chain while its route pages the
   // same rows — and a chain that only answered `.range` would hang the awaiting
   // caller with an unresolved builder rather than fail loudly.
+  //
+  // An unranged read is capped like any other: PostgREST applies `max_rows` to
+  // a request with no range at all. With `serverCap` set, a caller that awaits
+  // the chain instead of paging gets the first `serverCap` rows and no error,
+  // which is exactly the silent undercount the paged read exists to prevent.
   chain.then = (
     resolve: (value: { data: unknown[] | null; error: unknown }) => unknown,
     reject?: (reason: unknown) => unknown
   ) =>
     Promise.resolve(readFixture() as { data?: unknown[] | null; error?: unknown })
-      .then((result) => ({ data: (result?.data ?? []) as unknown[], error: result?.error ?? null }))
+      .then((result) => ({
+        data: ((result?.data ?? []) as unknown[]).slice(0, options.serverCap ?? Number.POSITIVE_INFINITY),
+        error: result?.error ?? null,
+      }))
       .then(resolve, reject);
 
   return { chain, range, reset: () => (cached = null) };

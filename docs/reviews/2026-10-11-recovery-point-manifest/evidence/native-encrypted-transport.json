@@ -1,0 +1,82 @@
+{
+  "state": "passed-encrypted-retained-packet-transport",
+  "snapshotId": "f5fa4f36dba18d5d00c65fdd2a7b8d4b2b04b545d8be5899557f9c847fea7369",
+  "packetFiles": 3092,
+  "packetDirectories": 2918,
+  "packetBytes": 1162155249,
+  "originalPointFiles": 1557,
+  "sourcePointAndWorkerSetUnchanged": true,
+  "allPacketPathsModesAndBytesRestored": true,
+  "nativeJournalsCompared": 8,
+  "allJournalSchemasAndRowsEqual": true,
+  "immutablePacketUnchanged": true,
+  "allDependenciesUnchanged": true,
+  "observationControls": {
+    "baseline": true,
+    "harmlessOrder": true,
+    "missingFileRefused": true,
+    "changedHashRefused": true,
+    "omittedOracleProducesAssertionFailure": true,
+    "restored": true,
+    "sourceWrites": 0
+  },
+  "sourceFileModesAndDirectoryModesUnchanged": true,
+  "originalModeMetadataRetained": true,
+  "privateModeNormalizationCount": 12,
+  "privateModeNormalizationFileCount": 10,
+  "sealSummary": {
+    "files": 3091,
+    "format": "openplan-retained-recovery-packet-v1",
+    "installationConsistency": "unassessed",
+    "manifestSha256": "6ab8e65b2ac347cfbc149d97599254af354f82c10d4c10817bec16f33db3f9bb",
+    "verified": false
+  },
+  "commands": [
+    {
+      "label": "seal",
+      "exitCode": 0
+    },
+    {
+      "label": "verify-sealed-packet",
+      "exitCode": 0
+    },
+    {
+      "label": "repository-init",
+      "exitCode": 0
+    },
+    {
+      "label": "encrypted-packet-backup",
+      "exitCode": 0
+    },
+    {
+      "label": "complete-encrypted-read-check",
+      "exitCode": 0
+    },
+    {
+      "label": "encrypted-packet-restore",
+      "exitCode": 0
+    },
+    {
+      "label": "verify-restored-packet",
+      "exitCode": 0
+    },
+    {
+      "label": "wrong-password-refused",
+      "exitCode": 12
+    },
+    {
+      "label": "missing-receipt-refused",
+      "exitCode": 1
+    },
+    {
+      "label": "changed-restored-archive-refused",
+      "exitCode": 1
+    },
+    {
+      "label": "restored-after-controls",
+      "exitCode": 0
+    }
+  ],
+  "wallSeconds": 51.397,
+  "limits": "Offline packaging/transport of a previously accepted full point plus five known roots. No new live database/Storage cut, writer fence, installation-wide discovery, database restart/native restore repeat, worker callback, physical-host independence, browser, agency or scientific acceptance. Same host and disk."
+}

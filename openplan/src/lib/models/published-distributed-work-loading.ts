@@ -3,13 +3,17 @@ import "server-only";
 import { createHash } from "node:crypto";
 import { gunzip } from "node:zlib";
 import { promisify } from "node:util";
-import { readFile } from "node:fs/promises";
+import { open, readFile } from "node:fs/promises";
+import { constants } from "node:fs";
 import path from "node:path";
 import { isDeepStrictEqual } from "node:util";
 
 const gunzipAsync = promisify(gunzip);
 const STUDY_DIRECTORY = "data/modeling/distributed-work-loading-study-2026-08-31";
 const STUDY_SCHEMA = "openplan.distributed-work-loading-study-result.v1";
+const STUDY_ID = "seven-county-distributed-work-loading-development-v1";
+const REGISTRY_PATH = "scripts/modeling/development/california_distributed_work_loading_study.v1.json";
+const REGISTRY_LIMIT = 64 * 1024;
 const METHODS = ["aequilibrae", "activitysim"] as const;
 
 export type DistributedWorkLoadingMethod = typeof METHODS[number];
@@ -42,6 +46,20 @@ export type PublishedDistributedWorkLoadingStudy = {
   createdAt: string;
   scientificOutcome: "inconclusive";
   candidateAdvanced: boolean;
+  recordedConfiguration: {
+    registryPath: string;
+    registrySha256: string;
+    arbitraryPointCap: null;
+    arbitraryGatewayCap: null;
+    aggregateOnlySameRoutableNode: true;
+    preserveMethodWorkTotals: true;
+    nonWorkUnchanged: true;
+    acceptanceHoldoutOpened: false;
+    legacyPathNote: string;
+    sourceRelease: string;
+    sourceYear: number;
+    sourceLimitation: string;
+  };
   records: PublishedDistributedWorkLoadingRecord[];
 };
 
@@ -88,12 +106,70 @@ async function verifiedObject(record: { path: string; stored_path: string; sha25
   return value;
 }
 
+/** Read only the fixed metadata file, never any source or holdout it describes. */
+async function recordedConfiguration(value: Record<string, unknown>): Promise<PublishedDistributedWorkLoadingStudy["recordedConfiguration"]> {
+  const descriptor = value.registry;
+  if (!isObject(descriptor) || descriptor.path !== REGISTRY_PATH || descriptor.stored_path !== REGISTRY_PATH ||
+      typeof descriptor.sha256 !== "string" || !/^[0-9a-f]{64}$/.test(descriptor.sha256) || descriptor.stored_sha256 !== descriptor.sha256 ||
+      typeof descriptor.bytes !== "number" || !Number.isSafeInteger(descriptor.bytes) || descriptor.bytes <= 0 || descriptor.bytes > REGISTRY_LIMIT || descriptor.stored_bytes !== descriptor.bytes) {
+    throw new Error("Published distributed work-loading registry descriptor is invalid.");
+  }
+  const file = await open(path.join(root(), REGISTRY_PATH), constants.O_RDONLY | constants.O_NOFOLLOW | constants.O_NONBLOCK);
+  let bytes: Buffer;
+  try {
+    const stat = await file.stat();
+    if (!stat.isFile() || stat.size !== descriptor.bytes) throw new Error("Published distributed work-loading registry length changed.");
+    const buffer = Buffer.alloc(REGISTRY_LIMIT + 1);
+    let length = 0;
+    while (length < buffer.length) {
+      const result = await file.read(buffer, length, buffer.length - length, length);
+      if (result.bytesRead === 0) break;
+      length += result.bytesRead;
+    }
+    bytes = buffer.subarray(0, length);
+  } finally {
+    await file.close();
+  }
+  if (bytes.length !== descriptor.bytes || createHash("sha256").update(bytes).digest("hex") !== descriptor.sha256) {
+    throw new Error("Published distributed work-loading registry bytes changed.");
+  }
+  const registry: unknown = JSON.parse(bytes.toString("utf8"));
+  if (!isObject(registry) || registry.schema !== "openplan.development-distributed-work-loading-study.v1" || registry.study_id !== STUDY_ID || value.study_id !== STUDY_ID ||
+      !isDeepStrictEqual(registry.methods, METHODS) || !Array.isArray(registry.geographies) || !Array.isArray(value.counties) ||
+      !isDeepStrictEqual(registry.geographies.map((item: unknown) => isObject(item) ? [item.geography_id, item.name] : null), value.counties.map((item: unknown) => isObject(item) ? [item.geography_id, item.name] : null))) {
+    throw new Error("Published distributed work-loading registry study, methods or geographies disagree.");
+  }
+  const policy = registry.policy;
+  const custody = registry.partition_custody;
+  const source = registry.source_release;
+  if (!isObject(policy) || policy.arbitrary_point_cap !== null || policy.arbitrary_gateway_cap !== null ||
+      policy.aggregate_only_same_routable_node !== true || policy.preserve_method_work_totals !== true || policy.non_work_unchanged !== true ||
+      policy.freeze_all_audits_before_output !== true || policy.retain_unroutable_demand !== true || policy.average_methods !== false || policy.open_holdout !== false ||
+      policy.change_defaults !== false || policy.promote_candidate !== false || policy.county_gate_no_national_rescue !== true || policy.scientific_outcome !== "inconclusive" ||
+      !isObject(custody) || custody.acceptance_holdout_opened !== false || custody.purpose !== "development candidate diagnosis only" ||
+      typeof custody.legacy_path_note !== "string" || !custody.legacy_path_note.trim() ||
+      !isObject(source) || source.release !== "LODES 8.4" || source.year !== 2023 || source.jobs_type !== "JT00" || source.segment !== "S000" ||
+      !Array.isArray(source.limitations) || !source.limitations.every((item: unknown) => typeof item === "string" && item.trim()) ||
+      source.limitations[0] !== "LODES describes jobs and home-to-work relationships. It does not describe all-purpose travel or vehicle trips.") {
+    throw new Error("Published distributed work-loading registry disclosure policy, custody or source is invalid.");
+  }
+  return {
+    registryPath: descriptor.path, registrySha256: descriptor.sha256,
+    arbitraryPointCap: policy.arbitrary_point_cap, arbitraryGatewayCap: policy.arbitrary_gateway_cap,
+    aggregateOnlySameRoutableNode: policy.aggregate_only_same_routable_node,
+    preserveMethodWorkTotals: policy.preserve_method_work_totals, nonWorkUnchanged: policy.non_work_unchanged,
+    acceptanceHoldoutOpened: custody.acceptance_holdout_opened, legacyPathNote: custody.legacy_path_note,
+    sourceRelease: source.release, sourceYear: source.year, sourceLimitation: source.limitations[0],
+  };
+}
+
 /** Load the immutable development checkpoint without promoting it to a model default. */
 export async function loadPublishedDistributedWorkLoadingStudy(): Promise<PublishedDistributedWorkLoadingStudy> {
   const value = JSON.parse(await readFile(path.join(root(), STUDY_DIRECTORY, "study-result.json"), "utf8")) as Record<string, unknown>;
   if (value.schema !== STUDY_SCHEMA || value.scientific_outcome !== "inconclusive" || value.method_aggregation !== "separate" || value.method_records !== 14 || !Array.isArray(value.counties) || value.defaults_changed !== false || value.holdout_accessed !== false || typeof value.candidate_advanced !== "boolean") {
     throw new Error("Published distributed work-loading study has an invalid contract.");
   }
+  const configuration = await recordedConfiguration(value);
   const records: PublishedDistributedWorkLoadingRecord[] = [];
   const geographyIds = new Set<string>();
   for (const county of value.counties) {
@@ -117,7 +193,7 @@ export async function loadPublishedDistributedWorkLoadingStudy(): Promise<Publis
       }
       if (auditValue.schema !== "openplan.pre-output-audit.v1" || comparisonValue.schema !== "openplan.development-comparison.v1" || !isObject(comparisonValue.bindings) || comparisonValue.bindings.pre_output_audit_sha256 !== audit.sha256 || !isObject(auditValue.bindings) || !isObject(auditValue.bindings.loading_input) || auditValue.bindings.loading_input.sha256 !== input.sha256) throw new Error("Published distributed work-loading artifact bindings disagree.");
       if (!isDeepStrictEqual(comparisonValue.coverage, methodValue.coverage) || !isDeepStrictEqual(comparisonValue.development_gate, methodValue.development_gate)) throw new Error("Published distributed work-loading summaries disagree with verified comparison evidence.");
-      if (comparisonValue.scientific_outcome !== "inconclusive" || comparisonValue.defaults_changed !== false || comparisonValue.holdout_accessed !== false || typeof methodValue.development_gate.advanced !== "boolean") throw new Error("Published distributed work-loading comparison has an invalid claim boundary.");
+      if (auditValue.holdout_accessed !== false || auditValue.study_id !== STUDY_ID || comparisonValue.study_id !== STUDY_ID || comparisonValue.scientific_outcome !== "inconclusive" || comparisonValue.defaults_changed !== false || comparisonValue.holdout_accessed !== false || typeof methodValue.development_gate.advanced !== "boolean") throw new Error("Published distributed work-loading comparison or audit has an invalid claim boundary.");
       const accounting = isObject(auditValue.demand_accounting) ? auditValue.demand_accounting : {};
       records.push({
         geographyId: county.geography_id,
@@ -151,6 +227,7 @@ export async function loadPublishedDistributedWorkLoadingStudy(): Promise<Publis
     createdAt: String(value.created_at ?? "unknown"),
     scientificOutcome: "inconclusive",
     candidateAdvanced: value.candidate_advanced === true,
+    recordedConfiguration: configuration,
     records,
   };
 }

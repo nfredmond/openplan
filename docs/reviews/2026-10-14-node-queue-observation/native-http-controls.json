@@ -1,0 +1,62 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "roles": 3,
+    "workerKinds": 8
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived",
+    "roles": 3,
+    "workerKinds": 8
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived",
+    "roles": 3,
+    "workerKinds": 8
+  },
+  {
+    "control": "late-baseline",
+    "outcome": "survived",
+    "observedDatabaseLock": true,
+    "lateReceipt": false,
+    "retainedState": "stopped"
+  },
+  {
+    "control": "late-harmless",
+    "outcome": "survived",
+    "observedDatabaseLock": true,
+    "lateReceipt": false,
+    "retainedState": "stopped"
+  },
+  {
+    "control": "late-restored",
+    "outcome": "survived",
+    "observedDatabaseLock": true,
+    "lateReceipt": false,
+    "retainedState": "stopped"
+  },
+  {
+    "control": "late-revival",
+    "outcome": "intended_failure",
+    "reason": "Blocked late HTTP write cannot revive a committed stopped process"
+  },
+  {
+    "control": "late-restored-final",
+    "outcome": "survived",
+    "observedDatabaseLock": true,
+    "lateReceipt": false,
+    "retainedState": "stopped"
+  },
+  {
+    "control": "reader-grant",
+    "outcome": "intended_failure",
+    "reason": "Ordinary role cannot execute the process reader"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

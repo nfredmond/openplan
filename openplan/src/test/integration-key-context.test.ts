@@ -74,6 +74,15 @@ describe("loadWorkspaceIntegrationKeys", () => {
     expect(loaded.has("anthropic")).toBe(false);
   });
 
+  it("reads a workspace-bound row only for the workspace it was written for", async () => {
+    vi.stubEnv("OPENPLAN_INTEGRATION_KEY_SECRET", "unit-test-operator-secret-0123456789");
+    const rows = [{ provider: "anthropic", key_ciphertext: encryptIntegrationKey("ws-1-own-key", { workspaceId: "ws-1" }) }];
+
+    expect((await loadWorkspaceIntegrationKeys(clientWithRows(rows), "ws-1")).get("anthropic")).toBe("ws-1-own-key");
+    // The same row copied under another workspace yields no key there.
+    expect((await loadWorkspaceIntegrationKeys(clientWithRows(rows), "ws-2")).has("anthropic")).toBe(false);
+  });
+
   it("returns an empty map on query error or empty workspace id", async () => {
     const errored = await loadWorkspaceIntegrationKeys(
       clientWithRows(null, { message: "boom" }),

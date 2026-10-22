@@ -1,0 +1,13 @@
+{
+  "controls": 90,
+  "engineMetadataProbes": true,
+  "engineReconstruction": false,
+  "image": "sha256:cb07d06e21fd6189cfad287c6fedfa0b72568100355635cd9035cb86eed42ee2",
+  "observations": 29,
+  "ownedStoppedContainers": 4,
+  "responseControls": 8,
+  "seconds": 15.668,
+  "sourceType": "synthetic ordinary bytes, not decoded imagery",
+  "transportPermission": false,
+  "workerRecoveryAccepted": false
+}

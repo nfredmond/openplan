@@ -1,0 +1,58 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "case": "harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "case": "final-access-read-omitted",
+    "outcome": "intended_failure",
+    "diagnostic": "First inspection needs eight actual current access reads"
+  },
+  {
+    "case": "post-read-revocation-swallowed",
+    "outcome": "intended_failure",
+    "diagnostic": "Actual post-read actor revocation must refuse completion"
+  },
+  {
+    "case": "saved-native-report-altered",
+    "outcome": "intended_failure",
+    "diagnostic": "Existing source custody record differs"
+  },
+  {
+    "case": "native-delivery-promoted",
+    "outcome": "intended_failure",
+    "diagnostic": "Native inspection cannot permit delivery"
+  },
+  {
+    "case": "native-quality-promoted",
+    "outcome": "intended_failure",
+    "diagnostic": "Native inspection cannot promote processingQualityVerification"
+  },
+  {
+    "case": "child-does-not-interrupt",
+    "outcome": "intended_failure",
+    "diagnostic": "Actual inspection child must exit after frozen report bytes"
+  },
+  {
+    "case": "native-scale-doubled",
+    "outcome": "intended_failure",
+    "diagnostic": "Useful native spacing must match independent GDAL positions"
+  },
+  {
+    "case": "saved-native-report-reparsed",
+    "outcome": "intended_failure",
+    "diagnostic": "Saved native inspection cannot parse again"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived"
+  }
+]

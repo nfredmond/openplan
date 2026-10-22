@@ -1,0 +1,83 @@
+{
+  "candidate": "53485a708512de34443e63ee38132a4f5991f36e",
+  "initialHead": "05dd3e8da4a4572437f06e771b0a2477873e681f",
+  "branch": "t3/fix-project-jurisdiction-review-findings",
+  "cwd": "/home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c",
+  "model": "gpt-6.1-sol",
+  "reasoning": "high",
+  "nestedDelegation": false,
+  "reviewCommit": "3ff9808bc7b8102b5854ce5a634c1b29086b9cb9",
+  "reviewSha256": "e38429cc09f01c6b7fd373cc7d6c10e4c25411943215510bcab9bdd9b4f1eb62",
+  "migration16": {
+    "path": "openplan/supabase/migrations/20261017000016_project_jurisdiction_context.sql",
+    "sha256": "1384e6a2767827c2b756d978bd6e76f6fea364e4e1263e953c0358364341267f",
+    "applied": false,
+    "changed": false
+  },
+  "checks": {
+    "passedTests": 138,
+    "failedTests": 0,
+    "testFiles": 11,
+    "types": 0,
+    "lint": 0,
+    "harmlessSurvivors": 26,
+    "intendedAssertionFaults": 46,
+    "assertionGroups": 22,
+    "extraRealSurvivorRetained": 1,
+    "sourceRestoration": {
+      "controls-04": {
+        "bindings": 9,
+        "mismatches": []
+      },
+      "controls-05": {
+        "bindings": 5,
+        "mismatches": []
+      },
+      "final-01": {
+        "bindings": 15,
+        "mismatches": []
+      }
+    }
+  },
+  "resourceBoundary": {
+    "memory.max": "1073741824",
+    "memory.swap.max": "0",
+    "memory.peak": "799895552",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+  },
+  "payloadSample": {
+    "projectId": "project",
+    "projectRevision": "2026-10-15T01:00:00.000Z",
+    "externalSchema": "openplan.project-jurisdiction-readiness-export.v3",
+    "externalPayloadSha256": "227a1a48160cbd34fd55fb2bb1c742ee967b1a81c710b9f0e1d6ae60db443e61",
+    "internalSchema": "openplan.project-jurisdiction-readiness-response.v2",
+    "internalPayloadSha256": "e4cc21e6b9e685e51f0f6b35b7c4677521adcd6d3cb1414128d27111067683ad",
+    "registryVersion": "2026-10-11.1",
+    "registrySha256": "531dca87cc6621786d4cff27b0fb52dd5b99105c3a78c6307a9a35322201c158"
+  },
+  "sourceSha256": {
+    "openplan/src/app/api/projects/[projectId]/jurisdiction-readiness/route.ts": "60e5a0b63b28fc6ddcbdd650d83c96f2694d811582d67a24aa326a61fb091edc",
+    "openplan/src/app/api/reports/[reportId]/generate/route.ts": "c91d67548e4aa807be70af49c7fa2872d0b1129a6a41a8d51b9832474fcc61ca",
+    "openplan/src/components/projects/project-jurisdiction-editor.tsx": "f8afd63053e01c812d2cc4c47d9f1c01c8bdbd03553144a877ee306f2a4d95e3",
+    "openplan/src/lib/jurisdiction-readiness/evidence-bundle.ts": "34ab92aaf0d893c4d524b64bfcabc0b860b581c57cf566c02289be967bfe98fc",
+    "openplan/src/lib/jurisdiction-readiness/payload.ts": "e16cd5539dac55e13b4c889fc897bd8ed2429b6ece7caeda7031d17edbaf805c",
+    "openplan/src/lib/project-evidence-bundles/generated-records.ts": "52353f5d766646142d458a63ecbe53ffb9a2aca16d04e9ce53dff791aa8a7b6c",
+    "openplan/src/lib/projects/project-geopackage.ts": "7a0d199b888db1a33f8790223c4f24bd53aa2a510db19b5dc87932d031b0d2de",
+    "openplan/src/lib/reports/html.ts": "a1cfb75c0ed2673a7aa7162277ec393f07670c587c1ac7bd68b7058874890b56",
+    "openplan/src/test/jurisdiction-readiness-routes.test.ts": "5a60e604d267610fb46f47380993726d76b1f45eb269baf32d1a4ac7aebce3a8",
+    "openplan/src/test/project-jurisdiction-artifacts.test.ts": "b76a126256635de80504e183a13c5f274e0c3562854e2b9802875f9c76f3439f",
+    "openplan/src/test/project-jurisdiction-editor.test.tsx": "9bf7b3d7072ef522a9e46e95492e57409459e57eb71f4371635f078955a97407",
+    "openplan/src/test/project-jurisdiction.test.ts": "d5a0424513efb85208f93e25d16b787e47afe06a22e14f99382640479648bfa1",
+    "openplan/src/test/report-generate-route.test.ts": "48cb036996eb87e75e608f5674355161e410392380f5c9a64422da24f3dad990",
+    "openplan/src/test/project-jurisdiction-export-corrections.test.ts": "f6b4765dad43edbccee140b1d5a617afab0c2396d3623453934e8a06f923d8c6",
+    "openplan/src/test/project-jurisdiction-export-fixture.ts": "bcec27f6e587d48b0da731836aa8bda0e157d9afec0bb67ac939e6e92bd631bc"
+  },
+  "limits": [
+    "No PostgreSQL/native SQL/live RLS/upgrade/restore",
+    "No browser, hosted, demo, services or production build",
+    "No full suite or complete application typecheck",
+    "No actual ZIP/download transport or frozen Storage proof",
+    "No practitioner/public/GIS-recipient/legal/scientific acceptance",
+    "No PR, main integration, push or nested delegation"
+  ]
+}

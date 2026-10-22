@@ -1,0 +1,52 @@
+[
+  {
+    "run": "controls-03",
+    "invocation": "bbb35934ec154ab7bd6c31f2059f613a",
+    "exit": 0,
+    "peakBytes": 35868672,
+    "limitBytes": 268435456,
+    "extraSwapBytes": 0,
+    "cpuQuota": "1s",
+    "serviceStopped": true
+  },
+  {
+    "run": "native-02",
+    "invocation": "b45d4a0b0107475a9bd6de4a529e64ce",
+    "exit": 0,
+    "peakBytes": 44744704,
+    "limitBytes": 268435456,
+    "extraSwapBytes": 0,
+    "cpuQuota": "1s",
+    "serviceStopped": true
+  },
+  {
+    "run": "suites-01",
+    "invocation": "bfbd5b06c0ac40f0b8f4ee64e1559ad5",
+    "exit": 0,
+    "peakBytes": 53415936,
+    "limitBytes": 268435456,
+    "extraSwapBytes": 0,
+    "cpuQuota": "1s",
+    "serviceStopped": true
+  },
+  {
+    "run": "ci-01",
+    "invocation": "6d8b9b59598948e5a5b8a1302d63ffe1",
+    "exit": 0,
+    "peakBytes": 64659456,
+    "limitBytes": 268435456,
+    "extraSwapBytes": 0,
+    "cpuQuota": "1s",
+    "serviceStopped": true
+  },
+  {
+    "run": "docs-01",
+    "invocation": "b727c46349eb4010b7bdf025ce19ac3c",
+    "exit": 0,
+    "peakBytes": 363290624,
+    "limitBytes": 1073741824,
+    "extraSwapBytes": 0,
+    "cpuQuota": "1s",
+    "serviceStopped": true
+  }
+]

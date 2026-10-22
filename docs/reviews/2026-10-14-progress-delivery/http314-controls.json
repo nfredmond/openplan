@@ -1,0 +1,148 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived",
+    "tests": 11
+  },
+  {
+    "case": "harmless-comment",
+    "outcome": "survived",
+    "tests": 11
+  },
+  {
+    "case": "restored-after-harmless",
+    "outcome": "survived",
+    "tests": 11
+  },
+  {
+    "case": "original-body-reencoded",
+    "outcome": "intended_failure",
+    "test": "test_actual_post_preserves_path_bearer_body_and_response",
+    "diagnostic": "Transport preserves exact original UTF-8 body bytes"
+  },
+  {
+    "case": "original-query-omitted",
+    "outcome": "intended_failure",
+    "test": "test_actual_post_preserves_path_bearer_body_and_response",
+    "diagnostic": "Transport preserves the original callback path and query"
+  },
+  {
+    "case": "bearer-omitted",
+    "outcome": "intended_failure",
+    "test": "test_actual_post_preserves_path_bearer_body_and_response",
+    "diagnostic": "Transport resolves the original callback bearer"
+  },
+  {
+    "case": "response-bytes-replaced",
+    "outcome": "intended_failure",
+    "test": "test_actual_post_preserves_path_bearer_body_and_response",
+    "diagnostic": "Complete receiver response stays exact"
+  },
+  {
+    "case": "redirect-followed",
+    "outcome": "intended_failure",
+    "test": "test_redirect_is_returned_without_following_or_forwarding_bearer",
+    "diagnostic": "Callback redirect cannot forward the bearer to another endpoint"
+  },
+  {
+    "case": "preflight-check-omitted",
+    "outcome": "intended_failure",
+    "test": "test_precancelled_unowned_and_expired_calls_start_no_child_or_credential_read",
+    "diagnostic": "Preflight interruption precedes credential resolution"
+  },
+  {
+    "case": "ownership-loss-ignored",
+    "outcome": "intended_failure",
+    "test": "test_ownership_loss_during_response_stops_actual_child_and_socket",
+    "diagnostic": "Progress HTTP child did not complete"
+  },
+  {
+    "case": "cancellation-ignored",
+    "outcome": "intended_failure",
+    "test": "test_cancellation_during_response_stops_actual_child_and_socket",
+    "diagnostic": "Progress HTTP child did not complete"
+  },
+  {
+    "case": "deadline-check-ignored",
+    "outcome": "intended_failure",
+    "test": "test_deadline_stops_stalled_response_without_partial_acknowledgement",
+    "diagnostic": "Progress HTTP child did not complete"
+  },
+  {
+    "case": "partial-response-accepted",
+    "outcome": "intended_failure",
+    "test": "test_short_and_oversized_response_cannot_be_confirmed",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "changed-original-scope-accepted",
+    "outcome": "intended_failure",
+    "test": "test_changed_endpoint_reference_body_and_credential_refuse_before_network",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "oversized-original-body-accepted",
+    "outcome": "intended_failure",
+    "test": "test_changed_endpoint_reference_body_and_credential_refuse_before_network",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "address-policy-ignored",
+    "outcome": "intended_failure",
+    "test": "test_private_address_requires_explicit_policy",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "invalid-constructor-accepted",
+    "outcome": "intended_failure",
+    "test": "test_nonboolean_owner_and_invalid_constructor_refuse",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "response-status-accepted",
+    "outcome": "intended_failure",
+    "test": "test_invalid_response_envelopes_cannot_become_acknowledgements",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "response-unknown-fields-accepted",
+    "outcome": "intended_failure",
+    "test": "test_invalid_response_envelopes_cannot_become_acknowledgements",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "oversized-response-accepted",
+    "outcome": "intended_failure",
+    "test": "test_invalid_response_envelopes_cannot_become_acknowledgements",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "response-wire-bound-ignored",
+    "outcome": "intended_failure",
+    "test": "test_invalid_response_envelopes_cannot_become_acknowledgements",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "duplicate-response-property-accepted",
+    "outcome": "intended_failure",
+    "test": "test_invalid_response_envelopes_cannot_become_acknowledgements",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "nonboolean-owner-accepted",
+    "outcome": "intended_failure",
+    "test": "test_nonboolean_owner_and_invalid_constructor_refuse",
+    "diagnostic": "Progress HTTP ownership ended"
+  },
+  {
+    "case": "noncanonical-base64-accepted",
+    "outcome": "intended_failure",
+    "test": "test_invalid_response_envelopes_cannot_become_acknowledgements",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived",
+    "tests": 11
+  }
+]

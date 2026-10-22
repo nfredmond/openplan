@@ -704,6 +704,8 @@ def patch_osm_builder() -> None:
         return [letter, link_type]
 
     OSMBuilder._OSMBuilder__define_link_type = _patched_define_link_type
+    from model_fresh_osm_modes import install as install_fresh_osm_modes
+    install_fresh_osm_modes()
 
 
 def _parse_speed(value: Any) -> int | None:

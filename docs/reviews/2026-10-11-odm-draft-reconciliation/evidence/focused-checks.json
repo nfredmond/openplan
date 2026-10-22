@@ -1,0 +1,10 @@
+{
+  "documentationReferenceTests": 6,
+  "productDirectionAndRoadmapTests": 8,
+  "vitestWorkers": 1,
+  "cwd": "openplan/",
+  "Result": "success",
+  "ExecMainStatus": "0",
+  "MemoryPeak": "326144000",
+  "InvocationID": "e63980de136d4c25b0ed65c25bf71d27"
+}

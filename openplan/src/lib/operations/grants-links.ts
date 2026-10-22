@@ -185,10 +185,11 @@ export function resolveWorkspaceCommandHref(item: WorkspaceCommandQueueItem): st
   return isGrantsCommand(item) ? resolveSharedGrantsQueueHref(item) : item.href;
 }
 
+/** Amounts are null when a saved packet did not record them; null never counts as a gap. */
 type FundingFollowThroughLike = {
-  unfundedAfterLikelyAmount: number;
-  outstandingReimbursementAmount: number;
-  uninvoicedAwardAmount: number;
+  unfundedAfterLikelyAmount: number | null;
+  outstandingReimbursementAmount: number | null;
+  uninvoicedAwardAmount: number | null;
   likelyCoveredProjectCount?: number | null;
   gapProjectCount?: number | null;
   pipelineStatus?: string | null;
@@ -199,7 +200,7 @@ export function resolveRtpFundingFollowThrough(snapshot: FundingFollowThroughLik
     return null;
   }
 
-  if (snapshot.unfundedAfterLikelyAmount > 0 || (snapshot.gapProjectCount ?? 0) > 0) {
+  if ((snapshot.unfundedAfterLikelyAmount ?? 0) > 0 || (snapshot.gapProjectCount ?? 0) > 0) {
     return {
       href: "/grants#grants-gap-resolution-lane",
       title: "Linked RTP projects still carry uncovered funding gaps.",
@@ -207,7 +208,7 @@ export function resolveRtpFundingFollowThrough(snapshot: FundingFollowThroughLik
     };
   }
 
-  if (snapshot.outstandingReimbursementAmount > 0) {
+  if ((snapshot.outstandingReimbursementAmount ?? 0) > 0) {
     return {
       href: "/grants#grants-reimbursement-triage",
       title: "Reimbursement follow-through is still active across linked RTP projects.",
@@ -215,7 +216,7 @@ export function resolveRtpFundingFollowThrough(snapshot: FundingFollowThroughLik
     };
   }
 
-  if (snapshot.uninvoicedAwardAmount > 0) {
+  if ((snapshot.uninvoicedAwardAmount ?? 0) > 0) {
     return {
       href: "/grants#grants-awards-reimbursement",
       title: "Committed award dollars exist, but invoice follow-through has not caught up yet.",

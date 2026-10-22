@@ -1,0 +1,74 @@
+{
+  "candidate": "6ca955851ba53437c68a171d523c2539184971e4",
+  "parent": "95f46dc506b85e83bcbf84146f6cf8dafa4c5a65",
+  "applicationTree": "2b1916349d7379c96bf97b1708b3e4016d37384d",
+  "authorHead": "6ca955851ba53437c68a171d523c2539184971e4",
+  "authorStatus": "",
+  "publicManifestSha256": "921d91982ea11d4c2e6a7fc0d242c884faaa8fc038c78bda30b8414c76e77a69",
+  "privateManifestSha256": "de1a15f30ef246a8a85eebd33f7680b85dbb3bef26b8040f994e9e088606e7e2",
+  "privateManifestEntries": 2879,
+  "fullPrivateManifestContentsRehashed": false,
+  "sourceDiffMatchesExactGitDiff": true,
+  "orderedHistoryCount": 423,
+  "orderedHistoryMatches": true,
+  "newSubjectRuns": 0,
+  "reviewMode": "SOURCE/METADATA ONLY",
+  "sourceVerdict": "accepted within bounded source review; no P1 or P2 found",
+  "newFindings": [
+    {
+      "id": "META-01",
+      "severity": "P3",
+      "blockingForSource": false,
+      "publicTimeNs": "1792192134978151200",
+      "rawTimeNs": "1792192134978151106",
+      "differenceNanoseconds": 94,
+      "disposition": "retain exact sealed raw receipt; root owns onward reconciliation"
+    }
+  ],
+  "pinCounts": {
+    "public": 14,
+    "source": 22,
+    "preservation": 7,
+    "preparation": 14,
+    "selectedPrivate": 130,
+    "orderedMigrations": 423
+  },
+  "allNamedPinsMatch": true,
+  "retainedCases": {
+    "baseline": 46,
+    "harmlessSurvived": 46,
+    "targetFaults": 16,
+    "actualAssertionFailures": 22,
+    "restored": 46,
+    "runtimeErrorSuites": 0
+  },
+  "focusedChecks": [
+    {
+      "name": "focused-types",
+      "exit": 0,
+      "seconds": 24.948713142075576
+    },
+    {
+      "name": "focused-lint",
+      "exit": 0,
+      "seconds": 9.850003229919821
+    },
+    {
+      "name": "direction",
+      "exit": 0,
+      "seconds": 1.8003172709140927
+    }
+  ],
+  "runtimeInvocation": "3976044c3d2d4ee9b2eee220326eca25",
+  "retainedRuntimeTerminal": 0,
+  "inheritedWritableMounts": 227,
+  "nativeAcceptance": false,
+  "browserAcceptance": false,
+  "sql20AppliedByReview": false,
+  "sourceJoinedByReview": false,
+  "newGrantRequested": false,
+  "newApplicationTestsOrGuards": false,
+  "privateInspectionSha256": "dbf980b014925db0a7c6fcb1d85daf77cdee679ddc4c145d6e33849b0dcbd4b2",
+  "selectedEvidenceSealSha256": "0ef30c324c5adcb19108f9c9f7622ef3d9ab601c0243c858f54e7626ab3de889",
+  "selectedEvidenceFileCount": 598
+}

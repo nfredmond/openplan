@@ -1,0 +1,49 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived",
+    "retainedDatabases": [
+      "odm_held_upgrade_452df664148c47f198e6344af0575da8",
+      "odm_held_restore_d8fd5236161a450898b48ae4d8bf4895"
+    ]
+  },
+  {
+    "case": "harmless-comment",
+    "outcome": "survived",
+    "retainedDatabases": [
+      "odm_held_upgrade_95b6b41116d740bf8094793f36876cd3",
+      "odm_held_restore_fee6c84a65e44d80b0e723ede32df3f1"
+    ]
+  },
+  {
+    "case": "restored-after-harmless",
+    "outcome": "survived",
+    "retainedDatabases": [
+      "odm_held_upgrade_8cbab861fd4640f089de3868c4ea5290",
+      "odm_held_restore_520e44f951b943a9966b85cf15da0459"
+    ]
+  },
+  {
+    "case": "migration-omitted",
+    "outcome": "intended_failure",
+    "diagnostic": "Candidate upgrade installs the exact414 migration history"
+  },
+  {
+    "case": "guard-body-omitted",
+    "outcome": "intended_failure",
+    "diagnostic": "Restored guard rejects held fact replacement"
+  },
+  {
+    "case": "member-update-permitted",
+    "outcome": "intended_failure",
+    "diagnostic": "Restored visible member remains unable to write"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived",
+    "retainedDatabases": [
+      "odm_held_upgrade_0a8b1333903248d7b7461aad7a5a3e61",
+      "odm_held_restore_d559bcb59e2b45f79603acc439954ec1"
+    ]
+  }
+]

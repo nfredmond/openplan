@@ -1,0 +1,253 @@
+{
+  "entrypoints": 49,
+  "unittestFiles": 42,
+  "unittestCases": 934,
+  "seconds": 116.83687057602219,
+  "suites": [
+    {
+      "suite": "test_admission_journal.py",
+      "unittestCases": 54,
+      "exit": 0
+    },
+    {
+      "suite": "test_application_dispatch_http.py",
+      "unittestCases": 25,
+      "exit": 0
+    },
+    {
+      "suite": "test_application_dispatch_reader.py",
+      "unittestCases": 18,
+      "exit": 0
+    },
+    {
+      "suite": "test_application_draft_authority.py",
+      "unittestCases": 14,
+      "exit": 0
+    },
+    {
+      "suite": "test_application_processing_authority.py",
+      "unittestCases": 16,
+      "exit": 0
+    },
+    {
+      "suite": "test_callbacks.py",
+      "unittestCases": null,
+      "exit": 0
+    },
+    {
+      "suite": "test_contract.py",
+      "unittestCases": null,
+      "exit": 0
+    },
+    {
+      "suite": "test_deploy_surface.py",
+      "unittestCases": 1,
+      "exit": 0
+    },
+    {
+      "suite": "test_derived_zip.py",
+      "unittestCases": 32,
+      "exit": 0
+    },
+    {
+      "suite": "test_draft_custody.py",
+      "unittestCases": 24,
+      "exit": 0
+    },
+    {
+      "suite": "test_draft_http.py",
+      "unittestCases": 35,
+      "exit": 0
+    },
+    {
+      "suite": "test_engine_effects.py",
+      "unittestCases": 28,
+      "exit": 0
+    },
+    {
+      "suite": "test_georef.py",
+      "unittestCases": null,
+      "exit": 0
+    },
+    {
+      "suite": "test_intake.py",
+      "unittestCases": null,
+      "exit": 0
+    },
+    {
+      "suite": "test_live_task_observation_cli.py",
+      "unittestCases": 14,
+      "exit": 0
+    },
+    {
+      "suite": "test_managed_state_root.py",
+      "unittestCases": 10,
+      "exit": 0
+    },
+    {
+      "suite": "test_native_engine_attestation.py",
+      "unittestCases": 31,
+      "exit": 0
+    },
+    {
+      "suite": "test_nodeodm_client.py",
+      "unittestCases": null,
+      "exit": 0
+    },
+    {
+      "suite": "test_original_commit_http.py",
+      "unittestCases": 19,
+      "exit": 0
+    },
+    {
+      "suite": "test_original_output_http.py",
+      "unittestCases": 16,
+      "exit": 0
+    },
+    {
+      "suite": "test_original_task_http.py",
+      "unittestCases": 23,
+      "exit": 0
+    },
+    {
+      "suite": "test_pipeline.py",
+      "unittestCases": null,
+      "exit": 0
+    },
+    {
+      "suite": "test_progress_http.py",
+      "unittestCases": 11,
+      "exit": 0
+    },
+    {
+      "suite": "test_retained_output_archive.py",
+      "unittestCases": 18,
+      "exit": 0
+    },
+    {
+      "suite": "test_retained_source.py",
+      "unittestCases": 44,
+      "exit": 0
+    },
+    {
+      "suite": "test_retained_task_observation.py",
+      "unittestCases": 31,
+      "exit": 0
+    },
+    {
+      "suite": "test_retired_sqlite_companions.py",
+      "unittestCases": 5,
+      "exit": 0
+    },
+    {
+      "suite": "test_rotated_georef.py",
+      "unittestCases": 6,
+      "exit": 0
+    },
+    {
+      "suite": "test_runtime_admission.py",
+      "unittestCases": 30,
+      "exit": 0
+    },
+    {
+      "suite": "test_runtime_artifact_plan.py",
+      "unittestCases": 12,
+      "exit": 0
+    },
+    {
+      "suite": "test_runtime_commit.py",
+      "unittestCases": 16,
+      "exit": 0
+    },
+    {
+      "suite": "test_runtime_dispatch_custody.py",
+      "unittestCases": 34,
+      "exit": 0
+    },
+    {
+      "suite": "test_runtime_draft.py",
+      "unittestCases": 22,
+      "exit": 0
+    },
+    {
+      "suite": "test_runtime_georef.py",
+      "unittestCases": 20,
+      "exit": 0
+    },
+    {
+      "suite": "test_runtime_observation.py",
+      "unittestCases": 17,
+      "exit": 0
+    },
+    {
+      "suite": "test_runtime_output_intake.py",
+      "unittestCases": 27,
+      "exit": 0
+    },
+    {
+      "suite": "test_runtime_preparation.py",
+      "unittestCases": 25,
+      "exit": 0
+    },
+    {
+      "suite": "test_runtime_products.py",
+      "unittestCases": 22,
+      "exit": 0
+    },
+    {
+      "suite": "test_runtime_progress_delivery.py",
+      "unittestCases": 23,
+      "exit": 0
+    },
+    {
+      "suite": "test_runtime_url_draft.py",
+      "unittestCases": 22,
+      "exit": 0
+    },
+    {
+      "suite": "test_runtime_url_draft_cancellation.py",
+      "unittestCases": 6,
+      "exit": 0
+    },
+    {
+      "suite": "test_runtime_url_intake.py",
+      "unittestCases": 39,
+      "exit": 0
+    },
+    {
+      "suite": "test_task_observation.py",
+      "unittestCases": 24,
+      "exit": 0
+    },
+    {
+      "suite": "test_task_observation_cli.py",
+      "unittestCases": 12,
+      "exit": 0
+    },
+    {
+      "suite": "test_uncertain_commit_inspection.py",
+      "unittestCases": 21,
+      "exit": 0
+    },
+    {
+      "suite": "test_url_source_custody.py",
+      "unittestCases": 40,
+      "exit": 0
+    },
+    {
+      "suite": "test_url_transport.py",
+      "unittestCases": 33,
+      "exit": 0
+    },
+    {
+      "suite": "test_worker_http.py",
+      "unittestCases": null,
+      "exit": 0
+    },
+    {
+      "suite": "test_zip_engine.py",
+      "unittestCases": 14,
+      "exit": 0
+    }
+  ]
+}

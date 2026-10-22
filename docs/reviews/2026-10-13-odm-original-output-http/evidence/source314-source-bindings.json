@@ -1,0 +1,5 @@
+{
+  "workers/odm_worker/original_output_http.py": "c1fae6405dc9959649a4a22087ab8bcdbfce6c96e47ab539c316f52eed24647c",
+  "workers/odm_worker/test_original_output_http.py": "d32d2332407cb1ddeb956f5717ca71329fdb54426cbc1954a5d046156cd453a7",
+  "docs/reviews/2026-10-13-odm-original-output-http/verify_controls.py": "8d84ea853e9bb86d1d2fe644e213505f4e6f032b20ba6416f2fa8f8f99076703"
+}

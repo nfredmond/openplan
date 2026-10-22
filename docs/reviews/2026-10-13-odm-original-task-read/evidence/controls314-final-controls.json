@@ -1,0 +1,225 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "cases": 23
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived",
+    "cases": 23
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived",
+    "cases": 23
+  },
+  {
+    "control": "plan-comparison-removed",
+    "outcome": "intended_failure",
+    "case": "test_changed_plan_refuses_before_credentials_or_network",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "initial-engine-check-removed",
+    "outcome": "intended_failure",
+    "case": "test_engine_check_false_or_nonboolean_refuses",
+    "diagnostic": "Refused engine check must precede any HTTP",
+    "kind": "failures"
+  },
+  {
+    "control": "final-engine-check-removed",
+    "outcome": "intended_failure",
+    "case": "test_final_engine_check_refuses_saved_record",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "truthy-engine-accepted",
+    "outcome": "intended_failure",
+    "case": "test_engine_check_false_or_nonboolean_refuses",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "ownership-removed",
+    "outcome": "intended_failure",
+    "case": "test_absent_or_nonboolean_ownership_refuses",
+    "diagnostic": "not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "ownership-type-removed",
+    "outcome": "intended_failure",
+    "case": "test_absent_or_nonboolean_ownership_refuses",
+    "diagnostic": "not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "cancellation-removed",
+    "outcome": "intended_failure",
+    "case": "test_pre_cancelled_refuses_before_engine_or_network",
+    "diagnostic": "InterruptedError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "cancellation-type-removed",
+    "outcome": "intended_failure",
+    "case": "test_nonboolean_cancellation_refuses",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "deadline-removed",
+    "outcome": "intended_failure",
+    "case": "test_deadline_refuses_before_network",
+    "diagnostic": "AssertionError",
+    "kind": "failures"
+  },
+  {
+    "control": "credential-reference-changed",
+    "outcome": "intended_failure",
+    "case": "test_exact_original_get_and_credentials",
+    "diagnostic": "Original task credential resolution failed",
+    "kind": "errors"
+  },
+  {
+    "control": "credential-type-removed",
+    "outcome": "intended_failure",
+    "case": "test_credential_none_and_invalid_values",
+    "diagnostic": "Original task read did not complete",
+    "kind": "failures"
+  },
+  {
+    "control": "credential-error-exposed",
+    "outcome": "intended_failure",
+    "case": "test_credential_resolution_error_is_not_exposed",
+    "diagnostic": "RuntimeError: PRIVATE_CREDENTIAL_MARKER",
+    "kind": "errors"
+  },
+  {
+    "control": "adapter-check-removed",
+    "outcome": "intended_failure",
+    "case": "test_adapters_are_required",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "ownership-adapter-removed",
+    "outcome": "intended_failure",
+    "case": "test_adapters_are_required",
+    "diagnostic": "TypeError: 'NoneType' object is not callable",
+    "kind": "errors"
+  },
+  {
+    "control": "response-bound-removed",
+    "outcome": "intended_failure",
+    "case": "test_owned_child_output_bounds",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "child-input-bound-removed",
+    "outcome": "intended_failure",
+    "case": "test_child_metadata_bound_precedes_payload_read",
+    "diagnostic": "Oversized child metadata reached payload read",
+    "kind": "failures"
+  },
+  {
+    "control": "wrong-uuid-path",
+    "outcome": "intended_failure",
+    "case": "test_exact_original_get_and_credentials",
+    "diagnostic": "Read must use original UUID",
+    "kind": "failures"
+  },
+  {
+    "control": "token-not-encoded",
+    "outcome": "intended_failure",
+    "case": "test_exact_original_get_and_credentials",
+    "diagnostic": "Original task read did not complete",
+    "kind": "errors"
+  },
+  {
+    "control": "status-check-removed",
+    "outcome": "intended_failure",
+    "case": "test_redirect_is_not_followed",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "framing-check-removed",
+    "outcome": "intended_failure",
+    "case": "test_short_valid_json_prefix_refuses",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "encoding-check-removed",
+    "outcome": "intended_failure",
+    "case": "test_compressed_response_refuses",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "reported-length-bound-removed",
+    "outcome": "intended_failure",
+    "case": "test_oversized_response_refuses",
+    "diagnostic": "TimeoutError: Original draft HTTP deadline exceeded",
+    "kind": "errors"
+  },
+  {
+    "control": "close-delimited-refused",
+    "outcome": "intended_failure",
+    "case": "test_close_delimited_response_preserves_exact_bytes",
+    "diagnostic": "Original task read did not complete",
+    "kind": "errors"
+  },
+  {
+    "control": "reply-bytes-altered",
+    "outcome": "intended_failure",
+    "case": "test_exact_original_get_and_credentials",
+    "diagnostic": "Exact original reply must survive transport",
+    "kind": "failures"
+  },
+  {
+    "control": "retention-bypassed",
+    "outcome": "intended_failure",
+    "case": "test_retain_and_reopen_exact_reply",
+    "diagnostic": "Retained task observation ledger plan is missing",
+    "kind": "errors"
+  },
+  {
+    "control": "wrong-reply-retained",
+    "outcome": "intended_failure",
+    "case": "test_wrong_task_reply_refuses_retention",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "parent-watch-removed",
+    "outcome": "intended_failure",
+    "case": "test_abrupt_parent_exit_stops_and_reaps_owned_http_child",
+    "diagnostic": "Parent exit must stop the owned HTTP child",
+    "kind": "failures"
+  },
+  {
+    "control": "inflight-cancellation-removed",
+    "outcome": "intended_failure",
+    "case": "test_cancelled_inflight_closes_connection",
+    "diagnostic": "TimeoutError: Original draft HTTP deadline exceeded",
+    "kind": "errors"
+  },
+  {
+    "control": "inflight-ownership-removed",
+    "outcome": "intended_failure",
+    "case": "test_lost_ownership_closes_connection",
+    "diagnostic": "TimeoutError: Original draft HTTP deadline exceeded",
+    "kind": "errors"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived",
+    "cases": 23
+  }
+]

@@ -17,6 +17,14 @@ import {
   computeRetentionAmount,
   parseCurrencyAmount,
 } from "./invoice-records";
+import {
+  compareMoney,
+  parseOptionalMoney,
+  subtractMoney,
+  sumMoney,
+  type ExactMoneyAmount,
+} from "@/lib/money/optional-amount";
+import { calendarDayOf, todayIn, UTC_TIME_ZONE } from "@/lib/time/workspace-calendar";
 
 export const CLIENT_INVOICE_STATUSES = ["draft", "sent", "paid", "void"] as const;
 
@@ -98,14 +106,26 @@ export type ClientInvoiceReceivableSummary = {
 };
 
 export type EngagementBilledSummary = {
-  /** Sum of sent + paid invoice totals. Void is excluded; draft is not yet billed. */
-  billedToDate: number;
-  /** Sum of draft invoice totals — composed but not yet sent. */
-  draftedUnbilled: number;
-  notToExceed: number | null;
-  /** notToExceed minus billedToDate; null when there is no NTE ceiling. */
-  remaining: number | null;
-  isOverNte: boolean;
+  /** Gross sent/paid subtotals before retention; null means unavailable. */
+  billedToDate: ExactMoneyAmount | null;
+  /** Gross draft subtotals before retention; null means unavailable. */
+  draftedUnbilled: ExactMoneyAmount | null;
+  notToExceed: ExactMoneyAmount | null;
+  /** A negative result preserves an overrun. Null means absent or unavailable. */
+  remaining: ExactMoneyAmount | null;
+  isOverNte: boolean | null;
+  /** Missing ceilings remain unrecorded; invalid ceilings and unreadable buckets are explicit. */
+  unavailable?: Partial<Record<"billedToDate" | "draftedUnbilled" | "notToExceed", "missing" | "invalid">>;
+  /** Completeness refers to the caller-visible engagement snapshot, not agreement authority. */
+  source?: { state: "complete" | "pending" | "unavailable"; error?: { code?: string; message: string } };
+};
+
+export type EngagementNteWarning = {
+  basis: "legacy_terms_unassessed";
+  billedToDate: ExactMoneyAmount;
+  projectedBilledToDate: ExactMoneyAmount;
+  notToExceed: ExactMoneyAmount;
+  overBy: ExactMoneyAmount;
 };
 
 function roundCurrency(value: number): number {
@@ -194,27 +214,44 @@ export function isReceivableOutstanding(status: string | null | undefined): bool
  * overdue. Deliberately the same whole-day arithmetic as the aging bucketer
  * (daysPastDue >= 1 ⇔ the days_1_30 and later buckets), so the overdue flag
  * and the aging buckets can never disagree at the boundary.
+ *
+ * `timeZone` is the workspace's IANA zone (`loadWorkspaceCalendar`); "today"
+ * is the date there. Without it the day is the UTC day, which turns over at
+ * 5 p.m. Pacific.
  */
 export function isReceivableOverdue(
   status: string | null | undefined,
   dueDate: string | null | undefined,
-  nowInput: Date | string = new Date()
+  nowInput: Date | string = new Date(),
+  timeZone: string = UTC_TIME_ZONE
 ): boolean {
   if (!isReceivableOutstanding(status) || !dueDate) {
     return false;
   }
 
   const now = nowInput instanceof Date ? nowInput : new Date(nowInput);
-  const days = daysPastDue(dueDate, now);
+  const days = daysPastDue(dueDate, now, timeZone);
   return days !== null && days >= 1;
 }
 
-function daysPastDue(dueDate: string, now: Date): number | null {
-  const parsed = new Date(dueDate);
-  if (Number.isNaN(parsed.getTime())) {
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Whole calendar days from the due date to today in `timeZone`; 0 on the due
+ * date itself. A due date stored as an instant counts as the day it falls on
+ * in that zone. Null when the due date cannot be read as a day.
+ */
+function daysPastDue(dueDate: string, now: Date, timeZone: string): number | null {
+  const dueDay = calendarDayOf(dueDate, timeZone);
+  if (!dueDay) {
     return null;
   }
-  return Math.floor((now.getTime() - parsed.getTime()) / (24 * 60 * 60 * 1000));
+  // Both are YYYY-MM-DD, read as midnight UTC, so the difference is whole days.
+  const dueAt = new Date(dueDay).getTime();
+  if (Number.isNaN(dueAt)) {
+    return null;
+  }
+  return Math.round((new Date(todayIn(timeZone, now)).getTime() - dueAt) / DAY_MS);
 }
 
 function agingBucketForDays(days: number): ReceivableAgingBucket {
@@ -232,7 +269,8 @@ function agingBucketForDays(days: number): ReceivableAgingBucket {
  */
 export function buildReceivableAgingSummary(
   invoices: ClientInvoiceRecordLike[] | null | undefined,
-  nowInput: Date | string = new Date()
+  nowInput: Date | string = new Date(),
+  timeZone: string = UTC_TIME_ZONE
 ): ReceivableAgingSummary {
   const now = nowInput instanceof Date ? nowInput : new Date(nowInput);
 
@@ -249,7 +287,7 @@ export function buildReceivableAgingSummary(
     }
 
     const amount = receivableInvoiceAmount(invoice);
-    const days = invoice.due_date ? daysPastDue(invoice.due_date, now) : null;
+    const days = invoice.due_date ? daysPastDue(invoice.due_date, now, timeZone) : null;
 
     if (days === null) {
       undatedCount += 1;
@@ -267,7 +305,8 @@ export function buildReceivableAgingSummary(
 
 export function summarizeReceivables(
   invoices: ClientInvoiceRecordLike[] | null | undefined,
-  nowInput: Date | string = new Date()
+  nowInput: Date | string = new Date(),
+  timeZone: string = UTC_TIME_ZONE
 ): ClientInvoiceReceivableSummary {
   const now = nowInput instanceof Date ? nowInput : new Date(nowInput);
 
@@ -300,7 +339,7 @@ export function summarizeReceivables(
         summary.outstandingAmount = roundCurrency(summary.outstandingAmount + amount);
       }
 
-      if (isReceivableOverdue(status, record.due_date, now)) {
+      if (isReceivableOverdue(status, record.due_date, now, timeZone)) {
         summary.overdueCount += 1;
         summary.overdueAmount = roundCurrency(summary.overdueAmount + amount);
       }
@@ -341,31 +380,56 @@ export function buildEngagementBilledSummary(
     (invoice) => engagementId !== null && invoice.engagement_id === engagementId
   );
 
-  let billedToDate = 0;
-  let draftedUnbilled = 0;
-
+  const billedAmounts: Array<number | string | null | undefined> = [];
+  const draftAmounts: Array<number | string | null | undefined> = [];
   for (const invoice of scoped) {
     const status = typeof invoice.status === "string" ? invoice.status : "draft";
-    if (status === "void") {
-      continue;
-    }
-
-    const amount = parseCurrencyAmount(invoice.subtotal_amount);
     if (status === "sent" || status === "paid") {
-      billedToDate = roundCurrency(billedToDate + amount);
+      billedAmounts.push(invoice.subtotal_amount);
     } else if (status === "draft") {
-      draftedUnbilled = roundCurrency(draftedUnbilled + amount);
+      draftAmounts.push(invoice.subtotal_amount);
     }
   }
 
-  const notToExceed = parseOptionalAmount(engagement.not_to_exceed_amount);
-  const remaining = notToExceed === null ? null : roundCurrency(notToExceed - billedToDate);
+  const unavailable: NonNullable<EngagementBilledSummary["unavailable"]> = {};
+  // Each bucket stands on its own. An unreadable row cannot become zero or
+  // erase another bucket that can still be calculated from its supplied rows.
+  function bucketAmount(values: typeof billedAmounts, bucket: "billedToDate" | "draftedUnbilled"): ExactMoneyAmount | null {
+    if (values.some((value) => value == null)) {
+      unavailable[bucket] = "missing";
+      return null;
+    }
+    try {
+      return sumMoney(values);
+    } catch {
+      unavailable[bucket] = "invalid";
+      return null;
+    }
+  }
+  const billedToDate = bucketAmount(billedAmounts, "billedToDate");
+  const draftedUnbilled = bucketAmount(draftAmounts, "draftedUnbilled");
+  return buildEngagementBilledPosition(engagement, billedToDate, draftedUnbilled, unavailable);
+}
 
+/** Compose already-aggregated gross buckets without inventing invoice records. */
+export function buildEngagementBilledPosition(
+  engagement: InvoicingEngagementLike,
+  billedToDate: ExactMoneyAmount | null,
+  draftedUnbilled: ExactMoneyAmount | null,
+  unavailable: NonNullable<EngagementBilledSummary["unavailable"]> = {}
+): EngagementBilledSummary {
+  let notToExceed: ExactMoneyAmount | null = null;
+  try {
+    notToExceed = parseOptionalMoney(engagement.not_to_exceed_amount);
+  } catch {
+    unavailable.notToExceed = "invalid";
+  }
   return {
     billedToDate,
     draftedUnbilled,
     notToExceed,
-    remaining,
-    isOverNte: notToExceed !== null && billedToDate > notToExceed,
+    remaining: notToExceed !== null && billedToDate !== null ? subtractMoney(notToExceed, billedToDate) : null,
+    isOverNte: billedToDate === null || unavailable.notToExceed ? null : notToExceed !== null && compareMoney(billedToDate, notToExceed) > 0,
+    ...(Object.keys(unavailable).length ? { unavailable } : {}),
   };
 }

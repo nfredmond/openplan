@@ -34,6 +34,7 @@
 
 import { createHash } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { checkWorkspaceStorageRoom, type WorkspaceStorageRoom } from "@/lib/workspaces/storage-quota";
 import {
   AERIAL_ARTIFACT_BUCKET,
   AERIAL_ARTIFACT_CUSTODY_COLUMNS,
@@ -55,9 +56,6 @@ import {
 
 /** Content types that mean "this is the vendor's error page, not the artifact". */
 const DOCUMENT_CONTENT_TYPES = ["text/html", "application/xhtml+xml"];
-
-/** Floor on the per-artifact fetch timeout so a nearly-exhausted budget still tries. */
-const MIN_ARTIFACT_TIMEOUT_MS = 2_000;
 
 type CustodyQueryResult = { data: unknown[] | null; error: { message?: string } | null };
 type CustodyWriteResult = { error: { message?: string; code?: string } | null };
@@ -81,6 +79,8 @@ export type CustodySupabaseLike = {
       eq: (column: string, value: string) => { select: (columns: string) => PromiseLike<CustodyQueryResult> };
     };
   };
+  /** The workspace storage-use read (`workspace_storage_bytes`) made before each store. */
+  rpc: (fn: string, args: Record<string, unknown>) => PromiseLike<{ data: unknown; error: { message?: string } | null }>;
   storage: {
     from: (bucket: string) => {
       upload: (
@@ -88,9 +88,48 @@ export type CustodySupabaseLike = {
         body: unknown,
         options?: { contentType?: string; upsert?: boolean }
       ) => PromiseLike<{ error: { message?: string } | null }>;
+      download: (path: string, options: Record<string, never>, parameters: RequestInit) => {
+        asStream: () => PromiseLike<{ data: ReadableStream<Uint8Array> | null; error: { message?: string } | null }>;
+      };
     };
   };
 };
+
+/** Check actual private object bytes before recording a held artifact. */
+async function storedArtifactMatches(
+  supabase: CustodySupabaseLike,
+  path: string,
+  expectedBytes: number,
+  expectedSha256: string,
+  signal: AbortSignal
+): Promise<boolean> {
+  try {
+    signal.throwIfAborted();
+    const result = await supabase.storage.from(AERIAL_ARTIFACT_BUCKET)
+      .download(path, {}, { signal, cache: "no-store" }).asStream();
+    if (result.error || !result.data) return false;
+    const reader = result.data.getReader();
+    const hash = createHash("sha256");
+    let count = 0;
+    try {
+      while (true) {
+        signal.throwIfAborted();
+        const { done, value } = await reader.read();
+        if (done) break;
+        count += value.byteLength;
+        if (count > expectedBytes) return false;
+        hash.update(value);
+      }
+      signal.throwIfAborted();
+      return count === expectedBytes && hash.digest("hex") === expectedSha256;
+    } finally {
+      await reader.cancel().catch(() => undefined);
+      reader.releaseLock();
+    }
+  } catch {
+    return false;
+  }
+}
 
 /**
  * What callers pass: the real SERVICE-ROLE client, directly.
@@ -221,7 +260,7 @@ type FetchOutcome =
 async function downloadArtifact(
   downloadUrl: string,
   maxBytes: number,
-  timeoutMs: number,
+  signal: AbortSignal,
   fetchImpl: typeof fetch
 ): Promise<FetchOutcome> {
   let response: Response;
@@ -229,7 +268,7 @@ async function downloadArtifact(
     response = await fetchImpl(downloadUrl, {
       method: "GET",
       redirect: "follow",
-      signal: AbortSignal.timeout(timeoutMs),
+      signal,
     });
   } catch (error) {
     // Only the error's NAME — a fetch failure's `message`/`cause` is one of the
@@ -361,13 +400,15 @@ async function custodyOfOne(
   options: {
     supabase: CustodySupabaseLike;
     maxBytes: number;
-    timeoutMs: number;
+    signal: AbortSignal;
+    storage: CustodySupabaseLike;
     now: Date;
     fetchImpl: typeof fetch;
     priorAttempts: number;
+    storageRoom: (workspaceId: string, bytes: number) => Promise<WorkspaceStorageRoom>;
   }
 ): Promise<CustodyRowWrite> {
-  const { supabase, maxBytes, timeoutMs, now, fetchImpl, priorAttempts } = options;
+  const { storage, maxBytes, signal, now, fetchImpl, priorAttempts, storageRoom } = options;
   const sourceHost = artifactSourceHost(candidate.downloadUrl) ?? "the processing worker";
   const base = { kind: candidate.kind, sourceHost, sourceExpiresAt: candidate.expiresAt };
 
@@ -387,7 +428,7 @@ async function custodyOfOne(
     );
   }
 
-  const download = await downloadArtifact(candidate.downloadUrl, maxBytes, timeoutMs, fetchImpl);
+  const download = await downloadArtifact(candidate.downloadUrl, maxBytes, signal, fetchImpl);
 
   if (!download.ok) {
     return failedRow(
@@ -429,14 +470,45 @@ async function custodyOfOne(
   const uploadContentType =
     download.contentType ?? candidate.contentType ?? "application/octet-stream";
 
-  // `upsert` is what makes a redelivered callback store ONE copy: the path is
-  // derived from ids OpenPlan owns, so the second write lands on the first
-  // object rather than beside it.
-  const { error: uploadError } = await supabase.storage
-    .from(AERIAL_ARTIFACT_BUCKET)
-    .upload(storagePath, download.bytes, { contentType: uploadContentType, upsert: true });
+  // The workspace's storage total, with the measured bytes, before they are
+  // stored. A retry whose earlier attempt already left this exact object (lost
+  // acknowledgement) adds no bytes, so a refusal is only final when no matching
+  // object is there; otherwise the reconciliation below takes custody of it.
+  const room = await storageRoom(job.workspaceId, download.bytes.byteLength);
+  if (
+    room.status !== "room" &&
+    !(await storedArtifactMatches(storage, storagePath, download.bytes.byteLength, download.sha256, signal))
+  ) {
+    const code = room.status === "full" ? "workspace_storage_full" : "workspace_storage_unreadable";
+    return failedRow(
+      candidate,
+      job,
+      sourceHost,
+      code,
+      room.status === "full"
+        ? { ...base, code, quotaBytes: room.quotaBytes, usedBytes: room.usedBytes }
+        : { ...base, code },
+      true,
+      now,
+      priorAttempts
+    );
+  }
 
-  if (uploadError) {
+  // Keep original bytes when a prior upload survives an interrupted row write.
+  // An existing key requires byte reconciliation, never replacement.
+  try {
+    signal.throwIfAborted();
+    await storage.storage
+      .from(AERIAL_ARTIFACT_BUCKET)
+      .upload(storagePath, download.bytes, { contentType: uploadContentType, upsert: false });
+  } catch {
+    // Storage may retain the object before its acknowledgement is lost.
+    // Reconcile while the same pass deadline still permits a read.
+  }
+
+  // A reply can be lost after Storage retains the object. Read and compare the
+  // actual bytes after every attempt, including an uncertain acknowledgement.
+  if (!(await storedArtifactMatches(storage, storagePath, download.bytes.byteLength, download.sha256, signal))) {
     return failedRow(
       candidate,
       job,
@@ -535,6 +607,9 @@ export type CustodyPassResult = {
  */
 export async function runAerialCustodyPass(input: {
   supabase: CustodySupabaseClient;
+  /** Same configured Storage target, with this pass's cancellable transport. */
+  storageClientFactory: (fetchImpl: typeof fetch) => CustodySupabaseClient;
+  signal?: AbortSignal;
   job: CustodyJobContext;
   candidates: readonly CustodyCandidate[];
   now?: Date;
@@ -552,6 +627,17 @@ export async function runAerialCustodyPass(input: {
   const alreadySpent = input.elapsedMs ?? 0;
 
   const supabase = asCustodyClient(input.supabase);
+  const deadline = AbortSignal.timeout(Math.max(0, budgetMs - alreadySpent));
+  const signal = input.signal ? AbortSignal.any([input.signal, deadline]) : deadline;
+  const storageFetch: typeof fetch = (request, init) => {
+    signal.throwIfAborted();
+    const requestSignal = init?.signal ?? (request instanceof Request ? request.signal : undefined);
+    return fetch(request, {
+      ...init,
+      signal: requestSignal ? AbortSignal.any([signal, requestSignal]) : signal,
+    });
+  };
+  const storage = asCustodyClient(input.storageClientFactory(storageFetch));
 
   // What is already held, read BEFORE anything is written. An unreadable prior
   // record is not an empty one: overwriting a row this pass cannot see is how a
@@ -589,7 +675,7 @@ export async function runAerialCustodyPass(input: {
     const priorAttempts = existing?.attemptCount ?? 0;
 
     const remaining = budgetMs - alreadySpent - (Date.now() - startedAt);
-    if (remaining <= 0) {
+    if (remaining <= 0 || signal.aborted) {
       const sourceHost = artifactSourceHost(candidate.downloadUrl) ?? "the processing worker";
       rows.push(
         failedRow(
@@ -615,10 +701,12 @@ export async function runAerialCustodyPass(input: {
       await custodyOfOne(candidate, input.job, {
         supabase,
         maxBytes,
-        timeoutMs: Math.max(remaining, MIN_ARTIFACT_TIMEOUT_MS),
+        signal,
+        storage,
         now,
         fetchImpl,
         priorAttempts,
+        storageRoom: (workspaceId, bytes) => checkWorkspaceStorageRoom(input.supabase, workspaceId, bytes, env),
       })
     );
   }
@@ -651,6 +739,16 @@ export async function runAerialCustodyPass(input: {
     // while the bytes just uploaded sit in the bucket with nothing recording
     // where. So the roll-up is NOT written (the job keeps whatever it honestly
     // said before) and the reason is returned instead.
+    if (writeError?.code === "23514" && writeError.message === "Original held aerial custody cannot be replaced") {
+      // A competing writer can preserve held rows while rejecting this entire
+      // batch. Re-read every expected identity before reporting its outcome.
+      return finalizeAerialCustodyState({
+        supabase: input.supabase,
+        processingJobId: input.job.processingJobId,
+        expectedCandidates: input.candidates,
+        now,
+      });
+    }
     if (writeError) {
       const held = rows.filter((row) => row.state === "held").length;
       const reason =
@@ -675,6 +773,7 @@ export async function runAerialCustodyPass(input: {
   return finalizeAerialCustodyState({
     supabase: input.supabase,
     processingJobId: input.job.processingJobId,
+    expectedCandidates: input.candidates,
     now,
   });
 }
@@ -690,6 +789,7 @@ export async function runAerialCustodyPass(input: {
 export async function finalizeAerialCustodyState(input: {
   supabase: CustodySupabaseClient;
   processingJobId: string;
+  expectedCandidates?: readonly Pick<CustodyCandidate, "kind" | "ordinal">[];
   now?: Date;
 }): Promise<CustodyPassResult> {
   const now = input.now ?? new Date();
@@ -724,6 +824,27 @@ export async function finalizeAerialCustodyState(input: {
   }
 
   const records = (data ?? []) as AerialArtifactCustodyRecord[];
+  const retainedKeys = new Set(records.map((record) => priorCustodyKey(record.kind, record.ordinal)));
+  const missing = (input.expectedCandidates ?? []).filter(
+    (candidate) => !retainedKeys.has(priorCustodyKey(candidate.kind, candidate.ordinal))
+  );
+  if (missing.length > 0) {
+    const retainedPosture = summarizeAerialArtifactCustody(records, now);
+    const reason = `${missing.length} expected artifact custody records are missing. Retry custody before assessing the complete delivery.`;
+    return {
+      posture: {
+        ...retainedPosture,
+        state: "partial",
+        artifactCount: records.length + missing.length,
+        pendingCount: retainedPosture.pendingCount + missing.length,
+        verificationReadiness: "pending",
+        label: "Artifact custody records are incomplete",
+        detail: reason,
+      },
+      records,
+      unreadableReason: reason,
+    };
+  }
   const posture = summarizeAerialArtifactCustody(records, now);
 
   // `.select("id")` so the roll-up can see whether it changed anything. Under

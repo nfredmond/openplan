@@ -1,0 +1,43 @@
+name: Node queue process observations
+on:
+  push:
+    branches: [main]
+  pull_request: {}
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  node-process-observations:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: openplan/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install application dependencies
+        working-directory: openplan
+        run: npm ci
+      # Each driver uses one Vitest worker, verifies its harmless control and
+      # intended fault diagnostics, and restores its original target bytes.
+      - name: Worker lifecycle and actual startup signal controls
+        run: python3 -B docs/reviews/2026-10-14-node-queue-observation/verify_source_controls.py --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/node-observation-source"
+      - name: Actual preparation CLI idle request controls
+        run: python3 -B docs/reviews/2026-10-14-node-queue-observation/verify_idle_cli_control.py --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/node-observation-idle"
+      - name: Process report shape and microsecond consistency controls
+        run: python3 -B docs/reviews/2026-10-14-node-queue-observation/verify_reader_controls.py --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/node-observation-reader"
+      - name: Actual SDK cancellation and deadline controls
+        run: python3 -B docs/reviews/2026-10-14-node-queue-observation/verify_health_transport_controls.py --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/node-observation-transport"
+      - name: Deep-health refusal and scope controls
+        run: python3 -B docs/reviews/2026-10-14-node-queue-observation/verify_health_route_controls.py --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/node-observation-health"
+      - name: Caller timeout budget controls
+        run: python3 -B docs/reviews/2026-10-14-node-queue-observation/verify_checker_controls.py --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/node-observation-checker"
+      - name: Schema census and SQL-read field controls
+        run: python3 -B docs/reviews/2026-10-14-node-queue-observation/verify_schema_controls.py --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/node-observation-schema"

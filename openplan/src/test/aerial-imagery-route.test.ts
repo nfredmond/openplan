@@ -1,5 +1,16 @@
 import { createHash } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+// The workspace storage limit (storage-quota.ts). Room by default; a test that
+// is about the limit sets the answer and checks what the route asked.
+const checkWorkspaceStorageRoomMock = vi.hoisted(() => vi.fn());
+vi.mock("@/lib/workspaces/storage-quota", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/workspaces/storage-quota")>()),
+  checkWorkspaceStorageRoom: (...args: unknown[]) =>
+    checkWorkspaceStorageRoomMock(...args) ?? Promise.resolve({ status: "room", usedBytes: 0, quotaBytes: 5 * 1024 ** 3 }),
+}));
+// Every test starts from the default (room), whatever ran before it.
+beforeEach(() => checkWorkspaceStorageRoomMock.mockReset());
 import { NextRequest } from "next/server";
 
 import { AERIAL_IMAGE_MAX_BYTES_ENV, AERIAL_IMAGERY_COLUMNS } from "@/lib/aerial/imagery";
@@ -396,5 +407,50 @@ describe("POST /api/aerial/missions/[missionId]/imagery", () => {
     expect((await response.json()).deduped).toBe(true);
     // And the losing upload's bytes were cleaned up.
     expect(capturedRemovePaths).toHaveLength(1);
+  });
+});
+
+describe("POST /api/aerial/missions/[missionId]/imagery: the workspace storage limit", () => {
+  it("refuses a photo that would go over the limit before any byte is stored", async () => {
+    checkWorkspaceStorageRoomMock.mockResolvedValueOnce({
+      status: "full",
+      usedBytes: 5 * 1024 ** 3,
+      quotaBytes: 5 * 1024 ** 3,
+      message: "This file would put the workspace over its 5 GiB storage limit (5 GiB used).",
+    });
+
+    const response = await uploadImagery(postRequest(JPEG_BYTES), context());
+
+    expect(response.status).toBe(413);
+    expect((await response.json()).error).toBe(
+      "This file would put the workspace over its 5 GiB storage limit (5 GiB used)."
+    );
+    expect(capturedUploadPaths).toHaveLength(0);
+    expect(capturedInserts).toHaveLength(0);
+    // The MISSION'S workspace and the measured photo, not anything the client said.
+    expect(checkWorkspaceStorageRoomMock).toHaveBeenCalledWith(expect.anything(), WORKSPACE_ID, JPEG_BYTES.length);
+  });
+
+  it("refuses when the workspace's use cannot be read", async () => {
+    checkWorkspaceStorageRoomMock.mockResolvedValueOnce({
+      status: "unreadable",
+      message: "Storage use could not be checked, so nothing was uploaded. Try again in a minute.",
+      detail: "permission denied",
+    });
+
+    const response = await uploadImagery(postRequest(JPEG_BYTES), context());
+
+    expect(response.status).toBe(503);
+    expect(capturedUploadPaths).toHaveLength(0);
+    expect(capturedInserts).toHaveLength(0);
+  });
+
+  it("stores the photo while the workspace has room", async () => {
+    checkWorkspaceStorageRoomMock.mockResolvedValueOnce({ status: "room", usedBytes: 0, quotaBytes: 5 * 1024 ** 3 });
+
+    const response = await uploadImagery(postRequest(JPEG_BYTES), context());
+
+    expect(response.status).toBe(201);
+    expect(capturedUploadPaths).toHaveLength(1);
   });
 });

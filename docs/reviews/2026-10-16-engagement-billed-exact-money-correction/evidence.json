@@ -1,0 +1,1001 @@
+{
+  "baseHead": "04841834d31755d3d618a6ea3c300fb9b0b1414b",
+  "baseAppTree": "44e638d6d79378042343bf5b18408f09ee991d57",
+  "correctedAppTree": "493488ffc952f1a69765c046afd03375d4fed126",
+  "sourcePinsSha256": "71f06911752332e7513c375b08814372f1f2a9dbebebe01c685a52b93d198f26",
+  "trials": {
+    "trial01": {
+      "classification": "HARNESS_FAILURE",
+      "wholeUnitExit": 1,
+      "unit": "op-m11-billed-exact-correction01",
+      "invocationId": "eac4cc51564b4b7095e9d093874fef51",
+      "baselinePassed": 106,
+      "harmlessPassed": 106,
+      "acceptedFaults": 13,
+      "composer": {
+        "acceptedKill": false,
+        "actualFailurePrefix": "Error: Unable to find an element with the text",
+        "failedCases": 1,
+        "transformApplied": true,
+        "vitestExit": 1,
+        "harnessAssertion": "requires AssertionError in all failed-case messages"
+      },
+      "notReached": [
+        "api-over-by-regression",
+        "restored selected 106 tests",
+        "focused types",
+        "focused lint",
+        "direction"
+      ],
+      "restorationAll18Match": true,
+      "postTerminalReadback": {
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/app/(app)/invoicing/_components/receivables-lane.tsx": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/app/api/invoicing/client-invoices/route.ts": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/components/invoicing/client-invoice-composer.tsx": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/components/invoicing/engagement-nte-bar.tsx": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/lib/invoicing/invoice-currency.ts": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/lib/invoicing/invoice-pdf.ts": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/lib/invoicing/receivables.ts": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/lib/project-evidence-bundles/bytes.ts": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/test/client-invoice-composer.test.tsx": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/test/client-invoice-pdf.test.ts": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/test/receivable-invoicing-routes.test.ts": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/test/engagement-billed-exact-money.test.tsx": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/lib/money/optional-amount.ts": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/lib/money/format.ts": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/lib/invoicing/invoice-records.ts": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/lib/work/deadlines.ts": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/lib/time/workspace-calendar.ts": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/lib/invoicing/contracts/reconciliation.ts": true
+      },
+      "lock": {
+        "key": "103:04:133604183",
+        "holders": [],
+        "readOnlyNoAcquisition": true
+      },
+      "inheritedWritableMountCount": 226,
+      "hostWideOnlyPrivateWritableEstablished": false,
+      "nativePathsAccessed": false,
+      "resources": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "cpu.max": "50000 100000",
+        "pids.max": "48",
+        "memory.peak": "327204864",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+      },
+      "sourceEditedAfterRun": false,
+      "noRetry": true
+    },
+    "trial02": {
+      "classification": "FOCUSED_CHECKS_PASS_DIRECTION_ENVIRONMENT_FAILURE",
+      "wholeUnitExit": 1,
+      "unit": "op-m11-billed-exact-correction02",
+      "invocationId": "893ed1308e4145acba354c9014fb8d1d",
+      "sourceEdited": false,
+      "reusedOriginalTrialStillFailed": true,
+      "prior13FaultsRepeated": false,
+      "composer": {
+        "baseline": 1,
+        "harmlessSurvived": 1,
+        "outcome": "KILLED_EXPECTED_QUERY_FAILURE",
+        "isAssertionError": false,
+        "narrowReaderMatched": true
+      },
+      "apiOverBy": {
+        "baseline": 1,
+        "outcome": "KILLED",
+        "isAssertionError": true
+      },
+      "restoredSelectedPassed": 106,
+      "focusedTypesExit": 0,
+      "focusedLintExit": 0,
+      "direction": {
+        "exit": 1,
+        "cwd": "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan",
+        "reviewedCommit": "380aad49770d856a9c4b577ccc9793baf39d3ddf",
+        "gitMetadataExit": 128,
+        "gitCatFileExit": 128,
+        "bothRawGitStderr": "fatal: could not open '/dev/null' for reading and writing: Permission denied",
+        "hostObjectAbsenceEstablished": false,
+        "authorityMetadataChanged": false
+      },
+      "all18AfterPinsMatch": true,
+      "sourceReadback": {
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/app/(app)/invoicing/_components/receivables-lane.tsx": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/app/api/invoicing/client-invoices/route.ts": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/components/invoicing/client-invoice-composer.tsx": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/components/invoicing/engagement-nte-bar.tsx": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/lib/invoicing/invoice-currency.ts": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/lib/invoicing/invoice-pdf.ts": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/lib/invoicing/receivables.ts": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/lib/project-evidence-bundles/bytes.ts": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/test/client-invoice-composer.test.tsx": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/test/client-invoice-pdf.test.ts": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/test/receivable-invoicing-routes.test.ts": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/test/engagement-billed-exact-money.test.tsx": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/lib/money/optional-amount.ts": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/lib/money/format.ts": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/lib/invoicing/invoice-records.ts": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/lib/work/deadlines.ts": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/lib/time/workspace-calendar.ts": true,
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/lib/invoicing/contracts/reconciliation.ts": true
+      },
+      "old104SealMatch": true,
+      "lock": {
+        "key": "103:04:133604183",
+        "holders": [],
+        "readOnlyNoAcquisition": true
+      },
+      "resources": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "cpu.max": "50000 100000",
+        "pids.max": "48",
+        "memory.peak": "750632960",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+      },
+      "hostWideOnlyPrivateWritableEstablished": false,
+      "inheritedWritableMountCount": 226,
+      "noRetry": true,
+      "sourceCommitCreated": false
+    },
+    "trial03": {
+      "classification": "DEVICE_CONTROL_CORRECTED_DIRECTION_GIT_THREAD_FAILURE",
+      "wholeUnitExit": 1,
+      "unit": "op-m11-billed-exact-correction03",
+      "invocationId": "683a6e634cd04cccacf3c8d275a52f14",
+      "commands": [
+        {
+          "name": "git-metadata",
+          "argv": [
+            "/usr/bin/git",
+            "rev-parse",
+            "--show-toplevel",
+            "--git-dir",
+            "--git-common-dir"
+          ],
+          "cwd": "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan",
+          "exit": 0,
+          "seconds": 0.005082231014966965,
+          "outputLimitBytesPerStream": 131072,
+          "stdoutBytes": 143,
+          "stderrBytes": 0
+        },
+        {
+          "name": "git-cat-file",
+          "argv": [
+            "/usr/bin/git",
+            "cat-file",
+            "-e",
+            "380aad49770d856a9c4b577ccc9793baf39d3ddf"
+          ],
+          "cwd": "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan",
+          "exit": 0,
+          "seconds": 0.005007870960980654,
+          "outputLimitBytesPerStream": 131072,
+          "stdoutBytes": 0,
+          "stderrBytes": 0
+        },
+        {
+          "name": "direction",
+          "argv": [
+            "/usr/bin/npm",
+            "run",
+            "product:direction:check"
+          ],
+          "cwd": "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan",
+          "exit": 1,
+          "seconds": 0.716337225981988,
+          "outputLimitBytesPerStream": 131072,
+          "stdoutBytes": 100,
+          "stderrBytes": 1532
+        }
+      ],
+      "devNullAccess": {
+        "isCharacterDevice": true,
+        "modeOctal": "0o666",
+        "major": 1,
+        "minor": 3,
+        "readWriteOpenCloseSucceeded": true,
+        "payloadBytes": 0
+      },
+      "actualDirectionFailure": "fatal: unable to create threaded lstat: Resource temporarily unavailable",
+      "failedGitCommand": "git diff --name-only 380aad49770d856a9c4b577ccc9793baf39d3ddf --",
+      "failedGitExit": 128,
+      "objectAbsenceEstablished": false,
+      "all18SourcePinsMatch": true,
+      "old180FilesStillMatch": true,
+      "resources": {
+        "memory.max": "536870912",
+        "memory.swap.max": "0",
+        "cpu.max": "50000 100000",
+        "pids.max": "32",
+        "memory.peak": "63205376",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+      },
+      "lock": {
+        "key": "103:04:133604183",
+        "holders": [],
+        "readOnlyNoAcquisition": true
+      },
+      "noTestsTypesLintRepeat": true,
+      "noRetry": true,
+      "sourceCommitCreated": false,
+      "sourceOrAuthorityMetadataEdited": false,
+      "hostWideOnlyPrivateWritableEstablished": false
+    },
+    "trial04": {
+      "classification": "DIRECTION_PASS_WITH_CORRECTED_RESOURCE_CONTROLLER",
+      "wholeUnitExit": 0,
+      "unit": "op-m11-billed-exact-correction04",
+      "invocationId": "fdbe7fbe8a174a0d834ea9beb56466e7",
+      "commands": [
+        {
+          "name": "git-metadata",
+          "argv": [
+            "/usr/bin/git",
+            "rev-parse",
+            "--show-toplevel",
+            "--git-dir",
+            "--git-common-dir"
+          ],
+          "cwd": "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan",
+          "exit": 0,
+          "seconds": 0.006101664039306343,
+          "outputLimitBytesPerStream": 131072,
+          "stdoutBytes": 143,
+          "stderrBytes": 0
+        },
+        {
+          "name": "git-cat-file",
+          "argv": [
+            "/usr/bin/git",
+            "cat-file",
+            "-e",
+            "380aad49770d856a9c4b577ccc9793baf39d3ddf"
+          ],
+          "cwd": "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan",
+          "exit": 0,
+          "seconds": 0.005116965970955789,
+          "outputLimitBytesPerStream": 131072,
+          "stdoutBytes": 0,
+          "stderrBytes": 0
+        },
+        {
+          "name": "direction",
+          "argv": [
+            "/usr/bin/npm",
+            "run",
+            "product:direction:check"
+          ],
+          "cwd": "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan",
+          "exit": 0,
+          "seconds": 1.885446029016748,
+          "outputLimitBytesPerStream": 131072,
+          "stdoutBytes": 286,
+          "stderrBytes": 648
+        }
+      ],
+      "resourcesBefore": {
+        "memory.max": "536870912",
+        "memory.swap.max": "0",
+        "cpu.max": "50000 100000",
+        "pids.max": "64",
+        "memory.peak": "11403264",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "pids.current": "3",
+        "pids.peak": "3",
+        "pids.events": "max 0"
+      },
+      "resourcesAfter": {
+        "memory.max": "536870912",
+        "memory.swap.max": "0",
+        "cpu.max": "50000 100000",
+        "pids.max": "64",
+        "memory.peak": "125771776",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "pids.current": "3",
+        "pids.peak": "43",
+        "pids.events": "max 0"
+      },
+      "all18SourcePinsMatch": true,
+      "all215OldFilesMatch": true,
+      "oldTrialExitsRemain": [
+        1,
+        1,
+        1
+      ],
+      "gitConfigurationOrAuthorityEdits": false,
+      "prior03TaskCapCauseIsInference": true,
+      "observedTaskPeakAt64": 43,
+      "hostWideOnlyPrivateWritableEstablished": false,
+      "inheritedWritableMountCount": 227,
+      "lock": {
+        "key": "103:04:133604183",
+        "holders": [],
+        "readOnlyNoAcquisition": true
+      },
+      "noTestsTypesLintRepeat": true,
+      "noRetry": true
+    }
+  },
+  "acceptedMutationReceiptsFromFailedTrial01": [
+    {
+      "name": "baseline",
+      "argv": [
+        "/usr/bin/node",
+        "--max-old-space-size=384",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/vitest.config.mts",
+        "--reporter=json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/results/baseline.vitest.json",
+        "src/test/invoicing-receivables.test.ts",
+        "src/test/client-invoice-pdf.test.ts",
+        "src/test/receivable-invoicing-routes.test.ts",
+        "src/test/client-invoice-composer.test.tsx",
+        "src/test/engagement-billed-exact-money.test.tsx"
+      ],
+      "exit": 0,
+      "seconds": 13.76890937006101,
+      "outcome": "PASS",
+      "passed": 106,
+      "failed": 0
+    },
+    {
+      "name": "harmless-source-annotation",
+      "argv": [
+        "/usr/bin/node",
+        "--max-old-space-size=384",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/vitest.config.mts",
+        "--reporter=json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/results/harmless-source-annotation.vitest.json",
+        "src/test/invoicing-receivables.test.ts",
+        "src/test/client-invoice-pdf.test.ts",
+        "src/test/receivable-invoicing-routes.test.ts",
+        "src/test/client-invoice-composer.test.tsx",
+        "src/test/engagement-billed-exact-money.test.tsx"
+      ],
+      "exit": 0,
+      "seconds": 14.316006883047521,
+      "outcome": "SURVIVED",
+      "passed": 106,
+      "failed": 0
+    },
+    {
+      "name": "dollar-number-aggregation-regression",
+      "argv": [
+        "/usr/bin/node",
+        "--max-old-space-size=384",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/vitest.config.mts",
+        "--reporter=json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/results/dollar-number-aggregation-regression.vitest.json",
+        "src/test/engagement-billed-exact-money.test.tsx",
+        "-t",
+        "retains literal cents"
+      ],
+      "exit": 1,
+      "seconds": 2.7075861759949476,
+      "outcome": "KILLED",
+      "assertionFailures": [
+        {
+          "title": "engagement exact money retains literal cents for 45 billed rows, numeric=false",
+          "failurePrefixes": [
+            "AssertionError: expected 4499999999999964n to be 4499999999999955n // Object.is equality"
+          ]
+        },
+        {
+          "title": "engagement exact money retains literal cents for 45 draft rows, numeric=false",
+          "failurePrefixes": [
+            "AssertionError: expected 4499999999999964n to be 4499999999999955n // Object.is equality"
+          ]
+        },
+        {
+          "title": "engagement exact money retains literal cents for 91 billed rows, numeric=false",
+          "failurePrefixes": [
+            "AssertionError: expected 9099999999999927n to be 9099999999999909n // Object.is equality"
+          ]
+        },
+        {
+          "title": "engagement exact money retains literal cents for 91 draft rows, numeric=false",
+          "failurePrefixes": [
+            "AssertionError: expected 9099999999999927n to be 9099999999999909n // Object.is equality"
+          ]
+        },
+        {
+          "title": "engagement exact money retains literal cents for 100 billed rows, numeric=false",
+          "failurePrefixes": [
+            "AssertionError: expected 9999999999999919n to be 9999999999999900n // Object.is equality"
+          ]
+        },
+        {
+          "title": "engagement exact money retains literal cents for 100 draft rows, numeric=false",
+          "failurePrefixes": [
+            "AssertionError: expected 9999999999999919n to be 9999999999999900n // Object.is equality"
+          ]
+        },
+        {
+          "title": "engagement exact money retains literal cents for 45 billed rows, numeric=true",
+          "failurePrefixes": [
+            "AssertionError: expected 4499999999999964n to be 4499999999999955n // Object.is equality"
+          ]
+        },
+        {
+          "title": "engagement exact money retains literal cents for 45 draft rows, numeric=true",
+          "failurePrefixes": [
+            "AssertionError: expected 4499999999999964n to be 4499999999999955n // Object.is equality"
+          ]
+        },
+        {
+          "title": "engagement exact money retains literal cents for 91 billed rows, numeric=true",
+          "failurePrefixes": [
+            "AssertionError: expected 9099999999999927n to be 9099999999999909n // Object.is equality"
+          ]
+        },
+        {
+          "title": "engagement exact money retains literal cents for 91 draft rows, numeric=true",
+          "failurePrefixes": [
+            "AssertionError: expected 9099999999999927n to be 9099999999999909n // Object.is equality"
+          ]
+        },
+        {
+          "title": "engagement exact money retains literal cents for 100 billed rows, numeric=true",
+          "failurePrefixes": [
+            "AssertionError: expected 9999999999999919n to be 9999999999999900n // Object.is equality"
+          ]
+        },
+        {
+          "title": "engagement exact money retains literal cents for 100 draft rows, numeric=true",
+          "failurePrefixes": [
+            "AssertionError: expected 9999999999999919n to be 9999999999999900n // Object.is equality"
+          ]
+        }
+      ],
+      "passed": 0,
+      "failed": 12
+    },
+    {
+      "name": "gross-to-net-regression",
+      "argv": [
+        "/usr/bin/node",
+        "--max-old-space-size=384",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/vitest.config.mts",
+        "--reporter=json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/results/gross-to-net-regression.vitest.json",
+        "src/test/engagement-billed-exact-money.test.tsx",
+        "-t",
+        "keeps gross retention"
+      ],
+      "exit": 1,
+      "seconds": 2.669182233978063,
+      "outcome": "KILLED",
+      "assertionFailures": [
+        {
+          "title": "engagement exact money keeps gross retention, status and strict attribution independent",
+          "failurePrefixes": [
+            "AssertionError: expected { billedToDate: 8.8, \u2026(4) } to deeply equal { billedToDate: 11, \u2026(4) }"
+          ]
+        }
+      ],
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "name": "foreign-attribution-regression",
+      "argv": [
+        "/usr/bin/node",
+        "--max-old-space-size=384",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/vitest.config.mts",
+        "--reporter=json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/results/foreign-attribution-regression.vitest.json",
+        "src/test/engagement-billed-exact-money.test.tsx",
+        "-t",
+        "strict attribution"
+      ],
+      "exit": 1,
+      "seconds": 2.619483334943652,
+      "outcome": "KILLED",
+      "assertionFailures": [
+        {
+          "title": "engagement exact money keeps gross retention, status and strict attribution independent",
+          "failurePrefixes": [
+            "AssertionError: expected { billedToDate: null, \u2026(5) } to deeply equal { billedToDate: 11, \u2026(4) }"
+          ]
+        }
+      ],
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "name": "ceiling-equality-is-over-regression",
+      "argv": [
+        "/usr/bin/node",
+        "--max-old-space-size=384",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/vitest.config.mts",
+        "--reporter=json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/results/ceiling-equality-is-over-regression.vitest.json",
+        "src/test/engagement-billed-exact-money.test.tsx",
+        "-t",
+        "legitimate ceiling equality"
+      ],
+      "exit": 1,
+      "seconds": 2.680252415011637,
+      "outcome": "KILLED",
+      "assertionFailures": [
+        {
+          "title": "engagement exact money keeps ordinary numeric output and legitimate ceiling equality and one-cent overrun",
+          "failurePrefixes": [
+            "AssertionError: expected true to be false // Object.is equality"
+          ]
+        }
+      ],
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "name": "empty-bucket-unavailable-regression",
+      "argv": [
+        "/usr/bin/node",
+        "--max-old-space-size=384",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/vitest.config.mts",
+        "--reporter=json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/results/empty-bucket-unavailable-regression.vitest.json",
+        "src/test/engagement-billed-exact-money.test.tsx",
+        "-t",
+        "preserves empty supplied sets"
+      ],
+      "exit": 1,
+      "seconds": 2.6255691410042346,
+      "outcome": "KILLED",
+      "assertionFailures": [
+        {
+          "title": "engagement exact money preserves empty supplied sets, absent identity and recorded zero",
+          "failurePrefixes": [
+            "AssertionError: expected { billedToDate: null, \u2026(4) } to deeply equal { billedToDate: +0, \u2026(4) }"
+          ]
+        }
+      ],
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "name": "invalid-ceiling-erases-buckets-regression",
+      "argv": [
+        "/usr/bin/node",
+        "--max-old-space-size=384",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/vitest.config.mts",
+        "--reporter=json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/results/invalid-ceiling-erases-buckets-regression.vitest.json",
+        "src/test/engagement-billed-exact-money.test.tsx",
+        "-t",
+        "ceiling is absent or invalid"
+      ],
+      "exit": 1,
+      "seconds": 2.7041666959412396,
+      "outcome": "KILLED",
+      "assertionFailures": [
+        {
+          "title": "engagement exact money preserves buckets when the ceiling is absent or invalid",
+          "failurePrefixes": [
+            "AssertionError: expected { billedToDate: null, \u2026(5) } to deeply equal { billedToDate: 7, \u2026(5) }"
+          ]
+        }
+      ],
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "name": "missing-bucket-as-zero-regression",
+      "argv": [
+        "/usr/bin/node",
+        "--max-old-space-size=384",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/vitest.config.mts",
+        "--reporter=json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/results/missing-bucket-as-zero-regression.vitest.json",
+        "src/test/engagement-billed-exact-money.test.tsx",
+        "-t",
+        "isolates missing and invalid"
+      ],
+      "exit": 1,
+      "seconds": 2.608010066091083,
+      "outcome": "KILLED",
+      "assertionFailures": [
+        {
+          "title": "engagement exact money isolates missing and invalid billed or draft buckets",
+          "failurePrefixes": [
+            "AssertionError: expected +0 to be null // Object.is equality"
+          ]
+        }
+      ],
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "name": "string-to-number-ui-regression",
+      "argv": [
+        "/usr/bin/node",
+        "--max-old-space-size=384",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/vitest.config.mts",
+        "--reporter=json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/results/string-to-number-ui-regression.vitest.json",
+        "src/test/engagement-billed-exact-money.test.tsx",
+        "-t",
+        "renders exact summary markup"
+      ],
+      "exit": 1,
+      "seconds": 3.0208214620361105,
+      "outcome": "KILLED",
+      "assertionFailures": [
+        {
+          "title": "engagement exact money renders exact summary markup with stated or unassessed currency",
+          "failurePrefixes": [
+            "AssertionError: expected '<p class=\"text-xs text-muted-foregrou\u2026' to contain '\u20ac44,999,999,999,999.55 gross billed b\u2026'"
+          ]
+        }
+      ],
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "name": "ui-unavailable-as-zero-regression",
+      "argv": [
+        "/usr/bin/node",
+        "--max-old-space-size=384",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/vitest.config.mts",
+        "--reporter=json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/results/ui-unavailable-as-zero-regression.vitest.json",
+        "src/test/engagement-billed-exact-money.test.tsx",
+        "-t",
+        "renders unavailable fields"
+      ],
+      "exit": 1,
+      "seconds": 2.99827977293171,
+      "outcome": "KILLED",
+      "assertionFailures": [
+        {
+          "title": "engagement exact money renders unavailable fields independently without inventing zero",
+          "failurePrefixes": [
+            "AssertionError: expected '<p class=\"text-xs text-muted-foregrou\u2026' to contain 'Gross billed calculation unavailable \u2026'"
+          ]
+        }
+      ],
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "name": "api-projected-addition-regression",
+      "argv": [
+        "/usr/bin/node",
+        "--max-old-space-size=384",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/vitest.config.mts",
+        "--reporter=json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/results/api-projected-addition-regression.vitest.json",
+        "src/test/receivable-invoicing-routes.test.ts",
+        "-t",
+        "serializes exact projected warning"
+      ],
+      "exit": 1,
+      "seconds": 3.6824648450128734,
+      "outcome": "KILLED",
+      "assertionFailures": [
+        {
+          "title": "POST /api/invoicing/client-invoices serializes exact projected warning cents from 100 legitimate rows",
+          "failurePrefixes": [
+            "AssertionError: expected 10000000000000002n to be 10000000000000001n // Object.is equality"
+          ]
+        }
+      ],
+      "passed": 2,
+      "failed": 1
+    },
+    {
+      "name": "api-unavailable-audit-regression",
+      "argv": [
+        "/usr/bin/node",
+        "--max-old-space-size=384",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/vitest.config.mts",
+        "--reporter=json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/results/api-unavailable-audit-regression.vitest.json",
+        "src/test/receivable-invoicing-routes.test.ts",
+        "-t",
+        "audits unavailable billed position|audits an invalid ceiling"
+      ],
+      "exit": 1,
+      "seconds": 3.386992510058917,
+      "outcome": "KILLED",
+      "assertionFailures": [
+        {
+          "title": "POST /api/invoicing/client-invoices audits unavailable billed position and still accepts invoice creation",
+          "failurePrefixes": [
+            "AssertionError: expected \"vi.fn()\" to be called with arguments: [ 'nte_position_unavailable', \u2026(1) ]\u001b[90m"
+          ]
+        },
+        {
+          "title": "POST /api/invoicing/client-invoices audits an invalid ceiling and still accepts invoice creation",
+          "failurePrefixes": [
+            "AssertionError: expected \"vi.fn()\" to be called with arguments: [ 'nte_position_unavailable', \u2026(1) ]\u001b[90m"
+          ]
+        }
+      ],
+      "passed": 0,
+      "failed": 2
+    },
+    {
+      "name": "artifact-html-cent-regression",
+      "argv": [
+        "/usr/bin/node",
+        "--max-old-space-size=384",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/vitest.config.mts",
+        "--reporter=json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/results/artifact-html-cent-regression.vitest.json",
+        "src/test/client-invoice-pdf.test.ts",
+        "-t",
+        "retains exact aggregate cents"
+      ],
+      "exit": 1,
+      "seconds": 4.2102405310142785,
+      "outcome": "KILLED",
+      "assertionFailures": [
+        {
+          "title": "GET /api/invoicing/client-invoices/[invoiceId]/pdf retains exact aggregate cents through artifact assembly and HTML",
+          "failurePrefixes": [
+            "AssertionError: expected '<!doctype html>\\n<html lang=\"en\">\\n  \u2026' to contain 'billed to date 44999999999999.55 (cur\u2026'"
+          ]
+        }
+      ],
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "name": "artifact-unavailable-as-zero-regression",
+      "argv": [
+        "/usr/bin/node",
+        "--max-old-space-size=384",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/vitest.config.mts",
+        "--reporter=json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/results/artifact-unavailable-as-zero-regression.vitest.json",
+        "src/test/client-invoice-pdf.test.ts",
+        "-t",
+        "keeps an invoice artifact usable"
+      ],
+      "exit": 1,
+      "seconds": 4.096779757994227,
+      "outcome": "KILLED",
+      "assertionFailures": [
+        {
+          "title": "GET /api/invoicing/client-invoices/[invoiceId]/pdf keeps an invoice artifact usable with an unavailable billed bucket",
+          "failurePrefixes": [
+            "AssertionError: expected '<!doctype html>\\n<html lang=\"en\">\\n  \u2026' to contain 'Gross billed calculation unavailable \u2026'"
+          ]
+        }
+      ],
+      "passed": 0,
+      "failed": 1
+    }
+  ],
+  "trial02NewMutationAndRestoredReceipts": [
+    {
+      "name": "composer-baseline",
+      "argv": [
+        "/usr/bin/node",
+        "--max-old-space-size=384",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/trial02/vitest.config.mts",
+        "--reporter=json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/trial02/results/composer-baseline.vitest.json",
+        "src/test/client-invoice-composer.test.tsx",
+        "-t",
+        "server's not-to-exceed overrun"
+      ],
+      "exit": 0,
+      "seconds": 4.682705883053131,
+      "outcome": "PASS",
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "name": "harmless-source-annotation",
+      "argv": [
+        "/usr/bin/node",
+        "--max-old-space-size=384",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/trial02/vitest.config.mts",
+        "--reporter=json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/trial02/results/harmless-source-annotation.vitest.json",
+        "src/test/client-invoice-composer.test.tsx",
+        "-t",
+        "server's not-to-exceed overrun"
+      ],
+      "exit": 0,
+      "seconds": 4.522045597084798,
+      "outcome": "SURVIVED",
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "name": "composer-prior-for-projected-regression",
+      "argv": [
+        "/usr/bin/node",
+        "--max-old-space-size=384",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/trial02/vitest.config.mts",
+        "--reporter=json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/trial02/results/composer-prior-for-projected-regression.vitest.json",
+        "src/test/client-invoice-composer.test.tsx",
+        "-t",
+        "server's not-to-exceed overrun"
+      ],
+      "exit": 1,
+      "seconds": 5.2244685750920326,
+      "narrowComposerReader": {
+        "matched": true,
+        "expectedFullName": "ClientInvoiceComposer renders the server's not-to-exceed overrun as a warning, never a block",
+        "expectedFailurePrefix": "Error: Unable to find an element with the text: /\u20ac44,999,999,999,999\\.55 projected gross billing against its \u20ac50,000\\.00 legacy not-to-exceed, \u20ac44,999,999,949,999\\.55 over\\. Agreement terms unassessed\\. Recorded as a warning; nothing was blocked\\./.",
+        "matchingAppliedTransform": {
+          "name": "composer-prior-for-projected-regression",
+          "file": "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/components/invoicing/client-invoice-composer.tsx",
+          "applied": true
+        },
+        "runtimeFailureSuites": 0,
+        "runtimeFailureDetection": "no suite-level message and each returned file has assertion results"
+      },
+      "outcome": "KILLED_EXPECTED_QUERY_FAILURE",
+      "assertionFailures": [
+        {
+          "title": "ClientInvoiceComposer renders the server's not-to-exceed overrun as a warning, never a block",
+          "failurePrefixes": [
+            "Error: Unable to find an element with the text: /\u20ac44,999,999,999,999\\.55 projected gross billing against its \u20ac50,000\\.00 legacy not-to-exceed, \u20ac44,999,999,949,999\\.55 over\\. Agreement terms unassessed\\. Recorded as a warning; nothing was blocked\\./. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible."
+          ]
+        }
+      ],
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "name": "api-over-by-baseline",
+      "argv": [
+        "/usr/bin/node",
+        "--max-old-space-size=384",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/trial02/vitest.config.mts",
+        "--reporter=json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/trial02/results/api-over-by-baseline.vitest.json",
+        "src/test/receivable-invoicing-routes.test.ts",
+        "-t",
+        "warns"
+      ],
+      "exit": 0,
+      "seconds": 3.3476767879910767,
+      "outcome": "PASS",
+      "passed": 1,
+      "failed": 0
+    },
+    {
+      "name": "api-over-by-regression",
+      "argv": [
+        "/usr/bin/node",
+        "--max-old-space-size=384",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/trial02/vitest.config.mts",
+        "--reporter=json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/trial02/results/api-over-by-regression.vitest.json",
+        "src/test/receivable-invoicing-routes.test.ts",
+        "-t",
+        "warns"
+      ],
+      "exit": 1,
+      "seconds": 3.1134083210490644,
+      "outcome": "KILLED",
+      "assertionFailures": [
+        {
+          "title": "POST /api/invoicing/client-invoices warns \u2014 and does not block \u2014 when the invoice pushes the engagement over its not-to-exceed",
+          "failurePrefixes": [
+            "AssertionError: expected { \u2026(6) } to deeply equal { \u2026(6) }"
+          ]
+        }
+      ],
+      "passed": 0,
+      "failed": 1
+    },
+    {
+      "name": "restored",
+      "argv": [
+        "/usr/bin/node",
+        "--max-old-space-size=384",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/node_modules/vitest/vitest.mjs",
+        "run",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/trial02/vitest.config.mts",
+        "--reporter=json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/trial02/results/restored.vitest.json",
+        "src/test/invoicing-receivables.test.ts",
+        "src/test/client-invoice-pdf.test.ts",
+        "src/test/receivable-invoicing-routes.test.ts",
+        "src/test/client-invoice-composer.test.tsx",
+        "src/test/engagement-billed-exact-money.test.tsx"
+      ],
+      "exit": 0,
+      "seconds": 13.802378932014108,
+      "outcome": "PASS",
+      "passed": 106,
+      "failed": 0
+    }
+  ],
+  "claimTier": "source and mocked consumer evidence only",
+  "freshIndependentReview": "pending root-owned review after local source commit"
+}

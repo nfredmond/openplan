@@ -1,4 +1,4 @@
-import { resolveReportPacketSourceUpdatedAt } from "./catalog";
+import { getReportPacketFreshness, resolveReportPacketSourceUpdatedAt, type ReportJurisdictionState } from "./catalog";
 import { PACKET_FRESHNESS_LABELS } from "./packet-labels";
 import type { ReportDriftSummary } from "./source-review-posture";
 
@@ -13,6 +13,15 @@ export function artifactSafetyEvidenceReadFailed(
   artifactMetadata: Record<string, unknown> | null | undefined
 ): boolean {
   return asRecord(artifactMetadata?.sourceContext)?.safetyEvidenceReadStatus === "failed";
+}
+
+/** Absent on legacy artifacts; explicit pending or unreadable receipts stay incomplete. */
+export function artifactGenerationWritebackIsCurrent(metadata: Record<string, unknown> | null | undefined, reportUpdatedAt: string | null | undefined): boolean | undefined {
+  if (!metadata || !Object.hasOwn(metadata, "generationWriteback")) return undefined;
+  const receipt = asRecord(metadata.generationWriteback);
+  return receipt?.schema === "openplan.report-generation-writeback.v1" &&
+    typeof receipt.reportUpdatedAt === "string" && Number.isFinite(Date.parse(receipt.reportUpdatedAt)) &&
+    receipt.reportUpdatedAt === reportUpdatedAt;
 }
 
 const REPORT_WRITEBACK_GRACE_MS = 15 * 60 * 1000;
@@ -80,8 +89,29 @@ export function resolveTrackedReportSourceUpdatedAt(input: {
       : null,
     input.safetyUpdatedAt ?? null,
   ]);
+  if (input.artifactMetadata && Object.hasOwn(input.artifactMetadata, "generationWriteback")) {
+    // New artifacts match the exact writeback, never a grace period.
+    return artifactGenerationWritebackIsCurrent(input.artifactMetadata, input.reportUpdatedAt)
+      ? trackedSourceUpdatedAt ?? input.generatedAt
+      : resolveReportPacketSourceUpdatedAt([trackedSourceUpdatedAt, input.reportUpdatedAt]);
+  }
   if (!trackedSourceUpdatedAt) return input.reportUpdatedAt;
   return hasMaterialReportWritebackAfterGeneration(input.generatedAt, input.reportUpdatedAt)
     ? resolveReportPacketSourceUpdatedAt([trackedSourceUpdatedAt, input.reportUpdatedAt])
     : trackedSourceUpdatedAt;
+}
+
+/** Shared row adapter keeps overview and registry writeback handling consistent. */
+export function resolveReportPacketRowFreshness(
+  report: { latest_artifact_kind: string | null; generated_at: string | null; updated_at: string },
+  artifact: { generated_at: string; metadata_json: Record<string, unknown> | null } | null | undefined,
+  jurisdictionState?: ReportJurisdictionState,
+) {
+  const generatedAt = artifact?.generated_at ?? report.generated_at;
+  const writebackCurrent = artifactGenerationWritebackIsCurrent(artifact?.metadata_json, report.updated_at);
+  return getReportPacketFreshness({ latestArtifactKind: report.latest_artifact_kind, generatedAt,
+    generationWritebackCurrent: writebackCurrent, jurisdictionState,
+    updatedAt: writebackCurrent === undefined ? report.updated_at : resolveTrackedReportSourceUpdatedAt({ generatedAt, reportUpdatedAt: report.updated_at,
+      cycleUpdatedAt: null, artifactMetadata: artifact?.metadata_json ?? null }),
+  });
 }

@@ -1,0 +1,8 @@
+[
+  {
+    "name": "Original supervised HTTP harmless and targeted fault controls",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-draft-http/verify_controls.py \\\n  --repo \"$GITHUB_WORKSPACE\" --out \"$RUNNER_TEMP/odm-draft-http-controls\"\n",
+    "exit": 0,
+    "workflowSha256": "88af26c170b338220ae640895a7b033a95f36d095c01939fabe436a92140711a"
+  }
+]

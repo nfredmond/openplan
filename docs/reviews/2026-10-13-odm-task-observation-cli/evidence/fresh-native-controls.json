@@ -1,0 +1,174 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "command-failure-mislabeled",
+    "outcome": "intended_failure",
+    "reason": "Native operator command must complete without a private diagnostic",
+    "exitCode": 1
+  },
+  {
+    "control": "command-diagnostic-present",
+    "outcome": "intended_failure",
+    "reason": "Native operator command must complete without a private diagnostic",
+    "exitCode": 1
+  },
+  {
+    "control": "actual-reply-digest-changed",
+    "outcome": "intended_failure",
+    "reason": "Native command must bind its actual retained reply digest",
+    "exitCode": 1
+  },
+  {
+    "control": "failed-state-relabelled",
+    "outcome": "intended_failure",
+    "reason": "Native command must preserve reported failed-task facts",
+    "exitCode": 1
+  },
+  {
+    "control": "reported-count-lost",
+    "outcome": "intended_failure",
+    "reason": "Native command must preserve reported failed-task facts",
+    "exitCode": 1
+  },
+  {
+    "control": "relocated-summary-changed",
+    "outcome": "intended_failure",
+    "reason": "Native relocated command must return the exact original summary",
+    "exitCode": 1
+  },
+  {
+    "control": "metadata-root-already-populated",
+    "outcome": "intended_failure",
+    "reason": "Native command must start with an empty metadata root",
+    "exitCode": 1
+  },
+  {
+    "control": "command-record-not-created",
+    "outcome": "intended_failure",
+    "reason": "Native command must create its own retained record",
+    "exitCode": 1
+  },
+  {
+    "control": "old-record-captured-instead",
+    "outcome": "intended_failure",
+    "reason": "Native capture must contain the record created by the command",
+    "exitCode": 1
+  },
+  {
+    "control": "fresh-record-changed-after-recovery",
+    "outcome": "intended_failure",
+    "reason": "Native fresh command record must remain unchanged after recovery",
+    "exitCode": 1
+  },
+  {
+    "control": "private-detail-bodyBase64",
+    "outcome": "intended_failure",
+    "reason": "Native command must exclude private detail field bodyBase64",
+    "exitCode": 1
+  },
+  {
+    "control": "private-detail-reportedErrorDetail",
+    "outcome": "intended_failure",
+    "reason": "Native command must exclude private detail field reportedErrorDetail",
+    "exitCode": 1
+  },
+  {
+    "control": "private-detail-engine",
+    "outcome": "intended_failure",
+    "reason": "Native command must exclude private detail field engine",
+    "exitCode": 1
+  },
+  {
+    "control": "private-detail-requestedOptions",
+    "outcome": "intended_failure",
+    "reason": "Native command must exclude private detail field requestedOptions",
+    "exitCode": 1
+  },
+  {
+    "control": "private-detail-reportedOptions",
+    "outcome": "intended_failure",
+    "reason": "Native command must exclude private detail field reportedOptions",
+    "exitCode": 1
+  },
+  {
+    "control": "claim-promoted-engineIdentityVerification",
+    "outcome": "intended_failure",
+    "reason": "Native command cannot promote engineIdentityVerification",
+    "exitCode": 1
+  },
+  {
+    "control": "claim-promoted-originalActorAuthorization",
+    "outcome": "intended_failure",
+    "reason": "Native command cannot promote originalActorAuthorization",
+    "exitCode": 1
+  },
+  {
+    "control": "claim-promoted-sourceCustodyVerification",
+    "outcome": "intended_failure",
+    "reason": "Native command cannot promote sourceCustodyVerification",
+    "exitCode": 1
+  },
+  {
+    "control": "claim-promoted-effectiveExecutionSettingsVerification",
+    "outcome": "intended_failure",
+    "reason": "Native command cannot promote effectiveExecutionSettingsVerification",
+    "exitCode": 1
+  },
+  {
+    "control": "claim-promoted-processingQualityVerification",
+    "outcome": "intended_failure",
+    "reason": "Native command cannot promote processingQualityVerification",
+    "exitCode": 1
+  },
+  {
+    "control": "claim-promoted-freshnessVerification",
+    "outcome": "intended_failure",
+    "reason": "Native command cannot promote freshnessVerification",
+    "exitCode": 1
+  },
+  {
+    "control": "permission-promoted-transportPermission",
+    "outcome": "intended_failure",
+    "reason": "Native command cannot grant writes",
+    "exitCode": 1
+  },
+  {
+    "control": "permission-promoted-publicationPermission",
+    "outcome": "intended_failure",
+    "reason": "Native command cannot grant writes",
+    "exitCode": 1
+  },
+  {
+    "control": "original-root-changed-engine",
+    "outcome": "intended_failure",
+    "reason": "Native command must preserve original engine",
+    "exitCode": 1
+  },
+  {
+    "control": "original-root-changed-records",
+    "outcome": "intended_failure",
+    "reason": "Native command must preserve original records",
+    "exitCode": 1
+  },
+  {
+    "control": "original-root-changed-package",
+    "outcome": "intended_failure",
+    "reason": "Native command must preserve original package",
+    "exitCode": 1
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

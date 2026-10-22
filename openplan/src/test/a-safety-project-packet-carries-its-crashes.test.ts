@@ -350,9 +350,10 @@ describe("a safety project's packet carries its crashes", () => {
       expect(html).not.toContain("No pair of mapped fatal or serious-injury");
     });
 
-    it("uses registered crash-source coverage when an imported project's ISO stamp is absent", () => {
+    it("uses retained source capability when an imported project's ISO stamp is absent", () => {
       const route = readFileSync("src/app/api/reports/[reportId]/generate/route.ts", "utf8");
-      expect(route).toContain('resolveCrashSources(safetyConcentrationBounds, "read_only").kind === "resolved"');
+      expect(route).toContain("retainedCrashRoadProvider(ingests, selectedSafetyIngestIds)");
+      expect(route).not.toContain("resolveCrashSources(");
       expect(route).not.toContain('projectRow.place_country_code === "US"');
     });
 

@@ -1,0 +1,129 @@
+{
+  "state": "passed-selected-five-root-set",
+  "roots": [
+    {
+      "id": "managed-stage",
+      "files": 5,
+      "directories": 13,
+      "bytes": 41676,
+      "sqliteCopies": 2,
+      "completeOrdinaryCensusAndAllLogicalRecordsEqual": true
+    },
+    {
+      "id": "legacy-model",
+      "files": 5,
+      "directories": 7,
+      "bytes": 33499,
+      "sqliteCopies": 2,
+      "completeOrdinaryCensusAndAllLogicalRecordsEqual": true
+    },
+    {
+      "id": "transit-configured",
+      "files": 699,
+      "directories": 620,
+      "bytes": 274085334,
+      "sqliteCopies": 0,
+      "completeOrdinaryCensusAndAllLogicalRecordsEqual": true
+    },
+    {
+      "id": "transit-replacement",
+      "files": 29,
+      "directories": 23,
+      "bytes": 2873176,
+      "sqliteCopies": 0,
+      "completeOrdinaryCensusAndAllLogicalRecordsEqual": true
+    },
+    {
+      "id": "transit-capacity",
+      "files": 787,
+      "directories": 780,
+      "bytes": 235651073,
+      "sqliteCopies": 0,
+      "completeOrdinaryCensusAndAllLogicalRecordsEqual": true
+    }
+  ],
+  "sourcePointFiles": 1557,
+  "sourcePointUnchanged": true,
+  "exactSelectionBytesAndModeRetained": true,
+  "relocatedSetVerified": true,
+  "immutableSetUnchanged": true,
+  "allDependenciesUnchanged": true,
+  "observationControls": {
+    "baseline": true,
+    "harmlessOrder": true,
+    "missingFileRefused": true,
+    "changedHashRefused": true,
+    "omittedOracleProducesAssertionFailure": true,
+    "restored": true,
+    "sourceWrites": 0
+  },
+  "commands": [
+    {
+      "label": "capture",
+      "exitCode": 0,
+      "summary": {
+        "format": "openplan-worker-root-set-snapshot-v1",
+        "installationConsistency": "unassessed",
+        "manifestSha256": "cc83e1f470c6a5b1aee545b42b46e5c13eb86d47b1ebb0f376d15d2952d6bf33",
+        "selectedRoots": 5,
+        "verified": false
+      }
+    },
+    {
+      "label": "verify",
+      "exitCode": 0,
+      "summary": {
+        "format": "openplan-worker-root-set-snapshot-v1",
+        "installationConsistency": "unassessed",
+        "manifestSha256": "cc83e1f470c6a5b1aee545b42b46e5c13eb86d47b1ebb0f376d15d2952d6bf33",
+        "selectedRoots": 5,
+        "verified": true
+      }
+    },
+    {
+      "label": "relocated-verify",
+      "exitCode": 0,
+      "summary": {
+        "format": "openplan-worker-root-set-snapshot-v1",
+        "installationConsistency": "unassessed",
+        "manifestSha256": "cc83e1f470c6a5b1aee545b42b46e5c13eb86d47b1ebb0f376d15d2952d6bf33",
+        "selectedRoots": 5,
+        "verified": true
+      }
+    },
+    {
+      "label": "changed-selection-refused",
+      "exitCode": 1,
+      "summary": null
+    },
+    {
+      "label": "harmless-manifest-order",
+      "exitCode": 0,
+      "summary": {
+        "format": "openplan-worker-root-set-snapshot-v1",
+        "installationConsistency": "unassessed",
+        "manifestSha256": "aeae65b5b0fdb44d1649faf43d689112df717c25d3648becf2bb446d5cb6ae77",
+        "selectedRoots": 5,
+        "verified": true
+      }
+    },
+    {
+      "label": "missing-component-binding-refused",
+      "exitCode": 1,
+      "summary": null
+    },
+    {
+      "label": "restored-verify",
+      "exitCode": 0,
+      "summary": {
+        "format": "openplan-worker-root-set-snapshot-v1",
+        "installationConsistency": "unassessed",
+        "manifestSha256": "cc83e1f470c6a5b1aee545b42b46e5c13eb86d47b1ebb0f376d15d2952d6bf33",
+        "selectedRoots": 5,
+        "verified": true
+      }
+    }
+  ],
+  "wallSeconds": 32.182,
+  "limits": "Five known previously retained roots on this host. No live writer fence, installation-wide discovery, new database/Storage cut, encryption, worker continuation, physical host-loss, scientific, browser or agency acceptance. Native source journals are already normalized; populated WAL is tested separately."
+}

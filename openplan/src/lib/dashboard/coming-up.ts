@@ -1,4 +1,5 @@
 import type { MyWorkItem, MyWorkSourceId } from "@/lib/my-work/types";
+import { calendarDayOf } from "@/lib/time/workspace-calendar";
 
 /**
  * The dashboard's two lists, built from My Work and a few workspace dates.
@@ -18,13 +19,16 @@ export type ComingUpKind =
   | "milestone"
   | "submittal"
   | "grant"
+  | "application-due"
   | "award"
   | "invoice"
   | "plan-action"
   | "plan-review"
   | "public-review"
   | "adoption"
-  | "comment-period";
+  | "comment-period"
+  | "contract-task"
+  | "work-program-review";
 
 export type ComingUpItem = {
   key: string;
@@ -58,8 +62,11 @@ const KIND_BY_SOURCE: Partial<Record<MyWorkSourceId, ComingUpKind>> = {
   land_use_plan_process: "plan-action",
   land_use_plan_review_closing: "plan-review",
   grant_decisions: "grant",
+  grant_application_due: "application-due",
   award_obligations: "award",
   invoice_windows: "invoice",
+  contract_tasks: "contract-task",
+  work_program_reviews: "work-program-review",
 };
 
 /** The word shown beside each date. */
@@ -68,6 +75,7 @@ export const COMING_UP_KIND_LABELS: Record<ComingUpKind, string> = {
   milestone: "Milestone",
   submittal: "Submittal",
   grant: "Grant decision",
+  "application-due": "Application due",
   award: "Award deadline",
   invoice: "Invoice window",
   "plan-action": "Plan action",
@@ -75,17 +83,11 @@ export const COMING_UP_KIND_LABELS: Record<ComingUpKind, string> = {
   "public-review": "Public review closes",
   adoption: "Adoption target",
   "comment-period": "Comment period ends",
+  "contract-task": "Contract task",
+  "work-program-review": "Work program review",
 };
 
 const DATED_BLOCKS = new Set(["deadlines", "workspace_deadlines"]);
-
-const DATE_ONLY = /^(\d{4})-(\d{2})-(\d{2})/;
-
-/** `YYYY-MM-DD` from a date or timestamp string, or null when it is not one. */
-export function calendarDate(value: string | null | undefined): string | null {
-  const match = value ? DATE_ONLY.exec(value) : null;
-  return match ? `${match[1]}-${match[2]}-${match[3]}` : null;
-}
 
 /** The reader's own calendar date, `YYYY-MM-DD`, in their device's time zone. */
 export function localCalendarDate(now: Date): string {
@@ -107,10 +109,17 @@ export function addDays(date: string, days: number): string {
   return shifted.toISOString().slice(0, 10);
 }
 
-/** My Work items with a date become Coming up items; everything else is left out. */
-export function comingUpFromMyWork(items: readonly MyWorkItem[]): ComingUpItem[] {
+/**
+ * My Work items with a date become Coming up items; everything else is left out.
+ *
+ * A due date may be a DATE (`2026-10-14`, kept as it is) or a TIMESTAMPTZ (a
+ * grant's close time), which is placed on the workspace's calendar: a call
+ * closing at 8 p.m. Pacific on the 14th is stored as 03:00 UTC on the 15th and
+ * is due on the 14th in a Pacific workspace.
+ */
+export function comingUpFromMyWork(items: readonly MyWorkItem[], timeZone: string): ComingUpItem[] {
   return items.flatMap((item) => {
-    const dueOn = calendarDate(item.dueOn);
+    const dueOn = calendarDayOf(item.dueOn, timeZone);
     const kind = KIND_BY_SOURCE[item.sourceId];
     if (!DATED_BLOCKS.has(item.block) || !dueOn || !kind) return [];
     return [

@@ -1,0 +1,45 @@
+{
+  "checkedAt": "2026-10-13T01:54:02.591036+00:00",
+  "migration": "20261017000003",
+  "migrationSha256": "4b0814b6f4e426261c8e3651b89812b50cc1c8226fd7ed2ec493c3b7f23d73f9",
+  "functions": 4,
+  "controls": [
+    {
+      "case": "baseline",
+      "outcome": "survived"
+    },
+    {
+      "case": "harmless-note",
+      "outcome": "survived"
+    },
+    {
+      "case": "restored",
+      "outcome": "survived"
+    },
+    {
+      "case": "hosted-history",
+      "outcome": "intended_refusal"
+    },
+    {
+      "case": "hosted-schema-grants",
+      "outcome": "intended_refusal"
+    },
+    {
+      "case": "hosted-table-profile",
+      "outcome": "intended_refusal"
+    },
+    {
+      "case": "hosted-function-source",
+      "outcome": "intended_refusal"
+    },
+    {
+      "case": "hosted-function-profile",
+      "outcome": "intended_refusal"
+    },
+    {
+      "case": "hosted-function-grants",
+      "outcome": "intended_refusal"
+    }
+  ],
+  "scope": "Exact routine bodies/profiles, history, schema/table/function grants and RLS metadata. No real user fixtures or default activation."
+}

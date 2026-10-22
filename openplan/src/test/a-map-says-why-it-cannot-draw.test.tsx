@@ -13,7 +13,7 @@
  * The env var is read at MODULE scope in both components, so every case here
  * resets the module registry and imports fresh under the env it wants.
  */
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({
@@ -156,7 +156,9 @@ describe("the Explore map stage without a usable token", () => {
     );
 
     const notice = screen.getByTestId("explore-map-unavailable");
-    expect(notice).toHaveTextContent("No map key is configured on this deployment");
-    expect(notice).toHaveTextContent("Analyses still run without the basemap");
+    expect(notice).toHaveTextContent("can't be drawn");
+    expect(notice).toHaveTextContent("Corridor runs still work");
+    // The variable name sits behind the disclosure, not in the planner's line.
+    expect(within(notice).getByText(/NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN/).closest("details")).not.toBeNull();
   });
 });

@@ -1,0 +1,1245 @@
+{
+  "checkedAt": "2026-10-15T04:01:16.532029+00:00",
+  "selectedPrs": 72,
+  "verifiedV2Receipts": 72,
+  "fileListsIdentical": 72,
+  "allProjectedListsIdentical": 72,
+  "differences": [],
+  "upstreamFileCountDiscrepancies": [
+    12296
+  ],
+  "originalCapturesOverwritten": false,
+  "rows": [
+    {
+      "number": 4272,
+      "originalSha256": "0867429918fc81c21209dbccdb72cee7b28bc3e00f66621cc3f9cd5867f2c482",
+      "recaptureSha256": "d1e0356110edbf4e2c8b0bf12910107aff0f82a90b9dc62b0dea41a02cfc2d90",
+      "expectedFiles": 9,
+      "originalFiles": 9,
+      "recapturedFiles": 9,
+      "endpointCounts": {
+        "files": 9,
+        "issueComments": 3,
+        "reviewComments": 2,
+        "reviews": 2
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:56:22.753581+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 13726,
+      "originalSha256": "9956569b07664d06bd3af9aa9ec5b37c037566fbf05c8a2d875b56dcefe68620",
+      "recaptureSha256": "818b81e1c932ae0ba3577521ad5492ee176f26b0ee5e613c3a74cdfaf55786d7",
+      "expectedFiles": 13,
+      "originalFiles": 13,
+      "recapturedFiles": 13,
+      "endpointCounts": {
+        "files": 13,
+        "issueComments": 2,
+        "reviewComments": 1,
+        "reviews": 1
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:56:25.782096+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 19630,
+      "originalSha256": "08cf9f9d62f1f825c51ff05ed704e86b5a9eb80c5f93a2201e187bc9fadd4361",
+      "recaptureSha256": "6ace49681736e47fb72cf4a911ebd49be02ba6baf1f6ed9cdf0d34a0d450cd06",
+      "expectedFiles": 13,
+      "originalFiles": 13,
+      "recapturedFiles": 13,
+      "endpointCounts": {
+        "files": 13,
+        "issueComments": 3,
+        "reviewComments": 0,
+        "reviews": 0
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:56:28.455692+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 18101,
+      "originalSha256": "ff4a3b176af6b12aac8af018e642189a369bb47f5f9817262e64017fc8372a24",
+      "recaptureSha256": "dc0dda343f8097aabb4c2cc3a7ffde963b31af69963070ad5cd8094d00e32202",
+      "expectedFiles": 2,
+      "originalFiles": 2,
+      "recapturedFiles": 2,
+      "endpointCounts": {
+        "files": 2,
+        "issueComments": 1,
+        "reviewComments": 0,
+        "reviews": 0
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:56:31.606805+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 9786,
+      "originalSha256": "255036c66fa55bfa7b6489370760d55f42286b48e21f93ddbfa43389ed3b3363",
+      "recaptureSha256": "a40922901317fcdef731e388b57ecd9589b8335b2b0644185391137686042b55",
+      "expectedFiles": 162,
+      "originalFiles": 162,
+      "recapturedFiles": 162,
+      "endpointCounts": {
+        "files": 162,
+        "issueComments": 10,
+        "reviewComments": 71,
+        "reviews": 53
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:56:37.015189+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 17370,
+      "originalSha256": "d4702c9e721359e8282a7eafce8490bc990455f9390190c008218e33827bbf20",
+      "recaptureSha256": "51ef8d6837a35f40143eea65ec004269ac7df86683cbe418b3a8e04b4b2dd03f",
+      "expectedFiles": 16,
+      "originalFiles": 16,
+      "recapturedFiles": 16,
+      "endpointCounts": {
+        "files": 16,
+        "issueComments": 4,
+        "reviewComments": 6,
+        "reviews": 6
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:56:39.835489+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 16335,
+      "originalSha256": "563bf4810fcdea7633d96d974fe068d90289765e96aaf69ba05c95534cc85120",
+      "recaptureSha256": "d17eb663efead22f43e76b1fdafdc032ccc92e47d8f1cd69b46259c07f14a9fb",
+      "expectedFiles": 48,
+      "originalFiles": 48,
+      "recapturedFiles": 48,
+      "endpointCounts": {
+        "files": 48,
+        "issueComments": 4,
+        "reviewComments": 13,
+        "reviews": 12
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:56:43.159690+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 15907,
+      "originalSha256": "2f548161023fa1c98012b03dd88e1e4f02c6d75eb429b2d71f16caa0acd7008d",
+      "recaptureSha256": "68e807af08a255bb7829d87473389e34251238a11d66b4b02b5cd1cf2f4bb692",
+      "expectedFiles": 49,
+      "originalFiles": 49,
+      "recapturedFiles": 49,
+      "endpointCounts": {
+        "files": 49,
+        "issueComments": 12,
+        "reviewComments": 58,
+        "reviews": 42
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:56:46.698015+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 9167,
+      "originalSha256": "dbac7c65429a4818d31d544037e19f24c6f224ff253f4beea8006673394987aa",
+      "recaptureSha256": "f655ed0958526e6d01d42bb24df42e770ca6a1cc8550f9dffb556360e5340c5e",
+      "expectedFiles": 26,
+      "originalFiles": 26,
+      "recapturedFiles": 26,
+      "endpointCounts": {
+        "files": 26,
+        "issueComments": 1,
+        "reviewComments": 46,
+        "reviews": 34
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:56:49.852694+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 15323,
+      "originalSha256": "ec5656804ca3342bd8bd4002812867e8c4961f852556b15f0f994b644eadae22",
+      "recaptureSha256": "aafef3c05e9db7921564f4ce467520612ab3b03e7ea0c99e81b157994a54a550",
+      "expectedFiles": 29,
+      "originalFiles": 29,
+      "recapturedFiles": 29,
+      "endpointCounts": {
+        "files": 29,
+        "issueComments": 2,
+        "reviewComments": 27,
+        "reviews": 23
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:56:53.011324+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 13895,
+      "originalSha256": "ff833b9c829b8136a9427b83cc161c94f6df6387ab04c85122b376a106bda98e",
+      "recaptureSha256": "f255afb3da9a7115d9b4f717de0f6d5f11815ee1b419a8e3522c6ad17341acfe",
+      "expectedFiles": 14,
+      "originalFiles": 14,
+      "recapturedFiles": 14,
+      "endpointCounts": {
+        "files": 14,
+        "issueComments": 2,
+        "reviewComments": 8,
+        "reviews": 5
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:56:56.134266+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 4656,
+      "originalSha256": "8e5fab0a1da003244bd35ccc3d6b52546c60ebc500f0d75791ed26d37a99f852",
+      "recaptureSha256": "ba73bffe2281dad9f0c23062485c8ba64e6a8e7ab3786d97d6ff638cf5eff4d5",
+      "expectedFiles": 6,
+      "originalFiles": 6,
+      "recapturedFiles": 6,
+      "endpointCounts": {
+        "files": 6,
+        "issueComments": 6,
+        "reviewComments": 5,
+        "reviews": 5
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:57:00.130992+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 5246,
+      "originalSha256": "48bef2d9ec5f03bb4affb43797ab2bbb38a8ee9dd1ae8a6c66b2a98342bad313",
+      "recaptureSha256": "033011b5a257c1e122a69a1faddf78edfcaf5e0473252aac506b17aa55a32cb8",
+      "expectedFiles": 3,
+      "originalFiles": 3,
+      "recapturedFiles": 3,
+      "endpointCounts": {
+        "files": 3,
+        "issueComments": 4,
+        "reviewComments": 3,
+        "reviews": 5
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:57:03.244692+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 16247,
+      "originalSha256": "a9857e95b1ff14de36019f3ab2c3caf6baecdf3d7d12bb966af5962ed62d49b8",
+      "recaptureSha256": "8a8a7995aebee7d5d0a8a7784ff23b1f56321bac61466aced9184821de0f2cfb",
+      "expectedFiles": 5,
+      "originalFiles": 5,
+      "recapturedFiles": 5,
+      "endpointCounts": {
+        "files": 5,
+        "issueComments": 3,
+        "reviewComments": 2,
+        "reviews": 2
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:57:05.976994+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 4400,
+      "originalSha256": "067c38b85fdaed497f1fad941d2c6001b6e778953e9169b936440c958a93682b",
+      "recaptureSha256": "09e149716336a1ebd625f69cc5103b980740dd7598814e5beff1b7ed41ddcf59",
+      "expectedFiles": 32,
+      "originalFiles": 32,
+      "recapturedFiles": 32,
+      "endpointCounts": {
+        "files": 32,
+        "issueComments": 2,
+        "reviewComments": 11,
+        "reviews": 8
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:57:08.757859+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 15442,
+      "originalSha256": "66325af484d3693933f96581b8b111f269c119244aceb0c397b9d920dc987d9b",
+      "recaptureSha256": "22b11e44daf7b0c799a30eb863319e4d767daf52fe9fc3e7b725cd55f706f9ea",
+      "expectedFiles": 10,
+      "originalFiles": 10,
+      "recapturedFiles": 10,
+      "endpointCounts": {
+        "files": 10,
+        "issueComments": 43,
+        "reviewComments": 24,
+        "reviews": 25
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:57:11.987713+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 12686,
+      "originalSha256": "7832e77ac826bc295d3349c1a28e251603c25bdfb94818ae2682cf8d639b0b37",
+      "recaptureSha256": "8acc3491d091235505e3e119c380b554dd7f6ac58bf9bdbf6f6beca0eb983887",
+      "expectedFiles": 19,
+      "originalFiles": 19,
+      "recapturedFiles": 19,
+      "endpointCounts": {
+        "files": 19,
+        "issueComments": 7,
+        "reviewComments": 22,
+        "reviews": 20
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:57:15.753057+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 12352,
+      "originalSha256": "d5ba58334c3ea36e4de65ee9b2465afba32800cd1df20b535fb171cd49509c06",
+      "recaptureSha256": "be457cf4568d069abce9ecb1bdbb627d767d0d66485dba8e08c1bf85ca7e89bf",
+      "expectedFiles": 24,
+      "originalFiles": 24,
+      "recapturedFiles": 24,
+      "endpointCounts": {
+        "files": 24,
+        "issueComments": 6,
+        "reviewComments": 30,
+        "reviews": 24
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:57:18.788128+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 16002,
+      "originalSha256": "d21b16a372cc64e943bbaf6e760d06661f1569688d0e5e099e0ad7555b38ffea",
+      "recaptureSha256": "b6bfd93030caa892605169d951950776877b77d1abebfdd149e0aea688a86808",
+      "expectedFiles": 18,
+      "originalFiles": 18,
+      "recapturedFiles": 18,
+      "endpointCounts": {
+        "files": 18,
+        "issueComments": 3,
+        "reviewComments": 17,
+        "reviews": 16
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:57:22.040974+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 17930,
+      "originalSha256": "23ea61b21885ffc2dc2994ae4c88eb6b9a66ec2dfe351aabc4448d35aedbf93b",
+      "recaptureSha256": "09e891929d8ee6cfee05dbdee8960c1a60fe371b6b647a92f2c5bd8b3d30de44",
+      "expectedFiles": 60,
+      "originalFiles": 60,
+      "recapturedFiles": 60,
+      "endpointCounts": {
+        "files": 60,
+        "issueComments": 4,
+        "reviewComments": 98,
+        "reviews": 72
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:57:28.056249+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 10231,
+      "originalSha256": "e98a9468ce18d8164468694117f48f2aee3b0f76b25e451d50059d03c402ad5e",
+      "recaptureSha256": "6b1dc0915b63189bf7b1d8d1c28b1669a0c4b28061ee8e1c0a9bd9fec7bfcf61",
+      "expectedFiles": 43,
+      "originalFiles": 43,
+      "recapturedFiles": 43,
+      "endpointCounts": {
+        "files": 43,
+        "issueComments": 4,
+        "reviewComments": 0,
+        "reviews": 0
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:57:31.250228+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 16336,
+      "originalSha256": "c119c40a5e1db0b26b178c8ec5cc3480ec3d8d50557bb7fe12c27b87b691b282",
+      "recaptureSha256": "eb26e3c3fd435b8de2624c5d11c165c8f8619e036b6d0539cac32d7b75cab0b5",
+      "expectedFiles": 29,
+      "originalFiles": 29,
+      "recapturedFiles": 29,
+      "endpointCounts": {
+        "files": 29,
+        "issueComments": 3,
+        "reviewComments": 5,
+        "reviews": 6
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:57:34.545562+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 16718,
+      "originalSha256": "83bce26f0bc254b08270a8feb45f93cb956c893f8e6b3797a2bb84fc2f5c09ee",
+      "recaptureSha256": "729053f9c81969a3188be84f687336b566e6d07e2cfe3ce1577a24d9191e9899",
+      "expectedFiles": 5,
+      "originalFiles": 5,
+      "recapturedFiles": 5,
+      "endpointCounts": {
+        "files": 5,
+        "issueComments": 3,
+        "reviewComments": 3,
+        "reviews": 3
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:57:37.859932+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 15219,
+      "originalSha256": "b6afe025be8827013947093897334a9cb627cd0a65690d9cc1f692a19c86e02a",
+      "recaptureSha256": "d60c9c7baaeddc9fc204c0011cc904ad4b1697b65e2d85ef112a0476f40342a5",
+      "expectedFiles": 43,
+      "originalFiles": 43,
+      "recapturedFiles": 43,
+      "endpointCounts": {
+        "files": 43,
+        "issueComments": 3,
+        "reviewComments": 24,
+        "reviews": 20
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:57:44.023113+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 8677,
+      "originalSha256": "b12ea15ceb2fee72bedd9b8f2cd50cef10d96ab5e6b4d2c975310515e0c74b28",
+      "recaptureSha256": "c5e38f323336037e568fe128803d0e5865e525b75382ae051ccf8d7d0c0ceed5",
+      "expectedFiles": 41,
+      "originalFiles": 41,
+      "recapturedFiles": 41,
+      "endpointCounts": {
+        "files": 41,
+        "issueComments": 6,
+        "reviewComments": 67,
+        "reviews": 55
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:57:49.286970+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 15464,
+      "originalSha256": "7497f12f2a538d0d01dbd6ba4fcc79569bc581d7671615b2375f61f27444f654",
+      "recaptureSha256": "9e49229366d345c36d0267df3b311b717704e6e5919bd5bf661de0e1582a7601",
+      "expectedFiles": 13,
+      "originalFiles": 13,
+      "recapturedFiles": 13,
+      "endpointCounts": {
+        "files": 13,
+        "issueComments": 3,
+        "reviewComments": 14,
+        "reviews": 10
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:57:53.241051+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 15913,
+      "originalSha256": "afdcb3899999d665d8e1b68096ed0be74621b04f8fe64a8ef6666a19b15df54d",
+      "recaptureSha256": "7f9cb415c63cf85a6bd14b81a5cb3bac60226e931b801cf02c28f4a76f9f4921",
+      "expectedFiles": 8,
+      "originalFiles": 8,
+      "recapturedFiles": 8,
+      "endpointCounts": {
+        "files": 8,
+        "issueComments": 3,
+        "reviewComments": 7,
+        "reviews": 4
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:57:57.228628+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 3638,
+      "originalSha256": "091cf4670b975e57a58541377212a364d9cd4da7198c91da2d502dcffac57bf7",
+      "recaptureSha256": "ed5ee23738f64e3c893861adc509ffe4453c67559d9126d7e120a019866972f7",
+      "expectedFiles": 24,
+      "originalFiles": 24,
+      "recapturedFiles": 24,
+      "endpointCounts": {
+        "files": 24,
+        "issueComments": 3,
+        "reviewComments": 35,
+        "reviews": 23
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:58:01.903218+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 15085,
+      "originalSha256": "15476434b7cf12eb21e31f57c887f9b23a75d7304c668a39c9c20e7a775b3837",
+      "recaptureSha256": "10bd56d42703bc52790287cfef0775960ab7b1704856af493855a51102acd038",
+      "expectedFiles": 32,
+      "originalFiles": 32,
+      "recapturedFiles": 32,
+      "endpointCounts": {
+        "files": 32,
+        "issueComments": 3,
+        "reviewComments": 55,
+        "reviews": 43
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:58:06.190341+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 15487,
+      "originalSha256": "0375138af79b0b274e3a25052b8d6600b88ebfe9ac646b1709697b168dfaadb9",
+      "recaptureSha256": "002e39e192daf9d0e6e55ea88b85baa57348cf007f3fe712396d8d0cb749f60d",
+      "expectedFiles": 73,
+      "originalFiles": 73,
+      "recapturedFiles": 73,
+      "endpointCounts": {
+        "files": 73,
+        "issueComments": 3,
+        "reviewComments": 75,
+        "reviews": 47
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:58:09.642812+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 15057,
+      "originalSha256": "0eb26662cf417b297a7619ee7ce1c42389ab1354d827700bd49c56f79062a107",
+      "recaptureSha256": "cbd369ea55a5b5a428eb3b32420ee48ae017b0d93067f6ba218f6c9e2ecd1296",
+      "expectedFiles": 31,
+      "originalFiles": 31,
+      "recapturedFiles": 31,
+      "endpointCounts": {
+        "files": 31,
+        "issueComments": 3,
+        "reviewComments": 37,
+        "reviews": 31
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:58:13.348101+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 16270,
+      "originalSha256": "d08e0a0a2445121cc669518388cf2eb8aa5898456d4c0c06072f4581d7e724ef",
+      "recaptureSha256": "7f014e4cf0345a762d1105ba26e1662be3aac0eec28fab25dd7838b4b9844806",
+      "expectedFiles": 12,
+      "originalFiles": 12,
+      "recapturedFiles": 12,
+      "endpointCounts": {
+        "files": 12,
+        "issueComments": 3,
+        "reviewComments": 2,
+        "reviews": 2
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:58:16.051664+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 14714,
+      "originalSha256": "46b795b912723e232a3c2f103ae9032e56f0f2e7bc3a26f20279022e87b63958",
+      "recaptureSha256": "955ebb05a1706478b8d3bed953cdaf7f21f3247186aac70ed6407046c3ff690b",
+      "expectedFiles": 48,
+      "originalFiles": 48,
+      "recapturedFiles": 48,
+      "endpointCounts": {
+        "files": 48,
+        "issueComments": 3,
+        "reviewComments": 6,
+        "reviews": 5
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:58:19.200806+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 15040,
+      "originalSha256": "40baa502c9691f0e2ab99329ca37d1784614352ab6f4afac1bea759b52ab7b05",
+      "recaptureSha256": "07287a01279edf3ae2897aa19aaa513c708f6b151de52cfb91b53669d80443c3",
+      "expectedFiles": 29,
+      "originalFiles": 29,
+      "recapturedFiles": 29,
+      "endpointCounts": {
+        "files": 29,
+        "issueComments": 3,
+        "reviewComments": 13,
+        "reviews": 5
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:58:22.424369+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 10848,
+      "originalSha256": "503fa35c60c0bf3d652209985c333cd2f04957aa57003286453f8eac5d797def",
+      "recaptureSha256": "31d95f94792f0f61c4a902b4af4c99eaf5ab54686840fadf340ae899520a656d",
+      "expectedFiles": 6,
+      "originalFiles": 6,
+      "recapturedFiles": 6,
+      "endpointCounts": {
+        "files": 6,
+        "issueComments": 3,
+        "reviewComments": 0,
+        "reviews": 1
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:58:24.907722+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 11570,
+      "originalSha256": "f5c58984d0429872957a739a8615159c4611f0257b994fe255b63a076679cf09",
+      "recaptureSha256": "ad98a376b214ea720f1c7f5a043bd027683fb7f3286f1b4c5329d9d1b3a445a9",
+      "expectedFiles": 8,
+      "originalFiles": 8,
+      "recapturedFiles": 8,
+      "endpointCounts": {
+        "files": 8,
+        "issueComments": 5,
+        "reviewComments": 0,
+        "reviews": 1
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:58:27.796481+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 3795,
+      "originalSha256": "86d28a86ac2d3266a4caa8dada1af40ee3877d8de6baa08ad5a5e1378656c013",
+      "recaptureSha256": "7fe29b2c897ddf3e0ea2da7abba580f6c9879243f1119799091e69f29f585782",
+      "expectedFiles": 48,
+      "originalFiles": 48,
+      "recapturedFiles": 48,
+      "endpointCounts": {
+        "files": 48,
+        "issueComments": 4,
+        "reviewComments": 29,
+        "reviews": 20
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:58:31.186525+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 18351,
+      "originalSha256": "c377df173bee413657feb05b13f814ecea57af18924a6b639b6153dbf8837faa",
+      "recaptureSha256": "210c312cd3fd441b8337a0e1bbcc55c73d579a2c6c605a8244a8b825b1e731a5",
+      "expectedFiles": 47,
+      "originalFiles": 47,
+      "recapturedFiles": 47,
+      "endpointCounts": {
+        "files": 47,
+        "issueComments": 3,
+        "reviewComments": 6,
+        "reviews": 5
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:58:33.853608+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 8491,
+      "originalSha256": "77b4c3095084db278783ebaeb47801543b1d00cad01b1111aebef83ab7603db3",
+      "recaptureSha256": "1319fda650b23d99b2b6e24e9e824b4518955cac2bd3f4ec735b96f82a7aa846",
+      "expectedFiles": 73,
+      "originalFiles": 73,
+      "recapturedFiles": 73,
+      "endpointCounts": {
+        "files": 73,
+        "issueComments": 2,
+        "reviewComments": 20,
+        "reviews": 3
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:58:37.187897+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 1697,
+      "originalSha256": "499d503943854c17325ce959417877ba25cb2e9f5e715e500c958ed6e8e94534",
+      "recaptureSha256": "e414557c867a16ff923824fc752a83e7778aa7090086acd6db120ae0eb5fd333",
+      "expectedFiles": 43,
+      "originalFiles": 43,
+      "recapturedFiles": 43,
+      "endpointCounts": {
+        "files": 43,
+        "issueComments": 2,
+        "reviewComments": 18,
+        "reviews": 10
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:58:40.298885+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 13697,
+      "originalSha256": "342b7b8440e359a2d934b7eb901bc38d110bcaa5f1735b3557cfbde2470ed55f",
+      "recaptureSha256": "369ce7f838ad8926db3a37500b8088319b2b50559bd31bd550c35d22532ab19f",
+      "expectedFiles": 4,
+      "originalFiles": 4,
+      "recapturedFiles": 4,
+      "endpointCounts": {
+        "files": 4,
+        "issueComments": 3,
+        "reviewComments": 11,
+        "reviews": 11
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:58:43.531687+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 13698,
+      "originalSha256": "d523e8676da620c3333aa9aa9f2165ea860adcc17c036b3f998d551ac36f7a58",
+      "recaptureSha256": "8be2e1c8cee6458507e6d96d6d559b118bbc12253cc30807a6060f0a5808abc2",
+      "expectedFiles": 6,
+      "originalFiles": 6,
+      "recapturedFiles": 6,
+      "endpointCounts": {
+        "files": 6,
+        "issueComments": 3,
+        "reviewComments": 14,
+        "reviews": 12
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:58:47.057399+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 2679,
+      "originalSha256": "771dc8ca01c47a89abc08b7ca8eb5c15bf3a7bb221bb43656c97b295b9a80b2a",
+      "recaptureSha256": "642e26b68a630cab21d0e7387dddb4fe0ef3ba81611a0240f511a39a8727983c",
+      "expectedFiles": 122,
+      "originalFiles": 122,
+      "recapturedFiles": 122,
+      "endpointCounts": {
+        "files": 122,
+        "issueComments": 3,
+        "reviewComments": 190,
+        "reviews": 94
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:58:52.801185+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 3405,
+      "originalSha256": "fcbd67b5f93b3a6dfc20eebc820945b3fafa7778e1e2989e50bcfdf30825f188",
+      "recaptureSha256": "e84a02722a5a1d79b0896d6812d82088fab55ea8a4d524aa30e72e8728e19556",
+      "expectedFiles": 14,
+      "originalFiles": 14,
+      "recapturedFiles": 14,
+      "endpointCounts": {
+        "files": 14,
+        "issueComments": 2,
+        "reviewComments": 1,
+        "reviews": 4
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:58:55.819127+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 6563,
+      "originalSha256": "4849becfa02362174772fc928a74705074adb710975b2489ae7bad6fa7e3752a",
+      "recaptureSha256": "3c397c1df2b03c40cdfa3f40b74e1f377003ee1a02c592ee0a3e76931a89351b",
+      "expectedFiles": 6,
+      "originalFiles": 6,
+      "recapturedFiles": 6,
+      "endpointCounts": {
+        "files": 6,
+        "issueComments": 6,
+        "reviewComments": 15,
+        "reviews": 8
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:58:58.916874+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 14986,
+      "originalSha256": "aab412eea854e63267ba485dc3e761237a301135317b1e4cde1bbbd97171859b",
+      "recaptureSha256": "001e372e579f4d6aeef721d9badf9f7d3cae25c7102d42c973bfa2e643c543a6",
+      "expectedFiles": 11,
+      "originalFiles": 11,
+      "recapturedFiles": 11,
+      "endpointCounts": {
+        "files": 11,
+        "issueComments": 2,
+        "reviewComments": 0,
+        "reviews": 1
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:59:02.931683+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 5181,
+      "originalSha256": "5d3b1c860f2f5329a803b72489eb8628bd1c529174f4dbfe70688f6f29a93e2e",
+      "recaptureSha256": "083a4649b61cc81da32e9e5214f26cd970a96893902b7a51a42b19a8d8cb68ed",
+      "expectedFiles": 40,
+      "originalFiles": 40,
+      "recapturedFiles": 40,
+      "endpointCounts": {
+        "files": 40,
+        "issueComments": 2,
+        "reviewComments": 96,
+        "reviews": 68
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:59:07.700612+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 5374,
+      "originalSha256": "f3f76a5259627ec95bda674016a974e5f2e7995920341c5617e23413a5a2aa58",
+      "recaptureSha256": "4018a80c8db36c7de862d8040a7c684041bbbd56601f64b57dc19532e6718223",
+      "expectedFiles": 17,
+      "originalFiles": 17,
+      "recapturedFiles": 17,
+      "endpointCounts": {
+        "files": 17,
+        "issueComments": 2,
+        "reviewComments": 6,
+        "reviews": 6
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:59:10.940632+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 16102,
+      "originalSha256": "4bc4a198ec584277bbe1875badf58c3ddbac42d4eb3fb5ee7b50419c97f56f7d",
+      "recaptureSha256": "4d28d051616918c220c5a3f1bde516e3c9ba4ae2d06365ba361837ce976b6e06",
+      "expectedFiles": 15,
+      "originalFiles": 15,
+      "recapturedFiles": 15,
+      "endpointCounts": {
+        "files": 15,
+        "issueComments": 9,
+        "reviewComments": 18,
+        "reviews": 14
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:59:15.309690+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 19311,
+      "originalSha256": "c0fdd04bc123db5c759385d8ecce58a4831c88454c3965faf4bf71f35cb67cd3",
+      "recaptureSha256": "68eb671c558767078898bca868d5462f772502da4ab03cb74e9108a16ab14e71",
+      "expectedFiles": 4,
+      "originalFiles": 4,
+      "recapturedFiles": 4,
+      "endpointCounts": {
+        "files": 4,
+        "issueComments": 3,
+        "reviewComments": 0,
+        "reviews": 0
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:59:18.449404+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 15925,
+      "originalSha256": "d84d899161d174e6b9e2d01cae9c46da19c54c633f75a8a6d1d471d84d35bf6b",
+      "recaptureSha256": "24fd84fba300b3fcbf1ce801feefe18f3494b31ba1055473554b42b578bcb109",
+      "expectedFiles": 3,
+      "originalFiles": 3,
+      "recapturedFiles": 3,
+      "endpointCounts": {
+        "files": 3,
+        "issueComments": 3,
+        "reviewComments": 0,
+        "reviews": 4
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:59:21.156348+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 7708,
+      "originalSha256": "8c1e0030a8fdcbcefc9abe77388e0414fffd28002ff48aa6962aeba14ec6a713",
+      "recaptureSha256": "ce048f9a75a063b8c677427439c8408352be7687523ea3746aed81ee99dd5a41",
+      "expectedFiles": 9,
+      "originalFiles": 9,
+      "recapturedFiles": 9,
+      "endpointCounts": {
+        "files": 9,
+        "issueComments": 3,
+        "reviewComments": 6,
+        "reviews": 3
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:59:24.851804+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 16731,
+      "originalSha256": "8d29afd40a4b59e27722505c465f644b7f32a4236218f8ad083895a3aadd50a6",
+      "recaptureSha256": "1a8129fb7938006f34ce93c2371535cae733aa4eca709d467f863242c4599b54",
+      "expectedFiles": 16,
+      "originalFiles": 16,
+      "recapturedFiles": 16,
+      "endpointCounts": {
+        "files": 16,
+        "issueComments": 4,
+        "reviewComments": 7,
+        "reviews": 5
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:59:29.202422+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 8066,
+      "originalSha256": "6f5e142f2c4e3c8a4e59af44b6a356f42d7699749dbeb529ae14320574fc7224",
+      "recaptureSha256": "0d2c5670220fce5efee2d0708c7cf4afeb49ad3800736d9e75b96acc2926f3b5",
+      "expectedFiles": 32,
+      "originalFiles": 32,
+      "recapturedFiles": 32,
+      "endpointCounts": {
+        "files": 32,
+        "issueComments": 3,
+        "reviewComments": 48,
+        "reviews": 32
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:59:33.325022+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 16236,
+      "originalSha256": "3656e491d4ce915151b86fb6009bfe1aecf3737b2392a932a44decd9b4382b14",
+      "recaptureSha256": "482b5f3225652126c3cc3e2ac39e838de3fc593027832438185982194198786c",
+      "expectedFiles": 83,
+      "originalFiles": 83,
+      "recapturedFiles": 83,
+      "endpointCounts": {
+        "files": 83,
+        "issueComments": 3,
+        "reviewComments": 45,
+        "reviews": 35
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:59:36.887557+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 15968,
+      "originalSha256": "2de960ece4d1c1ac8583e029f7f830cb0fa573e0c7c583061aecdccef603f758",
+      "recaptureSha256": "466a038a74f66d825e2c6e86926c55b14fc38c9f9f8516eaeb4511d698c04616",
+      "expectedFiles": 53,
+      "originalFiles": 53,
+      "recapturedFiles": 53,
+      "endpointCounts": {
+        "files": 53,
+        "issueComments": 4,
+        "reviewComments": 56,
+        "reviews": 39
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:59:40.395489+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 8962,
+      "originalSha256": "426ed90b7b8a777ab7e05a74991de4b208abadb89c6af7dcbb0abc2e2658c965",
+      "recaptureSha256": "7ce29d3ee4a7797b5903acd1fe222145a4a56e6cb20cbdcbefb137418ea4eb9b",
+      "expectedFiles": 38,
+      "originalFiles": 38,
+      "recapturedFiles": 38,
+      "endpointCounts": {
+        "files": 38,
+        "issueComments": 8,
+        "reviewComments": 49,
+        "reviews": 38
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:59:44.886894+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 9146,
+      "originalSha256": "2dc66ad656df4e1924ed8653b45966f1618493e42d06c66eaf0194ee28d82fc0",
+      "recaptureSha256": "8c964ac05ca42655c87dd4a0b122bf14cd8fbe492791bef2789ba2fdca9c4804",
+      "expectedFiles": 49,
+      "originalFiles": 49,
+      "recapturedFiles": 49,
+      "endpointCounts": {
+        "files": 49,
+        "issueComments": 4,
+        "reviewComments": 17,
+        "reviews": 6
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:59:48.648539+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 12296,
+      "originalSha256": "5ba83098f464bc44ca7015374c999ec233eaf83355218eb47ed6cb2c6743ba60",
+      "recaptureSha256": "57ffff65f1b43cdf491276be7b95813d6b4b752276f0d3995054782d9c22e312",
+      "expectedFiles": 0,
+      "originalFiles": 4,
+      "recapturedFiles": 4,
+      "endpointCounts": {
+        "files": 4,
+        "issueComments": 2,
+        "reviewComments": 6,
+        "reviews": 2
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:59:52.038064+00:00",
+      "fileCountMatchesDeclared": false
+    },
+    {
+      "number": 18454,
+      "originalSha256": "b38e0dd82aa688c4cf2b2036a353337fd4efa26871feac7e472c94c3185ba2b2",
+      "recaptureSha256": "e523a7a3ee4167e5fd6b24f056eb99db76646dfe82b6e347b171865cfe039ab8",
+      "expectedFiles": 37,
+      "originalFiles": 37,
+      "recapturedFiles": 37,
+      "endpointCounts": {
+        "files": 37,
+        "issueComments": 3,
+        "reviewComments": 19,
+        "reviews": 14
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T03:59:55.747161+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 18124,
+      "originalSha256": "5f5173f8d0f599d6f762249154546dce378997c9ea45885d756271c0ceb8f455",
+      "recaptureSha256": "90b2ccc97bb47c0d40e559ef2cbae230b9d2166bdb45fca395479cf4180a4a15",
+      "expectedFiles": 74,
+      "originalFiles": 74,
+      "recapturedFiles": 74,
+      "endpointCounts": {
+        "files": 74,
+        "issueComments": 3,
+        "reviewComments": 60,
+        "reviews": 46
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T04:00:00.335093+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 13491,
+      "originalSha256": "ba7290a75e64727f247cf07558f416dcf4e7d875032454bb3c0b1c08ecc53b60",
+      "recaptureSha256": "65bf2fd7d0234b5fb6b4bbdcffa23d460ab95fccc7173c4c75efe1a2c9f495df",
+      "expectedFiles": 9,
+      "originalFiles": 9,
+      "recapturedFiles": 9,
+      "endpointCounts": {
+        "files": 9,
+        "issueComments": 5,
+        "reviewComments": 1,
+        "reviews": 3
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T04:00:03.817427+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 11199,
+      "originalSha256": "9e0df746b688a2b1ea9dcb7c6bdaeb5d3d35487df552632f98da26b69966449f",
+      "recaptureSha256": "85dce2270531c166baca4d300b58d6b13088af25ef020039912887fb18fa71e8",
+      "expectedFiles": 4,
+      "originalFiles": 4,
+      "recapturedFiles": 4,
+      "endpointCounts": {
+        "files": 4,
+        "issueComments": 3,
+        "reviewComments": 0,
+        "reviews": 0
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T04:00:06.887101+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 16087,
+      "originalSha256": "73734c34f3130e7694ee2fc3d95f4f7680cf4139fb29a1b71ca9d9b274f35e35",
+      "recaptureSha256": "e3fabd6bb33126ada8f9f54d404f518da5ab6afacee6f340aab4ee945e73af82",
+      "expectedFiles": 39,
+      "originalFiles": 39,
+      "recapturedFiles": 39,
+      "endpointCounts": {
+        "files": 39,
+        "issueComments": 6,
+        "reviewComments": 24,
+        "reviews": 16
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T04:00:10.130078+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 16047,
+      "originalSha256": "9002b045b92443dd31b1d1a362839d58c7f0b12968a756fd2bfa058b78feae30",
+      "recaptureSha256": "63c8c6bec3aac91b7ee53f35a0cf1f8f1d64a411c187d3051c2bbd3e3f7d0183",
+      "expectedFiles": 106,
+      "originalFiles": 106,
+      "recapturedFiles": 106,
+      "endpointCounts": {
+        "files": 106,
+        "issueComments": 5,
+        "reviewComments": 35,
+        "reviews": 37
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T04:00:15.871715+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 3699,
+      "originalSha256": "efa29b9c470df0a1aeb7bf4706719a454ca1e3888fa6cbd890094294b4808a54",
+      "recaptureSha256": "a40c1b89edeebd4fdc20b7c57b029099cea1924793bb39b5bc0711d7e0bf0dfd",
+      "expectedFiles": 190,
+      "originalFiles": 190,
+      "recapturedFiles": 190,
+      "endpointCounts": {
+        "files": 190,
+        "issueComments": 8,
+        "reviewComments": 49,
+        "reviews": 18
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T04:00:22.688568+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 9325,
+      "originalSha256": "0033923f00db7928468ba2263d00791f2385a11e74c60b33e1742b02f4112342",
+      "recaptureSha256": "6f67d1b478da77ac4de439d8ef0226456337ef369c83c60b8b74ea112aa5e2be",
+      "expectedFiles": 23,
+      "originalFiles": 23,
+      "recapturedFiles": 23,
+      "endpointCounts": {
+        "files": 23,
+        "issueComments": 4,
+        "reviewComments": 41,
+        "reviews": 33
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T04:00:26.772613+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 2312,
+      "originalSha256": "3de734233e43f75c0e56b89cb221e7a5717ce20206b238ffa1bee88c68d05c1e",
+      "recaptureSha256": "2dac55d252ddcdbb92adc8abf5a727f529c28a85d9519630e8af910652904ec3",
+      "expectedFiles": 60,
+      "originalFiles": 60,
+      "recapturedFiles": 60,
+      "endpointCounts": {
+        "files": 60,
+        "issueComments": 12,
+        "reviewComments": 22,
+        "reviews": 18
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T04:00:31.722990+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 13533,
+      "originalSha256": "e2c8f09abbc8d0b4fadc96eb97a6f01e14839f21be71774be034342c686bf8ad",
+      "recaptureSha256": "0c92e42fefa6e218b0044fb7cf55c51a654a28978acd4b957d0910df8a1b8fb0",
+      "expectedFiles": 41,
+      "originalFiles": 41,
+      "recapturedFiles": 41,
+      "endpointCounts": {
+        "files": 41,
+        "issueComments": 3,
+        "reviewComments": 0,
+        "reviews": 0
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T04:00:36.070108+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 9774,
+      "originalSha256": "1356dcf7630436a832b3af8d996732c6beffe44d4488157d05261fe182225f84",
+      "recaptureSha256": "467c98bf48665a1241d300fcdfb895f65197e400cd4157b2560f9e5a8f4c3a2b",
+      "expectedFiles": 22,
+      "originalFiles": 22,
+      "recapturedFiles": 22,
+      "endpointCounts": {
+        "files": 22,
+        "issueComments": 2,
+        "reviewComments": 2,
+        "reviews": 2
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T04:00:38.869098+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 11176,
+      "originalSha256": "4118ab7fe67b830a621e6c5fd7aa3e54a324a21660a82fd66886dbbbea356f46",
+      "recaptureSha256": "e2aec219edbeeeafa999b922b587b53e3c5287046050895ff8f36c7fbbe296bd",
+      "expectedFiles": 25,
+      "originalFiles": 25,
+      "recapturedFiles": 25,
+      "endpointCounts": {
+        "files": 25,
+        "issueComments": 3,
+        "reviewComments": 34,
+        "reviews": 27
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T04:00:42.238628+00:00",
+      "fileCountMatchesDeclared": true
+    },
+    {
+      "number": 12848,
+      "originalSha256": "4bc525fa6d082c32195d7fea16f46d9ef118f58814c0fdf6189803c506f93845",
+      "recaptureSha256": "9a7d31f7ccf871267dabe2bd66d394356c2a89617eb0ea7597150cb02c218f7c",
+      "expectedFiles": 14,
+      "originalFiles": 14,
+      "recapturedFiles": 14,
+      "endpointCounts": {
+        "files": 14,
+        "issueComments": 4,
+        "reviewComments": 11,
+        "reviews": 9
+      },
+      "differences": [],
+      "recapturedAt": "2026-10-15T04:00:45.638088+00:00",
+      "fileCountMatchesDeclared": true
+    }
+  ],
+  "limits": [
+    "Independent fresh live reads through installed gh; original captures retained byte-for-byte.",
+    "Current comparison cannot recreate the earlier server state or authenticate old endpoint success.",
+    "Files, truncated comments and metadata only; no patch or new semantic reading proof."
+  ],
+  "executedCollectorSha256": "440ea24f6e4d6449fcb6f834af9dde0e4433cf5cb553d339d441d0a76ea21623",
+  "executionBoundary": "Live recapture uses initial corrected collector. Later deadline/type additions are covered by final synthetic controls."
+}

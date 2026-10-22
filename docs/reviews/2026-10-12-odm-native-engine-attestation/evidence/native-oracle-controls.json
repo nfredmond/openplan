@@ -1,0 +1,278 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-note",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "daemonObserved-changed",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "daemonObserved-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "daemonObserved-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "originalAttested-changed",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "originalAttested-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "originalAttested-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "harmlessOwnerAttested-changed",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "harmlessOwnerAttested-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "harmlessOwnerAttested-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "repeatOriginalAttested-changed",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "repeatOriginalAttested-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "repeatOriginalAttested-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrongOriginalRefused-changed",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrongOriginalRefused-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrongOriginalRefused-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrongConfigurationRefused-changed",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrongConfigurationRefused-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrongConfigurationRefused-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrongEndpointRefused-changed",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrongEndpointRefused-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrongEndpointRefused-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "stoppedOriginalRefused-changed",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "stoppedOriginalRefused-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "stoppedOriginalRefused-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "sameOriginalRestartAttested-changed",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "sameOriginalRestartAttested-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "sameOriginalRestartAttested-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "hostReplacementDiffers-changed",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "hostReplacementDiffers-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "hostReplacementDiffers-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mountedOriginalBytesRetained-changed",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mountedOriginalBytesRetained-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mountedOriginalBytesRetained-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "hostReplacementDoesNotChangeAttestation-changed",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "hostReplacementDoesNotChangeAttestation-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "hostReplacementDoesNotChangeAttestation-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "remountedChangedBytesRefused-changed",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "remountedChangedBytesRefused-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "remountedChangedBytesRefused-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "restoredMountedOriginalAttested-changed",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "restoredMountedOriginalAttested-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "restoredMountedOriginalAttested-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "preCancelledRefused-changed",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "preCancelledRefused-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "preCancelledRefused-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "expiredDeadlineRefused-changed",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "expiredDeadlineRefused-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "expiredDeadlineRefused-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "engineTaskListEmpty-changed",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "engineTaskListEmpty-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "engineTaskListEmpty-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "containerStopped-changed",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "containerStopped-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "containerStopped-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "networkOwnedAndInternal-changed",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "networkOwnedAndInternal-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "networkOwnedAndInternal-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "noPublishedPorts-changed",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "noPublishedPorts-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "noPublishedPorts-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "noContainerOOM-changed",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "noContainerOOM-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "noContainerOOM-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "sourceBindingsUnchanged-changed",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "sourceBindingsUnchanged-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "sourceBindingsUnchanged-wrong-type",
+    "outcome": "intended_refusal"
+  }
+]

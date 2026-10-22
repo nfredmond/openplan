@@ -73,12 +73,26 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   category: Category;
   reason: string;
 }> = [
+  { column: "rtp_extraction_runs.manual_request_id", category: "READ_IN_SQL", reason: "stage_rtp_manual_source_proposal locates the retained run by workspace and request identity; the partial unique index prevents a second run for that same request." },
+  { column: "rtp_extraction_runs.manual_request_payload", category: "READ_IN_SQL", reason: "stage_rtp_manual_source_proposal compares the complete retained request JSON on retry before returning the original candidate, refusing a changed payload." },
+  { column: "rtp_extraction_runs.manual_payload_sha256", category: "READ_IN_SQL", reason: "stage_rtp_manual_source_proposal compares the retained request digest on retry alongside the original payload before returning the existing proposal." },
+  { column: "rtp_extraction_runs.manual_authorship", category: "READ_IN_SQL", reason: "The rtp_manual_run_shape constraint requires authenticated_user authorship for a manual run; the identity trigger preserves that stored distinction from model output." },
+  { column: "funding_opportunity_deadline_changes.deadline_field", category: "WRITE_ONLY", reason: "The capture trigger retains which recorded date changed. Its enum check validates the stored value; no current application reader selects the journal field." },
+  { column: "funding_opportunity_deadline_changes.old_at", category: "WRITE_ONLY", reason: "The capture trigger retains the previous date for audit. The distinct-date constraint validates the pair; the inbox reads separately stored notice text, not this journal value." },
+  { column: "funding_opportunity_deadline_changes.new_at", category: "WRITE_ONLY", reason: "The capture trigger retains the replacement date, including null for a cleared date. The inbox reads separately stored notice text and does not select this journal value." },
+  { column: "funding_opportunity_deadline_changes.opportunity_title", category: "WRITE_ONLY", reason: "The trigger snapshots the title so later opportunity edits or deletion do not rewrite the original fact. Current application readers select the notice title rather than this journal field." },
+  { column: "funding_opportunity_deadline_changes.actor_user_id", category: "WRITE_ONLY", reason: "The trigger retains auth.uid(), including null for an unknown actor, without an account foreign key. The inbox reads notice text; no current application reader selects this retained identity." },
+  { column: "funding_opportunity_deadline_changes.creator_user_id", category: "WRITE_ONLY", reason: "The trigger snapshots the opportunity creator without an account foreign key. Recipient selection uses NEW.created_by before insertion; no current application reader selects this journal identity." },
+  { column: "funding_opportunity_deadline_changes.recipient_status", category: "WRITE_ONLY", reason: "The trigger retains whether the creator is a current member, absent member or unknown. Its enum check validates storage; notification selection uses the local variable, not a journal read." },
+  { column: "funding_opportunity_deadline_changes.changed_at", category: "WRITE_ONLY", reason: "The journal records server time and indexes it for subject history. Current application readers expose the separate notice created_at, without selecting this journal timestamp." },
+  { column: "node_queue_process_observations.build_sha", category: "READ_IN_SQL", reason: "The service-only process writer compares the captured build on every sequence and exact replay. Process identity cannot silently move to another build; the health reader does not publish this field." },
   { column: "model_execution_custody_enrollment.observed_at", category: "READ_IN_SQL", reason: "The scoped recovery reader returns the observed enrollment time without inferring historical execution." },
   { column: "model_stage_execution_starts.observed_at", category: "READ_IN_SQL", reason: "The scoped recovery reader returns the latest observed start with its count. This does not prove current ownership or completion." },
-  { column: "model_run_recovery_receipts.prior_run", category: "WRITE_ONLY", reason: "Abandonment retains the original parent snapshot for audit. No current application reader exposes this stored snapshot." },
-  { column: "model_run_recovery_receipts.prior_stages", category: "WRITE_ONLY", reason: "Abandonment retains original stage snapshots for audit. No current application reader exposes these stored snapshots." },
-  { column: "model_run_recovery_receipts.prior_attempts", category: "WRITE_ONLY", reason: "Abandonment retains original attempt snapshots for audit. No current application reader exposes these stored snapshots." },
-  { column: "model_run_recovery_receipts.response_payload", category: "READ_IN_SQL", reason: "abandon_model_run_execution returns the saved response on exact retry without another state change." },
+  { column: "model_run_recovery_receipts.prior_run", category: "WRITE_ONLY", reason: "Abandonment and historical keep-or-close decisions retain the original parent snapshot for audit. No current application reader exposes this stored snapshot." },
+  { column: "model_run_recovery_receipts.prior_stages", category: "WRITE_ONLY", reason: "Abandonment and historical keep-or-close decisions retain original stage snapshots for audit. No current application reader exposes these stored snapshots." },
+  { column: "model_run_recovery_receipts.prior_attempts", category: "WRITE_ONLY", reason: "Abandonment and historical keep-or-close decisions retain original attempt snapshots for audit. No current application reader exposes these stored snapshots." },
+  { column: "model_run_recovery_receipts.response_payload", category: "READ_IN_SQL", reason: "Both recovery commands return the saved response on exact retry without another state change; inspect_model_recovery_status reads the historical decision outcome from it." },
+  { column: "workspaces.stage_gate_binding_source", category: "WRITE_ONLY", reason: "Bootstrap passes the binding mode to create_owned_workspace (20261017000010), which writes it in SQL. No application code read it before or after that move; the response reports the resolved binding instead." },
   { column: "model_stage_skip_receipts.blocker_id", category: "WRITE_ONLY", reason: "The retained blocker identity has a foreign key and index for audit. Replay compares request_payload; no current application reader selects this separate column." },
   { column: "model_stage_skip_receipts.response_payload", category: "READ_IN_SQL", reason: "skip_blocked_model_stage returns the retained response on exact retry; model_run_has_retained_commands also reads its outcome." },
   { column: "model_legacy_kpi_receipts.kpi_id", category: "READ_IN_SQL", reason: "record_legacy_model_kpi locates the original receipt by the prepared KPI identity before any new row insert." },
@@ -394,6 +408,18 @@ const NAME_COLLISIONS = [
   { column: "land_use_plan_freeze_commands.command_text", category: "READ_IN_SQL", reason: "The native freeze function compares exact command text before replaying the original frozen-version receipt." },
 ];
 
+/**
+ * Source files whose snake_case keys belong to another system's wire format,
+ * not to this database. Each must import no database client, which the last
+ * test below checks, so a real column read cannot hide here.
+ */
+const FOREIGN_PROTOCOL_FILES = new Map([
+  [
+    "lib/observability/sentry-envelope.ts",
+    "Builds Sentry's envelope. Its event_id and sent_at are Sentry protocol fields that the format requires, not columns.",
+  ],
+]);
+
 /** Tables Postgres or an extension owns; not ours to explain. */
 const EXTENSION_OWNED = new Set(["spatial_ref_sys", "geography_columns", "geometry_columns"]);
 
@@ -409,6 +435,7 @@ function sourceIdentifiers(): Set<string> {
         continue;
       }
       if (!/\.tsx?$/.test(full)) continue;
+      if (FOREIGN_PROTOCOL_FILES.has(path.relative(SRC, full).split(path.sep).join("/"))) continue;
       for (const match of readFileSync(full, "utf8").matchAll(/\b[a-z][a-z0-9]*(?:_[a-z0-9]+)+\b/g)) {
         found.add(match[0]);
       }
@@ -503,6 +530,15 @@ describe("a column the application never reads has to say why", () => {
     for (const entry of inert) {
       expect(unread.has(entry.column), `${entry.column} gained a reader — the paid tier is coming back`).
         toBe(true);
+    }
+  });
+
+  it("skips only files that cannot read the database", () => {
+    for (const file of FOREIGN_PROTOCOL_FILES.keys()) {
+      const text = readFileSync(path.join(SRC, file), "utf8");
+      expect(text, `${file} is excused from the scan and must not reach the database`).not.toMatch(
+        /@\/lib\/supabase|@supabase\/|\.from\(|\.rpc\(/,
+      );
     }
   });
 });

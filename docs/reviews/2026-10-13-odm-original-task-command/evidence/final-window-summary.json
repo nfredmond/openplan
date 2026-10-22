@@ -1,0 +1,21 @@
+{
+  "workflowStages": 36,
+  "workerScripts": 35,
+  "unittestSuites": 28,
+  "unittestCases": 687,
+  "customCheckScripts": 7,
+  "sourceBindings": 64,
+  "passedAppDocs": 20,
+  "newSourceCases": 14,
+  "targetedFaultsPerInterpreter": 22,
+  "failureOraclesPerInterpreter": 132,
+  "positiveCohortsPerInterpreter": 4,
+  "nativeFaultsPerInterpreter": 13,
+  "nativeProducersInspectedStopped": 34,
+  "finalWindowSignalRefuses": true,
+  "metadataDeleted": false,
+  "applicationAuthorityAccepted": false,
+  "workerRecoveryAccepted": false,
+  "processingQualityAccepted": false,
+  "defaultActivated": false
+}

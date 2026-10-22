@@ -1,0 +1,5 @@
+{
+  "docs/reviews/2026-10-12-m3-owned-stack-integration/verify_layout_controls.py": "9b0327232960406bdce24591f9b16ec4342f4e59ae1550f21072e57efc158022",
+  "openplan/scripts/ops/openplan-control-panel.py": "aafbd87b97847363b166ec726c2373d2303ba16252672e0afa99afb0683b3c89",
+  "openplan/scripts/ops/tests/test_control_layout.py": "eaec59b383e60243e87d58baa58c5f38af06fa0af1bdd3726c5c47985cb7b915"
+}

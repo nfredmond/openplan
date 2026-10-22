@@ -1,0 +1,27 @@
+{
+  "survivingCohorts": [
+    "baseline",
+    "harmless",
+    "restored"
+  ],
+  "testsEach": 6,
+  "targetedFailure": "Missing new rollback target fails only the relative Markdown link assertion",
+  "classifierRefusals": [
+    "runner-error",
+    "unrelated-assertion",
+    "missing-diagnostic"
+  ],
+  "restoredSourceSha256": "90053933d65cfb5e1d761ec1afa97f37e146b0af4c21161fd0b1141b0934ade0",
+  "limits": "Checks file references, commands and environment names; not Markdown anchors, semantic rollback safety, other unlisted operator docs or any live operation.",
+  "selectedRegression": {
+    "files": 2,
+    "testsPassed": 19,
+    "failed": 0,
+    "memoryPeak": "213.1 MiB",
+    "swap": "0B",
+    "limit": "1 GiB",
+    "runtimeChanged": false
+  },
+  "controllerMemoryPeak": "195.8 MiB",
+  "firstAttempt": "Rejected truncated JSON diagnostic; no controls accepted. Source restored. Separate retained attempt."
+}

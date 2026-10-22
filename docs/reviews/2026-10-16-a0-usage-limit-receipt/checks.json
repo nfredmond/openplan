@@ -1,0 +1,79 @@
+{
+  "baseCommit": "bbbcfcc56e293cbf5fad105d0bfaf3ce94da1ffc",
+  "checkout": "/home/nathaniel/.t3/worktrees/openplan/t3-c1880cd3",
+  "branch": "t3/a0-usage-limit-receipt",
+  "heapMB": 1024,
+  "lock": "/home/nathaniel/.local/state/openplan/compiler-repair-checks-20261015.lock",
+  "node": {
+    "exitCode": 0,
+    "passed": 42,
+    "skipped": 0,
+    "concurrency": 1,
+    "files": [
+      "workers/planner_agent_connector/test/usage-limit.test.mjs",
+      "workers/planner_agent_connector/test/codex-session.test.mjs",
+      "workers/planner_agent_connector/test/connector-worker.test.mjs"
+    ],
+    "log": "node-final.log",
+    "tier": "synthetic frames and mocked generation/transport"
+  },
+  "vitest": {
+    "exitCode": 0,
+    "passed": 110,
+    "files": [
+      "src/test/provider-usage-limit.test.tsx",
+      "src/test/provider-usage-limit-adapter.test.ts",
+      "src/test/provider-routes.test.ts",
+      "src/test/project-provider-panel.test.tsx"
+    ],
+    "maxWorkers": 1,
+    "fileParallelism": false,
+    "log": "vitest-final.log",
+    "tier": "real route/reader/DOM with mocked storage; real adapter/session with synthetic launch"
+  },
+  "typescript": {
+    "exitCode": 0,
+    "scopeConfig": "/home/nathaniel/.local/state/openplan/a0-usage-limit-receipt-20261016/tsconfig.json",
+    "log": "typescript-corrected.log",
+    "fullProject": false
+  },
+  "lint": {
+    "exitCode": 0,
+    "errors": 0,
+    "warnings": 0,
+    "log": "lint.log",
+    "scope": "six changed TypeScript/TSX files"
+  },
+  "direction": {
+    "exitCode": 0,
+    "log": "direction.log",
+    "remindersRetained": true
+  },
+  "mutations": {
+    "harmlessSurvivors": 2,
+    "targetedFailures": 15,
+    "restoration": "every source hash rechecked at packaging",
+    "evidence": "controls.json"
+  },
+  "notExecuted": [
+    "migration18",
+    "NATIVE_PROBE.sql",
+    "native database",
+    "RLS",
+    "browser desktop/390px",
+    "installed CLI",
+    "new provider frame recording",
+    "full suite",
+    "build",
+    "services",
+    "cloud",
+    "CI"
+  ],
+  "boundaryIncident": {
+    "kind": "donor Vitest cache write by two initial test runs",
+    "path": "/home/nathaniel/.t3/worktrees/openplan/t3-0f743997/openplan/node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/results.json",
+    "observedLocalMtime": "2026-10-16T09:52:00.943276908",
+    "subsequentRuns": "private cache override",
+    "trackedDonorSourceModified": false
+  }
+}

@@ -1,0 +1,92 @@
+[
+  {
+    "id": "0be90d4b3abefb4d78716d3e984c7ef06c3d06a61400e843cb5c0bc296be638f",
+    "name": "openplan-pr330-native-rest-cd2ca9a78222",
+    "database": "openplan_pr330_native_32e91518d541497fbe62e201",
+    "image": "sha256:2f8e7b656f09db697a8875177694b417b35cb76c21370de07fc54e711e902326",
+    "cap": 1000,
+    "publish": "127.74.19.12:29950",
+    "version": "PostgREST 14.15",
+    "stopped": {
+      "id": "0be90d4b3abefb4d78716d3e984c7ef06c3d06a61400e843cb5c0bc296be638f",
+      "running": false,
+      "oomKilled": false,
+      "exitCode": 255
+    }
+  },
+  {
+    "id": "fac3614704bd8f53c481ca33e2a43ce5f86e96b25e9afa715d1bb51d71de10a9",
+    "name": "openplan-pr330-native-rest-00a062ab69d1",
+    "database": "openplan_pr330_native_32e91518d541497fbe62e201",
+    "image": "sha256:2f8e7b656f09db697a8875177694b417b35cb76c21370de07fc54e711e902326",
+    "cap": 137,
+    "publish": "127.74.19.12:29950",
+    "version": "PostgREST 14.15",
+    "stopped": {
+      "id": "fac3614704bd8f53c481ca33e2a43ce5f86e96b25e9afa715d1bb51d71de10a9",
+      "running": false,
+      "oomKilled": false,
+      "exitCode": 255
+    }
+  },
+  {
+    "id": "c9d930c46a25ce6e4c01a1af5d679191b109d85f4aa0fbac7a295181572b6aa4",
+    "name": "openplan-pr330-native-rest-92703a4fe627",
+    "database": "openplan_pr330_native_32e91518d541497fbe62e201",
+    "image": "sha256:2f8e7b656f09db697a8875177694b417b35cb76c21370de07fc54e711e902326",
+    "cap": 2,
+    "publish": "127.74.19.12:29950",
+    "version": "PostgREST 14.15",
+    "stopped": {
+      "id": "c9d930c46a25ce6e4c01a1af5d679191b109d85f4aa0fbac7a295181572b6aa4",
+      "running": false,
+      "oomKilled": false,
+      "exitCode": 255
+    }
+  },
+  {
+    "id": "02707e824730f0e83a22b7e4d4909113316307b2cff62b0ea49d5b63e0eaa972",
+    "name": "openplan-pr330-native-rest-5960da253dcc",
+    "database": "openplan_pr330_native_32e91518d541497fbe62e201",
+    "image": "sha256:2f8e7b656f09db697a8875177694b417b35cb76c21370de07fc54e711e902326",
+    "cap": 1000,
+    "publish": "127.74.19.12:29950",
+    "version": "PostgREST 14.15",
+    "stopped": {
+      "id": "02707e824730f0e83a22b7e4d4909113316307b2cff62b0ea49d5b63e0eaa972",
+      "running": false,
+      "oomKilled": false,
+      "exitCode": 255
+    }
+  },
+  {
+    "id": "e7f90b625c4d14dc08b4fe53312fad12263c23fec77dcce3600406ba3f083450",
+    "name": "openplan-pr330-native-rest-5df77bcc355a",
+    "database": "openplan_pr330_native_32e91518d541497fbe62e201",
+    "image": "sha256:2f8e7b656f09db697a8875177694b417b35cb76c21370de07fc54e711e902326",
+    "cap": 1000,
+    "publish": "127.74.19.12:29950",
+    "version": "PostgREST 14.15",
+    "stopped": {
+      "id": "e7f90b625c4d14dc08b4fe53312fad12263c23fec77dcce3600406ba3f083450",
+      "running": false,
+      "oomKilled": false,
+      "exitCode": 255
+    }
+  },
+  {
+    "id": "0a4d14d6969a69549643014536504f8593772fb5dee8478a9ad78992adeeec54",
+    "name": "openplan-pr330-native-rest-21677d88813f",
+    "database": "openplan_pr330_native_32e91518d541497fbe62e201",
+    "image": "sha256:2f8e7b656f09db697a8875177694b417b35cb76c21370de07fc54e711e902326",
+    "cap": 1000,
+    "publish": "127.74.19.12:29950",
+    "version": "PostgREST 14.15",
+    "stopped": {
+      "id": "0a4d14d6969a69549643014536504f8593772fb5dee8478a9ad78992adeeec54",
+      "running": false,
+      "oomKilled": false,
+      "exitCode": 255
+    }
+  }
+]

@@ -1,0 +1,14 @@
+[
+  {
+    "capture": "capture-01",
+    "selectedCommit": "dae9d2457c8a9ba843049d236539ee42b7fe6110",
+    "recordedMigrations": 408,
+    "mismatches": []
+  },
+  {
+    "capture": "capture-main41c-01",
+    "selectedCommit": "41cbd5a856c4da0824b408ac3ebabb459e205e3f",
+    "recordedMigrations": 409,
+    "mismatches": []
+  }
+]

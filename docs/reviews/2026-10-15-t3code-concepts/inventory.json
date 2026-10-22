@@ -1,0 +1,18 @@
+{
+  "repository": "pingdotgg/t3code",
+  "sourceCommit": "ec1313c8f8333292506f05a355bb72d308a455d8",
+  "startedAt": "2026-10-15T01:44:01.270841+00:00",
+  "finishedAt": "2026-10-15T01:44:53.504602+00:00",
+  "pullRequests": 13199,
+  "pages": 132,
+  "states": {
+    "open": 1341,
+    "closed": 11858
+  },
+  "merged": 5105,
+  "documentationPaths": 1014,
+  "allTreePaths": 28071,
+  "maxPrNumber": 19702,
+  "corpusSha256": "2852de23041366abdbec9c9b6fd3e8470bdf67b9ca3a2c26bb2db9225bc8a16f",
+  "scope": "Paginated all-state PR metadata and bodies, not all discussions or patches; repository documentation inventory at pinned source commit. PR data is collected over an interval."
+}

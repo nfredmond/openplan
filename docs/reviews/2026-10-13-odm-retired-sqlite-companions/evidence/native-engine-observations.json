@@ -1,0 +1,94 @@
+[
+  {
+    "case": "original",
+    "outcome": "attested",
+    "elapsedSeconds": 0.0830365180154331
+  },
+  {
+    "case": "repeat-original-0",
+    "outcome": "attested",
+    "elapsedSeconds": 0.07747576700057834
+  },
+  {
+    "case": "repeat-original-1",
+    "outcome": "attested",
+    "elapsedSeconds": 0.07989021198591217
+  },
+  {
+    "case": "repeat-original-2",
+    "outcome": "attested",
+    "elapsedSeconds": 0.07358002802357078
+  },
+  {
+    "case": "repeat-original-3",
+    "outcome": "attested",
+    "elapsedSeconds": 0.07137575995875522
+  },
+  {
+    "case": "repeat-original-4",
+    "outcome": "attested",
+    "elapsedSeconds": 0.08247363602276891
+  },
+  {
+    "case": "harmless-owner",
+    "outcome": "attested",
+    "elapsedSeconds": 0.07302202499704435
+  },
+  {
+    "case": "wrong-original",
+    "outcome": "refused",
+    "errorType": "ValueError",
+    "elapsedSeconds": 5.084503209218383e-05
+  },
+  {
+    "case": "wrong-configuration",
+    "outcome": "refused",
+    "errorType": "ValueError",
+    "elapsedSeconds": 0.0767616499797441
+  },
+  {
+    "case": "wrong-endpoint",
+    "outcome": "refused",
+    "errorType": "ValueError",
+    "elapsedSeconds": 0.069580412004143
+  },
+  {
+    "case": "pre-cancelled",
+    "outcome": "refused",
+    "errorType": "InterruptedError",
+    "elapsedSeconds": 4.027038812637329e-06
+  },
+  {
+    "case": "expired",
+    "outcome": "refused",
+    "errorType": "TimeoutError",
+    "elapsedSeconds": 3.1660310924053192e-06
+  },
+  {
+    "case": "stopped-original",
+    "outcome": "refused",
+    "errorType": "ValueError",
+    "elapsedSeconds": 0.07351524499244988
+  },
+  {
+    "case": "same-original-restart",
+    "outcome": "attested",
+    "elapsedSeconds": 0.07099733600625768
+  },
+  {
+    "case": "host-path-replaced",
+    "outcome": "attested",
+    "elapsedSeconds": 0.07453474903013557
+  },
+  {
+    "case": "remounted-changed-bytes",
+    "outcome": "refused",
+    "errorType": "ValueError",
+    "elapsedSeconds": 0.0680653449962847
+  },
+  {
+    "case": "restored-mounted-original",
+    "outcome": "attested",
+    "elapsedSeconds": 0.07039159297710285
+  }
+]

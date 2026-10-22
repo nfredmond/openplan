@@ -1,0 +1,425 @@
+{
+  "controls": [
+    {
+      "name": "baseline-ordinary",
+      "result": "survived",
+      "variant": "baseline",
+      "operation": "ordinary",
+      "observations": [
+        "exact-original",
+        "current-original-scope",
+        "no-engine-permission",
+        "identical-replay",
+        "anon-refused",
+        "authenticated-refused",
+        "private-schema-unexposed"
+      ],
+      "wallMilliseconds": 91,
+      "sourceSha256": {
+        "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
+        "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
+      }
+    },
+    {
+      "name": "baseline-revoked",
+      "result": "survived",
+      "variant": "baseline",
+      "operation": "revoked",
+      "observations": [
+        "revoked-scope",
+        "immutable-original-readback",
+        "revoked-record-refused"
+      ],
+      "wallMilliseconds": 74,
+      "sourceSha256": {
+        "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
+        "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
+      }
+    },
+    {
+      "name": "authorize-revoked-original",
+      "result": "intended assertion",
+      "assertion": "Actual RPC refuses revoked original scope"
+    },
+    {
+      "name": "baseline-record-abort",
+      "result": "survived",
+      "variant": "baseline",
+      "operation": "record-abort",
+      "observations": [
+        "record-abort",
+        "static-refusal",
+        "ten-second-client-abort"
+      ],
+      "wallMilliseconds": 10010,
+      "sourceSha256": {
+        "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
+        "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
+      }
+    },
+    {
+      "name": "baseline-record-recovery",
+      "result": "survived",
+      "variant": "baseline",
+      "operation": "ordinary",
+      "observations": [
+        "exact-original",
+        "current-original-scope",
+        "no-engine-permission",
+        "identical-replay",
+        "anon-refused",
+        "authenticated-refused",
+        "private-schema-unexposed"
+      ],
+      "wallMilliseconds": 94,
+      "sourceSha256": {
+        "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
+        "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
+      }
+    },
+    {
+      "name": "baseline-read-abort",
+      "result": "survived",
+      "variant": "baseline",
+      "operation": "read-abort",
+      "observations": [
+        "read-abort",
+        "static-refusal",
+        "ten-second-client-abort"
+      ],
+      "wallMilliseconds": 10050,
+      "sourceSha256": {
+        "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
+        "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
+      }
+    },
+    {
+      "name": "baseline-read-recovery",
+      "result": "survived",
+      "variant": "baseline",
+      "operation": "ordinary",
+      "observations": [
+        "exact-original",
+        "current-original-scope",
+        "no-engine-permission",
+        "identical-replay",
+        "anon-refused",
+        "authenticated-refused",
+        "private-schema-unexposed"
+      ],
+      "wallMilliseconds": 92,
+      "sourceSha256": {
+        "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
+        "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
+      }
+    },
+    {
+      "name": "harmless-ordinary",
+      "result": "survived",
+      "variant": "harmless",
+      "operation": "ordinary",
+      "observations": [
+        "exact-original",
+        "current-original-scope",
+        "no-engine-permission",
+        "identical-replay",
+        "anon-refused",
+        "authenticated-refused",
+        "private-schema-unexposed"
+      ],
+      "wallMilliseconds": 103,
+      "sourceSha256": {
+        "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
+        "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
+      }
+    },
+    {
+      "name": "harmless-revoked",
+      "result": "survived",
+      "variant": "harmless",
+      "operation": "revoked",
+      "observations": [
+        "revoked-scope",
+        "immutable-original-readback",
+        "revoked-record-refused"
+      ],
+      "wallMilliseconds": 83,
+      "sourceSha256": {
+        "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
+        "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
+      }
+    },
+    {
+      "name": "harmless-record-abort",
+      "result": "survived",
+      "variant": "harmless",
+      "operation": "record-abort",
+      "observations": [
+        "record-abort",
+        "static-refusal",
+        "ten-second-client-abort"
+      ],
+      "wallMilliseconds": 10006,
+      "sourceSha256": {
+        "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
+        "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
+      }
+    },
+    {
+      "name": "harmless-record-recovery",
+      "result": "survived",
+      "variant": "harmless",
+      "operation": "ordinary",
+      "observations": [
+        "exact-original",
+        "current-original-scope",
+        "no-engine-permission",
+        "identical-replay",
+        "anon-refused",
+        "authenticated-refused",
+        "private-schema-unexposed"
+      ],
+      "wallMilliseconds": 81,
+      "sourceSha256": {
+        "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
+        "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
+      }
+    },
+    {
+      "name": "harmless-read-abort",
+      "result": "survived",
+      "variant": "harmless",
+      "operation": "read-abort",
+      "observations": [
+        "read-abort",
+        "static-refusal",
+        "ten-second-client-abort"
+      ],
+      "wallMilliseconds": 10006,
+      "sourceSha256": {
+        "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
+        "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
+      }
+    },
+    {
+      "name": "harmless-read-recovery",
+      "result": "survived",
+      "variant": "harmless",
+      "operation": "ordinary",
+      "observations": [
+        "exact-original",
+        "current-original-scope",
+        "no-engine-permission",
+        "identical-replay",
+        "anon-refused",
+        "authenticated-refused",
+        "private-schema-unexposed"
+      ],
+      "wallMilliseconds": 102,
+      "sourceSha256": {
+        "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
+        "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
+      }
+    },
+    {
+      "name": "missing-abort-ordinary",
+      "result": "survived",
+      "variant": "missing-abort",
+      "operation": "ordinary",
+      "observations": [
+        "exact-original",
+        "current-original-scope",
+        "no-engine-permission",
+        "identical-replay",
+        "anon-refused",
+        "authenticated-refused",
+        "private-schema-unexposed"
+      ],
+      "wallMilliseconds": 92,
+      "sourceSha256": {
+        "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
+        "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
+      }
+    },
+    {
+      "name": "missing-abort-revoked",
+      "result": "survived",
+      "variant": "missing-abort",
+      "operation": "revoked",
+      "observations": [
+        "revoked-scope",
+        "immutable-original-readback",
+        "revoked-record-refused"
+      ],
+      "wallMilliseconds": 84,
+      "sourceSha256": {
+        "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
+        "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
+      }
+    },
+    {
+      "name": "missing-abort-record-abort",
+      "result": "intended assertion",
+      "assertion": "Actual RPC deadline refuses a stalled command"
+    },
+    {
+      "name": "missing-abort-record-recovery",
+      "result": "survived",
+      "variant": "missing-abort",
+      "operation": "ordinary",
+      "observations": [
+        "exact-original",
+        "current-original-scope",
+        "no-engine-permission",
+        "identical-replay",
+        "anon-refused",
+        "authenticated-refused",
+        "private-schema-unexposed"
+      ],
+      "wallMilliseconds": 88,
+      "sourceSha256": {
+        "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
+        "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
+      }
+    },
+    {
+      "name": "missing-abort-read-abort",
+      "result": "intended assertion",
+      "assertion": "Actual RPC deadline refuses a stalled command"
+    },
+    {
+      "name": "missing-abort-read-recovery",
+      "result": "survived",
+      "variant": "missing-abort",
+      "operation": "ordinary",
+      "observations": [
+        "exact-original",
+        "current-original-scope",
+        "no-engine-permission",
+        "identical-replay",
+        "anon-refused",
+        "authenticated-refused",
+        "private-schema-unexposed"
+      ],
+      "wallMilliseconds": 92,
+      "sourceSha256": {
+        "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
+        "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
+      }
+    },
+    {
+      "name": "restored-ordinary",
+      "result": "survived",
+      "variant": "restored",
+      "operation": "ordinary",
+      "observations": [
+        "exact-original",
+        "current-original-scope",
+        "no-engine-permission",
+        "identical-replay",
+        "anon-refused",
+        "authenticated-refused",
+        "private-schema-unexposed"
+      ],
+      "wallMilliseconds": 90,
+      "sourceSha256": {
+        "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
+        "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
+      }
+    },
+    {
+      "name": "restored-revoked",
+      "result": "survived",
+      "variant": "restored",
+      "operation": "revoked",
+      "observations": [
+        "revoked-scope",
+        "immutable-original-readback",
+        "revoked-record-refused"
+      ],
+      "wallMilliseconds": 62,
+      "sourceSha256": {
+        "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
+        "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
+      }
+    },
+    {
+      "name": "restored-record-abort",
+      "result": "survived",
+      "variant": "restored",
+      "operation": "record-abort",
+      "observations": [
+        "record-abort",
+        "static-refusal",
+        "ten-second-client-abort"
+      ],
+      "wallMilliseconds": 10006,
+      "sourceSha256": {
+        "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
+        "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
+      }
+    },
+    {
+      "name": "restored-record-recovery",
+      "result": "survived",
+      "variant": "restored",
+      "operation": "ordinary",
+      "observations": [
+        "exact-original",
+        "current-original-scope",
+        "no-engine-permission",
+        "identical-replay",
+        "anon-refused",
+        "authenticated-refused",
+        "private-schema-unexposed"
+      ],
+      "wallMilliseconds": 95,
+      "sourceSha256": {
+        "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
+        "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
+      }
+    },
+    {
+      "name": "restored-read-abort",
+      "result": "survived",
+      "variant": "restored",
+      "operation": "read-abort",
+      "observations": [
+        "read-abort",
+        "static-refusal",
+        "ten-second-client-abort"
+      ],
+      "wallMilliseconds": 10007,
+      "sourceSha256": {
+        "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
+        "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
+      }
+    },
+    {
+      "name": "restored-read-recovery",
+      "result": "survived",
+      "variant": "restored",
+      "operation": "ordinary",
+      "observations": [
+        "exact-original",
+        "current-original-scope",
+        "no-engine-permission",
+        "identical-replay",
+        "anon-refused",
+        "authenticated-refused",
+        "private-schema-unexposed"
+      ],
+      "wallMilliseconds": 104,
+      "sourceSha256": {
+        "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
+        "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
+      }
+    }
+  ],
+  "selectedMain": "44dceca1cc11e00b2f2736364e1c4b134a55e821",
+  "selectedMainDumpSha256": "7b51116b5caad24649b75be76e0d8582b3421bde1c86db23c8c6aa818a432dd5",
+  "migrationSha256": "8fe8cdfd8c38277d8534dab7821c5aaefa1bf702a630596eb9f7a747dbebcc09",
+  "clientSha256": "a56b7721c50cacbb909734e7b941caf0178dd198a0eaa1a25d233429581a5625",
+  "cliVersion": "2.111.0",
+  "scope": "Actual CLI application and idempotence, installed PostgREST client with real private RPCs and ten-second client abort under isolated stalled SQL. Current-scope observation and private schema role boundaries only. No complete Supabase stack, atomic engine fence, hosted, offsite, browser, practitioner or scientific acceptance."
+}

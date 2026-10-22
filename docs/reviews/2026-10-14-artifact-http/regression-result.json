@@ -1,0 +1,26 @@
+[
+  {
+    "check": "python311-http",
+    "returncode": 0
+  },
+  {
+    "check": "python314-access",
+    "returncode": 0
+  },
+  {
+    "check": "python314-admission",
+    "returncode": 0
+  },
+  {
+    "check": "python311-access",
+    "returncode": 0
+  },
+  {
+    "check": "python311-admission",
+    "returncode": 0
+  },
+  {
+    "check": "native-http",
+    "returncode": 0
+  }
+]

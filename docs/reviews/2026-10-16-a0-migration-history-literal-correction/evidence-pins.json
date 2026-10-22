@@ -1,0 +1,307 @@
+{
+  "freshIndependentFinalReview": "REQUIRED",
+  "nativeAccepted": false,
+  "newPrivateManifest": {
+    "bytes": 1168313,
+    "entries": 4577,
+    "path": "/home/nathaniel/.local/state/openplan/a0-migration-history-literal-correction-20261016/private-manifest.json",
+    "sha256": "76c0d0bb22567aeffc5ef45543ad1fb23177ec282960fe64cf3b4ed305e18316"
+  },
+  "privateRoot": "/home/nathaniel/.local/state/openplan/a0-migration-history-literal-correction-20261016",
+  "selectedPrivate": {
+    "bindings/external-predecessor.json": {
+      "bytes": 126449,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "ef4bd64e74f670c4eb8fa805b7d7bf1fc2f5720df2c1aaab9110612d98654b03",
+      "uid": 1000
+    },
+    "bindings/package-pins.json": {
+      "bytes": 1495,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "3fcc19fb18b09c0b38ed7fc262c58c06a73f155fc5bc1ec4ea02aea3e5164dc2",
+      "uid": 1000
+    },
+    "bindings/prior-function-pins.json": {
+      "bytes": 593,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "08b5773311198f492c4fb21a9974c2178887ec00ff80bd8962f3ccf5bf578ac9",
+      "uid": 1000
+    },
+    "bindings/review-pins.json": {
+      "bytes": 3636,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "1de634e1fbc73fdc2e0ddaf29ab5fdfc6fae53f4ccfdb398dd11dbb9be4fd331",
+      "uid": 1000
+    },
+    "bindings/source-pins.json": {
+      "bytes": 201496,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "b374b14a2b2fa10eb694fbb8d9de887bdd6879fbe68d20f1af717ceadd20d7ec",
+      "uid": 1000
+    },
+    "controls-01/reader-controls.json": {
+      "bytes": 373,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "98994615f82b0d0196f14596487f5487e71eb558d857a2b0a43c373b81b343e2",
+      "uid": 1000
+    },
+    "controls-01/result.json": {
+      "bytes": 2281,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "680839f0dabdf40a25ce2458c2f28fd958712e57b53e942283dc22814468fc9f",
+      "uid": 1000
+    },
+    "final-checks.json": {
+      "bytes": 991,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "2bdf4ff7546004c70d9da9fc29c49c95ca2618ebc6823caec28f92b2bb4c7e03",
+      "uid": 1000
+    },
+    "mutation-reader-static-audit.json": {
+      "bytes": 3817,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "f068186928f63ac734a5d8035361cf56698b4df4f8ffa0a6315caeb344a2af72",
+      "uid": 1000
+    },
+    "plan.json": {
+      "bytes": 61975,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "f8b8a36f4439703964cd5d66d9e6408d37bc984215c6c07a5909a728af7db4e5",
+      "uid": 1000
+    },
+    "prepared-window-pins.json": {
+      "bytes": 5374,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "6a4c21998a9466d098fae78aa989022083f8a2e968197e43d9be623b3b14e9bf",
+      "uid": 1000
+    },
+    "proposed-admission.json": {
+      "bytes": 133616,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "bf6d72e8687188f912510616dbee6bb72a37b8a1186cdb15db13b10e76031ee3",
+      "uid": 1000
+    },
+    "pure-window-terminal.json": {
+      "bytes": 997,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "7b32a648422a244cb2578de263f14bade779182dd33803406aa759afe1103c2e",
+      "uid": 1000
+    },
+    "root-pure-window-grant.json": {
+      "bytes": 1194,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "9e2f81c79c31ada854fc2bfff40a141873659c25737a63ac4df9c8f08dda02f5",
+      "uid": 1000
+    },
+    "selected-before.json": {
+      "bytes": 119952,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "e7309fa7ec56e4a9b6ee10b84d6081a55f951e3cdd9655d0a69c7b3da34b56e4",
+      "uid": 1000
+    },
+    "step-1/exit.json": {
+      "bytes": 207,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "2287e48d260afb8266438deb9c448d08dc2113a15ed842de5fca1bba24e2a7c9",
+      "uid": 1000
+    },
+    "step-1/intent.json": {
+      "bytes": 273,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "c37afd14e72b2e49ad776355d8ca163cf94f036d498dce867b1a2a2cb24479d2",
+      "uid": 1000
+    },
+    "step-1/returned-process.json": {
+      "bytes": 21,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "733794a9d2e4585f4e39a6cfa189002689d5300169049a1490c1e184bf6e8ba9",
+      "uid": 1000
+    },
+    "step-1/stderr.bin": {
+      "bytes": 0,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 1000
+    },
+    "step-1/stdout.bin": {
+      "bytes": 153,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "7b4b8eda126ab976ec314ce9a4d9d6e73900558e30a773a9dfc3d146a2c9bb35",
+      "uid": 1000
+    },
+    "step-2/exit.json": {
+      "bytes": 207,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "df0f4c412d4b4cf28874d9e365571c4c7867b5cdb78e207e13030ce4104996da",
+      "uid": 1000
+    },
+    "step-2/intent.json": {
+      "bytes": 177,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "0cb28d2dddb0b915cee27cfb43c4c66e9b18e2762a4bbae3640393137f59f5cd",
+      "uid": 1000
+    },
+    "step-2/returned-process.json": {
+      "bytes": 21,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "470968a9ba93bdf9e1c5f01172825ae732617697de9441e66ae444e179a9c10b",
+      "uid": 1000
+    },
+    "step-2/stderr.bin": {
+      "bytes": 648,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "f68445367cddf2dc482988cce2c102768990039ee4d491468a145718612a4640",
+      "uid": 1000
+    },
+    "step-2/stdout.bin": {
+      "bytes": 286,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "2d21f390f2609c705836afd80f7e9059cb7633f9b87fe51c3e19eed02579d912",
+      "uid": 1000
+    },
+    "step-3/exit.json": {
+      "bytes": 207,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "52843c1bfe98ed0f26c39ad1ae0ac5829871f5e764cc022fd3218028c0ec4498",
+      "uid": 1000
+    },
+    "step-3/intent.json": {
+      "bytes": 274,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "3f60a4aab4a9561a5f83fcbac33d146dbb192445bc2fd4d1dcdafe3ed42cf324",
+      "uid": 1000
+    },
+    "step-3/returned-process.json": {
+      "bytes": 21,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "a2227cba81415303603b0d74c0f4a18cd7344410e6412210a6eb43926cb92abb",
+      "uid": 1000
+    },
+    "step-3/stderr.bin": {
+      "bytes": 0,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 1000
+    },
+    "step-3/stdout.bin": {
+      "bytes": 32,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "cf774cf0f0c670241197f0b23110ad1294cdf93c37a13b85f7032d4a7a57160c",
+      "uid": 1000
+    },
+    "step-4/exit.json": {
+      "bytes": 207,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "a6c4fb08e4cdd0843d08e52e43a1e8f6f72a80cedd839086f0dcf47202a10a9c",
+      "uid": 1000
+    },
+    "step-4/intent.json": {
+      "bytes": 278,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "9824004997c8ea703b77f2f82b493edd7dd5cb2f1115c5849ca4a7e08fb18393",
+      "uid": 1000
+    },
+    "step-4/returned-process.json": {
+      "bytes": 21,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "0159d1cdbfbb9fcb4c2774cdf4ef3a6c25ccdde6ce65c70df98cb9b515342864",
+      "uid": 1000
+    },
+    "step-4/stderr.bin": {
+      "bytes": 0,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 1000
+    },
+    "step-4/stdout.bin": {
+      "bytes": 797,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "441910dd2254e6ab87a30be44f224483c8db2345b499356b5b72315b99b5a4e1",
+      "uid": 1000
+    },
+    "test-readonly-probes.json": {
+      "bytes": 335,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "e7ddafd0f4210722774e8f0cf71106a7fa3693581c1d53035ef3fd9d412dd3e1",
+      "uid": 1000
+    },
+    "test-resources.json": {
+      "bytes": 144403,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "8e44b179f61bf539111940411ef8616941c28728c9084376f24f21df4d9a4f2b",
+      "uid": 1000
+    },
+    "test-unit-01/exit.json": {
+      "bytes": 323,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "8448cb67eb869d63f649d57e17d334d3b0b5020c28cc89656ec5e5969283b80a",
+      "uid": 1000
+    },
+    "test-unit-01/intent.json": {
+      "bytes": 4727,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "360148b0d7b059aa2ecb87b6cf3d12eef0fa692c4fdac102802131323f0e2ccf",
+      "uid": 1000
+    },
+    "test-unit-01/returned-process.json": {
+      "bytes": 21,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "998c531f6b75bf0b846d6bbd84f0c0f4ea1183275c8db794e639264ac2844bbd",
+      "uid": 1000
+    },
+    "test-unit-01/stderr.bin": {
+      "bytes": 350,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "dec2aa5e4796ff093647737df7ea308d59eff495ccca7e291d18564bcef639ef",
+      "uid": 1000
+    },
+    "test-unit-01/stdout.bin": {
+      "bytes": 0,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 1000
+    }
+  }
+}

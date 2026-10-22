@@ -1,0 +1,41 @@
+{
+  "sourceSha256": "0f70c6eeb65e4331c694336444fbdf999c903993ac5c88e4742ef26ec595eb90",
+  "testSha256": "295fa2bc30e354f22f9d891c66859a9c34a70ab982663f90efd18b8870ee5a7c",
+  "productionDiff": false,
+  "focused": {
+    "unit": "openplan-gtfs-human-clock-tests-20261011-02.service",
+    "invocationId": "66f004e73c7c4d32b5351790030bebc2",
+    "exitCode": 0,
+    "testsPassed": 36
+  },
+  "static": {
+    "unit": "openplan-gtfs-human-clock-static-20261011-01.service",
+    "invocationId": "68c0b7fb04204df2bd78cb0f111bd645",
+    "exitCode": 0,
+    "lint": "changed file",
+    "typescript": "scoped"
+  },
+  "controls": {
+    "unit": "openplan-gtfs-human-clock-controls-20261011-02.service",
+    "invocationId": "ac4943b2c1c2404ba35dc91c49a2d484",
+    "exitCode": 0,
+    "survivors": 3,
+    "intendedFailures": 8
+  },
+  "regression": {
+    "unit": "openplan-gtfs-human-clock-regression-20261011-01.service",
+    "invocationId": "8dc214a01032472b97388576ca535b6d",
+    "exitCode": 0,
+    "seed": 672435,
+    "filesPassed": 56,
+    "testsPassed": 1431,
+    "testsSkipped": 17,
+    "skipBoundary": "live database",
+    "vitestWorkers": 1,
+    "memoryLimitBytes": 1073741824,
+    "wallSeconds": 57.76,
+    "journalRoundedPeakMiB": 488.1
+  },
+  "publicReadiness": "unassessed",
+  "mainMerged": false
+}

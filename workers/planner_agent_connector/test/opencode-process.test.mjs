@@ -28,7 +28,7 @@ async function fixture(mode = "normal") {
   const receiptPath = join(root, "receipt.json");
   const receipt = async () => JSON.parse(await readFile(receiptPath, "utf8"));
   fixtures.push(receipt);
-  return { receipt,
+  return { receipt, root,
     launch: { account: { status: "connected", authMode: "opencode_api" }, command: process.execPath,
       args: [fileURLToPath(new URL("./fixtures/opencode-server.mjs", import.meta.url))],
       options: { cwd: root, stdio: ["pipe", "pipe", "pipe"], shell: false,
@@ -108,9 +108,45 @@ test("cancellation terminates a held request and waits for child exit", async ()
 });
 
 test("shutdown escalates when the owned child ignores termination", async () => {
-  const f = await fixture("ignoreTerm"), server = await startOpenCodeServer(f.launch, { killGraceMs: 30 });
-  await server.close(); const receipt = await f.receipt();
-  assert.equal(receipt.terminated, true); gone(receipt.pid);
+  const f = await fixture("ignoreTerm"), signals = [];
+  const original = childProcess.spawn;
+  childProcess.spawn = function (...args) {
+    const child = original.apply(this, args), kill = child.kill.bind(child);
+    child.kill = signal => { signals.push({ signal, delivered: kill(signal) }); return signals.at(-1).delivered; };
+    return child;
+  };
+  syncBuiltinESMExports();
+  let server;
+  try {
+    server = await startOpenCodeServer(f.launch, { killGraceMs: 30 });
+    await server.close();
+    assert.deepEqual(signals, [{ signal: "SIGTERM", delivered: true }, { signal: "SIGKILL", delivered: true }],
+      "owned shutdown must deliver termination then forced kill");
+    gone((await f.receipt()).pid);
+  } finally {
+    try { await server?.close(); }
+    finally { childProcess.spawn = original; syncBuiltinESMExports(); }
+  }
+});
+
+test("interrupted fixture publication preserves its last complete receipt", async () => {
+  const f = await fixture("ignoreTerm"), barrier = join(f.root, "rewrite-barrier");
+  f.launch.options.env.RECEIPT_BARRIER_PATH = barrier;
+  const server = await startOpenCodeServer(f.launch, { killGraceMs: 30 });
+  const before = await f.receipt();
+  try {
+    process.kill(before.pid, "SIGTERM");
+    const deadline = performance.now() + 1000;
+    while (true) {
+      try { assert.equal(await readFile(barrier, "utf8"), "opened-before-data"); break; }
+      catch (error) { if (error.code !== "ENOENT") throw error; }
+      assert.ok(performance.now() < deadline, "owned fixture must reach the actual publication barrier");
+      await delay(5);
+    }
+    await server.close();
+    assert.deepEqual(await f.receipt(), before, "interrupted rewrite must keep the preceding complete receipt");
+    gone(before.pid);
+  } finally { await server.close(); }
 });
 
 test("unexpected exit remains a failure after startup", async () => {

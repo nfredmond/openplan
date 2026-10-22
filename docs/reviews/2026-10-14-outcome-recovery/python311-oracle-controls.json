@@ -1,0 +1,2642 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-log",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "zero-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "mismatched-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "duplicate-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-target",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  }
+]

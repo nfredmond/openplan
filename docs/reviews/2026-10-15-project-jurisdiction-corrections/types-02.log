@@ -1,0 +1,3 @@
+Running as unit: run-p48346-i88004035.scope; invocation ID: bb4c500e0c564e67bdaed8df0e134c21
+src/components/projects/project-jurisdiction-editor.tsx(15,7): error TS7034: Variable 'saved' implicitly has type 'any' in some locations where its type cannot be determined.
+src/components/projects/project-jurisdiction-editor.tsx(37,32): error TS7005: Variable 'saved' implicitly has an 'any' type.

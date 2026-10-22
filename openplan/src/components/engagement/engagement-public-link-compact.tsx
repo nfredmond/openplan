@@ -17,7 +17,14 @@ import { getPublicPortalState, type PublicPortalCampaignLike } from "@/lib/engag
 // gives a hydration-safe read (server snapshot is empty) without an effect.
 const subscribeToNothing = () => () => {};
 
-export function EngagementPublicLinkCompact({ campaign }: { campaign: PublicPortalCampaignLike }) {
+export function EngagementPublicLinkCompact({
+  campaign,
+  timeZone,
+}: {
+  campaign: PublicPortalCampaignLike;
+  /** The workspace calendar's zone, for dates in the status line. Absent means UTC. */
+  timeZone?: string;
+}) {
   const browserOrigin = useSyncExternalStore(
     subscribeToNothing,
     () => window.location.origin,
@@ -25,7 +32,7 @@ export function EngagementPublicLinkCompact({ campaign }: { campaign: PublicPort
   );
   const [copied, setCopied] = useState(false);
 
-  const portal = getPublicPortalState(campaign);
+  const portal = getPublicPortalState(campaign, { timeZone });
   // Honest by construction: a URL renders here only when the public page
   // actually resolves. Private and staged portals get the state detail instead.
   const shareUrl = portal.isPubliclyReachable && portal.portalPath ? `${browserOrigin}${portal.portalPath}` : null;
@@ -42,7 +49,7 @@ export function EngagementPublicLinkCompact({ campaign }: { campaign: PublicPort
     <div className="rounded-xl border border-border/70 bg-background/70 p-3 text-sm">
       <div className="flex flex-wrap items-center gap-2">
         <p className="text-compact font-semibold">Public link</p>
-        <EngagementPortalStatusChip campaign={campaign} />
+        <EngagementPortalStatusChip campaign={campaign} timeZone={timeZone} />
         <a
           href="#public-share-controls"
           className="ml-auto text-xs font-medium text-muted-foreground underline-offset-2 transition hover:text-foreground hover:underline"

@@ -1,0 +1,22 @@
+{
+  "main": "eef4253167815e60b5ab4093833abeaaa22a64d6",
+  "opsJoined": "df1acde665d83d57b25cfeae170827f204b85141",
+  "aerialJoined": "5219e4a731ab6120ad7c5daec4c7aabed82b379c",
+  "results": [
+    {
+      "scope": "joined-main325",
+      "success": true,
+      "numPassedTests": 87,
+      "numFailedTests": 0,
+      "numPendingTests": 0
+    },
+    {
+      "scope": "aerial-joined-main325",
+      "success": true,
+      "numPassedTests": 201,
+      "numFailedTests": 0,
+      "numPendingTests": 0
+    }
+  ],
+  "limits": "Local related suites only. No live SQL, browser, hosted backend or workflow event acceptance."
+}

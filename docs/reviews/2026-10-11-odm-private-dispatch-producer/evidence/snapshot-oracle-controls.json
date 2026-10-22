@@ -1,0 +1,31 @@
+{
+  "sourceSha256": "0e18708a047c5a391094497b914903f1a156ffcb8a9882bba6c1185ecdb02fee",
+  "cases": 8,
+  "controls": [
+    {
+      "name": "baseline",
+      "result": "survived"
+    },
+    {
+      "name": "harmless",
+      "result": "survived"
+    },
+    {
+      "name": "exit-removed",
+      "result": "intended oracle failure: success-exit"
+    },
+    {
+      "name": "state-removed",
+      "result": "intended oracle failure: later-payload"
+    },
+    {
+      "name": "extra-error-accepted",
+      "result": "intended oracle failure: extra-error"
+    },
+    {
+      "name": "restored",
+      "result": "survived"
+    }
+  ],
+  "scope": "In-memory scope-refusal classifier. Actual concurrent database proof remains separate."
+}

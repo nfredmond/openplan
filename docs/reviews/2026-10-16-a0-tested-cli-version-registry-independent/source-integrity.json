@@ -1,0 +1,134 @@
+{
+  "reviewDate": "2026-10-16",
+  "tier": "independent-source-only",
+  "checkout": "/home/nathaniel/.t3/worktrees/openplan/t3-e4f55188",
+  "branch": "t3/review-cli-version-registry",
+  "candidate": "435df897e7f06259c1ebc494f540f73b611003b1",
+  "candidateParents": [
+    "607ee0895a79457181eda1d2ebbda1de4f2a4d40"
+  ],
+  "parent": "607ee0895a79457181eda1d2ebbda1de4f2a4d40",
+  "method": "Read-only Python SHA256 of repository bytes and git show of parent references; no candidate execution.",
+  "candidateSourceHashes": {
+    "docs/reviews/2026-10-16-a0-tested-cli-version-registry/STATUS.md": {
+      "sha256": "6c190c69f7b88facb1e532f7f1b0d6d683fa00407e54460088bd96f5b826e51a"
+    },
+    "docs/reviews/2026-10-16-a0-tested-cli-version-registry/controls.json": {
+      "sha256": "1e74e98ab025170f5bd62fdbe95cc9e3f9553ab58b8b536b45021941a21ae31f"
+    },
+    "docs/reviews/2026-10-16-a0-tested-cli-version-registry/verify-controls.mjs": {
+      "sha256": "72052bdf1d70a3fdd1e0c3075f7e9f125589c6cee5c84f20fa0248f462ac8a3b"
+    },
+    "workers/planner_agent_connector/claude-launch.mjs": {
+      "sha256": "e03183cfc28863bcea1d4020686e10e94c5fefd53e2cfc2931b7a7503aa2bbd9",
+      "controlReceiptSha256": "e03183cfc28863bcea1d4020686e10e94c5fefd53e2cfc2931b7a7503aa2bbd9",
+      "controlReceiptMatches": true
+    },
+    "workers/planner_agent_connector/codex-launch.mjs": {
+      "sha256": "c1378048675b44b21164d19b5f50877ada38e9d8937e92a4cba5f9f6b0769e02",
+      "controlReceiptSha256": "c1378048675b44b21164d19b5f50877ada38e9d8937e92a4cba5f9f6b0769e02",
+      "controlReceiptMatches": true
+    },
+    "workers/planner_agent_connector/opencode-launch.mjs": {
+      "sha256": "c680c4ea2bbcf5dde6a9fd580d19b2485edb05a798527185cf8e5de30c8fd596",
+      "controlReceiptSha256": "c680c4ea2bbcf5dde6a9fd580d19b2485edb05a798527185cf8e5de30c8fd596",
+      "controlReceiptMatches": true
+    },
+    "workers/planner_agent_connector/test/tested-cli-versions.test.mjs": {
+      "sha256": "6c3f572fb3ece5226879b83255c5098322513965a81aaddb1428bab9e13ffbe7",
+      "controlReceiptSha256": "6c3f572fb3ece5226879b83255c5098322513965a81aaddb1428bab9e13ffbe7",
+      "controlReceiptMatches": true
+    },
+    "workers/planner_agent_connector/tested-cli-versions.json": {
+      "sha256": "0a32b6136c2bdef170223f43e6806aa2bc002a6d33b641cf37612ddee2931d3b",
+      "controlReceiptSha256": "0a32b6136c2bdef170223f43e6806aa2bc002a6d33b641cf37612ddee2931d3b",
+      "controlReceiptMatches": true
+    },
+    "workers/planner_agent_connector/tested-cli-versions.mjs": {
+      "sha256": "4110f452a7b6eb08232bd5dc84fb367c041251c69d9d39137bb1c74b508abc71",
+      "controlReceiptSha256": "4110f452a7b6eb08232bd5dc84fb367c041251c69d9d39137bb1c74b508abc71",
+      "controlReceiptMatches": true
+    }
+  },
+  "evidenceReferences": [
+    {
+      "provider": "codex",
+      "kind": "fixtureReplay",
+      "path": "workers/planner_agent_connector/test/codex-native-isolation.test.mjs",
+      "recordedSha256": "87030a087e0ab6a32a3544d231d870dd1221959dcc852aeb86ae5a9085800f77",
+      "actualSha256": "87030a087e0ab6a32a3544d231d870dd1221959dcc852aeb86ae5a9085800f77",
+      "hashMatches": true,
+      "unchangedFromParent": true
+    },
+    {
+      "provider": "codex",
+      "kind": "installedCliAcceptance",
+      "path": "docs/reviews/2026-09-10-planner-agent-provider-connection/VERIFICATION.md",
+      "recordedSha256": "cd5bde116dc39e2b3db70060a5b440d11151c79b5116d1e59376fd3d0572faf4",
+      "actualSha256": "cd5bde116dc39e2b3db70060a5b440d11151c79b5116d1e59376fd3d0572faf4",
+      "hashMatches": true,
+      "unchangedFromParent": true
+    },
+    {
+      "provider": "codex",
+      "kind": "liveProviderAcceptance",
+      "path": "docs/reviews/2026-09-10-planner-agent-provider-connection/VERIFICATION.md",
+      "recordedSha256": "cd5bde116dc39e2b3db70060a5b440d11151c79b5116d1e59376fd3d0572faf4",
+      "actualSha256": "cd5bde116dc39e2b3db70060a5b440d11151c79b5116d1e59376fd3d0572faf4",
+      "hashMatches": true,
+      "unchangedFromParent": true
+    },
+    {
+      "provider": "claude",
+      "kind": "fixtureReplay",
+      "path": "workers/planner_agent_connector/test/claude-native-isolation.test.mjs",
+      "recordedSha256": "9f04ab2bd766564db1d053b7fcbeba2ee75865e9db19797ddead0634a3d1158a",
+      "actualSha256": "9f04ab2bd766564db1d053b7fcbeba2ee75865e9db19797ddead0634a3d1158a",
+      "hashMatches": true,
+      "unchangedFromParent": true
+    },
+    {
+      "provider": "claude",
+      "kind": "installedCliAcceptance",
+      "path": "docs/reviews/2026-09-10-claude-native-spike/VERIFICATION.md",
+      "recordedSha256": "f70757c964c8b5d7ebd7e34aa5e29903f3a945180078c82eda35b4c68b3f48ef",
+      "actualSha256": "f70757c964c8b5d7ebd7e34aa5e29903f3a945180078c82eda35b4c68b3f48ef",
+      "hashMatches": true,
+      "unchangedFromParent": true
+    },
+    {
+      "provider": "opencode",
+      "kind": "fixtureReplay",
+      "path": "workers/planner_agent_connector/test/opencode-native-filesystem.test.mjs",
+      "recordedSha256": "67679aecdb61680e4c0084274ec90f0bc6add64552ec82136600fe4bcaef049f",
+      "actualSha256": "67679aecdb61680e4c0084274ec90f0bc6add64552ec82136600fe4bcaef049f",
+      "hashMatches": true,
+      "unchangedFromParent": true
+    },
+    {
+      "provider": "opencode",
+      "kind": "installedCliAcceptance",
+      "path": "docs/reviews/2026-09-10-opencode-native-spike/VERIFICATION.md",
+      "recordedSha256": "aa42be0cee7f70a6c633f7655a97b4b96f6143432666a52bfcc2c0f305f9bfae",
+      "actualSha256": "aa42be0cee7f70a6c633f7655a97b4b96f6143432666a52bfcc2c0f305f9bfae",
+      "hashMatches": true,
+      "unchangedFromParent": true
+    }
+  ],
+  "implementationReceiptCountsOnly": {
+    "survived": 5,
+    "killed": 39,
+    "unexpected": 0
+  },
+  "executionsIndependentlyObserved": false,
+  "privateExecutionLogsInspected": false,
+  "findings": [],
+  "blinds": [
+    "No tests, compiler, build or dependency operations.",
+    "No installed CLI, model, account, browser, database, Docker or external network operations.",
+    "Hashes do not authenticate historical run claims or establish recording provenance.",
+    "Source packaging inspection does not establish emitted or deployed runtime assets.",
+    "Diagnostic-sensitive parser mutations are not independent acceptance-bypass proofs.",
+    "No current native or complete T1 acceptance."
+  ]
+}

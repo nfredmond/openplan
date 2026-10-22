@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "currentRelease": "v0.68.0",
+  "currentRelease": "v0.70.0",
   "reviewedAt": "2026-09-06",
   "reviewBy": "2026-10-05",
   "statuses": ["proven", "partial", "missing", "not-assessed"],
@@ -8,7 +8,7 @@
   "readinessRegistry": {
     "schema": "openplan.jurisdiction-readiness.v1",
     "path": "openplan/src/lib/jurisdiction-readiness/registry.v1.json",
-    "sha256": "bc923904e0999e0b1916ab46a034f68af0fca6e70cb930851bda75bd8b6dc0e4"
+    "sha256": "7b6c352ec65edbd10d39b0b9bab1b62c007734b890a33377f2b683df218246f0"
   },
   "dimensions": {
     "planner": [

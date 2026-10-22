@@ -16,6 +16,7 @@ sends the artifact WITHOUT georeferencing and says so in the callback message.
 Absent fields are the consumer's cue to refuse map placement — never guess.
 """
 
+import math
 import struct
 
 # TIFF tag ids.
@@ -150,7 +151,8 @@ def parse_geotiff(path, max_header_bytes=64 * 1024 * 1024):
         xs = [x for x, _y in corners]
         ys = [y for _x, y in corners]
         native_bounds = (min(xs), min(ys), max(xs), max(ys))
-        pixel_size = (abs(a), abs(f))
+        # One column or row step follows the full raster-to-model vector.
+        pixel_size = (math.hypot(a, e), math.hypot(b, f))
     elif scale and tiepoint and len(scale) >= 2 and len(tiepoint) >= 6:
         sx, sy = scale[0], scale[1]
         i, j, _k, x, y, _z = tiepoint[:6]
@@ -209,8 +211,11 @@ def wgs84_bounds(parsed):
 
 
 def pixel_size_meters(parsed):
-    """The ground pixel size in meters, ONLY when the native CRS's unit is the
-    meter. A degree-unit CRS gets None rather than a wrong number."""
+    """Native column spacing in metres when the declared CRS uses metre axes.
+
+    This is raster grid metadata, not measured ground accuracy. Degree and
+    other-unit systems return None rather than a wrong metre value.
+    """
     try:
         from pyproj import CRS  # noqa: PLC0415
     except ImportError:

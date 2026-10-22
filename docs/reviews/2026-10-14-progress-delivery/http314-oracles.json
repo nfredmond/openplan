@@ -1,0 +1,842 @@
+[
+  {
+    "case": "original-body-reencoded",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "original-body-reencoded",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "original-body-reencoded",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "original-body-reencoded",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "original-body-reencoded",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "original-body-reencoded",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "original-body-reencoded",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "original-body-reencoded",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "original-query-omitted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "original-query-omitted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "original-query-omitted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "original-query-omitted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "original-query-omitted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "original-query-omitted",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "original-query-omitted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "original-query-omitted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "bearer-omitted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "bearer-omitted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "bearer-omitted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "bearer-omitted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "bearer-omitted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "bearer-omitted",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "bearer-omitted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "bearer-omitted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "response-bytes-replaced",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "response-bytes-replaced",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "response-bytes-replaced",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "response-bytes-replaced",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "response-bytes-replaced",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "response-bytes-replaced",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "response-bytes-replaced",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "response-bytes-replaced",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "redirect-followed",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "redirect-followed",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "redirect-followed",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "redirect-followed",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "redirect-followed",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "redirect-followed",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "redirect-followed",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "redirect-followed",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "preflight-check-omitted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "preflight-check-omitted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "preflight-check-omitted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "preflight-check-omitted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "preflight-check-omitted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "preflight-check-omitted",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "preflight-check-omitted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "preflight-check-omitted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "ownership-loss-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "ownership-loss-ignored",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "ownership-loss-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "ownership-loss-ignored",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "ownership-loss-ignored",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "ownership-loss-ignored",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "ownership-loss-ignored",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "ownership-loss-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "cancellation-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "cancellation-ignored",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "cancellation-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "cancellation-ignored",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "cancellation-ignored",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "cancellation-ignored",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "cancellation-ignored",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "cancellation-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "deadline-check-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "deadline-check-ignored",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "deadline-check-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "deadline-check-ignored",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "deadline-check-ignored",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "deadline-check-ignored",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "deadline-check-ignored",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "deadline-check-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "partial-response-accepted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "partial-response-accepted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "partial-response-accepted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "partial-response-accepted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "partial-response-accepted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "partial-response-accepted",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "partial-response-accepted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "partial-response-accepted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "changed-original-scope-accepted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "changed-original-scope-accepted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "changed-original-scope-accepted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "changed-original-scope-accepted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "changed-original-scope-accepted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "changed-original-scope-accepted",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "changed-original-scope-accepted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "changed-original-scope-accepted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "oversized-original-body-accepted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "oversized-original-body-accepted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "oversized-original-body-accepted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "oversized-original-body-accepted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "oversized-original-body-accepted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "oversized-original-body-accepted",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "oversized-original-body-accepted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "oversized-original-body-accepted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "address-policy-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "address-policy-ignored",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "address-policy-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "address-policy-ignored",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "address-policy-ignored",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "address-policy-ignored",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "address-policy-ignored",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "address-policy-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "invalid-constructor-accepted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "invalid-constructor-accepted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "invalid-constructor-accepted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "invalid-constructor-accepted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "invalid-constructor-accepted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "invalid-constructor-accepted",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "invalid-constructor-accepted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "invalid-constructor-accepted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "response-status-accepted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "response-status-accepted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "response-status-accepted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "response-status-accepted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "response-status-accepted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "response-status-accepted",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "response-status-accepted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "response-status-accepted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "response-unknown-fields-accepted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "response-unknown-fields-accepted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "response-unknown-fields-accepted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "response-unknown-fields-accepted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "response-unknown-fields-accepted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "response-unknown-fields-accepted",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "response-unknown-fields-accepted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "response-unknown-fields-accepted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "oversized-response-accepted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "oversized-response-accepted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "oversized-response-accepted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "oversized-response-accepted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "oversized-response-accepted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "oversized-response-accepted",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "oversized-response-accepted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "oversized-response-accepted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "response-wire-bound-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "response-wire-bound-ignored",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "response-wire-bound-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "response-wire-bound-ignored",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "response-wire-bound-ignored",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "response-wire-bound-ignored",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "response-wire-bound-ignored",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "response-wire-bound-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "duplicate-response-property-accepted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "duplicate-response-property-accepted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "duplicate-response-property-accepted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "duplicate-response-property-accepted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "duplicate-response-property-accepted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "duplicate-response-property-accepted",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "duplicate-response-property-accepted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "duplicate-response-property-accepted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "nonboolean-owner-accepted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "nonboolean-owner-accepted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "nonboolean-owner-accepted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "nonboolean-owner-accepted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "nonboolean-owner-accepted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "nonboolean-owner-accepted",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "nonboolean-owner-accepted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "nonboolean-owner-accepted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "noncanonical-base64-accepted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "noncanonical-base64-accepted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "noncanonical-base64-accepted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "noncanonical-base64-accepted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "noncanonical-base64-accepted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "noncanonical-base64-accepted",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "noncanonical-base64-accepted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "noncanonical-base64-accepted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  }
+]

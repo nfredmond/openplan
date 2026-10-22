@@ -101,11 +101,20 @@ const LOOKS_LIKE_CODE =
  * there, and counting it would push a lane to delete the fact instead of
  * moving it.
  *
- * BLIND SPOT, stated: a disclosure rendered by a component wrapper rather than
- * a literal `<details>` element is not stripped.
+ * The two shared wrappers are stripped too: `<OperatorDetail>` renders a
+ * `<details>`, and a `<SetupPendingNotice>`'s children are its operator half
+ * (its planner sentence is a prop, so it is not a text node here either way).
+ * Before October 13, 2026 only the literal element was stripped, so moving a
+ * migration sentence into `OperatorDetail` RAISED the count it should lower.
+ *
+ * BLIND SPOT, stated: any other component that renders a disclosure is not
+ * stripped.
  */
 function withoutOperatorDisclosures(source: string): string {
-  return source.replace(/<details[\s\S]*?<\/details>/g, " ");
+  return source
+    .replace(/<details[\s\S]*?<\/details>/g, " ")
+    .replace(/<OperatorDetail\b[\s\S]*?<\/OperatorDetail>/g, " ")
+    .replace(/<SetupPendingNotice\b[\s\S]*?<\/SetupPendingNotice>/g, " ");
 }
 
 function filesUnder(dir: string, extension: string): string[] {
@@ -192,54 +201,54 @@ function collectCopy(): string[] {
  * 0 is the assertion that it stays gone.
  */
 const BASELINE: Readonly<Record<string, number>> = {
-  artifact: 39,
+  artifact: 37,
   attribute: 4,
-  basemap: 4,
+  basemap: 2,
   basis: 22,
   bootstrap: 0,
   cadence: 3,
-  campaign: 59,
+  campaign: 52,
   "claim tier": 1,
-  compose: 3,
+  compose: 2,
   deterministic: 0,
   downstream: 8,
-  durable: 2,
+  durable: 1,
   entity: 0,
-  geometry: 11,
+  geometry: 10,
   "governance hold": 2,
   ingest: 7,
-  input: 32,
-  intake: 10,
-  lane: 42,
+  input: 30,
+  intake: 8,
+  lane: 0,
   legible: 1,
-  migration: 16,
+  migration: 0,
   mode: 10,
   "moderation queue": 1,
-  operator: 39,
+  operator: 35,
   // M2d.3 uses Nathaniel's requested reimbursement packet terminology for retained funder files.
-  packet: 111,
+  packet: 110,
   payload: 2,
   populate: 1,
-  posture: 40,
+  posture: 39,
   preset: 12,
   provenance: 9,
   readiness: 30,
   // Safety must distinguish crash records from people killed or injured.
-  record: 232,
-  registry: 12,
-  resolve: 3,
+  record: 230,
+  registry: 11,
+  resolve: 2,
   scaffold: 3,
-  schema: 5,
+  schema: 3,
   signal: 7,
-  spine: 4,
+  spine: 3,
   "study area": 20,
-  submission: 5,
-  surface: 11,
-  trace: 10,
+  submission: 3,
+  surface: 10,
+  trace: 4,
   upstream: 0,
   // The cross-workspace package notice uses the real membership object three
   // times: where work waits, what is active, and what the caller can switch.
-  workspace: 140,
+  workspace: 135,
 };
 
 describe("planner copy says the plain thing", () => {
@@ -266,6 +275,14 @@ describe("planner copy says the plain thing", () => {
       "<p>Something did not load.</p><details><summary>For whoever runs this</summary><p>Apply the migration.</p></details>"
     );
     expect(withDisclosure.join(" ")).not.toContain("migration");
+
+    // The shared wrappers are the same disclosure and must be stripped the same way.
+    const withWrappers = renderedTextIn(
+      '<p>Something is off.</p><OperatorDetail><p>Apply the migration.</p></OperatorDetail>' +
+        '<SetupPendingNotice consequence="Budgets are not shown."><p>The spend-ledger migration is pending.</p></SetupPendingNotice>'
+    );
+    expect(withWrappers.join(" ")).toContain("Something is off.");
+    expect(withWrappers.join(" ")).not.toContain("migration");
   });
 
   it("uses no term from the ledger more often than the recorded baseline", () => {

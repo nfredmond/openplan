@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { signedStorageRedirect } from "@/lib/http/signed-redirect";
 import { AERIAL_IMAGERY_BUCKET, sanitizeImageryFilename } from "@/lib/aerial/imagery";
 import { resolveTenantScopedStorageTarget } from "@/lib/files/tenant-scoped-storage";
 
@@ -160,5 +161,5 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
     workspaceId: mission.workspace_id,
     byteSize: imagery.byte_size,
   });
-  return NextResponse.redirect(signed.signedUrl);
+  return signedStorageRedirect(signed.signedUrl);
 }

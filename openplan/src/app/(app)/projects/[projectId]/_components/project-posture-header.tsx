@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight, FileStack, FolderKanban, Target } from "lucide-react";
+import { SetupPendingNotice } from "@/components/ui/setup-pending-notice";
 import { ProjectRtpLinker } from "@/components/projects/project-rtp-linker";
 import type { ResolvedRtpPriorityCriterion } from "@/lib/rtp/priority-frameworks";
 import type { RtpSafetyEvidence } from "@/lib/rtp/safety-evidence";
@@ -232,7 +233,7 @@ export function ProjectPostureHeader({
               <p className="module-summary-value">{kbDocumentCount ?? "—"}</p>
               <p className="module-summary-detail">
                 {kbDocumentCount === null ? (
-                  "Document count unavailable — apply the Knowledge Base migration, then reload."
+                  "Document count could not be read. Reload the page to try again."
                 ) : (
                   <Link
                     href={`/knowledge-base?projectId=${project.id}`}
@@ -335,9 +336,9 @@ export function ProjectPostureHeader({
 
         <div className="mt-5">
           {projectRtpLinksPending ? (
-            <div className="rounded-[0.5rem] border border-amber-300/60 bg-amber-50/80 px-4 py-3 text-sm text-amber-900 dark:border-amber-900/70 dark:bg-amber-950/30 dark:text-amber-100">
-              RTP linkage schema is not available yet in this environment. Run the latest migration, then this project can attach into RTP cycle portfolio tracking.
-            </div>
+            <SetupPendingNotice consequence="This project cannot be added to an RTP cycle yet.">
+              RTP linkage schema is not available in this environment. Run the latest migration.
+            </SetupPendingNotice>
           ) : (
             <ProjectRtpLinker
               projectId={project.id}

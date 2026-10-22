@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isDeepStrictEqual } from "node:util";
 import { z } from "zod";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
@@ -19,6 +20,7 @@ import {
   type AerialArtifactCustodyPosture,
 } from "@/lib/aerial/artifact-custody";
 import { runAerialCustodyPass } from "@/lib/aerial/artifact-custody-server";
+import { compareCallbackTimes } from "@/lib/aerial/callback-order";
 
 export const runtime = "nodejs";
 
@@ -34,6 +36,8 @@ type ProcessingJobRow = {
   request_id: string;
   job_reference: string | null;
   status: string;
+  last_callback_id: string | null;
+  last_callback_at: string | null;
 };
 
 /**
@@ -91,7 +95,7 @@ export async function POST(request: NextRequest) {
 
     const { data: jobData, error: jobError } = await supabase
       .from("aerial_processing_jobs")
-      .select("id, workspace_id, project_id, mission_id, request_id, job_reference, status")
+      .select("id, workspace_id, project_id, mission_id, request_id, job_reference, status, last_callback_id, last_callback_at")
       .eq("request_id", callback.requestId)
       .maybeSingle();
 
@@ -117,11 +121,12 @@ export async function POST(request: NextRequest) {
         storedJobReference: job.job_reference,
         callbackJobReference: callback.jobReference,
       });
-      // Proceed by request_id: it is the idempotency key both sides agreed on.
+      return NextResponse.json({ error: "job_reference_mismatch" }, { status: 409 });
     }
 
-    // Idempotency ledger first: a redelivered callbackId fails the UNIQUE
-    // constraint and we answer deduped without re-applying the transition.
+    // Retain the original before applying effects. An exact retry must finish
+    // interrupted writes, because a ledger receipt does not prove application.
+    let replayed = false;
     const { error: ledgerError } = await supabase.from("aerial_processing_callbacks").insert({
       processing_job_id: job.id,
       workspace_id: job.workspace_id,
@@ -133,20 +138,44 @@ export async function POST(request: NextRequest) {
 
     if (ledgerError) {
       if (ledgerError.code === POSTGRES_UNIQUE_VIOLATION) {
-        audit.info("callback_deduped", {
+        const { data: retained, error: retainedError } = await supabase
+          .from("aerial_processing_callbacks")
+          .select("processing_job_id, workspace_id, payload")
+          .eq("callback_id", callback.callbackId)
+          .maybeSingle();
+        if (retainedError) {
+          audit.error("callback_replay_lookup_failed", {
+            requestId: callback.requestId,
+            callbackId: callback.callbackId,
+            code: retainedError.code ?? null,
+          });
+          return NextResponse.json({ error: "Failed to read original callback" }, { status: 500 });
+        }
+        // JSON round-trip matches the representation retained in JSONB,
+        // including omitted optional properties and numeric negative zero.
+        if (!retained || retained.processing_job_id !== job.id
+          || retained.workspace_id !== job.workspace_id
+          || !isDeepStrictEqual(retained.payload, JSON.parse(JSON.stringify(callback)))) {
+          audit.warn("callback_replay_mismatch", {
+            requestId: callback.requestId,
+            callbackId: callback.callbackId,
+          });
+          return NextResponse.json({ error: "callback_replay_mismatch" }, { status: 409 });
+        }
+        replayed = true;
+        audit.info("callback_replay_verified", {
           requestId: callback.requestId,
           callbackId: callback.callbackId,
         });
-        return NextResponse.json({ ok: true, deduped: true }, { status: 200 });
+      } else {
+        audit.error("callback_ledger_insert_failed", {
+          requestId: callback.requestId,
+          callbackId: callback.callbackId,
+          message: ledgerError.message,
+          code: ledgerError.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to record processing callback" }, { status: 500 });
       }
-
-      audit.error("callback_ledger_insert_failed", {
-        requestId: callback.requestId,
-        callbackId: callback.callbackId,
-        message: ledgerError.message,
-        code: ledgerError.code ?? null,
-      });
-      return NextResponse.json({ error: "Failed to record processing callback" }, { status: 500 });
     }
 
     // Never downgrade a terminal status: the ledger row is recorded above,
@@ -158,6 +187,43 @@ export async function POST(request: NextRequest) {
         callbackStatus: callback.status,
       });
       return NextResponse.json({ ok: true, ignored: "terminal" }, { status: 200 });
+    }
+
+    if (job.last_callback_at && job.last_callback_id !== callback.callbackId) {
+      const { data: applied, error: appliedError } = await supabase
+        .from("aerial_processing_callbacks")
+        .select("processing_job_id, workspace_id, payload")
+        .eq("callback_id", job.last_callback_id)
+        .maybeSingle();
+      const parsedApplied = processingCallbackSchema.safeParse(applied?.payload);
+      // Older dispatch handlers saved accepted identity/time only on the job.
+      // That specific baseline remains usable; an unreadable ledger or a
+      // missing running/terminal event must still refuse application.
+      const legacyAccepted = !appliedError && !applied && job.status === "accepted"
+        && Boolean(job.last_callback_id) && Boolean(job.job_reference)
+        && job.job_reference === callback.jobReference;
+      if (!legacyAccepted && (appliedError || !applied || applied.processing_job_id !== job.id
+        || applied.workspace_id !== job.workspace_id || !parsedApplied.success
+        || parsedApplied.data.callbackId !== job.last_callback_id)) {
+        return NextResponse.json({ error: "Unreadable callback order" }, { status: 503 });
+      }
+      // New accepted responses retain original precision in the ledger. The
+      // legacy baseline uses only the timestamp actually saved on that job.
+      const appliedTime = legacyAccepted ? job.last_callback_at
+        : parsedApplied.success ? parsedApplied.data.occurredAt : null;
+      const order = appliedTime ? compareCallbackTimes(appliedTime, callback.occurredAt) : null;
+      if (order === null) {
+        return NextResponse.json({ error: "Unreadable callback order" }, { status: 503 });
+      }
+      // A replay cannot replace a different event already applied at the same
+      // time. New equal-time events still follow their arrival order.
+      if (order > 0 || (replayed && order === 0)) {
+        audit.info("callback_superseded", {
+          requestId: callback.requestId,
+          callbackId: callback.callbackId,
+        });
+        return NextResponse.json({ ok: true, ignored: "superseded" }, { status: 200 });
+      }
     }
 
     const update: Record<string, unknown> = {
@@ -185,10 +251,20 @@ export async function POST(request: NextRequest) {
       update.progress = callback.progress;
     }
 
-    const { error: updateError } = await supabase
+    const statusWrite = supabase
       .from("aerial_processing_jobs")
       .update(update)
-      .eq("id", job.id);
+      .eq("id", job.id)
+      .eq("status", job.status);
+    const referencedWrite = job.job_reference === null
+      ? statusWrite.is("job_reference", null)
+      : statusWrite.eq("job_reference", job.job_reference);
+    const identifiedWrite = job.last_callback_id === null
+      ? referencedWrite.is("last_callback_id", null)
+      : referencedWrite.eq("last_callback_id", job.last_callback_id);
+    const { data: appliedJobs, error: updateError } = await (job.last_callback_at === null
+      ? identifiedWrite.is("last_callback_at", null)
+      : identifiedWrite.eq("last_callback_at", job.last_callback_at)).select("id");
 
     if (updateError) {
       audit.error("processing_job_update_failed", {
@@ -198,6 +274,16 @@ export async function POST(request: NextRequest) {
         code: updateError.code ?? null,
       });
       return NextResponse.json({ error: "Failed to update processing job" }, { status: 500 });
+    }
+
+    if (appliedJobs?.length !== 1 || appliedJobs[0].id !== job.id) {
+      // The worker retries 5xx responses. A new read can observe a concurrent
+      // terminal state instead of replaying this callback over it.
+      audit.warn("processing_job_changed_before_application", {
+        requestId: callback.requestId,
+        callbackId: callback.callbackId,
+      });
+      return NextResponse.json({ error: "Processing job changed before callback application" }, { status: 503 });
     }
 
     if (callback.status === "succeeded") {
@@ -211,6 +297,8 @@ export async function POST(request: NextRequest) {
       // does not reach is written `pending` for the retry route rather than lost.
       const custodyResult = await runAerialCustodyPass({
         supabase,
+        storageClientFactory: (fetchImpl) => createServiceRoleClient({ fetchImpl }),
+        signal: request.signal,
         job: {
           processingJobId: job.id,
           workspaceId: job.workspace_id,
@@ -264,10 +352,21 @@ export async function POST(request: NextRequest) {
         custodyUnreadable: custodyResult.unreadableReason,
       });
 
-      // Idempotent evidence-package creation keyed on processing_job_id.
+      if (custodyResult.unreadableReason) {
+        return NextResponse.json({ error: "Artifact custody could not be established" }, { status: 503 });
+      }
+
+      // Preserve legacy package IDs; new callback-created packages use the
+      // job UUID as their primary key so overlapping revised handlers cannot
+      // create two packages after both observe no existing row.
+      const packageColumns = "id, processing_job_id, workspace_id, mission_id, project_id, package_type";
+      const matchesPackageScope = (value: Record<string, unknown> | null) => Boolean(value
+        && value.processing_job_id === job.id && value.workspace_id === job.workspace_id
+        && value.mission_id === job.mission_id && value.project_id === job.project_id
+        && value.package_type === "measurable_output");
       const { data: existingPackage, error: existingPackageError } = await supabase
         .from("aerial_evidence_packages")
-        .select("id")
+        .select(packageColumns)
         .eq("processing_job_id", job.id)
         .maybeSingle();
 
@@ -279,6 +378,10 @@ export async function POST(request: NextRequest) {
           code: existingPackageError.code ?? null,
         });
         return NextResponse.json({ error: "Failed to check evidence package" }, { status: 500 });
+      }
+
+      if (existingPackage && !matchesPackageScope(existingPackage)) {
+        return NextResponse.json({ error: "evidence_package_scope_mismatch" }, { status: 409 });
       }
 
       if (!existingPackage) {
@@ -303,6 +406,7 @@ export async function POST(request: NextRequest) {
         const { data: pkg, error: insertError } = await supabase
           .from("aerial_evidence_packages")
           .insert({
+            id: job.id,
             mission_id: job.mission_id,
             workspace_id: job.workspace_id,
             project_id: job.project_id,
@@ -321,7 +425,20 @@ export async function POST(request: NextRequest) {
           .select("id")
           .single();
 
-        if (insertError || !pkg) {
+        if (insertError?.code === POSTGRES_UNIQUE_VIOLATION) {
+          const { data: retainedPackage, error: retainedPackageError } = await supabase
+            .from("aerial_evidence_packages")
+            .select(packageColumns)
+            .eq("id", job.id)
+            .maybeSingle();
+          if (retainedPackageError) {
+            return NextResponse.json({ error: "Failed to read retained evidence package" }, { status: 500 });
+          }
+          if (!retainedPackage || retainedPackage.id !== job.id || !matchesPackageScope(retainedPackage)) {
+            return NextResponse.json({ error: "evidence_package_scope_mismatch" }, { status: 409 });
+          }
+          // The conflicting original remains unchanged, including human edits.
+        } else if (insertError || !pkg) {
           audit.error("evidence_package_insert_failed", {
             requestId: callback.requestId,
             processingJobId: job.id,
@@ -331,12 +448,26 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: "Failed to create evidence package" }, { status: 500 });
         }
 
-        audit.info("evidence_package_created", {
-          packageId: pkg.id,
+        audit.info(insertError?.code === POSTGRES_UNIQUE_VIOLATION ? "evidence_package_reused" : "evidence_package_created", {
+          packageId: pkg?.id ?? job.id,
           missionId: job.mission_id,
           workspaceId: job.workspace_id,
           processingJobId: job.id,
         });
+      }
+
+      // Held originals persist across competing passes. Advance only pending
+      // custody readiness; preserve human verification and package edits.
+      if (custody.verificationReadiness === "partial") {
+        const { error: readinessError } = await supabase
+          .from("aerial_evidence_packages")
+          .update({ verification_readiness: "partial" })
+          .eq("processing_job_id", job.id)
+          .eq("verification_readiness", "pending")
+          .select("id");
+        if (readinessError) {
+          return NextResponse.json({ error: "Failed to update evidence custody readiness" }, { status: 503 });
+        }
       }
 
       if (job.project_id) {
@@ -370,7 +501,7 @@ export async function POST(request: NextRequest) {
       durationMs: Date.now() - startedAt,
     });
 
-    return NextResponse.json({ ok: true, status: callback.status }, { status: 200 });
+    return NextResponse.json({ ok: true, status: callback.status, ...(replayed ? { replayed: true } : {}) }, { status: 200 });
   } catch (error) {
     if (error instanceof SyntaxError || error instanceof z.ZodError) {
       audit.warn("processing_callback_invalid", {

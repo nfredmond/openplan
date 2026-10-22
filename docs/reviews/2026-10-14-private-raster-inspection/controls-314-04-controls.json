@@ -1,0 +1,172 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived",
+    "tests": 20
+  },
+  {
+    "case": "harmless-comment",
+    "outcome": "survived",
+    "tests": 20
+  },
+  {
+    "case": "restored-after-harmless",
+    "outcome": "survived",
+    "tests": 20
+  },
+  {
+    "case": "missing-product-reported-as-failed",
+    "outcome": "intended_failure",
+    "test": "test_original_readable_failed_absent_and_unassessed_remain_distinct",
+    "diagnostic": "Frozen absent raster declaration differs"
+  },
+  {
+    "case": "rotated-vector-doubled",
+    "outcome": "intended_failure",
+    "test": "test_rotated_spacing_uses_original_raster_vectors",
+    "diagnostic": "Recovered inspection uses both nonzero quarter-turn vectors"
+  },
+  {
+    "case": "unsupported-format-labelled-failed",
+    "outcome": "intended_failure",
+    "test": "test_unsupported_bigtiff_keeps_bytes_without_zero_metadata",
+    "diagnostic": "BigTIFF is explicitly unsupported by this reader"
+  },
+  {
+    "case": "saved-report-reparsed",
+    "outcome": "intended_failure",
+    "test": "test_saved_report_replay_does_not_parse_again",
+    "diagnostic": "Frozen inspection cannot parse again"
+  },
+  {
+    "case": "interrupted-report-recomputed",
+    "outcome": "intended_failure",
+    "test": "test_report_publication_interruption_recovers_frozen_interpretation",
+    "diagnostic": "Interrupted interpretation cannot be recomputed"
+  },
+  {
+    "case": "raster-content-hash-ignored",
+    "outcome": "intended_failure",
+    "test": "test_changed_raster_during_inspection_refuses",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "post-read-access-omitted",
+    "outcome": "intended_failure",
+    "test": "test_current_access_after_reading_refuses_plan",
+    "diagnostic": "Current access must precede interpretation freezing"
+  },
+  {
+    "case": "saved-report-not-compared",
+    "outcome": "intended_failure",
+    "test": "test_changed_saved_report_refuses_without_replacing_it",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "original-product-plan-not-compared",
+    "outcome": "intended_failure",
+    "test": "test_original_product_plan_change_refuses",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "missing-plan-inferred",
+    "outcome": "intended_failure",
+    "test": "test_lost_original_plan_refuses",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "frozen-claim-limits-ignored",
+    "outcome": "intended_failure",
+    "test": "test_claim_promotion_refuses",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "frozen-code-profile-ignored",
+    "outcome": "intended_failure",
+    "test": "test_invalid_reader_or_inspection_profile_refuses",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "product-census-ignored",
+    "outcome": "intended_failure",
+    "test": "test_altered_product_census_refuses",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "original-member-binding-ignored",
+    "outcome": "intended_failure",
+    "test": "test_altered_original_member_binding_refuses",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "absence-promoted",
+    "outcome": "intended_failure",
+    "test": "test_absence_cannot_be_reported_as_read",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "cloud-reading-promoted",
+    "outcome": "intended_failure",
+    "test": "test_point_cloud_cannot_gain_a_raster_reader_result",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "native-units-relabelled",
+    "outcome": "intended_failure",
+    "test": "test_native_coordinates_cannot_be_relabelled_as_metres",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "failed-read-keeps-coordinates",
+    "outcome": "intended_failure",
+    "test": "test_failed_read_cannot_keep_native_coordinate_values",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "invalid-native-dimensions-accepted",
+    "outcome": "intended_failure",
+    "test": "test_nonfinite_and_degenerate_native_values_are_failed_reads",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "invalid-native-vectors-accepted",
+    "outcome": "intended_failure",
+    "test": "test_nonfinite_and_degenerate_native_values_are_failed_reads",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "invalid-constructor-accepted",
+    "outcome": "intended_failure",
+    "test": "test_constructor_requires_real_products_and_finite_timeout",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "callbackPermission-promoted",
+    "outcome": "intended_failure",
+    "test": "test_original_readable_failed_absent_and_unassessed_remain_distinct",
+    "diagnostic": "True != False"
+  },
+  {
+    "case": "publicationPermission-promoted",
+    "outcome": "intended_failure",
+    "test": "test_original_readable_failed_absent_and_unassessed_remain_distinct",
+    "diagnostic": "True != False"
+  },
+  {
+    "case": "processingQualityVerification-promoted",
+    "outcome": "intended_failure",
+    "test": "test_original_readable_failed_absent_and_unassessed_remain_distinct",
+    "diagnostic": "'verified' != 'unassessed'"
+  },
+  {
+    "case": "mapPlacementVerification-promoted",
+    "outcome": "intended_failure",
+    "test": "test_original_readable_failed_absent_and_unassessed_remain_distinct",
+    "diagnostic": "'verified' != 'unassessed'"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived",
+    "tests": 20
+  }
+]

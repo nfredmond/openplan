@@ -1,0 +1,58 @@
+[
+  {
+    "cohort": "native314-current",
+    "control": "baseline-stopped",
+    "exitCode": 0,
+    "outcome": "survived",
+    "engineRunning": false
+  },
+  {
+    "cohort": "native314-current",
+    "control": "harmless-renamed-copy",
+    "exitCode": 0,
+    "outcome": "survived",
+    "engineRunning": false
+  },
+  {
+    "cohort": "native314-current",
+    "control": "unknown-digest",
+    "exitCode": 2,
+    "outcome": "intended_refusal",
+    "engineRunning": false
+  },
+  {
+    "cohort": "native314-current",
+    "control": "restored-stopped",
+    "exitCode": 0,
+    "outcome": "survived",
+    "engineRunning": false
+  },
+  {
+    "cohort": "native311-current",
+    "control": "baseline-stopped",
+    "exitCode": 0,
+    "outcome": "survived",
+    "engineRunning": false
+  },
+  {
+    "cohort": "native311-current",
+    "control": "harmless-renamed-copy",
+    "exitCode": 0,
+    "outcome": "survived",
+    "engineRunning": false
+  },
+  {
+    "cohort": "native311-current",
+    "control": "unknown-digest",
+    "exitCode": 2,
+    "outcome": "intended_refusal",
+    "engineRunning": false
+  },
+  {
+    "cohort": "native311-current",
+    "control": "restored-stopped",
+    "exitCode": 0,
+    "outcome": "survived",
+    "engineRunning": false
+  }
+]

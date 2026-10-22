@@ -1,0 +1,10 @@
+{
+  "workers/odm_worker/runtime_worker_coordinator.py": "baee316329b2306ba1c133e72dd4a593413161a9c4a406243791f61dc9de7e2d",
+  "workers/odm_worker/test_runtime_worker_coordinator.py": "ea3c0e3c78ee9ffc3fc6ef1aff13a9e3f9aed62da627b43e381f3d5ff23020b8",
+  "workers/odm_worker/runtime_artifact_access.py": "fcdd99bf35efbaa33eaa2f6e591d790778080abd5e955ef35852649c98541705",
+  "workers/odm_worker/runtime_terminal_delivery.py": "9e3e013d99b104f9d5817b8bae93e40a68dbba7e8b60333352490fb0d4ca64e4",
+  "workers/odm_worker/runtime_artifact_http.py": "024c72c6d8116eaca9700c61ca0cab0ca63ab420e3cd3a8928e57fd87536edc4",
+  "docs/reviews/2026-10-14-worker-coordination/native_client.py": "61145ff275b0fe33f8506487af3e4e8bb003b6b73e5d15632a97ac5a98b20b5c",
+  "docs/reviews/2026-10-14-worker-coordination/native_http.py": "7bf6afced133432cdc9cc88f35879e96f8786b1c3a430052352c73e740f85b18",
+  "docs/reviews/2026-10-14-worker-coordination/verify_controls.py": "ba58d115233dc9287b0c950f202b3611e75dc4e5e652157b39a004cb938e3e2b"
+}

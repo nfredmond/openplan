@@ -21,4 +21,23 @@ describe("managed run status presentation", () => {
       })
     ).toEqual({ label: "Succeeded", tone: "success" });
   });
+
+  it("calls a running run with an interrupted stage interrupted, not running", () => {
+    const run = {
+      status: "running",
+      engine_key: "aequilibrae",
+      artifacts: [],
+      stages: [
+        { status: "succeeded", error_message: null },
+        { status: "running", error_message: "Interrupted: the model worker shut down." },
+      ],
+    };
+    expect(managedRunStatusPresentation(run)).toEqual({ label: "Interrupted", tone: "warning" });
+    expect(
+      managedRunStatusPresentation({ ...run, stages: [{ status: "running", error_message: null }] })
+    ).toEqual({ label: "Running", tone: "info" });
+    expect(
+      managedRunStatusPresentation({ ...run, stages: [{ status: "failed", error_message: "x" }, { status: "running" }] })
+    ).toEqual({ label: "Running", tone: "info" });
+  });
 });

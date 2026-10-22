@@ -1,0 +1,10 @@
+{
+  "Result": "exit-code",
+  "ExecMainStatus": "1",
+  "MemoryPeak": "728227840",
+  "MemorySwapPeak": "0",
+  "OOMKills": "0",
+  "MemoryMax": "1073741824",
+  "MemorySwapMax": "0",
+  "failureReason": "Documentation module lookup failed because node_modules link was absent; all45 worker stages passed."
+}

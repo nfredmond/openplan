@@ -1,0 +1,15 @@
+{
+  "docs/reviews/2026-10-12-odm-private-dispatch-reader/native_rpc_recovery.py": "c461e09ba3ada0f2e019832915ab34fdd37a733c7aa1e2d5341c6f3a02fae650",
+  "docs/reviews/2026-10-13-odm-native-uncertain-interruption/native_client.py": "b5789391868315c20daddfd44986a23c319de331113d8f2e16808f75de5d178d",
+  "docs/reviews/2026-10-13-odm-native-uncertain-interruption/native_rpc_recovery.py": "a26c51f8bc84dccf31f5a4eb27a1e9b2fb846c2d68ba15b82fec8a9740471bec",
+  "workers/odm_worker/native_engine_attestation.py": "cefa1463d2901c6e422fcc9af7040ceeda907598db7615f855a05cc344af6533",
+  "workers/odm_worker/application_draft_authority.py": "8d72265f7dbc2b90c5334049dcacfa2406c57dba4b2d0b0d4a55c045dbe1388b",
+  "workers/odm_worker/application_dispatch_reader.py": "4d13873d6d0e908b934df76c994fec3a3559602f3a40ecd30266567790366a0b",
+  "workers/odm_worker/draft_http.py": "6fc61d35a82e8b05a6b2ed13ddd7a6553bd84e434e0b387ce16feaa23dec3f86",
+  "workers/odm_worker/runtime_dispatch_custody.py": "dbdcd4e436a7c9cd274189a2ea4f47d67c7f8edd643fe5d4514d4a0b80a28056",
+  "workers/odm_worker/runtime_url_draft.py": "704f24ccaed770f4feec0a09f05f6a14debd6518a83c2ace3d8a5c7b711fa82a",
+  "workers/odm_worker/runtime_draft.py": "9ea25c0a6392315d13fc5a0256efb79d99f738dfb2483aa666e696461d0ae72a",
+  "workers/odm_worker/engine_effects.py": "df89851a49c2be4d52fe3e582a36d42026d895bc371f50e81143c8b70c145cb7",
+  "workers/odm_worker/admission_journal.py": "9411ae79d2579aaf89f474eb94f29d9759e32e634cb259d5d58676621b722332",
+  "docs/reviews/2026-10-13-odm-native-private-authority-composition/native_client.py": "a65a4cf4086f1a3f3a562453e307664b86a4028508537c5ec0ce8b213dc61440"
+}

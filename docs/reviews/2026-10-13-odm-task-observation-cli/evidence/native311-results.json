@@ -1,0 +1,14 @@
+{
+  "actualRecordCommandPassed": true,
+  "relocatedReadCommandPassed": true,
+  "bodySha256": "b4e9aa9bbe52ffa1988545a945f9c752f5286b056cb31e571090167a8c91a03a",
+  "reportedState": "failed",
+  "reportedImageCount": 3,
+  "originalEngineRecordsPackageUnchanged": true,
+  "networkingAccepted": false,
+  "freshnessAccepted": false,
+  "applicationAuthorityAccepted": false,
+  "processingQualityAccepted": false,
+  "workerRecoveryAccepted": false,
+  "defaultActivated": false
+}

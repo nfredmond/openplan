@@ -1,0 +1,17 @@
+[
+  {
+    "stage": "journal-controls314",
+    "returncode": 0,
+    "seconds": 5.969
+  },
+  {
+    "stage": "installed-rpc",
+    "returncode": 0,
+    "seconds": 39.894
+  },
+  {
+    "stage": "native-engine",
+    "returncode": 0,
+    "seconds": 7.633
+  }
+]

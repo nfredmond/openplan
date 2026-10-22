@@ -1,0 +1,10 @@
+{
+  "ActiveState": "active",
+  "MainPID": "1715226",
+  "MemoryPeak": "359874560",
+  "MemorySwapCurrent": "0",
+  "observedAt": "2026-10-13T11:25:53.544465+00:00",
+  "limitBytes": 1073741824,
+  "swapLimitBytes": 0,
+  "cwd": "/home/nathaniel/.local/state/openplan/m3-corrected-main-preview-20261013/openplan"
+}

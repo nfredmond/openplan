@@ -1,0 +1,44 @@
+{
+  "state": "passed-native-managed-stage-recovery",
+  "wallSeconds": 63.967,
+  "native374TablesSixSequencesUnchanged": true,
+  "originalClaimAndProgressExchangeByteEqual": true,
+  "admissionsUnchanged": {
+    "claim": 0,
+    "progress": 1
+  },
+  "computationCallbacks": 0,
+  "reentryRefused": true,
+  "ownershipPointInTimeOnly": true,
+  "attemptOwnerInputsOutputsEmptyDirectoriesModesPreserved": true,
+  "onlyTwoOriginalReceiptsRetainedLocally": true,
+  "sourcePointUnchanged": true,
+  "targetApiAndDatabaseStopped": true,
+  "journalCheckpoints": [
+    {
+      "journal": "claim",
+      "nativeResult": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "journal": "progress",
+      "nativeResult": [
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "executionSourceSha256": {
+    "prove_recovery_guards.py": "0367143c5e9d788f03e373581e1d7c42b5b5e89032fc0f2437068c6d026e779c",
+    "recovery_guards.py": "5da8413a23e910e885ea74261d751dde85c73f16177ff0d167b982d1adefc2d2",
+    "prove_retained_root.py": "038faaa6b57c3e571c581cbd582e3b858f4d1a31746340c7d4de28ccb62969ca",
+    "failed-root-oracles-source.py": "002a1447b54119abd58947f55dbfd1730c25b300c0bb570111e6344f75ec2040",
+    "run_recovery.py": "1ce50e00a701419c341f552955200462d8adb06ea46451194ba55e5fc45243a7",
+    "prove_root_oracles.py": "89f979360be26dfcbf625c59adf37514e20375653f39d1a2c5091dbeb23f9028"
+  },
+  "limits": "Synthetic admitted-stage custody on separate local clusters/volumes, same host/disk. No scientific engine, writer reconstruction, normal poller integration, distributed lease, physical-host, browser or hosted acceptance."
+}

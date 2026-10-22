@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "recordedOn": "2026-10-16",
+  "entries": [
+    {
+      "provider": "codex",
+      "version": "0.154.0",
+      "versionOutput": "codex-cli 0.154.0",
+      "platform": "linux",
+      "task": "retained-project-task",
+      "acceptance": "preserved-exact-version",
+      "fixtureReplay": {
+        "status": "scripted-source",
+        "recordedNativeFrames": "unknown",
+        "source": {
+          "path": "workers/planner_agent_connector/test/codex-native-isolation.test.mjs",
+          "sha256": "87030a087e0ab6a32a3544d231d870dd1221959dcc852aeb86ae5a9085800f77"
+        }
+      },
+      "installedCliAcceptance": {
+        "status": "historical-report",
+        "observedAt": null,
+        "report": {
+          "path": "docs/reviews/2026-09-10-planner-agent-provider-connection/VERIFICATION.md",
+          "sha256": "cd5bde116dc39e2b3db70060a5b440d11151c79b5116d1e59376fd3d0572faf4"
+        },
+        "scope": "installed-cli-with-scripted-local-responses"
+      },
+      "liveProviderAcceptance": {
+        "status": "historical-report",
+        "observedAt": null,
+        "report": {
+          "path": "docs/reviews/2026-09-10-planner-agent-provider-connection/VERIFICATION.md",
+          "sha256": "cd5bde116dc39e2b3db70060a5b440d11151c79b5116d1e59376fd3d0572faf4"
+        }
+      },
+      "limits": [
+        "No new installed-CLI acceptance occurs in this registry review.",
+        "Recorded native-frame provenance is unknown; scripted sources are not live-provider recordings.",
+        "Linux and the existing retained project task only; no new versions, account modes or fallback."
+      ]
+    },
+    {
+      "provider": "claude",
+      "version": "2.1.263",
+      "versionOutput": "2.1.263 (Claude Code)",
+      "platform": "linux",
+      "task": "retained-project-task",
+      "acceptance": "preserved-exact-version",
+      "fixtureReplay": {
+        "status": "scripted-source",
+        "recordedNativeFrames": "unknown",
+        "source": {
+          "path": "workers/planner_agent_connector/test/claude-native-isolation.test.mjs",
+          "sha256": "9f04ab2bd766564db1d053b7fcbeba2ee75865e9db19797ddead0634a3d1158a"
+        }
+      },
+      "installedCliAcceptance": {
+        "status": "historical-report",
+        "observedAt": null,
+        "report": {
+          "path": "docs/reviews/2026-09-10-claude-native-spike/VERIFICATION.md",
+          "sha256": "f70757c964c8b5d7ebd7e34aa5e29903f3a945180078c82eda35b4c68b3f48ef"
+        },
+        "scope": "installed-cli-with-scripted-local-responses"
+      },
+      "liveProviderAcceptance": {
+        "status": "unknown",
+        "observedAt": null,
+        "report": null
+      },
+      "limits": [
+        "No new installed-CLI acceptance occurs in this registry review.",
+        "Recorded native-frame provenance is unknown; scripted sources are not live-provider recordings.",
+        "Linux and the existing retained project task only; no new versions, account modes or fallback."
+      ]
+    },
+    {
+      "provider": "opencode",
+      "version": "1.18.30",
+      "versionOutput": "1.18.30",
+      "platform": "linux",
+      "task": "retained-project-task",
+      "acceptance": "preserved-exact-version",
+      "fixtureReplay": {
+        "status": "scripted-source",
+        "recordedNativeFrames": "unknown",
+        "source": {
+          "path": "workers/planner_agent_connector/test/opencode-native-filesystem.test.mjs",
+          "sha256": "67679aecdb61680e4c0084274ec90f0bc6add64552ec82136600fe4bcaef049f"
+        }
+      },
+      "installedCliAcceptance": {
+        "status": "historical-report",
+        "observedAt": null,
+        "report": {
+          "path": "docs/reviews/2026-09-10-opencode-native-spike/VERIFICATION.md",
+          "sha256": "aa42be0cee7f70a6c633f7655a97b4b96f6143432666a52bfcc2c0f305f9bfae"
+        },
+        "scope": "installed-cli-with-scripted-local-responses"
+      },
+      "liveProviderAcceptance": {
+        "status": "unknown",
+        "observedAt": null,
+        "report": null
+      },
+      "limits": [
+        "No new installed-CLI acceptance occurs in this registry review.",
+        "Recorded native-frame provenance is unknown; scripted sources are not live-provider recordings.",
+        "Linux and the existing retained project task only; no new versions, account modes or fallback."
+      ]
+    }
+  ]
+}

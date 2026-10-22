@@ -1,0 +1,42 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "case": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "case": "wrong-restore-variant",
+    "outcome": "intended_failure"
+  },
+  {
+    "case": "wrong-restored-identity",
+    "outcome": "intended_failure"
+  },
+  {
+    "case": "different-restore-capture",
+    "outcome": "intended_failure"
+  },
+  {
+    "case": "different-original-history",
+    "outcome": "intended_failure"
+  },
+  {
+    "case": "different-original-authority",
+    "outcome": "intended_failure"
+  },
+  {
+    "case": "restored-final",
+    "outcome": "survived"
+  },
+  {
+    "case": "full-current-native",
+    "outcome": "survived"
+  }
+]

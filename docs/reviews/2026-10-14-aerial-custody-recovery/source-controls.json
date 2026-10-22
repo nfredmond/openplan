@@ -1,0 +1,117 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived",
+    "tests": 88
+  },
+  {
+    "case": "harmless-comment",
+    "outcome": "survived",
+    "tests": 88
+  },
+  {
+    "case": "restored-after-harmless",
+    "outcome": "survived",
+    "tests": 88
+  },
+  {
+    "case": "conflict-not-recovered",
+    "outcome": "intended_failure",
+    "diagnostic": "Conflict recovery reads preserved custody"
+  },
+  {
+    "case": "missing-roster-ignored",
+    "outcome": "intended_failure",
+    "diagnostic": "Missing expected identity requires retry"
+  },
+  {
+    "case": "unreadable-recovery-hidden",
+    "outcome": "intended_failure",
+    "diagnostic": "Unreadable conflict reread cannot publish success"
+  },
+  {
+    "case": "retry-unreadable-published",
+    "outcome": "intended_failure",
+    "diagnostic": "Partial conflict roster remains retryable"
+  },
+  {
+    "case": "retry-roster-dropped",
+    "outcome": "intended_failure",
+    "diagnostic": "Missing original identity is retried"
+  },
+  {
+    "case": "all-held-repair-skipped",
+    "outcome": "intended_failure",
+    "diagnostic": "Held retry repairs stale package readiness"
+  },
+  {
+    "case": "retry-human-filter-removed",
+    "outcome": "intended_failure",
+    "diagnostic": "Custody retry preserves human verification"
+  },
+  {
+    "case": "retry-pending-downgrade",
+    "outcome": "intended_failure",
+    "diagnostic": "Older pending posture cannot lower package readiness"
+  },
+  {
+    "case": "callback-unreadable-published",
+    "outcome": "intended_failure",
+    "diagnostic": "Unreadable callback custody remains retryable"
+  },
+  {
+    "case": "callback-repair-skipped",
+    "outcome": "intended_failure",
+    "diagnostic": "Callback repairs pending package custody"
+  },
+  {
+    "case": "callback-human-filter-removed",
+    "outcome": "intended_failure",
+    "diagnostic": "Callback preserves human verification"
+  },
+  {
+    "case": "callback-pending-downgrade",
+    "outcome": "intended_failure",
+    "diagnostic": "Pending callback cannot lower human verification"
+  },
+  {
+    "case": "existing-pending-count-lost",
+    "outcome": "intended_failure",
+    "diagnostic": "Missing roster retains existing pending count"
+  },
+  {
+    "case": "package-repair-failure-hidden",
+    "outcome": "intended_failure",
+    "diagnostic": "Package readiness repair failure remains retryable"
+  },
+  {
+    "case": "unrelated-constraint-recovered",
+    "outcome": "intended_failure",
+    "diagnostic": "Only the named held constraint enters recovery"
+  },
+  {
+    "case": "planner-human-filter-removed",
+    "outcome": "intended_failure",
+    "diagnostic": "Planner custody repair preserves human verification"
+  },
+  {
+    "case": "georef-valid",
+    "outcome": "intended_failure",
+    "diagnostic": "Valid callback georeference remains recorded"
+  },
+  {
+    "case": "georef-refused",
+    "outcome": "intended_failure",
+    "diagnostic": "Refused callback georeference remains null"
+  },
+  {
+    "case": "georef-absent",
+    "outcome": "intended_failure",
+    "diagnostic": "Absent callback georeference remains null"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived",
+    "tests": 88
+  }
+]

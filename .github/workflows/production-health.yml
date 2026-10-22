@@ -1,14 +1,29 @@
 name: Production Health
 
-# Optional manual check. Hosted operation is deferred as of September 7, 2026.
-# Polls an explicitly configured deployment's /api/health. OpenPlan has no canonical
-# hosted instance, so the URL comes from the repository variable
-# OPENPLAN_HEALTH_URL (Settings -> Secrets and variables -> Actions ->
-# Variables). When the variable is unset — every fresh fork — the job is
-# skipped instead of failing or polling somebody else's deployment.
+# Polls an explicitly configured deployment's /api/health every 30 minutes, after
+# each successful Vercel production deployment, and on demand. The hosted
+# installation (live since October 11, 2026) sets the repository variable
+# OPENPLAN_HEALTH_URL (Settings -> Secrets and variables -> Actions -> Variables).
+# A failed run is GitHub's alert: it emails the repository owner. When the
+# variable is unset, as in a fresh fork, the job is skipped instead of failing
+# or polling somebody else's deployment.
+#
+# GitHub delays and drops scheduled runs under load; on October 13 and 14, 2026
+# the half-hourly schedule ran about every four to five hours. The deployment
+# trigger catches a bad release at once, but an outage between releases needs
+# an external uptime monitor as well (openplan/docs/ops/HOSTED_OPERATIONS.md).
+#
+# The second step compares the migrations the deployed build expects with the
+# ones the hosted database has applied, and fails when the database lacks one.
+# It is off until the owner sets the repository variable
+# OPENPLAN_SUPABASE_PROJECT_REF and the secrets OPENPLAN_HEALTH_TOKEN and
+# SUPABASE_ACCESS_TOKEN; while off it prints a notice instead of failing.
 
 on:
   workflow_dispatch:
+  deployment_status:
+  schedule:
+    - cron: "7,37 * * * *"
 
 permissions:
   contents: read
@@ -17,7 +32,9 @@ jobs:
   health:
     name: health check
     runs-on: ubuntu-latest
-    if: ${{ vars.OPENPLAN_HEALTH_URL != '' }}
+    if: >-
+      ${{ vars.OPENPLAN_HEALTH_URL != '' && (github.event_name != 'deployment_status' ||
+      (github.event.deployment_status.state == 'success' && github.event.deployment.environment == 'Production')) }}
     env:
       OPENPLAN_HEALTH_URL: ${{ vars.OPENPLAN_HEALTH_URL }}
     defaults:
@@ -33,3 +50,11 @@ jobs:
 
       - name: Check production health
         run: node scripts/ops/check-prod-health.mjs
+
+      - name: Check deep health and migrations
+        if: ${{ !cancelled() }}
+        env:
+          OPENPLAN_HEALTH_TOKEN: ${{ secrets.OPENPLAN_HEALTH_TOKEN }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          OPENPLAN_SUPABASE_PROJECT_REF: ${{ vars.OPENPLAN_SUPABASE_PROJECT_REF }}
+        run: node scripts/ops/check-deep-health.mjs

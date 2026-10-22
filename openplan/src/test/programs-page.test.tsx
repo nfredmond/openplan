@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -45,6 +45,13 @@ const reportArtifactsOrderMock = vi.fn();
 const reportArtifactsInMock = vi.fn(() => ({ order: reportArtifactsOrderMock }));
 const reportArtifactsSelectMock = vi.fn(() => ({ in: reportArtifactsInMock }));
 
+const workProgramRevisionsEqMock = vi.fn();
+const workProgramRevisionsInMock = vi.fn(() => ({ eq: workProgramRevisionsEqMock }));
+const workProgramRevisionsSelectMock = vi.fn(() => ({ in: workProgramRevisionsInMock }));
+
+const workProgramWorkflowInMock = vi.fn();
+const workProgramWorkflowSelectMock = vi.fn(() => ({ in: workProgramWorkflowInMock }));
+
 const fromMock = vi.fn((table: string) => {
   if (table === "programs") {
     return { select: programsSelectMock };
@@ -72,6 +79,12 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "report_artifacts") {
     return { select: reportArtifactsSelectMock };
+  }
+  if (table === "program_work_program_revisions") {
+    return { select: workProgramRevisionsSelectMock };
+  }
+  if (table === "program_work_program_workflow") {
+    return { select: workProgramWorkflowSelectMock };
   }
 
   throw new Error(`Unexpected table: ${table}`);
@@ -187,6 +200,8 @@ describe("ProgramsPage", () => {
     plansInMock.mockResolvedValue({ data: [], error: null });
     campaignsInMock.mockResolvedValue({ data: [], error: null });
     projectFundingProfilesInMock.mockResolvedValue({ data: [], error: null });
+    workProgramRevisionsEqMock.mockResolvedValue({ data: [], error: null });
+    workProgramWorkflowInMock.mockResolvedValue({ data: [], error: null });
 
     reportsInMock.mockResolvedValueOnce({
       data: [
@@ -302,6 +317,169 @@ describe("ProgramsPage", () => {
       // The program catalog read succeeded, so it still renders its real rows.
       expect(screen.getAllByText(/2027 RTIP/i).length).toBeGreaterThan(0);
       expect(screen.queryByText("Your programming cycles could not be read")).not.toBeInTheDocument();
+    });
+  });
+
+  /**
+   * THE WAY IN TO A WORK PROGRAM AND A MEASURE FUND.
+   *
+   * Both live on child routes of a program (`/work-program`, `/measure`), and
+   * before this section the only door to either was a chip on the program's
+   * own page. This section lists them by name on Programming Cycles, and the
+   * command palette's "Work programs (OWP/UPWP)" row lands on it.
+   */
+  describe("work programs and measure funds", () => {
+    const BASE_PROGRAM = {
+      workspace_id: "workspace-1",
+      project_id: null,
+      status: "draft",
+      funding_classification: "formula",
+      sponsor_agency: "Regional agency",
+      owner_label: null,
+      cadence_label: null,
+      fiscal_year_start: 2026,
+      fiscal_year_end: 2027,
+      nomination_due_at: null,
+      adoption_target_at: null,
+      summary: null,
+      created_at: "2026-03-28T18:00:00.000Z",
+      updated_at: "2026-03-28T21:10:00.000Z",
+      projects: null,
+    };
+
+    function withPrograms() {
+      programsOrderMock.mockResolvedValue({
+        data: [
+          { ...BASE_PROGRAM, id: "program-owp", title: "FY 2026-27 work program", program_type: "other", cycle_name: "FY 2026-27" },
+          { ...BASE_PROGRAM, id: "program-rtip", title: "2027 RTIP", program_type: "rtip", cycle_name: "2027 RTIP" },
+          { ...BASE_PROGRAM, id: "program-measure", title: "Measure A", program_type: "local_measure", cycle_name: "FY 2026-27" },
+        ],
+        error: null,
+      });
+      workProgramRevisionsEqMock.mockResolvedValue({ data: [{ program_id: "program-owp" }], error: null });
+    }
+
+    function doorList() {
+      return within(screen.getByRole("list", { name: "Work programs and measure funds" }));
+    }
+
+    it("links each saved work program and each measure fund by name, and nothing else", async () => {
+      withPrograms();
+
+      await renderPage();
+
+      const doors = doorList();
+      expect(doors.getByRole("link", { name: "FY 2026-27 work program" })).toHaveAttribute(
+        "href",
+        "/programs/program-owp/work-program"
+      );
+      expect(doors.getByRole("link", { name: "Measure A" })).toHaveAttribute("href", "/programs/program-measure/measure");
+      // An RTIP with no saved work program is not offered as one.
+      expect(doors.queryByRole("link", { name: "2027 RTIP" })).not.toBeInTheDocument();
+      expect(doors.getByText("Not adopted yet")).toBeInTheDocument();
+
+      // The palette row lands on this section by its id.
+      expect(document.getElementById("work-programs")).not.toBeNull();
+
+      // One row per work program: only revision 1, by program, from this page's programs.
+      expect(workProgramRevisionsSelectMock).toHaveBeenCalledWith("program_id");
+      expect(workProgramRevisionsInMock).toHaveBeenCalledWith("program_id", ["program-owp", "program-rtip", "program-measure"]);
+      expect(workProgramRevisionsEqMock).toHaveBeenCalledWith("revision", 1);
+      expect(workProgramWorkflowSelectMock).toHaveBeenCalledWith("program_id, effective_revision_id");
+    });
+
+    it("lists an Overall Work Program before its first version is saved", async () => {
+      programsOrderMock.mockResolvedValue({
+        data: [
+          { ...BASE_PROGRAM, id: "program-new-owp", title: "FY 2027-28 OWP", program_type: "owp_upwp", cycle_name: "FY 2027-28" },
+          { ...BASE_PROGRAM, id: "program-rtip", title: "2027 RTIP", program_type: "rtip", cycle_name: "2027 RTIP" },
+        ],
+        error: null,
+      });
+
+      await renderPage();
+
+      expect(doorList().getByRole("link", { name: "FY 2027-28 OWP" })).toHaveAttribute(
+        "href",
+        "/programs/program-new-owp/work-program"
+      );
+      expect(doorList().getByText("Not adopted yet")).toBeInTheDocument();
+      expect(doorList().queryByRole("link", { name: "2027 RTIP" })).not.toBeInTheDocument();
+      expect(screen.queryByText(/None yet\./)).not.toBeInTheDocument();
+    });
+
+    it("says a work program is adopted only when an adopted version is recorded", async () => {
+      withPrograms();
+      workProgramWorkflowInMock.mockResolvedValue({
+        data: [{ program_id: "program-owp", effective_revision_id: "revision-3" }],
+        error: null,
+      });
+
+      await renderPage();
+
+      expect(doorList().getByText("Adopted")).toBeInTheDocument();
+      expect(doorList().queryByText("Not adopted yet")).not.toBeInTheDocument();
+    });
+
+    it("lists the doors even when filters hide those programs from the list below", async () => {
+      withPrograms();
+
+      await renderPage({ programType: "rtip" });
+
+      expect(doorList().getByRole("link", { name: "FY 2026-27 work program" })).toBeInTheDocument();
+      expect(doorList().getByRole("link", { name: "Measure A" })).toBeInTheDocument();
+    });
+
+    it("says how to start one when there are none", async () => {
+      await renderPage();
+
+      expect(
+        screen.getByText(/None yet\. To start a work program, add a program with the type Overall Work Program \(OWP\/UPWP\)\./)
+      ).toBeInTheDocument();
+      expect(screen.queryByRole("list", { name: "Work programs and measure funds" })).not.toBeInTheDocument();
+    });
+
+    it("does not say there are none when the work program read failed", async () => {
+      withPrograms();
+      workProgramRevisionsEqMock.mockResolvedValue({
+        data: null,
+        error: { message: "permission denied for table program_work_program_revisions" },
+      });
+
+      await renderPage();
+
+      expect(screen.getByText("Work programs could not be read")).toBeInTheDocument();
+      expect(screen.queryByText(/None yet\./)).not.toBeInTheDocument();
+      // The measure fund needs no work program read, so it is still offered.
+      expect(doorList().getByRole("link", { name: "Measure A" })).toBeInTheDocument();
+    });
+
+    it("does not say there are none when the read failed and nothing else is listed", async () => {
+      // The default fixture is one RTIP and no measure fund, so the list is empty.
+      workProgramRevisionsEqMock.mockResolvedValue({
+        data: null,
+        error: { message: "permission denied for table program_work_program_revisions" },
+      });
+
+      await renderPage();
+
+      expect(screen.getByText("Work programs could not be read")).toBeInTheDocument();
+      expect(screen.queryByText(/None yet\./)).not.toBeInTheDocument();
+    });
+
+    it("lists the work program without an adoption claim when the adoption read failed", async () => {
+      withPrograms();
+      workProgramWorkflowInMock.mockResolvedValue({
+        data: null,
+        error: { message: "permission denied for table program_work_program_workflow" },
+      });
+
+      await renderPage();
+
+      expect(doorList().getByRole("link", { name: "FY 2026-27 work program" })).toBeInTheDocument();
+      expect(doorList().queryByText("Not adopted yet")).not.toBeInTheDocument();
+      expect(doorList().queryByText("Adopted")).not.toBeInTheDocument();
+      expect(screen.getByText(/work program adoption: permission denied/)).toBeInTheDocument();
     });
   });
 });

@@ -241,7 +241,7 @@ export function GrantsGovLiveSection({ trackedTitles }: { trackedTitles: string[
           className="mt-4 rounded-[0.75rem] border border-dashed border-border/60 bg-background/60 px-5 py-4 text-sm text-muted-foreground"
           data-testid="grants-gov-offline"
         >
-          grants.gov is unreachable from this environment right now. The grants lane keeps working
+          grants.gov is unreachable from this environment right now. Grants keeps working
           from the curated program catalog and your tracked opportunities — try loading again later.
         </div>
       ) : null}

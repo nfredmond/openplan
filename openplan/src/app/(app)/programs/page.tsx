@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ArrowRight, CalendarClock, FolderKanban } from "lucide-react";
 import { CartographicSelectionLink } from "@/components/cartographic/cartographic-selection-link";
@@ -240,7 +241,7 @@ export default async function ProgramsPage({
   const programIds = programs.map((program) => program.id);
   const projectIds = [...new Set(programs.map((program) => program.project_id).filter((value): value is string => Boolean(value)))];
 
-  const [linksResult, plansResult, projectReportsResult, campaignsResult] = await Promise.all([
+  const [linksResult, plansResult, projectReportsResult, campaignsResult, workProgramsResult, workProgramAdoptionResult] = await Promise.all([
     programIds.length
       ? supabase.from("program_links").select("program_id, link_type, linked_id").in("program_id", programIds)
       : Promise.resolve({ data: [], error: null }),
@@ -256,6 +257,24 @@ export default async function ProgramsPage({
     projectIds.length
       ? supabase.from("engagement_campaigns").select("id, project_id").in("project_id", projectIds)
       : Promise.resolve({ data: [], error: null }),
+    // A program has a work program once its first preparation revision is
+    // saved. Revisions are numbered from 1 per program and never deleted, so
+    // revision 1 is one row per work program however long its history is.
+    programIds.length
+      ? supabase
+          .from("program_work_program_revisions")
+          .select("program_id")
+          .in("program_id", programIds)
+          .eq("revision", 1)
+      : Promise.resolve({ data: [], error: null }),
+    // One row per program, written at its first review step. Adoption sets
+    // `effective_revision_id`; withdrawing the adoption clears it.
+    programIds.length
+      ? supabase
+          .from("program_work_program_workflow")
+          .select("program_id, effective_revision_id")
+          .in("program_id", programIds)
+      : Promise.resolve({ data: [], error: null }),
   ]);
 
   // Each `check` runs unconditionally — `||` would short-circuit and leave the
@@ -264,6 +283,45 @@ export default async function ProgramsPage({
   const planCountsUnreadable = reads.check("plans on the linked projects", plansResult);
   const projectReportsUnreadable = reads.check("reports on the linked projects", projectReportsResult);
   const campaignCountsUnreadable = reads.check("engagement campaigns on the linked projects", campaignsResult);
+  // Checked separately so a failed adoption read cannot hide the list itself.
+  const workProgramsUnreadable = reads.check("work programs", workProgramsResult);
+  const workProgramAdoptionUnreadable = reads.check("work program adoption", workProgramAdoptionResult);
+
+  const workProgramIds = new Set(
+    ((workProgramsResult.data ?? []) as Array<{ program_id: string }>).map((row) => row.program_id)
+  );
+  const adoptedWorkProgramIds = new Set(
+    ((workProgramAdoptionResult.data ?? []) as Array<{ program_id: string; effective_revision_id: string | null }>)
+      .filter((row) => Boolean(row.effective_revision_id))
+      .map((row) => row.program_id)
+  );
+  // Every work program and every measure fund, unfiltered: this is the way in,
+  // not a view of the list below. An Overall Work Program is listed before its
+  // first version is saved, so a new one can be found here too.
+  const programDoors = [
+    ...programs
+      .filter((program) => program.program_type === "owp_upwp" || workProgramIds.has(program.id))
+      .map((program) => ({
+        key: `work-program-${program.id}`,
+        href: `/programs/${program.id}/work-program`,
+        title: program.title,
+        kind: "Work program",
+        state: workProgramAdoptionUnreadable
+          ? null
+          : adoptedWorkProgramIds.has(program.id)
+            ? "Adopted"
+            : "Not adopted yet",
+      })),
+    ...programs
+      .filter((program) => program.program_type === "local_measure")
+      .map((program) => ({
+        key: `measure-${program.id}`,
+        href: `/programs/${program.id}/measure`,
+        title: program.title,
+        kind: "Measure fund",
+        state: null,
+      })),
+  ];
 
   const linksByProgram = new Map<string, ProgramLinkRow[]>();
   for (const link of (linksResult.data ?? []) as ProgramLinkRow[]) {
@@ -644,6 +702,45 @@ export default async function ProgramsPage({
           ]}
         />
       </PageHeader>
+
+      <article id="work-programs" className="module-section-surface scroll-mt-24" aria-labelledby="work-programs-title">
+        <div className="module-section-header">
+          <div className="module-section-heading">
+            <h2 id="work-programs-title" className="module-section-title">Work programs and measure funds</h2>
+          </div>
+        </div>
+
+        {programsUnreadable || workProgramsUnreadable ? (
+          <div className="mt-5">
+            <StateBlock
+              tone="danger"
+              title="Work programs could not be read"
+              description="This is not a finding that you have none. Try again."
+            />
+          </div>
+        ) : null}
+        {programDoors.length > 0 ? (
+          <ul className="module-record-list mt-5" aria-label="Work programs and measure funds">
+            {programDoors.map((door) => (
+              <li key={door.key} className="module-record-row">
+                <div className="module-record-kicker">
+                  <StatusBadge tone="info">{door.kind}</StatusBadge>
+                  {door.state ? (
+                    <StatusBadge tone={door.state === "Adopted" ? "success" : "neutral"}>{door.state}</StatusBadge>
+                  ) : null}
+                </div>
+                <Link href={door.href} className="module-record-title text-[1.05rem] hover:text-primary hover:underline">
+                  {door.title}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : programsUnreadable || workProgramsUnreadable ? null : (
+          <p className="mt-3 text-sm text-muted-foreground">
+            None yet. To start a work program, add a program with the type Overall Work Program (OWP/UPWP).
+          </p>
+        )}
+      </article>
 
       <article className="module-section-surface">
         <div className="module-section-header">

@@ -1,0 +1,326 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-extra-observation",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "childExit-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "childExit-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "childExit-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "childStopped-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "childStopped-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "childStopped-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "capturedRootCount-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "capturedRootCount-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "capturedRootCount-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "captureExit-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "captureExit-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "captureExit-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "verifyExit-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "verifyExit-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "verifyExit-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalRootsUnchanged-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalRootsUnchanged-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalRootsUnchanged-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalPackagesUnchanged-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalPackagesUnchanged-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalPackagesUnchanged-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalJournalPreserved-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalJournalPreserved-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalJournalPreserved-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalTaskPreserved-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalTaskPreserved-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalTaskPreserved-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalContextPreserved-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalContextPreserved-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalContextPreserved-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "firstSlotRetainedBeforeDeath-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "firstSlotRetainedBeforeDeath-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "firstSlotRetainedBeforeDeath-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "secondSlotAbsentBeforeDeath-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "secondSlotAbsentBeforeDeath-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "secondSlotAbsentBeforeDeath-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalAdmissionReplayed-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalAdmissionReplayed-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalAdmissionReplayed-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "localPreparationCompleted-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "localPreparationCompleted-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "localPreparationCompleted-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allOriginalBytesMatch-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allOriginalBytesMatch-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allOriginalBytesMatch-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "noEngineIntentsIssued-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "noEngineIntentsIssued-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "noEngineIntentsIssued-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "engineTransportPermission-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "engineTransportPermission-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "engineTransportPermission-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "authorityUnassessed-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "authorityUnassessed-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "authorityUnassessed-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "callbackCustodyUnassessed-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "callbackCustodyUnassessed-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "callbackCustodyUnassessed-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalStartStillHeld-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalStartStillHeld-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalStartStillHeld-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "completeCopyNeedsNoOriginalInput-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "completeCopyNeedsNoOriginalInput-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "completeCopyNeedsNoOriginalInput-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedActorRefused-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedActorRefused-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedActorRefused-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedEngineRefused-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedEngineRefused-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedEngineRefused-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedRetainedBytesRefused-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedRetainedBytesRefused-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedRetainedBytesRefused-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "negativeFixturesRestored-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "negativeFixturesRestored-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "negativeFixturesRestored-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceBindingsUnchanged-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceBindingsUnchanged-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceBindingsUnchanged-wrong-type",
+    "outcome": "intended_failure"
+  }
+]

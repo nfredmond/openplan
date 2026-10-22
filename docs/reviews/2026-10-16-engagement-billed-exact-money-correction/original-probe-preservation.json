@@ -1,0 +1,12 @@
+{
+  "/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb/docs/reviews/2026-10-16-engagement-billed-precision-probe": {
+    "sealedFileCount": 4,
+    "allMatch": true,
+    "sealSha256": "9650034415a6b86cda5795ee3a6b84ae7caf44e7e3ca94b33e3f8b499e2d3d0b"
+  },
+  "/home/nathaniel/.local/state/openplan/engagement-billed-precision-probe-20261016": {
+    "sealedFileCount": 30,
+    "allMatch": true,
+    "sealSha256": "87d20b5b6e92351e4b1df013ede258c4eee3953f3f34f4d972654601a65489b1"
+  }
+}

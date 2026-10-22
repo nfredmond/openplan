@@ -12,6 +12,7 @@ import {
   Trash2,
   Upload,
 } from "lucide-react";
+import { OperatorDetail } from "@/components/ui/read-failure-notice";
 import { navLabel } from "@/components/nav/nav-registry";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { ScreeningGradeLink } from "@/components/ui/screening-grade-link";
 import type { StatusTone } from "@/lib/ui/status";
+import { calendarDayOf, UTC_TIME_ZONE } from "@/lib/time/workspace-calendar";
 import { KB_DOC_KINDS, type KbDocKind, type KbDocumentStatus } from "@/lib/knowledge-base/types";
 import {
   DEFAULT_KB_DOCUMENT_MAX_BYTES,
@@ -165,9 +167,9 @@ function formatBytes(bytes: number | null): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function formatDate(iso: string): string {
-  const parsed = new Date(iso);
-  return Number.isNaN(parsed.getTime()) ? "" : parsed.toISOString().slice(0, 10);
+/** The day a document was added, on the workspace's calendar: the calendar the date filter reads. */
+function formatDate(iso: string, timeZone: string): string {
+  return calendarDayOf(iso, timeZone) ?? "";
 }
 
 function FormError({ error }: { error: string | null }) {
@@ -231,6 +233,12 @@ type KnowledgeBaseWorkspaceProps = {
    * offering a button that answers 501.
    */
   ocrConfigured?: boolean;
+  /**
+   * The workspace's IANA zone, resolved by the page. Dates are printed on its
+   * calendar so they agree with the "Added between" filter, which the route
+   * reads on the same calendar. Absent means UTC.
+   */
+  timeZone?: string;
 };
 
 export function KnowledgeBaseWorkspace({
@@ -242,6 +250,7 @@ export function KnowledgeBaseWorkspace({
   maxUploadBytes = DEFAULT_KB_DOCUMENT_MAX_BYTES,
   library = null,
   ocrConfigured = false,
+  timeZone = UTC_TIME_ZONE,
 }: KnowledgeBaseWorkspaceProps) {
   const [documents, setDocuments] = useState<KbDocumentRow[]>(initialDocuments);
   const [documentList, setDocumentList] = useState<KbDocumentListState>(() =>
@@ -393,6 +402,7 @@ export function KnowledgeBaseWorkspace({
             sort: nextSort,
             addedFrom: nextFrom,
             addedTo: nextTo,
+            timeZone,
           }),
       });
     } catch (loadError) {
@@ -1068,7 +1078,7 @@ export function KnowledgeBaseWorkspace({
                       : ""}
                   </p>
                   <div className="module-record-meta">
-                    <span className="module-record-stamp">{formatDate(doc.created_at)}</span>
+                    <span className="module-record-stamp">{formatDate(doc.created_at, timeZone)}</span>
                     {doc.project_id ? (
                       <Link
                         href={`/projects/${doc.project_id}`}
@@ -1178,13 +1188,24 @@ export function KnowledgeBaseWorkspace({
           {pendingLibrarySources.length > 0 ? (
             // One template literal → one text node, so tests (and translations,
             // later) see the sentence the planner sees.
-            <p className="module-note">
-              {`${pendingLibrarySources.map((id) => librarySourceLabel(id)).join(", ")}: ${
-                pendingLibrarySources.length === 1
-                  ? "this source is behind a database migration on this deployment, so its files are"
-                  : "these sources are behind a database migration on this deployment, so their files are"
-              } not listed here yet. That lane reads as unavailable, not as empty.`}
-            </p>
+            <div className="module-note">
+              <p>
+                {`${pendingLibrarySources.map((id) => librarySourceLabel(id)).join(", ")}: ${
+                  pendingLibrarySources.length === 1
+                    ? "this source is not set up on this installation yet, so its files are"
+                    : "these sources are not set up on this installation yet, so their files are"
+                } not listed here. That means unavailable, not empty. Whoever runs this OpenPlan can turn ${
+                  pendingLibrarySources.length === 1 ? "it" : "them"
+                } on.`}
+              </p>
+              <OperatorDetail>
+                <p>
+                  {pendingLibrarySources.length === 1
+                    ? "This source is behind a database migration on this deployment."
+                    : "These sources are behind a database migration on this deployment."}
+                </p>
+              </OperatorDetail>
+            </div>
           ) : null}
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -1240,8 +1261,8 @@ export function KnowledgeBaseWorkspace({
                     ) : null}
                     <div className="module-record-meta">
                       <span className="module-record-chip">{librarySourceLabel(entry.sourceId)}</span>
-                      {formatDate(entry.createdAt) ? (
-                        <span className="module-record-stamp">{formatDate(entry.createdAt)}</span>
+                      {formatDate(entry.createdAt, timeZone) ? (
+                        <span className="module-record-stamp">{formatDate(entry.createdAt, timeZone)}</span>
                       ) : null}
                       {formatBytes(entry.byteSize) ? (
                         <span className="module-record-chip">{formatBytes(entry.byteSize)}</span>

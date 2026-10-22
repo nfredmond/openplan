@@ -1,0 +1,6 @@
+{
+  "nativeFailuresReclassified": 29,
+  "classifierSha256": "d2a76ef7a123bed61ab629745fea4eb0d7b9a58efa6240803186d912caae2ba6",
+  "migrationSha256": "8fe8cdfd8c38277d8534dab7821c5aaefa1bf702a630596eb9f7a747dbebcc09",
+  "scope": "Current classifier accepts all29retained revised-SQL failures at their selected assertions; separate oracle controls reject wrong exits and diagnostic boundaries."
+}

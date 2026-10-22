@@ -1,0 +1,76 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived",
+    "tests": 9
+  },
+  {
+    "case": "harmless-comment",
+    "outcome": "survived",
+    "tests": 9
+  },
+  {
+    "case": "restored-after-harmless",
+    "outcome": "survived",
+    "tests": 9
+  },
+  {
+    "case": "unstaged-ignored",
+    "outcome": "intended_failure",
+    "test": "test_unstaged_migration_change_refuses",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "staged-ignored",
+    "outcome": "intended_failure",
+    "test": "test_staged_change_refuses_even_when_worktree_matches_commit",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "untracked-ignored",
+    "outcome": "intended_failure",
+    "test": "test_untracked_migration_refuses",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "missing-ignored",
+    "outcome": "intended_failure",
+    "test": "test_missing_selected_migration_refuses",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "unrelated-edits-blocked",
+    "outcome": "intended_failure",
+    "test": "test_exact_selected_git_bytes_survive_nonmigration_edits",
+    "diagnostic": "Selected migration worktree differs"
+  },
+  {
+    "case": "mutable-ref-accepted",
+    "outcome": "intended_failure",
+    "test": "test_selected_commit_identity_is_explicit",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "mutable-bytes-captured",
+    "outcome": "intended_failure",
+    "test": "test_selected_bytes_come_from_git_objects",
+    "diagnostic": "Captured bytes must come from selected Git objects"
+  },
+  {
+    "case": "nested-shadow-accepted",
+    "outcome": "intended_failure",
+    "test": "test_nested_migration_cannot_shadow_a_direct_member",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "checkout-output-accepted",
+    "outcome": "intended_failure",
+    "test": "test_capture_destination_refuses_checkout_overlap",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived",
+    "tests": 9
+  }
+]

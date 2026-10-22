@@ -1,0 +1,53 @@
+{
+  "feed": "bb28bb0b-1c4f-4e9d-9774-fc24a42d928c",
+  "geometry": [
+    {
+      "bytes": 142174,
+      "id": "managed-run-corridor"
+    }
+  ],
+  "noRuns": true,
+  "observed": {
+    "coverage": [
+      {
+        "body": {
+          "coverage": "yes",
+          "reason": null,
+          "serviceEndDate": "2027-01-10",
+          "stopServiceRowsInStudyArea": 238,
+          "usesFrequencies": false
+        },
+        "feedId": "41145384-4d4a-4cc0-b6e2-bf4ef09829ca",
+        "geometrySha256": "007c5ce9a3bea160193427fe1e6f769c33c239b3b448cd9e40ab623d9acdd8fd",
+        "status": 200,
+        "workspaceId": "e9df9fa9-8c14-4800-8b85-2d5a074fb513"
+      },
+      {
+        "body": {
+          "coverage": "yes",
+          "reason": null,
+          "serviceEndDate": "2026-08-09",
+          "stopServiceRowsInStudyArea": 238,
+          "usesFrequencies": false
+        },
+        "feedId": "bb28bb0b-1c4f-4e9d-9774-fc24a42d928c",
+        "geometrySha256": "007c5ce9a3bea160193427fe1e6f769c33c239b3b448cd9e40ab623d9acdd8fd",
+        "status": 200,
+        "workspaceId": "e9df9fa9-8c14-4800-8b85-2d5a074fb513"
+      }
+    ],
+    "errors": []
+  },
+  "overflow": {
+    "client": 390,
+    "scroll": 390
+  },
+  "retainsOakland": true,
+  "scheduleText": "Bay Area Rapid Transit (BART) \u00b7 schedule through 2026-08-09",
+  "title": "Synthetic retained transit geography review \u00b7 Models \u00b7 OpenPlan",
+  "url": "http://127.74.9.10:3579/models/492638e4-9937-4e61-a31c-d69f7e36f49b",
+  "viewport": {
+    "height": 844,
+    "width": 390
+  }
+}

@@ -60,13 +60,13 @@ describe("WorkspaceRuntimeCue", () => {
             key: "anchor-project-funding-needs",
             moduleKey: "grants",
             moduleLabel: "Grants",
-            title: "Anchor project funding needs",
-            detail: "1 project funding lane has linked opportunities but still no recorded funding-need anchor.",
+            title: "Record what each project needs",
+            detail: "1 project has grant opportunities but no funding target, so the funding gap cannot be measured.",
             href: "/projects/project-anchor#project-funding-opportunities",
             targetProjectId: "project-anchor",
             tone: "warning",
             priority: 3,
-            badges: [{ label: "Missing anchors", value: 1 }],
+            badges: [{ label: "No funding target", value: 1 }],
           },
           { projectFundingNeedAnchorProjects: 1 }
         )}
@@ -75,7 +75,7 @@ describe("WorkspaceRuntimeCue", () => {
 
     expect(
       screen.getByText(
-        "Next across this workspace: the lead Grants action is anchor project funding needs. 1 project funding lane has linked opportunities but still no recorded funding-need anchor."
+        "Next across this workspace: the lead Grants action is record what each project needs. 1 project has grant opportunities but no funding target, so the funding gap cannot be measured."
       )
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Open Grants" })).toHaveAttribute(

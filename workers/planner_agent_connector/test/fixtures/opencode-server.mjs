@@ -1,9 +1,15 @@
 import { createServer } from "node:http";
 import { writeFileSync } from "node:fs";
+import { saveReceipt } from "./receipt-publication.mjs";
 
 const mode = process.env.MODE;
 const receipt = { pid: process.pid, requests: [], terminated: false };
-const save = () => writeFileSync(process.env.RECEIPT_PATH, JSON.stringify(receipt));
+const save = () => saveReceipt(process.env.RECEIPT_PATH, receipt, () => {
+  if (receipt.terminated && process.env.RECEIPT_BARRIER_PATH) {
+    writeFileSync(process.env.RECEIPT_BARRIER_PATH, "opened-before-data");
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0);
+  }
+});
 save();
 if (mode === "ignoreTerm") process.on("SIGTERM", () => { receipt.terminated = true; save(); });
 if (mode === "earlyExit") process.exit(7);

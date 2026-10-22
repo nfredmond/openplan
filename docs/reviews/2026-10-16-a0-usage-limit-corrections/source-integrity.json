@@ -1,0 +1,24 @@
+{
+  "baseCommit": "40d8227dc25cb94084de077a4e8f47b107cc7a08",
+  "currentCompleteUsageLimitPath": {
+    "docs/reviews/2026-10-16-a0-usage-limit-corrections/NATIVE_CONFIGURATION_PROBE.sql": "6186eca531ec205a24f27518bd6cdeb72d0eea0a9f8ea020db43397d6d70faa3",
+    "docs/reviews/2026-10-16-a0-usage-limit-corrections/NATIVE_RUNTIME_BOUNDARY.md": "4e01e165a0ecb10c5634c504aa9457e73ca8bc9cf4085f09e9764f9e0b8af139",
+    "docs/reviews/2026-10-16-a0-usage-limit-receipt/NATIVE_PROBE.sql": "84998baf7a50735924d3352d68479809c7102df0bb0a76dcbd55d4ce0492c32b",
+    "openplan/src/app/api/assistant/providers/native/route.ts": "4a1d9930b8dad2e323177b149115ac7fef8015aed036b12437d9cb73ee5975b5",
+    "openplan/src/components/assistant/project-provider-panel.tsx": "6084457baeac20756ee076d8d5faffdb2568aad6b83af11eb7fa1245b58512c5",
+    "openplan/src/lib/assistant/provider-server.ts": "e2d4fc56add4837ccc3fcb294582f37f6b0a591d34f8f6eda1259b0c12f67bd7",
+    "openplan/src/lib/assistant/provider-usage-limit.ts": "c1d88308dbfeaf216c396e5529e1a99740884739114d746a37f04564695dda14",
+    "openplan/src/test/provider-usage-limit-adapter.test.ts": "1c086316352562d21e2c14a3be25d92419ddb8c50db02d60761cb5c28c2d820b",
+    "openplan/src/test/provider-usage-limit.test.tsx": "6a9e499ee671592087ac29bce26481cf1ab13ca4ad33ee978f283987e867acda",
+    "openplan/supabase/migrations/20261017000018_assistant_usage_limit_receipts.sql": "655e625878b3e62f332a7f17d6e126879813cc2bf881ca745593978d8eed6559",
+    "workers/planner_agent_connector/codex-provider.mjs": "48d21d52a71400e15a7c9f494d45051817135840bbd1719b3b6d2616a1105140",
+    "workers/planner_agent_connector/codex-session.mjs": "07d6a9fc0aa86f5dee531aa3857e33a9039588c6fae8827808dbab53c7ececf8",
+    "workers/planner_agent_connector/codex-usage-limit.mjs": "94e4336553940d2fc33778082d2bf6036b94c6acf5ecf155a1bd3769192ee57f",
+    "workers/planner_agent_connector/connector-worker.mjs": "38f5a3d6d3f72d693ead71a5e34d49831423cc8fe3a215d2981b19f4d5fd4ed9",
+    "workers/planner_agent_connector/test/usage-limit-frames.mjs": "00846aab076ea086babe2c8f12f03efdbd2cf04a2bf4d580cde0b6d2d47f4840",
+    "workers/planner_agent_connector/test/usage-limit-source.test.mjs": "cd4db86c61fbfa67a7e4d2de6273caf107f0036c8dd092aad3da5b1cfed15f99",
+    "workers/planner_agent_connector/test/usage-limit.test.mjs": "5d854eda799fdf5ce236afaa5b6ae679cd4ac376bed6f147dd68642b9142531c",
+    "workers/planner_agent_connector/usage-limit-receipt.mjs": "fa00af4974749e77610937be433e94c0c59b945b5694dacc82b4554f86eafb42"
+  },
+  "historicalProbeRemainsUnchanged": "docs/reviews/2026-10-16-a0-usage-limit-receipt/NATIVE_PROBE.sql"
+}

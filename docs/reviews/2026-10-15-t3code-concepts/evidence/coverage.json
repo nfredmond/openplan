@@ -1,0 +1,255 @@
+{
+  "repository": "pingdotgg/t3code",
+  "sourceCommit": "ec1313c8f8333292506f05a355bb72d308a455d8",
+  "prCaptureInterval": {
+    "earliestRetainedPage": "2026-10-15T01:43:13.543889Z",
+    "collectorResumeStart": "2026-10-15T01:44:01.270841+00:00",
+    "captureEnd": "2026-10-15T01:44:53.504602+00:00",
+    "note": "Not an atomic GitHub snapshot: the resumed collector reused earlier pages. PR 19703 (created 01:45:00Z, open, \"feat(review): unify pull request and Git review across clients\") is post-cutoff and appears only as a labelled addendum (post-cutoff-pr-19703.json)."
+  },
+  "prCorpusSha256": "2852de23041366abdbec9c9b6fd3e8470bdf67b9ca3a2c26bb2db9225bc8a16f",
+  "openplanCommit": "1b2fefe0f0e98f99700fc77e99146fe697b43ee7",
+  "levels": {
+    "L0_inventory_retrieved": {
+      "pullRequests": 13199,
+      "open": 1341,
+      "closedUnmerged": 6753,
+      "merged": 5105,
+      "numberRange": [
+        1,
+        19702
+      ],
+      "drafts": 793,
+      "emptyBodies": 9,
+      "note": "GitHub numbers are shared with issues; 13199 PR numbers exist below 19702."
+    },
+    "L1_metadata_screen": {
+      "pullRequests": 13199,
+      "fieldsUsed": "title, labels, first 6000 chars of cleaned body",
+      "unclassified": 127,
+      "method": "scripts/classify_prs.py regex themes + conventional-commit scope hints",
+      "outputs": [
+        "evidence/pr-classification.tsv",
+        "evidence/pr-classification.jsonl",
+        "evidence/pr-classification-summary.json"
+      ]
+    },
+    "L2_title_level_theme_lists": {
+      "method": "scripts/title_hits.py",
+      "lists": {
+        "accessibility-i18n": {
+          "merged": 106,
+          "closed-unmerged": 140,
+          "open": 27,
+          "total": 273
+        },
+        "approval": {
+          "merged": 73,
+          "closed-unmerged": 73,
+          "open": 20,
+          "total": 166
+        },
+        "artifacts-rendering": {
+          "closed-unmerged": 502,
+          "merged": 311,
+          "open": 98,
+          "total": 911
+        },
+        "citation-context-prompt": {
+          "merged": 132,
+          "closed-unmerged": 193,
+          "open": 46,
+          "total": 371
+        },
+        "delegation-handoff": {
+          "closed-unmerged": 169,
+          "merged": 124,
+          "open": 60,
+          "total": 353
+        },
+        "export-import-backup": {
+          "closed-unmerged": 128,
+          "merged": 169,
+          "open": 27,
+          "total": 324
+        },
+        "mcp-oauth": {
+          "closed-unmerged": 104,
+          "merged": 74,
+          "open": 21,
+          "total": 199
+        },
+        "model-catalog-capabilities": {
+          "merged": 34,
+          "closed-unmerged": 58,
+          "open": 13,
+          "total": 105
+        },
+        "notifications-mobile-offline": {
+          "merged": 73,
+          "closed-unmerged": 72,
+          "open": 23,
+          "total": 168
+        },
+        "observability": {
+          "closed-unmerged": 253,
+          "merged": 245,
+          "open": 69,
+          "total": 567
+        },
+        "plan-mode": {
+          "merged": 32,
+          "closed-unmerged": 92,
+          "open": 7,
+          "total": 131
+        },
+        "provider-account": {
+          "closed-unmerged": 208,
+          "merged": 122,
+          "open": 53,
+          "total": 383
+        },
+        "question-input": {
+          "closed-unmerged": 201,
+          "merged": 101,
+          "open": 65,
+          "total": 367
+        },
+        "queue-steer": {
+          "closed-unmerged": 85,
+          "merged": 58,
+          "open": 31,
+          "total": 174
+        },
+        "recovery-durability": {
+          "merged": 313,
+          "closed-unmerged": 342,
+          "open": 79,
+          "total": 734
+        },
+        "review-collab": {
+          "merged": 254,
+          "closed-unmerged": 302,
+          "open": 74,
+          "total": 630
+        },
+        "schedule-webhook-watch": {
+          "closed-unmerged": 81,
+          "merged": 47,
+          "open": 27,
+          "total": 155
+        },
+        "security-injection": {
+          "merged": 62,
+          "closed-unmerged": 67,
+          "open": 9,
+          "total": 138
+        },
+        "settings-layering": {
+          "merged": 264,
+          "closed-unmerged": 311,
+          "open": 67,
+          "total": 642
+        },
+        "snooze-settle-inbox": {
+          "merged": 133,
+          "closed-unmerged": 227,
+          "open": 42,
+          "total": 402
+        },
+        "update-migration-rollback": {
+          "closed-unmerged": 358,
+          "merged": 341,
+          "open": 87,
+          "total": 786
+        },
+        "usage-limits-cost": {
+          "merged": 196,
+          "closed-unmerged": 355,
+          "open": 90,
+          "total": 641
+        }
+      },
+      "note": "Titles in these lists were read by the analyst, filtered by size for large lists (see REPORT appendix)."
+    },
+    "L3_deep_review": {
+      "pullRequests": 72,
+      "byStatus": {
+        "merged": 58,
+        "open": 6,
+        "closed-unmerged": 8
+      },
+      "reading": "complete cleaned body; complete files-endpoint list; human issue comments, reviews and review comments as fetched (issue comments truncated at 4,000 chars, reviews and review comments at 2,500); bot comments counted only; patch hunks not read",
+      "apiFileCountDiscrepancies": [
+        12296
+      ],
+      "history": "First pass used bounded digests (scripts/digest.py: body prefixes, final setting 900 chars, top 14 files, at most 3 human issue comments and 2 review comments of 350 chars). Complete bodies and file lists were read afterwards via scripts/full_text.py; findings were rechecked against them.",
+      "outputs": [
+        "evidence/deep-review-selection.tsv",
+        "evidence/deep-review-findings.jsonl",
+        "pr-details/*.json"
+      ]
+    },
+    "L1b_supervisor_full_body_supplement": {
+      "by": "supervising Codex, not this agent",
+      "outputs": "supervisor-fullbody/",
+      "pullRequests": 13199,
+      "themeAssignmentChanges": 477,
+      "bestRelevanceChanges": 17,
+      "note": "Same regex rules with the 6,000-char cutoff removed. Still keyword matching, not semantic reading. All 17 relevance changes move B or C to A; none is a PR this report recommends from, and none changes a recommendation (analyst check of titles and theme deltas)."
+    },
+    "L4_pinned_source_inspection": {
+      "note": "Separate from PR retrieval. 36 T3 paths at the pinned commit were checked for existence and specific lines (git cat-file/git show + grep); several small files (for example promptLinks.ts, handoffBudget.ts, McpToolAccess.ts, EffectOutbox.ts excerpts) were read around the cited lines. No T3 code was run or built."
+    },
+    "L3b_collector_review_recap": {
+      "selectedPrs": 72,
+      "verifiedV2Receipts": 72,
+      "allProjectedListsIdentical": 72,
+      "upstreamFileCountDiscrepancies": [
+        12296
+      ],
+      "audit": "evidence/collector-recapture-audit.json",
+      "limits": "Later complete endpoint retrieval, not recreation of original server state, reading or patch/runtime acceptance. Original study remains frozen."
+    }
+  },
+  "documentation": {
+    "totalPaths": 1014,
+    "firstPartyNonVendoredPaths": 117,
+    "externalVendoredRepoPaths": 897,
+    "note": "Only firstPartyNonVendoredPaths are T3-owned prose. External .repos paths are upstream library docs. Retrieval is script-verified; reading is a researcher declaration.",
+    "byCategory": {
+      "t3-agent-skill": 4,
+      "t3-repo-policy": 10,
+      "vendored-upstream:alchemy-effect (Apache-2.0)": 739,
+      "vendored-upstream:effect-smol (MIT)": 158,
+      "t3-component-readme": 13,
+      "t3-test-fixture-readme": 5,
+      "t3-internals-design": 30,
+      "t3-operations-runbook": 9,
+      "t3-orchestration-v2-design": 9,
+      "t3-user-doc": 37
+    },
+    "byRetrieval": {
+      "retrieved": 117,
+      "not retrieved": 897
+    },
+    "byResearcherDeclaration": {
+      "researcher declares read in full (not script-verifiable)": 117,
+      "path-screened only (external upstream library docs under .repos; not T3 product docs)": 895,
+      "README head viewed via git show (output not retained) + license checked": 2
+    },
+    "bySource": {
+      "sparse-checkout": 97,
+      "git-show-at-pinned-commit": 20,
+      "not-fetched (tree path only)": 897
+    },
+    "firstPartyLinesRetrieved": 13938
+  },
+  "notDone": [
+    "complete patch diffs for any PR",
+    "complete review discussions for the other 13,127 PRs",
+    "issues and discussions (Ideas) were not collected",
+    "vendored .repos documentation beyond path screening",
+    "running or building T3 Code"
+  ]
+}

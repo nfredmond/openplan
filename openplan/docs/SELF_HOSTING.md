@@ -30,10 +30,12 @@ public address does not change the CLI stack's status.
 The free reference path uses an existing Linux computer and
 [Docker Engine](https://docs.docker.com/engine/). Docker Desktop has separate
 terms: [government entities require a paid subscription](https://docs.docker.com/subscription-billing/desktop-license/).
-No paid provider is provisioned by these instructions. Public engagement maps
-can use a configured MapLibre style without a Mapbox key. Other map surfaces
-still use Mapbox. See the public-map configuration below. This does not establish
-a complete no-egress installation.
+No paid provider is provisioned by these instructions. The public engagement
+map, the Safety crash map, Corridor Analysis, the engagement drawing and
+response maps, and the published land use designation map can use a configured
+MapLibre style without a Mapbox key. Other map surfaces still use Mapbox. See
+the map configuration below. This does not establish a complete no-egress
+installation.
 
 OpenPlan's target remains core planning work throughout all 50 states and DC,
 with California the deepest implementation and separately validated AequilibraE
@@ -58,13 +60,19 @@ configuration.
 |---|---|
 | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | Point all components at the intended database. Confirm a saved project survives sign-out/sign-in and that a second workspace cannot read it. Local credentials belong only to the selected local instance. |
 | `NEXT_PUBLIC_SITE_URL` | Canonical origin. Match Supabase Auth Site URL and allowed callback/reset redirects. The checked-in local Auth configuration uses `http://127.0.0.1:3000`; use one consistent origin and test actual links. |
-| `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` | Public `pk.` token for staff map surfaces. The legacy `NEXT_PUBLIC_MAPBOX_TOKEN` alias is accepted. Public engagement maps can instead use the MapLibre configuration below. Check the visible map and browser console, not token shape alone. |
+| `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` | Public `pk.` token for map surfaces. The legacy `NEXT_PUBLIC_MAPBOX_TOKEN` alias is accepted. A secret `sk.` token is refused. The maps listed under "Maps without a Mapbox key" below can instead use a MapLibre style. Check the visible map and browser console, not token shape alone. |
 | `CENSUS_API_KEY` | Demographic/source requests and travel-model inputs. Activate the key and confirm the required source data can be retrieved for the selected geography. A configured key does not establish data coverage. |
-| `OPENPLAN_INTEGRATION_KEY_SECRET` | High-entropy secret for stored per-workspace integration keys. Generate securely, preserve with recovery configuration, and restrict access. Changing it invalidates existing encrypted keys. |
+| `OPENPLAN_INTEGRATION_KEY_SECRET` | Primary high-entropy secret for stored workspace keys and sealed worker credentials. Generate securely, preserve with recovery configuration, and restrict access. New ciphertext uses this secret. Follow [integration secret rotation](#rotate-the-integration-encryption-secret) before changing it. |
+| `OPENPLAN_INTEGRATION_KEY_PREVIOUS_SECRET` | Optional second secret for reading retained ciphertext during rotation. It does not enable storage without a usable primary. Reads preserve the stored bytes. Web and every worker that decrypts credentials need the same two secrets during a rolling transition. |
 | `ANTHROPIC_API_KEY` | Optional cloud AI requests. Inspect the material being sent and the provider cost before enabling. Model overrides are listed in the environment template. |
+| `OPENPLAN_SHARED_AI_KEY` | Set to `allow` so a production build lets workspaces without their own key use `ANTHROPIC_API_KEY`. Set it for a single-agency installation. Leave it unset on any deployment with public signup; each workspace then adds its own key. |
 | `RESEND_API_KEY`, `RESEND_FROM_EMAIL` | Optional outbound application email. Without these, teammate invitations use a copyable link. Supabase Auth email delivery is configured separately. Test invitation and password-reset flows independently. |
 | `CHROME_EXECUTABLE_PATH` | Local Chrome/Chromium used for report PDF typesetting. If unavailable, the app uses its disclosed built-in writer tier; inspect the exported document. |
 | `CRON_SECRET` | Shared secret for the authenticated maintenance requests listed below. Configure the scheduler's protected environment as well as the app. |
+| `OPENPLAN_MAX_OWNED_WORKSPACES` | How many workspaces one person may own. Unset means 5, which includes the workspace created at signup. Each workspace has its own AI and run allowance, so this keeps one account from multiplying them on a deployment with public signup. Use a positive whole number; any other value falls back to 5. Requires migration `20261017000010`. This is an operator limit, not a paid tier. |
+| `OPENPLAN_WORKSPACE_STORAGE_QUOTA_BYTES` | Total bytes one workspace may keep in Storage. Unset means 5 GiB (5368709120). Uploads, generated report files, grant application exports, engagement review files, project evidence bundles and work program exports that would pass it are refused before any upload URL is issued or any byte is stored; if current use cannot be read, the file is refused. The total counts every object whose path begins with the workspace id. Public engagement photos have their own allowance and are not counted. Use a positive whole number; any other value falls back to 5 GiB. Requires migration `20261017000010`; migration `20261017000013` stops members from uploading report and grant export files around it. This is an operator limit, not a paid tier. |
+| `OPENPLAN_HEALTH_TOKEN` | Turns on `GET /api/health/deep`, which answers only `Authorization: Bearer <token>`. Unset means the route answers 404. It reads the database once and Storage once, gives each modeling worker's heartbeat age, and lists every migration version the build expects. Use a long random value and give the same value to your monitor. |
+| `OPENPLAN_SENTRY_DSN` | Optional. A Sentry project DSN (Sentry's free Developer plan works). Unset means error reports stay in this deployment's server log. When set, each browser error an error page catches, and each server request error, is scrubbed and sent to that project from the server. Browsers never contact Sentry, so the content-security policy does not change. |
 
 `NEXT_PUBLIC_*` values are included at build time: rebuild after changing them.
 Restart server processes after changing their private environment. A worker
@@ -93,6 +101,54 @@ before admitting traffic. A linked managed project uses
 `npm exec -- supabase migration up --linked` after linking that project; this
 is not the command for an independently self-hosted Supabase deployment.
 The latter's migration/role/extension setup still needs a tested OpenPlan recipe.
+
+## Rotate the integration encryption secret
+
+This procedure changes the secret that encrypts provider credentials. It does
+not change the provider's API key. Keep a protected copy of both secrets with
+the database and worker-journal backups. Do not put either value in a command
+argument, report, log or public environment variable.
+
+1. Deploy the version with second-secret support to the web app and every
+   worker that reads sealed credentials. Keep the existing primary secret.
+   Before replacing an already configured distinct second secret, establish
+   that no required record, request, journal or restore point needs it. If it
+   is still needed, stop this rotation and retain both existing secrets.
+   Two slots cannot preserve three required secrets. This procedure supplies
+   no automatic inventory or migration to retire an occupied slot.
+2. Generate a new high-entropy secret. Keep the old primary, and set
+   `OPENPLAN_INTEGRATION_KEY_PREVIOUS_SECRET` to the new secret on every reader.
+   Restart or redeploy each process. Although named "previous", this setting
+   can prepare the next secret for reading. Confirm every reader has this
+   configuration before proceeding. An old process with only the old secret
+   cannot read new ciphertext.
+3. Change each process to the new primary with the old secret in
+   `OPENPLAN_INTEGRATION_KEY_PREVIOUS_SECRET`. Restart or redeploy each one.
+   During this transition, prepared processes can read writes from either
+   primary. New writes use that process's configured primary.
+4. Check an existing workspace key and a new save through the normal workflow.
+   Check retained worker requests separately, without dispatching an uncertain
+   provider request again. A successful key save does not prove queue recovery.
+
+Reads do not re-encrypt workspace rows or sealed request envelopes. Rewriting
+them can change the ciphertext fingerprints that protect queued requests.
+Before an app or worker rollback, establish that the candidate readers support
+every secret needed by required records. Once required records need both
+secrets, keep the web app and credential-reading workers on a build with
+second-secret support. Schema compatibility alone does not make an older
+single-secret build safe. Do not rewrite retained rows or queued envelopes
+to fit it. Use a compatible roll-forward fix if compatibility is uncertain.
+See the [hosted rollback procedure](ops/HOSTED_RECOVERY.md#roll-back-the-hosted-app).
+There is no automatic inventory or bulk re-encryption command. Keep the old
+secret until an inventory establishes that no required live record, retained
+request, journal or restore point still needs it. Saving a workspace key again
+does not update older queued envelopes or backups. Removing the second secret
+makes ciphertext written with it unreadable. A missing or short primary still
+disables key storage and decryption, even with a usable second secret.
+
+This read compatibility is not provider-key revocation or a complete response
+to a disclosed encryption secret. Plan those actions separately. No hosted
+secret rotation is implied by shipping this code.
 
 ## Local compute and document processing
 
@@ -127,6 +183,21 @@ which starts the county-onramp service. The launchers discover existing Python
 environments; they do not install a complete execution environment. Follow the
 [AequilibraE guide](../../workers/aequilibrae_worker/DEPLOY.md) and
 [ActivitySim guide](../../workers/activitysim_worker/DEPLOY.md).
+Both local AequilibraE launchers check installed AequilibraE, NumPy and pandas
+versions against `workers/aequilibrae_worker/requirements.txt`, then check imports.
+The preflight uses `packaging`, included in that requirements file. Automatic
+selection tries `.venv311`, then `.venv`, and reports rejected candidates. To bind
+an existing external environment, set an absolute interpreter path, quoted when
+it contains spaces:
+
+```bash
+OPENPLAN_AEQUILIBRAE_PYTHON="/path to execution env/bin/python" npm run modeling:local
+```
+
+The same variable works with `npm run worker:aequilibrae`. An explicitly selected
+missing, nonexecutable or incompatible interpreter stops the launcher without
+fallback. The check does not install or modify an environment. Dependency
+adherence and imports do not establish numerical behavior or scientific validity.
 ActivitySim explicitly falls back to preflight-only when its execution
 environment is missing. A running poller therefore does not establish that
 ActivitySim executed, and an executed model does not establish scientific validity.
@@ -273,11 +344,41 @@ The schedules in [vercel.json](../vercel.json) are:
 | `/api/cron/reap-model-runs` | Every 5 minutes |
 | `/api/cron/reap-gtfs-ingests` | Every 15 minutes |
 | `/api/cron/sweep-deadlines` | Daily at 13:00 UTC |
+| `/api/cron/sweep-engagement-photos` | Daily at 10:30 UTC |
 
 On a self-hosted installation, arrange a scheduler that sends
 `Authorization: Bearer <CRON_SECRET>` using a protected environment and records
 failures. Merely setting a variable in an interactive shell does not configure
 cron. Confirm the intended cleanup/reminder effects as well as delivery.
+
+### Monitoring
+
+- `GET /api/health` is public and reads nothing. It names the commit, the
+  version, and how many migrations the build expects with the latest version.
+  Point a free uptime monitor at it; a reply proves the app answers, not that
+  its database works.
+- `GET /api/health/deep` needs `OPENPLAN_HEALTH_TOKEN`. It answers 503 when the
+  database or Storage read fails. Only the modeling workers write heartbeats;
+  the Node queues do not yet, so a stopped queue does not show here.
+- `npm run ops:check-deep-health` compares the migrations the deployed build
+  expects with the ones a Supabase-hosted project has applied, and fails when
+  the database lacks one. It needs `OPENPLAN_HEALTH_URL`,
+  `OPENPLAN_HEALTH_TOKEN`, `OPENPLAN_SUPABASE_PROJECT_REF` and a Supabase
+  personal access token in `SUPABASE_ACCESS_TOKEN`, which it uses only to list
+  migrations. It compares whole sets, because migrations may be applied out of
+  numeric order. The repository's Production Health workflow runs it when the
+  repository variable `OPENPLAN_SUPABASE_PROJECT_REF` and the secrets
+  `OPENPLAN_HEALTH_TOKEN` and `SUPABASE_ACCESS_TOKEN` are set; until then it
+  prints a notice. An independently hosted Supabase has no Management API; run
+  `npm exec -- supabase migration list` against it instead.
+- Error pages report what they caught to `/api/client-errors` on the same
+  deployment, which writes one scrubbed line to the server log (and to Sentry
+  when `OPENPLAN_SENTRY_DSN` is set). Reports carry the page path with share
+  and invitation tokens replaced, the error's type, message, digest and stack,
+  and no user, workspace, cookie or query string.
+- Responses carry a `Content-Security-Policy-Report-Only` header beside the
+  enforced policy. It is the same policy without `'unsafe-eval'`; browsers
+  report what it would block to `/api/csp-report` and block nothing.
 
 Before upgrading, read the [release notes](../../CHANGELOG.md), capture the
 [recovery inventory](ops/BACKUP_AND_RESTORE.md), and rehearse the release against
@@ -313,18 +414,42 @@ sensitive workflows before using private planning material.
 | Census, TIGERweb, LEHD, OSM and other source services | Geography/source queries and downloads. Consult [Census](https://www.census.gov/data/developers.html), [TIGERweb](https://tigerweb.geo.census.gov/), [LEHD](https://lehd.ces.census.gov/data/), [OSM terms](https://www.openstreetmap.org/copyright) and [Mobility Database](https://mobilitydatabase.org/). Transit, crash and other integrations add their own source endpoints. |
 | Anthropic | Material selected for enabled AI actions: prompts/context, comments and document text or images. [API usage is priced separately](https://platform.claude.com/docs/en/about-claude/pricing). |
 | Resend | Recipients, message content and relevant invitation/reminder links. [Provider limits and pricing](https://resend.com/pricing) apply. |
+| Sentry (only with `OPENPLAN_SENTRY_DSN`) | Scrubbed error reports: the failing page's path with tokens replaced, error type, message, digest, stack, release and commit. Sent from the server, not the browser. See [Sentry pricing](https://sentry.io/pricing/). |
 | Configured workers | Job inputs, document/image locators or bytes, configuration, callbacks and outputs. Processing is local only when the configured service and storage are local. |
 | Source/package/image registries and tooling | Installation/update downloads and tool telemetry where enabled. Supabase distinguishes CLI telemetry from its self-hosted service in its [documentation](https://supabase.com/docs/guides/self-hosting). |
 
-### The public engagement map without a Mapbox key
+### Maps without a Mapbox key
 
-With no Mapbox key, the participant map on `/engage/<token>` and `/embed/<token>`
-can still be drawn by MapLibre from a style you choose. Set
-`NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL` and rebuild, since `NEXT_PUBLIC_*` values are
-fixed at build time. A Mapbox key, when set, takes precedence. Place search and
-the background picker need Mapbox and are absent on this map. Other maps in
-OpenPlan (Explore, corridor analysis, the staff engagement views) still need a
-Mapbox key.
+With no Mapbox key, these maps are drawn by MapLibre from a style you choose:
+
+- the public engagement map on `/engage/<token>` and `/embed/<token>`;
+- the Safety crash map on `/safety`;
+- Corridor Analysis on `/explore`;
+- the drawing map used by comment forms, surveys and study-area pickers, and
+  the map of engagement responses;
+- the published land use designation map on published plans, plan reviews and
+  land use reports.
+
+Set `NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL` and rebuild, since `NEXT_PUBLIC_*`
+values are fixed at build time. A Mapbox key, when set, takes precedence. Each
+map credits the sources its style declares, so keep the style's attribution.
+If a browser cannot start MapLibre (it needs WebGL2), the map shows a notice in
+its place and the rest of the page still works.
+
+What still needs a Mapbox key:
+
+- Place search on the public engagement map, which uses Mapbox's geocoder.
+- The background picker (streets, satellite, terrain), on the public map and on
+  Safety. Its backgrounds are Mapbox styles. Without a key there is no picker
+  and the map uses your one style.
+- The shell map on the Aerial index, the Aerial mission maps and flight plan
+  editor, the traffic volume and model agreement maps, the participation heat
+  map, the RTP cycle project map, and the static preview in GIS layer import.
+
+On Corridor Analysis your style is used in both light and dark mode; with a key
+the map follows the page's mode. Labels for uploaded workspace layers and land
+use designations use the fonts your style serves, and are left off if it
+serves none.
 
 Two ways to set it:
 

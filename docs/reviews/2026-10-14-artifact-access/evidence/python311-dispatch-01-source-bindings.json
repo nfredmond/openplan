@@ -1,0 +1,8 @@
+{
+  "workers/odm_worker/application_dispatch_reader.py": "4d13873d6d0e908b934df76c994fec3a3559602f3a40ecd30266567790366a0b",
+  "workers/odm_worker/application_dispatch_http.py": "f29bce9379c6a960ac62fe40c1abbdabd48f6b8b6c184bb9751400acb816fdb6",
+  "workers/odm_worker/test_application_dispatch_reader.py": "4fe139379a28579e2e338e5bb69b67f573094bbc8056f2540be6f14c75e43535",
+  "workers/odm_worker/test_application_dispatch_http.py": "cb7abea6f7eb1233865281d279e784463d95cd65450ce4808e8d5ac1c0e47ce7",
+  "docs/reviews/2026-10-11-odm-url-transport/verify_controls.py": "28cc44da9b012a37f794f17e1ee2c9a6b4e078cee8e10f0d0a74ef59c0803b76",
+  "docs/reviews/2026-10-14-artifact-access/../2026-10-12-odm-private-dispatch-reader/verify_controls.py": "a594a934d3c03b201f1f74546a43d8693571a1eea113670177f1ff5faa3b3c72"
+}

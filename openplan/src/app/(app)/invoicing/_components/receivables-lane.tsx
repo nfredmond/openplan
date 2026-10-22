@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SetupPendingNotice } from "@/components/ui/setup-pending-notice";
 import { formatInvoiceMoney } from "@/lib/invoicing/invoice-currency";
 import { InvoiceBalance } from "@/components/invoicing/contracts/invoice-balance";
 import { ClientComposer, type ClientComposerRecord } from "@/components/invoicing/client-composer";
@@ -12,12 +13,13 @@ import { TimeEntryComposer } from "@/components/invoicing/time-entry-composer";
 import { TimeEntryRowControls } from "@/components/invoicing/time-entry-row-controls";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
-  buildEngagementBilledSummary,
   summarizeReceivables,
   type ClientInvoiceRecordLike,
 } from "@/lib/invoicing/receivables";
+import { engagementSummaryFor, loadEngagementBilledSummaries } from "@/lib/invoicing/engagement-summary-queries";
 import { summarizeUnbilledTime, type TimeEntryLike } from "@/lib/invoicing/time-billing";
 import { createClient } from "@/lib/supabase/server";
+import { loadWorkspaceCalendar } from "@/lib/time/workspace-calendar";
 import {
   insetClass,
   looksLikePendingSchema,
@@ -124,6 +126,9 @@ export async function ReceivablesLane({
   canWriteInvoices: boolean;
 }) {
   const supabase = await createClient();
+  // Days past due count on the workspace's calendar; UTC when it cannot be read.
+  const calendarRead = loadWorkspaceCalendar(supabase, workspaceId);
+  const engagementSummariesRead = loadEngagementBilledSummaries(supabase, { workspaceId });
 
   const [clientsRead, engagementsRead, invoicesRead, staffRead, rateTablesRead, timeEntriesRead, projectsRead] =
     (await Promise.all([
@@ -206,7 +211,9 @@ export async function ReceivablesLane({
     ? []
     : ((deliverablesRead.data ?? []) as Array<{ id: string; project_id: string; title: string }>);
 
-  const receivableSummary = summarizeReceivables(invoices);
+  const calendar = await calendarRead;
+  const engagementSummaries = await engagementSummariesRead;
+  const receivableSummary = summarizeReceivables(invoices, new Date(), calendar.timeZone);
   const unbilledSummary = summarizeUnbilledTime(timeEntries);
 
   const engagementTitleById = new Map(engagements.map((engagement) => [engagement.id, engagement.title]));
@@ -219,8 +226,7 @@ export async function ReceivablesLane({
     clientId: engagement.client_id,
     projectId: engagement.project_id,
     title: engagement.title,
-    notToExceedAmount:
-      engagement.not_to_exceed_amount == null ? null : Number(engagement.not_to_exceed_amount),
+    notToExceedAmount: engagement.not_to_exceed_amount,
   }));
   const deliverableOptions = deliverables.map((deliverable) => ({
     id: deliverable.id,
@@ -250,11 +256,13 @@ export async function ReceivablesLane({
             <p className="text-xs font-semibold text-muted-foreground">Client invoices</p>
             <h2 className="text-lg font-semibold tracking-tight text-foreground">Receivable register</h2>
           </div>
-          <p className="mt-4 text-sm text-muted-foreground">
-            {receivableCorePending
-              ? "The client invoicing tables are pending in this database. Apply the latest migrations before expecting clients, engagements, or client invoices to render here."
-              : "Client invoicing records could not be loaded right now."}
-          </p>
+          {receivableCorePending ? (
+            <SetupPendingNotice className="mt-4" consequence="Clients, engagements and client invoices are not shown.">
+              The client invoicing tables are pending in this database. Apply the latest migrations.
+            </SetupPendingNotice>
+          ) : (
+            <p className="mt-4 text-sm text-muted-foreground">Client invoicing records could not be loaded right now.</p>
+          )}
         </article>
       </section>
     );
@@ -356,7 +364,7 @@ export async function ReceivablesLane({
                   {clientEngagements.length > 0 ? (
                     <ul className="mt-3 space-y-3">
                       {clientEngagements.map((engagement) => {
-                        const billed = buildEngagementBilledSummary(engagement, invoices);
+                        const billed = engagementSummaryFor(engagementSummaries, engagement);
                         const engagementRecord: EngagementComposerRecord = {
                           id: engagement.id,
                           clientId: engagement.client_id,
@@ -400,7 +408,7 @@ export async function ReceivablesLane({
                               />
                             </div>
                             <div className="mt-2">
-                              <EngagementNteBar summary={billed} />
+                              <EngagementNteBar summary={billed} currencyCode={null} />
                             </div>
                           </li>
                         );
@@ -485,11 +493,13 @@ export async function ReceivablesLane({
         </div>
 
         {timeAndRatesUnavailable ? (
-          <p className="mt-4 text-sm text-muted-foreground">
-            {timeAndRatesPending
-              ? "The time and rate tables are pending in this database. Apply the latest migrations before expecting staff, rate tables, or time entries to render here."
-              : "Time and rate records could not be loaded right now."}
-          </p>
+          timeAndRatesPending ? (
+            <SetupPendingNotice className="mt-4" consequence="Staff, rate tables and time entries are not shown.">
+              The time and rate tables are pending in this database. Apply the latest migrations.
+            </SetupPendingNotice>
+          ) : (
+            <p className="mt-4 text-sm text-muted-foreground">Time and rate records could not be loaded right now.</p>
+          )
         ) : (
           <div className="mt-4 space-y-4">
             <StaffAndRatesPanel

@@ -1,0 +1,35 @@
+--- retained-v6/run_stage.sh
++++ memory/run_stage.sh
+@@ -5 +5,2 @@
+-ROOT=/home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v6
++ROOT=/dev/shm/openplan-pr330-preview-20261015
++DURABLE=/home/nathaniel/.local/state/openplan/pr330-memory-preview-20261015-r2
+@@ -11 +12,3 @@
+-  active-check|checkout) controller=app_binding_v1.py; memory=512M ;;
++  active-check) controller=app_binding_v1.py; memory=512M ;;
++  checkout) controller=app_binding_v1.py; memory=1G ;;
++  archive) controller=storage_stage.py; memory=512M ;;
+@@ -17,0 +21 @@
++/usr/bin/python3 -B "$ROOT/journal.py" claim "request-$stage"
+@@ -20 +24 @@
+-  exec /usr/bin/systemd-run --user --unit=openplan-portfolio-skip-preview-49e3fa200-v6-web \
++  exec /usr/bin/python3 -B "$ROOT/journal.py" execute "unit-$stage" -- /usr/bin/systemd-run --user --unit=openplan-pr330-memory-f0cbeddff-r2-web \
+@@ -21,0 +26,3 @@
++    -p StandardOutput=append:/home/nathaniel/.local/state/openplan/pr330-memory-preview-20261015-r2/journal/unit-start/web-stdout.bin \
++    -p StandardError=append:/home/nathaniel/.local/state/openplan/pr330-memory-preview-20261015-r2/journal/unit-start/web-stderr.bin \
++    -p "ExecStopPost=/usr/bin/python3 -B /home/nathaniel/.local/state/openplan/pr330-memory-preview-20261015-r2/templates/journal.py stopped-web" \
+@@ -27 +34 @@
+-  exec /usr/bin/systemd-run --user --wait --pipe --unit=openplan-portfolio-skip-preview-49e3fa200-v6-attest \
++  exec /usr/bin/python3 -B "$ROOT/journal.py" execute "unit-$stage" -- /usr/bin/systemd-run --user --wait --pipe --unit=openplan-pr330-memory-f0cbeddff-r2-attest \
+@@ -33 +40 @@
+-  exec /usr/bin/systemd-run --user --wait --pipe --unit="openplan-portfolio-skip-preview-49e3fa200-v6-$stage" \
++  exec /usr/bin/python3 -B "$ROOT/journal.py" execute "unit-$stage" -- /usr/bin/systemd-run --user --wait --pipe --unit="openplan-pr330-memory-f0cbeddff-r2-$stage" \
+@@ -35,2 +42,3 @@
+-    /usr/bin/bwrap --die-with-parent --ro-bind / / --dev /dev --proc /proc \
+-    --bind "$ROOT" "$ROOT" --bind "$ROOT/tmp" /tmp \
++    /usr/bin/bwrap --die-with-parent --ro-bind / / --dev /dev --proc /proc --dir /dev/shm \
++    --bind "$ROOT" "$ROOT" --bind "$DURABLE/journal" "$DURABLE/journal" \
++    --bind "$DURABLE/receipts" "$DURABLE/receipts" --bind "$ROOT/tmp" /tmp \
+@@ -40 +48 @@
+-exec /usr/bin/systemd-run --user --wait --pipe --unit="openplan-portfolio-skip-preview-49e3fa200-v6-$stage" \
++exec /usr/bin/python3 -B "$ROOT/journal.py" execute "unit-$stage" -- /usr/bin/systemd-run --user --wait --pipe --unit="openplan-pr330-memory-f0cbeddff-r2-$stage" \

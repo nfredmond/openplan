@@ -11,7 +11,7 @@
  * display-side token stripper, and a defensive parser for stored JSON.
  */
 
-import type { GroundedNarrative } from "@/lib/planner-pack/grounding";
+import { splitSentences, type GroundedNarrative } from "@/lib/planner-pack/grounding";
 
 /** FactBlock-like entry: a numbered workspace fact the model may cite. */
 export type NarrativeFact = {
@@ -303,4 +303,36 @@ export function listFlaggedNarrativeSentences(
  */
 export function isNarrativeExportable(grounding: NarrativeDraftGrounding): boolean {
   return grounding.is_fully_grounded && grounding.faithfulness_checked;
+}
+
+/** A sentence's words in order, lowercase, with citations and punctuation dropped. */
+function sentenceWords(text: string): string {
+  return (stripFactCitationTokens(text).toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? []).join(" ");
+}
+
+/**
+ * The sentences an operator's edit kept word for word, of those the draft
+ * could not vouch for: every sentence that failed grounding, or every
+ * sentence when the faithfulness check never ran or the grounding is
+ * unreadable. An edit elsewhere in the text does not make these sentences the
+ * operator's own; each must be reworded or removed. Case, spacing,
+ * punctuation and citation tokens do not count as rewording.
+ */
+export function unverifiedSentencesKeptVerbatim(params: {
+  draftMarkdown: string;
+  grounding: NarrativeDraftGrounding | null;
+  editedMarkdown: string;
+}): string[] {
+  const { draftMarkdown, grounding, editedMarkdown } = params;
+  const unverified =
+    grounding && grounding.faithfulness_checked
+      ? listFlaggedNarrativeSentences(grounding).map((sentence) => sentence.text)
+      : splitSentences(draftMarkdown);
+  const editedWords = ` ${sentenceWords(editedMarkdown)} `;
+  return unverified
+    .filter((sentence) => {
+      const words = sentenceWords(sentence);
+      return words.length > 0 && editedWords.includes(` ${words} `);
+    })
+    .map((sentence) => stripFactCitationTokens(sentence));
 }

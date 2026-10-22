@@ -446,35 +446,35 @@ function actionLabel(action: AssistantAction) {
 function quickLinkBadge(link: AssistantQuickLink) {
   switch (resolveQuickLinkApproval(link)) {
     case "approval_required":
-      return { label: "Approval", className: "border-amber-300/25 bg-amber-400/14 text-amber-100" };
+      return { label: "Approval", className: "border-[color:color-mix(in_srgb,var(--status-warn)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--status-warn)_12%,transparent)] text-[color:var(--status-warn)]" };
     case "review":
-      return { label: "Review", className: "border-sky-300/22 bg-sky-400/12 text-sky-100" };
+      return { label: "Review", className: "border-[color:color-mix(in_srgb,var(--status-info)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--status-info)_12%,transparent)] text-[color:var(--status-info)]" };
     case "safe":
     default:
-      return { label: "Open", className: "border-emerald-300/22 bg-emerald-400/12 text-emerald-100" };
+      return { label: "Open", className: "border-[color:color-mix(in_srgb,var(--accent-2)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--accent-2)_12%,transparent)] text-[color:var(--accent-2)]" };
   }
 }
 
 function quickLinkPriorityBadge(link: AssistantQuickLink) {
   switch (link.priority) {
     case "primary":
-      return { label: "Primary", className: "border-fuchsia-300/22 bg-fuchsia-400/12 text-fuchsia-100" };
+      return { label: "Primary", className: "border-foreground/30 bg-foreground/[0.06] text-foreground" };
     case "secondary":
-      return { label: "Secondary", className: "border-violet-300/22 bg-violet-400/12 text-violet-100" };
+      return { label: "Secondary", className: "border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--primary)_12%,transparent)] text-[color:var(--primary)]" };
     case "supporting":
     default:
-      return { label: "Supporting", className: "border-slate-300/18 bg-slate-400/10 text-slate-100" };
+      return { label: "Supporting", className: "border-border bg-foreground/[0.04] text-foreground" };
   }
 }
 
 function quickLinkExecutionBadge(link: AssistantQuickLink) {
   if (link.executionMode !== "future_agent_action") {
-    return { label: "Navigate only", className: "border-slate-300/18 bg-slate-400/10 text-slate-100" };
+    return { label: "Navigate only", className: "border-border bg-foreground/[0.04] text-foreground" };
   }
 
   return link.executeAction
-    ? { label: "Execute action", className: "border-violet-300/24 bg-violet-400/12 text-violet-100" }
-    : { label: "Agent action", className: "border-violet-300/24 bg-violet-400/12 text-violet-100" };
+    ? { label: "Execute action", className: "border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--primary)_12%,transparent)] text-[color:var(--primary)]" }
+    : { label: "Agent action", className: "border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--primary)_12%,transparent)] text-[color:var(--primary)]" };
 }
 
 function operationCardClasses(link: AssistantQuickLink) {
@@ -482,32 +482,32 @@ function operationCardClasses(link: AssistantQuickLink) {
   const urgency = resolveAssistantOperationUrgency(link);
 
   if (tone === "danger") {
-    return "border-rose-300/26 bg-rose-400/10 hover:border-rose-300/40 hover:bg-rose-400/14";
+    return "border-[color:color-mix(in_srgb,var(--status-urgent)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--status-urgent)_12%,transparent)] hover:border-[color:color-mix(in_srgb,var(--status-urgent)_35%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--status-urgent)_12%,transparent)]";
   }
   if (tone === "warning") {
     return urgency === "high"
-      ? "border-amber-300/28 bg-amber-400/10 hover:border-amber-300/42 hover:bg-amber-400/14"
-      : "border-amber-300/20 bg-amber-400/8 hover:border-amber-300/34 hover:bg-amber-400/12";
+      ? "border-[color:color-mix(in_srgb,var(--status-warn)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--status-warn)_12%,transparent)] hover:border-[color:color-mix(in_srgb,var(--status-warn)_35%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--status-warn)_12%,transparent)]"
+      : "border-[color:color-mix(in_srgb,var(--status-warn)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--status-warn)_12%,transparent)] hover:border-[color:color-mix(in_srgb,var(--status-warn)_35%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--status-warn)_12%,transparent)]";
   }
   if (tone === "info") {
-    return "border-sky-300/20 bg-sky-400/8 hover:border-sky-300/34 hover:bg-sky-400/12";
+    return "border-[color:color-mix(in_srgb,var(--status-info)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--status-info)_12%,transparent)] hover:border-[color:color-mix(in_srgb,var(--status-info)_35%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--status-info)_12%,transparent)]";
   }
   if (tone === "success") {
-    return "border-emerald-300/20 bg-emerald-400/8 hover:border-emerald-300/34 hover:bg-emerald-400/12";
+    return "border-[color:color-mix(in_srgb,var(--accent-2)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--accent-2)_12%,transparent)] hover:border-[color:color-mix(in_srgb,var(--accent-2)_35%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--accent-2)_12%,transparent)]";
   }
-  return "border-white/10 bg-white/[0.04] hover:border-emerald-300/26 hover:bg-emerald-400/10";
+  return "border-border bg-foreground/[0.04] hover:border-[color:color-mix(in_srgb,var(--accent-2)_35%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--accent-2)_12%,transparent)]";
 }
 
 function BoardStateCueCard({ cue }: { cue: AssistantBoardStateCue }) {
   return (
-    <div className="rounded-[0.5rem] border border-sky-300/16 bg-sky-400/10 px-4 py-3 shadow-[0_14px_28px_rgba(56,189,248,0.08)]">
-      <p className="text-label font-semibold text-sky-100/76">{cue.label}</p>
-      <p className="mt-2 text-sm font-semibold text-white">{cue.title}</p>
-      <p className="mt-1 text-sm leading-relaxed text-slate-200/82">{cue.detail}</p>
+    <div className="rounded-[0.5rem] border border-[color:color-mix(in_srgb,var(--status-info)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--status-info)_12%,transparent)] px-4 py-3">
+      <p className="text-label font-semibold text-[color:var(--status-info)]">{cue.label}</p>
+      <p className="mt-2 text-sm font-semibold text-foreground">{cue.title}</p>
+      <p className="mt-1 text-sm leading-relaxed text-foreground">{cue.detail}</p>
       {cue.items?.length ? (
         <div className="mt-3 flex flex-wrap gap-2">
           {cue.items.map((item) => (
-            <StatusBadge key={item} tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-200/85">
+            <StatusBadge key={item} tone="neutral" className="border-border bg-foreground/[0.04] text-foreground">
               {item}
             </StatusBadge>
           ))}
@@ -563,15 +563,15 @@ function ApprovalPayloadDisclosure({ action }: { action: AssistantQuickLinkExecu
   const fields = actionPayloadFields(action as unknown as Record<string, unknown>);
   if (fields.length === 0) return null;
   return (
-    <div className="mt-3 rounded-[0.5rem] border border-white/10 bg-white/[0.04]">
-      <p className="border-b border-white/8 px-3 py-2 text-label font-semibold text-slate-400">
+    <div className="mt-3 rounded-[0.5rem] border border-border bg-foreground/[0.04]">
+      <p className="border-b border-border px-3 py-2 text-label font-semibold text-muted-foreground">
         Exactly what you are approving
       </p>
       <dl className="max-h-56 space-y-2.5 overflow-y-auto px-3 py-2.5">
         {fields.map(([key, value]) => (
           <div key={key}>
-            <dt className="text-label font-semibold text-slate-400/88">{key}</dt>
-            <dd className="mt-0.5 whitespace-pre-wrap break-words text-sm leading-relaxed text-slate-100">{value}</dd>
+            <dt className="text-label font-semibold text-muted-foreground">{key}</dt>
+            <dd className="mt-0.5 whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground">{value}</dd>
           </div>
         ))}
       </dl>
@@ -582,12 +582,12 @@ function ApprovalPayloadDisclosure({ action }: { action: AssistantQuickLinkExecu
 function proposalApprovalBadge(proposal: AssistantChatProposal) {
   switch (proposal.approval) {
     case "approval_required":
-      return { label: "Approval required", className: "border-amber-300/25 bg-amber-400/14 text-amber-100" };
+      return { label: "Approval required", className: "border-[color:color-mix(in_srgb,var(--status-warn)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--status-warn)_12%,transparent)] text-[color:var(--status-warn)]" };
     case "review":
-      return { label: "Review", className: "border-sky-300/22 bg-sky-400/12 text-sky-100" };
+      return { label: "Review", className: "border-[color:color-mix(in_srgb,var(--status-info)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--status-info)_12%,transparent)] text-[color:var(--status-info)]" };
     case "safe":
     default:
-      return { label: "Safe", className: "border-emerald-300/22 bg-emerald-400/12 text-emerald-100" };
+      return { label: "Safe", className: "border-[color:color-mix(in_srgb,var(--accent-2)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--accent-2)_12%,transparent)] text-[color:var(--accent-2)]" };
   }
 }
 
@@ -609,12 +609,12 @@ function ChatProposalCard({
   const freeTextFields = payloadFields.filter(([, value]) => !isCompactPayloadValue(value));
   return (
     <div
-      className="rounded-[0.5rem] border border-violet-300/22 bg-violet-400/8 px-3.5 py-3"
+      className="rounded-[0.5rem] border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--primary)_12%,transparent)] px-3.5 py-3"
       role="group"
       aria-label={`Proposed action: ${kindLabel}`}
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-label font-semibold text-violet-100/78">
+        <p className="text-label font-semibold text-[color:var(--primary)]">
           Proposed action · {kindLabel}
         </p>
         <span
@@ -623,15 +623,15 @@ function ChatProposalCard({
           {badge.label}
         </span>
       </div>
-      <p className="mt-2 text-sm leading-relaxed text-slate-100">{entry.proposal.description}</p>
+      <p className="mt-2 text-sm leading-relaxed text-foreground">{entry.proposal.description}</p>
       {compactFields.length > 0 ? (
         <div className="mt-2 flex flex-wrap gap-1.5">
           {compactFields.map(([key, value]) => (
             <span
               key={key}
-              className="inline-flex max-w-full items-center gap-1 rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-label font-semibold text-slate-200/85"
+              className="inline-flex max-w-full items-center gap-1 rounded-full border border-border bg-foreground/[0.04] px-2 py-0.5 text-label font-semibold text-foreground"
             >
-              <span className="text-slate-400/88">{key}</span>
+              <span className="text-muted-foreground">{key}</span>
               <span className="break-all normal-case">{value}</span>
             </span>
           ))}
@@ -642,9 +642,9 @@ function ChatProposalCard({
       {freeTextFields.length > 0 ? (
         <dl className="mt-2 space-y-2">
           {freeTextFields.map(([key, value]) => (
-            <div key={key} className="rounded-[0.5rem] border border-white/10 bg-white/[0.04] px-3 py-2">
-              <dt className="text-label font-semibold text-slate-400/88">{key}</dt>
-              <dd className="mt-1 whitespace-pre-wrap break-words text-sm leading-relaxed text-slate-100">{value}</dd>
+            <div key={key} className="rounded-[0.5rem] border border-border bg-foreground/[0.04] px-3 py-2">
+              <dt className="text-label font-semibold text-muted-foreground">{key}</dt>
+              <dd className="mt-1 whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground">{value}</dd>
             </div>
           ))}
         </dl>
@@ -652,14 +652,14 @@ function ChatProposalCard({
 
       {entry.state === "pending" ? (
         <>
-          <p className="mt-2 text-xs leading-relaxed text-slate-300/78">
-            Nothing has changed yet — this is a proposal awaiting your explicit approval.
+          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+            Nothing has changed yet. This is a proposal awaiting your explicit approval.
           </p>
           <div className="mt-3 flex items-center gap-2">
             <Button
               type="button"
               size="sm"
-              className="bg-violet-400/90 text-slate-950 hover:bg-violet-300"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
               onClick={() => onApprove?.(entry)}
               disabled={busy}
             >
@@ -669,7 +669,7 @@ function ChatProposalCard({
               type="button"
               variant="outline"
               size="sm"
-              className="border-white/12 bg-white/[0.04] text-slate-200 hover:bg-white/[0.08] hover:text-white"
+              className="border-border bg-foreground/[0.04] text-foreground hover:bg-foreground/[0.04] hover:text-foreground"
               onClick={() => onDismiss?.(entry)}
               disabled={busy}
             >
@@ -679,21 +679,21 @@ function ChatProposalCard({
         </>
       ) : null}
       {entry.state === "executing" ? (
-        <p className="mt-2 inline-flex items-center gap-2 text-xs leading-relaxed text-violet-100/88">
+        <p className="mt-2 inline-flex items-center gap-2 text-xs leading-relaxed text-[color:var(--primary)]">
           <Loader2 className="h-3 w-3 animate-spin" aria-hidden />
           Waiting on approval, then running through the audited action flow…
         </p>
       ) : null}
       {entry.state === "executed" ? (
-        <p className="mt-2 text-xs font-semibold leading-relaxed text-emerald-100/92">
+        <p className="mt-2 text-xs font-semibold leading-relaxed text-[color:var(--accent-2)]">
           Approved and executed. Open the result page to check any background job.
         </p>
       ) : null}
       {entry.followUpWarning ? (
-        <p role="status" className="mt-2 text-xs leading-relaxed text-amber-100/92">{entry.followUpWarning}</p>
+        <p role="status" className="mt-2 text-xs leading-relaxed text-[color:var(--status-warn)]">{entry.followUpWarning}</p>
       ) : null}
       {entry.state === "failed" ? (
-        <div className="mt-2 space-y-2 text-xs leading-relaxed text-rose-100/92">
+        <div className="mt-2 space-y-2 text-xs leading-relaxed text-[color:var(--status-urgent)]">
           <p>{entry.error ?? "The action response could not be confirmed."} Check the saved record before trying again.</p>
           {entry.proposal.kind === "record_stage_gate_hold" ? (
             <a href="/assistant-activity#approved-holds" className="font-semibold underline">Check approved HOLD result</a>
@@ -703,7 +703,7 @@ function ChatProposalCard({
         </div>
       ) : null}
       {entry.state === "dismissed" ? (
-        <p className="mt-2 text-xs leading-relaxed text-slate-400/88">Dismissed — no change was made.</p>
+        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">Dismissed — no change was made.</p>
       ) : null}
     </div>
   );
@@ -940,50 +940,50 @@ function QuickLinkGrid({
 
   return (
     <div className="space-y-4">
-      <div className="rounded-[0.5rem] border border-white/10 bg-white/[0.04] px-4 py-3">
+      <div className="rounded-[0.5rem] border border-border bg-foreground/[0.04] px-4 py-3">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-label font-semibold text-slate-400">Operations summary</p>
-            <p className="mt-1 text-sm leading-relaxed text-slate-300/82">
+            <p className="text-label font-semibold text-muted-foreground">Operations summary</p>
+            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
               {summary.total} tracked operation{summary.total === 1 ? "" : "s"} are visible from this grounded assistant context.
             </p>
             {summary.leadOperation ? (
-              <p className="mt-2 text-sm leading-relaxed text-white">
-                <span className="font-semibold text-white">Lead move:</span> {summary.leadOperation.label}.
-                <span className="text-slate-300/82"> {summary.leadOperation.detail}</span>
+              <p className="mt-2 text-sm leading-relaxed text-foreground">
+                <span className="font-semibold text-foreground">Lead move:</span> {summary.leadOperation.label}.
+                <span className="text-muted-foreground"> {summary.leadOperation.detail}</span>
               </p>
             ) : null}
           </div>
-          <StatusBadge tone={summary.actNow > 0 ? "warning" : "neutral"} className="border-white/10 bg-white/[0.05] text-slate-100">
+          <StatusBadge tone={summary.actNow > 0 ? "warning" : "neutral"} className="border-border bg-foreground/[0.04] text-foreground">
             {summary.leadOperation?.statusLabel ?? "Act now"} · {summary.actNow}
           </StatusBadge>
         </div>
 
         <div className="mt-3 grid gap-2 sm:grid-cols-3">
-          <div className="rounded-[0.5rem] border border-white/8 bg-black/10 px-3 py-2.5">
-            <p className="text-label font-semibold text-slate-400">Review soon</p>
-            <p className="mt-1 text-lg font-semibold text-white">{summary.reviewSoon}</p>
+          <div className="rounded-[0.5rem] border border-border bg-foreground/[0.03] px-3 py-2.5">
+            <p className="text-label font-semibold text-muted-foreground">Review soon</p>
+            <p className="mt-1 text-lg font-semibold text-foreground">{summary.reviewSoon}</p>
           </div>
-          <div className="rounded-[0.5rem] border border-white/8 bg-black/10 px-3 py-2.5">
-            <p className="text-label font-semibold text-slate-400">Support context</p>
-            <p className="mt-1 text-lg font-semibold text-white">{summary.supportContext}</p>
+          <div className="rounded-[0.5rem] border border-border bg-foreground/[0.03] px-3 py-2.5">
+            <p className="text-label font-semibold text-muted-foreground">Support context</p>
+            <p className="mt-1 text-lg font-semibold text-foreground">{summary.supportContext}</p>
           </div>
-          <div className="rounded-[0.5rem] border border-white/8 bg-black/10 px-3 py-2.5">
-            <p className="text-label font-semibold text-slate-400">Approval required</p>
-            <p className="mt-1 text-lg font-semibold text-white">{summary.approvalRequired}</p>
+          <div className="rounded-[0.5rem] border border-border bg-foreground/[0.03] px-3 py-2.5">
+            <p className="text-label font-semibold text-muted-foreground">Approval required</p>
+            <p className="mt-1 text-lg font-semibold text-foreground">{summary.approvalRequired}</p>
           </div>
         </div>
 
-        <div className="mt-3 rounded-[0.5rem] border border-white/8 bg-black/10 px-3.5 py-3">
+        <div className="mt-3 rounded-[0.5rem] border border-border bg-foreground/[0.03] px-3.5 py-3">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-label font-semibold text-slate-400">Execution posture</p>
-              <p className="mt-2 text-sm font-semibold text-white">
+              <p className="text-label font-semibold text-muted-foreground">Execution posture</p>
+              <p className="mt-2 text-sm font-semibold text-foreground">
                 {executionSummary.futureAgentAction > 0
                   ? `${executionSummary.futureAgentAction} tracked agent action${executionSummary.futureAgentAction === 1 ? " is" : "s are"} available.`
                   : "All current operations are tracked navigation surfaces."}
               </p>
-              <p className="mt-1 text-sm leading-relaxed text-slate-300/82">
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                 {executionSummary.futureAgentAction > 0
                   ? `${executionSummary.navigateOnly} navigation surface${executionSummary.navigateOnly === 1 ? " remains" : "s remain"} alongside agent-ready operations, with ${executionSummary.review} review-gated and ${executionSummary.approvalRequired} approval-required item${executionSummary.approvalRequired === 1 ? "" : "s"}.`
                   : `No record-mutating agent actions are armed yet. ${executionSummary.review} operation${executionSummary.review === 1 ? " is" : "s are"} review-gated and ${executionSummary.safe} are safe navigation-only hops.`}
@@ -991,17 +991,17 @@ function QuickLinkGrid({
             </div>
           </div>
 
-          <div className="mt-3 flex flex-wrap gap-2 text-label font-semibold text-slate-400/82">
-            <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-slate-100">
+          <div className="mt-3 flex flex-wrap gap-2 text-label font-semibold text-muted-foreground">
+            <span className="inline-flex items-center rounded-full border border-border bg-foreground/[0.04] px-2 py-0.5 text-foreground">
               Navigate only · {executionSummary.navigateOnly}
             </span>
-            <span className="inline-flex items-center rounded-full border border-violet-300/18 bg-violet-400/10 px-2 py-0.5 text-violet-100">
+            <span className="inline-flex items-center rounded-full border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--primary)_12%,transparent)] px-2 py-0.5 text-[color:var(--primary)]">
               Agent actions · {executionSummary.futureAgentAction}
             </span>
-            <span className="inline-flex items-center rounded-full border border-sky-300/18 bg-sky-400/10 px-2 py-0.5 text-sky-100">
+            <span className="inline-flex items-center rounded-full border border-[color:color-mix(in_srgb,var(--status-info)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--status-info)_12%,transparent)] px-2 py-0.5 text-[color:var(--status-info)]">
               Review gated · {executionSummary.review}
             </span>
-            <span className="inline-flex items-center rounded-full border border-amber-300/18 bg-amber-400/10 px-2 py-0.5 text-amber-100">
+            <span className="inline-flex items-center rounded-full border border-[color:color-mix(in_srgb,var(--status-warn)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--status-warn)_12%,transparent)] px-2 py-0.5 text-[color:var(--status-warn)]">
               Approval required · {executionSummary.approvalRequired}
             </span>
           </div>
@@ -1013,12 +1013,12 @@ function QuickLinkGrid({
             onClick={() => setViewMode((current) => (current === "triage" ? "full" : "triage"))}
             className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
               viewMode === "triage"
-                ? "border-amber-300/35 bg-amber-400/14 text-white"
-                : "border-white/10 bg-white/[0.05] text-slate-200/82 hover:border-amber-300/22 hover:bg-amber-400/10"
+                ? "border-[color:color-mix(in_srgb,var(--status-warn)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--status-warn)_12%,transparent)] text-foreground"
+                : "border-border bg-foreground/[0.04] text-foreground hover:border-[color:color-mix(in_srgb,var(--status-warn)_35%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--status-warn)_12%,transparent)]"
             }`}
           >
             {viewMode === "triage" ? "Triage mode" : "Full board"}
-            <span className="rounded-full bg-black/18 px-1.5 py-0.5 text-label text-slate-100">
+            <span className="rounded-full bg-foreground/[0.03] px-1.5 py-0.5 text-label text-foreground">
               {hasActNowGroup ? summary.actNow : 0}
             </span>
           </button>
@@ -1037,12 +1037,12 @@ function QuickLinkGrid({
                 onClick={() => setFilter(option.key as OperationFilter)}
                 className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
                   active
-                    ? "border-emerald-300/35 bg-emerald-400/14 text-white"
-                    : "border-white/10 bg-white/[0.05] text-slate-200/82 hover:border-emerald-300/22 hover:bg-emerald-400/10"
+                    ? "border-[color:color-mix(in_srgb,var(--accent-2)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--accent-2)_12%,transparent)] text-foreground"
+                    : "border-border bg-foreground/[0.04] text-foreground hover:border-[color:color-mix(in_srgb,var(--accent-2)_35%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--accent-2)_12%,transparent)]"
                 }`}
               >
                 {option.label}
-                <span className="rounded-full bg-black/18 px-1.5 py-0.5 text-label text-slate-100">{option.count}</span>
+                <span className="rounded-full bg-foreground/[0.03] px-1.5 py-0.5 text-label text-foreground">{option.count}</span>
               </button>
             );
           })}
@@ -1052,17 +1052,17 @@ function QuickLinkGrid({
             onClick={() => setShowSnoozed((current) => !current)}
             className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
               showSnoozed
-                ? "border-sky-300/35 bg-sky-400/14 text-white"
-                : "border-white/10 bg-white/[0.05] text-slate-200/82 hover:border-sky-300/22 hover:bg-sky-400/10"
+                ? "border-[color:color-mix(in_srgb,var(--status-info)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--status-info)_12%,transparent)] text-foreground"
+                : "border-border bg-foreground/[0.04] text-foreground hover:border-[color:color-mix(in_srgb,var(--status-info)_35%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--status-info)_12%,transparent)]"
             }`}
           >
             {showSnoozed ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}
             {showSnoozed ? "Snoozed visible" : "Snoozed hidden"}
-            <span className="rounded-full bg-black/18 px-1.5 py-0.5 text-label text-slate-100">{snoozedCount}</span>
+            <span className="rounded-full bg-foreground/[0.03] px-1.5 py-0.5 text-label text-foreground">{snoozedCount}</span>
           </button>
         </div>
 
-        <p className="mt-2 text-label font-semibold text-slate-400/82">
+        <p className="mt-2 text-label font-semibold text-muted-foreground">
           {viewMode === "triage"
             ? hasActNowGroup
               ? "Showing only what needs doing now."
@@ -1070,66 +1070,66 @@ function QuickLinkGrid({
             : "Showing everything, including background context."}
         </p>
 
-        <div className="mt-2 flex flex-wrap gap-2 text-label font-semibold text-slate-400/82">
-          <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-slate-100">
+        <div className="mt-2 flex flex-wrap gap-2 text-label font-semibold text-muted-foreground">
+          <span className="inline-flex items-center rounded-full border border-border bg-foreground/[0.04] px-2 py-0.5 text-foreground">
             Pinned · {pinnedCount}
           </span>
-          <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-slate-100">
+          <span className="inline-flex items-center rounded-full border border-border bg-foreground/[0.04] px-2 py-0.5 text-foreground">
             Snoozed · {snoozedCount}
           </span>
-          <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-slate-100">
+          <span className="inline-flex items-center rounded-full border border-border bg-foreground/[0.04] px-2 py-0.5 text-foreground">
             Session · {sessionSnoozedCount}
           </span>
-          <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-slate-100">
+          <span className="inline-flex items-center rounded-full border border-border bg-foreground/[0.04] px-2 py-0.5 text-foreground">
             Tomorrow · {tomorrowSnoozedCount}
           </span>
-          <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-slate-100">
+          <span className="inline-flex items-center rounded-full border border-border bg-foreground/[0.04] px-2 py-0.5 text-foreground">
             Reopen · {reopenedSnoozedCount}
           </span>
           {returningSoonCount > 0 ? (
-            <span className="inline-flex items-center rounded-full border border-amber-300/24 bg-amber-400/12 px-2 py-0.5 text-amber-100">
+            <span className="inline-flex items-center rounded-full border border-[color:color-mix(in_srgb,var(--status-warn)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--status-warn)_12%,transparent)] px-2 py-0.5 text-[color:var(--status-warn)]">
               Returning soon · {returningSoonCount}
             </span>
           ) : null}
         </div>
 
         {snoozedCount > 0 ? (
-          <p className="mt-2 text-xs leading-relaxed text-slate-300/74">
+          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
             Snooze timing: {sessionSnoozedCount} this session, {tomorrowSnoozedCount} until tomorrow, {reopenedSnoozedCount} until manually reopened.
           </p>
         ) : null}
         {returningSoonCount > 0 ? (
-          <p className="mt-1 text-xs leading-relaxed text-amber-100/84">
+          <p className="mt-1 text-xs leading-relaxed text-[color:var(--status-warn)]">
             {returningSoonCount} tomorrow-snoozed operation{returningSoonCount === 1 ? " is" : "s are"} approaching the return window.
           </p>
         ) : null}
 
-        <div className="mt-3 rounded-[0.5rem] border border-white/8 bg-black/10 px-3.5 py-3">
-          <p className="text-label font-semibold text-slate-400">Board cue</p>
-          <p className="mt-2 text-sm font-semibold text-white">{boardNarrative.title}</p>
-          <p className="mt-1 text-sm leading-relaxed text-slate-300/82">{boardNarrative.detail}</p>
+        <div className="mt-3 rounded-[0.5rem] border border-border bg-foreground/[0.03] px-3.5 py-3">
+          <p className="text-label font-semibold text-muted-foreground">Board cue</p>
+          <p className="mt-2 text-sm font-semibold text-foreground">{boardNarrative.title}</p>
+          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{boardNarrative.detail}</p>
         </div>
       </div>
       {shapedOperations.length ? (
-        <div className="rounded-[0.5rem] border border-fuchsia-300/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] px-4 py-3">
+        <div className="rounded-[0.5rem] border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-foreground/[0.03] px-4 py-3">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-label font-semibold text-slate-400">Shaped operations</p>
-              <p className="mt-1 text-sm leading-relaxed text-slate-300/82">
+              <p className="text-label font-semibold text-muted-foreground">Shaped operations</p>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                 Local queue-shaping decisions stay visible here so pinned and snoozed items carry operator context, not just hidden state.
               </p>
               {snoozedCount > 0 ? (
-                <p className="mt-2 text-xs leading-relaxed text-slate-300/74">
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
                   {sessionSnoozedCount} return this session, {tomorrowSnoozedCount} return tomorrow, and {reopenedSnoozedCount} stay hidden until reopened.
                 </p>
               ) : null}
               {returningSoonCount > 0 ? (
-                <p className="mt-1 text-xs leading-relaxed text-amber-100/84">
+                <p className="mt-1 text-xs leading-relaxed text-[color:var(--status-warn)]">
                   {returningSoonCount} snoozed operation{returningSoonCount === 1 ? " is" : "s are"} coming back soon.
                 </p>
               ) : null}
             </div>
-            <StatusBadge tone="info" className="border-white/10 bg-white/[0.05] text-slate-100">
+            <StatusBadge tone="info" className="border-border bg-foreground/[0.04] text-foreground">
               {shapedOperations.length} tracked
             </StatusBadge>
           </div>
@@ -1147,36 +1147,36 @@ function QuickLinkGrid({
               const isSnoozed = Boolean(snoozeLabel);
 
               return (
-                <div key={`shaped-${operationKey}`} className="rounded-[0.5rem] border border-white/8 bg-black/10 px-3.5 py-3">
+                <div key={`shaped-${operationKey}`} className="rounded-[0.5rem] border border-border bg-foreground/[0.03] px-3.5 py-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-slate-50">{link.label}</p>
-                      <p className="mt-1 text-label font-semibold text-slate-400/88">
+                      <p className="text-sm font-semibold text-foreground">{link.label}</p>
+                      <p className="mt-1 text-label font-semibold text-muted-foreground">
                         {formatAssistantOperationActionClass(link)} · {resolveAssistantOperationUrgency(link)}
                       </p>
                       <div className="mt-2 flex flex-wrap gap-1.5">
                         {isPinned ? (
-                          <span className="inline-flex items-center rounded-full border border-fuchsia-300/22 bg-fuchsia-400/12 px-2 py-0.5 text-label font-semibold text-fuchsia-100">
+                          <span className="inline-flex items-center rounded-full border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--primary)_12%,transparent)] px-2 py-0.5 text-label font-semibold text-[color:var(--primary)]">
                             Pinned
                           </span>
                         ) : null}
                         {isSnoozed ? (
-                          <span className="inline-flex items-center rounded-full border border-sky-300/20 bg-sky-400/10 px-2 py-0.5 text-label font-semibold text-sky-100">
+                          <span className="inline-flex items-center rounded-full border border-[color:color-mix(in_srgb,var(--status-info)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--status-info)_12%,transparent)] px-2 py-0.5 text-label font-semibold text-[color:var(--status-info)]">
                             {snoozeLabel}
                           </span>
                         ) : null}
                         {returningSoon ? (
-                          <span className="inline-flex items-center rounded-full border border-amber-300/24 bg-amber-400/12 px-2 py-0.5 text-label font-semibold text-amber-100">
+                          <span className="inline-flex items-center rounded-full border border-[color:color-mix(in_srgb,var(--status-warn)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--status-warn)_12%,transparent)] px-2 py-0.5 text-label font-semibold text-[color:var(--status-warn)]">
                             Returning soon{returnSoonLabel ? ` · ${returnSoonLabel}` : ""}
                           </span>
                         ) : null}
                       </div>
-                      {snoozeReturnDetail ? <p className="mt-2 text-xs leading-relaxed text-slate-300/74">{snoozeReturnDetail}</p> : null}
+                      {snoozeReturnDetail ? <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{snoozeReturnDetail}</p> : null}
                     </div>
 
                     <Link
                       href={link.href}
-                      className="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-2.5 py-1 text-label font-semibold text-emerald-100 transition hover:border-emerald-300/35 hover:bg-emerald-400/16 hover:text-white"
+                      className="inline-flex shrink-0 items-center gap-1 rounded-full border border-[color:color-mix(in_srgb,var(--accent-2)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--accent-2)_12%,transparent)] px-2.5 py-1 text-label font-semibold text-[color:var(--accent-2)] transition hover:border-[color:color-mix(in_srgb,var(--accent-2)_35%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--accent-2)_12%,transparent)] hover:text-foreground"
                     >
                       <ArrowUpRight className="h-3.5 w-3.5" />
                       Open
@@ -1194,8 +1194,8 @@ function QuickLinkGrid({
                       }
                       className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-label font-semibold transition ${
                         isPinned
-                          ? "border-fuchsia-300/28 bg-fuchsia-400/12 text-fuchsia-100"
-                          : "border-white/10 bg-white/[0.05] text-slate-200/82 hover:border-fuchsia-300/22 hover:bg-fuchsia-400/10"
+                          ? "border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--primary)_12%,transparent)] text-[color:var(--primary)]"
+                          : "border-border bg-foreground/[0.04] text-foreground hover:border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--primary)_12%,transparent)]"
                       }`}
                     >
                       <Pin className="h-3 w-3" />
@@ -1206,8 +1206,8 @@ function QuickLinkGrid({
                       onClick={() => (isSnoozed ? clearOperationSnooze(operationKey) : setOperationSnoozeMode(operationKey, "session"))}
                       className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-label font-semibold transition ${
                         isSnoozed
-                          ? "border-sky-300/28 bg-sky-400/12 text-sky-100"
-                          : "border-white/10 bg-white/[0.05] text-slate-200/82 hover:border-sky-300/22 hover:bg-sky-400/10"
+                          ? "border-[color:color-mix(in_srgb,var(--status-info)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--status-info)_12%,transparent)] text-[color:var(--status-info)]"
+                          : "border-border bg-foreground/[0.04] text-foreground hover:border-[color:color-mix(in_srgb,var(--status-info)_35%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--status-info)_12%,transparent)]"
                       }`}
                     >
                       {isSnoozed ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
@@ -1218,14 +1218,14 @@ function QuickLinkGrid({
                         <button
                           type="button"
                           onClick={() => setOperationSnoozeMode(operationKey, "until_tomorrow")}
-                          className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.05] px-2 py-1 text-label font-semibold text-slate-200/82 transition hover:border-sky-300/22 hover:bg-sky-400/10"
+                          className="inline-flex items-center gap-1 rounded-full border border-border bg-foreground/[0.04] px-2 py-1 text-label font-semibold text-foreground transition hover:border-[color:color-mix(in_srgb,var(--status-info)_35%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--status-info)_12%,transparent)]"
                         >
                           Tomorrow
                         </button>
                         <button
                           type="button"
                           onClick={() => setOperationSnoozeMode(operationKey, "until_reopened")}
-                          className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.05] px-2 py-1 text-label font-semibold text-slate-200/82 transition hover:border-sky-300/22 hover:bg-sky-400/10"
+                          className="inline-flex items-center gap-1 rounded-full border border-border bg-foreground/[0.04] px-2 py-1 text-label font-semibold text-foreground transition hover:border-[color:color-mix(in_srgb,var(--status-info)_35%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--status-info)_12%,transparent)]"
                         >
                           Reopened
                         </button>
@@ -1234,7 +1234,7 @@ function QuickLinkGrid({
                   </div>
 
                   <div className="mt-3">
-                    <p className="mb-1 text-label font-semibold text-slate-400/88">Operator note</p>
+                    <p className="mb-1 text-label font-semibold text-muted-foreground">Operator note</p>
                     <Textarea
                       value={note}
                       onChange={(event) => {
@@ -1253,7 +1253,7 @@ function QuickLinkGrid({
                       }}
                       placeholder="Why is this pinned or snoozed?"
                       rows={2}
-                      className="min-h-[70px] border-white/10 bg-white/[0.04] text-sm text-slate-100 placeholder:text-slate-500"
+                      className="min-h-[70px] border-border bg-foreground/[0.04] text-sm text-foreground placeholder:text-muted-foreground"
                     />
                   </div>
                 </div>
@@ -1263,7 +1263,7 @@ function QuickLinkGrid({
         </div>
       ) : null}
       {!visibleGroups.length ? (
-        <div className="rounded-[0.5rem] border border-white/8 bg-black/10 px-4 py-3 text-sm text-slate-300/82">
+        <div className="rounded-[0.5rem] border border-border bg-foreground/[0.03] px-4 py-3 text-sm text-muted-foreground">
           No operations match the current board mode and filter.
         </div>
       ) : null}
@@ -1274,29 +1274,29 @@ function QuickLinkGrid({
             <button
               type="button"
               onClick={() => setGroupState((current) => ({ ...current, [group.key]: !expanded }))}
-              className="flex w-full items-start justify-between gap-3 rounded-[0.5rem] border border-white/8 bg-black/10 px-3.5 py-3 text-left transition hover:border-emerald-300/22 hover:bg-emerald-400/8"
+              className="flex w-full items-start justify-between gap-3 rounded-[0.5rem] border border-border bg-foreground/[0.03] px-3.5 py-3 text-left transition hover:border-[color:color-mix(in_srgb,var(--accent-2)_35%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--accent-2)_12%,transparent)]"
             >
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
-                  {expanded ? <ChevronDown className="h-4 w-4 text-slate-300/82" /> : <ChevronRight className="h-4 w-4 text-slate-300/82" />}
-                  <p className="text-label font-semibold text-slate-400">{group.label}</p>
-                  <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-label font-semibold text-slate-100">
+                  {expanded ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+                  <p className="text-label font-semibold text-muted-foreground">{group.label}</p>
+                  <span className="inline-flex items-center rounded-full border border-border bg-foreground/[0.04] px-2 py-0.5 text-label font-semibold text-foreground">
                     {group.items.length}
                   </span>
                   {group.snoozedCount > 0 ? (
-                    <span className="inline-flex items-center rounded-full border border-sky-300/16 bg-sky-400/10 px-2 py-0.5 text-label font-semibold text-sky-100">
+                    <span className="inline-flex items-center rounded-full border border-[color:color-mix(in_srgb,var(--status-info)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--status-info)_12%,transparent)] px-2 py-0.5 text-label font-semibold text-[color:var(--status-info)]">
                       Snoozed {group.snoozedCount}
                     </span>
                   ) : null}
                 </div>
-                <p className="mt-1 text-xs leading-relaxed text-slate-300/74">{group.description}</p>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{group.description}</p>
                 {!expanded ? (
-                  <p className="mt-2 text-label font-semibold text-slate-400/88">
+                  <p className="mt-2 text-label font-semibold text-muted-foreground">
                     {group.items.length} visible of {group.totalItems} operation{group.totalItems === 1 ? "" : "s"}
                   </p>
                 ) : null}
               </div>
-              <StatusBadge tone={expanded ? "info" : "neutral"} className="border-white/10 bg-white/[0.05] text-slate-100">
+              <StatusBadge tone={expanded ? "info" : "neutral"} className="border-border bg-foreground/[0.04] text-foreground">
                 {expanded ? "Expanded" : "Collapsed"}
               </StatusBadge>
             </button>
@@ -1320,8 +1320,8 @@ function QuickLinkGrid({
                     >
                       <div className="flex min-w-0 flex-col gap-3">
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold text-slate-50">{link.label}</p>
-                          <p className="mt-1 text-label font-semibold text-slate-400/88">
+                          <p className="text-sm font-semibold text-foreground">{link.label}</p>
+                          <p className="mt-1 text-label font-semibold text-muted-foreground">
                             {formatAssistantOperationActionClass(link)} · {formatAssistantOperationExecutionMode(link)} · {urgency}
                           </p>
                           <div className="mt-2 flex flex-wrap gap-1.5">
@@ -1336,25 +1336,25 @@ function QuickLinkGrid({
                               {executionBadge.label}
                             </span>
                             {isPinned ? (
-                              <span className="inline-flex items-center rounded-full border border-fuchsia-300/22 bg-fuchsia-400/12 px-2 py-0.5 text-label font-semibold text-fuchsia-100">
+                              <span className="inline-flex items-center rounded-full border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--primary)_12%,transparent)] px-2 py-0.5 text-label font-semibold text-[color:var(--primary)]">
                                 Pinned
                               </span>
                             ) : null}
                             {isSnoozed ? (
-                              <span className="inline-flex items-center rounded-full border border-sky-300/20 bg-sky-400/10 px-2 py-0.5 text-label font-semibold text-sky-100">
+                              <span className="inline-flex items-center rounded-full border border-[color:color-mix(in_srgb,var(--status-info)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--status-info)_12%,transparent)] px-2 py-0.5 text-label font-semibold text-[color:var(--status-info)]">
                                 {snoozeLabel}
                               </span>
                             ) : null}
                             {link.statusLabel ? (
-                              <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-label font-semibold text-slate-100">
+                              <span className="inline-flex items-center rounded-full border border-border bg-foreground/[0.04] px-2 py-0.5 text-label font-semibold text-foreground">
                                 {link.statusLabel}
                               </span>
                             ) : null}
                           </div>
-                          <p className="mt-2 text-xs leading-relaxed text-slate-200/88">
+                          <p className="mt-2 text-xs leading-relaxed text-foreground">
                             {link.reason ?? "Opens the page where this work continues."}
                           </p>
-                          <p className="mt-1 text-xs leading-relaxed text-slate-300/78">
+                          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                             {link.auditNote ?? "You still review it on the page this opens."}
                           </p>
                         </div>
@@ -1370,8 +1370,8 @@ function QuickLinkGrid({
                               }
                               className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-label font-semibold transition ${
                                 isPinned
-                                  ? "border-fuchsia-300/28 bg-fuchsia-400/12 text-fuchsia-100"
-                                  : "border-white/10 bg-white/[0.05] text-slate-200/82 hover:border-fuchsia-300/22 hover:bg-fuchsia-400/10"
+                                  ? "border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--primary)_12%,transparent)] text-[color:var(--primary)]"
+                                  : "border-border bg-foreground/[0.04] text-foreground hover:border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--primary)_12%,transparent)]"
                               }`}
                             >
                               <Pin className="h-3 w-3" />
@@ -1382,8 +1382,8 @@ function QuickLinkGrid({
                               onClick={() => (isSnoozed ? clearOperationSnooze(operationKey) : setOperationSnoozeMode(operationKey, "session"))}
                               className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-label font-semibold transition ${
                                 isSnoozed
-                                  ? "border-sky-300/28 bg-sky-400/12 text-sky-100"
-                                  : "border-white/10 bg-white/[0.05] text-slate-200/82 hover:border-sky-300/22 hover:bg-sky-400/10"
+                                  ? "border-[color:color-mix(in_srgb,var(--status-info)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--status-info)_12%,transparent)] text-[color:var(--status-info)]"
+                                  : "border-border bg-foreground/[0.04] text-foreground hover:border-[color:color-mix(in_srgb,var(--status-info)_35%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--status-info)_12%,transparent)]"
                               }`}
                             >
                               {isSnoozed ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
@@ -1394,14 +1394,14 @@ function QuickLinkGrid({
                                 <button
                                   type="button"
                                   onClick={() => setOperationSnoozeMode(operationKey, "until_tomorrow")}
-                                  className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.05] px-2 py-1 text-label font-semibold text-slate-200/82 transition hover:border-sky-300/22 hover:bg-sky-400/10"
+                                  className="inline-flex items-center gap-1 rounded-full border border-border bg-foreground/[0.04] px-2 py-1 text-label font-semibold text-foreground transition hover:border-[color:color-mix(in_srgb,var(--status-info)_35%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--status-info)_12%,transparent)]"
                                 >
                                   Tomorrow
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => setOperationSnoozeMode(operationKey, "until_reopened")}
-                                  className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.05] px-2 py-1 text-label font-semibold text-slate-200/82 transition hover:border-sky-300/22 hover:bg-sky-400/10"
+                                  className="inline-flex items-center gap-1 rounded-full border border-border bg-foreground/[0.04] px-2 py-1 text-label font-semibold text-foreground transition hover:border-[color:color-mix(in_srgb,var(--status-info)_35%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--status-info)_12%,transparent)]"
                                 >
                                   Reopen
                                 </button>
@@ -1415,29 +1415,29 @@ function QuickLinkGrid({
                           </span>
                         </div>
                       </div>
-                      <div className="mt-3 flex min-w-0 flex-col items-start gap-2 text-label font-semibold text-emerald-200/82">
+                      <div className="mt-3 flex min-w-0 flex-col items-start gap-2 text-label font-semibold text-[color:var(--accent-2)]">
                         <div className="flex flex-wrap items-center gap-2">
                           {link.executionMode === "future_agent_action" && (link.workflowId || link.executeAction) ? (
                             <button
                               type="button"
                               onClick={() => onRunOperation?.(link)}
                               disabled={isRunningOperation}
-                              className="inline-flex items-center gap-1 rounded-full border border-violet-300/20 bg-violet-400/12 px-2.5 py-1 text-violet-100 transition hover:border-violet-300/35 hover:bg-violet-400/16 hover:text-white"
+                              aria-label={`${isRunningOperation ? "Running" : link.executeAction ? "Run now" : "Run in panel"}: ${link.label}`}
+                              className="inline-flex items-center gap-1 rounded-full border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--primary)_12%,transparent)] px-2.5 py-1 text-[color:var(--primary)] transition hover:border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--primary)_12%,transparent)] hover:text-foreground"
                             >
                               {isRunningOperation ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
                               {isRunningOperation
-                                ? `Running · ${link.id}`
+                                ? "Running…"
                                 : link.executeAction
-                                  ? `Execute now · ${link.id}`
-                                  : `Run in panel · ${link.id}`}
+                                  ? "Run now"
+                                  : "Run in panel"}
                             </button>
                           ) : null}
-                          <Link href={link.href} className="inline-flex items-center gap-1 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-2.5 py-1 text-emerald-100 transition hover:border-emerald-300/35 hover:bg-emerald-400/16 hover:text-white">
+                          <Link href={link.href} aria-label={`Open: ${link.label}`} className="inline-flex items-center gap-1 rounded-full border border-[color:color-mix(in_srgb,var(--accent-2)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--accent-2)_12%,transparent)] px-2.5 py-1 text-[color:var(--accent-2)] transition hover:border-[color:color-mix(in_srgb,var(--accent-2)_35%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--accent-2)_12%,transparent)] hover:text-foreground">
                             <ArrowUpRight className="h-3.5 w-3.5" />
-                            Open surface · {link.id}
+                            Open
                           </Link>
                         </div>
-                        {link.auditEvent ? <span className="max-w-full break-all text-slate-400/82">{link.auditEvent}</span> : null}
                       </div>
                     </div>
                   );
@@ -1691,6 +1691,8 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
           workspaceId: target.workspaceId ?? workspaceId,
           question,
           history,
+          // So "today" is the planner's date, not the server's UTC date.
+          timeZone: Intl.DateTimeFormat("en-US").resolvedOptions().timeZone,
         }),
       });
 
@@ -2185,10 +2187,10 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
         variant="outline"
         size="sm"
         aria-label="Planner Agent"
-        className="op-cart-copilot-launch rounded-full border-emerald-300/30 bg-[rgba(7,14,20,0.92)] px-4 text-slate-100 shadow-[0_18px_40px_rgba(0,0,0,0.35)] backdrop-blur-xl hover:border-emerald-300/50 hover:bg-emerald-400/12 hover:text-white"
+        className="op-cart-copilot-launch rounded-full border-[color:color-mix(in_srgb,var(--accent-2)_35%,transparent)] bg-[rgba(7,14,20,0.92)] px-4 text-foreground backdrop-blur-xl hover:border-[color:color-mix(in_srgb,var(--accent-2)_35%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--accent-2)_12%,transparent)] hover:text-foreground"
         onClick={() => setOpen(true)}
       >
-        <Sparkles className="h-4 w-4 text-emerald-300" />
+        <Sparkles className="h-4 w-4 text-[color:var(--accent-2)]" />
         <span>Planner Agent</span>
       </Button>
 
@@ -2207,28 +2209,25 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
           closeOnBackdropPress
           className="fixed inset-y-0 left-auto right-0 m-0 h-dvh max-h-none w-full max-w-[560px] rounded-none border-0 bg-transparent backdrop:bg-slate-950/55"
         >
-          <aside className="surface-dark relative flex h-full w-full max-w-[560px] flex-col border-l border-white/10 bg-[linear-gradient(180deg,rgba(6,12,18,0.98),rgba(9,16,24,0.985))] text-slate-100 shadow-[-24px_0_60px_rgba(2,8,15,0.34)]">
-            <div className="shrink-0 border-b border-white/8 px-5 py-4 sm:px-6">
+          <aside className="relative flex h-full w-full max-w-[560px] flex-col border-l border-border bg-background text-foreground">
+            <div className="shrink-0 border-b border-border px-5 py-4 sm:px-6">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-[0.5rem] bg-emerald-400/12 text-emerald-200">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-[0.5rem] bg-[color:color-mix(in_srgb,var(--accent-2)_12%,transparent)] text-[color:var(--accent-2)]">
                       <Sparkles className="h-5 w-5" />
                     </span>
                     <div className="min-w-0">
-                      <p className="text-label font-semibold text-slate-400">Planner Agent</p>
-                      <h2 id={drawerTitleId} className="truncate text-lg font-semibold text-white">{summaryLabel}</h2>
+                      <p className="text-label font-semibold text-muted-foreground">Planner Agent</p>
+                      <h2 id={drawerTitleId} className="truncate text-lg font-semibold text-foreground">{summaryLabel}</h2>
                     </div>
                   </div>
-                  <p className="mt-3 text-sm leading-relaxed text-slate-300/82">
-                    {preview?.summary ?? `Grounding to ${workspaceName}...`}
-                  </p>
                 </div>
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon-sm"
-                  className="shrink-0 rounded-[0.5rem] text-slate-300 hover:bg-white/7 hover:text-white"
+                  className="shrink-0 rounded-[0.5rem] text-muted-foreground hover:bg-foreground/[0.04] hover:text-foreground"
                   onClick={() => setOpen(false)}
                   aria-label="Close Planner Agent"
                 >
@@ -2249,14 +2248,14 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                     <ProjectProviderPanel key={`${target.workspaceId ?? workspaceId}:${target.id}`} workspaceId={(target.workspaceId ?? workspaceId)!} projectId={target.id} busy={responding} onReview={reviewProviderProposal} />
                   ) : null}
                   {loadingContext ? (
-                    <div className="flex items-center gap-2 rounded-[0.5rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-slate-300/82">
-                      <Loader2 className="h-4 w-4 animate-spin text-emerald-300" />
+                    <div className="flex items-center gap-2 rounded-[0.5rem] border border-border bg-foreground/[0.04] px-4 py-3 text-sm text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin text-[color:var(--accent-2)]" />
                       Loading Planner Agent context…
                     </div>
                   ) : null}
 
                   {contextRecovery ? (
-                    <div role="status" className="rounded-[0.5rem] border border-amber-300/28 bg-amber-400/12 px-4 py-3 text-sm text-amber-100">
+                    <div role="status" className="rounded-[0.5rem] border border-[color:color-mix(in_srgb,var(--status-warn)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--status-warn)_12%,transparent)] px-4 py-3 text-sm text-[color:var(--status-warn)]">
                       {contextRecovery === "refreshed" ? (
                         <p>Context refreshed. The completed action was not repeated. Any unfinished follow-up still needs to be requested separately.</p>
                       ) : (
@@ -2270,7 +2269,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                     </div>
                   ) : null}
                   {error ? (
-                    <div role="alert" className="rounded-[0.5rem] border border-rose-300/20 bg-rose-400/10 px-4 py-3 text-sm text-rose-100/92">
+                    <div role="alert" className="rounded-[0.5rem] border border-[color:color-mix(in_srgb,var(--status-urgent)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--status-urgent)_12%,transparent)] px-4 py-3 text-sm text-[color:var(--status-urgent)]">
                       {error}
                     </div>
                   ) : null}
@@ -2278,7 +2277,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                   {aiOffline ? (
                     <div
                       role="status"
-                      className="rounded-[0.5rem] border border-amber-300/28 bg-amber-400/12 px-4 py-3 text-sm text-amber-100"
+                      className="rounded-[0.5rem] border border-[color:color-mix(in_srgb,var(--status-warn)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--status-warn)_12%,transparent)] px-4 py-3 text-sm text-[color:var(--status-warn)]"
                     >
                       <p className="font-semibold">
                         {target.kind === "project" ? "The existing project chat needs a workspace AI key. The project provider task above can use a saved API or a supported installed CLI connection." : "The Planner Agent can't chat yet because no AI key is set up for this workspace."}
@@ -2286,64 +2285,51 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                       <p className="mt-1">
                         <Link
                           href="/dashboard#workspace-ai-key"
-                          className="font-semibold underline underline-offset-2 hover:text-white"
+                          className="font-semibold underline underline-offset-2 hover:text-foreground"
                         >
                           Turn on your AI assistant from the dashboard checklist
-                        </Link>{" "}
-                        — a workspace owner or admin adds the key there. Suggested actions below
+                        </Link>
+                        . An owner or admin adds the key there. Suggested actions below
                         still work.
                       </p>
                     </div>
                   ) : null}
 
-              <div className="border-b border-white/8 px-5 py-3 sm:px-6">
+              <div className="border-b border-border pb-3">
                 <div className="flex flex-wrap gap-2">
                   {(preview?.suggestedActions ?? []).map((action) => (
                     <button
                       key={action.id}
                       type="button"
-                      className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-xs font-semibold text-slate-100 transition hover:border-emerald-300/35 hover:bg-emerald-400/12 hover:text-white disabled:opacity-60"
+                      className="inline-flex items-center gap-2 rounded-full border border-border bg-foreground/[0.04] px-3 py-1.5 text-xs font-semibold text-foreground transition hover:border-[color:color-mix(in_srgb,var(--accent-2)_35%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--accent-2)_12%,transparent)] hover:text-foreground disabled:opacity-60"
                       onClick={() => submitPrompt({ workflowId: action.id, question: action.prompt, promptLabel: actionLabel(action) })}
                       disabled={responding || loadingContext}
                       title={action.description}
                     >
-                      <Sparkles className="h-3.5 w-3.5 text-emerald-300" />
+                      <Sparkles className="h-3.5 w-3.5 text-[color:var(--accent-2)]" />
                       {action.label}
                     </button>
                   ))}
                 </div>
               </div>
 
-              <div className="mt-4 flex flex-wrap gap-2">
-                <StatusBadge tone="info">{preview?.kind.replace(/_/g, " ") ?? "workspace"}</StatusBadge>
-                {preview?.stats.map((stat) => (
-                  <StatusBadge key={`${stat.label}-${stat.value}`} tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-200/85">
-                    {stat.label} · {stat.value}
-                  </StatusBadge>
-                ))}
-              </div>
 
               {preview?.operatorCue ? (
-                <div className="mt-4 rounded-[0.5rem] border border-emerald-300/18 bg-emerald-400/10 px-4 py-3 shadow-[0_16px_30px_rgba(16,185,129,0.08)]">
-                  <p className="text-label font-semibold text-emerald-100/72">{preview.operatorCue.label}</p>
-                  <p className="mt-2 text-sm font-semibold text-white">{preview.operatorCue.title}</p>
-                  <p className="mt-1 text-sm leading-relaxed text-slate-200/82">{preview.operatorCue.detail}</p>
+                <div className="mt-4 rounded-[0.5rem] border border-[color:color-mix(in_srgb,var(--accent-2)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--accent-2)_12%,transparent)] px-4 py-3">
+                  <p className="text-label font-semibold text-[color:var(--accent-2)]">{preview.operatorCue.label}</p>
+                  <p className="mt-2 text-sm font-semibold text-foreground">{preview.operatorCue.title}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-foreground">{preview.operatorCue.detail}</p>
                 </div>
               ) : null}
 
-              {preview?.boardStateCue ? (
-                <div className="mt-4">
-                  <BoardStateCueCard cue={preview.boardStateCue} />
-                </div>
-              ) : null}
 
               {operationStatus ? (
-                <div className="mt-4 rounded-[0.5rem] border border-violet-300/16 bg-violet-400/10 px-4 py-3 shadow-[0_16px_30px_rgba(139,92,246,0.08)]">
+                <div className="mt-4 rounded-[0.5rem] border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--primary)_12%,transparent)] px-4 py-3">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-label font-semibold text-violet-100/76">In-panel operation</p>
+                    <p className="text-label font-semibold text-[color:var(--primary)]">In-panel operation</p>
                     <StatusBadge
                       tone={operationStatus.status === "failed" ? "danger" : operationStatus.status === "completed" ? "success" : "info"}
-                      className="border-white/10 bg-white/[0.05] text-slate-100"
+                      className="border-border bg-foreground/[0.04] text-foreground"
                     >
                       {operationStatus.status === "running"
                         ? "Running"
@@ -2352,8 +2338,8 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                           : "Failed"}
                     </StatusBadge>
                   </div>
-                  <p className="mt-2 text-sm font-semibold text-white">{operationStatus.label}</p>
-                  <p className="mt-1 text-sm leading-relaxed text-slate-200/82">
+                  <p className="mt-2 text-sm font-semibold text-foreground">{operationStatus.label}</p>
+                  <p className="mt-1 text-sm leading-relaxed text-foreground">
                     {operationStatus.status === "running"
                       ? "Planner Agent is running this grounded workflow in panel now."
                       : operationStatus.status === "completed"
@@ -2361,23 +2347,13 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                         : operationStatus.error ?? "This grounded workflow failed before a response could be posted."}
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    {operationStatus.workflowId ? (
-                      <StatusBadge tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-200/85">
-                        Workflow · {operationStatus.workflowId}
-                      </StatusBadge>
-                    ) : null}
-                    {operationStatus.auditEvent ? (
-                      <StatusBadge tone="neutral" className="max-w-full whitespace-normal break-all border-white/10 bg-white/[0.05] text-slate-200/85">
-                        Audit · {operationStatus.auditEvent}
-                      </StatusBadge>
-                    ) : null}
                     {formatOperationTimestamp(operationStatus.startedAt) ? (
-                      <StatusBadge tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-200/85">
+                      <StatusBadge tone="neutral" className="border-border bg-foreground/[0.04] text-foreground">
                         Started · {formatOperationTimestamp(operationStatus.startedAt)}
                       </StatusBadge>
                     ) : null}
                     {operationStatus.finishedAt && formatOperationTimestamp(operationStatus.finishedAt) ? (
-                      <StatusBadge tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-200/85">
+                      <StatusBadge tone="neutral" className="border-border bg-foreground/[0.04] text-foreground">
                         Finished · {formatOperationTimestamp(operationStatus.finishedAt)}
                       </StatusBadge>
                     ) : null}
@@ -2386,22 +2362,22 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
               ) : null}
 
               {operationHistory.length > 0 ? (
-                <div className="mt-4 rounded-[0.5rem] border border-white/8 bg-black/10 px-4 py-3">
+                <div className="mt-4 rounded-[0.5rem] border border-border bg-foreground/[0.03] px-4 py-3">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="text-label font-semibold text-slate-400">Recent in-panel actions</p>
-                      <p className="mt-1 text-sm leading-relaxed text-slate-300/82">
+                      <p className="text-label font-semibold text-muted-foreground">Recent in-panel actions</p>
+                      <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
                         The latest grounded Planner Agent operations stay visible here for quick traceability.
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <StatusBadge tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-100">
+                      <StatusBadge tone="neutral" className="border-border bg-foreground/[0.04] text-foreground">
                         {operationHistory.length} tracked
                       </StatusBadge>
                       <button
                         type="button"
                         onClick={() => setOperationHistory([])}
-                        className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-1 text-label font-semibold text-slate-200/82 transition hover:border-rose-300/22 hover:bg-rose-400/10 hover:text-white"
+                        className="inline-flex items-center gap-1 rounded-full border border-border bg-foreground/[0.04] px-2.5 py-1 text-label font-semibold text-foreground transition hover:border-[color:color-mix(in_srgb,var(--status-urgent)_35%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--status-urgent)_12%,transparent)] hover:text-foreground"
                       >
                         Clear all
                       </button>
@@ -2410,11 +2386,11 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
 
                   <div className="mt-3 space-y-2">
                     {operationHistory.map((entry) => (
-                      <div key={`${entry.linkId}:${entry.startedAt}`} className="rounded-[0.5rem] border border-white/8 bg-white/[0.03] px-3 py-2.5">
+                      <div key={`${entry.linkId}:${entry.startedAt}`} className="rounded-[0.5rem] border border-border bg-foreground/[0.04] px-3 py-2.5">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <div>
-                            <p className="text-sm font-semibold text-white">{entry.label}</p>
-                            <p className="mt-1 text-xs leading-relaxed text-slate-300/78">
+                            <p className="text-sm font-semibold text-foreground">{entry.label}</p>
+                            <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                               {entry.status === "running"
                                 ? "Currently running in panel."
                                 : entry.status === "completed"
@@ -2425,7 +2401,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                           <div className="flex items-center gap-2">
                             <StatusBadge
                               tone={entry.status === "failed" ? "danger" : entry.status === "completed" ? "success" : "info"}
-                              className="border-white/10 bg-white/[0.05] text-slate-100"
+                              className="border-border bg-foreground/[0.04] text-foreground"
                             >
                               {entry.status === "running" ? "Running" : entry.status === "completed" ? "Completed" : "Failed"}
                             </StatusBadge>
@@ -2436,7 +2412,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                                   current.filter((candidate) => !(candidate.linkId === entry.linkId && candidate.startedAt === entry.startedAt))
                                 )
                               }
-                              className="inline-flex items-center justify-center rounded-full border border-white/10 bg-white/[0.05] p-1 text-slate-300/82 transition hover:border-rose-300/22 hover:bg-rose-400/10 hover:text-white"
+                              className="inline-flex items-center justify-center rounded-full border border-border bg-foreground/[0.04] p-1 text-muted-foreground transition hover:border-[color:color-mix(in_srgb,var(--status-urgent)_35%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--status-urgent)_12%,transparent)] hover:text-foreground"
                               aria-label={`Dismiss ${entry.label} from recent in-panel actions`}
                               title="Dismiss from recent actions"
                             >
@@ -2445,23 +2421,13 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                           </div>
                         </div>
                         <div className="mt-2 flex flex-wrap gap-2">
-                          {entry.workflowId ? (
-                            <StatusBadge tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-200/85">
-                              Workflow · {entry.workflowId}
-                            </StatusBadge>
-                          ) : null}
-                          {entry.auditEvent ? (
-                            <StatusBadge tone="neutral" className="max-w-full whitespace-normal break-all border-white/10 bg-white/[0.05] text-slate-200/85">
-                              Audit · {entry.auditEvent}
-                            </StatusBadge>
-                          ) : null}
                           {formatOperationTimestamp(entry.startedAt) ? (
-                            <StatusBadge tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-200/85">
+                            <StatusBadge tone="neutral" className="border-border bg-foreground/[0.04] text-foreground">
                               Started · {formatOperationTimestamp(entry.startedAt)}
                             </StatusBadge>
                           ) : null}
                           {entry.finishedAt && formatOperationTimestamp(entry.finishedAt) ? (
-                            <StatusBadge tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-200/85">
+                            <StatusBadge tone="neutral" className="border-border bg-foreground/[0.04] text-foreground">
                               Finished · {formatOperationTimestamp(entry.finishedAt)}
                             </StatusBadge>
                           ) : null}
@@ -2473,7 +2439,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
               ) : null}
 
                   {!loadingContext && messages.length === 0 ? (
-                    <div className="rounded-[0.75rem] border border-white/10 bg-white/[0.04] px-4 py-4 text-sm text-slate-300/82">
+                    <div className="rounded-[0.75rem] border border-border bg-foreground/[0.04] px-4 py-4 text-sm text-muted-foreground">
                       No grounded context loaded yet.
                     </div>
                   ) : null}
@@ -2482,26 +2448,12 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                     if (message.type === "prompt") {
                       return (
                         <div key={message.id} className="flex justify-end">
-                          <div className="max-w-[88%] rounded-[0.5rem] border border-emerald-300/20 bg-emerald-400/12 px-4 py-3 text-sm text-slate-50 shadow-[0_16px_34px_rgba(16,185,129,0.10)]">
-                            <div className="mb-2 flex items-center justify-end gap-2 text-label font-semibold text-emerald-100/78">
+                          <div className="max-w-[88%] rounded-[0.5rem] border border-[color:color-mix(in_srgb,var(--accent-2)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--accent-2)_12%,transparent)] px-4 py-3 text-sm text-foreground">
+                            <div className="mb-2 flex items-center justify-end gap-2 text-label font-semibold text-[color:var(--accent-2)]">
                               You
                               <User className="h-3.5 w-3.5" />
                             </div>
                             <p>{message.text}</p>
-                            {message.operation ? (
-                              <div className="mt-3 flex flex-wrap justify-end gap-2">
-                                {message.operation.workflowId ? (
-                                  <StatusBadge tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-100">
-                                    Workflow · {message.operation.workflowId}
-                                  </StatusBadge>
-                                ) : null}
-                                {message.operation.auditEvent ? (
-                                  <StatusBadge tone="neutral" className="max-w-full whitespace-normal break-all border-white/10 bg-white/[0.05] text-slate-100">
-                                    Audit · {message.operation.auditEvent}
-                                  </StatusBadge>
-                                ) : null}
-                              </div>
-                            ) : null}
                           </div>
                         </div>
                       );
@@ -2509,12 +2461,12 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
 
                     if (message.type === "chat") {
                       return (
-                        <div key={message.id} id={message.id} className="rounded-[0.5rem] border border-white/10 bg-white/[0.04] px-4 py-4 shadow-[0_18px_34px_rgba(2,8,15,0.18)]">
-                          <div className="mb-3 flex items-center gap-2 text-label font-semibold text-slate-300/72">
-                            <Bot className="h-3.5 w-3.5 text-emerald-300" />
+                        <div key={message.id} id={message.id} className="rounded-[0.5rem] border border-border bg-foreground/[0.04] px-4 py-4">
+                          <div className="mb-3 flex items-center gap-2 text-label font-semibold text-muted-foreground">
+                            <Bot className="h-3.5 w-3.5 text-[color:var(--accent-2)]" />
                             Planner Agent
                             {message.status === "streaming" ? (
-                              <Loader2 className="h-3 w-3 animate-spin text-emerald-300" aria-label="Streaming reply" />
+                              <Loader2 className="h-3 w-3 animate-spin text-[color:var(--accent-2)]" aria-label="Streaming reply" />
                             ) : null}
                           </div>
                           {message.toolEvents.length ? (
@@ -2524,8 +2476,8 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                                   key={activity.toolCallId}
                                   className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-label font-semibold ${
                                     activity.status === "failed"
-                                      ? "border-rose-300/22 bg-rose-400/10 text-rose-100"
-                                      : "border-sky-300/18 bg-sky-400/8 text-sky-100"
+                                      ? "border-[color:color-mix(in_srgb,var(--status-urgent)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--status-urgent)_12%,transparent)] text-[color:var(--status-urgent)]"
+                                      : "border-[color:color-mix(in_srgb,var(--status-info)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--status-info)_12%,transparent)] text-[color:var(--status-info)]"
                                   }`}
                                 >
                                   {activity.status === "running" ? (
@@ -2538,11 +2490,11 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                           ) : null}
                           {message.text ? (
                             <div
-                              className="chapter-markdown text-sm leading-relaxed text-slate-100"
+                              className="chapter-markdown text-sm leading-relaxed text-foreground"
                               dangerouslySetInnerHTML={{ __html: renderChapterMarkdownToHtml(message.text) }}
                             />
                           ) : (
-                            <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-100">
+                            <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
                               {message.status === "streaming" ? "…" : message.status === "complete" ? "No reply text was returned." : ""}
                             </p>
                           )}
@@ -2560,7 +2512,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                             </div>
                           ) : null}
                           {message.costWarning ? (
-                            <p className="mt-3 rounded-[0.5rem] border border-amber-300/16 bg-amber-400/10 px-3.5 py-2.5 text-xs leading-relaxed text-amber-100/92">
+                            <p className="mt-3 rounded-[0.5rem] border border-[color:color-mix(in_srgb,var(--status-warn)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--status-warn)_12%,transparent)] px-3.5 py-2.5 text-xs leading-relaxed text-[color:var(--status-warn)]">
                               This reply&apos;s single AI call was estimated at ~$
                               {message.costWarning.estimatedCostUsd.toFixed(2)}, above the $
                               {message.costWarning.thresholdUsd.toFixed(2)} review threshold. Occasional heavy questions are
@@ -2568,13 +2520,13 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                             </p>
                           ) : null}
                           {message.status === "error" ? (
-                            <div className="mt-3 flex items-center justify-between gap-3 rounded-[0.5rem] border border-rose-300/20 bg-rose-400/10 px-3.5 py-2.5 text-sm text-rose-100/92">
+                            <div className="mt-3 flex items-center justify-between gap-3 rounded-[0.5rem] border border-[color:color-mix(in_srgb,var(--status-urgent)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--status-urgent)_12%,transparent)] px-3.5 py-2.5 text-sm text-[color:var(--status-urgent)]">
                               <span>{message.error ?? "The Planner Agent chat reply was interrupted."}</span>
                               <button
                                 type="button"
                                 onClick={() => retryChatEntry(message)}
                                 disabled={responding}
-                                className="inline-flex shrink-0 items-center gap-1 rounded-full border border-rose-300/28 bg-rose-400/14 px-2.5 py-1 text-label font-semibold text-rose-50 transition hover:border-rose-300/45 hover:bg-rose-400/22 hover:text-white disabled:opacity-60"
+                                className="inline-flex shrink-0 items-center gap-1 rounded-full border border-[color:color-mix(in_srgb,var(--status-urgent)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--status-urgent)_12%,transparent)] px-2.5 py-1 text-label font-semibold text-[color:var(--status-urgent)] transition hover:border-[color:color-mix(in_srgb,var(--status-urgent)_35%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--status-urgent)_12%,transparent)] hover:text-foreground disabled:opacity-60"
                               >
                                 Retry
                               </button>
@@ -2587,57 +2539,62 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                     if (message.type === "intro") {
                       const introPreview = preview ?? message.preview;
                       return (
-                        <div key={message.id} className="rounded-[0.5rem] border border-white/10 bg-white/[0.04] px-4 py-4 shadow-[0_18px_34px_rgba(2,8,15,0.18)]">
-                          <div className="mb-3 flex items-center gap-2 text-label font-semibold text-slate-300/72">
-                            <Bot className="h-3.5 w-3.5 text-emerald-300" />
+                        <div key={message.id} className="rounded-[0.5rem] border border-border bg-foreground/[0.04] px-4 py-4">
+                          <div className="mb-3 flex items-center gap-2 text-label font-semibold text-muted-foreground">
+                            <Bot className="h-3.5 w-3.5 text-[color:var(--accent-2)]" />
                             Planning context
                           </div>
-                          <p className="text-sm leading-relaxed text-slate-100">{introPreview.summary}</p>
-                          {introPreview.boardStateCue ? (
-                            <div className="mt-3">
-                              <BoardStateCueCard cue={introPreview.boardStateCue} />
-                            </div>
-                          ) : null}
-                          <ul className="mt-3 space-y-2 text-sm text-slate-300/82">
+                          <p className="text-sm leading-relaxed text-foreground">{introPreview.summary}</p>
+                          <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
                             {introPreview.facts.map((fact) => (
-                              <li key={fact} className="rounded-[0.5rem] border border-white/8 bg-black/10 px-3.5 py-2.5">
+                              <li key={fact} className="rounded-[0.5rem] border border-border bg-foreground/[0.03] px-3.5 py-2.5">
                                 {fact}
                               </li>
                             ))}
                           </ul>
 
                           {introPreview.quickLinks?.length ? (
-                            <div className="mt-4">
-                              <p className="mb-2 text-label font-semibold text-slate-400">Action surfaces</p>
+                            // Folded: the action board (counters, filters,
+                            // snooze controls, one card per action) buried the
+                            // conversation under several screens of text.
+                            <details className="mt-4 rounded-[0.5rem] border border-border px-3.5 py-2.5">
+                              <summary className="cursor-pointer text-sm font-semibold text-foreground">
+                                Suggested actions ({introPreview.quickLinks.length})
+                              </summary>
+                              {introPreview.boardStateCue ? (
+                                <div className="mt-3">
+                                  <BoardStateCueCard cue={introPreview.boardStateCue} />
+                                </div>
+                              ) : null}
                               <QuickLinkGrid
                                 links={introPreview.quickLinks}
                                 onConsoleStateChange={setLiveConsoleState}
                                 onRunOperation={runOperation}
                                 runningOperationId={runningOperationId}
                               />
-                            </div>
+                            </details>
                           ) : null}
                         </div>
                       );
                     }
 
                     return (
-                      <div key={message.id} className="rounded-[0.5rem] border border-white/10 bg-white/[0.04] px-4 py-4 shadow-[0_18px_34px_rgba(2,8,15,0.18)]">
-                        <div className="mb-3 flex items-center gap-2 text-label font-semibold text-slate-300/72">
-                          <Bot className="h-3.5 w-3.5 text-emerald-300" />
+                      <div key={message.id} className="rounded-[0.5rem] border border-border bg-foreground/[0.04] px-4 py-4">
+                        <div className="mb-3 flex items-center gap-2 text-label font-semibold text-muted-foreground">
+                          <Bot className="h-3.5 w-3.5 text-[color:var(--accent-2)]" />
                           {message.response.label}
                         </div>
-                        <h3 className="text-lg font-semibold tracking-tight text-white">{message.response.title}</h3>
-                        <p className="mt-2 text-sm leading-relaxed text-slate-300/88">{message.response.summary}</p>
+                        <h3 className="text-lg font-semibold tracking-tight text-foreground">{message.response.title}</h3>
+                        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{message.response.summary}</p>
 
                         <div className="mt-4 grid gap-4">
                           {message.response.boardStateCue ? <BoardStateCueCard cue={message.response.boardStateCue} /> : null}
 
                           <section>
-                            <p className="mb-2 text-label font-semibold text-slate-400">Findings</p>
-                            <ul className="space-y-2 text-sm text-slate-200/88">
+                            <p className="mb-2 text-label font-semibold text-muted-foreground">Findings</p>
+                            <ul className="space-y-2 text-sm text-foreground">
                               {message.response.findings.map((finding) => (
-                                <li key={finding} className="rounded-[0.5rem] border border-white/8 bg-black/10 px-3.5 py-2.5">
+                                <li key={finding} className="rounded-[0.5rem] border border-border bg-foreground/[0.03] px-3.5 py-2.5">
                                   {finding}
                                 </li>
                               ))}
@@ -2645,10 +2602,10 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                           </section>
 
                           <section>
-                            <p className="mb-2 text-label font-semibold text-slate-400">Next steps</p>
-                            <ul className="space-y-2 text-sm text-slate-200/88">
+                            <p className="mb-2 text-label font-semibold text-muted-foreground">Next steps</p>
+                            <ul className="space-y-2 text-sm text-foreground">
                               {message.response.nextSteps.map((step) => (
-                                <li key={step} className="rounded-[0.5rem] border border-emerald-300/16 bg-emerald-400/8 px-3.5 py-2.5">
+                                <li key={step} className="rounded-[0.5rem] border border-[color:color-mix(in_srgb,var(--accent-2)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--accent-2)_12%,transparent)] px-3.5 py-2.5">
                                   {step}
                                 </li>
                               ))}
@@ -2656,10 +2613,10 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                           </section>
 
                           <section>
-                            <p className="mb-2 text-label font-semibold text-slate-400">Evidence</p>
+                            <p className="mb-2 text-label font-semibold text-muted-foreground">Evidence</p>
                             <div className="flex flex-wrap gap-2">
                               {message.response.evidence.map((item) => (
-                                <StatusBadge key={item} tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-200/85">
+                                <StatusBadge key={item} tone="neutral" className="border-border bg-foreground/[0.04] text-foreground">
                                   {item}
                                 </StatusBadge>
                               ))}
@@ -2668,7 +2625,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
 
                           {message.response.quickLinks?.length ? (
                             <section>
-                              <p className="mb-2 text-label font-semibold text-slate-400">Take action</p>
+                              <p className="mb-2 text-label font-semibold text-muted-foreground">Take action</p>
                               <QuickLinkGrid
                                 links={message.response.quickLinks}
                                 onRunOperation={runOperation}
@@ -2678,7 +2635,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                           ) : null}
 
                           {message.response.caution ? (
-                            <div className="rounded-[0.5rem] border border-amber-300/16 bg-amber-400/10 px-3.5 py-3 text-sm text-amber-100/92">
+                            <div className="rounded-[0.5rem] border border-[color:color-mix(in_srgb,var(--status-warn)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--status-warn)_12%,transparent)] px-3.5 py-3 text-sm text-[color:var(--status-warn)]">
                               {message.response.caution}
                             </div>
                           ) : null}
@@ -2688,16 +2645,16 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                   })}
 
                   {responding ? (
-                    <div className="flex items-center gap-2 rounded-[0.5rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-slate-300/82">
-                      <Loader2 className="h-4 w-4 animate-spin text-emerald-300" />
+                    <div className="flex items-center gap-2 rounded-[0.5rem] border border-border bg-foreground/[0.04] px-4 py-3 text-sm text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin text-[color:var(--accent-2)]" />
                       Building grounded response…
                     </div>
                   ) : null}
                 </div>
               </div>
 
-              <div className="border-t border-white/8 px-5 py-4 sm:px-6">
-                <label className="mb-2 block text-label font-semibold text-slate-400">
+              <div className="border-t border-border px-5 py-4 sm:px-6">
+                <label className="mb-2 block text-label font-semibold text-muted-foreground">
                   Ask Planner Agent
                 </label>
                 <Textarea
@@ -2725,16 +2682,16 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                     void submitChat();
                   }}
                   placeholder="Ask about project status, planning assumptions, report needs, or next steps…"
-                  className="min-h-[108px] border-white/10 bg-white/[0.04] text-slate-50 placeholder:text-slate-400/75"
+                  className="min-h-[108px] border-border bg-foreground/[0.04] text-foreground placeholder:text-muted-foreground"
                 />
                 <div className="mt-3 flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-xs text-slate-400">
-                      Working from {preview?.title ?? workspaceName}. Typed questions go to the AI; suggested actions use existing OpenPlan workflows.
+                    <p className="text-xs text-muted-foreground">
+                      Typed questions go to the AI; suggested actions use existing OpenPlan workflows.
                     </p>
                     <Link
                       href="/assistant-activity"
-                      className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-emerald-200/88 underline-offset-2 transition hover:text-emerald-100 hover:underline"
+                      className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-[color:var(--accent-2)] underline-offset-2 transition hover:text-[color:var(--accent-2)] hover:underline"
                     >
                       <ArrowUpRight className="h-3 w-3" />
                       Action log
@@ -2760,13 +2717,13 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                 aria-modal="true"
                 aria-label="Approve Planner Agent action"
               >
-                <div className="w-full max-w-[480px] rounded-[0.75rem] border border-amber-300/26 bg-[linear-gradient(180deg,rgba(10,17,25,0.99),rgba(8,14,21,0.99))] px-5 py-4 shadow-[0_28px_60px_rgba(0,0,0,0.45)]">
-                  <p className="text-label font-semibold text-amber-100/78">Approval required</p>
-                  <h3 className="mt-2 text-base font-semibold text-white">{pendingApproval.label}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-200/88">
+                <div className="w-full max-w-[480px] rounded-[0.75rem] border border-[color:color-mix(in_srgb,var(--status-warn)_35%,transparent)] bg-background px-5 py-4">
+                  <p className="text-label font-semibold text-[color:var(--status-warn)]">Approval required</p>
+                  <h3 className="mt-2 text-base font-semibold text-foreground">{pendingApproval.label}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-foreground">
                     {getActionMetadata(pendingApproval.action.kind).description}
                   </p>
-                  <p className="mt-2 text-xs leading-relaxed text-slate-300/78">
+                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
                     Approving records audit evidence ({getActionMetadata(pendingApproval.action.kind).auditEvent}) and then makes a real change in OpenPlan. Press Esc or choose Cancel to stop.
                   </p>
                   <ApprovalPayloadDisclosure action={pendingApproval.action} />
@@ -2775,7 +2732,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="border-white/12 bg-white/[0.04] text-slate-200 hover:bg-white/[0.08] hover:text-white"
+                      className="border-border bg-foreground/[0.04] text-foreground hover:bg-foreground/[0.04] hover:text-foreground"
                       onClick={cancelPendingApproval}
                     >
                       Cancel
@@ -2783,7 +2740,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                     <Button
                       type="button"
                       size="sm"
-                      className="bg-amber-400/90 text-slate-950 hover:bg-amber-300"
+                      className="bg-[color:var(--status-warn)] text-background hover:opacity-90"
                       onClick={approvePendingApproval}
                     >
                       Approve action

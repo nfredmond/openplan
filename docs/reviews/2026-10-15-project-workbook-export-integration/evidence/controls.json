@@ -1,0 +1,891 @@
+[
+  {
+    "trial": "pagination-complete-positive",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "exports all 2000 projects through the configured row cap with original workbook values",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-complete-harmless",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "exports all 2000 projects through the configured row cap with original workbook values",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-complete-fault",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "exports all 2000 projects through the configured row cap with original workbook values",
+    "exitCode": 1,
+    "marker": "complete workbook must preserve all original rows and literal metadata",
+    "classification": "KILLED"
+  },
+  {
+    "trial": "pagination-complete-restored",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "exports all 2000 projects through the configured row cap with original workbook values",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-projection-positive",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "scopes and projects every ordered page for a read-only workspace member",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-projection-harmless",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "scopes and projects every ordered page for a read-only workspace member",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-projection-fault",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "scopes and projects every ordered page for a read-only workspace member",
+    "exitCode": 1,
+    "marker": "every page must retain scope projection stable order and bounded ranges",
+    "classification": "KILLED"
+  },
+  {
+    "trial": "pagination-projection-restored",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "scopes and projects every ordered page for a read-only workspace member",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-scope-positive",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "scopes and projects every ordered page for a read-only workspace member",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-scope-harmless",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "scopes and projects every ordered page for a read-only workspace member",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-scope-fault",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "scopes and projects every ordered page for a read-only workspace member",
+    "exitCode": 1,
+    "marker": "every page must retain scope projection stable order and bounded ranges",
+    "classification": "KILLED"
+  },
+  {
+    "trial": "pagination-scope-restored",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "scopes and projects every ordered page for a read-only workspace member",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-tie-order-positive",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "scopes and projects every ordered page for a read-only workspace member",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-tie-order-harmless",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "scopes and projects every ordered page for a read-only workspace member",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-tie-order-fault",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "scopes and projects every ordered page for a read-only workspace member",
+    "exitCode": 1,
+    "marker": "every page must retain scope projection stable order and bounded ranges",
+    "classification": "KILLED"
+  },
+  {
+    "trial": "pagination-tie-order-restored",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "scopes and projects every ordered page for a read-only workspace member",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-date-order-positive",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "scopes and projects every ordered page for a read-only workspace member",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-date-order-harmless",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "scopes and projects every ordered page for a read-only workspace member",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-date-order-fault",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "scopes and projects every ordered page for a read-only workspace member",
+    "exitCode": 1,
+    "marker": "every page must retain scope projection stable order and bounded ranges",
+    "classification": "KILLED"
+  },
+  {
+    "trial": "pagination-date-order-restored",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "scopes and projects every ordered page for a read-only workspace member",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-bounded-range-positive",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "scopes and projects every ordered page for a read-only workspace member",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-bounded-range-harmless",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "scopes and projects every ordered page for a read-only workspace member",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-bounded-range-fault",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "scopes and projects every ordered page for a read-only workspace member",
+    "exitCode": 1,
+    "marker": "every page must retain scope projection stable order and bounded ranges",
+    "classification": "KILLED"
+  },
+  {
+    "trial": "pagination-bounded-range-restored",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "scopes and projects every ordered page for a read-only workspace member",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-short-page-positive",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "continues after a short capped page until the scoped portfolio is exhausted",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-short-page-harmless",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "continues after a short capped page until the scoped portfolio is exhausted",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-short-page-fault",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "continues after a short capped page until the scoped portfolio is exhausted",
+    "exitCode": 1,
+    "marker": "short server pages must not truncate the workbook",
+    "classification": "KILLED"
+  },
+  {
+    "trial": "pagination-short-page-restored",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "continues after a short capped page until the scoped portfolio is exhausted",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-over-limit-positive",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "refuses 2001 projects explicitly instead of generating a partial workbook",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-over-limit-harmless",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "refuses 2001 projects explicitly instead of generating a partial workbook",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-over-limit-fault",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "refuses 2001 projects explicitly instead of generating a partial workbook",
+    "exitCode": 1,
+    "marker": "over-limit portfolio must refuse before creating a workbook",
+    "classification": "KILLED"
+  },
+  {
+    "trial": "pagination-over-limit-restored",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "refuses 2001 projects explicitly instead of generating a partial workbook",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-late-error-positive",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "refuses a later page error instead of exporting the earlier rows",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-late-error-harmless",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "refuses a later page error instead of exporting the earlier rows",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-late-error-fault",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "refuses a later page error instead of exporting the earlier rows",
+    "exitCode": 1,
+    "marker": "later page read failure must not export a partial workbook",
+    "classification": "KILLED"
+  },
+  {
+    "trial": "pagination-late-error-restored",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "refuses a later page error instead of exporting the earlier rows",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-unavailable-positive",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "keeps an unavailable page distinct from an empty portfolio",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-unavailable-harmless",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "keeps an unavailable page distinct from an empty portfolio",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-unavailable-fault",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "keeps an unavailable page distinct from an empty portfolio",
+    "exitCode": 1,
+    "marker": "unavailable data must not become a successful empty page",
+    "classification": "KILLED"
+  },
+  {
+    "trial": "pagination-unavailable-restored",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "keeps an unavailable page distinct from an empty portfolio",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-empty-positive",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "exports a genuinely empty portfolio with the original workbook headers",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-empty-harmless",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "exports a genuinely empty portfolio with the original workbook headers",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-empty-fault",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "exports a genuinely empty portfolio with the original workbook headers",
+    "exitCode": 1,
+    "marker": "empty successful read must still export the workbook",
+    "classification": "KILLED"
+  },
+  {
+    "trial": "pagination-empty-restored",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "exports a genuinely empty portfolio with the original workbook headers",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-anonymous-positive",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "stops anonymous callers before membership or project reads",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-anonymous-harmless",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "stops anonymous callers before membership or project reads",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-anonymous-fault",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "stops anonymous callers before membership or project reads",
+    "exitCode": 1,
+    "marker": "anonymous caller must stop before portfolio access",
+    "classification": "KILLED"
+  },
+  {
+    "trial": "pagination-anonymous-restored",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "stops anonymous callers before membership or project reads",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-membership-positive",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "stops callers without active membership before project reads",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-membership-harmless",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "stops callers without active membership before project reads",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "pagination-membership-fault",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "stops callers without active membership before project reads",
+    "exitCode": 1,
+    "marker": "missing membership must stop before portfolio access",
+    "classification": "KILLED"
+  },
+  {
+    "trial": "pagination-membership-restored",
+    "testFile": "src/test/project-workbook-export-pagination.test.ts",
+    "test": "stops callers without active membership before project reads",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-viewer-positive",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-viewer-harmless",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-viewer-fault",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 1,
+    "marker": "viewer export must remain successful",
+    "classification": "KILLED"
+  },
+  {
+    "trial": "legacy-viewer-restored",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-workspace-positive",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook stops before a project read when the user has no active workspace",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-workspace-harmless",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook stops before a project read when the user has no active workspace",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-workspace-fault",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook stops before a project read when the user has no active workspace",
+    "exitCode": 1,
+    "marker": "missing workspace must stop before reads",
+    "classification": "KILLED"
+  },
+  {
+    "trial": "legacy-workspace-restored",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook stops before a project read when the user has no active workspace",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-over-limit-positive",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook refuses an over-limit portfolio instead of silently truncating it",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-over-limit-harmless",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook refuses an over-limit portfolio instead of silently truncating it",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-over-limit-fault",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook refuses an over-limit portfolio instead of silently truncating it",
+    "exitCode": 1,
+    "marker": "legacy over-limit export must refuse without a workbook",
+    "classification": "KILLED"
+  },
+  {
+    "trial": "legacy-over-limit-restored",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook refuses an over-limit portfolio instead of silently truncating it",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-unknown-year-positive",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports and reimports a recorded cost with an unknown price year",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-unknown-year-harmless",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports and reimports a recorded cost with an unknown price year",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-unknown-year-fault",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports and reimports a recorded cost with an unknown price year",
+    "exitCode": 1,
+    "marker": "legacy round trip must preserve an unknown price year",
+    "classification": "KILLED"
+  },
+  {
+    "trial": "legacy-unknown-year-restored",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports and reimports a recorded cost with an unknown price year",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-denied-read-positive",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook fails closed when the workspace-scoped read fails",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-denied-read-harmless",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook fails closed when the workspace-scoped read fails",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-denied-read-fault",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook fails closed when the workspace-scoped read fails",
+    "exitCode": 1,
+    "marker": "denied project read must fail without a workbook",
+    "classification": "KILLED"
+  },
+  {
+    "trial": "legacy-denied-read-restored",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook fails closed when the workspace-scoped read fails",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-projection-positive",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-projection-harmless",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-projection-fault",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 1,
+    "marker": "every legacy read must preserve projection scope order and inclusive range",
+    "classification": "KILLED"
+  },
+  {
+    "trial": "legacy-projection-restored",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-workspace-filter-positive",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-workspace-filter-harmless",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-workspace-filter-fault",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 1,
+    "marker": "every legacy read must preserve projection scope order and inclusive range",
+    "classification": "KILLED"
+  },
+  {
+    "trial": "legacy-workspace-filter-restored",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-date-order-positive",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-date-order-harmless",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-date-order-fault",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 1,
+    "marker": "every legacy read must preserve projection scope order and inclusive range",
+    "classification": "KILLED"
+  },
+  {
+    "trial": "legacy-date-order-restored",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-tie-order-positive",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-tie-order-harmless",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-tie-order-fault",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 1,
+    "marker": "every legacy read must preserve projection scope order and inclusive range",
+    "classification": "KILLED"
+  },
+  {
+    "trial": "legacy-tie-order-restored",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-range-positive",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-range-harmless",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-range-fault",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 1,
+    "marker": "every legacy read must preserve projection scope order and inclusive range",
+    "classification": "KILLED"
+  },
+  {
+    "trial": "legacy-range-restored",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-metadata-positive",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-metadata-harmless",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-metadata-fault",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 1,
+    "marker": "legacy workbook must retain ordered scoped original metadata",
+    "classification": "KILLED"
+  },
+  {
+    "trial": "legacy-metadata-restored",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-fake-filter-positive",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-fake-filter-harmless",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-fake-filter-fault",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 1,
+    "marker": "every legacy read must preserve projection scope order and inclusive range",
+    "classification": "KILLED"
+  },
+  {
+    "trial": "legacy-fake-filter-restored",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-fake-order-positive",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-fake-order-harmless",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-fake-order-fault",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 1,
+    "marker": "legacy workbook must retain ordered scoped original metadata",
+    "classification": "KILLED"
+  },
+  {
+    "trial": "legacy-fake-order-restored",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-fake-projection-positive",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-fake-projection-harmless",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-fake-projection-fault",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 1,
+    "marker": "legacy workbook must retain ordered scoped original metadata",
+    "classification": "KILLED"
+  },
+  {
+    "trial": "legacy-fake-projection-restored",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-fake-inclusive-range-positive",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-fake-inclusive-range-harmless",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-fake-inclusive-range-fault",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+    "exitCode": 0,
+    "marker": "every legacy read must preserve projection scope order and inclusive range",
+    "classification": "REFUSED",
+    "reason": "not one assertion failure"
+  }
+]

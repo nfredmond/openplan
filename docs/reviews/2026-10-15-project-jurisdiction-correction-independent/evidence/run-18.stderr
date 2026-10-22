@@ -1,0 +1,19 @@
+{
+  "mode": "auth",
+  "result": "AssertionError",
+  "diagnostic": "Expected values to be strictly equal:\n\n200 !== 401\n",
+  "checked": [
+    "minimized external actor with internal custody",
+    "strict storage parse before external conversion",
+    "external canonical material hashed after minimization",
+    "null unresolved invalid missing remain distinct",
+    "sovereign overlap and global support not inherited",
+    "canonical hash and material stable across clocks",
+    "complete generated adapter minimizes identifiers",
+    "bundle and separate JSON parity",
+    "standalone GeoPackage canonical parity and source geometry",
+    "bundle GeoPackage canonical parity and source geometry",
+    "report external hash attribution and escaped source labels",
+    "original input object unchanged"
+  ]
+}

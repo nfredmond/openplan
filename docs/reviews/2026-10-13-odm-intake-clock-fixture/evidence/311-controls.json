@@ -1,0 +1,32 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-owner-startup-delay",
+    "outcome": "survived"
+  },
+  {
+    "control": "nested-deadline-unclamped",
+    "outcome": "intended_failure",
+    "reason": "Nested fetch cannot extend the original intake deadline"
+  },
+  {
+    "control": "actual-deadline-not-observed",
+    "outcome": "intended_failure",
+    "reason": "Intake must expose its actual shared deadline"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  },
+  {
+    "control": "complete-intake-suite",
+    "outcome": "survived"
+  }
+]

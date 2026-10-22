@@ -1,0 +1,232 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "cases": 27
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived",
+    "cases": 27
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived",
+    "cases": 27
+  },
+  {
+    "control": "final-current-access-omitted",
+    "outcome": "intended_failure",
+    "case": "test_exact_download_custody_checks_current_access_and_grants_nothing",
+    "diagnostic": "Intake must check current access around download and private publication",
+    "kind": "failures"
+  },
+  {
+    "control": "complete-replay-downloads-again",
+    "outcome": "intended_failure",
+    "case": "test_complete_replay_needs_no_incoming_object_or_engine_contact",
+    "diagnostic": "Original archive credential resolution failed",
+    "kind": "errors"
+  },
+  {
+    "control": "missing-bytes-reported-success",
+    "outcome": "intended_failure",
+    "case": "test_complete_receipt_with_no_remaining_bytes_refuses_without_refetch",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "changed-byte-hash-unchecked",
+    "outcome": "intended_failure",
+    "case": "test_changed_incoming_bytes_refuse_even_when_archive_survives",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "prepared-archive-receipt-omitted",
+    "outcome": "intended_failure",
+    "case": "test_missing_complete_receipt_cannot_refetch_a_prepared_archive",
+    "diagnostic": "does not match",
+    "kind": "failures"
+  },
+  {
+    "control": "frozen-plan-omitted",
+    "outcome": "intended_failure",
+    "case": "test_missing_frozen_plan_refuses_existing_records",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "current-access-silently-granted",
+    "outcome": "intended_failure",
+    "case": "test_current_revocation_refuses_before_archive_get",
+    "diagnostic": "PermissionError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "post-get-revocation-receipt-published",
+    "outcome": "intended_failure",
+    "case": "test_revocation_after_get_leaves_no_complete_receipt",
+    "diagnostic": "Revoked download cannot publish a complete byte receipt",
+    "kind": "failures"
+  },
+  {
+    "control": "owner-silently-restored-after-hash",
+    "outcome": "intended_failure",
+    "case": "test_owner_loss_after_hashing_refuses_receipt_publication",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "cancellation-type-unchecked",
+    "outcome": "intended_failure",
+    "case": "test_pre_cancellation_and_nonboolean_decision_refuse",
+    "diagnostic": "InterruptedError: Original output intake cancelled",
+    "kind": "errors"
+  },
+  {
+    "control": "pre-cancellation-omitted",
+    "outcome": "intended_failure",
+    "case": "test_pre_cancellation_and_nonboolean_decision_refuse",
+    "diagnostic": "does not match",
+    "kind": "failures"
+  },
+  {
+    "control": "uncompleted-task-accepted",
+    "outcome": "intended_failure",
+    "case": "test_uncompleted_observation_cannot_download",
+    "diagnostic": "does not match",
+    "kind": "failures"
+  },
+  {
+    "control": "changed-frozen-plan-overwritten",
+    "outcome": "intended_failure",
+    "case": "test_changed_observation_or_limits_cannot_replace_frozen_plan",
+    "diagnostic": "does not match",
+    "kind": "failures"
+  },
+  {
+    "control": "third-unconfirmed-attempt-allowed",
+    "outcome": "intended_failure",
+    "case": "test_two_unconfirmed_attempts_hold_before_third_get",
+    "diagnostic": "does not match",
+    "kind": "failures"
+  },
+  {
+    "control": "unknown-attempt-object-accepted",
+    "outcome": "intended_failure",
+    "case": "test_unknown_attempt_object_refuses_before_network",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "constructor-adapters-unchecked",
+    "outcome": "intended_failure",
+    "case": "test_constructor_refuses_adapter_budget_and_timeout_types",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "constructor-timeout-unchecked",
+    "outcome": "intended_failure",
+    "case": "test_constructor_refuses_adapter_budget_and_timeout_types",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "transport-byte-range-unchecked",
+    "outcome": "intended_failure",
+    "case": "test_constructor_refuses_adapter_budget_and_timeout_types",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "insufficient-disk-space-accepted",
+    "outcome": "intended_failure",
+    "case": "test_disk_space_refuses_before_archive_get",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "exposed-limits-alias",
+    "outcome": "intended_failure",
+    "case": "test_exposed_limits_cannot_change_the_frozen_operation_by_alias",
+    "diagnostic": "Original output limits must not retain a mutable exposed alias",
+    "kind": "failures"
+  },
+  {
+    "control": "whole-download-budget-capped-to-rpc",
+    "outcome": "intended_failure",
+    "case": "test_download_budget_is_not_shortened_to_one_rpc_read_timeout",
+    "diagnostic": "deadline",
+    "kind": "errors"
+  },
+  {
+    "control": "lost-byte-receipt-reply-refetched",
+    "outcome": "intended_failure",
+    "case": "test_lost_complete_receipt_reply_recovers_without_another_get",
+    "diagnostic": "Existing source custody record differs",
+    "kind": "errors"
+  },
+  {
+    "control": "archive-link-recovery-skipped",
+    "outcome": "intended_failure",
+    "case": "test_link_interruption_recovers_without_incoming_bytes",
+    "diagnostic": "Interrupted archive publication alias must be removed",
+    "kind": "failures"
+  },
+  {
+    "control": "copied-runtime-needs-old-incoming-object",
+    "outcome": "intended_failure",
+    "case": "test_copied_runtime_keeps_original_output_under_current_access",
+    "diagnostic": "FileNotFoundError",
+    "kind": "errors"
+  },
+  {
+    "control": "complete-receipt-shape-unchecked",
+    "outcome": "intended_failure",
+    "case": "test_complete_receipt_shape_is_not_inferred_from_surviving_bytes",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "attempt-storage-limits-unchecked",
+    "outcome": "intended_failure",
+    "case": "test_saved_attempt_storage_cannot_exceed_bytes_or_object_limits",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "download-count-unchecked",
+    "outcome": "intended_failure",
+    "case": "test_wrong_download_count_cannot_publish_a_complete_receipt",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "stored-byte-count-unchecked",
+    "outcome": "intended_failure",
+    "case": "test_changed_stored_size_before_hashing_cannot_publish_receipt",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "exhausted-storage-attempt-created",
+    "outcome": "intended_failure",
+    "case": "test_exhausted_byte_budget_does_not_create_another_attempt",
+    "diagnostic": "Exhausted output storage must not create another attempt",
+    "kind": "failures"
+  },
+  {
+    "control": "retained-summary-does-not-match-download",
+    "outcome": "intended_failure",
+    "case": "test_retained_archive_summary_must_match_original_download_receipt",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived",
+    "cases": 27
+  }
+]

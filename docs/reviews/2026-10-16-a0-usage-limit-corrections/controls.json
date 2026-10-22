@@ -1,0 +1,156 @@
+{
+  "trials": [
+    {
+      "label": "survivor-node",
+      "source": "workers/planner_agent_connector/codex-usage-limit.mjs",
+      "expected": "survived",
+      "exitCode": 0,
+      "intendedAssertions": [],
+      "leakedOwnedDirectories": [],
+      "observedAsExpected": true,
+      "restoredSHA256": "94e4336553940d2fc33778082d2bf6036b94c6acf5ecf155a1bd3769192ee57f"
+    },
+    {
+      "label": "survivor-sql",
+      "source": "openplan/supabase/migrations/20261017000018_assistant_usage_limit_receipts.sql",
+      "expected": "survived",
+      "exitCode": 0,
+      "intendedAssertions": [],
+      "leakedOwnedDirectories": [],
+      "observedAsExpected": true,
+      "restoredSHA256": "655e625878b3e62f332a7f17d6e126879813cc2bf881ca745593978d8eed6559"
+    },
+    {
+      "label": "survivor-app",
+      "source": "workers/planner_agent_connector/codex-usage-limit.mjs",
+      "expected": "survived",
+      "exitCode": 0,
+      "intendedAssertions": [],
+      "leakedOwnedDirectories": [],
+      "observedAsExpected": true,
+      "restoredSHA256": "94e4336553940d2fc33778082d2bf6036b94c6acf5ecf155a1bd3769192ee57f"
+    },
+    {
+      "label": "standard-env-load",
+      "source": "workers/planner_agent_connector/test/usage-limit.test.mjs",
+      "expected": "failed",
+      "exitCode": 1,
+      "intendedAssertions": [
+        "P2-1 custom environment requirement"
+      ],
+      "leakedOwnedDirectories": [],
+      "observedAsExpected": true,
+      "restoredSHA256": "5d854eda799fdf5ce236afaa5b6ae679cd4ac376bed6f147dd68642b9142531c"
+    },
+    {
+      "label": "owned-temp-cleanup",
+      "source": "workers/planner_agent_connector/test/usage-limit.test.mjs",
+      "expected": "cleanup-failed",
+      "exitCode": 0,
+      "intendedAssertions": [],
+      "leakedOwnedDirectories": [
+        "/home/nathaniel/.local/state/openplan/a0-usage-limit-corrections-20261016/openplan-usage-limit-EYCZbX"
+      ],
+      "observedAsExpected": true,
+      "restoredSHA256": "5d854eda799fdf5ce236afaa5b6ae679cd4ac376bed6f147dd68642b9142531c"
+    },
+    {
+      "label": "unbound-default-node",
+      "source": "workers/planner_agent_connector/codex-usage-limit.mjs",
+      "expected": "failed",
+      "exitCode": 1,
+      "intendedAssertions": [
+        "Generic error borrowed an unbound default reset",
+        "Unbound bucket reset reached the failure"
+      ],
+      "leakedOwnedDirectories": [],
+      "observedAsExpected": true,
+      "restoredSHA256": "94e4336553940d2fc33778082d2bf6036b94c6acf5ecf155a1bd3769192ee57f"
+    },
+    {
+      "label": "unbound-default-multibucket-adapter",
+      "source": "workers/planner_agent_connector/codex-usage-limit.mjs",
+      "expected": "failed",
+      "exitCode": 1,
+      "intendedAssertions": [
+        "initial-multi-known",
+        "initial-multi-unknown",
+        "later-other-known",
+        "later-other-unknown",
+        "default"
+      ],
+      "leakedOwnedDirectories": [],
+      "observedAsExpected": true,
+      "restoredSHA256": "94e4336553940d2fc33778082d2bf6036b94c6acf5ecf155a1bd3769192ee57f"
+    },
+    {
+      "label": "qualified-observation-sparse",
+      "source": "workers/planner_agent_connector/codex-usage-limit.mjs",
+      "expected": "failed",
+      "exitCode": 1,
+      "intendedAssertions": [
+        "Sparse update cleared a qualified observation"
+      ],
+      "leakedOwnedDirectories": [],
+      "observedAsExpected": true,
+      "restoredSHA256": "94e4336553940d2fc33778082d2bf6036b94c6acf5ecf155a1bd3769192ee57f"
+    },
+    {
+      "label": "qualified-observation-bounds",
+      "source": "workers/planner_agent_connector/codex-usage-limit.mjs",
+      "expected": "failed",
+      "exitCode": 1,
+      "intendedAssertions": [
+        "Invalid observation reset -1"
+      ],
+      "leakedOwnedDirectories": [],
+      "observedAsExpected": true,
+      "restoredSHA256": "94e4336553940d2fc33778082d2bf6036b94c6acf5ecf155a1bd3769192ee57f"
+    },
+    {
+      "label": "qualified-observation-copy",
+      "source": "workers/planner_agent_connector/codex-usage-limit.mjs",
+      "expected": "failed",
+      "exitCode": 1,
+      "intendedAssertions": [
+        "Observed copy changed session state"
+      ],
+      "leakedOwnedDirectories": [],
+      "observedAsExpected": true,
+      "restoredSHA256": "94e4336553940d2fc33778082d2bf6036b94c6acf5ecf155a1bd3769192ee57f"
+    },
+    {
+      "label": "finish-explicit-temp",
+      "source": "openplan/supabase/migrations/20261017000018_assistant_usage_limit_receipts.sql",
+      "expected": "failed",
+      "exitCode": 1,
+      "intendedAssertions": [
+        "Finish must preserve explicit pg_temp last"
+      ],
+      "leakedOwnedDirectories": [],
+      "observedAsExpected": true,
+      "restoredSHA256": "655e625878b3e62f332a7f17d6e126879813cc2bf881ca745593978d8eed6559"
+    },
+    {
+      "label": "validator-explicit-temp",
+      "source": "openplan/supabase/migrations/20261017000018_assistant_usage_limit_receipts.sql",
+      "expected": "failed",
+      "exitCode": 1,
+      "intendedAssertions": [
+        "Validator must keep explicit pg_temp last"
+      ],
+      "leakedOwnedDirectories": [],
+      "observedAsExpected": true,
+      "restoredSHA256": "655e625878b3e62f332a7f17d6e126879813cc2bf881ca745593978d8eed6559"
+    }
+  ],
+  "cleanupOracle": {
+    "nodeExitCode": 0,
+    "cleanupAssertionFailedAsIntended": true,
+    "assertion": "Owned temporary parent cleanup assertion failed",
+    "leakedOwnedDirectoryCount": 1,
+    "ownedLeaksCleaned": true,
+    "restoredExitCode": 0,
+    "restoredSHA256": "5d854eda799fdf5ce236afaa5b6ae679cd4ac376bed6f147dd68642b9142531c"
+  }
+}

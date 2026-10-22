@@ -100,7 +100,7 @@ export function GrantsModelingTriageSection({
             </div>
           ) : (
             <p className="mt-3 text-sm text-muted-foreground">
-              No linked project is currently calling for a packet refresh from the grant lane.
+              No linked project needs a packet refresh for a grant right now.
             </p>
           )}
         </div>
@@ -160,7 +160,7 @@ export function GrantsModelingTriageSection({
             </div>
           ) : (
             <p className="mt-3 text-sm text-muted-foreground">
-              Every linked project in the visible grant lane has at least one comparison-backed packet.
+              Every linked project shown here has at least one comparison-backed packet.
             </p>
           )}
         </div>

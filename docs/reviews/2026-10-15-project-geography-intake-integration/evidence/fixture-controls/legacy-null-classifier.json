@@ -1,0 +1,18 @@
+[
+  {
+    "fixture": "startup",
+    "accepted": false
+  },
+  {
+    "fixture": "wrong-name",
+    "accepted": false
+  },
+  {
+    "fixture": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "fixture": "extra-failure",
+    "accepted": false
+  }
+]

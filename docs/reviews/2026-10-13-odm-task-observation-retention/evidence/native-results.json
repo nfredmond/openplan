@@ -1,0 +1,17 @@
+{
+  "actualReplyRetained": true,
+  "applicationAuthorityAccepted": false,
+  "bodySha256": "5562f1c7ff94f9f2f5ecc04fbb9d1676cde578438e9d428f073fc87af906de4f",
+  "defaultActivated": false,
+  "engineAdoptionAccepted": false,
+  "engineStoppedBeforeCapture": true,
+  "longComputationAccepted": false,
+  "originalPlanSha256": "e853ed87d7116f3060d2eeca8eb15953f138e041eb5f5119419df25271de6314",
+  "originalRootUnchanged": true,
+  "packageUnchanged": true,
+  "processingQualityAccepted": false,
+  "reportedImageCount": 3,
+  "reportedState": "failed",
+  "selectedRootPackageVerified": true,
+  "workerRecoveryAccepted": false
+}

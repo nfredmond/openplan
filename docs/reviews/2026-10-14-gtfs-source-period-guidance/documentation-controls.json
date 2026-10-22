@@ -1,0 +1,22 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived",
+    "passed": 20
+  },
+  {
+    "case": "harmless",
+    "outcome": "survived",
+    "passed": 6
+  },
+  {
+    "case": "broken",
+    "outcome": "intended_failure",
+    "passed": 5
+  },
+  {
+    "case": "restored",
+    "outcome": "survived",
+    "passed": 6
+  }
+]

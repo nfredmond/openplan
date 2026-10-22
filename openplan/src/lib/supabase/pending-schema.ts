@@ -64,3 +64,25 @@ export function looksLikePendingSchema(message: string | null | undefined): bool
     message ?? ""
   );
 }
+
+/**
+ * Read a missing column for a single known relation, or refuse an unknown form.
+ * This is narrower than the boolean classifier, whose behavior stays unchanged.
+ * PostgreSQL may omit the relation; callers must know the read targets only the
+ * supplied relation. Named relations must match exactly. PostgreSQL supports
+ * unqualified or public-qualified, unquoted relation names and simple column
+ * names, optionally quoted. PostgREST must name the table in its schema-cache
+ * message. Aliases, other schemas, quoted relations and complex identifiers are
+ * unsupported. Preserve identifier spelling so quoted names cannot be folded
+ * into another column. Callers must still allowlist columns they may omit.
+ */
+export function readPendingSchemaMissingColumn(
+  message: string | null | undefined,
+  relation: string
+): string | null {
+  if (!message || !looksLikePendingSchema(message) || !/^[a-z_][a-z0-9_]*$/.test(relation)) return null;
+  const postgres = /^column (?:(?:public\.)?([a-z_][a-z0-9_]*)\.)?(["']?)([a-z_][a-z0-9_]*)\2 does not exist$/i.exec(message);
+  if (postgres) return !postgres[1] || postgres[1] === relation ? postgres[3] : null;
+  const cache = /^could not find the (["'])([a-z_][a-z0-9_]*)\1 column of (["'])([a-z_][a-z0-9_]*)\3 in the schema cache$/i.exec(message);
+  return cache && cache[4] === relation ? cache[2] : null;
+}

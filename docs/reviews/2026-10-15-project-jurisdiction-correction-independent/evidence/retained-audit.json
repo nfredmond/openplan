@@ -1,0 +1,112 @@
+{
+  "provenance": {
+    "bindings": 15,
+    "mismatches": []
+  },
+  "controls-04/source-bindings": {
+    "bindings": 9,
+    "mismatches": []
+  },
+  "controls-05/source-bindings": {
+    "bindings": 5,
+    "mismatches": []
+  },
+  "final-01/source-bindings": {
+    "bindings": 15,
+    "mismatches": []
+  },
+  "controls-04": {
+    "count": 63,
+    "harmless": 21,
+    "intended": 41,
+    "unexpected": [
+      {
+        "label": "permission scope epoch tracking",
+        "source": "src/components/projects/project-jurisdiction-editor.tsx",
+        "suite": "project-jurisdiction-editor.test.tsx",
+        "test": "keeps draft when an in-flight save returns after permission changes",
+        "diagnostic": "Earlier-scope response disclosed",
+        "survives": false,
+        "exitCode": 0,
+        "expectedObserved": false,
+        "failures": []
+      }
+    ],
+    "classifier": {
+      "named_assertion_accepted": true,
+      "harmless_survivor_accepted": true,
+      "generic_failure_rejected": true,
+      "wrong_assertion_rejected": true,
+      "wrong_test_rejected": true,
+      "empty_selection_rejected": true,
+      "crash_exit_rejected": true,
+      "skipped_selection_rejected": true
+    },
+    "resources": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "memory.peak": "330285056",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+    }
+  },
+  "coverage_shape": [
+    "project-jurisdiction-editor.test.tsx :: retains original draft and blocks account props changes until explicit restart",
+    "project-jurisdiction-editor.test.tsx :: keeps draft when an in-flight save returns after account changes",
+    "project-jurisdiction-editor.test.tsx :: retains original draft and blocks workspace props changes until explicit restart",
+    "project-jurisdiction-editor.test.tsx :: keeps draft when an in-flight save returns after workspace changes",
+    "project-jurisdiction-editor.test.tsx :: retains original draft and blocks permission props changes until explicit restart",
+    "project-jurisdiction-editor.test.tsx :: keeps draft when an in-flight save returns after permission changes",
+    "project-jurisdiction-editor.test.tsx :: retains original draft and blocks project props changes until explicit restart",
+    "project-jurisdiction-editor.test.tsx :: keeps draft when an in-flight save returns after project changes",
+    "project-jurisdiction-editor.test.tsx :: retains original draft and blocks revision props changes until explicit restart",
+    "project-jurisdiction-editor.test.tsx :: keeps draft when an in-flight save returns after revision changes",
+    "project-jurisdiction-editor.test.tsx :: blocks an in-flight confirmation even when account changes away and back",
+    "project-jurisdiction-editor.test.tsx :: does not publish a prior-scope error after deferred response parsing",
+    "project-jurisdiction-export-corrections.test.ts :: hashes a versioned external representation after strict internal validation",
+    "project-jurisdiction-export-corrections.test.ts :: carries minimized same-revision canonical material through real generated files and SQLite at different clocks",
+    "project-jurisdiction-artifacts.test.ts :: exports a separate jurisdiction manifest without changing project_area attributes or WKB",
+    "project-jurisdiction-artifacts.test.ts :: renders each declaration and its payload hash with escaped labels and no authority inference",
+    "project-jurisdiction.test.ts :: freezes identical same-revision context and payload hashes without changing old bytes",
+    "jurisdiction-readiness-routes.test.ts :: uses the project place and keeps Puerto Rico's unavailable claims visible",
+    "jurisdiction-readiness-routes.test.ts :: distinguishes authenticated internal custody from minimized download bytes",
+    "report-generate-route.test.ts :: persists an html artifact and updates report status",
+    "report-generate-route.test.ts :: freezes non-null export-safe report readiness with canonical hash parity",
+    "project-jurisdiction-editor.test.tsx :: blocks confirmation after permission is revoked and restored during a save"
+  ],
+  "final": {
+    "numTotalTests": 138,
+    "numPassedTests": 138,
+    "numFailedTests": 0,
+    "numPendingTests": 0,
+    "numTotalTestSuites": 22,
+    "numPassedTestSuites": 22,
+    "files": 11,
+    "assertion_statuses": {
+      "passed": 138
+    }
+  },
+  "original_review_verbatim": true,
+  "migration16_sha256": "1384e6a2767827c2b756d978bd6e76f6fea364e4e1263e953c0358364341267f",
+  "controls-05": {
+    "count": 10,
+    "harmless": 5,
+    "intended": 5,
+    "unexpected": [],
+    "classifier": {
+      "named_assertion_accepted": true,
+      "harmless_survivor_accepted": true,
+      "generic_failure_rejected": true,
+      "wrong_assertion_rejected": true,
+      "wrong_test_rejected": true,
+      "empty_selection_rejected": true,
+      "crash_exit_rejected": true,
+      "skipped_selection_rejected": true
+    },
+    "resources": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "memory.peak": "334221312",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "mode": "actor",
+  "result": "AssertionError",
+  "diagnostic": "external actor identifier must be omitted",
+  "checked": []
+}

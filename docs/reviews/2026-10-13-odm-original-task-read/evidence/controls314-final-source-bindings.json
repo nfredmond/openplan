@@ -1,0 +1,5 @@
+{
+  "workers/odm_worker/original_task_http.py": "eaebc14155549ca8abda346e83e9bfb008f7661b806d89a46a5dd4166c853979",
+  "workers/odm_worker/test_original_task_http.py": "75f8805feaed1deadd5b69a433b6ecccce461826a0e1216cb7acc0924a70e352",
+  "docs/reviews/2026-10-13-odm-original-task-read/verify_controls.py": "2908bbeee1068327a92005147208be7167d9fc79fddeed3076ebe6596f34f73f"
+}

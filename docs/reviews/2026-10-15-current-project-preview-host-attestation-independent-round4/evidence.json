@@ -1,0 +1,368 @@
+{
+  "audit": {
+    "candidate": "90cc1f800840f5921f7cf17d413af01187e39d4e",
+    "parent": "f25d91bece7259c5013136873c97a784ea562069",
+    "originalFunctionASTExactDelta": true,
+    "deltaControls": [
+      "harmless-comment-survives",
+      "removed-environment-guard-detected"
+    ],
+    "literalPins": 21,
+    "installedPinsMatch": true,
+    "installedTemplatesMatch": true,
+    "manifestSha256": "b5da239064c99976e8dd27c1f00f0fea66fac7c7fb085854d4160fbb4ec6a230",
+    "subjectHashes": {
+      "attest_start_v2.py": "c9439e729583c4312c2c8b2d5e96e6981fb81d485f8a7a639f9956f1c28e3002",
+      "run_attest_host.sh": "9a6ebbb0c8a6a095d16ba9277181966c16e4693937e99f23b14231ddc1414d5c",
+      "PARENT_RECIPE.md": "6590d7a72f9efd6bc11cc2cd3b2ff9fef6f345b29040fd628405e24bea5ee8c8"
+    },
+    "selectedSnapshotFiles": 69,
+    "limits": [
+      "AST comparison checks named function, not all module behavior. Header/import/main reviewed separately.",
+      "Selected fixed files exclude runtime caches, database/global/Storage state, dependency tree bytes and hostile concurrent same-user mutation."
+    ]
+  },
+  "function": {
+    "adapterSourceSha256": "95727978505a69fa6bf315f9d36ec1c83af33355ec7782c9c3b1fb2fab41816e",
+    "cases": [
+      {
+        "case": "harmless source comment first",
+        "outcome": "SURVIVED"
+      },
+      {
+        "case": "exact actual-helper PATH",
+        "outcome": "SURVIVED"
+      },
+      {
+        "case": "pre-npm base",
+        "outcome": "REFUSED",
+        "reason": "attest-process-environment"
+      },
+      {
+        "case": "wrong order",
+        "outcome": "REFUSED",
+        "reason": "attest-process-environment"
+      },
+      {
+        "case": "extra entry",
+        "outcome": "REFUSED",
+        "reason": "attest-process-environment"
+      },
+      {
+        "case": "missing node-gyp",
+        "outcome": "REFUSED",
+        "reason": "attest-process-environment"
+      },
+      {
+        "case": "other sealed environment value",
+        "outcome": "REFUSED",
+        "reason": "attest-process-environment"
+      },
+      {
+        "case": "short process identity",
+        "outcome": "REFUSED",
+        "reason": "attest-process-environment"
+      },
+      {
+        "case": "wrong process cwd",
+        "outcome": "REFUSED",
+        "reason": "attest-process-cwd"
+      },
+      {
+        "case": "exclusive new fixture receipt",
+        "outcome": "REFUSED",
+        "reason": "exclusive-receipt"
+      },
+      {
+        "case": "new file identity",
+        "outcome": "REFUSED",
+        "reason": "attestor-root"
+      },
+      {
+        "case": "missing PATH replacement",
+        "outcome": "REFUSED",
+        "reason": "attest-process-environment"
+      },
+      {
+        "case": "exact source restored",
+        "outcome": "SURVIVED"
+      }
+    ],
+    "actualHelperParity": true,
+    "derivedPathSha256": "ad753e22e76a38f64d18b5e4eceb9ce3d5ff73e58c7e0ef9b4b9e119566b794a",
+    "parityControls": [
+      "harmless-survives",
+      "wrong-spawn-path-detected"
+    ],
+    "mutations": [
+      "environment-guard-removal-exposes-acceptance",
+      "missing-PATH-replacement-refuses",
+      "accepted-broken-behavior:attest-binding-sha"
+    ],
+    "newImportModuleNpmBaseRefusals": true,
+    "exactSourceRestored": true,
+    "limits": [
+      "Actual attest() and binding consumers execute. Synthetic producers and operational proc/systemd/HTTP/recovery adapters do not establish real acquisition.",
+      "Source/global/Storage and service acquisition use fixtures. No actual attestation, npm dispatch, build or start."
+    ]
+  },
+  "composition": {
+    "adapterSourceSha256": "32c53b4db1d827c4b26e811a36955613826e774800cb6380342709821f7ed7f9",
+    "cases": [
+      {
+        "case": "harmless comment first",
+        "exit": 0,
+        "reachedPayload": true,
+        "reason": null,
+        "unit": "openplan-host-attest-review-r4-peer-01",
+        "payload": {
+          "sameUserNamespace": true,
+          "sameNetworkNamespace": true,
+          "peerCwd": true,
+          "peerEnvironmentHash": "9274cb6c41d8274c1fb8363e0e3bfc82724472573e1ae1cf808320a586fb11eb",
+          "resources": {
+            "memory.max": "536870912",
+            "memory.swap.max": "0",
+            "cpu.max": "50000 100000",
+            "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+            "memory.peak": "7249920",
+            "memory.swap.current": "0"
+          },
+          "cleanEnvironment": true,
+          "pythonB": true
+        }
+      },
+      {
+        "case": "changed npm seal",
+        "exit": 2,
+        "reachedPayload": false,
+        "reason": "external-seal",
+        "unit": "openplan-host-attest-review-r4-peer-02",
+        "payload": null
+      },
+      {
+        "case": "attempt already reserved",
+        "exit": 2,
+        "reachedPayload": false,
+        "reason": "attempt-exists",
+        "unit": "openplan-host-attest-review-r4-peer-03",
+        "payload": null
+      },
+      {
+        "case": "alternate entry",
+        "exit": 2,
+        "reachedPayload": false,
+        "reason": "runner-identity",
+        "unit": "openplan-host-attest-review-r4-peer-04",
+        "payload": null
+      },
+      {
+        "case": "old receipt present",
+        "exit": 2,
+        "reachedPayload": false,
+        "reason": "receipt-exists",
+        "unit": "openplan-host-attest-review-r4-peer-05",
+        "payload": null
+      },
+      {
+        "case": "new receipt present",
+        "exit": 2,
+        "reachedPayload": false,
+        "reason": "new-receipt-exists",
+        "unit": "openplan-host-attest-review-r4-peer-06",
+        "payload": null
+      },
+      {
+        "case": "parent harmless first",
+        "exit": 0,
+        "reachedPayload": true,
+        "reason": null,
+        "unit": "openplan-host-attest-review-r4-peer-30",
+        "payload": {
+          "sameUserNamespace": true,
+          "sameNetworkNamespace": true,
+          "peerCwd": true,
+          "peerEnvironmentHash": "9274cb6c41d8274c1fb8363e0e3bfc82724472573e1ae1cf808320a586fb11eb",
+          "resources": {
+            "memory.max": "536870912",
+            "memory.swap.max": "0",
+            "cpu.max": "50000 100000",
+            "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+            "memory.peak": "7270400",
+            "memory.swap.current": "0"
+          },
+          "cleanEnvironment": true,
+          "pythonB": true
+        }
+      },
+      {
+        "case": "parent external hash refuses changed runner",
+        "exit": 2,
+        "reachedPayload": false,
+        "reason": "parent-hash",
+        "unit": "openplan-host-attest-review-r4-peer-31",
+        "payload": null
+      },
+      {
+        "case": "exact restored composition",
+        "exit": 0,
+        "reachedPayload": true,
+        "reason": null,
+        "unit": "openplan-host-attest-review-r4-peer-33",
+        "payload": {
+          "sameUserNamespace": true,
+          "sameNetworkNamespace": true,
+          "peerCwd": true,
+          "peerEnvironmentHash": "9274cb6c41d8274c1fb8363e0e3bfc82724472573e1ae1cf808320a586fb11eb",
+          "resources": {
+            "memory.max": "536870912",
+            "memory.swap.max": "0",
+            "cpu.max": "50000 100000",
+            "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+            "memory.peak": "6852608",
+            "memory.swap.current": "0"
+          },
+          "cleanEnvironment": true,
+          "pythonB": true
+        }
+      }
+    ],
+    "guardRemovalDetections": [
+      {
+        "case": "removed seal accepts altered npm",
+        "detectedBy": "dispatch-before-refusal"
+      },
+      {
+        "case": "removed attempt guard dispatches",
+        "detectedBy": "dispatch-before-refusal"
+      },
+      {
+        "case": "removed new receipt guard dispatches",
+        "detectedBy": "dispatch-before-refusal"
+      },
+      {
+        "case": "parent external hash removal dispatches",
+        "detectedBy": "dispatch-before-refusal"
+      }
+    ],
+    "restored": true,
+    "limits": [
+      "Actual POSIX shell/systemd, proc peer access, namespaces and child resource caps; fixture roots, pins, unit names and final payload.",
+      "No actual attestor, fixed host unit, receipt, listener, HTTP, SQL/database/helper operation or business service dispatch.",
+      "Host controller retains same-user authority, Docker/proc/network permissions. Caps do not confine."
+    ]
+  },
+  "final": {
+    "selectedFixedFiles": 69,
+    "selectedFixedFilesUnchanged": true,
+    "preservationControls": [
+      "harmless-survives",
+      "byte-fault-detected",
+      "mode-fault-detected",
+      "restored"
+    ],
+    "absenceControls": [
+      "absent-survives",
+      "dangling-link-detected",
+      "restored"
+    ],
+    "absentPaths": [
+      "/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/execution/runtime-start-attestation.json",
+      "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-v2-20261015/runtime-start-attestation.json",
+      "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-fix-20261015/runtime-start-attestation.json",
+      "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-v2-20261015/attempt-host-v2-01",
+      "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-fix-20261015/attempt-host-01"
+    ],
+    "originalWeb": {
+      "ActiveState": "active",
+      "InvocationID": "34615ba06b554482b0f79c90fe999a61",
+      "ControlGroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-current-project-preview-app-21510042e-v3-web.service"
+    },
+    "actualHostUnits": {
+      "openplan-current-project-preview-app-21510042e-v3-attest-host-01.service": "not-found",
+      "openplan-current-project-preview-app-21510042e-v3-attest-host-v2-01.service": "not-found"
+    },
+    "existingBindingBytecode": [
+      {
+        "file": "/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/__pycache__/app_binding_v1.cpython-314.pyc",
+        "matchesFreshCompilation": true,
+        "sha256": "b8b46c16bceeabd0f80cd4bcb7d0062e17e8ca53de7a9a8093490f20736c15a3"
+      }
+    ],
+    "knownValuePrivacyControls": 5,
+    "publicKnownValueScreenClear": true,
+    "limits": [
+      "Unknown secrets are outside the known-value screen.",
+      "Selected fixed files exclude running runtime caches and all logical DB/global/Storage preservation.",
+      "Bytecode observation does not seal future loader/cache behavior. Host tools/loader and same-user custody remain trust assumptions.",
+      "No actual listener/process-environment/HTTP/readiness/preservation attestation or product acceptance."
+    ]
+  },
+  "unit-records": [
+    {
+      "stage": "direction",
+      "unit": "openplan-host-review-r4-direction-01.service",
+      "invocation": "13763de23844411587cb46cb4c5eec9b",
+      "observedCommandExit": 0,
+      "logSha256": "3e383c8596f0e9710ffab775520aebb0722e254ddcd99b51f0d1078d1ccb7075",
+      "managerJournalSha256": "fd638322edcd939a993f7435f54074acd59346ac03518507733c4f181f9504ca",
+      "managerJournalBytes": 4113,
+      "missingEventAccounting": "unavailable, not inferred zero"
+    },
+    {
+      "stage": "audit",
+      "unit": "openplan-host-review-r4-audit-01.service",
+      "invocation": "1fc0fcb66196440abd579d4099369727",
+      "observedCommandExit": 0,
+      "logSha256": "c7633914198efb032f833724ac4fe0a78340153c5bc707432aecc2e040dd3769",
+      "managerJournalSha256": "fdd848884035ed527db8293893ef53e9898a3c2aeb4848bee3a95761ebac8737",
+      "managerJournalBytes": 2733,
+      "missingEventAccounting": "unavailable, not inferred zero"
+    },
+    {
+      "stage": "function",
+      "unit": "openplan-host-review-r4-function-01.service",
+      "invocation": "376dae6b60c74bbe93ce5a4b1c77e801",
+      "observedCommandExit": 0,
+      "logSha256": "ff978f4fe72de9a32c5ba78a31e00b112ae112960e6074622eb20a9573139b0d",
+      "managerJournalSha256": "07d6ee3a7014ba8151e66e9645a881a14ff8d20f47903997f88c8064ced2d2d3",
+      "managerJournalBytes": 4238,
+      "missingEventAccounting": "unavailable, not inferred zero"
+    },
+    {
+      "stage": "composition",
+      "unit": "openplan-host-review-r4-composition-01.service",
+      "invocation": "0e1dd1903f034b439e741b1c707ea7cc",
+      "observedCommandExit": 0,
+      "logSha256": "a18e26bd6db72a56073f087f1f786fe7772a120a37d5540fe1f2aa4cdd84532d",
+      "managerJournalSha256": "612ff2e40accefbb70a271e3112113ac3dbc67170a48f6bfdb0c802a83edc9ff",
+      "managerJournalBytes": 1939,
+      "missingEventAccounting": "unavailable, not inferred zero"
+    },
+    {
+      "stage": "final",
+      "unit": "openplan-host-review-r4-final-01.service",
+      "invocation": "d6780c29bd704760a4d08e024ba8784b",
+      "observedCommandExit": 0,
+      "logSha256": "fa0f314e1925fe2d5ffce2e9ebf66a2c2d024c4016feeb455c9eb4870a3ae523",
+      "managerJournalSha256": "f973706a444ebfc4db53789c9ef80454b47770600b1d30d0046aa7d3f6648298",
+      "managerJournalBytes": 2733,
+      "missingEventAccounting": "unavailable, not inferred zero"
+    }
+  ],
+  "scope": {
+    "noCurrentConcreteUnresolvedP1P2": true,
+    "actualAttestationExecuted": false,
+    "parentSoleActualOperationOwner": true,
+    "newReviewSetupFailures": [],
+    "priorFailuresRetained": true
+  },
+  "privateRoot": "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-independent-round4-20261015",
+  "reviewSourceHashes": {
+    "function.py": "358ee792f45a276023d1406cdd416a8305f60f2b569bd38e407faf8ad1e4ab79",
+    "final.py": "7e2efa8b52005a63e565edaf7eb52668d4c1d743e5dea3453c6cd7978bd35ef8",
+    "audit.py": "e85098ced64cff0237c147a160adcf5fb77f359473c4bc6e21dfaeb51ef9f576",
+    "run.sh": "417772f8edf1d180ea54231b39b75029229ae14be6b44a42ebeca25829fcec07",
+    "composition.py": "ad221525649c8b5afa596d7a06bf26bcfe487278e1ec22ee89ea431c560978b9"
+  }
+}

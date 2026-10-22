@@ -1,0 +1,38 @@
+[
+  {
+    "test": "test_admission_journal.py",
+    "exit": 0
+  },
+  {
+    "test": "test_callbacks.py",
+    "exit": 0
+  },
+  {
+    "test": "test_contract.py",
+    "exit": 0
+  },
+  {
+    "test": "test_deploy_surface.py",
+    "exit": 0
+  },
+  {
+    "test": "test_georef.py",
+    "exit": 0
+  },
+  {
+    "test": "test_intake.py",
+    "exit": 0
+  },
+  {
+    "test": "test_nodeodm_client.py",
+    "exit": 0
+  },
+  {
+    "test": "test_pipeline.py",
+    "exit": 0
+  },
+  {
+    "test": "test_worker_http.py",
+    "exit": 0
+  }
+]

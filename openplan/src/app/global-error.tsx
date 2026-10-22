@@ -1,10 +1,15 @@
 "use client";
 
 import { useEffect } from "react";
+import { reportClientError } from "@/lib/observability/report-client-error";
 
+/**
+ * The last boundary: the root layout itself failed. `reset()` alone re-renders
+ * from the failed response, so "Retry" reloads the document instead, the same
+ * finding the portal's error page records.
+ */
 export default function GlobalError({
   error,
-  reset,
 }: {
   error: Error & { digest?: string };
   reset: () => void;
@@ -14,6 +19,7 @@ export default function GlobalError({
       message: error.message,
       digest: error.digest ?? null,
     });
+    reportClientError("global-error", error);
   }, [error]);
 
   return (
@@ -53,7 +59,7 @@ export default function GlobalError({
             <div style={{ marginTop: "1rem", display: "flex", gap: "0.75rem" }}>
               <button
                 type="button"
-                onClick={reset}
+                onClick={() => window.location.reload()}
                 style={{
                   padding: "0.4rem 0.9rem",
                   border: "1px solid rgba(248,113,113,0.5)",

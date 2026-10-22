@@ -1,0 +1,167 @@
+[
+  {
+    "stage": "owned-python311-environment",
+    "returncode": 0,
+    "seconds": 0.035
+  },
+  {
+    "stage": "aerial-ci-dependencies",
+    "returncode": 0,
+    "seconds": 0.315
+  },
+  {
+    "stage": "workflow-00",
+    "returncode": 0,
+    "seconds": 34.196
+  },
+  {
+    "stage": "workflow-01",
+    "returncode": 0,
+    "seconds": 6.072
+  },
+  {
+    "stage": "workflow-02",
+    "returncode": 0,
+    "seconds": 0.489
+  },
+  {
+    "stage": "workflow-03",
+    "returncode": 0,
+    "seconds": 5.33
+  },
+  {
+    "stage": "workflow-04",
+    "returncode": 0,
+    "seconds": 2.212
+  },
+  {
+    "stage": "workflow-05",
+    "returncode": 0,
+    "seconds": 5.311
+  },
+  {
+    "stage": "workflow-06",
+    "returncode": 0,
+    "seconds": 0.865
+  },
+  {
+    "stage": "workflow-07",
+    "returncode": 0,
+    "seconds": 4.271
+  },
+  {
+    "stage": "workflow-08",
+    "returncode": 0,
+    "seconds": 5.306
+  },
+  {
+    "stage": "workflow-09",
+    "returncode": 0,
+    "seconds": 0.597
+  },
+  {
+    "stage": "workflow-10",
+    "returncode": 0,
+    "seconds": 3.078
+  },
+  {
+    "stage": "workflow-11",
+    "returncode": 0,
+    "seconds": 0.983
+  },
+  {
+    "stage": "workflow-12",
+    "returncode": 0,
+    "seconds": 6.701
+  },
+  {
+    "stage": "workflow-13",
+    "returncode": 0,
+    "seconds": 1.485
+  },
+  {
+    "stage": "workflow-14",
+    "returncode": 0,
+    "seconds": 5.019
+  },
+  {
+    "stage": "workflow-15",
+    "returncode": 0,
+    "seconds": 1.287
+  },
+  {
+    "stage": "workflow-16",
+    "returncode": 0,
+    "seconds": 5.634
+  },
+  {
+    "stage": "workflow-17",
+    "returncode": 0,
+    "seconds": 5.849
+  },
+  {
+    "stage": "workflow-18",
+    "returncode": 0,
+    "seconds": 31.375
+  },
+  {
+    "stage": "workflow-19",
+    "returncode": 0,
+    "seconds": 6.613
+  },
+  {
+    "stage": "workflow-20",
+    "returncode": 0,
+    "seconds": 0.937
+  },
+  {
+    "stage": "workflow-21",
+    "returncode": 0,
+    "seconds": 38.439
+  },
+  {
+    "stage": "workflow-22",
+    "returncode": 0,
+    "seconds": 1.184
+  },
+  {
+    "stage": "workflow-23",
+    "returncode": 0,
+    "seconds": 10.394
+  },
+  {
+    "stage": "workflow-24",
+    "returncode": 0,
+    "seconds": 1.866
+  },
+  {
+    "stage": "workflow-25",
+    "returncode": 0,
+    "seconds": 16.158
+  },
+  {
+    "stage": "workflow-26",
+    "returncode": 0,
+    "seconds": 9.689
+  },
+  {
+    "stage": "workflow-27",
+    "returncode": 0,
+    "seconds": 99.476
+  },
+  {
+    "stage": "workflow-28",
+    "returncode": 0,
+    "seconds": 6.94
+  },
+  {
+    "stage": "documentation",
+    "returncode": 0,
+    "seconds": 4.93
+  },
+  {
+    "stage": "product-direction",
+    "returncode": 0,
+    "seconds": 0.432
+  }
+]

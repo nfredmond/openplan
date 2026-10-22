@@ -1,0 +1,33 @@
+{
+  "cases": [
+    {
+      "case": "claim",
+      "mutation": "cancelled-parent",
+      "rollbackOnly": true,
+      "ownsStageFalse": true,
+      "restoredOwnsStageTrue": true
+    },
+    {
+      "case": "claim",
+      "mutation": "inactive-attempt",
+      "rollbackOnly": true,
+      "ownsStageFalse": true,
+      "restoredOwnsStageTrue": true
+    },
+    {
+      "case": "progress",
+      "mutation": "cancelled-parent",
+      "rollbackOnly": true,
+      "ownsStageFalse": true,
+      "restoredOwnsStageTrue": true
+    },
+    {
+      "case": "progress",
+      "mutation": "inactive-attempt",
+      "rollbackOnly": true,
+      "ownsStageFalse": true,
+      "restoredOwnsStageTrue": true
+    }
+  ],
+  "scope": "Existing reader consumes native rollback-only projected snapshots with exact field/filter assertion. No live lease replacement, concurrent revocation or authorization to continue."
+}

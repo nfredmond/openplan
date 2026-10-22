@@ -1,0 +1,10 @@
+{
+  "preserved": [
+    {"unit":"openplan-portfolio-v4-prepare-01","invocation":"976f446a6d6b47cea7327b61650cc7d6","exit":2,"reason":"systemd default cwd made a relative Python entry path resolve under /home/nathaniel; script never loaded","correction":"absolute entry path, new prepare-02 invocation"},
+    {"unit":"openplan-portfolio-v4-controls-01","invocation":"7e27c917ea8b445fb23303ab2bb262e2","exit":1,"reason":"template finalizer left comment suffix as bare text; import refused with IndentationError","retained":"private failed-template-assembly-01.py.txt","correction":"preserve complete comment boundary; new finalize-02 and controls-02"},
+    {"unit":"openplan-portfolio-v4-controls-02","invocation":"4ee55d2d6c944fbd9e9e4a9e47ad3053","exit":1,"reason":"mechanical comparison treated intended recovery receipt to upgrade expectations filename delta as unchanged","correction":"compare exact one-literal replacement instead; no runtime guard loosened"},
+    {"unit":"openplan-portfolio-v4-controls-03","invocation":"1ab7e74f27a145e4b08bce3f48877b97","exit":0,"limits":"59 observations passed before independent source comparison caught earlier v1-body selection; not final upgrade evidence","retained":"private failed-old-body-selection-01.json","correction":"select exact named v2 function section and independently check it"}
+  ],
+  "operatingStagesDispatched":false,
+  "historicalFailures":"Original T3/browser import failures, 678 compiler/build failures, wrapped attestor PID failure, PATH failure and native first pg_class discrepancy remain retained in their original stores."
+}

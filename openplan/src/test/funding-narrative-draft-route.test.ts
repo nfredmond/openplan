@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 /**
@@ -423,5 +423,129 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft — proposa
     const response = await postNarrativeDraft(jsonRequest(), routeContext());
     expect(response.status).toBe(201);
     expect(promptsSent().join("\n")).not.toContain("RFP-2026-014");
+  });
+});
+
+describe("/api/funding-opportunities/[opportunityId]/narrative-draft — today's date", () => {
+  // A live draft on 2026-10-11 called a call that closed on 2026-09-30
+  // "currently open". Two clocks must give two different close-date facts,
+  // so a route that drops or hardcodes the date fails here.
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.stubEnv("ANTHROPIC_API_KEY", "sk-test");
+    vi.stubEnv("OPENPLAN_GRANTS_AI_MODEL", "");
+    createApiAuditLoggerMock.mockReturnValue(mockAudit);
+    checkAiUsageRateLimitMock.mockResolvedValue({ allowed: true, count: 0, retryAfterSeconds: 0 });
+    recordAiUsageEventMock.mockResolvedValue(undefined);
+    authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
+    loadFundingOpportunityAccessMock.mockResolvedValue({
+      supabase: null,
+      opportunity: { ...opportunityRow, closes_at: "2026-09-30" },
+      membership: { workspace_id: WORKSPACE_ID, role: "member" },
+      error: null,
+      allowed: true,
+    });
+    generateTextMock.mockResolvedValue({
+      text: "Drafted narrative paragraphs.",
+      usage: { inputTokens: 1200, outputTokens: 800, totalTokens: 2000 },
+    });
+    draftSingleMock.mockResolvedValue({
+      data: {
+        id: DRAFT_ID,
+        opportunity_id: OPPORTUNITY_ID,
+        draft_markdown: "Drafted narrative paragraphs.",
+        model: "claude-opus-5-5",
+        source: "ai",
+        created_at: "2026-10-11T00:00:00.000Z",
+      },
+      error: null,
+    });
+    createClientMock.mockResolvedValue(clientWith());
+  });
+
+  it("tells the model whether the close date has passed, from the clock when the request arrives", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      vi.setSystemTime(new Date("2026-10-11T18:00:00Z"));
+      expect((await postNarrativeDraft(jsonRequest(), routeContext())).status).toBe(201);
+      expect(promptsSent()[0]).toContain("2026-09-30, before today's date (2026-10-11, UTC), so the close date has passed");
+
+      generateTextMock.mockClear();
+      vi.setSystemTime(new Date("2026-09-01T18:00:00Z"));
+      expect((await postNarrativeDraft(jsonRequest(), routeContext())).status).toBe(201);
+      const earlier = promptsSent()[0];
+      expect(earlier).toContain("The recorded close date for this opportunity is 2026-09-30; today's date is 2026-09-01 (UTC).");
+      expect(earlier).not.toContain("so the close date has passed");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
+/**
+ * CLOSE TIMES IN THE WORKSPACE'S ZONE (KI-2026-10-12-016). The route reads the
+ * workspace's calendar and hands its zone to the fact list. 06:59 UTC Oct 1 is
+ * 11:59 p.m. Sep 30 in Los Angeles; at 8 p.m. Pacific on Sep 30 the call is
+ * still open, later today.
+ */
+describe("/api/funding-opportunities/[opportunityId]/narrative-draft: the workspace's zone", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-10-01T03:00:00Z"));
+    vi.stubEnv("ANTHROPIC_API_KEY", "sk-test");
+    vi.stubEnv("OPENPLAN_GRANTS_AI_MODEL", "");
+    createApiAuditLoggerMock.mockReturnValue(mockAudit);
+    checkAiUsageRateLimitMock.mockResolvedValue({ allowed: true, count: 0, retryAfterSeconds: 0 });
+    recordAiUsageEventMock.mockResolvedValue(undefined);
+    authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
+    loadFundingOpportunityAccessMock.mockResolvedValue({
+      supabase: null,
+      opportunity: { ...opportunityRow, closes_at: "2026-10-01T06:59:00Z" },
+      membership: { workspace_id: WORKSPACE_ID, role: "member" },
+      error: null,
+      allowed: true,
+    });
+    generateTextMock.mockResolvedValue({
+      text: "Drafted narrative paragraphs.",
+      usage: { inputTokens: 1200, outputTokens: 800, totalTokens: 2000 },
+    });
+    draftSingleMock.mockResolvedValue({
+      data: {
+        id: DRAFT_ID,
+        opportunity_id: OPPORTUNITY_ID,
+        draft_markdown: "Drafted narrative paragraphs.",
+        model: "claude-opus-4-8",
+        source: "ai",
+        created_at: "2026-07-17T00:00:00.000Z",
+      },
+      error: null,
+    });
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  function withWorkspaceZone(timeZone: string | null) {
+    return (table: string, columns: string): ReadResult | null =>
+      table === "workspaces" && columns === "time_zone, home_country_code"
+        ? { data: { time_zone: timeZone, home_country_code: null }, error: null }
+        : null;
+  }
+
+  it("states the close time in the workspace's zone", async () => {
+    createClientMock.mockResolvedValue(clientWith(withWorkspaceZone("America/Los_Angeles")));
+    expect((await postNarrativeDraft(jsonRequest(), routeContext())).status).toBe(201);
+    expect(promptsSent().join("\n")).toContain(
+      "The recorded close time for this opportunity is 2026-09-30 at 23:59 (America/Los_Angeles), later today."
+    );
+  });
+
+  it("states it in UTC when the workspace has no zone", async () => {
+    createClientMock.mockResolvedValue(clientWith(withWorkspaceZone(null)));
+    expect((await postNarrativeDraft(jsonRequest(), routeContext())).status).toBe(201);
+    expect(promptsSent().join("\n")).toContain(
+      "The recorded close time for this opportunity is 2026-10-01 at 06:59 (UTC), later today."
+    );
   });
 });

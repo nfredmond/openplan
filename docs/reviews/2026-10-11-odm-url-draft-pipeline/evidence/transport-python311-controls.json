@@ -1,0 +1,30 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "source-signal-severed",
+    "test": "test_actual_source_body_cancellation_stops_before_engine",
+    "outcome": "intended_failure",
+    "reason": "Source transport deadline exceeded"
+  },
+  {
+    "control": "engine-signal-severed",
+    "test": "test_actual_engine_body_cancellation_retains_unresolved_original_intent",
+    "outcome": "intended_failure",
+    "reason": "Original draft HTTP deadline exceeded"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

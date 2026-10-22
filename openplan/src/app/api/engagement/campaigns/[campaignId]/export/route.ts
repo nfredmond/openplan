@@ -6,6 +6,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadCampaignAccess } from "@/lib/engagement/api";
 import { buildEngagementCommentMatrixPreview } from "@/lib/engagement/comment-matrix";
 import { getPublicPortalState } from "@/lib/engagement/public-portal";
+import { loadWorkspaceCalendar } from "@/lib/time/workspace-calendar";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import { readStoredEngagementGeometry, type EngagementGeometry } from "@/lib/engagement/geometry";
 import { escapeCsvField } from "@/lib/export/csv";
@@ -223,7 +224,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const categoryMap = new Map(exportCategories.map((c) => [c.id, c.label]));
     const counts = summarizeEngagementItems(exportCategories, items);
     const commentMatrixPreview = buildEngagementCommentMatrixPreview(exportCategories, items);
-    const publicPortal = getPublicPortalState(access.campaign);
+    // A participation date in the status line is named in the workspace calendar.
+    const { timeZone } = await loadWorkspaceCalendar(supabase, access.campaign.workspace_id);
+    const publicPortal = getPublicPortalState(access.campaign, { timeZone });
 
     audit.info("export_completed", {
       userId: user.id,

@@ -1,0 +1,12 @@
+--- trial02/focused-tsconfig.json
++++ trial03/focused-tsconfig.json
+@@ -18,7 +18,8 @@
+     "/home/nathaniel/.t3/worktrees/openplan/t3-9a9c35f8/openplan/src/lib/invoicing/receivables.ts",
+     "/home/nathaniel/.t3/worktrees/openplan/t3-9a9c35f8/openplan/src/test/client-invoice-composer.test.tsx",
+     "/home/nathaniel/.t3/worktrees/openplan/t3-9a9c35f8/openplan/src/test/client-invoice-pdf.test.ts",
+-    "/home/nathaniel/.t3/worktrees/openplan/t3-9a9c35f8/openplan/src/test/receivable-invoicing-routes.test.ts"
++    "/home/nathaniel/.t3/worktrees/openplan/t3-9a9c35f8/openplan/src/test/receivable-invoicing-routes.test.ts",
++    "/home/nathaniel/.t3/worktrees/openplan/t3-9a9c35f8/openplan/src/test/setup.ts"
+   ],
+   "exclude": []
+ }

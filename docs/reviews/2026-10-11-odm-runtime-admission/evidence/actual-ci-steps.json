@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Durable HTTP admission harmless and targeted fault controls",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-runtime-admission/verify_controls.py \\\n  --repo \"$GITHUB_WORKSPACE\" --out \"$RUNNER_TEMP/odm-runtime-admission-controls\"\n",
+    "exit": 0,
+    "workflowSha256": "c04d1b01041bd8efb0d3b843b52c540310928abc5b889c140b6fe6b43923a4e7"
+  },
+  {
+    "name": "Actual HTTP admission and stopped-root held-start recovery",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-runtime-admission/native_recovery.py \\\n  --repo \"$GITHUB_WORKSPACE\" --out \"$RUNNER_TEMP/odm-runtime-admission-native\"\n",
+    "exit": 0,
+    "workflowSha256": "c04d1b01041bd8efb0d3b843b52c540310928abc5b889c140b6fe6b43923a4e7"
+  }
+]

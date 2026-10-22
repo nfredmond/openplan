@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { isDeepStrictEqual } from "node:util";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { buildOdmProcessingBoundary } from "@/lib/aerial/odm-processing";
 import { AERIAL_IMAGERY_BUCKET } from "@/lib/aerial/imagery";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
+import { recordOriginalDispatch, readOriginalDispatch, resolveDispatchCustodyScope } from "@/lib/aerial/original-dispatch";
 import {
   buildProcessingRequest,
   processingCallbackSchema,
@@ -316,6 +318,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
       );
     }
 
+    let custodyScope: ReturnType<typeof resolveDispatchCustodyScope>;
+    try { custodyScope = resolveDispatchCustodyScope(); }
+    catch {
+      audit.error("original_dispatch_custody_misconfigured", { missionId: mission.id });
+      return NextResponse.json({ error: "original_dispatch_custody_misconfigured",
+        detail: "The original request storage settings are incomplete. Nothing was dispatched." }, { status: 500 });
+    }
+
     const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.smallJson);
     if (!payloadBody.ok) return payloadBody.response;
 
@@ -582,6 +592,25 @@ export async function POST(request: NextRequest, context: RouteContext) {
       }
     };
 
+    const dispatchText = JSON.stringify(processingRequest);
+    if (custodyScope) {
+      const originalJob = {
+        id: jobRow.id, request_id: requestId, workspace_id: mission.workspace_id,
+        project_id: mission.project_id, mission_id: mission.id, created_by: user.id,
+        preset_id: processingRequest.presetId ?? "balanced", imagery_type: processingRequest.imagery.type,
+      };
+      try {
+        await recordOriginalDispatch(jobsWriter, custodyScope, originalJob, dispatchText);
+        const current = await readOriginalDispatch(jobsWriter, custodyScope, originalJob, dispatchText);
+        if (!current.authorizedNow) throw new Error("Current original request scope is unavailable");
+      } catch {
+        const detail = "The original request could not be saved and checked. Nothing was dispatched.";
+        audit.error("original_dispatch_custody_unavailable", { requestId, missionId: mission.id });
+        await markDispatchFailed(detail);
+        return NextResponse.json({ error: "original_dispatch_custody_unavailable", detail }, { status: 503 });
+      }
+    }
+
     let workerResponse: Response;
     try {
       workerResponse = await fetch(
@@ -593,7 +622,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
             accept: "application/json",
             authorization: `Bearer ${workerToken}`,
           },
-          body: JSON.stringify(processingRequest),
+          body: dispatchText,
           signal: AbortSignal.timeout(WORKER_DISPATCH_TIMEOUT_MS),
         }
       );
@@ -617,7 +646,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const acceptedBody = await workerResponse.json().catch(() => null);
     const parsedAccepted = processingCallbackSchema.safeParse(acceptedBody);
 
-    if (!parsedAccepted.success || parsedAccepted.data.status !== "accepted") {
+    if (!parsedAccepted.success || parsedAccepted.data.status !== "accepted"
+      || parsedAccepted.data.requestId !== requestId) {
       const detail = "worker accepted response did not match the processing contract";
       audit.error("worker_accepted_response_invalid", {
         requestId,
@@ -630,6 +660,34 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const accepted = parsedAccepted.data;
 
+    // Retain the synchronous response before making it the ordering baseline.
+    // The worker does not separately POST this accepted event.
+    const { error: acceptedLedgerError } = await jobsWriter
+      .from("aerial_processing_callbacks")
+      .insert({
+        processing_job_id: jobRow.id,
+        workspace_id: mission.workspace_id,
+        callback_id: accepted.callbackId,
+        status: accepted.status,
+        occurred_at: accepted.occurredAt,
+        payload: accepted,
+      });
+    let acceptedRecorded = !acceptedLedgerError;
+    if (acceptedLedgerError?.code === "23505") {
+      const { data: retained, error: retainedError } = await jobsWriter
+        .from("aerial_processing_callbacks")
+        .select("processing_job_id, workspace_id, payload")
+        .eq("callback_id", accepted.callbackId)
+        .maybeSingle();
+      acceptedRecorded = !retainedError && retained != null && retained.processing_job_id === jobRow.id
+        && retained.workspace_id === mission.workspace_id
+        && isDeepStrictEqual(retained.payload, JSON.parse(JSON.stringify(accepted)));
+    }
+    if (!acceptedRecorded) {
+      audit.error("processing_acceptance_record_unavailable", { requestId, missionId: mission.id });
+      return NextResponse.json({ error: "processing_acceptance_record_unavailable", requestId }, { status: 503 });
+    }
+
     const { error: acceptUpdateError } = await jobsWriter
       .from("aerial_processing_jobs")
       .update({
@@ -638,7 +696,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
         last_callback_id: accepted.callbackId,
         last_callback_at: accepted.occurredAt,
       })
-      .eq("id", jobRow.id);
+      .eq("id", jobRow.id)
+      .eq("status", "requested")
+      .is("job_reference", null)
+      .is("last_callback_id", null)
+      .is("last_callback_at", null)
+      .select("id");
 
     if (acceptUpdateError) {
       // The worker owns the job now; keep the row (callbacks will advance it)

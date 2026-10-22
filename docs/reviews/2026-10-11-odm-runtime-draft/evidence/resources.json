@@ -1,0 +1,116 @@
+[
+  {
+    "SubState": "exited",
+    "InvocationID": "2bb57d3792fe482db841266c608f32ac",
+    "MainPID": "0",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "64843776",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0"
+  },
+  {
+    "SubState": "failed",
+    "InvocationID": "70142b9c765848d8b6ee3319d1e6649f",
+    "MainPID": "0",
+    "ExecMainStatus": "1",
+    "MemoryPeak": "34246656",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0"
+  },
+  {
+    "SubState": "failed",
+    "InvocationID": "e106106e38434bba997847a6c0304f60",
+    "MainPID": "0",
+    "ExecMainStatus": "1",
+    "MemoryPeak": "34996224",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0"
+  },
+  {
+    "SubState": "failed",
+    "InvocationID": "f946b0cf9aac44978585fcef08a32010",
+    "MainPID": "0",
+    "ExecMainStatus": "1",
+    "MemoryPeak": "34213888",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0"
+  },
+  {
+    "SubState": "exited",
+    "InvocationID": "645d97f7341d48b992cd3911470c5959",
+    "MainPID": "0",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "35356672",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0"
+  },
+  {
+    "SubState": "exited",
+    "InvocationID": "76591a357c1247899f0f7c8c1d2a8497",
+    "MainPID": "0",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "49156096",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0"
+  },
+  {
+    "SubState": "exited",
+    "InvocationID": "32ec51d3634549c2ae30a6281ce5f9e0",
+    "MainPID": "0",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "48603136",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0"
+  },
+  {
+    "ActiveState": "active",
+    "SubState": "exited",
+    "InvocationID": "47d967e8d1ed48de856ebb18e376b320",
+    "MainPID": "0",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "72949760",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0",
+    "unit": "openplan-odm-runtime-draft-rebound-20261011-01.service",
+    "stopped": true
+  },
+  {
+    "SubState": "exited",
+    "InvocationID": "df1c081f8b54447ea3fac66e49c3793b",
+    "MainPID": "0",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "21708800",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0"
+  },
+  {
+    "InvocationID": "15cb0dae7bd342089df347c6249be802",
+    "MainPID": "0",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "269651968",
+    "MemoryMax": "1073741824",
+    "MemorySwapMax": "0",
+    "unit": "openplan-odm-runtime-draft-docs-20261011-01.service",
+    "stopped": true
+  },
+  {
+    "InvocationID": "740b675d05014b599498337c2180c60d",
+    "MainPID": "0",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "66617344",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0",
+    "unit": "openplan-odm-runtime-draft-ci-20261011-03.service",
+    "stopped": true
+  },
+  {
+    "InvocationID": "738e698aef6e4cef93ccc9350ca0ab66",
+    "MainPID": "0",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "273920000",
+    "MemoryMax": "1073741824",
+    "MemorySwapMax": "0",
+    "unit": "openplan-odm-runtime-draft-docs-20261011-02.service",
+    "stopped": true
+  }
+]

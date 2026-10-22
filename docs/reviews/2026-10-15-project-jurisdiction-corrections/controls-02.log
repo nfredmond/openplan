@@ -1,0 +1,53 @@
+Running as unit: run-p66519-i87996626.scope; invocation ID: dcd7f82030b34fbe934f5e7a2a367fde
+harmless survivor: retains original draft and blocks account props changes until explicit restart SURVIVED True
+account scope retention INTENDED ASSERTION True
+harmless survivor: keeps draft when an in-flight save returns after account changes SURVIVED True
+account in-flight confirmation INTENDED ASSERTION True
+harmless survivor: retains original draft and blocks workspace props changes until explicit restart SURVIVED True
+workspace scope retention INTENDED ASSERTION True
+harmless survivor: keeps draft when an in-flight save returns after workspace changes SURVIVED True
+workspace in-flight confirmation INTENDED ASSERTION True
+harmless survivor: retains original draft and blocks permission props changes until explicit restart SURVIVED True
+permission scope retention INTENDED ASSERTION True
+harmless survivor: keeps draft when an in-flight save returns after permission changes SURVIVED True
+permission in-flight confirmation INTENDED ASSERTION True
+harmless survivor: retains original draft and blocks project props changes until explicit restart SURVIVED True
+project scope retention INTENDED ASSERTION True
+harmless survivor: keeps draft when an in-flight save returns after project changes SURVIVED True
+project in-flight confirmation INTENDED ASSERTION True
+harmless survivor: retains original draft and blocks revision props changes until explicit restart SURVIVED True
+revision scope retention INTENDED ASSERTION True
+harmless survivor: keeps draft when an in-flight save returns after revision changes SURVIVED True
+revision in-flight confirmation INTENDED ASSERTION True
+harmless survivor: blocks an in-flight confirmation even when account changes away and back SURVIVED True
+account round-trip epoch INTENDED ASSERTION True
+harmless survivor: does not publish a prior-scope error after deferred response parsing SURVIVED True
+parsed response scope INTENDED ASSERTION True
+handler stale refusal INTENDED ASSERTION True
+restart reads saved context INTENDED ASSERTION True
+harmless survivor: hashes a versioned external representation after strict internal validation SURVIVED True
+external actor minimization INTENDED ASSERTION True
+recorded time retained INTENDED ASSERTION True
+explicit external schema INTENDED ASSERTION True
+explicit external scope INTENDED ASSERTION True
+strict internal parser before export INTENDED ASSERTION True
+external canonical hash INTENDED ASSERTION True
+registry identity INTENDED ASSERTION True
+harmless survivor: carries minimized same-revision canonical material through real generated files and SQLite at different clocks SURVIVED True
+generated project context export INTENDED ASSERTION True
+GeoPackage canonical hash record INTENDED ASSERTION True
+GeoPackage canonical payload bytes INTENDED ASSERTION True
+GeoPackage registry hash INTENDED ASSERTION True
+GeoPackage registry version INTENDED ASSERTION True
+GeoPackage payload schema INTENDED ASSERTION True
+harmless survivor: exports a separate jurisdiction manifest without changing project_area attributes or WKB SURVIVED True
+GeoPackage context record INTENDED ASSERTION True
+harmless survivor: renders each declaration and its payload hash with escaped labels and no authority inference SURVIVED True
+external report rendering INTENDED ASSERTION True
+report time disclosure INTENDED ASSERTION True
+harmless survivor: freezes identical same-revision context and payload hashes without changing old bytes SURVIVED True
+external frozen payload INTENDED ASSERTION False
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/docs/reviews/2026-10-15-project-jurisdiction-corrections/prove.py", line 124, in <module>
+    raise RuntimeError('Unexpected mutation outcome: ' + c['label'])
+RuntimeError: Unexpected mutation outcome: external frozen payload

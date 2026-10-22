@@ -1,0 +1,8 @@
+{
+  "trial": "legacy-denied-read-fault",
+  "testFile": "src/test/project-portfolio-export-route.test.ts",
+  "test": "GET /api/projects/export/workbook fails closed when the workspace-scoped read fails",
+  "exitCode": 1,
+  "marker": "denied project read must fail without a workbook",
+  "classification": "KILLED"
+}

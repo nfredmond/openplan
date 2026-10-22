@@ -1,0 +1,31 @@
+{
+  "newFailure": {
+    "unit": "openplan-portfolio-v5-delta-controls-01",
+    "invocation": "c5a277fc56fc4c1487955f405364ff7e",
+    "exit": 1,
+    "reason": "Missing-bus specimen indexed an absent environment key in the spy and raised KeyError before the intended named refusal.",
+    "retainedSourceSHA256": "8ca5e87fbc4459e954d180646873b4e6858fa4a1ccdbeb89d908fa62d41f54a9",
+    "correction": "Spy uses get and requires the fixed explicit bus environment. Subsequent named missing-bus code fault passes.",
+    "suppliesAcceptance": false
+  },
+  "preserveHistorical": "V4 remains wholly unchanged, including its failures. Independent R1/R2/R3 and parent namespace failures remain attributed and retained.",
+  "runtimeStagesExecuted": false,
+  "finalAuditFailure": {
+    "unit": "openplan-portfolio-v5-final-audit-01",
+    "invocation": "6503a652bb334b70b87b2dccb2be3d9b",
+    "exit": 1,
+    "reason": "String comparison assumed empty args/keywords appear in ast.dump; Python 3.14 omits them. Complete old-root inventory already matched before the mechanical check stopped.",
+    "correction": "Explicitly transform only the original final preserve call from Expr to Return, then compare full AST. No runtime guard changes.",
+    "retainedSourceSHA256": "16742fb477836e78930621f7cb26acfa0e462fd3199b37179539192fd4bea540",
+    "suppliesAcceptance": false
+  },
+  "secondFinalAuditFailure": {
+    "unit": "openplan-portfolio-v5-final-audit-02",
+    "invocation": "37ef7b0a8e6c4e4c901faee1b6ab44cd",
+    "exit": 1,
+    "reason": "The typography scanner matched the literal forbidden Unicode character in its own source. Old-root inventory and runtime mechanical checks already matched.",
+    "correction": "Use its byte encoding, add harmless/in-memory credential and typography injections plus a disabled-scanner code control. No runtime change.",
+    "retainedSourceSHA256": "934b556082da9d5e98b67284fd35950d605089ab4fa580b4a8545a05b9beaef4",
+    "suppliesAcceptance": false
+  }
+}

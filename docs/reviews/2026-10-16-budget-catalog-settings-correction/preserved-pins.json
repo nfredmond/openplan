@@ -1,0 +1,408 @@
+{
+  "status": "SOURCE_ASSESSMENT_ONLY_NOT_APPROVED",
+  "baseCommit": "d37b64b117d87b5edabe766dd42db4422407b40f",
+  "nativeOperationGranted": false,
+  "subjectImported": false,
+  "checksRun": [],
+  "preservedLocalPins": {
+    "/home/nathaniel/.local/state/openplan/budget-catalog-outer-transport-20261016/native-capture-parent/returned-process.json": {
+      "sha256": "998fb88dea249060dfb965f463f7b3645e64579a73fce51c04b7f05ef48b9f03",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 73,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-outer-transport-20261016/native-capture-parent/terminal.json": {
+      "sha256": "099e28452e3e1d433f0a15e60910a185fa0dc123a31837cfa9041f56ce4ba252",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 491,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-outer-transport-20261016/native-capture-parent/stderr.bin": {
+      "sha256": "60cd561ea3ad6940151ef5b604d4b5783eae44b54d6c956b45ccf12c81188183",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 349,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-outer-transport-20261016/native-capture-parent/intent.json": {
+      "sha256": "4d1ad76c3efc37667ae53a7f1f28f068b2df2a84fce397efeb3017334906fb4b",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 1980,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-preparation-20261016/capture-attempt/intent.json": {
+      "sha256": "f241e02ee731e8a04856a820ec3e176ef04e7ad4f0636ee112b449d18ac5a831",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 508,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-outer-transport-20261016/native-capture-parent/stdout.bin": {
+      "sha256": "d04aa01b5fe8b7c6373d78ea84abb7ea043296ffa6a7d56c7164d39f186f9d88",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 338,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-preparation-20261016/capture-attempt/request-001/input.bin": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 0,
+      "type": "regular empty file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-preparation-20261016/capture-attempt/request-001/intent.json": {
+      "sha256": "fddb54d56307c78d1df47bdde7661a767ede0026811d0b6c9a8b2f07d773be73",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 771,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-preparation-20261016/capture-attempt/request-001/returned-process.json": {
+      "sha256": "3d12db920d6244ff701befb5061e5450c473847b3df46b5fe177a4404e036ed1",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 46,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-preparation-20261016/capture-attempt/failure.json": {
+      "sha256": "fb67550c7d15e7515e545c0a84c99269ee20e7adba8a282185ac528056312b9d",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 75,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-preparation-20261016/capture-attempt/request-001/stdout.bin": {
+      "sha256": "1e7f1f3f99e8f71a6a058a177ba7b056160f1b6d9abc7adce265c2e80e5dfea0",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 388,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-preparation-20261016/capture-attempt/request-001/terminal.json": {
+      "sha256": "513de24ec0f5c692d4d408db1c72ffcf146bbedec211a973c0add70e960b8422",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 308,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-preparation-20261016/capture-attempt/request-001/stderr.bin": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 0,
+      "type": "regular empty file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-preparation-20261016/capture-attempt/request-002/input.bin": {
+      "sha256": "26dd06196571158f56e7e17843137108aed202dfe186b879754939cc29999651",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 2114,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-preparation-20261016/capture-attempt/request-002/returned-process.json": {
+      "sha256": "4d3dfb10833dce81a837b9fa381ff4425bcd892eed2b8c2e09ebe62db692fd94",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 46,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-preparation-20261016/capture-attempt/request-002/intent.json": {
+      "sha256": "37f82ffed87ba02b2d007ee956c73f12364a5433f92f5cbbe4ffb76b9d6d22d4",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 648,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-preparation-20261016/capture-attempt/request-002/stdout.bin": {
+      "sha256": "501c829fca9556b1fc82b4517243d8422b0526784a66083a26ab62aab352dd31",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 72,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-preparation-20261016/capture-attempt/request-002/stderr.bin": {
+      "sha256": "88cb46494b3249cb7cc354338357ec6718eae891e2a2bbf86715ce129869ecff",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 55,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-preparation-20261016/capture-attempt/request-002/terminal.json": {
+      "sha256": "6eaaecca347c82c4d79bb98608a10d98f07093363a2f5d241f7078c6effd8907",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 325,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/runtime/controller.py": {
+      "sha256": "d19ac7a2840aecde45f6623b744c48c183f8ed7d2c4beb25153ca162285caf60",
+      "mode": "664",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 23660,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/runtime/sql.py": {
+      "sha256": "d2bd48d5f3583e064a0160b6a6c1988f8261d33ef28f7da5377d5151349a13e3",
+      "mode": "664",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 17422,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-preparation-20261016/catalog-capture-request.json": {
+      "sha256": "c4bcc4882f50543da4fec0f542ad730069c76b606a75ddff462e72d5d8e5a4e6",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 6327,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/runtime/journal.py": {
+      "sha256": "4309e4d05c5d86f44ab0832fe4932681a54e00cd5070b7da2827fb8118d0201c",
+      "mode": "664",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 6172,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/runtime/policy.py": {
+      "sha256": "142f4bf84a88631aac1e96e4d9c0801e92fa8133fb9212b41cd4e6059377e597",
+      "mode": "664",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 5369,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/source-pins.json": {
+      "sha256": "c56b2cf133c792260c449a6dc228ea0c0cf4c4b44a80299923db81f8c41cbe20",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 117112,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-outer-transport-20261016/collector.py": {
+      "sha256": "05bc862604ebc65bf52ae5f58565cf30f765080d8df5bc14b142ba481d8066cc",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 11991,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-preparation-20261016/run-capture-window.sh": {
+      "sha256": "ed59087c8f9eb7f3dd61e76cad73a7ffe8ce3a8c10b54b560c8d81068f5553e1",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 1060,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-root-decision-20261016/failed-native-attempt-disposition.json": {
+      "sha256": "4f7058be943512af95fbb5cf0b270c2766bb09a25b5c5cd4a959f57b4a15f75d",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 1455,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/STATUS.md": {
+      "sha256": "ff0bb45186e4c1b987e9ce5f14a7ece65c5c5abf6c941b24adc980ca868eb6eb",
+      "mode": "664",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 2415,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-root-decision-20261016/failed-native-attempt-seal.json": {
+      "sha256": "03af0418d965e06b23d72f095bb043b064f841beb93adf35ec4c9a26a1ad1f47",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 5330,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/REVIEW.md": {
+      "sha256": "8ef04471ceaa522d8af5c5751a35aa7ed13044be479183423f1e61823d82f178",
+      "mode": "664",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 2416,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/DESIGN.md": {
+      "sha256": "9ddbc19ef275c9713006ecb0d96f719e834ed545150b5c7bfad95cdd3dbc3f71",
+      "mode": "664",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 9915,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/PARENT_RECIPE.md": {
+      "sha256": "01447c9244c3af0a4c3f4ca21f76fd97c0f683fafe34845a92cc453d9d168694",
+      "mode": "664",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 8998,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/VALIDATION.md": {
+      "sha256": "b57db0179656d231803201617bd62b96ef814224e6655a97e984a9260c36f627",
+      "mode": "664",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 9038,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/plan.json": {
+      "sha256": "ee0cc8e1413414a961d9a757fd4d6fed2403ed96696d3e410ed6fd43328d812a",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 54746,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/PREP_1_RESPONSE.md": {
+      "sha256": "111666ceebcb70c0b5f4ae650efdfde97bb85e0903dd35923689f4127b720864",
+      "mode": "664",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 1925,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-90d20f48/docs/reviews/2026-10-16-budget-target-controller-independent/REPORT.md": {
+      "sha256": "dc1f49a9a6dea4696708afa61f39727d9696b8a54e8dc840943373fe2ed95472",
+      "mode": "664",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 16508,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-preparation-20261016/catalog-capture.sql": {
+      "sha256": "26dd06196571158f56e7e17843137108aed202dfe186b879754939cc29999651",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 2114,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-preparation-20261016/capture-window.json": {
+      "sha256": "670c9f89f003e29bb20929fdd829e0c49bbb65fa98301c4e2c0e28c9c4df4fe9",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 433,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-preparation-20261016/capture-grant.json": {
+      "sha256": "abc807bedb4af8513ab843f10bd5ad3a3d64df499e3fdf636eca520c3665ed51",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 620,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-catalog-outer-transport/RESULT.md": {
+      "sha256": "68bf9d70b16487a0564b8d99310fe459274f042c710afcfafbafd46af3fc3427",
+      "mode": "664",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 5119,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-outer-transport-20261016/collector-authorization.json": {
+      "sha256": "98e655c0e203e26ba058cecbaea35da12a61af2da04fe4c274cea2d60218d7f9",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 580,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-preparation-20261016/build_observe_proposal.py": {
+      "sha256": "225d8aee6f730726b726b72f7f8bc00ed45cbd93c9944e483c330178823a843d",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 5528,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-preparation-20261016/capture-review.md": {
+      "sha256": "490d692e85fdc7683a3c7e8d6f46fcb5bd3be1d626ea18b0bc8b369f80dda275",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 2538,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-preparation-20261016/capture_catalog.py": {
+      "sha256": "d526d6f5e9e1f7d5970def79c005c7f9294affb8ddd931591ab4a8d7b6a47cbf",
+      "mode": "600",
+      "uid": 1000,
+      "gid": 1000,
+      "bytes": 8863,
+      "type": "regular file"
+    }
+  },
+  "publicSourceReferences": [
+    {
+      "url": "https://raw.githubusercontent.com/postgres/postgres/REL_17_6/src/interfaces/libpq/fe-connect.c",
+      "version": "REL_17_6",
+      "lines": [
+        "7022-7031",
+        "5179-5186"
+      ],
+      "sha256": "NOT_CAPTURED"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/17/libpq-pgpass.html",
+      "version": "17",
+      "sha256": "NOT_CAPTURED"
+    },
+    {
+      "url": "https://www.postgresql.org/docs/17/catalog-pg-db-role-setting.html",
+      "version": "17",
+      "sha256": "NOT_CAPTURED"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/systemd/systemd/v259.5/src/run/run.c",
+      "version": "v259.5",
+      "lines": [
+        "2089-2104",
+        "2354-2359",
+        "2396"
+      ],
+      "sha256": "NOT_CAPTURED"
+    },
+    {
+      "url": "https://supabase.com/docs/guides/observability",
+      "version": "unversioned-public-documentation",
+      "sha256": "NOT_CAPTURED"
+    }
+  ],
+  "newConsumerSourcePins": "MISSING_PENDING_ROOT_TECHNICAL_DISPOSITION",
+  "futurePureRequest": "NOT_AUTHORED",
+  "futureNativeGrant": "NOT_AUTHORED"
+}

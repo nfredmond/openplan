@@ -1,0 +1,7 @@
+{
+  "precedingExport": "rejected-count-expectation",
+  "expected": 20,
+  "actual": 14,
+  "reason": "Selected follow-up omits the six release-ordering cases from the earlier documentation cohort",
+  "correctedExport": "passed"
+}

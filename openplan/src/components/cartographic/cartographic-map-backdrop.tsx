@@ -29,6 +29,7 @@ import {
 } from "@/lib/cartographic/geometry-bbox";
 import { hasInvalidPublicMapboxToken, resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
+import { whenStyleAccepts } from "@/lib/maps/when-style-accepts";
 import { showsSharedMapControls } from "@/lib/navigation/map-surfaces";
 import type { HomeMapView } from "@/lib/workspaces/home-geography";
 import { useTheme } from "@/components/theme-provider";
@@ -1115,11 +1116,7 @@ export function CartographicMapBackdrop({
       }
     };
 
-    if (map.isStyleLoaded()) {
-      paint();
-    } else {
-      map.once("style.load", paint);
-    }
+    return whenStyleAccepts(map, paint);
   }, [ready, aois, resolvedTheme]);
 
   // Paint project markers onto the map once both the map and the data are
@@ -1167,11 +1164,7 @@ export function CartographicMapBackdrop({
       }
     };
 
-    if (map.isStyleLoaded()) {
-      paint();
-    } else {
-      map.once("style.load", paint);
-    }
+    return whenStyleAccepts(map, paint);
   }, [ready, projectMarkers, resolvedTheme]);
 
   // Paint the area each project studies. Deliberately drawn as a soft fill with
@@ -1250,11 +1243,7 @@ export function CartographicMapBackdrop({
       }
     };
 
-    if (map.isStyleLoaded()) {
-      paint();
-    } else {
-      map.once("style.load", paint);
-    }
+    return whenStyleAccepts(map, paint);
   }, [ready, projectAreas, resolvedTheme]);
 
   // Paint corridor LineStrings onto the map once both the map and the data
@@ -1316,11 +1305,7 @@ export function CartographicMapBackdrop({
       }
     };
 
-    if (map.isStyleLoaded()) {
-      paint();
-    } else {
-      map.once("style.load", paint);
-    }
+    return whenStyleAccepts(map, paint);
   }, [ready, corridors, resolvedTheme]);
 
   // Paint RTP cycle pins onto the map once both the map and the data are
@@ -1369,11 +1354,7 @@ export function CartographicMapBackdrop({
       }
     };
 
-    if (map.isStyleLoaded()) {
-      paint();
-    } else {
-      map.once("style.load", paint);
-    }
+    return whenStyleAccepts(map, paint);
   }, [ready, rtpCycles, resolvedTheme]);
 
   // Paint census tracts as an equity choropleth once both the map and the
@@ -1475,11 +1456,7 @@ export function CartographicMapBackdrop({
       }
     };
 
-    if (map.isStyleLoaded()) {
-      paint();
-    } else {
-      map.once("style.load", paint);
-    }
+    return whenStyleAccepts(map, paint);
   }, [ready, censusTracts, resolvedTheme]);
 
   // Paint approved engagement points above the equity choropleth but below
@@ -1533,11 +1510,7 @@ export function CartographicMapBackdrop({
       }
     };
 
-    if (map.isStyleLoaded()) {
-      paint();
-    } else {
-      map.once("style.load", paint);
-    }
+    return whenStyleAccepts(map, paint);
   }, [ready, engagementItems, resolvedTheme]);
 
   // Paint acquired crash points: a soft halo so dense clusters read as intensity
@@ -1590,11 +1563,7 @@ export function CartographicMapBackdrop({
       }
     };
 
-    if (map.isStyleLoaded()) {
-      paint();
-    } else {
-      map.once("style.load", paint);
-    }
+    return whenStyleAccepts(map, paint);
   }, [ready, crashes, resolvedTheme]);
 
   /**
@@ -1697,11 +1666,7 @@ export function CartographicMapBackdrop({
       }
     };
 
-    if (map.isStyleLoaded()) {
-      paint();
-    } else {
-      map.once("style.load", paint);
-    }
+    return whenStyleAccepts(map, paint);
   }, [ready, transitStops, resolvedTheme]);
 
   // Frame the workspace's own features once, on the first payload that carries
@@ -2370,11 +2335,7 @@ export function CartographicMapBackdrop({
       }
     };
 
-    if (map.isStyleLoaded()) {
-      apply();
-    } else {
-      map.once("style.load", apply);
-    }
+    return whenStyleAccepts(map, apply);
   }, [
     selection,
     ready,

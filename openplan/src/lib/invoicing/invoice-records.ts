@@ -1,3 +1,5 @@
+import { isDeadlinePast } from "@/lib/work/deadlines";
+
 export const BILLING_INVOICE_STATUSES = [
   "draft",
   "internal_review",
@@ -270,17 +272,13 @@ export function resolveExactBillingInvoiceAwardMatch<
   return projectFundingAwards[0] ?? null;
 }
 
+/** Unsettled and past its due date, by the shared {@link isDeadlinePast} rule. */
 function isOverdue(status: string, dueDate: string | null | undefined, now: Date): boolean {
-  if (!dueDate || status === "paid" || status === "rejected") {
+  if (status === "paid" || status === "rejected") {
     return false;
   }
 
-  const parsed = new Date(dueDate);
-  if (Number.isNaN(parsed.getTime())) {
-    return false;
-  }
-
-  return parsed.getTime() < now.getTime();
+  return isDeadlinePast(dueDate, now);
 }
 
 export function summarizeBillingInvoiceRecords(

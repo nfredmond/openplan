@@ -93,6 +93,11 @@ export type DocumentLibraryEntry = {
   groundable: boolean;
 };
 
+/** An exact linked-document read, independent of the library's recency cap. */
+export type LinkedDocumentLibraryEntry =
+  | { status: "unlinked" | "unreadable" | "pending" | "failed"; entry: null }
+  | { status: "readable"; entry: DocumentLibraryEntry };
+
 /**
  * What one source's read established: how many entries it contributed and BOTH
  * ways it can have failed to contribute them. `pending` (deployment behind a

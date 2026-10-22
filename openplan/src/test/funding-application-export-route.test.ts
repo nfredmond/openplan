@@ -34,9 +34,17 @@ const EXPORT_ID = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee";
 
 const mockAudit = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
 
+// The export is stored with the service role (migration 20261017000013 removed
+// member INSERT on the bucket), after the workspace storage limit, which has
+// room here: this file is about the cover page, not the limit.
 vi.mock("@/lib/supabase/server", () => ({
   createClient: (...args: unknown[]) => createClientMock(...args),
-  createServiceRoleClient: vi.fn(),
+  createServiceRoleClient: () => ({ storage: { from: () => ({ upload: uploadMock }) } }),
+}));
+
+vi.mock("@/lib/workspaces/storage-quota", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/workspaces/storage-quota")>()),
+  checkWorkspaceStorageRoom: async () => ({ status: "room", usedBytes: 0, quotaBytes: 5 * 1024 ** 3 }),
 }));
 
 vi.mock("@/lib/observability/audit", () => ({
@@ -61,7 +69,7 @@ vi.mock("@/lib/grants/pursuit", async () => {
 
 import { POST as exportApplication } from "@/app/api/funding-opportunities/[opportunityId]/application/export/route";
 
-type QueryResult = { data: unknown; error: { message: string; code?: string } | null };
+type QueryResult = { count?: number | null; data: unknown; error: { message: string; code?: string } | null };
 
 const CHAIN_METHODS = ["select", "eq", "in", "order", "limit", "insert", "update", "delete"];
 
@@ -79,6 +87,7 @@ function makeChain(resolve: () => QueryResult) {
 
 /** The `programs` read — the one read each test varies. */
 let programRead: QueryResult;
+let seedHistoryChain: ReturnType<typeof makeChain>;
 
 const finalSection = {
   id: SECTION_ID,
@@ -125,12 +134,14 @@ function installClient() {
       if (table === "programs") {
         return makeChain(() => programRead);
       }
+      if (table === "funding_opportunity_section_drafts") {
+        return seedHistoryChain;
+      }
       if (table === "funding_opportunity_application_exports") {
         return makeChain(() => ({ data: exportRow, error: null }));
       }
       throw new Error(`Unexpected table: ${table}`);
     }),
-    storage: { from: vi.fn(() => ({ upload: uploadMock })) },
   });
 }
 
@@ -147,6 +158,19 @@ const routeContext = { params: Promise.resolve({ opportunityId: OPPORTUNITY_ID }
 function renderedCoverHtml(): string | null {
   const call = renderReportPdfMock.mock.calls[0];
   return call ? (call[0] as string) : null;
+}
+
+/** An empty Safety history still needs an exact count and the protected origin. */
+function expectCompleteSafetyHistoryRead() {
+  expect(seedHistoryChain.select).toHaveBeenCalledTimes(1);
+  expect(seedHistoryChain.select).toHaveBeenCalledWith(
+    "id, section_id, origin, safety_seed_id, grounding_json", { count: "exact" }
+  );
+  expect(seedHistoryChain.eq).toHaveBeenCalledWith("opportunity_id", OPPORTUNITY_ID);
+  expect(seedHistoryChain.eq).toHaveBeenCalledWith("workspace_id", WORKSPACE_ID);
+  expect(seedHistoryChain.eq).toHaveBeenCalledWith("origin", "safety_plan_seed");
+  expect(seedHistoryChain.order).toHaveBeenCalledWith("id");
+  expect(seedHistoryChain.limit).toHaveBeenCalledWith(1001);
 }
 
 describe("POST /api/funding-opportunities/[opportunityId]/application/export — the program line", () => {
@@ -191,6 +215,7 @@ describe("POST /api/funding-opportunities/[opportunityId]/application/export —
     });
     uploadMock.mockResolvedValue({ error: null });
     programRead = { data: { id: PROGRAM_ID, title: "Active Transportation Program" }, error: null };
+    seedHistoryChain = makeChain(() => ({ data: [], error: null, count: 0 }));
     installClient();
   });
 
@@ -242,6 +267,7 @@ describe("POST /api/funding-opportunities/[opportunityId]/application/export —
     const html = renderedCoverHtml();
     expect(html).toContain("Active Transportation Program");
     expect(html).not.toContain("Not linked");
+    expectCompleteSafetyHistoryRead();
   });
 
   it("still prints 'Not linked' for an opportunity that carries no program at all", async () => {
@@ -269,5 +295,6 @@ describe("POST /api/funding-opportunities/[opportunityId]/application/export —
 
     expect(response.status).toBe(201);
     expect(renderedCoverHtml()).toContain("Not linked");
+    expectCompleteSafetyHistoryRead();
   });
 });

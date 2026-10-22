@@ -1,0 +1,236 @@
+{
+  "candidate": "db4eed778b2519e68cdf359712bc2affd573bf76",
+  "joinedMain": "b39f5be0446538ddd2d3adde30b81fe5268dd9aa",
+  "ownedHeads": 31,
+  "pullRequests": [
+    {
+      "baseRefName": "work/odm-private-reader-capacity-20261012",
+      "headRefName": "work/odm-private-draft-authority-20261012",
+      "headRefOid": "e5e6b2fb24c42684d3de82be0fa73e05b6b99c3a",
+      "number": 262,
+      "headIncluded": true
+    },
+    {
+      "baseRefName": "work/odm-private-dispatch-reader-20261012",
+      "headRefName": "work/odm-private-reader-capacity-20261012",
+      "headRefOid": "1b4c4c4c7f6c04c1c131cc40f69e6b3ec48f1f9c",
+      "number": 261,
+      "headIncluded": true
+    },
+    {
+      "baseRefName": "work/odm-private-dispatch-producer-20261011",
+      "headRefName": "work/odm-private-dispatch-reader-20261012",
+      "headRefOid": "8d89d2398f4a27ea9591b5249a293b9dce556ce3",
+      "number": 260,
+      "headIncluded": true
+    },
+    {
+      "baseRefName": "work/odm-original-dispatch-custody-20261011",
+      "headRefName": "work/odm-private-dispatch-producer-20261011",
+      "headRefOid": "279556a55dc192d631958a65bfaf176276f784c3",
+      "number": 256,
+      "headIncluded": true
+    },
+    {
+      "baseRefName": "work/odm-url-draft-pipeline-20261011",
+      "headRefName": "work/odm-original-dispatch-custody-20261011",
+      "headRefOid": "665f790805e23d9e90ca89497dc5c78040a34d8f",
+      "number": 241,
+      "headIncluded": true
+    },
+    {
+      "baseRefName": "work/odm-url-runtime-intake-20261011",
+      "headRefName": "work/odm-url-draft-pipeline-20261011",
+      "headRefOid": "26a4f6fe930bf5c039eb1a3475c173c6bbf1ed38",
+      "number": 239,
+      "headIncluded": true
+    },
+    {
+      "baseRefName": "work/odm-url-transport-20261011",
+      "headRefName": "work/odm-url-runtime-intake-20261011",
+      "headRefOid": "2d86972114ba7446248c19ed3468b6ba1f19050c",
+      "number": 238,
+      "headIncluded": true
+    },
+    {
+      "baseRefName": "work/odm-url-source-custody-20261011",
+      "headRefName": "work/odm-url-transport-20261011",
+      "headRefOid": "b0b96841a2bb6f0f816b53f2419024c80b7609a2",
+      "number": 237,
+      "headIncluded": true
+    },
+    {
+      "baseRefName": "work/odm-draft-http-20261011",
+      "headRefName": "work/odm-url-source-custody-20261011",
+      "headRefOid": "27e36ca0677676debbba8c6e3ed60f40729c6590",
+      "number": 236,
+      "headIncluded": true
+    },
+    {
+      "baseRefName": "work/odm-runtime-draft-20261011",
+      "headRefName": "work/odm-draft-http-20261011",
+      "headRefOid": "95ba54395635010d059d429c553f9b214f1ab947",
+      "number": 233,
+      "headIncluded": true
+    },
+    {
+      "baseRefName": "work/odm-runtime-preparation-20261011",
+      "headRefName": "work/odm-runtime-draft-20261011",
+      "headRefOid": "04421a6b60c720964345c656f33e25465d371fa7",
+      "number": 227,
+      "headIncluded": true
+    },
+    {
+      "baseRefName": "work/odm-runtime-admission-20261011",
+      "headRefName": "work/odm-runtime-preparation-20261011",
+      "headRefOid": "200b92d234dd036517e3b583838e2ee7b3dcda6d",
+      "number": 226,
+      "headIncluded": true
+    },
+    {
+      "baseRefName": "work/odm-zip-engine-integration-20261011",
+      "headRefName": "work/odm-runtime-admission-20261011",
+      "headRefOid": "5055fe5a5383374a907f2672c64d90bc95539916",
+      "number": 225,
+      "headIncluded": true
+    },
+    {
+      "baseRefName": "work/odm-zip-derived-custody-20261011",
+      "headRefName": "work/odm-zip-engine-integration-20261011",
+      "headRefOid": "6e15a9678234c8f2ef566788c4b52eba1c1c07bc",
+      "number": 224,
+      "headIncluded": true
+    },
+    {
+      "baseRefName": "work/odm-draft-custody-20261011",
+      "headRefName": "work/odm-zip-derived-custody-20261011",
+      "headRefOid": "850e936563cb6f10fab7416aa7d2c0c299c91f1c",
+      "number": 223,
+      "headIncluded": true
+    },
+    {
+      "baseRefName": "work/odm-engine-effects-20261011",
+      "headRefName": "work/odm-draft-custody-20261011",
+      "headRefOid": "f8d64a3528d0a1f8f87d3ba6b893f47618e3ef22",
+      "number": 219,
+      "headIncluded": true
+    },
+    {
+      "baseRefName": "work/odm-draft-reconciliation-20261011",
+      "headRefName": "work/odm-engine-effects-20261011",
+      "headRefOid": "45f5af5416f4b28735da8c60241cc2b624c7af52",
+      "number": 216,
+      "headIncluded": true
+    },
+    {
+      "baseRefName": "work/odm-source-custody-20261011",
+      "headRefName": "work/odm-draft-reconciliation-20261011",
+      "headRefOid": "e928e7aab169fbf92a74974ec5099fe5222ea910",
+      "number": 215,
+      "headIncluded": true
+    },
+    {
+      "baseRefName": "work/odm-admission-journal-20261011",
+      "headRefName": "work/odm-source-custody-20261011",
+      "headRefOid": "f3bf1cf8d0766b74d6da8f70b0025b2ce857bddd",
+      "number": 214,
+      "headIncluded": true
+    },
+    {
+      "baseRefName": "work/odm-restart-reproduction-20261011",
+      "headRefName": "work/odm-admission-journal-20261011",
+      "headRefOid": "90d865ffa4f5b01e7627b50117b81d2786325fb7",
+      "number": 213,
+      "headIncluded": true
+    },
+    {
+      "baseRefName": "work/ocr-inventory-root-set-20261011",
+      "headRefName": "work/odm-restart-reproduction-20261011",
+      "headRefOid": "4ef5d5e97d29e4e429d0b36e60c6d45c5d8ed29e",
+      "number": 212,
+      "headIncluded": true
+    },
+    {
+      "baseRefName": "work/ocr-worker-recovery-20261011",
+      "headRefName": "work/ocr-inventory-root-set-20261011",
+      "headRefOid": "8d93435e0203fea47ff258c825e079f109f0c75d",
+      "number": 211,
+      "headIncluded": true
+    },
+    {
+      "baseRefName": "work/installation-worker-inventory-20261011",
+      "headRefName": "work/ocr-worker-recovery-20261011",
+      "headRefOid": "3cfa0250575431608c2440e49b3df7aef07666fd",
+      "number": 210,
+      "headIncluded": true
+    },
+    {
+      "baseRefName": "work/recovery-point-manifest-20261011",
+      "headRefName": "work/installation-worker-inventory-20261011",
+      "headRefOid": "4ae1c9964015fb28feef92bf3509f418ce587cda",
+      "number": 209,
+      "headIncluded": true
+    },
+    {
+      "baseRefName": "work/worker-root-set-20261011",
+      "headRefName": "work/recovery-point-manifest-20261011",
+      "headRefOid": "8f123ea0a45979e177d65cec8042e29a11ff0f04",
+      "number": 208,
+      "headIncluded": true
+    },
+    {
+      "baseRefName": "main",
+      "headRefName": "work/worker-root-set-20261011",
+      "headRefOid": "e4e793dfe9cf5c3cd352a3f8d537683b9482b223",
+      "number": 205,
+      "headIncluded": true
+    },
+    {
+      "number": 264,
+      "headRefOid": "b59c764f5591dd63a5d3cbee7954ad086d617b27",
+      "headIncluded": true
+    },
+    {
+      "number": 266,
+      "headRefOid": "b0cc393384098392188463a7018a68012e168238",
+      "headIncluded": true
+    },
+    {
+      "number": 269,
+      "headRefName": "work/gtfs-intake-deadline-fixture-20261013",
+      "headRefOid": "02c5b4932a50d299dd4748714d477723c33e809d",
+      "headIncluded": true
+    },
+    {
+      "number": 270,
+      "headRefName": "work/odm-native-private-authority-composition-20261012",
+      "headRefOid": "ca4435d755a32b965ed39f87e99a92f33acf1032",
+      "headIncluded": true
+    },
+    {
+      "number": 271,
+      "headRefName": "work/odm-intake-clock-fixture-20261013",
+      "headRefOid": "886369c5531621509d35420f46d7c6a93933a317",
+      "headIncluded": true
+    }
+  ],
+  "controls": [
+    {
+      "case": "baseline",
+      "outcome": "survived"
+    },
+    {
+      "case": "harmless-metadata",
+      "outcome": "survived"
+    },
+    {
+      "case": "restored",
+      "outcome": "survived"
+    },
+    {
+      "case": "preceding-candidate-without271",
+      "outcome": "intended_refusal",
+      "reason": "missing-owned-head-271"
+    }
+  ]
+}

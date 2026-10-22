@@ -19,4 +19,7 @@ COPY workers/hosted-node/supervise.mjs /app/supervise.mjs
 ENV NODE_ENV=production
 ENV CHROME_EXECUTABLE_PATH=/usr/local/bin/openplan-chromium
 # Mounted volumes start root-owned. Only this service's /data mount is adjusted.
-CMD ["sh", "-c", "mkdir -p /data && chown node:node /data && exec runuser -u node -- node /app/supervise.mjs"]
+# setpriv drops to the node user and execs, so the supervisor runs as PID 1 and
+# receives SIGTERM itself. runuser stays as a parent and SIGKILLs its child
+# about 2 seconds after SIGTERM, cutting the supervisor's 20-second grace.
+CMD ["sh", "-c", "mkdir -p /data && chown node:node /data && exec setpriv --reuid=node --regid=node --init-groups env HOME=/home/node USER=node LOGNAME=node node /app/supervise.mjs"]

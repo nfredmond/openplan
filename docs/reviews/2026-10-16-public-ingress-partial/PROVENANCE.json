@@ -1,0 +1,139 @@
+{
+  "health": {
+    "at": "2026-10-17T01:05:00.359Z",
+    "body": {
+      "checkedAt": "2026-10-17T01:05:00.343Z",
+      "checks": {
+        "app": "ok",
+        "database": "not_checked"
+      },
+      "deployment": {
+        "commit": "ced6aced9ddc",
+        "migrations": {
+          "expected": 418,
+          "latest": "20261017000015"
+        },
+        "version": "0.68.0"
+      },
+      "service": "openplan",
+      "status": "ok"
+    },
+    "bodyBytes": 236,
+    "status": 200,
+    "url": "https://openplan-zeta.vercel.app/api/health"
+  },
+  "noCandidateAcceptance": true,
+  "noFormSubmission": true,
+  "noHostedChange": true,
+  "rasterCorrection": {
+    "actualImages": [
+      {
+        "file": "publicIngressLandingDesktopImage.png",
+        "height": 580,
+        "sha256": "3acf86f3f1042cd24a69534ec63ef16d1d598e26b954f827e286b59a1e68d9be",
+        "width": 928
+      },
+      {
+        "file": "publicIngressSignupDesktopImage.png",
+        "height": 580,
+        "sha256": "41b308a3b54007282ce10265d2ad7349e3a0d2d33ea4ca3e312b15924af31abd",
+        "width": 928
+      },
+      {
+        "file": "publicIngressSignupMobileImage.png",
+        "height": 580,
+        "sha256": "974656d49c882cb015245951895bd1ef46291b1fbbe334cf918c613700ccf5af",
+        "width": 928
+      },
+      {
+        "file": "publicIngressSigninMobileImage.png",
+        "height": 580,
+        "sha256": "2e099494ecfec739a6f60b47e4e5bd89e12af446961b80567b8eaa5d6282c6fe",
+        "width": 928
+      }
+    ],
+    "correction": "Original imageLimit prose says1280x800; actual copied PNG IHDR and original images[] entries say928x580. Use actual928x580 dimensions. Invalid viewport-to-raster correlation and incomplete visual acceptance remain.",
+    "noBrowserActionRepeated": true,
+    "originalReadbackSHA256": "44cdf535b79b2ae687823dcd13ff1b41627c6077a73447dc30c288871683006c",
+    "originalReadbackUnchanged": true
+  },
+  "recordedFiles": {
+    "publicIngressFinalHealth.json": {
+      "bytes": 673,
+      "sha256": "6503249c5bf263ffb356b57711581d92124efd235223c6bb6c55a10e18bf3d76"
+    },
+    "publicIngressLandingDesktopImage.json": {
+      "bytes": 185,
+      "sha256": "455bcb2c4e1af3d59e1a3cb2ea05451e11ed0927afff05c0faa365ee4d75cd96"
+    },
+    "publicIngressLandingDesktopImage.png": {
+      "bytes": 232501,
+      "sha256": "3acf86f3f1042cd24a69534ec63ef16d1d598e26b954f827e286b59a1e68d9be"
+    },
+    "publicIngressLandingReadback.json": {
+      "bytes": 1135,
+      "sha256": "a9502af9f97fd914aba563ba1249d309f49393e8328e273a6a1ef734241fb19a"
+    },
+    "publicIngressPreviewInitialStatus.json": {
+      "bytes": 316,
+      "sha256": "759fd5e3c776a1dc8efaebb0a4bb2ab0d6502b73ce50f8046596c975b291a338"
+    },
+    "publicIngressPreviewOpen.json": {
+      "bytes": 879,
+      "sha256": "b0e117be9eee7a414eb6a07bff6503e48350db882fcc2f626c466430837a96c5"
+    },
+    "publicIngressSigninMobileImage.json": {
+      "bytes": 214,
+      "sha256": "a1cf6aa42ea089cedbe39fc7dc2a7fc827b2b0fa6718edaf0f0727dd775cd1d4"
+    },
+    "publicIngressSigninMobileImage.png": {
+      "bytes": 50609,
+      "sha256": "2e099494ecfec739a6f60b47e4e5bd89e12af446961b80567b8eaa5d6282c6fe"
+    },
+    "publicIngressSigninMobileReadback.json": {
+      "bytes": 934,
+      "sha256": "13d819dc6dd839339b06e384e271d91c6fe57d02e3b32dc898c7230f452dc0b9"
+    },
+    "publicIngressSigninMobileSnapshot.json": {
+      "bytes": 21194,
+      "sha256": "1faca3c85d63a0f6962d59e18e84f7c1b8580c08e0b2f7d7e5c196bac28c653a"
+    },
+    "publicIngressSignupDesktopImage.json": {
+      "bytes": 207,
+      "sha256": "e8b9f9b8609ce3bc218319e9b423957ce7fcaac468783f8a33a43de7e24e6a47"
+    },
+    "publicIngressSignupDesktopImage.png": {
+      "bytes": 95965,
+      "sha256": "41b308a3b54007282ce10265d2ad7349e3a0d2d33ea4ca3e312b15924af31abd"
+    },
+    "publicIngressSignupDesktopReadback.json": {
+      "bytes": 1034,
+      "sha256": "a2551af9174086ee90d32d2c26388962d2eb68e2a4ba68937c8b73b3f904429d"
+    },
+    "publicIngressSignupMobileImage.json": {
+      "bytes": 207,
+      "sha256": "c488685c518038714f7bde603495d70a3d51bc90b82389c947216c0bdd9092a3"
+    },
+    "publicIngressSignupMobileImage.png": {
+      "bytes": 53391,
+      "sha256": "974656d49c882cb015245951895bd1ef46291b1fbbe334cf918c613700ccf5af"
+    },
+    "publicIngressSignupMobileReadback.json": {
+      "bytes": 1473,
+      "sha256": "b135c060ff47ca3632d827395a6242639b66bd0ab3dced3464759c0dee61d8a3"
+    },
+    "publicIngressSignupMobileSnapshot.json": {
+      "bytes": 20735,
+      "sha256": "1edc083d3810ba3ec962c1007a277c717e2f4b2caa9c73db23f46cc2515ee948"
+    },
+    "root-save-error-01.json": {
+      "bytes": 401,
+      "sha256": "0b1195a0c8adb16158bfcf007be52624d713550933b70145f4722ee60bf0fd64"
+    }
+  },
+  "scope": "READ_ONLY_PUBLIC_INGRESS_PARTIAL",
+  "sourceReadback": {
+    "path": "/home/nathaniel/.local/state/openplan/public-ingress-main-readonly-20261016/readback.json",
+    "sha256": "44cdf535b79b2ae687823dcd13ff1b41627c6077a73447dc30c288871683006c"
+  }
+}

@@ -1,0 +1,207 @@
+{
+  "checks": [
+    {
+      "python": "/home/nathaniel/.local/bin/python3.11",
+      "case": "harmless-comment",
+      "expected": "survived",
+      "matched": true,
+      "requiredAssertion": null,
+      "exitCode": 0,
+      "old": null,
+      "new": null
+    },
+    {
+      "python": "/home/nathaniel/.local/bin/python3.11",
+      "case": "wrong-method",
+      "expected": "targeted_failure",
+      "matched": true,
+      "requiredAssertion": "AssertionError: Controller misclassified synthetic runner transcript: wrong-method",
+      "exitCode": 1,
+      "old": "all(name == method for name in failed_methods)",
+      "new": "True"
+    },
+    {
+      "python": "/home/nathaniel/.local/bin/python3.11",
+      "case": "source-echo",
+      "expected": "targeted_failure",
+      "matched": true,
+      "requiredAssertion": "AssertionError: Controller misclassified synthetic runner transcript: source-echo-with-wrong-assertion",
+      "exitCode": 1,
+      "old": "any(needle in diagnostic for diagnostic in diagnostics)",
+      "new": "needle in text"
+    },
+    {
+      "python": "/home/nathaniel/.local/bin/python3.11",
+      "case": "extra-error",
+      "expected": "targeted_failure",
+      "matched": true,
+      "requiredAssertion": "AssertionError: Controller misclassified synthetic runner transcript: additional-error",
+      "exitCode": 1,
+      "old": "'\\nERROR:' not in text",
+      "new": "True"
+    },
+    {
+      "python": "/home/nathaniel/.local/bin/python3.11",
+      "case": "syntax",
+      "expected": "targeted_failure",
+      "matched": true,
+      "requiredAssertion": "AssertionError: Controller misclassified synthetic runner transcript: syntax-failure",
+      "exitCode": 1,
+      "old": "'SyntaxError' not in text",
+      "new": "True"
+    },
+    {
+      "python": "/home/nathaniel/.local/bin/python3.11",
+      "case": "footer",
+      "expected": "targeted_failure",
+      "matched": true,
+      "requiredAssertion": "AssertionError: Controller misclassified synthetic runner transcript: missing-failure-footer",
+      "exitCode": 1,
+      "old": "'FAILED (failures=' in text",
+      "new": "True"
+    },
+    {
+      "python": "/home/nathaniel/.local/bin/python3.11",
+      "case": "failure-exit",
+      "expected": "targeted_failure",
+      "matched": true,
+      "requiredAssertion": "AssertionError: Controller misclassified synthetic runner transcript: zero-exit-failure-text",
+      "exitCode": 1,
+      "old": "result.returncode != 0 and failed_methods",
+      "new": "True and failed_methods"
+    },
+    {
+      "python": "/home/nathaniel/.local/bin/python3.11",
+      "case": "cohort-count",
+      "expected": "targeted_failure",
+      "matched": true,
+      "requiredAssertion": "AssertionError: Controller misclassified synthetic runner transcript: old-twelve-method-cohort",
+      "exitCode": 1,
+      "old": "'Ran 19 tests' in text",
+      "new": "True"
+    },
+    {
+      "python": "/home/nathaniel/.local/bin/python3.11",
+      "case": "cohort-ok",
+      "expected": "targeted_failure",
+      "matched": true,
+      "requiredAssertion": "AssertionError: Controller misclassified synthetic runner transcript: baseline-without-ok",
+      "exitCode": 1,
+      "old": "'\\nOK\\n' in text",
+      "new": "True"
+    },
+    {
+      "python": "/home/nathaniel/.local/bin/python3.11",
+      "case": "cohort-exit",
+      "expected": "targeted_failure",
+      "matched": true,
+      "requiredAssertion": "AssertionError: Controller misclassified synthetic runner transcript: baseline-nonzero",
+      "exitCode": 1,
+      "old": "result.returncode == 0 and",
+      "new": "True and"
+    },
+    {
+      "python": "/usr/bin/python3.14",
+      "case": "harmless-comment",
+      "expected": "survived",
+      "matched": true,
+      "requiredAssertion": null,
+      "exitCode": 0,
+      "old": null,
+      "new": null
+    },
+    {
+      "python": "/usr/bin/python3.14",
+      "case": "wrong-method",
+      "expected": "targeted_failure",
+      "matched": true,
+      "requiredAssertion": "AssertionError: Controller misclassified synthetic runner transcript: wrong-method",
+      "exitCode": 1,
+      "old": "all(name == method for name in failed_methods)",
+      "new": "True"
+    },
+    {
+      "python": "/usr/bin/python3.14",
+      "case": "source-echo",
+      "expected": "targeted_failure",
+      "matched": true,
+      "requiredAssertion": "AssertionError: Controller misclassified synthetic runner transcript: source-echo-with-wrong-assertion",
+      "exitCode": 1,
+      "old": "any(needle in diagnostic for diagnostic in diagnostics)",
+      "new": "needle in text"
+    },
+    {
+      "python": "/usr/bin/python3.14",
+      "case": "extra-error",
+      "expected": "targeted_failure",
+      "matched": true,
+      "requiredAssertion": "AssertionError: Controller misclassified synthetic runner transcript: additional-error",
+      "exitCode": 1,
+      "old": "'\\nERROR:' not in text",
+      "new": "True"
+    },
+    {
+      "python": "/usr/bin/python3.14",
+      "case": "syntax",
+      "expected": "targeted_failure",
+      "matched": true,
+      "requiredAssertion": "AssertionError: Controller misclassified synthetic runner transcript: syntax-failure",
+      "exitCode": 1,
+      "old": "'SyntaxError' not in text",
+      "new": "True"
+    },
+    {
+      "python": "/usr/bin/python3.14",
+      "case": "footer",
+      "expected": "targeted_failure",
+      "matched": true,
+      "requiredAssertion": "AssertionError: Controller misclassified synthetic runner transcript: missing-failure-footer",
+      "exitCode": 1,
+      "old": "'FAILED (failures=' in text",
+      "new": "True"
+    },
+    {
+      "python": "/usr/bin/python3.14",
+      "case": "failure-exit",
+      "expected": "targeted_failure",
+      "matched": true,
+      "requiredAssertion": "AssertionError: Controller misclassified synthetic runner transcript: zero-exit-failure-text",
+      "exitCode": 1,
+      "old": "result.returncode != 0 and failed_methods",
+      "new": "True and failed_methods"
+    },
+    {
+      "python": "/usr/bin/python3.14",
+      "case": "cohort-count",
+      "expected": "targeted_failure",
+      "matched": true,
+      "requiredAssertion": "AssertionError: Controller misclassified synthetic runner transcript: old-twelve-method-cohort",
+      "exitCode": 1,
+      "old": "'Ran 19 tests' in text",
+      "new": "True"
+    },
+    {
+      "python": "/usr/bin/python3.14",
+      "case": "cohort-ok",
+      "expected": "targeted_failure",
+      "matched": true,
+      "requiredAssertion": "AssertionError: Controller misclassified synthetic runner transcript: baseline-without-ok",
+      "exitCode": 1,
+      "old": "'\\nOK\\n' in text",
+      "new": "True"
+    },
+    {
+      "python": "/usr/bin/python3.14",
+      "case": "cohort-exit",
+      "expected": "targeted_failure",
+      "matched": true,
+      "requiredAssertion": "AssertionError: Controller misclassified synthetic runner transcript: baseline-nonzero",
+      "exitCode": 1,
+      "old": "result.returncode == 0 and",
+      "new": "True and"
+    }
+  ],
+  "workingControllerUnchanged": true,
+  "controllerSha256": "703b61b33fe4f4f784bf3f2a3257e01f0ec8626723eb77c68e68678f42179350",
+  "driverSha256": "7d833baf3c1d220c621df531cc4f3650c9e517b1676f8ec052625f33490c8c40"
+}

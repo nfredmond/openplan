@@ -1,0 +1,10 @@
+{
+  "source": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/project-geography-preview-final-20261015/rest-uri-recovery-01/active-service-receipts-private.json",
+  "sourceSHA256": "89042f1acf194f483ab6e1e0b1e7e64c4ec217d3984200d167a589c43e215e8d",
+  "ids": {
+    "rest": "140c68675574a3705fa68aa46543d806d66d1f20739bf63273d6126108d5430d",
+    "auth": "174ab2d834b744022f4388f754cddfb2e75db0c449b712bc4032006c5a2d2984",
+    "storage": "f11687449419ad9e3e97677fde125c07755a92d4e354d1a2de62488546b4d932",
+    "gateway": "9df8243592d037ee9189cd74cb116824d5ae45166d20b7bde4e88109610b709f"
+  }
+}

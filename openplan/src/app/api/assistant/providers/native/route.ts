@@ -4,6 +4,7 @@ import { z } from "zod";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { checkedProviderTurn, PROVIDER_TURN_COLUMNS, ProviderRequestError, providerBearer, providerBody, providerError, providerJson, providerRpcError } from "@/lib/assistant/provider-server";
 import { parseProviderProjectAnswer, PROVIDER_PROJECT_INSTRUCTIONS, providerProjectOutputSchema, providerProjectPrompt } from "@/lib/assistant/provider-project-task";
+import { checkedNativeUsageLimit, providerUsageLimitReceiptSchema } from "@/lib/assistant/provider-usage-limit";
 
 const receiptSchema = z.object({ schemaVersion: z.literal(1), provider: z.enum(["codex", "claude", "opencode"]), model: z.string().min(1).max(160),
   authMode: z.enum(["chatgpt", "apiKey", "claude_subscription", "opencode_api"]), planType: z.string().max(120).nullable(), threadId: z.string().min(1).max(160), turnId: z.string().min(1).max(160) }).strict();
@@ -11,7 +12,7 @@ const requestSchema = z.discriminatedUnion("operation", [
   z.object({ operation: z.literal("claim"), authMode: z.enum(["chatgpt", "apiKey", "claude_subscription", "opencode_api"]).nullable(), status: z.enum(["connected", "needs_login", "unavailable"]) }).strict(),
   z.object({ operation: z.literal("status"), turnId: z.string().uuid() }).strict(),
   z.object({ operation: z.literal("finish"), turnId: z.string().uuid(), attemptId: z.string().uuid(),
-    answer: z.string().max(64_000).nullable(), receipt: receiptSchema.nullable(), failureCode: z.string().regex(/^[a-z_]{1,120}$/).nullable() }).strict(),
+    answer: z.string().max(64_000).nullable(), receipt: z.union([receiptSchema, providerUsageLimitReceiptSchema]).nullable(), failureCode: z.string().regex(/^[a-z_]{1,120}$/).nullable() }).strict(),
 ]);
 
 // This endpoint accepts only the scoped connector bearer. It has no cookie
@@ -33,7 +34,7 @@ export async function POST(request: NextRequest) {
         throw new ProviderRequestError("provider_claim_mismatch", 409);
       }
       audit.info("request_claimed", { turnId: turn.id, attemptId: turn.attempt_id });
-      return providerJson({ status: claimed.status, turn: { id: turn.id, attemptId: turn.attempt_id, workspaceId: turn.workspace_id,
+      return providerJson({ status: claimed.status, turn: { id: turn.id, requestId: turn.request_id, userId: turn.user_id, attemptId: turn.attempt_id, workspaceId: turn.workspace_id,
         projectId: turn.project_id, provider: turn.provider, model: turn.model_id, authMode: turn.auth_mode, packetCanonical: turn.packet_canonical, packetHash: turn.packet_hash,
         question: turn.question, leaseExpiresAt: turn.lease_expires_at, instructions: PROVIDER_PROJECT_INSTRUCTIONS,
         prompt: providerProjectPrompt(packet, turn.question), outputSchema: z.toJSONSchema(providerProjectOutputSchema(packet), { target: turn.provider === "codex" ? "draft-2020-12" : "draft-07" }) } });
@@ -44,8 +45,9 @@ export async function POST(request: NextRequest) {
       p_connection_id: connectionId, p_token_hash: tokenHash });
     providerRpcError(status.error);
     if (body.operation === "status") { audit.info("attempt_status_read", { turnId: body.turnId }); return providerJson(status.data); }
-    if ((body.failureCode !== null && (body.answer !== null || body.receipt !== null)) ||
-      (body.failureCode === null && (body.answer === null || body.receipt === null))) throw new ProviderRequestError("invalid_provider_result");
+    const limited = body.failureCode === "native_usage_limit" && body.receipt?.schemaVersion === 2 && body.answer === null;
+    if ((body.failureCode !== null && (body.answer !== null || body.receipt !== null && !limited)) ||
+      (body.failureCode === null && (body.answer === null || body.receipt?.schemaVersion !== 1))) throw new ProviderRequestError("invalid_provider_result");
     const { data, error } = await service.from("assistant_provider_turns").select(PROVIDER_TURN_COLUMNS)
       .eq("id", body.turnId).eq("connection_id", connectionId).maybeSingle();
     providerRpcError(error);
@@ -53,6 +55,8 @@ export async function POST(request: NextRequest) {
     const { turn, packet } = checkedProviderTurn(data);
     if (turn.connection_id !== connectionId || turn.id !== body.turnId || turn.attempt_id !== body.attemptId || !["codex", "claude", "opencode"].includes(turn.provider)) throw new ProviderRequestError("provider_attempt_mismatch", 403);
     if (body.receipt && (body.receipt.provider !== turn.provider || body.receipt.model !== turn.model_id || body.receipt.authMode !== turn.auth_mode)) throw new ProviderRequestError("provider_receipt_mismatch", 409);
+    if (limited && !checkedNativeUsageLimit({ ...turn, state: "failed", failure_code: body.failureCode,
+      result: null, provider_receipt: body.receipt })) throw new ProviderRequestError("provider_receipt_mismatch", 409);
     let result = null;
     let receipt = body.receipt;
     let failureCode = body.failureCode;

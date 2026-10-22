@@ -1,0 +1,69 @@
+{
+  "preparedOnly": true,
+  "executionBlocked": true,
+  "head": "f0cbeddff5ae3fc37e0dd8b91c02601429d977a6",
+  "appTree": "a13c491da3ad3ba5b237ca5fa8802b236c4ef27b",
+  "sealedInputs": 42,
+  "internalEdges": 43,
+  "migrations": 420,
+  "sourceFiles": 17349,
+  "sourceBytes": 528310488,
+  "sourceInventorySHA256": "008b9b8e9fd42cf7794255637196a9f96f6cbf791e1c37752db5940172f67769",
+  "trackedLinks": {
+    "candidate/.agents/skills": "../.claude/skills"
+  },
+  "typedProtectedIds": 8,
+  "privateEnvironmentAndACLMechanicalOnly": true,
+  "preserved": [
+    {
+      "root": "/home/nathaniel/.t3/worktrees/openplan/t3-d8a9134b/docs/reviews/2026-10-15-pr330-memory-preview-preparation",
+      "entries": 32,
+      "matched": true
+    },
+    {
+      "root": "/home/nathaniel/.local/state/openplan/pr330-memory-preview-20261015",
+      "entries": 2948,
+      "matched": true
+    },
+    {
+      "root": "/home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v6",
+      "entries": 23651,
+      "matched": true
+    }
+  ],
+  "fixedProtectedFiles": 280,
+  "reusedAffectedHelperFunctions": [
+    "active_helper_identities",
+    "require_active_helper",
+    "preserve",
+    "packet_inventory"
+  ],
+  "reusedJournalSubjects": [
+    "begin",
+    "bytes_once",
+    "record",
+    "effect",
+    "execute"
+  ],
+  "capacityRefusal": "durable-archive-budget",
+  "durableFreeBytes": 795086848,
+  "runtimeRootAbsent": true,
+  "operatingExecutionEmpty": true,
+  "realAdmissionAbsent": true,
+  "resources": {
+    "memory.max": "536870912",
+    "memory.swap.max": "0",
+    "memory.swap.current": "0",
+    "memory.peak": "536870912",
+    "memory.events": "low 0\nhigh 0\nmax 1807\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.max": "50000 100000"
+  },
+  "knownSecretLeaks": [],
+  "controls": [
+    "harmless exact copied bindings survive",
+    "wrong digest refuses",
+    "removed comparator is the missing-refusal specimen",
+    "bindings restored"
+  ],
+  "boundary": "Preparation custody only. No current DB, service health, build, startup, browser or independent final review acceptance."
+}

@@ -1,0 +1,169 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "cases": 21
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived",
+    "cases": 21
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived",
+    "cases": 21
+  },
+  {
+    "control": "uncertain-ack-promoted",
+    "outcome": "intended_failure",
+    "case": "test_uncertain_commit_inspects_exact_task_without_another_post_or_reply",
+    "diagnostic": "Task GET must not acknowledge a missing commit reply",
+    "kind": "failures"
+  },
+  {
+    "control": "incomplete-draft-read",
+    "outcome": "intended_failure",
+    "case": "test_incomplete_draft_returns_without_current_read",
+    "diagnostic": "Incomplete original uploads must hold before GET",
+    "kind": "failures"
+  },
+  {
+    "control": "unissued-processing-invented",
+    "outcome": "intended_failure",
+    "case": "test_unissued_commit_returns_without_current_read",
+    "diagnostic": "Unissued original commit must not inspect a processing effect",
+    "kind": "failures"
+  },
+  {
+    "control": "acknowledged-task-get",
+    "outcome": "intended_failure",
+    "case": "test_acknowledged_commit_returns_without_current_read",
+    "diagnostic": "Exact acknowledged commit must return without task GET",
+    "kind": "failures"
+  },
+  {
+    "control": "original-dispatch-not-checked",
+    "outcome": "intended_failure",
+    "case": "test_original_processing_dispatch_is_required_before_get",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "observation-plan-unchecked",
+    "outcome": "intended_failure",
+    "case": "test_wrong_observation_plan_is_refused",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "revocation-accepted",
+    "outcome": "intended_failure",
+    "case": "test_current_revocation_refuses_without_another_post",
+    "diagnostic": "PermissionError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "wrong-constructor-adapter",
+    "outcome": "intended_failure",
+    "case": "test_same_runtime_and_real_adapter_types_are_required",
+    "diagnostic": "'NoneType' object has no attribute 'draft'",
+    "kind": "errors"
+  },
+  {
+    "control": "ended-owner-replaced",
+    "outcome": "intended_failure",
+    "case": "test_unowned_inspection_refuses_before_current_read",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "changed-job-accepted",
+    "outcome": "intended_failure",
+    "case": "test_job_hook_preserves_state_and_requires_original_request",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "runtime-alias-unchecked",
+    "outcome": "intended_failure",
+    "case": "test_changed_runtime_refuses_before_get",
+    "diagnostic": "'object' object has no attribute 'root'",
+    "kind": "errors"
+  },
+  {
+    "control": "late-ack-ignored",
+    "outcome": "intended_failure",
+    "case": "test_late_exact_reply_is_retained_separately_from_task_metadata",
+    "diagnostic": "Final exact reply arrival must remain distinct from task GET",
+    "kind": "failures"
+  },
+  {
+    "control": "ended-owner-after-read-accepted",
+    "outcome": "intended_failure",
+    "case": "test_ended_ownership_after_observation_refuses_return",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "expiry-checks-and-final-journal-validation-removed",
+    "outcome": "intended_failure",
+    "case": "test_expired_observation_refuses_return",
+    "diagnostic": "TimeoutError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "observation-deadline-extended",
+    "outcome": "intended_failure",
+    "case": "test_observer_timeout_uses_remaining_commit_budget",
+    "diagnostic": "Inspection cannot extend the commit budget for its task read",
+    "kind": "failures"
+  },
+  {
+    "control": "preparation-budget-not-forwarded",
+    "outcome": "intended_failure",
+    "case": "test_shared_budget_bounds_actual_slow_preparation_validation",
+    "diagnostic": "Inspection budget must bound slow preparation source validation",
+    "kind": "failures"
+  },
+  {
+    "control": "snapshot-budget-not-forwarded",
+    "outcome": "intended_failure",
+    "case": "test_shared_budget_bounds_actual_slow_snapshot_validation",
+    "diagnostic": "Inspection budget must bound slow snapshot source validation",
+    "kind": "failures"
+  },
+  {
+    "control": "preparation-deadline-bool-accepted",
+    "outcome": "intended_failure",
+    "case": "test_preparation_deadline_types_refuse_before_supplier",
+    "diagnostic": "TimeoutError: Source custody deadline exceeded",
+    "kind": "errors"
+  },
+  {
+    "control": "effect-deadline-bool-accepted",
+    "outcome": "intended_failure",
+    "case": "test_effect_deadline_types_refuse_before_source_validation",
+    "diagnostic": "TimeoutError: Source custody deadline exceeded",
+    "kind": "errors"
+  },
+  {
+    "control": "snapshot-lock-budget-not-forwarded",
+    "outcome": "intended_failure",
+    "case": "test_effect_snapshot_shared_deadline_bounds_actual_lock_wait",
+    "diagnostic": "Shared snapshot budget must bound its actual journal lock wait",
+    "kind": "failures"
+  },
+  {
+    "control": "source-timeout-bool-normalized",
+    "outcome": "intended_failure",
+    "case": "test_source_timeout_types_are_not_normalized_by_deadline_clamping",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived",
+    "cases": 21
+  }
+]

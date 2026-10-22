@@ -42,6 +42,11 @@ export const ENV_DOCUMENTED_ELSEWHERE: ReadonlyArray<{ name: string; reason: str
     reason:
       "deployment-platform metadata (the non-Vercel commit stamp), set by the host's build pipeline, not per-developer config",
   },
+  {
+    name: "OPENPLAN_BUILD_MIGRATION_VERSIONS",
+    reason:
+      "written by next.config.ts at build time from supabase/migrations and inlined into the bundle; a value set by hand is overwritten by every build",
+  },
 ];
 
 /** The same list as a set, for membership tests. */

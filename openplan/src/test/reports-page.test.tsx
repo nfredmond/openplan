@@ -1,3 +1,6 @@
+import { buildProjectJurisdictionReadinessExportPayload } from "@/lib/jurisdiction-readiness/payload";
+import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
+import { PROJECT_JURISDICTION_COLUMNS } from "@/lib/projects/project-jurisdiction";
 import { render, screen } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -189,6 +192,11 @@ describe("ReportsPage", () => {
           geography_label: "Nevada County, CA",
           stage: "validated-screening",
           updated_at: "2026-04-24T17:00:00.000Z",
+          // A confirmed rules-v4 pass, so the stored screening tier is shown.
+          basis_rules_version: 4,
+          basis_outcome: "pass",
+          basis_evidence_write: "recorded",
+          basis_reasons: [],
         },
       ],
       error: null,
@@ -300,6 +308,32 @@ describe("ReportsPage", () => {
     });
   });
 
+  it("flags a retained jurisdiction snapshot after the live context changes", async () => {
+    const oldProject = { id: "project-1", jurisdiction_context: null, place_country_code: "US" };
+    const snapshot = buildProjectJurisdictionReadinessExportPayload(oldProject, jurisdictionReadinessRegistrySha256());
+    projectsOrderMock.mockResolvedValueOnce({ data: [{ ...oldProject, name: "Downtown Mobility Plan", place_country_code: "CA" }], error: null });
+    reportArtifactsOrderMock.mockResolvedValueOnce({ data: [{ report_id: "report-1", generated_at: "2026-10-18T00:00:00Z", metadata_json: { sourceContext: { jurisdictionReadiness: snapshot } } }], error: null });
+    render(await ReportsPage({ searchParams: Promise.resolve({}) }));
+    expect(projectsSelectMock).toHaveBeenCalledWith(expect.stringContaining(PROJECT_JURISDICTION_COLUMNS));
+    expect(screen.getAllByText(/Project jurisdiction context or registry inputs changed/).length).toBeGreaterThan(0);
+  });
+
+  it("keeps a failed artifact comparison unavailable instead of current", async () => {
+    const generatedAt = "2026-10-18T00:00:00Z";
+    reportsOrderMock.mockResolvedValueOnce({ data: [{
+      id: "report-1", workspace_id: "workspace-1", project_id: "project-1",
+      rtp_cycle_id: null, title: "Artifact-backed report", report_type: "project_status",
+      status: "generated", summary: "Saved packet", generated_at: generatedAt,
+      latest_artifact_kind: "pdf", updated_at: generatedAt, created_at: generatedAt,
+      projects: { id: "project-1", name: "Downtown Mobility Plan" }, rtp_cycles: null,
+    }], error: null });
+    reportArtifactsOrderMock.mockResolvedValueOnce({ data: null, error: { message: "Artifact read failed" } });
+    await renderPage();
+    expect(reportArtifactsSelectMock).toHaveBeenCalledWith("report_id, generated_at, metadata_json");
+    expect(screen.getAllByText(/jurisdiction assessment could not be checked/).length).toBeGreaterThan(0);
+    expect(screen.queryByText("Current / ready")).not.toBeInTheDocument();
+  });
+
   it("shows project crash evidence added after generation as a packet refresh", async () => {
     reportsOrderMock.mockResolvedValueOnce({
       data: [
@@ -406,6 +440,46 @@ describe("ReportsPage", () => {
             runName: "Nevada County assignment screening",
             claimStatus: "screening_grade",
             statusReason: "Critical APE remains screening-grade.",
+          }),
+        ],
+      })
+    );
+  });
+
+  it("shows a stored county tier the rules-v4 basis does not support as prototype-only", async () => {
+    // KI-2026-10-12-001: a row written by the retired 30 percent gate still says
+    // screening_grade. With no rules-v4 outcome on the run, the creator must
+    // be offered prototype-only, never the stored tier.
+    countyRunsLimitMock.mockResolvedValue({
+      data: [
+        {
+          id: "county-run-1",
+          workspace_id: "workspace-1",
+          run_name: "Nevada County assignment screening",
+          geography_label: "Nevada County, CA",
+          stage: "validated-screening",
+          updated_at: "2026-04-24T17:00:00.000Z",
+          basis_rules_version: null,
+          basis_outcome: null,
+          basis_evidence_write: null,
+          basis_reasons: null,
+        },
+      ],
+      error: null,
+    });
+
+    await renderPage();
+
+    expect(countyRunsSelectMock).toHaveBeenCalledWith(
+      "id, workspace_id, run_name, geography_label, stage, updated_at, basis_rules_version:validation_summary_json->validation_rules_version, basis_outcome:validation_summary_json->model_validation_assessment->>scientific_outcome, basis_evidence_write:validation_summary_json->model_validation_assessment->>validation_evidence_write, basis_reasons:validation_summary_json->model_validation_assessment->reasons"
+    );
+    expect(reportCreatorMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        modelingCountyRuns: [
+          expect.objectContaining({
+            id: "county-run-1",
+            claimStatus: "prototype_only",
+            statusReason: expect.stringMatching(/^Not assessed: this run has no rules-v4 scientific outcome\./),
           }),
         ],
       })

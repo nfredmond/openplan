@@ -1,0 +1,93 @@
+[
+  {
+    "check": "controls-03",
+    "ActiveState": "active",
+    "SubState": "exited",
+    "InvocationID": "8f7875e635b34f7cb834e937a262d960",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "34729984",
+    "CPUQuotaPerSecUSec": "1s",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0",
+    "TasksMax": "64",
+    "stoppedByThisLane": true
+  },
+  {
+    "check": "native-02",
+    "ActiveState": "active",
+    "SubState": "exited",
+    "InvocationID": "10e6c5eadba0472e8236cff4b59863c9",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "29081600",
+    "CPUQuotaPerSecUSec": "1s",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0",
+    "TasksMax": "64",
+    "stoppedByThisLane": true
+  },
+  {
+    "check": "suites-01",
+    "ActiveState": "active",
+    "SubState": "exited",
+    "InvocationID": "c3ac069a6b844b11892d0c6038f8b996",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "53948416",
+    "CPUQuotaPerSecUSec": "1s",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0",
+    "TasksMax": "64",
+    "stoppedByThisLane": true
+  },
+  {
+    "check": "ci-controls-01",
+    "ActiveState": "active",
+    "SubState": "exited",
+    "InvocationID": "7a3adfe9d2354cdbba40ab573cef4dbe",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "56750080",
+    "CPUQuotaPerSecUSec": "1s",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0",
+    "TasksMax": "64",
+    "stoppedByThisLane": true
+  },
+  {
+    "check": "ci-actual-01",
+    "ActiveState": "active",
+    "SubState": "exited",
+    "InvocationID": "d7bea022f8944408946044a1d140c2b8",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "42233856",
+    "CPUQuotaPerSecUSec": "1s",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0",
+    "TasksMax": "64",
+    "stoppedByThisLane": true
+  },
+  {
+    "check": "ci-actual-02",
+    "ActiveState": "active",
+    "SubState": "exited",
+    "InvocationID": "7021a359907a4da399bf692ec835a2f2",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "42000384",
+    "CPUQuotaPerSecUSec": "1s",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0",
+    "TasksMax": "64",
+    "stoppedByThisLane": true
+  },
+  {
+    "check": "suites-02",
+    "ActiveState": "active",
+    "SubState": "exited",
+    "InvocationID": "c29909c1f7e44424bc3f567b71005806",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "54448128",
+    "CPUQuotaPerSecUSec": "1s",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0",
+    "TasksMax": "64",
+    "stoppedByThisLane": true
+  }
+]

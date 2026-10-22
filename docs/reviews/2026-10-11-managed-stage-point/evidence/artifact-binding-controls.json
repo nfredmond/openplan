@@ -1,0 +1,86 @@
+{
+  "cases": [
+    {
+      "file": "source_seed.py",
+      "exactPrivateSourceAndRecordedSha256Equal": true,
+      "harmlessRecordFormattingSurvives": true,
+      "changedBytesFail": "archived-driver-bytes-differ"
+    },
+    {
+      "file": "source_capture.py",
+      "exactPrivateSourceAndRecordedSha256Equal": true,
+      "harmlessRecordFormattingSurvives": true,
+      "changedBytesFail": "archived-driver-bytes-differ"
+    },
+    {
+      "file": "seed_guards.py",
+      "exactPrivateSourceAndRecordedSha256Equal": true,
+      "harmlessRecordFormattingSurvives": true,
+      "changedBytesFail": "archived-driver-bytes-differ"
+    },
+    {
+      "file": "transport.py",
+      "exactPrivateSourceAndRecordedSha256Equal": true,
+      "harmlessRecordFormattingSurvives": true,
+      "changedBytesFail": "archived-driver-bytes-differ"
+    },
+    {
+      "file": "prove_seed_guards.py",
+      "exactPrivateSourceAndRecordedSha256Equal": true,
+      "harmlessRecordFormattingSurvives": true,
+      "changedBytesFail": "archived-driver-bytes-differ"
+    },
+    {
+      "file": "prove_transport.py",
+      "exactPrivateSourceAndRecordedSha256Equal": true,
+      "harmlessRecordFormattingSurvives": true,
+      "changedBytesFail": "archived-driver-bytes-differ"
+    },
+    {
+      "file": "target_recovery.py",
+      "exactPrivateSourceAndRecordedSha256Equal": true,
+      "harmlessRecordFormattingSurvives": true,
+      "changedBytesFail": "archived-driver-bytes-differ"
+    },
+    {
+      "file": "recovery_guards.py",
+      "exactPrivateSourceAndRecordedSha256Equal": true,
+      "harmlessRecordFormattingSurvives": true,
+      "changedBytesFail": "archived-driver-bytes-differ"
+    },
+    {
+      "file": "prove_recovery_guards.py",
+      "exactPrivateSourceAndRecordedSha256Equal": true,
+      "harmlessRecordFormattingSurvives": true,
+      "changedBytesFail": "archived-driver-bytes-differ"
+    },
+    {
+      "file": "prove_retained_root.py",
+      "exactPrivateSourceAndRecordedSha256Equal": true,
+      "harmlessRecordFormattingSurvives": true,
+      "changedBytesFail": "archived-driver-bytes-differ"
+    },
+    {
+      "file": "prove_root_oracles.py",
+      "exactPrivateSourceAndRecordedSha256Equal": true,
+      "harmlessRecordFormattingSurvives": true,
+      "changedBytesFail": "archived-driver-bytes-differ"
+    },
+    {
+      "file": "final_preservation.py",
+      "exactPrivateSourceAndRecordedSha256Equal": true,
+      "harmlessRecordFormattingSurvives": true,
+      "changedBytesFail": "archived-driver-bytes-differ"
+    },
+    {
+      "file": "ownership_controls.py",
+      "exactPrivateSourceAndRecordedSha256Equal": true,
+      "harmlessRecordFormattingSurvives": true,
+      "changedBytesFail": "archived-driver-bytes-differ"
+    }
+  ],
+  "source47Recovery35Final39DependenciesUnchanged": true,
+  "allJsonSyntaxAndPythonSyntaxPass": true,
+  "noEmDashesOrDetectedLiteralCredentials": true,
+  "scope": "Archive byte/hash, syntax and limited credential-pattern checks. Does not establish complete secret scanning, native acceptance or standalone operator usability."
+}

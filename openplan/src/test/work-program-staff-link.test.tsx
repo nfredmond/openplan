@@ -40,7 +40,7 @@ it("loads staff account identity in the real projection", () => {
 it.each([workspaceId, "00000000-0000-4000-8000-000000000003"])("keeps the program workspace %s when opening staff setup", async (programWorkspaceId) => {
  vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ revisions: [] }), { status: 200 })));
  render(<ReportingPanel programId="00000000-0000-4000-8000-000000000004" workspaceId={programWorkspaceId} userId={userId}/>);
- await screen.findByText("Save a preparation revision below before attributing actual work. Adopt a baseline before issuing a management report.");
+ await screen.findByText("Save a preparation revision before entering actual work. Adopt it before issuing a management report.");
  const target = new URL(screen.getByRole("link", { name: "Staff and account setup" }).getAttribute("href")!, "http://localhost");
  expect(target.pathname).toBe("/invoicing");
  expect(target.searchParams.get("workspaceId")).toBe(programWorkspaceId);

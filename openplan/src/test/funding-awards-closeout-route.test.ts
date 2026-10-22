@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 const createClientMock = vi.fn();
@@ -29,6 +29,9 @@ const milestonesEqSecondMock = vi.fn(() => ({ eq: milestonesEqThirdMock }));
 const milestonesEqFirstMock = vi.fn(() => ({ eq: milestonesEqSecondMock }));
 const milestonesSelectMock = vi.fn(() => ({ eq: milestonesEqFirstMock }));
 const milestonesInsertMock = vi.fn();
+
+let workspaceTimeZone: string | null = null;
+let workspaceReads: string[] = [];
 
 const mockAudit = {
   info: vi.fn(),
@@ -138,6 +141,18 @@ describe("POST /api/funding-awards/[awardId]/closeout", () => {
           return {
             select: milestonesSelectMock,
             insert: (...args: unknown[]) => milestonesInsertMock(...args),
+          };
+        }
+        if (table === "workspaces") {
+          return {
+            select: (columns: string) => ({
+              eq: (column: string, value: string) => ({
+                maybeSingle: async () => {
+                  workspaceReads.push(`${columns}|${column}=${value}`);
+                  return { data: { time_zone: workspaceTimeZone, home_country_code: null }, error: null };
+                },
+              }),
+            }),
           };
         }
         throw new Error(`Unexpected table: ${table}`);
@@ -468,5 +483,32 @@ describe("POST /api/funding-awards/[awardId]/closeout", () => {
 
     const response = await postCloseout(closeoutRequest(), context());
     expect(response.status).toBe(403);
+  });
+
+  describe("the date the closeout milestone carries", () => {
+    // 01:00 UTC Oct 13 is 6 p.m. Oct 12 in Los Angeles.
+    beforeEach(() => {
+      vi.useFakeTimers({ toFake: ["Date"] });
+      vi.setSystemTime(new Date("2026-10-13T01:00:00Z"));
+      workspaceReads = [];
+    });
+    afterEach(() => {
+      vi.useRealTimers();
+      workspaceTimeZone = null;
+    });
+
+    it("is the workspace's calendar day, read for the award's own workspace", async () => {
+      workspaceTimeZone = "America/Los_Angeles";
+      expect((await postCloseout(closeoutRequest(), context())).status).toBe(200);
+      expect(milestonesInsertMock).toHaveBeenCalledWith(
+        expect.objectContaining({ target_date: "2026-10-12", actual_date: "2026-10-12" })
+      );
+      expect(workspaceReads).toEqual([`time_zone, home_country_code|id=${WORKSPACE_ID}`]);
+    });
+
+    it("is the UTC day when no zone is recorded", async () => {
+      expect((await postCloseout(closeoutRequest(), context())).status).toBe(200);
+      expect(milestonesInsertMock).toHaveBeenCalledWith(expect.objectContaining({ actual_date: "2026-10-13" }));
+    });
   });
 });

@@ -37,6 +37,8 @@ import {
   resolveSourceKind,
   resolveStoredSourceKind,
 } from "@/lib/knowledge-base/extract";
+import { checkWorkspaceStorageRoom, workspaceStorageRefusal } from "@/lib/workspaces/storage-quota";
+import { loadWorkspaceCalendar, UTC_TIME_ZONE } from "@/lib/time/workspace-calendar";
 
 // PDFs are retained first and extracted by the Documents worker.
 export const runtime = "nodejs";
@@ -239,6 +241,18 @@ export async function POST(request: NextRequest) {
     }
     if (existingResult.data) {
       return NextResponse.json({ document: existingResult.data, deduped: true }, { status: 200 });
+    }
+
+    // The workspace's total, after dedup (a returned duplicate stores nothing)
+    // and before any byte reaches Storage.
+    const room = await checkWorkspaceStorageRoom(service, query.data.workspaceId, bodyRead.byteLength);
+    if (room.status !== "room") {
+      audit.warn("kb_document_workspace_storage_refused", {
+        status: room.status,
+        byteLength: bodyRead.byteLength,
+        ...(room.status === "full" ? { usedBytes: room.usedBytes, quotaBytes: room.quotaBytes } : { detail: room.detail }),
+      });
+      return workspaceStorageRefusal(room);
     }
 
     const documentId = randomUUID();
@@ -466,11 +480,20 @@ export async function GET(request: NextRequest) {
       return membershipErrorResponse(membership);
     }
 
+    // A date range is read on the workspace's calendar, the one the list
+    // prints dates on. The calendar is only read when a date is asked for.
+    let timeZone = UTC_TIME_ZONE;
+    if (query.data.addedFrom || query.data.addedTo) {
+      const calendar = await loadWorkspaceCalendar(supabase, query.data.workspaceId);
+      if (calendar.readError) audit.warn("workspace_calendar_read_failed", { message: calendar.readError });
+      timeZone = calendar.timeZone;
+    }
     const filters = resolveKbDocumentListFilters({
       q: query.data.q,
       sort: query.data.sort,
       addedFrom: query.data.addedFrom,
       addedTo: query.data.addedTo,
+      timeZone,
     });
     const order = resolveKbDocumentOrder(filters.sort);
 
@@ -490,7 +513,7 @@ export async function GET(request: NextRequest) {
       builder = builder.gte("created_at", filters.addedFrom);
     }
     if (filters.addedTo) {
-      builder = builder.lte("created_at", filters.addedTo);
+      builder = builder.lt("created_at", filters.addedTo);
     }
 
     const { data: documents, error } = await builder;

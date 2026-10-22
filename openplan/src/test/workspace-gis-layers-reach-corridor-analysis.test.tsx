@@ -141,7 +141,16 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("mapbox-gl", () => ({
-  default: { AttributionControl: class {}, Map: mapboxMocks.Map, accessToken: "" },
+  // The controls live on the default export too, as in the real module: the
+  // map is built through whichever library the deployment uses.
+  default: {
+    AttributionControl: class {},
+    Map: mapboxMocks.Map,
+    FullscreenControl: mapboxMocks.FullscreenControl,
+    NavigationControl: mapboxMocks.NavigationControl,
+    ScaleControl: mapboxMocks.ScaleControl,
+    accessToken: "",
+  },
   FullscreenControl: mapboxMocks.FullscreenControl,
   NavigationControl: mapboxMocks.NavigationControl,
   ScaleControl: mapboxMocks.ScaleControl,

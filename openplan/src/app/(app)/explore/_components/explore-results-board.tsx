@@ -525,7 +525,7 @@ export function ExploreResultsBoard({
       label: "Safety",
       value: safetyTile.value,
       note: safetyTile.measured
-        ? "Crash-risk lane informed by the active safety source and filters."
+        ? "Crash risk from the active safety source and filters."
         : [scorePresentation?.safety.withheldReason, crashSourceNote].filter(Boolean).join(" ")
           || "Safety was withheld because crash evidence is unavailable.",
       estimated: safetyTile.measured && estimatedDomains.crashes,

@@ -1,0 +1,86 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "cases": 35
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived",
+    "cases": 35
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived",
+    "cases": 35
+  },
+  {
+    "control": "omitted-framing-guard",
+    "outcome": "intended_failure",
+    "names": [
+      "test_incomplete_content_length_refuses_valid_json_prefix",
+      "test_incomplete_content_length_refuses_empty_prefix"
+    ],
+    "kind": "failures",
+    "diagnostic": "AssertionError: RuntimeError not raised",
+    "exitCode": 1
+  },
+  {
+    "control": "admitted-unread-bytes",
+    "outcome": "intended_failure",
+    "names": [
+      "test_incomplete_content_length_refuses_valid_json_prefix",
+      "test_incomplete_content_length_refuses_empty_prefix"
+    ],
+    "kind": "failures",
+    "diagnostic": "AssertionError: RuntimeError not raised",
+    "exitCode": 1
+  },
+  {
+    "control": "valid-close-delimiter-refused",
+    "outcome": "intended_failure",
+    "names": [
+      "test_complete_close_delimited_reply_preserves_exact_bytes"
+    ],
+    "kind": "errors",
+    "diagnostic": "RuntimeError: Original draft HTTP child failed",
+    "exitCode": 1
+  },
+  {
+    "control": "valid-empty-frame-refused",
+    "outcome": "intended_failure",
+    "names": [
+      "test_complete_zero_length_reply_is_not_a_framing_error"
+    ],
+    "kind": "errors",
+    "diagnostic": "RuntimeError: Original draft HTTP child failed",
+    "exitCode": 1
+  },
+  {
+    "control": "short-frame-fixture-lost",
+    "outcome": "intended_failure",
+    "names": [
+      "test_incomplete_content_length_refuses_valid_json_prefix",
+      "test_incomplete_content_length_refuses_empty_prefix"
+    ],
+    "kind": "failures",
+    "diagnostic": "AssertionError: RuntimeError not raised",
+    "exitCode": 1
+  },
+  {
+    "control": "request-observation-lost",
+    "outcome": "intended_failure",
+    "names": [
+      "test_incomplete_content_length_refuses_valid_json_prefix",
+      "test_incomplete_content_length_refuses_empty_prefix"
+    ],
+    "kind": "failures",
+    "diagnostic": "0 != 1",
+    "exitCode": 1
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived",
+    "cases": 35
+  }
+]

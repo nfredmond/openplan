@@ -11,6 +11,7 @@ import { EngagementOperatorActions } from "@/components/engagement/engagement-op
 import { CampaignPublishFlow } from "@/components/engagement/campaign-publish-flow";
 import { EngagementSurveyBuilder } from "@/components/engagement/survey-builder";
 import { EngagementCloseLoopBuilder } from "@/components/engagement/close-loop-builder";
+import { SetupAdvancedGroup } from "@/components/engagement/setup-advanced-group";
 import { EngagementCategoryCreator } from "@/components/engagement/engagement-category-creator";
 import { EngagementItemRegistry, type ItemRecord } from "@/components/engagement/engagement-item-registry";
 import { EngagementSurveyResults } from "@/components/engagement/survey-results-panel";
@@ -62,7 +63,8 @@ import { LocationDisplayMap } from "@/components/engagement/location-display-map
 import { EngagementContextLayersPanel } from "@/components/engagement/engagement-context-layers-panel";
 import { loadCampaignContextLayerSummaries, loadParticipantContextLayers } from "@/lib/engagement/context-layers";
 import { getPublicPortalState } from "@/lib/engagement/public-portal";
-import { loadPortalPlaceCandidates } from "@/lib/engagement/public-portal-data";
+import { loadWorkspaceCalendar } from "@/lib/time/workspace-calendar";
+import { loadPortalPlaceCandidates, publishChecklistMapArea } from "@/lib/engagement/public-portal-data";
 import { loadCampaignAccess } from "@/lib/engagement/api";
 import { EngagementSynthesisSources } from "@/components/engagement/engagement-synthesis-sources";
 import { EngagementSynthesisPanel } from "@/components/engagement/engagement-synthesis-panel";
@@ -444,8 +446,10 @@ export default async function EngagementCampaignDetailPage({
   // public portal and the campaign GET route read (`loadPortalPlaceCandidates`),
   // so what the flow says about the campaign's area is the fact residents get,
   // not a second calculation. Its three-state answer already keeps a failed
-  // read from arriving as "no area".
-  const [layerAccess, contextLayers, publishedContextLayers, portalPlaceCandidates] = await Promise.all([
+  // read from arriving as "no area". The workspace calendar names the
+  // participation dates in staff sentences; a failed read answers UTC and the
+  // sentence names the zone.
+  const [layerAccess, contextLayers, publishedContextLayers, portalPlaceCandidates, workspaceCalendar] = await Promise.all([
     loadCampaignAccess(supabase, campaign.id, user.id, "engagement.write"),
     loadCampaignContextLayerSummaries(supabase, campaign.id),
     loadParticipantContextLayers(supabase, campaign.id),
@@ -454,6 +458,7 @@ export default async function EngagementCampaignDetailPage({
       workspace_id: campaign.workspace_id,
       project_id: campaign.project_id,
     }),
+    loadWorkspaceCalendar(supabase, campaign.workspace_id),
   ]);
   const canManageContextLayers = "allowed" in layerAccess && Boolean(layerAccess.allowed);
 
@@ -484,7 +489,8 @@ export default async function EngagementCampaignDetailPage({
       negative: negativeItemIdSet.has(it.id),
     }));
   const intakeTrend = buildDailyIntake(
-    (items ?? []) as Array<{ created_at?: string | null; updated_at?: string | null }>
+    (items ?? []) as Array<{ created_at?: string | null; updated_at?: string | null }>,
+    { timeZone: workspaceCalendar.timeZone }
   );
   // E5a — k-anonymized self-reported demographics (only when the campaign opted
   // in). The SOURCE, not the summary: a failed aggregate read used to arrive here
@@ -552,7 +558,7 @@ export default async function EngagementCampaignDetailPage({
   // states that plainly, near the top, from the same portal-state function the
   // publish gate uses. It is withheld when the comments could not be read: a
   // failed read licenses no count, in either direction.
-  const portalStateNow = getPublicPortalState(campaign);
+  const portalStateNow = getPublicPortalState(campaign, { timeZone: workspaceCalendar.timeZone });
   const awaitingReviewCount = counts.moderationQueue.actionableCount;
   const showModerationHonestyBanner =
     !itemsUnreadable &&
@@ -668,290 +674,281 @@ export default async function EngagementCampaignDetailPage({
 
       {/* Above the tab strip on purpose: whether residents can reach this
           campaign, and the link they use, matters on every tab. */}
-      <EngagementPublicLinkCompact campaign={campaign} />
+      <EngagementPublicLinkCompact campaign={campaign} timeZone={workspaceCalendar.timeZone} />
 
       <PageTabNav
         tabs={campaignTabs}
         activeKey={activeTab}
         basePath={`/engagement/${campaign.id}`}
         searchParams={query}
-        ariaLabel="Campaign console sections"
+        ariaLabel="Campaign sections"
       />
 
       <PageTabPanel tabKey="setup" active={activeTab === "setup"}>
         <div className="mt-6 min-w-0 space-y-6">
         {/*
-          CONSOLE ORDER IS THE WORKFLOW ORDER. Setting a campaign up — taking
-          it public, writing the survey, closing the loop — comes before the
-          analysis panels, because every analysis panel is computed over
-          responses that do not exist until the campaign is published and
-          answered. Publishing used to be three forms with three save buttons
-          at the BOTTOM of this console; the guided flow now leads it.
+          TWO GROUPS, IN THE ORDER A PLANNER WORKS. "Before publishing" holds
+          only what a first public page needs: the publish checklist (link,
+          description, where the map opens, comments, preview, go live), then
+          the categories, then the questions that use those categories. The
+          two-month review (October 12, 2026) found twelve sections here with
+          the map area and public access last. Everything else is in Advanced,
+          collapsed but still on the page, so no capability moved out of reach.
+          Reporting back moved to Responses, where the comments it answers are.
         */}
-        <CampaignPublishFlow
-          campaign={campaign}
-          campaignArea={{
-            state: portalPlaceCandidates.campaign.state,
-            label: portalPlaceCandidates.campaign.label,
-          }}
-        />
+        <section aria-labelledby="setup-before-publishing" className="min-w-0 space-y-6">
+          <h2 id="setup-before-publishing" className="text-base font-semibold text-foreground">
+            {portalStateNow.isPubliclyReachable ? "Public page" : "Before publishing"}
+          </h2>
+          <CampaignPublishFlow
+            campaign={campaign}
+            campaignArea={publishChecklistMapArea(portalPlaceCandidates)}
+            projectArea={portalPlaceCandidates.projectReference ?? null}
+            timeZone={workspaceCalendar.timeZone}
+          />
 
-        <EngagementSurveyBuilder
-          campaignId={campaign.id}
-          categories={builderCategories}
-          initialQuestions={surveyQuestions}
-        />
-
-        <EngagementCloseLoopBuilder
-          workspaceId={campaign.workspace_id}
-          key={`${user.id}:${campaign.id}`}
-          userId={user.id}
-          campaignId={campaign.id}
-          categories={builderCategories}
-          initialEntries={closeLoopEntries.rows}
-          initialReadError={Boolean(closeLoopEntries.error)}
-          sourceItems={(items ?? []).filter(item => item.status === "approved").map(item => ({id:item.id,title:item.title || item.body.slice(0,120)}))}
-        />
-
-        {/*
-          THE RTP ATTACHMENT, VISIBLE FROM THE CAMPAIGN SIDE. These two columns
-          were written only by the RTP cycle page's campaign creator and read by
-          nothing on this console — so a moderator triaging comments collected
-          for a plan could not see which plan, and the link was uneditable from
-          here. The display lives on the console; the edit lives in Campaign
-          management below (the same PATCH the rest of the metadata uses).
-        */}
-        <article className="module-section-surface">
-          <div className="module-section-header">
-            <div className="module-section-heading">
-              <p className="module-section-label">Regional plan</p>
-              <h2 className="module-section-title">RTP attachment</h2>
-              <p className="module-section-description">
-                Which Regional Transportation Plan cycle this campaign collects input for. Comments
-                on an attached campaign feed that plan&apos;s comment-response record instead of
-                being re-associated by hand later.
-              </p>
+          <article className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <h2 className="module-section-title">Comment categories</h2>
+              </div>
             </div>
-          </div>
-          <div className="mt-5">
-            {campaign.rtp_cycle_id === null ? (
-              <p className="text-sm text-muted-foreground">
-                This campaign is not attached to an RTP cycle. If its comments belong to a plan,
-                attach one under Campaign management at the bottom of this page.
-              </p>
-            ) : rtpCycleUnreadable ? (
-              <StateBlock
-                tone="danger"
-                title="The attached RTP cycle could not be read"
-                description="This campaign is attached to an RTP cycle, but that record could not be loaded. The attachment is still in place — this is a failed read, not a missing attachment."
-                compact
-              />
-            ) : !rtpCycle ? (
-              <StateBlock
-                tone="warning"
-                title="The attached RTP cycle could not be found"
-                description="This campaign records an attachment to an RTP cycle, but no such cycle came back. It may have been deleted; the attachment can be cleared or repointed under Campaign management below."
-                compact
-              />
+
+            <div className="mt-5">
+              {canManageContextLayers ? <EngagementCategoryCreator campaignId={campaign.id} /> : null}
+            </div>
+
+            {categoriesUnreadable ? (
+              <div className="mt-5">
+                <StateBlock
+                  tone="danger"
+                  title="This campaign's categories could not be read"
+                  description="OpenPlan cannot say whether this campaign has categories. Do not add duplicates on the strength of this screen. The list is missing, not empty."
+                  compact
+                />
+              </div>
+            ) : !(categories?.length) ? (
+              <div className="mt-5">
+                <EmptyState
+                  title="No categories yet"
+                  description="Add a few categories so comments can be sorted before you report on them."
+                  compact
+                />
+              </div>
             ) : (
-              <div className="module-record-row">
-                <div className="module-record-head">
-                  <div className="module-record-main">
-                    <div className="module-record-kicker">
-                      <StatusBadge tone="info">{titleizeEngagementValue(rtpCycle.status)}</StatusBadge>
-                      <span className="text-sm font-semibold text-foreground">{rtpCycle.title}</span>
+              <div className="mt-5 space-y-3">
+                {categorySummaries.map((category) => (
+                  <div key={category.categoryId} className="module-record-row">
+                    <div className="module-record-head">
+                      <div className="module-record-main">
+                        <div className="module-record-kicker">
+                          <StatusBadge tone="info">{category.label}</StatusBadge>
+                          <StatusBadge tone={category.flaggedCount > 0 ? "warning" : "neutral"}>
+                            {category.count} items
+                          </StatusBadge>
+                          {category.flaggedCount > 0 ? (
+                            <StatusBadge tone="warning">{category.flaggedCount} flagged</StatusBadge>
+                          ) : null}
+                        </div>
+                        <p className="module-record-summary">
+                          {category.description || "No description yet. This category is available for classification."}
+                        </p>
+                      </div>
                     </div>
-                    <p className="module-record-summary">
-                      {campaign.rtp_cycle_chapter_id === null
-                        ? "Comments land on the whole plan — no specific chapter is targeted."
-                        : rtpChapterUnreadable
-                          ? "A specific chapter is targeted, but its record could not be read."
-                          : rtpChapter
-                            ? `Targeted chapter: ${rtpChapter.title}`
-                            : "A specific chapter is targeted, but it could not be found — it may have been deleted."}
-                    </p>
+                    <MetaList>
+                      <MetaItem>{Math.round(category.shareOfItems * 100)}% of campaign items</MetaItem>
+                      <MetaItem>{category.pendingCount} pending</MetaItem>
+                      <MetaItem>{category.approvedCount} approved</MetaItem>
+                      <MetaItem>Last activity {fmtDateTime(category.lastActivityAt)}</MetaItem>
+                    </MetaList>
+                    {canManageContextLayers && categories?.find(row => row.id === category.categoryId) ? <EngagementCategoryEditor key={categories.find(row => row.id === category.categoryId)!.updated_at} campaignId={campaign.id} category={categories.find(row => row.id === category.categoryId)!} /> : null}
                   </div>
-                </div>
-                <MetaList>
-                  <MetaItem>
-                    <Link
-                      href={`/rtp/${rtpCycle.id}`}
-                      className="underline underline-offset-2 transition hover:text-foreground"
-                    >
-                      Open the RTP cycle
-                    </Link>
-                  </MetaItem>
-                </MetaList>
+                ))}
+
+                {uncategorizedSummary && uncategorizedSummary.count > 0 ? (
+                  <div className="module-record-row">
+                    <div className="module-record-head">
+                      <div className="module-record-main">
+                        <div className="module-record-kicker">
+                          <StatusBadge tone="warning">{uncategorizedSummary.label}</StatusBadge>
+                          <StatusBadge tone="warning">{uncategorizedSummary.count} items</StatusBadge>
+                        </div>
+                        <p className="module-record-summary">{uncategorizedSummary.description}</p>
+                      </div>
+                    </div>
+                    <MetaList>
+                      <MetaItem>{uncategorizedSummary.pendingCount} pending</MetaItem>
+                      <MetaItem>{uncategorizedSummary.flaggedCount} flagged</MetaItem>
+                      <MetaItem>Last activity {fmtDateTime(uncategorizedSummary.lastActivityAt)}</MetaItem>
+                    </MetaList>
+                  </div>
+                ) : null}
               </div>
             )}
-          </div>
-        </article>
+          </article>
 
-        <article className="module-section-surface">
-          <div className="module-section-header">
-            <div className="module-section-heading">
-              <p className="module-section-label">Category Registry</p>
-              <h2 className="module-section-title">Current categories</h2>
-              <p className="module-section-description">
-                Category structure stays intentionally light, and each category shows its item volume and moderation load.
-              </p>
+          <EngagementSurveyBuilder
+            campaignId={campaign.id}
+            categories={builderCategories}
+            initialQuestions={surveyQuestions}
+          />
+        </section>
+
+        <SetupAdvancedGroup summary="Map layers, translations, offline comments, other ways to take part, RTP, settings and public access.">
+          <EngagementContextLayersPanel
+            campaignId={campaign.id}
+            layers={contextLayers.layers}
+            readFailure={contextLayers.readFailure}
+            canWrite={canManageContextLayers}
+          />
+
+          <CampaignTranslationsPanel
+            key={`${user.id}:${campaign.workspace_id}:${campaign.id}`}
+            userId={user.id}
+            workspaceId={campaign.workspace_id}
+            snapshot={translationState.snapshot}
+            campaignId={campaign.id}
+            fields={translationState.fields}
+            entries={translationState.entries}
+            coverage={translationState.coverage}
+            sourceLocale={translationState.sourceLocale}
+            sourceLocaleStated={translationState.sourceLocaleStated}
+            readFailures={translationState.readFailures}
+            translationsReadable={translationState.translationsReadable}
+            inventoryComplete={translationState.inventoryComplete}
+            sourceLocaleReadable={translationState.sourceLocaleReadable}
+            machineTranslationAvailable={machineTranslationAvailable}
+            machineBatchMax={MACHINE_TRANSLATION_BATCH_MAX}
+            acceptBatchMax={TRANSLATION_ACCEPT_BATCH_MAX}
+            canWrite={canManageContextLayers}
+          />
+
+          <article className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <p className="module-section-label">Offline comments</p>
+                <h2 className="module-section-title">Comments that did not come through the portal</h2>
+                <p className="module-section-description">
+                  Open house notes, comment cards, the project inbox. Comments not entered here are missing
+                  from every summary on this page, and portal comments lean toward people with a device
+                  and a data plan.
+                </p>
+              </div>
             </div>
-          </div>
-
-          <div className="mt-5">
-            {canManageContextLayers ? <EngagementCategoryCreator campaignId={campaign.id} /> : null}
-          </div>
-
-          {categoriesUnreadable ? (
             <div className="mt-5">
-              <StateBlock
-                tone="danger"
-                title="This campaign's categories could not be read"
-                description="OpenPlan cannot say whether this campaign has categories. Do not add duplicates on the strength of this screen — the list is missing, not empty."
-                compact
+              <CommentImportPanel campaignId={campaign.id} />
+            </div>
+          </article>
+
+          <article className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <p className="module-section-label">Taking part another way</p>
+                <h2 className="module-section-title">If a resident cannot use the portal</h2>
+                <p className="module-section-description">
+                  The contact a resident reaches when the page does not work for them, in your
+                  agency&apos;s words, shown on the public portal in the resident&apos;s language.
+                  OpenPlan makes no claim that the portal meets any accessibility standard, and this is
+                  not one.
+                </p>
+              </div>
+            </div>
+            <div className="mt-5">
+              <CampaignAccessibilityEditor
+                campaignId={campaign.id}
+                portalIsLive={Boolean(campaign.share_token) && campaign.allow_public_submissions && !campaign.submissions_closed_at}
+                initial={{
+                  contactLabel: campaign.accessibility_contact_label,
+                  contactEmail: campaign.accessibility_contact_email,
+                  contactPhone: campaign.accessibility_contact_phone,
+                  alternateFormats: campaign.accessibility_alternate_formats,
+                }}
               />
             </div>
-          ) : !(categories?.length) ? (
-            <div className="mt-5">
-              <EmptyState
-                title="No categories yet"
-                description="Add a few categories so intake can be classified before downstream reports rely on it."
-                compact
-              />
-            </div>
-          ) : (
-            <div className="mt-5 space-y-3">
-              {categorySummaries.map((category) => (
-                <div key={category.categoryId} className="module-record-row">
-                  <div className="module-record-head">
-                    <div className="module-record-main">
-                      <div className="module-record-kicker">
-                        <StatusBadge tone="info">{category.label}</StatusBadge>
-                        <StatusBadge tone={category.flaggedCount > 0 ? "warning" : "neutral"}>
-                          {category.count} items
-                        </StatusBadge>
-                        {category.flaggedCount > 0 ? (
-                          <StatusBadge tone="warning">{category.flaggedCount} flagged</StatusBadge>
-                        ) : null}
-                      </div>
-                      <p className="module-record-summary">
-                        {category.description || "No description yet. This category is available for classification."}
-                      </p>
-                    </div>
-                  </div>
-                  <MetaList>
-                    <MetaItem>{Math.round(category.shareOfItems * 100)}% of campaign items</MetaItem>
-                    <MetaItem>{category.pendingCount} pending</MetaItem>
-                    <MetaItem>{category.approvedCount} approved</MetaItem>
-                    <MetaItem>Last activity {fmtDateTime(category.lastActivityAt)}</MetaItem>
-                  </MetaList>
-                  {canManageContextLayers && categories?.find(row => row.id === category.categoryId) ? <EngagementCategoryEditor key={categories.find(row => row.id === category.categoryId)!.updated_at} campaignId={campaign.id} category={categories.find(row => row.id === category.categoryId)!} /> : null}
-                </div>
-              ))}
+          </article>
 
-              {uncategorizedSummary && uncategorizedSummary.count > 0 ? (
+          {/*
+            THE RTP ATTACHMENT, VISIBLE FROM THE CAMPAIGN SIDE. These two columns
+            were written only by the RTP cycle page's campaign creator and read by
+            nothing on this console, so a moderator triaging comments collected
+            for a plan could not see which plan. The display lives here; the edit
+            lives in Campaign metadata below (the same PATCH the rest of the
+            metadata uses).
+          */}
+          <article className="module-section-surface">
+            <div className="module-section-header">
+              <div className="module-section-heading">
+                <p className="module-section-label">Regional plan</p>
+                <h2 className="module-section-title">RTP attachment</h2>
+                <p className="module-section-description">
+                  The Regional Transportation Plan these comments feed, so they reach its comment
+                  responses without being sorted again by hand.
+                </p>
+              </div>
+            </div>
+            <div className="mt-5">
+              {campaign.rtp_cycle_id === null ? (
+                <p className="text-sm text-muted-foreground">
+                  This campaign is not attached to an RTP cycle. If its comments belong to a plan,
+                  attach one under Campaign metadata below.
+                </p>
+              ) : rtpCycleUnreadable ? (
+                <StateBlock
+                  tone="danger"
+                  title="The attached RTP cycle could not be read"
+                  description="This campaign is attached to an RTP cycle, but that record could not be loaded. The attachment is still in place. This is a failed read, not a missing attachment."
+                  compact
+                />
+              ) : !rtpCycle ? (
+                <StateBlock
+                  tone="warning"
+                  title="The attached RTP cycle could not be found"
+                  description="This campaign records an attachment to an RTP cycle, but no such cycle came back. It may have been deleted; the attachment can be cleared or repointed under Campaign metadata below."
+                  compact
+                />
+              ) : (
                 <div className="module-record-row">
                   <div className="module-record-head">
                     <div className="module-record-main">
                       <div className="module-record-kicker">
-                        <StatusBadge tone="warning">{uncategorizedSummary.label}</StatusBadge>
-                        <StatusBadge tone="warning">{uncategorizedSummary.count} items</StatusBadge>
+                        <StatusBadge tone="info">{titleizeEngagementValue(rtpCycle.status)}</StatusBadge>
+                        <span className="text-sm font-semibold text-foreground">{rtpCycle.title}</span>
                       </div>
-                      <p className="module-record-summary">{uncategorizedSummary.description}</p>
+                      <p className="module-record-summary">
+                        {campaign.rtp_cycle_chapter_id === null
+                          ? "Comments land on the whole plan. No specific chapter is targeted."
+                          : rtpChapterUnreadable
+                            ? "A specific chapter is targeted, but its record could not be read."
+                            : rtpChapter
+                              ? `Targeted chapter: ${rtpChapter.title}`
+                              : "A specific chapter is targeted, but it could not be found. It may have been deleted."}
+                      </p>
                     </div>
                   </div>
                   <MetaList>
-                    <MetaItem>{uncategorizedSummary.pendingCount} pending</MetaItem>
-                    <MetaItem>{uncategorizedSummary.flaggedCount} flagged</MetaItem>
-                    <MetaItem>Last activity {fmtDateTime(uncategorizedSummary.lastActivityAt)}</MetaItem>
+                    <MetaItem>
+                      <Link
+                        href={`/rtp/${rtpCycle.id}`}
+                        className="underline underline-offset-2 transition hover:text-foreground"
+                      >
+                        Open the RTP cycle
+                      </Link>
+                    </MetaItem>
                   </MetaList>
                 </div>
-              ) : null}
+              )}
             </div>
-          )}
-        </article>
+          </article>
 
-        <EngagementContextLayersPanel
-          campaignId={campaign.id}
-          layers={contextLayers.layers}
-          readFailure={contextLayers.readFailure}
-          canWrite={canManageContextLayers}
-        />
-
-        <article className="module-section-surface">
-          <div className="module-section-header">
-            <div className="module-section-heading">
-              <p className="module-section-label">Offline input</p>
-              <h2 className="module-section-title">Comments that did not come through the portal</h2>
-              <p className="module-section-description">
-                The open house, the comment cards, the project inbox, the council transcript. Everything
-                this page says about the campaign is computed over the comments it holds, so input that
-                never got entered is missing from the synthesis, the representativeness reading and the
-                appendix — and it is missing in a predictable direction, because portal submissions skew
-                toward people with a device and a data plan.
-              </p>
-            </div>
-          </div>
-          <div className="mt-5">
-            <CommentImportPanel campaignId={campaign.id} />
-          </div>
-        </article>
-
-        <article className="module-section-surface">
-          <div className="module-section-header">
-            <div className="module-section-heading">
-              <p className="module-section-label">Taking part another way</p>
-              <h2 className="module-section-title">If a resident cannot use the portal</h2>
-              <p className="module-section-description">
-                A map, a form and a comment feed each have people they do not work for. This is the
-                contact a resident reaches when the page is not usable for them — your agency&apos;s
-                words, not OpenPlan&apos;s, shown on the public portal in the resident&apos;s language.
-                OpenPlan makes no claim that the portal meets any accessibility standard, and this is
-                not one.
-              </p>
-            </div>
-          </div>
-          <div className="mt-5">
-            <CampaignAccessibilityEditor
-              campaignId={campaign.id}
-              portalIsLive={Boolean(campaign.share_token) && campaign.allow_public_submissions && !campaign.submissions_closed_at}
-              initial={{
-                contactLabel: campaign.accessibility_contact_label,
-                contactEmail: campaign.accessibility_contact_email,
-                contactPhone: campaign.accessibility_contact_phone,
-                alternateFormats: campaign.accessibility_alternate_formats,
-              }}
-            />
-          </div>
-        </article>
-
-        <CampaignTranslationsPanel
-          key={`${user.id}:${campaign.workspace_id}:${campaign.id}`}
-          userId={user.id}
-          workspaceId={campaign.workspace_id}
-          snapshot={translationState.snapshot}
-          campaignId={campaign.id}
-          fields={translationState.fields}
-          entries={translationState.entries}
-          coverage={translationState.coverage}
-          sourceLocale={translationState.sourceLocale}
-          sourceLocaleStated={translationState.sourceLocaleStated}
-          readFailures={translationState.readFailures}
-          translationsReadable={translationState.translationsReadable}
-          inventoryComplete={translationState.inventoryComplete}
-          sourceLocaleReadable={translationState.sourceLocaleReadable}
-          machineTranslationAvailable={machineTranslationAvailable}
-          machineBatchMax={MACHINE_TRANSLATION_BATCH_MAX}
-          acceptBatchMax={TRANSLATION_ACCEPT_BATCH_MAX}
-          canWrite={canManageContextLayers}
-        />
-
-      <EngagementSetupReuse campaignId={campaign.id} configurationVersionId={campaign.configuration_version_id} canWrite={canManageContextLayers} />
-      <EngagementOperatorActions
-        campaign={{ ...campaign, public_slug: publicSlug }}
-        projects={(projects ?? []) as Array<{ id: string; name: string }>}
-        categories={builderCategories}
-      />
+          <EngagementSetupReuse campaignId={campaign.id} configurationVersionId={campaign.configuration_version_id} canWrite={canManageContextLayers} />
+          <EngagementOperatorActions
+            campaign={{ ...campaign, public_slug: publicSlug }}
+            projects={(projects ?? []) as Array<{ id: string; name: string }>}
+            categories={builderCategories}
+            timeZone={workspaceCalendar.timeZone}
+            calendar={{ timeZone: workspaceCalendar.timeZone, source: workspaceCalendar.source }}
+          />
+        </SetupAdvancedGroup>
         </div>
       </PageTabPanel>
 
@@ -1102,6 +1099,22 @@ export default async function EngagementCampaignDetailPage({
             questions={surveyResults.questions}
           />
         ) : null}
+
+        {/*
+          REPORTING BACK, after the comments it answers. It sat on Setup, above
+          the categories, before any comment existed; its sources are the
+          approved comments listed above.
+        */}
+        <EngagementCloseLoopBuilder
+          workspaceId={campaign.workspace_id}
+          key={`${user.id}:${campaign.id}`}
+          userId={user.id}
+          campaignId={campaign.id}
+          categories={builderCategories}
+          initialEntries={closeLoopEntries.rows}
+          initialReadError={Boolean(closeLoopEntries.error)}
+          sourceItems={(items ?? []).filter(item => item.status === "approved").map(item => ({id:item.id,title:item.title || item.body.slice(0,120)}))}
+        />
         </div>
       </PageTabPanel>
 
@@ -1283,7 +1296,11 @@ export default async function EngagementCampaignDetailPage({
       </PageTabPanel>
 
       <PageTabPanel tabKey="record" active={activeTab === "record"}>
-        <EngagementReviewFiles campaignId={campaign.id} categories={categories ?? []} />
+        <EngagementReviewFiles
+          campaignId={campaign.id}
+          categories={categories ?? []}
+          calendar={{ timeZone: workspaceCalendar.timeZone, source: workspaceCalendar.source }}
+        />
         <div className="mt-6 min-w-0 space-y-6">
         <CampaignHandoffReadinessSection
           handoffReadiness={handoffReadiness}

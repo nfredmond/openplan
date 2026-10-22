@@ -45,7 +45,7 @@ describe("OWP review records",()=>{
   const source=MY_WORK_SOURCES.find(row=>row.id==='work_program_reviews')!;
   expect(source.select).toContain('assignee_user_id, due_on, status');
   expect(source.staticFilters).toEqual([{kind:'in',column:'status',values:['pending','returned']}]);
-  const item=source.toItems([{id:'review',program_id:'program',assignee_user_id:'reviewer',due_on:null,status:'pending',programs:{title:'Synthetic OWP'}}],{now:new Date('2026-09-07'),limitPerSource:10})[0];
+  const item=source.toItems([{id:'review',program_id:'program',assignee_user_id:'reviewer',due_on:null,status:'pending',programs:{title:'Synthetic OWP'}}],{now:new Date('2026-09-07'),limitPerSource:10,timeZone:'UTC'})[0];
   expect(item).toMatchObject({block:'undated',dueOn:null,href:'/programs/program/work-program#work-program-review',title:'Review Synthetic OWP',assigneeUserId:'reviewer',badge:{label:'OWP review',tone:'neutral'}});
  });
 });

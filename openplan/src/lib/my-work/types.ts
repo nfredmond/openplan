@@ -68,6 +68,7 @@ export const MY_WORK_SOURCE_IDS = [
   "land_use_plan_process",
   "land_use_plan_review_closing",
   "grant_decisions",
+  "grant_application_due",
   "award_obligations",
   "invoice_windows",
 ] as const;

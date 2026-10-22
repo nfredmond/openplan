@@ -4,6 +4,7 @@ import type { ProjectCorridorRow } from "@/lib/cartographic/project-corridor-rec
 import { ProviderRequestError, type ProviderService, type ProviderUserClient } from "@/lib/assistant/provider-server";
 import { buildMapPackageBrief, type MapPackageBriefProject } from "./brief";
 import type { MapPackageDeliverable } from "./catalog";
+import { checkWorkspaceStorageRoom } from "@/lib/workspaces/storage-quota";
 import { MAP_PACKAGE_FILE_LIMITS, type MapPackageFileRole } from "./contracts";
 
 const MAP_PACKAGE_BUCKET = "project-map-packages";
@@ -63,6 +64,16 @@ export async function loadMapPackageBrief(client: ProviderUserClient, input: {
     practice: input.practice,
     capturedAt: input.capturedAt,
   });
+}
+
+/**
+ * Refuse before any upload URL exists when the files would put the workspace
+ * over its storage limit, or when its current use cannot be read.
+ */
+export async function requireMapPackageStorageRoom(service: ProviderService, workspaceId: string, bytes: number) {
+  const room = await checkWorkspaceStorageRoom(service, workspaceId, bytes);
+  if (room.status === "full") throw new ProviderRequestError("workspace_storage_full", 413);
+  if (room.status === "unreadable") throw new ProviderRequestError("workspace_storage_unavailable", 503);
 }
 
 export async function signedMapPackageUpload(service: ProviderService, objectPath: string) {

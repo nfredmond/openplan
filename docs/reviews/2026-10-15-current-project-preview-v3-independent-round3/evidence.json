@@ -1,0 +1,813 @@
+{
+  "integrationCommit": "4373e82872b743694f0b463f08b43856ba79ee36",
+  "packetCandidateCommit": "a968f2ec4ed6dd018b82fe09c4d6558c16a4dca3",
+  "appHead": "21510042e94bcaf80f262205ad156a7bb639e35c",
+  "manifestSha256": "011bdb57b4eb347660fbbde6c5bbdb88738995314b22bf6ba82b2a226e3fae14",
+  "audit": {
+    "integrationCommit": "4373e82872b743694f0b463f08b43856ba79ee36",
+    "appHead": "21510042e94bcaf80f262205ad156a7bb639e35c",
+    "runtimeMechanical": true,
+    "manifestSha256": "011bdb57b4eb347660fbbde6c5bbdb88738995314b22bf6ba82b2a226e3fae14",
+    "installedOperationFiles": {
+      "run_stage_v3.sh": "34339836f8503af3e583ca24ed5b74ddb6d764c6802b52d830809c8c1796353e",
+      "app_binding_v1.py": "c195d3be5eb3bcafb016f8794bf77e704d940bbf878bd725a874d85559c58329",
+      "attest_start_v1.py": "0f62106d862c4f691cd87ffdaee6c277f93f01908cadfbcf7c686c365fd27665",
+      "binding-private.json": "493af5c631b4b420d6f5b6c0723879e9d555240395a41aca7dde367051f0070f",
+      "app-env-private.json": "a62b271a418901db0965f77e54b3e646196e0b3912230efd819f1849ad36f205",
+      "app-v1.env": "a283c64f3002d46ad879ea313f618166b94ff7712e3c9d7fd8dba11f977b69f9",
+      "migrations.json": "56c984affb04f643bd3ccc74e7c4258771253cb7bbadcbbe6d130039cccc5317",
+      "dependency-binding.json": "75ffc3b6ddf0e6f934f9c0a070f475b648209b1f3c4cad67cf21142ed4571b3d",
+      "recovery-active-binding.json": "362c039646e1e561c1ae37fb5cab2fc45d80f6aedd7123ba46379960caf9416b"
+    },
+    "changedApplicationFiles": [
+      "openplan/src/app/(app)/projects/[projectId]/_components/_types.ts",
+      "openplan/src/test/project-detail-page.test.tsx",
+      "openplan/src/test/report-generate-route.test.ts",
+      "openplan/src/test/the-deliverable-update-control-is-reachable.test.tsx",
+      "openplan/src/test/the-record-reassignment-control-is-reachable.test.tsx"
+    ],
+    "productionChanges": [
+      "openplan/src/app/(app)/projects/[projectId]/_components/_types.ts"
+    ],
+    "compilerReceiptHashesMatch": true,
+    "compilerAttempt02": {
+      "before": {
+        "head": "21510042e94bcaf80f262205ad156a7bb639e35c",
+        "status": "",
+        "resources": {
+          "memory.max": "8589934592",
+          "memory.swap.max": "0",
+          "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+          "memory.peak": "16953344",
+          "memory.swap.current": "0",
+          "cpu.max": "100000 100000"
+        }
+      },
+      "after": {
+        "head": "21510042e94bcaf80f262205ad156a7bb639e35c",
+        "status": "",
+        "resources": {
+          "memory.max": "8589934592",
+          "memory.swap.max": "0",
+          "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+          "memory.peak": "5874405376",
+          "memory.swap.current": "0",
+          "cpu.max": "100000 100000"
+        }
+      },
+      "command": [
+        "/usr/bin/bwrap",
+        "--die-with-parent",
+        "--unshare-net",
+        "--ro-bind",
+        "/",
+        "/",
+        "--bind",
+        "/home/nathaniel/.local/state/openplan/project-combined-full-types-20261015-02",
+        "/home/nathaniel/.local/state/openplan/project-combined-full-types-20261015-02",
+        "--tmpfs",
+        "/tmp",
+        "--dev",
+        "/dev",
+        "--proc",
+        "/proc",
+        "--chdir",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-e33fc359/openplan",
+        "/usr/bin/env",
+        "-i",
+        "PATH=/usr/bin:/bin",
+        "HOME=/home/nathaniel/.local/state/openplan/project-combined-full-types-20261015-02/home",
+        "NODE_OPTIONS=--max-old-space-size=6144",
+        "XDG_CACHE_HOME=/home/nathaniel/.local/state/openplan/project-combined-full-types-20261015-02/cache",
+        "/usr/bin/node",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-e33fc359/openplan/node_modules/typescript/bin/tsc",
+        "--project",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-e33fc359/openplan/tsconfig.json",
+        "--noEmit",
+        "--incremental",
+        "false",
+        "--pretty",
+        "false"
+      ],
+      "exitCode": 0,
+      "seconds": 92.59529607900186,
+      "compilerLogSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tsconfigSha256": "cb3404493257250c77d7145c9825ed31f79246b640eb30a59b8069d39091bf29",
+      "scope": "Full unchanged project tsconfig with all implementation/test roots and actual generated Next declaration inputs; noEmit, incremental output disabled. No source-specific diagnostic selection or new exclusions."
+    },
+    "dependencyBindingDigest": "5bff54066d812bfaabb4a864ff8f50e90e616e68aed0c0097bf392d2e832834c",
+    "migrationDigest": "1f7ce06758c8a3e64d4a89cb4359d4035a38ffb5f18f9ce84c552876906c8ad4",
+    "counts": {
+      "migrations": 419,
+      "nonRootLock": 1143,
+      "installedPackages": 969
+    },
+    "oldRootEntries": {
+      "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/project-geography-preview-final-20261015": 20640,
+      "/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015": 3233,
+      "/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2": 27722,
+      "/home/nathaniel/.local/state/openplan/rest-recovery-parent-operation-20261015-01": 6,
+      "/home/nathaniel/.t3/worktrees/openplan/t3-c2662e5b/docs/reviews/2026-10-15-current-project-preview-health-contract-fix": 22,
+      "/home/nathaniel/.t3/worktrees/openplan/t3-c2662e5b/docs/reviews/2026-10-15-current-project-preview-app-binding": 15,
+      "/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3": 2728,
+      "/home/nathaniel/.t3/worktrees/openplan/t3-f7deea0c/docs/reviews/2026-10-15-current-project-preview-app-binding-v3": 27,
+      "/home/nathaniel/.t3/worktrees/openplan/t3-f7deea0c/docs/reviews/2026-10-15-current-project-preview-app-binding-independent": 12,
+      "/home/nathaniel/.t3/worktrees/openplan/t3-f7deea0c/docs/reviews/2026-10-15-current-project-preview-app-binding-independent-round2": 12
+    },
+    "inventoryControls": [
+      "harmless read survived",
+      "bytes detected",
+      "mode detected",
+      "link detected"
+    ],
+    "candidateAbsent": true,
+    "executionFiles": [],
+    "nullJournalAccountingUnits": [
+      "openplan-binding-v3-identity-01.service",
+      "openplan-binding-v3-composition-01.service",
+      "openplan-binding-v3-mechanical-01.service",
+      "openplan-binding-v3-entry-01.service"
+    ],
+    "retainedReportingFailures": [
+      {
+        "unit": "openplan-binding-v3-seal-01.service",
+        "exitCode": 1,
+        "reason": "private-mode:entry-specimens/03-active-check/fake-bin/sha256sum",
+        "failedSourceSha256": "503a3a3bbd01241fd2275b7ea4ec3566a03d0a9fa3b00988eabf07d22d671306",
+        "boundary": "Reporting-only mode assumption. No application operation or frozen-file change."
+      },
+      {
+        "unit": "openplan-binding-v3-finalize-01.service",
+        "exitCode": 1,
+        "reason": "StopIteration: short identity fixture unit journal has no MEMORY_PEAK summary",
+        "failedSourceSha256": "73c1281830a9634d7a750d195fe559b7740b352df1347a5dceb6a03a6fdbde69",
+        "boundary": "Reporting assumption only; short-unit tool result remains observed success. No absent journal resource value is supplied."
+      }
+    ],
+    "limits": [
+      "Read-only file and metadata evidence, no runtime readiness",
+      "Retained compiler result, no rerun or accepted Next build",
+      "Package manifests do not hash all installed JS",
+      "No live database/global/Storage or hostile-host proof"
+    ]
+  },
+  "identity": {
+    "cases": [
+      {
+        "case": "harmless attestor comment first",
+        "outcome": "survived"
+      },
+      {
+        "case": "actual 215 producer baseline",
+        "outcome": "survived"
+      },
+      {
+        "case": "old 678 HTTP prefix",
+        "outcome": "refused",
+        "reason": "attest-http-identity"
+      },
+      {
+        "case": "full SHA in HTTP",
+        "outcome": "refused",
+        "reason": "attest-http-identity"
+      },
+      {
+        "case": "old full process SHA",
+        "outcome": "refused",
+        "reason": "attest-process-environment"
+      },
+      {
+        "case": "short process SHA",
+        "outcome": "refused",
+        "reason": "attest-process-environment"
+      },
+      {
+        "case": "old web cgroup",
+        "outcome": "refused",
+        "reason": "attest-unit"
+      },
+      {
+        "case": "old fixed attestor unit",
+        "outcome": "refused",
+        "reason": "attestor-requested-wrong-unit"
+      },
+      {
+        "case": "old full-SHA HTTP comparison",
+        "outcome": "refused",
+        "reason": "attest-http-identity"
+      },
+      {
+        "case": "exact restored attestor",
+        "outcome": "survived"
+      }
+    ],
+    "mutations": [
+      {
+        "mutation": "old fixed attestor unit",
+        "outcome": "detected",
+        "reason": "attestor-requested-wrong-unit"
+      },
+      {
+        "mutation": "old full-SHA HTTP comparison",
+        "outcome": "detected",
+        "reason": "attest-http-identity"
+      },
+      {
+        "mutation": "remove process environment guard",
+        "outcome": "detected",
+        "reason": "removed process env guard:accepted-broken-behavior"
+      }
+    ],
+    "producer": {
+      "baseline": {
+        "payload": {
+          "status": "ok",
+          "service": "openplan",
+          "checkedAt": "2026-10-15T11:57:19.527Z",
+          "deployment": {
+            "commit": "21510042e94b",
+            "version": "0.68.0",
+            "migrations": {
+              "expected": 419,
+              "latest": "20261017000016"
+            }
+          },
+          "checks": {
+            "app": "ok",
+            "database": "not_checked"
+          }
+        },
+        "appCommitSha": "21510042e94bcaf80f262205ad156a7bb639e35c"
+      },
+      "old": {
+        "payload": {
+          "status": "ok",
+          "service": "openplan",
+          "checkedAt": "2026-10-15T11:57:19.827Z",
+          "deployment": {
+            "commit": "06a108010ab3",
+            "version": "0.68.0",
+            "migrations": {
+              "expected": 419,
+              "latest": "20261017000016"
+            }
+          },
+          "checks": {
+            "app": "ok",
+            "database": "not_checked"
+          }
+        },
+        "appCommitSha": "06a108010ab39aa42eed4c2bcda3e1371b8aa813"
+      },
+      "unknown": {
+        "payload": {
+          "status": "ok",
+          "service": "openplan",
+          "checkedAt": "2026-10-15T11:57:19.835Z",
+          "deployment": {
+            "commit": "unknown",
+            "version": "0.68.0",
+            "migrations": {
+              "expected": 419,
+              "latest": "20261017000016"
+            }
+          },
+          "checks": {
+            "app": "ok",
+            "database": "not_checked"
+          }
+        },
+        "appCommitSha": null
+      },
+      "migrationError": {
+        "payload": {
+          "status": "ok",
+          "service": "openplan",
+          "checkedAt": "2026-10-15T11:57:19.844Z",
+          "deployment": {
+            "commit": "21510042e94b",
+            "version": "0.68.0",
+            "migrations": null
+          },
+          "checks": {
+            "app": "ok",
+            "database": "not_checked"
+          }
+        },
+        "appCommitSha": "21510042e94bcaf80f262205ad156a7bb639e35c"
+      },
+      "mutations": [
+        {
+          "mutation": "harmless producer comment",
+          "outcome": "survived"
+        },
+        {
+          "mutation": "producer emits seven characters",
+          "outcome": "detected",
+          "reason": "actual route twelve-character contract"
+        },
+        {
+          "mutation": "producer drops self-hosted identity",
+          "outcome": "detected",
+          "reason": "full environment identity"
+        }
+      ],
+      "restored": true,
+      "sourceCommit": "21510042e94bcaf80f262205ad156a7bb639e35c",
+      "sourceHashes": {
+        "openplan/src/app/api/health/route.ts": "d9e42a2ca04795334020528a866eb937126933dbcb5b83fbb65fd00d4938e4b1",
+        "openplan/src/lib/runtime/app-version.ts": "c11775f33effc4e66672fbf8898b846e541c2ac66d7596f81d57798fa33199ae",
+        "openplan/src/lib/ops/migration-manifest.ts": "1128e4efaaa8b5da5208c934e4b674b1f0c68d08a24710e7f2d49b6cb9a00954",
+        "openplan/package.json": "a857e933382f3a990db3bcb036f579af8b9c044cb6b77509ae4daf71ed498e71"
+      },
+      "adapters": [
+        "NextResponse response object only",
+        "build-time OPENPLAN_BUILD_MIGRATION_VERSIONS from pinned git filenames"
+      ],
+      "limits": "No Next server, build, HTTP transport, installed schema census or live process evidence."
+    },
+    "restored": true,
+    "adapters": [
+      "Actual source producer fixture, assigned repo path",
+      "Supplied fixture builders only, new owned root",
+      "Git, npm, services, HTTP and proc acquisition replaced before invocation"
+    ],
+    "limits": [
+      "No build/server/transport/readiness proof",
+      "Full real attest consumer, synthetic acquisition and receipts",
+      "No hostile-host boundary"
+    ]
+  },
+  "composition": {
+    "cases": [
+      {
+        "case": "harmless comment",
+        "phase": "build",
+        "outcome": "survived",
+        "observed": {
+          "childCount": 1,
+          "protectedReads": 3,
+          "EROFS": 3,
+          "privateDirectoryWrites": 4,
+          "tmpWrite": true,
+          "ownedBuildCache": true,
+          "networkPolicy": "build",
+          "healthCommit": "21510042e94b"
+        },
+        "resources": {
+          "memory.max": "536870912",
+          "memory.swap.max": "0",
+          "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+          "cpu.max": "50000 100000",
+          "memory.peak": "9871360",
+          "memory.swap.current": "0"
+        },
+        "recipeSha256": "f2720cc5ec9a8c5a19f8c6f86c2012117bf47556d92bf3c6006eff17a503694a",
+        "subjectSha256": "da5c1fe0fa0645be49c95bf6c632b342acff1167bdae9f301589cfda36964ddc"
+      },
+      {
+        "case": "broken outer-inner composition",
+        "phase": "build",
+        "outcome": "detected",
+        "reason": "No permissions to create a new namespace",
+        "childCount": 0,
+        "recipeSha256": "113bb584fff33232137a54579d5cc2a177fc563997db78da3fb7f896f0932784",
+        "subjectSha256": "c195d3be5eb3bcafb016f8794bf77e704d940bbf878bd725a874d85559c58329"
+      },
+      {
+        "case": "writable donor",
+        "phase": "build",
+        "outcome": "detected",
+        "reason": "protected-write-permitted:original",
+        "childCount": 1,
+        "recipeSha256": "9398162a65cbfb524fb69f302d6948306f94b49813028397a4ff7596b8bc18a0",
+        "subjectSha256": "b8e5bc009a004a9eaa12d3a5679bb3d29df9527d4e27a1efa9db91511999c103"
+      },
+      {
+        "case": "wrong sealed subject",
+        "phase": "build",
+        "outcome": "detected",
+        "reason": "sealed-input-refused",
+        "childCount": 0,
+        "recipeSha256": "23dadb6ed591afb62bc02c4af5dd44fac1a88db216fb3c6f4d5d8884aa987d81",
+        "subjectSha256": "c195d3be5eb3bcafb016f8794bf77e704d940bbf878bd725a874d85559c58329"
+      },
+      {
+        "case": "remove seal check",
+        "phase": "build",
+        "outcome": "detected",
+        "reason": "sealed-input-accepted",
+        "childCount": 1,
+        "recipeSha256": "f2133db6701b347323e57b48b936c07c2676a93578fa6b3b27869af9e5379e35",
+        "subjectSha256": "c195d3be5eb3bcafb016f8794bf77e704d940bbf878bd725a874d85559c58329"
+      },
+      {
+        "case": "restored",
+        "phase": "build",
+        "outcome": "survived",
+        "observed": {
+          "childCount": 1,
+          "protectedReads": 3,
+          "EROFS": 3,
+          "privateDirectoryWrites": 4,
+          "tmpWrite": true,
+          "ownedBuildCache": true,
+          "networkPolicy": "build",
+          "healthCommit": "21510042e94b"
+        },
+        "resources": {
+          "memory.max": "536870912",
+          "memory.swap.max": "0",
+          "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+          "cpu.max": "50000 100000",
+          "memory.peak": "10678272",
+          "memory.swap.current": "0"
+        },
+        "recipeSha256": "64698dc987927c48848ce921e48cc5c66e40b4683676a81b77d3ee770204b058",
+        "subjectSha256": "c195d3be5eb3bcafb016f8794bf77e704d940bbf878bd725a874d85559c58329"
+      },
+      {
+        "case": "harmless comment",
+        "phase": "start",
+        "outcome": "survived",
+        "observed": {
+          "childCount": 1,
+          "protectedReads": 3,
+          "EROFS": 3,
+          "privateDirectoryWrites": 4,
+          "tmpWrite": true,
+          "ownedBuildCache": true,
+          "networkPolicy": "start",
+          "healthCommit": "21510042e94b"
+        },
+        "resources": {
+          "memory.max": "536870912",
+          "memory.swap.max": "0",
+          "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+          "cpu.max": "50000 100000",
+          "memory.peak": "10051584",
+          "memory.swap.current": "0"
+        },
+        "recipeSha256": "7d1d951036c1aaff52e4f7b90fbf859162a4eacbd713d44f78277107420eaf89",
+        "subjectSha256": "da5c1fe0fa0645be49c95bf6c632b342acff1167bdae9f301589cfda36964ddc"
+      },
+      {
+        "case": "broken outer-inner composition",
+        "phase": "start",
+        "outcome": "detected",
+        "reason": "No permissions to create a new namespace",
+        "childCount": 0,
+        "recipeSha256": "b1396385e885b99c4a831020b798998d57f2d160bf9b7b17e99b9dcf12c9d40e",
+        "subjectSha256": "c195d3be5eb3bcafb016f8794bf77e704d940bbf878bd725a874d85559c58329"
+      },
+      {
+        "case": "writable donor",
+        "phase": "start",
+        "outcome": "detected",
+        "reason": "protected-write-permitted:original",
+        "childCount": 1,
+        "recipeSha256": "f01dd6c0666b53406fe92cca37a7c9c60fbad4e08132f3031b84b006917449e2",
+        "subjectSha256": "b8e5bc009a004a9eaa12d3a5679bb3d29df9527d4e27a1efa9db91511999c103"
+      },
+      {
+        "case": "wrong sealed subject",
+        "phase": "start",
+        "outcome": "detected",
+        "reason": "sealed-input-refused",
+        "childCount": 0,
+        "recipeSha256": "3a8b1733b454f40b770e878f6783148024939763d71f0de21695fca364de4f4b",
+        "subjectSha256": "c195d3be5eb3bcafb016f8794bf77e704d940bbf878bd725a874d85559c58329"
+      },
+      {
+        "case": "remove seal check",
+        "phase": "start",
+        "outcome": "detected",
+        "reason": "sealed-input-accepted",
+        "childCount": 1,
+        "recipeSha256": "22faf72ce5659976162c089a160438339435719d5aef15e1fc305d69b72c463d",
+        "subjectSha256": "c195d3be5eb3bcafb016f8794bf77e704d940bbf878bd725a874d85559c58329"
+      },
+      {
+        "case": "restored",
+        "phase": "start",
+        "outcome": "survived",
+        "observed": {
+          "childCount": 1,
+          "protectedReads": 3,
+          "EROFS": 3,
+          "privateDirectoryWrites": 4,
+          "tmpWrite": true,
+          "ownedBuildCache": true,
+          "networkPolicy": "start",
+          "healthCommit": "21510042e94b"
+        },
+        "resources": {
+          "memory.max": "536870912",
+          "memory.swap.max": "0",
+          "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+          "cpu.max": "50000 100000",
+          "memory.peak": "10227712",
+          "memory.swap.current": "0"
+        },
+        "recipeSha256": "1ff8a815bc184d8a8bf9dec4f1f1b2b1e090e2305f26b24bf480c0d78fbcae6a",
+        "subjectSha256": "c195d3be5eb3bcafb016f8794bf77e704d940bbf878bd725a874d85559c58329"
+      }
+    ],
+    "restored": true,
+    "recipeSha256": "34339836f8503af3e583ca24ed5b74ddb6d764c6802b52d830809c8c1796353e",
+    "probeSha256": "66ed9f2443b725d9d06536ef511758d6be08096468164e757d594e80684c2958",
+    "controllerStandinSha256": "5e6d1c2d1b0985583762af1edfca1e84ec518adbf3ed108aa938bb37a1f45fcb",
+    "adapters": [
+      "owned specimen root and unit names",
+      "512 MiB fixture build budget",
+      "trusted controller business operation and npm payload replaced",
+      "fixture unit injects harmless PYTHONPATH sitecustomize trap"
+    ],
+    "limits": "No npm, app build/start, listener, real checkout, services, SQL or readiness acquisition; actual POSIX/systemd/inner bwrap construction and writes only."
+  },
+  "entry": {
+    "cases": [
+      {
+        "branch": "checkout",
+        "case": "harmless comment first",
+        "outcome": "survived",
+        "observed": {
+          "branch": "checkout",
+          "environmentKeys": [
+            "HOME",
+            "LC_CTYPE",
+            "PATH",
+            "PYTHONDONTWRITEBYTECODE"
+          ]
+        }
+      },
+      {
+        "branch": "checkout",
+        "case": "changed sealed input",
+        "outcome": "refused-before-systemd"
+      },
+      {
+        "branch": "checkout",
+        "case": "restored source",
+        "outcome": "survived",
+        "observed": {
+          "branch": "checkout",
+          "environmentKeys": [
+            "HOME",
+            "LC_CTYPE",
+            "PATH",
+            "PYTHONDONTWRITEBYTECODE"
+          ]
+        }
+      }
+    ],
+    "restored": true,
+    "limits": "Owned payload replaces business code before dispatch. No checkout, active check, attestation, Docker, HTTP or database operation. Trusted /bin/sh and systemd user manager remain assumptions."
+  },
+  "mechanicalOracle": {
+    "cases": [
+      {
+        "case": "harmless label first",
+        "outcome": "survived"
+      },
+      {
+        "case": "old HEAD",
+        "outcome": "refused",
+        "reason": "mechanical-runtime-delta"
+      },
+      {
+        "case": "old UNIT",
+        "outcome": "refused",
+        "reason": "mechanical-runtime-delta"
+      }
+    ],
+    "guardRemovalDetected": "old HEAD:accepted-broken-behavior",
+    "restored": true
+  },
+  "preservation": {
+    "roots": {
+      "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/project-geography-preview-final-20261015": 20640,
+      "/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015": 3233,
+      "/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2": 27722,
+      "/home/nathaniel/.local/state/openplan/rest-recovery-parent-operation-20261015-01": 6,
+      "/home/nathaniel/.t3/worktrees/openplan/t3-c2662e5b/docs/reviews/2026-10-15-current-project-preview-health-contract-fix": 22,
+      "/home/nathaniel/.t3/worktrees/openplan/t3-c2662e5b/docs/reviews/2026-10-15-current-project-preview-app-binding": 15,
+      "/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3": 2728,
+      "/home/nathaniel/.t3/worktrees/openplan/t3-f7deea0c/docs/reviews/2026-10-15-current-project-preview-app-binding-v3": 27,
+      "/home/nathaniel/.t3/worktrees/openplan/t3-f7deea0c/docs/reviews/2026-10-15-current-project-preview-app-binding-independent": 12,
+      "/home/nathaniel/.t3/worktrees/openplan/t3-f7deea0c/docs/reviews/2026-10-15-current-project-preview-app-binding-independent-round2": 12
+    },
+    "added": 0,
+    "removed": 0,
+    "changed": 0,
+    "candidateAbsent": true,
+    "executionEmpty": true
+  },
+  "retainedGeneratedDeclarations": {
+    "count": 446,
+    "allCurrentParentHashesMatch": true,
+    "newGeneration": false
+  },
+  "failedV2Build": {
+    "invocation": "c24248dcd7ba45c4959c78cc280ca97f",
+    "exit": 1,
+    "filesMatchFrozenRecord": true,
+    "acceptedBuild": false
+  },
+  "parentReadback": {
+    "checks": 22,
+    "allTrue": true,
+    "proofSha256": "4fc8f0c32394f332f5d39f989977c54b699b7be87e99b5510555e08bfd8529e5"
+  },
+  "units": [
+    {
+      "unit": "openplan-review-v3-r3-direction-01.service",
+      "configured": {
+        "MemoryMax": "512M",
+        "MemorySwapMax": "0",
+        "CPUQuota": "50%"
+      },
+      "terminalExit": 0,
+      "exitEvidence": "Retained unit success journal",
+      "journalAccounting": {
+        "MEMORY_PEAK": "88838144",
+        "MEMORY_SWAP_PEAK": "0",
+        "CPU_USAGE_NSEC": "862827000"
+      },
+      "journalSha256": "22a9339329bc05057b40dbcda1f42078a080ce65fc760f4ec333e961c26410ed"
+    },
+    {
+      "unit": "openplan-review-v3-r3-audit-01.service",
+      "configured": {
+        "MemoryMax": "512M",
+        "MemorySwapMax": "0",
+        "CPUQuota": "50%"
+      },
+      "terminalExit": 1,
+      "exitEvidence": "Tool terminal result",
+      "journalAccounting": {
+        "MEMORY_PEAK": "536870912",
+        "MEMORY_SWAP_PEAK": "0",
+        "CPU_USAGE_NSEC": "6114743000"
+      },
+      "journalSha256": "df2971be97508ec793ffe86ff37558c9b3ae7243151c535b18bee7b4c98be87f"
+    },
+    {
+      "unit": "openplan-review-v3-r3-audit-02.service",
+      "configured": {
+        "MemoryMax": "512M",
+        "MemorySwapMax": "0",
+        "CPUQuota": "50%"
+      },
+      "terminalExit": 0,
+      "exitEvidence": "Tool terminal result",
+      "journalAccounting": {
+        "MEMORY_PEAK": "536870912",
+        "MEMORY_SWAP_PEAK": "0",
+        "CPU_USAGE_NSEC": "6097045000"
+      },
+      "journalSha256": "9c5f091068f25b57852dc316ebcfd7e498c1da380027b0c112b7d9ccd08c624f"
+    },
+    {
+      "unit": "openplan-review-v3-r3-identity-01.service",
+      "configured": {
+        "MemoryMax": "512M",
+        "MemorySwapMax": "0",
+        "CPUQuota": "50%"
+      },
+      "terminalExit": 1,
+      "exitEvidence": "Tool terminal result",
+      "journalAccounting": {
+        "MEMORY_PEAK": "100622336",
+        "MEMORY_SWAP_PEAK": "0",
+        "CPU_USAGE_NSEC": "661981000"
+      },
+      "journalSha256": "c9af62742fd244dda8a7343980717450cc9a0fb4bf625dc399031fe89c21239e"
+    },
+    {
+      "unit": "openplan-review-v3-r3-identity-02.service",
+      "configured": {
+        "MemoryMax": "512M",
+        "MemorySwapMax": "0",
+        "CPUQuota": "50%"
+      },
+      "terminalExit": 1,
+      "exitEvidence": "Tool terminal result",
+      "journalAccounting": {
+        "MEMORY_PEAK": "100028416",
+        "MEMORY_SWAP_PEAK": "0",
+        "CPU_USAGE_NSEC": "1305442000"
+      },
+      "journalSha256": "ba587d16f96ce65db68d4c9b694ad950dc406da0477fcd86b8f52cafc8329bee"
+    },
+    {
+      "unit": "openplan-review-v3-r3-identity-03.service",
+      "configured": {
+        "MemoryMax": "512M",
+        "MemorySwapMax": "0",
+        "CPUQuota": "50%"
+      },
+      "terminalExit": 0,
+      "exitEvidence": "Tool terminal result",
+      "journalAccounting": {
+        "MEMORY_PEAK": "101638144",
+        "MEMORY_SWAP_PEAK": "0",
+        "CPU_USAGE_NSEC": "7890940000"
+      },
+      "journalSha256": "8db5f1cdc9dfdc8c0270f58aa9e254b02e41100555c9db84cf69c917ec5acfb7"
+    },
+    {
+      "unit": "openplan-review-v3-r3-composition-01.service",
+      "configured": {
+        "MemoryMax": "512M",
+        "MemorySwapMax": "0",
+        "CPUQuota": "50%"
+      },
+      "terminalExit": 1,
+      "exitEvidence": "Tool terminal result",
+      "journalAccounting": null,
+      "journalSha256": "db9fcce9d8cefe6b18f009459376c1b71f921b1d7028590c55fa0eede591f26b"
+    },
+    {
+      "unit": "openplan-review-v3-r3-composition-02.service",
+      "configured": {
+        "MemoryMax": "512M",
+        "MemorySwapMax": "0",
+        "CPUQuota": "50%"
+      },
+      "terminalExit": 0,
+      "exitEvidence": "Tool terminal result",
+      "journalAccounting": null,
+      "journalSha256": "21444332eef8ff2ba36711d83822a3ebe9facda13955ddd8f9ac92a4824cae7b"
+    }
+  ],
+  "reviewHarnessFailures": [
+    {
+      "unit": "audit-01",
+      "reason": "Wrong expected type-module path, corrected to _components/_types.ts"
+    },
+    {
+      "unit": "identity-01",
+      "reason": "Overstrict deployment equality omitted valid version field; corrected to compare identity fields"
+    },
+    {
+      "unit": "identity-02",
+      "reason": "HTTP stand-in omitted helper Request handling; restored inspected helper stand-in fallback"
+    },
+    {
+      "unit": "composition-01",
+      "reason": "Root relocation adapter used output root instead of sealed root; own unit refused missing controller.py before any business code; corrected adapter and added predispatch owned-root assertion"
+    }
+  ],
+  "scriptHashes": {
+    "final.py": "3806d1af6f6d25a9949e949e2ff642adb06d75e377f95d741f8e888b2de3d440",
+    "audit.py": "00500041e5a7953049fdd5b917c41f589303b615080fc03b701955a634e37cf9",
+    "identity.py": "5120517f333033a000bf73447e3ee21633731c68b170cce1ca04f46718776022",
+    "run.sh": "87d67b1aec27c57e46531dee90f5655a774073b12ac382406c5c45c0297ea38b",
+    "composition.py": "662bcfb1a7656f9e1d06d5fe38f6777d998fed5e6bd2b28dc6117af03626f173"
+  },
+  "privateEvidenceHashes": {
+    "identity.json": "cf0b312d9c7b1a0b78f1d06fe5319272fa8083d95c7a08efe3746ca55c6b9582",
+    "composition-failed-01.py": "cf1ee59afc29ffb4b94bb96aa2c3ce128bc008b724f5cac2f7420a1b4ca56597",
+    "composition.json": "96b0986b1e95c29c773051055bee972b0ab7b1f61e9032582545bebc9fa2be5b",
+    "audit-failed-01.py": "ba416eff8817df0ce85a4bd413e8776da4e2e0cc9a99fc1738dcd1dbf7471518",
+    "before-private.json": "1a9ae5286e47be7fcada51394af3760a6370dd154204d3d07307c090f31a34da",
+    "entry.json": "4651c0f8401d69864df101b468f35b13509da1d20edd3b103a8209ffa07eedcc",
+    "composition-adapted-failed-01.py": "acf476ae8fb84a857ceb6416219895a45cab181a9261fb74c9cfc84b7d901699",
+    "identity-failed-02.py": "bc867779cb219c17a847ad370e2d4c9f172a140fcc6c2abd0917a4e55e798545",
+    "identity-failed-01.py": "0610dc0ce58f1d327529b96922fad0027bcd6f21d8b6ede4286e24aba3aab8e7",
+    "producer.json": "207575c1a39a0f00ae70ef9806641da74d8224844cabb1b55866fe55ea35a965",
+    "audit-02/audit.json": "bafe30bdaf9487dec32936fb873b7587eb8ba160f2de99267e911bf836f6785e",
+    "audit-02/before-private.json": "1a9ae5286e47be7fcada51394af3760a6370dd154204d3d07307c090f31a34da"
+  },
+  "limitations": [
+    "No actual app checkout/build/start/listener/attestation or HTTP",
+    "No SQL, DB clone, helper/service transition, provider, browser/fallback or install",
+    "No repeated fullcompiler/fullQA/121+72 or native-artifact campaigns",
+    "Trusted controllers retain ordinary same-user filesystem/Docker permissions; resource caps are not OS confinement",
+    "No logical DB/global/Storage, concurrent-donor, hostile-host, crash/power-loss, large-build capacity or human/scientific acceptance",
+    "Missing short-unit journal accounting and event fields remain unobserved, not zero"
+  ],
+  "privacy": {
+    "knownValues": 9,
+    "harmlessSurvives": true,
+    "eachKnownInjectionDetected": true,
+    "blindCategory": "Unknown secrets and short/common values"
+  },
+  "finalUnit": {
+    "unit": "openplan-review-v3-r3-final-01.service",
+    "terminalExit": 0,
+    "exitEvidence": "Tool terminal result",
+    "configured": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "journalAccounting": {
+      "CPU_USAGE_NSEC": "5937171000",
+      "MEMORY_PEAK": "536870912",
+      "MEMORY_SWAP_PEAK": "0"
+    },
+    "privateJournalSha256": "ba38b6610615bc082c59e4b0f509aee4f76549f06319dd2dff1feec51dbfa565"
+  }
+}

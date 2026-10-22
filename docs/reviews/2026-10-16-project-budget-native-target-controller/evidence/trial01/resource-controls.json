@@ -1,0 +1,41 @@
+[
+  {
+    "name": "harmless-resource-comment",
+    "outcome": "SURVIVED"
+  },
+  {
+    "name": "memory.max",
+    "outcome": "KILLED",
+    "assertion": "resource-memory.max"
+  },
+  {
+    "name": "memory.swap.max",
+    "outcome": "KILLED",
+    "assertion": "resource-memory.swap.max"
+  },
+  {
+    "name": "cpu.max",
+    "outcome": "KILLED",
+    "assertion": "resource-cpu.max"
+  },
+  {
+    "name": "pids.max",
+    "outcome": "KILLED",
+    "assertion": "resource-pids.max"
+  },
+  {
+    "name": "root-ro",
+    "outcome": "KILLED",
+    "assertion": "resource-root-ro"
+  },
+  {
+    "name": "private-rw",
+    "outcome": "KILLED",
+    "assertion": "resource-private-rw"
+  },
+  {
+    "name": "unshared-net",
+    "outcome": "KILLED",
+    "assertion": "resource-unshared-net"
+  }
+]

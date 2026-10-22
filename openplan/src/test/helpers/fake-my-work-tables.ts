@@ -60,6 +60,7 @@ const RELATIONS: Record<string, Record<string, { fk: string; parent: string }>> 
     engagement_campaigns: { fk: "campaign_id", parent: "engagement_campaigns" },
   },
   engagement_campaigns: { projects: { fk: "project_id", parent: "projects" } },
+  program_work_program_reviews: { programs: { fk: "program_id", parent: "programs" } },
 };
 
 type SelectNode =
@@ -176,8 +177,21 @@ type Filter =
   /** Date bounds compare as strings, as ISO dates and timestamps do in PostgREST. */
   | { kind: "range"; column: string; op: "lt" | "gte" | "lte"; value: string };
 
-/** `col.is.null` / `col.not.in.(a,b)` — the only two shapes the loader builds. */
+/**
+ * `col.is.null`, `col.not.in.(a,b)`, a quoted date bound `col.lt."2026-10-10"`
+ * and `and(...)` of bounds: the shapes the loader builds.
+ */
 function evaluateOrClause(clause: string, row: Row): boolean {
+  const andMatch = /^and\((.*)\)$/.exec(clause.trim());
+  if (andMatch) return splitTopLevel(andMatch[1]).every((inner) => evaluateOrClause(inner, row));
+  const rangeMatch = /^([a-z_]+)\.(lt|gte|lte)\."([^"]*)"$/.exec(clause.trim());
+  if (rangeMatch) {
+    const [, column, op, bound] = rangeMatch;
+    const cell = row[column];
+    // NULL compares as unknown in PostgREST, so a bound never keeps it.
+    if (typeof cell !== "string") return false;
+    return op === "lt" ? cell < bound : op === "gte" ? cell >= bound : cell <= bound;
+  }
   const isNullMatch = /^([a-z_]+)\.is\.null$/.exec(clause.trim());
   if (isNullMatch) return row[isNullMatch[1]] === null || row[isNullMatch[1]] === undefined;
   const notInMatch = /^([a-z_]+)\.not\.in\.\(([^)]*)\)$/.exec(clause.trim());
@@ -297,32 +311,41 @@ type FakeResult = { data: unknown; error: { message: string } | null };
 export function createFakeSupabase(db: Db, failures: Record<string, string> = {}) {
   const selects: Record<string, string> = {};
   const limits: Record<string, number> = {};
+  /** Every read, with each chained call in order, so a test can assert the filter it relies on. */
+  const queries: Array<{ table: string; ops: Array<{ verb: string; args: unknown[] }> }> = [];
   const client = {
     from(table: string) {
       return {
         select(select: string) {
           selects[table] = select;
+          const ops: Array<{ verb: string; args: unknown[] }> = [];
+          queries.push({ table, ops });
           const filters: Filter[] = [];
           let order: { column: string; ascending: boolean } | null = null;
           let limitCount: number | null = null;
           const builder = {
             eq(column: string, value: unknown) {
+              ops.push({ verb: "eq", args: [column, value] });
               filters.push({ kind: "eq", path: column.split("."), value });
               return builder;
             },
             neq(column: string, value: unknown) {
+              ops.push({ verb: "neq", args: [column, value] });
               filters.push({ kind: "neq", column, value });
               return builder;
             },
             in(column: string, values: readonly string[]) {
+              ops.push({ verb: "in", args: [column, values] });
               filters.push({ kind: "in", column, values });
               return builder;
             },
             is(column: string, value: null) {
+              ops.push({ verb: "is", args: [column, value] });
               filters.push({ kind: "or", clauses: [`${column}.is.${String(value)}`] });
               return builder;
             },
             not(column: string, operator: string, value: unknown) {
+              ops.push({ verb: "not", args: [column, operator, value] });
               if (operator === "is" && value === null) {
                 filters.push({ kind: "notNull", column });
                 return builder;
@@ -339,26 +362,32 @@ export function createFakeSupabase(db: Db, failures: Record<string, string> = {}
               throw new Error(`fake cannot apply not(${column}, ${operator})`);
             },
             or(filter: string) {
+              ops.push({ verb: "or", args: [filter] });
               filters.push({ kind: "or", clauses: splitTopLevel(filter) });
               return builder;
             },
             lt(column: string, value: string) {
+              ops.push({ verb: "lt", args: [column, value] });
               filters.push({ kind: "range", column, op: "lt", value });
               return builder;
             },
             gte(column: string, value: string) {
+              ops.push({ verb: "gte", args: [column, value] });
               filters.push({ kind: "range", column, op: "gte", value });
               return builder;
             },
             lte(column: string, value: string) {
+              ops.push({ verb: "lte", args: [column, value] });
               filters.push({ kind: "range", column, op: "lte", value });
               return builder;
             },
             order(column: string, options?: { ascending?: boolean }) {
+              ops.push({ verb: "order", args: [column, options] });
               order = { column, ascending: options?.ascending === true };
               return builder;
             },
             limit(count: number) {
+              ops.push({ verb: "limit", args: [count] });
               limitCount = count;
               limits[table] = count;
               return builder;
@@ -376,7 +405,7 @@ export function createFakeSupabase(db: Db, failures: Record<string, string> = {}
       };
     },
   };
-  return { client, selects, limits };
+  return { client, selects, limits, queries };
 }
 
 // ── Fixtures ────────────────────────────────────────────────────────────────
@@ -949,6 +978,7 @@ export async function loadSeededMyWork(
     failures?: Record<string, string>;
     limitPerSource?: number;
     db?: Db;
+    timeZone?: string;
   } = {}
 ): Promise<{
   result: MyWorkResult;
@@ -963,6 +993,7 @@ export async function loadSeededMyWork(
     roster: options.roster ?? ROSTER,
     limitPerSource: options.limitPerSource,
     now: NOW,
+    timeZone: options.timeZone ?? "UTC",
   });
   return { result, selects, limits };
 }

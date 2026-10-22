@@ -1,0 +1,156 @@
+{
+  "trials": [
+    {
+      "label": "controls-baseline",
+      "exitCode": 0,
+      "logSHA256": "740a24ea8300aa0b5088b75b38beb1f697ecfc2547bbbadc50b52c4b1e78073f",
+      "passed": true,
+      "intendedAssertion": false
+    },
+    {
+      "label": "harmless-installer-guidance",
+      "exitCode": 0,
+      "logSHA256": "8204af3250540e30e06eefd719cde8e06d05316a5cabe60188526f8128ec5f58",
+      "passed": true,
+      "intendedAssertion": false
+    },
+    {
+      "label": "harmless-installer-guidance-cli",
+      "exitCode": 0,
+      "logSHA256": "a9675df54787fe45c8a3a056a0f36472bf56c2e77fa786b655c3a25f33ba94d9",
+      "passed": true,
+      "intendedAssertion": false
+    },
+    {
+      "label": "pin-version",
+      "exitCode": 1,
+      "logSHA256": "92e3dc76d52262d64f31d36f7148fa20897a2b1a0bec7cff550831555bcf5572",
+      "passed": false,
+      "intendedAssertion": true,
+      "scope": "behavior"
+    },
+    {
+      "label": "owning-prefix",
+      "exitCode": 1,
+      "logSHA256": "4b2cf46b935bd751122014230aa4eb58a08447ef7854e9ede9e784ce645738e0",
+      "passed": false,
+      "intendedAssertion": true,
+      "scope": "behavior"
+    },
+    {
+      "label": "npm-layout",
+      "exitCode": 1,
+      "logSHA256": "d8dcaecdee08dd773957ea74ba6f22a49467faa0eeb91ec6b1b5f1b62fc8ed93",
+      "passed": false,
+      "intendedAssertion": true,
+      "scope": "behavior"
+    },
+    {
+      "label": "installer-declaration",
+      "exitCode": 1,
+      "logSHA256": "efad376115a301ccb3583bd9d04c0a9687014c5b68e1fbce35293daec462b4d9",
+      "passed": false,
+      "intendedAssertion": true,
+      "scope": "behavior"
+    },
+    {
+      "label": "platform",
+      "exitCode": 1,
+      "logSHA256": "7a8590e90e9d9014154268229622663f9d66305f2584606e83cd78f8d54e75aa",
+      "passed": false,
+      "intendedAssertion": true,
+      "scope": "behavior"
+    },
+    {
+      "label": "binary-entry",
+      "exitCode": 1,
+      "logSHA256": "c3848397bb337f7f1266310c7acd6f838b12e2797f7f562f4160b2f105b4baa1",
+      "passed": false,
+      "intendedAssertion": true,
+      "scope": "behavior"
+    },
+    {
+      "label": "entry-boundary",
+      "exitCode": 1,
+      "logSHA256": "f261efbc65b43efc8c70dd6e6446f67a821ce4c6832bdc9541093776cdd6b187",
+      "passed": false,
+      "intendedAssertion": true,
+      "scope": "behavior"
+    },
+    {
+      "label": "metadata-size",
+      "exitCode": 1,
+      "logSHA256": "9c1a3cfe20c254c959ec71b2e425fc859a000c0ff22c8f356d13fcf2c7c854a7",
+      "passed": false,
+      "intendedAssertion": true,
+      "scope": "diagnostic; secondary read-size guard still refuses"
+    },
+    {
+      "label": "metadata-provider",
+      "exitCode": 1,
+      "logSHA256": "cbd0d764e0c34727a7ca8fa655d62361873d4ee3a895ce93ceb0c8187866223a",
+      "passed": false,
+      "intendedAssertion": true,
+      "scope": "behavior"
+    },
+    {
+      "label": "metadata-symlink",
+      "exitCode": 1,
+      "logSHA256": "d09410e3e44b0828f79d4be93bbacfb4cde7b258d451e87e05d6b05f7bea1e81",
+      "passed": false,
+      "intendedAssertion": true,
+      "scope": "behavior"
+    },
+    {
+      "label": "duplicate-flags",
+      "exitCode": 1,
+      "logSHA256": "c7e64c2eaa3c92680efbaa3b404e948f87573d1b606644c09b0c11dee625117b",
+      "passed": false,
+      "intendedAssertion": true,
+      "scope": "behavior"
+    },
+    {
+      "label": "unknown-flags",
+      "exitCode": 1,
+      "logSHA256": "ebd357b0cdd5691a0c595b4f0ef1b61da41fd80e359a1022889c3d46014bca08",
+      "passed": false,
+      "intendedAssertion": true,
+      "scope": "behavior"
+    },
+    {
+      "label": "execute-binary",
+      "exitCode": 1,
+      "logSHA256": "968026d2345d1d44048321209af971c7151bb1611a639e9aa9d9040c005abff2",
+      "passed": false,
+      "intendedAssertion": true,
+      "scope": "behavior; only synthetic fixture shell binary executes"
+    },
+    {
+      "label": "controls-restored",
+      "exitCode": 0,
+      "logSHA256": "6cbcd9de52d5985f0b4913cfc451f8597e8af66977900c1457c144e2564af0bd",
+      "passed": true,
+      "intendedAssertion": false
+    }
+  ],
+  "restoredSHA256": {
+    "workers/planner_agent_connector/installer-guidance.mjs": "737cd7d0ed6ffe2a093b14b59f8fa479f4d6402da2b519ab6b1ec4f765d2e688",
+    "workers/planner_agent_connector/installer-guidance-cli.mjs": "8aea6c6242132643097f4cbf4279c72f6ca2deb1df509b89cfb63a8836e5a0ef",
+    "workers/planner_agent_connector/test/installer-guidance.test.mjs": "1512b34781a4640371d82ea131410522aaeda9ffc41813381822db46a35e0284"
+  },
+  "blindCategories": [
+    "actual package-manager ownership beyond operator declaration",
+    "native binary version or compatibility",
+    "provider/account/model operation",
+    "executing an update command",
+    "planner browser UI",
+    "other installers and platforms",
+    "concurrent hostile filesystem changes"
+  ],
+  "sourceParent": "bbbcfcc56e293cbf5fad105d0bfaf3ce94da1ffc",
+  "controlDriverSHA256": "26477776394737be6d8857a73a1fc685ee342ba8f207d14037b11c9093d9bbf9",
+  "campaignLogSHA256": "8eefbb164275b26678d47bec61adc63c24dfe97c698b0251969ca0587b998f9a",
+  "earlierInvocationFailureRetained": true,
+  "earlierUnqualifiedPrefixSourcesRetained": true,
+  "fullT1Accepted": false
+}

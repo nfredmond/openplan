@@ -1,0 +1,8 @@
+{
+  "trial": "pagination-anonymous-fault",
+  "testFile": "src/test/project-workbook-export-pagination.test.ts",
+  "test": "stops anonymous callers before membership or project reads",
+  "exitCode": 1,
+  "marker": "anonymous caller must stop before portfolio access",
+  "classification": "KILLED"
+}

@@ -18,8 +18,8 @@ export function GuidedComparisonSavePanel({
         <div className="max-w-3xl space-y-1">
           <p className="text-sm font-semibold tracking-tight">Exact four-run comparison</p>
           <p className="text-sm text-muted-foreground">
-            This guided path verifies the current AequilibraE and ActivitySim baseline and build files, identical
-            network custody, and each run&apos;s own validation decision. The methods stay separate; this does not use
+            This checks the current AequilibraE and ActivitySim baseline and build files, that all four runs used the
+            same network, and each run&apos;s own validation decision. The methods stay separate; this does not use
             the single-run Analysis Studio attachment above.
           </p>
         </div>

@@ -1,0 +1,64 @@
+{
+  "status": "EXACT_SOURCE_METADATA_WITH_SEPARATE_AUTHOR_PURE_TEXT_RECEIPT",
+  "sourceCheckpoint": "d0d12c406df8b8fd29bd2611a9cb29d8c3168ab8",
+  "observedDocsHead": "87b18feb30b6989757c2b36592418881dd5443da",
+  "appTree": "44e638d6d79378042343bf5b18408f09ee991d57",
+  "path": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016",
+  "filesMatchSourceCheckpoint": {
+    "openplan/src/lib/projects/budget-queries.ts": {
+      "sha256": "c763dfe4041b9f6390f93b2329312a539a2d13796a74719d84f9630413bf9743",
+      "bytes": 14138
+    },
+    "openplan/src/lib/projects/budget.ts": {
+      "sha256": "fb3ccc6f106f68aaabc8292fac1143d365a39560470816d4415a366ae5554347",
+      "bytes": 13375
+    },
+    "openplan/src/lib/money/optional-amount.ts": {
+      "sha256": "c957ffc9f7c74da749c17c59af46f8f99461e68f1a57445c4ca655d71256d77a",
+      "bytes": 8122
+    },
+    "openplan/src/lib/money/format.ts": {
+      "sha256": "9bb8c64c90778f47fd417c0b1e3852353e0e7d11ac2a08b122c17abaf7cf0389",
+      "bytes": 9874
+    },
+    "openplan/supabase/migrations/20261017000019_project_budget_complete_inputs.sql": {
+      "sha256": "ed2784b2b1623eb34340480d84dc72e5ce8d226c70532a5062495a1565df181d",
+      "bytes": 6046
+    },
+    "openplan/supabase/migrations/20261017000005_money_integrity_corrections.sql": {
+      "sha256": "82374309f11d7c270f1defa18d70d1f719882296f2f662f80ad74d3214410066",
+      "bytes": 64341
+    },
+    "openplan/supabase/migrations/20260911000002_contract_billing.sql": {
+      "sha256": "520f5e50c37ac1c71276751bb13aaf90c2de454dd20cb5a2ab184b606449c32a",
+      "bytes": 8727
+    },
+    "openplan/supabase/migrations/20260911000008_contract_source_deletions.sql": {
+      "sha256": "195c2f092ec07899b117a61435ef82d974769d127aaee80ce43e8d6b75610ede",
+      "bytes": 3589
+    },
+    "openplan/supabase/migrations/20260915000003_contract_closeout_relationships.sql": {
+      "sha256": "43feea9e0865ffe47d189de90d626457c5e86ab3d0e7773edfb1b3241b200b4a",
+      "bytes": 4306
+    },
+    "openplan/supabase/migrations/20260727000010_receivable_invoicing.sql": {
+      "sha256": "d007c5dc5cdd54a81f605990bdfec72b57242527966c2a6f574d227340ba20f3",
+      "bytes": 14224
+    },
+    "openplan/supabase/migrations/20260728000006_workspace_write_role_gate.sql": {
+      "sha256": "02dffba9d0365d29a6fe686eb8910ed8764278aa29c37b321e0a68d16f6c9e57",
+      "bytes": 8777
+    },
+    "openplan/supabase/migrations/20260728000007_workspace_write_role_gate_children.sql": {
+      "sha256": "ddf0820b8f2f3f126eb892e8e2db0b8740215d1b448a9e6177aa2aedd72dc795",
+      "bytes": 7582
+    },
+    "openplan/supabase/migrations/20260827000003_evidence_dependency_freshness.sql": {
+      "sha256": "b9cd7754b57c08fb495fe4c2ac44042415115dca15ba94f6bb3cf8649fd69bf7",
+      "bytes": 9199
+    }
+  },
+  "historicalFrozenSource": "825b34a549fbd424d4148815cfa6bdb7c23f2f5c",
+  "historicalPacket": "7c07549714f5b2afdd5816557fedd697bf743adc",
+  "nativeIdentity": null
+}

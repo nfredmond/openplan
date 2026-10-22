@@ -6,14 +6,7 @@ const createServiceRoleClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 
 const authGetUserMock = vi.fn();
-const workspaceInsertMock = vi.fn();
-const workspaceSelectMock = vi.fn();
-const workspaceSingleMock = vi.fn();
-const workspaceDeleteEqMock = vi.fn();
-const workspaceDeleteMock = vi.fn();
-const memberInsertMock = vi.fn();
-const memberDeleteEqMock = vi.fn();
-const memberDeleteMock = vi.fn();
+const rpcMock = vi.fn();
 const fromMock = vi.fn();
 
 const mockAudit = {
@@ -48,37 +41,29 @@ describe("POST /api/workspaces/bootstrap", () => {
 
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
 
-    workspaceSingleMock.mockResolvedValue({
+    vi.unstubAllEnvs();
+    rpcMock.mockResolvedValue({
       data: {
-        id: "11111111-1111-4111-8111-111111111111",
-        slug: "regional-planning-commission",
-        // What the column default (migration 20260805000001) stamps on a
-        // workspace born with no template named: the nationwide federal-aid
-        // floor, never one state's pack.
-        stage_gate_template_id: "us_federal_aid_stage_gates_v0_1",
-        stage_gate_template_version: "0.1.0",
-        stage_gate_template_selection: "interim_unconfigured_default",
+        created: true,
+        owned: 1,
+        limit: 5,
+        workspace: {
+          id: "11111111-1111-4111-8111-111111111111",
+          slug: "regional-planning-commission",
+          // What the column default (migration 20260805000001) stamps on a
+          // workspace born with no template named: the nationwide federal-aid
+          // floor, never one state's pack.
+          stage_gate_template_id: "us_federal_aid_stage_gates_v0_1",
+          stage_gate_template_version: "0.1.0",
+          stage_gate_template_selection: "interim_unconfigured_default",
+        },
       },
       error: null,
     });
 
-    workspaceSelectMock.mockReturnValue({ single: workspaceSingleMock });
-    workspaceInsertMock.mockReturnValue({ select: workspaceSelectMock });
-    workspaceDeleteEqMock.mockResolvedValue({ error: null });
-    workspaceDeleteMock.mockReturnValue({ eq: workspaceDeleteEqMock });
-    memberInsertMock.mockResolvedValue({ error: null });
-    memberDeleteEqMock.mockResolvedValue({ error: null });
-    memberDeleteMock.mockReturnValue({ eq: memberDeleteEqMock });
-
+    // The route writes through create_owned_workspace only. A direct table
+    // write would bypass the per-person limit, so any .from() call fails.
     fromMock.mockImplementation((table: string) => {
-      if (table === "workspaces") {
-        return { insert: workspaceInsertMock, delete: workspaceDeleteMock };
-      }
-
-      if (table === "workspace_members") {
-        return { insert: memberInsertMock, delete: memberDeleteMock };
-      }
-
       throw new Error(`Unexpected table: ${table}`);
     });
 
@@ -97,6 +82,7 @@ describe("POST /api/workspaces/bootstrap", () => {
 
     createServiceRoleClientMock.mockReturnValue({
       from: fromMock,
+      rpc: rpcMock,
     });
   });
 
@@ -175,14 +161,17 @@ describe("POST /api/workspaces/bootstrap", () => {
     expect(checklistText).not.toMatch(/\breadout\b/i);
     expect(checklistText).not.toMatch(/\bKPI\b/);
 
-    expect(workspaceInsertMock).toHaveBeenCalledWith(
-      expect.objectContaining({
-        stage_gate_template_id: "us_federal_aid_stage_gates_v0_1",
-        stage_gate_template_version: "0.1.0",
-        stage_gate_binding_source: "workspace_bootstrap_interim",
-        stage_gate_template_selection: "interim_unconfigured_default",
-      })
-    );
+    expect(rpcMock).toHaveBeenCalledTimes(1);
+    expect(rpcMock).toHaveBeenCalledWith("create_owned_workspace", {
+      p_user_id: "22222222-2222-4222-8222-222222222222",
+      p_name: "Regional Planning Commission",
+      p_slug: "regional-planning-commission",
+      p_stage_gate_template_id: "us_federal_aid_stage_gates_v0_1",
+      p_stage_gate_template_version: "0.1.0",
+      p_stage_gate_binding_source: "workspace_bootstrap_interim",
+      p_stage_gate_template_selection: "interim_unconfigured_default",
+      p_max_owned: 5,
+    });
 
     expect(createApiAuditLoggerMock).toHaveBeenCalledWith(
       "workspaces.bootstrap",
@@ -200,19 +189,24 @@ describe("POST /api/workspaces/bootstrap", () => {
 
     expect(response.status).toBe(400);
     expect(await response.json()).toMatchObject({ error: "Unsupported stage-gate template" });
-    expect(workspaceInsertMock).not.toHaveBeenCalled();
+    expect(rpcMock).not.toHaveBeenCalled();
   });
 
   it("accepts explicit california stage-gate template selection", async () => {
     // The insert result mock mirrors what the database would return for this
     // request, so the response assertions read the same story the insert wrote.
-    workspaceSingleMock.mockResolvedValue({
+    rpcMock.mockResolvedValue({
       data: {
-        id: "11111111-1111-4111-8111-111111111111",
-        slug: "regional-planning-commission",
-        stage_gate_template_id: "ca_stage_gates_v0_1",
-        stage_gate_template_version: "0.1.0",
-        stage_gate_template_selection: "explicitly_requested",
+        created: true,
+        owned: 1,
+        limit: 5,
+        workspace: {
+          id: "11111111-1111-4111-8111-111111111111",
+          slug: "regional-planning-commission",
+          stage_gate_template_id: "ca_stage_gates_v0_1",
+          stage_gate_template_version: "0.1.0",
+          stage_gate_template_selection: "explicitly_requested",
+        },
       },
       error: null,
     });
@@ -225,10 +219,11 @@ describe("POST /api/workspaces/bootstrap", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(workspaceInsertMock).toHaveBeenCalledWith(
+    expect(rpcMock).toHaveBeenCalledWith(
+      "create_owned_workspace",
       expect.objectContaining({
-        stage_gate_template_id: "ca_stage_gates_v0_1",
-        stage_gate_template_selection: "explicitly_requested",
+        p_stage_gate_template_id: "ca_stage_gates_v0_1",
+        p_stage_gate_template_selection: "explicitly_requested",
       })
     );
 
@@ -242,14 +237,8 @@ describe("POST /api/workspaces/bootstrap", () => {
     expect(payload.stageGateTemplate.templateSelection).toBe("explicitly_requested");
   });
 
-  it("returns 500 when db insert fails", async () => {
-    workspaceSingleMock.mockResolvedValue({
-      data: null,
-      error: {
-        message: "insert failed",
-        code: "XX000",
-      },
-    });
+  it("returns 500 when the database refuses the workspace", async () => {
+    rpcMock.mockResolvedValue({ data: null, error: { message: "insert failed", code: "XX000" } });
 
     const response = await postBootstrap(
       jsonRequest({
@@ -261,29 +250,102 @@ describe("POST /api/workspaces/bootstrap", () => {
     expect(await response.json()).toMatchObject({ error: "Failed to bootstrap workspace" });
   });
 
-  it("cleans up the partially created workspace when owner membership insert fails", async () => {
-    memberInsertMock.mockResolvedValue({
-      error: {
-        message: "membership insert failed",
-        code: "XX001",
-      },
-    });
+  it("refuses an unrecognized reply instead of treating it as a workspace", async () => {
+    rpcMock.mockResolvedValue({ data: { created: true }, error: null });
 
-    const response = await postBootstrap(
-      jsonRequest({
-        workspaceName: "Regional Planning Commission",
-      })
-    );
+    const response = await postBootstrap(jsonRequest({ workspaceName: "Regional Planning Commission" }));
 
     expect(response.status).toBe(500);
     expect(await response.json()).toMatchObject({ error: "Failed to bootstrap workspace" });
-    expect(memberDeleteEqMock).toHaveBeenCalledWith(
-      "workspace_id",
-      "11111111-1111-4111-8111-111111111111"
-    );
-    expect(workspaceDeleteEqMock).toHaveBeenCalledWith(
-      "id",
-      "11111111-1111-4111-8111-111111111111"
-    );
+  });
+
+  it("retries a taken slug with a suffix", async () => {
+    const created = await rpcMock();
+    rpcMock.mockReset();
+    rpcMock
+      .mockResolvedValueOnce({ data: null, error: { message: "duplicate key value violates unique constraint \"workspaces_slug_key\"", code: "23505" } })
+      .mockResolvedValueOnce(created);
+
+    const response = await postBootstrap(jsonRequest({ workspaceName: "Regional Planning Commission" }));
+
+    expect(response.status).toBe(200);
+    expect(rpcMock).toHaveBeenCalledTimes(2);
+    expect(rpcMock.mock.calls[1][1].p_slug).toMatch(/^regional-planning-commission-[0-9a-f]{4}$/);
+  });
+
+  describe("workspaces one person may own", () => {
+    it("refuses plainly when the person already owns the limit, and creates nothing", async () => {
+      rpcMock.mockResolvedValue({ data: { created: false, owned: 5, limit: 5 }, error: null });
+
+      const response = await postBootstrap(jsonRequest({ workspaceName: "Sixth Workspace" }));
+
+      expect(response.status).toBe(403);
+      const payload = (await response.json()) as { error: string; limit: number; workspaceId?: string };
+      expect(payload.error).toBe(
+        "You already own 5 workspaces, the most this OpenPlan site allows. Ask whoever runs this site to raise the limit."
+      );
+      expect(payload.limit).toBe(5);
+      expect(payload.workspaceId).toBeUndefined();
+      // The refusal names the operator and sells nothing.
+      expect(payload.error).not.toMatch(/\b(upgrade|plan|tier|pay|paid)\b/i);
+      expect(rpcMock).toHaveBeenCalledTimes(1);
+      expect(mockAudit.warn).toHaveBeenCalledWith("owned_workspace_limit_reached", {
+        userId: "22222222-2222-4222-8222-222222222222",
+        owned: 5,
+        limit: 5,
+      });
+    });
+
+    it("creates the workspace while the person is under the limit", async () => {
+      rpcMock.mockResolvedValue({
+        data: {
+          created: true,
+          owned: 4,
+          limit: 5,
+          workspace: {
+            id: "33333333-3333-4333-8333-333333333333",
+            slug: "fourth-workspace",
+            stage_gate_template_id: "us_federal_aid_stage_gates_v0_1",
+            stage_gate_template_version: "0.1.0",
+            stage_gate_template_selection: "interim_unconfigured_default",
+          },
+        },
+        error: null,
+      });
+
+      const response = await postBootstrap(jsonRequest({ workspaceName: "Fourth Workspace" }));
+
+      expect(response.status).toBe(200);
+      expect(await response.json()).toMatchObject({ workspaceId: "33333333-3333-4333-8333-333333333333" });
+    });
+
+    it("passes the operator's limit from OPENPLAN_MAX_OWNED_WORKSPACES", async () => {
+      vi.stubEnv("OPENPLAN_MAX_OWNED_WORKSPACES", "12");
+
+      await postBootstrap(jsonRequest({ workspaceName: "Regional Planning Commission" }));
+
+      expect(rpcMock).toHaveBeenCalledWith("create_owned_workspace", expect.objectContaining({ p_max_owned: 12 }));
+    });
+
+    it("keeps the default of 5 when the setting is not a positive whole number", async () => {
+      for (const value of ["0", "-3", "2.5", "lots", ""]) {
+        rpcMock.mockClear();
+        vi.stubEnv("OPENPLAN_MAX_OWNED_WORKSPACES", value);
+
+        await postBootstrap(jsonRequest({ workspaceName: "Regional Planning Commission" }));
+
+        expect(rpcMock, value).toHaveBeenCalledWith("create_owned_workspace", expect.objectContaining({ p_max_owned: 5 }));
+      }
+    });
+
+    it("words a limit of one in the singular", async () => {
+      rpcMock.mockResolvedValue({ data: { created: false, owned: 1, limit: 1 }, error: null });
+
+      const response = await postBootstrap(jsonRequest({ workspaceName: "Second Workspace" }));
+
+      expect((await response.json()) as { error: string }).toMatchObject({
+        error: "You already own 1 workspace, the most this OpenPlan site allows. Ask whoever runs this site to raise the limit.",
+      });
+    });
   });
 });

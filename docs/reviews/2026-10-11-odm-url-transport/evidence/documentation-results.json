@@ -1,0 +1,10 @@
+[
+  {
+    "check": "documentation",
+    "exit": 0
+  },
+  {
+    "check": "direction",
+    "exit": 0
+  }
+]

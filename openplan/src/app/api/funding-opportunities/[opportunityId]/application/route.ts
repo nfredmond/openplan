@@ -16,6 +16,12 @@ import {
 } from "@/lib/grants/application";
 import { buildProposalSectionSeeds } from "@/lib/grants/proposal-template";
 import { loadOpportunityPursuitContext } from "@/lib/grants/pursuit";
+import { listStateAdministrationFor } from "@/lib/grants/program-catalog";
+import { parseWorkspaceHomeGeography, resolveJurisdiction } from "@/lib/workspaces/home-geography";
+
+/** The workspace columns `resolveJurisdiction` reads, as the grants page selects them. */
+const WORKSPACE_JURISDICTION_COLUMNS =
+  "home_geography_source, home_geography_kind, home_geography_ref, home_country_code, home_subdivision_code";
 
 const paramsSchema = z.object({
   opportunityId: z.string().uuid(),
@@ -123,7 +129,30 @@ export async function POST(request: NextRequest, context: RouteContext) {
         { status: 422 }
       );
     }
-    const catalogEntry = catalogKey ? findGrantProgramCatalogEntry(catalogKey) : null;
+    // A federal program seeds in the words of the state that runs it here (its
+    // agency, cycle and benefit/cost tool) when that state is registered. The
+    // workspace's geography is read only when some state administers this
+    // program. If the read fails, the seed uses the federal text, which is true
+    // in every state, and the failure is logged.
+    let workspaceJurisdiction: ReturnType<typeof resolveJurisdiction> = null;
+    if (catalogKey && listStateAdministrationFor(catalogKey.trim()).length > 0) {
+      const { data: workspaceGeography, error: workspaceGeographyError } = await supabase
+        .from("workspaces")
+        .select(WORKSPACE_JURISDICTION_COLUMNS)
+        .eq("id", opportunity.workspace_id)
+        .maybeSingle();
+      if (workspaceGeographyError) {
+        audit.warn("application_workspace_geography_failed", {
+          opportunityId: opportunity.id,
+          workspaceId: opportunity.workspace_id,
+          message: workspaceGeographyError.message,
+          code: workspaceGeographyError.code ?? null,
+        });
+      } else {
+        workspaceJurisdiction = resolveJurisdiction(parseWorkspaceHomeGeography(workspaceGeography));
+      }
+    }
+    const catalogEntry = catalogKey ? findGrantProgramCatalogEntry(catalogKey, workspaceJurisdiction) : null;
     if (catalogKey && !catalogEntry) {
       return NextResponse.json(
         {

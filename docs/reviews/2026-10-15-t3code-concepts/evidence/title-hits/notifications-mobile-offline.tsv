@@ -1,0 +1,168 @@
+13	merged		feat: Commit, Push and Create PR actions
+606	merged		fix(server): use waitForPush in terminal event broadcast test to prevent flaky failure
+742	closed-unmerged		fix: stop cursor from being pushed to the very end on each keystroke in custom question answer entry
+758	merged		Treat retryable Codex error notifications as runtime warnings
+771	merged		Fix UI Overflow when Github Action is 'Commit, Create & Push PR'
+788	merged		Fix cross-repo PR detection and push remote selection
+847	closed-unmerged		fix: auto-dismiss toast notifications after timeout
+976	closed-unmerged	XL	feat: add OS notifications for completed/failed tasks
+1131	closed-unmerged	XXL	Add system notifications + sounds
+1132	closed-unmerged	XXL	Add custom PWA web push notifications
+1573	closed-unmerged	L	Add background attention notifications
+1657	closed-unmerged	L	feat(web): add browser notifications for thread lifecycle events
+1684	merged	XS	fix: use explicit refspec for push in worktrees with slashed branch names
+1748	closed-unmerged	M	[codex] Fix initial offline websocket UI state
+1780	closed-unmerged	L	Add OS notifications for turn completions
+2057	closed-unmerged	XL	feat: add sound notification on task completion
+2081	closed-unmerged	M	Enable Create PR for pushed branches that are ahead of main
+2166	closed-unmerged	L	Add dismissible thread notifications
+2167	closed-unmerged	L	feat(web): add dismissible thread notifications
+2373	closed-unmerged	XL	Add notification ding when agent needs attention
+2431	merged	L	Add structured Discord webhook logging for release notifications
+2524	closed-unmerged	M	feat(web): make auto-create PR on push optional
+3314	merged	L	[codex] Structure relay Live Activity errors
+3341	merged	L	[codex] Structure mobile thread outbox failures
+3359	merged	M	[codex] Structure mobile notification navigation failures
+3391	merged	M	[codex] Structure mobile notification setting failures
+3643	merged	M	fix(mobile): push gating and personal-team hardening for Android PR
+3685	merged	XXL	Improve live activity routing and diagnostics
+3761	merged	S	Extend Done display to 15 minutes and show up to 5 Live Activity banner rows
+3763	merged	M	Fix Expo widget asset wiring order
+3767	closed-unmerged	L	AGT-005: add Android ongoing agent notification
+3768	merged	S	Lead with the outcome when no agents are active in the Live Activity
+3786	closed-unmerged	L	Add iOS New Thread home screen widget
+3794	closed-unmerged	XXL	Improve iPad mobile navigation and offline caching
+3795	merged	XXL	feat(client): persist offline environment data and mobile preferences
+3802	closed-unmerged	XL	feat(mobile): add Android Live Update mock preview
+3949	merged	XS	fix(mobile): don't mark Android VPN/Tailscale as offline when connected
+3961	merged	L	Skip stale working-task notifications
+4003	closed-unmerged	XXL	feat: add native turn notifications
+4177	merged	L	perf(orchestration): speed up new-chat propagation and offline catch-up
+4747	closed-unmerged	L	feat(notifications): suppress mobile activity while desktop is focused
+4978	closed-unmerged	XL	feat(mobile): improve cross-device agent Live Activities
+4980	closed-unmerged	L	fix(mobile): stale Connecting live activity is retired on a bound
+4998	closed-unmerged	S	fix(mobile): enable agent activity publishing with Live Activities
+5207	closed-unmerged	L	fix(web): stop a tall terminal drawer pushing the composer out of the chat area
+5559	merged	S	fix(server): stop showing commit/push/PR notices as errors in the work log
+5821	closed-unmerged	XXL	feat: add configurable agent notifications
+6207	merged	XS	fix(web): use upload icon for disabled push action
+6308	closed-unmerged	XXL	feat(web): notify agent updates with Web Push
+6325	merged	M	fix: avoid stale Live Activities when publishing is disabled
+6455	closed-unmerged	M	fix(usage): exclude offline environments from pending totals
+6464	closed-unmerged	XL	fix(mobile): iOS home screen widgets render instead of a containerBackground error
+6499	merged	M	fix(server): allow long-running git pushes
+6538	merged	S	fix(server): keep provider notification consumers alive past startSession
+6652	closed-unmerged	M	feat(web): add unread notification badge to sidebar toggle button
+7195	closed-unmerged	L	fix(web): allow new threads when unsettled env is offline
+7206	merged	XL	fix(swift-ios): preserve live updates during thread loading
+7348	closed-unmerged	XL	feat(web): notification (and sound) when a thread finish
+7405	closed-unmerged	XS	refactor(mobile): drop the ignored busy input from outbox delivery
+7610	closed-unmerged	S	fix(server): unpushed branch no longer breaks thread creation
+7867	closed-unmerged	S	fix(mobile): stop the changed files widget from crashing
+7897	merged	L	fix(chat): stop pushing follow-up messages to the top
+8056	merged	M	test(server): remove no-op live activity tests
+8153	closed-unmerged	XXL	fix(connect): remove tunnels after hosts go offline
+8196	closed-unmerged	L	fix: usage totals no longer wait forever on offline devices
+8228	merged	M	fix(server): push no longer writes a feature branch's commits to its base branch
+8316	closed-unmerged	L	feat(desktop): notify on turn completion while unfocused on Windows
+8491	closed-unmerged	XXL	feat(notifications): detect notification edges server-side and deliver them to web and desktop
+8614	merged	XXL	feat(mobile): add offline iPhone voice input
+8637	closed-unmerged	M	feat(relay): silence mobile notifications while the desktop is focused
+8682	closed-unmerged	M	fix(cli): avoid unsafe project offline fallback
+8935	closed-unmerged	L	fix(app): show threads from unreachable environments as offline
+9062	merged	M	fix(chat): reuse one row for live activity
+9081	closed-unmerged	S	fix(server): stop stale settlement notifications
+9096	merged	M	Revert "fix(chat): reuse one row for live activity"
+9386	merged	XXL	fix(connect): remove tunnels after hosts go offline
+9734	merged	XS	fix(relay): bound stalled push requests
+9820	closed-unmerged	S	fix(usage): keep offline providers from hiding live limits
+9901	closed-unmerged	S	fix(mobile): respect notification permission when linking cloud environments
+9910	merged	XS	fix(web): reset markdown widgets when the previewed file changes
+9960	merged	M	chore(mobile): remove obsolete widget wiring script
+10055	closed-unmerged	XL	feat(mobile): add subscription usage home screen widgets
+10107	closed-unmerged	M	refactor(mobile): make outbox ownership checks explicit
+10350	closed-unmerged	L	fix(mobile): render the home screen activity widget
+10405	merged	L	feat(mobile): show when an existing thread has a message waiting in the outbox
+10416	merged	XXL	feat(mobile): add Android agent notifications and ongoing activity
+10848	merged	XL	fix(relay): share notification policy and prioritize waiting agents
+10850	merged	XS	fix(mobile): respect notification permission when tokens rotate
+11025	closed-unmerged	L	feat(mobile): show final answers in completion notifications
+11073	closed-unmerged	M	fix(relay): keep concurrent threads from hiding iOS push alerts
+11457	closed-unmerged	M	feat(mobile): expose Android Live Update chips and settings
+11481	merged	L	feat(web): add opt-in thread notifications and sounds
+11506	merged	XL	feat(mobile): add pooled subscription usage widgets
+11569	merged	L	feat: badge background thread notifications on desktop and web
+11570	merged	L	feat(web): add opt-in in-app thread notifications
+11582	closed-unmerged	XS	fix(web): suppress desktop notifications while focused
+11604	merged	L	fix(mobile): adopt system glass for Live Activities
+11669	merged	M	fix(mobile): keep usage widget rows consistently sized
+11671	merged	L	fix(web): disconnect offline servers from threads
+11692	merged	XXL	feat(swift-ios): show pooled subscription limits in widgets
+11914	closed-unmerged	L	fix(relay): keep startup notification catch-up silent
+11943	open	L	fix(relay): end idle Live Activities after the display window
+12046	merged	XL	feat(mobile): render the Android subscription widget with expo-widgets
+12047	merged	M	feat(mobile): degrade the agent Live Activity once its content goes stale
+12048	merged	M	feat(notifications): stack agent alerts by thread on both platforms
+12202	merged	S	fix(web): align notification icons with titles
+12209	merged	XS	fix(web): place notification icons after titles
+12289	open	S	fix(web): keep thread notification tags within the Windows toast limit
+12380	merged	M	perf(mobile): isolate iOS Live Activity imports
+12483	merged	L	fix(mobile): synchronize native notification delegates
+12539	closed-unmerged	XS	fix(notifications): silence subagent threads
+12567	open	S	fix(desktop): raise the window when a thread notification is clicked …
+12610	open	S	fix(mobile): a stuck attachment upload no longer holds the whole outbox
+12656	closed-unmerged	L	fix(mobile): dismiss ended Live Activities on foreground
+12695	closed-unmerged	M	fix(mobile): hide disabled providers from subscription usage widget
+12699	closed-unmerged	L	fix(relay): deliver Live Activity updates on phase change
+12714	closed-unmerged	S	fix(web): shorten Windows notification tags under platform limit
+12798	open	M	fix(relay): deliver Live Activity phase changes inside the throttle window
+12806	merged	S	fix(web): match thread notification icons to sidebar status
+12903	closed-unmerged	S	fix(notifications): keep subagent runs active
+13083	merged	M	fix(web): stop mistaking offline servers for updates
+13144	merged	L	fix(mobile): keep ordinary offline outbox failures out of console.warn
+13316	merged	XL	feat(mobile): capture Live Activities and agent notifications in showcase screenshots
+13474	merged	L	fix(mobile): make Android subscription usage widgets scrollable
+13577	merged	XS	fix(clients): a preview app no longer knocks the desktop's own server offline
+14141	closed-unmerged	S	fix(server): bound git push with a deadline and non-interactive env
+14158	open	M	fix(mobile): show relative reset countdowns in widgets
+14608	closed-unmerged	XXL	fix(mobile): keep agent widgets updated in the background
+14612	closed-unmerged	S	fix(mobile): stop offering an iOS Agent Activity widget that always renders blank
+14734	merged	XL	fix(mobile): update Expo 58 to restore widgets and Live Activities
+14830	closed-unmerged	XL	fix(mobile): render agent widgets and expire stale timelines
+14848	closed-unmerged	XXL	fix(mobile): keep agent widgets updated in the background
+14861	open	XXL	fix(mobile): keep agent widgets updated in the background
+15142	merged	S	fix(mobile): Android usage widget no longer sticks on "Loading widget" in release builds
+15254	merged	M	fix(mobile): an expired Live Activity no longer leaves a second card
+15281	merged	L	fix(web): subagent finish notifications look like subagent cards
+15349	open	S	fix(relay): Live Activity leaves Connecting when the agent starts working
+15368	open	S	fix(server): Pi extension notifications render as notices, not tool calls
+15487	merged	XXL	feat(relay,server,web,mobile): opt-in to hold webhooks while offline
+15535	closed-unmerged	M	test(web): cover notifications without expandable detail
+15791	open	XS	fix(server): keep Pi notification identities distinct across threads
+15792	closed-unmerged	M	fix(server): preserve Pi notifications between turns
+15892	merged	M	fix(server): queue background notifications during active tools
+15941	open	L	fix(mobile): match subscription widgets to app theme
+16062	open	XXL	feat(server,web,mobile): let plugins send notifications
+16116	merged	XS	Removed an unused helper from the Android push payload builder
+16247	merged	L	fix(server): finished outbox rows and old PR cache files are pruned
+16350	open	XS	fix(relay): preserve conversation routing in iOS push responses
+16506	closed-unmerged	S	fix(server): settling a finished thread removes it from the Live Activity
+16800	open	L	(WIP) feat: mute a thread's notifications on every device
+17330	merged	L	refactor(provider-core): share attachment prompts, notifications, and event loggers
+17441	closed-unmerged	M	fix(server): bound thread history when runs start from notifications
+17782	closed-unmerged	XS	fix(web): remove empty space before screenshot notification actions
+17890	open	XXL	feat(android): configure subscription usage widgets
+18099	open	M	fix(web): a resumed subagent's notification row shows it running, not failed
+18100	closed-unmerged	L	fix(server): background notifications wait for a human answer instead of interrupting the thread
+18135	closed-unmerged	L	fix(relay): deliver Live Activity updates on phase change
+18203	open	S	fix(mobile): usage chart legend wraps instead of pushing the end date off-screen
+18351	merged	XXL	feat(mobile): keep pull requests available offline
+18465	open	XS	fix(web): offline launch no longer deletes T3 Connect environments
+18604	open	S	fix(server): settling a finished thread removes it from the Live Activity
+18698	merged	M	fix(mobile): pull requests load from another environment when theirs is offline
+19022	open	M	fix(mobile): compact Dynamic Island opens the Live Activity's thread
+19219	open	M	fix(server): publishing explains why the first push failed
+19397	open	M	fix(gitlab): identify offline remotes from local config
+19423	merged	M	fix(server): threads woken by notifications no longer load their whole history
+19511	closed-unmerged	L	fix(desktop): push local backend topology changes instead of polling over IPC
+19585	open	L	fix(acp): bound unread raw notification retention

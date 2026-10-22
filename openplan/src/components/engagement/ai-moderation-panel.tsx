@@ -19,6 +19,7 @@ const FLAG_LABEL: Record<string, string> = {
   pii: "Personal info",
   off_topic: "Off-topic",
   spam: "Spam",
+  manipulation: "Instructions to the screen",
 };
 
 // The flagged-item shape and the queue assembly live in ai-moderation-shared.ts,
@@ -72,7 +73,7 @@ export function AiModerationPanel({
         <div className="space-y-1">
           <p className="text-sm font-semibold text-foreground">AI moderation assist</p>
           <p className="text-xs text-muted-foreground">
-            Flags possible toxicity, personal info, off-topic, or spam across the {queueCount} comment
+            Flags possible toxicity, personal info, off-topic, spam, or instructions to the screen across the {queueCount} comment
             {queueCount === 1 ? "" : "s"} still awaiting review — with a rationale. Never auto-rejects.
           </p>
         </div>

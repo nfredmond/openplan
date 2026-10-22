@@ -1,0 +1,9 @@
+{
+  "unittestSuites": 22,
+  "unittestCases": 568,
+  "workflowStages": 31,
+  "scenarioPrograms": 7,
+  "documentationCases": 20,
+  "seconds": 326.803,
+  "precedingExport": "rejected because its regex omitted the one-case suite singular test line"
+}

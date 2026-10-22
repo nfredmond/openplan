@@ -1,0 +1,54 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "source-signal-severed",
+    "test": "test_actual_source_body_cancellation_stops_before_engine",
+    "outcome": "intended_failure",
+    "reason": "Source transport deadline exceeded"
+  },
+  {
+    "control": "engine-signal-severed",
+    "test": "test_actual_engine_body_cancellation_retains_unresolved_original_intent",
+    "outcome": "intended_failure",
+    "reason": "Original draft HTTP deadline exceeded"
+  },
+  {
+    "control": "actual-fin-ignored",
+    "test": "test_peer_observer_accepts_actual_fin",
+    "outcome": "intended_failure",
+    "reason": "Actual TCP EOF must count as a closed peer"
+  },
+  {
+    "control": "actual-reset-ignored",
+    "test": "test_peer_observer_accepts_actual_reset",
+    "outcome": "intended_failure",
+    "reason": "Connection reset by peer"
+  },
+  {
+    "control": "received-data-called-closed",
+    "test": "test_peer_observer_rejects_actual_available_bytes",
+    "outcome": "intended_failure",
+    "reason": "Received bytes cannot count as peer closure"
+  },
+  {
+    "control": "timeout-called-closed",
+    "test": "test_peer_observer_propagates_actual_timeout",
+    "outcome": "intended_failure",
+    "reason": "TimeoutError not raised"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

@@ -1,0 +1,13 @@
+{
+  "@supabase/supabase-js": "2.110.7",
+  "@supabase/postgrest-js": "2.110.7",
+  "next": "16.3.8",
+  "xlsx": "0.20.3",
+  "vitest": "4.1.11",
+  "node": "v24.22.0",
+  "python": "Python 3.14.4",
+  "pg_dump": "pg_dump (PostgreSQL) 17.6",
+  "pg_restore": "pg_restore (PostgreSQL) 17.6",
+  "postgres": "PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit",
+  "PostgREST": "14.15"
+}

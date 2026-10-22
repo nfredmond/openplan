@@ -138,16 +138,6 @@ const UNGATED_BY_DESIGN: Record<string, string> = {
   "gtfs/feeds/study-area-coverage/route.ts":
     "read-only disclosure; POST only because the study-area geometry is the input. Membership is checked; nothing is written",
 
-  // Public reference data, not workspace content. This route loads a US county's
-  // census tracts into the shared, cross-tenant `census_tracts` table — the data
-  // is public and loading a county once benefits every workspace that ever looks
-  // at it, which its own header argues at length. It reads the caller's current
-  // workspace ONLY to resolve that workspace's Census API key; the workspace is
-  // an integration scope here, never an authorization subject, and no row it
-  // writes belongs to a workspace at all.
-  "geographies/census-tracts/ingest/route.ts":
-    "writes public cross-tenant reference data; the workspace lookup resolves an API key, not a permission",
-
   // The assistant answers and PROPOSES; it never writes workspace content here.
   // Anything it proposes is executed by a different route, and each of those
   // routes carries its own gate (approvals go through
@@ -165,6 +155,8 @@ const UNGATED_BY_DESIGN: Record<string, string> = {
   // published/accepting-submissions state, checked in the handler.
   "engage/[shareToken]/submit/route.ts": "public share-token submission; the submitter has no workspace role",
   "engage/[shareToken]/survey/submit/route.ts": "public share-token survey response; no session",
+  "engage/[shareToken]/photo-upload/route.ts":
+    "public share-token photo upload; no session. It reads the campaign's workspace_id only to file its upload-limit row in usage_events, which that column requires",
   "engage/[shareToken]/items/[itemId]/translate/route.ts":
     "public share-token translation queue; SQL checks current publication and exact source, and the anonymous caller has no workspace role",
 
@@ -173,7 +165,7 @@ const UNGATED_BY_DESIGN: Record<string, string> = {
   "workspaces/active/route.ts":
     "switches which workspace the caller is looking at; a viewer must be able to change their own view",
   "workspaces/bootstrap/route.ts":
-    "self-provisions the caller's FIRST workspace, where by definition they hold no prior role",
+    "creates a new workspace the caller will own, where by definition they hold no prior role; create_owned_workspace limits how many each person owns",
   "workspaces/invitations/accept/route.ts":
     "the caller acts on their own invitation; their role in that workspace is the thing being established",
   "workspaces/invitations/decline/route.ts": "the caller declines their own invitation",

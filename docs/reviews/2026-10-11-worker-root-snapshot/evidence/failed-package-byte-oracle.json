@@ -1,0 +1,39 @@
+{
+  "state": "failed-overstrict-native-byte-oracle",
+  "delta": [
+    {
+      "path": "claim/model-commands.sqlite3",
+      "source": {
+        "kind": "file",
+        "mode": 384,
+        "bytes": 20480,
+        "sha256": "1d189f744e5929903b1e8f5e4ae2655fe37e644cdb82b1d8ba4785aa71234856"
+      },
+      "retained": {
+        "kind": "file",
+        "mode": 384,
+        "bytes": 20480,
+        "sha256": "c7013b7c98eb20e73b22cd39c1a5267e4cfd9a6eb4be46892aeb229c87c23bb4"
+      },
+      "logicalRecordsEqual": true
+    },
+    {
+      "path": "progress/model-commands.sqlite3",
+      "source": {
+        "kind": "file",
+        "mode": 384,
+        "bytes": 20480,
+        "sha256": "e7eedc7614dd7908e1674a64d75a3f05682cbc2b99480b65ab516d415ef0ec78"
+      },
+      "retained": {
+        "kind": "file",
+        "mode": 384,
+        "bytes": 20480,
+        "sha256": "144ccc5f4ed17d8222f8bd6e1221bc4d95059adbc8d0573cce8628becd1d5d0d"
+      },
+      "logicalRecordsEqual": true
+    }
+  ],
+  "original1557FilesUnchanged": true,
+  "limits": "SQLite native backup may normalize page metadata. Full logical records and modes must match independently; ordinary bytes remain exact. This failed producer remains retained."
+}

@@ -1,0 +1,22 @@
+{
+  "openplan/src/lib/integrations/key-crypto.ts": "298f8b2218e578af8c6e6c050011d7839002c801aa68daf25df1411b42a7d274",
+  "openplan/src/test/integration-key-rotation.test.ts": "bcdf738f9c0b4e77d89c78670e329f6bd6226beacb4b25384debfb2e7db5850e",
+  "openplan/src/lib/integrations/translation-credentials.ts": "fb0a54d0529a11ed42aef6bb07c7b3f4acd2bd9d2cdeb407e50db3f12c5932a6",
+  "openplan/src/lib/integrations/provider-api-credentials.ts": "102a3c27c161ab83bb5f5d91c5dfc3f6cb40ee13c2f90b9c851ef82106aded3e",
+  "openplan/.env.example": "4542892421bb5811690d197d14dde2ae29c11948d26d028759542cd73d84b386",
+  "openplan/docs/SELF_HOSTING.md": "90053933d65cfb5e1d761ec1afa97f37e146b0af4c21161fd0b1141b0934ade0",
+  "openplan/docs/ops/HOSTED_OPERATIONS.md": "eac75dae31e056d81bfdd676a97e6612fb829a2dadfd8e1b14e78a9ba45663e3",
+  "workers/hosted-node/DEPLOY.md": "9175b73a58e46187c978058ccc3b717f9aecd581da31d38365029c33a101a3ac",
+  ".github/workflows/integration-secret-rotation.yml": "17577fbffb58613a2ede7ed9500d89e3ccb6e332d8b9e16c0fed5d74b0111a98",
+  "CHANGELOG.md": "90848f60dc84bc865d3380d718ca8643f215158e6e79cce1d8da05f6758dd863",
+  "docs/README.md": "2215bdb4a7ff14c88905492489a72088e2ffc330f88cd791e2fe44229c00c37c",
+  "docs/ROADMAP.md": "47dd6b090e8746c30ce835c03f80c1520fe2a45a8c25386e1eb37fdb96a54209",
+  "docs/archive/ROADMAP_EVIDENCE_LOG_2026-08-24_TO_2026-10-12.md": "8778128ca120b595153c88b31ad50e466d30ceecafd793dc905edfb8770c488b",
+  "docs/reviews/2026-10-15-integration-secret-rotation/verify_controls.py": "6ef0eae00dffd7734b5869eb8a8a41f6bd40f61ff8406e0ce7049e1d4a52678c",
+  "docs/reviews/2026-10-15-integration-secret-rotation/STATUS.md": "7bdc1f27df92c1851fb48e98868ba7e21b5caffb4a6ab5ea42b1bc29b560383f",
+  "docs/reviews/2026-10-15-integration-secret-rotation/REVIEW.md": "d8e6e26b4f0f9458185a8b6dda27dc9a7cb4b5f91d18c2b5f1c4ea7c1f2db9fd",
+  "openplan/docs/ops/HOSTED_RECOVERY.md": "b93e59cde0ad0c2d1768273b29ace4bade93b104c3b146e04b4c97d62e479e95",
+  "openplan/docs/ops/BACKUP_AND_RESTORE.md": "3b43d427ba165fcf82c372701d967c782d9d200d552174346b5e57f6fce0ae15",
+  "docs/reviews/2026-10-15-integration-secret-rotation/INDEPENDENT_ROLLBACK_REVIEW.md": "417e4a32b1dad72891582c53aa0a47a76f779cd181f1ced0b3f7f5b6f27d0863",
+  "docs/reviews/2026-10-15-integration-secret-rotation/rollback-doc-controls.json": "46710348eb4b4fbd988574ce78a1de3a1590393bf1f6184d20b7ea6f9a3409e4"
+}

@@ -29,6 +29,9 @@ type ShareControlsCampaign = {
   public_slug: string | null;
   allow_public_submissions: boolean;
   submissions_closed_at: string | null;
+  /** Read for the status line: the public page refuses comments outside these dates. */
+  participation_starts_at?: string | null;
+  participation_ends_at?: string | null;
   demographics_enabled: boolean;
 };
 
@@ -56,8 +59,11 @@ function useShareField<T extends string | boolean>(campaignId: string, saved: T,
 
 export function EngagementShareControls({
   campaign,
+  timeZone,
 }: {
   campaign: ShareControlsCampaign;
+  /** The workspace calendar's zone, for dates in the status line. Absent means UTC. */
+  timeZone?: string;
 }) {
   const router = useRouter();
   const { confirm, confirmDialog } = useConfirmDialog();
@@ -79,7 +85,7 @@ export function EngagementShareControls({
     setBrowserOrigin(window.location.origin);
   }, []);
 
-  const portalState = getPublicPortalState(campaign);
+  const portalState = getPublicPortalState(campaign, { timeZone });
   const shareUrl = portalState.portalPath ? `${browserOrigin}${portalState.portalPath}` : null;
 
   // The SAME normalization and rule the route and the public resolver use —

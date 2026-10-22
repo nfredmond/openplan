@@ -1,0 +1,147 @@
+[
+  {
+    "label": "harmless survivor: keeps draft when an in-flight save returns after project changes",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "keeps draft when an in-flight save returns after project changes",
+    "diagnostic": "Earlier-scope response disclosed",
+    "survives": true,
+    "exitCode": 0,
+    "expectedObserved": true,
+    "failures": []
+  },
+  {
+    "label": "harmless survivor: keeps draft when an in-flight save returns after revision changes",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "keeps draft when an in-flight save returns after revision changes",
+    "diagnostic": "Earlier-scope response disclosed",
+    "survives": true,
+    "exitCode": 0,
+    "expectedObserved": true,
+    "failures": []
+  },
+  {
+    "label": "harmless survivor: carries minimized same-revision canonical material through real generated files and SQLite at different clocks",
+    "source": "src/lib/project-evidence-bundles/generated-records.ts",
+    "suite": "project-jurisdiction-export-corrections.test.ts",
+    "test": "carries minimized same-revision canonical material through real generated files and SQLite at different clocks",
+    "diagnostic": "Generated project record minimizes actor",
+    "survives": true,
+    "exitCode": 0,
+    "expectedObserved": true,
+    "failures": []
+  },
+  {
+    "label": "harmless survivor: freezes non-null export-safe report readiness with canonical hash parity",
+    "source": "src/app/api/reports/[reportId]/generate/route.ts",
+    "suite": "report-generate-route.test.ts",
+    "test": "freezes non-null export-safe report readiness with canonical hash parity",
+    "diagnostic": "Report metadata shares external canonical material",
+    "survives": true,
+    "exitCode": 0,
+    "expectedObserved": true,
+    "failures": []
+  },
+  {
+    "label": "harmless survivor: blocks confirmation after permission is revoked and restored during a save",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "blocks confirmation after permission is revoked and restored during a save",
+    "diagnostic": "Intervening permission loss invalidates confirmation",
+    "survives": true,
+    "exitCode": 0,
+    "expectedObserved": true,
+    "failures": []
+  },
+  {
+    "label": "permission scope epoch tracking",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "blocks confirmation after permission is revoked and restored during a save",
+    "diagnostic": "Intervening permission loss invalidates confirmation",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "blocks confirmation after permission is revoked and restored during a save",
+        "messages": [
+          "AssertionError: Intervening permission loss invalidates confirmation: expected null to be truthy\n\nIgnored nodes: comments, script, style\n\u001b[36m<html>\u001b[39m\n  \u001b[36m<head />\u001b[39m\n  \u001b[36m<body>\u001b[39m\n    \u001b[36m<div>\u001b[39m\n      \u001b[36m<section\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-3 rounded-xl border border-border p-4\"\u001b[39m\n        \u001b[33mid\u001b[39m=\u001b[32m\"project-jurisdiction\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<h3\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"font-semibold\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mProject jurisdiction context\u001b[0m\n        \u001b[36m</h3>\u001b[39m\n        \u001b[36m<p\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm text-muted-foreground\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mDeclare the jurisdictions involved in this project separately from its study boundary. This does not establish adopting authority or legal applicability.\u001b[0m\n        \u001b[36m</p>\u001b[39m\n        \u001b[36m<p>\u001b[39m\n          \u001b[0mNo separate declaration. Readiness may show labelled legacy study-place context.\u001b[0m\n        \u001b[36m</p>\u001b[39m\n        \u001b[36m<button\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\u001b[39m\n          \u001b[33mdata-size\u001b[39m=\u001b[32m\"default\"\u001b[39m\n          \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n          \u001b[33mdata-variant\u001b[39m=\u001b[32m\"default\"\u001b[39m\n          \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mEdit jurisdiction context\u001b[0m\n        \u001b[36m</button>\u001b[39m\n      \u001b[36m</section>\u001b[39m\n    \u001b[36m</div>\u001b[39m\n  \u001b[36m</body>\u001b[39m\n\u001b[36m</html>\u001b[39m\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-editor.test.tsx:108:151\n    at runWithExpensiveErrorDiagnosticsDisabled (/home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/config.js:47:12)\n    at checkCallback (/home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/wait-for.js:124:77)\n    at Timeout.checkRealTimersCallback (/home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/wait-for.js:118:16)\n    at listOnTimeout (node:internal/timers:685:17)\n    at processTimers (node:internal/timers:618:7)"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "project scope epoch tracking",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "keeps draft when an in-flight save returns after project changes",
+    "diagnostic": "Earlier-scope response disclosed",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "keeps draft when an in-flight save returns after project changes",
+        "messages": [
+          "AssertionError: Earlier-scope response disclosed: expected null to be truthy\n\nIgnored nodes: comments, script, style\n\u001b[36m<html>\u001b[39m\n  \u001b[36m<head />\u001b[39m\n  \u001b[36m<body>\u001b[39m\n    \u001b[36m<div>\u001b[39m\n      \u001b[36m<section\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-3 rounded-xl border border-border p-4\"\u001b[39m\n        \u001b[33mid\u001b[39m=\u001b[32m\"project-jurisdiction\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<h3\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"font-semibold\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mProject jurisdiction context\u001b[0m\n        \u001b[36m</h3>\u001b[39m\n        \u001b[36m<p\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm text-muted-foreground\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mDeclare the jurisdictions involved in this project separately from its study boundary. This does not establish adopting authority or legal applicability.\u001b[0m\n        \u001b[36m</p>\u001b[39m\n        \u001b[36m<p>\u001b[39m\n          \u001b[0mNo separate declaration. Readiness may show labelled legacy study-place context.\u001b[0m\n        \u001b[36m</p>\u001b[39m\n        \u001b[36m<button\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\u001b[39m\n          \u001b[33mdata-size\u001b[39m=\u001b[32m\"default\"\u001b[39m\n          \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n          \u001b[33mdata-variant\u001b[39m=\u001b[32m\"default\"\u001b[39m\n          \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mEdit jurisdiction context\u001b[0m\n        \u001b[36m</button>\u001b[39m\n      \u001b[36m</section>\u001b[39m\n    \u001b[36m</div>\u001b[39m\n  \u001b[36m</body>\u001b[39m\n\u001b[36m</html>\u001b[39m\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-editor.test.tsx:71:133\n    at runWithExpensiveErrorDiagnosticsDisabled (/home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/config.js:47:12)\n    at checkCallback (/home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/wait-for.js:124:77)\n    at Timeout.checkRealTimersCallback (/home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/wait-for.js:118:16)\n    at listOnTimeout (node:internal/timers:685:17)\n    at processTimers (node:internal/timers:618:7)"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "revision scope epoch tracking",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "keeps draft when an in-flight save returns after revision changes",
+    "diagnostic": "Earlier-scope response disclosed",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "keeps draft when an in-flight save returns after revision changes",
+        "messages": [
+          "AssertionError: Earlier-scope response disclosed: expected null to be truthy\n\nIgnored nodes: comments, script, style\n\u001b[36m<html>\u001b[39m\n  \u001b[36m<head />\u001b[39m\n  \u001b[36m<body>\u001b[39m\n    \u001b[36m<div>\u001b[39m\n      \u001b[36m<section\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-3 rounded-xl border border-border p-4\"\u001b[39m\n        \u001b[33mid\u001b[39m=\u001b[32m\"project-jurisdiction\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<h3\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"font-semibold\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mProject jurisdiction context\u001b[0m\n        \u001b[36m</h3>\u001b[39m\n        \u001b[36m<p\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm text-muted-foreground\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mDeclare the jurisdictions involved in this project separately from its study boundary. This does not establish adopting authority or legal applicability.\u001b[0m\n        \u001b[36m</p>\u001b[39m\n        \u001b[36m<p>\u001b[39m\n          \u001b[0mNo separate declaration. Readiness may show labelled legacy study-place context.\u001b[0m\n        \u001b[36m</p>\u001b[39m\n        \u001b[36m<button\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\u001b[39m\n          \u001b[33mdata-size\u001b[39m=\u001b[32m\"default\"\u001b[39m\n          \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n          \u001b[33mdata-variant\u001b[39m=\u001b[32m\"default\"\u001b[39m\n          \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mEdit jurisdiction context\u001b[0m\n        \u001b[36m</button>\u001b[39m\n      \u001b[36m</section>\u001b[39m\n    \u001b[36m</div>\u001b[39m\n  \u001b[36m</body>\u001b[39m\n\u001b[36m</html>\u001b[39m\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-editor.test.tsx:71:133\n    at runWithExpensiveErrorDiagnosticsDisabled (/home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/config.js:47:12)\n    at checkCallback (/home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/wait-for.js:124:77)\n    at Timeout.checkRealTimersCallback (/home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/wait-for.js:118:16)\n    at listOnTimeout (node:internal/timers:685:17)\n    at processTimers (node:internal/timers:618:7)"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "clock independence",
+    "source": "src/lib/jurisdiction-readiness/payload.ts",
+    "suite": "project-jurisdiction-export-corrections.test.ts",
+    "test": "carries minimized same-revision canonical material through real generated files and SQLite at different clocks",
+    "diagnostic": "Separate JSON canonical parity across clocks",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "carries minimized same-revision canonical material through real generated files and SQLite at different clocks",
+        "messages": [
+          "AssertionError: Separate JSON canonical parity across clocks: expected { \u2026(13) } to deeply equal { \u2026(13) }\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-export-corrections.test.ts:58:68\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "actual report GeoPackage parity",
+    "source": "src/lib/projects/project-geopackage.ts",
+    "suite": "report-generate-route.test.ts",
+    "test": "freezes non-null export-safe report readiness with canonical hash parity",
+    "diagnostic": "Actual report JSON and both GeoPackages share a hash across clocks",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "POST /api/reports/[reportId]/generate freezes non-null export-safe report readiness with canonical hash parity",
+        "messages": [
+          "AssertionError: Actual report JSON and both GeoPackages share a hash across clocks: expected 'wrong-hash' to be '227a1a48160cbd34fd55fb2bb1c742ee967b1\u2026' // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/report-generate-route.test.ts:4334:106\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,34 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-note",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "zero-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-unexpected-failure",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-error-block",
+    "outcome": "intended_refusal"
+  }
+]

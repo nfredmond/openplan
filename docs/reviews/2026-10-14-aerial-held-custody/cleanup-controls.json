@@ -1,0 +1,77 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived",
+    "tests": 5
+  },
+  {
+    "case": "harmless-comment",
+    "outcome": "survived",
+    "tests": 5
+  },
+  {
+    "case": "restored-after-harmless",
+    "outcome": "survived",
+    "tests": 5
+  },
+  {
+    "case": "identity-ignored",
+    "outcome": "intended_failure",
+    "diagnostic": "Cleanup refuses a changed ownership/resource fence"
+  },
+  {
+    "case": "image-ignored",
+    "outcome": "intended_failure",
+    "diagnostic": "Cleanup refuses a changed ownership/resource fence"
+  },
+  {
+    "case": "purpose-ignored",
+    "outcome": "intended_failure",
+    "diagnostic": "Cleanup refuses a changed ownership/resource fence"
+  },
+  {
+    "case": "memory-ignored",
+    "outcome": "intended_failure",
+    "diagnostic": "Cleanup refuses a changed ownership/resource fence"
+  },
+  {
+    "case": "swap-ignored",
+    "outcome": "intended_failure",
+    "diagnostic": "Cleanup refuses a changed ownership/resource fence"
+  },
+  {
+    "case": "ports-ignored",
+    "outcome": "intended_failure",
+    "diagnostic": "Cleanup refuses a changed ownership/resource fence"
+  },
+  {
+    "case": "stopped-still-stopped",
+    "outcome": "intended_failure",
+    "diagnostic": "Stopped owned cluster needs no stop"
+  },
+  {
+    "case": "graceful-stop-shortened",
+    "outcome": "intended_failure",
+    "diagnostic": "Owned cleanup keeps its exact target and graceful deadline"
+  },
+  {
+    "case": "timeout-cleanup-skipped",
+    "outcome": "intended_failure",
+    "diagnostic": "Outer timeout requests owned cluster cleanup"
+  },
+  {
+    "case": "timeout-verify_native_controls.py-cleanup-skipped",
+    "outcome": "intended_failure",
+    "diagnostic": "Native controller timeout requests owned cluster cleanup"
+  },
+  {
+    "case": "timeout-verify_aftermath_controls.py-cleanup-skipped",
+    "outcome": "intended_failure",
+    "diagnostic": "Native controller timeout requests owned cluster cleanup"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived",
+    "tests": 5
+  }
+]

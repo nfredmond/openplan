@@ -1,0 +1,8 @@
+{
+  "docs/reviews/2026-10-13-odm-task-observation-retention/native_retention.py": "59d45d69daf16958f57a152820bfe7165d660ea5a2d1d7fe0e467e9e4655216b",
+  "docs/reviews/2026-10-13-odm-task-observation/native_observation.py": "32b05c24406dc777e85bd23d72332d78de2be5f894e0a2a3b0fab977f7766fc9",
+  "openplan/scripts/ops/worker_root_snapshot.py": "4ea3f9d9c084e0de5b45dee2b371f2ce6fcb5182ea6c2a0f2eac8a6a83040d24",
+  "workers/odm_worker/retained_source.py": "dbfc565dbe917cc9029de7c9e453e10ffa4b710c08289d79c49e762b21568a0c",
+  "workers/odm_worker/retained_task_observation.py": "29b012334f28af1d12d0e4404cf2aa397ea849a4bfc81c6d41a2beb538e21b77",
+  "workers/odm_worker/task_observation.py": "c7dbd6329edf87b1bd0a05e53daca346440f12ab8db74509d55f383cd003abd0"
+}

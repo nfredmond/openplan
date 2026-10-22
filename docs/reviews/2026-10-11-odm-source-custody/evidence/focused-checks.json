@@ -1,0 +1,9 @@
+{
+  "documentationReferenceTests": 6,
+  "productDirectionAndRoadmapTests": 8,
+  "vitestWorkers": 1,
+  "cwd": "openplan/",
+  "productDirectionCommand": "passed_with_existing_review_reminders",
+  "browserAcceptance": false,
+  "liveAuthorityOrDatabaseAcceptance": false
+}

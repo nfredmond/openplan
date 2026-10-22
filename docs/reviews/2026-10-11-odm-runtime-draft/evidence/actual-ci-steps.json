@@ -1,0 +1,8 @@
+[
+  {
+    "name": "Owned original runtime draft harmless and targeted fault controls",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-runtime-draft/verify_controls.py \\\n  --repo \"$GITHUB_WORKSPACE\" --out \"$RUNNER_TEMP/odm-runtime-draft-controls\"\n",
+    "exit": 0,
+    "workflowSha256": "4bbb83de01ee57707df081d16c057f655dc9ad690a0b9121a71667a0f75b9a0b"
+  }
+]

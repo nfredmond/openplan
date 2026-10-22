@@ -260,6 +260,7 @@ const TOOL_ACTIVITY_LABELS: Record<string, { noun: string; verb?: string; fixed?
   get_surface_context: { noun: "surface", fixed: "Read: another workspace surface" },
   list_projects: { noun: "project" },
   list_funding_opportunities: { noun: "funding opportunity" },
+  list_milestones: { noun: "milestone" },
   list_reports: { noun: "report" },
   list_pending_operations: { noun: "pending operation" },
   get_grant_program_catalog: { noun: "grant program" },

@@ -6,6 +6,14 @@ on:
   # Stacked PRs need the same checks before their base reaches main.
   pull_request: {}
 
+# A new push to a pull request supersedes the run still testing the old head,
+# so that run is cancelled. Every other run, including each push to main, gets
+# a group of its own and is never cancelled or queued: Vercel waits on main's
+# checks before it promotes a deployment.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   verify:
     name: verify (qa gate)
@@ -46,6 +54,26 @@ jobs:
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-anon-key
           SUPABASE_SERVICE_ROLE_KEY: ci-placeholder-service-role
           ANTHROPIC_API_KEY: ci-placeholder-anthropic-key
+
+      - name: Aerial callback retry source controls
+        run: |
+          python3 -B ../docs/reviews/2026-10-14-aerial-callback-retry/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/aerial-callback-retry-controls"
+
+      - name: Aerial custody roster recovery controls
+        run: |
+          python3 -B ../docs/reviews/2026-10-14-aerial-custody-recovery/verify_source_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/aerial-custody-roster-controls"
+
+      - name: Aerial immutable custody source controls
+        run: |
+          python3 -B ../docs/reviews/2026-10-14-aerial-immutable-custody/verify_guard_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/aerial-immutable-custody-controls"
+
+      - name: Aerial Storage transport controls
+        run: |
+          python3 -B ../docs/reviews/2026-10-14-aerial-immutable-custody/verify_transport_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/aerial-storage-transport-controls"
 
   order-independence:
     name: order independence (shuffled vitest)
@@ -212,15 +240,21 @@ jobs:
           python-version: "3.11"
 
       # Lightweight deps only — the modeling unit tests do NOT import aequilibrae
-      # (that heavy engine stays a local/deploy concern). This guards the pure
+      # (the engine runs in compact-graph-native.yml). This guards the pure
       # demand logic: LODES OD, resident VMT, OD-matrix blend, mode choice, GTFS.
       # python-dotenv is here because four suites import main.py, whose module
       # level imports it — verified in a clean venv with exactly this list.
+      # packaging parses requirements in test_local_launchers.py's real helper.
       - name: Install test deps
-        run: pip install "numpy<2.1" pandas shapely requests python-dotenv
+        run: pip install "numpy<2.1" pandas shapely requests python-dotenv packaging
 
       - name: Hosted model supervisor
         run: python ../hosted-models/test_supervise.py
+
+      # Uses the runner's gpg for the encryption round trip; no network.
+      - name: Hosted offsite backup
+        working-directory: ./workers/hosted-backup
+        run: python -m unittest test_backup -v
 
       - name: Syntax check
         run: python -m py_compile *.py

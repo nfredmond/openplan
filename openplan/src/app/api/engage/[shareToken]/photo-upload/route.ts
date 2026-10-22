@@ -10,10 +10,17 @@ import {
   ENGAGEMENT_PHOTO_BUCKET,
   ENGAGEMENT_PHOTO_MAX_BYTES,
   isEngagementPhotoContentType,
-  registerEngagementPhotoUpload,
   sniffEngagementPhotoContentType,
 } from "@/lib/engagement/photo";
 import { stripPhotoMetadata } from "@/lib/engagement/photo-metadata";
+import {
+  photoUploadRefusal,
+  readPhotoUploadUsage,
+  releasePhotoUpload,
+  reservePhotoUpload,
+  type PhotoUploadRefusal,
+  type PhotoUploadScope,
+} from "@/lib/engagement/photo-upload-allowance";
 
 const paramsSchema = z.object({
   shareToken: z.string().min(8).max(64),
@@ -23,6 +30,18 @@ type RouteContext = {
   params: Promise<{ shareToken: string }>;
 };
 
+function refusedResponse(refusal: PhotoUploadRefusal) {
+  return NextResponse.json(
+    {
+      error:
+        refusal === "connection"
+          ? "Too many recent photo uploads from this connection. Please wait a few minutes and try again."
+          : "This consultation cannot take more photos today. Please try again tomorrow.",
+    },
+    { status: 429 }
+  );
+}
+
 /**
  * Step one of the two-step public photo attachment flow.
  *
@@ -31,7 +50,9 @@ type RouteContext = {
  * body, verifies the campaign is live and accepting submissions, then writes
  * a re-encoded copy with location, device and other embedded metadata removed
  * to the PRIVATE engagement-photos bucket at <campaignId>/<uuid>.<ext> via
- * the service role; the participant's original bytes are never stored. Only
+ * the service role; the participant's original bytes are never stored. Each
+ * stored photo is counted in `usage_events` first, which is both the shared
+ * limit and the record the daily sweep uses to remove photos never attached. Only
  * the resulting storage path is returned — the submit route later
  * re-validates that path (campaign prefix + object existence + recency)
  * before persisting it on the item. The photo is never publicly
@@ -84,20 +105,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
       );
     }
 
-    const fingerprint = buildPublicSubmissionClientFingerprint(request);
-    const rate = registerEngagementPhotoUpload(fingerprint);
-    if (!rate.allowed) {
-      return NextResponse.json(
-        { error: "Too many recent photo uploads from this connection. Please wait a few minutes and try again." },
-        { status: 429 }
-      );
-    }
-
     const supabase = createServiceRoleClient();
 
     const { data: campaign, error: campaignError } = await supabase
       .from("engagement_campaigns")
-      .select("id, status, allow_public_submissions, submissions_closed_at, participation_starts_at, participation_ends_at")
+      .select("id, workspace_id, status, allow_public_submissions, submissions_closed_at, participation_starts_at, participation_ends_at")
       .eq("share_token", parsedParams.data.shareToken)
       .eq("status", "active")
       .maybeSingle();
@@ -122,7 +134,22 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "This campaign is outside its participation dates." }, { status: 403 });
     }
 
-    // Decoding runs after the rate limit and campaign checks so a closed or
+    // The limits are counted in the database, so every server instance sees
+    // the same numbers. See photo-upload-allowance.ts.
+    const scope: PhotoUploadScope = {
+      workspaceId: campaign.workspace_id,
+      campaignId: campaign.id,
+      fingerprint: buildPublicSubmissionClientFingerprint(request),
+    };
+    const before = await readPhotoUploadUsage(supabase, scope);
+    if (!before.ok) {
+      audit.error("engagement_photo_allowance_lookup_failed", { campaignId: campaign.id, message: before.message });
+      return NextResponse.json({ error: "Failed to verify recent photo uploads" }, { status: 500 });
+    }
+    const refusedBefore = photoUploadRefusal(before.usage, { includesThisUpload: false });
+    if (refusedBefore) return refusedResponse(refusedBefore);
+
+    // Decoding runs after the limits and campaign checks so a closed or
     // unknown campaign never costs an image decode. A file that passed the
     // magic-byte check but does not decode is refused, never stored raw.
     const stripped = await stripPhotoMetadata(bodyRead.bytes, sniffedContentType);
@@ -146,11 +173,41 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // campaign resolved from the share token.
     const photoPath = buildEngagementPhotoPath(campaign.id, randomUUID(), stripped.contentType);
 
+    /*
+      WRITE THE ROW, THEN COUNT AGAIN, THEN STORE. Parallel requests all read
+      the counts above before any of them writes, so that check alone admits a
+      whole burst. The row is written first and the counts read again with it
+      included; an upload that finds a limit passed withdraws its row. The row
+      also exists before the bytes do, so the sweep can always find a photo
+      that was stored and never attached.
+    */
+    const reservationId = await reservePhotoUpload(supabase, {
+      ...scope,
+      photoPath,
+      bytes: stripped.bytes.byteLength,
+    });
+    if (!reservationId) {
+      audit.error("engagement_photo_reservation_failed", { campaignId: campaign.id });
+      return NextResponse.json({ error: "Failed to store photo" }, { status: 500 });
+    }
+    const after = await readPhotoUploadUsage(supabase, scope);
+    const refusedAfter = after.ok ? photoUploadRefusal(after.usage, { includesThisUpload: true }) : null;
+    if (!after.ok || refusedAfter) {
+      await releasePhotoUpload(supabase, reservationId);
+      if (refusedAfter) return refusedResponse(refusedAfter);
+      audit.error("engagement_photo_allowance_lookup_failed", {
+        campaignId: campaign.id,
+        message: after.ok ? null : after.message,
+      });
+      return NextResponse.json({ error: "Failed to verify recent photo uploads" }, { status: 500 });
+    }
+
     const { error: uploadError } = await supabase.storage
       .from(ENGAGEMENT_PHOTO_BUCKET)
       .upload(photoPath, stripped.bytes, { contentType: stripped.contentType, upsert: false });
 
     if (uploadError) {
+      await releasePhotoUpload(supabase, reservationId);
       audit.error("engagement_photo_upload_failed", {
         campaignId: campaign.id,
         message: uploadError.message,

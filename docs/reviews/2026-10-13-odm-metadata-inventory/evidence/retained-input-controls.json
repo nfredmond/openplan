@@ -1,0 +1,108 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-root-aliases",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "omit-engine",
+    "outcome": "intended_refusal",
+    "reason": "known metadata command requires both selected roots"
+  },
+  {
+    "control": "omit-metadata",
+    "outcome": "intended_refusal",
+    "reason": "known metadata command requires both selected roots"
+  },
+  {
+    "control": "corrupt-configuration",
+    "outcome": "intended_refusal",
+    "reason": "Retained worker inventory bytes or layout differ"
+  },
+  {
+    "control": "corrupt-component",
+    "outcome": "intended_refusal",
+    "reason": "Worker-root package content differs from its manifest"
+  },
+  {
+    "control": "changed-summary",
+    "outcome": "intended_refusal",
+    "reason": "captured metadata command summary differs"
+  },
+  {
+    "control": "change-source",
+    "outcome": "intended_refusal",
+    "reason": "retained original root changed"
+  },
+  {
+    "control": "missing-stopped-record",
+    "outcome": "intended_refusal",
+    "reason": "retained fixture must record stopped engine capture"
+  },
+  {
+    "control": "wrong-digest",
+    "outcome": "intended_refusal",
+    "reason": "metadata command did not reopen the captured digest"
+  },
+  {
+    "control": "configured-wrong-digest",
+    "outcome": "intended_refusal",
+    "reason": "metadata command did not reopen the captured digest"
+  },
+  {
+    "control": "configured-swapped-roots",
+    "outcome": "intended_refusal",
+    "reason": "metadata command did not reopen the captured digest"
+  },
+  {
+    "control": "configured-external-root",
+    "outcome": "intended_refusal",
+    "reason": "captured metadata root mapping differs"
+  },
+  {
+    "control": "configured-equal-roots",
+    "outcome": "intended_refusal",
+    "reason": "captured metadata root mapping differs"
+  },
+  {
+    "control": "configured-root-type",
+    "outcome": "intended_refusal",
+    "reason": "captured metadata root mapping differs"
+  },
+  {
+    "control": "substitute-receipt",
+    "outcome": "intended_refusal",
+    "reason": "known fixture source receipt differs"
+  },
+  {
+    "control": "substitute-snapshot",
+    "outcome": "intended_refusal",
+    "reason": "known fixture source snapshot differs"
+  },
+  {
+    "control": "substitute-root",
+    "outcome": "intended_refusal",
+    "reason": "known fixture source root differs"
+  },
+  {
+    "control": "prior-binding",
+    "outcome": "intended_refusal",
+    "reason": "known fixture prior evidence differs"
+  },
+  {
+    "control": "reply-binding",
+    "outcome": "intended_refusal",
+    "reason": "known fixture original reply digest differs"
+  }
+]

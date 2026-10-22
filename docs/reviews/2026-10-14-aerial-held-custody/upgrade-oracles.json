@@ -1,0 +1,92 @@
+[
+  {
+    "case": "migration-omitted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "migration-omitted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "migration-omitted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "migration-omitted",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "migration-omitted",
+    "oracle": "source-only",
+    "accepted": false
+  },
+  {
+    "case": "migration-omitted",
+    "oracle": "extra-error",
+    "accepted": false
+  },
+  {
+    "case": "guard-body-omitted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "guard-body-omitted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "guard-body-omitted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "guard-body-omitted",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "guard-body-omitted",
+    "oracle": "source-only",
+    "accepted": false
+  },
+  {
+    "case": "guard-body-omitted",
+    "oracle": "extra-error",
+    "accepted": false
+  },
+  {
+    "case": "member-update-permitted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "member-update-permitted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "member-update-permitted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "member-update-permitted",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "member-update-permitted",
+    "oracle": "source-only",
+    "accepted": false
+  },
+  {
+    "case": "member-update-permitted",
+    "oracle": "extra-error",
+    "accepted": false
+  }
+]

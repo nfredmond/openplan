@@ -1,0 +1,50 @@
+[
+  {
+    "image": "sha256:cb07d06e21fd6189cfad287c6fedfa0b72568100355635cd9035cb86eed42ee2",
+    "running": false,
+    "exit": 0,
+    "oomKilled": false,
+    "memoryLimit": 536870912,
+    "memoryAndSwapLimit": 536870912,
+    "network": "none",
+    "portBindings": {},
+    "proofOwnershipChecked": true,
+    "retainedStopped": true
+  },
+  {
+    "image": "sha256:cb07d06e21fd6189cfad287c6fedfa0b72568100355635cd9035cb86eed42ee2",
+    "running": false,
+    "exit": 0,
+    "oomKilled": false,
+    "memoryLimit": 536870912,
+    "memoryAndSwapLimit": 536870912,
+    "network": "none",
+    "portBindings": {},
+    "proofOwnershipChecked": true,
+    "retainedStopped": true
+  },
+  {
+    "image": "sha256:cb07d06e21fd6189cfad287c6fedfa0b72568100355635cd9035cb86eed42ee2",
+    "running": false,
+    "exit": 0,
+    "oomKilled": false,
+    "memoryLimit": 536870912,
+    "memoryAndSwapLimit": 536870912,
+    "network": "none",
+    "portBindings": {},
+    "proofOwnershipChecked": true,
+    "retainedStopped": true
+  },
+  {
+    "image": "sha256:cb07d06e21fd6189cfad287c6fedfa0b72568100355635cd9035cb86eed42ee2",
+    "running": false,
+    "exit": 0,
+    "oomKilled": false,
+    "memoryLimit": 536870912,
+    "memoryAndSwapLimit": 536870912,
+    "network": "none",
+    "portBindings": {},
+    "proofOwnershipChecked": true,
+    "retainedStopped": true
+  }
+]

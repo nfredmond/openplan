@@ -1,5 +1,6 @@
 import { historical } from "./fixtures/engagement/legacy-synthesis";
 import { cleanup, render, screen, within } from "@testing-library/react";
+import { todayIn } from "@/lib/time/workspace-calendar";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { pagingFake } from "./helpers/paging-fake";
@@ -57,11 +58,21 @@ const campaignSelectMock = vi.fn((columns?: string) => {
 
 const projectMaybeSingleMock = vi.fn();
 const projectOrderMock = vi.fn();
+/**
+ * The linked project's place-of-record, a second framing candidate the portal
+ * place loader reads, and the area the publish checklist offers to copy onto
+ * the campaign. Unset by default; configurable per test.
+ */
+let projectPlaceResult: { data: Record<string, unknown> | null; error: { message: string } | null } = {
+  data: null,
+  error: null,
+};
+/** The workspace home geography row and the workspace calendar row. Unset by default. */
+let workspaceHomeRow: Record<string, unknown> | null = null;
+let workspaceCalendarRow: { time_zone: string | null; home_country_code: string | null } | null = null;
 const projectSelectMock = vi.fn((columns?: string) => {
-  // The linked project's place-of-record — a second framing candidate the
-  // portal place loader reads. Unset by default; nothing here tests it.
   if (columns?.includes("place_source")) {
-    return { eq: () => ({ maybeSingle: async () => ({ data: null, error: null }) }) };
+    return { eq: () => ({ maybeSingle: async () => projectPlaceResult }) };
   }
   return {
     eq: (column: string) => {
@@ -328,10 +339,22 @@ const fromMock = vi.fn((table: string) => {
       error: translationReadError,
     }));
   }
-  // The workspace home geography — the portal place loader's third framing
-  // candidate. Unset: these tests exercise the campaign candidate only.
+  // The workspace row, read twice: the home geography (the portal place
+  // loader's third framing candidate) and the calendar (the zone staff
+  // sentences name dates in). Both unset unless a test sets them.
   if (table === "workspaces") {
-    return { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: null, error: null }) }) }) };
+    return {
+      select: (columns?: string) => ({
+        eq: () => ({
+          maybeSingle: async () =>
+            columns === "time_zone, home_country_code"
+              ? { data: workspaceCalendarRow, error: null }
+              : columns?.includes("home_geography_source")
+                ? { data: workspaceHomeRow, error: null }
+                : { data: null, error: null },
+        }),
+      }),
+    };
   }
   // Operator notifications (loadOperatorNotifications) — select → eq → order → limit.
   if (table === "engagement_notifications") {
@@ -386,7 +409,27 @@ vi.mock("@/lib/supabase/server", () => {
 });
 
 vi.mock("@/components/engagement/engagement-campaign-controls", () => ({
-  EngagementCampaignControls: () => <div data-testid="engagement-campaign-controls" />,
+  // The calendar is exposed so the participation inputs' zone wiring can be checked.
+  EngagementCampaignControls: ({ calendar }: { calendar?: { timeZone: string; source: string } }) => (
+    <div
+      data-testid="engagement-campaign-controls"
+      data-time-zone={calendar?.timeZone ?? ""}
+      data-time-zone-source={calendar?.source ?? ""}
+    />
+  ),
+}));
+
+vi.mock("@/components/engagement/spatial-hotspot-tuner", () => ({
+  // The intake trend's last day is exposed so the page's calendar wiring can be checked.
+  SpatialHotspotTuner: ({ intake }: { intake: { buckets: Array<{ date: string }> } }) => (
+    <div data-testid="spatial-hotspot-tuner" data-intake-last-day={intake.buckets.at(-1)?.date ?? ""} />
+  ),
+}));
+
+vi.mock("@/components/engagement/engagement-review-files", () => ({
+  EngagementReviewFiles: ({ calendar }: { calendar?: { timeZone: string; source: string } }) => (
+    <div data-testid="engagement-review-files" data-time-zone={calendar?.timeZone ?? ""} />
+  ),
 }));
 
 vi.mock("@/components/engagement/engagement-report-create-button", () => ({
@@ -411,11 +454,16 @@ vi.mock("@/components/engagement/engagement-item-registry", () => ({
 }));
 
 vi.mock("@/components/engagement/engagement-share-controls", () => ({
-  EngagementShareControls: () => <div data-testid="engagement-share-controls" />,
+  // The zone is exposed so the page's calendar wiring can be checked.
+  EngagementShareControls: ({ timeZone }: { timeZone?: string }) => (
+    <div data-testid="engagement-share-controls" data-time-zone={timeZone ?? ""} />
+  ),
 }));
 
 vi.mock("@/components/engagement/engagement-public-link-compact", () => ({
-  EngagementPublicLinkCompact: () => <div data-testid="engagement-public-link-compact" />,
+  EngagementPublicLinkCompact: ({ timeZone }: { timeZone?: string }) => (
+    <div data-testid="engagement-public-link-compact" data-time-zone={timeZone ?? ""} />
+  ),
 }));
 
 vi.mock("@/components/engagement/engagement-bulk-moderation", () => ({
@@ -513,7 +561,8 @@ describe("EngagementCampaignDetailPage", () => {
 
   it("shows a retry instead of an empty staff-response builder when the read fails", async () => {
     closeLoopReadError = { message: "SYNTHETIC connection lost" };
-    await renderPage({ tab: "setup" });
+    // The report-back builder lives on Responses, after the comments it answers.
+    await renderPage({ tab: "responses" });
     expect(snapshotRpcMock).toHaveBeenCalledWith("read_engagement_response_snapshot", { p_campaign: "50000000-0000-4000-8000-000000000001", p_published_only: false });
     expect(snapshotRpcMock).toHaveBeenCalledWith("read_engagement_translation_snapshot", { p_campaign: "50000000-0000-4000-8000-000000000001" });
     expect(screen.getByRole("button", { name: "Retry loading responses" })).toBeEnabled();
@@ -544,6 +593,29 @@ describe("EngagementCampaignDetailPage", () => {
     expect(reportsInMock).toHaveBeenCalledWith("project_id", ["project-1", "project-2"]);
   });
 
+  it("buckets daily intake on the workspace calendar", async () => {
+    // UTC+14 and UTC-11 are 25 hours apart, so their dates always differ.
+    for (const timeZone of ["Pacific/Kiritimati", "Pacific/Pago_Pago"]) {
+      workspaceCalendarRow = { time_zone: timeZone, home_country_code: null };
+      await renderPage({ tab: "analysis" });
+      expect(screen.getByTestId("spatial-hotspot-tuner")).toHaveAttribute(
+        "data-intake-last-day",
+        todayIn(timeZone, new Date())
+      );
+      cleanup();
+    }
+  });
+
+  it("hands the review-file date filters the workspace calendar", async () => {
+    workspaceCalendarRow = { time_zone: "Asia/Tokyo", home_country_code: "JP" };
+    await renderPage({ tab: "record" });
+    expect(screen.getByTestId("engagement-review-files")).toHaveAttribute("data-time-zone", "Asia/Tokyo");
+    cleanup();
+    workspaceCalendarRow = { time_zone: "Pacific/Honolulu", home_country_code: "US" };
+    await renderPage({ tab: "record" });
+    expect(screen.getByTestId("engagement-review-files")).toHaveAttribute("data-time-zone", "Pacific/Honolulu");
+  });
+
   it("withholds report creation and discloses unreadable coverage", async () => {
     coverageError = { message: "connection lost" };
     await renderPage({ tab: "record" });
@@ -556,6 +628,9 @@ describe("EngagementCampaignDetailPage", () => {
     itemsPaging.reset();
     categoriesPaging.reset();
     vi.clearAllMocks();
+    // clearAllMocks keeps queued Once values; a test that returns before
+    // reading one would hand it to the next test under a shuffled order.
+    campaignMaybeSingleMock.mockReset();
     coverageRows = [{ project_id: "project-1", projects: { id: "project-1", name: "Downtown Mobility Plan" } }];
     coverageError = null;
 
@@ -567,6 +642,9 @@ describe("EngagementCampaignDetailPage", () => {
     translationReadError = null;
     sourceLocaleResult = { data: null, error: null };
     campaignPlaceResult = { data: null, error: null };
+    projectPlaceResult = { data: null, error: null };
+    workspaceHomeRow = null;
+    workspaceCalendarRow = null;
     surveyQuestionsReadError = null;
     closeLoopReadError = null;
     membershipMaybeSingleMock.mockResolvedValue({
@@ -1098,7 +1176,7 @@ describe("EngagementCampaignDetailPage", () => {
 
       await renderPage({ tab: "setup" });
 
-      expect(screen.getByText(/does not have the translation storage yet/i)).toBeInTheDocument();
+      expect(screen.getByText(/Translation storage is not set up on this installation yet/i)).toBeInTheDocument();
       expect(screen.getByText(/That is not the same as none/)).toBeInTheDocument();
       // The claim that must not be made out of a database failure.
       expect(screen.queryByText("Not translated")).not.toBeInTheDocument();
@@ -1122,7 +1200,7 @@ describe("EngagementCampaignDetailPage", () => {
       expect(screen.queryByText(/Nobody has recorded which language/)).not.toBeInTheDocument();
       expect(screen.getByText(/could not be read, so OpenPlan is falling back/)).toBeInTheDocument();
       // And it is a pending migration, not a fault to go investigating.
-      expect(screen.getByText(/does not have the translation storage yet/i)).toBeInTheDocument();
+      expect(screen.getByText(/Translation storage is not set up on this installation yet/i)).toBeInTheDocument();
     });
 
     it("withholds coverage when part of what participants read could not be listed", async () => {
@@ -1511,8 +1589,8 @@ describe("EngagementCampaignDetailPage", () => {
       await renderPage({ tab: "setup" });
 
       const flow = screen.getByTestId("campaign-publish-flow");
-      expect(within(flow).getByText(/This campaign is live/i)).toBeInTheDocument();
-      expect(within(flow).getByRole("link", { name: /Preview the resident view/i })).toHaveAttribute(
+      expect(within(flow).getByRole("heading", { name: /The public page is live/i })).toBeInTheDocument();
+      expect(within(flow).getByRole("link", { name: /Preview as a resident/i })).toHaveAttribute(
         "href",
         "/engagement/50000000-0000-4000-8000-000000000001/preview"
       );
@@ -1539,8 +1617,8 @@ describe("EngagementCampaignDetailPage", () => {
       expect(screen.getByTestId("publish-step-share_token")).toHaveAttribute("data-state", "todo");
       expect(screen.getByTestId("publish-step-active_status")).toHaveAttribute("data-state", "todo");
       expect(within(flow).getByRole("button", { name: /Generate link/i })).toBeInTheDocument();
-      expect(within(flow).getByRole("button", { name: /Set the campaign to Active/i })).toBeInTheDocument();
-      expect(within(flow).queryByText(/This campaign is live/i)).not.toBeInTheDocument();
+      expect(within(flow).getByRole("button", { name: /Set to Active/i })).toBeInTheDocument();
+      expect(within(flow).queryByRole("heading", { name: /The public page is live/i })).not.toBeInTheDocument();
     });
 
     it("marks the steps the campaign has genuinely completed as done", async () => {
@@ -1579,17 +1657,17 @@ describe("EngagementCampaignDetailPage", () => {
       await renderPage({ tab: "setup" });
 
       expect(screen.getByTestId("publish-area-advisory")).toHaveTextContent(
-        /Campaign area on record: Franklin County, Ohio/
+        "The map opens on Franklin County, Ohio."
       );
-      expect(screen.queryByText(/No campaign area is set/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/middle of the country/i)).not.toBeInTheDocument();
     });
 
     it("states the consequences of publishing without a campaign area", async () => {
       await renderPage({ tab: "setup" });
 
       const advisory = screen.getByTestId("publish-area-advisory");
-      expect(advisory).toHaveTextContent(/No campaign area is set/i);
-      expect(advisory).toHaveTextContent(/location check .* cannot be turned on/i);
+      expect(advisory).toHaveTextContent(/No area is set/i);
+      expect(advisory).toHaveTextContent(/middle of the country/i);
     });
 
     it("does not render a failed area read as a missing area", async () => {
@@ -1600,7 +1678,201 @@ describe("EngagementCampaignDetailPage", () => {
       const advisory = screen.getByTestId("publish-area-advisory");
       expect(advisory).toHaveTextContent(/could not be read/i);
       expect(advisory).toHaveTextContent(/failed read, not a missing area/i);
-      expect(screen.queryByText(/No campaign area is set/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/middle of the country/i)).not.toBeInTheDocument();
+    });
+
+    it("counts the linked project's area as where the map opens, as the resident map does", async () => {
+      // A draft, so the full checklist renders. The campaign has no area of
+      // its own; the project's searched county frames the resident map.
+      campaignMaybeSingleMock.mockResolvedValueOnce({
+        data: campaignRow({ status: "draft", share_token: null, allow_public_submissions: false }),
+        error: null,
+      });
+      projectPlaceResult = {
+        data: {
+          place_source: "tigerweb",
+          place_kind: "county",
+          place_ref: "06061",
+          place_label: "Placer County, California",
+          place_min_lon: -121.5,
+          place_min_lat: 38.7,
+          place_max_lon: -120.0,
+          place_max_lat: 39.3,
+        },
+        error: null,
+      };
+
+      await renderPage({ tab: "setup" });
+
+      const step = screen.getByTestId("publish-step-map_opens_somewhere");
+      expect(step.closest("[data-testid='campaign-publish-flow']")).not.toBeNull();
+      expect(step).toHaveAttribute("data-state", "done");
+      expect(within(step).getByTestId("publish-area-advisory")).toHaveTextContent(
+        "The map opens on the project's area, Placer County, California."
+      );
+      expect(screen.queryByText(/middle of the country/i)).not.toBeInTheDocument();
+      expect(within(step).getByRole("button", { name: /Choose another area/i })).toBeVisible();
+      // The old warning that sent a planner to the bottom of the page is gone.
+      expect(screen.queryByText(/at the bottom of this page/i)).not.toBeInTheDocument();
+    });
+
+    it("offers the linked project's place in one click when that area cannot frame the map", async () => {
+      // The project names a searched county but its extent is missing, so the
+      // resident map cannot open on it and the step stays open.
+      campaignMaybeSingleMock.mockResolvedValueOnce({
+        data: campaignRow({ status: "draft", share_token: null, allow_public_submissions: false }),
+        error: null,
+      });
+      projectPlaceResult = {
+        data: {
+          place_source: "tigerweb",
+          place_kind: "county",
+          place_ref: "06061",
+          place_label: "Placer County, California",
+          place_min_lon: null,
+          place_min_lat: null,
+          place_max_lon: null,
+          place_max_lat: null,
+        },
+        error: null,
+      };
+
+      await renderPage({ tab: "setup" });
+
+      const step = screen.getByTestId("publish-step-map_opens_somewhere");
+      expect(step).toHaveAttribute("data-state", "todo");
+      expect(
+        within(step).getByRole("button", { name: "Use the project's area: Placer County, California" })
+      ).toBeVisible();
+    });
+
+    it("counts a drawn project area too, and offers nothing to copy", async () => {
+      campaignMaybeSingleMock.mockResolvedValueOnce({
+        data: campaignRow({ status: "draft", share_token: null }),
+        error: null,
+      });
+      projectPlaceResult = {
+        data: {
+          place_source: "drawn",
+          place_kind: null,
+          place_ref: null,
+          place_label: "Downtown loop",
+          place_min_lon: -121.3,
+          place_min_lat: 38.9,
+          place_max_lon: -121.2,
+          place_max_lat: 39.0,
+        },
+        error: null,
+      };
+
+      await renderPage({ tab: "setup" });
+
+      const step = screen.getByTestId("publish-step-map_opens_somewhere");
+      expect(step).toHaveAttribute("data-state", "done");
+      expect(within(step).getByTestId("publish-area-advisory")).toHaveTextContent(
+        "The map opens on the project's area, Downtown loop."
+      );
+      expect(within(step).queryByRole("button", { name: /Use the project's area/i })).not.toBeInTheDocument();
+      expect(within(step).getByRole("button", { name: /Choose another area/i })).toBeVisible();
+    });
+
+    it("counts the workspace home area, which the resident map falls back to after the project's", async () => {
+      // No campaign area, no project area: the resident map opens on the
+      // workspace home, so the step must not say a pin lands in the middle of
+      // the country.
+      campaignMaybeSingleMock.mockResolvedValueOnce({
+        data: campaignRow({ status: "draft", share_token: null, allow_public_submissions: false }),
+        error: null,
+      });
+      workspaceHomeRow = {
+        home_geography_source: "tigerweb",
+        home_geography_kind: "county",
+        home_geography_ref: "06057",
+        home_geography_label: "Nevada County, California",
+        home_country_code: "US",
+        home_subdivision_code: "US-CA",
+        home_min_lon: -121.28,
+        home_min_lat: 39.0,
+        home_max_lon: -120.0,
+        home_max_lat: 39.53,
+        home_geography_set_at: "2026-09-01T00:00:00.000Z",
+      };
+
+      await renderPage({ tab: "setup" });
+
+      const step = screen.getByTestId("publish-step-map_opens_somewhere");
+      expect(step).toHaveAttribute("data-state", "done");
+      expect(within(step).getByTestId("publish-area-advisory")).toHaveTextContent(
+        "The map opens on the workspace's home area, Nevada County, California."
+      );
+      expect(screen.queryByText(/middle of the country/i)).not.toBeInTheDocument();
+      expect(within(step).getByRole("button", { name: /Choose another area/i })).toBeVisible();
+    });
+
+    it("names a past participation end date in the workspace's own calendar", async () => {
+      for (const [timeZone, named] of [
+        ["America/Los_Angeles", "October 10, 2026 at 19:30 (America/Los_Angeles)"],
+        ["Pacific/Auckland", "October 11, 2026 at 15:30 (Pacific/Auckland)"],
+      ] as const) {
+        campaignMaybeSingleMock.mockResolvedValueOnce({
+          data: campaignRow({
+            status: "active",
+            share_token: "share-token",
+            allow_public_submissions: true,
+            submissions_closed_at: null,
+            participation_ends_at: "2026-10-11T02:30:00+00:00",
+          }),
+          error: null,
+        });
+        workspaceCalendarRow = { time_zone: timeZone, home_country_code: "US" };
+
+        await renderPage({ tab: "setup" });
+
+        const flow = screen.getByTestId("campaign-publish-flow");
+        expect(flow).toHaveTextContent(`Comments are closed because the participation period ended on ${named}.`);
+        expect(flow).not.toHaveTextContent(/accepting submissions/i);
+        // The header link and the share controls name dates in the same zone.
+        expect(screen.getByTestId("engagement-public-link-compact")).toHaveAttribute("data-time-zone", timeZone);
+        expect(screen.getByTestId("engagement-share-controls")).toHaveAttribute("data-time-zone", timeZone);
+        // The participation date inputs read and write the same zone.
+        expect(screen.getByTestId("engagement-campaign-controls")).toHaveAttribute("data-time-zone", timeZone);
+        expect(screen.getByTestId("engagement-campaign-controls")).toHaveAttribute(
+          "data-time-zone-source",
+          "workspace_setting"
+        );
+        cleanup();
+      }
+    });
+
+    it("puts the comments switch inside the checklist", async () => {
+      campaignMaybeSingleMock.mockResolvedValueOnce({
+        data: campaignRow({ status: "draft", allow_public_submissions: false }),
+        error: null,
+      });
+
+      await renderPage({ tab: "setup" });
+
+      const step = screen.getByTestId("publish-step-submission_mode");
+      expect(within(step).getByRole("checkbox", { name: /Accept comments from residents/i })).toBeVisible();
+    });
+
+    it("offers a preview as a resident as its own step, before going live", async () => {
+      campaignMaybeSingleMock.mockResolvedValueOnce({
+        data: campaignRow({ status: "draft" }),
+        error: null,
+      });
+
+      await renderPage({ tab: "setup" });
+
+      const preview = screen.getByTestId("publish-step-preview");
+      expect(within(preview).getByRole("link", { name: /Preview as a resident/i })).toHaveAttribute(
+        "href",
+        "/engagement/50000000-0000-4000-8000-000000000001/preview"
+      );
+      expect(
+        preview.compareDocumentPosition(screen.getByTestId("publish-step-active_status")) &
+          Node.DOCUMENT_POSITION_FOLLOWING
+      ).toBeTruthy();
     });
   });
 
@@ -1774,9 +2046,8 @@ describe("EngagementCampaignDetailPage", () => {
       // Setup surfaces.
       expect(screen.getByTestId("campaign-publish-flow")).toBeInTheDocument();
       expect(screen.getByRole("heading", { name: /Survey & form questions/i })).toBeInTheDocument();
-      expect(screen.getByRole("heading", { name: /You said \/ We did/i })).toBeInTheDocument();
       expect(screen.getByText(/RTP attachment/)).toBeInTheDocument();
-      expect(screen.getByText(/Current categories/i)).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Comment categories" })).toBeInTheDocument();
       // Portal surfaces and intake.
       expect(screen.getByText(/Put your project on the map/i)).toBeInTheDocument();
       expect(screen.getByText(/Comments that did not come through the portal/i)).toBeInTheDocument();
@@ -1784,15 +2055,16 @@ describe("EngagementCampaignDetailPage", () => {
       expect(
         screen.getByRole("heading", { name: /publish this campaign in your community.s languages/i })
       ).toBeInTheDocument();
-      // Operator Actions footer.
+      // Settings, public access and adding a comment by hand.
       expect(screen.getByTestId("engagement-campaign-controls")).toBeInTheDocument();
       expect(screen.getByTestId("engagement-share-controls")).toBeInTheDocument();
       expect(screen.getByTestId("engagement-item-composer")).toBeInTheDocument();
 
       await renderTabAfresh("responses");
-      // Moderation.
+      // Moderation, and reporting back on what was heard.
       expect(screen.getByTestId("engagement-bulk-moderation")).toBeInTheDocument();
       expect(screen.getByTestId("engagement-item-registry")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /You said \/ We did/i })).toBeInTheDocument();
 
       await renderTabAfresh("analysis");
       // Analysis.
@@ -1813,15 +2085,84 @@ describe("EngagementCampaignDetailPage", () => {
      * their TABS: each section is pinned to its tab's open panel, and the tab
      * links are compared in the strip.
      */
-    it("puts the publish flow and both builders above the analysis panels", async () => {
+    it("puts the publish flow and the survey builder above the analysis panels", async () => {
       await renderTabAfresh("analysis");
       expect(panelOf(screen.getByTestId("synthesis-source-scope"))).toBe("analysis");
 
       await renderTabAfresh("setup");
       expect(panelOf(screen.getByTestId("campaign-publish-flow"))).toBe("setup");
       expect(panelOf(screen.getByRole("heading", { name: /Survey & form questions/i }))).toBe("setup");
-      expect(panelOf(screen.getByRole("heading", { name: /You said \/ We did/i }))).toBe("setup");
       assertPrecedes(tabLink("setup"), tabLink("analysis"));
+    });
+
+    /*
+      THE SETUP TAB IN TWO GROUPS. The two-month review (October 12, 2026)
+      found twelve sections on Setup with the map area and public access last,
+      and the report-back builder placed before any comment existed. These pin
+      what a planner sees before opening anything: the "Before publishing"
+      group, in order, and an Advanced group that is closed but still holds
+      every other capability. Visibility is jsdom's reading of a closed
+      <details>, so a group rendered open fails here.
+    */
+    it("shows only what a first public page needs, in working order, before Advanced", async () => {
+      const existing = await campaignMaybeSingleMock();
+      await renderTabAfresh("setup", () =>
+        campaignMaybeSingleMock.mockResolvedValueOnce({ ...existing, data: { ...existing.data, status: "draft" } })
+      );
+
+      const before = screen.getByRole("region", { name: "Before publishing" });
+      const flow = within(before).getByTestId("campaign-publish-flow");
+      const categories = within(before).getByRole("heading", { name: "Comment categories" });
+      const questions = within(before).getByRole("heading", { name: /Survey & form questions/i });
+      // Categories before the questions that use them.
+      assertPrecedes(flow, categories);
+      assertPrecedes(categories, questions);
+      for (const element of [flow, categories, questions]) expect(element).toBeVisible();
+
+      const advanced = screen.getByTestId("setup-advanced");
+      expect(advanced.tagName).toBe("DETAILS");
+      expect(advanced).not.toHaveAttribute("open");
+      assertPrecedes(before, advanced);
+      expect(within(advanced).getByText(/^Advanced$/)).toBeVisible();
+    });
+
+    it("keeps every other Setup capability in the closed Advanced group", async () => {
+      await renderTabAfresh("setup");
+      const advanced = screen.getByTestId("setup-advanced");
+
+      for (const content of [
+        within(advanced).getByText(/Put your project on the map/i),
+        within(advanced).getByRole("heading", { name: /publish this campaign in your community.s languages/i }),
+        within(advanced).getByText(/Comments that did not come through the portal/i),
+        within(advanced).getByText(/If a resident cannot use the portal/i),
+        within(advanced).getByText(/RTP attachment/),
+        within(advanced).getByTestId("engagement-campaign-controls"),
+        within(advanced).getByTestId("engagement-share-controls"),
+        within(advanced).getByTestId("engagement-item-composer"),
+      ]) {
+        expect(content).not.toBeVisible();
+      }
+      // None of it leaked into the open group, which a live page names for
+      // what it is rather than "Before publishing".
+      expect(within(screen.getByRole("region", { name: "Public page" })).queryByTestId("engagement-share-controls")).toBeNull();
+    });
+
+    it("moves the report-back builder off Setup and onto Responses", async () => {
+      await renderTabAfresh("setup");
+      expect(screen.queryByRole("heading", { name: /You said \/ We did/i })).not.toBeInTheDocument();
+
+      await renderTabAfresh("responses");
+      const reportBack = screen.getByRole("heading", { name: /You said \/ We did/i });
+      expect(panelOf(reportBack)).toBe("responses");
+      // After the comments it answers.
+      assertPrecedes(screen.getByTestId("engagement-item-registry"), reportBack);
+    });
+
+    it("names the tab strip and the categories without builder notes", async () => {
+      await renderTabAfresh("setup");
+      expect(screen.getByRole("navigation", { name: "Campaign sections" })).toBeInTheDocument();
+      expect(screen.queryByText(/Category Registry/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/intentionally light/i)).not.toBeInTheDocument();
     });
 
     it("keeps moderation above the analysis panels in the working column", async () => {

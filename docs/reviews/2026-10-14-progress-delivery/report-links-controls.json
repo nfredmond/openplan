@@ -1,0 +1,19 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "case": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "case": "broken",
+    "outcome": "intended_failure",
+    "diagnostic": "Progress report remains reachable from the documentation index"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived"
+  }
+]

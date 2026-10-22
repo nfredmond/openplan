@@ -390,7 +390,7 @@ class ControlPanel:
         self.tabs.add(diagnostics, text="Diagnostics")
 
         self.demo_summary = tk.Label(demo, text="Checking the demo…", anchor="w", justify="left", wraplength=500)
-        self.demo_summary.pack(fill="x", pady=(8, 12))
+        self.demo_summary.pack(fill="x", pady=(8, 8))
         self._wrap_to_width(self.demo_summary)
         actions = ttk.Frame(demo)
         actions.pack(fill="x")

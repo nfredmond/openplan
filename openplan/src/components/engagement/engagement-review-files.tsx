@@ -2,8 +2,11 @@
 import { useEffect,useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { calendarDayOf, instantFromWallClock, timeZoneInputLabel, UTC_TIME_ZONE, type WorkspaceCalendar } from '@/lib/time/workspace-calendar';
 type Job={id:string;report_id:string;scope:string;snapshot_format:number|null;filters_json:Record<string,unknown>;snapshot_sha256:string;status:string;phase:string;failure_detail:string|null;created_at:string;artifacts_json:Array<{format:string;checksum:string;byteLength:number}>};
-export function EngagementReviewFiles({campaignId,reportId,categories=[]}:{campaignId:string;reportId?:string;categories?:Array<{id:string;label:string}>}) {
+/** `calendar` is the workspace calendar; the received-date filters are whole days on it. Absent means UTC, said so. */
+export function EngagementReviewFiles({campaignId,reportId,categories=[],calendar}:{campaignId:string;reportId?:string;categories?:Array<{id:string;label:string}>;calendar?:WorkspaceCalendar}) {
+ const timeZone=calendar?.timeZone??UTC_TIME_ZONE,zoneLabel=timeZoneInputLabel(calendar);
  const [jobs,setJobs]=useState<Job[]>([]),[scope,setScope]=useState('internal'),[status,setStatus]=useState('all'),[error,setError]=useState<string|null>(null),[busy,setBusy]=useState(false);
  const [canWrite,setCanWrite]=useState(false),[categoryId,setCategoryId]=useState('');
  const storageKey=`openplan-engagement-export-request:${campaignId}`;
@@ -11,15 +14,16 @@ export function EngagementReviewFiles({campaignId,reportId,categories=[]}:{campa
  const [request,setRequest]=useState<{id:string;payload:string}|null>(null);
  useEffect(()=>{
   let cancelled=false;
-  queueMicrotask(()=>{try {const raw=localStorage.getItem(storageKey);if(!raw||cancelled)return;const saved=JSON.parse(raw),selection=JSON.parse(saved.payload);if(typeof saved.id!=='string'||!['public','internal'].includes(selection.scope)||!selection.filters)throw Error('Unreadable saved export selection');setRequest(saved);setScope(selection.scope);setStatus(selection.filters.status||'all');setFrom((selection.filters.from||'').slice(0,10));setTo((selection.filters.to||'').slice(0,10));setCategoryId(selection.filters.categoryIds?.[0]||'');}catch{if(!cancelled)setError('A previous export selection could not be restored. Existing jobs remain below.');}});
+  queueMicrotask(()=>{try {const raw=localStorage.getItem(storageKey);if(!raw||cancelled)return;const saved=JSON.parse(raw),selection=JSON.parse(saved.payload);if(typeof saved.id!=='string'||!['public','internal'].includes(selection.scope)||!selection.filters)throw Error('Unreadable saved export selection');setRequest(saved);setScope(selection.scope);setStatus(selection.filters.status||'all');setFrom(calendarDayOf(selection.filters.from,timeZone)??'');setTo(calendarDayOf(selection.filters.to,timeZone)??'');setCategoryId(selection.filters.categoryIds?.[0]||'');}catch{if(!cancelled)setError('A previous export selection could not be restored. Existing jobs remain below.');}});
 
   const load=async()=>{try{const response=await fetch(`/api/engagement/campaigns/${campaignId}/reports${reportId?`?reportId=${reportId}`:''}`);const payload=await response.json();if(cancelled)return;if(!response.ok)throw new Error(payload.error||'Files unavailable');setJobs(payload.jobs);setCanWrite(payload.canWrite===true);}catch(cause){if(!cancelled)setError(cause instanceof Error?cause.message:'Files unavailable');}};
   void load();const timer=setInterval(load,3000);return()=>{cancelled=true;clearInterval(timer);};
- },[campaignId,reportId,storageKey]);
+ },[campaignId,reportId,storageKey,timeZone]);
  async function queue() {
   setBusy(true);setError(null);
   try {
-   const selection=JSON.stringify({scope,filters:{...(categoryId?{categoryIds:[categoryId]}:{}),...(status==='all'?{}:{status}),...(from?{from:new Date(`${from}T00:00:00Z`).toISOString()}:{}),...(to?{to:new Date(`${to}T00:00:00Z`).toISOString()}:{})}});
+   const startOfDay=(day:string)=>{const instant=instantFromWallClock(`${day}T00:00`,timeZone);if(!instant)throw Error('Enter the received dates as whole days.');return instant;};
+   const selection=JSON.stringify({scope,filters:{...(categoryId?{categoryIds:[categoryId]}:{}),...(status==='all'?{}:{status}),...(from?{from:startOfDay(from)}:{}),...(to?{to:startOfDay(to)}:{})}});
    const id=request?.payload===selection?request.id:crypto.randomUUID();setRequest({id,payload:selection});try{localStorage.setItem(storageKey,JSON.stringify({id,payload:selection}));}catch{throw Error("Browser storage could not preserve this retry identifier. Existing jobs remain below; enable storage before preparing a new selection.");}
    const response=await fetch(`/api/engagement/campaigns/${campaignId}/reports`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({requestId:id,...JSON.parse(selection)})});
    const payload=await response.json();if(!response.ok)throw new Error(payload.error||'Could not queue review files');setRequest(null);try{localStorage.removeItem(storageKey);}catch{/* Acceptance is already retained by the server. */}
@@ -39,8 +43,8 @@ export function EngagementReviewFiles({campaignId,reportId,categories=[]}:{campa
    <label>Disclosure scope<select className="block w-full rounded border p-2" value={scope} onChange={event=>{setScope(event.target.value);if(event.target.value==='public')setStatus('approved');}}><option value="internal">Internal staff review</option><option value="public">Public review copy</option></select></label>
    <label>Review status<select className="block w-full rounded border p-2" value={status} onChange={event=>setStatus(event.target.value)} disabled={scope==='public'}><option value="all">All review states</option><option value="approved">Approved</option><option value="pending">Pending</option><option value="flagged">Flagged for review</option><option value="rejected">Withheld</option></select></label>
    <label>Category<select className="block w-full rounded border p-2" value={categoryId} onChange={event=>setCategoryId(event.target.value)}><option value="">All categories</option>{categories.map(category=><option key={category.id} value={category.id}>{category.label}</option>)}</select></label>
-   <label>Received from, UTC<input className="block w-full rounded border p-2" type="date" value={from} onChange={event=>setFrom(event.target.value)}/></label>
-   <label>Received before, UTC<input className="block w-full rounded border p-2" type="date" value={to} onChange={event=>setTo(event.target.value)}/></label>
+   <label>Received from ({zoneLabel})<input className="block w-full rounded border p-2" type="date" value={from} onChange={event=>setFrom(event.target.value)}/></label>
+   <label>Received before ({zoneLabel})<input className="block w-full rounded border p-2" type="date" value={to} onChange={event=>setTo(event.target.value)}/></label>
   </div>{scope==='internal'?<p>Internal files also retain the entire consultation decision history, including original links, changes and withdrawals. The status, category and date filters above do not limit that private history. Earlier saved files keep their original contents.</p>:null}<Button type="button" onClick={queue} disabled={busy}>{busy?'Saving selection…':'Prepare PDF, XLSX and ZIP'}</Button></>:null}
   {error?<p role="alert">{error}</p>:null}
   <p className="text-xs text-muted-foreground">The latest 50 jobs appear here. Each report retains its files and snapshot. The local Documents export worker prepares queued files.</p>

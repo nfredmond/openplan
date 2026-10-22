@@ -1,0 +1,8 @@
+{
+  "trial": "pagination-over-limit-restored",
+  "testFile": "src/test/project-workbook-export-pagination.test.ts",
+  "test": "refuses 2001 projects explicitly instead of generating a partial workbook",
+  "exitCode": 0,
+  "marker": null,
+  "classification": "SURVIVED"
+}

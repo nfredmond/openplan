@@ -1,0 +1,388 @@
+{
+  "sourceSha256": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5",
+  "controls": [
+    {
+      "name": "baseline",
+      "category": "behavior",
+      "result": "survived",
+      "failedTests": [],
+      "passedTests": 34
+    },
+    {
+      "name": "harmless comment",
+      "category": "behavior",
+      "result": "survived",
+      "failedTests": [],
+      "passedTests": 34
+    },
+    {
+      "name": "enable by default",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody defaults to disabled and requires both stable identities only when enabled"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "accept unknown enable flag",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody defaults to disabled and requires both stable identities only when enabled"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "substitute missing installation",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody defaults to disabled and requires both stable identities only when enabled"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "substitute missing target",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody defaults to disabled and requires both stable identities only when enabled"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "omit byte bound",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody refuses unbounded text before parsing or calling the database"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "forward wrong actor",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody records exact UTF-8 text, actor, installation and target through a bounded service RPC"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "forward altered wire text",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody records exact UTF-8 text, actor, installation and target through a bounded service RPC"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "wrong record RPC",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody records exact UTF-8 text, actor, installation and target through a bounded service RPC"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "wrong read RPC",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody returns current scope observation true without granting engine transport",
+        "original application aerial dispatch custody returns current scope observation false without granting engine transport"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "omit payload requestId",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody refuses a changed payload requestId before storage"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "omit payload system",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody refuses a changed payload system before storage"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "omit payload workspaceId",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody refuses a changed payload workspaceId before storage"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "omit payload missionId",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody refuses a changed payload missionId before storage"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "omit payload projectId",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody refuses a changed payload projectId before storage"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "omit payload presetId",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody refuses a changed payload presetId before storage"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "omit receipt job id",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody refuses changed receipt job field id"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "omit receipt job request_id",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody refuses changed receipt job field request_id"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "omit receipt job workspace_id",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody refuses changed receipt job field workspace_id"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "omit receipt job project_id",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody refuses changed receipt job field project_id"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "omit receipt job mission_id",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody refuses changed receipt job field mission_id"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "omit receipt job created_by",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody refuses changed receipt job field created_by"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "omit receipt job preset_id",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody refuses changed receipt job field preset_id"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "omit receipt job imagery_type",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody refuses changed receipt job field imagery_type"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "omit payload imagery kind",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody refuses a valid manifest under an original ZIP job before storage"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "rewrite manifest receipt",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody preserves a complete v1.1 photo manifest with original private URLs"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "replace nullable project",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody preserves an explicitly nullable project"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "omit receipt installationId",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody refuses changed receipt installationId"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "omit receipt targetId",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody refuses changed receipt targetId"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "omit receipt payloadText",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody refuses changed receipt payloadText"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "omit receipt payloadBytes",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody refuses changed receipt payloadBytes"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "omit receipt payloadSha256",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody refuses changed receipt payloadSha256"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "promote transport permission",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody refuses absent, oversized, unknown-field and purported permission receipts"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "accept unknown receipt fields",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody refuses absent, oversized, unknown-field and purported permission receipts"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "omit contract check",
+      "category": "diagnostic refusal with independent backstop",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody refuses malformed and wrong-version contracts before storage"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "lose static provider refusal",
+      "category": "diagnostic refusal with independent backstop",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody keeps provider diagnostics and source URLs out of its refusal through async function recordOriginalDispatch(client, scope, expectedJob, payloadText) {\n  const job = originalApplicationJobSchema.parse(expectedJob);\n  scope = scopeSchema.parse(scope);\n  validatePayload(payloadText, job);\n  const { data, error } = await Promise.resolve().then(() => client.rpc(\"record_aerial_original_dispatch\", {\n    p_job: job.id,\n    p_actor: job.created_by,\n    p_installation: scope.installationId,\n    p_target: scope.targetId,\n    p_payload_text: payloadText\n  }).abortSignal(AbortSignal.timeout(RPC_TIMEOUT_MS))).catch(() => ({ data: null, error: true }));\n  return validateReceipt(data, scope, job, payloadText);\n}"
+      ],
+      "passedTests": 1
+    },
+    {
+      "name": "lose static read refusal",
+      "category": "diagnostic refusal with independent backstop",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody keeps provider diagnostics and source URLs out of its refusal through async function readOriginalDispatch(client, scope, expectedJob, payloadText) {\n  const job = originalApplicationJobSchema.parse(expectedJob);\n  scope = scopeSchema.parse(scope);\n  validatePayload(payloadText, job);\n  const { data, error } = await Promise.resolve().then(() => client.rpc(\"read_aerial_original_dispatch\", {\n    p_request: job.request_id,\n    p_installation: scope.installationId,\n    p_target: scope.targetId\n  }).abortSignal(AbortSignal.timeout(RPC_TIMEOUT_MS))).catch(() => ({ data: null, error: true }));\n  const observed = receiptSchema.extend({\n    authorizedNow: __vite_ssr_import_1__.z.boolean(),\n    authorityObservedAt: __vite_ssr_import_1__.z.string().datetime({ offset: true })\n  }).safeParse(data);\n  if (!observed.success) throw new Error(\"Original aerial dispatch observation differs\");\n  const { authorizedNow, authorityObservedAt, ...original } = observed.data;\n  const receipt = validateReceipt(original, scope, job, payloadText);\n  return { ...receipt, authorizedNow, authorityObservedAt };\n}"
+      ],
+      "passedTests": 1
+    },
+    {
+      "name": "lose record transport refusal",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody keeps thrown transport diagnostics private through async function recordOriginalDispatch(client, scope, expectedJob, payloadText) {\n  const job = originalApplicationJobSchema.parse(expectedJob);\n  scope = scopeSchema.parse(scope);\n  validatePayload(payloadText, job);\n  const { data, error } = await Promise.resolve().then(() => client.rpc(\"record_aerial_original_dispatch\", {\n    p_job: job.id,\n    p_actor: job.created_by,\n    p_installation: scope.installationId,\n    p_target: scope.targetId,\n    p_payload_text: payloadText\n  }).abortSignal(AbortSignal.timeout(RPC_TIMEOUT_MS)));\n  if (error) throw new Error(\"Original aerial dispatch custody is unavailable\");\n  return validateReceipt(data, scope, job, payloadText);\n}"
+      ],
+      "passedTests": 1
+    },
+    {
+      "name": "lose read transport refusal",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody keeps thrown transport diagnostics private through async function readOriginalDispatch(client, scope, expectedJob, payloadText) {\n  const job = originalApplicationJobSchema.parse(expectedJob);\n  scope = scopeSchema.parse(scope);\n  validatePayload(payloadText, job);\n  const { data, error } = await Promise.resolve().then(() => client.rpc(\"read_aerial_original_dispatch\", {\n    p_request: job.request_id,\n    p_installation: scope.installationId,\n    p_target: scope.targetId\n  }).abortSignal(AbortSignal.timeout(RPC_TIMEOUT_MS)));\n  if (error) throw new Error(\"Original aerial dispatch custody is unavailable\");\n  const observed = receiptSchema.extend({\n    authorizedNow: __vite_ssr_import_1__.z.boolean(),\n    authorityObservedAt: __vite_ssr_import_1__.z.string().datetime({ offset: true })\n  }).safeParse(data);\n  if (!observed.success) throw new Error(\"Original aerial dispatch observation differs\");\n  const { authorizedNow, authorityObservedAt, ...original } = observed.data;\n  const receipt = validateReceipt(original, scope, job, payloadText);\n  return { ...receipt, authorizedNow, authorityObservedAt };\n}"
+      ],
+      "passedTests": 1
+    },
+    {
+      "name": "fabricate authorized observation",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody requires a typed current observation and the unchanged original bytes"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "substitute receipt for current observation",
+      "category": "behavior",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "original application aerial dispatch custody requires a typed current observation and the unchanged original bytes"
+      ],
+      "passedTests": 0
+    },
+    {
+      "name": "restored",
+      "category": "behavior",
+      "result": "survived",
+      "failedTests": [],
+      "passedTests": 34
+    }
+  ],
+  "scope": "Focused TypeScript helper and simulated RPC replies. No database, live transport, route, caller authorship or engine authorization proof."
+}

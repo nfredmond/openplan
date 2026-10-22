@@ -58,7 +58,7 @@ export function ReportNavigationPreview({
                 className="inline-flex items-center gap-2 transition hover:text-primary"
               >
                 <Link2 className="h-4 w-4" />
-                Open grants lane for this project
+                Open grants for this project
               </Link>
             </MetaItem>
           ) : null}

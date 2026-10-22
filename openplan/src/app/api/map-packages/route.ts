@@ -7,7 +7,7 @@ import { ProviderRequestError, providerBody, providerError, providerJson, provid
 import { MAP_PACKAGE_DELIVERABLES, mapPackageRunnerFor } from "@/lib/map-packages/catalog";
 import { MAP_PACKAGE_REQUEST_MAX_CHARS, mapPackageZipMaxBytes } from "@/lib/map-packages/contracts";
 import { MAP_PACKAGE_SKILL } from "@/lib/map-packages/skill";
-import { loadMapPackageBrief, mapPackageObjectPath, mapPackageRpcError, signedMapPackageUpload } from "@/lib/map-packages/server";
+import { loadMapPackageBrief, mapPackageObjectPath, mapPackageRpcError, requireMapPackageStorageRoom, signedMapPackageUpload } from "@/lib/map-packages/server";
 
 export const runtime = "nodejs";
 
@@ -82,6 +82,8 @@ export async function POST(request: NextRequest) {
       return providerJson({ package: saved.package }, saved.created ? 201 : 200);
     }
     if (body.bytes > mapPackageZipMaxBytes()) throw new ProviderRequestError("map_package_file_too_large", 413);
+    // Before the package row exists, so a refusal leaves nothing waiting for a file.
+    await requireMapPackageStorageRoom(service, body.workspaceId, body.bytes);
     const { data, error } = await service.rpc("create_project_map_package", {
       p_request_id: body.requestId, p_user_id: userId, p_workspace_id: body.workspaceId, p_project_id: body.projectId,
       p_title: body.title, p_source: "upload", p_deliverable: body.deliverable, p_funding_opportunity_id: body.fundingOpportunityId,

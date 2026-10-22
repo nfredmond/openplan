@@ -1,0 +1,52 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "cases": 11
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived",
+    "cases": 11
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived",
+    "cases": 11
+  },
+  {
+    "control": "rpc",
+    "test": "reads the database and Storage, ages each heartbeat, and lists every expected migration",
+    "outcome": "intended_failure",
+    "reason": "Node observations use their dedicated reader"
+  },
+  {
+    "control": "rpc-payload",
+    "test": "reads the database and Storage, ages each heartbeat, and lists every expected migration",
+    "outcome": "intended_failure",
+    "reason": "Node observations use their dedicated reader"
+  },
+  {
+    "control": "unavailable",
+    "test": "keeps an unavailable Node observation distinct from no workers",
+    "outcome": "intended_failure",
+    "reason": "Unavailable Node observation must fail deep health"
+  },
+  {
+    "control": "malformed",
+    "test": "refuses malformed Node observations instead of forwarding a completion claim",
+    "outcome": "intended_failure",
+    "reason": "Malformed process facts cannot pass deep health"
+  },
+  {
+    "control": "process-output",
+    "test": "reads the database and Storage, ages each heartbeat, and lists every expected migration",
+    "outcome": "intended_failure",
+    "reason": "Process availability remains separate from completed work"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived",
+    "cases": 11
+  }
+]

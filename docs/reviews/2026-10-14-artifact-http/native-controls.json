@@ -1,0 +1,62 @@
+[
+  {
+    "case": "baseline-completed",
+    "outcome": "survived"
+  },
+  {
+    "case": "baseline-canceled",
+    "outcome": "survived"
+  },
+  {
+    "case": "baseline-revoked",
+    "outcome": "survived"
+  },
+  {
+    "case": "harmless-completed",
+    "outcome": "survived"
+  },
+  {
+    "case": "harmless-canceled",
+    "outcome": "survived"
+  },
+  {
+    "case": "harmless-revoked",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-after-harmless-completed",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-after-harmless-canceled",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-after-harmless-revoked",
+    "outcome": "survived"
+  },
+  {
+    "case": "completed-original-denied",
+    "outcome": "intended_failure"
+  },
+  {
+    "case": "revoked-original-granted",
+    "outcome": "intended_failure"
+  },
+  {
+    "case": "canceled-original-granted",
+    "outcome": "intended_failure"
+  },
+  {
+    "case": "restored-final-completed",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-final-canceled",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-final-revoked",
+    "outcome": "survived"
+  }
+]

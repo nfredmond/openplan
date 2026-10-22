@@ -1,0 +1,29 @@
+{
+  "cohorts": {
+    "python314-access": {
+      "cases": 48,
+      "positiveCohorts": 4,
+      "faults": 51,
+      "proofDirectory": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/running-progress-20261014/python314-root-access-03"
+    },
+    "python314-http": {
+      "cases": 34,
+      "positiveCohorts": 4,
+      "faults": 35,
+      "proofDirectory": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/running-progress-20261014/python314-root-http-01"
+    },
+    "python311-access": {
+      "cases": 48,
+      "positiveCohorts": 4,
+      "faults": 51,
+      "proofDirectory": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/running-progress-20261014/python311-root-access-03"
+    },
+    "python311-http": {
+      "cases": 34,
+      "positiveCohorts": 4,
+      "faults": 35,
+      "proofDirectory": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/running-progress-20261014/python311-root-http-01"
+    }
+  },
+  "limits": "Private supplied authority and synthetic products; actual owned HTTP sockets, no hosted, public TLS, quality, browser, default or v1 acceptance."
+}

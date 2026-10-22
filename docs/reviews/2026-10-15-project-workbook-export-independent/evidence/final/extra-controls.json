@@ -1,0 +1,26 @@
+{
+  "controls": [
+    {
+      "fault": "range-contract",
+      "classification": "KILLED",
+      "marker": "independent query contract",
+      "namedFailures": 13,
+      "totalFailures": 17
+    },
+    {
+      "fault": "byte-parity",
+      "classification": "KILLED",
+      "marker": "independent complete byte parity",
+      "namedFailures": 8,
+      "totalFailures": 8
+    }
+  ],
+  "restoredCases": 17,
+  "routeRestoredSha256": "efd81d2e4a2bc9b181dca617d60c5ce6b21f9db65b596f306f4fa1d11257bbd9",
+  "resources": {
+    "memory.max": "1073741824",
+    "memory.swap.max": "0",
+    "memory.peak": "287158272",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+  }
+}

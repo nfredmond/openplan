@@ -4,6 +4,7 @@ import {
   ArrowRight,
   CheckCircle2,
   Circle,
+  FolderKanban,
   MapPin,
   MessageSquareShare,
   Radar,
@@ -11,6 +12,7 @@ import {
   Users,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { aiKeyFeatureSentenceList } from "@/lib/help/ai-key-features";
 
 /**
  * The first-run checklist a brand-new workspace lands on.
@@ -100,6 +102,7 @@ function FirstRunStep({
   return (
     <li
       id={anchorId}
+      data-emphasis={emphasis ? "true" : undefined}
       className={[
         "rounded-lg border p-4",
         emphasis
@@ -164,6 +167,12 @@ function FirstRunStep({
 
 export type FirstRunChecklistProps = {
   /**
+   * How many projects this workspace has, or null when the count could not be
+   * read. Projects carry the work across every module, so creating one is the
+   * first step. A null count makes no claim either way (rule 1 above).
+   */
+  projectCount: number | null;
+  /**
    * Whether an AI (Anthropic) key resolves for this workspace — a key the
    * workspace stored itself OR the deployment's own environment key, resolved
    * server-side with the same helper every AI route uses
@@ -226,6 +235,7 @@ export type FirstRunChecklistProps = {
 };
 
 export function FirstRunChecklist({
+  projectCount,
   aiKeyConfigured,
   homeGeographyIsSet,
   homeGeographyUnreadable = false,
@@ -250,23 +260,29 @@ export function FirstRunChecklist({
       : engagementCampaignCount === 0
         ? "todo"
         : "optional";
+  const projectStatus: StepStatus =
+    projectCount !== null && projectCount > 0 ? "done" : "todo";
   // Exactly one step may carry emphasis: the first incomplete one in display
-  // order. The AI key leads (Nathaniel's decision 2026-08-10: key entry at the
-  // very beginning), then geography, then the intent-driven engagement step.
-  // Emphasis never gates anything — every step stays usable regardless.
-  const emphasizeAiKey = !aiKeyConfigured;
-  const emphasizeGeography = aiKeyConfigured && !homeGeographyIsSet && !homeGeographyUnreadable;
+  // order. A project leads, then geography, then the intent-driven engagement
+  // step. The AI key is optional and never carries emphasis: the October 12,
+  // 2026 review (docs/reviews/2026-10-12-two-month-review/PLAN.md, B1) moved it
+  // from first to optional, replacing the 2026-08-10 key-first order, because
+  // OpenPlan is free and most of it runs without a key.
+  // Emphasis never gates anything; every step stays usable regardless.
+  const emphasizeProject = projectCount === 0;
+  const emphasizeGeography = !emphasizeProject && !homeGeographyIsSet && !homeGeographyUnreadable;
   const emphasizeEngagement =
     showEngagementStep &&
-    aiKeyConfigured &&
+    !emphasizeProject &&
     homeGeographyIsSet &&
     engagementStatus !== "done";
   const geographyIndex = 2;
   const screeningIndex = showEngagementStep ? 4 : 3;
-  const teamIndex = screeningIndex + 1;
+  const aiKeyIndex = screeningIndex + 1;
+  const teamIndex = aiKeyIndex + 1;
 
   const aiKeyState = aiKeyConfigured
-    ? "On — an AI key is available to this workspace."
+    ? "On. An AI key is available to this workspace."
     : canManageWorkspace
       ? aiKeyControlIsHere
         ? "Not on yet. Paste your workspace's Anthropic API key below."
@@ -287,31 +303,22 @@ export function FirstRunChecklist({
 
   return (
     <ol className="mt-4 space-y-3">
-      {/* First on purpose. Without a key nothing blocks — every other step and
-          the whole app stay usable — but the AI features are simply off, and
-          the honest move is to say that at the very beginning rather than let
-          a planner discover it mid-conversation with a silent copilot. */}
       <FirstRunStep
         index={1}
-        icon={Sparkles}
-        title="Turn on your AI assistant"
-        status={aiKeyConfigured ? "done" : "todo"}
-        emphasis={emphasizeAiKey}
-        anchorId="workspace-ai-key"
-        state={aiKeyState}
-        unlocks={
-          aiKeyConfigured
-            ? "The Planner Agent, narrative drafting, and comment translation all run on this key. OpenPlan itself is free — the key is your workspace's own account with the AI provider, and usage is billed by that provider, not by OpenPlan."
-            : "Without a key, the Planner Agent, narrative drafting, and comment translation are unavailable — everything else in OpenPlan still works. OpenPlan itself is free — the key is your workspace's own account with the AI provider, and usage is billed by that provider, not by OpenPlan."
+        icon={FolderKanban}
+        title="Create your first project"
+        status={projectStatus}
+        emphasis={emphasizeProject}
+        state={
+          projectCount === null
+            ? "Could not check whether this workspace has projects. That is not the same as having none."
+            : projectCount > 0
+              ? "This workspace has projects."
+              : "No projects yet."
         }
-        action={
-          !aiKeyConfigured && canManageWorkspace && !aiKeyControlIsHere
-            ? { href: "/workspace#workspace-integrations", label: "Open integration setup" }
-            : undefined
-        }
-      >
-        {aiKeyConfigured ? null : aiKeyControl}
-      </FirstRunStep>
+        unlocks="A project holds the place, money, people and files for one piece of work, and every module can attach to it."
+        action={projectStatus === "done" ? undefined : { href: "/projects#create-project", label: "Create a project" }}
+      />
 
       <FirstRunStep
         index={geographyIndex}
@@ -373,6 +380,29 @@ export function FirstRunChecklist({
         unlocks="Corridor Analysis scores a corridor or study area against the open data available for it and saves the run to this workspace, where reports, comparisons, and grant narratives can draw on it. Results are screening-grade — they support prioritization and narrative, not final engineering."
         action={hasRuns ? undefined : { href: "/explore", label: "Open Corridor Analysis" }}
       />
+
+      {/* Optional, and never emphasized: nothing else depends on it. The
+          copilot's no-key notice deep-links to this step by its anchor. */}
+      <FirstRunStep
+        index={aiKeyIndex}
+        icon={Sparkles}
+        title="Turn on your AI assistant"
+        status={aiKeyConfigured ? "done" : "optional"}
+        anchorId="workspace-ai-key"
+        state={aiKeyState}
+        unlocks={
+          aiKeyConfigured
+            ? `This key runs ${aiKeyFeatureSentenceList()}. The AI provider bills your own account for it; OpenPlan is free.`
+            : `Without a key, ${aiKeyFeatureSentenceList()} are off. Everything else works. The AI provider bills your own account for a key; OpenPlan is free.`
+        }
+        action={
+          !aiKeyConfigured && canManageWorkspace && !aiKeyControlIsHere
+            ? { href: "/workspace#workspace-integrations", label: "Open integration setup" }
+            : undefined
+        }
+      >
+        {aiKeyConfigured ? null : aiKeyControl}
+      </FirstRunStep>
 
       {/* Owner/admin only: the invitation API refuses everyone else, so showing
           this to a member would be an instruction they cannot follow. It carries

@@ -295,6 +295,8 @@ export const AERIAL_CUSTODY_FAILURE_CODES = [
   "network_error",
   "storage_write_failed",
   "budget_exhausted",
+  "workspace_storage_full",
+  "workspace_storage_unreadable",
 ] as const;
 export type AerialCustodyFailureCode = (typeof AERIAL_CUSTODY_FAILURE_CODES)[number];
 
@@ -568,6 +570,9 @@ export function describeAerialCustodyFailure(input: {
   maxBytes?: number;
   observedBytes?: number;
   declaredBytes?: number;
+  /** The workspace storage limit and current use, for `workspace_storage_full`. */
+  quotaBytes?: number;
+  usedBytes?: number;
   errorName?: string;
   sourceHost?: string;
   sourceExpiresAt?: string;
@@ -591,6 +596,10 @@ export function describeAerialCustodyFailure(input: {
       return `${subject}: the download from ${input.sourceHost ?? "the processing worker"} failed (${input.errorName ?? "network error"}). The link may still be valid — a retry is worth attempting before it expires.`;
     case "storage_write_failed":
       return `${subject}: the bytes were downloaded but the write into this deployment's private aerial-artifacts bucket failed. Confirm the bucket exists (migration 20260730000004) and that its size limit allows this object.`;
+    case "workspace_storage_full":
+      return `${subject}: storing it would put this workspace over its storage limit of ${formatBytes(input.quotaBytes ?? 0)} (${formatBytes(input.usedBytes ?? 0)} used). Nothing was stored. Delete files the workspace no longer needs, or ask whoever runs this OpenPlan site to raise the limit, then retry before the link expires.`;
+    case "workspace_storage_unreadable":
+      return `${subject}: this workspace's storage use could not be checked, so nothing was stored. The link is untouched; retry through POST /api/aerial/processing-callback/custody before it expires.`;
     case "budget_exhausted":
       return `${subject} during the processing callback: the callback's custody time budget (${AERIAL_CUSTODY_BUDGET_MS_ENV}) ran out first. The link is untouched and still valid — retry through POST /api/aerial/processing-callback/custody before it expires.`;
   }

@@ -1,0 +1,47 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "reason": null
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived",
+    "reason": null
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived",
+    "reason": null
+  },
+  {
+    "control": "package-bytes-changed",
+    "outcome": "intended_failure",
+    "reason": "Captured failed-task bytes differ"
+  },
+  {
+    "control": "relocation-bytes-changed",
+    "outcome": "intended_failure",
+    "reason": "Relocated failed-task bytes differ"
+  },
+  {
+    "control": "restored-status-changed",
+    "outcome": "intended_failure",
+    "reason": "Restored failed-task API projection differs"
+  },
+  {
+    "control": "restored-task-uuid-changed",
+    "outcome": "intended_failure",
+    "reason": "Restored failed-task API projection differs"
+  },
+  {
+    "control": "original-source-changed",
+    "outcome": "intended_failure",
+    "reason": "Restoration must not mutate original or package"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived",
+    "reason": null
+  }
+]

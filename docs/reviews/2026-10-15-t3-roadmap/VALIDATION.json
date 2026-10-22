@@ -1,0 +1,83 @@
+{
+  "schema": "openplan.roadmap-plan-review.v1",
+  "approvedAt": "2026-10-15T03:06:56.358340+00:00",
+  "draftModel": "claude-opus-5-5",
+  "effort": "high",
+  "sessionId": "7cd119d8-0c7b-45c2-b8ac-468e9bfb5687",
+  "reviewer": "Codex technical and product lead",
+  "approval": "corrected plan scope and sequencing only",
+  "base": "8a180c3776a836e48caa98b34f43d1b3001f0289",
+  "mainSource": "1b2fefe0f0e98f99700fc77e99146fe697b43ee7",
+  "documentSha256": {
+    "docs/ROADMAP.md": "37824b7ef62898ebc42e1347717a8f6193cb93c36c7e4be2fab4142be03b7b1f",
+    "docs/product/MILESTONES.md": "0f88f25810777d226d2f953689cf92070d41b8054f5553ee212d4c9db1e38fc4",
+    "docs/product/CORE_REQUIREMENTS_LEDGER.md": "543d7c3c822db5bff4d3d68ab3f4a47530a7ff6252b16b39cc66b1ce7352a78e",
+    "docs/README.md": "93e01ba7f40310e49395a444c7b2f8f466e5d9e4bb1d0d900be69ca83369e279",
+    "docs/archive/ROADMAP_EVIDENCE_LOG_2026-08-24_TO_2026-10-12.md": "9d11d4407a3a68300e38a0d54c7dada01d8dcc1d0d4d147d62ecc238009cf59b",
+    "docs/reviews/2026-10-15-t3-roadmap/PROPOSAL.md": "acae03fc31af72a3cfa9affcdbb46f9a2222c8140d91b8371775af18837a8efd",
+    "docs/reviews/2026-10-15-t3-roadmap/REVIEW.md": "6a19f931b5cd7068218eb8756935ced2a3040596c7588e077d376db92ccf8a8d"
+  },
+  "documentationChecks": {
+    "checks": [
+      {
+        "name": "baseline",
+        "exitCode": 0,
+        "expectedExit": 0,
+        "requiredFailureText": null,
+        "matched": true
+      },
+      {
+        "name": "harmless",
+        "exitCode": 0,
+        "expectedExit": 0,
+        "requiredFailureText": null,
+        "matched": true
+      },
+      {
+        "name": "broken-link",
+        "exitCode": 1,
+        "expectedExit": 1,
+        "requiredFailureText": "INTENTIONALLY_MISSING_ROADMAP_REFERENCE.md",
+        "matched": true
+      },
+      {
+        "name": "restored",
+        "exitCode": 0,
+        "expectedExit": 0,
+        "requiredFailureText": null,
+        "matched": true
+      }
+    ],
+    "roadmapRestored": true,
+    "limits": "Mechanical document checks only. No product behavior or acceptance proved.",
+    "finishedAt": "2026-10-15T03:05:47.764094+00:00"
+  },
+  "testFiles": 3,
+  "testsPerPositiveCohort": 14,
+  "newOrChangedTests": 0,
+  "limits": [
+    "Mechanical references and source/state review only",
+    "No application, deployment, provider, browser, practitioner, legal, scientific or second-host acceptance",
+    "GitHub CI and merge/deployment are separate",
+    "No release or completion grade change"
+  ],
+  "finalReviewChecks": {
+    "statusCellsUnchanged": true,
+    "headerMetadataUnchanged": true,
+    "protectedFilesUnchanged": [
+      "docs/product/V1_PRODUCT_CONTRACT.md",
+      "docs/product/US_PLANNING_CAPABILITY_REGISTRY.json",
+      "docs/product/US_PLANNING_CAPABILITY_MATRIX.md",
+      "docs/reviews/2026-10-12-two-month-review/PLAN.md",
+      "docs/modeling/NATIONWIDE_VALIDATION_PREREGISTRATION_V1.json",
+      "docs/modeling/NATIONWIDE_VALIDATION_PREREGISTRATION_V1.sha256"
+    ],
+    "changedDocumentRelativePathsResolve": true,
+    "newTextHasNoEmDashes": true,
+    "finalDocumentationSuite": {
+      "testFiles": 3,
+      "tests": 14,
+      "failures": 0
+    }
+  }
+}

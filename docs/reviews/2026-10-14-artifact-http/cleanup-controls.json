@@ -1,0 +1,38 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "case": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "case": "rest-failure-skips-pg",
+    "outcome": "intended_failure",
+    "reason": "REST stop failure must still attempt verified PostgreSQL cleanup"
+  },
+  {
+    "case": "foreign-rest-stopped",
+    "outcome": "intended_failure",
+    "reason": "Foreign REST identity must never be stopped"
+  },
+  {
+    "case": "foreign-pg-stopped",
+    "outcome": "intended_failure",
+    "reason": "Foreign PostgreSQL identity must never be stopped"
+  },
+  {
+    "case": "pg-error-discarded",
+    "outcome": "intended_failure",
+    "reason": "Both cleanup failure diagnostics remain visible"
+  },
+  {
+    "case": "restored-final",
+    "outcome": "survived"
+  }
+]

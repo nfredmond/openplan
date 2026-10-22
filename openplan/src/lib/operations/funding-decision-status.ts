@@ -19,6 +19,8 @@
  * null decision_state.
  */
 
+import { isDeadlinePast } from "@/lib/work/deadlines";
+
 export const FUNDING_CLOSING_SOON_WINDOW_DAYS = 14;
 
 const PENDING_DECISION_OPPORTUNITY_STATUSES: readonly string[] = ["open", "upcoming"];
@@ -55,12 +57,20 @@ export function isOverdueFundingDecision(
   return days !== null && days < 0;
 }
 
-/** An open opportunity whose close (or, failing that, decision due date) falls within the shared window. */
+/**
+ * An open opportunity whose close (or, failing that, decision due date) is
+ * still ahead and falls within the shared window. A passed date is not
+ * closing soon: the window check alone counted a call that closed eleven days
+ * earlier, because -11 is at most 14 (live Planner Agent test, 2026-10-11).
+ * "Passed" follows the shared calendar-day rule in `lib/work/deadlines.ts`.
+ */
 export function isClosingSoonFundingOpportunity(
   facts: Pick<FundingOpportunityDeadlineFacts, "opportunityStatus" | "closesAt" | "decisionDueAt">,
   now: Date
 ): boolean {
   if ((facts.opportunityStatus ?? "") !== "open") return false;
-  const days = fundingDaysUntil(facts.closesAt ?? facts.decisionDueAt, now);
+  const deadline = facts.closesAt ?? facts.decisionDueAt;
+  if (!deadline || isDeadlinePast(deadline, now)) return false;
+  const days = fundingDaysUntil(deadline, now);
   return days !== null && days <= FUNDING_CLOSING_SOON_WINDOW_DAYS;
 }

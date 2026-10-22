@@ -18,6 +18,7 @@ import { describe, expect, it } from "vitest";
 import { FirstRunChecklist } from "@/components/onboarding/first-run-checklist";
 
 const BASE = {
+  projectCount: 1,
   aiKeyConfigured: true,
   homeGeographyIsSet: true,
   homeGeographyLabel: "Somewhere",

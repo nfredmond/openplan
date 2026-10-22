@@ -1,0 +1,32 @@
+[
+  {
+    "file": "failed-3be86907c4.json",
+    "type": "AssertionError",
+    "message": "native controller (private log retained)",
+    "sha256": "1c5ad5b97b080ba2ee4aeb08ba4636c291934bd3ac01fab83991bd6d6abd91c0"
+  },
+  {
+    "file": "failed-4bef291712.json",
+    "type": "IndexError",
+    "message": "tuple index out of range",
+    "sha256": "da81d04b050e3114d10dd66362e34feb76d23d73e10a1142c19dd4d79ce0f33d"
+  },
+  {
+    "file": "failed-59364bc9d5.json",
+    "type": "AssertionError",
+    "message": "native controller (private log retained)",
+    "sha256": "1c5ad5b97b080ba2ee4aeb08ba4636c291934bd3ac01fab83991bd6d6abd91c0"
+  },
+  {
+    "file": "failed-752b41117d.json",
+    "type": "AssertionError",
+    "message": "native controller (private log retained)",
+    "sha256": "1c5ad5b97b080ba2ee4aeb08ba4636c291934bd3ac01fab83991bd6d6abd91c0"
+  },
+  {
+    "file": "failed-c857a6189d.json",
+    "type": "AssertionError",
+    "message": "fixture target exact restoration",
+    "sha256": "833446d1cea7ca8db83ea7dab1f2dde24b37962faf1a77db4b259ff88badb1d2"
+  }
+]

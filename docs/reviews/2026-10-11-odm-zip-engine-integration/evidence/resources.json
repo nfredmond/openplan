@@ -1,0 +1,156 @@
+{
+  "checks-01-service": {
+    "SubState": "exited",
+    "InvocationID": "234f2349d1a24cfbba87af22ef05f477",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "63238144",
+    "CPUQuotaPerSecUSec": "1s",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0",
+    "afterStop": {
+      "ActiveState": "inactive",
+      "SubState": "dead",
+      "MainPID": "0"
+    }
+  },
+  "ci-01-service": {
+    "SubState": "exited",
+    "InvocationID": "cb2921bbb36a40a98ad2393c7e31fb5c",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "64208896",
+    "CPUQuotaPerSecUSec": "1s",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0",
+    "afterStop": {
+      "ActiveState": "inactive",
+      "SubState": "dead",
+      "MainPID": "0"
+    }
+  },
+  "controls-01-service": {
+    "SubState": "failed",
+    "InvocationID": "4047c2aa5ca644459b31ef2308d3cfbc",
+    "ExecMainStatus": "1",
+    "MemoryPeak": "33271808",
+    "CPUQuotaPerSecUSec": "1s",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0",
+    "afterStop": {
+      "ActiveState": "failed",
+      "SubState": "failed",
+      "MainPID": "0"
+    }
+  },
+  "controls-02-service": {
+    "SubState": "failed",
+    "InvocationID": "baa7621f41c1463fb1780cfcb08bff84",
+    "ExecMainStatus": "1",
+    "MemoryPeak": "32059392",
+    "CPUQuotaPerSecUSec": "1s",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0",
+    "afterStop": {
+      "ActiveState": "failed",
+      "SubState": "failed",
+      "MainPID": "0"
+    }
+  },
+  "controls-03-service": {
+    "SubState": "failed",
+    "InvocationID": "4abd8712c07b430881041de1e841a1ab",
+    "ExecMainStatus": "1",
+    "MemoryPeak": "33091584",
+    "CPUQuotaPerSecUSec": "1s",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0",
+    "afterStop": {
+      "ActiveState": "failed",
+      "SubState": "failed",
+      "MainPID": "0"
+    }
+  },
+  "controls-04-service": {
+    "SubState": "failed",
+    "InvocationID": "4827f0acb8ae4a82a7b8dbc2f76d0b4a",
+    "ExecMainStatus": "1",
+    "MemoryPeak": "33947648",
+    "CPUQuotaPerSecUSec": "1s",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0",
+    "afterStop": {
+      "ActiveState": "failed",
+      "SubState": "failed",
+      "MainPID": "0"
+    }
+  },
+  "controls-05-service": {
+    "SubState": "failed",
+    "InvocationID": "06c136567a1e4153984753c783b05713",
+    "ExecMainStatus": "1",
+    "MemoryPeak": "33120256",
+    "CPUQuotaPerSecUSec": "1s",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0",
+    "afterStop": {
+      "ActiveState": "failed",
+      "SubState": "failed",
+      "MainPID": "0"
+    }
+  },
+  "controls-06-service": {
+    "SubState": "exited",
+    "InvocationID": "558445626c074195a8f74921178c3a55",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "33726464",
+    "CPUQuotaPerSecUSec": "1s",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0",
+    "afterStop": {
+      "ActiveState": "inactive",
+      "SubState": "dead",
+      "MainPID": "0"
+    }
+  },
+  "docs-01-service": {
+    "SubState": "failed",
+    "InvocationID": "19544ab2cec541a595bb4845b0aeb707",
+    "ExecMainStatus": "1",
+    "MemoryPeak": "27394048",
+    "CPUQuotaPerSecUSec": "1s",
+    "MemoryMax": "1073741824",
+    "MemorySwapMax": "0",
+    "afterStop": {
+      "ActiveState": "failed",
+      "SubState": "failed",
+      "MainPID": "0"
+    }
+  },
+  "docs-02-service": {
+    "SubState": "exited",
+    "InvocationID": "d1453cee3ce74015b3fc61a86b90f4e3",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "302202880",
+    "CPUQuotaPerSecUSec": "1s",
+    "MemoryMax": "1073741824",
+    "MemorySwapMax": "0",
+    "afterStop": {
+      "ActiveState": "inactive",
+      "SubState": "dead",
+      "MainPID": "0"
+    }
+  },
+  "native-engine-01-service": {
+    "SubState": "exited",
+    "InvocationID": "0ebebd0caabb447ca7ee5ba6cee4476f",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "46272512",
+    "CPUQuotaPerSecUSec": "1s",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0",
+    "afterStop": {
+      "ActiveState": "inactive",
+      "SubState": "dead",
+      "MainPID": "0"
+    }
+  }
+}

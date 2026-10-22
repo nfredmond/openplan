@@ -1,0 +1,185 @@
+{
+  "positiveControls": 4,
+  "badObservations": 28,
+  "omittedGuards": 12,
+  "cases": [
+    {
+      "case": "baseline",
+      "accepted": true
+    },
+    {
+      "case": "harmless-comment",
+      "accepted": true
+    },
+    {
+      "case": "harmless-serialization",
+      "accepted": true
+    },
+    {
+      "case": "restored",
+      "accepted": true
+    },
+    {
+      "case": "head",
+      "refusedBy": "model-point-source-build"
+    },
+    {
+      "case": "sourceEdits",
+      "refusedBy": "model-point-source-build"
+    },
+    {
+      "case": "pointPath",
+      "refusedBy": "model-point-private-roots"
+    },
+    {
+      "case": "outputPath",
+      "refusedBy": "model-point-private-roots"
+    },
+    {
+      "case": "sourceProject",
+      "refusedBy": "model-point-projects"
+    },
+    {
+      "case": "targetProject",
+      "refusedBy": "model-point-projects"
+    },
+    {
+      "case": "sourceVolume",
+      "refusedBy": "model-point-volumes"
+    },
+    {
+      "case": "targetVolume",
+      "refusedBy": "model-point-volumes"
+    },
+    {
+      "case": "existingContainers",
+      "refusedBy": "model-point-existing-resources"
+    },
+    {
+      "case": "existingVolumes",
+      "refusedBy": "model-point-existing-resources"
+    },
+    {
+      "case": "toolSha256",
+      "refusedBy": "model-point-backup-tool"
+    },
+    {
+      "case": "imageId",
+      "refusedBy": "model-point-cached-image"
+    },
+    {
+      "case": "retainedPoint.state",
+      "refusedBy": "model-point-retained-input"
+    },
+    {
+      "case": "retainedPoint.snapshotId",
+      "refusedBy": "model-point-retained-input"
+    },
+    {
+      "case": "retainedPoint.sourceHead",
+      "refusedBy": "model-point-retained-input"
+    },
+    {
+      "case": "retainedPoint.capturedFiles",
+      "refusedBy": "model-point-retained-input"
+    },
+    {
+      "case": "retainedPoint.capturedBytes",
+      "refusedBy": "model-point-retained-input"
+    },
+    {
+      "case": "helperHashes",
+      "refusedBy": "model-point-helper-identity"
+    },
+    {
+      "case": "controlsScopeSha256",
+      "refusedBy": "model-point-control-source"
+    },
+    {
+      "case": "databaseMemoryBytes",
+      "refusedBy": "model-point-resource-caps"
+    },
+    {
+      "case": "databaseSwapBytes",
+      "refusedBy": "model-point-resource-caps"
+    },
+    {
+      "case": "driverMemoryBytes",
+      "refusedBy": "model-point-resource-caps"
+    },
+    {
+      "case": "driverSwapBytes",
+      "refusedBy": "model-point-resource-caps"
+    },
+    {
+      "case": "restMemoryBytes",
+      "refusedBy": "model-point-resource-caps"
+    },
+    {
+      "case": "cpuQuotaPercent",
+      "refusedBy": "model-point-resource-caps"
+    },
+    {
+      "case": "freeDiskBytes",
+      "refusedBy": "model-point-resource-headroom"
+    },
+    {
+      "case": "availableMemoryBytes",
+      "refusedBy": "model-point-resource-headroom"
+    },
+    {
+      "case": "foreign-expected-helper",
+      "refusedBy": "model-point-helper-identity"
+    },
+    {
+      "case": "omit-model-point-source-build",
+      "intendedAssertion": "Missing refusal: model-point-source-build"
+    },
+    {
+      "case": "omit-model-point-private-roots",
+      "intendedAssertion": "Missing refusal: model-point-private-roots"
+    },
+    {
+      "case": "omit-model-point-projects",
+      "intendedAssertion": "Missing refusal: model-point-projects"
+    },
+    {
+      "case": "omit-model-point-volumes",
+      "intendedAssertion": "Missing refusal: model-point-volumes"
+    },
+    {
+      "case": "omit-model-point-existing-resources",
+      "intendedAssertion": "Missing refusal: model-point-existing-resources"
+    },
+    {
+      "case": "omit-model-point-backup-tool",
+      "intendedAssertion": "Missing refusal: model-point-backup-tool"
+    },
+    {
+      "case": "omit-model-point-cached-image",
+      "intendedAssertion": "Missing refusal: model-point-cached-image"
+    },
+    {
+      "case": "omit-model-point-retained-input",
+      "intendedAssertion": "Missing refusal: model-point-retained-input"
+    },
+    {
+      "case": "omit-model-point-helper-identity",
+      "intendedAssertion": "Missing refusal: model-point-helper-identity"
+    },
+    {
+      "case": "omit-model-point-control-source",
+      "intendedAssertion": "Missing refusal: model-point-control-source"
+    },
+    {
+      "case": "omit-model-point-resource-caps",
+      "intendedAssertion": "Missing refusal: model-point-resource-caps"
+    },
+    {
+      "case": "omit-model-point-resource-headroom",
+      "intendedAssertion": "Missing refusal: model-point-resource-headroom"
+    }
+  ],
+  "sourceSha256": "a6731d9360438ab050306924d6ab22b805d43da1be73a5fd74ad4f837e8d2402",
+  "blindCategory": "Pure observation predicates only. These controls do not launch resources or prove native resource identity, snapshot completeness, writer fencing or recovery."
+}

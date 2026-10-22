@@ -1,0 +1,269 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comments",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "authority-promoted",
+    "test": "test_owned_queue_advances_one_original_init_and_keeps_start_held",
+    "source": "pipeline",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "URL draft cannot promote supplied authority"
+  },
+  {
+    "control": "commit-permission-promoted",
+    "test": "test_owned_queue_advances_one_original_init_and_keeps_start_held",
+    "source": "pipeline",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "URL draft cannot grant processing commit"
+  },
+  {
+    "control": "reported-task-changed",
+    "test": "test_owned_queue_advances_one_original_init_and_keeps_start_held",
+    "source": "draft",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Reported draft task must be original"
+  },
+  {
+    "control": "saved-inputs-resupplied",
+    "test": "test_original_settings_bytes_and_order_survive_changed_supplier",
+    "source": "pipeline",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Draft preparation called changed supplier"
+  },
+  {
+    "control": "engine-identity-changed",
+    "test": "test_original_settings_bytes_and_order_survive_changed_supplier",
+    "source": "pipeline",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Original engine settings must reach transport"
+  },
+  {
+    "control": "command-order-reversed",
+    "test": "test_original_settings_bytes_and_order_survive_changed_supplier",
+    "source": "draft",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Original command order must remain"
+  },
+  {
+    "control": "commit-hold-omitted",
+    "test": "test_original_settings_bytes_and_order_survive_changed_supplier",
+    "source": "draft",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "URL pipeline must not send a processing commit"
+  },
+  {
+    "control": "permission-guard-omitted",
+    "test": "test_denied_permission_cannot_issue_intent_or_send",
+    "source": "draft",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": [
+      "PermissionError not raised",
+      "Denied URL draft cannot issue intent"
+    ]
+  },
+  {
+    "control": "uncertain-hold-omitted",
+    "test": "test_lost_reply_keeps_intent_and_prevents_reissue_or_later_upload",
+    "source": "draft",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Uncertain URL draft requested another permission"
+  },
+  {
+    "control": "restored-inputs-resupplied",
+    "test": "test_relocated_runtime_advances_original_upload_without_download_root",
+    "source": "pipeline",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Restored draft resupplied"
+  },
+  {
+    "control": "partial-inputs-resupplied",
+    "test": "test_partial_intake_finishes_only_missing_source_before_first_command",
+    "source": "pipeline",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Partial draft resupplied settings"
+  },
+  {
+    "control": "invalid-adapters",
+    "test": "test_invalid_constructor_adapters_and_deadline",
+    "source": "pipeline",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "invalid-deadline",
+    "test": "test_invalid_constructor_adapters_and_deadline",
+    "source": "pipeline",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "owner-marker-spoofed",
+    "test": "test_original_owner_and_pre_cancelled_signal_refuse_before_intake",
+    "source": "pipeline",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "job-identity-bridge-skipped",
+    "test": "test_pipeline_job_identity_refuses_before_fetch_or_permission",
+    "source": "pipeline",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "input-admission-guard-omitted",
+    "test": "test_saved_input_adapter_requires_original_admission",
+    "source": "pipeline",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Changed admission read saved draft inputs"
+  },
+  {
+    "control": "saved-plan-extra-fields",
+    "test": "test_saved_settings_shape_and_version_refuse_before_validation",
+    "source": "pipeline",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Malformed draft settings reached validation"
+  },
+  {
+    "control": "saved-plan-version",
+    "test": "test_saved_settings_shape_and_version_refuse_before_validation",
+    "source": "pipeline",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Malformed draft settings reached validation"
+  },
+  {
+    "control": "saved-binding-guard-omitted",
+    "test": "test_saved_settings_original_binding_refuses_before_mapping",
+    "source": "pipeline",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Changed draft binding reached mapping"
+  },
+  {
+    "control": "saved-mapping-validation-skipped",
+    "test": "test_saved_mapping_settings_hash_refuses",
+    "source": "pipeline",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "post-permission-cancellation-skipped",
+    "test": "test_cancellation_in_permission_refuses_before_intent",
+    "source": "pipeline",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Cancelled permission cannot issue an intent"
+  },
+  {
+    "control": "post-transport-cancellation-skipped",
+    "test": "test_cancellation_during_transport_leaves_original_intent_unresolved",
+    "source": "pipeline",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Cancelled transport cannot save a reply"
+  },
+  {
+    "control": "source-budget-extended",
+    "test": "test_source_stage_shares_total_deadline_without_mutating_original_adapter",
+    "source": "pipeline",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Intake cannot receive more than the whole pipeline deadline"
+  },
+  {
+    "control": "transport-budget-extended",
+    "test": "test_source_stage_shares_total_deadline_without_mutating_original_adapter",
+    "source": "pipeline",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Engine transport cannot extend the pipeline deadline"
+  },
+  {
+    "control": "permission-expiry-intent-check",
+    "test": "test_expired_permission_cannot_issue_intent",
+    "source": "pipeline",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Expired URL draft cannot issue an intent"
+  },
+  {
+    "control": "cloned-cancellation-stale",
+    "test": "test_cancellation_changed_during_source_write_reaches_cloned_stage",
+    "source": "pipeline",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Cloned intake must see the current cancellation signal"
+  },
+  {
+    "control": "late-draft-cancellation-skipped",
+    "test": "test_late_draft_cancellation_cannot_report_success",
+    "source": "pipeline",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "InterruptedError not raised"
+  },
+  {
+    "control": "mapping-cancellation-skipped",
+    "test": "test_saved_mapping_cancellation_cannot_return_inputs",
+    "source": "pipeline",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "InterruptedError not raised"
+  },
+  {
+    "control": "current-authorization-deadline-omitted",
+    "test": "test_current_authorization_shares_the_outer_deadline",
+    "source": "pipeline",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Current authorization must receive the actual shared URL deadline"
+  },
+  {
+    "control": "current-authorization-selection-dropped",
+    "test": "test_current_authorization_shares_the_outer_deadline",
+    "source": "pipeline",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "KeyError: 'deadline'"
+  },
+  {
+    "control": "authorization-selection-unchecked",
+    "test": "test_authorization_deadline_selection_requires_boolean",
+    "source": "pipeline",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

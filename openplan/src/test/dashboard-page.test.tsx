@@ -1,6 +1,6 @@
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const createClientMock = vi.fn();
 const redirectMock = vi.fn((..._args: unknown[]) => {
@@ -30,8 +30,16 @@ const homeGeographyRowMock = vi.fn<() => { data: unknown; error: unknown }>(() =
   data: null,
   error: null,
 }));
+// The workspace's calendar row (loadWorkspaceCalendar). No zone by default,
+// which is UTC; the calendar tests set one.
+const workspaceCalendarRowMock = vi.fn<() => { data: unknown; error: unknown }>(() => ({
+  data: { time_zone: null, home_country_code: null },
+  error: null,
+}));
 const workspacesSelectMock = vi.fn((columns: string) => {
-  void columns;
+  if (columns === "time_zone, home_country_code") {
+    return { eq: () => ({ maybeSingle: async () => workspaceCalendarRowMock() }) };
+  }
   return { eq: () => ({ maybeSingle: async () => homeGeographyRowMock() }) };
 });
 
@@ -155,6 +163,20 @@ const loadWorkspaceDatesMock = vi.fn();
 vi.mock("@/lib/dashboard/workspace-dates", () => ({
   loadWorkspaceDates: (...args: unknown[]) => loadWorkspaceDatesMock(...args),
 }));
+
+// The comment chart runs for real; its arguments are recorded so a test can
+// see which calendar the page handed it.
+const commentsChartCalls: unknown[][] = [];
+vi.mock("@/lib/dashboard/chart-series", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/dashboard/chart-series")>("@/lib/dashboard/chart-series");
+  return {
+    ...actual,
+    commentsReceivedOverTime: (...args: Parameters<typeof actual.commentsReceivedOverTime>) => {
+      commentsChartCalls.push(args);
+      return actual.commentsReceivedOverTime(...args);
+    },
+  };
+});
 
 vi.mock("@/components/runs/RunHistory", () => ({
   RunHistory: () => <div data-testid="run-history" />,
@@ -343,8 +365,10 @@ describe("DashboardPage", () => {
 
     runsLimitMock.mockResolvedValue({ data: [], error: null });
     loadMyWorkMock.mockImplementation(async () => myWorkResult([]));
-    loadWorkspaceDatesMock.mockResolvedValue({ items: [], failed: [], capped: [] });
+    loadWorkspaceDatesMock.mockResolvedValue({ items: [], missed: [], failed: [], capped: [] });
     homeGeographyRowMock.mockReturnValue({ data: null, error: null });
+    commentsChartCalls.length = 0;
+    workspaceCalendarRowMock.mockReturnValue({ data: { time_zone: null, home_country_code: null }, error: null });
     // Default: no Anthropic key resolves — the honest state of a fresh
     // deployment with no env key and no stored workspace key.
     hasAnthropicAccessMock.mockReturnValue(false);
@@ -381,7 +405,9 @@ describe("DashboardPage", () => {
 
     expect(screen.queryByRole("heading", { name: "Set up this workspace" })).not.toBeInTheDocument();
     const summary = screen.getByText("Setup checklist").closest("summary");
-    expect(summary?.textContent).toMatch(/1 of 3 done/);
+    // Project (the summary counts one) and geography. The optional AI key is
+    // not one of the three counted steps.
+    expect(summary?.textContent).toMatch(/2 of 3 done/);
     expect(screen.getByText("Example County, Example State")).toBeInTheDocument();
   });
 
@@ -457,6 +483,32 @@ describe("DashboardPage", () => {
     expect(coming).toHaveTextContent("Overdue traffic study");
     expect(coming).toHaveTextContent("1 item overdue");
     expect(coming).not.toHaveTextContent("Main Street held at design gate");
+  });
+
+  it("lists a missed RTP adoption date as overdue in Coming up", async () => {
+    loadWorkspaceDatesMock.mockResolvedValue({
+      items: [],
+      missed: [
+        {
+          key: "rtp-adoption:c1",
+          kind: "adoption",
+          title: "2026 RTP update",
+          dueOn: "2026-10-08",
+          href: "/rtp/c1",
+          projectName: null,
+          overdue: true,
+        },
+      ],
+      failed: [],
+      capped: [],
+    });
+    await renderPage();
+
+    // The read is given the render's clock, so its overdue answer agrees with My Work's.
+    expect(loadWorkspaceDatesMock.mock.calls[0][4]).toBeInstanceOf(Date);
+    const coming = screen.getByRole("region", { name: "Coming up" });
+    expect(coming).toHaveTextContent("1 item overdue");
+    expect(within(coming).getByRole("link", { name: "2026 RTP update" })).toHaveAttribute("href", "/rtp/c1");
   });
 
   it("names a source that could not be read instead of showing a clear list", async () => {
@@ -562,21 +614,24 @@ describe("DashboardPage", () => {
       await renderFirstRun();
 
       expect(workspacesSelectMock).toHaveBeenCalled();
-      const columns = workspacesSelectMock.mock.calls[0]?.[0] ?? "";
-      expect(columns).toContain("home_geography_source");
+      // Two reads of the row: the calendar's two columns, and the geography's.
+      const reads = workspacesSelectMock.mock.calls.map((call) => call[0] ?? "");
+      const columns = reads.find((read) => read.includes("home_geography_source")) ?? "";
       expect(columns).toContain("home_geography_label");
       // The polygon can be megabytes and nothing on this page draws it.
-      expect(columns).not.toContain("home_geometry_geojson");
+      for (const read of reads) expect(read).not.toContain("home_geometry_geojson");
     });
 
     it("marks the geography step done with the resolved label", async () => {
       hasAnthropicAccessMock.mockReturnValue(true);
       await renderFirstRun({ homeGeographyRow: SET_HOME_GEOGRAPHY_ROW });
 
-      // AI key and geography are both done; nothing outstanding is emphasized.
+      // AI key and geography are both done. A first-run workspace has no
+      // project, so that step still carries the one emphasis.
       expect(screen.getAllByText("Done")).toHaveLength(2);
       expect(screen.getByText("Set to Example County, Example State.")).toBeInTheDocument();
-      expect(screen.queryByText("Start here")).not.toBeInTheDocument();
+      expect(screen.getAllByText("Start here")).toHaveLength(1);
+      expect(screen.getByText("Create your first project").closest("li")!.textContent).toContain("Start here");
 
     });
 
@@ -591,16 +646,14 @@ describe("DashboardPage", () => {
       expect(screen.queryByText(/^Set to /)).not.toBeInTheDocument();
     });
 
-    it("leads with the AI step and links to integration setup while no key resolves", async () => {
+    it("offers the AI key as an optional step and links to integration setup while no key resolves", async () => {
       await renderFirstRun();
 
       const step = screen.getByText("Turn on your AI assistant").closest("li");
       expect(step).not.toBeNull();
-      // First incomplete step in display order carries the one emphasis.
-      expect(step!.textContent).toContain("Start here");
-      expect(step!.textContent).toMatch(
-        /Without a key, the Planner Agent, narrative drafting, and comment translation are unavailable/
-      );
+      expect(step!.textContent).toContain("Optional");
+      expect(step!.textContent).not.toContain("Start here");
+      expect(step!.textContent).toMatch(/Without a key, the Planner Agent, .* are off\. Everything else works\./);
 
       expect(screen.getByRole("link", { name: "Open integration setup" })).toHaveAttribute(
         "href",
@@ -615,9 +668,39 @@ describe("DashboardPage", () => {
       const step = screen.getByText("Turn on your AI assistant").closest("li");
       expect(step!.textContent).toContain("Done");
       expect(
-        screen.getByText("On — an AI key is available to this workspace.")
+        screen.getByText("On. An AI key is available to this workspace.")
       ).toBeInTheDocument();
 
+    });
+
+    it("starts with creating a project, counted from the workspace summary", async () => {
+      await renderFirstRun();
+
+      expect(screen.getByText("No projects yet.")).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: /Create a project/ })).toHaveAttribute("href", "/projects#create-project");
+    });
+
+    it("marks the project step done when the summary counts a project", async () => {
+      // The default summary in this file counts one project.
+      await renderPage();
+
+      expect(screen.getByText("This workspace has projects.")).toBeInTheDocument();
+      expect(screen.queryByRole("link", { name: /Create a project/ })).not.toBeInTheDocument();
+    });
+
+    it("makes no project claim when the summary could not read projects", async () => {
+      const summary = emptyWorkspaceSummary();
+      loadWorkspaceOperationsSummaryForWorkspaceMock.mockResolvedValueOnce({
+        ...summary,
+        moduleObservations: {
+          engagement: { campaigns: 0, moderationActionableItems: 0 },
+          unreadable: [{ label: "projects", message: "permission denied for table projects" }],
+        },
+      });
+      await renderPage();
+
+      expect(screen.queryByText("No projects yet.")).not.toBeInTheDocument();
+      expect(screen.getByText(/Could not check whether this workspace has projects/)).toBeInTheDocument();
     });
 
     it("points the screening step at Corridor Analysis and reports that no runs exist", async () => {
@@ -638,7 +721,7 @@ describe("DashboardPage", () => {
       );
       // The page cannot read who else is in the workspace (workspace_members
       // RLS is own-row only), so the step must not carry a completion claim.
-      expect(screen.getByText("Optional")).toBeInTheDocument();
+      expect(screen.getByText("Invite your team").closest("li")!.textContent).toContain("Optional");
     });
 
     it("hides the invite step from a plain member, who cannot invite anyone", async () => {
@@ -667,6 +750,84 @@ describe("DashboardPage", () => {
       for (const line of RETIRED_BASELINE_CHANGELOG_LINES) {
         expect(screen.queryByText(line)).not.toBeInTheDocument();
       }
+    });
+  });
+  /**
+   * DATES ON THE WORKSPACE'S CALENDAR. Servers run in UTC, so a grant closing
+   * at 8 p.m. Pacific on January 14 (03:00 UTC on the 15th) showed as the
+   * 15th, and a run on New Year's Eve evening counted in next year. Each case
+   * renders the page in more than one zone: one zone could pass by accident.
+   */
+  describe("on the workspace's calendar", () => {
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    function inZone(timeZone: string | null) {
+      workspaceCalendarRowMock.mockReturnValue({ data: { time_zone: timeZone, home_country_code: null }, error: null });
+    }
+
+    async function renderInZone(timeZone: string | null) {
+      cleanup();
+      inZone(timeZone);
+      await renderPage();
+    }
+
+    it("hands the workspace's zone to the workspace dates and the comment chart", async () => {
+      for (const zone of ["America/Los_Angeles", "Asia/Tokyo"]) {
+        loadWorkspaceDatesMock.mockClear();
+        commentsChartCalls.length = 0;
+        await renderInZone(zone);
+        expect(loadWorkspaceDatesMock.mock.calls[0][5]).toBe(zone);
+        expect(commentsChartCalls[0][2]).toBe(zone);
+      }
+      await renderInZone(null);
+      expect(loadWorkspaceDatesMock.mock.calls.at(-1)?.[5]).toBe("UTC");
+    });
+
+    it("shows a grant decision due at 8 p.m. Pacific on the Pacific day in the project list", async () => {
+      const dueOn = { current: "2099-01-15T03:00:00+00:00" };
+      loadMyWorkMock.mockImplementation(async (_client: unknown, options: { datedOnly?: boolean }) =>
+        myWorkResult(
+          options.datedOnly
+            ? [myWorkItem({ sourceId: "grant_decisions", block: "workspace_deadlines", id: "g1", dueOn: dueOn.current, title: "ATP decision" })]
+            : []
+        )
+      );
+      const projectDate = () => within(screen.getByRole("region", { name: "Projects" })).getByText(/^[A-Z][a-z]{2} \d+$/).textContent;
+
+      await renderInZone("America/Los_Angeles");
+      expect(projectDate()).toBe("Jan 14");
+      await renderInZone("Pacific/Honolulu");
+      expect(projectDate()).toBe("Jan 14");
+      await renderInZone("Asia/Tokyo");
+      expect(projectDate()).toBe("Jan 15");
+
+      // 11:30 p.m. on November 1, after daylight time ends: standard time puts
+      // it on the 1st, where a daylight offset would say the 2nd.
+      dueOn.current = "2026-11-02T07:30:00+00:00";
+      await renderInZone("America/Los_Angeles");
+      expect(projectDate()).toBe("Nov 1");
+    });
+
+    it("counts corridor runs in the workspace's year on New Year's Eve", async () => {
+      vi.useFakeTimers({ toFake: ["Date"] });
+      // 10 p.m. Pacific on December 31, 2026; already 2027 in UTC and Tokyo.
+      vi.setSystemTime(new Date("2027-01-01T06:00:00Z"));
+      const run = (created_at: string) => ({ created_at, metrics: null, summary_text: null, report_generated_count: 0 });
+      runsLimitMock.mockResolvedValue({
+        // 9 p.m. Pacific on the 31st, and noon Pacific on the 31st.
+        data: [run("2027-01-01T05:00:00+00:00"), run("2026-12-31T20:00:00+00:00")],
+        error: null,
+      });
+      const runsFigure = (year: string) => screen.getByText(`Corridor runs in ${year}`).closest("a");
+
+      await renderInZone("America/Los_Angeles");
+      expect(runsFigure("2026")).toHaveTextContent(/2026\s*2\b/);
+      await renderInZone("Asia/Tokyo");
+      expect(runsFigure("2027")).toHaveTextContent(/2027\s*2\b/);
+      await renderInZone(null);
+      expect(runsFigure("2027")).toHaveTextContent(/2027\s*1\b/);
     });
   });
 });

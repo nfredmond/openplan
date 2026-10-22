@@ -19,11 +19,20 @@ export type {
   GrantProgramCatalogEntry,
   GrantProgramJurisdiction,
   GrantProgramLevel,
+  GrantProgramStateAdministration,
+  GrantProgramStateTemplateText,
 } from "./types";
 export { GRANT_APPLICATION_EVIDENCE_KINDS } from "./types";
 export { usCaPrograms } from "./us-ca";
 export { usFederalPrograms } from "./us-federal";
 export { GRANT_PROGRAM_BUNDLES, GRANT_PROGRAM_CATALOG } from "./registry";
+export {
+  findStateAdministration,
+  listStateAdministrationFor,
+  resolveGrantProgramForJurisdiction,
+  type GrantProgramAdministrationQuery,
+  type GrantProgramStateAdministrationEntry,
+} from "./state-administration";
 export {
   describeGrantProgramCoverage,
   listGrantProgramsWithBundle,

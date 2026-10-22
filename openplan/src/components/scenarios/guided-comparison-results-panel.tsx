@@ -1,6 +1,8 @@
 import { StatusBadge } from "@/components/ui/status-badge";
+import { modelingClaimStatusLabel } from "@/lib/models/evidence-backbone";
 import {
   formatGuidedComparisonValue,
+  guidedComparisonClaimStatus,
   type GuidedComparisonResult,
 } from "@/lib/models/guided-comparison-results";
 import { titleizeScenarioValue } from "@/lib/scenarios/catalog";
@@ -39,7 +41,9 @@ export function GuidedComparisonResultsPanel({
         <section key={result.method} className="rounded-[0.5rem] border border-border/70 bg-background/75 p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h4 className="font-semibold text-foreground">{result.methodLabel}</h4>
-            <StatusBadge tone="warning">Screening evidence · no cross-method average</StatusBadge>
+            <StatusBadge tone="warning">
+              {modelingClaimStatusLabel(guidedComparisonClaimStatus(result))} · no cross-method average
+            </StatusBadge>
           </div>
           <div className="mt-3 overflow-x-auto">
             <table className="w-full min-w-[34rem] text-left text-sm">

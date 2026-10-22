@@ -1,0 +1,44 @@
+{
+  "preparedAt": "2026-10-15T02:20:47.755144+00:00",
+  "researcher": {
+    "model": "claude-opus-5-5",
+    "effort": "high",
+    "sessionId": "20de0ed1-f0e7-48ce-8be3-87c8286955ce",
+    "invocations": 1,
+    "exitCode": 0
+  },
+  "originalReportSha256": "6e1768becaa1f4ed4f628272e505dedf59e1cdb58165cd1797504fad26b9fe1f",
+  "repositoryReportSha256": "646048c29fad9ec93b30c51a5ac63db640b79f79dd7dcd6b1345843bbbbfdc6b",
+  "editorialChange": "Codex changed the method lead-in from Four separate coverage levels to Separate coverage levels because the revised table contains six levels. Recommendations unchanged. Codex product-fit disagreement is separate in LEAD_REVIEW.md.",
+  "localResearchPackage": "/home/nathaniel/.local/state/openplan/t3code-opus-research-20261015",
+  "omittedInputs": [
+    "56 MB PR corpus (hash in inventory.json)",
+    "raw PR page responses and fetched comment text",
+    "T3 source checkout and full documentation reading copies",
+    "private agent transcript, native auth/session metadata, scratch reading batches and initial draft",
+    "a research-agent feedback-memory entry was removed because Nathaniel did not request memory changes; correction receipt remains local",
+    "Duplicate full classification JSONL and supplemental full TSV remain in the local research package; original classification TSV, all supplemental theme differences and summaries are included.",
+    "Post-cutoff PR19703 response is represented by metadata and original-response hash; its body and full API payload remain local.",
+    "Two body re-fetch receipts contain metadata and original-response hashes here; complete upstream PR text is retained only in the original research package."
+  ],
+  "sourceLimits": [
+    "All-state metadata census through PR19702, not an atomic current GitHub snapshot.",
+    "Full-body heuristic scan is separate from semantic reading.",
+    "72 selected PR bodies and returned file lists read, human comments only as fetched and truncated, bot comments counted, no patches.",
+    "117 first-party docs retrieved and reported read by researcher;897 upstream reference paths screened only.",
+    "Source review only. No app, browser, practitioner, provider or scientific acceptance."
+  ],
+  "sourceViewFormatting": {
+    "rows": 6,
+    "change": "Trimmed trailing whitespace in six public title-view TSV rows after git diff --check identified it. Source capture and original researcher files remain unchanged; classification inputs and conclusions are unchanged."
+  },
+  "repositoryReportSha256BeforeCollectorCorrection": "9f7490c2472f997c9b894a019b76d20cf238822b7502a20778f3f522d88fdeda",
+  "collectorCorrection": {
+    "record": "COLLECTOR_CORRECTION.md",
+    "audit": "evidence/collector-recapture-audit.json",
+    "controls": "evidence/collector-controls.json",
+    "originalProjectedRecordsMatched": 72,
+    "recommendationsChanged": false,
+    "originalCapturesOverwritten": false
+  }
+}

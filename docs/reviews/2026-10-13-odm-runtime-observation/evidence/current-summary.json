@@ -1,0 +1,10 @@
+{
+  "unittestCases": 704,
+  "unittestSuites": 29,
+  "workerScripts": 36,
+  "sourceBindings": 66,
+  "stages": 37,
+  "documentationCases": 20,
+  "actualCurrentNativeEnginesStopped": 2,
+  "fullV1Accepted": false
+}

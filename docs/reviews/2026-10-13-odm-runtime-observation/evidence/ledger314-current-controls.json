@@ -1,0 +1,256 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comments",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "copied-reply-relabelled",
+    "test": "test_exact_bytes_reopen_after_private_root_copy",
+    "source": "workers/odm_worker/retained_task_observation.py",
+    "outcome": "intended_failure",
+    "reason": "Copied root must retain the exact checked observation"
+  },
+  {
+    "control": "replay-replaces-inode",
+    "test": "test_equal_reply_replay_keeps_original_record_inode_and_bytes",
+    "source": "workers/odm_worker/retained_task_observation.py",
+    "outcome": "intended_failure",
+    "reason": "Equal replay must keep the original inode"
+  },
+  {
+    "control": "raw-spelling-normalized",
+    "test": "test_different_raw_spellings_remain_separate_records",
+    "source": "workers/odm_worker/retained_task_observation.py",
+    "outcome": "intended_failure",
+    "reason": "Distinct reply spellings cannot collapse to one original"
+  },
+  {
+    "control": "existing-record-difference-ignored",
+    "test": "test_changed_existing_record_cannot_be_overwritten_by_replay",
+    "source": "workers/odm_worker/retained_source.py",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "interpretation-not-rechecked",
+    "test": "test_saved_interpretation_and_permissions_are_recomputed",
+    "source": "workers/odm_worker/retained_task_observation.py",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "original-body-digest-unchecked",
+    "test": "test_changed_response_body_cannot_reuse_the_original_digest",
+    "source": "workers/odm_worker/retained_task_observation.py",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "malformed-body-wrong-error-type",
+    "test": "test_missing_or_invalid_saved_body_refuses",
+    "source": "workers/odm_worker/retained_task_observation.py",
+    "outcome": "intended_failure",
+    "reason": "TypeError:"
+  },
+  {
+    "control": "saved-plan-unchecked",
+    "test": "test_changed_plan_refuses_before_record_or_load",
+    "source": "workers/odm_worker/retained_task_observation.py",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "constructor-input-alias",
+    "test": "test_plan_is_detached_from_constructor_input",
+    "source": "workers/odm_worker/retained_task_observation.py",
+    "outcome": "intended_failure",
+    "reason": "Retained task observation original plan differs"
+  },
+  {
+    "control": "missing-root-provisioned",
+    "test": "test_missing_root_or_plan_is_not_provisioned",
+    "source": "workers/odm_worker/retained_task_observation.py",
+    "outcome": "intended_failure",
+    "reason": "Reading observations cannot provision a missing engine root"
+  },
+  {
+    "control": "public-root-accepted",
+    "test": "test_alias_and_public_root_refuse",
+    "source": "workers/odm_worker/retained_task_observation.py",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "public-observation-directory-accepted",
+    "test": "test_unsafe_observation_directory_and_record_refuse",
+    "source": "workers/odm_worker/retained_task_observation.py",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "public-observation-file-accepted",
+    "test": "test_unsafe_observation_directory_and_record_refuse",
+    "source": "workers/odm_worker/retained_source.py",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "invalid-digest-reaches-read",
+    "test": "test_digest_is_checked_before_any_record_path_read",
+    "source": "workers/odm_worker/retained_task_observation.py",
+    "outcome": "intended_failure",
+    "reason": "Invalid digest reached record read"
+  },
+  {
+    "control": "failed-status-accepted",
+    "test": "test_invalid_reply_does_not_write_observation_root",
+    "source": "workers/odm_worker/retained_task_observation.py",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "infinite-timeout-accepted",
+    "test": "test_invalid_timeout_and_shared_deadline_refuse",
+    "source": "workers/odm_worker/retained_task_observation.py",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "shared-deadline-type-omitted",
+    "test": "test_invalid_timeout_and_shared_deadline_refuse",
+    "source": "workers/odm_worker/retained_task_observation.py",
+    "outcome": "intended_failure",
+    "reason": "TimeoutError: Source custody deadline exceeded"
+  },
+  {
+    "control": "nested-deadline-extended",
+    "test": "test_shared_deadline_is_never_extended",
+    "source": "workers/odm_worker/retained_task_observation.py",
+    "outcome": "intended_failure",
+    "reason": "Nested observation deadline must retain the actual earlier bound"
+  },
+  {
+    "control": "publication-size-unbounded",
+    "test": "test_record_and_load_size_limits_precede_publication_and_json_parse",
+    "source": "workers/odm_worker/retained_task_observation.py",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "load-size-unbounded",
+    "test": "test_record_and_load_size_limits_precede_publication_and_json_parse",
+    "source": "workers/odm_worker/retained_task_observation.py",
+    "outcome": "intended_failure",
+    "reason": "Oversized observation reached JSON parsing"
+  },
+  {
+    "control": "writer-lock-omitted",
+    "test": "test_actual_lock_contention_retains_the_deadline",
+    "source": "workers/odm_worker/retained_task_observation.py",
+    "outcome": "intended_failure",
+    "reason": "TimeoutError not raised"
+  },
+  {
+    "control": "concurrent-key-not-immutable",
+    "test": "test_concurrent_equal_records_retain_one_exact_reply",
+    "source": "workers/odm_worker/retained_task_observation.py",
+    "outcome": "intended_failure",
+    "reason": "Concurrent equal replies must retain one original record"
+  },
+  {
+    "control": "record-check-before-initial-publication-lock",
+    "test": "test_record_waits_for_initial_plan_publication",
+    "source": "workers/odm_worker/retained_task_observation.py",
+    "outcome": "intended_failure",
+    "reason": "ValueError: Retained task observation ledger plan is missing"
+  },
+  {
+    "control": "constructor-check-before-initial-publication-lock",
+    "test": "test_constructor_waits_for_initial_plan_publication",
+    "source": "workers/odm_worker/retained_task_observation.py",
+    "outcome": "intended_failure",
+    "reason": "ValueError: Retained task observation ledger plan is missing"
+  },
+  {
+    "control": "publication-directory-sync-omitted",
+    "test": "test_directory_sync_failure_recovers_the_original_published_record",
+    "source": "workers/odm_worker/retained_source.py",
+    "outcome": "intended_failure",
+    "reason": "OSError not raised"
+  },
+  {
+    "control": "reopened-permission-promoted",
+    "test": "test_reopened_views_keep_denied_permissions_and_independent_bytes",
+    "source": "workers/odm_worker/retained_task_observation.py",
+    "outcome": "intended_failure",
+    "reason": "Reopened observations must keep publication denied"
+  },
+  {
+    "control": "invalid-original-plan-accepted",
+    "test": "test_invalid_original_plan_refuses_even_when_saved_bytes_match",
+    "source": "workers/odm_worker/retained_task_observation.py",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "alternate-record-encoding-accepted",
+    "test": "test_alternate_and_duplicate_key_record_encoding_refuses",
+    "source": "workers/odm_worker/retained_task_observation.py",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "late-publication-acknowledged",
+    "test": "test_late_published_record_remains_but_acknowledgment_refuses",
+    "source": "workers/odm_worker/retained_task_observation.py",
+    "outcome": "intended_failure",
+    "reason": "TimeoutError not raised"
+  },
+  {
+    "control": "overlapping-record-root-accepted",
+    "test": "test_record_root_must_be_separate_from_the_engine_tree",
+    "source": "workers/odm_worker/retained_task_observation.py",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "missing-record-root-provisioned",
+    "test": "test_missing_record_root_is_not_provisioned",
+    "source": "workers/odm_worker/retained_task_observation.py",
+    "outcome": "intended_failure",
+    "reason": "FileNotFoundError not raised"
+  },
+  {
+    "control": "lost-ledger-plan-inferred",
+    "test": "test_original_ledger_plan_is_required_when_records_exist",
+    "source": "workers/odm_worker/retained_task_observation.py",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "changed-ledger-plan-accepted",
+    "test": "test_changed_ledger_plan_refuses_without_replacing_originals",
+    "source": "workers/odm_worker/retained_task_observation.py",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "metadata-written-inside-engine-journal",
+    "test": "test_engine_journal_remains_usable_without_added_paths",
+    "source": "workers/odm_worker/retained_task_observation.py",
+    "outcome": "intended_failure",
+    "reason": "Recording task metadata cannot change engine command paths"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

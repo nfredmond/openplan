@@ -1,0 +1,5 @@
+{
+  "workers/odm_worker/native_engine_attestation.py": "cefa1463d2901c6e422fcc9af7040ceeda907598db7615f855a05cc344af6533",
+  "workers/odm_worker/test_native_engine_attestation.py": "7656959c1ec810e4bf575f1f22d2a469e5bdb57c585119317ec32dc03fe1f0ea",
+  "docs/reviews/2026-10-12-odm-native-engine-attestation/verify_controls.py": "bee63abba6ee8a5d1bb8cd50c5dc42bd7793d737fda71bb7947d07f30334befa"
+}

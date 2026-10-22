@@ -1,0 +1,18 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "control": "preceding-clipped-gap",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  }
+]

@@ -1,0 +1,59 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived",
+    "retainedDatabases": [
+      "odm_held_upgrade_bef98d8f42b747938ed7cc39047e2b7e",
+      "odm_held_restore_797ed23cbc9b47b1a2db0755f7cee29c"
+    ]
+  },
+  {
+    "case": "harmless-comment",
+    "outcome": "survived",
+    "retainedDatabases": [
+      "odm_held_upgrade_02c8b10b9bce45f097c50012adeb937e",
+      "odm_held_restore_0fed6bd50a674e35b1261e619fd5d425"
+    ]
+  },
+  {
+    "case": "restored-after-harmless",
+    "outcome": "survived",
+    "retainedDatabases": [
+      "odm_held_upgrade_cb536c1677d248b48e4f2c19730053c9",
+      "odm_held_restore_0d0ecfb23fe244a38c4a5472ae6d9d9e"
+    ]
+  },
+  {
+    "case": "delivery-migration-omitted",
+    "outcome": "intended_failure",
+    "diagnostic": "Candidate delivery upgrade installs exact415 migration history"
+  },
+  {
+    "case": "delivery-function-omitted",
+    "outcome": "intended_failure",
+    "diagnostic": "Restored delivery authority exists"
+  },
+  {
+    "case": "member-delivery-granted",
+    "outcome": "intended_failure",
+    "diagnostic": "Restored delivery authority stays service only"
+  },
+  {
+    "case": "delivery-definer-restored",
+    "outcome": "intended_failure",
+    "diagnostic": "Restored delivery authority stays invoker with pinned search path"
+  },
+  {
+    "case": "delivery-path-broadened",
+    "outcome": "intended_failure",
+    "diagnostic": "Restored delivery authority stays invoker with pinned search path"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived",
+    "retainedDatabases": [
+      "odm_held_upgrade_7684153b8b0848f2a523b34a480a9816",
+      "odm_held_restore_d056e9b4d2b34ada925a6b65f22f4fd8"
+    ]
+  }
+]

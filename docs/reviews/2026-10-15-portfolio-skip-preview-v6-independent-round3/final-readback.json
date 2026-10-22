@@ -1,0 +1,41 @@
+{
+  "scope": "File/report readback and known-value screen only.",
+  "priorReviews": {
+    "b037efc892359dcbd5350eb64438604610713ca5": {
+      "root": "/home/nathaniel/.t3/worktrees/openplan/t3-1eb9f303/docs/reviews/2026-10-15-portfolio-skip-preview-v4-independent-round1",
+      "files": {
+        "review_controls.py": "677ada0d7a8d6592a9109cfeffe570835508b8b8d73f282643d9002ace14f35a",
+        "README.md": "1ac3432609596109e620d69bfcabaa5131548bbacd04406088218af196fbc013",
+        "controls.json": "cafcca3e31ffad455a919cd04767ea3ff9dbcb7b20bb7249a8a34bf4bd7127c4",
+        "execution.json": "b419419f63c0083f070cf16dc9db84784f9110775f05b59ff01e2a8c9dfaee2e"
+      }
+    },
+    "0257e77b1a4d76d42e9bdb621e05374b83db613e": {
+      "root": "/home/nathaniel/.t3/worktrees/openplan/t3-78ca8e4a/docs/reviews/2026-10-15-portfolio-skip-preview-v5-independent-round2",
+      "files": {
+        "review_controls.py": "ca5abe3991ae654ac66aeeac96503fb8a9dac129979fca33691b465c315e5259",
+        "README.md": "a1e50f79c60e278406c52dc6bb0f45464461da445f1e3b1b0c783724f12a928e",
+        "controls.json": "9ee39f13c05e7b66eb353e5842f0003abf6f312c892743a0d33a2ef045dbc50b",
+        "final_readback.py": "1e4e7d504a0f1554064eee9547df2d6cfea809ebfb22ef6852b08d4d655e5124",
+        "source-bindings.json": "4d2e73d61dc9d53f46cc6ccd05a44259880166c5f5ce898196f94b576d5dfc6c",
+        "execution.json": "5eafcd8eb205f6b33170cf1b3a8b22a4c32602577fecccf2b22dc1463b4f8557"
+      }
+    }
+  },
+  "retainedFailedAuditSourceAndOutputExact": true,
+  "knownValueScreenHarmlessInjectionAndDisabledScannerControls": true,
+  "blindCategories": [
+    "Known-value scanning cannot prove absence of unknown secrets.",
+    "File readback does not establish runtime preservation or operating-stage acceptance."
+  ],
+  "reportFileHashes": {
+    "review_controls.py": "be3f103cce74392c5d9617059f033f47723b8ef0ce272af3292861ef6d30b7d6",
+    "README.md": "ef25be5c684eb2ea2fc1f83757679c0218d246dd2df69f59a6d34d9da523486d",
+    "controls.json": "5bfc6cc814f7d55732616d1724e6fdf428a82aebcbc31154f8b1a7d9c7e0eee6",
+    "final_readback.py": "1a25ba8d4d4bea9e99cee859b5810c32aae1e830a51ced46a943007d4504c721",
+    "file_audit.py": "202dab796539d1a10693a03836b5eabdf2b597290159106cb0b264fb14e3199e",
+    "source-bindings.json": "f588b352d73572b3d8311e86f9693d2567f6079f9b57d4ef842bc3f72ccf2bf0",
+    "execution.json": "951c23b0401d5906b91de85543a01957f8b986b84e0d86878a5eb831c2cbc1e1"
+  },
+  "operatingStages": 0
+}

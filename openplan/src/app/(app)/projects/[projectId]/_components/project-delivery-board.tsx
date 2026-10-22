@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { compareMoney, parseOptionalAmount } from "@/lib/money/optional-amount";
 import { ArrowRight, ClipboardCheck, FileClock, Target } from "lucide-react";
+import { SetupPendingNotice } from "@/components/ui/setup-pending-notice";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { RecordStatusAdvanceButton } from "@/components/projects/record-status-advance-button";
 import { DeliverableUpdateControls } from "@/components/projects/deliverable-update-controls";
@@ -17,6 +19,7 @@ import {
 import type { ProjectControlsSummary } from "@/lib/projects/controls";
 import {
   buildProjectControlHref,
+  projectControlLinkLabel,
   fmtCurrency,
   fmtDateTime,
   titleize,
@@ -186,7 +189,7 @@ export function ProjectDeliveryBoard({
                 )}
                 className="module-inline-action w-fit"
               >
-                Open control lane
+                {projectControlLinkLabel(projectControlsSummary.recommendedNextAction.targetId)}
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
@@ -274,7 +277,9 @@ export function ProjectDeliveryBoard({
                 }
                 className="module-inline-action w-fit"
               >
-                Open deadline lane
+                {projectControlsSummary.deadlineSummary.nextDeadline
+                  ? projectControlLinkLabel(projectControlsSummary.deadlineSummary.nextDeadline.targetId)
+                  : "Open milestones"}
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
@@ -313,7 +318,7 @@ export function ProjectDeliveryBoard({
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-medium text-foreground">{fmtDateTime(item.deadlineAt)}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">Open lane</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{projectControlLinkLabel(item.targetId)}</p>
                   </div>
                 </Link>
               ))}
@@ -328,13 +333,7 @@ export function ProjectDeliveryBoard({
           projectControlsSummary.attentionSummary.overdueInvoices.count > 0) ? (
           <div className="mt-5 rounded-[0.75rem] border border-border/70 bg-background/80 p-5">
             <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-semibold text-muted-foreground">Attention lanes</p>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Fast paths into the control lanes currently creating schedule or payment risk.
-                </p>
-              </div>
-              <StatusBadge tone="danger">Operator attention</StatusBadge>
+              <p className="text-xs font-semibold text-muted-foreground">Needs attention</p>
             </div>
             <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-5">
               {projectControlsSummary.attentionSummary.reportPackets.count > 0 ? (
@@ -411,7 +410,7 @@ export function ProjectDeliveryBoard({
                 >
                   <p className="text-label font-semibold text-muted-foreground">Overdue invoices</p>
                   <p className="mt-2 text-lg font-semibold tracking-tight text-foreground">{projectControlsSummary.attentionSummary.overdueInvoices.count}</p>
-                  <p className="mt-1 text-sm text-muted-foreground">Resolve payment or documentation drift in the invoice lane.</p>
+                  <p className="mt-1 text-sm text-muted-foreground">Late payments or missing invoice documents.</p>
                   {firstOverdueInvoice ? (
                     <p className="mt-2 text-xs text-muted-foreground">First: {firstOverdueInvoice.invoice_number}</p>
                   ) : null}
@@ -593,14 +592,18 @@ export function ProjectDeliveryBoard({
           </div>
         </div>
         {deliverableAssigneeColumnPending ? (
-          <div className="module-alert mt-5 text-sm">
-            Deliverable assignees are not shown here yet: this deployment is behind migration
-            20260811000006, so the list could not ask the database who is assigned. Nobody is being
-            reported as unassigned — the question has not been asked.
-          </div>
+          <SetupPendingNotice
+            className="mt-5"
+            consequence="Assignees are not shown, which does not mean nobody is assigned."
+          >
+            This deployment is behind migration 20260811000006, so the list could not ask the
+            database who is assigned.
+          </SetupPendingNotice>
         ) : null}
         {!deliverables || deliverables.length === 0 ? (
-          <div className="module-empty-state mt-5 text-sm">No deliverables yet. Add the first required output in the creation lane.</div>
+          <div className="module-empty-state mt-5 text-sm">
+            No deliverables yet. <a href="#deliverable-add" className="underline underline-offset-2">Add a deliverable</a>.
+          </div>
         ) : (
           <div className="mt-5 module-record-list">
             {deliverables.map((deliverable) => {
@@ -623,8 +626,8 @@ export function ProjectDeliveryBoard({
                           {budgetSummary.budgetAmount !== null ? (
                             <StatusBadge tone="neutral">Budget {fmtCurrency(budgetSummary.budgetAmount)}</StatusBadge>
                           ) : null}
-                          {budgetSummary.actualToDate > 0 ? (
-                            <StatusBadge tone="info">Billed + spend {fmtCurrency(budgetSummary.actualToDate)}</StatusBadge>
+                          {compareMoney(budgetSummary.actualToDate, 0) > 0 ? (
+                            <StatusBadge tone="info">Direct spending {fmtCurrency(budgetSummary.actualToDate)}</StatusBadge>
                           ) : null}
                         </>
                       ) : null}
@@ -637,17 +640,16 @@ export function ProjectDeliveryBoard({
                       <p className="module-record-summary">{deliverable.summary || "No summary yet."}</p>
                     </div>
                     {/*
-                      The deliverable lane's write control. Budget and progress
-                      seed src/lib/projects/budget.ts, which refuses a pace
-                      verdict without them — so without this control the chips
-                      above are stuck at their refusal forever.
+                      Prefill from readable deliverable fields, even when an
+                      unrelated financial read withholds the calculated chips.
+                      The control still sends only fields the planner touches.
                     */}
                     <DeliverableUpdateControls
                       projectId={project.id}
                       deliverableId={deliverable.id}
                       currentStatus={deliverable.status}
-                      currentBudgetAmount={budgetSummary?.budgetAmount ?? null}
-                      currentPercentComplete={budgetSummary?.percentComplete ?? null}
+                      currentBudgetAmount={parseOptionalAmount(deliverable.budget_amount)}
+                      currentPercentComplete={parseOptionalAmount(deliverable.percent_complete)}
                     />
                     {/*
                       Reassignment. `assignee_user_id` is UNDEFINED here when the

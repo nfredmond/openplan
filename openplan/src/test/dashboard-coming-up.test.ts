@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 
 import {
   addDays,
-  calendarDate,
   cappedSourcesSentence,
   comingUpFromMyWork,
   deadlinesByMonth,
@@ -42,7 +41,7 @@ describe("dashboard lists", () => {
       item({ id: "c", sourceId: "stage_gate_holds", block: "blocked_projects", dueOn: null, badge: { label: "Held at a gate", tone: "warning" } }),
       item({ id: "d", sourceId: "narrative_drafts", block: "needs_review", dueOn: null }),
     ];
-    const coming = comingUpFromMyWork(items);
+    const coming = comingUpFromMyWork(items, "UTC");
     const needs = needsYouFromMyWork(items);
 
     expect(coming.map((entry) => entry.key)).toEqual(["deliverables:a", "grant_decisions:b"]);
@@ -88,8 +87,6 @@ describe("dashboard lists", () => {
   it("compares calendar days, so a deadline is not past on its own day", () => {
     expect(isCalendarDayPast("2026-10-14", "2026-10-14")).toBe(false);
     expect(isCalendarDayPast("2026-10-13", "2026-10-14")).toBe(true);
-    expect(calendarDate("2026-10-14T23:30:00-07:00")).toBe("2026-10-14");
-    expect(calendarDate("not a date")).toBeNull();
     expect(addDays("2026-12-30", 3)).toBe("2027-01-02");
   });
 

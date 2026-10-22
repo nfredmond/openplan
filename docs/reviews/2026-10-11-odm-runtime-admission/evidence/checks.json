@@ -1,0 +1,32 @@
+[
+  {
+    "label": "runtime-final-controls",
+    "source": "docs/reviews/2026-10-11-odm-runtime-admission/verify_controls.py",
+    "sourceSha256": "63472374dcbcaa5fee016f1461c946ff64f77f0c1c7ac7b58a5203f3444e0db9",
+    "exit": 0
+  },
+  {
+    "label": "journal-controls",
+    "source": "docs/reviews/2026-10-11-odm-admission-journal/verify_controls.py",
+    "sourceSha256": "314d1e30c66ae58f436667008f95d38d8fe305fe914948c549109e102c2d8a56",
+    "exit": 0
+  },
+  {
+    "label": "source-controls",
+    "source": "docs/reviews/2026-10-11-odm-source-custody/verify_controls.py",
+    "sourceSha256": "44f1a631fe3e9c42ef936bdb194734b7e611e421229eeb6cdf552c4b7e19951c",
+    "exit": 0
+  },
+  {
+    "label": "engine-controls",
+    "source": "docs/reviews/2026-10-11-odm-engine-effects/verify_controls.py",
+    "sourceSha256": "6c17dbbaea9c04e84566b7fbf44e0ce37906a0cec4624be173a2e051d9901e65",
+    "exit": 0
+  },
+  {
+    "label": "zip-native",
+    "source": "docs/reviews/2026-10-11-odm-zip-engine-integration/native_recovery.py",
+    "sourceSha256": "2ea51bfb8b4291df95e6c03bd332d550f9526a3be637c2db0a3cc4263fef9e16",
+    "exit": 0
+  }
+]

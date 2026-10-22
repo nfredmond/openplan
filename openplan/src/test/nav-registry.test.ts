@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import { CARTOGRAPHIC_RAIL_ICON_NAMES } from "@/components/cartographic/cartographic-rail";
 import {
   APP_NAV_ENTRIES,
+  APP_NAV_SHORTCUTS,
   buildPaletteCommands,
   buildRailGroups,
   navLabel,
@@ -124,7 +125,7 @@ describe("nav registry — the single source for every nav and the auth proxy", 
     expect(hrefs).toContain("/knowledge-base");
     expect(hrefs).toContain("/county-runs");
     expect(hrefs).toContain("/assistant-activity");
-    expect(new Set(hrefs).size).toBe(APP_NAV_ENTRIES.length);
+    expect(new Set(hrefs).size).toBe(APP_NAV_ENTRIES.length + APP_NAV_SHORTCUTS.length);
 
     // The old "billing" habit still finds the LAPM invoice register.
     const invoicing = commands.find((command) => command.href === "/invoicing");
@@ -195,5 +196,44 @@ describe("nav registry — the single source for every nav and the auth proxy", 
     expect(railHrefs).toContain("/county-runs");
     expect(paletteHrefs).toContain("/scenarios");
     expect(paletteHrefs).toContain("/county-runs");
+  });
+
+  /**
+   * The work program and the measure fund live on child routes of a program,
+   * so no registry entry can point at them. Before these shortcuts, typing
+   * "OWP" in the palette found nothing, and "measure" found only the list of
+   * programming cycles. The palette's own filter is reproduced here: label,
+   * group and keywords, lowercased, substring match.
+   */
+  it("finds the work programs and the measure funds by name in the palette", () => {
+    const commands = buildPaletteCommands();
+    const search = (query: string) =>
+      commands.filter((command) =>
+        `${command.label} ${command.group} ${command.keywords ?? ""}`.toLowerCase().includes(query.toLowerCase()),
+      );
+
+    for (const query of ["OWP", "UPWP", "overall work program"]) {
+      expect(search(query).map((command) => command.href), query).toContain("/programs#work-programs");
+    }
+    for (const query of ["measure", "sales tax"]) {
+      expect(search(query).map((command) => command.href), query).toContain("/programs?programType=local_measure");
+    }
+    expect(commands.find((command) => command.href === "/programs#work-programs")?.label).toBe(
+      "Work programs (OWP/UPWP)",
+    );
+  });
+
+  it("keeps every shortcut under a registered, protected module and off the rail", () => {
+    const prefixes = protectedRoutePrefixes();
+    const railHrefs = buildRailGroups().flatMap((group) => group.items.map((item) => item.href));
+    for (const shortcut of APP_NAV_SHORTCUTS) {
+      const path = shortcut.href.split(/[?#]/)[0];
+      expect(
+        APP_NAV_ENTRIES.some((entry) => entry.href === path),
+        `${shortcut.href} does not sit under a registered module`,
+      ).toBe(true);
+      expect(prefixes.some((prefix) => path.startsWith(prefix))).toBe(true);
+      expect(railHrefs).not.toContain(shortcut.href);
+    }
   });
 });

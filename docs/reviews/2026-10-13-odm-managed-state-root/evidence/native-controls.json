@@ -1,0 +1,494 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-order",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "originalScratchHasNoAdmissionRegistry-wrong",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-originalScratchHasNoAdmissionRegistry"
+  },
+  {
+    "control": "originalScratchHasNoAdmissionRegistry-missing",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-originalScratchHasNoAdmissionRegistry"
+  },
+  {
+    "control": "originalScratchHasNoAdmissionRegistry-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-originalScratchHasNoAdmissionRegistry"
+  },
+  {
+    "control": "replacementUsesFreshScratch-wrong",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-replacementUsesFreshScratch"
+  },
+  {
+    "control": "replacementUsesFreshScratch-missing",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-replacementUsesFreshScratch"
+  },
+  {
+    "control": "replacementUsesFreshScratch-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-replacementUsesFreshScratch"
+  },
+  {
+    "control": "missingDatabaseStartupRefused-wrong",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-missingDatabaseStartupRefused"
+  },
+  {
+    "control": "missingDatabaseStartupRefused-missing",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-missingDatabaseStartupRefused"
+  },
+  {
+    "control": "missingDatabaseStartupRefused-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-missingDatabaseStartupRefused"
+  },
+  {
+    "control": "missingSealStartupRefused-wrong",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-missingSealStartupRefused"
+  },
+  {
+    "control": "missingSealStartupRefused-missing",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-missingSealStartupRefused"
+  },
+  {
+    "control": "missingSealStartupRefused-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-missingSealStartupRefused"
+  },
+  {
+    "control": "negativeFixturesRestored-wrong",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-negativeFixturesRestored"
+  },
+  {
+    "control": "negativeFixturesRestored-missing",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-negativeFixturesRestored"
+  },
+  {
+    "control": "negativeFixturesRestored-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-negativeFixturesRestored"
+  },
+  {
+    "control": "firstAdmissionStatus-wrong",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-firstAdmissionStatus"
+  },
+  {
+    "control": "firstAdmissionStatus-missing",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-firstAdmissionStatus"
+  },
+  {
+    "control": "firstAdmissionStatus-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-firstAdmissionStatus"
+  },
+  {
+    "control": "queuedAdmissionStatus-wrong",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-queuedAdmissionStatus"
+  },
+  {
+    "control": "queuedAdmissionStatus-missing",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-queuedAdmissionStatus"
+  },
+  {
+    "control": "queuedAdmissionStatus-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-queuedAdmissionStatus"
+  },
+  {
+    "control": "predeathReplayStatus-wrong",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-predeathReplayStatus"
+  },
+  {
+    "control": "predeathReplayStatus-missing",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-predeathReplayStatus"
+  },
+  {
+    "control": "predeathReplayStatus-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-predeathReplayStatus"
+  },
+  {
+    "control": "predeathReceiptExact-wrong",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-predeathReceiptExact"
+  },
+  {
+    "control": "predeathReceiptExact-missing",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-predeathReceiptExact"
+  },
+  {
+    "control": "predeathReceiptExact-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-predeathReceiptExact"
+  },
+  {
+    "control": "changedStatus-wrong",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-changedStatus"
+  },
+  {
+    "control": "changedStatus-missing",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-changedStatus"
+  },
+  {
+    "control": "changedStatus-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-changedStatus"
+  },
+  {
+    "control": "restartAdmissionStatus-wrong",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-restartAdmissionStatus"
+  },
+  {
+    "control": "restartAdmissionStatus-missing",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-restartAdmissionStatus"
+  },
+  {
+    "control": "restartAdmissionStatus-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-restartAdmissionStatus"
+  },
+  {
+    "control": "restartReceiptExact-wrong",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-restartReceiptExact"
+  },
+  {
+    "control": "restartReceiptExact-missing",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-restartReceiptExact"
+  },
+  {
+    "control": "restartReceiptExact-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-restartReceiptExact"
+  },
+  {
+    "control": "originalStartedReceiptExact-wrong",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-originalStartedReceiptExact"
+  },
+  {
+    "control": "originalStartedReceiptExact-missing",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-originalStartedReceiptExact"
+  },
+  {
+    "control": "originalStartedReceiptExact-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-originalStartedReceiptExact"
+  },
+  {
+    "control": "firstStartPreserved-wrong",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-firstStartPreserved"
+  },
+  {
+    "control": "firstStartPreserved-missing",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-firstStartPreserved"
+  },
+  {
+    "control": "firstStartPreserved-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-firstStartPreserved"
+  },
+  {
+    "control": "queuedAdmissionPreserved-wrong",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-queuedAdmissionPreserved"
+  },
+  {
+    "control": "queuedAdmissionPreserved-missing",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-queuedAdmissionPreserved"
+  },
+  {
+    "control": "queuedAdmissionPreserved-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-queuedAdmissionPreserved"
+  },
+  {
+    "control": "restoredHeldStarted-wrong",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-restoredHeldStarted"
+  },
+  {
+    "control": "restoredHeldStarted-missing",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-restoredHeldStarted"
+  },
+  {
+    "control": "restoredHeldStarted-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-restoredHeldStarted"
+  },
+  {
+    "control": "restoredAccepted-wrong",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-restoredAccepted"
+  },
+  {
+    "control": "restoredAccepted-missing",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-restoredAccepted"
+  },
+  {
+    "control": "restoredAccepted-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-restoredAccepted"
+  },
+  {
+    "control": "sourceGetsBeforeDeath-wrong",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-sourceGetsBeforeDeath"
+  },
+  {
+    "control": "sourceGetsBeforeDeath-missing",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-sourceGetsBeforeDeath"
+  },
+  {
+    "control": "sourceGetsBeforeDeath-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-sourceGetsBeforeDeath"
+  },
+  {
+    "control": "sourceGetsFinal-wrong",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-sourceGetsFinal"
+  },
+  {
+    "control": "sourceGetsFinal-missing",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-sourceGetsFinal"
+  },
+  {
+    "control": "sourceGetsFinal-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-sourceGetsFinal"
+  },
+  {
+    "control": "sourceBodyBytesSent-wrong",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-sourceBodyBytesSent"
+  },
+  {
+    "control": "sourceBodyBytesSent-missing",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-sourceBodyBytesSent"
+  },
+  {
+    "control": "sourceBodyBytesSent-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-sourceBodyBytesSent"
+  },
+  {
+    "control": "engineRequests-wrong",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-engineRequests"
+  },
+  {
+    "control": "engineRequests-missing",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-engineRequests"
+  },
+  {
+    "control": "engineRequests-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-engineRequests"
+  },
+  {
+    "control": "sqliteCopies-wrong",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-sqliteCopies"
+  },
+  {
+    "control": "sqliteCopies-missing",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-sqliteCopies"
+  },
+  {
+    "control": "sqliteCopies-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-sqliteCopies"
+  },
+  {
+    "control": "captureExit-wrong",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-captureExit"
+  },
+  {
+    "control": "captureExit-missing",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-captureExit"
+  },
+  {
+    "control": "captureExit-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-captureExit"
+  },
+  {
+    "control": "verifyExit-wrong",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-verifyExit"
+  },
+  {
+    "control": "verifyExit-missing",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-verifyExit"
+  },
+  {
+    "control": "verifyExit-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-verifyExit"
+  },
+  {
+    "control": "capturedOrdinaryMatchesSource-wrong",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-capturedOrdinaryMatchesSource"
+  },
+  {
+    "control": "capturedOrdinaryMatchesSource-missing",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-capturedOrdinaryMatchesSource"
+  },
+  {
+    "control": "capturedOrdinaryMatchesSource-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-capturedOrdinaryMatchesSource"
+  },
+  {
+    "control": "capturedJournalMatchesSource-wrong",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-capturedJournalMatchesSource"
+  },
+  {
+    "control": "capturedJournalMatchesSource-missing",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-capturedJournalMatchesSource"
+  },
+  {
+    "control": "capturedJournalMatchesSource-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-capturedJournalMatchesSource"
+  },
+  {
+    "control": "sourceOrdinaryUnchanged-wrong",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-sourceOrdinaryUnchanged"
+  },
+  {
+    "control": "sourceOrdinaryUnchanged-missing",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-sourceOrdinaryUnchanged"
+  },
+  {
+    "control": "sourceOrdinaryUnchanged-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-sourceOrdinaryUnchanged"
+  },
+  {
+    "control": "sourceJournalUnchanged-wrong",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-sourceJournalUnchanged"
+  },
+  {
+    "control": "sourceJournalUnchanged-missing",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-sourceJournalUnchanged"
+  },
+  {
+    "control": "sourceJournalUnchanged-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-sourceJournalUnchanged"
+  },
+  {
+    "control": "packageUnchanged-wrong",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-packageUnchanged"
+  },
+  {
+    "control": "packageUnchanged-missing",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-packageUnchanged"
+  },
+  {
+    "control": "packageUnchanged-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-packageUnchanged"
+  },
+  {
+    "control": "runtimeJournalUnchanged-wrong",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-runtimeJournalUnchanged"
+  },
+  {
+    "control": "runtimeJournalUnchanged-missing",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-runtimeJournalUnchanged"
+  },
+  {
+    "control": "runtimeJournalUnchanged-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-runtimeJournalUnchanged"
+  },
+  {
+    "control": "exactOriginalRequestBytes-wrong",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-exactOriginalRequestBytes"
+  },
+  {
+    "control": "exactOriginalRequestBytes-missing",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-exactOriginalRequestBytes"
+  },
+  {
+    "control": "exactOriginalRequestBytes-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-exactOriginalRequestBytes"
+  },
+  {
+    "control": "sourceBindingsUnchanged-wrong",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-sourceBindingsUnchanged"
+  },
+  {
+    "control": "sourceBindingsUnchanged-missing",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-sourceBindingsUnchanged"
+  },
+  {
+    "control": "sourceBindingsUnchanged-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "runtime-admission-native-sourceBindingsUnchanged"
+  }
+]

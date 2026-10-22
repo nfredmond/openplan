@@ -51,7 +51,15 @@ const itemsEqStatusMock = vi.fn(() => itemsChain);
 const itemsEqCampaignMock = vi.fn(() => ({ ...itemsChain, eq: itemsEqStatusMock }));
 const itemsSelectMock = vi.fn(() => ({ eq: itemsEqCampaignMock }));
 
+/** The workspace calendar row (`loadWorkspaceCalendar`). Null unless a test sets it. */
+let workspaceCalendarRow: { time_zone: string | null; home_country_code: string | null } | null = null;
+
 const fromMock = vi.fn((table: string) => {
+  if (table === "workspaces") {
+    return {
+      select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: workspaceCalendarRow, error: null }) }) }),
+    };
+  }
   if (table === "engagement_campaigns") {
     return { select: campaignSelectMock };
   }
@@ -85,6 +93,9 @@ describe("GET /api/engagement/campaigns/[campaignId]/export", () => {
     // a fixture would otherwise inherit the previous test's cached rows.
     itemsPageSource = null;
     vi.clearAllMocks();
+    // clearAllMocks keeps queued Once values; drop them so no test inherits one.
+    campaignMaybeSingleMock.mockReset();
+    workspaceCalendarRow = null;
 
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
     authGetUserMock.mockResolvedValue({
@@ -283,6 +294,42 @@ describe("GET /api/engagement/campaigns/[campaignId]/export", () => {
     expect(csvText).not.toMatch(/(^|,)@SUM/m);
     // The machine-written coordinates stay bare numbers.
     expect(csvText).toContain(",39.22,-121.06,");
+  });
+
+  it("names a past participation end date in the workspace calendar, not as accepting", async () => {
+    for (const [timeZone, named] of [
+      ["America/Los_Angeles", "October 10, 2026 at 19:30 (America/Los_Angeles)"],
+      ["Pacific/Auckland", "October 11, 2026 at 15:30 (Pacific/Auckland)"],
+    ] as const) {
+      workspaceCalendarRow = { time_zone: timeZone, home_country_code: null };
+      campaignMaybeSingleMock.mockResolvedValueOnce({
+        data: {
+          id: validCampaignId,
+          workspace_id: "44444444-4444-4444-8444-444444444444",
+          project_id: null,
+          title: "Test Campaign",
+          status: "active",
+          share_token: "pilot-link-01",
+          allow_public_submissions: true,
+          submissions_closed_at: null,
+          participation_ends_at: "2026-10-11T02:30:00+00:00",
+        },
+        error: null,
+      });
+
+      const response = await GET(
+        new NextRequest(`http://localhost/api/engagement/campaigns/${validCampaignId}/export?format=json`),
+        { params: Promise.resolve({ campaignId: validCampaignId }) }
+      );
+
+      expect(response.status).toBe(200);
+      const json = JSON.parse(await response.text());
+      expect(json.campaign.publicPortal).toMatchObject({
+        label: "Live · submissions closed",
+        detail: `Comments are closed because the participation period ended on ${named}.`,
+        isAcceptingSubmissions: false,
+      });
+    }
   });
 
   it("returns JSON export when format=json", async () => {

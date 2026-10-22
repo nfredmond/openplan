@@ -20,6 +20,11 @@ const SOURCE_EXTENSIONS = new Set([".ts", ".tsx"]);
 const EXCLUDED_SEGMENTS = new Set(["test"]);
 const SENSITIVE_TABLES = ["engagement_survey_response_sessions", "engagement_survey_answers"] as const;
 const ALLOWED_READER = "src/lib/engagement/survey-responses.ts";
+// The one reader outside that module: a definer function that returns counts
+// and no answers (20261017000002), called only by the Planner Agent's
+// engagement tool. Pinned here so a second caller is a decision, not a drift.
+const COUNTS_FUNCTION = "engagement_campaign_survey_question_counts";
+const COUNTS_FUNCTION_CALLERS = ["src/lib/assistant/chat-tools.ts"];
 
 // Sensitive-table writes: .update/.delete must carry .eq("campaign_id"); .insert/
 // .upsert carry campaign_id in the payload and are trusted inside the reader.
@@ -157,5 +162,14 @@ describe("engagement survey response reader inventory", () => {
       `await supabase.from("engagement_survey_answers").delete().eq("id", answerId);`
     );
     expect(unscopedDelete.violations.some((v) => v.kind === "unscoped")).toBe(true);
+  });
+});
+
+describe("the survey counts function has one caller", () => {
+  it("is called only from the Planner Agent engagement tool", () => {
+    const callers = collectSourceFiles(SOURCE_ROOT)
+      .filter((file) => fs.readFileSync(file, "utf8").includes(COUNTS_FUNCTION))
+      .map((file) => path.relative(process.cwd(), file));
+    expect(callers).toEqual(COUNTS_FUNCTION_CALLERS);
   });
 });

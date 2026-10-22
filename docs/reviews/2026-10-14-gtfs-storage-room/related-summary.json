@@ -1,0 +1,10 @@
+{
+  "numTotalTests": 1434,
+  "numPassedTests": 1417,
+  "numPendingTests": 17,
+  "numFailedTests": 0,
+  "files": 55,
+  "resourceLimitMiB": 1024,
+  "peakMiB": 453.5,
+  "scope": "all55GTFS testfiles; live tests opt-out; no native hosted acceptance"
+}

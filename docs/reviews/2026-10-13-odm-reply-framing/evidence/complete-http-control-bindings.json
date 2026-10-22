@@ -1,0 +1,5 @@
+{
+  "workers/odm_worker/draft_http.py": "921834b81231f7036c17b6b923e1d7bd42b127448b6ee6a7155604334dccba81",
+  "workers/odm_worker/test_draft_http.py": "305b8bc24a90d9dfda8721a110a64af01a45c586f483fa2e511ff8061d157882",
+  "docs/reviews/2026-10-11-odm-draft-http/verify_controls.py": "ba3f88857db52418db5724f9eb99708ef7febc8d174e8ceef264748dfeff5234"
+}

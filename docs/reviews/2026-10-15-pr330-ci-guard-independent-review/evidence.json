@@ -1,0 +1,66 @@
+{
+  "reviewedHead": "2046fca9aa1dde80043fe39075f00c6fc7512e54",
+  "applicationTree": "a13c491da3ad3ba5b237ca5fa8802b236c4ef27b",
+  "implementationCommit": "9f8278347698f61d3b813df805d56abd87fa11fb",
+  "implementationBase": "80943a00724b973d241b866d8f8e1a769be757cd",
+  "checkout": "/home/nathaniel/.t3/worktrees/openplan/t3-47eaba3a",
+  "branch": "t3/pr330-ci-guard-independent-review",
+  "initialCleanHead": "05dd3e8da4a4572437f06e771b0a2477873e681f",
+  "disposition": "No reproducible material P1/P2 defect or regression found in the bounded correction.",
+  "tier": "Independent source review and retained synthetic/process evidence readback; no fresh product runtime execution.",
+  "sourceHashes": {
+    "openplan/src/app/api/reports/[reportId]/generate/route.ts": "c468c208925e1322762988b1f24f2513625459d8c8b57687fe4ddf23dab6e192",
+    "openplan/src/lib/supabase/pending-schema.ts": "26d930545ccce66c33d7c01b251cfd2565f5d7d98dc906878ac4a7b343b6cfae",
+    "openplan/src/test/report-generate-route.test.ts": "8dfc582bca8f5dad934d74b881dee228ec8dce09313defe0357a455eb3800f6f",
+    "openplan/src/test/pending-schema-missing-column.test.ts": "13a98f51307e1e51d0b3a846f6777040bb792211de1197b9f8dac7ba0e822077"
+  },
+  "unchangedGuardAndScannerHashes": {
+    "openplan/src/test/reference-count-projection-guard.test.ts": "069169b61ea1bef0f5c472bc169ff1e8bbaf18e8073c7648fb9bdf149dcd6432",
+    "openplan/src/test/one-pending-schema-classifier.test.ts": "b3ea640fbc9c1eb11060605160d6fb573969688bd1fc173e4c96fa29e985c24b",
+    "openplan/src/test/supabase-call-sites.ts": "dc101ef4680083388f9dfee42ea1523b772abe484b80893278300e7b4e37973e"
+  },
+  "implementationEvidenceSha256": "a53d7b8dabcafba9a5c524b9bdd3e4df993061159d347eef83b4fc9213b7fbdb",
+  "readbackBindings": 52,
+  "retainedFinalTests": {
+    "one-pending-schema-classifier.test.ts": 26,
+    "reference-count-projection-guard.test.ts": 10,
+    "report-html-accepted-narrative.test.ts": 14,
+    "report-generate-route.test.ts": 96,
+    "pending-schema-missing-column.test.ts": 34
+  },
+  "retainedControls": {
+    "acceptedExecutions": 15,
+    "harmlessExecutions": 3,
+    "brokenExecutions": 12,
+    "distinctBrokenBehaviors": 11,
+    "excludedIncompleteSelections": [
+      "parser-relation-bypass",
+      "cache-relation-bypass",
+      "quoted-column-folded"
+    ]
+  },
+  "readbackControls": {
+    "harmless": "SURVIVED",
+    "wrongCount": "REJECTED",
+    "wrongDiagnostic": "REJECTED",
+    "wrongDigest": "REJECTED",
+    "originalInputsUnchanged": true
+  },
+  "privateReadback": {
+    "/home/nathaniel/.local/state/openplan/pr330-ci-guard-independent-review-20261015/readback.py": "4655a70d05aceb3dad230dec7691a707c88f03701f5d7c7fa6e5466aa521a7ca",
+    "/home/nathaniel/.local/state/openplan/pr330-ci-guard-independent-review-20261015/readback.json": "5dfd0c75563a04055f0c6be17db3ecb7476986089292ebba92523812baf3423e",
+    "/home/nathaniel/.local/state/openplan/pr330-ci-guard-independent-review-20261015/product-direction.log": "39c69ae83f2b5e8fd42b88184ff9da1bc1794740931f4c7928f595606029abb0"
+  },
+  "productDirection": {
+    "exitCode": 0,
+    "reviewDeadline": "2026-11-06",
+    "existingRemindersRetained": true
+  },
+  "freshProductProbes": 0,
+  "limits": [
+    "No DB, browser, application services, build, full TypeScript, full suite, hosted, provider, configuration or migration operation.",
+    "Retained receipt consistency is not an independently observed runtime rerun.",
+    "Computed fallback projections, native database message variants, RLS and installed schema remain outside this review.",
+    "Historical APP49 and native workbook proof retain their original source boundaries; 420 versus 418 hold remains."
+  ]
+}

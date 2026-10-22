@@ -4,6 +4,7 @@ import { generateText } from "ai";
 import { defaultClaudeModelId, estimateClaudeListPriceUsd } from "@/lib/ai/model-policy";
 import { anthropicModel, hasAnthropicAccess } from "@/lib/integrations/anthropic-access";
 import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-keys";
+import { loadWorkspaceCalendar } from "@/lib/time/workspace-calendar";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadFundingOpportunityAccess } from "@/lib/programs/api";
@@ -209,7 +210,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
       // cite these with inline [fact:N] tokens; the citations are validated
       // deterministically after generation (planner-pack grounding contract).
       const hasModelingEvidence = Boolean(evidence.modelingHeadline && evidence.modelingReadinessDetail);
-      const facts = buildOpportunityFactList(evidence);
+      // Close dates are stated in the workspace's zone and compared as instants.
+      const calendar = await loadWorkspaceCalendar(supabase, opportunity.workspace_id);
+      if (calendar.readError) audit.warn("workspace_calendar_unreadable", { message: calendar.readError });
+      const facts = buildOpportunityFactList(evidence, { now: new Date(), timeZone: calendar.timeZone });
       const factIds = facts.map((fact) => fact.fact_id);
 
       const promptSections = [
@@ -221,6 +225,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         "- CITATIONS ARE MANDATORY: every sentence that states a workspace-specific fact MUST end with one or more inline citation tokens of the form [fact:fact_N] naming the fact(s) it draws on, e.g. \"The project carries a documented funding need. [fact:fact_3]\".",
         "- Only cite fact ids that appear in the WORKSPACE FACTS list. A purely transitional sentence may go uncited ONLY if it asserts nothing factual — when in doubt, prefer citing.",
         "- If a figure or fact is not provided, describe it qualitatively or note that it is still being documented — never fabricate it.",
+        "- Dates: the facts say whether a recorded close date or decision due date has passed. Never describe a passed close date as open or upcoming, and do not compute day counts the facts do not state.",
         "- If (and only if) you reference the modeling evidence or model results below, you MUST include the following caveat sentence verbatim in the same paragraph:",
         `  "${GRANT_MODELING_PLANNING_CAVEAT}"`,
         "- If (and only if) you reference the benefit-cost screening facts below, you MUST include the following caveat sentence verbatim in the same paragraph, and you must describe the results as screening-level — never as an application benefit-cost analysis:",

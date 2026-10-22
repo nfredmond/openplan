@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-import { readWgs84Viewport } from "@/lib/geo/wgs84-bounds";
+import { parseWgs84QueryViewport } from "@/lib/geo/wgs84-query-viewport";
 import { loadPublishedLandUsePlanPacket } from "@/lib/land-use-plans/public";
 import { loadPublicDesignationMap } from "@/lib/land-use-plans/public-map";
 import { createApiAuditLogger } from "@/lib/observability/audit";
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest, context: Context) {
   audit.info("public_land_use_plan_map_requested");
   const params = paramsSchema.safeParse(await context.params);
   if (!params.success) return NextResponse.json({ error: "Map not found" }, { status: 404 });
-  const bbox = readWgs84Viewport(request.nextUrl.searchParams.get("bbox")?.split(",").map(Number));
+  const bbox = parseWgs84QueryViewport(request.nextUrl.searchParams.get("bbox"));
   if (!bbox) return NextResponse.json({ error: "Pass a valid bbox=west,south,east,north" }, { status: 400 });
   const plan = await loadPublishedLandUsePlanPacket(params.data.planId);
   if (!plan.ok) return NextResponse.json({ error: "Map not found" }, { status: plan.reason === "not_found" ? 404 : 503 });

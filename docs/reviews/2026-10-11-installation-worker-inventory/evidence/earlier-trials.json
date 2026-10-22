@@ -1,0 +1,32 @@
+{
+  "controls01": {
+    "state": "failed",
+    "reason": "Unassessed-state guard also rejects invalid custody; selected case did not establish isolated custody refusal. Tests changed to use configured custody and duplicate references."
+  },
+  "controls02": {
+    "state": "failed",
+    "reason": "Missing CLI args hit declaration refusal and return1 rather than an uncaught TypeError. The omitted parser scope must fail SystemExit2 assertion."
+  },
+  "controls03": {
+    "state": "passed older source, superseded",
+    "reason": "Later source audit corrects native executable and records launch aliases/wrappers."
+  },
+  "controls04": {
+    "state": "passed older source, superseded",
+    "reason": "Later catalogue adds exact known command and launcher/package byte binding."
+  },
+  "controls05": {
+    "state": "failed",
+    "reason": "Exact command guard independently rejects non-string command after type guard omission. Selected negative now checks the controlled type diagnostic."
+  },
+  "native01": {
+    "state": "completed older catalogue, superseded",
+    "unit": "openplan-installation-worker-inventory-native-20261011-01.service",
+    "invocationId": "b6fc140b305342028c9870cb89c88fc3",
+    "exitCode": 0,
+    "wallSeconds": 30.873,
+    "reason": "Source audit corrected connector-worker library binding to executable connector.mjs and added launch wrappers/command checks. Repeated final producer uses fresh native02 directories."
+  },
+  "retained": true,
+  "noFailedProducerPromoted": true
+}

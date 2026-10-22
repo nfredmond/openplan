@@ -3,6 +3,7 @@ import path from "node:path";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { signedStorageRedirect } from "@/lib/http/signed-redirect";
 import { loadModelAccess } from "@/lib/models/api";
 import {
   parseStorageRef,
@@ -149,7 +150,7 @@ export async function GET(req: NextRequest, context: RouteContext): Promise<Next
       return NextResponse.json({ error: "Failed to sign artifact URL" }, { status: 500 });
     }
 
-    return NextResponse.redirect(data.signedUrl);
+    return signedStorageRedirect(data.signedUrl);
   }
 
   // Redirecting to a member-controlled remote URL would make this route an

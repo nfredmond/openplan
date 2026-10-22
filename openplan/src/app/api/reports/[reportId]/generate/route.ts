@@ -1,3 +1,6 @@
+import { persistSafetyPlanGeneration } from "@/lib/reports/safety-plan-persistence";
+import { buildSafetyPlanSnapshot, type SafetyPlanSnapshot } from "@/lib/reports/safety-plan-snapshot";
+import { finishReportGeneration } from "@/lib/reports/generation-writeback";
 import {
   loadSafetyCrashEvidence,
   readSafetyCrashEvidenceIngest,
@@ -18,14 +21,23 @@ import {
   type SafetyRoadContextFeature,
 } from "@/lib/safety/road-context";
 import { loadUsTigerRoadContext, roadContextForFrozenPacket } from "@/lib/safety/us-road-context-adapter";
-import { resolveCrashSources } from "@/lib/safety/sources/registry";
+import { retainedCrashRoadProvider } from "@/lib/safety/road-provider";
 import { readReportSafetyIngestSelections } from "@/lib/reports/safety-evidence-selection";
-import type { StudyAreaBbox } from "@/lib/models/study-area";
+import {
+  buildSafetyActionPlanSection,
+  readReportSafetyActionPlan,
+  type SafetyActionPlanSectionDraft,
+} from "@/lib/reports/safety-action-plan";
+import {
+  buildHighInjuryNetworkForIngest,
+  type HighInjuryNetworkSupabaseLike,
+} from "@/lib/safety/high-injury-network-loader";
 import { ACS_YEAR } from "@/lib/data-sources/census";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { checkWorkspaceStorageRoom, workspaceStorageRefusal } from "@/lib/workspaces/storage-quota";
 import { assistantActionAuditIdentity, recordAssistantActionExecution } from "@/lib/observability/action-audit";
 import { verifyAssistantActionApproval } from "@/lib/assistant/action-approval-server";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
@@ -68,7 +80,9 @@ import {
   buildReportEngagementSynthesis,
   extractEngagementHandoffProvenance,
   extractEngagementCampaignId,
+  type ReportEngagementItemRecord,
 } from "@/lib/reports/engagement";
+import { readEveryPage } from "@/lib/supabase/paged-read";
 import {
   buildCampaignReportHtml,
   buildReportHtml,
@@ -113,10 +127,10 @@ import {
 } from "@/lib/reports/dual-demand-agreement";
 import { readReportAerialOrthoSelections, reportAerialOrthoPreviewHref } from "@/lib/reports/aerial-ortho-evidence";
 import { freezeSelectedReportAerialOrtho } from "@/lib/reports/aerial-ortho-evidence-server";
-import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
+import { looksLikePendingSchema, readPendingSchemaMissingColumn } from "@/lib/supabase/pending-schema";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import {
-  PROJECT_PLACE_COLUMNS,
+  PROJECT_PLACE_COLUMN_NAMES,
   placeOfRecordFromProject,
   type ProjectPlaceRow,
 } from "@/lib/projects/project-place";
@@ -124,8 +138,19 @@ import type {
   PacketGeographyCorridor,
   PacketGeographyReadState,
 } from "@/lib/reports/geography-figure";
-import { buildJurisdictionReadinessPayload } from "@/lib/jurisdiction-readiness/payload";
+import { buildProjectJurisdictionReadinessExportPayload } from "@/lib/jurisdiction-readiness/payload";
 import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
+import { buildReportProjectJurisdictionSchemaPendingPayload } from "@/lib/reports/project-jurisdiction";
+
+const PACKET_PROJECT_OPTIONAL_COLUMN_GROUPS = [
+  { kind: "jurisdiction", columns: ["jurisdiction_context"] },
+  { kind: "geography", columns: PROJECT_PLACE_COLUMN_NAMES },
+  { kind: "estimate", columns: ["estimated_cost_amount", "estimated_cost_currency", "estimated_cost_basis_year", "estimated_cost_source_document_id"] },
+  { kind: "site", columns: ["latitude", "longitude"] },
+] as const;
+// Keep the initial projection literal so the source guard checks every column.
+// Route tests pin parity with the four independently removable groups above.
+const PACKET_PROJECT_COLUMNS = "id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at, jurisdiction_context, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_geometry_geojson, place_set_at, estimated_cost_amount, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, latitude, longitude";
 
 /**
  * A read whose ABSENCE is honest when the schema is genuinely not there: no
@@ -168,6 +193,7 @@ import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readines
  * database answers the narrow re-query, which carries none of it.
  */
 type PacketProjectRow = {
+  jurisdiction_context?: unknown;
   id: string;
   workspace_id: string;
   name: string;
@@ -223,6 +249,48 @@ async function safeOptionalQuery<T>(
   }
 }
 
+type EngagementItemsReadError = { message: string; code?: string | null };
+
+/**
+ * Every comment on one campaign, for a packet's engagement counts, or an error.
+ *
+ * PostgREST caps a response at `max_rows` (1,000 here) with `error = null`, so
+ * the single read this replaces counted a campaign with more than 1,000
+ * comments as 1,000 in a published packet, with nothing looking wrong. Both packet
+ * paths read through here. An unfinished read comes back as an error so the
+ * callers' existing refusal covers it: a packet that cannot count every comment
+ * is not generated. The `id` tiebreak makes the order total across pages.
+ */
+async function readEveryReportEngagementItem(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  campaignId: string
+): Promise<{ data: ReportEngagementItemRecord[] | null; error: EngagementItemsReadError | null }> {
+  const read = await readEveryPage<ReportEngagementItemRecord, EngagementItemsReadError>(
+    (from, toInclusive) =>
+      supabase
+        .from("engagement_items")
+        .select(
+          "id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at"
+        )
+        .eq("campaign_id", campaignId)
+        .order("updated_at", { ascending: false })
+        .order("id", { ascending: true })
+        .range(from, toInclusive) as PromiseLike<{
+        data: ReportEngagementItemRecord[] | null;
+        error: EngagementItemsReadError | null;
+      }>
+  );
+
+  if (read.complete) return { data: read.rows, error: null };
+  return {
+    data: null,
+    error: read.error ?? {
+      message: "the engagement comment read could not be completed, so any count from it would understate participation",
+      code: null,
+    },
+  };
+}
+
 const paramsSchema = z.object({
   reportId: z.string().uuid(),
 });
@@ -267,6 +335,68 @@ type ArtifactHistoryEntry = {
 
 function asRecord(value: unknown): Record<string, unknown> | null {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+}
+
+const REPORT_ARTIFACT_BUCKET = "report-artifacts";
+
+/**
+ * Refuse with the planner-facing storage message when the workspace has no
+ * room for `incomingBytes` more (0: refuse only a workspace already at its
+ * limit). Returns null when there is room.
+ */
+async function refuseWhenReportStorageFull(input: {
+  serviceSupabase: ReturnType<typeof createServiceRoleClient>;
+  audit: ReturnType<typeof createApiAuditLogger>;
+  reportId: string;
+  workspaceId: string;
+  incomingBytes: number;
+}): Promise<NextResponse | null> {
+  const room = await checkWorkspaceStorageRoom(input.serviceSupabase, input.workspaceId, input.incomingBytes);
+  if (room.status === "room") return null;
+  input.audit.warn("report_artifact_storage_refused", {
+    reportId: input.reportId,
+    workspaceId: input.workspaceId,
+    incomingBytes: input.incomingBytes,
+    status: room.status,
+    ...(room.status === "full"
+      ? { usedBytes: room.usedBytes, quotaBytes: room.quotaBytes }
+      : { detail: room.detail }),
+  });
+  return workspaceStorageRefusal(room);
+}
+
+/**
+ * Store one generated report file after checking the workspace storage limit.
+ *
+ * Writes with the service role: members have no direct INSERT on
+ * report-artifacts (migration 20261017000013), so this route, which has
+ * already checked the caller's report.generate role, is the only way a
+ * generated file gets there. Returns null once stored, or the response to send.
+ */
+async function storeReportArtifactFile(input: {
+  serviceSupabase: ReturnType<typeof createServiceRoleClient>;
+  audit: ReturnType<typeof createApiAuditLogger>;
+  reportId: string;
+  workspaceId: string;
+  storagePath: string;
+  bytes: Buffer;
+  contentType: "application/pdf" | "text/html";
+}): Promise<NextResponse | null> {
+  const refusal = await refuseWhenReportStorageFull({ ...input, incomingBytes: input.bytes.byteLength });
+  if (refusal) return refusal;
+  const { error: uploadError } = await input.serviceSupabase.storage
+    .from(REPORT_ARTIFACT_BUCKET)
+    .upload(input.storagePath, input.bytes, { contentType: input.contentType, upsert: false });
+  if (!uploadError) return null;
+  const pdf = input.contentType === "application/pdf";
+  input.audit.error(pdf ? "report_pdf_upload_failed" : "report_html_upload_failed", {
+    reportId: input.reportId,
+    message: uploadError.message,
+  });
+  return NextResponse.json(
+    { error: pdf ? "Failed to upload PDF artifact" : "Failed to upload HTML artifact" },
+    { status: 500 }
+  );
 }
 
 function buildArtifactHistoryEntry(input: {
@@ -455,7 +585,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     let reportLookupResult = await supabase
       .from("reports")
-      .select("id, workspace_id, project_id, rtp_cycle_id, engagement_campaign_id, modeling_county_run_id, title, summary, report_type, status, created_at, generated_at, metadata_json")
+      .select("id, workspace_id, project_id, rtp_cycle_id, engagement_campaign_id, modeling_county_run_id, title, summary, report_type, status, created_at, updated_at, generated_at, metadata_json")
       .eq("id", parsedParams.data.reportId)
       .maybeSingle();
 
@@ -464,7 +594,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       // retry without it before falling back to the oldest column set.
       reportLookupResult = await supabase
         .from("reports")
-        .select("id, workspace_id, project_id, rtp_cycle_id, modeling_county_run_id, title, summary, report_type, status, created_at, generated_at, metadata_json")
+        .select("id, workspace_id, project_id, rtp_cycle_id, modeling_county_run_id, title, summary, report_type, status, created_at, updated_at, generated_at, metadata_json")
         .eq("id", parsedParams.data.reportId)
         .maybeSingle();
     }
@@ -472,7 +602,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if (reportLookupResult.error && looksLikePendingSchema(reportLookupResult.error.message)) {
       reportLookupResult = await supabase
         .from("reports")
-        .select("id, workspace_id, project_id, rtp_cycle_id, title, summary, report_type, status, created_at, generated_at")
+        .select("id, workspace_id, project_id, rtp_cycle_id, title, summary, report_type, status, created_at, updated_at, generated_at")
         .eq("id", parsedParams.data.reportId)
         .maybeSingle();
     }
@@ -681,19 +811,20 @@ export async function POST(request: NextRequest, context: RouteContext) {
         }
         const pdfBuffer = Buffer.from(rendered.bytes);
         const storagePath = `${report.workspace_id}/${report.id}/${artifactId}.pdf`;
-        const { error: uploadError } = await supabase.storage
-          .from("report-artifacts")
-          .upload(storagePath, pdfBuffer, { contentType: "application/pdf", upsert: false });
-        if (uploadError) {
-          audit.error("report_pdf_upload_failed", {
-            reportId: report.id,
-            message: uploadError.message,
-          });
-          return NextResponse.json({ error: "Failed to upload PDF artifact" }, { status: 500 });
-        }
+        const notStored = await storeReportArtifactFile({
+          serviceSupabase,
+          audit,
+          reportId: report.id,
+          workspaceId: report.workspace_id,
+          storagePath,
+          bytes: pdfBuffer,
+          contentType: "application/pdf",
+        });
+        if (notStored) return notStored;
         rtpPdfStoragePath = storagePath;
       }
       const artifactMetadata = {
+      generationWriteback: null,
         htmlContent: html,
         generatedAt,
         // Which typesetting tier produced the stored file, so the record can
@@ -783,42 +914,21 @@ export async function POST(request: NextRequest, context: RouteContext) {
         },
       };
 
-      let reportUpdateResult = await supabase
-        .from("reports")
-        .update({
-          status: "generated",
-          generated_at: generatedAt,
-          latest_artifact_kind: format,
-          latest_artifact_url: latestArtifactUrl,
+      const reportUpdateResult = await finishReportGeneration({
+        client: supabase, reportId: report.id, reportUpdatedAt: report.updated_at,
+        artifactId: artifact.id, artifactMetadata,
+        update: {
+          status: "generated", generated_at: generatedAt,
+          latest_artifact_kind: format, latest_artifact_url: latestArtifactUrl,
           metadata_json: nextMetadataJson,
-          rtp_basis_stale: false,
-          rtp_basis_stale_reason: null,
-          rtp_basis_stale_run_id: null,
-          rtp_basis_stale_marked_at: null,
-        })
-        .eq("id", report.id);
-
-      if (reportUpdateResult.error && looksLikePendingSchema(reportUpdateResult.error.message)) {
-        reportUpdateResult = await supabase
-          .from("reports")
-          .update({
-            status: "generated",
-            generated_at: generatedAt,
-            latest_artifact_kind: format,
-            latest_artifact_url: latestArtifactUrl,
-          })
-          .eq("id", report.id);
-      }
-
+          rtp_basis_stale: false, rtp_basis_stale_reason: null, rtp_basis_stale_run_id: null, rtp_basis_stale_marked_at: null,
+        },
+        legacyUpdate: { status: "generated", generated_at: generatedAt, latest_artifact_kind: format, latest_artifact_url: latestArtifactUrl },
+      });
       const { error: reportUpdateError } = reportUpdateResult;
-
       if (reportUpdateError) {
-        audit.error("report_update_failed", {
-          reportId: report.id,
-          message: reportUpdateError.message,
-          code: reportUpdateError.code ?? null,
-        });
-        return NextResponse.json({ error: "Failed to update report generation status" }, { status: 500 });
+        audit.error("report_update_failed", { reportId: report.id, message: reportUpdateError.message, code: reportUpdateError.code ?? null });
+        return NextResponse.json({ error: reportUpdateResult.status === 409 ? reportUpdateError.message : "Failed to update report generation status" }, { status: reportUpdateResult.status });
       }
 
       audit.info("rtp_report_generated", {
@@ -961,13 +1071,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
           .eq("campaign_id", campaignRow.id)
           .order("sort_order", { ascending: true })
           .order("created_at", { ascending: true }),
-        supabase
-          .from("engagement_items")
-          .select(
-            "id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at"
-          )
-          .eq("campaign_id", campaignRow.id)
-          .order("updated_at", { ascending: false }),
+        readEveryReportEngagementItem(supabase, campaignRow.id),
       ]);
 
       if (campaignCategoriesResult.error || campaignItemsResult.error) {
@@ -1149,20 +1253,21 @@ export async function POST(request: NextRequest, context: RouteContext) {
         }
         const pdfBuffer = Buffer.from(rendered.bytes);
         const storagePath = `${report.workspace_id}/${report.id}/${artifactId}.pdf`;
-        const { error: uploadError } = await supabase.storage
-          .from("report-artifacts")
-          .upload(storagePath, pdfBuffer, { contentType: "application/pdf", upsert: false });
-        if (uploadError) {
-          audit.error("report_pdf_upload_failed", {
-            reportId: report.id,
-            message: uploadError.message,
-          });
-          return NextResponse.json({ error: "Failed to upload PDF artifact" }, { status: 500 });
-        }
+        const notStored = await storeReportArtifactFile({
+          serviceSupabase,
+          audit,
+          reportId: report.id,
+          workspaceId: report.workspace_id,
+          storagePath,
+          bytes: pdfBuffer,
+          contentType: "application/pdf",
+        });
+        if (notStored) return notStored;
         campaignPdfStoragePath = storagePath;
       }
 
       const artifactMetadata = {
+      generationWriteback: null,
         metadata_schema_version: "2026-04",
         htmlContent: html,
         generatedAt,
@@ -1258,38 +1363,20 @@ export async function POST(request: NextRequest, context: RouteContext) {
         },
       };
 
-      let reportUpdateResult = await supabase
-        .from("reports")
-        .update({
-          status: "generated",
-          generated_at: generatedAt,
-          latest_artifact_kind: format,
-          latest_artifact_url: latestArtifactUrl,
+      const reportUpdateResult = await finishReportGeneration({
+        client: supabase, reportId: report.id, reportUpdatedAt: report.updated_at,
+        artifactId: artifact.id, artifactMetadata,
+        update: {
+          status: "generated", generated_at: generatedAt,
+          latest_artifact_kind: format, latest_artifact_url: latestArtifactUrl,
           metadata_json: nextMetadataJson,
-        })
-        .eq("id", report.id);
-
-      if (reportUpdateResult.error && looksLikePendingSchema(reportUpdateResult.error.message)) {
-        reportUpdateResult = await supabase
-          .from("reports")
-          .update({
-            status: "generated",
-            generated_at: generatedAt,
-            latest_artifact_kind: format,
-            latest_artifact_url: latestArtifactUrl,
-          })
-          .eq("id", report.id);
-      }
-
+        },
+        legacyUpdate: { status: "generated", generated_at: generatedAt, latest_artifact_kind: format, latest_artifact_url: latestArtifactUrl },
+      });
       const { error: reportUpdateError } = reportUpdateResult;
-
       if (reportUpdateError) {
-        audit.error("report_update_failed", {
-          reportId: report.id,
-          message: reportUpdateError.message,
-          code: reportUpdateError.code ?? null,
-        });
-        return NextResponse.json({ error: "Failed to update report generation status" }, { status: 500 });
+        audit.error("report_update_failed", { reportId: report.id, message: reportUpdateError.message, code: reportUpdateError.code ?? null });
+        return NextResponse.json({ error: reportUpdateResult.status === 409 ? reportUpdateError.message : "Failed to update report generation status" }, { status: reportUpdateResult.status });
       }
 
       audit.info("campaign_report_generated", {
@@ -1412,7 +1499,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         // missing-column error, which the narrow re-query below recovers from —
         // the same shape the `report_runs` typed-evidence fallback uses.
         .select(
-          `id, workspace_id, name, summary, status, plan_type, delivery_phase, estimated_cost_amount, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, created_at, updated_at, latitude, longitude, ${PROJECT_PLACE_COLUMNS}`
+          PACKET_PROJECT_COLUMNS
         )
         .eq("id", report.project_id)
         .maybeSingle(),
@@ -1506,22 +1593,32 @@ export async function POST(request: NextRequest, context: RouteContext) {
         .order("created_at", { ascending: false }),
     ]);
 
-    // Geography fallback. A missing place column is a PENDING SCHEMA, not an
-    // absent study area, and the two must not read the same in the packet — so
-    // the narrow re-query restores generation and the read state carries the
-    // reason into the figure, which prints it.
+    // Remove only the named unavailable field group. Place, jurisdiction, cost
+    // and site migrations can be at different stages; one gap proves nothing
+    // about the others. Unknown schema errors and non-schema failures refuse.
     let projectGeographyReadState: PacketGeographyReadState = "ok";
+    let projectJurisdictionSchemaPending = false;
     let projectResultForPacket = projectResult;
-    if (projectResult.error && looksLikePendingSchema(projectResult.error.message)) {
-      projectGeographyReadState = "schema_pending";
-      audit.warn("report_project_geography_schema_pending", {
+    let projectColumnsForPacket = PACKET_PROJECT_COLUMNS.split(", ");
+    for (let attempt = 0; attempt < PACKET_PROJECT_OPTIONAL_COLUMN_GROUPS.length; attempt += 1) {
+      const message = projectResultForPacket.error?.message;
+      const missingColumn = readPendingSchemaMissingColumn(message, "projects");
+      const missing = PACKET_PROJECT_OPTIONAL_COLUMN_GROUPS.find(group => group.columns.some(column =>
+        column === missingColumn && projectColumnsForPacket.includes(column)
+      ));
+      if (!missing) break;
+      if (missing.kind === "geography") projectGeographyReadState = "schema_pending";
+      if (missing.kind === "jurisdiction") projectJurisdictionSchemaPending = true;
+      projectColumnsForPacket = projectColumnsForPacket.filter(column => !missing.columns.some(unavailable => unavailable === column));
+      audit.warn("report_project_columns_schema_pending", {
         reportId: report.id,
         projectId: report.project_id,
-        message: projectResult.error.message,
+        fieldGroup: missing.kind,
+        message,
       });
       projectResultForPacket = (await supabase
         .from("projects")
-        .select("id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at")
+        .select(projectColumnsForPacket.join(", "))
         .eq("id", report.project_id)
         .maybeSingle()) as unknown as typeof projectResult;
     }
@@ -1651,18 +1748,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     // Cast: the projection is a template literal (the place columns interpolated
-    // from PROJECT_PLACE_COLUMNS), which supabase-js's string parser cannot
+    // from PACKET_PROJECT_COLUMNS), which supabase-js's string parser cannot
     // type — the same reason the workspace read above is cast. Guaranteed
     // non-null here; a failed or empty project read returned already.
     const projectRow = projectResultForPacket.data as unknown as PacketProjectRow;
-    const jurisdictionReadiness = buildJurisdictionReadinessPayload(
-      {
-        countryCode: projectRow.place_country_code ?? null,
-        subdivisionCode: projectRow.place_subdivision_code ?? null,
-        label: projectRow.place_label ?? null,
-      },
-      jurisdictionReadinessRegistrySha256(),
-    );
+    const registrySha256 = jurisdictionReadinessRegistrySha256();
+    const jurisdictionReadiness = projectJurisdictionSchemaPending
+      ? buildReportProjectJurisdictionSchemaPendingPayload(projectRow, registrySha256, projectGeographyReadState)
+      : buildProjectJurisdictionReadinessExportPayload(projectRow, registrySha256);
     let estimatedCostSourceTitle: string | null = null;
     if (projectRow.estimated_cost_source_document_id) {
       // The recorded FK is the source of this estimate. Portfolio imports are
@@ -1730,11 +1823,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
               .eq("campaign_id", engagementCampaignId)
               .order("sort_order", { ascending: true })
               .order("created_at", { ascending: true }),
-            supabase
-              .from("engagement_items")
-              .select("id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at")
-              .eq("campaign_id", engagementCampaignId)
-              .order("updated_at", { ascending: false }),
+            readEveryReportEngagementItem(supabase, engagementCampaignId),
           ])
         : [
             { data: null, error: null },
@@ -1950,6 +2039,20 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const generatedAt = new Date().toISOString();
     const artifactId = crypto.randomUUID();
     const aerialSelections = readReportAerialOrthoSelections(report.metadata_json);
+    // Freezing the selected aerial preview copies its PNG into this
+    // workspace's report-artifacts folder before the packet itself is stored.
+    // Its size is not known here, so refuse only a workspace already at its
+    // limit; the packet's own check below counts the frozen copy.
+    if (aerialSelections.length === 1) {
+      const refusal = await refuseWhenReportStorageFull({
+        serviceSupabase,
+        audit,
+        reportId: report.id,
+        workspaceId: report.workspace_id,
+        incomingBytes: 0,
+      });
+      if (refusal) return refusal;
+    }
     const frozenAerial = aerialSelections.length === 1
       ? await freezeSelectedReportAerialOrtho({
           supabase,
@@ -2211,7 +2314,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     let safetyKsiConcentrations: SafetyKsiConcentration[] | null = [];
     let safetyKsiEquityTracts: SafetyKsiEquityTract[] | null = [];
     let safetyIngestRowsForConcentrations: unknown[] = [];
-    let safetyConcentrationBounds: StudyAreaBbox | null = null;
+    let safetyRoadProvider: string | null = null;
     try {
       const safetyIngestResult = selectedSafetyIngestIds.length > 0
         ? await supabase
@@ -2232,6 +2335,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         const ingests = (safetyIngestRows ?? [])
           .map((row) => readSafetyCrashEvidenceIngest(row as unknown as Record<string, unknown>))
           .filter((ingest): ingest is NonNullable<typeof ingest> => ingest !== null);
+        safetyRoadProvider = retainedCrashRoadProvider(ingests, selectedSafetyIngestIds);
         const evidenceByIngest = await loadSafetyCrashEvidence(
           supabase as unknown as SafetyCrashEvidenceSupabaseLike,
           report.workspace_id,
@@ -2245,7 +2349,6 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     try {
       const concentrationBounds = readSafetyKsiBounds(safetyIngestRowsForConcentrations);
-      safetyConcentrationBounds = concentrationBounds;
       if (concentrationBounds && safetyIngestRowsForConcentrations.length > 0) {
         const concentrationResult = await supabase.rpc("safety_ksi_concentrations_for_ingests", {
           p_workspace_id: report.workspace_id,
@@ -2327,12 +2430,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       && safetyRoadContext.length === 0
       && safetyKsiConcentrations
       && safetyKsiConcentrations.length > 0
-      // Uploaded project geometry can predate the project's ISO country stamp.
-      // The crash-source registry already resolved this exact acquisition area;
-      // use that source evidence instead of guessing from coordinates or
-      // silently inheriting the workspace's country for a cross-border project.
-      && safetyConcentrationBounds
-      && resolveCrashSources(safetyConcentrationBounds, "read_only").kind === "resolved"
+      && safetyRoadProvider === "us-census-tiger-line"
     ) {
       const tigerContext = await loadUsTigerRoadContext(safetyKsiConcentrations);
       if (tigerContext.roads.length > 0) {
@@ -2371,6 +2469,52 @@ export async function POST(request: NextRequest, context: RouteContext) {
         ),
       }));
     }
+    /**
+     * The safety action plan draft, only when a planner saved one. It must use
+     * the acquisition this report cites; a plan saved against another one is
+     * reported as stale rather than printed.
+     */
+    const savedSafetyActionPlan = readReportSafetyActionPlan(report.metadata_json);
+    let safetyPlanSnapshotV1: SafetyPlanSnapshot | null = null;
+    let safetyActionPlan: SafetyActionPlanSectionDraft | { kind: "stale_acquisition" } | null = null;
+    if (savedSafetyActionPlan) {
+      if (!selectedSafetyIngestIds.includes(savedSafetyActionPlan.ingestId)) {
+        safetyActionPlan = { kind: "stale_acquisition" };
+      } else {
+        const planEvidence = safetyEvidence?.find((item) => item.ingestId === savedSafetyActionPlan.ingestId) ?? null;
+        const planIngestRow = safetyIngestRowsForConcentrations.find(
+          (row) => (row as { id?: unknown } | null)?.id === savedSafetyActionPlan.ingestId
+        );
+        const planBounds = planIngestRow ? readSafetyKsiBounds([planIngestRow]) : null;
+        const network = planEvidence && planBounds
+          ? await buildHighInjuryNetworkForIngest(
+              supabase as unknown as HighInjuryNetworkSupabaseLike,
+              {
+                workspaceId: report.workspace_id,
+                ingestId: savedSafetyActionPlan.ingestId,
+                severityCompleteness: planEvidence.severityCompleteness,
+                bbox: planBounds,
+                years: planEvidence.years,
+                roads: safetyRoadContext,
+              }
+            )
+          : { status: "unavailable" as const, reason: "crash_read_failed" as const, basis: null };
+        safetyActionPlan = buildSafetyActionPlanSection({
+          plan: savedSafetyActionPlan,
+          evidence: planEvidence,
+          network,
+        });
+        if (planEvidence?.status === "ready" && planIngestRow && typeof planIngestRow === "object") {
+          safetyPlanSnapshotV1 = buildSafetyPlanSnapshot({
+            artifactId, reportId: report.id, workspaceId: report.workspace_id,
+            projectId: projectRow.id, generatedAt, reportUpdatedAt: report.updated_at,
+            projectUpdatedAt: projectRow.updated_at,
+            acquisition: planIngestRow as Record<string, unknown>, selection: savedSafetyActionPlan, draft: safetyActionPlan,
+          });
+        }
+      }
+    }
+
     evidenceChainSummary = {
       ...evidenceChainSummary,
       safetyAcquisitionCount: safetyEvidence?.length ?? 0,
@@ -2391,6 +2535,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       safetyRoadContext,
       safetyKsiEquityTracts,
       safetyKsiEquityDemographicSource: { label: "U.S. Census ACS 5-year", vintage: ACS_YEAR },
+      safetyActionPlan,
       deliverables: (deliverablesResult.data ?? []).map((item) => ({
         id: item.id,
         title: item.title,
@@ -2501,31 +2646,36 @@ export async function POST(request: NextRequest, context: RouteContext) {
       }
       const pdfBuffer = Buffer.from(rendered.bytes);
       const storagePath = `${report.workspace_id}/${report.id}/${artifactId}.pdf`;
-      const { error: uploadError } = await supabase.storage
-        .from("report-artifacts")
-        .upload(storagePath, pdfBuffer, { contentType: "application/pdf", upsert: false });
-      if (uploadError) {
-        audit.error("report_pdf_upload_failed", {
-          reportId: report.id,
-          message: uploadError.message,
-        });
-        return NextResponse.json({ error: "Failed to upload PDF artifact" }, { status: 500 });
-      }
+      const notStored = await storeReportArtifactFile({
+        serviceSupabase,
+        audit,
+        reportId: report.id,
+        workspaceId: report.workspace_id,
+        storagePath,
+        bytes: pdfBuffer,
+        contentType: "application/pdf",
+      });
+      if (notStored) return notStored;
       artifactStoragePath = storagePath;
     } else {
       const storagePath = `${report.workspace_id}/${report.id}/${artifactId}.html`;
-      const { error: uploadError } = await supabase.storage
-        .from("report-artifacts")
-        // Storage bucket allowlists compare the media type literally. Charset
-        // belongs on the download response, not in the stored object's type.
-        .upload(storagePath, Buffer.from(exportHtml, "utf8"), { contentType: "text/html", upsert: false });
-      if (uploadError) {
-        audit.error("report_html_upload_failed", { reportId: report.id, message: uploadError.message });
-        return NextResponse.json({ error: "Failed to upload HTML artifact" }, { status: 500 });
-      }
+      // Storage bucket allowlists compare the media type literally. Charset
+      // belongs on the download response, not in the stored object's type.
+      const notStored = await storeReportArtifactFile({
+        serviceSupabase,
+        audit,
+        reportId: report.id,
+        workspaceId: report.workspace_id,
+        storagePath,
+        bytes: Buffer.from(exportHtml, "utf8"),
+        contentType: "text/html",
+      });
+      if (notStored) return notStored;
       artifactStoragePath = storagePath;
     }
     const artifactMetadata = {
+      safetyPlanSnapshotV1,
+      generationWriteback: null,
       metadata_schema_version: "2026-04",
       htmlContent: html,
       generatedAt,
@@ -2542,6 +2692,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         reportOrigin: engagementProvenance?.origin ?? "report_builder",
         reportReason: engagementProvenance?.reason ?? null,
         projectUpdatedAt: projectRow.updated_at,
+        projectGeographyReadState,
         jurisdictionReadiness,
         linkedRunCount: linkedRuns.length,
         citedModelRunCount: citedModelRuns.length,
@@ -2623,19 +2774,17 @@ export async function POST(request: NextRequest, context: RouteContext) {
       generationMode: format === "pdf" ? "structured_pdf_packet" : "structured_html_packet",
     };
 
-    const { data: artifact, error: artifactError } = await supabase
-      .from("report_artifacts")
-      .insert({
-        id: artifactId,
-        report_id: report.id,
-        artifact_kind: format,
-        storage_path: artifactStoragePath,
-        generated_by: user.id,
-        generated_at: generatedAt,
-        metadata_json: artifactMetadata,
-      })
-      .select("id, report_id, artifact_kind, generated_at, metadata_json")
-      .single();
+    const artifactInsert = {
+      id: artifactId, report_id: report.id, artifact_kind: format,
+      storage_path: artifactStoragePath, generated_by: user.id, generated_at: generatedAt,
+      metadata_json: artifactMetadata,
+    };
+    // Safety insertion waits for the atomic persistence RPC below. Other report
+    // branches retain their existing caller-scoped insertion and writeback.
+    const { data: artifact, error: artifactError } = safetyPlanSnapshotV1
+      ? { data: artifactInsert, error: null }
+      : await supabase.from("report_artifacts").insert(artifactInsert)
+          .select("id, report_id, artifact_kind, generated_at, metadata_json").single();
 
     if (artifactError || !artifact) {
       audit.error("artifact_insert_failed", {
@@ -2669,42 +2818,37 @@ export async function POST(request: NextRequest, context: RouteContext) {
       },
     };
 
-    let reportUpdateResult = await supabase
-      .from("reports")
-      .update({
-        status: "generated",
-        generated_at: generatedAt,
-        latest_artifact_kind: format,
-        latest_artifact_url: latestArtifactUrl,
-        metadata_json: nextMetadataJson,
-        rtp_basis_stale: false,
-        rtp_basis_stale_reason: null,
-        rtp_basis_stale_run_id: null,
-        rtp_basis_stale_marked_at: null,
-      })
-      .eq("id", report.id);
-
-    if (reportUpdateResult.error && looksLikePendingSchema(reportUpdateResult.error.message)) {
-      reportUpdateResult = await supabase
-        .from("reports")
-        .update({
-          status: "generated",
-          generated_at: generatedAt,
-          latest_artifact_kind: format,
-          latest_artifact_url: latestArtifactUrl,
+    const reportUpdate = {
+      status: "generated" as const, generated_at: generatedAt,
+      latest_artifact_kind: format, latest_artifact_url: latestArtifactUrl,
+      metadata_json: nextMetadataJson,
+      rtp_basis_stale: false as const, rtp_basis_stale_reason: null,
+      rtp_basis_stale_run_id: null, rtp_basis_stale_marked_at: null,
+    };
+    const reportUpdateResult = safetyPlanSnapshotV1
+      ? await persistSafetyPlanGeneration({
+          client: createServiceRoleClient(), actorId: user.id, snapshot: safetyPlanSnapshotV1,
+          artifact: artifactInsert, reportUpdate,
         })
-        .eq("id", report.id);
-    }
-
+      : await finishReportGeneration({
+          client: supabase, reportId: report.id, reportUpdatedAt: report.updated_at,
+          artifactId: artifact.id, artifactMetadata, update: reportUpdate,
+          legacyUpdate: { status: "generated", generated_at: generatedAt, latest_artifact_kind: format, latest_artifact_url: latestArtifactUrl },
+        });
     const { error: reportUpdateError } = reportUpdateResult;
-
     if (reportUpdateError) {
-      audit.error("report_update_failed", {
-        reportId: report.id,
-        message: reportUpdateError.message,
-        code: reportUpdateError.code ?? null,
-      });
-      return NextResponse.json({ error: "Failed to update report generation status" }, { status: 500 });
+      audit.error("report_update_failed", { reportId: report.id, message: reportUpdateError.message, code: reportUpdateError.code ?? null });
+      let cleanupPending = false;
+      if (safetyPlanSnapshotV1 && "storageDisposition" in reportUpdateResult && reportUpdateResult.storageDisposition === "remove_unpersisted" && artifactStoragePath) {
+        try {
+          const removed = await serviceSupabase.storage.from(REPORT_ARTIFACT_BUCKET).remove([artifactStoragePath]);
+          if (removed.error) throw new Error(removed.error.message);
+        } catch {
+          cleanupPending = true;
+          audit.error("refused_safety_artifact_cleanup_failed", { reportId: report.id, artifactId: artifact.id });
+        }
+      }
+      return NextResponse.json({ error: reportUpdateResult.status === 409 ? reportUpdateError.message : "Failed to update report generation status", ...(cleanupPending ? { cleanupPending: true } : {}) }, { status: reportUpdateResult.status });
     }
 
     audit.info("report_generated", {

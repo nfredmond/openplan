@@ -1,0 +1,19 @@
+--- /home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/project-geography-preview-final-20261015/rest_uri_recovery_01_policy.py
++++ policy.py
+@@ -7 +7 @@
+-HEAD = '06a108010ab39aa42eed4c2bcda3e1371b8aa813'
++HEAD = '49e3fa2004c1336ffa36c134a8f21bcc2d72d327'
+@@ -14,5 +14,5 @@
+-HOST = '127.74.19.10'
+-API = 'http://' + HOST + ':29948'
+-WEB = 'http://' + HOST + ':3585'
+-PURPOSE = 'project-geography-preview-final-20261015'
+-ROOT = '/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/' + PURPOSE
++HOST = '127.74.19.11'
++API = 'http://' + HOST + ':29949'
++WEB = 'http://' + HOST + ':3586'
++PURPOSE = 'project-portfolio-skip-preview-20261015-v4'
++ROOT = '/home/nathaniel/.local/state/openplan/' + PURPOSE
+@@ -69 +69 @@
+-    exact({'valid': True}, {'valid': isinstance(value, str) and re.fullmatch(r'openplan_project_combined_preview_[0-9a-f]{24}', value) is not None}, 'target')
++    exact({'valid': True}, {'valid': isinstance(value, str) and re.fullmatch(r'openplan_project_portfolio_preview_[0-9a-f]{24}', value) is not None}, 'target')

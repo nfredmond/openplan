@@ -1,0 +1,5 @@
+{
+  "state": "failed-driver-variable-shadowing",
+  "errorType": "AttributeError",
+  "reason": "The local SQLite comparison loop reused the package summary list name. The supported operator completed its first capture and verification; this driver did not complete. No services started."
+}

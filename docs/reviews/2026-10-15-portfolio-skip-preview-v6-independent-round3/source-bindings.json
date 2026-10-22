@@ -1,0 +1,504 @@
+{
+  "subjectCommit": "02ec7bcbd391088477390a738eb21d5aad34d3b3",
+  "subjectPublicFiles": {
+    "BINDINGS.md": "88739fa7587d8c2de5a7f96d0935f2fa47600492914bdf2d9f84cf8b6bf844a6",
+    "PARENT_RECIPE.md": "7e205f21245c9039e54308e3c4180f3ebad6c45c915e7bb8eeeb220ffdd9a713",
+    "STATUS.md": "903e2cda0e753cc7ae90f42c5cc6af2d72145099d65a4ff6c5cf796e3a4ef3f5",
+    "active-helper-identities.json": "566a52886f660564e915cb4c822e8b34bf6cc0d9d763aff1cce2828d5de3c765",
+    "active_helpers.txt": "d9fd07b6d64a0c7506f149cd010533ec9b362d92090d91c3ec135841635ba38b",
+    "app_binding_v1.py.patch": "b84bc7c13ef20b7b97670b572ad363bd48a2384a41922003e88960f6656b4a96",
+    "attest_start_v1.py.patch": "9c21496a635e9c2394b8a769d1ea1e1f540e0106d734c9c40b67501ce9e7e006",
+    "controls.json": "d1091ddce1d400aceaf3339c0d117b238b67394652f411a24d7840dc6bdd91e9",
+    "execution.json": "c0e0a2d418b068e5d9d0f5cd4852de244d209afc21c65fd2bac160fafa5b382b",
+    "final-audit.json": "fec5c8d42ecc2eea412e5c7123b8067c855e34cc04599c1494893c45d5884b28",
+    "final-readback.json": "a0148743a949372977886251efd4edc967bbd5571727d55eae65ada5057ac430",
+    "final_audit.py": "4db76a6fa98f354de91a1bd54f48862200efdf739e372488e9dbe22aa5e9adb9",
+    "final_readback.py": "89baa887e06355bcac018dc587f11a075d6275afb8012a4183b4e5b272dc6e26",
+    "harness-failures.json": "6bb293d9ee89d52b99415abb8de3782737963d4299350b198668b919fb3bc600",
+    "helper.py.patch": "dbe9acb2b996fdd4a8c36a2249af639d30d04b4bb14620f4e899c45f2d30edbb",
+    "manifest.json": "bd8ff7c66be0e7869ed6553bb9fce51b2a313ebf5d2452d41a69fc768bdb830d",
+    "observer.py.patch": "e3efefeba2fa0286176810bc4b76ee3bc364f6bfbc0b822b4c6daa54980f5301",
+    "observer_transport.py.patch": "c8c70db3bdc94b87b60e0d369d995eb272c4c63d4f2d7135be39f5e8ceea1acf",
+    "parent_recipe.sh": "5342df59072e6083353151f410e9ce73f3cb3a1cedfa75a263eee8a6181a9168",
+    "parent_recipe.sh.in": "49147d7ad61dcb01e42faf8d42ef56ed7859e422271d1952ff39fb9fa71b2d7e",
+    "policy.py.patch": "16614d0feb7420bb2faa5ab4be31999863555bc1d7b3d22ee80a050b8455e336",
+    "preflight.txt": "315ae7e6d4feafd02ca0d018efafdf9cae43e8848052dfa605c57d6b692743ec",
+    "prepare_v6.py": "73369c9efe1915396960009693c124b87719785901626ed96b9d07c636fe1a4e",
+    "preserve.txt": "762e49e8c10e32cb45156b69503de361d7f258b37cabce8fc5846370c1c27b06",
+    "review-bindings.json": "181e5ca612ebb0887d61f4313b4d74472dee94b64b9da7691c67d23f10915bdc",
+    "run_stage.sh.patch": "22491119e70f227a3a78d3ed6c971f48afc8515e97f05a21fc7ece21a0d04b8a",
+    "supplement.json": "9ca811d5edbc10971f991a50da0dab3feeaac784306dc8a4fe6f447dfbd78a15",
+    "templates/app_binding_v1.py": "780528a021a5b314d67c1ef2a31060e62798782a322c0e88d9fc217d61a20ccf",
+    "templates/attest_start_v1.py": "0140f5817db7c24e2d2e6a4aaacd2caf6c3124fe2cc30718d184eb8ac1fa6131",
+    "templates/helper.py": "0d58b5523890386d0758abe311dbe50d6fcbcea4661f4e31646fa5060b6e1bf9",
+    "templates/observer.py": "2ebe4e3b238413db916d211181bab81fbd2337da063f2b0a8e1badf73c008a36",
+    "templates/observer_transport.py": "1fe4ac37961be1b4429ae4285dfbad3a9a6473e02a466d4b6e543782830ebcd3",
+    "templates/policy.py": "e5e04b367ea0ac150bed38cea021ceb74b3e49f2de5df216a10d1b14efab8535",
+    "templates/run_stage.sh": "b83ca1554fcecbe8ae2d5e9806717c53b5cec6e4cb3c7474ba3a65b9e318f7db",
+    "verify_n1.py": "ed7ab73ac11482da3e20dab22e1eeda0bf20d8313f9f8c35b491700044aa54dd",
+    "verify_n1_supplement.py": "f4eeab3ef8888941c96ad09e40cf590368e8b62ee8915417a7a448f86df71a7e"
+  },
+  "subjectSealedPrivateFiles": {
+    "acl-private.json": "1d5e8511ca39bb0541d7305220f4596d9e1aa2761acf9f8a0f8192e187b6d67d",
+    "active-helper-identities.json": "566a52886f660564e915cb4c822e8b34bf6cc0d9d763aff1cce2828d5de3c765",
+    "app-env-private.json": "b8a03bfcc3cae699156a85a3529832fe0190a8b95d307be266262eeab92b8e12",
+    "app-v1.env": "61ad3c8ae7c2c54f260a37e9bb7a2777d32cf88996a8ee602143ea90b438186f",
+    "app_binding_v1.py": "780528a021a5b314d67c1ef2a31060e62798782a322c0e88d9fc217d61a20ccf",
+    "attest_start_v1.py": "0140f5817db7c24e2d2e6a4aaacd2caf6c3124fe2cc30718d184eb8ac1fa6131",
+    "binding-private.json": "5d2193af1c031a1baaac73d99a93630dc09f35a70bd17f0aea164d3a95d1f0e5",
+    "candidate17.sql": "b129f80e37aa9be71069683acd42df3fb6fdb94078ed0458f20b6e9c5155a41b",
+    "configured-source-private.json": "4a78f9eea9170633c2aed538302076d78001582210a43fabbbadb44887536291",
+    "dependency-binding.json": "75ffc3b6ddf0e6f934f9c0a070f475b648209b1f3c4cad67cf21142ed4571b3d",
+    "envs-private.json": "89a37d08c10447c9c84fd50e99a31e8c6ccc233fc855b4df002bff2cea645ee9",
+    "expected-checks.json": "f183f73a620735ce517b5b3c42084cac094de52d0ef3f454990e854cff131809",
+    "helper.py": "0d58b5523890386d0758abe311dbe50d6fcbcea4661f4e31646fa5060b6e1bf9",
+    "input-bindings-private.json": "b68636360565c66d88176361ebe6014574b9909532bc56c3b98655df97cd7d20",
+    "kong-private.json": "5f8d8d7f6a5c6df2d7ca6a25e7e55cd4276135f1e378c595cc10174d9b656fdd",
+    "migrations.json": "43689889df942cff0046353ef42177c4aa8a77d8c2cba3a0bce0771333c4aa88",
+    "observer.py": "2ebe4e3b238413db916d211181bab81fbd2337da063f2b0a8e1badf73c008a36",
+    "observer_transport.py": "1fe4ac37961be1b4429ae4285dfbad3a9a6473e02a466d4b6e543782830ebcd3",
+    "old-fixed-inputs-before.json": "2c807d1f2ab4617b39d6bfb5579e2ce917be5f8e5d14661dd86e78db506a7cbf",
+    "old-helper-bindings-private.json": "ddea3c4678ff53e782834d0a515891bf4d3c9f33a307fb393145175a88053621",
+    "plan-private.json": "518f919c079bbbb45b3045f0f95d3a5b6b9924555eae32554d98178d9b77a33a",
+    "policy.py": "e5e04b367ea0ac150bed38cea021ceb74b3e49f2de5df216a10d1b14efab8535",
+    "preservation-files.json": "2c807d1f2ab4617b39d6bfb5579e2ce917be5f8e5d14661dd86e78db506a7cbf",
+    "prior-packet-inventories-before.json": "4620bc1d6b633232dfdc98f3565954f52d8bca0bb301b813056791905e54c4d3",
+    "private-bindings.json": "28b2b46919e3a68adade90e65bad6a223c0f23e24d631440b39969a5e303c551",
+    "protected-databases.json": "c889190854f6e14fda3b0ceab60643b745a5f7e257a3a9ab6b903d49501db657",
+    "run_stage.sh": "b83ca1554fcecbe8ae2d5e9806717c53b5cec6e4cb3c7474ba3a65b9e318f7db",
+    "source-binding-private.json": "830556658900e5cf65645114a8643663951a689d0ac98c6d86fee4f2b8b4f084",
+    "storage-binding-private.json": "9390429bd3b3c616fddfcf473776488da817b9b1127e8d3b41cdb41ba6bf539a",
+    "template-binding.json": "e95484678e39eae50f1e6f0ea3575aea08a8c698b7a1b059ec877525e7603178",
+    "upgrade-expectations.json": "de05023d891fe804161d089fc57adaba3b5d29cd0dd3defdca5718682e94b9f8",
+    "v4-full-inventory-before.json": "ad9ade8701051f0ba35243c19faacdac5bdefafc1b91ef310a07480e9cb93c88",
+    "v4-full-inventory-binding.json": "a5facbd189f786ab706cdd67441a4754bf0656a7a267c59aaf7268c0f26e5a37",
+    "v5-packet-inventory-before.json": "44f5265ee34b8c43c8e3f3267e0e6d93787dfafb39d2154ba83ad112f0f4dd5e"
+  },
+  "manifestSHA256": "bd8ff7c66be0e7869ed6553bb9fce51b2a313ebf5d2452d41a69fc768bdb830d",
+  "operationFilesSHA256": "1bd2e70cc13cc1d9af8944ef96d4856da162db6b5dbc42d423a62340aaa73e3c",
+  "parentRecipeSHA256": "5342df59072e6083353151f410e9ce73f3cb3a1cedfa75a263eee8a6181a9168",
+  "mechanicalModuleExclusions": {
+    "helper.py": [
+      "preserve",
+      "preflight",
+      "active_helper_identities",
+      "require_active_helper"
+    ],
+    "policy.py": [],
+    "app_binding_v1.py": [],
+    "attest_start_v1.py": [],
+    "observer.py": [],
+    "observer_transport.py": [],
+    "run_stage.sh": []
+  },
+  "inheritedByteIdenticalInputs": [
+    "acl-private.json",
+    "app-env-private.json",
+    "app-v1.env",
+    "candidate17.sql",
+    "configured-source-private.json",
+    "dependency-binding.json",
+    "expected-checks.json",
+    "input-bindings-private.json",
+    "migrations.json",
+    "old-helper-bindings-private.json",
+    "preservation-files.json",
+    "protected-databases.json",
+    "source-binding-private.json",
+    "storage-binding-private.json",
+    "upgrade-expectations.json",
+    "v4-full-inventory-before.json",
+    "v4-full-inventory-binding.json"
+  ],
+  "priorPacketEntries": {
+    "/home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v5": 92,
+    "/home/nathaniel/.t3/worktrees/openplan/t3-9eeec4ad/docs/reviews/2026-10-15-portfolio-skip-preview-v5-corrections": 38,
+    "/home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v4": 42,
+    "/home/nathaniel/.t3/worktrees/openplan/t3-9eeec4ad/docs/reviews/2026-10-15-portfolio-skip-preview-v4-preparation": 30
+  },
+  "fixedInputs": 280,
+  "sealedCompleteInventory": {
+    ".": {
+      "kind": "directory",
+      "mode": 448
+    },
+    "acl-private.json": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 614,
+      "sha256": "1d5e8511ca39bb0541d7305220f4596d9e1aa2761acf9f8a0f8192e187b6d67d"
+    },
+    "active-helper-identities.json": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 620,
+      "sha256": "566a52886f660564e915cb4c822e8b34bf6cc0d9d763aff1cce2828d5de3c765"
+    },
+    "app-env-private.json": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 1020,
+      "sha256": "b8a03bfcc3cae699156a85a3529832fe0190a8b95d307be266262eeab92b8e12"
+    },
+    "app-v1.env": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 957,
+      "sha256": "61ad3c8ae7c2c54f260a37e9bb7a2777d32cf88996a8ee602143ea90b438186f"
+    },
+    "app_binding_v1.py": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 19146,
+      "sha256": "780528a021a5b314d67c1ef2a31060e62798782a322c0e88d9fc217d61a20ccf"
+    },
+    "attest_start_v1.py": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 7148,
+      "sha256": "0140f5817db7c24e2d2e6a4aaacd2caf6c3124fe2cc30718d184eb8ac1fa6131"
+    },
+    "binding-private.json": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 956,
+      "sha256": "5d2193af1c031a1baaac73d99a93630dc09f35a70bd17f0aea164d3a95d1f0e5"
+    },
+    "cache": {
+      "mode": 448,
+      "kind": "directory"
+    },
+    "candidate17.sql": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 15938,
+      "sha256": "b129f80e37aa9be71069683acd42df3fb6fdb94078ed0458f20b6e9c5155a41b"
+    },
+    "configured-source-private.json": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 506,
+      "sha256": "4a78f9eea9170633c2aed538302076d78001582210a43fabbbadb44887536291"
+    },
+    "controls": {
+      "mode": 448,
+      "kind": "directory"
+    },
+    "controls/final-audit-failed-01-output.txt": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 1320,
+      "sha256": "6c7f3f02952e60966718b67a04de714c9052d90bb921103e41a061415444f272"
+    },
+    "controls/final-audit-failed-01.json": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 534,
+      "sha256": "645e7aad51ef0b48104d5d508ee800731923a0af2feaec0223e7f46a65948be9"
+    },
+    "controls/final-audit-failed-01.py": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 10174,
+      "sha256": "8e8b68b41ec2a512399be20626890be2aa721001d4e13d09f3a95405f1a91d90"
+    },
+    "controls/full-final-01": {
+      "mode": 448,
+      "kind": "directory"
+    },
+    "controls/full-final-01/protected-runtime-before.json": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 3,
+      "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356"
+    },
+    "controls/n1-controls-01.json": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 10074,
+      "sha256": "d1091ddce1d400aceaf3339c0d117b238b67394652f411a24d7840dc6bdd91e9"
+    },
+    "controls/n1-supplement-01.json": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 2252,
+      "sha256": "9ca811d5edbc10971f991a50da0dab3feeaac784306dc8a4fe6f447dfbd78a15"
+    },
+    "controls/preflight-01": {
+      "mode": 448,
+      "kind": "directory"
+    },
+    "controls/supplement-01": {
+      "mode": 448,
+      "kind": "directory"
+    },
+    "controls/supplement-01/protected-runtime-before.json": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 3,
+      "sha256": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356"
+    },
+    "dependency-binding.json": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 587,
+      "sha256": "75ffc3b6ddf0e6f934f9c0a070f475b648209b1f3c4cad67cf21142ed4571b3d"
+    },
+    "envs-private.json": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 3400,
+      "sha256": "89a37d08c10447c9c84fd50e99a31e8c6ccc233fc855b4df002bff2cea645ee9"
+    },
+    "execution": {
+      "mode": 448,
+      "kind": "directory"
+    },
+    "expected-checks.json": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 830,
+      "sha256": "f183f73a620735ce517b5b3c42084cac094de52d0ef3f454990e854cff131809"
+    },
+    "final-audit-02.json": {
+      "mode": 436,
+      "kind": "file",
+      "bytes": 2748,
+      "sha256": "fec5c8d42ecc2eea412e5c7123b8067c855e34cc04599c1494893c45d5884b28"
+    },
+    "final-audit-03.json": {
+      "mode": 436,
+      "kind": "file",
+      "bytes": 2748,
+      "sha256": "fec5c8d42ecc2eea412e5c7123b8067c855e34cc04599c1494893c45d5884b28"
+    },
+    "final-readback-01.json": {
+      "mode": 436,
+      "kind": "file",
+      "bytes": 528,
+      "sha256": "a0148743a949372977886251efd4edc967bbd5571727d55eae65ada5057ac430"
+    },
+    "helper.py": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 35906,
+      "sha256": "0d58b5523890386d0758abe311dbe50d6fcbcea4661f4e31646fa5060b6e1bf9"
+    },
+    "home": {
+      "mode": 448,
+      "kind": "directory"
+    },
+    "input-bindings-private.json": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 1200,
+      "sha256": "b68636360565c66d88176361ebe6014574b9909532bc56c3b98655df97cd7d20"
+    },
+    "kong-private.json": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 3286,
+      "sha256": "5f8d8d7f6a5c6df2d7ca6a25e7e55cd4276135f1e378c595cc10174d9b656fdd"
+    },
+    "migrations.json": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 62937,
+      "sha256": "43689889df942cff0046353ef42177c4aa8a77d8c2cba3a0bce0771333c4aa88"
+    },
+    "npm-cache": {
+      "mode": 448,
+      "kind": "directory"
+    },
+    "observer-home": {
+      "mode": 448,
+      "kind": "directory"
+    },
+    "observer-receipts": {
+      "mode": 448,
+      "kind": "directory"
+    },
+    "observer.py": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 5089,
+      "sha256": "2ebe4e3b238413db916d211181bab81fbd2337da063f2b0a8e1badf73c008a36"
+    },
+    "observer_transport.py": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 4953,
+      "sha256": "1fe4ac37961be1b4429ae4285dfbad3a9a6473e02a466d4b6e543782830ebcd3"
+    },
+    "old-fixed-inputs-after-audit-01.json": {
+      "mode": 436,
+      "kind": "file",
+      "bytes": 68491,
+      "sha256": "2c807d1f2ab4617b39d6bfb5579e2ce917be5f8e5d14661dd86e78db506a7cbf"
+    },
+    "old-fixed-inputs-after-audit-02.json": {
+      "mode": 436,
+      "kind": "file",
+      "bytes": 68491,
+      "sha256": "2c807d1f2ab4617b39d6bfb5579e2ce917be5f8e5d14661dd86e78db506a7cbf"
+    },
+    "old-fixed-inputs-after-audit-03.json": {
+      "mode": 436,
+      "kind": "file",
+      "bytes": 68491,
+      "sha256": "2c807d1f2ab4617b39d6bfb5579e2ce917be5f8e5d14661dd86e78db506a7cbf"
+    },
+    "old-fixed-inputs-before.json": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 68491,
+      "sha256": "2c807d1f2ab4617b39d6bfb5579e2ce917be5f8e5d14661dd86e78db506a7cbf"
+    },
+    "old-helper-bindings-private.json": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 321,
+      "sha256": "ddea3c4678ff53e782834d0a515891bf4d3c9f33a307fb393145175a88053621"
+    },
+    "operation-files.sha256": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 5760,
+      "sha256": "1bd2e70cc13cc1d9af8944ef96d4856da162db6b5dbc42d423a62340aaa73e3c"
+    },
+    "parent_recipe.sh": {
+      "mode": 448,
+      "kind": "file",
+      "bytes": 3315,
+      "sha256": "5342df59072e6083353151f410e9ce73f3cb3a1cedfa75a263eee8a6181a9168"
+    },
+    "plan-private.json": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 1614,
+      "sha256": "518f919c079bbbb45b3045f0f95d3a5b6b9924555eae32554d98178d9b77a33a"
+    },
+    "policy.py": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 11401,
+      "sha256": "e5e04b367ea0ac150bed38cea021ceb74b3e49f2de5df216a10d1b14efab8535"
+    },
+    "preparation.json": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 4041,
+      "sha256": "bd8ff7c66be0e7869ed6553bb9fce51b2a313ebf5d2452d41a69fc768bdb830d"
+    },
+    "preservation-files.json": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 68491,
+      "sha256": "2c807d1f2ab4617b39d6bfb5579e2ce917be5f8e5d14661dd86e78db506a7cbf"
+    },
+    "prior-packet-inventories-after-audit-01.json": {
+      "mode": 436,
+      "kind": "file",
+      "bytes": 35496,
+      "sha256": "4620bc1d6b633232dfdc98f3565954f52d8bca0bb301b813056791905e54c4d3"
+    },
+    "prior-packet-inventories-after-audit-02.json": {
+      "mode": 436,
+      "kind": "file",
+      "bytes": 35496,
+      "sha256": "4620bc1d6b633232dfdc98f3565954f52d8bca0bb301b813056791905e54c4d3"
+    },
+    "prior-packet-inventories-after-audit-03.json": {
+      "mode": 436,
+      "kind": "file",
+      "bytes": 35496,
+      "sha256": "4620bc1d6b633232dfdc98f3565954f52d8bca0bb301b813056791905e54c4d3"
+    },
+    "prior-packet-inventories-after-preparation.json": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 35496,
+      "sha256": "4620bc1d6b633232dfdc98f3565954f52d8bca0bb301b813056791905e54c4d3"
+    },
+    "prior-packet-inventories-before.json": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 35496,
+      "sha256": "4620bc1d6b633232dfdc98f3565954f52d8bca0bb301b813056791905e54c4d3"
+    },
+    "private-bindings.json": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 2258,
+      "sha256": "28b2b46919e3a68adade90e65bad6a223c0f23e24d631440b39969a5e303c551"
+    },
+    "protected-databases.json": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 121,
+      "sha256": "c889190854f6e14fda3b0ceab60643b745a5f7e257a3a9ab6b903d49501db657"
+    },
+    "run_stage.sh": {
+      "mode": 448,
+      "kind": "file",
+      "bytes": 2440,
+      "sha256": "b83ca1554fcecbe8ae2d5e9806717c53b5cec6e4cb3c7474ba3a65b9e318f7db"
+    },
+    "source-binding-private.json": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 63224,
+      "sha256": "830556658900e5cf65645114a8643663951a689d0ac98c6d86fee4f2b8b4f084"
+    },
+    "storage-binding-private.json": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 3785,
+      "sha256": "9390429bd3b3c616fddfcf473776488da817b9b1127e8d3b41cdb41ba6bf539a"
+    },
+    "template-binding.json": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 169,
+      "sha256": "e95484678e39eae50f1e6f0ea3575aea08a8c698b7a1b059ec877525e7603178"
+    },
+    "tmp": {
+      "mode": 448,
+      "kind": "directory"
+    },
+    "upgrade-expectations.json": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 38605,
+      "sha256": "de05023d891fe804161d089fc57adaba3b5d29cd0dd3defdca5718682e94b9f8"
+    },
+    "v4-full-inventory-before.json": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 11806856,
+      "sha256": "ad9ade8701051f0ba35243c19faacdac5bdefafc1b91ef310a07480e9cb93c88"
+    },
+    "v4-full-inventory-binding.json": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 83,
+      "sha256": "a5facbd189f786ab706cdd67441a4754bf0656a7a267c59aaf7268c0f26e5a37"
+    },
+    "v5-packet-inventory-before.json": {
+      "mode": 384,
+      "kind": "file",
+      "bytes": 23082,
+      "sha256": "44f5265ee34b8c43c8e3f3267e0e6d93787dfafb39d2154ba83ad112f0f4dd5e"
+    }
+  },
+  "APP49Unchanged": true,
+  "dumpPinExact": true,
+  "operatingStages": 0,
+  "phase": "after",
+  "blindCategories": [
+    "File custody does not prove runtime state, command success, continuous preservation or hostile-host security.",
+    "AST comparisons exclude the explicitly reviewed N1 functions and normalize fixed root/name/hash strings.",
+    "The historical five-root inventory is not reacquired."
+  ],
+  "completeSubjectBeforeAfterExact": true
+}

@@ -1,0 +1,32 @@
+{
+  "11": {
+    "checkedAt": "2026-10-14T21:55:36.813903+00:00",
+    "project": "lolckycpdjsgeejsmuzl",
+    "version": "20261017000011",
+    "historyCount": 415,
+    "exactHistoryPreserved": true,
+    "sourceSha256": "5d388c7dfbed8bab6e58195e1ec5f6dbad8aa36cfde31294c0d286a1e1d0cd2e",
+    "bodySha256": "6ab4b8f9d78220559bbc058d9655dc1b8049606a9482b167b5f6b1b928f33013",
+    "triggerExact": true,
+    "invoker": true,
+    "serviceOnlyExecute": true,
+    "boundary": "Installed metadata/body/history readback. Native controlled behavior remains separate; no default or v1 acceptance."
+  },
+  "12": {
+    "checkedAt": "2026-10-14T22:00:49.114241+00:00",
+    "project": "lolckycpdjsgeejsmuzl",
+    "version": "20261017000012",
+    "historyCount": 416,
+    "exactHistoryPreserved": true,
+    "sourceSha256": "7005dcfb97fa97f8599887fff37f3f7be931e42fd22873da74a9196a094ab375",
+    "bodySha256": "ada63e6966587b00ee038121531e8267ca896ae50bd023bf5c2d1292e83e710a",
+    "invoker": true,
+    "searchPath": [
+      "pg_catalog"
+    ],
+    "serviceOnlyExecute": true,
+    "readbackControls": "3positive/5faults",
+    "liveRefusals": 4,
+    "boundary": "Exact metadata/body/history and live unavailable-request/member execute refusals. Authorized native/recovery behavior is separate; no default or v1 acceptance."
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "baseCommit": "b4dbcac21a58f61bd480ccade4dec69383dacbc7",
+  "branch": "t3/synthesis-journal-umask-fixture",
+  "sha256": {
+    "openplan/src/test/engagement-synthesis-generation-worker.test.ts": "a7e6a23ec6038cd53f7bc1d4e77bd16c62dd6d74b654d23c9c17c806008c67c2",
+    "openplan/src/lib/engagement/synthesis-generation-worker.ts": "92544532a249a470b69d496b34f007360540999122f30c79cfd9394e035651f2",
+    "openplan/src/test/fixtures/engagement/synthesis-worker.ts": "c59a83ff8e80c7cf6b5f0ba755a572f9045019ed5e0bc756ae40a502aed5a708",
+    "workers/planner_agent_connector/connector-client.mjs": "6a26291c3ed01de49e46096024e3caf753e73532659556b4cab3b735e44bf4ce",
+    "workers/planner_agent_connector/connector-worker.mjs": "691a7a5892a32d4267fffa8474e2826afc98e2990742dc8e6bc38d376cad6436",
+    "openplan/src/lib/engagement/synthesis-generation-api.ts": "0c596872d93e64cc88be13ca30682c176be695ba25d4d264e4c188f9b79beb46",
+    "openplan/src/test/setup.ts": "70d7fbd3e6d08caa4ca508bb6bdca213deb4a58da22a840ff646a5862c05067a",
+    "openplan/package-lock.json": "40c30e5b8ae8aac104f242af61298b9e5a3e85fe7b004fee3c44d945c7cfe965",
+    "openplan/vitest.config.ts": "2af1a9ecbe50bde256b20197cfbff00f34cfc57534a86234c83ee55425cb8da5",
+    "docs/reviews/2026-10-15-synthesis-journal-umask-fixture/check.py": "16f1704491835c5c693d63d1fa8f1751a98365b2269de633161de2b28a796c82",
+    "docs/reviews/2026-10-15-synthesis-journal-umask-fixture/vitest.config.mts": "a098ebb633f3ae6b295857d11dc886e779be9724af2c1e29211eacf731b8cfa9"
+  },
+  "baseTestSha256": "095f09817becbe7d642e93cb6412da3b968048720d6cfdf61194995eca1ed646",
+  "parentReadOnlyCheck": {
+    "head": "b4dbcac21a58f61bd480ccade4dec69383dacbc7",
+    "sha256": {
+      "openplan/src/test/engagement-synthesis-generation-worker.test.ts": "095f09817becbe7d642e93cb6412da3b968048720d6cfdf61194995eca1ed646",
+      "openplan/src/lib/engagement/synthesis-generation-worker.ts": "92544532a249a470b69d496b34f007360540999122f30c79cfd9394e035651f2",
+      "openplan/src/test/fixtures/engagement/synthesis-worker.ts": "c59a83ff8e80c7cf6b5f0ba755a572f9045019ed5e0bc756ae40a502aed5a708",
+      "workers/planner_agent_connector/connector-client.mjs": "6a26291c3ed01de49e46096024e3caf753e73532659556b4cab3b735e44bf4ce",
+      "workers/planner_agent_connector/connector-worker.mjs": "691a7a5892a32d4267fffa8474e2826afc98e2990742dc8e6bc38d376cad6436"
+    }
+  }
+}

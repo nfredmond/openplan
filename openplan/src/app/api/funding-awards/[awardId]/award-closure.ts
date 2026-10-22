@@ -7,6 +7,7 @@ import {
 } from "@/lib/invoicing/invoice-records";
 import { FUNDING_AWARD_CLOSED_SPENDING_STATUS } from "@/lib/programs/catalog";
 import { rebuildProjectRtpPosture } from "@/lib/projects/rtp-posture-writeback";
+import { todayInWorkspace } from "@/lib/time/workspace-calendar";
 
 /**
  * ONE DEFINITION OF WHAT CLOSING AN AWARD MEANS, shared by the two routes that
@@ -248,8 +249,8 @@ export async function recordEarnedFundingAwardCloseout({
   audit: FundingAwardAuditLogger;
   now?: () => Date;
 }): Promise<EarnedCloseoutResult> {
-  const closedAtIso = now().toISOString();
-  const closedAtDate = closedAtIso.slice(0, 10);
+  const closedAt = now();
+  const closedAtIso = closedAt.toISOString();
 
   const updateResult = await supabase
     .from("funding_awards")
@@ -322,6 +323,12 @@ export async function recordEarnedFundingAwardCloseout({
       closedAt: closedAtIso,
     });
   } else {
+    // The milestone is dated on the workspace's calendar day, not the server's.
+    const calendar = await todayInWorkspace(supabase, award.workspace_id, closedAt);
+    if (calendar.readError) {
+      audit.warn("funding_award_closeout_calendar_unreadable", { awardId: award.id, message: calendar.readError });
+    }
+    const closedAtDate = calendar.today;
     const { error: milestoneError } = await supabase.from("project_milestones").insert({
       project_id: award.project_id,
       funding_award_id: award.id,

@@ -1,0 +1,226 @@
+{
+  "numTotalTestSuites": 6,
+  "numPassedTestSuites": 6,
+  "numFailedTestSuites": 0,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 14,
+  "numPassedTests": 14,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1791757554146,
+  "success": true,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "the canonical development roadmap"
+          ],
+          "fullName": "the canonical development roadmap has exactly one active marker and its mechanical references are current",
+          "status": "passed",
+          "title": "has exactly one active marker and its mechanical references are current",
+          "duration": 95.30429499999991,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1791757557247,
+      "endTime": 1791757557342.3042,
+      "status": "passed",
+      "message": "",
+      "name": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-20261009/openplan/src/test/active-roadmap-guard.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "operator docs: mechanical cross-references resolve"
+          ],
+          "fullName": "operator docs: mechanical cross-references resolve every `npm run <script>` names a script that exists",
+          "status": "passed",
+          "title": "every `npm run <script>` names a script that exists",
+          "duration": 2.024285000000077,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "operator docs: mechanical cross-references resolve"
+          ],
+          "fullName": "operator docs: mechanical cross-references resolve every backticked repo path with a directory separator resolves",
+          "status": "passed",
+          "title": "every backticked repo path with a directory separator resolves",
+          "duration": 0.9172529999999597,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "operator docs: mechanical cross-references resolve"
+          ],
+          "fullName": "operator docs: mechanical cross-references resolve every app env var the docs name appears in .env.example (or is excused by name)",
+          "status": "passed",
+          "title": "every app env var the docs name appears in .env.example (or is excused by name)",
+          "duration": 1.1521160000000918,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "operator docs: mechanical cross-references resolve"
+          ],
+          "fullName": "operator docs: mechanical cross-references resolve every relative markdown link resolves",
+          "status": "passed",
+          "title": "every relative markdown link resolves",
+          "duration": 3.018342999999959,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "operator docs: mechanical cross-references resolve"
+          ],
+          "fullName": "operator docs: mechanical cross-references resolve the PR template's constraint pointer leads to real definitions",
+          "status": "passed",
+          "title": "the PR template's constraint pointer leads to real definitions",
+          "duration": 0.4529459999999972,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "operator docs: mechanical cross-references resolve"
+          ],
+          "fullName": "operator docs: mechanical cross-references resolve every excused env var is still absent from .env.example (ratchet)",
+          "status": "passed",
+          "title": "every excused env var is still absent from .env.example (ratchet)",
+          "duration": 0.21737100000007104,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1791757557952,
+      "endTime": 1791757557960.453,
+      "status": "passed",
+      "message": "",
+      "name": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-20261009/openplan/src/test/docs-mechanical-cross-references.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "the recurring product-direction review"
+          ],
+          "fullName": "the recurring product-direction review checks that the review and matrix preserve the v1 scope",
+          "status": "passed",
+          "title": "checks that the review and matrix preserve the v1 scope",
+          "duration": 297.043914,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "the recurring product-direction review"
+          ],
+          "fullName": "the recurring product-direction review checks the machine-readable proof registry and frozen validation protocol",
+          "status": "passed",
+          "title": "checks the machine-readable proof registry and frozen validation protocol",
+          "duration": 263.167643,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "the recurring product-direction review"
+          ],
+          "fullName": "the recurring product-direction review keeps overdue strategy reviews advisory without changing their recorded dates",
+          "status": "passed",
+          "title": "keeps overdue strategy reviews advisory without changing their recorded dates",
+          "duration": 268.5881929999998,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "the recurring product-direction review"
+          ],
+          "fullName": "the recurring product-direction review still rejects a frozen-artifact hash mismatch",
+          "status": "passed",
+          "title": "still rejects a frozen-artifact hash mismatch",
+          "duration": 34.13728399999991,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "the recurring product-direction review"
+          ],
+          "fullName": "the recurring product-direction review handles a strategy review recorded for v0.43.0 without rewriting it",
+          "status": "passed",
+          "title": "handles a strategy review recorded for v0.43.0 without rewriting it",
+          "duration": 259.90132199999994,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "the recurring product-direction review"
+          ],
+          "fullName": "the recurring product-direction review handles a strategy review recorded for v99.0.0 without rewriting it",
+          "status": "passed",
+          "title": "handles a strategy review recorded for v99.0.0 without rewriting it",
+          "duration": 34.70235200000002,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "the recurring product-direction review"
+          ],
+          "fullName": "the recurring product-direction review builds a fresh-context packet from the live repository state",
+          "status": "passed",
+          "title": "builds a fresh-context packet from the live repository state",
+          "duration": 306.2277039999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1791757555165,
+      "endTime": 1791757556629.2278,
+      "status": "passed",
+      "message": "",
+      "name": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-20261009/openplan/src/test/product-direction-review-guard.test.ts"
+    }
+  ]
+}

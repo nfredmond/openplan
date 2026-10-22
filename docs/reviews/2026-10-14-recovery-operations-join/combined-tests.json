@@ -1,0 +1,14 @@
+{
+  "application": {
+    "success": true,
+    "numPassedTests": 218,
+    "numFailedTests": 0,
+    "numPendingTests": 0
+  },
+  "selectedWorker": {
+    "cases": 95,
+    "seconds": 6.821,
+    "failures": 0
+  },
+  "limits": "Local joined-tree checks. No hosted worker, browser, scientific or V1 acceptance."
+}

@@ -11,17 +11,26 @@
  * salt, so an attacker with a dumped table cannot amortize a dictionary attack
  * across rows and pays the full scrypt cost per guess per row. A high-entropy
  * secret (e.g. `openssl rand -hex 32`) makes that attack unpayable; SELF_HOSTING
- * instructs exactly that. The other cost is honest and documented: rotating
- * OPENPLAN_INTEGRATION_KEY_SECRET invalidates stored workspace keys (they fail
- * decryption and fall back to the deployment env key), so rotation means teams
- * re-enter their keys.
+ * instructs exactly that. During rotation, an optional previous secret keeps
+ * retained ciphertext readable. New writes use the primary secret. Reads do
+ * not rewrite ciphertext or change the fingerprints of queued credentials.
  *
  * Ciphertext formats:
- *   * `v2:<salt b64>:<iv b64>:<auth tag b64>:<ciphertext b64>` — current.
+ *   * `v3:<salt b64>:<iv b64>:<auth tag b64>:<ciphertext b64>`: current for
+ *     workspace keys. The v2 key derivation, plus the workspace ID as GCM
+ *     additional authenticated data, so a row copied to another workspace
+ *     fails decryption. Written when the caller names the workspace.
+ *   * `v2:<salt b64>:<iv b64>:<auth tag b64>:<ciphertext b64>`: workspace
+ *     keys stored before v3, and sealed credential envelopes, which carry
+ *     their own workspace identity inside the encrypted payload.
  *     Key = scrypt(secret, salt, 32) with a fresh 16-byte salt per encryption.
- *   * `v1:<iv b64>:<auth tag b64>:<ciphertext b64>` — legacy rows written
+ *   * `v1:<iv b64>:<auth tag b64>:<ciphertext b64>`: legacy rows written
  *     before the salted KDF. Key = sha256(secret), unsalted. Still decryptable
- *     so existing stored keys survive the upgrade; every new write is v2.
+ *     so existing stored keys survive the upgrade.
+ *
+ * v1 and v2 rows stay readable and are not rewritten on read: the
+ * translation queue fingerprints the stored ciphertext, so rewriting it would
+ * strand queued requests. A v2 row becomes v3 when its key is next saved.
  */
 
 import {
@@ -32,6 +41,7 @@ import {
   scryptSync,
 } from "node:crypto";
 
+const V3_PREFIX = "v3";
 const V2_PREFIX = "v2";
 const LEGACY_V1_PREFIX = "v1";
 const ALGORITHM = "aes-256-gcm";
@@ -45,8 +55,8 @@ const SCRYPT_OPTIONS = { N: 2 ** 14, r: 8, p: 1, maxmem: 64 * 1024 * 1024 } as c
 /** Minimum operator-secret length; shorter secrets are refused, not padded. */
 export const INTEGRATION_KEY_SECRET_MIN_LENGTH = 16;
 
-function configuredSecret(): string | null {
-  const secret = process.env.OPENPLAN_INTEGRATION_KEY_SECRET?.trim();
+function configuredSecret(value = process.env.OPENPLAN_INTEGRATION_KEY_SECRET): string | null {
+  const secret = value?.trim();
   if (!secret || secret.length < INTEGRATION_KEY_SECRET_MIN_LENGTH) return null;
   return secret;
 }
@@ -65,31 +75,41 @@ function derivedKeyV2(secret: string, salt: Buffer): Buffer {
   return scryptSync(secret, salt, AES_KEY_BYTES, SCRYPT_OPTIONS);
 }
 
+/** The workspace a ciphertext belongs to, for the v3 format. */
+export type IntegrationKeyBinding = { workspaceId: string };
+
+/** v3 additional authenticated data: the workspace the key belongs to. */
+function workspaceAad(binding: IntegrationKeyBinding): Buffer {
+  return Buffer.from(`openplan:workspace-integration-key:${binding.workspaceId}`, "utf8");
+}
+
 /** Legacy v1 key derivation: unsalted sha256. Read path only — never written. */
 function derivedKeyV1(secret: string): Buffer {
   return createHash("sha256").update(secret, "utf8").digest();
 }
 
 /**
- * Encrypt one provider key (always the v2 format). Throws when the deployment
- * has no usable secret — callers must check
- * {@link integrationKeyEncryptionAvailable} first and refuse the save with
- * honest copy instead of reaching this throw.
+ * Encrypt one provider key: v3, bound to the workspace, when the caller names
+ * it; v2 otherwise. Throws when the deployment has no usable secret. Callers
+ * must check {@link integrationKeyEncryptionAvailable} first and refuse the
+ * save with honest copy instead of reaching this throw.
  */
-export function encryptIntegrationKey(plaintext: string): string {
+export function encryptIntegrationKey(plaintext: string, binding?: IntegrationKeyBinding): string {
   const secret = configuredSecret();
   if (!secret) {
     throw new Error(
       "OPENPLAN_INTEGRATION_KEY_SECRET is not configured (min 16 chars); per-workspace keys cannot be stored on this deployment"
     );
   }
+  if (binding && !binding.workspaceId) throw new Error("A workspace-bound key needs a workspace ID");
   const salt = randomBytes(SALT_BYTES);
   const iv = randomBytes(IV_BYTES);
   const cipher = createCipheriv(ALGORITHM, derivedKeyV2(secret, salt), iv);
+  if (binding) cipher.setAAD(workspaceAad(binding));
   const ciphertext = Buffer.concat([cipher.update(plaintext, "utf8"), cipher.final()]);
   const tag = cipher.getAuthTag();
   return [
-    V2_PREFIX,
+    binding ? V3_PREFIX : V2_PREFIX,
     salt.toString("base64"),
     iv.toString("base64"),
     tag.toString("base64"),
@@ -98,21 +118,37 @@ export function encryptIntegrationKey(plaintext: string): string {
 }
 
 /**
- * Decrypt a stored ciphertext — v2 (salted scrypt) or legacy v1 (unsalted
- * sha256). Returns null (never throws) on any failure — missing secret,
- * rotated secret, tampered or malformed ciphertext. A null simply means "no
- * workspace key"; callers fall back to the deployment env.
+ * Decrypt a stored ciphertext: v3 (workspace-bound), v2 (salted scrypt) or
+ * legacy v1 (unsalted sha256). A v3 ciphertext decrypts only under the
+ * workspace it was written for. Returns null (never throws) on any failure:
+ * missing primary secret, unknown secret, wrong or missing workspace, tampered
+ * or malformed ciphertext. Existing callers decide whether a null refuses the
+ * task or permits an environment key. This function never selects a payer.
  */
-export function decryptIntegrationKey(stored: string): string | null {
+export function decryptIntegrationKey(stored: string, binding?: IntegrationKeyBinding): string | null {
   const secret = configuredSecret();
   if (!secret) return null;
+  const current = decryptWithSecret(stored, secret, binding);
+  if (current !== null) return current;
+  const previous = configuredSecret(process.env.OPENPLAN_INTEGRATION_KEY_PREVIOUS_SECRET ?? "");
+  if (!previous || previous === secret) return null;
+  return decryptWithSecret(stored, previous, binding);
+}
+
+/** Authenticate each candidate independently; failed authentication releases no plaintext. */
+function decryptWithSecret(stored: string, secret: string, binding?: IntegrationKeyBinding): string | null {
   const parts = stored.split(":");
   try {
     let key: Buffer;
     let iv: Buffer;
     let tag: Buffer;
     let ciphertext: Buffer;
-    if (parts.length === 5 && parts[0] === V2_PREFIX) {
+    let aad: Buffer | null = null;
+    if (parts.length === 5 && (parts[0] === V3_PREFIX || parts[0] === V2_PREFIX)) {
+      if (parts[0] === V3_PREFIX) {
+        if (!binding?.workspaceId) return null;
+        aad = workspaceAad(binding);
+      }
       const salt = Buffer.from(parts[1], "base64");
       if (salt.length !== SALT_BYTES) return null;
       iv = Buffer.from(parts[2], "base64");
@@ -132,6 +168,7 @@ export function decryptIntegrationKey(stored: string): string | null {
     // authentication.
     if (iv.length !== IV_BYTES || tag.length !== 16) return null;
     const decipher = createDecipheriv(ALGORITHM, key, iv);
+    if (aad) decipher.setAAD(aad);
     decipher.setAuthTag(tag);
     return Buffer.concat([decipher.update(ciphertext), decipher.final()]).toString("utf8");
   } catch {

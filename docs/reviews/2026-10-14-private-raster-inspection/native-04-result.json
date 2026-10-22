@@ -1,0 +1,84 @@
+{
+  "selectedMigrations": 409,
+  "firstOperationActualReads": 8,
+  "savedOperationActualReads": 7,
+  "sourceReceiptSha256": "0da77a518733c40957ee0382ebffeae8df636e73d84705c2d1a82b7dbaecdd84",
+  "report": {
+    "callbackPermission": false,
+    "format": "openplan.odm-private-raster-inspection.v1",
+    "inspectionSha256": "4e5ea22a2d401c85ab21873cda9071fb31fd8482d0410981795b324bcc1c5cdf",
+    "mapPlacementVerification": "unassessed",
+    "processingQualityVerification": "unassessed",
+    "products": [
+      {
+        "bytes": 82774,
+        "filename": "orthophoto.tif",
+        "kind": "orthomosaic",
+        "nativeTags": {
+          "declaredCrs": "EPSG:32615",
+          "height": 165,
+          "nativeBounds": [
+            576652.7054028471,
+            5188121.633178137,
+            576762.8661630218,
+            5188204.1289327545
+          ],
+          "nativeCellSpacing": [
+            0.4984649781657096,
+            0.4999742704076749
+          ],
+          "unitInterpretation": "declared_native_coordinates",
+          "width": 221
+        },
+        "reason": null,
+        "sha256": "5291421186f9ae1bf3f8d77ec4621ed044d30fd2e8f4c99c34727132e166b12b",
+        "status": "read"
+      },
+      {
+        "bytes": null,
+        "filename": "dsm.tif",
+        "kind": "dsm",
+        "nativeTags": null,
+        "reason": "absent_from_original_archive",
+        "sha256": null,
+        "status": "unavailable"
+      },
+      {
+        "bytes": null,
+        "filename": "dtm.tif",
+        "kind": "dtm",
+        "nativeTags": null,
+        "reason": "absent_from_original_archive",
+        "sha256": null,
+        "status": "unavailable"
+      },
+      {
+        "bytes": 31623,
+        "filename": "georeferenced_model.laz",
+        "kind": "point_cloud",
+        "nativeTags": null,
+        "reason": "point_cloud_reader_not_configured",
+        "sha256": "5e29bd70f8a0e5877e1bc88ae344cec4b077e07d0206bbb89967e9713534dc6d",
+        "status": "unassessed"
+      }
+    ],
+    "publicationPermission": false,
+    "readerSha256": "9a3dfcc47b6f4a1c204ec432523adca6e9dd4ff1f5ddd9c937b99decd58f6a87",
+    "scope": "private_declared_native_raster_metadata",
+    "sourceReceiptSha256": "0da77a518733c40957ee0382ebffeae8df636e73d84705c2d1a82b7dbaecdd84"
+  },
+  "gdalNativeSpacing": [
+    0.49846497795078903,
+    0.4999742694199085
+  ],
+  "computationalNativeUnitAllowance": 1e-07,
+  "savedReplayExact": true,
+  "actualChildExit": 44,
+  "interruptedReplayExact": true,
+  "postReadRevocationRefused": true,
+  "revokedReportRetained": true,
+  "scope": "isolated_selected409_private_native_tag_inspection",
+  "currentMainSchemaAcceptance": false,
+  "physicalHostRecovery": false,
+  "scientificAcceptance": false
+}

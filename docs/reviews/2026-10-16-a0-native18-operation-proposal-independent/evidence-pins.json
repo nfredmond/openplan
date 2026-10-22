@@ -1,0 +1,115 @@
+{
+  "metadataComparisons": 6291,
+  "mismatches": 0,
+  "newSubjectExecution": false,
+  "proofBoundary": "Retained evidence and source/file relationships only. Current operating facts unassessed.",
+  "records": {
+    "/home/nathaniel/.local/state/openplan/a0-native18-operation-proposal-independent-20261016/absence-before.json": {
+      "bytes": 612,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "ddac70c246144fb9ef7596e83945906d78e1cc2fd7d00966ade444fd1e6e3381",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-operation-proposal-independent-20261016/collect_metadata.py": {
+      "bytes": 11141,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "f681fd930619a1fd534607be6f9531460ec645521f1ead50dced06aec1dd40a9",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-operation-proposal-independent-20261016/comparisons.json": {
+      "bytes": 1221439,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "8944b4a9f62e52490396977f67509a2cab1ca17a5c6a735920b97f37af472aa1",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-operation-proposal-independent-20261016/git-identity.json": {
+      "bytes": 1065,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "a783c63d93eb3bba9e68f428f228aad41f0306421ba3662811987e3484c489f4",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-operation-proposal-independent-20261016/input-custody-after.json": {
+      "bytes": 821,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "10550fd96e0c0f93807fcde6efe293da1072db22fb457b3667a09e222601b037",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-operation-proposal-independent-20261016/input-pins-before.json": {
+      "bytes": 1485583,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "a6c95824da95df38378901c5965e9f45957969edfbc69602bc10f2824339371e",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-operation-proposal-independent-20261016/metadata-summary.json": {
+      "bytes": 922,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "dfa033338735627f22a565ffd6455a54d7575eb0c76bdc0c502c0fb76f7e488e",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-operation-proposal-independent-20261016/private-manifest.json": {
+      "bytes": 2902,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "48d1b50a14f4ebd058addf4133c4e8cebd8549cfca145a581be4622df1865a04",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-operation-proposal-independent-20261016/proposal-delta.json": {
+      "bytes": 4003,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "7843c2c9e831a6b87f493cddde1560b929889dda690e5cdbfb6e268f9d0a2040",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-operation-proposal-independent-20261016/read_relations.py": {
+      "bytes": 9541,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "c857e15b35c4a4bb550d0ededd4f694aeb2f732e99efb68c19911984aa300006",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-operation-proposal-independent-20261016/relations-summary.json": {
+      "bytes": 1577,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "f99761e5aa5d2a6c0a6ab9146b5f0c74a1b4d610c92f26ee24d3612c41341da4",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-operation-proposal-independent-20261016/retained-relations.json": {
+      "bytes": 28357,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "fc526d4d187384d215053bf607125c6b5abbefa9daa18bd6769ab58e967c4e0b",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-operation-proposal-independent-20261016/retained-semantics.json": {
+      "bytes": 25991,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "e2600b042d5eca59fd24128360e80b7632338354bfa9a814d4be89bc7f5eff03",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-operation-proposal-independent-20261016/review-scope.json": {
+      "bytes": 791,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "f66b8484f1399a3c7fe18afcf7fadca80169df495b268307be2c9ff426159618",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-operation-proposal-independent-20261016/supplemental-input-pins.json": {
+      "bytes": 69683,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "61e6c4eadccc2ed081c6a433a8ba1919297c1ff6b550ace54ffb2e4db1a2d8db",
+      "uid": 1000
+    }
+  },
+  "retainedRelationshipComparisons": 195,
+  "selectedInputs": 4274
+}

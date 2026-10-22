@@ -1,0 +1,13 @@
+def preflight():
+    pinned_files();retained_dump();source_check();unchanged_inputs();free_ports();fresh_target()
+    p.exact({'disk':True},{'disk':shutil.disk_usage(OUT).free>=8*1024**3},'preflight')
+    # Capture only the independently pinned active IDs after all typed state checks.
+    ids=active_helper_identities()
+    helpers={};states={}
+    for identity in ids.values():
+        i=inspect(identity)
+        states[identity]=require_active_helper(identity,i)
+        helpers[identity]=p.digest({k:i[k] for k in ['Id','Name','Image','Config','HostConfig','Mounts']})
+    databases={database:snapshot(database) for database in read('protected-databases.json')}
+    write('protected-runtime-before.json',{'activeHelperIds':ids,'helpers':helpers,'helperStates':states,'databases':databases})
+    write('preflight-ready.json',{'target':TARGET,'sourceAnchor':p.SOURCE_ANCHOR,'dumpSHA256':DUMP_SHA})

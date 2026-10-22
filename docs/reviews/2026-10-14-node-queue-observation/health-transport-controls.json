@@ -1,0 +1,94 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "cases": 9
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived",
+    "cases": 9
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived",
+    "cases": 9
+  },
+  {
+    "control": "projection",
+    "test": "reads the exact heartbeat projection and Storage with distinct transports",
+    "outcome": "intended_failure",
+    "reason": "Actual health query projection differs"
+  },
+  {
+    "control": "pre-client",
+    "test": "refuses pre-cancelled probes before constructing a client",
+    "outcome": "intended_failure",
+    "reason": "Pre-cancelled health cannot construct an SDK client"
+  },
+  {
+    "control": "caller-signal",
+    "test": "closes an actual read when its caller ends and starts no later probe",
+    "outcome": "intended_failure",
+    "reason": "Cancelled caller cannot start the Storage probe"
+  },
+  {
+    "control": "actual-fetch-signal",
+    "test": "closes an actual read when its caller ends and starts no later probe",
+    "outcome": "intended_failure",
+    "reason": "Actual caller cancellation did not close SDK connection"
+  },
+  {
+    "control": "inherited-init",
+    "test": "preserves inherited RequestInit cancellation",
+    "outcome": "intended_failure",
+    "reason": "Inherited health cancellation cannot start another request"
+  },
+  {
+    "control": "inherited-request",
+    "test": "preserves inherited Request cancellation",
+    "outcome": "intended_failure",
+    "reason": "Inherited health cancellation cannot start another request"
+  },
+  {
+    "control": "active-pre-fetch",
+    "test": "preserves inherited RequestInit cancellation",
+    "outcome": "intended_failure",
+    "reason": "Active inherited cancellation cannot reach SDK fetch"
+  },
+  {
+    "control": "retired-pre-input",
+    "test": "refuses a retired probe before inspecting another request signal",
+    "outcome": "intended_failure",
+    "reason": "Retired probe must refuse before inspecting another signal"
+  },
+  {
+    "control": "cleanup",
+    "test": "refuses a retired probe before inspecting another request signal",
+    "outcome": "intended_failure",
+    "reason": "Retired probe must refuse before inspecting another signal"
+  },
+  {
+    "control": "database-deadline",
+    "test": "closes the actual database read at its deadline",
+    "outcome": "intended_failure",
+    "reason": "Actual database deadline did not close SDK connection"
+  },
+  {
+    "control": "storage-deadline",
+    "test": "closes the actual Storage read at its deadline",
+    "outcome": "intended_failure",
+    "reason": "Actual storage deadline did not close SDK connection"
+  },
+  {
+    "control": "process-deadline",
+    "test": "closes the actual Node process read at its deadline",
+    "outcome": "intended_failure",
+    "reason": "Actual processes deadline did not close SDK connection"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived",
+    "cases": 9
+  }
+]

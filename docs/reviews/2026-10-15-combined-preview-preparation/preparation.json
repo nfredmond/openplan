@@ -1,0 +1,52 @@
+{
+  "candidate": "b4dbcac21a58f61bd480ccade4dec69383dacbc7",
+  "sourceDatabase": "openplan_jurisdiction_native_3d281df106064b8cbb9e0c82_up",
+  "plannedTargetDatabase": "openplan_project_combined_preview_4a0447f4f966dfa1e3b0a820",
+  "postgresContainerId": "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce",
+  "postgresContainerName": "supabase_db_openplan-restore-target-2026091050",
+  "schema": {
+    "migrations": 419,
+    "latest": "20261017000016"
+  },
+  "api": "http://127.74.19.10:29948",
+  "web": "http://127.74.19.10:3585",
+  "templateSha256": {
+    "controls.py": "2f690a690a920c56bb22440cb1f975bdb9e4ffc6b901caf5eaefc7ea41b6bc44",
+    "launcher.py": "fda1a08657b95ea1d97a8cb163ccb43885baac9d5e0d3cb9f3802739a5a5edd4",
+    "policy.py": "9918ab9a529d27cb5b328f5f526e223bc48e1fb664629d5e74ef6d891e45e4f7"
+  },
+  "privateBindingManifestSha256": "c92c1925f350a0ce534f6a994e2814015334dcc89e258cad0833fda02f8bcaec",
+  "sourceLogicalFingerprintSha256": "82fda3004c8dd5d3f1e26eb179e11d1da159eb79a33253a636de37ef68213547",
+  "syntheticControls": {
+    "total": 478,
+    "survived": 75,
+    "intended_refusal": 403
+  },
+  "operationallyProved": false,
+  "executedPhases": [
+    "capture (read-only SQL and Docker inspection; private file writes)",
+    "check (read-only)",
+    "controls (synthetic in-memory)",
+    "syntax (AST parse)"
+  ],
+  "notExecuted": [
+    "clone",
+    "checkout",
+    "services",
+    "dependency installation",
+    "build",
+    "start",
+    "browser",
+    "full suite",
+    "internet workloads",
+    "PR",
+    "push",
+    "merge"
+  ],
+  "absenceChecks": {
+    "targetDatabaseExists": false,
+    "ownedHelperContainers": 0,
+    "candidateCheckoutExists": false,
+    "dumpExists": false
+  }
+}

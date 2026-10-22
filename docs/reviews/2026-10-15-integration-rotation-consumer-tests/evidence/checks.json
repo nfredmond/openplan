@@ -1,0 +1,33 @@
+{
+  "baseCommit": "cfdce545f70c2580bf11d4a6253bb48620927a9e",
+  "branch": "t3/integration-secret-rotation-consumer-tests",
+  "directionCheck": {
+    "exit": 0,
+    "limits": "Existing expired registry/matrix reminders; v0.66.0 review versus v0.68.0; intervening-source reminder. No dates refreshed."
+  },
+  "focusedEslint": {
+    "exit": 0,
+    "command": "npm exec -- eslint src/test/integration-rotation-consumer-chain.test.ts --max-warnings=0 --no-cache"
+  },
+  "scopedTypes": {
+    "exit": 0,
+    "command": "npm exec -- tsc --project /home/nathaniel/.local/state/openplan/rotation-consumer-proof-095307b4-20261015/tsconfig.json",
+    "include": "New test and its imports; node ambient declarations from read-only installed dependencies; no full application typecheck."
+  },
+  "parentSourceExactlyRestored": [
+    "openplan/src/lib/integrations/workspace-keys.ts",
+    "openplan/src/lib/integrations/key-crypto.ts",
+    "openplan/src/lib/integrations/provider-api-credentials.ts",
+    "openplan/src/lib/integrations/translation-credentials.ts",
+    "openplan/src/lib/assistant/provider-api-transport.ts"
+  ],
+  "execution": {
+    "memoryMaxBytes": 1073741824,
+    "swapMaxBytes": 0,
+    "workers": 1,
+    "network": "bwrap --unshare-net",
+    "dependencies": "Existing canonical node_modules mounted read-only into assigned checkout",
+    "caches": "Private per-trial Vite/npm/TMPDIR; no install or dependency writes"
+  },
+  "privateEvidence": "/home/nathaniel/.local/state/openplan/rotation-consumer-proof-095307b4-20261015"
+}

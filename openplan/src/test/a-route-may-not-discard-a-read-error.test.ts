@@ -625,7 +625,10 @@ describe("classifyRouteReadFailure", () => {
     expect(failure?.status).toBe(503);
     expect(failure?.pending).toBe(true);
     expect(failure?.body.error).toBe("Reports schema is not available yet");
-    expect(failure?.body.hint).toContain("migrations");
+    // The planner's sentence says who can act; the migration is the operator's half.
+    expect(failure?.body.hint).toContain("not set up on this installation yet");
+    expect(failure?.body.hint).not.toContain("migration");
+    expect(failure?.body.operatorDetail).toContain("migrations");
   });
 
   it("lets a route supply the wording its module is known by", () => {
@@ -639,7 +642,18 @@ describe("classifyRouteReadFailure", () => {
     expect(failure?.body).toEqual({
       error: "Knowledge Base schema is not available yet",
       hint: "Apply the latest Supabase migrations before using the Knowledge Base.",
+      operatorDetail: "Apply the latest Supabase migrations, then try again.",
     });
+  });
+
+  it("lets a route name the exact migration in the operator's half", () => {
+    const failure = classifyRouteReadFailure("this plan's horizon periods", {
+      error: { message: 'relation "public.rtp_horizon_bands" does not exist' },
+    }, {
+      pendingOperatorDetail: "Apply migration 20260805000003, then export again.",
+    });
+    expect(failure?.body.operatorDetail).toBe("Apply migration 20260805000003, then export again.");
+    expect(failure?.body.hint).not.toContain("20260805000003");
   });
 
   /**

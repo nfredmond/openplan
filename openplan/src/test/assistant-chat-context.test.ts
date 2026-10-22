@@ -4,6 +4,7 @@ import {
   ASSISTANT_CHAT_CONTEXT_MAX_CHARS,
   ASSISTANT_CHAT_CONTEXT_TRUNCATION_MARKER,
   buildAssistantChatContextLines,
+  assistantTodayLine,
   buildAssistantChatSystemPrompt,
 } from "@/lib/assistant/chat-context";
 import type {
@@ -315,8 +316,16 @@ describe("buildAssistantChatContextLines", () => {
 });
 
 describe("buildAssistantChatSystemPrompt", () => {
+  it("puts today's date beside the instructions and says a date before it has passed", () => {
+    const prompt = buildAssistantChatSystemPrompt(buildWorkspaceContext(), { today: "2026-10-11" });
+    const [beforeContext] = prompt.split("WORKSPACE CONTEXT");
+    expect(beforeContext).toContain("TODAY: 2026-10-11 (UTC calendar date).");
+    expect(beforeContext).toContain("before today has passed");
+    expect(assistantTodayLine("2027-01-05")).toContain("TODAY: 2027-01-05");
+  });
+
   it("includes grounding, no-invention, screening-grade, tool-use, and propose-only rules", () => {
-    const prompt = buildAssistantChatSystemPrompt(buildWorkspaceContext());
+    const prompt = buildAssistantChatSystemPrompt(buildWorkspaceContext(), { today: "2026-10-11" });
 
     expect(prompt).toContain("copilot for city and regional transportation planners");
     expect(prompt).toContain("Never invent workspace data.");
@@ -332,7 +341,7 @@ describe("buildAssistantChatSystemPrompt", () => {
   });
 
   it("embeds the serialized context lines as bullet entries", () => {
-    const prompt = buildAssistantChatSystemPrompt(buildProjectContext());
+    const prompt = buildAssistantChatSystemPrompt(buildProjectContext(), { today: "2026-10-11" });
 
     expect(prompt).toContain("- Current surface: project");
     expect(prompt).toContain('- Project: "Elm Corridor Study"');
@@ -342,7 +351,7 @@ describe("buildAssistantChatSystemPrompt", () => {
     const context = buildProjectContext();
     context.project.summary = "A ".repeat(600);
 
-    const prompt = buildAssistantChatSystemPrompt(context, { maxContextChars: 300 });
+    const prompt = buildAssistantChatSystemPrompt(context, { today: "2026-10-11", maxContextChars: 300 });
     const contextPortion = prompt.split("WORKSPACE CONTEXT (RLS-scoped, current surface):")[1];
 
     expect(prompt).toContain(ASSISTANT_CHAT_CONTEXT_TRUNCATION_MARKER);
@@ -352,7 +361,7 @@ describe("buildAssistantChatSystemPrompt", () => {
   });
 
   it("keeps the default prompt within the configured budget for a dense context", () => {
-    const prompt = buildAssistantChatSystemPrompt(buildProjectContext());
+    const prompt = buildAssistantChatSystemPrompt(buildProjectContext(), { today: "2026-10-11" });
     const contextPortion = prompt.split("WORKSPACE CONTEXT (RLS-scoped, current surface):")[1];
 
     expect(contextPortion.length).toBeLessThanOrEqual(ASSISTANT_CHAT_CONTEXT_MAX_CHARS + ASSISTANT_CHAT_CONTEXT_TRUNCATION_MARKER.length + 100);

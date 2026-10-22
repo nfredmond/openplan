@@ -1,0 +1,307 @@
+{
+  "trials": [
+    {
+      "directory": "cap-1000",
+      "label": "original-oracle-baseline-2000",
+      "outcome": "survived"
+    },
+    {
+      "directory": "cap-1000",
+      "label": "original-oracle-harmless-2000",
+      "outcome": "survived"
+    },
+    {
+      "directory": "cap-1000",
+      "label": "original-oracle-corrected-source-2000",
+      "outcome": "killed"
+    },
+    {
+      "directory": "cap-1000",
+      "label": "original-oracle-restored-2000",
+      "outcome": "survived"
+    },
+    {
+      "directory": "cap-1000",
+      "label": "original-oracle-baseline-2001",
+      "outcome": "survived"
+    },
+    {
+      "directory": "cap-1000",
+      "label": "original-oracle-harmless-2001",
+      "outcome": "survived"
+    },
+    {
+      "directory": "cap-1000",
+      "label": "original-oracle-corrected-source-2001",
+      "outcome": "killed"
+    },
+    {
+      "directory": "cap-1000",
+      "label": "original-oracle-restored-2001",
+      "outcome": "survived"
+    },
+    {
+      "directory": "cap-1000",
+      "label": "restored-final",
+      "outcome": "survived"
+    },
+    {
+      "directory": "cap-137",
+      "label": "baseline-396e8e",
+      "outcome": "survived"
+    },
+    {
+      "directory": "cap-137",
+      "label": "harmless-11a7dd",
+      "outcome": "survived"
+    },
+    {
+      "directory": "cap-137",
+      "label": "fault-short-page",
+      "outcome": "killed"
+    },
+    {
+      "directory": "cap-137",
+      "label": "restored-final",
+      "outcome": "survived"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "baseline-eb173a",
+      "outcome": "survived"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "harmless-4c4ec5",
+      "outcome": "survived"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "original-reproduction",
+      "outcome": "survived"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "fault-first-page-end",
+      "outcome": "killed"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "restored-first-page-end",
+      "outcome": "survived"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "fault-progress-by-request",
+      "outcome": "killed"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "restored-progress-by-request",
+      "outcome": "survived"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "fault-projection-summary",
+      "outcome": "killed"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "restored-projection-summary",
+      "outcome": "survived"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "fault-scope-omitted",
+      "outcome": "killed"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "restored-scope-omitted",
+      "outcome": "survived"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "fault-date-order",
+      "outcome": "killed"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "restored-date-order",
+      "outcome": "survived"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "fault-tie-order",
+      "outcome": "killed"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "restored-tie-order",
+      "outcome": "survived"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "fault-sentinel-end",
+      "outcome": "killed"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "restored-sentinel-end",
+      "outcome": "survived"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "fault-success-status",
+      "outcome": "killed"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "restored-success-status",
+      "outcome": "survived"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "fault-refusal-status",
+      "outcome": "killed"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "restored-refusal-status",
+      "outcome": "survived"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "fault-failure-status",
+      "outcome": "killed"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "restored-failure-status",
+      "outcome": "survived"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "fault-error-partial-workbook",
+      "outcome": "killed"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "restored-error-partial-workbook",
+      "outcome": "survived"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "fault-serializer-input",
+      "outcome": "killed"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "restored-serializer-input",
+      "outcome": "survived"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "fault-workspace-metadata",
+      "outcome": "killed"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "restored-workspace-metadata",
+      "outcome": "survived"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "fault-unknown-year",
+      "outcome": "killed"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "restored-unknown-year",
+      "outcome": "survived"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "fault-cache-header",
+      "outcome": "killed"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "restored-cache-header",
+      "outcome": "survived"
+    },
+    {
+      "directory": "earlier-cap-1000-0db2eaf1",
+      "label": "restored-final",
+      "outcome": "survived"
+    },
+    {
+      "directory": "earlier-cap-1000-78c36cfb",
+      "label": "baseline-c63ecd",
+      "outcome": "survived"
+    },
+    {
+      "directory": "earlier-cap-1000-78c36cfb",
+      "label": "harmless-7ce717",
+      "outcome": "survived"
+    },
+    {
+      "directory": "earlier-cap-1000-78c36cfb",
+      "label": "original-reproduction",
+      "outcome": "survived"
+    },
+    {
+      "directory": "earlier-cap-1000-915883ca",
+      "label": "original-oracle-baseline",
+      "outcome": "survived"
+    },
+    {
+      "directory": "earlier-cap-1000-915883ca",
+      "label": "original-oracle-harmless",
+      "outcome": "survived"
+    },
+    {
+      "directory": "earlier-cap-1000-915883ca",
+      "label": "original-oracle-corrected-source",
+      "outcome": "killed"
+    },
+    {
+      "directory": "earlier-cap-1000-915883ca",
+      "label": "original-oracle-restored",
+      "outcome": "survived"
+    },
+    {
+      "directory": "earlier-cap-1000-915883ca",
+      "label": "restored-final",
+      "outcome": "survived"
+    },
+    {
+      "directory": "earlier-cap-1000-d55f8d69",
+      "label": "baseline-e63677",
+      "outcome": "survived"
+    },
+    {
+      "directory": "earlier-cap-1000-d55f8d69",
+      "label": "harmless-47d9ea",
+      "outcome": "survived"
+    },
+    {
+      "directory": "earlier-cap-1000-d55f8d69",
+      "label": "original-reproduction",
+      "outcome": "survived"
+    },
+    {
+      "directory": "earlier-cap-137-4a715dc5",
+      "label": "baseline-ae2274",
+      "outcome": "survived"
+    },
+    {
+      "directory": "earlier-cap-137-4a715dc5",
+      "label": "harmless-f89889",
+      "outcome": "survived"
+    }
+  ],
+  "count": 60,
+  "vacuousClassifierFault": "classifier harmless baseline survivor",
+  "restored": "passed"
+}

@@ -1,0 +1,5 @@
+{
+  "workers/odm_worker/runtime_georef.py": "4e5ea22a2d401c85ab21873cda9071fb31fd8482d0410981795b324bcc1c5cdf",
+  "docs/reviews/2026-10-14-private-raster-inspection/native_recovery.py": "ccb5222672e038a503ceba930101b0c1127d070e89b8eff36b94c339982311c3",
+  "workers/odm_worker/georef.py": "9a3dfcc47b6f4a1c204ec432523adca6e9dd4ff1f5ddd9c937b99decd58f6a87"
+}

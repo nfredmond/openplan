@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   countyOnrampManifestSchema,
+  countyRunStageLabelFor,
   getCountyRunAllowedClaim,
   getCountyRunCaveats,
   getCountyRunStageLabel,
@@ -136,12 +137,14 @@ describe("county onramp primitives", () => {
 
     expect(card).toMatchObject({
       title: "Nevada County, CA",
-      stageLabel: "Validated Screening",
-      tone: "success",
+      // The retired stage reads as a finished count check, never as validated.
+      stageLabel: "Count Check Complete",
+      tone: "info",
       statusLabel: "bounded screening-ready",
     });
-    expect(card.allowedClaim).toContain("bounded screening-ready");
-    expect(card.caveats).toContain("Screening-grade only");
+    expect(card.allowedClaim).toContain("prototype-only");
+    expect(card.allowedClaim).not.toMatch(/screening-ready|validated/i);
+    expect(card.caveats).toContain("Prototype-only");
     expect(card.nextAction).toContain("validation report");
   });
 
@@ -176,6 +179,10 @@ describe("county onramp primitives", () => {
     ]);
     expect(getCountyRunCaveats("runtime-complete", null)).toContain("No local validation result yet.");
     expect(getCountyRunNextAction("validation-scaffolded")).toContain("rerun validation");
+    // Reports and drafts read stored stages through this, not by title-casing.
+    expect(countyRunStageLabelFor("validated-screening")).toBe("Count Check Complete");
+    expect(countyRunStageLabelFor("not-a-stage")).toBeNull();
+    expect(countyRunStageLabelFor(null)).toBeNull();
   });
 
   it("builds a bounded manifest proof summary for operator review", () => {
@@ -202,12 +209,15 @@ describe("county onramp primitives", () => {
     );
     expect(proof.validationRows).toEqual(
       expect.arrayContaining([
-        { label: "Recorded stage", value: "Validated Screening" },
-        { label: "Screening gate", value: "bounded screening-ready" },
+        { label: "Recorded stage", value: "Count Check Complete" },
+        {
+          label: "Old count gate (diagnostic)",
+          value: "bounded screening-ready. Diagnostic only, not a validation result.",
+        },
         { label: "Median APE", value: "16.01%" },
       ])
     );
-    expect(proof.operatorNextAction).toContain("preserve all screening-grade caveats");
+    expect(proof.operatorNextAction).toContain("Treat results as prototype-only");
     expect(proof.caveatRows.join(" ")).toContain("not a validated behavioral forecast");
   });
 });

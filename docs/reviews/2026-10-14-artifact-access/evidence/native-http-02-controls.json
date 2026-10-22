@@ -1,0 +1,178 @@
+[
+  {
+    "case": "baseline-active",
+    "outcome": "survived"
+  },
+  {
+    "case": "baseline-completed",
+    "outcome": "survived"
+  },
+  {
+    "case": "baseline-processing-stays-refused",
+    "outcome": "survived"
+  },
+  {
+    "case": "baseline-revoked",
+    "outcome": "survived"
+  },
+  {
+    "case": "baseline-terminal-original",
+    "outcome": "survived"
+  },
+  {
+    "case": "baseline-terminal-changed",
+    "outcome": "survived"
+  },
+  {
+    "case": "baseline-reference-changed",
+    "outcome": "survived"
+  },
+  {
+    "case": "baseline-time-changed",
+    "outcome": "survived"
+  },
+  {
+    "case": "baseline-member-rpc",
+    "outcome": "survived"
+  },
+  {
+    "case": "baseline-anon-rpc",
+    "outcome": "survived"
+  },
+  {
+    "case": "harmless-active",
+    "outcome": "survived"
+  },
+  {
+    "case": "harmless-completed",
+    "outcome": "survived"
+  },
+  {
+    "case": "harmless-processing-stays-refused",
+    "outcome": "survived"
+  },
+  {
+    "case": "harmless-revoked",
+    "outcome": "survived"
+  },
+  {
+    "case": "harmless-terminal-original",
+    "outcome": "survived"
+  },
+  {
+    "case": "harmless-terminal-changed",
+    "outcome": "survived"
+  },
+  {
+    "case": "harmless-reference-changed",
+    "outcome": "survived"
+  },
+  {
+    "case": "harmless-time-changed",
+    "outcome": "survived"
+  },
+  {
+    "case": "harmless-member-rpc",
+    "outcome": "survived"
+  },
+  {
+    "case": "harmless-anon-rpc",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-after-harmless-active",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-after-harmless-completed",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-after-harmless-processing-stays-refused",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-after-harmless-revoked",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-after-harmless-terminal-original",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-after-harmless-terminal-changed",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-after-harmless-reference-changed",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-after-harmless-time-changed",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-after-harmless-member-rpc",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-after-harmless-anon-rpc",
+    "outcome": "survived"
+  },
+  {
+    "case": "changed-payload-granted",
+    "outcome": "intended_failure"
+  },
+  {
+    "case": "changed-reference-granted",
+    "outcome": "intended_failure"
+  },
+  {
+    "case": "revoked-actor-granted",
+    "outcome": "intended_failure"
+  },
+  {
+    "case": "non-service-projection-granted",
+    "outcome": "intended_failure"
+  },
+  {
+    "case": "restored-final-active",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-final-completed",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-final-processing-stays-refused",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-final-revoked",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-final-terminal-original",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-final-terminal-changed",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-final-reference-changed",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-final-time-changed",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-final-member-rpc",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-final-anon-rpc",
+    "outcome": "survived"
+  }
+]

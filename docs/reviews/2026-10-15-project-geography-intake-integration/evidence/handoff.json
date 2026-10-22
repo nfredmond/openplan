@@ -1,0 +1,35 @@
+{
+  "base": "b259d73e56d22d4935ef2789874cf69901786b33",
+  "joinedParentBeforeFinalCheckpoint": "c9d9e9f2d3576262fa1ca7a06b9bb4110cad0cfe",
+  "branch": "t3/project-geography-intake-integration",
+  "applicationSourceChangedLocally": [
+    "openplan/src/test/project-detail-page.test.tsx"
+  ],
+  "newFunctionalJoinCorrection": false,
+  "migration16Sha256": "1384e6a2767827c2b756d978bd6e76f6fea364e4e1263e953c0358364341267f",
+  "migration16AppliedByThisLane": false,
+  "tests": {
+    "passed": 426,
+    "files": 34,
+    "skipped": 0,
+    "failed": 0,
+    "workbookSubset": 79
+  },
+  "statics": {
+    "types": "scoped only",
+    "eslintFiles": 40,
+    "maxWarnings": 0,
+    "direction": "passed with pre-existing reminders",
+    "sourceWhitespace": "passed"
+  },
+  "retainedHistoricalWhitespaceExit": 2,
+  "forbiddenOperationsPerformed": [],
+  "parentAcceptance": [
+    "identified combined build",
+    "new preview with actual HTTP/browser/390px/download/account journeys",
+    "live PostgREST",
+    "native worksheets and GIS recipient use",
+    "whole installation recovery",
+    "whole QA and deployment/rollout disposition"
+  ]
+}

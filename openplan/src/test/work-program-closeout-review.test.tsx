@@ -113,7 +113,7 @@ describe("OWP closeout review boundaries", () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ canManage, revisions: [] }) }));
     try {
       render(<ReportingPanel programId={randomUUID()} workspaceId={randomUUID()} userId={randomUUID()}/>);
-      await screen.findByText(/Save a preparation revision below/);
+      await screen.findByText(/Save a preparation revision before entering actual work/);
       expect(screen.queryByRole("link", { name: "Closeout review" }) !== null).toBe(canManage);
       expect(screen.queryByRole("link", { name: "Saved reconciliation" }) !== null).toBe(canManage);
     } finally { vi.unstubAllGlobals(); }

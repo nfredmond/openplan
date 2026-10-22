@@ -10,6 +10,21 @@ import { summarizeEngagementItems } from "@/lib/engagement/summary";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { readEveryPage } from "@/lib/supabase/paged-read";
+
+/** The columns the list's per-campaign counts are computed from. */
+type CampaignListItemRow = {
+  id: string;
+  campaign_id: string;
+  status: string | null;
+  category_id: string | null;
+  source_type: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  moderation_notes: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+};
 
 const listCampaignsSchema = z.object({
   projectId: z.string().uuid().optional(),
@@ -91,12 +106,36 @@ export async function GET(request: NextRequest) {
 
     const campaigns = data ?? [];
     const campaignIds = campaigns.map((campaign) => campaign.id);
+    // PAGED: these rows become each campaign's comment counts. PostgREST caps a
+    // response at `max_rows` with `error = null`, so a single read stopped at
+    // 1,000 comments across the listed campaigns and the counts simply read
+    // low. The `id` tiebreak makes the order total across page requests. An
+    // unfinished read becomes an error, never a short count.
     const itemsResult = campaignIds.length
-      ? await supabase
-          .from("engagement_items")
-          .select("id, campaign_id, status, category_id, source_type, latitude, longitude, moderation_notes, created_at, updated_at")
-          .in("campaign_id", campaignIds)
-      : { data: [], error: null };
+      ? await readEveryPage<CampaignListItemRow, { message: string; code?: string | null }>(
+          (from, toInclusive) =>
+            supabase
+              .from("engagement_items")
+              .select("id, campaign_id, status, category_id, source_type, latitude, longitude, moderation_notes, created_at, updated_at")
+              .in("campaign_id", campaignIds)
+              .order("created_at", { ascending: true })
+              .order("id", { ascending: true })
+              .range(from, toInclusive) as PromiseLike<{
+              data: CampaignListItemRow[] | null;
+              error: { message: string; code?: string | null } | null;
+            }>
+        ).then((read) =>
+          read.complete
+            ? { data: read.rows, error: null }
+            : {
+                data: null,
+                error: read.error ?? {
+                  message: "the comment read could not be completed, so these counts would understate the campaigns",
+                  code: null,
+                },
+              }
+        )
+      : { data: [] as CampaignListItemRow[], error: null };
 
     if (itemsResult.error) {
       audit.error("campaign_item_summary_failed", {
@@ -106,7 +145,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Failed to summarize engagement items" }, { status: 500 });
     }
 
-    const itemsByCampaign = new Map<string, Array<(typeof itemsResult.data)[number]>>();
+    const itemsByCampaign = new Map<string, CampaignListItemRow[]>();
     for (const item of itemsResult.data ?? []) {
       const current = itemsByCampaign.get(item.campaign_id) ?? [];
       current.push(item);

@@ -1,0 +1,252 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "scope-changed",
+    "test": "test_original_arguments_and_ownership",
+    "outcome": "intended_failure",
+    "reason": "Delivery RPC sends exact original scope"
+  },
+  {
+    "control": "refusal-promoted",
+    "test": "test_revocation_stays_false",
+    "outcome": "intended_failure",
+    "reason": "Current refusal cannot become delivery access"
+  },
+  {
+    "control": "private-processing-flag-required",
+    "test": "test_completed_processing_does_not_control_delivery",
+    "outcome": "intended_failure",
+    "reason": "Distinct scope permits completed delivery"
+  },
+  {
+    "control": "terminal-body-changed",
+    "test": "test_terminal_callback_is_original",
+    "outcome": "intended_failure",
+    "reason": "Terminal access observes exact original callback"
+  },
+  {
+    "control": "supplied-binding-ignored",
+    "test": "test_changed_binding_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "processing_operation_refuses",
+    "test": "test_processing_operation_refuses",
+    "outcome": "intended_failure",
+    "reason": "response original scope differs"
+  },
+  {
+    "control": "artifact_callback_refuses",
+    "test": "test_artifact_callback_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "missing_terminal_callback_refuses",
+    "test": "test_missing_terminal_callback_refuses",
+    "outcome": "intended_failure",
+    "reason": "has no attribute 'get'"
+  },
+  {
+    "control": "terminal-original-ignored",
+    "test": "test_changed_terminal_original_refuses",
+    "outcome": "intended_failure",
+    "reason": "response original scope differs"
+  },
+  {
+    "control": "wrong_operation_receipt_refuses",
+    "test": "test_wrong_operation_receipt_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "wrong_original_receipt_refuses",
+    "test": "test_wrong_original_receipt_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "nonboolean_access_refuses",
+    "test": "test_nonboolean_access_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "engine_permission_refuses",
+    "test": "test_engine_permission_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "extra_receipt_refuses",
+    "test": "test_extra_receipt_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "response-size-ignored",
+    "test": "test_response_size_refuses",
+    "outcome": "intended_failure",
+    "reason": "response JSON differs"
+  },
+  {
+    "control": "invalid-json-fallback",
+    "test": "test_invalid_json_refuses",
+    "outcome": "intended_failure",
+    "reason": "response original scope differs"
+  },
+  {
+    "control": "duplicate-json-accepted",
+    "test": "test_duplicate_json_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "nonfinite-json-fallback",
+    "test": "test_nonfinite_json_refuses",
+    "outcome": "intended_failure",
+    "reason": "response original scope differs"
+  },
+  {
+    "control": "timestamp-gates-ignored",
+    "test": "test_bad_observation_time_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "calendar-date-ignored",
+    "test": "test_impossible_time_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "owned-loss-ignored",
+    "test": "test_owner_loss_after_transport_refuses",
+    "outcome": "intended_failure",
+    "reason": "InterruptedError not raised"
+  },
+  {
+    "control": "shared-deadline-extended",
+    "test": "test_expired_deadline_refuses",
+    "outcome": "intended_failure",
+    "reason": "TimeoutError not raised"
+  },
+  {
+    "control": "constructor-adapter-ignored",
+    "test": "test_invalid_constructor_refuses",
+    "outcome": "intended_failure",
+    "reason": "has no attribute 'timeout'"
+  },
+  {
+    "control": "constructor-timeout-ignored",
+    "test": "test_invalid_constructor_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "shared-type-ignored",
+    "test": "test_invalid_deadline_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "binding-shape-ignored",
+    "test": "test_invalid_binding_refuses",
+    "outcome": "intended_failure",
+    "reason": "not subscriptable"
+  },
+  {
+    "control": "delivery-rpc-path-changed",
+    "test": "test_fixed_delivery_path_and_original_scope",
+    "outcome": "intended_failure",
+    "reason": "Only explicit delivery RPC receives delivery scope"
+  },
+  {
+    "control": "callback-normalized",
+    "test": "test_terminal_body_and_unicode_identity_remain_exact",
+    "outcome": "intended_failure",
+    "reason": "Terminal authority receives exact original callback including Unicode"
+  },
+  {
+    "control": "unicode-metadata-expanded",
+    "test": "test_large_utf8_callback_fits_private_metadata",
+    "outcome": "intended_failure",
+    "reason": "Private dispatch metadata exceeds its bound"
+  },
+  {
+    "control": "default-infers-delivery",
+    "test": "test_default_rpc_cannot_accept_delivery_arguments",
+    "outcome": "intended_failure",
+    "reason": "Private dispatch RPC read did not complete"
+  },
+  {
+    "control": "constructor-arbitrary-rpc",
+    "test": "test_unknown_rpc_constructor_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "child-arbitrary-rpc",
+    "test": "test_unknown_rpc_child_refuses_before_network",
+    "outcome": "intended_failure",
+    "reason": "Child independently refuses arbitrary RPC"
+  },
+  {
+    "control": "missing_original_reference_refuses",
+    "test": "test_missing_original_reference_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "blank_original_reference_refuses",
+    "test": "test_blank_original_reference_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "unknown_operation_refuses",
+    "test": "test_unknown_operation_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "artifact_scope_cannot_carry_callback",
+    "test": "test_artifact_scope_cannot_carry_callback",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "terminal_scope_needs_callback",
+    "test": "test_terminal_scope_needs_callback",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "nonfinite-callback-accepted",
+    "test": "test_nonfinite_callback_refuses_before_network",
+    "outcome": "intended_failure",
+    "reason": "Out of range float values are not JSON compliant"
+  },
+  {
+    "control": "callback-body-unbounded",
+    "test": "test_oversized_callback_refuses_before_network",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

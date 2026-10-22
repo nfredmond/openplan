@@ -1,0 +1,698 @@
+[
+  {
+    "control": "plan-comparison-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "plan-comparison-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "plan-comparison-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "plan-comparison-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "plan-comparison-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "plan-comparison-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "initial-engine-check-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "initial-engine-check-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "initial-engine-check-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "initial-engine-check-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "initial-engine-check-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "initial-engine-check-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "final-engine-check-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "final-engine-check-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "final-engine-check-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "final-engine-check-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "final-engine-check-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "final-engine-check-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "truthy-engine-accepted-exact",
+    "accepted": true
+  },
+  {
+    "control": "truthy-engine-accepted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "truthy-engine-accepted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "truthy-engine-accepted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "truthy-engine-accepted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "truthy-engine-accepted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "ownership-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "ownership-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "ownership-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "ownership-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "ownership-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "ownership-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "ownership-type-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "ownership-type-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "ownership-type-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "ownership-type-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "ownership-type-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "ownership-type-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "cancellation-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-type-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "cancellation-type-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-type-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-type-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-type-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-type-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "deadline-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "deadline-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "deadline-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "deadline-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "deadline-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "deadline-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "credential-reference-changed-exact",
+    "accepted": true
+  },
+  {
+    "control": "credential-reference-changed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "credential-reference-changed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "credential-reference-changed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "credential-reference-changed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "credential-reference-changed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "credential-type-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "credential-type-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "credential-type-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "credential-type-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "credential-type-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "credential-type-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "credential-error-exposed-exact",
+    "accepted": true
+  },
+  {
+    "control": "credential-error-exposed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "credential-error-exposed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "credential-error-exposed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "credential-error-exposed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "credential-error-exposed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "adapter-check-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "adapter-check-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "adapter-check-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "adapter-check-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "adapter-check-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "adapter-check-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "ownership-adapter-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "ownership-adapter-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "ownership-adapter-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "ownership-adapter-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "ownership-adapter-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "ownership-adapter-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "response-bound-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "response-bound-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "response-bound-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "response-bound-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "response-bound-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "response-bound-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "child-input-bound-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "child-input-bound-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "child-input-bound-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "child-input-bound-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "child-input-bound-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "child-input-bound-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "wrong-uuid-path-exact",
+    "accepted": true
+  },
+  {
+    "control": "wrong-uuid-path-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "wrong-uuid-path-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "wrong-uuid-path-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "wrong-uuid-path-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "wrong-uuid-path-success-output",
+    "accepted": false
+  },
+  {
+    "control": "token-not-encoded-exact",
+    "accepted": true
+  },
+  {
+    "control": "token-not-encoded-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "token-not-encoded-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "token-not-encoded-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "token-not-encoded-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "token-not-encoded-success-output",
+    "accepted": false
+  },
+  {
+    "control": "status-check-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "status-check-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "status-check-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "status-check-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "status-check-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "status-check-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "framing-check-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "framing-check-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "framing-check-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "framing-check-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "framing-check-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "framing-check-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "encoding-check-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "encoding-check-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "encoding-check-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "encoding-check-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "encoding-check-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "encoding-check-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "reported-length-bound-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "reported-length-bound-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "reported-length-bound-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "reported-length-bound-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "reported-length-bound-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "reported-length-bound-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "close-delimited-refused-exact",
+    "accepted": true
+  },
+  {
+    "control": "close-delimited-refused-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "close-delimited-refused-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "close-delimited-refused-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "close-delimited-refused-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "close-delimited-refused-success-output",
+    "accepted": false
+  },
+  {
+    "control": "reply-bytes-altered-exact",
+    "accepted": true
+  },
+  {
+    "control": "reply-bytes-altered-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "reply-bytes-altered-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "reply-bytes-altered-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "reply-bytes-altered-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "reply-bytes-altered-success-output",
+    "accepted": false
+  },
+  {
+    "control": "retention-bypassed-exact",
+    "accepted": true
+  },
+  {
+    "control": "retention-bypassed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "retention-bypassed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "retention-bypassed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "retention-bypassed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "retention-bypassed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "wrong-reply-retained-exact",
+    "accepted": true
+  },
+  {
+    "control": "wrong-reply-retained-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "wrong-reply-retained-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "wrong-reply-retained-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "wrong-reply-retained-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "wrong-reply-retained-success-output",
+    "accepted": false
+  },
+  {
+    "control": "parent-watch-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "parent-watch-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "parent-watch-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "parent-watch-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "parent-watch-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "parent-watch-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "inflight-cancellation-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "inflight-cancellation-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "inflight-cancellation-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "inflight-cancellation-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "inflight-cancellation-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "inflight-cancellation-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "inflight-ownership-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "inflight-ownership-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "inflight-ownership-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "inflight-ownership-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "inflight-ownership-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "inflight-ownership-removed-success-output",
+    "accepted": false
+  }
+]

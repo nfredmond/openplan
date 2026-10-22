@@ -62,11 +62,12 @@ function createSupabaseMock(tableData: Record<string, unknown[]> = {}, rpcData: 
       ((...args: unknown[]) => {
         if (name === "select") log.columns = String(args[0] ?? "");
         if (name === "eq") log.filters.push([String(args[0]), args[1]]);
+        if (name === "neq") log.filters.push([`neq:${String(args[0])}`, args[1]]);
         if (name === "limit") log.limit = Number(args[0]);
         return chain;
       }) as unknown;
 
-    for (const name of ["select", "eq", "in", "order", "limit", "gte", "lte", "is"]) {
+    for (const name of ["select", "eq", "neq", "in", "order", "limit", "gte", "lte", "is"]) {
       chain[name] = passthrough(name);
     }
     for (const name of ["insert", "update", "delete", "upsert"]) {
@@ -179,13 +180,14 @@ describe("buildAssistantChatTools", () => {
     loadAssistantContextMock.mockResolvedValue(workspaceContextFixture());
   });
 
-  it("exposes the twelve read tools plus one propose tool per registry action", () => {
+  it("exposes the thirteen read tools plus one propose tool per registry action", () => {
     const { tools } = buildTools();
     expect(Object.keys(tools).sort()).toEqual(
       [
         "get_grant_program_catalog",
         "get_surface_context",
         "list_funding_opportunities",
+        "list_milestones",
         "list_projects",
         "list_pending_operations",
         "list_reports",
@@ -235,12 +237,72 @@ describe("buildAssistantChatTools", () => {
     expect(query!.limit).toBe(ASSISTANT_CHAT_TOOL_LIST_LIMIT);
   });
 
+  it("list_milestones reads open milestones through their project for this workspace, soonest first", async () => {
+    const supabase = createSupabaseMock({
+      project_milestones: [
+        {
+          id: "m1",
+          project_id: "p1",
+          title: "Council hearing",
+          milestone_type: "hearing",
+          status: "scheduled",
+          target_date: "2026-10-15",
+          actual_date: null,
+          owner_label: "Planning",
+          notes: "must not leak",
+          projects: { id: "p1", name: "Main St Bridge", workspace_id: WORKSPACE_ID },
+        },
+      ],
+    });
+    const { tools } = buildTools({ supabase });
+
+    const result = await toolExecute(tools, "list_milestones")({}, CALL_OPTIONS);
+
+    expect(result.status).toBe("ok");
+    expect(result.milestones).toEqual([
+      {
+        id: "m1",
+        title: "Council hearing",
+        projectId: "p1",
+        projectName: "Main St Bridge",
+        type: "hearing",
+        status: "scheduled",
+        targetDate: "2026-10-15",
+        actualDate: null,
+        ownerLabel: "Planning",
+      },
+    ]);
+    const query = supabase.queries.find((entry) => entry.table === "project_milestones");
+    // Milestones carry no workspace column; the scope is the embedded project's.
+    expect(query!.columns).toContain("projects!inner(");
+    expect(query!.columns).toContain("target_date");
+    expect(query!.filters).toContainEqual(["projects.workspace_id", WORKSPACE_ID]);
+    expect(query!.filters).toContainEqual(["neq:status", "complete"]);
+    expect(query!.limit).toBe(ASSISTANT_CHAT_TOOL_LIST_LIMIT);
+  });
+
+  it("list_milestones narrows to one project and can include completed milestones", async () => {
+    const supabase = createSupabaseMock({ project_milestones: [] });
+    const { tools } = buildTools({ supabase });
+
+    await toolExecute(tools, "list_milestones")(
+      { projectId: "11111111-1111-4111-8111-111111111111", includeComplete: true },
+      CALL_OPTIONS
+    );
+
+    const query = supabase.queries.find((entry) => entry.table === "project_milestones");
+    expect(query!.filters).toContainEqual(["projects.workspace_id", WORKSPACE_ID]);
+    expect(query!.filters).toContainEqual(["project_id", "11111111-1111-4111-8111-111111111111"]);
+    expect(query!.filters.some(([column]) => column === "neq:status")).toBe(false);
+  });
+
   it("list_funding_opportunities is workspace-scoped and hard-limited", async () => {
     const supabase = createSupabaseMock({
       funding_opportunities: [
         {
           id: "f1",
           title: "ATP Cycle",
+          project_id: "p1",
           opportunity_status: "open",
           decision_state: "pursue",
           expected_award_amount: 250000,
@@ -260,6 +322,7 @@ describe("buildAssistantChatTools", () => {
       {
         id: "f1",
         title: "ATP Cycle",
+        projectId: "p1",
         status: "open",
         decisionState: "pursue",
         expectedAwardAmount: 250000,
@@ -271,6 +334,9 @@ describe("buildAssistantChatTools", () => {
 
     const query = supabase.queries.find((entry) => entry.table === "funding_opportunities");
     expect(query!.filters).toContainEqual(["workspace_id", WORKSPACE_ID]);
+    // The mock returns whole rows, so the projection is checked directly:
+    // without project_id in the select, the real query returns no project link.
+    expect(query!.columns).toContain("project_id");
     expect(query!.limit).toBe(ASSISTANT_CHAT_TOOL_LIST_LIMIT);
   });
 
@@ -505,6 +571,31 @@ describe("buildAssistantChatTools", () => {
     expect(statePrograms.every((program) => program.level === "state")).toBe(true);
     expect(statePrograms[0].key).toBeTruthy();
     expect(statePrograms[0].url).toMatch(/^https?:\/\//);
+  });
+
+  it("get_grant_program_catalog gives federal programs in federal text, with each state's administration labeled", async () => {
+    const { tools } = buildTools();
+
+    const federal = await toolExecute(tools, "get_grant_program_catalog")({ level: "federal" }, CALL_OPTIONS);
+    const programs = federal.programs as Array<{
+      key: string;
+      administeringAgency: string;
+      cycleNote: string;
+      stateAdministration: Array<{ jurisdiction: string; jurisdictionSubdivision: string | null; administeringAgency: string | null }>;
+    }>;
+    const hsip = programs.find((program) => program.key === "hsip");
+
+    // The program itself is what any state's planner reads, so it names no state.
+    expect(hsip?.administeringAgency).not.toContain("Caltrans");
+    expect(hsip?.cycleNote).not.toContain("Caltrans");
+    // California's administration travels with it, labeled as California's.
+    expect(hsip?.stateAdministration).toEqual([
+      expect.objectContaining({
+        jurisdiction: "California",
+        jurisdictionSubdivision: "CA",
+        administeringAgency: "FHWA, administered by Caltrans Division of Local Assistance",
+      }),
+    ]);
   });
 
   it("never issues a mutating supabase call from any read tool", async () => {

@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import * as XLSX from "xlsx";
 import JSZip from "jszip";
+import { formatReviewWorkbook } from "@/lib/export/review-workbook-layout";
 import { renderReportPdf } from "@/lib/reports/pdf";
 import { escapeCsvField } from "@/lib/export/csv";
 import { readStoredEngagementGeometry } from "./geometry";
@@ -271,17 +272,7 @@ export async function buildCampaignReviewWorkbook(snapshot: EngagementReviewSnap
     workbook.Sheets.Summary[`B${index}`]={t:'n',v:count,f:count?`COUNTA('${name}'!A2:A${count+1})`:'0'};
   }
   const zip=await JSZip.loadAsync(XLSX.write(workbook,{type:'buffer',bookType:'xlsx',compression:true}) as Buffer);
-  const book=await zip.file('xl/workbook.xml')!.async('string');
-  zip.file('xl/workbook.xml',book.replace('</workbook>','<calcPr calcId="0" calcMode="auto" fullCalcOnLoad="1" forceFullCalc="1"/></workbook>'));
-  // SheetJS CE retains values/types; this small OpenXML style pass supplies readable wrapping and headers.
-  zip.file('xl/styles.xml',`<?xml version="1.0" encoding="UTF-8"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><color rgb="FFFFFFFF"/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF136B73"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border/></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="3"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment vertical="top" wrapText="1"/></xf></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`);
-  for(const path of Object.keys(zip.files).filter(path=>/^xl\/worksheets\/sheet\d+\.xml$/.test(path))) {
-    let xml=await zip.file(path)!.async('string');
-    xml=xml.replace(/<c\b([^>]*)>/g,(_all,attrs:string)=>`<c${attrs.replace(/\s+s="\d+"/,'')} s="2">`);
-    xml=xml.replace(/<c\b([^>]*\br="[A-Z]+1"[^>]*)>/g,(_all,attrs:string)=>`<c${attrs.replace(/\s+s="\d+"/,'')} s="1">`);
-    xml=xml.replace(/<sheetView([^>]*)\/>/,'<sheetView$1><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView>');
-    zip.file(path,xml);
-  }
+  await formatReviewWorkbook(zip, { recalculate: true, worksheets: workbook.SheetNames.map(() => ({})) });
   return zip.generateAsync({type:'nodebuffer',compression:'DEFLATE'});
 }
 

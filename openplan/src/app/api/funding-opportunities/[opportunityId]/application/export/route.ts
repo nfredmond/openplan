@@ -1,10 +1,12 @@
+import { readSafetySeedOrigin, type SafetySeedProvenance } from "@/lib/grants/safety-seed-origin";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import { loadFundingOpportunityAccess } from "@/lib/programs/api";
 import { renderReportPdf } from "@/lib/reports/pdf";
+import { checkWorkspaceStorageRoom, workspaceStorageRefusal } from "@/lib/workspaces/storage-quota";
 import {
   APPLICATION_ATTACHMENT_SELECT,
   APPLICATION_FINALIZER_PENDING_SCHEMA_ERROR,
@@ -68,6 +70,8 @@ type DraftRowLite = {
   draft_markdown: string;
   model: string | null;
   grounding_json: unknown;
+  origin?: string;
+  safety_seed_id?: string;
 };
 
 type OffendingSection = {
@@ -118,7 +122,12 @@ function resolveSectionProvenance(
     };
   }
 
+  const safetySeed = readSafetySeedOrigin(draft);
   const grounding = parseStoredNarrativeGrounding(draft.grounding_json);
+  if (safetySeed) return {
+    origin: draft.draft_markdown === section.final_markdown ? "safety_seed_unedited" : "safety_seed_operator_edited",
+    model: null, groundedSentenceCount: null, totalSentenceCount: null, finalizedBy, finalizedAt, safetySeed,
+  };
   return {
     origin: draft.draft_markdown === section.final_markdown ? "ai_draft_unedited" : "ai_draft_edited",
     model: draft.model,
@@ -230,8 +239,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if (finalizedDraftIds.length > 0) {
       const { data: draftRows, error: draftsError } = await supabase
         .from("funding_opportunity_section_drafts")
-        .select("id, section_id, draft_markdown, model, grounding_json")
-        .in("id", finalizedDraftIds);
+        .select("id, section_id, draft_markdown, model, grounding_json, origin, safety_seed_id")
+        .in("id", finalizedDraftIds).eq("opportunity_id", opportunity.id).eq("workspace_id", opportunity.workspace_id);
 
       if (draftsError) {
         audit.error("application_export_drafts_load_failed", {
@@ -256,7 +265,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
     for (const section of sections) {
       if (!section.final_markdown || !section.finalized_from_draft_id) continue;
       const draft = draftById.get(section.finalized_from_draft_id);
-      if (!draft) continue;
+      if (!draft || draft.section_id !== section.id) {
+        return NextResponse.json({ error: "Finalized draft provenance is missing or belongs to another section; export refused." }, { status: 422 });
+      }
+      if (draft.origin === "safety_plan_seed" && !readSafetySeedOrigin(draft)) {
+        return NextResponse.json({ error: "Safety seed provenance is malformed; export refused." }, { status: 422 });
+      }
+      if (readSafetySeedOrigin(draft)) continue;
       if (draft.draft_markdown !== section.final_markdown) continue; // operator-edited: human authority
       const grounding = parseStoredNarrativeGrounding(draft.grounding_json);
       if (!grounding || !isNarrativeExportable(grounding)) {
@@ -338,6 +353,20 @@ export async function POST(request: NextRequest, context: RouteContext) {
       );
     }
     const packetLabel = applicationExportPacketLabel(pursuit.context.pursuitKind);
+    const seedHistoryResult = await supabase.from("funding_opportunity_section_drafts")
+      .select("id, section_id, origin, safety_seed_id, grounding_json", { count: "exact" })
+      .eq("opportunity_id", opportunity.id).eq("workspace_id", opportunity.workspace_id)
+      .eq("origin", "safety_plan_seed").order("id").limit(1001);
+    if (seedHistoryResult.error || !seedHistoryResult.data || seedHistoryResult.count === null || seedHistoryResult.count !== seedHistoryResult.data.length || seedHistoryResult.data.length > 1000) {
+      return NextResponse.json({ error: "Safety seed provenance history could not be read completely; export refused." }, { status: 503 });
+    }
+    const safetySeedHistory: SafetySeedProvenance[] = [];
+    for (const row of seedHistoryResult.data ?? []) {
+      const provenance = readSafetySeedOrigin(row);
+      if (!provenance) return NextResponse.json({ error: "Safety seed provenance history is malformed; export refused." }, { status: 422 });
+      if (!safetySeedHistory.some((entry) => entry.artifactId === provenance.artifactId && entry.snapshotHash === provenance.snapshotHash)) safetySeedHistory.push(provenance);
+    }
+
     const exportSections: GrantApplicationExportSection[] = sections.map((section) => ({
       section,
       provenance: resolveSectionProvenance(
@@ -347,6 +376,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }));
 
     const html = buildGrantApplicationHtml({
+      safetySeedHistory,
       opportunity: {
         id: opportunity.id,
         title: opportunityTitle,
@@ -373,10 +403,30 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const exportId = crypto.randomUUID();
     const storagePath = `${opportunity.workspace_id}/${opportunity.id}/${exportId}.pdf`;
+    const pdfBytes = Buffer.from(pdf.bytes);
 
-    const { error: uploadError } = await supabase.storage
+    // Members have no direct INSERT on this bucket (migration
+    // 20261017000013): the export is stored with the service role, after the
+    // programs.write check above and the workspace storage limit here.
+    const service = createServiceRoleClient();
+    const room = await checkWorkspaceStorageRoom(service, opportunity.workspace_id, pdfBytes.byteLength);
+    if (room.status !== "room") {
+      audit.warn("application_export_storage_refused", {
+        opportunityId: opportunity.id,
+        workspaceId: opportunity.workspace_id,
+        userId: user.id,
+        incomingBytes: pdfBytes.byteLength,
+        status: room.status,
+        ...(room.status === "full"
+          ? { usedBytes: room.usedBytes, quotaBytes: room.quotaBytes }
+          : { detail: room.detail }),
+      });
+      return workspaceStorageRefusal(room);
+    }
+
+    const { error: uploadError } = await service.storage
       .from(EXPORT_BUCKET)
-      .upload(storagePath, Buffer.from(pdf.bytes), {
+      .upload(storagePath, pdfBytes, {
         contentType: "application/pdf",
         upsert: false,
       });

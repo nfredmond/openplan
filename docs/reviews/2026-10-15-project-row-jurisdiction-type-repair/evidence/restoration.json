@@ -1,0 +1,10 @@
+{
+  "src/app/(app)/projects/[projectId]/_components/_types.ts": {
+    "restored": true,
+    "sha256": "7737a874603333c8cab22836f5acedeb38c6777943aaaeba4d946c1ef172fe53"
+  },
+  "src/app/(app)/projects/[projectId]/page.tsx": {
+    "restored": true,
+    "sha256": "1dae1462e32857bcea2ff737d6ab2061ffb0aa4d94308c32b0d1df99801c0710"
+  }
+}

@@ -42,16 +42,19 @@ class EngineScopeTests(unittest.TestCase):
 
     def test_actual_setup_closes_after_download_failure(self):
         project=Mock();project.network.create_from_osm.side_effect=ValueError('synthetic download failure')
-        with tempfile.TemporaryDirectory() as temp,mock_engine_runtime(Mock(return_value=project)),patch.object(aeq,'sb_patch_stage'):
+        with tempfile.TemporaryDirectory() as temp,mock_engine_runtime(Mock(return_value=project)),patch.object(aeq,'sb_patch_stage'),patch.object(aeq,'install_fresh_osm_modes') as install_modes:
             with self.assertRaisesRegex(ValueError,'synthetic download failure'):
                 aeq.stage_setup('run','stage',temp,(-122,38,-121,39),str(Path(temp)/'package'))
+        install_modes.assert_called_once_with()
         project.close.assert_called_once_with()
 
     def test_actual_assignment_closes_after_graph_failure(self):
-        project=Mock();project.network.build_graphs.side_effect=ValueError('synthetic graph failure')
-        with tempfile.TemporaryDirectory() as temp,mock_engine_runtime(Mock(return_value=project)),patch.object(aeq,'sb_patch_stage'),patch.object(aeq,'sb_get_run',return_value={}),patch.object(aeq,'retain_assignment_counts',return_value={'counts_path':'/synthetic/counts.csv','counts_status':'unavailable'}):
-            with self.assertRaisesRegex(ValueError,'synthetic graph failure'):
+        project=Mock();failure=ValueError('synthetic graph failure');builder=project.network.build_graphs
+        builder.side_effect=failure
+        with tempfile.TemporaryDirectory() as temp,mock_engine_runtime(Mock(return_value=project),graph_builder=builder),patch.object(aeq,'sb_patch_stage'),patch.object(aeq,'sb_get_run',return_value={}),patch.object(aeq,'retain_assignment_counts',return_value={'counts_path':'/synthetic/counts.csv','counts_status':'unavailable'}):
+            with self.assertRaisesRegex(ValueError,'synthetic graph failure') as caught:
                 aeq.stage_assignment('run','stage',temp,{'centroid_map':{}},str(Path(temp)/'package'),counts_path_override='/synthetic/counts.csv')
+        self.assertIs(caught.exception,failure);builder.assert_called_once()
         project.open.assert_called_once();project.close.assert_called_once_with()
 
     def test_project_log_closes_without_touching_unrelated_handler(self):

@@ -1,0 +1,148 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "cases": 16
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived",
+    "cases": 16
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived",
+    "cases": 16
+  },
+  {
+    "control": "initial-current-read-omitted",
+    "outcome": "intended_failure",
+    "case": "test_exact_commit_checks_current_access_around_engine_attestation",
+    "diagnostic": "Processing permission must check current access before and after attestation",
+    "kind": "failures"
+  },
+  {
+    "control": "command-guard-omitted",
+    "outcome": "intended_failure",
+    "case": "test_draft_commands_and_changed_commit_refuse_before_current_read",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "saved-engine-plan-guard-omitted",
+    "outcome": "intended_failure",
+    "case": "test_changed_valid_plan_cannot_reuse_original_application_binding",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "initial-revocation-ignored",
+    "outcome": "intended_failure",
+    "case": "test_initial_revocation_refuses_before_engine_check",
+    "diagnostic": "Revoked access cannot reach processing engine attestation",
+    "kind": "failures"
+  },
+  {
+    "control": "final-revocation-ignored",
+    "outcome": "intended_failure",
+    "case": "test_revocation_during_attestation_refuses_permission",
+    "diagnostic": "Revocation during attestation cannot grant processing permission",
+    "kind": "failures"
+  },
+  {
+    "control": "non-boolean-engine-result-accepted",
+    "outcome": "intended_failure",
+    "case": "test_engine_refusal_and_non_boolean_attestation_do_not_permit",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "engine-refusal-ignored",
+    "outcome": "intended_failure",
+    "case": "test_engine_refusal_and_non_boolean_attestation_do_not_permit",
+    "diagnostic": "True is not False",
+    "kind": "failures"
+  },
+  {
+    "control": "owner-silently-acquired",
+    "outcome": "intended_failure",
+    "case": "test_unowned_runtime_cannot_obtain_processing_permission",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "scope-comparisons-disabled",
+    "outcome": "intended_failure",
+    "case": "test_changed_scope_and_engine_refuse_before_current_access",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "constructor-adapters-not-required",
+    "outcome": "intended_failure",
+    "case": "test_constructor_requires_private_reader_and_explicit_attestor",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "missing-shared-deadline-accepted",
+    "outcome": "intended_failure",
+    "case": "test_actual_shared_deadline_is_required_before_current_access",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "binding-shape-guard-omitted",
+    "outcome": "intended_failure",
+    "case": "test_original_binding_shape_is_required_before_private_reads",
+    "diagnostic": "KeyError: 'requestId'",
+    "kind": "errors"
+  },
+  {
+    "control": "engine-alias-forwarded",
+    "outcome": "intended_failure",
+    "case": "test_engine_attestation_cannot_change_original_or_extend_deadline",
+    "diagnostic": "Processing attestation cannot replace the configured engine through an alias",
+    "kind": "failures"
+  },
+  {
+    "control": "shared-deadline-extended",
+    "outcome": "intended_failure",
+    "case": "test_engine_attestation_cannot_change_original_or_extend_deadline",
+    "diagnostic": "Processing attestation must receive its original engine and actual deadline",
+    "kind": "failures"
+  },
+  {
+    "control": "configured-engine-guard-omitted",
+    "outcome": "intended_failure",
+    "case": "test_configured_engine_cannot_authorize_another_saved_engine",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "saved-application-scope-guard-omitted",
+    "outcome": "intended_failure",
+    "case": "test_changed_saved_plan_cannot_replace_original_application_scope",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "prepared-runtime-guard-omitted",
+    "outcome": "intended_failure",
+    "case": "test_mixed_saved_engine_plan_cannot_replace_prepared_task",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "prepared-digest-ignored",
+    "outcome": "intended_failure",
+    "case": "test_prepared_engine_digest_is_required_before_current_access",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived",
+    "cases": 16
+  }
+]

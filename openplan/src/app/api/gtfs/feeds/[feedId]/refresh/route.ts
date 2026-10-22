@@ -20,6 +20,7 @@ import { runGtfsIngest } from "@/lib/gtfs/ingest";
 import { GTFS_FEED_REFRESH_SOURCE_COLUMNS } from "@/lib/gtfs/route-projections";
 import { managedGtfsEnabled, managedGtfsRouteSubmission } from "@/lib/gtfs/managed-route";
 import { resolveManagedGtfsSubmission } from "@/lib/gtfs/managed-source";
+import { checkWorkspaceStorageRoom, workspaceStorageRefusal } from "@/lib/workspaces/storage-quota";
 
 /**
  * FETCH THIS FEED AGAIN, FROM WHERE THE DATABASE SAYS IT CAME FROM.
@@ -339,6 +340,20 @@ export async function POST(
         },
         { status: 422 }
       );
+    }
+
+    // Before an agent approval is spent: a fetched archive's size is unknown
+    // until it arrives, so this refuses a workspace already at its storage
+    // limit; the per-archive ceiling bounds the rest.
+    const room = await checkWorkspaceStorageRoom(service, workspaceId, 0);
+    if (room.status !== "room") {
+      audit.warn("gtfs_feed_workspace_storage_refused", {
+        workspaceId,
+        feedId,
+        status: room.status,
+        ...(room.status === "full" ? { usedBytes: room.usedBytes, quotaBytes: room.quotaBytes } : { detail: room.detail }),
+      });
+      return workspaceStorageRefusal(room);
     }
 
     /**

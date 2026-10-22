@@ -1,0 +1,6 @@
+{
+  "state": "failed",
+  "reason": "modelpoint-selected-subnet broken observation accidentally equals newly selected target subnet after replacement",
+  "nativeNetworkLaunched": false,
+  "failedSourceRetained": "failed-explicit-observer-source.py"
+}

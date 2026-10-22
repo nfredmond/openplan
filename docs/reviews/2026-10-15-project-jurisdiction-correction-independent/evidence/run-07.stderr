@@ -1,0 +1,19 @@
+{
+  "mode": "inflight",
+  "result": "AssertionError",
+  "diagnostic": "Expected values to be strictly equal:\n\n1 !== 0\n",
+  "checked": [
+    "scope round trip refuses userId=actor-B",
+    "explicit restart userId=actor-B",
+    "scope round trip refuses workspaceId=workspace-B",
+    "explicit restart workspaceId=workspace-B",
+    "scope round trip refuses projectId=review-project-B",
+    "explicit restart projectId=review-project-B",
+    "scope round trip refuses revision=revision-B",
+    "explicit restart revision=revision-B",
+    "scope round trip refuses canWrite=false",
+    "explicit restart canWrite=false",
+    "scope round trip refuses canWrite=undefined",
+    "explicit restart canWrite=undefined"
+  ]
+}

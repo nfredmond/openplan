@@ -66,7 +66,7 @@ function commentsAcrossWeeks(weeks: number): EngagementCommentRow[] {
 
 describe("comments coming in", () => {
   it("says a failed read failed — and never draws it as zero", () => {
-    const series = commentsReceivedOverTime(commentsRead([], { failed: true }), NOW);
+    const series = commentsReceivedOverTime(commentsRead([], { failed: true }), NOW, "UTC");
 
     expect(series.points).toEqual([]);
     expect(series.blockedKind).toBe("unreadable");
@@ -75,8 +75,8 @@ describe("comments coming in", () => {
   });
 
   it("distinguishes an empty workspace from a failed read, in kind and in words", () => {
-    const empty = commentsReceivedOverTime(commentsRead([]), NOW);
-    const failed = commentsReceivedOverTime(commentsRead([], { failed: true }), NOW);
+    const empty = commentsReceivedOverTime(commentsRead([]), NOW, "UTC");
+    const failed = commentsReceivedOverTime(commentsRead([], { failed: true }), NOW, "UTC");
 
     expect(empty.blockedKind).toBe("empty");
     expect(failed.blockedKind).toBe("unreadable");
@@ -85,7 +85,7 @@ describe("comments coming in", () => {
   });
 
   it("calls a pending migration what it is, rather than a failure", () => {
-    const series = commentsReceivedOverTime(commentsRead([], { pending: true }), NOW);
+    const series = commentsReceivedOverTime(commentsRead([], { pending: true }), NOW, "UTC");
     expect(series.blockedKind).toBe("pending");
     expect(series.blockedReason).toMatch(/migration/i);
   });
@@ -93,21 +93,22 @@ describe("comments coming in", () => {
   it("refuses to total a read that hit its cap", () => {
     const series = commentsReceivedOverTime(
       commentsRead(commentsAcrossWeeks(6), { truncated: true }),
-      NOW
+      NOW,
+      "UTC"
     );
     expect(series.points).toEqual([]);
     expect(series.blockedKind).toBe("truncated");
   });
 
   it("refuses a line through two weeks — two points are not a trend", () => {
-    const series = commentsReceivedOverTime(commentsRead(commentsAcrossWeeks(2)), NOW);
+    const series = commentsReceivedOverTime(commentsRead(commentsAcrossWeeks(2)), NOW, "UTC");
     expect(series.points).toEqual([]);
     expect(series.blockedKind).toBe("insufficient");
     expect(series.blockedReason).toMatch(/not a trend/i);
   });
 
   it("draws a running total once three weeks have comments, and never goes down", () => {
-    const series = commentsReceivedOverTime(commentsRead(commentsAcrossWeeks(4)), NOW);
+    const series = commentsReceivedOverTime(commentsRead(commentsAcrossWeeks(4)), NOW, "UTC");
 
     expect(series.blockedReason).toBeNull();
     // Every week in the window is drawn, silent ones included — a skipped week
@@ -119,7 +120,7 @@ describe("comments coming in", () => {
   });
 
   it("carries the weekly arrival in each point, so a flat stretch reads as a quiet week", () => {
-    const series = commentsReceivedOverTime(commentsRead(commentsAcrossWeeks(4)), NOW);
+    const series = commentsReceivedOverTime(commentsRead(commentsAcrossWeeks(4)), NOW, "UTC");
     const silent = series.points.find((point) => point.detail?.includes("0 new comments"));
     expect(silent).toBeDefined();
   });

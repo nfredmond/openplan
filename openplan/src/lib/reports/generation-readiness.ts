@@ -2,9 +2,12 @@ import type { DatasetDependentOutputContext } from "@/lib/data-sources/dataset-d
 import {
   buildProjectFundingProfileScan,
   type ProjectFundingProfileScan,
-  type ProjectFundingSnapshot,
 } from "@/lib/projects/funding";
-import type { ReportComparisonSnapshotAggregate } from "@/lib/reports/catalog";
+import {
+  isCompleteFundingSnapshot,
+  type ReportComparisonSnapshotAggregate,
+  type ReportFundingSnapshot,
+} from "@/lib/reports/catalog";
 
 export type ReportGenerationReadinessStatus =
   | "ready"
@@ -75,8 +78,21 @@ function summarizeDataLineage(
 }
 
 function fundingCheck(
-  fundingProfileScan: ProjectFundingProfileScan | null
+  fundingProfileScan: ProjectFundingProfileScan | null,
+  fundingSnapshotIncomplete = false
 ): ReportGenerationReadinessCheck {
+  if (fundingSnapshotIncomplete) {
+    return {
+      id: "funding_profile",
+      label: "Funding profile scan",
+      status: "unknown",
+      statusLabel: "Funding figures not recorded",
+      detail:
+        "The saved funding snapshot is missing some dollar figures, so funding readiness is not assessed.",
+      nextAction: "Regenerate the packet to save the current funding figures.",
+    };
+  }
+
   if (!fundingProfileScan) {
     return {
       id: "funding_profile",
@@ -226,7 +242,7 @@ export function buildReportGenerationReadiness(input: {
   sourceContext: Record<string, unknown> | null;
   driftedSourceCount: number;
   comparisonAggregate?: ReportComparisonSnapshotAggregate | null;
-  fundingSnapshot?: ProjectFundingSnapshot | null;
+  fundingSnapshot?: ReportFundingSnapshot | null;
   datasetOutputContexts?: DatasetDependentOutputContext[];
   /**
    * Honest framing when the latest refresh-log entry for a linked dataset is
@@ -237,15 +253,21 @@ export function buildReportGenerationReadiness(input: {
   refreshLogNote?: string | null;
   now?: Date | string;
 }): ReportGenerationReadiness {
-  const fundingProfileScan = input.fundingSnapshot
-    ? buildProjectFundingProfileScan({
-        summary: input.fundingSnapshot,
-        hasComparisonEvidence: Boolean(
-          input.comparisonAggregate && input.comparisonAggregate.comparisonSnapshotCount > 0
-        ),
-        now: input.now,
-      })
-    : null;
+  const fundingSnapshot = input.fundingSnapshot ?? null;
+  // A saved snapshot missing a dollar figure is not scanned: the scan would
+  // treat the missing figure as $0 and could report a gap as covered.
+  const fundingSnapshotIncomplete =
+    fundingSnapshot !== null && !isCompleteFundingSnapshot(fundingSnapshot);
+  const fundingProfileScan =
+    fundingSnapshot !== null && isCompleteFundingSnapshot(fundingSnapshot)
+      ? buildProjectFundingProfileScan({
+          summary: fundingSnapshot,
+          hasComparisonEvidence: Boolean(
+            input.comparisonAggregate && input.comparisonAggregate.comparisonSnapshotCount > 0
+          ),
+          now: input.now,
+        })
+      : null;
   const dataLineageSummary = summarizeDataLineage(input.datasetOutputContexts ?? []);
   const sourceContextCheck: ReportGenerationReadinessCheck = !hasSourceContext(input.sourceContext)
     ? {
@@ -285,7 +307,7 @@ export function buildReportGenerationReadiness(input: {
   const checks = [
     sourceContextCheck,
     comparisonContextCheck(input.comparisonAggregate),
-    fundingCheck(fundingProfileScan),
+    fundingCheck(fundingProfileScan, fundingSnapshotIncomplete),
     dataLineageCheck(dataLineageSummary, input.refreshLogNote ?? null),
   ];
   const firstAction = [...checks].sort(

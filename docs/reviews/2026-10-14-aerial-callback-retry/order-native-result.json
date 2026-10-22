@@ -1,0 +1,16 @@
+{
+  "scope": "isolated_selected409_compiled_route_sdk_http",
+  "firstWriteInterrupted": true,
+  "originalLedgerRetained": true,
+  "exactRetryApplied": true,
+  "changedPayloadRefused": true,
+  "foreignWorkerRefused": true,
+  "concurrentStateRefused": true,
+  "terminalStatePreserved": true,
+  "newerSameStatusPreserved": true,
+  "sameStatusRaceFenced": true,
+  "fullNextBuildAcceptance": false,
+  "browserAcceptance": false,
+  "hostedAcceptance": false,
+  "routeSha256": "e89244765600a36fcd0af3d18f6a1a50139e07844e34088e535797067b1ed9b6"
+}

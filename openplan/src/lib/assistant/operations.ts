@@ -126,10 +126,10 @@ function describeWorkspaceNextCommandLink(context: {
     const overdueCount = context.operationsSummary.counts.overdueDecisionFundingOpportunities;
     const leadOpportunityTitle = nextCommand.targetOpportunityTitle ?? null;
     return {
-      label: "Open overdue grant decision lane",
+      label: "Open overdue grant decisions",
       statusLabel: `${overdueCount} overdue decision${overdueCount === 1 ? "" : "s"}`,
       reason: `Monitored funding opportunities are already past their recorded decision deadline while the window is still open, so these pursue or skip calls outrank newer closing-soon timing before less urgent cleanup.${leadOpportunityTitle ? ` ${leadOpportunityTitle} is the lead overdue monitor decision to resolve first.` : ""}`,
-      auditNote: `Use the focused grants opportunity lane to resolve the lapsed decision as pursue or skip before acting on newer closing windows.${leadOpportunityTitle ? ` Lead overdue monitor decision: ${leadOpportunityTitle}.` : ""}`,
+      auditNote: `On the Grants page, resolve the lapsed decision as pursue or skip before acting on newer closing windows.${leadOpportunityTitle ? ` Lead overdue monitor decision: ${leadOpportunityTitle}.` : ""}`,
     };
   }
 
@@ -156,7 +156,7 @@ function describeWorkspaceNextCommandLink(context: {
     const modelingSummary = context.operationsSummary.grantModelingSummary;
     const decisionReadyCount = modelingSummary.breakdown.decisionReady;
     return {
-      label: decisionReadyCount > 0 ? "Open decision-ready grant lane" : "Open lead grant decision lane",
+      label: decisionReadyCount > 0 ? "Open decision-ready grants" : "Open lead grant decision",
       statusLabel: decisionReadyCount > 0 ? `${decisionReadyCount} decision-ready` : "Modeling context available",
       reason: modelingSummary.leadDecisionDetail ?? undefined,
       auditNote:
@@ -167,10 +167,10 @@ function describeWorkspaceNextCommandLink(context: {
   if (nextCommand.key === "advance-project-funding-decisions") {
     const leadOpportunityTitle = nextCommand.targetOpportunityTitle ?? null;
     return {
-      label: "Open lead grant decision lane",
+      label: "Open lead grant decision",
       statusLabel: "Workspace command",
-      reason: `The shared workspace queue has a linked funding opportunity that still needs a pursue or skip call before the lane is treated as a true funding stack.${leadOpportunityTitle ? ` ${leadOpportunityTitle} is the lead opportunity decision to advance first.` : ""}`,
-      auditNote: `Use the focused grants opportunity lane to advance pursue or skip before changing records.${leadOpportunityTitle ? ` Lead opportunity decision: ${leadOpportunityTitle}.` : ""}`,
+      reason: `The shared workspace queue has a linked funding opportunity that still needs a pursue or skip call before it can count toward the project's funding.${leadOpportunityTitle ? ` ${leadOpportunityTitle} is the lead opportunity decision to advance first.` : ""}`,
+      auditNote: `On the Grants page, decide pursue or skip before changing records.${leadOpportunityTitle ? ` Lead opportunity decision: ${leadOpportunityTitle}.` : ""}`,
     };
   }
 
@@ -180,17 +180,17 @@ function describeWorkspaceNextCommandLink(context: {
       label: "Open lead closing funding window",
       statusLabel: "Workspace command",
       reason: `Monitored funding windows are closing within the near-term timing horizon, so reopening the lead opportunity outranks less urgent cleanup before the window locks.${leadOpportunityTitle ? ` ${leadOpportunityTitle} is the lead closing window to reopen first.` : ""}`,
-      auditNote: `Use the focused grants opportunity lane to review the closing window before acting on later-dated entries.${leadOpportunityTitle ? ` Lead closing window: ${leadOpportunityTitle}.` : ""}`,
+      auditNote: `On the Grants page, review the closing window before acting on later-dated entries.${leadOpportunityTitle ? ` Lead closing window: ${leadOpportunityTitle}.` : ""}`,
     };
   }
 
   if (nextCommand.key === "record-awarded-funding") {
     const leadOpportunityTitle = nextCommand.targetOpportunityTitle ?? null;
     return {
-      label: "Open lead award conversion lane",
+      label: "Open lead awarded opportunity",
       statusLabel: "Workspace command",
       reason: `An opportunity is already marked awarded but still has no funding-award record, so closing that committed-dollar bookkeeping gap outranks further gap analysis.${leadOpportunityTitle ? ` ${leadOpportunityTitle} is the lead awarded opportunity to convert first.` : ""}`,
-      auditNote: `Use the grants award conversion lane to record the committed dollars before the shortfall math is treated as final.${leadOpportunityTitle ? ` Lead awarded opportunity: ${leadOpportunityTitle}.` : ""}`,
+      auditNote: `On the Grants page, record the committed dollars before the shortfall math is treated as final.${leadOpportunityTitle ? ` Lead awarded opportunity: ${leadOpportunityTitle}.` : ""}`,
     };
   }
 
@@ -198,7 +198,7 @@ function describeWorkspaceNextCommandLink(context: {
     label: `Open ${nextCommand.title}`,
     statusLabel: "Workspace command",
     reason: "Your workspace queue has the clearest guidance on what to do next here.",
-    auditNote: "Use the command-board rationale before changing records or regenerating artifacts.",
+    auditNote: "Check why the workspace queue ranks this first before changing records or regenerating artifacts.",
   };
 }
 
@@ -281,7 +281,7 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
     context.operationsSummary.counts.projectFundingNeedAnchorProjects > 0 && fundingAnchorCommand?.targetProjectId
       ? quickLink(
           "workspace-create-funding-profile",
-          "Create lead funding anchor now",
+          "Create lead funding target now",
           resolveWorkspaceCommandHref(fundingAnchorCommand),
           {
             targetKind: "workspace",
@@ -296,9 +296,9 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
             executeAction: {
               kind: "create_project_funding_profile",
               projectId: fundingAnchorCommand.targetProjectId,
-              notes: "Planner Agent created this funding profile anchor from the workspace funding queue. Add funding need and local match next.",
+              notes: "Planner Agent created this funding target record from the workspace funding queue. Add funding need and local match next.",
               postActionWorkflowId: "workspace-funding",
-              postActionPrompt: "A lead project funding profile anchor was created from the workspace queue. Which funding lane should move next, and what still needs to be filled in?",
+              postActionPrompt: "A funding target record was created for the lead project from the workspace queue. What funding work should come next, and what still needs to be filled in?",
               postActionPromptLabel: "Review workspace funding posture",
             },
           }
@@ -324,7 +324,7 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
               projectId: fundingSourcingCommand.targetProjectId,
               title: `${fundingSourcingCommand.targetProjectName ?? "Project"} funding opportunity`,
               postActionWorkflowId: "workspace-funding",
-              postActionPrompt: "A lead workspace funding opportunity record was created from the sourcing list. Which grant lane should move next?",
+              postActionPrompt: "A lead workspace funding opportunity record was created from the sourcing list. What grant work should come next?",
               postActionPromptLabel: "Review workspace funding posture",
             },
           }
@@ -350,7 +350,7 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
               opportunityId: fundingDecisionCommand.targetOpportunityId,
               decisionState: "pursue",
               postActionWorkflowId: "workspace-funding",
-              postActionPrompt: "A lead funding opportunity was marked pursue from the workspace queue. Which grant lane should move next?",
+              postActionPrompt: "A lead funding opportunity was marked pursue from the workspace queue. What grant work should come next?",
               postActionPromptLabel: "Review workspace funding posture",
             },
           }
@@ -383,7 +383,7 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
               invoiceId: invoiceRelinkCommand.targetInvoiceId,
               fundingAwardId: invoiceRelinkCommand.targetFundingAwardId,
               postActionWorkflowId: "workspace-funding",
-              postActionPrompt: "A lead invoice was relinked to its funding award from the workspace queue. Which reimbursement or billing lane should move next?",
+              postActionPrompt: "A lead invoice was relinked to its funding award from the workspace queue. What reimbursement or billing work should come next?",
               postActionPromptLabel: "Review workspace reimbursement status",
             },
           }
@@ -413,7 +413,7 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
               status: "draft",
               notes: "Planner Agent created this reimbursement packet starter from the workspace funding queue. Link award-specific backup and invoice chain next.",
               postActionWorkflowId: "workspace-funding",
-              postActionPrompt: "A lead reimbursement packet was created from the workspace queue. Which funding or invoicing lane should move next?",
+              postActionPrompt: "A lead reimbursement packet was created from the workspace queue. What funding or invoicing work should come next?",
               postActionPromptLabel: "Review workspace reimbursement status",
             },
           }
@@ -422,7 +422,7 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
     reimbursementAdvanceCommand?.targetProjectId
       ? quickLink(
           "workspace-open-reimbursement-lane",
-          "Open lead reimbursement lane",
+          "Open lead reimbursement invoice",
           resolveWorkspaceCommandHref(reimbursementAdvanceCommand),
           {
             targetKind: "workspace",
@@ -477,7 +477,7 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
       ? quickLink(
           "workspace-funding-agent",
           context.operationsSummary.counts.projectFundingNeedAnchorProjects > 0
-            ? "Review missing funding anchors in panel"
+            ? "Review missing funding targets in panel"
             : context.operationsSummary.counts.projectFundingSourcingProjects > 0
               ? "Review funding sourcing gaps in panel"
               : context.operationsSummary.counts.projectFundingDecisionProjects > 0
@@ -515,7 +515,7 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
           priority: fundingAnchorCommand || fundingSourcingCommand || fundingDecisionCommand || fundingAwardRecordCommand || invoiceRelinkCommand || reimbursementStartCommand || reimbursementAdvanceCommand || fundingGapCommand ? "primary" : "secondary",
           statusLabel:
             context.operationsSummary.counts.projectFundingNeedAnchorProjects > 0
-              ? `${context.operationsSummary.counts.projectFundingNeedAnchorProjects} missing anchor${context.operationsSummary.counts.projectFundingNeedAnchorProjects === 1 ? "" : "s"}`
+              ? `${context.operationsSummary.counts.projectFundingNeedAnchorProjects} funding target${context.operationsSummary.counts.projectFundingNeedAnchorProjects === 1 ? "" : "s"} missing`
               : context.operationsSummary.counts.projectFundingSourcingProjects > 0
                 ? `${context.operationsSummary.counts.projectFundingSourcingProjects} need sourcing`
                 : context.operationsSummary.counts.projectFundingDecisionProjects > 0
@@ -559,7 +559,7 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
                 : context.operationsSummary.counts.projectFundingAwardRecordProjects > 0
                   ? "Which projects already have awarded opportunities but still no funding-award record, and where should I start reconciling committed dollars?"
                   : invoiceRelinkCommand
-                    ? "Which invoice can be safely relinked to a funding award right now, and what reimbursement lane should move next?"
+                    ? "Which invoice can be safely relinked to a funding award right now, and what reimbursement work should come next?"
                   : reimbursementStartCommand
                     ? "Which projects already have committed awards but still need their first reimbursement packet, and where should I start?"
                     : reimbursementAdvanceCommand
@@ -567,7 +567,7 @@ function buildWorkspaceOperations(context: WorkspaceAssistantContext): Assistant
               : "Which project funding gaps need attention across this workspace, and where should I start?",
           promptLabel:
             context.operationsSummary.counts.projectFundingNeedAnchorProjects > 0
-              ? "Review missing funding anchors in panel"
+              ? "Review missing funding targets in panel"
               : context.operationsSummary.counts.projectFundingSourcingProjects > 0
                 ? "Review funding sourcing gaps in panel"
                 : context.operationsSummary.counts.projectFundingDecisionProjects > 0
@@ -764,7 +764,7 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
   const recommendedReport = context.reportSummary.recommendedReport;
   const comparisonEvidenceReason =
     comparisonBackedReportCount > 0
-      ? ` Saved comparison context from ${recommendedReport?.title ?? "the project reporting lane"} can support grant planning language, but it does not prove award likelihood or replace funding source review.`
+      ? ` Saved comparison context from ${recommendedReport?.title ?? "the project's reports"} can support grant planning language, but it does not prove award likelihood or replace funding source review.`
       : "";
 
   return compactQuickLinks([
@@ -778,7 +778,7 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
           reason:
             context.fundingSummary.fundingNeedAmount !== null
               ? "This project already has a recorded funding need but still no linked funding opportunities, so sourcing candidate programs is the next honest move."
-              : "This project still has no linked funding opportunity records, so the grants lane is not anchored at the project level yet.",
+              : "This project still has no linked funding opportunity records, so grant tracking has not started for it yet.",
           approval: "approval_required",
           auditEvent: "assistant.operation.project.create_funding_opportunity",
           auditNote: "Creates the first funding opportunity record on the project so grant tracking can start from the project control room.",
@@ -794,7 +794,7 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
       : null,
     context.fundingSummary.opportunityCount > 0
       && context.fundingSummary.fundingNeedAmount === null
-      ? quickLink("project-create-funding-profile", "Create funding need anchor", `/projects/${context.project.id}#project-funding-opportunities`, {
+      ? quickLink("project-create-funding-profile", "Create funding target", `/projects/${context.project.id}#project-funding-opportunities`, {
           targetKind: "project",
           actionClass: "review_controls",
           executionMode: "future_agent_action",
@@ -807,9 +807,9 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
           executeAction: {
             kind: "create_project_funding_profile",
             projectId: context.project.id,
-            notes: "Planner Agent created this funding profile anchor. Add funding need and local match next.",
+            notes: "Planner Agent created this funding target record. Add funding need and local match next.",
             postActionWorkflowId: "project-funding",
-            postActionPrompt: "A project funding profile anchor was created. What should be filled in next before this funding gap can be measured honestly?",
+            postActionPrompt: "A funding target record was created for this project. What should be filled in next before this funding gap can be measured honestly?",
             postActionPromptLabel: "Review project funding posture",
           },
         })
@@ -821,7 +821,7 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
           executionMode: "future_agent_action",
           priority: "primary",
           statusLabel: leadFundingOpportunity.status === "open" ? "Decision needed" : "Queue next grant",
-          reason: `No linked opportunity is currently marked pursue, so ${leadFundingOpportunity.title} is the cleanest next grant decision to advance from the project lane.`,
+          reason: `No linked opportunity is currently marked pursue, so ${leadFundingOpportunity.title} is the cleanest next grant decision to advance on this project.`,
           approval: "approval_required",
           auditEvent: "assistant.operation.project.advance_funding_opportunity",
           auditNote: "Updates the lead funding opportunity decision through the normal route, and the change is recorded in the activity log so the project has a a recorded decision to pursue or skip.",
@@ -830,7 +830,7 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
             opportunityId: leadFundingOpportunity.id,
             decisionState: "pursue",
             postActionWorkflowId: "project-funding",
-            postActionPrompt: `The lead funding opportunity ${leadFundingOpportunity.title} was marked pursue. What should be reviewed next on this project funding lane?`,
+            postActionPrompt: `The lead funding opportunity ${leadFundingOpportunity.title} was marked pursue. What should be reviewed next on this project's funding?`,
             postActionPromptLabel: "Review project funding posture",
           },
         })
@@ -895,7 +895,7 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
         })
       : null,
     awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
-      ? quickLink("project-reimbursement-lane", reimbursementPacketCount > 0 ? "Open reimbursement lane" : "Open invoice register", `/projects/${context.project.id}#project-invoices`, {
+      ? quickLink("project-reimbursement-lane", reimbursementPacketCount > 0 ? "Open reimbursement invoices" : "Open invoice register", `/projects/${context.project.id}#project-invoices`, {
           targetKind: "project",
           actionClass: "review_controls",
           priority: "primary",
@@ -956,7 +956,7 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
                 : awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0
                   ? `Committed awards are recorded, but reimbursement has not yet caught up to the full awards, so the invoice register deserves attention before routine cleanup.${comparisonEvidenceReason}`
                   : (projectGapAmount ?? 0) > 0
-                    ? `This project still shows uncovered funding need after current pursued dollars, so the grants lane should stay in front of routine cleanup.${comparisonEvidenceReason}`
+                    ? `This project still shows uncovered funding need after current pursued dollars, so grant work should stay in front of routine cleanup.${comparisonEvidenceReason}`
                     : `Funding opportunities are already linked to this project, so grant posture should stay visible in the control room.${comparisonEvidenceReason}`,
           approval: "review",
           auditEvent: "assistant.operation.project.funding_agent",
@@ -1089,7 +1089,7 @@ function buildProjectOperations(context: ProjectAssistantContext): AssistantQuic
                 ? `Use the project invoice register to move committed awards into reimbursement workflow before the delivery record falls behind.${comparisonEvidenceReason}`
                 : (projectGapAmount ?? 0) > 0
                   ? `Use the project funding section to close the remaining uncovered gap before delivery scope drifts ahead of funding reality.${comparisonEvidenceReason}`
-                  : `Use the project funding section as the canonical grant strategy lane for this project.${comparisonEvidenceReason}`,
+                  : `Keep this project's grant strategy in the project funding section.${comparisonEvidenceReason}`,
           approval: "review",
           auditEvent: "assistant.operation.project.funding_record",
           auditNote: "Confirm funding gap, opportunity status, award timing, and reimbursement status before promising delivery scope.",
@@ -1208,7 +1208,7 @@ function buildRtpRegistryOperations(context: RtpRegistryAssistantContext): Assis
             context.operationsSummary.nextCommand.key === "review-current-report-packets" &&
             context.operationsSummary.counts.rtpFundingReviewPackets > 0
               ? nextCommandLink.auditNote
-              : "Use the command-board rationale before changing cycle, report, or packet freshness.",
+              : "Check why the workspace queue ranks this first before changing cycle, report, or packet freshness.",
         })
       : null,
     quickLink("rtp-registry-surface", "Open RTP registry", "/rtp", {
@@ -1375,7 +1375,7 @@ function buildRtpOperations(context: RtpAssistantContext): AssistantQuickLink[] 
             context.operationsSummary.nextCommand.key === "review-current-report-packets" &&
             context.operationsSummary.counts.rtpFundingReviewPackets > 0
               ? nextCommandLink.auditNote
-              : "Use the command-board rationale before changing cycle, chapter, or packet freshness.",
+              : "Check why the workspace queue ranks this first before changing cycle, chapter, or packet freshness.",
         })
       : null,
     quickLink("rtp-record", "Open RTP cycle", `/rtp/${context.rtpCycle.id}`, {
@@ -1465,7 +1465,7 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
           reason:
             context.fundingSummary.fundingNeedAmount !== null
               ? "This package already carries a linked project funding need but still no funding opportunities, so sourcing candidate programs is the next honest move."
-              : "This package still has no linked funding opportunity records, so the grants operating lane is not anchored yet.",
+              : "This package still has no linked funding opportunity records, so grant tracking has not started for it yet.",
           approval: "approval_required",
           auditEvent: "assistant.operation.program.create_funding_opportunity",
           auditNote: "Creates the first funding opportunity record for this package so grant tracking can start inside OpenPlan.",
@@ -1483,7 +1483,7 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
     context.fundingSummary.opportunityCount > 0
       && context.fundingSummary.fundingNeedAmount === null
       && context.project
-      ? quickLink("program-create-funding-profile", "Create funding need anchor", `/programs/${context.program.id}#program-funding-opportunities`, {
+      ? quickLink("program-create-funding-profile", "Create funding target", `/programs/${context.program.id}#program-funding-opportunities`, {
           targetKind: "program",
           actionClass: "review_controls",
           executionMode: "future_agent_action",
@@ -1496,9 +1496,9 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
           executeAction: {
             kind: "create_project_funding_profile",
             projectId: context.project.id,
-            notes: `Planner Agent created this funding profile anchor from ${context.program.title}. Add funding need and local match next.`,
+            notes: `Planner Agent created this funding target record from ${context.program.title}. Add funding need and local match next.`,
             postActionWorkflowId: "program-funding",
-            postActionPrompt: "A project funding profile anchor was created for this package. What should be filled in next before the funding gap can be measured honestly?",
+            postActionPrompt: "A funding target record was created for this package's project. What should be filled in next before the funding gap can be measured honestly?",
             postActionPromptLabel: "Review package funding posture",
           },
         })
@@ -1519,7 +1519,7 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
             opportunityId: leadFundingOpportunity.id,
             decisionState: "pursue",
             postActionWorkflowId: "program-funding",
-            postActionPrompt: `The lead funding opportunity ${leadFundingOpportunity.title} was marked pursue. What should be reviewed next on this package funding lane?`,
+            postActionPrompt: `The lead funding opportunity ${leadFundingOpportunity.title} was marked pursue. What should be reviewed next on this package's funding?`,
             postActionPromptLabel: "Review package funding posture",
           },
         })
@@ -1584,7 +1584,7 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
         })
       : null,
     awardRecordCount === 0 && awardCount > 0 && (uninvoicedAwardAmount ?? 0) > 0 && context.project
-      ? quickLink("program-reimbursement-lane", reimbursementPacketCount > 0 ? "Open reimbursement lane" : "Open invoice register", `/projects/${context.project.id}#project-invoices`, {
+      ? quickLink("program-reimbursement-lane", reimbursementPacketCount > 0 ? "Open reimbursement invoices" : "Open invoice register", `/projects/${context.project.id}#project-invoices`, {
           targetKind: "project",
           actionClass: "review_controls",
           priority: "primary",
@@ -1725,7 +1725,7 @@ function buildProgramOperations(context: ProgramAssistantContext): AssistantQuic
                 ? "Use the linked project invoice register to move committed package awards into reimbursement workflow before downstream the delivery record falls behind."
                 : (programGapAmount ?? 0) > 0
                   ? "Use the package funding section to close the linked project funding gap before downstream packet or delivery assumptions harden."
-                  : "Use the linked funding-opportunities section as the canonical grant posture lane for this package.",
+                  : "Keep this package's grant status in the linked funding-opportunities section.",
           approval: "review",
           auditEvent: "assistant.operation.program.funding_record",
           auditNote: "Funding decisions should stay tied to this package before they ripple into the wider project or RTP record.",
@@ -2190,7 +2190,7 @@ function buildGrantsLaneOperations(context: WorkspaceAssistantContext): Assistan
     workspaceId && reimbursementStartCommand?.targetProjectId
       ? quickLink(
           "grants-lane-award-invoicing",
-          "Open uninvoiced award lane",
+          "Open uninvoiced awards",
           buildInvoicingHref({
             workspaceId,
             linkage: "unlinked",

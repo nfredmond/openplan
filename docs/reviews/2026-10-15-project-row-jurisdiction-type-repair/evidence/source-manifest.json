@@ -1,0 +1,18 @@
+{
+  "baseCommit": "80e3035098159deb3127bbb277226ae6f5872870",
+  "checkout": "/home/nathaniel/.t3/worktrees/openplan/t3-42303f19",
+  "sourceFiles": {
+    "openplan/src/app/(app)/projects/[projectId]/_components/_types.ts": "7737a874603333c8cab22836f5acedeb38c6777943aaaeba4d946c1ef172fe53",
+    "openplan/src/test/project-detail-page.test.tsx": "4f4fb981227bbb9cca565397066576d2c3237a1102a968345647bdaef85c08f2",
+    "openplan/src/test/the-deliverable-update-control-is-reachable.test.tsx": "cc7f2c080e4213532a3cc5dbecd00ac8036ddb01e179639b0a323d4d5b7fbadd",
+    "openplan/src/test/the-record-reassignment-control-is-reachable.test.tsx": "6ed4fca3f20b1cb90f3f2c6b3ea459a44f12721abb9bd7c5cce8c252129c5740"
+  },
+  "privateCopiesMatch": {
+    "openplan/src/app/(app)/projects/[projectId]/_components/_types.ts": true,
+    "openplan/src/test/project-detail-page.test.tsx": true,
+    "openplan/src/test/the-deliverable-update-control-is-reachable.test.tsx": true,
+    "openplan/src/test/the-record-reassignment-control-is-reachable.test.tsx": true
+  },
+  "checkModel": "Scoped compiler API diagnostics, not full-project TypeScript",
+  "dependencyRoot": "/home/nathaniel/.t3/worktrees/openplan/t3-0f743997/openplan/node_modules"
+}

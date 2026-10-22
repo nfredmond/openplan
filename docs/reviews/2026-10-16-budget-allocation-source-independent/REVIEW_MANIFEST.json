@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "subject": "9b6da72af62732eb4ac773caad15473fe3ad13b6",
+  "verdict": "APPROVE_BOUNDED_SOURCE_PREPARATION",
+  "findings": {
+    "P1": [],
+    "P2": [],
+    "P3": [],
+    "PREP": []
+  },
+  "public": {
+    "EVIDENCE_SEAL.json": {
+      "sha256": "799fef620bd9bec71598626e58fb30648ce971cd1c0f3a4184d5c530ebaf4345",
+      "bytes": 4483
+    },
+    "REPORT.md": {
+      "sha256": "a9700cfc52bfdf4f36d9f12c818228ffdcece33f95edd18dd4630a61709ba0f1",
+      "bytes": 24573
+    },
+    "SOURCE_PINS.sha256": {
+      "sha256": "2d1237f6f6672230c5e27ebc41a85f300be113c9e0cc1ca890a0aabd8d5cce2a",
+      "bytes": 6898
+    },
+    "VALIDATION.md": {
+      "sha256": "27eee051807c505062c3931eb8c10dd04aac9f812b4a389e26728833ba5ee9b5",
+      "bytes": 10944
+    }
+  },
+  "selfExcluded": true,
+  "finish": "ONE_CLEAN_LOCAL_DOCS_ONLY_COMMIT",
+  "nativeOperationGranted": false,
+  "pushed": false,
+  "joined": false,
+  "PR": false,
+  "release": false
+}

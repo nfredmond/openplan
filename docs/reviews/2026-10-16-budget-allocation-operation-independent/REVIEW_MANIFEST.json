@@ -1,0 +1,51 @@
+{
+  "exclusive": false,
+  "findings": {
+    "P1": [],
+    "P2": [],
+    "P3": [],
+    "PREP": []
+  },
+  "finish": "ONE_CLEAN_LOCAL_DOCS_ONLY_COMMIT_NO_PUSH_PR_INTEGRATION_OR_OPERATION",
+  "nativeOperationGranted": false,
+  "notAfter": null,
+  "notBefore": null,
+  "parent": "9b6da72af62732eb4ac773caad15473fe3ad13b6",
+  "public": {
+    "EVIDENCE_SEAL.json": {
+      "bytes": 3330,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "e8e54c88849249211421fd37f1a89779d5acc6702d0588711221f0c9c8884456",
+      "uid": 1000
+    },
+    "REPORT.md": {
+      "bytes": 25103,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "9c8b3d4d006fc5d1711f2179806c593feb1c94ad7dc26e446ec0f8f8572b4811",
+      "uid": 1000
+    },
+    "SOURCE_PINS.sha256": {
+      "bytes": 9031,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "541a354ca3221d0bea453d245e9029cea403567e09d58cd13252a5920b07ce5c",
+      "uid": 1000
+    },
+    "VALIDATION.md": {
+      "bytes": 12511,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "5c769124adae8d047a923722148dc258bcb30b751d618ccb4107b0a1dc495954",
+      "uid": 1000
+    }
+  },
+  "publicCountIncludingManifest": 5,
+  "publicationEnabled": false,
+  "schema": 1,
+  "selfExcluded": true,
+  "sourceReview": "44f2dbfc19fe35e382ee38711fe80b1ab22fe03d",
+  "subject": "1e7a88c1447b7492fa16536e9d69ecda8c138dd8",
+  "verdict": "CONDITIONAL_OPERATION_PROPOSAL_ACCEPTANCE_NO_OPERATING_AUTHORITY"
+}

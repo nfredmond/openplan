@@ -1,0 +1,16 @@
+{
+  "initial": {
+    "chunk_id": "c56446",
+    "wall_time_seconds": 1.00040116,
+    "session_id": 4142,
+    "original_token_count": 26,
+    "output": "Running as unit: openplan-budget-target-pure01.service; invocation ID: ae9127413be74a8ea696e4bd2ddb03e6\n"
+  },
+  "terminal": {
+    "chunk_id": "67cf51",
+    "wall_time_seconds": 0.000009128,
+    "exit_code": 1,
+    "original_token_count": 270,
+    "output": "Traceback (most recent call last):\n  File \"/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/window_runner.py\", line 86, in <module>\n    main()\n    ~~~~^^\n  File \"/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/window_runner.py\", line 64, in main\n    controls.main()\n    ~~~~~~~~~~~~~^^\n  File \"/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/controls.py\", line 466, in main\n    check(original.count(old.encode())==1,'mutation-unique-anchor:'+str(index))\n    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/controls.py\", line 26, in check\n    raise AssertionError(name)\nAssertionError: mutation-unique-anchor:5\n          Finished with result: exit-code\nMain processes terminated with: code=exited, status=1/FAILURE\n               Service runtime: 5.462s\n             CPU time consumed: 577ms\n                   Memory peak: 39M (swap: 0B)\n"
+  }
+}

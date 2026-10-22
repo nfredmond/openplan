@@ -1,0 +1,267 @@
+{
+  "frozenSource": {
+    "actualMap17BindingSHA256": "e5425e21b35c8c57faebebb771929a99c1600f0c21fa9f362c86ab0fef0018d5",
+    "appTree": "d577a9cd955018b3253f42b3d9af2a96a9a10b53",
+    "assignedCheckout": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee",
+    "branch": "t3/a0-migration-history-literal-correction",
+    "cleanParent": "5ad5b36e57eb3a9f288a50015d7d22d220a07f7e",
+    "connectorTree": "228ce912b1cf63dba408445422dc6e2b690d91f4",
+    "originalPlanSHA256": "f8b8a36f4439703964cd5d66d9e6408d37bc984215c6c07a5909a728af7db4e5",
+    "originalR6BindingSHA256": "ef4bd64e74f670c4eb8fa805b7d7bf1fc2f5720df2c1aaab9110612d98654b03",
+    "runtime": {
+      "cases.py": "d75049fd4a2cb6b92bf447e1292c1ffdb864c5aab3478a77f11ecd4c354bbbf9",
+      "continuation.py": "5d95283a72159dd60037dbce0483aecb79826dc7d0e66dd6108187d0d36f6ac8",
+      "controller.py": "385165f93c1ed28c732139d0ed82958df1bb20c463624d80b2b16dc08614ca9c",
+      "fixture.py": "c6259f3a51679e75aab940262f0f42e25c8d3b4d456881d85e1141653c610289",
+      "journal.py": "8a133c526070cdd70543a2c7cb1f6fff23c295b1d7214fee928d53eb1607a61e",
+      "literal_history.py": "c4ed381699f468403a04c248529985992b75b7dc504f6163b8d9fac7f03f204b",
+      "policy.py": "825aa4c501eb625eaa657bd987fc974b8980a9fbbd423ba6ce25012c927b7af6",
+      "run_stage.sh": "f8d028579cc85b9128923ba03101ee7b47f9197fc381efd3d603a34d1f9e0c67",
+      "sql/assertions.sql": "5df8ae78027e030a97cd259c5dc3f4ffcb72cb7cd28f707c4e9b5d8a78e80eef",
+      "sql/post_rollback.sql": "bf2611abdfb29ca54e45114f246c24d5952a893f8d5ee78db26f9572b165ff50",
+      "sql/shadows.sql": "a6f239b4e172e40c613d4d624c6ff8cbfb701005b7f33330f401a9141337be14"
+    },
+    "runtimeOrigin": "Eight byte-identical original R6 sources by source copy. literal_history changes18 constants only; controller has explicit new18 continuation; continuation.py new. No old subject imports.",
+    "sourceCheckout": "/home/nathaniel/.t3/worktrees/openplan/t3-ac91cc52",
+    "sourceCommit": "f8a571bb0a18b8b6501870acb5ef1e760d487e1c",
+    "sourceMigrationCount": 421
+  },
+  "inputInventory": {
+    "bytes": 1480117,
+    "gid": 1000,
+    "mode": 384,
+    "path": "/home/nathaniel/.local/state/openplan/a0-native18-continuation-independent-20261016/input-pins-before.json",
+    "sha256": "0bf1617fff55188092dd4c240ee985dd24805b20cea5e112ce79c94b89e7b58a",
+    "uid": 1000
+  },
+  "proofBoundary": "Exact committed source and retained metadata only. No admission, test/native acceptance, successor or release.",
+  "subjectCheckout": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee",
+  "subjectCommit": "d8b3a4eb9b21bd230ada830586a3785cb2b4e91a",
+  "subjectDirectory": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-native18-continuation",
+  "subjectEvidencePins": {
+    "bytes": 14720,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "877b6a501dd3413f645357b12ad92773f1dd888d5e5808e8c1a3baf5f3638943",
+    "uid": 1000
+  },
+  "subjectGitFiles": {
+    "docs/reviews/2026-10-16-a0-native18-continuation/CONTROL_PLAN.md": {
+      "bytes": 2520,
+      "matchesWorkingBytes": true,
+      "sha256": "c986a6e04d225b83755c7dc3365c8cce0a507b0516c71bf30e8dbeae63631f8c"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/DESIGN.md": {
+      "bytes": 13851,
+      "matchesWorkingBytes": true,
+      "sha256": "f01c5b95b9d4f3b740d50a7670db737342391efd09683bfa2f467c4cd85ff6ba"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/PARENT_RECIPE.md": {
+      "bytes": 2748,
+      "matchesWorkingBytes": true,
+      "sha256": "e1fbd4980df84c01d38f8f9d6bbc007f6c3e50900e888f55a7b5a7aafbfa344a"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/REPORT.md": {
+      "bytes": 13837,
+      "matchesWorkingBytes": true,
+      "sha256": "b015c4c9d368d63626ccb497b275015bb971a7abfdb081eb62fc456cbe0c0751"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/STATUS.md": {
+      "bytes": 2027,
+      "matchesWorkingBytes": true,
+      "sha256": "7fc8f2f6a28e7153bccfd78cb757b4ce7646e1383c66b91d1963a880388335b9"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/VALIDATION.md": {
+      "bytes": 4749,
+      "matchesWorkingBytes": true,
+      "sha256": "0e8e96e44b34e7f2ea3e04f4905851f208d64967e25b5ef28c9be08e5cac2e1e"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/checks.json": {
+      "bytes": 8226,
+      "matchesWorkingBytes": true,
+      "sha256": "06a29469f74b5e278e013e5ef9149a3f78c6aa8a0e282eb4585670cd9503de18"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/continued-predecessor.json": {
+      "bytes": 62995,
+      "matchesWorkingBytes": true,
+      "sha256": "e5425e21b35c8c57faebebb771929a99c1600f0c21fa9f362c86ab0fef0018d5"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/controls.py": {
+      "bytes": 18625,
+      "matchesWorkingBytes": true,
+      "sha256": "281e182829fd1b20a5f1b34192024527eb0a2d020c2617883cc3cfc0694861b0"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/evidence-pins.json": {
+      "bytes": 14720,
+      "matchesWorkingBytes": true,
+      "sha256": "877b6a501dd3413f645357b12ad92773f1dd888d5e5808e8c1a3baf5f3638943"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/expected-post-functions.json": {
+      "bytes": 9919,
+      "matchesWorkingBytes": true,
+      "sha256": "188ebcfcdd14dfd0aa68deaafc5a4af834fc32c5e675f7c44a9d08a981fa8608"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/external-predecessor-pins.json": {
+      "bytes": 126449,
+      "matchesWorkingBytes": true,
+      "sha256": "ef4bd64e74f670c4eb8fa805b7d7bf1fc2f5720df2c1aaab9110612d98654b03"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/final_checks.py": {
+      "bytes": 5905,
+      "matchesWorkingBytes": true,
+      "sha256": "0eca585415c1d9d1b55b5ce380dd8d96eda7b856257920fca9821ac03de27eec"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/package-pins.json": {
+      "bytes": 1832,
+      "matchesWorkingBytes": true,
+      "sha256": "dcec759dced617d0e629923dcabda617901df34fe7e178a58c9654308d70f889"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/preparation-input-pins.json": {
+      "bytes": 9882,
+      "matchesWorkingBytes": true,
+      "sha256": "ba06c2ca84b82bd5f79ff6ad27c21740dbdbcf3558e777f79df5280652282bf2"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/prepare.py": {
+      "bytes": 3847,
+      "matchesWorkingBytes": true,
+      "sha256": "446832c8d9feac6869691a9a94f483feb325a25101deca56c2a28f8004016d95"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/prior-function-pins.json": {
+      "bytes": 593,
+      "matchesWorkingBytes": true,
+      "sha256": "08b5773311198f492c4fb21a9974c2178887ec00ff80bd8962f3ccf5bf578ac9"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/proposed-admission.json": {
+      "bytes": 209635,
+      "matchesWorkingBytes": true,
+      "sha256": "21a63657c6d3305e91922b8cf92e8fe7e91b3352c42e629436c93172402aae6c"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/public-seal.json": {
+      "bytes": 7031,
+      "matchesWorkingBytes": true,
+      "sha256": "74b6470675f936f6707fe09777a72e7167b600f26da24e02bdb98cd12aa135ee"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/review-pins.json": {
+      "bytes": 23992,
+      "matchesWorkingBytes": true,
+      "sha256": "f6674b1dc5032dba06a0dc30f5d112ea0bc503f11b0b93157d07aefbe3f5a682"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/review-provenance.json": {
+      "bytes": 1505,
+      "matchesWorkingBytes": true,
+      "sha256": "c3b7859f341926f4698827dd0c02e88d03681fb932453407b4cf2514eea7e67d"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/runtime-delta.patch": {
+      "bytes": 10086,
+      "matchesWorkingBytes": true,
+      "sha256": "6cdf08413531ded49cec5defe1b7e22fbdf80cd6f68baf68a519fb7ae568f98d"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/runtime/cases.py": {
+      "bytes": 12821,
+      "matchesWorkingBytes": true,
+      "sha256": "d75049fd4a2cb6b92bf447e1292c1ffdb864c5aab3478a77f11ecd4c354bbbf9"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/runtime/continuation.py": {
+      "bytes": 5203,
+      "matchesWorkingBytes": true,
+      "sha256": "5d95283a72159dd60037dbce0483aecb79826dc7d0e66dd6108187d0d36f6ac8"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/runtime/controller.py": {
+      "bytes": 34304,
+      "matchesWorkingBytes": true,
+      "sha256": "385165f93c1ed28c732139d0ed82958df1bb20c463624d80b2b16dc08614ca9c"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/runtime/fixture.py": {
+      "bytes": 7731,
+      "matchesWorkingBytes": true,
+      "sha256": "c6259f3a51679e75aab940262f0f42e25c8d3b4d456881d85e1141653c610289"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/runtime/journal.py": {
+      "bytes": 4331,
+      "matchesWorkingBytes": true,
+      "sha256": "8a133c526070cdd70543a2c7cb1f6fff23c295b1d7214fee928d53eb1607a61e"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/runtime/literal_history.py": {
+      "bytes": 7667,
+      "matchesWorkingBytes": true,
+      "sha256": "c4ed381699f468403a04c248529985992b75b7dc504f6163b8d9fac7f03f204b"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/runtime/policy.py": {
+      "bytes": 6126,
+      "matchesWorkingBytes": true,
+      "sha256": "825aa4c501eb625eaa657bd987fc974b8980a9fbbd423ba6ce25012c927b7af6"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/runtime/run_stage.sh": {
+      "bytes": 199,
+      "matchesWorkingBytes": true,
+      "sha256": "f8d028579cc85b9128923ba03101ee7b47f9197fc381efd3d603a34d1f9e0c67"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/runtime/sql/assertions.sql": {
+      "bytes": 794,
+      "matchesWorkingBytes": true,
+      "sha256": "5df8ae78027e030a97cd259c5dc3f4ffcb72cb7cd28f707c4e9b5d8a78e80eef"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/runtime/sql/post_rollback.sql": {
+      "bytes": 654,
+      "matchesWorkingBytes": true,
+      "sha256": "bf2611abdfb29ca54e45114f246c24d5952a893f8d5ee78db26f9572b165ff50"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/runtime/sql/shadows.sql": {
+      "bytes": 489,
+      "matchesWorkingBytes": true,
+      "sha256": "a6f239b4e172e40c613d4d624c6ff8cbfb701005b7f33330f401a9141337be14"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/source-pins.json": {
+      "bytes": 201496,
+      "matchesWorkingBytes": true,
+      "sha256": "b374b14a2b2fa10eb694fbb8d9de887bdd6879fbe68d20f1af717ceadd20d7ec"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/source-runtime-pins.json": {
+      "bytes": 1986,
+      "matchesWorkingBytes": true,
+      "sha256": "fca23480c58dd9d0c984bde99f5e2e9de9c9c3f3168912546a9de62641f99178"
+    },
+    "docs/reviews/2026-10-16-a0-native18-continuation/window.py": {
+      "bytes": 7277,
+      "matchesWorkingBytes": true,
+      "sha256": "fd9aea7e2c9a1004e4b27c0ac90b706d34509b4d4098401dd1ee8cd46eb5c08a"
+    }
+  },
+  "subjectLaterLocalCommit": {
+    "bytes": 8763,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "4f04acafdf9a3fa5b6eac924a89c1c00343cf6e7dc233a45f0fa71886d09a6e3",
+    "uid": 1000
+  },
+  "subjectPackage": {
+    "bytes": 1832,
+    "gid": 1000,
+    "mode": 436,
+    "sha256": "dcec759dced617d0e629923dcabda617901df34fe7e178a58c9654308d70f889",
+    "uid": 1000
+  },
+  "subjectParent": "5ad5b36e57eb3a9f288a50015d7d22d220a07f7e",
+  "subjectPrivateManifest": {
+    "bytes": 622193,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "2a22f3e5a2aff8649d70d1ddf0db61a12d1c178ac411b4890f446ac8cf0720ac",
+    "uid": 1000
+  },
+  "subjectPublicSeal": {
+    "bytes": 7031,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "74b6470675f936f6707fe09777a72e7167b600f26da24e02bdb98cd12aa135ee",
+    "uid": 1000
+  },
+  "supplementalInputInventory": {
+    "bytes": 606164,
+    "gid": 1000,
+    "mode": 384,
+    "path": "/home/nathaniel/.local/state/openplan/a0-native18-continuation-independent-20261016/supplemental-input-pins.json",
+    "sha256": "ea01ba8d8f2721da78c714efb74c3ae2316a161ad706926851a045b38648d20b",
+    "uid": 1000
+  }
+}

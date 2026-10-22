@@ -1,3 +1,6 @@
+import { buildProjectJurisdictionReadinessExportPayload } from "@/lib/jurisdiction-readiness/payload";
+import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
+import { PROJECT_JURISDICTION_COLUMNS } from "@/lib/projects/project-jurisdiction";
 import { cleanup, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -916,6 +919,16 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
    * where to look. Keep new assertions in the group they belong to rather than
    * appending them to whichever test is nearest.
    */
+  it("flags a retained jurisdiction snapshot after the live context changes", async () => {
+    const oldProject = { id: "project-1", jurisdiction_context: null, place_country_code: "US" };
+    const snapshot = buildProjectJurisdictionReadinessExportPayload(oldProject, jurisdictionReadinessRegistrySha256());
+    projectMaybeSingleMock.mockResolvedValueOnce({ data: { ...oldProject, workspace_id: "workspace-1", name: "Downtown Mobility Plan", status: "active", plan_type: "corridor", delivery_phase: "analysis", updated_at: "2026-03-28T18:01:00.000Z", place_country_code: "CA" }, error: null });
+    artifactsOrderMock.mockResolvedValueOnce({ data: [{ id: "artifact-1", artifact_kind: "html", generated_at: "2026-10-18T00:00:00Z", metadata_json: { sourceContext: { jurisdictionReadiness: snapshot } } }], error: null });
+    render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+    expect(projectSelectMock).toHaveBeenCalledWith(expect.stringContaining(PROJECT_JURISDICTION_COLUMNS));
+    expect(screen.getAllByText(/Project jurisdiction context or registry inputs changed/).length).toBeGreaterThan(0);
+  });
+
   it("renders the packet page without emitting a NaN warning", async () => {
     const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
 

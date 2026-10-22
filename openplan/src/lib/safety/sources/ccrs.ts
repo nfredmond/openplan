@@ -497,6 +497,8 @@ export async function fetchCcrsCrashes(params: CrashFetchParams): Promise<CrashF
     yearsCovered: Array.from(
       new Set(records.map((r) => r.collisionYear).filter((y): y is number => typeof y === "number"))
     ).sort((a, b) => a - b),
+    // Every year in the loop above was queried; a failed query throws instead.
+    yearsQueried: [...years].sort((a, b) => a - b),
     truncated,
     unmappedByDimension,
     resourceUpdates: {
@@ -527,6 +529,7 @@ export const ccrsAdapter: CrashSourceAdapter = {
   dimensions: CCRS_DIMENSION_SUPPORT,
   earliestYear: CCRS_EARLIEST_YEAR,
   persistable: true,
+  roadContextProvider: "us-census-tiger-line",
   // California only — a national backstop's records in state 06 are redundant
   // with CCRS and must be dropped when the two are merged.
   coversStateFips: ["06"],

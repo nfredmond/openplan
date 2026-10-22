@@ -1,0 +1,10 @@
+{
+  "main": "d0d2290da7e7cb2cf53a77a0d9fbf96b6abc1dee",
+  "originalPipeline": "65cf6def9",
+  "matchedWorkerSourceFingerprints": 111,
+  "nestedDocumentationDirectionReleaseCases": 19,
+  "nativeStorageTransportCohorts": 4,
+  "nativeStorageTransportCasesPerCohort": 6,
+  "nativeStorageTransportFaults": 8,
+  "scope": "Joined source/fixtures; fresh exact-head CI, hosted migration rollout and main delivery remain required"
+}

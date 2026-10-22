@@ -33,6 +33,12 @@ COPY scripts/modeling/requirements.txt /tmp/modeling-requirements.txt
 RUN pip install --no-cache-dir -r /tmp/county-onramp-worker-requirements.txt \
     && pip install --no-cache-dir -r /tmp/modeling-requirements.txt
 
+# The same graph-compression probe the hosted model image runs. A dependency
+# stack that breaks AequilibraE graph compression (pandas 3 with AequilibraE)
+# fails the build here instead of producing a county number.
+COPY workers/hosted-models/verify_graph_compatibility.py /tmp/verify_graph_compatibility.py
+RUN python /tmp/verify_graph_compatibility.py
+
 # The whole repo, because the bootstrap shells out to sibling scripts by path
 # and reads reference data out of `data/`. See `.dockerignore` at the repo root
 # for what is kept out — without it this copies a 14 GB Next.js build cache.

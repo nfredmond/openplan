@@ -1,0 +1,9 @@
+{
+  "openplan/src/lib/aerial/artifact-custody-server.ts": "69fa289343c1150f3f6312dc9af855c08d1df33ed9cdecdb44ff6489cf6b782c",
+  "openplan/src/app/api/aerial/processing-callback/custody/route.ts": "d19946c3990a82f4b7ba420b50528be65b0c9c378bb68fabf0dceb1d9e358fc8",
+  "openplan/src/app/api/aerial/processing-callback/route.ts": "3c94e27308373812773aa7b6f18719b6a27f0296d98dac4437f0834e771971d5",
+  "openplan/supabase/migrations/20261017000011_aerial_preserve_held_custody.sql": "5d388c7dfbed8bab6e58195e1ec5f6dbad8aa36cfde31294c0d286a1e1d0cd2e",
+  "openplan/../docs/reviews/2026-10-14-aerial-held-custody/verify_aftermath_controls.py": "78d834c72d02ad45de1eede8a2672e615a597cca3111b2e09ed75d8273b81e53",
+  "openplan/../docs/reviews/2026-10-14-aerial-held-custody/native_aftermath.py": "39d9fc1c276a1b3c4cd3d1aa896a47f223ed20951b0148577a97ebcef46bd9da",
+  "openplan/../docs/reviews/2026-10-14-aerial-held-custody/native_aftermath.mjs": "e8570d7c2a5127a1e83fbf29597bb4777ec00a811cef00d3820a92fad9fbaa7d"
+}

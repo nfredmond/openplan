@@ -1,0 +1,12 @@
+{
+  "format": "openplan.odm-ci-wrapper-review.v1",
+  "executionSha256": "3fb80368ea8483313c4dbb8cd5275743b20d43a2f2264c076cb2ae4f6385a904",
+  "precedingWrapperMinutes": 10,
+  "currentWrapperMinutes": 20,
+  "precedingHead": "26a8aec135cd73ccb8071825baa54fd9a4c9287c",
+  "cancelledRun": 38343007466,
+  "cancelledJob": 115117985333,
+  "annotation": "The job has exceeded the maximum execution time of 10m0s",
+  "startedAt": "2026-10-13T03:44:12Z",
+  "completedAt": "2026-10-13T03:54:28Z"
+}

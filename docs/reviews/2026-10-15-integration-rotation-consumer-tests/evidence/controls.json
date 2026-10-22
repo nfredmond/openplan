@@ -1,0 +1,71 @@
+[
+  {
+    "trial": "baseline",
+    "outcome": "survived",
+    "passed": 2
+  },
+  {
+    "trial": "harmless",
+    "outcome": "survived",
+    "passed": 2
+  },
+  {
+    "trial": "restored-after-harmless",
+    "outcome": "survived",
+    "passed": 2
+  },
+  {
+    "trial": "no-previous-secret-read",
+    "outcome": "intended_failure",
+    "test": "prepares then verifies the original workspace selection across rotation",
+    "diagnostic": "Prepared selection must verify through the previous secret after rotation",
+    "exit": 1
+  },
+  {
+    "trial": "plaintext-instead-of-stored-digest",
+    "outcome": "intended_failure",
+    "test": "prepares then verifies the original workspace selection across rotation",
+    "diagnostic": "Selection fingerprints the exact original stored ciphertext",
+    "exit": 1
+  },
+  {
+    "trial": "omit-selected-workspace-column",
+    "outcome": "intended_failure",
+    "test": "prepares then verifies the original workspace selection across rotation",
+    "diagnostic": "Every selection read keeps the exact projection and workspace/provider filters",
+    "exit": 1
+  },
+  {
+    "trial": "ignore-retained-ciphertext-digest",
+    "outcome": "intended_failure",
+    "test": "prepares then verifies the original workspace selection across rotation",
+    "diagnostic": "Same plaintext with replacement ciphertext must refuse the retained digest",
+    "exit": 1
+  },
+  {
+    "trial": "fallback-payer-after-row-decrypt-fails",
+    "outcome": "intended_failure",
+    "test": "prepares then verifies the original workspace selection across rotation",
+    "diagnostic": "Removing the needed secret must refuse the stored row despite an available environment payer",
+    "exit": 1
+  },
+  {
+    "trial": "ignore-encrypted-api-configuration-hash",
+    "outcome": "intended_failure",
+    "test": "rejects a substituted API destination with a recomputed outer hash after previous-secret decrypt",
+    "diagnostic": "Encrypted configuration hash must refuse the recomputed destination substitution",
+    "exit": 1
+  },
+  {
+    "trial": "ignore-outer-api-configuration-hash",
+    "outcome": "intended_failure",
+    "test": "rejects a substituted API destination with a recomputed outer hash after previous-secret decrypt",
+    "diagnostic": "Stale outer hash refuses before envelope decryption",
+    "exit": 1
+  },
+  {
+    "trial": "restored-final",
+    "outcome": "survived",
+    "passed": 2
+  }
+]

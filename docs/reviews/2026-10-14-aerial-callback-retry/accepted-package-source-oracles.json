@@ -1,0 +1,1452 @@
+[
+  {
+    "case": "original-replay-skipped",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "original-replay-skipped",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "original-replay-skipped",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "original-replay-skipped",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "original-replay-skipped",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "interrupted-status-skipped",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "interrupted-status-skipped",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "interrupted-status-skipped",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "interrupted-status-skipped",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "interrupted-status-skipped",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "interrupted-evidence-skipped",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "interrupted-evidence-skipped",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "interrupted-evidence-skipped",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "interrupted-evidence-skipped",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "interrupted-evidence-skipped",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "lookup-error-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "lookup-error-ignored",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "lookup-error-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "lookup-error-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "lookup-error-ignored",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "job-scope-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "job-scope-ignored",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "job-scope-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "job-scope-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "job-scope-ignored",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "workspace-scope-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "workspace-scope-ignored",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "workspace-scope-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "workspace-scope-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "workspace-scope-ignored",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "payload-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "payload-ignored",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "payload-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "payload-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "payload-ignored",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "worker-reference-refusal-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "worker-reference-refusal-ignored",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "worker-reference-refusal-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "worker-reference-refusal-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "worker-reference-refusal-ignored",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "observed-status-not-guarded",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "observed-status-not-guarded",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "observed-status-not-guarded",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "observed-status-not-guarded",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "observed-status-not-guarded",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "observed-reference-not-guarded",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "observed-reference-not-guarded",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "observed-reference-not-guarded",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "observed-reference-not-guarded",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "observed-reference-not-guarded",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "null-reference-not-guarded",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "null-reference-not-guarded",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "null-reference-not-guarded",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "null-reference-not-guarded",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "null-reference-not-guarded",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "affected-row-not-checked",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "affected-row-not-checked",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "affected-row-not-checked",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "affected-row-not-checked",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "affected-row-not-checked",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "foreign-affected-row-accepted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "foreign-affected-row-accepted",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "foreign-affected-row-accepted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "foreign-affected-row-accepted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "foreign-affected-row-accepted",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "duplicate-affected-rows-accepted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "duplicate-affected-rows-accepted",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "duplicate-affected-rows-accepted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "duplicate-affected-rows-accepted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "duplicate-affected-rows-accepted",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "replay-projection-omits-original",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "replay-projection-omits-original",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "replay-projection-omits-original",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "replay-projection-omits-original",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "replay-projection-omits-original",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "original-job-id-not-bound",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "original-job-id-not-bound",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "original-job-id-not-bound",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "original-job-id-not-bound",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "original-job-id-not-bound",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "original-callback-key-not-bound",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "original-callback-key-not-bound",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "original-callback-key-not-bound",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "original-callback-key-not-bound",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "original-callback-key-not-bound",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "affected-projection-not-bound",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "affected-projection-not-bound",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "affected-projection-not-bound",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "affected-projection-not-bound",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "affected-projection-not-bound",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "newer-event-order-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "newer-event-order-ignored",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "newer-event-order-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "newer-event-order-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "newer-event-order-ignored",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "equal-event-replay-allowed",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "equal-event-replay-allowed",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "equal-event-replay-allowed",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "equal-event-replay-allowed",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "equal-event-replay-allowed",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "newer-retry-blocked",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "newer-retry-blocked",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "newer-retry-blocked",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "newer-retry-blocked",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "newer-retry-blocked",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "observed-event-id-omitted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "observed-event-id-omitted",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "observed-event-id-omitted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "observed-event-id-omitted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "observed-event-id-omitted",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "observed-event-time-omitted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "observed-event-time-omitted",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "observed-event-time-omitted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "observed-event-time-omitted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "observed-event-time-omitted",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "empty-event-id-omitted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "empty-event-id-omitted",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "empty-event-id-omitted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "empty-event-id-omitted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "empty-event-id-omitted",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "empty-event-time-omitted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "empty-event-time-omitted",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "empty-event-time-omitted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "empty-event-time-omitted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "empty-event-time-omitted",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "applied-order-read-unchecked",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "applied-order-read-unchecked",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "applied-order-read-unchecked",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "applied-order-read-unchecked",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "applied-order-read-unchecked",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "applied-job-scope-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "applied-job-scope-ignored",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "applied-job-scope-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "applied-job-scope-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "applied-job-scope-ignored",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "applied-workspace-scope-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "applied-workspace-scope-ignored",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "applied-workspace-scope-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "applied-workspace-scope-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "applied-workspace-scope-ignored",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "applied-callback-key-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "applied-callback-key-ignored",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "applied-callback-key-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "applied-callback-key-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "applied-callback-key-ignored",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "fractional-precision-lost",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "fractional-precision-lost",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "fractional-precision-lost",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "fractional-precision-lost",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "fractional-precision-lost",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "fraction-zero-normalization-lost",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "fraction-zero-normalization-lost",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "fraction-zero-normalization-lost",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "fraction-zero-normalization-lost",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "fraction-zero-normalization-lost",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "timezone-offset-lost",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "timezone-offset-lost",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "timezone-offset-lost",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "timezone-offset-lost",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "timezone-offset-lost",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "whole-second-order-reversed",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "whole-second-order-reversed",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "whole-second-order-reversed",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "whole-second-order-reversed",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "whole-second-order-reversed",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "malformed-time-invented",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "malformed-time-invented",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "malformed-time-invented",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "malformed-time-invented",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "malformed-time-invented",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "nonfinite-time-accepted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "nonfinite-time-accepted",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "nonfinite-time-accepted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "nonfinite-time-accepted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "nonfinite-time-accepted",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "custody-status-filter-omitted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "custody-status-filter-omitted",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "custody-status-filter-omitted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "custody-status-filter-omitted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "custody-status-filter-omitted",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "custody-returned-id-projection-unchecked",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "custody-returned-id-projection-unchecked",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "custody-returned-id-projection-unchecked",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "custody-returned-id-projection-unchecked",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "custody-returned-id-projection-unchecked",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "legacy-accepted-baseline-blocked",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "legacy-accepted-baseline-blocked",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "legacy-accepted-baseline-blocked",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "legacy-accepted-baseline-blocked",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "legacy-accepted-baseline-blocked",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "legacy-baseline-status-not-bound",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "legacy-baseline-status-not-bound",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "legacy-baseline-status-not-bound",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "legacy-baseline-status-not-bound",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "legacy-baseline-status-not-bound",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "package-deterministic-key-omitted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "package-deterministic-key-omitted",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "package-deterministic-key-omitted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "package-deterministic-key-omitted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "package-deterministic-key-omitted",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "package-conflict-refused",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "package-conflict-refused",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "package-conflict-refused",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "package-conflict-refused",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "package-conflict-refused",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "package-scope-projection-omitted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "package-scope-projection-omitted",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "package-scope-projection-omitted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "package-scope-projection-omitted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "package-scope-projection-omitted",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "package-conflicting-key-not-bound",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "package-conflicting-key-not-bound",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "package-conflicting-key-not-bound",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "package-conflicting-key-not-bound",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "package-conflicting-key-not-bound",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "package-retained-id-not-checked",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "package-retained-id-not-checked",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "package-retained-id-not-checked",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "package-retained-id-not-checked",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "package-retained-id-not-checked",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "package-scope-processing_job_id-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "package-scope-processing_job_id-ignored",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "package-scope-processing_job_id-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "package-scope-processing_job_id-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "package-scope-processing_job_id-ignored",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "package-scope-workspace_id-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "package-scope-workspace_id-ignored",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "package-scope-workspace_id-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "package-scope-workspace_id-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "package-scope-workspace_id-ignored",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "package-scope-mission_id-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "package-scope-mission_id-ignored",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "package-scope-mission_id-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "package-scope-mission_id-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "package-scope-mission_id-ignored",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "package-scope-project_id-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "package-scope-project_id-ignored",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "package-scope-project_id-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "package-scope-project_id-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "package-scope-project_id-ignored",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "package-scope-package_type-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "package-scope-package_type-ignored",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "package-scope-package_type-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "package-scope-package_type-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "package-scope-package_type-ignored",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "package-legacy-scope-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "package-legacy-scope-ignored",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "package-legacy-scope-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "package-legacy-scope-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "package-legacy-scope-ignored",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "accepted-ledger-not-recorded",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "accepted-ledger-not-recorded",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "accepted-ledger-not-recorded",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "accepted-ledger-not-recorded",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "accepted-ledger-not-recorded",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "accepted-ledger-failure-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "accepted-ledger-failure-ignored",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "accepted-ledger-failure-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "accepted-ledger-failure-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "accepted-ledger-failure-ignored",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "accepted-conflict-scope-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "accepted-conflict-scope-ignored",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "accepted-conflict-scope-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "accepted-conflict-scope-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "accepted-conflict-scope-ignored",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "accepted-workspace-scope-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "accepted-workspace-scope-ignored",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "accepted-workspace-scope-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "accepted-workspace-scope-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "accepted-workspace-scope-ignored",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "accepted-original-payload-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "accepted-original-payload-ignored",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "accepted-original-payload-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "accepted-original-payload-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "accepted-original-payload-ignored",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "accepted-projection-not-bound",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "accepted-projection-not-bound",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "accepted-projection-not-bound",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "accepted-projection-not-bound",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "accepted-projection-not-bound",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "accepted-request-not-bound",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "accepted-request-not-bound",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "accepted-request-not-bound",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "accepted-request-not-bound",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "accepted-request-not-bound",
+    "oracle": "wrong-message",
+    "accepted": false
+  },
+  {
+    "case": "accepted-state-not-guarded",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "accepted-state-not-guarded",
+    "oracle": "successful-exit",
+    "accepted": false
+  },
+  {
+    "case": "accepted-state-not-guarded",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "accepted-state-not-guarded",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "accepted-state-not-guarded",
+    "oracle": "wrong-message",
+    "accepted": false
+  }
+]

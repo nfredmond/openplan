@@ -588,8 +588,10 @@ describe("KnowledgeBaseWorkspace", () => {
           })}
         />
       );
-      expect(screen.getByText(/behind a database migration/)).toBeInTheDocument();
-      expect(screen.getByText(/Aerial imagery:/)).toBeInTheDocument();
+      expect(screen.getByText(/Aerial imagery: this source is not set up on this installation yet/)).toBeInTheDocument();
+      expect(screen.getByText(/unavailable, not empty/)).toBeInTheDocument();
+      // The migration is named for whoever runs the installation, behind the disclosure.
+      expect(screen.getByText(/behind a database migration/).closest("details")).not.toBeNull();
     });
 
     it("keeps the library's loaded scope honest when the project selector moves on without it", async () => {

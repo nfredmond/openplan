@@ -1,0 +1,105 @@
+279	merged		Fix crash when rendering code blocks with unsupported languages (#266 & #210)
+1507	closed-unmerged	M	Tolerate unsupported persisted provider kinds
+1556	merged	XL	Make provider model lists dynamic based on auth context
+1594	merged	M	Bump Effect catalog dependencies
+1792	closed-unmerged	M	Use Codex defaults for custom model capabilities
+1793	merged	M	Assign default capabilities to Codex custom models
+1891	merged	L	Harden secret store and resolve catalog overrides
+1980	closed-unmerged	L	Fix: Respect app server model list and "prolite" account support.
+2124	merged	S	fix(server): thread cwd through Claude capability probe (#2048)
+2192	merged	S	fix(server): prevent probeClaudeCapabilities from wasting API requests
+3007	closed-unmerged	M	Optimize chat plan catalog selector
+3021	merged	XL	Model picker UI Improvements, Virtualize Model List
+3298	merged	S	[codex] Structure catalog dependency resolution failures
+3454	merged	S	[codex] Structure preview capability errors
+3498	merged	S	[codex] Reject unsupported remote pairing protocols
+3699	closed-unmerged	XXL	feat: runtime plugin system — capability host, marketplace, install lifecycle (server + web)
+3728	closed-unmerged	XXL	Plugin system (4/8): mechanical capability façades
+3729	closed-unmerged	XXL	Plugin system (5/8): agents + vcs capabilities
+3732	closed-unmerged	XXL	Plugin system (8/8): filesystem/httpClient capabilities + hardening
+3993	closed-unmerged	XXL	Plugin system: host, SDK, capabilities, web host, and marketplace
+4015	merged	M	fix(claude): isolate capability probe from user MCP servers
+4067	closed-unmerged	L	Model picker redesign: compact rows, catalog-driven short names
+4169	merged	M	fix(server): disable executable capabilities in Claude metadata generation
+4200	closed-unmerged	L	[Bug]: Unsupported attachment (e.g. HEIC) permanently wedges the turn in "working" with a dead stop button
+4454	closed-unmerged	M	fix(desktop): treat an undecryptable connection catalog as empty instead of crashing environment discovery
+4466	merged	XS	Skip user hooks during Claude capability probes
+5423	closed-unmerged	XXL	feat(grok): native ACP parity (catalog, effort, usage, plan, multi-agent, compact)
+5503	closed-unmerged	XXL	feat(grok): native ACP parity (catalog, effort, usage, plan, multi-agent, compact)
+5902	closed-unmerged	M	fix(desktop): recover corrupt connection catalog documents
+6024	closed-unmerged	XXL	feat(grok): bridge native ACP capabilities
+6025	closed-unmerged	XL	feat(grok): bridge native ACP capabilities
+6130	merged	XS	test(swift-ios): use environment-scoped provider catalogs
+6574	merged	M	fix(web): reject unsupported composer image types at attach time
+7112	closed-unmerged	S	fix(server): keep claude slash commands when a capability probe fails
+7124	closed-unmerged	XXL	feat(models): support capabilities for custom models
+7494	closed-unmerged	M	fix(web): validate monospace fonts on pick instead of scanning the catalog
+7545	closed-unmerged	L	Add `t3 env add`: pre-seed a legacy saved-environment catalog, headlessly
+7549	closed-unmerged	XL	feat: add plugin command catalog
+7919	closed-unmerged	L	fix(grok): populate the skill catalog from grok inspect
+8223	closed-unmerged	M	fix(server): skip change requests for unsupported remotes
+8350	closed-unmerged	XXL	feat(swift-ios): present the command drawer catalog
+8480	merged	XXL	fix(opencode): handle child approvals, stops, and model catalogs
+8544	closed-unmerged	L	fix(codex): scope custom model catalogs to the provider
+8649	closed-unmerged	L	fix(codex): scope provider models and suppress false capabilities
+8655	closed-unmerged	L	fix(codex): scope provider models and suppress false capabilities
+8753	closed-unmerged	M	fix(desktop): recover from obsolete catalog keys
+8835	closed-unmerged	M	fix(server): isolate Claude capability probe cwd
+8908	closed-unmerged	L	fix(claude): isolate capability probe settings
+8923	closed-unmerged	M	fix(mobile): preserve saved environments across catalog recovery
+8982	closed-unmerged	L	fix(cursor): populate skill catalog and keep spaced names as one chip
+9381	merged	L	fix(mobile): skip unsupported shared settings targets
+9383	closed-unmerged	L	fix(providers): resolve gateway-prefixed model slugs to their catalog entry
+9397	merged	M	fix(antigravity): refresh the model manifest so older Gemini models fold as legacy
+10139	closed-unmerged	M	fix(server): probe Claude capabilities under an enterprise MCP config
+10157	closed-unmerged	L	fix(desktop): use native frame when X11 client insets are unsupported
+10215	closed-unmerged	M	fix(provider): retry the Claude capability probe without --settings
+10737	closed-unmerged	M	fix(swift-ios): preserve unsupported environment documents
+10746	closed-unmerged	M	fix(swift-ios): preserve unsupported saved message queues
+10913	closed-unmerged	XXL	feat(devin): add Devin provider and ACP capability parity
+11151	closed-unmerged	XS	fix(server): report the missing forced restart capability
+11565	merged	XS	fix(server): report missing interrupt-and-restart capability for forced restarts
+11642	closed-unmerged	S	fix(server): stop borrowing capabilities for custom Codex models
+11798	closed-unmerged	L	fix(web): show CLI Connect setup on unsupported browser origins
+12017	merged	S	fix(server): detect unsupported legacy Android command-line tools
+12026	merged	L	fix(clients): show unsupported environments as neutral rows with their machine icon
+12070	closed-unmerged	L	fix(server): recover OpenCode chats with unsupported text attachments
+12468	closed-unmerged	S	fix(server): fall back to fresh Codex thread when resume hits unsupported list_turns
+12901	closed-unmerged	XXL	feat(agent-capability): publish HYDE work-state and diagnostics capability
+13131	closed-unmerged	L	feat(server): flag incompatible provider versions from the model manifest
+13257	closed-unmerged	XS	fix(settings): explain that provider update checks also fetch model catalog updates
+13268	closed-unmerged	L	fix(cursor): reject out-of-catalog custom models before ACP
+13339	merged	M	fix(server): let Antigravity inspect unsupported files by path
+13468	closed-unmerged	M	fix(desktop): recover from malformed connection catalogs
+13485	closed-unmerged	S	fix(server): disabling provider update checks no longer freezes model lists
+13486	merged	XS	chore(server): unexport OpenCode capabilities left unused by test removal
+13643	closed-unmerged	XS	fix(server): log why the Claude capability probe failed
+13656	closed-unmerged	M	fix(desktop): recover undecryptable connection catalogs safely
+13696	closed-unmerged	L	perf(server): Claude instances on the same home share one capabilities probe
+13721	closed-unmerged	L	perf(server): share Claude capability probes across instances
+14152	merged	S	Add Claude Sonnet 5.5 to the model manifest
+14411	open	M	fix(server): fall back when checkpoint fsync is unsupported
+14529	merged	XS	fix(build): desktop and CLI builds resolve catalog overrides on selectors
+14549	closed-unmerged	S	fix(server): refresh model catalog without CLI update checks
+14928	open	S	fix(server): disabling provider update checks no longer freezes model lists
+15107	open	S	fix(connections): retry unsupported saved direct connections
+15232	closed-unmerged	M	chore(server): add Antigravity Claude 5.5 catalog metadata
+16058	open	XXL	feat(web,mobile): show what each plugin adds and what its capabilities allow
+16232	merged	XL	refactor(server,relay): webhook capabilities live in services, not handlers
+16265	merged	XXL	refactor(server): T3 Connect link capabilities live in a CloudLink service
+16411	merged	S	fix(release): resolve version-qualified catalog overrides
+16448	open	M	fix(server): settle OpenCode model catalog before caching it
+16583	open	M	fix(server): Claude adapter compiles selections against the live model catalog
+16766	open	XL	feat(server): ship coding benchmark scores in the model manifest
+17417	merged	XL	refactor(provider-core): expose model metadata through a ModelCatalog port
+17499	merged	XS	fix(codex): prevent unsupported agent history in ChatGPT sharing
+17774	merged	L	feat(pull-requests): quick actions follow each host's capabilities, not GitHub
+18208	merged	S	docs(settings): explain that provider update checks also gate the model catalog
+18538	merged	L	feat(mobile): add a development catalog for shared UI controls
+18541	open	XXL	refactor(mobile): adopt shared controls and add component catalog
+18624	open	XS	fix(server): a Claude account with no rate-limit data no longer stays unsupported
+18696	closed-unmerged	M	fix(mobile): stop Android logging "Unsupported FontVariant value" on every tabular-nums render
+18737	open	XS	fix(server): Codex usage is unsupported without an account
+19000	open	M	fix(opencode): omit unsupported reasoning options from catalog models
+19518	open	S	fix(server): replace ACP model catalogs after completed discovery
+19678	open	M	fix(cursor): explain model rejections from the account catalog

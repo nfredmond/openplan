@@ -2,7 +2,7 @@ import "server-only";
 import { z } from "zod";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { isWorkerExecutedRunMode } from "@/lib/models/run-modes";
-import type { ModelRecoveryStatus } from "./recovery-status";
+import type { HistoricalRunDecisionRecord, ModelRecoveryStatus } from "./recovery-status";
 
 import { inspectRelaunchCustody } from "./relaunch-custody";
 
@@ -13,7 +13,23 @@ const recoverySchema = z.object({
   enrolled_at: z.string().datetime({ offset: true }),
   observed_starts: z.number().int().nonnegative().safe(),
   last_start_observed_at: z.string().datetime({ offset: true }).nullable(),
-}).strict().refine((row) => (row.observed_starts === 0) === (row.last_start_observed_at === null));
+  // Optional only so a reader older than migration 20261017000008 still reads as
+  // undecided; that database cannot hold a decision.
+  historical_decision: z.object({
+    request_id: z.string().uuid(),
+    outcome: z.enum(["kept_as_record", "closed_for_fresh_run"]),
+    actor_id: z.string().uuid(),
+    reason: z.string().min(1).max(2000),
+    recorded_at: z.string().datetime({ offset: true }),
+  }).strict().nullable().optional(),
+}).strict()
+  .refine((row) => (row.observed_starts === 0) === (row.last_start_observed_at === null))
+  .refine((row) => row.provenance === "historical_unassessed" || !row.historical_decision);
+
+function decisionFrom(row: z.infer<typeof recoverySchema>["historical_decision"]): HistoricalRunDecisionRecord | null {
+  if (!row) return null;
+  return { requestId: row.request_id, outcome: row.outcome, actorId: row.actor_id, reason: row.reason, recordedAt: row.recorded_at };
+}
 
 /** Call only after workspace/model authorization. This reader grants no execution lease. */
 export async function loadModelRecoveryStatuses(
@@ -38,6 +54,7 @@ export async function loadModelRecoveryStatuses(
         enrolledAt: parsed.data.enrolled_at,
         observedStarts: parsed.data.observed_starts,
         lastStartObservedAt: parsed.data.last_start_observed_at,
+        ...(parsed.data.provenance === "historical_unassessed" ? { historicalDecision: decisionFrom(parsed.data.historical_decision) } : {}),
       });
     } catch {
       // An unavailable read cannot establish that old work is safe to restart.

@@ -48,6 +48,7 @@ import {
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { moduleMetadata } from "@/lib/ui/page-title";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
+import { todayInWorkspace } from "@/lib/time/workspace-calendar";
 
 export const metadata = moduleMetadata("Data Hub");
 
@@ -410,7 +411,8 @@ export default async function DataHubPage() {
    * `gtfs_feeds` and its current version rows actually supports, INCLUDING
    * whether the schedule in the adopted feed has expired.
    */
-  const todayIso = new Date().toISOString().slice(0, 10);
+  // Whether a schedule has ended is judged on the workspace's calendar day.
+  const todayIso = (await todayInWorkspace(supabase, workspaceId)).today;
   const transitFeedCard = describeTransitFeedRegistry({
     workspaceId,
     readFailed: Boolean(transitFeedsResult.error),
@@ -877,8 +879,7 @@ export default async function DataHubPage() {
 
           {refreshJobs.length === 0 ? (
             <div className="module-empty-state mt-5 text-sm">
-              No refreshes logged yet. Use the job lane to document ingestion, validation, and backfill
-              work an operator performed or plans to perform.
+              No refreshes logged yet.
             </div>
           ) : (
             <div className="mt-5 module-record-list">

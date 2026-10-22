@@ -74,6 +74,8 @@ const EXTERNAL_CALLERS: Record<string, string> = {
   "api/knowledge-base/extraction-dispatch": "workers/ocr_worker/main.py polls its configured OPENPLAN_KB_OCR_DISPATCH_URL to recover queued documents and cancellation requests.",
   "api/health":
     "Uptime monitoring and container orchestration probe this; it exists to be called from outside.",
+  "api/health/deep":
+    "scripts/ops/check-deep-health.mjs calls it from the Production Health workflow with the operator's OPENPLAN_HEALTH_TOKEN; deep-health-check-script.test.ts drives that caller.",
   "api/geographies/equity-designation/ingest":
     "Operator/CI data load, authenticated by a shared secret with timingSafeEqual — cross-tenant public reference data, deliberately not driven from a workspace UI.",
   "api/county-runs/[countyRunId]/validate/refresh":
@@ -88,6 +90,8 @@ const EXTERNAL_CALLERS: Record<string, string> = {
     "Vercel Cron, scheduled in vercel.json. Recorded here EXPLICITLY: under the old word-bag matcher it was passing only because `src/lib/models/worker-backed-launch.ts` mentions the path inside backticks in a docblock, so rewording that comment would have broken the build for a reason nobody could have guessed. Comments are now blanked before the scan, which is what makes THIS entry the thing holding it up.",
   "api/cron/sweep-deadlines":
     "Vercel Cron, scheduled in vercel.json at 0 13 * * *. The daily deadline digest: it writes one work_notifications row per person per due record and sends the email when a transport is configured. Authenticated by CRON_SECRET compared with timingSafeSecretEquals, never from a session — nothing in the product calls it, and nothing should, because a user-triggered sweep would let one person mail the whole team.",
+  "api/cron/sweep-engagement-photos":
+    "Vercel Cron, scheduled in vercel.json at 30 10 * * *. Removes public engagement photos that no comment or survey answer took up within a day of upload, after checking every record that can hold a photo path. Authenticated by CRON_SECRET compared with timingSafeSecretEquals, never from a session.",
   "api/knowledge-base/ocr-callback":
     "OCR worker callback — a self-hosted recogniser (workers/ocr_worker, or anything speaking schemas/ocr_extraction_contract.schema.json) posts per-page text here as a job advances. Bearer-authenticated with OPENPLAN_KB_OCR_CALLBACK_BEARER_TOKEN, never from a session: this is the route that turns recognised text into citable chunks and flips a scanned document to `ready`, so a caller inside the product would be a way to make a document claim text nobody read. The REQUEST side of the lane (api/knowledge-base/documents/[documentId]/ocr) is wired to the document library's 'Read with OCR' button and needs no entry here.",
   "api/engage/[shareToken]/subscribe/confirm":

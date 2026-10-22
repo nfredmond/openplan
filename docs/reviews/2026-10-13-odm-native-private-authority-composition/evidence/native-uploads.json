@@ -1,0 +1,38 @@
+[
+  {
+    "case": "baseline",
+    "slot": 0,
+    "bytes": 26,
+    "sha256": "da01c0b987987bfbad5f8557103a248d9879a0203083982282e1756656127dec"
+  },
+  {
+    "case": "baseline",
+    "slot": 1,
+    "bytes": 26,
+    "sha256": "eb1e9d0e171c71fe3a158985eff1b1b28c841955d436b68b8fa5350612b8be1c"
+  },
+  {
+    "case": "harmless",
+    "slot": 0,
+    "bytes": 26,
+    "sha256": "da01c0b987987bfbad5f8557103a248d9879a0203083982282e1756656127dec"
+  },
+  {
+    "case": "harmless",
+    "slot": 1,
+    "bytes": 26,
+    "sha256": "eb1e9d0e171c71fe3a158985eff1b1b28c841955d436b68b8fa5350612b8be1c"
+  },
+  {
+    "case": "restored",
+    "slot": 0,
+    "bytes": 26,
+    "sha256": "da01c0b987987bfbad5f8557103a248d9879a0203083982282e1756656127dec"
+  },
+  {
+    "case": "restored",
+    "slot": 1,
+    "bytes": 26,
+    "sha256": "eb1e9d0e171c71fe3a158985eff1b1b28c841955d436b68b8fa5350612b8be1c"
+  }
+]

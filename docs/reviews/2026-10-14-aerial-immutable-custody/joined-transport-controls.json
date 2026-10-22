@@ -1,0 +1,58 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived",
+    "transportCases": 6
+  },
+  {
+    "case": "harmless-comment",
+    "outcome": "survived",
+    "transportCases": 6
+  },
+  {
+    "case": "restored-after-harmless",
+    "outcome": "survived",
+    "transportCases": 6
+  },
+  {
+    "case": "upload-signal-removed",
+    "outcome": "intended_failure",
+    "transportCase": "upload-deadline",
+    "diagnostic": "Native custody transport failed to stop"
+  },
+  {
+    "case": "cancellation-ignored",
+    "outcome": "intended_failure",
+    "transportCase": "upload-cancellation",
+    "diagnostic": "Current cancellation stops transfer before its later deadline"
+  },
+  {
+    "case": "read-transport-signals-removed",
+    "outcome": "intended_failure",
+    "transportCase": "read-deadline",
+    "diagnostic": "Native custody transport failed to stop"
+  },
+  {
+    "case": "buffered-object-before-ceiling",
+    "outcome": "intended_failure",
+    "transportCase": "read-size",
+    "diagnostic": "Excessive stream stops before continued network accumulation"
+  },
+  {
+    "case": "stream-ceiling-removed",
+    "outcome": "intended_failure",
+    "transportCase": "read-size",
+    "diagnostic": "Excessive stream stops before continued network accumulation"
+  },
+  {
+    "case": "thrown-ack-recovery-removed",
+    "outcome": "intended_failure",
+    "transportCase": "thrown-acknowledgement",
+    "diagnostic": "Thrown acknowledgement reconciles actual native bytes"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived",
+    "transportCases": 6
+  }
+]

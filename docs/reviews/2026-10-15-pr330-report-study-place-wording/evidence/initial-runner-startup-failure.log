@@ -1,0 +1,20 @@
+failed to load config from /home/nathaniel/.t3/worktrees/openplan/t3-e444198e/openplan/vitest.config.ts
+/home/nathaniel/.t3/worktrees/openplan/t3-e444198e/openplan/vitest.config.ts:69
+    alias: { "@": __vite_ssr_import_2__.default.resolve(__dirname, "./src") }
+                                                        ^
+
+ReferenceError: Cannot determine intended module format because both '__dirname' and top-level await are present. If the code is intended to be CommonJS, wrap await in an async function. If the code is intended to be an ES module, use import.meta.dirname instead.
+    at eval (/home/nathaniel/.t3/worktrees/openplan/t3-e444198e/openplan/vitest.config.ts:69:57)
+    at async ESModulesEvaluator.runInlinedModule (file:///home/nathaniel/.t3/worktrees/openplan/t3-0f743997/openplan/node_modules/vite/dist/node/module-runner.js:913:3)
+    at async ModuleRunner.directRequest (file:///home/nathaniel/.t3/worktrees/openplan/t3-0f743997/openplan/node_modules/vite/dist/node/module-runner.js:1146:59)
+    at async ModuleRunner.cachedRequest (file:///home/nathaniel/.t3/worktrees/openplan/t3-0f743997/openplan/node_modules/vite/dist/node/module-runner.js:1053:73)
+    at async ModuleRunner.import (file:///home/nathaniel/.t3/worktrees/openplan/t3-0f743997/openplan/node_modules/vite/dist/node/module-runner.js:1014:10)
+    at async runnerImport (file:///home/nathaniel/.t3/worktrees/openplan/t3-0f743997/openplan/node_modules/vite/dist/node/chunks/config.js:35282:20)
+    at async runnerImportConfigFile (file:///home/nathaniel/.t3/worktrees/openplan/t3-0f743997/openplan/node_modules/vite/dist/node/chunks/config.js:35874:45)
+    at async loadConfigFromFile (file:///home/nathaniel/.t3/worktrees/openplan/t3-0f743997/openplan/node_modules/vite/dist/node/chunks/config.js:35851:42)
+    at async resolveConfig (file:///home/nathaniel/.t3/worktrees/openplan/t3-0f743997/openplan/node_modules/vite/dist/node/chunks/config.js:35500:22)
+    at async _createServer (file:///home/nathaniel/.t3/worktrees/openplan/t3-0f743997/openplan/node_modules/vite/dist/node/chunks/config.js:25441:67) {
+  code: 'ERR_AMBIGUOUS_MODULE_SYNTAX'
+}
+
+Node.js v24.22.0

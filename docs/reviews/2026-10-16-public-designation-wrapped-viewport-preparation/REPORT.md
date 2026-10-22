@@ -1,0 +1,17 @@
+# Wrapped public designation viewport candidate
+
+The candidate source normalizes wrapped map-camera viewports and requests one dedicated viewport RPC. ROOT accepts the focused pure/mocked evidence from Window06. This does not establish database or browser behavior, and it does not close M1, KI-2026-10-12-025 or full v1.
+
+The old component clipped camera longitudes independently to ±180. A view from 170 to 190 lost its western world-copy interval. A view from 190 to 210 could reject the query while retaining earlier shapes. The new query helper handles ordered world copies, canonical wrapped intervals and full-world longitude coverage separately from strict stored extents. It refuses unreadable, nonfinite, unsafe, collapsed or direction-ambiguous bounds. Unreadable views clear earlier shapes and invalidate older responses.
+
+All three designation routes use the same nonempty-part parser. The loader retains frozen designation/version/workspace/hash/readiness checks, public projection, counts, cap and complete-response refusal. It calls workspace_gis_features_in_query_viewport once and refuses repeated feature IDs. Density copy says feature bounds overlap the view, matching the retained envelope-overlap predicate.
+
+The additive candidate migration is `20261017052401_public_designation_query_viewport.sql`. Its filename came from the accepted local CLI generation, followed by separately authorized SQL authoring. Its executable body matches the reviewed template. The source uses a single OR predicate over longitude intervals and symmetric seam edges, counts each feature row once and retains invoker permissions. These are source properties, not native SQL/RLS or performance results. The original RPC, workspace GIS route and strict stored-extent reader stay unchanged.
+
+Window06 ran once under ROOT ownership and ended 0. Its 38 in-process controls, 13 named mutations with 36 assertion-failure observations, seven final Node commands and four SQL byte controls have a full independent saved-data audit. Final Vitest counts are 75 helper, 13 component, 74 route and 25 selected loader passes, with 41 loader cases skipped. Scoped types, changed-source lint and direction exit 0. Existing direction reminders remain recorded.
+
+All 11 source files and seven overlays restore exactly. ROOT audits the complete donor's 52,201 entries and source visibility inventory's 20,069 entries at terminal. This lane rehashes all 2,470 saved output files, totaling 12,634,410 bytes, and matches their recorded modes, ownership and lengths. It runs no additional subject check.
+
+The original 425 migrations remain byte-frozen, including the historical migration 424 binding. ROOT's separate combined parser correction is not rebased here. The candidate migration 426 is unapplied. No native migration 424/425/426, Auth/RLS, exact geometry intersection, performance, full build, real HTTP, desktop/390px, practitioner, hosted, release or v1 acceptance follows this checkpoint. Nationwide states/DC, territory and tribal scope remains unchanged; no legal or geography applicability is inferred.
+
+See VALIDATION.md for controls, failure history and reader corrections. EVIDENCE.json and SOURCE11.sha256 bind the source and dated receipts. Earlier preparation documents remain historical and unchanged. The authorized local checkpoint contains the exact frozen source plus this owned review directory. It excludes both temporary config scaffolds, changes no package version and grants no push, join, release or successor.

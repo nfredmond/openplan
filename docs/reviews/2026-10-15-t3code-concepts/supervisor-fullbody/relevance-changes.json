@@ -1,0 +1,104 @@
+[
+  {
+    "number": 4384,
+    "title": "Add complete archive workflows to the default sidebar",
+    "old": "B",
+    "fullBody": "A"
+  },
+  {
+    "number": 4700,
+    "title": "fix(web): 33 web UI fixes",
+    "old": "C",
+    "fullBody": "A"
+  },
+  {
+    "number": 6218,
+    "title": "fix(web): 130+ UI consistency fixes",
+    "old": "B",
+    "fullBody": "A"
+  },
+  {
+    "number": 9854,
+    "title": "perf(server): reuse local submodule objects when creating worktrees",
+    "old": "B",
+    "fullBody": "A"
+  },
+  {
+    "number": 11923,
+    "title": "feat(web): drag to resize split terminal panes",
+    "old": "B",
+    "fullBody": "A"
+  },
+  {
+    "number": 11927,
+    "title": "feat(web): find text in the terminal with Cmd/Ctrl+F",
+    "old": "B",
+    "fullBody": "A"
+  },
+  {
+    "number": 13543,
+    "title": "fix(server): reuse the checkpoint index so unchanged untracked files are not rehashed every turn",
+    "old": "B",
+    "fullBody": "A"
+  },
+  {
+    "number": 15010,
+    "title": "refactor(web): register the Diff side panel",
+    "old": "B",
+    "fullBody": "A"
+  },
+  {
+    "number": 15036,
+    "title": "fix(vcs): stop Check out here from discarding local pull request work",
+    "old": "B",
+    "fullBody": "A"
+  },
+  {
+    "number": 15949,
+    "title": "feat(web): optionally lay the chat and panels out as scrolling columns",
+    "old": "B",
+    "fullBody": "A"
+  },
+  {
+    "number": 16040,
+    "title": "fix(web): keep device results in the thread that started them",
+    "old": "B",
+    "fullBody": "A"
+  },
+  {
+    "number": 16309,
+    "title": "chore(deps-dev): bump compression from 1.8.1 to 1.8.2 in the npm_and_yarn group across 1 directory",
+    "old": "B",
+    "fullBody": "A"
+  },
+  {
+    "number": 16560,
+    "title": "fix(web): a cloned project's first worktree starts from its default branch",
+    "old": "B",
+    "fullBody": "A"
+  },
+  {
+    "number": 17858,
+    "title": "fix(web): find bar and thread details panel stop covering each other",
+    "old": "B",
+    "fullBody": "A"
+  },
+  {
+    "number": 18068,
+    "title": "fix(tailscale): existing Serve handlers are no longer overwritten or removed",
+    "old": "B",
+    "fullBody": "A"
+  },
+  {
+    "number": 18588,
+    "title": "fix(server,desktop): browser tools report why a page failed to load",
+    "old": "B",
+    "fullBody": "A"
+  },
+  {
+    "number": 18784,
+    "title": "fix(server): Android readiness reports a missing ffmpeg",
+    "old": "B",
+    "fullBody": "A"
+  }
+]

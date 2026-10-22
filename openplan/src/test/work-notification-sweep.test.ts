@@ -8,6 +8,7 @@ import {
   WORK_NOTIFICATION_KINDS,
   WORK_NOTIFICATION_IDEMPOTENCY_COLUMNS,
   WORK_NOTIFICATION_INBOX_COLUMNS,
+  WORK_NOTIFICATION_WRITE_COLUMNS,
   WORK_SWEEP_SOURCES,
   type WorkSweepClient,
 } from "@/lib/notifications/work";
@@ -27,7 +28,7 @@ const EMPTY_LEDGER: AwardDrawdownLedger = (() => {
 
 import {
   FakeWorkDb,
-  migrationDeclaresNotNullDueOn,
+  migrationRequiresReminderDueOn,
   migrationExists,
   migrationKindVocabulary,
   workNotificationUniqueKey,
@@ -408,9 +409,8 @@ afterEach(() => {
 describe("the daily deadline sweep", () => {
   it("is backed by a migration whose unique index is what makes it idempotent", () => {
     expect(migrationExists()).toBe(true);
-    // The code names these columns as its ON CONFLICT target; the database
-    // enforces them. Pinning the two together is what stops a rename in one
-    // place from turning the guarantee off in the other.
+    // The full identity remains kind-aware. The RPC handles both uniqueness
+    // stages with targetless insertion; the database still enforces this key.
     expect(workNotificationUniqueKey()).toEqual([...WORK_NOTIFICATION_IDEMPOTENCY_COLUMNS]);
   });
 
@@ -420,19 +420,17 @@ describe("the daily deadline sweep", () => {
     // 13:00 UTC with nobody watching. Derived from the migration rather than
     // retyped here, so the assertion cannot agree with a stale list.
     expect(migrationKindVocabulary().sort()).toEqual([...WORK_NOTIFICATION_KINDS].sort());
-    // Every kind is actually produced by a source — a vocabulary entry nothing
-    // emits is a capability that looks shipped and is not.
+    // Reminder kinds come from the sweep. Change notices come from the atomic
+    // opportunity trigger, without entering an email digest.
     expect(WORK_SWEEP_SOURCES.map((source) => source.kind).sort()).toEqual(
-      [...WORK_NOTIFICATION_KINDS].sort()
+      WORK_NOTIFICATION_KINDS.filter((kind) => kind !== "grant_deadline_changed").sort()
     );
   });
 
-  it("keeps due_on NOT NULL, or the unique index would guarantee nothing", () => {
-    // NULLs are DISTINCT in a unique index. A nullable `due_on` would leave the
-    // constraint in place and silently stop de-duplicating, which is the worst
-    // shape of this defect: the guard above still finds an index, and the digest
-    // goes out every day.
-    expect(migrationDeclaresNotNullDueOn()).toBe(true);
+  it("requires due_on for reminder rows, keeping null dates exclusive to change events", () => {
+    // NULLs are distinct in a unique index. Reminder dates remain required;
+    // only journal-backed change notices may have a null due date.
+    expect(migrationRequiresReminderDueOn()).toBe(true);
   });
 
   it("writes one reminder per person per record, in the workspace the record belongs to", async () => {
@@ -526,9 +524,11 @@ describe("the daily deadline sweep", () => {
 
     // And it did TRY — the idempotency is the database's, not a pre-read that
     // could get out of step with it.
-    expect(db.upsertCalls).toHaveLength(2);
-    expect(db.upsertCalls[1].ignoreDuplicates).toBe(true);
-    expect(db.upsertCalls[1].onConflict).toBe(WORK_NOTIFICATION_IDEMPOTENCY_COLUMNS.join(","));
+    expect(db.reminderWriteCalls).toHaveLength(2);
+    expect(db.upsertCalls).toHaveLength(0);
+    expect(Object.keys((db.reminderWriteResponses[1] as { outcomes: object[] }).outcomes[0]).sort())
+      .toEqual(WORK_NOTIFICATION_WRITE_COLUMNS.split(", ").sort());
+    expect(second.notificationsAlreadyPresent).toBe(10);
   });
 
   it("mails a second digest that contains ONLY what is genuinely new", async () => {
@@ -639,7 +639,8 @@ describe("the daily deadline sweep", () => {
     // Bob's invoice is overdue by `invoicePriority`, not by a second date test
     // written here: unsettled AND past due.
     const bob = db.outbox.find((row) => row.to_email === "bob@example.gov");
-    expect(bob?.subject).toBe("OpenPlan: 1 overdue, 5 due in the next 7 days");
+    // The closed award (fa-spent) is a review item, not one of the deadlines due.
+    expect(bob?.subject).toBe("OpenPlan: 1 overdue, 4 due in the next 7 days, 1 closed award to review");
     expect(String(bob?.body)).toContain("Invoice 2026-014");
 
     const overdueRow = db.notifications.find((row) => row.subject_id === "d-overdue");
@@ -663,6 +664,52 @@ describe("the daily deadline sweep", () => {
     expect(reminder?.body).toContain("Obligation timing is not established");
     expect(reminder?.body).not.toContain("must be obligated");
     expect(WORK_SWEEP_SOURCES.find(source => source.kind === "award_obligation_due")?.select.split(",").map(x => x.trim())).toContain("closure_basis");
+  });
+
+  describe("a closed award's obligation deadline (KI-2026-10-12-015)", () => {
+    const bobDigest = (db: FakeWorkDb) => db.outbox.find((row) => row.to_email === "bob@example.gov");
+    const section = (body: string, heading: string) => {
+      const start = body.indexOf(heading);
+      if (start === -1) return "";
+      const end = body.indexOf("\n\n", start);
+      return body.slice(start, end === -1 ? undefined : end);
+    };
+
+    it("is listed for review and not counted or worded as overdue when the date has passed", async () => {
+      const { db, tables } = makeDbWithFixtures();
+      tables.funding_awards.find((row) => row.id === "fa-spent")!.obligation_due_at = "2026-08-01T00:00:00.000Z";
+      await run(db);
+
+      const digest = bobDigest(db);
+      expect(digest?.subject).toBe("OpenPlan: 1 overdue, 4 due in the next 7 days, 1 closed award to review");
+      const body = String(digest?.body);
+      expect(section(body, "Overdue (1):")).not.toContain("Closed-out award");
+      expect(section(body, "Closed awards to review (1):")).toContain("Closed-out award, obligation deadline Aug 1, 2026");
+      expect(body).toContain("Closing an award does not show whether this deadline was met.");
+      expect((digest?.payload_json as { overdue: number; toReview: number })).toMatchObject({ overdue: 1, toReview: 1 });
+
+      const reminder = db.notifications.find((row) => row.subject_id === "fa-spent");
+      expect(String(reminder?.body)).not.toContain("overdue");
+    });
+
+    it("is listed for review, not as due, when the date is ahead", async () => {
+      const { db } = makeDbWithFixtures();
+      await run(db);
+
+      const body = String(bobDigest(db)?.body);
+      expect(section(body, "Due in the next 7 days (4):")).not.toContain("Closed-out award");
+      expect(section(body, "Closed awards to review (1):")).toContain("Closed-out award, obligation deadline Aug 16, 2026");
+    });
+
+    it("leaves an open award with a passed date overdue", async () => {
+      const { db, tables } = makeDbWithFixtures();
+      tables.funding_awards.find((row) => row.id === "fa-1")!.obligation_due_at = "2026-08-01T00:00:00.000Z";
+      await run(db);
+
+      const digest = bobDigest(db);
+      expect(digest?.subject).toBe("OpenPlan: 2 overdue, 3 due in the next 7 days, 1 closed award to review");
+      expect(section(String(digest?.body), "Overdue (2):")).toContain("Safety implementation award");
+    });
   });
 
   it("leaves out records that are closed, settled, already decided, unassigned or beyond the week", async () => {
@@ -879,6 +926,186 @@ describe("the daily deadline sweep", () => {
     expect(result.emailUnavailable).toBe(3);
     expect(result.emailsSkipped).toBe(0);
     expect(db.outbox).toEqual([]);
+  });
+});
+
+/**
+ * EACH WORKSPACE'S WINDOW IS ON ITS OWN CALENDAR.
+ *
+ * "Due in the next 7 days" and "waiting N days" used to be counted from the
+ * UTC day. At 6 p.m. Pacific that is already tomorrow, and in Tokyo or
+ * Auckland it is still yesterday. Each case below gives two workspaces the
+ * same deadline and expects opposite answers, so a sweep that used one
+ * calendar for both cannot pass.
+ */
+describe("the reminder window on each workspace's calendar", () => {
+  type Rows = Array<Record<string, unknown>>;
+
+  function calendarDb(
+    zones: { one: string | null; two: string | null },
+    deliverables: Array<{ id: string; workspace: "one" | "two"; due: string }>,
+    errors?: Record<string, { message: string }>
+  ) {
+    const tables = fixtures();
+    const db = new FakeWorkDb({ tables, errors });
+    db.emails.set(ALICE, "alice@example.gov");
+    db.emails.set(CAROL, "carol@example.gov");
+    const all = tables as unknown as Record<string, Rows>;
+    for (const table of [
+      "project_deliverables",
+      "project_milestones",
+      "project_submittals",
+      "funding_opportunities",
+      "funding_awards",
+      "billing_invoice_records",
+    ]) {
+      all[table].splice(0);
+    }
+    Object.assign(all.workspaces[0], { time_zone: zones.one, home_country_code: null });
+    Object.assign(all.workspaces[1], { time_zone: zones.two, home_country_code: null });
+    for (const row of deliverables) {
+      all.project_deliverables.push({
+        id: row.id,
+        project_id: row.workspace === "one" ? PROJECT_ONE : PROJECT_THREE,
+        title: row.id,
+        due_date: row.due,
+        status: "in_progress",
+        assignee_user_id: row.workspace === "one" ? ALICE : CAROL,
+        projects: row.workspace === "one" ? projectOne() : projectThree(),
+      });
+    }
+    return { db, all };
+  }
+
+  const reminded = (db: FakeWorkDb) => db.notifications.map((row) => String(row.subject_id)).sort();
+
+  it("reaches a day further for a workspace whose calendar is already tomorrow (Tokyo)", async () => {
+    // 20:00 UTC Oct 14 is 5 a.m. Oct 15 in Tokyo: its week runs to Oct 22. In UTC it runs to Oct 21.
+    const { db } = calendarDb({ one: "Asia/Tokyo", two: null }, [
+      { id: "tokyo-oct-22", workspace: "one", due: "2026-10-22" },
+      { id: "utc-oct-22", workspace: "two", due: "2026-10-22" },
+    ]);
+    const result = await run(db, { now: new Date("2026-10-14T20:00:00Z") });
+    expect(reminded(db)).toEqual(["tokyo-oct-22"]);
+    expect(result.workspaceCalendarsUnavailable).toBe(false);
+  });
+
+  it("stops a day short for a Pacific workspace at 6 p.m., when UTC is already tomorrow", async () => {
+    // 01:00 UTC Oct 15 is 6 p.m. Oct 14 in Los Angeles: its week runs to Oct 21. In UTC it runs to Oct 22.
+    const { db } = calendarDb({ one: "America/Los_Angeles", two: null }, [
+      { id: "pacific-oct-21", workspace: "one", due: "2026-10-21" },
+      { id: "pacific-oct-22", workspace: "one", due: "2026-10-22" },
+      { id: "utc-oct-22", workspace: "two", due: "2026-10-22" },
+    ]);
+    await run(db, { now: new Date("2026-10-15T01:00:00Z") });
+    expect(reminded(db)).toEqual(["pacific-oct-21", "utc-oct-22"]);
+  });
+
+  it("counts the window on the night daylight saving time ends, and in Honolulu", async () => {
+    // 07:30 UTC Nov 2 is 11:30 p.m. PST Nov 1 (Nov 1 is 25 hours long) and 9:30 p.m. Nov 1 in Honolulu.
+    // Both weeks run to Nov 8. In UTC, Nov 2 plus 7 is Nov 9.
+    const { db } = calendarDb({ one: "America/Los_Angeles", two: "Pacific/Honolulu" }, [
+      { id: "pacific-nov-8", workspace: "one", due: "2026-11-08" },
+      { id: "pacific-nov-9", workspace: "one", due: "2026-11-09" },
+      { id: "honolulu-nov-8", workspace: "two", due: "2026-11-08" },
+      { id: "honolulu-nov-9", workspace: "two", due: "2026-11-09" },
+    ]);
+    await run(db, { now: new Date("2026-11-02T07:30:00Z") });
+    expect(reminded(db)).toEqual(["honolulu-nov-8", "pacific-nov-8"]);
+  });
+
+  it("reads every calendar in one projection-checked query", async () => {
+    const { db } = calendarDb({ one: "Asia/Tokyo", two: null }, [
+      { id: "a", workspace: "one", due: "2026-10-16" },
+      { id: "b", workspace: "two", due: "2026-10-16" },
+    ]);
+    await run(db, { now: new Date("2026-10-14T20:00:00Z") });
+    const calendarReads = db.reads.filter(
+      (read) => read.table === "workspaces" && read.select === "id, time_zone, home_country_code"
+    );
+    expect(calendarReads).toHaveLength(1);
+    const inFilter = calendarReads[0].filters.find((filter) => filter.kind === "in");
+    expect(inFilter && "values" in inFilter ? [...inFilter.values].sort() : null).toEqual(
+      [WORKSPACE_ONE, WORKSPACE_TWO].sort()
+    );
+  });
+
+  it("still reminds on UTC days when the calendars cannot be read, and says so", async () => {
+    const { db } = calendarDb(
+      { one: "Asia/Tokyo", two: null },
+      [
+        { id: "tokyo-oct-22", workspace: "one", due: "2026-10-22" },
+        { id: "tokyo-oct-21", workspace: "one", due: "2026-10-21" },
+      ],
+      { workspaces: { message: "column workspaces.time_zone does not exist" } }
+    );
+    const result = await run(db, { now: new Date("2026-10-14T20:00:00Z") });
+    expect(result.workspaceCalendarsUnavailable).toBe(true);
+    expect(reminded(db)).toEqual(["tokyo-oct-21"]);
+  });
+
+  it("reports a missing calendar row while retaining UTC fallback and readable peer calendars", async () => {
+    const { db, all } = calendarDb({ one: "Asia/Tokyo", two: "America/Los_Angeles" }, [
+      { id: "missing-oct-21", workspace: "one", due: "2026-10-21" },
+      { id: "missing-oct-22", workspace: "one", due: "2026-10-22" },
+      { id: "peer-oct-21", workspace: "two", due: "2026-10-21" },
+      { id: "peer-oct-22", workspace: "two", due: "2026-10-22" },
+    ]);
+    all.workspaces.splice(0, 1);
+
+    const result = await run(db, { now: new Date("2026-10-15T01:00:00Z") });
+
+    expect(result.workspaceCalendarsUnavailable).toBe(true);
+    expect(reminded(db)).toEqual(["missing-oct-21", "missing-oct-22", "peer-oct-21"]);
+    const calendarRead = db.reads.find(
+      (read) => read.table === "workspaces" && read.select === "id, time_zone, home_country_code"
+    );
+    expect(calendarRead?.filters).toContainEqual({ kind: "in", column: "id", values: [WORKSPACE_ONE, WORKSPACE_TWO] });
+  });
+
+  it("reports empty calendar results while retaining reminders on UTC days", async () => {
+    const { db, all } = calendarDb({ one: "Asia/Tokyo", two: null }, [
+      { id: "missing-oct-21", workspace: "one", due: "2026-10-21" },
+      { id: "missing-oct-22", workspace: "one", due: "2026-10-22" },
+    ]);
+    all.workspaces.splice(0);
+
+    const result = await run(db, { now: new Date("2026-10-14T20:00:00Z") });
+
+    expect(result.workspaceCalendarsUnavailable).toBe(true);
+    expect(reminded(db)).toEqual(["missing-oct-21"]);
+  });
+
+  it("counts the days a measure claim has waited on its workspace's calendar", async () => {
+    const { db, all } = calendarDb({ one: "Asia/Tokyo", two: "America/Los_Angeles" }, []);
+    all.measure_claims = [
+      {
+        id: "claim-tokyo",
+        workspace_id: WORKSPACE_ONE,
+        measure_fund_id: "fund-1",
+        fiscal_year_label: "FY 2027",
+        amount: "1000.00",
+        status: "submitted",
+        submitted_on: "2026-10-14",
+        created_by: ALICE,
+      },
+      {
+        id: "claim-pacific",
+        workspace_id: WORKSPACE_TWO,
+        measure_fund_id: "fund-1",
+        fiscal_year_label: "FY 2027",
+        amount: "1000.00",
+        status: "submitted",
+        submitted_on: "2026-10-14",
+        created_by: CAROL,
+      },
+    ];
+    all.measure_funds = [{ id: "fund-1", currency_code: "USD" }];
+    // 01:00 UTC Oct 15 is 10 a.m. Oct 15 in Tokyo and 6 p.m. Oct 14 in Los Angeles.
+    await run(db, { now: new Date("2026-10-15T01:00:00Z") });
+    const body = (id: string) => String(db.notifications.find((row) => row.subject_id === id)?.body);
+    expect(body("claim-tokyo")).toContain("It has been waiting 1 day.");
+    expect(body("claim-pacific")).toContain("It arrived today.");
   });
 });
 

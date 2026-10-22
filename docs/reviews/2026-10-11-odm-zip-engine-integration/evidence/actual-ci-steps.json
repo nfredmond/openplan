@@ -1,0 +1,14 @@
+[
+  {
+    "name": "ZIP engine lineage harmless and targeted fault controls",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-zip-engine-integration/verify_controls.py \\\n  --repo \"$GITHUB_WORKSPACE\" --out \"$RUNNER_TEMP/odm-zip-engine-controls\"\n",
+    "exit": 0,
+    "workflowSha256": "ee642dff086deeb49ffe791801eb57aa661ad545085ec6025dcf1bedc49a8d9f"
+  },
+  {
+    "name": "Original ZIP engine stopped-root replay",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-zip-engine-integration/native_recovery.py \\\n  --out \"$RUNNER_TEMP/odm-zip-engine-native\"\n",
+    "exit": 0,
+    "workflowSha256": "ee642dff086deeb49ffe791801eb57aa661ad545085ec6025dcf1bedc49a8d9f"
+  }
+]

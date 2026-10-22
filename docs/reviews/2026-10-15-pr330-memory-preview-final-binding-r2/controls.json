@@ -1,0 +1,118 @@
+{
+  "preparedOnly": true,
+  "sourceHead": "f0cbeddff5ae3fc37e0dd8b91c02601429d977a6",
+  "controls": [
+    {
+      "case": "harmless source/helper comments",
+      "result": "survived"
+    },
+    {
+      "case": "source-root",
+      "result": "named refusal; removed guard detected"
+    },
+    {
+      "case": "source-relative-path",
+      "result": "named refusal; removed guard detected"
+    },
+    {
+      "case": "source-link-kind",
+      "result": "named refusal; removed guard detected"
+    },
+    {
+      "case": "source-file-kind",
+      "result": "named refusal; removed guard detected"
+    },
+    {
+      "case": "source-file-bytes",
+      "result": "named refusal; removed guard detected"
+    },
+    {
+      "case": "protected-active-groups",
+      "result": "named refusal; removed guard detected"
+    },
+    {
+      "case": "protected-active-eight",
+      "result": "named refusal; removed guard detected"
+    },
+    {
+      "case": "protected-active-config-set",
+      "result": "named refusal; removed guard detected"
+    },
+    {
+      "case": "protected-active-config",
+      "result": "named refusal; removed guard detected"
+    },
+    {
+      "case": "v6:auth:Running",
+      "result": "typed refusal through composed preserve"
+    },
+    {
+      "case": "v6:auth:Paused",
+      "result": "typed refusal through composed preserve"
+    },
+    {
+      "case": "v6:auth:Restarting",
+      "result": "typed refusal through composed preserve"
+    },
+    {
+      "case": "v6:rest:Running",
+      "result": "typed refusal through composed preserve"
+    },
+    {
+      "case": "v6:rest:Paused",
+      "result": "typed refusal through composed preserve"
+    },
+    {
+      "case": "v6:rest:Restarting",
+      "result": "typed refusal through composed preserve"
+    },
+    {
+      "case": "v6:storage:Running",
+      "result": "typed refusal through composed preserve"
+    },
+    {
+      "case": "v6:storage:Paused",
+      "result": "typed refusal through composed preserve"
+    },
+    {
+      "case": "v6:storage:Restarting",
+      "result": "typed refusal through composed preserve"
+    },
+    {
+      "case": "v6:gateway:Running",
+      "result": "typed refusal through composed preserve"
+    },
+    {
+      "case": "v6:gateway:Paused",
+      "result": "typed refusal through composed preserve"
+    },
+    {
+      "case": "v6:gateway:Restarting",
+      "result": "typed refusal through composed preserve"
+    }
+  ],
+  "exactRestoration": true,
+  "sourceSHA256": "c1fb64a1013f66d146930c0f231cdcc760ac0354b70b2a5210dce6f2772fdfb7",
+  "helperSHA256": "acbcd05f418b89e167575b05dab205f7709fecbdbf4eb2ac06eeebcce857e0aa",
+  "resourcesBefore": {
+    "memory.max": "536870912",
+    "memory.swap.max": "0",
+    "memory.swap.current": "0",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.peak": "9347072",
+    "cpu.max": "50000 100000"
+  },
+  "resourcesAfter": {
+    "memory.max": "536870912",
+    "memory.swap.max": "0",
+    "memory.swap.current": "0",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.peak": "16637952",
+    "cpu.max": "50000 100000"
+  },
+  "blindCategories": [
+    "helper receipts, inspection, old packet/DB/web observations are private stand-ins",
+    "source receipts use tiny fixture files, not a real candidate checkout",
+    "no application, DB, service or browser acceptance"
+  ]
+}

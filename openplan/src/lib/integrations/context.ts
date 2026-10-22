@@ -73,7 +73,7 @@ export async function loadWorkspaceIntegrationKeys(
     if (error) return keys;
     for (const row of (data ?? []) as Array<{ provider?: unknown; key_ciphertext?: unknown }>) {
       if (typeof row.provider !== "string" || typeof row.key_ciphertext !== "string") continue;
-      const plaintext = decryptIntegrationKey(row.key_ciphertext);
+      const plaintext = decryptIntegrationKey(row.key_ciphertext, { workspaceId });
       if (plaintext) keys.set(row.provider as IntegrationProviderId, plaintext);
     }
     return keys;

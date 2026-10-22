@@ -1,0 +1,15 @@
+{
+  "unitSuites": 26,
+  "unitCases": 642,
+  "workflowStages": 34,
+  "operatorCases": 12,
+  "controlsPerInterpreter": 18,
+  "sourceSurvivors": 4,
+  "sourceFaults": 14,
+  "nativeControls": 26,
+  "nativeSurvivors": 4,
+  "nativeFaults": 22,
+  "documentationCases": 20,
+  "exactRestoration": true,
+  "scope": "Local supplied-file command and known native selected-root evidence, not CI or full worker/M3/v1 acceptance."
+}

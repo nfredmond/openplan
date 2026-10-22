@@ -1,0 +1,567 @@
+59	closed-unmerged		Add desktop perf trace automation
+163	merged		Add startup Codex provider health checks and surface status in server config/chat banner + Windows BS
+174	merged		Add anonymous PostHog telemetry for provider lifecycle events
+235	closed-unmerged		Correct installation command for T3 Code
+268	closed-unmerged		fix: run fixPath() before provider health check layer construction
+275	closed-unmerged		Add packaging/install scaffolding for Arch Linux and macOS
+423	closed-unmerged		fix: add Claude Code health check and error guidance
+482	closed-unmerged		Add linuxbrew support for codex installation.
+497	merged		fix(perf): debounce storage writes, batch events, async health checks
+555	closed-unmerged		docs: add Homebrew install method to README
+591	closed-unmerged		feat: interactive install wizard + CI/release fixes
+639	closed-unmerged		Docs/codex installation guide
+641	merged		Fix users who installed intel builds on arm macs
+699	closed-unmerged		Adding Story Based Telemetry For Agentic Development
+712	closed-unmerged		feat(web): display installed version in settings
+789	closed-unmerged		fix(ui): add dismiss button to provider health banner
+793	closed-unmerged	L	fix(server): use custom codex binary path in provider health checks
+801	closed-unmerged		Respect configured Codex path in provider health checks
+812	closed-unmerged		Share Codex CLI probe logic across startup and health checks
+837	closed-unmerged		fix: update installation command in README to use npx t3@alpha
+872	merged		feat: add selective file staging to commit dialog
+912	merged		Actions dialog: autofocus script-name field
+948	merged		fix: add logging for WebSocket errors
+951	merged	S	fix: add error logging for code highlighting failures
+955	merged		fix(desktop): show dialog after "Check for Updates" menu action
+1060	closed-unmerged	S	Standardize Codex manager logging and fix documentation typos
+1061	closed-unmerged	M	feat(web): add docsUrl for providers to install from
+1076	closed-unmerged	L	feat: add project command dialog with filesystem path autocomplete
+1119	closed-unmerged	S	refactor: standardize server logging
+1140	closed-unmerged	XS	fix: enable fixPath() on Linux and call it before health check
+1223	merged	XS	fix(web): show health banner for selected provider instead of defaulting to Codex
+1249	merged	S	Prefer Claude user ID for telemetry identity
+1289	closed-unmerged	XXL	feat: Add provider health and per-provider controls
+1340	closed-unmerged	XL	Add optional Linux installer bundle for AppImage releases
+1345	closed-unmerged	M	Collapse work log groups by default
+1378	closed-unmerged	M	fix(web): filter model picker by server provider health status
+1400	merged	XS	fix(desktop): default confirm dialog selection to "No"
+1428	closed-unmerged	XL	Add changelog dialog with GitHub releases in settings
+1450	closed-unmerged	XXL	fix: trust node-pty install scripts on linux
+1451	merged	XS	fix: trust node-pty install scripts on linux
+1461	merged	XS	fix(desktop): ensure all windows are destroyed before launching the NSIS installer during update process
+1554	closed-unmerged	S	Fix Claude [ede_diagnostic] red popups
+1564	merged	M	Document T3 Code install methods
+1569	closed-unmerged	M	fix(web): work log Show more — cursor, transition & scroll
+1594	merged	M	Bump Effect catalog dependencies
+1641	closed-unmerged	XS	[codex] migrate Effect.fn in apps/server/src/telemetry/Identify.ts
+1642	merged	XS	[codex] migrate Effect.fn in apps/server/src/telemetry/Layers/AnalyticsService.ts
+1697	merged	XXL	Add server observability tracing and metrics
+1705	merged	L	Persist server OTLP tracing settings across restarts
+1739	merged	XL	Proxy browser OTLP traces through the server
+1827	closed-unmerged	XXL	chore(release): add Linux packaging and stable install path
+1828	closed-unmerged	M	fix: intellij not being visible even though it's installed
+1862	merged	S	Debounce reconnect disconnect logging
+1891	merged	L	Harden secret store and resolve catalog overrides
+1943	merged	M	fix: Align token usage metrics for both Claude and Codex
+2047	closed-unmerged	M	Respect installed desktop update channel
+2100	merged	XS	ci(release): install deps before finalize version bump
+2102	closed-unmerged	M	Install Spectre MSVC libs for Windows release builds
+2295	closed-unmerged	L	feat: commit dialog refresh
+2431	merged	L	Add structured Discord webhook logging for release notifications
+2450	closed-unmerged	XXL	Add Sentry observability with distributed tracing
+2458	merged	S	Fix dialog footer button clipping in Git actions dialog
+2497	merged	S	Fix repeated effect-language-service prepare hooks during bun install
+2532	merged	XXL	Add process and trace diagnostics views
+2602	closed-unmerged	M	Optimize add-provider dialog state derivation
+2672	closed-unmerged	L	Add expandable runtime warning details to the work log
+2675	closed-unmerged	M	Reduce provider instance dialog rerenders
+2677	merged	XS	Skip healthy env reconnects after browser resume
+2679	merged	XXL	Reduce idle work and disk churn with native resource diagnostics
+2685	merged	XL	[codex] add diagnostics resource history
+2698	closed-unmerged	M	Remove derived state effects from provider dialog
+2715	closed-unmerged	M	Optimize expanded image dialog rerenders
+2741	closed-unmerged	M	Avoid extra expanded image dialog rerenders
+2752	closed-unmerged	L	Use Effect schemas in diagnostics parsing
+2762	closed-unmerged	L	Use idiomatic Effect patterns in diagnostics
+2772	closed-unmerged	M	Avoid effect-driven renders in image preview dialog
+2783	closed-unmerged	L	Use Effect idioms in diagnostics and keyed worker
+2801	closed-unmerged	M	Use more idiomatic Effect APIs in VCS config and diagnostics
+2821	closed-unmerged	XXL	feat(pwa): one-QR install + pair + reconnect flow
+2827	closed-unmerged	M	Optimize provider instance dialog renders
+2861	merged	XS	Ensure Electron runtime is installed in release workflow
+2936	merged	M	ci: let setup-vp install dependencies
+2941	merged	S	fix(release): install dependency closures in partial jobs
+2949	merged	XS	fix(release): install hosted web workspace closure
+2961	merged	XS	[codex] fix release finalize install
+2974	closed-unmerged	M	Use Effect scheduling for relay install locks
+2975	closed-unmerged	M	Avoid effect-driven PR dialog resets
+2977	merged	L	[codex] Enrich relay authorization diagnostics
+2983	closed-unmerged	M	Make relay install lock use idiomatic Effect policies
+2991	closed-unmerged	M	Optimize publish repository dialog state
+2994	merged	XL	[codex] Extract infrastructure, telemetry, and test tooling
+2995	merged	XL	[codex] Trace first-party relay clients
+3007	closed-unmerged	M	Optimize chat plan catalog selector
+3016	merged	L	Polish dialog/alert surfaces and unauthenticated provider banner
+3022	merged	XXL	Rework message metadata, timestamps, and tool work log rows
+3031	closed-unmerged	L	Optimize add provider dialog render flow
+3051	closed-unmerged	L	fix(server): Make telemetry configurable and opt-in
+3189	merged	L	[codex] Align diagnostics and telemetry Effect services
+3220	merged	XS	Preserve observable Effect error semantics
+3228	merged	XS	[fix/feat:ui] Capitalize Work Log heading
+3279	merged	M	[codex] Structure rotating log sink errors
+3284	merged	L	[codex] add structured Electron dialog errors
+3298	merged	S	[codex] Structure catalog dependency resolution failures
+3300	merged	M	Preserve trace file read causes
+3306	merged	L	[codex] Structure telemetry identity errors
+3365	merged	M	[codex] Structure relay install confirmation conflicts
+3366	closed-unmerged	L	[codex] Preserve managed endpoint failure diagnostics
+3375	merged	L	[codex] Preserve desktop backend log failures
+3377	merged	S	[codex] Preserve relay trace error causes
+3389	merged	M	[codex] Structure process diagnostics failures
+3403	closed-unmerged	XXL	[codex] Share safe URL diagnostics
+3405	merged	L	[codex] Sanitize client error log diagnostics
+3407	merged	L	[codex] Structure OTLP export diagnostics
+3410	merged	M	[codex] Redact agent awareness relay diagnostics
+3411	merged	M	[codex] Sanitize client runtime failure diagnostics
+3412	merged	M	[codex] Redact SSH tunnel diagnostics
+3414	merged	M	[codex] sanitize provider runtime failure diagnostics
+3416	merged	M	[codex] sanitize VCS refresh diagnostics
+3417	merged	L	[codex] sanitize ACP native event diagnostics
+3418	merged	L	[codex] Structure keybindings failure diagnostics
+3419	closed-unmerged	L	[codex] Preserve auth HTTP failure diagnostics
+3420	merged	S	[codex] Bound relay registration replay diagnostics
+3424	merged	L	[codex] Bound shared schema diagnostics
+3426	merged	M	[codex] Preserve trace IDs across error causes
+3427	merged	S	[codex] Sanitize YAML schema diagnostics
+3434	closed-unmerged	M	[codex] Sanitize provider config decode diagnostics
+3437	merged	M	[codex] Preserve cloud disconnect diagnostics
+3477	closed-unmerged	S	[codex] Structure Tailscale status parse diagnostics
+3504	closed-unmerged	L	[codex] fix: surface Codex app-server exit diagnostics
+3505	merged	S	[codex] fix: guard trace ID clipboard copy
+3569	closed-unmerged	L	Apply idiomatic Effect patterns to SSH diagnostics
+3583	closed-unmerged	L	Make process diagnostics parsing more idiomatic Effect
+3589	closed-unmerged	L	Make diagnostics parsing more idiomatic Effect
+3600	closed-unmerged	M	Use Effect Schema for Windows process diagnostics
+3618	closed-unmerged	L	Make diagnostics and readiness more idiomatic Effect
+3626	closed-unmerged	XL	Use codex update for standalone installs
+3633	closed-unmerged	L	Make server diagnostics and file reads more idiomatic Effect
+3685	merged	XXL	Improve live activity routing and diagnostics
+3699	closed-unmerged	XXL	feat: runtime plugin system — capability host, marketplace, install lifecycle (server + web)
+3731	closed-unmerged	XXL	Plugin system (7/8): marketplace + install lifecycle
+3740	merged	L	fix(server): resolve Claude SDK executable path on Windows npm installs
+3741	closed-unmerged	XS	fix(server): stop surfacing Claude 'task_updated' messages as work-log errors
+3743	closed-unmerged	M	Use Effect Schema decoding in diagnostics parsers
+3751	merged	L	feat(server): title background-task work-log rows with the task name
+3781	merged	M	fix(release): stage pnpm 11 allowBuilds for desktop installs
+3832	merged	L	feat: show nightly update changelog tooltip
+3834	closed-unmerged	M	Use Schema parsing for Windows process diagnostics
+3857	closed-unmerged	L	Make diagnostics parsing more idiomatic Effect
+3873	closed-unmerged	S	fix(server): bound editor discovery and optimize Windows diagnostics
+3874	closed-unmerged	S	fix(server): bound editor discovery and optimize Windows diagnostics
+3883	closed-unmerged	L	fix(client-runtime): tolerate transient server stalls in connection heartbeat
+3902	merged	XS	Fix worktree removal timing out on large install trees
+3911	closed-unmerged	M	fix(server): speed up Windows diagnostics and editor discovery
+3914	closed-unmerged	L	Make process diagnostics parsing more idiomatic Effect
+3940	closed-unmerged	M	Use idiomatic Effect APIs for filesystem reads and telemetry timing
+3956	closed-unmerged	XXL	fix(codex): use `codex update` for standalone installer installs
+4033	open	M	fix(mobile): Persist crash diagnostics before runtime fatals
+4067	closed-unmerged	L	Model picker redesign: compact rows, catalog-driven short names
+4075	closed-unmerged	XS	fix(server): stabilize non-repository Git diagnostics
+4077	merged	S	fix(server): stabilize non-repository Git diagnostics
+4083	merged	L	fix(web): show command output in work log
+4119	closed-unmerged	M	fix(server): absorb unknown Claude SDK messages instead of work-log warnings
+4153	merged	L	fix(server): use CLI for OpenCode health check instead of spawning server
+4156	closed-unmerged	L	Refactor server diagnostics with Effect-native APIs
+4185	closed-unmerged	M	Use codex update for standalone installs
+4213	merged	XS	fix(desktop): handle EPIPE errors on stdout/stderr to prevent crash dialog
+4220	closed-unmerged	XXL	(WIP) feat: subagent & workflow observability — Agents panel
+4228	closed-unmerged	XS	fix: speed up Windows process diagnostics
+4244	merged	M	fix(claude): handle all SDK stream messages; stop spurious work-log warning rows
+4269	merged	L	fix: open command palette instead of custom dialog for new thread picker in SidebarV2
+4306	merged	S	fix(web): add web app manifest so installed app keeps its scope
+4318	closed-unmerged	M	Recover stalled draft thread promotion
+4319	merged	XXL	Refresh web application surfaces and dark-mode dialogs
+4365	merged	L	Unify dialog glass and fix composer overlays
+4454	closed-unmerged	M	fix(desktop): treat an undecryptable connection catalog as empty instead of crashing environment discovery
+4486	closed-unmerged	L	feat(web): select diagnostics environment
+4551	closed-unmerged	XXL	feat(orchestration-v2): add subagent observability
+4569	closed-unmerged	XS	fix(windows): discover Cursor Agent CLI install dir
+4607	merged	M	perf(mobile): defer work-log detail serialization
+4618	closed-unmerged	S	feat(codex): enable input dialogs in default mode
+4626	closed-unmerged	L	feat(orchestration-v2): add subagent observability data model (1/5)
+4629	merged	XXL	feat(orchestration-v2): populate subagent observability from providers (2/5)
+4736	closed-unmerged	XS	fix: speed up Windows process diagnostics
+4762	closed-unmerged	XXL	fix(web): Keep running, stopped, and failed rows visible in the work log
+4768	merged	L	feat(orchestration-v2): add subagent observability data model (1/5)
+4779	closed-unmerged	XXL	feat(orchestration-v2): subagent observability — data model and providers (1/4)
+4796	merged	XS	fix(release): skip scripts during Vercel installs
+4824	merged	M	build(desktop): reduce installed app size by ~300MB
+4838	closed-unmerged	M	fix(claude): classify stop diagnostics as interrupted
+4858	closed-unmerged	XXL	Fix worktree conflict diagnostics
+4910	closed-unmerged	M	fix(server): brew upgrade the installed formula, not the configured one
+4956	closed-unmerged	L	fix(server): keep installed editors visible when discovery times out
+5012	closed-unmerged	S	fix(server): pass the explicit user to loginctl enable-linger (fixes WSL2 service install)
+5074	merged	XS	fix(shell): add ~/.local/bin to the Windows CLI resolver so native-installed providers are found
+5076	merged	XS	fix(server): surface cloudflared FTL/PNC relay logs as warnings, not debug
+5122	closed-unmerged	XXL	perf(desktop): unblock Windows startup and shrink the installer
+5132	merged	S	fix(ssh): surface a failed remote t3 install instead of a silent 0-byte server.log
+5170	closed-unmerged	XXL	fix(terminal): polish pass — node-pty diagnostics, Ctrl+W guards, black flash, split grouping
+5199	closed-unmerged	L	fix(web): preserve dialog state through close transitions
+5219	merged	XXL	feat: native subagent & workflow observability
+5268	closed-unmerged	L	feat(terminal): select installed shell for new sessions
+5345	closed-unmerged	L	perf(telemetry): reduce idle resource monitoring CPU
+5423	closed-unmerged	XXL	feat(grok): native ACP parity (catalog, effort, usage, plan, multi-agent, compact)
+5480	closed-unmerged	XXL	WIP Changelog - do not merge
+5503	closed-unmerged	XXL	feat(grok): native ACP parity (catalog, effort, usage, plan, multi-agent, compact)
+5557	merged	S	fix(server): stopping a Claude thread no longer shows an ede_diagnostic error
+5559	merged	S	fix(server): stop showing commit/push/PR notices as errors in the work log
+5561	merged	L	fix: prevent reconnect loops during server stalls
+5624	merged	XL	fix(web): use themed confirmation dialogs
+5630	closed-unmerged	M	fix(server): update standalone Codex installs with codex update
+5646	merged	S	fix(server): allow install scripts in npm-global provider updates
+5678	closed-unmerged	L	fix(server): resolve Claude launcher shims from pnpm and space-containing Windows installs
+5726	merged	XS	fix(mobile): detect PowerShell cmdlet errors in work log rows
+5780	closed-unmerged	XL	perf(server): trace logs keep hours of history instead of minutes
+5902	closed-unmerged	M	fix(desktop): recover corrupt connection catalog documents
+5969	closed-unmerged	XL	feat(swift-ios): embed an exact build changelog with links
+5998	closed-unmerged	XXL	fix(desktop): verified update teardown on Windows+WSL, install integrity check, and resilient WSL readiness handshake
+6042	closed-unmerged	M	fix(ssh): adopt installed service without session env
+6130	merged	XS	test(swift-ios): use environment-scoped provider catalogs
+6169	merged	XXL	perf(desktop): speed up Windows update installation
+6201	merged	L	feat(desktop): add signal macOS DMG installer background
+6221	closed-unmerged	L	fix(server): installed editors no longer go undetected on Windows
+6239	closed-unmerged	L	fix(desktop): theme update status dialogs
+6247	closed-unmerged	M	fix(server): upgrade the actually-installed Homebrew formula
+6269	merged	L	fix(desktop): refresh queued updates before install
+6356	closed-unmerged	M	fix(server): pick up newly installed provider CLIs on Windows refresh
+6392	merged	M	fix(web): show filenames when commit dialog paths overflow
+6436	closed-unmerged	XXL	fix(server): use the correct installer for provider updates
+6453	closed-unmerged	L	fix(claude): discover skills from installed plugins
+6475	closed-unmerged	XL	feat(terminals): add observable tmux sessions
+6563	merged	XL	feat(cli): npx t3 triage hands broken installs to your own coding agent
+6577	closed-unmerged	S	fix(server): bound OpenCode CLI health probes with timeouts
+7142	closed-unmerged	M	fix(server): backfill assistant text from the snapshot when a stalled stream never closes its block
+7421	merged	S	fix(packaging): install AUR launcher icons where icon themes look
+7426	closed-unmerged	XXL	feat(server): open a project in any installed application
+7437	merged	S	fix(desktop): stop the passkey dialog from popping as soon as sign-in opens
+7494	closed-unmerged	M	fix(web): validate monospace fonts on pick instead of scanning the catalog
+7495	closed-unmerged	L	fix(web): preserve dialog state through close transitions
+7534	closed-unmerged	L	feat(server): open a project in any installed application
+7545	closed-unmerged	L	Add `t3 env add`: pre-seed a legacy saved-environment catalog, headlessly
+7549	closed-unmerged	XL	feat: add plugin command catalog
+7580	merged	L	fix(web): polish theme library buttons, search, and import dialog
+7638	closed-unmerged	XXL	fix(grok): skills, reasoning, plan mode, usage, and stalled turns
+7646	closed-unmerged	M	fix(service): make install reconcile current service
+7679	closed-unmerged	S	fix(web): stop calling branches refName in the commit dialog
+7731	closed-unmerged	M	fix(server): check Homebrew for provider updates on Homebrew installs
+7880	closed-unmerged	L	fix(web): replace the update tooltip with a changelog popover
+7919	closed-unmerged	L	fix(grok): populate the skill catalog from grok inspect
+7943	closed-unmerged	XS	fix(web): stop rendering healthy ready providers as auth failures
+7999	merged	XS	fix(web): stop recovered tool failures from marking work logs red
+8006	merged	M	perf(web): reuse work log rows during streaming
+8106	closed-unmerged	L	feat(web): shift+click to skip confirmation dialogs
+8139	merged	XS	fix(web): block type-to-focus behind open dialogs
+8152	closed-unmerged	S	fix(web): dialogs and palettes no longer render under the composer slash menu
+8163	merged	XS	fix(deps): stop pnpm installs from changing the lockfile
+8247	closed-unmerged	XS	fix(server): one-click provider updates no longer wedge brew-installed Codex on macOS
+8350	closed-unmerged	XXL	feat(swift-ios): present the command drawer catalog
+8391	closed-unmerged	M	fix(server): make OpenCode health check resilient to terminal escapes and spaced model IDs
+8429	closed-unmerged	S	fix(desktop): keep windows if update install fails
+8480	merged	XXL	fix(opencode): handle child approvals, stops, and model catalogs
+8498	closed-unmerged	S	fix(server): roll back failed service installs
+8544	closed-unmerged	L	fix(codex): scope custom model catalogs to the provider
+8547	closed-unmerged	S	fix(chat): avoid stalled pending follow-ups
+8693	merged	XXL	fix(web): unify activity logs and composer banners
+8726	closed-unmerged	L	feat(mcp): expose current environment diagnostics
+8734	merged	XXL	fix(web): restore unified activity logs and composer banners
+8753	closed-unmerged	M	fix(desktop): recover from obsolete catalog keys
+8858	closed-unmerged	M	fix(server): background service no longer crash-loops on Linux npm 12 installs
+8870	closed-unmerged	L	fix(web): show update changelog in downloaded toast
+8917	merged	XS	chore(macroscope): review diagnostic overrides
+8923	closed-unmerged	M	fix(mobile): preserve saved environments across catalog recovery
+8930	open	XS	fix(ssh): give each managed launch a fresh remote server log
+8936	merged	L	feat(client): render viewed images in work logs
+8982	closed-unmerged	L	fix(cursor): populate skill catalog and keep spaced names as one chip
+8996	closed-unmerged	M	fix(web): warn when agent startup stalls
+9093	merged	XXL	feat: display native app and browser icons in work logs
+9154	merged	L	fix(grok): health check, model selection, and stop all work against the real CLI
+9162	closed-unmerged	M	feat(web): make the hosted app installable from Chrome
+9232	open	M	fix(desktop): find user-installed CLIs when shell probing fails
+9285	merged	S	fix(desktop): detect installed Spectre libs for Windows builds
+9325	merged	XL	fix(server): only run provider updates through the installer that owns the binary
+9383	closed-unmerged	L	fix(providers): resolve gateway-prefixed model slugs to their catalog entry
+9403	closed-unmerged	S	fix(server): unset the allow-scripts policy npx exports before installing the pinned runtime
+9411	closed-unmerged	XS	fix(desktop): close windows before installing updates
+9419	merged	M	fix(web): avoid duplicate Antigravity install status
+9489	closed-unmerged	L	fix(web): copy an update command that matches how the server is installed
+9524	merged	XS	(via juliusmarminge): Add --max-time 60 to curl in cursor-hygiene-webhook to prevent stalled t
+9574	merged	M	test(server): run the Antigravity install harness for the host platform
+9689	merged	S	perf(server): omit repeated OpenCode progress logs
+9734	merged	XS	fix(relay): bound stalled push requests
+9790	merged	L	feat(auth): separate diagnostics and usage permissions
+9839	closed-unmerged	L	fix(server): preserve Antigravity startup diagnostics
+9859	merged	XS	fix(release): install the correct Windows Spectre component
+9863	closed-unmerged	L	ci: publish a Windows arm64 desktop installer
+9870	merged	XS	fix(web): show retained runtime diagnostics in the work log
+9923	merged	S	fix(server): install pinned runtime when pnpm node lacks npm
+10032	merged	XS	refactor(server): keep telemetry identity errors private
+10057	merged	S	refactor(server): simplify native telemetry error internals
+10087	closed-unmerged	S	fix(server): retain bounded runtime diagnostic details
+10088	merged	XS	fix(ssh): report remote package installation failures accurately
+10263	closed-unmerged	XXL	feat(skills): browse installed skills by environment and project
+10273	merged	L	fix(mobile): stop the work log flickering during subagent runs and failing calls
+10277	merged	S	refactor(server): classify telemetry exports
+10402	merged	M	fix(web): onboarding installs agents without needing Node or npm
+10442	merged	M	fix(mobile): expand single-line tool details in work logs
+10509	merged	XS	docs: add Scoop as Windows installation method
+10520	closed-unmerged	S	fix(server): prevent worktree pairing from falling back to the live install
+10585	merged	XS	fix(shared): release relay install locks on cancellation
+10587	open	M	fix(server): bound native telemetry command writes
+10632	merged	L	feat(desktop): refresh macOS installer with aurora artwork
+10739	closed-unmerged	M	fix(swift-ios): recover when a keepalive send stalls
+10803	closed-unmerged	XXL	feat(server): open preview tabs in installed gecko, webkit, and blink engines
+10819	merged	S	fix(desktop): use official logo in macOS installer
+10820	merged	M	fix(desktop): neutral artwork for stable macOS installer
+10895	open	XS	fix(desktop): Group Linux windows under the installed launcher
+10965	closed-unmerged	M	fix(server): stop an oversized provider diff from exhausting the backend heap
+10968	closed-unmerged	L	fix(server): stop an oversized provider diff from exhausting the backend heap
+10971	closed-unmerged	M	fix(shared): detect Windows CLIs installed after the app's PATH snapshot
+10978	closed-unmerged	XS	fix(web): keep dialog controls clickable over desktop titlebars
+11023	closed-unmerged	M	fix(web): let a stalled title regeneration be retried
+11125	closed-unmerged	L	fix(server): stop an oversized provider diff from exhausting the backend heap
+11126	open	M	fix(shared): detect Windows CLIs installed after the app's PATH snapshot
+11183	closed-unmerged	L	fix(server): bootstrap attachment cleanup without decoding the event log
+11218	merged	M	Allow setting T3CODE_OTLP_HEADERS
+11224	merged	M	Add T3CODE_OTLP_PROTOCOL to allow protobuf protocol
+11232	closed-unmerged	L	fix(server): apply Effect overrides at pinned-runtime install root
+11237	closed-unmerged	S	fix(ssh): resolve user-installed t3 without changing PATH
+11240	merged	XS	fix(cli): pin shared Effect dependency for npm installs
+11262	closed-unmerged	L	feat(server): show OpenCode subagents in the Agents panel and work log
+11281	merged	S	fix(web): use branch wording in commit dialogs
+11318	merged	XL	feat(server): install preview runtimes from release archives
+11324	merged	M	fix(web): keep large image previews from stalling composer typing
+11391	merged	M	fix(usage): model shares and order follow the selected metric
+11446	closed-unmerged	XS	fix(web): keep long commands inside the Add Action dialog
+11451	merged	XL	feat(cli): add t3 update for self-contained installs
+11471	closed-unmerged	S	fix(server): bound Codex session startup to release stalled commands
+11475	closed-unmerged	XXL	feat(providers): install Codex, Claude, and OpenCode from settings
+11540	merged	L	feat(mobile): show startup crashes in Settings → Diagnostics
+11659	merged	L	feat(cli): add t3 uninstall for self-contained installs
+11696	merged	L	docs: make the standalone installer the primary way to get the CLI
+11733	closed-unmerged	XS	fix(server): prevent worktree setup stalling on terminal colour queries
+11753	merged	S	fix(desktop): keep preview releases out of the nightly update changelog
+11784	merged	XXL	feat(chat): show provider thinking traces
+11901	open	S	fix(desktop): preserve WSL runtime installation errors
+11915	closed-unmerged	L	fix(chat): show tool identity in work logs
+11946	closed-unmerged	M	fix(server): report stalled SSH key authorization during fetch
+12008	merged	L	fix(antigravity): stop health checks from filling the disk with _MEI folders
+12027	closed-unmerged	S	perf(tailscale): linearize status collection, evaluate stderr diagnostic once
+12029	closed-unmerged	S	perf(relay): skip aggregate serialization on cheaply-decided updates
+12044	merged	L	feat(cli): show installer and update download progress
+12163	closed-unmerged	L	fix(server): show Codex and Claude thinking traces in V2 adapters
+12205	closed-unmerged	L	fix(server): compress rotated diagnostic logs
+12305	merged	L	fix(server): bound provider event log records before serialization
+12332	merged	M	fix(web): client spans reach the trace proxy again
+12347	merged	M	refactor(web): reuse worklog rows for setup and created threads
+12358	merged	L	refactor(web): share diagnostic process actions
+12371	merged	L	fix(mobile): share accessible connection trace controls
+12375	merged	XS	t3code/ui composition audit/worklog link variant
+12386	closed-unmerged	XXL	fix(web): label read-file work log rows with the path, not contents
+12439	merged	L	fix: detect installed editors outside PATH
+12470	closed-unmerged	L	fix(server): floor the provider health interval and skip ticks during a probe
+12493	merged	L	feat(server): export log records over OTLP
+12520	merged	L	feat(desktop): export main process telemetry over OTLP
+12538	merged	L	feat(web): configure OpenTelemetry exports in diagnostics
+12540	merged	M	chore(desktop): leave main process metrics export off until a metric exists
+12571	merged	XS	fix(web): wrap long titles in confirmation dialogs
+12602	closed-unmerged	XXL	perf(server): answer cheap git metadata from repository files instead of spawning git
+12621	closed-unmerged	XXL	feat(observability): honor the standard OTEL_* environment variables
+12657	merged	M	refactor(observability): hold OTLP export settings per signal
+12693	open	S	fix(cli): explain missing libatomic dependency during Linux installation
+12722	closed-unmerged	M	fix(server): Antigravity Linux ARM64 install + custom path resolve
+12816	merged	L	feat(devices): show installed and running tool versions per host
+12901	closed-unmerged	XXL	feat(agent-capability): publish HYDE work-state and diagnostics capability
+12925	closed-unmerged	L	feat(observability): honor an OpenTelemetry kill switch in the environment
+12970	closed-unmerged	XS	fix(work-log): hide raw tool output from collapsed labels
+13016	closed-unmerged	S	fix(opencode): report the installed CLI version when the owned server lags behind
+13032	merged	M	refactor(web): one vertical rhythm for dialog bodies
+13137	closed-unmerged	L	fix(acp): prevent assistant message fragmentation on background tool updates & filter leaked harness telemetry
+13179	closed-unmerged	M	fix(cli): t3 update points apt and dnf installs to their package manager
+13257	closed-unmerged	XS	fix(settings): explain that provider update checks also fetch model catalog updates
+13268	closed-unmerged	L	fix(cursor): reject out-of-catalog custom models before ACP
+13355	merged	L	feat(observability): honor the OpenTelemetry kill switch
+13428	closed-unmerged	L	fix(web): right panel shortcuts on non-Latin layouts and terminal close dialog UX
+13441	closed-unmerged	M	fix(server): install Antigravity without Node in standalone builds
+13445	closed-unmerged	M	fix(server): install Antigravity without Node in standalone builds
+13468	closed-unmerged	M	fix(desktop): recover from malformed connection catalogs
+13469	merged	M	fix(observability): a malformed OTEL_RESOURCE_ATTRIBUTES no longer stops startup
+13488	closed-unmerged	XXL	[DO NOT MERGE] feat(server): export agent runs as OpenTelemetry GenAI spans
+13492	merged	L	feat(observability): honor the standard OTLP endpoint, headers, and protocol variables
+13564	merged	L	feat(relay): measure the managed tunnel backlog
+13641	merged	L	feat(desktop): honor the standard OTLP variables in the main process and WSL backends
+13643	closed-unmerged	XS	fix(server): log why the Claude capability probe failed
+13656	closed-unmerged	M	fix(desktop): recover undecryptable connection catalogs safely
+13669	merged	M	fix(server): installed editors no longer vanish when discovery is slow
+13672	closed-unmerged	S	feat(web): open projects in px0 when installed
+13685	merged	M	fix(cli): t3 triage points agents at log files that exist
+13694	merged	M	feat(observability): write a server heap snapshot on SIGUSR2
+13697	merged	L	feat(observability): record event loop stalls in the server trace
+13698	merged	L	feat(cli): summarize the server trace file from the command line
+13699	merged	M	refactor(observability): name each service after its application
+13701	merged	XS	feat(observability): name the command on subprocess spans
+13736	merged	M	feat(observability): honor OTEL_*_EXPORTER=none per signal
+13756	merged	M	perf(observability): stop writing empty spans on spawns, projected events, and idle polls
+13758	merged	M	fix(observability): a failing trace disk no longer stalls the server
+13760	closed-unmerged	M	fix(observability): span events no longer pile up without limit
+13761	merged	M	fix(observability): the renderer trace proxy stops tracing itself
+13763	merged	L	perf(server): opening Diagnostics no longer loads the whole trace ring into memory
+13794	open	L	fix(install): launch t3 by absolute path
+13804	closed-unmerged	S	fix(server): launcher preflight and service install explain which t3 ran
+13821	closed-unmerged	XXL	feat(server): install environment extensions and serve their APIs
+14008	closed-unmerged	S	fix(desktop): updater failures log the error code and exit status
+14036	closed-unmerged	L	fix(mobile): preserve tool identity in work-log rows
+14063	closed-unmerged	L	fix(server): increase ACP process kill grace period and preserve install error details
+14142	closed-unmerged	M	fix(server): fail stalled project clones after 5 quiet minutes
+14145	closed-unmerged	M	bound sync setup-script join so a wedged script cannot stall thread bootstrap
+14151	closed-unmerged	XS	fix(server): hide Claude models the installed CLI is too old for
+14170	open	XS	fix(server): only offer claude update for native Claude installs
+14230	closed-unmerged	L	fix(client-runtime): reconnects no longer stall until reload after an interrupted connection check
+14256	closed-unmerged	M	fix(server): tell users how to update an install T3 cannot update
+14276	open	M	fix(desktop): close SSH forwards before installing an update
+14295	open	S	fix(server): install the advertised version for pnpm-global provider updates
+14323	merged	XS	test(server): stop pinning codex install advisory to a release range
+14413	open	L	fix(telemetry): honor opt-out for relay tracing across local clients
+14471	open	M	fix(desktop): Install Linux theme icons named after the app id
+14529	merged	XS	fix(build): desktop and CLI builds resolve catalog overrides on selectors
+14549	closed-unmerged	S	fix(server): refresh model catalog without CLI update checks
+14573	merged	M	fix(desktop): agent clicks in the browser no longer pop Save dialogs
+14606	closed-unmerged	S	fix(web): show platform diagnostics on the first device setup step when nothing is available
+14776	closed-unmerged	S	fix(server): read desktop telemetry without blocking process exit
+14840	closed-unmerged	S	fix(shared): install the T3 Connect relay client on Windows ARM64
+14897	merged	L	fix(client-runtime): reconnects back off with jitter and keep healthy sockets
+14903	merged	S	fix(server): API-key Codex installs no longer warn on every start
+14942	open	S	fix(server): opening a folder without Git installed no longer shows a spawn error
+14986	merged	L	fix(server): failed telemetry batches stop re-sending every second
+15026	closed-unmerged	S	fix(desktop): browser tabs no longer log a spurious Electron sandbox error
+15028	open	M	feat(server): send telemetry through ingest.t3.codes
+15033	merged	L	perf: cheaper shell refreshes, one copy of Codex streaming text, no MCP wait polling
+15232	closed-unmerged	M	chore(server): add Antigravity Claude 5.5 catalog metadata
+15345	closed-unmerged	XS	fix(desktop): install the Electron test runtime once, not per worker
+15384	merged		fix(web): highlight tool inputs and remove nested work log indentation
+15386	open	L	fix(desktop): report updater install failures on the first click
+15416	merged	L	fix(server): offer one-click provider updates for every install
+15435	merged	S	fix(web): show device diagnostics before hub readiness
+15442	merged	L	fix(orchestration-v2): let Stop recover stalled runs
+15454	merged	XS	fix(web): keep workspace panels below dialogs
+15458	merged	XS	fix(web): promoting a draft thread no longer logs a React key warning
+15539	merged	L	fix(server): match manual update commands to installed cli
+15621	closed-unmerged	XXL	Bound provider log retention by age and size
+15629	open	M	fix(server): preserve antigravity ipv6 startup diagnostics
+15632	open	M	fix(web): rank usage provider rows by the selected metric
+15662	open	L	fix(claude): discover enabled installed plugin skills
+15732	merged	XS	docs(install): polish binary install destination phrasing
+15754	merged	L	feat(release): include nightly changelogs in Discord announcements
+15872	merged	S	fix(server): a Claude 403 no longer tells you to log in again
+15945	open	XS	fix(codex): a slow but healthy Codex no longer shows as Unavailable
+16027	open	M	fix(web): scrolling a large diff no longer stalls while collapsed files load
+16031	open	M	fix(desktop): allow browser annotations over native modal dialogs
+16054	open	XXL	feat(server): install plugins from npm with integrity checks and staged updates
+16057	open	XXL	feat(web,mobile): install and update plugins from npm in Settings
+16200	merged	L	fix(clients): dropped connections say why in the client trace
+16202	closed-unmerged	S	fix(server): project lookups stop flooding the server trace
+16207	merged	L	fix(server): metrics count interrupted work on the monotonic clock
+16225	closed-unmerged	M	fix(web): reasoning trace follows live stream to the bottom
+16262	merged	L	feat(server): log how long PR watches stay quiet before they end
+16312	closed-unmerged	L	fix(terminal): answer startup queries so fish doesn't stall 10s
+16314	merged	L	fix(observability): T3 Connect tracing stops at the relay boundary
+16372	merged	M	fix(web): bring back the live shimmer on work log rows
+16375	merged	XS	chore(tsconfig): turn off the Schema-over-JSON diagnostic in test files
+16382	merged	M	fix(relay): export traces through one tracer, one request span each
+16411	merged	S	fix(release): resolve version-qualified catalog overrides
+16448	open	M	fix(server): settle OpenCode model catalog before caching it
+16490	closed-unmerged	M	feat(server): option to turn off provider event logs
+16563	merged	XS	fix(desktop): honor the telemetry opt-out from the shell profile
+16583	open	M	fix(server): Claude adapter compiles selections against the live model catalog
+16642	open	M	fix(server): logs print causes instead of [Object]
+16676	merged	L	fix(desktop): setup prompts name a t3 that runs on desktop installs
+16683	merged	L	feat(desktop): install the t3 command from Settings
+16715	closed-unmerged	S	fix(shared): install the relay client on Windows ARM64
+16757	merged	S	fix(server): missing project folders no longer log favicon warnings
+16790	closed-unmerged	L	fix(server): one silent provider no longer stalls every thread
+16806	open	M	fix(server): report stalled Antigravity sign-in sooner
+16812	closed-unmerged	M	fix(server): keep workspace skills when provider health fails
+16879	closed-unmerged	XS	fix(server): disable Grok startup updates during health checks
+16998	merged	M	fix(shared): relay client install waits out a brief Windows file lock
+17116	merged	S	fix(web): stack merge dialog closes as soon as you confirm
+17122	merged	S	perf(web): switching project keeps Diagnostics and Providers mounted
+17206	merged	L	fix(server): Pi editor dialogs prefill the answer composer
+17298	closed-unmerged	L	fix(desktop): capture background browser tabs without stalling
+17329	merged	L	fix(muse): workflow subagents no longer stall on hidden approvals
+17351	merged	M	fix(desktop): the t3 command warns instead of installing behind another t3
+17417	merged	XL	refactor(provider-core): expose model metadata through a ModelCatalog port
+17494	open	XS	fix(desktop): WSL runtime install reports why t3 cannot run
+17566	merged	M	fix(devices): recover stalled video without losing simulator input
+17570	open	M	fix(cli): install missing fonts during browser setup
+17585	open	XL	feat(server): install provider CLI updates in the background
+17588	open	M	feat(desktop): download updates in the background and install them on quit
+17691	open	XXL	feat: install skills from a source, view their files, and let agents change Tools
+17836	merged	S	docs(pi): update installation and remote login guidance
+17875	open	M	fix(server): Windows npm installs keep one-click updates with a direct binary path
+17881	closed-unmerged	L	fix(web): Enter runs the primary action in confirmation dialogs
+17959	merged	S	fix(server): threads without a project no longer need Git installed
+17966	closed-unmerged	S	fix(server): check mise ownership before the native-installer match
+18075	open	XS	fix(server): Grok health checks no longer start Grok's updater
+18082	closed-unmerged	L	fix(server): Codex sessions stall after a native subagent finishes
+18106	closed-unmerged	M	perf(server): server traces keep more history by skipping low-value spans
+18110	open	M	fix(server): tell users how to update an install T3 cannot update
+18121	merged	M	fix(server): sync device tool license versions with installer pins
+18127	merged	M	fix(mobile): license generation works with filtered installs
+18130	closed-unmerged	L	fix(source-control): show Forgejo instances with safe diagnostics
+18176	closed-unmerged	M	fix(web): focus the primary action when confirmation dialogs open
+18187	open	M	fix(web): focus the primary action when confirmation dialogs open
+18207	merged	XS	fix(web): long commands no longer overflow the Add Action dialog
+18208	merged	S	docs(settings): explain that provider update checks also gate the model catalog
+18210	closed-unmerged	M	fix(server): provider health interval can't drop below 30 seconds
+18262	closed-unmerged	M	perf(usage): reduce memory and stalls in cold Antigravity reads
+18269	open	M	fix(web): make hosted clients installable on Android
+18280	open	L	fix(server): recover stalled checkpoint captures
+18309	open	M	fix(server): keep workspace skills when provider health fails
+18472	open	M	fix(server): Antigravity installs on Windows ARM
+18520	open	L	fix(desktop): Windows on ARM installs no longer pull x64 updates
+18523	open	M	fix(server): Windows Codex install uses system tar and retries rename
+18538	merged	L	feat(mobile): add a development catalog for shared UI controls
+18541	open	XXL	refactor(mobile): adopt shared controls and add component catalog
+18558	open	S	fix(server): Claude threads recover after you log in again
+18561	open	M	fix(opencode): verify updates using the installed CLI version
+18623	open	M	fix(web): an installed provider with unchecked sign-in no longer reads Needs attention
+18679	merged	S	fix(mobile): installs skip the Enriched math download again
+18696	closed-unmerged	M	fix(mobile): stop Android logging "Unsupported FontVariant value" on every tabular-nums render
+18709	merged	XS	fix(web): update everything includes npm-installed servers again
+18716	open	S	fix(web): the default-branch dialog no longer offers a feature branch it cannot create
+18740	merged	L	fix: expose running terminals and prevent setup install stalls
+18760	closed-unmerged	M	fix(device): explain npm installation failures
+18772	open	M	fix(grok): a Homebrew-installed Grok updates through brew and is compared against the cask
+18773	closed-unmerged	M	fix(server): Homebrew-installed Grok updates through brew
+18776	merged	XS	fix(mobile): Browser page no longer logs a duplicate key warning
+18830	merged	XS	fix(server): bound activity publishes so stalled responses release the worker
+18832	open	S	fix(ssh): keep draining tunnel diagnostics after readiness
+18864	merged	M	fix(desktop): preserve updater failure causes in diagnostics
+18940	merged	XS	fix(web): scheduled task model picker no longer shifts the dialog
+18979	open	XL	perf: warm lazy surfaces, lighter remote snapshots and cheaper streaming
+18993	open	L	feat(web): add chat settings to compact the work log and hide reasoning
+19000	open	M	fix(opencode): omit unsupported reasoning options from catalog models
+19097	open	XS	fix(server): a provider session that fails at runtime no longer puts a stack trace in the thread banner
+19157	open	S	fix(providers): respect mise ownership in native install locations
+19175	open	XS	fix(web): name the web app manifest so Chrome offers to install it
+19238	open	S	fix(mobile): long commands no longer freeze Android work-log taps
+19253	open	M	fix(server): Update all can update Codex when accounts share one install
+19266	open	L	refactor(mobile): centralize dialog and sheet APIs
+19303	closed-unmerged	L	perf(logging): move local trace and provider log writes off the event loop
+19320	merged	S	fix(server): Claude no longer shows unavailable when its health check can't run in $HOME
+19321	merged	S	fix(server): stalled OAuth token requests no longer block credential calls
+19370	open	S	fix(server): OTLP exports say which machine and build they came from
+19412	open	L	fix(provider-cursor): list skills from installed Cursor plugins
+19425	merged	L	feat(observability): SQL spans show lock wait and connection; stalls keep their own history
+19430	merged	L	perf(server): traces keep ~40% more history and no longer block the event loop
+19446	merged	M	fix(usage): cold usage scans no longer stall the server
+19449	open	M	fix(server): migrate compatible legacy service install state
+19496	closed-unmerged	XL	perf(all): settings parsing up to 6.7x faster, trace logging 2x
+19517	open	S	fix(server): keep WinGet Claude installs manual-only instead of running claude update
+19518	open	S	fix(server): replace ACP model catalogs after completed discovery
+19580	open	L	fix(server): pnpm provider updates only offer versions pnpm will install
+19581	open	L	fix(server): Homebrew installs no longer run brew info with update checks off
+19613	closed-unmerged	S	fix(web): balance headings and avoid orphan words in chat and dialogs
+19631	merged	M	fix(server): restarts no longer stall on old subagent result deliveries
+19658	closed-unmerged	L	fix(terminal): fish no longer stalls on startup waiting for a DA1 reply
+19678	open	M	fix(cursor): explain model rejections from the account catalog
+19685	open	S	fix(terminal): fish no longer stalls 10s on startup

@@ -1,0 +1,32 @@
+[
+  {
+    "check": "controls314-verified-final",
+    "returncode": 0,
+    "seconds": 7.558
+  },
+  {
+    "check": "controls311-verified-final",
+    "returncode": 0,
+    "seconds": 6.827
+  },
+  {
+    "check": "native314-verified-final",
+    "returncode": 0,
+    "seconds": 68.199
+  },
+  {
+    "check": "native311-verified-final",
+    "returncode": 0,
+    "seconds": 66.524
+  },
+  {
+    "check": "legacy314-verified-final",
+    "returncode": 0,
+    "seconds": 6.054
+  },
+  {
+    "check": "legacy311-verified-final",
+    "returncode": 0,
+    "seconds": 5.242
+  }
+]

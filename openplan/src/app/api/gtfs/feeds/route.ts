@@ -21,6 +21,7 @@ import {
 import { selectGtfsCaveats } from "@/lib/gtfs/caveats";
 import { managedGtfsEnabled, managedGtfsRouteSubmission } from "@/lib/gtfs/managed-route";
 import { resolveManagedGtfsSubmission } from "@/lib/gtfs/managed-source";
+import { checkWorkspaceStorageRoom, workspaceStorageRefusal } from "@/lib/workspaces/storage-quota";
 
 /**
  * THE WORKSPACE'S TRANSIT FEEDS: what is here, and how another one gets here.
@@ -402,6 +403,19 @@ export async function POST(request: NextRequest) {
     /* ------------------------------------------------------------------ */
     /* Ingest                                                              */
     /* ------------------------------------------------------------------ */
+
+    // A fetched archive's size is unknown until it arrives, so this refuses a
+    // workspace already at its storage limit; the per-archive ceiling
+    // (OPENPLAN_GTFS_MAX_ARCHIVE_BYTES) bounds the rest.
+    const room = await checkWorkspaceStorageRoom(service, workspaceId, 0);
+    if (room.status !== "room") {
+      audit.warn("gtfs_feed_workspace_storage_refused", {
+        workspaceId,
+        status: room.status,
+        ...(room.status === "full" ? { usedBytes: room.usedBytes, quotaBytes: room.quotaBytes } : { detail: room.detail }),
+      });
+      return workspaceStorageRefusal(room);
+    }
 
     const result = await runGtfsIngest({
       service,

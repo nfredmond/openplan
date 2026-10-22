@@ -4,6 +4,8 @@ import "mapbox-gl/dist/mapbox-gl.css";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { SetupPendingNotice } from "@/components/ui/setup-pending-notice";
+import { MapUnavailableNotice } from "@/components/ui/map-unavailable-notice";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { withPresentedHeadlineScores } from "@/lib/analysis/score-presentation";
@@ -88,12 +90,15 @@ type ExploreWorkbenchProps = {
   openedForProject: { id: string; name: string | null } | null;
   /** Why the project's area is not the one on screen, when it isn't. */
   projectAreaNotice: string | null;
+  /** Operator copy for the notice above, folded under it. */
+  projectAreaOperatorDetail?: string | null;
 };
 
 export function ExploreWorkbench({
   projectPlace,
   openedForProject,
   projectAreaNotice,
+  projectAreaOperatorDetail = null,
 }: ExploreWorkbenchProps) {
   const { mapContainerRef, mapRef, mapReady, mapUnavailableReason } = useExploreMapInstance();
 
@@ -715,7 +720,7 @@ export function ExploreWorkbench({
           AN EMPTY MAP PANE MUST SAY WHY IT IS EMPTY. Without a usable Mapbox
           token the hook never creates the map, and this stage rendered as a
           permanently blank rectangle — the 2026-08-03 review's finding #6. A
-          planner reads silence as broken software; the analysis lanes still
+          planner reads silence as broken software; the analyses still
           work without the basemap, and this says both things.
         */}
         {mapUnavailableReason ? (
@@ -723,17 +728,12 @@ export function ExploreWorkbench({
             className="absolute inset-0 z-10 flex items-center justify-center p-6"
             data-testid="explore-map-unavailable"
           >
-            <div className="max-w-md rounded-[0.5rem] border border-dashed border-border bg-background/95 px-5 py-4 text-sm text-muted-foreground shadow-lg backdrop-blur-sm">
-              <p className="font-medium text-foreground">No map key is configured on this deployment</p>
-              <p className="mt-1.5">
-                {mapUnavailableReason === "unusable_token"
-                  ? "A Mapbox token is set but is not a public key. Set NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to a token beginning with pk. — a secret sk. token is deliberately refused rather than sent to the browser."
-                  : "Set NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to a public Mapbox token (it begins with pk.) and this map will draw."}
-              </p>
-              <p className="mt-1.5">
-                Analyses still run without the basemap — only the map display is affected.
-              </p>
-            </div>
+            <MapUnavailableNotice
+              className="max-w-md border-border bg-background/95 px-5 shadow-lg backdrop-blur-sm"
+              unusableToken={mapUnavailableReason === "unusable_token"}
+              cause={mapUnavailableReason === "cannot_start" ? "cannot_start" : "not_set_up"}
+              stillWorks="Corridor runs still work. Only the map display is affected."
+            />
           </div>
         ) : null}
 
@@ -944,9 +944,9 @@ export function ExploreWorkbench({
               {analysisContext?.project ? (
                 <div className="mt-5 space-y-4">
                   {analysisContext.migrationPending ? (
-                    <div className="module-alert text-xs">
-                      Data Hub is wired into Corridor Analysis, but the current database still needs the latest migration before linked datasets can fully appear here.
-                    </div>
+                    <SetupPendingNotice className="text-xs" consequence="Linked Data Hub datasets may not all appear here.">
+                      The database still needs the latest migration before linked datasets can fully appear here.
+                    </SetupPendingNotice>
                   ) : linkedDatasetQueueState.items.length > 0 ? (
                     // Closed by default: the list ran several screens and pushed
                     // the study area and the Run button out of view.
@@ -1011,7 +1011,7 @@ export function ExploreWorkbench({
                     </details>
                   ) : (
                     <div className="module-empty-state text-xs">
-                      No project-linked datasets yet. Register sources in Data Hub to start building real overlay lanes instead of hidden analysis assumptions.
+                      No datasets are linked to this project yet. Add them in Data Hub.
                     </div>
                   )}
                 </div>
@@ -1026,6 +1026,7 @@ export function ExploreWorkbench({
               homeGeographyLoadState={homeGeographyLoadState}
               openedForProject={openedForProject}
               projectAreaNotice={projectAreaNotice}
+              projectAreaOperatorDetail={projectAreaOperatorDetail}
             />
 
             <ExploreLayerVisibilityControls

@@ -36,7 +36,7 @@ from typing import Any
 
 import requests
 from dotenv import load_dotenv
-from worker_heartbeat import WorkerHeartbeat
+from worker_heartbeat import OutputGrowth, WorkerHeartbeat
 
 _WORKER_DIR = Path(__file__).resolve().parent
 _REPO_ROOT = _WORKER_DIR.parents[1]
@@ -47,6 +47,7 @@ _SHARED_WORKER_DIR = str(_WORKER_DIR.parent / "aequilibrae_worker")
 if _SHARED_WORKER_DIR not in sys.path:
     sys.path.append(_SHARED_WORKER_DIR)
 from model_receipt_values import same_json_value
+import model_stage_lease
 
 # Locally load .env (worker dir) then the app's .env.local; in a container these
 # come from the environment. override=False so real env vars always win.
@@ -91,6 +92,12 @@ EVIDENCE_SCHEMA_VERSION = "openplan.behavioral_demand_preflight_evidence.v0"
 EXECUTED_RUNTIME_MODES = {"activitysim_cli", "activitysim_container_cli"}
 
 _WORKER_HEARTBEAT: WorkerHeartbeat | None = None
+
+# The stage this process holds, renewed through the heartbeat, and what a
+# poll-mode shutdown records about it. See model_stage_lease.py.
+_CUSTODY = model_stage_lease.PollCustody(
+    base_url=SUPABASE_URL, headers=HEADERS, heartbeat=lambda: _WORKER_HEARTBEAT, worker_label="ActivitySim worker",
+)
 
 
 def _activitysim_exec_config() -> dict:
@@ -222,10 +229,12 @@ def _confirmed_state_patch(table: str, record_id: str, payload: dict, *, queued_
     this exception into a contradictory failed-stage update.
     """
     try:
-        response = requests.patch(
-            f"{SUPABASE_URL}/rest/v1/{table}?id=eq.{record_id}" + ("&status=eq.queued" if queued_claim else ""),
-            headers=HEADERS, json=payload, timeout=30,
-        )
+        # A recorded shutdown holds this gate until the process exits.
+        with model_stage_lease.STATE_WRITE_GATE:
+            response = requests.patch(
+                f"{SUPABASE_URL}/rest/v1/{table}?id=eq.{record_id}" + ("&status=eq.queued" if queued_claim else ""),
+                headers=HEADERS, json=payload, timeout=30,
+            )
         if response.status_code != 200:
             raise WorkerStateWriteUnconfirmed(
                 f"Worker state write unconfirmed for {table} (HTTP {response.status_code})"
@@ -332,6 +341,74 @@ def sb_post_artifact(payload: dict) -> None:
         except Exception:
             raise WorkerStateWriteUnconfirmed("Hosted artifact mirror unconfirmed; retain original files before recovery") from None
     _confirmed_record_insert("model_run_artifacts", payload)
+
+
+def stage_journal_dir(run_id: str, stage_id: str) -> str:
+    """Where this stage's KPI and artifact requests are saved before they are sent.
+
+    Beside `skip-commands` and outside every `execution-*` directory, so a later
+    execution of the same stage reads the same saved requests, and
+    `model_command_recovery.py --journal` can find them.
+    """
+    validate_run_identity(run_id)
+    if not isinstance(stage_id, str) or str(uuid.UUID(stage_id)) != stage_id:
+        raise ValueError("Model stage identity must be a canonical UUID")
+    return os.path.join(ACTIVITYSIM_WORK_DIR, run_id, "stage-journals", stage_id)
+
+
+def sb_record_retained_kpi(payload: dict, *, workspace_id: str, stage_id: str) -> dict:
+    """Save the complete KPI request, then send it; a lost reply stays recoverable.
+
+    Uses the AequilibraE worker's legacy KPI command and journal unchanged. A
+    resend of the same request returns the original receipt rather than a
+    second row; changed values under the same KPI identity are refused.
+    """
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return writer.record_kpi(payload)
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed("Managed kpi registration requires reconciliation; no insert fallback") from error
+    import model_legacy_output_delivery
+    try:
+        return model_legacy_output_delivery.deliver_kpi(
+            payload, workspace_id=workspace_id, stage_id=stage_id,
+            journal_dir=stage_journal_dir(payload.get("run_id"), stage_id),
+            base_url=SUPABASE_URL, deployment_id=os.environ.get("OPENPLAN_DEPLOYMENT_ID", ""),
+            service_key=SUPABASE_KEY, post=requests.post,
+        )
+    except Exception:
+        raise WorkerStateWriteUnconfirmed("KPI delivery unconfirmed; recover the saved request before continuing") from None
+
+
+def sb_record_retained_artifact(payload: dict, *, workspace_id: str, logical_name: str) -> dict:
+    """Save the complete artifact request under a stable logical name, then send it."""
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return writer.record_artifact(payload)
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed("Managed artifact registration requires reconciliation; no insert fallback") from error
+    if os.environ.get("OPENPLAN_HOSTED_ARTIFACT_MIRROR") == "1":
+        import model_hosted_artifacts
+        try:
+            model_hosted_artifacts.mirror_registered(Path(ACTIVITYSIM_WORK_DIR).parent, payload,
+                model_hosted_artifacts.configured_upload)
+        except Exception:
+            raise WorkerStateWriteUnconfirmed("Hosted artifact mirror unconfirmed; retain original files before recovery") from None
+    import model_legacy_output_delivery
+    try:
+        return model_legacy_output_delivery.deliver_artifact(
+            payload, workspace_id=workspace_id,
+            journal_dir=stage_journal_dir(payload.get("run_id"), payload.get("stage_id")),
+            logical_name=logical_name,
+            base_url=SUPABASE_URL, deployment_id=os.environ.get("OPENPLAN_DEPLOYMENT_ID", ""),
+            service_key=SUPABASE_KEY, post=requests.post,
+        )
+    except Exception:
+        raise WorkerStateWriteUnconfirmed("Artifact delivery unconfirmed; recover the saved request before continuing") from None
 
 
 def sb_get_run(run_id: str) -> dict:
@@ -810,7 +887,7 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
     data = (json.dumps(evidence, indent=2) + "\n").encode("utf-8")
     storage_ref = sb_upload_evidence(run_id, "behavioral_demand_evidence_packet.json", data, "application/json", stage_id=stage_id)
     if storage_ref:
-        sb_post_artifact(
+        sb_record_retained_artifact(
             {
                 "run_id": run_id,
                 "stage_id": stage_id,
@@ -819,7 +896,8 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
                 "file_size_bytes": len(data),
                 "content_hash": hashlib.sha256(data).hexdigest(),
                 "metadata_json": {"kind": "behavioral_demand_preflight_evidence", "is_forecast": False},
-            }
+            },
+            workspace_id=run.get("workspace_id"), logical_name="evidence_packet",
         )
 
     if demand_package:
@@ -830,7 +908,7 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
         )
         for artifact_type, artifact_path in artifact_specs:
             artifact_bytes = Path(artifact_path).read_bytes()
-            sb_post_artifact(
+            sb_record_retained_artifact(
                 {
                     "run_id": run_id,
                     "stage_id": stage_id,
@@ -842,7 +920,8 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
                         "kind": "activitysim_assignment_handoff",
                         "uncalibrated": True,
                     },
-                }
+                },
+                workspace_id=run.get("workspace_id"), logical_name=artifact_type,
             )
 
     # 5. Structural, non-forecast general KPIs (bundle scaffold sizes + runtime mode).
@@ -872,7 +951,7 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
             float(bundle_stats["synthetic_persons"]), "persons", {"provenance": scaffold_provenance},
         ))
     for name, label, value, unit, breakdown in kpis:
-        sb_post_kpi(
+        sb_record_retained_kpi(
             {
                 "run_id": run_id,
                 "kpi_category": "general",
@@ -881,7 +960,8 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
                 "value": value,
                 "unit": unit,
                 "breakdown_json": breakdown,
-            }
+            },
+            workspace_id=run.get("workspace_id"), stage_id=stage_id,
         )
 
     # 6. ONLY when a real ActivitySim run executed AND produced supportable
@@ -889,7 +969,10 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
     #    never a forecast. On $0 preflight infra this block is skipped entirely, so
     #    no demand-shaped number is ever emitted without a real run behind it.
     real_kpis = (
-        _write_executed_behavioral_kpis(run_id, pipeline, accepted_components)
+        _write_executed_behavioral_kpis(
+            run_id, pipeline, accepted_components,
+            workspace_id=run.get("workspace_id"), stage_id=stage_id,
+        )
         if executed else 0
     )
 
@@ -905,7 +988,8 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
 
 
 def _write_executed_behavioral_kpis(
-    run_id: str, pipeline: dict, accepted_components: list[dict[str, Any]] | None = None
+    run_id: str, pipeline: dict, accepted_components: list[dict[str, Any]] | None = None,
+    *, workspace_id: str, stage_id: str,
 ) -> int:
     """Write behavioral KPIs from a REAL (uncalibrated, starter) ActivitySim run,
     reading the extractor's honest summary. Emits nothing if the run produced
@@ -941,7 +1025,7 @@ def _write_executed_behavioral_kpis(
         value = totals.get(key)
         if value is None:
             continue
-        sb_post_kpi(
+        sb_record_retained_kpi(
             {
                 "run_id": run_id,
                 "kpi_category": "general",
@@ -950,7 +1034,8 @@ def _write_executed_behavioral_kpis(
                 "value": float(value),
                 "unit": unit,
                 "breakdown_json": {"provenance": provenance, "calibration": "uncalibrated"},
-            }
+            },
+            workspace_id=workspace_id, stage_id=stage_id,
         )
         written += 1
     return written
@@ -997,19 +1082,23 @@ def process_stage(stage: dict) -> None:
     stage_name = stage["stage_name"]
 
     validate_run_identity(run_id)
+    claimed_at = _utc_now()
     claimed = sb_claim_stage(
         stage_id,
-        {"status": "running", "started_at": _utc_now(), "log_tail": f"Starting {stage_name}..."},
+        {"status": "running", "started_at": claimed_at, "log_tail": f"Starting {stage_name}..."},
     )
     if not claimed:
         print(f"[{time.strftime('%X')}] ⏭️ Lost claim race for {stage_name} (run={run_id[:8]}…)")
         return
-    sb_patch_run(run_id, {"status": "running"})
-
-    if _WORKER_HEARTBEAT is not None:
-        _WORKER_HEARTBEAT.set_current_work(
-            {"runId": run_id, "stageId": stage_id, "stageName": stage_name}
-        )
+    try:
+        # Only a confirmed claim is leased. The heartbeat renews it and reports
+        # file growth under this run's directory separately from liveness, so
+        # a long ActivitySim step that writes nothing is visible, never killed.
+        _CUSTODY.hold(stage, claimed_at, progress=OutputGrowth(os.path.join(ACTIVITYSIM_WORK_DIR, run_id)))
+        sb_patch_run(run_id, {"status": "running"})
+    except BaseException:
+        _CUSTODY.release()
+        raise
 
     try:
         run = sb_get_run(run_id)
@@ -1034,8 +1123,9 @@ def process_stage(stage: dict) -> None:
         )
         sb_patch_run(run_id, {"status": "failed"})
     finally:
-        if _WORKER_HEARTBEAT is not None:
-            _WORKER_HEARTBEAT.set_current_work(None)
+        # Releasing the lease is not a status write. A stage left running
+        # without a held lease is marked interrupted once the lease lapses.
+        _CUSTODY.release()
 
 
 def poll_for_jobs() -> None:
@@ -1057,8 +1147,28 @@ def poll_for_jobs() -> None:
     print(f"ActivitySim behavioral-preflight worker started at {time.strftime('%c')}")
     print(f"Polling {SUPABASE_URL} for queued stages (owned: {', '.join(OWNED_STAGE_NAMES)})...")
 
-    while True:
+    # SIGTERM stops new claims; a held stage is recorded as interrupted by
+    # shutdown and the process exits inside the supervisor's grace period.
+    restore_signals = _CUSTODY.install_signal_handlers()
+    try:
+        _poll_until_stopped()
+    finally:
+        restore_signals()
+
+
+def _poll_until_stopped() -> None:
+    next_reconcile = 0.0
+    while not _CUSTODY.stop_requested():
+        stage = None
         try:
+            # At start, then periodically: an owner that died after this
+            # process started is noticed once its lease lapses.
+            if time.monotonic() >= next_reconcile:
+                model_stage_lease.reconcile_lapsed_stages(
+                    base_url=SUPABASE_URL, headers=HEADERS, stage_filter=_STAGE_FILTER,
+                    worker_label="ActivitySim worker",
+                )
+                next_reconcile = time.monotonic() + model_stage_lease.RECONCILE_INTERVAL_SECONDS
             url = (
                 f"{SUPABASE_URL}/rest/v1/model_run_stages"
                 f"?status=eq.queued&{_STAGE_FILTER}"
@@ -1075,6 +1185,8 @@ def poll_for_jobs() -> None:
             if not stages:
                 time.sleep(POLL_INTERVAL_SECONDS)
                 continue
+            if _CUSTODY.stop_requested():
+                break
 
             processed = False
             for stage in stages:
@@ -1091,9 +1203,15 @@ def poll_for_jobs() -> None:
             if not processed:
                 time.sleep(POLL_INTERVAL_SECONDS)
 
+        except (WorkerStateWriteUnconfirmed, WorkerStateReadUnconfirmed) as error:
+            if stage is not None:
+                model_stage_lease.attach_stage_identity(error, stage)
+            model_stage_lease.report_unconfirmed_state(error, "ActivitySim worker")
+            time.sleep(POLL_INTERVAL_SECONDS)
         except Exception as exc:  # noqa: BLE001 — keep the poll loop alive
             print(f"Poll loop error: {exc}")
             time.sleep(POLL_INTERVAL_SECONDS)
+    print(f"[{time.strftime('%X')}] ActivitySim worker stopped claiming stages and is exiting.")
 
 
 if __name__ == "__main__":

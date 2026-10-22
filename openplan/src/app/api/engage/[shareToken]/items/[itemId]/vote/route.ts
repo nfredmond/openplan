@@ -9,8 +9,10 @@ import {
   buildPublicSubmissionClientFingerprint,
 } from "@/lib/engagement/public-submit";
 import {
+  PUBLIC_VOTE_MAX_PER_CONNECTION_PER_ITEM,
   PUBLIC_VOTE_MAX_PER_CONNECTION_WINDOW,
   PUBLIC_VOTE_MAX_PER_WINDOW,
+  PUBLIC_VOTE_PER_ITEM_WINDOW_HOURS,
   PUBLIC_VOTE_RATE_WINDOW_MINUTES,
 } from "@/lib/engagement/votes";
 
@@ -36,7 +38,13 @@ type VoteTarget =
  * Voter: `<connection>:<device>` when the browser sent a device token, else
  * the connection alone (as every vote was before 2026-10-11). So a meeting
  * room on one Wi-Fi can support a comment once per device, not once per room,
- * and the connection prefix still lets the route count the whole room.
+ * and the connection prefix still lets the route count the whole room. The
+ * device hash is salted with the campaign (`public-submit.ts`).
+ *
+ * The device token is the browser's word, so a script can send a new one with
+ * every request. One comment therefore takes at most
+ * PUBLIC_VOTE_MAX_PER_CONNECTION_PER_ITEM supports from one connection a day,
+ * checked before the insert and again after it (see `POST`).
  *
  * Idempotency: one row per (item_id, voter_fingerprint) enforced by the
  * UNIQUE constraint in migration 20260717000084. A repeat POST hits the
@@ -47,12 +55,20 @@ type VoteTarget =
  * service-role route is the only path in, gated on share-token knowledge,
  * campaign active status, and item approval.
  */
-/** This voter's fingerprint, and the connection it belongs to. */
-function voterFingerprints(request: NextRequest): { voter: string; connection: string } {
+/** This voter's fingerprint for one campaign, and the connection it belongs to. */
+function voterFingerprints(request: NextRequest, campaignId: string): { voter: string; connection: string } {
   const connection = buildPublicSubmissionClientFingerprint(request);
-  const device = buildPublicParticipantDeviceFingerprint(request);
+  const device = buildPublicParticipantDeviceFingerprint(request, campaignId);
   return { voter: device ? `${connection}:${device}` : connection, connection };
 }
+
+/** PostgREST `or` filter for every vote from one connection: no token, or any device on it. */
+function wholeConnectionFilter(connection: string): string {
+  return `voter_fingerprint.eq.${connection},voter_fingerprint.like.${connection}:*`;
+}
+
+const PER_ITEM_LIMIT_MESSAGE =
+  "This comment has had as much support from this connection as it can take today. Please try again tomorrow.";
 
 async function resolveVoteTarget(
   supabase: SupabaseServiceClient,
@@ -186,7 +202,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return target.response;
     }
 
-    const { voter, connection } = voterFingerprints(request);
+    const { voter, connection } = voterFingerprints(request, target.campaignId);
     const windowStart = new Date(Date.now() - PUBLIC_VOTE_RATE_WINDOW_MINUTES * 60 * 1000).toISOString();
     const recentVotes = (scope: "voter" | "connection") => {
       const query = supabase
@@ -195,12 +211,23 @@ export async function POST(request: NextRequest, context: RouteContext) {
         .eq("campaign_id", target.campaignId)
         .gte("created_at", windowStart);
       // The whole connection: votes without a device token, and every device on it.
-      return scope === "voter"
-        ? query.eq("voter_fingerprint", voter)
-        : query.or(`voter_fingerprint.eq.${connection},voter_fingerprint.like.${connection}:*`);
+      return scope === "voter" ? query.eq("voter_fingerprint", voter) : query.or(wholeConnectionFilter(connection));
     };
-    const [fromVoter, fromConnection] = await Promise.all([recentVotes("voter"), recentVotes("connection")]);
-    const recentVotesError = fromVoter.error ?? fromConnection.error;
+    // This comment's support from the whole connection over the last day.
+    const itemSince = new Date(Date.now() - PUBLIC_VOTE_PER_ITEM_WINDOW_HOURS * 60 * 60 * 1000).toISOString();
+    const connectionSupportForItem = () =>
+      supabase
+        .from("engagement_item_votes")
+        .select("id", { count: "exact", head: true })
+        .eq("item_id", target.itemId)
+        .gte("created_at", itemSince)
+        .or(wholeConnectionFilter(connection));
+    const [fromVoter, fromConnection, forItem] = await Promise.all([
+      recentVotes("voter"),
+      recentVotes("connection"),
+      connectionSupportForItem(),
+    ]);
+    const recentVotesError = fromVoter.error ?? fromConnection.error ?? forItem.error;
 
     if (recentVotesError) {
       audit.error("engagement_vote_rate_lookup_failed", {
@@ -219,6 +246,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
         { error: "Too many recent votes from this connection. Please wait a few minutes and try again." },
         { status: 429 }
       );
+    }
+
+    if ((forItem.count ?? 0) >= PUBLIC_VOTE_MAX_PER_CONNECTION_PER_ITEM) {
+      return NextResponse.json({ error: PER_ITEM_LIMIT_MESSAGE }, { status: 429 });
     }
 
     const { error: insertError } = await supabase.from("engagement_item_votes").insert({
@@ -243,6 +274,32 @@ export async function POST(request: NextRequest, context: RouteContext) {
         code: insertError.code ?? null,
       });
       return NextResponse.json({ error: "Failed to record support" }, { status: 500 });
+    }
+
+    /*
+      COUNT AGAIN AFTER THE INSERT. A script sends its requests in parallel, and
+      every one of them reads the count before any of them writes, so the check
+      above alone admits the whole burst. Each vote is now written first and then
+      counted with every vote already written; one that finds the comment over
+      the cap removes itself. A burst can be refused entirely, but the cap
+      cannot be passed.
+    */
+    const afterInsert = await connectionSupportForItem();
+    if (afterInsert.error || (afterInsert.count ?? 0) > PUBLIC_VOTE_MAX_PER_CONNECTION_PER_ITEM) {
+      const { error: releaseError } = await supabase
+        .from("engagement_item_votes")
+        .delete()
+        .eq("item_id", target.itemId)
+        .eq("voter_fingerprint", voter);
+      if (afterInsert.error || releaseError) {
+        audit.error("engagement_vote_item_cap_check_failed", {
+          campaignId: target.campaignId,
+          itemId: target.itemId,
+          message: afterInsert.error?.message ?? releaseError?.message ?? null,
+        });
+        return NextResponse.json({ error: "Failed to verify recent voting activity" }, { status: 500 });
+      }
+      return NextResponse.json({ error: PER_ITEM_LIMIT_MESSAGE }, { status: 429 });
     }
 
     const votesCount = await readVotesCount(supabase, audit, target.itemId);
@@ -284,7 +341,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       return target.response;
     }
 
-    const { voter } = voterFingerprints(request);
+    const { voter } = voterFingerprints(request, target.campaignId);
 
     // No rate limit on removal: each delete requires a matching prior vote
     // from the same fingerprint, so the insert-side limit already bounds it.

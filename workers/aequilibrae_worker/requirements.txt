@@ -1,11 +1,22 @@
-aequilibrae>=1.6.0
+# THE ENGINE PAIR IS PINNED, AND scripts/modeling/requirements.txt MUST CARRY THE
+# SAME THREE LINES (aequilibrae, numpy, pandas); test_dependency_pins.py fails
+# when they differ. AequilibraE 1.7.0 declares pandas>=3.0, so with the pandas
+# pin below the resolver can only reach 1.6.x; 1.6.2 is what it selects
+# (pip --dry-run on CPython 3.11, 2026-10-12) and the frozen v0.44 runtime.
+# Raising either line is a model change: rebuild, pass
+# workers/hosted-models/verify_graph_compatibility.py, re-run a county and
+# compare the number first.
+aequilibrae==1.6.2
 # <2.1: newer numpy ABIs heap-corrupt aequilibrae 1.6.x's compiled path
 # engine (glibc "corrupted size vs. prev_size" aborts mid-skim/assignment,
 # reproduced on numpy 2.4/2.5 with cp311 and cp314; clean on 2.0.x).
 numpy>=1.26,<2.1
-# AequilibraE 1.7 graph compression uses chained assignments that stop updating
-# the original frame under Pandas 3 Copy-on-Write. Retain the tested semantics.
+# AequilibraE graph compression uses chained assignments that stop updating the
+# original frame under Pandas 3 Copy-on-Write (reproduced with AequilibraE 1.7.0
+# on the hosted host, 2026-10-10). Retain the tested semantics.
 pandas==2.3.3
 shapely>=2.0
 requests>=2.31
 python-dotenv>=1.0.0
+# Local launcher preflight parses the numerical constraints with PEP 440 semantics.
+packaging>=23.2

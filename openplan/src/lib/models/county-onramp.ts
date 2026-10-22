@@ -1,6 +1,11 @@
 import { z } from "zod";
 
 import {
+  countyRunScientificClaimBasis,
+  countyRunValidationFromBasisRow,
+  type CountyRunScientificBasisRow,
+} from "@/lib/models/evidence-backbone";
+import {
   LINK_VALIDATION_NOT_SUPPORTED_CAVEAT,
   bandIntrazonalShare,
 } from "@/lib/models/zone-resolution";
@@ -243,13 +248,38 @@ export function isPassingCountyRunGateStatus(
   if (!normalized) return false;
   // Fails CLOSED: an unrecognised status is not evidence.
   if (!COUNTY_RUN_PASSING_GATE_STATUSES.includes(normalized)) return false;
+  return countyRunZoneSupportsLinkComparison(intrazonalTripShare);
+}
+
+/**
+ * Whether a run's zone system lets a link-level count comparison settle
+ * anything. An unmeasured share (null, undefined, non-finite) leaves the
+ * question to the other checks; a measured coarse share refuses.
+ */
+function countyRunZoneSupportsLinkComparison(intrazonalTripShare: number | null | undefined): boolean {
   if (typeof intrazonalTripShare === "number" && Number.isFinite(intrazonalTripShare)) {
     // The share is stored as a fraction; the banding works in percent.
-    if (!bandIntrazonalShare(intrazonalTripShare * 100, null).supportsLinkLevelValidation) {
-      return false;
-    }
+    return bandIntrazonalShare(intrazonalTripShare * 100, null).supportsLinkLevelValidation;
   }
   return true;
+}
+
+/**
+ * Whether a stored county run counts as passing modeling evidence for the
+ * model detail page's "No validated screening run on file" warning.
+ *
+ * Only a run whose rules-v4 scientific outcome is a confirmed pass can
+ * (`countyRunScientificClaimBasis`), and its zone system must still support a
+ * link comparison. The retired `validated-screening` stage and the old
+ * "bounded screening-ready" gate label are diagnostics and decide nothing
+ * here (KI-2026-10-12-001).
+ */
+export function countyRunRowSupportsScreeningClaim(
+  row: CountyRunScientificBasisRow & { run_summary_json?: { intrazonal_trip_share?: unknown } | null }
+): boolean {
+  if (!countyRunScientificClaimBasis(countyRunValidationFromBasisRow(row)).passed) return false;
+  const share = row.run_summary_json?.intrazonal_trip_share;
+  return countyRunZoneSupportsLinkComparison(typeof share === "number" ? share : null);
 }
 
 /**
@@ -277,11 +307,23 @@ export function getCountyRunStageLabel(stage: CountyRunStage): string {
       return "Runtime Complete";
     case "validation-scaffolded":
       return "Validation In Progress";
+    // Retired stage, still on rows stored before rules v4. It names what
+    // happened, not a validation: the old count gate is a diagnostic.
     case "validated-screening":
-      return "Validated Screening";
+      return "Count Check Complete";
     default:
       return stage;
   }
+}
+
+/**
+ * A stored stage in the app's words, or null when the value is not a known
+ * stage. Reports and drafts use this rather than title-casing the raw value,
+ * which turned the retired `validated-screening` into "Validated Screening".
+ */
+export function countyRunStageLabelFor(stage: string | null | undefined): string | null {
+  const parsed = countyRunStageSchema.safeParse(stage);
+  return parsed.success ? getCountyRunStageLabel(parsed.data) : null;
 }
 
 export function getCountyRunStageTone(stage: CountyRunStage): "neutral" | "info" | "warning" | "success" {
@@ -293,7 +335,7 @@ export function getCountyRunStageTone(stage: CountyRunStage): "neutral" | "info"
     case "validation-scaffolded":
       return "warning";
     case "validated-screening":
-      return "success";
+      return "info";
     default:
       return "neutral";
   }
@@ -308,7 +350,7 @@ export function getCountyRunAllowedClaim(stage: CountyRunStage): string {
     case "validation-scaffolded":
       return "County has entered the validation workflow, but is not yet bounded screening-ready.";
     case "validated-screening":
-      return "County has a bounded screening-ready result on the documented validated slice, with explicit caveats.";
+      return "Count check complete. Not assessed under current validation rules, so prototype-only.";
     default:
       return "County state available.";
   }
@@ -338,11 +380,10 @@ export function getCountyRunCaveats(
 ): string[] {
   if (stage === "validated-screening") {
     return [
-      "Screening-grade only",
+      "Prototype-only",
       calibrationCaveat(manifest),
       populationCaveat(manifest),
       "Not client-ready forecasting",
-      "Validated slice only",
     ];
   }
   if (stage === "validation-scaffolded") {

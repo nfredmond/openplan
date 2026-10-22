@@ -106,6 +106,21 @@ describe("financial routes bind the complete agent write to the registered actio
     await executeAction(action, { onCompleted() {} }, { approvalEvidence: { approvalId, inputHash: f.inputHash, executionSource: "planner_agent_quick_link" } });
     expect(f.writes[0].value.notes).toBeNull(); expect(f.consumed).toBe(true);
   });
+  it("writes the closing date the planner approved, and refuses a different one", async () => {
+    // The Planner Agent could not carry a due date before 2026-10-11; a planner
+    // who gave one had to type it again on the record.
+    const closesAt = "2027-06-15T12:00:00Z";
+    const action = { ...actions.opportunity, closesAt };
+    const f = fixture(action);
+    vi.stubGlobal("fetch", async (_url: string, init: ConstructorParameters<typeof NextRequest>[1]) => route("opportunity", new NextRequest("http://localhost/api/synthetic", init)));
+    await executeAction(action, { onCompleted() {} }, { approvalEvidence: { approvalId, inputHash: f.inputHash, executionSource: "planner_agent_quick_link" } });
+    expect(f.writes[0].value).toMatchObject({ closes_at: closesAt });
+
+    const g = fixture(action);
+    const changed = await route("opportunity", request({ ...bodies.opportunity, closesAt: "2027-07-15T12:00:00Z" }, g.inputHash));
+    expect(changed.status).toBe(403);
+    expect(g.consumed).toBe(false); expect(g.writes).toEqual([]);
+  });
   it("refuses a changed signed note before consuming consent", async () => {
     const f = fixture(actions.profile);
     expect((await route("profile", request({ notes: "Different note" }, f.inputHash))).status).toBe(403);
@@ -113,7 +128,7 @@ describe("financial routes bind the complete agent write to the registered actio
   });
   const extras: [Lane, Record<string, unknown>][] = [
     ...["fundingNeedAmount", "localMatchNeedAmount"].map(key => ["profile", { [key]: 9999999 }] as [Lane, Record<string, unknown>]),
-    ...["status", "decisionState", "agencyName", "ownerLabel", "cadenceLabel", "expectedAwardAmount", "opensAt", "closesAt", "decisionDueAt", "fitNotes", "readinessNotes", "decisionRationale", "decidedAt", "summary", "pursuitKind", "solicitationNumber", "submissionFormatNote", "questionsDueAt"].map(key => ["opportunity", { [key]: key === "expectedAwardAmount" ? 9999999 : "unapproved" }] as [Lane, Record<string, unknown>]),
+    ...["status", "decisionState", "agencyName", "ownerLabel", "cadenceLabel", "expectedAwardAmount", "opensAt", "decisionDueAt", "fitNotes", "readinessNotes", "decisionRationale", "decidedAt", "summary", "pursuitKind", "solicitationNumber", "submissionFormatNote", "questionsDueAt"].map(key => ["opportunity", { [key]: key === "expectedAwardAmount" ? 9999999 : "unapproved" }] as [Lane, Record<string, unknown>]),
     ...["title", "status", "agencyName", "ownerLabel", "cadenceLabel", "expectedAwardAmount", "opensAt", "closesAt", "decisionDueAt", "fitNotes", "readinessNotes", "decisionRationale", "decidedAt", "summary"].map(key => ["decision", { [key]: key === "expectedAwardAmount" ? 9999999 : "unapproved" }] as [Lane, Record<string, unknown>]),
     ["invoice", { status: "paid" }],
     ...(["profile", "opportunity", "decision", "invoice"] as Lane[]).map(lane => [lane, { unknownFutureField: "must not be stripped first" }] as [Lane, Record<string, unknown>]),

@@ -35,9 +35,14 @@ import { SAFETY_KSI_COVERAGE_UNAVAILABLE, separatesSeriousInjuries, type SafetyC
 import type { SafetyKsiConcentration, SafetyKsiEquityTract } from "@/lib/safety/client-types";
 import type { SafetyRoadContextFeature } from "@/lib/safety/road-context";
 import { renderSafetyStreetContextSvg, SAFETY_STREET_CONTEXT_PROJECTION_NOTE } from "@/lib/safety/street-context-svg";
+import {
+  SAFETY_ACTION_PLAN_SECTION_TITLE,
+  type SafetyActionPlanSectionDraft,
+} from "@/lib/reports/safety-action-plan";
 import { corridorGeojsonSchema } from "@/lib/models/run-launch";
 import { type ReportScenarioSetLink } from "@/lib/reports/scenario-provenance";
 import { modelingClaimStatusLabel, type ModelingClaimStatus } from "@/lib/models/evidence-backbone";
+import { countyRunStageLabelFor } from "@/lib/models/county-onramp";
 import {
   buildReportModelingEvidenceExportProof,
   formatModelingValidationStatusLabel,
@@ -51,7 +56,8 @@ import { scoreValueForPresentation } from "@/lib/analysis/score-presentation";
 import { presentRunSummary } from "@/lib/analysis/run-summary-presentation";
 import type { FrozenReportAerialOrthoSnapshotV1 } from "@/lib/reports/aerial-ortho-evidence";
 import { buildEvidenceDescriptor, type EvidenceDescriptorV1 } from "@/lib/evidence/evidence-descriptor";
-import type { JurisdictionReadinessPayload } from "@/lib/jurisdiction-readiness/payload";
+import type { JurisdictionReadinessPayload, ProjectJurisdictionReadinessPayload, ProjectJurisdictionReadinessExportPayload, LegacyProjectJurisdictionReadinessExportPayload } from "@/lib/jurisdiction-readiness/payload";
+import type { ReportProjectJurisdictionSchemaPendingPayload } from "./project-jurisdiction";
 
 /**
  * The disclosure label rendered over every included AI narrative block.
@@ -223,7 +229,7 @@ export type ReportGenerationData = {
   modelingEvidence: ReportModelingEvidence[];
   evidenceDescriptors?: EvidenceDescriptorV1[];
   /** The exact sparse registry reading frozen into this packet. */
-  jurisdictionReadiness?: JurisdictionReadinessPayload;
+  jurisdictionReadiness?: JurisdictionReadinessPayload | ProjectJurisdictionReadinessPayload | ProjectJurisdictionReadinessExportPayload | LegacyProjectJurisdictionReadinessExportPayload | ReportProjectJurisdictionSchemaPendingPayload;
   /**
    * The crash evidence attached to this project, or null when the read FAILED.
    * Optional so existing callers keep working — but `undefined` and `null` mean
@@ -236,6 +242,12 @@ export type ReportGenerationData = {
   safetyRoadContext?: readonly SafetyRoadContextFeature[] | null;
   safetyKsiEquityTracts?: readonly SafetyKsiEquityTract[] | null;
   safetyKsiEquityDemographicSource?: { label: string; vintage: string };
+  /**
+   * The safety action plan draft, when a planner saved one into this report.
+   * `stale_acquisition` means the plan was saved against a crash acquisition
+   * the report no longer cites; it renders as that notice, never as the old plan.
+   */
+  safetyActionPlan?: SafetyActionPlanSectionDraft | { kind: "stale_acquisition" } | null;
   /** Optional so pre-typed-evidence callers keep working; absent reads as none. */
   citedModelRuns?: ReportCitedModelRun[];
   dualDemandAgreementSnapshotsV1?: DualDemandAgreementSnapshotV1[];
@@ -361,9 +373,25 @@ function listMarkup(items: ProjectItem[], emptyMessage: string): string {
     .join("")}</ul>`;
 }
 
-function jurisdictionReadinessMarkup(payload: JurisdictionReadinessPayload | undefined): string {
+function jurisdictionReadinessMarkup(payload: ReportGenerationData["jurisdictionReadiness"]): string {
   if (!payload) return "";
 
+  if (payload.schema === "openplan.report-project-jurisdiction-schema-pending.v1") {
+    return `<section id="project-jurisdiction-context"><h2>Project jurisdiction context</h2><p>${esc(payload.disclosure)}</p>
+      <p>Project revision: ${esc(payload.projectRevision ?? "Unavailable")}. Readiness payload SHA-256: ${esc(payload.payloadSha256)}.</p>
+      <p>Payload schema: ${esc(payload.schema)}. Scope: ${esc(payload.scope)}. Registry SHA-256: ${esc(payload.registrySha256)}. Study geography read state: ${esc(payload.studyAreaReadState)}.</p></section>`;
+  }
+
+  if (payload.schema === "openplan.project-jurisdiction-readiness-response.v2" || payload.schema === "openplan.project-jurisdiction-readiness-export.v3" || payload.schema === "openplan.project-jurisdiction-readiness-export.v4") {
+    return `<section id="project-jurisdiction-context"><h2>Project jurisdiction context</h2><p>${esc(payload.disclosure)}</p>
+      <p>${"projectRevision" in payload ? `Project revision: ${esc(payload.projectRevision ?? "Unavailable")}.` : "Jurisdiction context and registry inputs; project evidence revision is recorded separately."} Readiness payload SHA-256: ${esc(payload.payloadSha256)}. Study geometry retains its own identity and coordinates.</p>
+      ${(payload.schema === "openplan.project-jurisdiction-readiness-export.v3" || payload.schema === "openplan.project-jurisdiction-readiness-export.v4") ? `<p>Payload schema: ${esc(payload.schema)}. Scope: ${esc(payload.scope)}. Registry: ${esc(payload.registryVersion)}; SHA-256: ${esc(payload.registrySha256)}. ${esc(payload.attribution)} Recorded at: ${esc(payload.context?.recordedAt ?? "No separate declaration")}.</p>` : ""}
+      ${payload.entries.length ? payload.entries.map(entry => `<article><h3>${esc(entry.declaration?.label ?? "Legacy study-place context")}</h3><p>${esc(entry.assessmentScope)}</p>
+        ${entry.declaration ? `<p>Kind: ${esc(entry.declaration.kind)}. Source reference: ${esc(entry.declaration.reference ?? "None")}. Identity: ${esc(entry.declaration.identity === "staff_declared" ? "Unverified staff declaration" : "Server-resolved identity")}.</p><p>Declared country: ${esc(entry.declaration.countryCode ?? "Unspecified")}; subdivision: ${esc(entry.declaration.subdivisionCode ?? "Unspecified")}; scope: ${esc(entry.declaration.scope)}.</p>` : ""}
+        ${jurisdictionReadinessMarkup(entry.assessment)}
+        ${entry.administrativeGuidance ? `<h4>Separate administrative state-level guidance, identity unverified</h4>${jurisdictionReadinessMarkup(entry.administrativeGuidance)}` : ""}</article>`).join("") : "<p>Jurisdiction explicitly unresolved. No study-place fallback applies.</p>"}
+      </section>`;
+  }
   const reports = payload.reports
     .map((report) => `<article class="run-card">
       <div class="run-head">
@@ -600,6 +628,15 @@ function citedModelRunMarkup(run: ReportCitedModelRun): string {
   </article>`;
 }
 
+/**
+ * A county run's stage, in the app's own words. No stage is a pass: the old
+ * count gate that once set `validated-screening` is a diagnostic, and what a
+ * run may claim is its claim tier.
+ */
+function countyRunStageText(stage: string | null | undefined): string {
+  return countyRunStageLabelFor(stage) ?? titleize(stage || "unknown");
+}
+
 function citedCountyRunMarkup(run: ReportCitedCountyRun): string {
   const validation =
     run.validation_summary_json && typeof run.validation_summary_json === "object"
@@ -617,7 +654,7 @@ function citedCountyRunMarkup(run: ReportCitedCountyRun): string {
         <h3>${esc(run.run_name?.trim() || "County run")}</h3>
         <p class="meta">County validation run</p>
       </div>
-      <span class="pill ${run.stage === "validated-screening" ? "pill-pass" : "pill-hold"}">${esc(titleize(run.stage || "unknown"))}</span>
+      <span class="pill pill-hold">${esc(countyRunStageText(run.stage))}</span>
     </div>
     ${
       validationParts.length > 0
@@ -1174,6 +1211,69 @@ function packetSafetyBodyMarkup(data: ReportGenerationData): string {
   return acquisitionMarkup + concentrationMarkup + streetContextMarkup + equityMarkup;
 }
 
+/**
+ * The safety action plan draft, as its own section after the report's
+ * sections. Rendered only when a planner saved a plan into this report. Every
+ * figure keeps its source line, and the uncovered components are listed so the
+ * draft cannot read as a finished plan.
+ */
+export function safetyActionPlanMarkup(plan: ReportGenerationData["safetyActionPlan"]): string {
+  if (!plan) return "";
+  const heading = `<h2 class="section-title">${esc(SAFETY_ACTION_PLAN_SECTION_TITLE)}</h2>`;
+  if ("kind" in plan && plan.kind === "stale_acquisition") {
+    return `<section id="safety_action_plan">${heading}<p>The saved action plan used a different crash acquisition than the one this report now cites, so it is not printed. Save the plan again from Safety.</p></section>`;
+  }
+  const draft = plan as SafetyActionPlanSectionDraft;
+
+  const summary = draft.crashSummary.kind === "present"
+    ? `<h3>Crash summary</h3>
+      <p>${esc(draft.crashSummary.sourceLabel)}. Years requested: ${esc(draft.crashSummary.years)}.</p>
+      <dl class="detail-grid">${draft.crashSummary.figures.map((figure) => `<div><dt>${esc(figure.label)}</dt><dd>${
+        figure.value === null
+          ? `Not available. ${esc(figure.absentBecause ?? "No reason recorded.")}`
+          : esc(figure.value.toLocaleString("en-US"))
+      }</dd></div>`).join("")}</dl>
+      ${draft.crashSummary.caveats.length > 0 ? `<ul>${draft.crashSummary.caveats.map((caveat) => `<li>${esc(caveat)}</li>`).join("")}</ul>` : ""}
+      <p class="source-line">${esc(draft.crashSummary.sourceLine)}</p>`
+    : `<h3>Crash summary</h3><p>${esc(draft.crashSummary.reason)}</p>`;
+
+  const network = draft.network;
+  const networkMarkup = network.kind === "unavailable"
+    ? `<h3>High-injury network</h3><p>${esc(network.reason)}</p>`
+    : `<h3>High-injury network</h3>
+      <p><strong>${esc(network.measureLabel)}</strong>, ${esc(network.years)}.</p>
+      ${network.rows.length > 0 ? `<table>
+        <thead><tr><th>Rank</th><th>Location</th><th>Miles</th><th>Fatal</th><th>Serious injury</th><th>Per mile</th><th>Countermeasures</th></tr></thead>
+        <tbody>${network.rows.map((row) => `<tr>
+          <td>${esc(row.tied ? `${row.rank} (tie)` : String(row.rank))}</td>
+          <td>${esc(row.label)}</td>
+          <td>${row.lengthMiles === null ? "Not a road piece" : esc(row.lengthMiles.toFixed(2))}</td>
+          <td>${esc(row.fatalCrashCount.toLocaleString("en-US"))}</td>
+          <td>${row.seriousInjuryCrashCount === null ? "Not in source (fatal crashes only)" : esc(row.seriousInjuryCrashCount.toLocaleString("en-US"))}</td>
+          <td>${row.crashesPerMile === null ? `${esc(row.crashCount.toLocaleString("en-US"))} in square` : esc(row.crashesPerMile.toFixed(1))}</td>
+          <td>${row.countermeasureNames.length > 0 ? row.countermeasureNames.map(esc).join("; ") : "None attached"}</td>
+        </tr>`).join("")}</tbody>
+      </table>` : ""}
+      <p><strong>Method:</strong> ${esc(network.method)}</p>
+      <p><strong>Coverage:</strong> ${esc(network.coverage)}</p>
+      <p class="source-line">${esc(network.sourceLine)}</p>`;
+
+  const treatments = draft.treatments.length === 0
+    ? `<h3>Countermeasures</h3><p>No countermeasure is attached to a segment yet.</p>`
+    : `<h3>Countermeasures</h3>
+      <p>Proposed by staff for review. Attaching a countermeasure is not an engineering finding, and no crash reduction is estimated here.</p>
+      <ul>${draft.treatments.map((treatment) => `<li><strong>${esc(treatment.segmentLabel)}</strong> (${treatment.rank === null ? "not among the listed segments for this report's years" : `rank ${treatment.rank}`}):
+        <ul>${treatment.countermeasures.map((item) => `<li>${esc(item.name)}. Addresses: ${esc(item.addresses)} Crash types: ${esc(item.crashTypes.join(", "))}. Source: <a href="${esc(item.sourceUrl)}">${esc(item.sourceUrl)}</a>. ${esc(item.cmfNote)}</li>`).join("")}</ul>
+      </li>`).join("")}</ul>
+      <p class="source-line">${esc(draft.countermeasureSourceLine)}</p>`;
+
+  const components = `<h3>Action plan components not yet covered</h3>
+    <ul>${draft.components.map((component) => `<li><strong>${esc(component.component)}:</strong> ${component.status === "partial" ? "Partly covered." : "Not covered."} ${esc(component.gap)}</li>`).join("")}</ul>
+    <p class="source-line">${esc(draft.componentSourceLine)}</p>`;
+
+  return `<section id="safety_action_plan">${heading}<p>${esc(draft.draftNotice)}</p>${summary}${networkMarkup}${treatments}${components}</section>`;
+}
+
 function projectGeographyMarkup(data: ReportGenerationData, sectionListCarriesIt: boolean): string {
   // `sectionListCarriesIt` counts a DISABLED section too. A report whose
   // section list names geography has already been asked the question, and an
@@ -1341,7 +1441,7 @@ function modelingEvidenceMarkup(modelingEvidence: ReportModelingEvidence[]): str
 
           return `<article class="metric-card modeling-evidence-card">
             <h3>${esc(item.geographyLabel?.trim() || item.runName?.trim() || "County model run")}</h3>
-            <p class="meta">${esc(item.runName?.trim() || "County run")} • ${esc(titleize(item.stage || "unknown"))} • updated ${esc(formatDateTime(item.updatedAt))}</p>
+            <p class="meta">${esc(item.runName?.trim() || "County run")} • ${esc(countyRunStageText(item.stage))} • updated ${esc(formatDateTime(item.updatedAt))}</p>
             ${
               claim
                 ? `<p><strong>${esc(modelingClaimStatusLabel(claim.claimStatus))}:</strong> ${esc(
@@ -1733,7 +1833,7 @@ function sectionMarkup(sectionKey: string, data: ReportGenerationData): string {
       <strong>Auditability posture</strong>
       <p>${hasEvidence
         ? "This report is a structured packet assembled from current OpenPlan evidence. Reviewers should treat its cited records as evidence-backed output, not freeform narrative copy."
-        : "This report has a structured evidence-chain record, but every supported evidence count is zero. It is a draft shell, not evidence-backed or release-ready output."}</p>
+        : "This packet contains structured planning context, but no linked evidence is counted in its evidence chain. Use it as a briefing draft, not an evidence-backed recommendation or a release-ready decision packet."}</p>
       <p>Generated on ${esc(formatDateTime(new Date().toISOString()))}. Project last updated ${esc(formatDateTime(data.project.updated_at))}. Review run-level transparency notes before external release.</p>
       ${data.scenarioSetLinks.length > 0 ? `<p>Scenario basis at generation: ${data.scenarioSetLinks.length} linked set${data.scenarioSetLinks.length === 1 ? "" : "s"} • ${scenarioSpineAggregate.pendingCount > 0 ? `${scenarioSpineAggregate.pendingCount} shared-spine pending` : `${scenarioSpineAggregate.assumptionSetCount} assumption set${scenarioSpineAggregate.assumptionSetCount === 1 ? "" : "s"} • ${scenarioSpineAggregate.dataPackageCount} data package${scenarioSpineAggregate.dataPackageCount === 1 ? "" : "s"} • ${scenarioSpineAggregate.indicatorSnapshotCount} indicator snapshot${scenarioSpineAggregate.indicatorSnapshotCount === 1 ? "" : "s"}`}</p>` : ""}
       ${(scenarioSpineAggregate.latestAssumptionSetUpdatedAt || scenarioSpineAggregate.latestDataPackageUpdatedAt || scenarioSpineAggregate.latestIndicatorSnapshotAt) ? `<p>Latest scenario spine timing: ${scenarioSpineAggregate.latestAssumptionSetUpdatedAt ? `assumptions ${esc(formatDateTime(scenarioSpineAggregate.latestAssumptionSetUpdatedAt))}` : "assumptions unavailable"}${scenarioSpineAggregate.latestDataPackageUpdatedAt ? ` • packages ${esc(formatDateTime(scenarioSpineAggregate.latestDataPackageUpdatedAt))}` : ""}${scenarioSpineAggregate.latestIndicatorSnapshotAt ? ` • indicators ${esc(formatDateTime(scenarioSpineAggregate.latestIndicatorSnapshotAt))}` : ""}</p>` : ""}
@@ -1964,6 +2064,7 @@ export function buildReportHtml(data: ReportGenerationData): string {
           </section>`
         )
         .join("")}
+      ${safetyActionPlanMarkup(data.safetyActionPlan)}
     </main>
   </body>
 </html>`;

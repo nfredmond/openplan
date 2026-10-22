@@ -2,7 +2,7 @@
 
 <!-- openplan-v1-product-contract
 decided: 2026-08-25
-current_release: v0.68.0
+current_release: v0.70.0
 direction_review: docs/reviews/product-direction/2026-10-06-integration-review.md
 review_protocol: docs/product/PRODUCT_DIRECTION_REVIEW_PROTOCOL.md
 capability_matrix: docs/product/US_PLANNING_CAPABILITY_MATRIX.md
@@ -19,7 +19,10 @@ strengthen or amend it, but a release plan may not quietly narrow it.
 Interim releases follow the [development release policy](DEVELOPMENT_RELEASE_POLICY.md),
 accepted by Nathaniel on September 7, 2026. The complete v1 destination remains
 binding; known partial v1 outcomes do not freeze unrelated development releases.
-Hosted deployment is deferred and Vercel is inactive.
+Nathaniel authorizes hosted operation on October 10, 2026. The
+[public cutover record](../ops/HOSTED_LIVE_2026-10-11.md) documents that installation's
+dated checks and limits. Hosted operation does not require paid infrastructure
+for independent installations or establish full v1 acceptance.
 
 ## Mission
 
@@ -196,6 +199,16 @@ evidence must have one implementation used by all consumers.
 
 ## V1 acceptance evidence
 
+**October 17, 2026 acceptance policy.** Agent-run planner and public-participant
+workflow checks can satisfy milestone and v1 acceptance. Human feedback moves
+after v1 and does not gate implementation, merging, releases or milestone
+closure. Apply this policy to older human-observation requirements throughout
+the active product guidance. Do not recruit human reviewers or ask Nathaniel
+for feedback as a prerequisite. Report agent-run results as agent-run results.
+The complete capability, geography, scientific, accessibility, security and
+operating requirements remain in force. This policy does not grant an agent
+authority to make an agency's adoption, spending or publication decisions.
+
 The v1 tag requires all of the following on one candidate commit:
 
 - every required planner-role, organization, geography, and capability cell is
@@ -204,8 +217,8 @@ The v1 tag requires all of the following on one candidate commit:
   workflow gates, with the additional California proof above;
 - all end-to-end planning journeys reach the intended outcome from visible UI
   entry points and produce usable artifacts;
-- an independent person installs, operates, backs up, restores, and upgrades the
-  product without Nathaniel;
+- an agent installs, operates, backs up, restores, and upgrades the product
+  through the documented self-service path without Nathaniel;
 - accessibility, responsive, keyboard, screen-reader, print, and public-artifact
   checks pass for every core journey;
 - live RLS, worker suites, mutation samples, restore and upgrade rehearsals,
@@ -246,8 +259,8 @@ Engagement reports export as polished PDF and usable XLSX with portable supporti
 
 ## OWP, appearance and forecasting decisions retained at handoff
 
-Complete OWP/UPWP administration is an explicit high priority. It includes prior-program intake, work elements and products, staff/contracts, authorization and amendments, delivery, progress and claims, expenditure certification, closeout and next-cycle carryover. CORE-OWP-01 and roadmap M2d define its connected outcome; a work-plan template is insufficient.
+Complete OWP/UPWP administration is an explicit high priority. It includes prior-program intake, work elements and products, staff/contracts, authorization and amendments, delivery, progress and claims, expenditure certification, closeout and next-cycle carryover. CORE-OWP-01 and milestone M2d in [MILESTONES.md](MILESTONES.md) define its connected outcome; a work-plan template is insufficient.
 
 Retain the requested Signal palette with yellow, two grays and black alongside existing palettes, and an independent default-rounded or square-corner preference. These are queued UI changes, not implemented by documentation.
 
-TimesFM evaluation targets 3.0 only; Nathaniel rejected 2.5. Roadmap S2a preserves the actual license, scientific and deployment conditions. Optional forecasting does not replace either demand model or the full geographic validation obligation.
+TimesFM evaluation targets 3.0 only; Nathaniel rejected 2.5. Milestone S2a in [MILESTONES.md](MILESTONES.md) preserves the actual license, scientific and deployment conditions. Optional forecasting does not replace either demand model or the full geographic validation obligation.

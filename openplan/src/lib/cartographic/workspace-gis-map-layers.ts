@@ -172,7 +172,16 @@ export type WorkspaceGisPaintOptions = {
   anchorLayerId: string | undefined;
   /** Which casing ink to use. The basemap's theme, not the app chrome's. */
   theme: "light" | "dark";
+  /**
+   * Fonts for the label layer. Omitted means Mapbox's own. On an operator's
+   * MapLibre style the caller passes the style's fonts (`labelFontsFor`), or
+   * null when the style serves none, and the label layer is left off.
+   */
+  labelFonts?: string[] | null;
 };
+
+/** The fonts the label layer asks Mapbox for. */
+export const WORKSPACE_GIS_MAPBOX_LABEL_FONTS = ["DIN Offc Pro Medium", "Arial Unicode MS Bold"];
 
 /**
  * Make the map match the catalog: one source per layer, up to five layers over
@@ -192,7 +201,7 @@ export type WorkspaceGisPaintOptions = {
  */
 export function paintWorkspaceGisLayers(
   map: WorkspaceGisMapTarget,
-  { layers, collections, anchorLayerId, theme }: WorkspaceGisPaintOptions,
+  { layers, collections, anchorLayerId, theme, labelFonts = WORKSPACE_GIS_MAPBOX_LABEL_FONTS }: WorkspaceGisPaintOptions,
 ): void {
   const casingColor = WORKSPACE_GIS_CASING_COLOR[theme];
 
@@ -345,7 +354,7 @@ export function paintWorkspaceGisLayers(
     }
 
     const labelLayerId = workspaceGisLabelLayerId(layer.id);
-    if (labelField) {
+    if (labelField && labelFonts) {
       if (!map.getLayer(labelLayerId)) {
         map.addLayer(
           {
@@ -354,7 +363,7 @@ export function paintWorkspaceGisLayers(
             source: sourceId,
             layout: {
               "text-field": ["get", "label"],
-              "text-font": ["DIN Offc Pro Medium", "Arial Unicode MS Bold"],
+              "text-font": labelFonts,
               "text-size": 11,
               // Never `text-allow-overlap`: a parcels layer labelled by APN
               // would render a solid block of overlapping text. Mapbox drops the

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { OperatorDetail } from "@/components/ui/read-failure-notice";
 import { StatusBadge } from "@/components/ui/status-badge";
 import type { PublishedDistributedWorkLoadingStudy } from "@/lib/models/published-distributed-work-loading";
 
@@ -18,6 +19,7 @@ export function PublishedDistributedWorkLoadingCard({ study }: { study: Publishe
       <p className="module-section-description mt-3">The published work-trip loading checkpoint could not be read and verified. Its results are unavailable, not zero. Reload this page to retry. If the problem continues, ask your administrator to check the installed study files. No model accuracy conclusion follows.</p>
     </section>
   );
+  const configuration = study.recordedConfiguration;
   return (
     <section aria-label="Distributed work loading development checkpoint" className="module-section-surface mb-6" data-testid="published-distributed-work-loading">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -28,13 +30,30 @@ export function PublishedDistributedWorkLoadingCard({ study }: { study: Publishe
         <StatusBadge tone="warning">{study.scientificOutcome}</StatusBadge>
       </div>
       <p className="module-section-description mt-3 max-w-[64rem]">
-        Census LODES8 places covered work-trip endpoints at block-supported road access points. Non-work trips keep their prior centroid loading. Missing, zero, unavailable, suppressed, unmapped, and unroutable states stay separate. This checkpoint does not change model defaults or claim calibration or validation.
+        {configuration.sourceRelease} ({configuration.sourceYear}) supplies endpoint weights for existing modeled work demand at block-supported road access points. {configuration.sourceLimitation} These weights are not observed vehicle or all-purpose trip counts. Missing, zero, unavailable, suppressed, unmapped, and unroutable states stay separate. This checkpoint does not change model defaults or claim calibration or validation.
       </p>
       <div className="mt-3 grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
         <div><span className="font-semibold">Coverage</span><span className="mt-1 block text-muted-foreground">{geographies.length} counties · {records.length} separate method results</span></div>
         <div><span className="font-semibold">Method treatment</span><span className="mt-1 block text-muted-foreground">AequilibraE and ActivitySim stay separate. No average or national rescue.</span></div>
         <div><span className="font-semibold">Rollout</span><span className="mt-1 block text-muted-foreground">{study.candidateAdvanced ? "Development gate met; defaults still unchanged" : "Candidate retained and retired"}</span></div>
       </div>
+      <section className="mt-4 space-y-3 rounded border border-border/70 p-3 text-sm" aria-label="Saved study configuration and evidence">
+        <h3 className="font-semibold">Saved configuration and evidence</h3>
+        <p>These disclosures come from the study file, verified by its file hash and size. They describe the saved development setup, not independent scientific acceptance or measured accuracy.</p>
+        <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div><dt className="font-semibold">Arbitrary point cap</dt><dd>{configuration.arbitraryPointCap === null ? "None recorded (null)" : String(configuration.arbitraryPointCap)}</dd></div>
+          <div><dt className="font-semibold">Arbitrary gateway cap</dt><dd>{configuration.arbitraryGatewayCap === null ? "None recorded (null)" : String(configuration.arbitraryGatewayCap)}</dd></div>
+          <div><dt className="font-semibold">Aggregation rule</dt><dd>{configuration.aggregateOnlySameRoutableNode ? "Aggregate only at the same routable node." : "Unavailable"}</dd></div>
+          <div><dt className="font-semibold">Demand policy</dt><dd>{configuration.preserveMethodWorkTotals && configuration.nonWorkUnchanged ? "Preserve each method's work total. Non-work trips keep their prior centroid loading." : "Unavailable"}</dd></div>
+          <div><dt className="font-semibold">Acceptance holdout opened</dt><dd>{configuration.acceptanceHoldoutOpened === false ? "No, according to the saved evidence." : "Unavailable"}</dd></div>
+        </dl>
+        <p>{configuration.legacyPathNote}</p>
+        <p>Study, audit and comparison files also report no holdout access. A development gate does not establish calibration, validation, statewide completeness or nationwide accuracy.</p>
+        <OperatorDetail summary="Disclosure registry fingerprint">
+          <p className="break-all font-mono text-xs">{configuration.registryPath}</p>
+          <p className="mt-1 break-all font-mono text-xs">{configuration.registrySha256}</p>
+        </OperatorDetail>
+      </section>
       <div className="mt-4 flex flex-wrap gap-3 text-sm font-semibold">
         <a download className="underline underline-offset-2" href="/api/models/distributed-work-loading/study-result.json">Download exact study result</a>
         <a download className="underline underline-offset-2" href="/api/models/distributed-work-loading/study-report.md">Download study report</a>
@@ -60,10 +79,17 @@ export function PublishedDistributedWorkLoadingCard({ study }: { study: Publishe
           </dl>
           <p className="mt-3 text-xs text-muted-foreground">Observed links loaded: {selected.baselineCoverage.loaded} before, {selected.candidateCoverage.loaded} after. {selected.advanced ? "Development gate met; no default changed." : "County-method candidate failed and was retired."}</p>
           <dl className="mt-3 min-w-0 space-y-2 text-xs">
-            <div><dt className="font-semibold">Work-loading file</dt><dd className="break-all font-mono text-muted-foreground">{selected.geographyId}-{selected.method}-distributed-work-loading-input-v1.json</dd><dt className="font-semibold">Work-loading file SHA-256</dt><dd className="break-all font-mono text-muted-foreground">{selected.inputSha256}</dd></div>
-            <div><dt className="font-semibold">Before-output audit file</dt><dd className="break-all font-mono text-muted-foreground">{selected.geographyId}-{selected.method}-pre-output-audit-v1.json</dd><dt className="font-semibold">Before-output audit SHA-256</dt><dd className="break-all font-mono text-muted-foreground">{selected.auditSha256}</dd></div>
-            <div><dt className="font-semibold">Development comparison file</dt><dd className="break-all font-mono text-muted-foreground">{selected.geographyId}-{selected.method}-development-comparison-v1.json</dd><dt className="font-semibold">Development comparison SHA-256</dt><dd className="break-all font-mono text-muted-foreground">{selected.comparisonSha256}</dd></div>
+            <div><dt className="font-semibold">Work-loading file</dt><dd className="break-all font-mono text-muted-foreground">{selected.geographyId}-{selected.method}-distributed-work-loading-input-v1.json</dd></div>
+            <div><dt className="font-semibold">Before-output audit file</dt><dd className="break-all font-mono text-muted-foreground">{selected.geographyId}-{selected.method}-pre-output-audit-v1.json</dd></div>
+            <div><dt className="font-semibold">Development comparison file</dt><dd className="break-all font-mono text-muted-foreground">{selected.geographyId}-{selected.method}-development-comparison-v1.json</dd></div>
           </dl>
+          <OperatorDetail summary="File fingerprints, for checking a download">
+            <dl className="min-w-0 space-y-2 text-xs">
+              <div><dt className="font-semibold">Work-loading file SHA-256</dt><dd className="break-all font-mono text-muted-foreground">{selected.inputSha256}</dd></div>
+              <div><dt className="font-semibold">Before-output audit SHA-256</dt><dd className="break-all font-mono text-muted-foreground">{selected.auditSha256}</dd></div>
+              <div><dt className="font-semibold">Development comparison SHA-256</dt><dd className="break-all font-mono text-muted-foreground">{selected.comparisonSha256}</dd></div>
+            </dl>
+          </OperatorDetail>
           <div className="mt-3 flex flex-wrap gap-3 text-xs font-semibold">
             <a download className="underline" href={`/api/models/distributed-work-loading/${selected.geographyId}/${selected.method}/distributed-work-loading-input-v1.json`}>Download selected loading file</a>
             <a download className="underline" href={`/api/models/distributed-work-loading/${selected.geographyId}/${selected.method}/pre-output-audit-v1.json`}>Download selected before-output audit</a>

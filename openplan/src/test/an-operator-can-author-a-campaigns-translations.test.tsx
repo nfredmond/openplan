@@ -778,7 +778,7 @@ describe("the operator panel", () => {
       />
     );
 
-    expect(screen.getByText(/does not have the translation storage yet/i)).toBeInTheDocument();
+    expect(screen.getByText(/Translation storage is not set up on this installation yet/i)).toBeInTheDocument();
     expect(screen.getByText(/That is not the same as none/)).toBeInTheDocument();
     expect(screen.queryByText("Not translated")).not.toBeInTheDocument();
     expect(screen.getAllByText(/Unknown — could not be read/).length).toBe(fields.length);

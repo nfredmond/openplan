@@ -1,0 +1,87 @@
+{
+  "programs": 20,
+  "unittestCases": 295,
+  "suites": [
+    {
+      "suite": "test_automated_checks",
+      "unittestCases": 0
+    },
+    {
+      "suite": "test_control_layout",
+      "unittestCases": 1
+    },
+    {
+      "suite": "test_control_panel",
+      "unittestCases": 31
+    },
+    {
+      "suite": "test_control_processes",
+      "unittestCases": 1
+    },
+    {
+      "suite": "test_database_key_custody",
+      "unittestCases": 19
+    },
+    {
+      "suite": "test_demo_database",
+      "unittestCases": 6
+    },
+    {
+      "suite": "test_full_restore",
+      "unittestCases": 18
+    },
+    {
+      "suite": "test_installation_worker_inventory",
+      "unittestCases": 56
+    },
+    {
+      "suite": "test_key_restore_workflow",
+      "unittestCases": 3
+    },
+    {
+      "suite": "test_reconstruct_owp_restore",
+      "unittestCases": 6
+    },
+    {
+      "suite": "test_recovery_point_manifest",
+      "unittestCases": 34
+    },
+    {
+      "suite": "test_restore_drill_ownership",
+      "unittestCases": 3
+    },
+    {
+      "suite": "test_restore_encrypted_canary",
+      "unittestCases": 1
+    },
+    {
+      "suite": "test_restore_ports",
+      "unittestCases": 0
+    },
+    {
+      "suite": "test_safe_refresh",
+      "unittestCases": 20
+    },
+    {
+      "suite": "test_serving_process",
+      "unittestCases": 5
+    },
+    {
+      "suite": "test_stacked_pr_checks",
+      "unittestCases": 1
+    },
+    {
+      "suite": "test_worker_journal_snapshot",
+      "unittestCases": 23
+    },
+    {
+      "suite": "test_worker_root_set_snapshot",
+      "unittestCases": 31
+    },
+    {
+      "suite": "test_worker_root_snapshot",
+      "unittestCases": 36
+    }
+  ],
+  "boundary": "Direct independent script invocations; two programs use scripted assertions rather than unittest."
+}

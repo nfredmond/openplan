@@ -11,7 +11,7 @@ import {
   buildGrantDecisionModelingSupport,
   describeProjectGrantModelingReadiness,
 } from "@/lib/grants/modeling-evidence";
-import type { ProjectFundingSnapshot } from "@/lib/projects/funding";
+import type { ReportFundingSnapshot } from "@/lib/reports/catalog";
 import type { AgreementCorridorSelection, ReportAgreementEvidence } from "@/lib/reports/dual-demand-agreement";
 import type { AerialOrthoCatalog } from "@/lib/aerial/ortho-map-layers";
 import type { ReportAerialOrthoSelection } from "@/lib/reports/aerial-ortho-evidence";
@@ -103,7 +103,7 @@ type ReportStandardDetailProps = {
   safetyIngestSelections?: Array<{ ingestId: string }>;
   initialSafetyIngestId?: string | null;
   latestArtifact: ReportArtifact | null;
-  fundingSnapshot: ProjectFundingSnapshot | null;
+  fundingSnapshot: ReportFundingSnapshot | null;
   driftItems: DriftItem[];
   driftedItems: DriftItem[];
   evidenceSummaryDigest: ReportEvidenceChainDigest | null;
@@ -343,11 +343,13 @@ export function ReportStandardDetail({
           </p>
           <p className="module-summary-detail">
             {fundingSnapshot
-              ? fundingSnapshot.unfundedAfterLikelyAmount > 0
+              ? (fundingSnapshot.unfundedAfterLikelyAmount ?? 0) > 0
                 ? `${formatCurrency(fundingSnapshot.unfundedAfterLikelyAmount)} still uncovered after likely dollars.`
-                : fundingSnapshot.uninvoicedAwardAmount > 0
-                  ? `${formatCurrency(fundingSnapshot.uninvoicedAwardAmount)} still uninvoiced.`
-                  : fundingSnapshot.reimbursementLabel
+                : fundingSnapshot.hasTargetNeed && fundingSnapshot.unfundedAfterLikelyAmount === null
+                  ? "Funding gap unknown."
+                  : (fundingSnapshot.uninvoicedAwardAmount ?? 0) > 0
+                    ? `${formatCurrency(fundingSnapshot.uninvoicedAwardAmount)} still uninvoiced.`
+                    : fundingSnapshot.reimbursementLabel
               : "Generate a packet and the funding picture at that moment is saved with it."}
           </p>
         </div>

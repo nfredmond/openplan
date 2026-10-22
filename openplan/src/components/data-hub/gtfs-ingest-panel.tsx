@@ -547,16 +547,60 @@ export function GtfsIngestPanel({
       await submitManaged({ source: "upload", workspaceId, filename: input.file.name, ...(input.feedId ? { feedId: input.feedId } : {}), ...(input.label ? { label: input.label } : {}) }, input.busyKey, input.file);
       return;
     }
+    if (input.file.size === 0) {
+      setOutcome({ tone: "bad", headline: "That file is empty.", lines: ["Nothing was uploaded."] });
+      return;
+    }
     setBusy(input.busyKey);
     setOutcome(null);
     try {
-      const params = new URLSearchParams({ workspaceId, filename: input.file.name });
-      if (input.feedId) params.set("feedId", input.feedId);
-      if (input.label) params.set("label", input.label);
-      const response = await fetch(`/api/gtfs/feeds/upload?${params.toString()}`, {
+      // The file goes straight to private storage through a signed URL, never
+      // through an app route: hosted functions refuse bodies over about 4.5 MB.
+      const target = { workspaceId, ...(input.feedId ? { feedId: input.feedId } : {}) };
+      const start = await fetch("/api/gtfs/feeds/upload/start", {
         method: "POST",
-        headers: { "content-type": input.file.type || "application/zip" },
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          ...target,
+          filename: input.file.name,
+          byteSize: input.file.size,
+          ...(input.file.type ? { contentType: input.file.type } : {}),
+        }),
+      });
+      const started = (await start.json().catch(() => ({}))) as IngestBody & {
+        uploadUrl?: string;
+        objectPath?: string;
+        contentType?: string;
+      };
+      if (!start.ok || !started.uploadUrl || !started.objectPath) {
+        await settleIngest(start, started, input.what);
+        return;
+      }
+
+      const put = await fetch(started.uploadUrl, {
+        method: "PUT",
+        headers: { "content-type": started.contentType ?? "application/zip", "x-upsert": "false" },
         body: input.file,
+      });
+      if (!put.ok) {
+        setOutcome({
+          tone: "bad",
+          headline: "The archive could not be stored.",
+          lines: [`Storage answered ${put.status}. Nothing was read. Try again.`],
+        });
+        return;
+      }
+
+      const response = await fetch("/api/gtfs/feeds/upload/complete", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          ...target,
+          objectPath: started.objectPath,
+          byteSize: input.file.size,
+          filename: input.file.name,
+          ...(input.label ? { label: input.label } : {}),
+        }),
       });
       const body = (await response.json().catch(() => ({}))) as IngestBody;
       await settleIngest(response, body, input.what);

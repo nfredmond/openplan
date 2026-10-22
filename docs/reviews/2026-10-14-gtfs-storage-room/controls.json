@@ -1,0 +1,112 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "cases": 93
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived",
+    "cases": 93
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived",
+    "cases": 93
+  },
+  {
+    "control": "worker-full",
+    "outcome": "intended_failure",
+    "test": "refuses new archive bytes when the installation has no storage room",
+    "reason": "promise resolved"
+  },
+  {
+    "control": "worker-unreadable",
+    "outcome": "intended_failure",
+    "test": "refuses unreadable storage use before upload",
+    "reason": "promise resolved"
+  },
+  {
+    "control": "worker-workspace",
+    "outcome": "intended_failure",
+    "test": "checks storage use for the original workspace with active transport cancellation",
+    "reason": "Original workspace storage RPC projection differs"
+  },
+  {
+    "control": "worker-exact-reconciliation",
+    "outcome": "intended_failure",
+    "test": "reconciles exact retained bytes even when the installation is full",
+    "reason": "storage limit"
+  },
+  {
+    "control": "worker-metadata-not-custody",
+    "outcome": "intended_failure",
+    "test": "charges no additional bytes for a same-size immutable key without treating metadata as custody",
+    "reason": "promise resolved"
+  },
+  {
+    "control": "worker-refusal-message",
+    "outcome": "intended_failure",
+    "test": "refuses new archive bytes when the installation has no storage room",
+    "reason": "unconfirmed"
+  },
+  {
+    "control": "admission-full",
+    "outcome": "intended_failure",
+    "test": "refuses new archive bytes when the installation has no storage room",
+    "reason": "promise resolved"
+  },
+  {
+    "control": "admission-unreadable",
+    "outcome": "intended_failure",
+    "test": "refuses unreadable storage use before upload",
+    "reason": "promise resolved"
+  },
+  {
+    "control": "admission-workspace",
+    "outcome": "intended_failure",
+    "test": "checks storage use for the original workspace with active transport cancellation",
+    "reason": "Original workspace storage RPC projection differs"
+  },
+  {
+    "control": "admission-exact-reconciliation",
+    "outcome": "intended_failure",
+    "test": "reconciles exact retained bytes even when the installation is full",
+    "reason": "storage limit"
+  },
+  {
+    "control": "admission-metadata-not-custody",
+    "outcome": "intended_failure",
+    "test": "charges no additional bytes for a same-size immutable key without treating metadata as custody",
+    "reason": "promise resolved"
+  },
+  {
+    "control": "admission-refusal-message",
+    "outcome": "intended_failure",
+    "test": "refuses new archive bytes when the installation has no storage room",
+    "reason": "unconfirmed"
+  },
+  {
+    "control": "actual-rpc-scope",
+    "outcome": "intended_failure",
+    "test": "reads the original immutable key and workspace through actual SDK HTTP",
+    "reason": "Actual workspace storage RPC projection differs"
+  },
+  {
+    "control": "actual-request-cancellation",
+    "outcome": "intended_failure",
+    "test": "closes an actual stalled capacity request when ownership ends",
+    "reason": "Cancelled capacity connection did not close"
+  },
+  {
+    "control": "pre-cancelled-sdk",
+    "outcome": "intended_failure",
+    "test": "refuses pre-cancelled work before invoking the Storage client",
+    "reason": "to not be called"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived",
+    "cases": 93
+  }
+]

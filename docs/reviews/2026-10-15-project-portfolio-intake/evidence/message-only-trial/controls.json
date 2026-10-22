@@ -1,0 +1,68 @@
+{
+  "trials": [
+    {
+      "trial": "baseline",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "baseline.json"
+    },
+    {
+      "trial": "harmless",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "harmless.json"
+    },
+    {
+      "trial": "false-rollback",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "assertion": "unconfirmed commit must direct re-review without claiming rollback",
+      "report": "false-rollback.json"
+    },
+    {
+      "trial": "lost-prior-identity",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "assertion": "re-review must lock a previously created source row",
+      "report": "lost-prior-identity.json"
+    },
+    {
+      "trial": "missing-prior-projection",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "assertion": "retry query must select the complete prior-creation identity",
+      "report": "missing-prior-projection.json"
+    },
+    {
+      "trial": "restored",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "restored.json"
+    }
+  ],
+  "classifierRefusals": [
+    {
+      "case": "startup",
+      "result": "REFUSED",
+      "reason": "wrong test identity or count"
+    },
+    {
+      "case": "wrong-name",
+      "result": "REFUSED",
+      "reason": "wrong test identity or count"
+    },
+    {
+      "case": "wrong-assertion",
+      "result": "REFUSED",
+      "reason": "wrong assertion diagnostic"
+    },
+    {
+      "case": "extra-failure",
+      "result": "REFUSED",
+      "reason": "not exactly one assertion failure"
+    }
+  ]
+}

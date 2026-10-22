@@ -28,6 +28,7 @@ import {
   resolveAerialImageMaxBytes,
   sniffImageFormat,
 } from "@/lib/aerial/imagery";
+import { checkWorkspaceStorageRoom, workspaceStorageRefusal } from "@/lib/workspaces/storage-quota";
 
 // Photos are streamed and hashed inline; allow more than the default budget.
 export const runtime = "nodejs";
@@ -250,6 +251,18 @@ export async function POST(request: NextRequest, context: RouteContext) {
         durationMs: Date.now() - startedAt,
       });
       return NextResponse.json({ imagery: existing, deduped: true }, { status: 200 });
+    }
+
+    // The workspace's total, after dedupe and before any byte reaches Storage.
+    const room = await checkWorkspaceStorageRoom(service, mission.workspace_id, bodyRead.byteLength);
+    if (room.status !== "room") {
+      audit.warn("aerial_imagery_workspace_storage_refused", {
+        missionId: mission.id,
+        status: room.status,
+        byteLength: bodyRead.byteLength,
+        ...(room.status === "full" ? { usedBytes: room.usedBytes, quotaBytes: room.quotaBytes } : { detail: room.detail }),
+      });
+      return workspaceStorageRefusal(room);
     }
 
     const imageryId = randomUUID();

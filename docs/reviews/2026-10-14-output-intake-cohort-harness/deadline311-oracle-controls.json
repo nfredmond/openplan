@@ -1,0 +1,898 @@
+[
+  {
+    "control": "final-current-access-omitted-exact",
+    "accepted": true
+  },
+  {
+    "control": "final-current-access-omitted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "final-current-access-omitted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "final-current-access-omitted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "final-current-access-omitted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "final-current-access-omitted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "final-current-access-omitted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "complete-replay-downloads-again-exact",
+    "accepted": true
+  },
+  {
+    "control": "complete-replay-downloads-again-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "complete-replay-downloads-again-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "complete-replay-downloads-again-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "complete-replay-downloads-again-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "complete-replay-downloads-again-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "complete-replay-downloads-again-success-output",
+    "accepted": false
+  },
+  {
+    "control": "missing-bytes-reported-success-exact",
+    "accepted": true
+  },
+  {
+    "control": "missing-bytes-reported-success-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "missing-bytes-reported-success-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "missing-bytes-reported-success-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "missing-bytes-reported-success-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "missing-bytes-reported-success-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "missing-bytes-reported-success-success-output",
+    "accepted": false
+  },
+  {
+    "control": "changed-byte-hash-unchecked-exact",
+    "accepted": true
+  },
+  {
+    "control": "changed-byte-hash-unchecked-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "changed-byte-hash-unchecked-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "changed-byte-hash-unchecked-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "changed-byte-hash-unchecked-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "changed-byte-hash-unchecked-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "changed-byte-hash-unchecked-success-output",
+    "accepted": false
+  },
+  {
+    "control": "prepared-archive-receipt-omitted-exact",
+    "accepted": true
+  },
+  {
+    "control": "prepared-archive-receipt-omitted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "prepared-archive-receipt-omitted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "prepared-archive-receipt-omitted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "prepared-archive-receipt-omitted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "prepared-archive-receipt-omitted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "prepared-archive-receipt-omitted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "frozen-plan-omitted-exact",
+    "accepted": true
+  },
+  {
+    "control": "frozen-plan-omitted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "frozen-plan-omitted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "frozen-plan-omitted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "frozen-plan-omitted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "frozen-plan-omitted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "frozen-plan-omitted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "current-access-silently-granted-exact",
+    "accepted": true
+  },
+  {
+    "control": "current-access-silently-granted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "current-access-silently-granted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "current-access-silently-granted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "current-access-silently-granted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "current-access-silently-granted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "current-access-silently-granted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "post-get-revocation-receipt-published-exact",
+    "accepted": true
+  },
+  {
+    "control": "post-get-revocation-receipt-published-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "post-get-revocation-receipt-published-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "post-get-revocation-receipt-published-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "post-get-revocation-receipt-published-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "post-get-revocation-receipt-published-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "post-get-revocation-receipt-published-success-output",
+    "accepted": false
+  },
+  {
+    "control": "owner-silently-restored-after-hash-exact",
+    "accepted": true
+  },
+  {
+    "control": "owner-silently-restored-after-hash-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "owner-silently-restored-after-hash-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "owner-silently-restored-after-hash-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "owner-silently-restored-after-hash-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "owner-silently-restored-after-hash-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "owner-silently-restored-after-hash-success-output",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-type-unchecked-exact",
+    "accepted": true
+  },
+  {
+    "control": "cancellation-type-unchecked-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-type-unchecked-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-type-unchecked-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-type-unchecked-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-type-unchecked-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-type-unchecked-success-output",
+    "accepted": false
+  },
+  {
+    "control": "pre-cancellation-omitted-exact",
+    "accepted": true
+  },
+  {
+    "control": "pre-cancellation-omitted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "pre-cancellation-omitted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "pre-cancellation-omitted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "pre-cancellation-omitted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "pre-cancellation-omitted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "pre-cancellation-omitted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "uncompleted-task-accepted-exact",
+    "accepted": true
+  },
+  {
+    "control": "uncompleted-task-accepted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "uncompleted-task-accepted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "uncompleted-task-accepted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "uncompleted-task-accepted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "uncompleted-task-accepted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "uncompleted-task-accepted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "changed-frozen-plan-overwritten-exact",
+    "accepted": true
+  },
+  {
+    "control": "changed-frozen-plan-overwritten-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "changed-frozen-plan-overwritten-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "changed-frozen-plan-overwritten-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "changed-frozen-plan-overwritten-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "changed-frozen-plan-overwritten-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "changed-frozen-plan-overwritten-success-output",
+    "accepted": false
+  },
+  {
+    "control": "third-unconfirmed-attempt-allowed-exact",
+    "accepted": true
+  },
+  {
+    "control": "third-unconfirmed-attempt-allowed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "third-unconfirmed-attempt-allowed-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "third-unconfirmed-attempt-allowed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "third-unconfirmed-attempt-allowed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "third-unconfirmed-attempt-allowed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "third-unconfirmed-attempt-allowed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "unknown-attempt-object-accepted-exact",
+    "accepted": true
+  },
+  {
+    "control": "unknown-attempt-object-accepted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "unknown-attempt-object-accepted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "unknown-attempt-object-accepted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "unknown-attempt-object-accepted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "unknown-attempt-object-accepted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "unknown-attempt-object-accepted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "constructor-adapters-unchecked-exact",
+    "accepted": true
+  },
+  {
+    "control": "constructor-adapters-unchecked-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "constructor-adapters-unchecked-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "constructor-adapters-unchecked-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "constructor-adapters-unchecked-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "constructor-adapters-unchecked-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "constructor-adapters-unchecked-success-output",
+    "accepted": false
+  },
+  {
+    "control": "constructor-timeout-unchecked-exact",
+    "accepted": true
+  },
+  {
+    "control": "constructor-timeout-unchecked-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "constructor-timeout-unchecked-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "constructor-timeout-unchecked-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "constructor-timeout-unchecked-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "constructor-timeout-unchecked-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "constructor-timeout-unchecked-success-output",
+    "accepted": false
+  },
+  {
+    "control": "transport-byte-range-unchecked-exact",
+    "accepted": true
+  },
+  {
+    "control": "transport-byte-range-unchecked-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "transport-byte-range-unchecked-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "transport-byte-range-unchecked-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "transport-byte-range-unchecked-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "transport-byte-range-unchecked-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "transport-byte-range-unchecked-success-output",
+    "accepted": false
+  },
+  {
+    "control": "insufficient-disk-space-accepted-exact",
+    "accepted": true
+  },
+  {
+    "control": "insufficient-disk-space-accepted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "insufficient-disk-space-accepted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "insufficient-disk-space-accepted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "insufficient-disk-space-accepted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "insufficient-disk-space-accepted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "insufficient-disk-space-accepted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "exposed-limits-alias-exact",
+    "accepted": true
+  },
+  {
+    "control": "exposed-limits-alias-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "exposed-limits-alias-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "exposed-limits-alias-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "exposed-limits-alias-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "exposed-limits-alias-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "exposed-limits-alias-success-output",
+    "accepted": false
+  },
+  {
+    "control": "whole-download-budget-capped-to-rpc-exact",
+    "accepted": true
+  },
+  {
+    "control": "whole-download-budget-capped-to-rpc-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "whole-download-budget-capped-to-rpc-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "whole-download-budget-capped-to-rpc-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "whole-download-budget-capped-to-rpc-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "whole-download-budget-capped-to-rpc-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "whole-download-budget-capped-to-rpc-success-output",
+    "accepted": false
+  },
+  {
+    "control": "budget-probe-transport-bypassed-exact",
+    "accepted": true
+  },
+  {
+    "control": "budget-probe-transport-bypassed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "budget-probe-transport-bypassed-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "budget-probe-transport-bypassed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "budget-probe-transport-bypassed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "budget-probe-transport-bypassed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "budget-probe-transport-bypassed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "budget-probe-returned-hash-corrupted-exact",
+    "accepted": true
+  },
+  {
+    "control": "budget-probe-returned-hash-corrupted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "budget-probe-returned-hash-corrupted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "budget-probe-returned-hash-corrupted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "budget-probe-returned-hash-corrupted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "budget-probe-returned-hash-corrupted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "budget-probe-returned-hash-corrupted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "lost-byte-receipt-reply-refetched-exact",
+    "accepted": true
+  },
+  {
+    "control": "lost-byte-receipt-reply-refetched-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "lost-byte-receipt-reply-refetched-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "lost-byte-receipt-reply-refetched-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "lost-byte-receipt-reply-refetched-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "lost-byte-receipt-reply-refetched-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "lost-byte-receipt-reply-refetched-success-output",
+    "accepted": false
+  },
+  {
+    "control": "archive-link-recovery-skipped-exact",
+    "accepted": true
+  },
+  {
+    "control": "archive-link-recovery-skipped-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "archive-link-recovery-skipped-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "archive-link-recovery-skipped-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "archive-link-recovery-skipped-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "archive-link-recovery-skipped-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "archive-link-recovery-skipped-success-output",
+    "accepted": false
+  },
+  {
+    "control": "copied-runtime-needs-old-incoming-object-exact",
+    "accepted": true
+  },
+  {
+    "control": "copied-runtime-needs-old-incoming-object-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "copied-runtime-needs-old-incoming-object-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "copied-runtime-needs-old-incoming-object-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "copied-runtime-needs-old-incoming-object-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "copied-runtime-needs-old-incoming-object-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "copied-runtime-needs-old-incoming-object-success-output",
+    "accepted": false
+  },
+  {
+    "control": "complete-receipt-shape-unchecked-exact",
+    "accepted": true
+  },
+  {
+    "control": "complete-receipt-shape-unchecked-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "complete-receipt-shape-unchecked-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "complete-receipt-shape-unchecked-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "complete-receipt-shape-unchecked-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "complete-receipt-shape-unchecked-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "complete-receipt-shape-unchecked-success-output",
+    "accepted": false
+  },
+  {
+    "control": "attempt-storage-limits-unchecked-exact",
+    "accepted": true
+  },
+  {
+    "control": "attempt-storage-limits-unchecked-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "attempt-storage-limits-unchecked-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "attempt-storage-limits-unchecked-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "attempt-storage-limits-unchecked-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "attempt-storage-limits-unchecked-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "attempt-storage-limits-unchecked-success-output",
+    "accepted": false
+  },
+  {
+    "control": "download-count-unchecked-exact",
+    "accepted": true
+  },
+  {
+    "control": "download-count-unchecked-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "download-count-unchecked-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "download-count-unchecked-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "download-count-unchecked-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "download-count-unchecked-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "download-count-unchecked-success-output",
+    "accepted": false
+  },
+  {
+    "control": "stored-byte-count-unchecked-exact",
+    "accepted": true
+  },
+  {
+    "control": "stored-byte-count-unchecked-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "stored-byte-count-unchecked-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "stored-byte-count-unchecked-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "stored-byte-count-unchecked-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "stored-byte-count-unchecked-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "stored-byte-count-unchecked-success-output",
+    "accepted": false
+  },
+  {
+    "control": "exhausted-storage-attempt-created-exact",
+    "accepted": true
+  },
+  {
+    "control": "exhausted-storage-attempt-created-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "exhausted-storage-attempt-created-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "exhausted-storage-attempt-created-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "exhausted-storage-attempt-created-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "exhausted-storage-attempt-created-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "exhausted-storage-attempt-created-success-output",
+    "accepted": false
+  },
+  {
+    "control": "retained-summary-does-not-match-download-exact",
+    "accepted": true
+  },
+  {
+    "control": "retained-summary-does-not-match-download-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "retained-summary-does-not-match-download-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "retained-summary-does-not-match-download-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "retained-summary-does-not-match-download-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "retained-summary-does-not-match-download-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "retained-summary-does-not-match-download-success-output",
+    "accepted": false
+  }
+]

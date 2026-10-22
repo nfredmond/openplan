@@ -333,8 +333,9 @@ describe("AerialMissionMap", () => {
 
     render(<AerialMissionMap missionId={MISSION_ID} preview={VALID_PREVIEW} previewNotice={null} />);
 
-    expect(await screen.findByText(/No map key is configured on this deployment/i)).toBeTruthy();
-    expect(screen.getByText(/NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN/)).toBeTruthy();
+    expect(await screen.findByText(/has no map key set up/i)).toBeTruthy();
+    // The variable is for whoever runs the installation, folded out of the planner's line.
+    expect(screen.getByText(/NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN/).closest("details")).not.toBeNull();
     expect(mapboxMocks.Map).not.toHaveBeenCalled();
   });
 

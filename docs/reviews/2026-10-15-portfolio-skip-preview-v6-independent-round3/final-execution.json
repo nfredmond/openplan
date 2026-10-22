@@ -1,0 +1,14 @@
+{
+  "unit": "openplan-v6-round3-final-readback-4cefaf52.service",
+  "invocation": "eae56a3c9248490882f6897fb3356885",
+  "exit": 0,
+  "runtime": "111ms",
+  "cpu": "83ms",
+  "roundedMemoryPeak": "19.1M",
+  "swap": "0B",
+  "sourceSHA256": "1a25ba8d4d4bea9e99cee859b5810c32aae1e830a51ced46a943007d4504c721",
+  "rawSHA256": "55211d575e077f67dcdae328f4e507ad705e3cd346b2a12e795a118ccebdd3b8",
+  "requestedLimits": "Same shared flock, MemoryMax=512M, MemorySwapMax=0, CPUQuota=50%, private HOME/cache and Python -B as execution.json.",
+  "eventCounters": "not collected",
+  "operatingStages": 0
+}

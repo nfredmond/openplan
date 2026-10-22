@@ -11,6 +11,7 @@ import { StateBlock } from "@/components/ui/state-block";
 import { createClient } from "@/lib/supabase/server";
 import { loadPortalPreviewResult } from "@/lib/engagement/public-portal-data";
 import { getPublicPortalState } from "@/lib/engagement/public-portal";
+import { loadWorkspaceCalendar } from "@/lib/time/workspace-calendar";
 import { createPortalTranslator } from "@/lib/engagement/portal-i18n/translator";
 import { buildPortalMapShellProps } from "@/lib/engagement/portal-surface-props";
 import { PORTAL_LOCALE_QUERY_PARAM } from "@/lib/engagement/portal-i18n/locales";
@@ -114,7 +115,9 @@ export default async function EngagementPortalPreviewPage({
 
   const { campaign, campaignText, locale, messages } = result.bundle;
   const translator = createPortalTranslator(messages);
-  const portalState = getPublicPortalState(campaign);
+  // Dates in the status line are named in the workspace calendar, as on the console.
+  const { timeZone } = await loadWorkspaceCalendar(supabase, campaign.workspace_id);
+  const portalState = getPublicPortalState(campaign, { timeZone });
   const shellProps = buildPortalMapShellProps(result.bundle);
   const search = portalSearchString(resolvedSearch);
   const previewAboutHref = search

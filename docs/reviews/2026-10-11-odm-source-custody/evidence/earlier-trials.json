@@ -1,0 +1,22 @@
+[
+  {
+    "trial": "unit-02",
+    "reason": "Nested directory fixture inherited private umask; explicit chmod isolates the public-directory boundary."
+  },
+  {
+    "trial": "controls-01",
+    "reason": "Removed mapping guard actually allowed completion; corrected the expected failure classification."
+  },
+  {
+    "trial": "controls-02",
+    "reason": "Boolean byte-limit mutation reached aggregate-size refusal; direct finite_limit assertion now isolates boolean handling."
+  },
+  {
+    "trial": "controls-03",
+    "reason": "Removed regular-file guard reached kernel FIFO fsync refusal; classified as diagnostic refusal."
+  },
+  {
+    "trial": "native-01",
+    "reason": "Original actor change correctly refused, but driver expected the wrong identity-refusal message."
+  }
+]

@@ -71,6 +71,9 @@ import {
 } from "@/lib/safety/crash-filters";
 import { CrashFilterPanel, type CrashFacetCounts } from "./crash-filter-panel";
 import { SafetyPrintableStreetContext } from "./safety-printable-street-context";
+import { HighInjuryNetworkPanel, type HighInjuryNetworkReportTarget } from "./high-injury-network-panel";
+import { highInjuryNetworkFeatureCollection } from "@/lib/safety/high-injury-network";
+import { fitInstructionFromGeometry } from "@/lib/cartographic/geometry-bbox";
 
 function CutoffProvenanceLink({
   provenance,
@@ -286,12 +289,10 @@ const EMPTY_STUDY_AREA_SEED: SafetyStudyAreaSeed = {
 type SafetyWorkspaceProps = {
   workspaceId: string;
   latestIngest: SafetyIngestSummary | null;
-  /**
-   * True when the crash-import history could not be READ. Distinct from "no
-   * import exists": one is a fact about this workspace, the other is a fact
-   * about the query, and only the first belongs in a sentence about crashes.
-   */
+  /** Failed history or current-area reads withhold an unverified map fallback. */
   ingestsReadFailed?: boolean;
+  /** Identify a failed current-area lookup without mislabeling readable history. */
+  currentIngestReadFailed?: boolean;
   /**
    * Where the picker STARTS, resolved on the server. Absent (or `origin: "none"`)
    * keeps the original behavior: nothing is preselected and nothing is fetched
@@ -309,7 +310,7 @@ type SafetyWorkspaceProps = {
   /** Recent acquisitions, newest first, with their project links. */
   ingestHistory?: SafetyIngestHistoryEntry[];
   /** Existing reports for the active project that can receive this pull. */
-  projectReports?: Array<{ id: string; title: string }>;
+  projectReports?: Array<{ id: string; title: string; safetyActionPlan?: HighInjuryNetworkReportTarget["safetyActionPlan"] }>;
   /**
    * The map backgrounds this deployment offers, resolved on the server by
    * `resolvePublicBasemapConfig` — the same registry and the same operator
@@ -350,6 +351,7 @@ export function SafetyWorkspace({
   workspaceId,
   latestIngest,
   ingestsReadFailed = false,
+  currentIngestReadFailed = false,
   studyArea = EMPTY_STUDY_AREA_SEED,
   openedForProject = null,
   projects = [],
@@ -455,6 +457,7 @@ export function SafetyWorkspace({
    * its own "no map key" notice and nothing is painted anyway.
    */
   const crashMapRef = useRef<mapboxgl.Map | null>(null);
+  const mapStageRef = useRef<HTMLDivElement>(null);
   const [crashMapReady, setCrashMapReady] = useState(false);
   /**
    * The crash map has finished building (or has been torn down).
@@ -503,6 +506,12 @@ export function SafetyWorkspace({
    * re-render — and this component re-renders on every filter press.
    */
   const [mapFocus, setMapFocus] = useState<FitInstruction | null>(null);
+  /** Whether the high-injury network layer is drawn. On by default. */
+  const [showHighInjuryNetwork, setShowHighInjuryNetwork] = useState(true);
+  const highInjuryNetworkLayer = useMemo(
+    () => (showHighInjuryNetwork ? highInjuryNetworkFeatureCollection(response?.highInjuryNetwork) : null),
+    [showHighInjuryNetwork, response?.highInjuryNetwork]
+  );
 
   // Whether the box still holds the area this page opened with. Everything that
   // explains where that area came from is gated on it: once the planner picks
@@ -556,8 +565,9 @@ export function SafetyWorkspace({
   );
 
   const loadCrashes = useCallback(async (signal: AbortSignal) => {
-    if (!bbox) {
+    if (!bbox || (ingestsReadFailed && !ingest?.id)) {
       setResponse(null);
+      setLoading(false);
       return;
     }
     setLoading(true);
@@ -597,7 +607,7 @@ export function SafetyWorkspace({
     } finally {
       if (!signal.aborted) setLoading(false);
     }
-  }, [workspaceId, filters, bbox, projectId, place, ingest?.id]);
+  }, [workspaceId, filters, bbox, projectId, place, ingest?.id, ingestsReadFailed]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -1065,6 +1075,11 @@ export function SafetyWorkspace({
           */
           className="relative h-[max(16rem,45svh)] shrink-0 lg:h-auto lg:min-h-0 lg:flex-1"
           data-testid="safety-map-stage"
+          ref={mapStageRef}
+          role="region"
+          aria-label="Safety map"
+          tabIndex={-1}
+          style={{ outlineOffset: "-3px" }}
         >
           <SafetyCrashMap
             collection={collection}
@@ -1079,6 +1094,7 @@ export function SafetyWorkspace({
             onMapReady={handleMapReady}
             focus={mapFocus}
             onFocusApplied={() => setMapFocus(null)}
+            highInjuryNetwork={highInjuryNetworkLayer}
           />
 
           {/* The background picker, docked over the map. Top-LEFT, because
@@ -1564,6 +1580,34 @@ export function SafetyWorkspace({
             ) : null}
             </>}
             {response ? (
+              <HighInjuryNetworkPanel
+                // A new acquisition or report list starts a fresh selection.
+                key={`${ingest.id}:${projectId}`}
+                network={response.highInjuryNetwork}
+                sourceLabel={ingest.sourceLabel}
+                showOnMap={showHighInjuryNetwork}
+                onShowOnMapChange={setShowHighInjuryNetwork}
+                onFocusSegment={(segment) => {
+                  const instruction = fitInstructionFromGeometry(segment.geometry);
+                  if (!instruction) return;
+                  setMapFocus(instruction);
+                  // Reveal the map in the existing scroll containers. Nearest
+                  // alignment leaves the desktop map in place; focus lets a
+                  // keyboard user continue through its controls.
+                  mapStageRef.current?.scrollIntoView?.({ block: "nearest", inline: "nearest" });
+                  mapStageRef.current?.focus({ preventScroll: true });
+                }}
+                ingestId={ingest.id ?? null}
+                reports={projectId
+                  ? projectReports.map((report) => ({
+                      id: report.id,
+                      title: report.title,
+                      safetyActionPlan: report.safetyActionPlan ?? null,
+                    }))
+                  : []}
+              />
+            ) : null}
+            {response ? (
               <SafetyPrintableStreetContext
                 projectName={openedForProject?.name ?? null}
                 place={place}
@@ -1622,9 +1666,11 @@ export function SafetyWorkspace({
           </div>
         ) : bbox ? (
           <p className="text-muted-foreground">
-            {ingestsReadFailed
-              ? "This workspace's crash-import history could not be read, so nothing is shown on the map. That is a failed lookup, not a finding — imports may exist."
-              : "No crash data has been retrieved for this study area yet. Nothing is shown on the map — that is not evidence that no crashes occurred."}
+            {currentIngestReadFailed
+              ? "This study area's current crash acquisition could not be read, so nothing is shown on the map. That is a failed lookup, not a finding. Imports may exist."
+              : ingestsReadFailed
+                ? "This workspace's crash-import history could not be read, so nothing is shown on the map. That is a failed lookup, not a finding. Imports may exist."
+                : "No crash data has been retrieved for this study area yet. Nothing is shown on the map. That is not evidence that no crashes occurred."}
           </p>
         ) : (
           /* NO JURISDICTION IS NAMED HERE. This sentence used to say crash

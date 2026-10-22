@@ -1,0 +1,72 @@
+{
+  "checkedAt": "2026-10-12T08:23:11.418438+00:00",
+  "archiveBytes": 7211788,
+  "archiveSha256": "8fc43e6a6285ff23d0018d212f6ced45f12c80bc157a2d35bf81505fad1bc12f",
+  "tocEntries": 7490,
+  "tlsMode": "verify-full",
+  "storage": {
+    "buckets": 11,
+    "objects": 220,
+    "bytes": 117871050
+  },
+  "controls": [
+    {
+      "case": "baseline",
+      "outcome": "survived"
+    },
+    {
+      "case": "harmless-note",
+      "outcome": "survived"
+    },
+    {
+      "case": "restored",
+      "outcome": "survived"
+    },
+    {
+      "case": "wrong-archive-hash",
+      "outcome": "intended_refusal",
+      "reason": "capture-archive-bytes"
+    },
+    {
+      "case": "wrong-archive-size",
+      "outcome": "intended_refusal",
+      "reason": "capture-archive-bytes"
+    },
+    {
+      "case": "wrong-tls-mode",
+      "outcome": "intended_refusal",
+      "reason": "capture-archive-boundary"
+    },
+    {
+      "case": "expired-capture",
+      "outcome": "intended_refusal",
+      "reason": "capture-freshness"
+    },
+    {
+      "case": "wrong-object-hash",
+      "outcome": "intended_refusal",
+      "reason": "capture-storage-bytes"
+    },
+    {
+      "case": "outside-object-path",
+      "outcome": "intended_refusal",
+      "reason": "capture-storage-scope"
+    },
+    {
+      "case": "duplicate-object-path",
+      "outcome": "intended_refusal",
+      "reason": "capture-storage-scope"
+    },
+    {
+      "case": "omitted-object",
+      "outcome": "intended_refusal",
+      "reason": "capture-storage-inventory"
+    },
+    {
+      "case": "wrong-inventory-totals",
+      "outcome": "intended_refusal",
+      "reason": "capture-storage-totals"
+    }
+  ],
+  "boundary": "Independent index/hash and each observed Storage copy verified. Active writers remain; archive not restored; captures are not atomic."
+}

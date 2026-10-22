@@ -1,0 +1,212 @@
+{
+  "integrationAcceptedTrials": 118,
+  "completeGroups": {
+    "pagination-complete": {
+      "positive": "SURVIVED",
+      "harmless": "SURVIVED",
+      "fault": "KILLED",
+      "restored": "SURVIVED"
+    },
+    "pagination-projection": {
+      "positive": "SURVIVED",
+      "harmless": "SURVIVED",
+      "fault": "KILLED",
+      "restored": "SURVIVED"
+    },
+    "pagination-scope": {
+      "positive": "SURVIVED",
+      "harmless": "SURVIVED",
+      "fault": "KILLED",
+      "restored": "SURVIVED"
+    },
+    "pagination-tie-order": {
+      "positive": "SURVIVED",
+      "harmless": "SURVIVED",
+      "fault": "KILLED",
+      "restored": "SURVIVED"
+    },
+    "pagination-date-order": {
+      "positive": "SURVIVED",
+      "harmless": "SURVIVED",
+      "fault": "KILLED",
+      "restored": "SURVIVED"
+    },
+    "pagination-bounded-range": {
+      "positive": "SURVIVED",
+      "harmless": "SURVIVED",
+      "fault": "KILLED",
+      "restored": "SURVIVED"
+    },
+    "pagination-short-page": {
+      "positive": "SURVIVED",
+      "harmless": "SURVIVED",
+      "fault": "KILLED",
+      "restored": "SURVIVED"
+    },
+    "pagination-over-limit": {
+      "positive": "SURVIVED",
+      "harmless": "SURVIVED",
+      "fault": "KILLED",
+      "restored": "SURVIVED"
+    },
+    "pagination-late-error": {
+      "positive": "SURVIVED",
+      "harmless": "SURVIVED",
+      "fault": "KILLED",
+      "restored": "SURVIVED"
+    },
+    "pagination-unavailable": {
+      "positive": "SURVIVED",
+      "harmless": "SURVIVED",
+      "fault": "KILLED",
+      "restored": "SURVIVED"
+    },
+    "pagination-empty": {
+      "positive": "SURVIVED",
+      "harmless": "SURVIVED",
+      "fault": "KILLED",
+      "restored": "SURVIVED"
+    },
+    "pagination-anonymous": {
+      "positive": "SURVIVED",
+      "harmless": "SURVIVED",
+      "fault": "KILLED",
+      "restored": "SURVIVED"
+    },
+    "pagination-membership": {
+      "positive": "SURVIVED",
+      "harmless": "SURVIVED",
+      "fault": "KILLED",
+      "restored": "SURVIVED"
+    },
+    "legacy-viewer": {
+      "positive": "SURVIVED",
+      "harmless": "SURVIVED",
+      "fault": "KILLED",
+      "restored": "SURVIVED"
+    },
+    "legacy-workspace": {
+      "positive": "SURVIVED",
+      "harmless": "SURVIVED",
+      "fault": "KILLED",
+      "restored": "SURVIVED"
+    },
+    "legacy-over-limit": {
+      "positive": "SURVIVED",
+      "harmless": "SURVIVED",
+      "fault": "KILLED",
+      "restored": "SURVIVED"
+    },
+    "legacy-unknown-year": {
+      "positive": "SURVIVED",
+      "harmless": "SURVIVED",
+      "fault": "KILLED",
+      "restored": "SURVIVED"
+    },
+    "legacy-denied-read": {
+      "positive": "SURVIVED",
+      "harmless": "SURVIVED",
+      "fault": "KILLED",
+      "restored": "SURVIVED"
+    },
+    "legacy-projection": {
+      "positive": "SURVIVED",
+      "harmless": "SURVIVED",
+      "fault": "KILLED",
+      "restored": "SURVIVED"
+    },
+    "legacy-workspace-filter": {
+      "positive": "SURVIVED",
+      "harmless": "SURVIVED",
+      "fault": "KILLED",
+      "restored": "SURVIVED"
+    },
+    "legacy-date-order": {
+      "positive": "SURVIVED",
+      "harmless": "SURVIVED",
+      "fault": "KILLED",
+      "restored": "SURVIVED"
+    },
+    "legacy-tie-order": {
+      "positive": "SURVIVED",
+      "harmless": "SURVIVED",
+      "fault": "KILLED",
+      "restored": "SURVIVED"
+    },
+    "legacy-range": {
+      "positive": "SURVIVED",
+      "harmless": "SURVIVED",
+      "fault": "KILLED",
+      "restored": "SURVIVED"
+    },
+    "legacy-metadata": {
+      "positive": "SURVIVED",
+      "harmless": "SURVIVED",
+      "fault": "KILLED",
+      "restored": "SURVIVED"
+    },
+    "legacy-fake-filter": {
+      "positive": "SURVIVED",
+      "harmless": "SURVIVED",
+      "fault": "KILLED",
+      "restored": "SURVIVED"
+    },
+    "legacy-fake-order": {
+      "positive": "SURVIVED",
+      "harmless": "SURVIVED",
+      "fault": "KILLED",
+      "restored": "SURVIVED"
+    },
+    "legacy-fake-projection": {
+      "positive": "SURVIVED",
+      "harmless": "SURVIVED",
+      "fault": "KILLED",
+      "restored": "SURVIVED"
+    },
+    "legacy-fake-inclusive-range": {
+      "positive": "SURVIVED",
+      "harmless": "SURVIVED",
+      "fault": "KILLED",
+      "restored": "SURVIVED"
+    },
+    "legacy-single-capped-query": {
+      "positive": "SURVIVED",
+      "harmless": "SURVIVED",
+      "fault": "KILLED",
+      "restored": "SURVIVED"
+    }
+  },
+  "originalPaginationTrials": 52,
+  "retainedSurvivor": [
+    {
+      "trial": "legacy-fake-inclusive-range-fault",
+      "reason": "not one assertion failure",
+      "actualPassed": 1
+    }
+  ],
+  "sourceBindingsMatchGit": true,
+  "controllerHashMatchesGit": true,
+  "restorationRecords": [
+    "docs/reviews/2026-10-15-project-workbook-export-pagination/evidence",
+    "docs/reviews/2026-10-15-project-workbook-export-integration/evidence",
+    "docs/reviews/2026-10-15-project-workbook-export-integration/evidence/continuation",
+    "docs/reviews/2026-10-15-project-workbook-export-integration/evidence/cohort-final",
+    "docs/reviews/2026-10-15-project-workbook-export-integration/evidence/cohort-count-corrected"
+  ],
+  "correctedCounts": {
+    "src/test/project-portfolio-export-route.test.ts": 5,
+    "src/test/project-workbook-export-pagination.test.ts": 9,
+    "src/test/portfolio-workbook-export.test.ts": 5,
+    "src/test/portfolio-price-year.test.ts": 11,
+    "src/test/portfolio-import-review.test.ts": 12,
+    "src/test/portfolio-workbook-import.test.ts": 16,
+    "src/test/project-portfolio-import-route.test.ts": 11,
+    "src/test/project-portfolio-importer.test.tsx": 3,
+    "src/test/refused-project-portfolio-import-action.test.ts": 3
+  },
+  "incorrect67ExpectationRefused": true,
+  "cohortControl": {
+    "harmless": "SURVIVED",
+    "removedCase": "KILLED"
+  }
+}

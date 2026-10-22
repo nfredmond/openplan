@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Supervised URL transport harmless and targeted fault controls",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-url-transport/verify_controls.py \\\n  --repo \"$GITHUB_WORKSPACE\" --out \"$RUNNER_TEMP/odm-url-transport-controls\"\n",
+    "exit": 0,
+    "workflowSha256": "f4e87c9d253db05be7b8e1e599d3e57f15e189f90b9716b6a1ed2a790f24e4a6"
+  },
+  {
+    "name": "Interrupted network source and two stopped-root recovery",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-url-transport/native_recovery.py \\\n  --out \"$RUNNER_TEMP/odm-url-transport-native\"\n",
+    "exit": 0,
+    "workflowSha256": "f4e87c9d253db05be7b8e1e599d3e57f15e189f90b9716b6a1ed2a790f24e4a6"
+  }
+]

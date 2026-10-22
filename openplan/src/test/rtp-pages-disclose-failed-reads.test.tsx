@@ -67,6 +67,13 @@ function makeQuery(result: QueryResult, table?: string) {
   query.single = vi.fn(async () => result);
   query.then = (resolve: (value: QueryResult) => unknown, reject?: (reason: unknown) => unknown) =>
     Promise.resolve(result).then(resolve, reject);
+  // A paged read asks for slices until one comes back empty, so a range answers
+  // its slice. Handing back the whole result for every range would never end.
+  query.range = vi.fn(async (from: number, toInclusive: number): Promise<QueryResult> =>
+    result.error || !Array.isArray(result.data)
+      ? result
+      : { data: result.data.slice(from, toInclusive + 1), error: null }
+  );
   return query;
 }
 

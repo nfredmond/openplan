@@ -1,0 +1,21 @@
+{
+  "docs/reviews/2026-10-11-ocr-worker-recovery/native_recovery.py": "578f4202a256d6f40e097d7069a1ea4f963b27c201a4ef40ccc7e1af49006bb7",
+  "docs/reviews/2026-10-11-ocr-worker-recovery/recovery_oracle.py": "4035d7dcaaf8356051886ea08a62b53ea9a10bd5cf7bf9d93b94d64bb8e8261d",
+  "docs/reviews/2026-10-11-ocr-worker-recovery/verify_controls.py": "832ccdddd35609f6c715f62113380eef8111f6aa94a17ca879e2973d5831eae2",
+  "docs/reviews/2026-10-11-ocr-worker-recovery/create_fixture.py": "78d83e947b5886a7edc4ef4b9d090f2da9627bf8604e06365cf7a12426d16996",
+  "docs/reviews/2026-10-11-coordinated-worker-point/worker_root.py": "5785a629453489501b2dca6c1bd33d8c40e3cca3ba2cbed743e4619cc439286d",
+  "openplan/scripts/ops/worker_root_snapshot.py": "4ea3f9d9c084e0de5b45dee2b371f2ce6fcb5182ea6c2a0f2eac8a6a83040d24",
+  "openplan/scripts/ops/worker_journal_snapshot.py": "7e5570eec9861b44abfe1138b0eb31bf0a982e7b13b8b179a174e1007fe05ebb",
+  "workers/ocr_worker/callbacks.py": "a54a69adfbed029aa56936c38cd7db436941ecad3c42aa03acd8ab0ea30b4027",
+  "workers/ocr_worker/contract.py": "9d2cd7ec1c2cfad0c4d13f0a054a08695745f92519ed472f0f2a319216f3c5f3",
+  "workers/ocr_worker/durable.py": "eda5750599fbfb85dffab46b1ef9b73ba3afa71863013fbd09d71daac15e4669",
+  "workers/ocr_worker/intake.py": "1c7ad70f9b9b191646e58830b8ab9665204ed635711700ff7902daa4b8c873d4",
+  "workers/ocr_worker/main.py": "f8eb6a96eb3a582064ac36b61343c05833b77fe096379925d445463532b9fc86",
+  "workers/ocr_worker/ocr.py": "97d343e71b9bb907ef80997ae5e867954b750013a172339dfbe638af7964b346",
+  "workers/ocr_worker/test_callbacks.py": "7c150fb85f7946ef26c86ce8fabdc82f48aa21f1fa19cb8dcd30192edbd6509a",
+  "workers/ocr_worker/test_contract.py": "7cdf962fbc7454b111a4513cc3618e7c22abfe793a2521f2316a060bc05ea6e2",
+  "workers/ocr_worker/test_durable.py": "23d3ac17aba3eaf4545462dfa8d087d989376af4629a83a8ec4aadc93a11a6e0",
+  "workers/ocr_worker/test_intake.py": "259a95dc5c05e2e859d1ef5c9a0b1a66f1648bd95dd53a27e2dba135731b4207",
+  "workers/ocr_worker/test_ocr.py": "7ad707ce87604e8071a275c36ffd3e9cd382b9c6a54c0d71465bd680ea9792f8",
+  "workers/ocr_worker/test_worker_http.py": "e649134d45565aae1e779803df27fcc1d4615047c3282ecbd6790119e446dd04"
+}

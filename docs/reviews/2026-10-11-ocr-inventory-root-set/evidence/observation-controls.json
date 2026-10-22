@@ -1,0 +1,134 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-key-order",
+    "outcome": "survived"
+  },
+  {
+    "control": "admission-status",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "accepted-status",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "completed-admission-replay-status",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "original-admission-replay",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "changed-request-refusal",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "consumer-auth-and-payload-identity",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "saved-request-binding",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "saved-result-before-http",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "saved-result-content",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "original-result-status",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "original-request-id",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "original-job-reference",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "original-page-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "page-sequence",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "blank-middle-page",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "fixture-page-text",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "native-text-engine",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "recovered-terminal-state",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "recovered-job-content",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "exact-callback-bytes",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "two-terminal-deliveries",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "one-logical-consumer-result",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "no-second-source-download",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "no-second-source-download",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "no-extraction-reentry",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "complete-root-and-journal-copy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "original-root-unchanged",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "immutable-package-unchanged",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "runtime-source-and-modes-unchanged",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "executed-source-unchanged",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  }
+]

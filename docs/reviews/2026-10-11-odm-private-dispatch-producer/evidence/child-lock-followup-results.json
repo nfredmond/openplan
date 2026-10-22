@@ -1,0 +1,32 @@
+[
+  {
+    "check": "apply-05",
+    "exit": 0,
+    "wallSeconds": 0.966
+  },
+  {
+    "check": "native-controls-05",
+    "exit": 0,
+    "wallSeconds": 128.188
+  },
+  {
+    "check": "membership-locks-03",
+    "exit": 0,
+    "wallSeconds": 10.335
+  },
+  {
+    "check": "restore-04",
+    "exit": 0,
+    "wallSeconds": 38.297
+  },
+  {
+    "check": "rpc-cli-09",
+    "exit": 0,
+    "wallSeconds": 195.265
+  },
+  {
+    "check": "advisors-03",
+    "exit": 0,
+    "wallSeconds": 18.955
+  }
+]

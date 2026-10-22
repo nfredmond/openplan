@@ -1,0 +1,13 @@
+{
+  "bodySha256": "da33c7d086bafd065dd8d9489933e756215dd59566881039fe318cea7ac569fe",
+  "format": "openplan-known-metadata-fixture-binding-v1",
+  "priorEvidence": "docs/reviews/2026-10-13-odm-task-observation-cli/evidence/native-results.json",
+  "priorEvidenceSha256": "32ce196cfe21cd0dfb219c178f6944dcc92ee9c301bc7fbc299ce354d1c8098c",
+  "rootInventories": {
+    "engine": "630a4b517af6b28437d8de223ac2319d0cb898f0d2d8950e12891c329e104724",
+    "metadata": "f3163f3153d19c9e26b66c12d898cd6d1fab9ff766b07434cf85da4c80917519"
+  },
+  "scope": "Frozen known retained fixture bytes; not origin authentication, host attestation or installation discovery.",
+  "sourceResultSha256": "d0e3a1c7a4653c423cbe5df6e973a44f962fe9c0be773f5816e1b9a08a61ed17",
+  "sourceSnapshotSha256": "199a04a44e978f3d0fb5487fab0c5eba757af2b9b7def3f1d7fceb93f4e8c21a"
+}

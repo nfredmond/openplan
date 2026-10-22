@@ -93,9 +93,11 @@ describe("the caveats a county run carries", () => {
   it("keeps the caveats that are still true whatever the run did", () => {
     for (const supplied of [null, CALIBRATED, FITTED_POPULATION]) {
       const caveats = getCountyRunCaveats("validated-screening", supplied);
-      expect(caveats).toContain("Screening-grade only");
+      // The retired stage was set by the old count gate, a diagnostic. It
+      // carries no screening or validated claim (KI-2026-10-12-001).
+      expect(caveats).toContain("Prototype-only");
       expect(caveats).toContain("Not client-ready forecasting");
-      expect(caveats).toContain("Validated slice only");
+      expect(caveats.join(" ")).not.toMatch(/screening-grade|validated/i);
     }
   });
 

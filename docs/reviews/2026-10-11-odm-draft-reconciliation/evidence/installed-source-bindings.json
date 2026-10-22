@@ -1,0 +1,57 @@
+{
+  "imageId": "sha256:cb07d06e21fd6189cfad287c6fedfa0b72568100355635cd9035cb86eed42ee2",
+  "initial": {
+    "imageId": "sha256:cb07d06e21fd6189cfad287c6fedfa0b72568100355635cd9035cb86eed42ee2",
+    "version": "2.2.4",
+    "files": [
+      {
+        "imagePath": "/var/www/package.json",
+        "bytes": 1293,
+        "sha256": "12845e34cb3947b8ea68e753511107cabc6c448c264c8e97a42f5f09343b4bae"
+      },
+      {
+        "imagePath": "/var/www/libs/taskNew.js",
+        "bytes": 15897,
+        "sha256": "1b803713301db91dd11b8d2b54816fe3827cf5211edbc488e8f81104736f1f38"
+      },
+      {
+        "imagePath": "/var/www/libs/TaskManager.js",
+        "bytes": 11502,
+        "sha256": "9f43fff4882e7fba113c69f73328daa927ebb7e5716414eea5d9225b15d50efb"
+      },
+      {
+        "imagePath": "/var/www/libs/Task.js",
+        "bytes": 29568,
+        "sha256": "a3cba219aa9607d42ea12018c0e08c6742afccc5d3b812a5cb05a11a99cf5d51"
+      },
+      {
+        "imagePath": "/var/www/index.js",
+        "bytes": 32840,
+        "sha256": "a31bc1c4282bf2614982e81e4974a783171916a379fa146900b1dfad8dd2cd6e"
+      }
+    ],
+    "engineExecuted": false,
+    "network": "none",
+    "readOnly": true,
+    "memoryBytes": 67108864,
+    "swapExtraBytes": 0
+  },
+  "additional": {
+    "config.js": {
+      "bytes": 8986,
+      "sha256": "b2e54a5c9a3ad036ada0167da41146f14fc33ecbc804708822e06a06927f5d61"
+    },
+    "libs/Directories.js": {
+      "bytes": 940,
+      "sha256": "ceee03071d7d76c0ba2c3a60254df5170364f789038e770c3a7341705290919b"
+    },
+    "libs/odmInfo.js": {
+      "bytes": 13192,
+      "sha256": "dcc5a0cb8096857716c07d486da6b42785a8d9ee7b1607ef33e5ab3ee49b0849"
+    },
+    "libs/logger.js": {
+      "bytes": 1965,
+      "sha256": "0e157b4d597125d4f475ee6b7e25640afefda00330596a8206ab6fe5e950b447"
+    }
+  }
+}

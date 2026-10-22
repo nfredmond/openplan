@@ -30,6 +30,10 @@ import {
   type ApplicationSectionStatus,
 } from "@/lib/grants/application";
 import { GRANT_PROGRAM_CATALOG } from "@/lib/grants/program-catalog";
+import { identifySeededCatalogKey, isAtpApplication } from "@/lib/grants/atp-packet";
+import { SafetyPlanSeedPanel } from "@/components/grants/safety-plan-seed-panel";
+import { readSafetySeedOrigin } from "@/lib/grants/safety-seed-origin";
+import { AtpScoringPacketPanel } from "@/components/grants/atp-scoring-packet-panel";
 
 /**
  * The application workspace for one funding opportunity: initialize from a
@@ -52,6 +56,8 @@ export type ApplicationSectionDraftView = {
   draft_markdown: string;
   model: string | null;
   grounding_json?: unknown;
+  origin?: string;
+  safety_seed_id?: string | null;
   grounded_sentence_count?: number | null;
   total_sentence_count?: number | null;
   created_at: string;
@@ -142,6 +148,8 @@ function parseDraftView(value: unknown): ApplicationSectionDraftView | null {
     draft_markdown: record.draft_markdown,
     model: typeof record.model === "string" ? record.model : null,
     grounding_json: record.grounding_json,
+    origin: typeof record.origin === "string" ? record.origin : "ai",
+    safety_seed_id: typeof record.safety_seed_id === "string" ? record.safety_seed_id : null,
     grounded_sentence_count:
       typeof record.grounded_sentence_count === "number" ? record.grounded_sentence_count : null,
     total_sentence_count:
@@ -521,6 +529,8 @@ export function FundingOpportunityApplicationWorkspace({
   }
 
   const isEmptyApplication = hasLoaded && sections.length === 0 && attachments.length === 0;
+  // ATP is a California program: only an application seeded from its template shows the packet.
+  const showAtpPacket = pursuitKind === "grant" && isAtpApplication(sections);
 
   return (
     <div className="module-note mt-4 text-sm" data-testid="application-workspace">
@@ -621,6 +631,11 @@ export function FundingOpportunityApplicationWorkspace({
                   Stored draft history could not be loaded right now — sections may show no working
                   draft even though one exists.
                 </p>
+              ) : null}
+
+              {showAtpPacket ? <AtpScoringPacketPanel opportunityId={opportunityId} /> : null}
+              {pursuitKind === "grant" && identifySeededCatalogKey(sections) === "ss4a" ? (
+                <SafetyPlanSeedPanel opportunityId={opportunityId} onApplied={loadApplication} />
               ) : null}
 
               <div className="space-y-2" data-testid="application-sections">
@@ -938,6 +953,7 @@ function SectionDetailView({
   const [editTitle, setEditTitle] = useState(section.title);
   const [editGuidance, setEditGuidance] = useState(section.guidance ?? "");
 
+  const safetySeed = useMemo(() => readSafetySeedOrigin(latestDraft), [latestDraft]);
   const displayDraftHtml = useMemo(
     () =>
       latestDraft
@@ -965,7 +981,7 @@ function SectionDetailView({
           method: "POST",
           headers: { "content-type": "application/json" },
           body: JSON.stringify({
-            ...(latestDraft ? { revisionOfDraftId: latestDraft.id } : {}),
+            ...(latestDraft && !safetySeed ? { revisionOfDraftId: latestDraft.id } : {}),
             ...(instructions.trim() ? { instructions: instructions.trim() } : {}),
           }),
         }
@@ -1077,12 +1093,18 @@ function SectionDetailView({
       ) : null}
 
       {!section.ai_drafting_enabled ? (
-        <p className="text-muted-foreground" data-testid="never-ai-note">
-          {NEVER_AI_NOTE}
-        </p>
-      ) : (
+        <p className="text-muted-foreground" data-testid="never-ai-note">{NEVER_AI_NOTE}</p>
+      ) : null}
+      {safetySeed ? (
+        <div className="space-y-2" data-testid="safety-seed-working-draft">
+          <p className="font-semibold">Code-built Safety seed · {formatDate(latestDraft!.created_at)} · review before use</p>
+          <p>{safetySeed!.caveat}</p>
+          <pre className="whitespace-pre-wrap break-words rounded-xl border p-3">{latestDraft!.draft_markdown}</pre>
+        </div>
+      ) : null}
+      {section.ai_drafting_enabled ? (
         <div className="space-y-2" data-testid="section-draft-panel">
-          {latestDraft ? (
+          {latestDraft && !safetySeed ? (
             <div className="space-y-2">
               <p className="text-label font-semibold text-foreground/70">
                 AI draft{latestDraft.model ? ` · ${latestDraft.model}` : ""} ·{" "}
@@ -1100,7 +1122,7 @@ function SectionDetailView({
             </div>
           ) : (
             <p className="text-muted-foreground">
-              No working draft yet. Facts are rebuilt fresh from workspace evidence on every
+              {safetySeed ? "Optional AI drafting is separate from the code-built seed. " : "No working draft yet. "}Facts are rebuilt fresh from workspace evidence on every
               generation, and every draft is validated sentence by sentence.
             </p>
           )}
@@ -1132,7 +1154,7 @@ function SectionDetailView({
               ) : (
                 <PenLine className="h-4 w-4" />
               )}
-              {latestDraft ? "Revise draft" : "Draft with AI"}
+              {latestDraft && !safetySeed ? "Revise draft" : "Draft with AI"}
             </Button>
           </div>
 
@@ -1147,7 +1169,7 @@ function SectionDetailView({
           ) : null}
           {draftError ? <p className="text-destructive">{draftError}</p> : null}
         </div>
-      )}
+      ) : null}
 
       <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-2">
@@ -1181,7 +1203,7 @@ function SectionDetailView({
               Reopen for review
             </Button>
           ) : null}
-          {section.status !== "final" && latestDraft && section.ai_drafting_enabled ? (
+          {section.status !== "final" && latestDraft && (section.ai_drafting_enabled || safetySeed) ? (
             <Button
               type="button"
               size="sm"
@@ -1189,7 +1211,7 @@ function SectionDetailView({
               onClick={() => void handleFinalizeUnedited()}
             >
               {isFinalizing ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileCheck2 className="h-4 w-4" />}
-              Finalize AI draft unedited
+              {safetySeed ? "Finalize Safety seed unedited" : "Finalize AI draft unedited"}
             </Button>
           ) : null}
           {section.status !== "final" ? (
@@ -1207,11 +1229,12 @@ function SectionDetailView({
           ) : null}
         </div>
 
-        {section.status !== "final" && latestDraft && section.ai_drafting_enabled ? (
+        {section.status !== "final" && latestDraft && (section.ai_drafting_enabled || safetySeed) ? (
           <p className="text-xs text-muted-foreground">
-            An unedited AI draft can only be finalized when every sentence is grounded in workspace
+            {safetySeed ? "A Safety seed requires operator review; its source caveats remain in the export. " : "An unedited AI draft can only be finalized"}
+            {!safetySeed ? <> when every sentence is grounded in workspace
             facts and passed the numeric-faithfulness check; otherwise the flagged sentences come
-            back here for your review.
+            back here for your review.</> : null}
           </p>
         ) : null}
 

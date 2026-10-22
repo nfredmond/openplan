@@ -1,0 +1,25 @@
+def active_helper_identities():
+    # These four IDs are independent of a newly captured configuration baseline.
+    binding=read('active-helper-identities.json')
+    source=FROZEN/'rest-uri-recovery-01/active-service-receipts-private.json'
+    p.exact({'source':str(source)},binding,'active-helper-source')
+    p.exact({'regular':True,'sha256':binding['sourceSHA256']},
+        {'regular':source.is_file() and not source.is_symlink(),'sha256':sha(source)},'active-helper-source')
+    original=json.loads(source.read_text())
+    ids=binding['ids']
+    p.exact({'mapping':True},{'mapping':type(ids) is dict},'active-helper-identities')
+    p.exact({'roles':['auth','gateway','rest','storage'],'unique':4,'valid':True},
+        {'roles':sorted(ids),'unique':len(set(ids.values())),
+         'valid':all(type(value) is str and len(value)==64 and all(c in '0123456789abcdef' for c in value) for value in ids.values())},'active-helper-identities')
+    p.files(ids,{kind:receipt['id'] for kind,receipt in original.items()})
+    return ids
+
+
+def require_active_helper(identity,observed):
+    # Point-in-time state only. PID/start continuity and continuous availability are unproved.
+    p.exact({'mapping':True},{'mapping':type(observed) is dict},'protected-active-descriptor')
+    p.exact({'Id':identity},observed,'protected-active-identity')
+    state=observed.get('State')
+    p.exact({'mapping':True},{'mapping':type(state) is dict},'protected-active-state')
+    p.exact({'Running':True,'Paused':False,'Restarting':False},state,'protected-active-state')
+    return {key:state[key] for key in ['Running','Paused','Restarting']}

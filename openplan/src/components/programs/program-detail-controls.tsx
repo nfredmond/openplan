@@ -207,7 +207,7 @@ export function ProgramDetailControls({
 
           <div className="space-y-1.5">
             <label htmlFor="program-control-type" className="text-compact font-semibold">
-              Program lane
+              Program type
             </label>
             <select
               id="program-control-type"

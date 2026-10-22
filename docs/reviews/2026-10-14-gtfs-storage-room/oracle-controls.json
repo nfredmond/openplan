@@ -1,0 +1,29 @@
+{
+  "positiveControls": 2,
+  "faults": [
+    {
+      "fault": "runner-error",
+      "outcome": "refused"
+    },
+    {
+      "fault": "false-success",
+      "outcome": "refused"
+    },
+    {
+      "fault": "extra-failure",
+      "outcome": "refused"
+    },
+    {
+      "fault": "wrong-test",
+      "outcome": "refused"
+    },
+    {
+      "fault": "wrong-diagnostic",
+      "outcome": "refused"
+    },
+    {
+      "fault": "missing-failure",
+      "outcome": "refused"
+    }
+  ]
+}

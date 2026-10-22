@@ -29,6 +29,7 @@
 
 import { readAttemptInstruments, type AttemptInstrument } from "@/lib/models/attempt-instrument-read";
 import type { ModelingClaimStatus } from "@/lib/models/evidence-backbone";
+import { countyRunStageLabelFor } from "@/lib/models/county-onramp";
 import { titleize } from "@/lib/reports/catalog";
 import {
   formatRtpEvidenceRunDisclosureLine,
@@ -462,7 +463,7 @@ export function buildTypedRunCitations(
           claimStatus: null,
           claimReadFailed: false,
           disclosureLine: `County validation run · ${
-            countyRun.stage ? titleize(countyRun.stage) : "Stage not recorded"
+            countyRun.stage ? countyRunStageLabelFor(countyRun.stage) ?? titleize(countyRun.stage) : "Stage not recorded"
           } · Claim tier is recorded on this run's modeling-evidence snapshot`,
           warnings: [],
           unresolved: null,

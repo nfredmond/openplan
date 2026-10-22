@@ -1,0 +1,28 @@
+{
+  "acceptance": {
+    "path": "/home/nathaniel/.local/state/openplan/public-designation-wrap-root-preparation-20261016/CLI_REVISION03_ACCEPTANCE.json",
+    "sha256": "995dead1c4d8b057441404802d74a6b3bb3d948f03ad61ee1512c49d99aadaa1"
+  },
+  "authorBase": "d264d69149ae2f9d589840e5a543b798ae4718ec",
+  "authorCheckout": "/home/nathaniel/.t3/worktrees/openplan/t3-dd1f8bad",
+  "combinedApp": "42fc0315070f31269325acb264f0260723dbd56b",
+  "combinedParent": "aeab0aea13f0974820a0540bccd5a45274bcbf6f",
+  "generatedBytes": 0,
+  "generatedName": "20261017052401_public_designation_query_viewport.sql",
+  "grantSHA256": "1cbc48ede0909ae57546c284ee88a1b3bbb649279ea29a2541af4b9cc6a6961a",
+  "invocation": "d7cf340dc68743d1a1638155f1d3df8f",
+  "nativeOrBrowserAcceptance": false,
+  "request": {
+    "path": "/home/nathaniel/.local/state/openplan/public-designation-wrapped-viewport-preparation-20261016/cli-go-source-preparation-02/packet/request-03.json",
+    "sha256": "e3f1c289dce5936fd182110a6238c49399c812c28eb08d13b68cd0560175c4c4"
+  },
+  "runnerSHA256": "2729cd68e5d0e42ac11105dea411765cb5a441e8dba668ac9388480de5fbd9b2",
+  "runtimeFiles": 39,
+  "schema": 1,
+  "scope": "Local empty migration generation only",
+  "sourceFile": {
+    "name": "VIEWPORT_CLI.md",
+    "sha256": "f10879660c1ef6bf4483e2ca1c2654f9a70fc79a66264bfb9a32be5af1cc3d9d"
+  },
+  "successorRuntimeAuthorized": false
+}

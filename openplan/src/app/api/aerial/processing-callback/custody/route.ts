@@ -165,18 +165,6 @@ export async function POST(request: NextRequest) {
     }
 
     const custodyRows = (custodyData ?? []) as CustodyRow[];
-    const outstanding = new Set(
-      custodyRows.filter((row) => row.state !== "held").map((row) => `${row.kind}:${row.ordinal}`)
-    );
-
-    if (custodyRows.length > 0 && outstanding.size === 0) {
-      audit.info("custody_already_complete", { processingJobId: job.id });
-      return NextResponse.json(
-        { ok: true, custodyState: "complete", retriedCount: 0, heldCount: custodyRows.length },
-        { status: 200 }
-      );
-    }
-
     // The signed URLs live only here, in the verbatim vendor delivery.
     const { data: ledgerData, error: ledgerError } = await service
       .from("aerial_processing_callbacks")
@@ -224,15 +212,18 @@ export async function POST(request: NextRequest) {
         expiresAt: artifact.expiresAt,
         sizeBytes: artifact.sizeBytes ?? null,
         contentType: artifact.contentType ?? null,
-      }))
-      // On the first ever retry there may be no custody rows at all (the
-      // callback pass could not write them); then every artifact is a candidate.
-      .filter((candidate) =>
-        custodyRows.length === 0 ? true : outstanding.has(`${candidate.kind}:${candidate.ordinal}`)
-      );
+      }));
+
+    // Keep the original roster. The engine skips held rows, but must see missing
+    // rows too: a rejected bulk write can leave only part of the delivery.
+    const heldKeys = new Set(custodyRows.filter((row) => row.state === "held")
+      .map((row) => `${row.kind}:${row.ordinal}`));
+    const retriedCount = candidates.filter((candidate) => !heldKeys.has(`${candidate.kind}:${candidate.ordinal}`)).length;
 
     const result = await runAerialCustodyPass({
       supabase: service,
+      storageClientFactory: (fetchImpl) => createServiceRoleClient({ fetchImpl }),
+      signal: request.signal,
       job: {
         processingJobId: job.id,
         workspaceId: job.workspace_id,
@@ -242,27 +233,37 @@ export async function POST(request: NextRequest) {
       elapsedMs: Date.now() - startedAt,
     });
 
+    if (result.unreadableReason) {
+      audit.warn("custody_retry_unestablished", { processingJobId: job.id });
+      return NextResponse.json({ error: "custody_retry_unestablished", detail: result.unreadableReason }, { status: 503 });
+    }
+
     // Keep the evidence package's claim in step with what is actually held. A
     // package that said "pending" because nothing was in custody must be able to
     // stop saying it once the bytes arrive — otherwise the retry succeeds and no
     // planner-visible surface changes.
-    const { error: packageUpdateError } = await service
-      .from("aerial_evidence_packages")
-      .update({ verification_readiness: result.posture.verificationReadiness })
-      .eq("processing_job_id", job.id);
+    if (result.posture.verificationReadiness === "partial") {
+      const { error: packageUpdateError } = await service
+        .from("aerial_evidence_packages")
+        .update({ verification_readiness: "partial" })
+        .eq("processing_job_id", job.id)
+        .eq("verification_readiness", "pending")
+        .select("id");
 
-    if (packageUpdateError) {
-      audit.warn("evidence_package_readiness_update_failed", {
-        processingJobId: job.id,
-        message: packageUpdateError.message,
-      });
+      if (packageUpdateError) {
+        audit.warn("evidence_package_readiness_update_failed", {
+          processingJobId: job.id,
+          message: packageUpdateError.message,
+        });
+        return NextResponse.json({ error: "Failed to update evidence custody readiness" }, { status: 503 });
+      }
     }
 
     audit.info("aerial_artifact_custody_retry", {
       processingJobId: job.id,
       workspaceId: job.workspace_id,
       operatorAuthenticated,
-      retriedCount: candidates.length,
+      retriedCount,
       custodyState: result.posture.state,
       heldCount: result.posture.heldCount,
       unrecoverableCount: result.posture.unrecoverableCount,
@@ -273,7 +274,7 @@ export async function POST(request: NextRequest) {
       {
         ok: true,
         custodyState: result.posture.state,
-        retriedCount: candidates.length,
+        retriedCount,
         heldCount: result.posture.heldCount,
         pendingCount: result.posture.pendingCount,
         failedCount: result.posture.failedCount,

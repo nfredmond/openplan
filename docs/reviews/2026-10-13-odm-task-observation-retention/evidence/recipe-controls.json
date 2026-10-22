@@ -1,0 +1,42 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "reason": null
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived",
+    "reason": null
+  },
+  {
+    "control": "source-metadata-command-removed",
+    "outcome": "intended_failure",
+    "reason": "Reviewed aerial execution commands or configuration differ"
+  },
+  {
+    "control": "retained-metadata-command-removed",
+    "outcome": "intended_failure",
+    "reason": "Reviewed aerial execution commands or configuration differ"
+  },
+  {
+    "control": "per-suite-deadline-added",
+    "outcome": "intended_failure",
+    "reason": "Reviewed aerial execution commands or configuration differ"
+  },
+  {
+    "control": "preceding-ten-minute-wrapper",
+    "outcome": "intended_failure",
+    "reason": "Aerial CI wrapper must retain its reviewed twenty-minute bound"
+  },
+  {
+    "control": "unbounded-wrapper",
+    "outcome": "intended_failure",
+    "reason": "Aerial CI wrapper must retain its reviewed twenty-minute bound"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived",
+    "reason": null
+  }
+]

@@ -1,0 +1,148 @@
+{
+  "at": "2026-10-16 03:47:37.864314+00:00",
+  "scope": "fresh bounded query-only baseline inventory",
+  "candidateSource": "43ae7e44ecec74eefadd14431822e0a521bbec24",
+  "candidateAppTree": "bed283ab0c937ead65378a2e9d26c177ceee6938",
+  "baseline": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+  "database": {
+    "project": "lolckycpdjsgeejsmuzl",
+    "serverVersion": "17.11",
+    "isolation": "repeatable read",
+    "readOnlyBefore": "on",
+    "readOnlyAfter": "on",
+    "installedCount": 418,
+    "latest": "20261017000015",
+    "versionSetMatchesBaseline": true,
+    "historyStatementParityEstablished": false,
+    "jurisdictionColumnPresent": false,
+    "currentRpcBodyMatchesSource": true,
+    "currentRpcBodySHA256": "08c8e278879f51812cb04111519d8945fb7e4681763da1f0afd21cd8a7d7eed5",
+    "rpcExecution": {
+      "anon": false,
+      "authenticated": false,
+      "service_role": true
+    },
+    "touchedTablesRlsEnabled": true,
+    "liveRlsBehavior": "not exercised"
+  },
+  "web": {
+    "id": "dpl_CUa3mFxALLkfmJjsHxuAu1y1gFoA",
+    "name": "openplan",
+    "url": "openplan-o7i68un15-natford.vercel.app",
+    "readyState": "READY",
+    "target": "production",
+    "projectId": "prj_NKckTxKCBtO25Tf6a92hPLkuqzYT",
+    "gitSource": {
+      "ref": "main",
+      "repoId": 1162377198,
+      "sha": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+      "type": "github",
+      "prId": null
+    },
+    "meta": {
+      "githubCommitSha": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+      "githubCommitRef": "main",
+      "githubRepo": "openplan",
+      "githubOrg": "nfredmond"
+    },
+    "queryOnly": true
+  },
+  "publicHealth": {
+    "startedAt": "2026-10-16T03:47:37.322410+00:00",
+    "queryOnly": true,
+    "httpStatus": 200,
+    "payload": {
+      "status": "ok",
+      "service": "openplan",
+      "checkedAt": "2026-10-16T03:47:37.623Z",
+      "deployment": {
+        "commit": "ced6aced9ddc",
+        "version": "0.68.0",
+        "migrations": {
+          "expected": 418,
+          "latest": "20261017000015"
+        }
+      },
+      "checks": {
+        "app": "ok",
+        "database": "not_checked"
+      }
+    },
+    "headers": {
+      "date": "Fri, 16 Oct 2026 03:47:37 GMT",
+      "cache-control": "no-store, max-age=0",
+      "x-vercel-cache": "MISS"
+    },
+    "status": "captured",
+    "finishedAt": "2026-10-16T03:47:37.642637+00:00"
+  },
+  "railway": {
+    "project": "9d7fbdc3-c370-41b5-8471-34dc128e718e",
+    "environment": "343ca578-aef1-4005-9ef6-a8a5e89582d5",
+    "applicationService": "4883a282-fbed-4043-b220-3b3daabe04e9",
+    "deploymentId": "1fd9bd72-1e79-4584-8c3a-2ec6d1ca6c77",
+    "state": "SUCCESS",
+    "commit": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+    "recordedBuild": {
+      "builder": "DOCKERFILE",
+      "dockerfilePath": "workers/hosted-node/Dockerfile",
+      "watchPatterns": []
+    },
+    "effectiveWatchInterpretation": "not established by the empty stored list"
+  },
+  "nodeProcesses": {
+    "runningKinds": 7,
+    "oneInstancePerKind": true,
+    "newestObservationAgeSeconds": 5.014136,
+    "oldestObservationAgeSeconds": 10.461605,
+    "allBuildShasNull": true,
+    "scope": "process_only",
+    "jobCompletion": "unassessed"
+  },
+  "modelHeartbeats": {
+    "rows": 26,
+    "newestAgeSecondsByKind": {
+      "activitysim": 25.815501,
+      "aequilibrae": 17.106883
+    },
+    "completionAndScientificAcceptance": "unassessed"
+  },
+  "receiptControls": {
+    "harmless": "survived",
+    "namedFaultsRefused": 13,
+    "originalInputsPreserved": true
+  },
+  "acceptance": {
+    "hostedPromotion": false,
+    "freshCapture": false,
+    "restoreReadiness": false,
+    "maintenanceControls": false,
+    "desktop390Raster": false,
+    "newBuild": false,
+    "release": false
+  },
+  "inputHashes": {
+    "database-intent.json": "08aea93d795322e75f3623593b587a66f8ea0c516d419db359d91ed712783f9e",
+    "railway-intent.json": "a22c691523db2ade4ff021b9972122b5d744bd1003250bd68d3766b1ec139fb9",
+    "vercel-command-private.json": "12433f9a53a8cf364b1b9fef18b4a8d45c35663a57ec8fcaafe8405e049980a2",
+    "vercel-intent.json": "054f495ceb615b02788c18d78ee44027a3b3e0ac60ba3948a901c53646a32e31",
+    "vercel-summary.json": "2bd1c8e74e90fe8d8625695f615491168c1f1f2f3fccfd328b554cfafa28c322",
+    "function-source-binding.json": "1c48d9419ee5fdb3bf04923b93e63d9a0bb8fc122e895af179cdff0527a514f8",
+    "verification.json": "554f2ae23d401b405607552782240d6a916fba5da7befff053daa554b3a4de3f",
+    "main-summary.json": "224d072bb393a7620c94255c01bd0404bbee0c43d0575fc6ca6d6f676f393abc",
+    "verify_readback.py": "09b3314f96dd313c3ba5dc840bfed0de82941a15f56084187e10508fc22899e5",
+    "railway-summary.json": "76cfd5d363b3d796e8d25cf7f5f07e1577ea72225092ca40d30d3d1db0c99e85",
+    "railway-command-private.json": "f4f276402abd59228c8a42d3ea9c2cdac84a7ef2fdd792a200dc60c299530a9d",
+    "database-private.json": "51d7c7e36863aabc10409ea87f3379709b33f6948579ae1e00fee7a493ed263b",
+    "vercel-source-intent.json": "4f65155f3873df90f0c44ba7032fff53939a9ffc111964160dc3de78882e36cb",
+    "capture.py": "fd51493b795da183a28b480fa3031dfe4fdd645a5959c6b7d95fcaf93c200b01",
+    "database-summary.json": "d7a20b9c816f70498654b5c163e9ee19e80a8fc79b9919885e62dcdc9dc321c6",
+    "vercel-source-summary.json": "a916c5e42073454c9305fd3cb5e08986a5bfe639dfbfef0ba7039b2e578db6b8",
+    "health-summary.json": "24408a2d95aebab55741e57ba9294dae2a1e9ab7782b8e30d0e8b29b4cb00401",
+    "health-intent.json": "e09db927ed23995e1c95f817aa66b3543c234aedcd7dec6dfe7917892cf3e316",
+    "main-command-private.json": "ff81765f82beff8f7a16f9d3d7af0fe23b27105c2f308666461657a7550049bd",
+    "vercel-source-private.json": "4a49748d41ded6e473d28f4c2a500cf68f4341e9681324da77ab535adf22ceb9",
+    "main-intent.json": "a568b53cd01066fc0562a47df5532844077aa242cebda371978744179735a94d",
+    "health-private.json": "8ca0482717232ad14702fa82feb02ea7efde197e6c64c9668716d2ab30412b58"
+  }
+}

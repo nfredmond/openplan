@@ -1,6 +1,17 @@
 import { createHash } from "node:crypto";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+// The workspace storage limit (storage-quota.ts). Room by default; a test that
+// is about the limit sets the answer and checks what the route asked.
+const checkWorkspaceStorageRoomMock = vi.hoisted(() => vi.fn());
+vi.mock("@/lib/workspaces/storage-quota", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/workspaces/storage-quota")>()),
+  checkWorkspaceStorageRoom: (...args: unknown[]) =>
+    checkWorkspaceStorageRoomMock(...args) ?? Promise.resolve({ status: "room", usedBytes: 0, quotaBytes: 5 * 1024 ** 3 }),
+}));
+// Every test starts from the default (room), whatever ran before it.
+beforeEach(() => checkWorkspaceStorageRoomMock.mockReset());
 import { newProviderConnectionToken } from "@/lib/assistant/provider-server";
 import { MAP_PACKAGE_SKILL } from "@/lib/map-packages/skill";
 import * as collection from "@/app/api/map-packages/route";
@@ -243,6 +254,7 @@ describe("map package files", () => {
     mocks.userFrom.mockReturnValue(query(fileRow("synthetic_maps_20261010.zip", "package_zip")));
     const zip = await fileRoute.GET(browserRequest(`/api/map-packages/${pkg}/files/synthetic_maps_20261010.zip`, undefined, "GET"), context("synthetic_maps_20261010.zip"));
     expect(zip.status).toBe(307);
+    expect(zip.headers.get("cache-control")).toBe("private, no-store");
     expect(mocks.sign).toHaveBeenCalledWith(`${workspace}/${project}/${pkg}/synthetic_maps_20261010.zip`, 300, { download: "synthetic_maps_20261010.zip" });
     mocks.userFrom.mockReturnValue(query(fileRow("fig01.png", "figure_preview")));
     mocks.fetch.mockResolvedValue(new Response("png-bytes"));
@@ -310,5 +322,68 @@ describe("stopping a package", () => {
     const response = await detail.DELETE(browserRequest(`/api/map-packages/${pkg}`, undefined, "DELETE"), context);
     expect(response.status).toBe(200);
     expect(mocks.rpc).toHaveBeenCalledWith("cancel_project_map_package", { p_package_id: pkg, p_user_id: owner });
+  });
+});
+
+describe("map packages and the workspace storage limit", () => {
+  const full = { status: "full", usedBytes: 5 * 1024 ** 3, quotaBytes: 5 * 1024 ** 3, message: "full" };
+  const unreadable = { status: "unreadable", message: "unreadable", detail: "permission denied" };
+  const handBuilt = () => browserRequest("/api/map-packages", { requestId, workspaceId: workspace, projectId: project, title: "Hand-built",
+    deliverable: "general", fundingOpportunityId: null, source: "upload", fileName: "figures.zip", bytes: 1000 });
+  const agentUpload = () => connectorRequest({ operation: "upload", packageId: pkg, attemptId: attempt, receipt: receipt(), files: files() });
+  // A member of the project's workspace, as in "starting a map package".
+  const memberOfProject = () => {
+    const projectQuery = query({ id: project, workspace_id: workspace, name: "SYNTHETIC project" });
+    const memberQuery = query({ workspace_id: workspace, role: "member" });
+    mocks.userFrom.mockImplementation((table: string) => table === "workspace_members" ? memberQuery : projectQuery);
+  };
+  const beginUpload = () => {
+    mocks.rpc.mockResolvedValue({ data: { id: pkg, workspace_id: workspace, project_id: project, state: "uploading" }, error: null });
+    mocks.serviceFrom.mockReturnValue(query([fileRow("synthetic_maps_20261010.zip", "package_zip", false), fileRow("fig01.png", "figure_preview", false)]));
+  };
+
+  it("refuses a hand-built ZIP over the limit before the package row or any URL exists", async () => {
+    memberOfProject();
+    checkWorkspaceStorageRoomMock.mockResolvedValue(full);
+    const response = await collection.POST(handBuilt());
+    expect(response.status).toBe(413);
+    expect(await response.json()).toEqual({ error: "workspace_storage_full" });
+    expect(checkWorkspaceStorageRoomMock).toHaveBeenCalledWith(expect.anything(), workspace, 1000);
+    expect(mocks.rpc).not.toHaveBeenCalled();
+    expect(mocks.signUpload).not.toHaveBeenCalled();
+  });
+
+  it("refuses a hand-built ZIP when the workspace's use cannot be read", async () => {
+    memberOfProject();
+    checkWorkspaceStorageRoomMock.mockResolvedValue(unreadable);
+    const response = await collection.POST(handBuilt());
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ error: "workspace_storage_unavailable" });
+    expect(mocks.signUpload).not.toHaveBeenCalled();
+  });
+
+  it("issues no upload URLs to the connector when the declared files would go over the limit", async () => {
+    beginUpload();
+    checkWorkspaceStorageRoomMock.mockResolvedValue(full);
+    const response = await connector.POST(agentUpload());
+    expect(response.status).toBe(413);
+    expect(await response.json()).toEqual({ error: "workspace_storage_full" });
+    // The package's own workspace, and the files still to arrive (19 + 19 bytes).
+    expect(checkWorkspaceStorageRoomMock).toHaveBeenCalledWith(expect.anything(), workspace, 38);
+    expect(mocks.signUpload).not.toHaveBeenCalled();
+  });
+
+  it("issues no upload URLs to the connector when the workspace's use cannot be read", async () => {
+    beginUpload();
+    checkWorkspaceStorageRoomMock.mockResolvedValue(unreadable);
+    expect((await connector.POST(agentUpload())).status).toBe(503);
+    expect(mocks.signUpload).not.toHaveBeenCalled();
+  });
+
+  it("issues the URLs while the workspace has room", async () => {
+    beginUpload();
+    checkWorkspaceStorageRoomMock.mockResolvedValue({ status: "room", usedBytes: 0, quotaBytes: 5 * 1024 ** 3 });
+    expect((await connector.POST(agentUpload())).status).toBe(200);
+    expect(mocks.signUpload).toHaveBeenCalledTimes(2);
   });
 });

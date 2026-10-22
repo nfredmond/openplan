@@ -1,0 +1,34 @@
+{
+  "sourceSha256": "8fe8cdfd8c38277d8534dab7821c5aaefa1bf702a630596eb9f7a747dbebcc09",
+  "controls": [
+    {
+      "name": "baseline",
+      "result": "survived",
+      "parentExit": 0,
+      "workerExit": 3,
+      "database": "dispatch_lock_9141159a77ae49089cbce345f9c693ab"
+    },
+    {
+      "name": "harmless",
+      "result": "survived",
+      "parentExit": 0,
+      "workerExit": 3,
+      "database": "dispatch_lock_5e48a26976964c9da5e535263accd086"
+    },
+    {
+      "name": "job-before-parent",
+      "result": "intended native deadlock",
+      "parentExit": 0,
+      "workerExit": 3,
+      "database": "dispatch_lock_c9e0d020ede2436bb32a56b8cdb9c9db"
+    },
+    {
+      "name": "restored",
+      "result": "survived",
+      "parentExit": 0,
+      "workerExit": 3,
+      "database": "dispatch_lock_186fa2d044e345309578ffd684861e33"
+    }
+  ],
+  "scope": "Actual project deletion/admission lock order on four fresh retained native database clones. Other parent paths, authority fences, external requests and full recovery remain unproved."
+}

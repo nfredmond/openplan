@@ -1,0 +1,21 @@
+{
+  "allIssuedFlagsFalse": true,
+  "captureExit": 0,
+  "changedEngineRefused": true,
+  "changedReplyHashRefused": true,
+  "changedSourceBytesRefused": true,
+  "childExit": 19,
+  "commitRemainsUnissued": true,
+  "noOriginalSourceAccessRequired": true,
+  "originalPlanIdentityPreserved": true,
+  "originalReplyBytesPreserved": true,
+  "originalSourceMatchesPackage": true,
+  "packageUnchanged": true,
+  "runtimeInitiallyMatchesPackage": true,
+  "runtimeJournalUnchanged": true,
+  "runtimeOrdinaryUnchanged": true,
+  "sourceBindingsUnchanged": true,
+  "sourceUnchanged": true,
+  "unresolvedOriginalUploadPreserved": true,
+  "verifyExit": 0
+}

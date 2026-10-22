@@ -51,6 +51,7 @@ import {
   resolveAllocationRuleInForce,
 } from "@/lib/measures/fund";
 import { authorizeMeasureWrite } from "@/lib/measures/write-authorization";
+import { todayInWorkspace } from "@/lib/time/workspace-calendar";
 
 const POSTGRES_UNIQUE_VIOLATION = "23505";
 
@@ -91,11 +92,22 @@ export async function POST(request: NextRequest, context: { params: Promise<{ me
     }
 
     const status = payload.data.status ?? "draft";
-    const submittedOn = status === "draft" ? null : payload.data.submittedOn ?? new Date().toISOString().slice(0, 10);
 
     const supabase = await createClient();
     const authorization = await authorizeMeasureWrite(supabase as unknown as Parameters<typeof authorizeMeasureWrite>[0], audit, parsedParams.data.measureId);
     if (!authorization.ok) return authorization.response;
+
+    // A submitted claim with no stated date is dated today in the workspace's
+    // own zone, not the server's UTC day.
+    let submittedOn: string | null = null;
+    if (status !== "draft") {
+      submittedOn = payload.data.submittedOn ?? null;
+      if (!submittedOn) {
+        const calendar = await todayInWorkspace(supabase, authorization.workspaceId);
+        if (calendar.readError) audit.warn("workspace_calendar_unreadable", { message: calendar.readError });
+        submittedOn = calendar.today;
+      }
+    }
 
     /* THE PERIOD — it carries the date the rule version is resolved from, and
        the fiscal year the claim is bucketed under. */

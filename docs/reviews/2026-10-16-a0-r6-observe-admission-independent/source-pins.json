@@ -1,0 +1,65 @@
+{
+  "appTree": "d577a9cd955018b3253f42b3d9af2a96a9a10b53",
+  "applicationSource": "f8a571bb0a18b8b6501870acb5ef1e760d487e1c",
+  "connectorTree": "228ce912b1cf63dba408445422dc6e2b690d91f4",
+  "inputs": {
+    "/home/nathaniel/.local/state/openplan/a0-r5-observe-parent-runner-20261016.py": {
+      "bytes": 3622,
+      "gid": 1000,
+      "mode": "0o664",
+      "sha256": "50f1a5fefae4edda53f1d9f2d61b5d8514b47286a8c7407bf2536ba0266801eb",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-r6-observe-admission-proposal-20261016/observe-proposal.json": {
+      "bytes": 1203,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "f45cccec462d519ed9aef97e0d01362001889a13d0d221196926fe975d086919",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-r6-observe-admission-proposal-20261016/outer-runner-diff.patch": {
+      "bytes": 2284,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "1992e30694b7f512584ddda264c7ef9f077f65bf1acc5326b7b0d90619ea3b51",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-r6-observe-admission-proposal-20261016/proposal-custody.json": {
+      "bytes": 968,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "54cbeba50e5748507c9b67acc951d79652171a151afe49739ba4f50806d1b4c9",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-r6-observe-parent-runner-20261016.py": {
+      "bytes": 3622,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "33825147386977f7e95db315f65250b031b49ae1ff019f3c235fd2930262e068",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/bindings/package-pins.json": {
+      "bytes": 1446,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "a8c583e5a73dec9602b7329e3c646e77e99677033c4229e20d38c173dabf3141",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/plan.json": {
+      "bytes": 61975,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "f8b8a36f4439703964cd5d66d9e6408d37bc984215c6c07a5909a728af7db4e5",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-58057fa7/docs/reviews/2026-10-16-a0-sequence-r6-independent/REVIEW.md": {
+      "bytes": 17274,
+      "gid": 1000,
+      "mode": "0o664",
+      "sha256": "07af1a42a1771c4e2d70c7f5a365d1c722f35938dcefc25ee68d170156366125",
+      "uid": 1000
+    }
+  },
+  "sourceReviewCommit": "688c783586fbdccad8d685656786e9fb85536d7d",
+  "subjectCommit": "b35dd7126939d7e1ad24e9ddbf887653275317c1"
+}

@@ -1,0 +1,18 @@
+{
+  "actual": {
+    "7": 7,
+    "3": 0
+  },
+  "harmlessCopy": "survived",
+  "unrelatedActor": {
+    "7": 0,
+    "3": 0
+  },
+  "intendedFault": "killed",
+  "restored": {
+    "7": 7,
+    "3": 0
+  },
+  "readOnly": true,
+  "blind": "This authenticated-role SQL read supplements actual GET/PostgREST tests. It does not establish cookie auth, every policy, membership freshness or full RLS acceptance."
+}

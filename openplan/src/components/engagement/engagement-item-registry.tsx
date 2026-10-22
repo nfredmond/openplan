@@ -20,6 +20,7 @@ import {
 } from "@/lib/engagement/geometry";
 import { LocationDisplayMap } from "./location-display-map";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { EngagementTextInspection } from "./engagement-text-inspection";
 
 type CategoryOption = {
   id: string;
@@ -155,7 +156,7 @@ function ItemRow({
         setHistory(payload.history);setDefinition(payload.definition);
       }}>Read original and review history</Button>
       {definition!==undefined?<p className="text-sm break-words">{definition?`Received under configuration ${definition.id}. Category then: ${definition.categories.find(category=>category.id===item.category_id)?.label??'Not assigned in this definition'}. Instructions then: ${definition.campaign.instructions??'Not supplied'}`:'Historical configuration unavailable. Current wording is not evidence of what this participant saw.'}</p>:null}
-      {history ? <details open><summary>Restricted staff history, {history.length} copies</summary>{history.length === 0 ? <p>Historical copies are unavailable. This item predates retained history and has not been edited since.</p> : history.map((entry) => <article key={entry.id} className="my-3 rounded border p-3"><p>{entry.event} · {formatEngagementDateTime(entry.recorded_at)} · {entry.record.status}</p><p>{entry.reason}</p>{entry.record.hasPhoto?<a className="underline" href={`/api/engagement/campaigns/${item.campaign_id}/attachments?itemId=${item.id}&historyId=${entry.id}`} target="_blank" rel="noreferrer">Open original photograph</a>:null}<h4>{entry.record.title}</h4><p className="whitespace-pre-wrap break-words">{entry.record.body}</p></article>)}</details> : null}
+      {history ? <details open><summary>Restricted staff history, {history.length} copies</summary>{history.length === 0 ? <p>Historical copies are unavailable. This item predates retained history and has not been edited since.</p> : history.map((entry) => <article key={entry.id} className="my-3 rounded border p-3"><p>{entry.event} · {formatEngagementDateTime(entry.recorded_at)} · {entry.record.status}</p><p>{entry.reason}</p>{entry.record.hasPhoto?<a className="underline" href={`/api/engagement/campaigns/${item.campaign_id}/attachments?itemId=${item.id}&historyId=${entry.id}`} target="_blank" rel="noreferrer">Open original photograph</a>:null}{entry.record.title !== null ? <EngagementTextInspection text={entry.record.title} label="Historical comment title" /> : null}<EngagementTextInspection text={entry.record.body} label="Historical comment body" /></article>)}</details> : null}
       {storedGeometry ? <label className="flex gap-2 text-sm"><input type="checkbox" checked={removeGeometry} onChange={(event) => setRemoveGeometry(event.target.checked)} />Withhold the drawing and coordinates from the public copy</label> : null}
       {item.photo_url ? <label className="flex gap-2 text-sm"><input type="checkbox" checked={removePhoto} onChange={(event) => setRemovePhoto(event.target.checked)} />Withhold photograph from the public copy</label> : null}
       <div className="module-record-head">
@@ -185,7 +186,9 @@ function ItemRow({
               <h3 className="module-record-title text-[1rem]">{title || "Untitled feedback item"}</h3>
               <p className="module-record-stamp">Updated {formatEngagementDateTime(item.updated_at)}</p>
             </div>
-            <p className="module-record-summary whitespace-pre-wrap">{body}</p>
+            {item.title !== null ? <EngagementTextInspection text={item.title} label="Saved comment title" /> : null}
+            <EngagementTextInspection text={item.body} label="Saved comment body" />
+            <p className="text-xs text-muted-foreground">Inspection shows saved text. Unsaved edits remain in the fields below.</p>
             {item.photo_url ? (
               // eslint-disable-next-line @next/next/no-img-element -- short-TTL signed URL from the private engagement-photos bucket
               <img

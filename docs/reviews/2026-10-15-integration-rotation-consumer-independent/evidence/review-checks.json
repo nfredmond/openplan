@@ -1,0 +1,19 @@
+{
+  "candidate": "7cb1239a7aefda601e98e7bbc4c2768f931d22f6",
+  "parent": "cfdce545f70c2580bf11d4a6253bb48620927a9e",
+  "assignedBase": "1b2fefe0f0e98f99700fc77e99146fe697b43ee7",
+  "privateSnapshot": "/tmp/pr328-independent-s23rndud",
+  "controllerExit": 0,
+  "allSevenCandidateBindingsMatchGit": true,
+  "allSevenPrivateSnapshotBindingsRestored": true,
+  "candidateOwnerUntouched": true,
+  "directionCheckExit": 0,
+  "sourceFaults": 7,
+  "positiveCohorts": 4,
+  "casesPerCohort": 2,
+  "workers": 1,
+  "network": "bwrap --unshare-net",
+  "dependencyMount": "canonical node_modules read-only",
+  "unit": "pr328-consumer-independent-20261015.scope",
+  "invocation": "027347cfbb2e40fb9aecb0f76890768c"
+}

@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { parseReviewSnapshot,renderCampaignReviewFiles,verifyCampaignReviewZip,type EngagementReviewFile } from './review-export';
 import { ENGAGEMENT_PHOTO_BUCKET,isEngagementPhotoPathForCampaign } from './photo';
+import { checkWorkspaceStorageRoomForFiles } from '@/lib/workspaces/storage-quota';
 
 /** One leased campaign job per poll, sharing the existing Documents export worker process. */
 export async function processNextEngagementReport(root:string):Promise<boolean> {
@@ -58,9 +59,14 @@ export async function processNextEngagementReport(root:string):Promise<boolean> 
   }
   const stillOwned=await service.from('engagement_report_jobs').update({phase:'Saving review files'}).eq('id',job.id).eq('lease_token',token).eq('status','running').select('id').maybeSingle();
   if(stillOwned.error||!stillOwned.data)return true;
+  // The review files count toward the workspace storage limit like any upload. A full or unreadable total fails the job with the planner message; a retry after deleting files succeeds.
+  // A retry after a partial upload is charged only for the files not already at their paths, so the bytes its own earlier attempt stored cannot refuse it.
+  const pathOf=(file:EngagementReviewFile)=>`${job.workspace_id}/${job.report_id}/${job.id}/${file.checksum}.${file.format}`;
+  const room=await checkWorkspaceStorageRoomForFiles(service,job.workspace_id,'report-artifacts',files.map(file=>({path:pathOf(file),bytes:file.bytes.length})));
+  if(room.status==='full'||room.status==='unreadable')throw new Error(room.message);
   const artifacts=[];
   for(const file of files) {
-   const path=`${job.workspace_id}/${job.report_id}/${job.id}/${file.checksum}.${file.format}`;
+   const path=pathOf(file);
    const uploaded=await service.storage.from('report-artifacts').upload(path,file.bytes,{contentType:file.contentType,upsert:false});
    if(uploaded.error) {
     const previous=await service.storage.from('report-artifacts').download(path);

@@ -1,0 +1,194 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comments",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "zip-format-lost",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ZIP plans need a distinct original format",
+    "source": "engine",
+    "test": "test_zip_plan_binds_original_lineage_and_ordered_slots"
+  },
+  {
+    "control": "derived-hash-lost",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "Actual retained engine source identity differs",
+    "source": "engine",
+    "test": "test_zip_plan_binds_original_lineage_and_ordered_slots"
+  },
+  {
+    "control": "raw-lineage-lost",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "original raw and derived lineage must remain",
+    "source": "engine",
+    "test": "test_zip_plan_binds_original_lineage_and_ordered_slots"
+  },
+  {
+    "control": "wrong-upload-source",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "upload must use derived slot",
+    "source": "engine",
+    "test": "test_zip_plan_binds_original_lineage_and_ordered_slots"
+  },
+  {
+    "control": "raw-zip-guard-diagnostic",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "does not match",
+    "source": "engine",
+    "test": "test_raw_zip_never_becomes_upload"
+  },
+  {
+    "control": "invalid-zip-lineage",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "source": "engine",
+    "test": "test_lineage_shape_hashes_and_archive_types_refuse"
+  },
+  {
+    "control": "empty-zip-slots",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "does not match",
+    "source": "engine",
+    "test": "test_empty_or_invalid_slot_mapping_refuses"
+  },
+  {
+    "control": "invalid-zip-slot-mapping",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "source": "engine",
+    "test": "test_empty_or_invalid_slot_mapping_refuses"
+  },
+  {
+    "control": "unsafe-zip-member",
+    "kind": "mixed_target_failures",
+    "outcome": "intended_failure",
+    "reason": "does not match",
+    "source": "engine",
+    "test": "test_member_path_filename_and_order_refuse"
+  },
+  {
+    "control": "changed-zip-member-order",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "source": "engine",
+    "test": "test_member_path_filename_and_order_refuse"
+  },
+  {
+    "control": "renamed-derived-upload",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "source": "engine",
+    "test": "test_caller_cannot_rename_derived_uploads"
+  },
+  {
+    "control": "unknown-derivation-arguments",
+    "kind": "mixed_target_failures",
+    "outcome": "intended_failure",
+    "reason": "Invalid derivation arguments reached source intake",
+    "source": "engine",
+    "test": "test_exact_derivation_arguments_and_root_overlap_refuse"
+  },
+  {
+    "control": "overlapping-derived-journal",
+    "kind": "mixed_target_failures",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "source": "engine",
+    "test": "test_exact_derivation_arguments_and_root_overlap_refuse"
+  },
+  {
+    "control": "photo-derivation-bypassed",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Non-ZIP derivation reached engine plan",
+    "source": "engine",
+    "test": "test_photo_cannot_claim_zip_derivation"
+  },
+  {
+    "control": "actual-zip-byte-recheck-omitted",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "source": "engine",
+    "test": "test_every_operation_rechecks_actual_zip_and_image_bytes"
+  },
+  {
+    "control": "derived-receipt-ignored",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "source": "engine",
+    "test": "test_derived_receipt_change_refuses_before_intent"
+  },
+  {
+    "control": "caller-derivation-alias",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "expanded byte budget",
+    "source": "engine",
+    "test": "test_caller_derivation_mutation_does_not_change_original"
+  },
+  {
+    "control": "uncertain-zip-command-reissued",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "uncertain ZIP upload must not issue again",
+    "source": "engine",
+    "test": "test_stopped_copy_preserves_unresolved_commands_and_missing_slot_recovery"
+  },
+  {
+    "control": "draft-lineage-shape-ignored",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "does not match",
+    "source": "library",
+    "test": "test_draft_plan_shape_and_zip_source_identity_refuse"
+  },
+  {
+    "control": "draft-zip-source-type-ignored",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "does not match",
+    "source": "library",
+    "test": "test_draft_plan_shape_and_zip_source_identity_refuse"
+  },
+  {
+    "control": "draft-zip-permission-promoted",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ZIP byte comparison cannot authorize transport",
+    "source": "library",
+    "test": "test_captured_zip_draft_compares_actual_bytes_without_permission"
+  },
+  {
+    "control": "draft-zip-byte-comparison-omitted",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "source": "library",
+    "test": "test_captured_zip_draft_compares_actual_bytes_without_permission"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

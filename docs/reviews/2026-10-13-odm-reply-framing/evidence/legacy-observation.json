@@ -1,0 +1,10 @@
+{
+  "baselineAcceptedIncompleteFrame": true,
+  "actualHttpStatus": 200,
+  "receivedBytes": 47,
+  "declaredBytes": 64,
+  "jsonPrefixComplete": true,
+  "scope": "Actual local HTTP response; no native engine or application authority/processing acceptance.",
+  "sourceSha256": "6fc61d35a82e8b05a6b2ed13ddd7a6553bd84e434e0b387ce16feaa23dec3f86",
+  "sourceMain": "30ec6f2d39078d1c86b7cbab633850cb7f1e7af6"
+}

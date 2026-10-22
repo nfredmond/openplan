@@ -1,0 +1,23 @@
+{
+  "extends": "../../../openplan/tsconfig.json",
+  "compilerOptions": {
+    "incremental": false,
+    "types": [
+      "geojson",
+      "node",
+      "vitest/globals",
+      "@testing-library/jest-dom"
+    ],
+    "typeRoots": [
+      "../../../openplan/node_modules/@types",
+      "../../../openplan/node_modules"
+    ]
+  },
+  "include": [
+    "../../../openplan/src/components/projects/project-saved-map.tsx",
+    "../../../openplan/src/lib/cartographic/saved-geometry-frame.ts",
+    "../../../openplan/src/test/project-saved-map.test.tsx",
+    "../../../openplan/src/test/saved-geometry-frame.test.ts"
+  ],
+  "exclude": []
+}

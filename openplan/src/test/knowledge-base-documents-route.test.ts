@@ -1,4 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+// The workspace storage limit (storage-quota.ts). Room by default; a test that
+// is about the limit sets the answer and checks what the route asked.
+const checkWorkspaceStorageRoomMock = vi.hoisted(() => vi.fn());
+vi.mock("@/lib/workspaces/storage-quota", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/workspaces/storage-quota")>()),
+  checkWorkspaceStorageRoom: (...args: unknown[]) =>
+    checkWorkspaceStorageRoomMock(...args) ?? Promise.resolve({ status: "room", usedBytes: 0, quotaBytes: 5 * 1024 ** 3 }),
+}));
+// Every test starts from the default (room), whatever ran before it.
+beforeEach(() => checkWorkspaceStorageRoomMock.mockReset());
 import { NextRequest } from "next/server";
 vi.mock("server-only", () => ({}));
 
@@ -20,6 +31,12 @@ const kbListRangeCalls: Array<[string, string, unknown]> = [];
 const kbListOrderCalls: Array<[string, boolean | undefined]> = [];
 let kbListLimit: number | null = null;
 let kbListResponse: { data: unknown[]; error: null | { message: string } } = { data: [], error: null };
+/** The workspace row the calendar reads (`time_zone, home_country_code`), and every read of it. */
+let workspaceCalendarRow: { time_zone: string | null; home_country_code: string | null } = {
+  time_zone: null,
+  home_country_code: null,
+};
+const workspaceCalendarReads: Array<{ columns: string; eq: [string, unknown] }> = [];
 
 /** The checksum dedup probe, addressable on its own so it can be made to fail. */
 let dedupResponse: { data: unknown; error: null | { message: string } } = { data: null, error: null };
@@ -29,6 +46,7 @@ const dedupEqCalls: Array<[string, unknown]> = [];
 const dedupIsCalls: Array<[string, unknown]> = [];
 /** Service-role writes the upload performed, in order. */
 const serviceInserts: Array<{ table: string; rows: unknown }> = [];
+const storageUploads: string[] = [];
 
 /** Awaitable filter-recording builder standing in for the kb_documents list query. */
 function kbListBuilder() {
@@ -48,6 +66,10 @@ function kbListBuilder() {
     },
     lte: (column: string, value: unknown) => {
       kbListRangeCalls.push(["lte", column, value]);
+      return builder;
+    },
+    lt: (column: string, value: unknown) => {
+      kbListRangeCalls.push(["lt", column, value]);
       return builder;
     },
     order: (column: string, options?: { ascending?: boolean }) => {
@@ -79,6 +101,16 @@ vi.mock("@/lib/supabase/server", () => ({
       if (table === "kb_documents") {
         return kbListBuilder();
       }
+      if (table === "workspaces") {
+        return {
+          select: (columns: string) => ({
+            eq: (column: string, value: unknown) => {
+              workspaceCalendarReads.push({ columns, eq: [column, value] });
+              return { maybeSingle: async () => ({ data: workspaceCalendarRow, error: null }) };
+            },
+          }),
+        };
+      }
       return {
         select: () => ({
           eq: () => ({ eq: () => ({ maybeSingle: async () => ({ data: { id: "p" }, error: null }) }) }),
@@ -89,7 +121,10 @@ vi.mock("@/lib/supabase/server", () => ({
   createServiceRoleClient: () => ({
     storage: {
       from: () => ({
-        upload: async () => ({ error: null }),
+        upload: async (path: string) => {
+          storageUploads.push(path);
+          return { error: null };
+        },
         remove: async () => ({ error: null }),
       }),
     },
@@ -249,6 +284,72 @@ describe("POST /api/knowledge-base/documents — the checksum dedup probe", () =
   });
 });
 
+describe("POST /api/knowledge-base/documents: the workspace storage limit", () => {
+  beforeEach(() => {
+    getUserMock.mockResolvedValue({ data: { user: { id: "user-1" } } });
+    membershipMaybeSingleMock.mockResolvedValue({ data: { role: "owner" }, error: null });
+    dedupResponse = { data: null, error: null };
+    serviceInserts.length = 0;
+    storageUploads.length = 0;
+    auditWarn.mockClear();
+  });
+
+  it("refuses a file that would go over the limit before any byte is stored", async () => {
+    checkWorkspaceStorageRoomMock.mockResolvedValue({
+      status: "full",
+      usedBytes: 5 * 1024 ** 3,
+      quotaBytes: 5 * 1024 ** 3,
+      message: "This file would put the workspace over its 5 GiB storage limit (5 GiB used).",
+    });
+
+    const res = await POST(uploadTextRequest());
+
+    expect(res.status).toBe(413);
+    expect(await res.json()).toMatchObject({
+      error: "This file would put the workspace over its 5 GiB storage limit (5 GiB used).",
+    });
+    expect(storageUploads).toEqual([]);
+    expect(serviceInserts).toEqual([]);
+    // The measured body (one byte) against THIS workspace.
+    expect(checkWorkspaceStorageRoomMock).toHaveBeenCalledWith(expect.anything(), WORKSPACE_ID, 1);
+  });
+
+  it("refuses when the workspace's use cannot be read", async () => {
+    checkWorkspaceStorageRoomMock.mockResolvedValue({
+      status: "unreadable",
+      message: "Storage use could not be checked, so nothing was uploaded. Try again in a minute.",
+      detail: "permission denied",
+    });
+
+    const res = await POST(uploadTextRequest());
+
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({
+      error: "Storage use could not be checked, so nothing was uploaded. Try again in a minute.",
+    });
+    expect(storageUploads).toEqual([]);
+  });
+
+  it("stores the file while the workspace has room", async () => {
+    checkWorkspaceStorageRoomMock.mockResolvedValue({ status: "room", usedBytes: 0, quotaBytes: 5 * 1024 ** 3 });
+
+    const res = await POST(uploadTextRequest());
+
+    expect(res.status).toBe(201);
+    expect(storageUploads).toHaveLength(1);
+    expect(storageUploads[0].startsWith(`${WORKSPACE_ID}/`)).toBe(true);
+  });
+
+  it("answers a duplicate without checking, because a duplicate stores nothing", async () => {
+    dedupResponse = { data: { id: "doc-existing", title: "Adopted plan" }, error: null };
+
+    const res = await POST(uploadTextRequest());
+
+    expect(res.status).toBe(200);
+    expect(checkWorkspaceStorageRoomMock).not.toHaveBeenCalled();
+  });
+});
+
 describe("GET /api/knowledge-base/documents guards", () => {
   beforeEach(() => {
     getUserMock.mockResolvedValue({ data: { user: { id: "user-1" } } });
@@ -259,6 +360,8 @@ describe("GET /api/knowledge-base/documents guards", () => {
     kbListOrderCalls.length = 0;
     kbListLimit = null;
     kbListResponse = { data: [], error: null };
+    workspaceCalendarRow = { time_zone: null, home_country_code: null };
+    workspaceCalendarReads.length = 0;
   });
 
   it("400 when workspaceId is missing", async () => {
@@ -367,7 +470,7 @@ describe("GET /api/knowledge-base/documents guards", () => {
     );
   });
 
-  it("bounds a date range on created_at, whole days, in UTC", async () => {
+  it("bounds a date range on created_at, whole days, in UTC when the workspace has no zone", async () => {
     const res = await GET(
       new NextRequest(
         `http://localhost/api/knowledge-base/documents?workspaceId=${WORKSPACE_ID}&addedFrom=2026-01-01&addedTo=2026-06-30`
@@ -376,8 +479,63 @@ describe("GET /api/knowledge-base/documents guards", () => {
     expect(res.status).toBe(200);
     expect(kbListRangeCalls).toEqual([
       ["gte", "created_at", "2026-01-01T00:00:00.000Z"],
-      ["lte", "created_at", "2026-06-30T23:59:59.999Z"],
+      ["lt", "created_at", "2026-07-01T00:00:00.000Z"],
     ]);
+  });
+
+  /**
+   * THE WORKSPACE'S DAYS, NOT UTC'S. A document added at 8 p.m. Pacific on
+   * October 14 is stored as 03:00 UTC on the 15th. Bounded in UTC, a filter on
+   * the 14th missed it and a filter on the 15th found it.
+   */
+  async function rangeFor(zone: string, from: string, to: string) {
+    workspaceCalendarRow = { time_zone: zone, home_country_code: null };
+    kbListRangeCalls.length = 0;
+    const res = await GET(
+      new NextRequest(
+        `http://localhost/api/knowledge-base/documents?workspaceId=${WORKSPACE_ID}&addedFrom=${from}&addedTo=${to}`
+      )
+    );
+    expect(res.status).toBe(200);
+    return [...kbListRangeCalls];
+  }
+
+  it("bounds a date range by the workspace's midnights, read from the workspace row", async () => {
+    // Pacific daylight time: the 14th runs from 07:00 UTC to 07:00 UTC, so the
+    // 8 p.m. document (2026-10-15T03:00Z) is inside it.
+    expect(await rangeFor("America/Los_Angeles", "2026-10-14", "2026-10-14")).toEqual([
+      ["gte", "created_at", "2026-10-14T07:00:00.000Z"],
+      ["lt", "created_at", "2026-10-15T07:00:00.000Z"],
+    ]);
+    expect(workspaceCalendarReads).toEqual([{ columns: "time_zone, home_country_code", eq: ["id", WORKSPACE_ID] }]);
+  });
+
+  it("varies with the workspace's zone: Tokyo and Honolulu get their own midnights", async () => {
+    expect(await rangeFor("Asia/Tokyo", "2026-10-14", "2026-10-14")).toEqual([
+      ["gte", "created_at", "2026-10-13T15:00:00.000Z"],
+      ["lt", "created_at", "2026-10-14T15:00:00.000Z"],
+    ]);
+    expect(await rangeFor("Pacific/Honolulu", "2026-10-14", "2026-10-14")).toEqual([
+      ["gte", "created_at", "2026-10-14T10:00:00.000Z"],
+      ["lt", "created_at", "2026-10-15T10:00:00.000Z"],
+    ]);
+  });
+
+  it("ends a day at the next midnight across the end of daylight time (a 25-hour November 1)", async () => {
+    expect(await rangeFor("America/Los_Angeles", "2026-11-01", "2026-11-01")).toEqual([
+      ["gte", "created_at", "2026-11-01T07:00:00.000Z"],
+      ["lt", "created_at", "2026-11-02T08:00:00.000Z"],
+    ]);
+    // And the 23-hour March 8, when daylight time starts.
+    expect(await rangeFor("America/Los_Angeles", "2026-03-08", "2026-03-08")).toEqual([
+      ["gte", "created_at", "2026-03-08T08:00:00.000Z"],
+      ["lt", "created_at", "2026-03-09T07:00:00.000Z"],
+    ]);
+  });
+
+  it("does not read the workspace row when no date is asked for", async () => {
+    await GET(new NextRequest(`http://localhost/api/knowledge-base/documents?workspaceId=${WORKSPACE_ID}&q=rtp`));
+    expect(workspaceCalendarReads).toEqual([]);
   });
 
   it("drops a day that is not a day, and says so in the echo instead of narrowing", async () => {

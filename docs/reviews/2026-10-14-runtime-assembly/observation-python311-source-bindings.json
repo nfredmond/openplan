@@ -1,0 +1,5 @@
+{
+  "workers/odm_worker/runtime_observation.py": "a44a93fe600339211c24a0221d57ce836296f0e2ae187530355b0204a9637706",
+  "workers/odm_worker/test_runtime_observation.py": "adecfb6c6576edfabdbc337aae2e91620c4ea9e7470d1e3dfe62ee13914151e6",
+  "docs/reviews/2026-10-13-odm-runtime-observation/verify_controls.py": "374cdab6821a8a2a4dae431dabb32babd47b3e5d854367fd80c147d0c064c93b"
+}

@@ -9,9 +9,21 @@ import { checkWorkspaceMembership } from "@/lib/workspaces/membership";
 import { runGtfsIngest } from "@/lib/gtfs/ingest";
 import { managedGtfsEnabled, managedGtfsRouteSubmission } from "@/lib/gtfs/managed-route";
 import { resolveManagedGtfsSubmission } from "@/lib/gtfs/managed-source";
+import {
+  GTFS_UPLOAD_CONTENT_TYPES,
+  provisionalUploadedFeedName,
+  resolveGtfsUploadContentType,
+} from "@/lib/gtfs/staged-upload";
+import { checkWorkspaceStorageRoom, workspaceStorageRefusal } from "@/lib/workspaces/storage-quota";
 
 /**
  * A `.zip` A PLANNER WAS EMAILED, TURNED INTO SERVICE LEVELS.
+ *
+ * THE BODY DOOR. The Data Hub panel no longer sends the file here: Vercel
+ * refuses a function body above about 4.5 MB, so the panel puts the archive in
+ * Storage through `upload/start` and `upload/complete` (see
+ * `lib/gtfs/staged-upload.ts`). This route remains for API clients, installs
+ * without that platform limit, and managed imports.
  *
  * THE DOOR THAT HAS TO EXIST. A great many agencies — especially small ones,
  * which is most of them — do not publish a feed at a stable address and are not
@@ -55,13 +67,6 @@ import { resolveManagedGtfsSubmission } from "@/lib/gtfs/managed-source";
 export const runtime = "nodejs";
 export const maxDuration = 300;
 
-/** Exactly the `gtfs-uploads` bucket's `allowed_mime_types`. */
-const ALLOWED_UPLOAD_CONTENT_TYPES = [
-  "application/zip",
-  "application/x-zip-compressed",
-  "application/octet-stream",
-] as const;
-
 const uploadQuerySchema = z
   .object({
     workspaceId: z.string().uuid(),
@@ -72,20 +77,6 @@ const uploadQuerySchema = z
     label: z.string().trim().min(1).max(120).optional(),
   })
   .strict();
-
-/**
- * A name to show while the ingest runs, from what the planner actually gave us.
- *
- * Never a guess at an agency — see `provisionalFeedNameFromUrl`. A filename is
- * a fact about the file they chose; anything inferred from its contents is a
- * claim, and this runs before anything has been read.
- */
-function provisionalNameFor(label: string | undefined, filename: string | undefined): string {
-  if (label) return label;
-  const base = (filename ?? "").split(/[\\/]/).pop() ?? "";
-  const withoutExtension = base.replace(/\.[^.]+$/, "").trim();
-  return withoutExtension || "Uploaded transit feed";
-}
 
 export async function POST(request: NextRequest) {
   const audit = createApiAuditLogger("gtfs.feeds.upload", request);
@@ -169,13 +160,7 @@ export async function POST(request: NextRequest) {
       .split(";")[0]
       .trim()
       .toLowerCase();
-    const contentType = (ALLOWED_UPLOAD_CONTENT_TYPES as readonly string[]).includes(
-      declaredContentType
-    )
-      ? declaredContentType
-      : /\.zip$/i.test(query.data.filename ?? "")
-        ? "application/zip"
-        : null;
+    const contentType = resolveGtfsUploadContentType(declaredContentType, query.data.filename);
 
     if (!contentType) {
       return NextResponse.json(
@@ -183,7 +168,7 @@ export async function POST(request: NextRequest) {
           error: "A GTFS feed is uploaded as a .zip archive",
           detail:
             `This request declared "${declaredContentType || "no content type"}". Send the archive ` +
-            `with one of ${ALLOWED_UPLOAD_CONTENT_TYPES.join(", ")}, or name the file so it ends ` +
+            `with one of ${GTFS_UPLOAD_CONTENT_TYPES.join(", ")}, or name the file so it ends ` +
             "in .zip.",
         },
         { status: 415 }
@@ -216,12 +201,24 @@ export async function POST(request: NextRequest) {
         resolve: archive => resolveManagedGtfsSubmission(service, intent, archive) });
     }
 
+    // The workspace's total, with the measured body, before the ingest stores it.
+    const room = await checkWorkspaceStorageRoom(service, workspaceId, bodyRead.byteLength);
+    if (room.status !== "room") {
+      audit.warn("gtfs_upload_workspace_storage_refused", {
+        workspaceId,
+        status: room.status,
+        byteSize: bodyRead.byteLength,
+        ...(room.status === "full" ? { usedBytes: room.usedBytes, quotaBytes: room.quotaBytes } : { detail: room.detail }),
+      });
+      return workspaceStorageRefusal(room);
+    }
+
     const result = await runGtfsIngest({
       service,
       workspaceId,
       feedId: query.data.feedId ?? null,
       requestedBy: user.id,
-      provisionalName: provisionalNameFor(query.data.label, query.data.filename),
+      provisionalName: provisionalUploadedFeedName(query.data.label, query.data.filename),
       source: {
         kind: "upload",
         bytes: bodyRead.bytes,

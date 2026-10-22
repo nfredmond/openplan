@@ -1,0 +1,13 @@
+{
+  "files": {
+    "REVIEW.md": "6c467c1bf0c7861953ab1f380fa3301265f6bfa47a5c9338b3e4b3faa32b19f2",
+    "checks.json": "0bf128071408b3b3db9ff8931eea776c03714b0efe72c5a432957172e45cacb5",
+    "source-pins.json": "28f8acbe8318f95e9bc32a3d33921b6a6eb699f8a478cc20c47d8cc6101a9a35"
+  },
+  "metadataOnly": true,
+  "privateManifest": {
+    "entries": 15,
+    "path": "/home/nathaniel/.local/state/openplan/a0-r6-apply17-admission-independent-20261016/review-private-pins.json",
+    "sha256": "5981b74e54941693577d4919cf941cf388ad2245d98b78c47bdfbe43b6f86dbe"
+  }
+}

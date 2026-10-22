@@ -1,0 +1,398 @@
+{
+  "reviewedCommit": "a72f012ced074cadbfeb8981e2944e056e6373d2",
+  "assignedBase": "4ea6a8ca3b43c6712952fc4e527a8538237a9adb",
+  "disposition": "Bounded F1 source closure; no new concrete blocker; operational acceptance remains unknown.",
+  "submitted": {
+    "total": 607,
+    "outcomes": {
+      "survived": 99,
+      "intended_refusal": 508
+    },
+    "mutations": [
+      {
+        "mutation": "baseline",
+        "outcome": "survived"
+      },
+      {
+        "mutation": "harmless-comment",
+        "outcome": "survived"
+      },
+      {
+        "mutation": "harmless-comment:exact-restoration",
+        "outcome": "survived"
+      },
+      {
+        "mutation": "always-refuses",
+        "outcome": "killed",
+        "reason": "health-control:baseline-fixed-configured:unexpected-refusal:named-fault:health-always-refuses"
+      },
+      {
+        "mutation": "always-refuses:exact-restoration",
+        "outcome": "survived"
+      },
+      {
+        "mutation": "skip-health-policy",
+        "outcome": "killed",
+        "reason": "health-control:auth-status-201:expected-refusal:health:auth"
+      },
+      {
+        "mutation": "skip-health-policy:exact-restoration",
+        "outcome": "survived"
+      },
+      {
+        "mutation": "skip-health-request",
+        "outcome": "killed",
+        "reason": "health-control:baseline-fixed-configured:request-0"
+      },
+      {
+        "mutation": "skip-health-request:exact-restoration",
+        "outcome": "survived"
+      },
+      {
+        "mutation": "skip-old-request",
+        "outcome": "killed",
+        "reason": "health-control:baseline-fixed-configured:unexpected-refusal:health:oldOrigin"
+      },
+      {
+        "mutation": "skip-old-request:exact-restoration",
+        "outcome": "survived"
+      },
+      {
+        "mutation": "skip-verify-services-health",
+        "outcome": "killed",
+        "reason": "health-control:verify-services-baseline:requests-not-acquired"
+      },
+      {
+        "mutation": "skip-verify-services-health:exact-restoration",
+        "outcome": "survived"
+      },
+      {
+        "mutation": "old-none-only-regression",
+        "outcome": "killed",
+        "reason": "health-control:baseline-fixed-configured:unexpected-refusal:health:oldOrigin"
+      },
+      {
+        "mutation": "old-none-only-regression:exact-restoration",
+        "outcome": "survived"
+      },
+      {
+        "mutation": "allow-reflected-old",
+        "outcome": "killed",
+        "reason": "health-control:old-header-reflected:expected-refusal:health:oldOrigin"
+      },
+      {
+        "mutation": "allow-reflected-old:exact-restoration",
+        "outcome": "survived"
+      },
+      {
+        "mutation": "allow-wildcard-old",
+        "outcome": "killed",
+        "reason": "health-control:old-header-wildcard:expected-refusal:health:oldOrigin"
+      },
+      {
+        "mutation": "allow-wildcard-old:exact-restoration",
+        "outcome": "survived"
+      },
+      {
+        "mutation": "ignore-own-origin",
+        "outcome": "killed",
+        "reason": "health-control:own-header-absent:expected-refusal:health:ownOrigin"
+      },
+      {
+        "mutation": "ignore-own-origin:exact-restoration",
+        "outcome": "survived"
+      },
+      {
+        "mutation": "classifier:unrelated-runtime",
+        "outcome": "unclassified-runtime-error"
+      },
+      {
+        "mutation": "classifier:unrelated-value",
+        "outcome": "unclassified-runtime-error"
+      },
+      {
+        "mutation": "final-exact-restoration",
+        "outcome": "survived"
+      }
+    ],
+    "restoration": {
+      "functions": true,
+      "controlRows": true,
+      "templateBytes": true,
+      "templateSha256": {
+        "controls.py": "5ce62be0c8014884c394844ec0ff4e71ff3161f14d48fe5e6445be388c70a949",
+        "launcher.py": "6c23a4888b4a4a1a2395dddf2faa5d6264d3a74d5fc1de450fd093066ac144ba",
+        "policy.py": "be78f468864ac7ff639fb70816917f9f9d0089745f874476edefe025fa9ccd49"
+      }
+    }
+  },
+  "independent": {
+    "total": 80,
+    "survivors": 6,
+    "refusals": 74,
+    "mutations": [
+      {
+        "mutation": "baseline",
+        "outcome": "survived"
+      },
+      {
+        "mutation": "harmless-comment",
+        "outcome": "survived",
+        "exactRestoration": true
+      },
+      {
+        "mutation": "replace-old-request-with-own",
+        "outcome": "killed",
+        "reason": "health:fixed:cors-request-4",
+        "exactRestoration": true
+      },
+      {
+        "mutation": "ignore-acquired-cors",
+        "outcome": "killed",
+        "reason": "health:own:reflected:expected-refusal:health:ownOrigin",
+        "exactRestoration": true
+      },
+      {
+        "mutation": "swallow-health-refusals",
+        "outcome": "killed",
+        "reason": "health:own:reflected:expected-refusal:health:ownOrigin",
+        "exactRestoration": true
+      },
+      {
+        "mutation": "skip-verify-health",
+        "outcome": "killed",
+        "reason": "verify_services:fixed:request-count",
+        "exactRestoration": true
+      },
+      {
+        "mutation": "old-none-only",
+        "outcome": "killed",
+        "reason": "health:fixed:unexpected-refusal:health:oldOrigin",
+        "exactRestoration": true
+      },
+      {
+        "mutation": "allow-reflected-old",
+        "outcome": "killed",
+        "reason": "health:old:reflected:expected-refusal:health:oldOrigin",
+        "exactRestoration": true
+      },
+      {
+        "mutation": "allow-wildcard-old",
+        "outcome": "killed",
+        "reason": "health:old:wildcard:expected-refusal:health:oldOrigin",
+        "exactRestoration": true
+      },
+      {
+        "mutation": "remove-no-redirect",
+        "outcome": "killed",
+        "reason": "health:redirect-get:301:expected-http:301",
+        "exactRestoration": true
+      },
+      {
+        "mutation": "allow-ambient-proxy",
+        "outcome": "killed",
+        "reason": "health:fixed:request-0",
+        "exactRestoration": true
+      }
+    ],
+    "originalF1Reproduced": true,
+    "exactRestoration": true
+  },
+  "boundFileAudit": {
+    "scope": "Read-only bound-file custody, no live database or helper observation",
+    "checks": {
+      "private-manifest-hash": true,
+      "template-manifest-hash": true,
+      "private-bindings.json:all-bound-bytes": true,
+      "private-bindings.json:private-modes": true,
+      "template-binding.json:all-bound-bytes": true,
+      "template-binding.json:private-modes": true,
+      "private-root-mode": true,
+      "exact-template:launcher.py": true,
+      "exact-template:controls.py": true,
+      "exact-template:policy.py": true,
+      "exact-template:mutation_controls.py": true,
+      "candidate-source-target": true,
+      "source-anchor": true,
+      "source-binding-byte-identical": true,
+      "configured-source-binding-byte-identical": true,
+      "configured-source-current-bytes": true,
+      "all-three-retained-values": true,
+      "configuration-policy": true,
+      "engine-role-credentials-unchanged": true,
+      "gtfs-zero": true,
+      "fresh-jwt-secret": true,
+      "token-verified:anon": true,
+      "token-verified:service_role": true,
+      "prior-custody-bindings-unchanged": true,
+      "no-operational-intents": true
+    },
+    "boundPrivateFiles": 14,
+    "boundTemplates": 4
+  },
+  "boundFileChallenges": {
+    "auditChallenges": [
+      {
+        "mutation": "harmless-json-whitespace-after-read",
+        "outcome": "survived"
+      },
+      {
+        "mutation": "tamper:private-bindings.json",
+        "outcome": "killed",
+        "reason": "binding:private-manifest-hash",
+        "exactRestoration": true
+      },
+      {
+        "mutation": "tamper:template-binding.json",
+        "outcome": "killed",
+        "reason": "binding:template-manifest-hash",
+        "exactRestoration": true
+      },
+      {
+        "mutation": "tamper:envs-private.json",
+        "outcome": "killed",
+        "reason": "binding:private-bindings.json:all-bound-bytes",
+        "exactRestoration": true
+      },
+      {
+        "mutation": "tamper:launcher.py",
+        "outcome": "killed",
+        "reason": "binding:exact-template:launcher.py",
+        "exactRestoration": true
+      },
+      {
+        "mutation": "tamper:.env.local",
+        "outcome": "killed",
+        "reason": "binding:configured-source-current-bytes",
+        "exactRestoration": true
+      },
+      {
+        "mutation": "changed-source-anchor",
+        "outcome": "killed",
+        "reason": "binding:source-anchor",
+        "exactRestoration": true
+      },
+      {
+        "mutation": "changed-engine-credential",
+        "outcome": "killed",
+        "reason": "binding:engine-role-credentials-unchanged",
+        "exactRestoration": true
+      },
+      {
+        "mutation": "invalid-token-signature",
+        "outcome": "killed",
+        "reason": "binding:token-verified:anon",
+        "exactRestoration": true
+      },
+      {
+        "mutation": "unexpected-operation-intent",
+        "outcome": "killed",
+        "reason": "binding:no-operational-intents",
+        "exactRestoration": true
+      }
+    ],
+    "allReadOnly": true,
+    "restoredResultEqual": true
+  },
+  "historical": {
+    "historicalCount": 567,
+    "historicalOutcomes": {
+      "survived": 93,
+      "intended_refusal": 474
+    },
+    "alwaysRefusingHealthStillGreen": true,
+    "harmlessAndRestorationEqual": true,
+    "serializedPrefixEqual": true,
+    "semanticallyRevisedHealthRows": 17
+  },
+  "probeSha256": {
+    "run_submitted.py": "1072bbf68ffb24b6d177a8321b242f82fec021bee0144eb410f478195d7054d5",
+    "probe.py": "c40f636d3817a980960b28fa602c9c549478b494ffadda8c090007d23f99548b",
+    "bindings.py": "9c4e1df3b502efee082b128eaeeba150a8eaf8369892300b3ef65b238b25a4fe",
+    "audit_challenges.py": "f53f19906a86ec8bbd8111c3a8607dd31a7b415adce077edff5f4fc01c2af1d4",
+    "history.py": "439835f0ec62a4c6c4bd756d17252e25220cb0e5416cea11d9366db95f206641",
+    "final_scan.py": "6dfaa97bb8cfc723a02571f620fe38762e18cfaa5f58c4a28ed7d2e1ad259e36"
+  },
+  "resourceLimits": {
+    "MemoryMax": 1073741824,
+    "MemorySwapMax": 0,
+    "TasksMax": 32,
+    "CPUQuota": "100%",
+    "serial": true,
+    "bytecodeDisabled": true,
+    "cache": "private only"
+  },
+  "units": [
+    {
+      "name": "openplan-cors-independent-submitted-20261015-01",
+      "result": "success",
+      "peak": "30M",
+      "swap": "0B"
+    },
+    {
+      "name": "openplan-cors-independent-probes-20261015-01",
+      "result": "reviewer transport stand-in missing debuglevel",
+      "peak": "31M",
+      "swap": "0B"
+    },
+    {
+      "name": "openplan-cors-independent-probes-20261015-02",
+      "result": "reviewer retained HTTPError response closure assumption",
+      "peak": "30.3M",
+      "swap": "0B"
+    },
+    {
+      "name": "openplan-cors-independent-probes-20261015-03",
+      "result": "redirect mutation survived OPTIONS-only test; test expanded to GET",
+      "peak": "88.8M",
+      "swap": "0B"
+    },
+    {
+      "name": "openplan-cors-independent-probes-20261015-04",
+      "result": "success",
+      "peak": "102.1M",
+      "swap": "0B"
+    },
+    {
+      "name": "openplan-cors-independent-bindings-20261015-01",
+      "result": "reviewer compared full URI instead of retained credential fields",
+      "peak": "25.9M",
+      "swap": "0B"
+    },
+    {
+      "name": "openplan-cors-independent-bindings-20261015-02",
+      "result": "success",
+      "peak": "12.4M",
+      "swap": "0B"
+    },
+    {
+      "name": "openplan-cors-independent-history-20261015-01",
+      "result": "success",
+      "peak": "22.3M",
+      "swap": "0B"
+    },
+    {
+      "name": "openplan-cors-independent-audit-challenges-20261015-01",
+      "result": "success",
+      "peak": "23.6M",
+      "swap": "0B"
+    },
+    {
+      "name": "openplan-cors-independent-final-20261015-01",
+      "result": "success",
+      "peak": "14.7M",
+      "swap": "0B"
+    }
+  ],
+  "liveDatabaseOrHelperAcceptance": false,
+  "finalAudit": {
+    "publicCredentialScan": true,
+    "harmlessSurvivor": true,
+    "fullSecretOrUriFaultsDetected": 9,
+    "exactRestoration": true,
+    "templatesUnchanged": true,
+    "syntax": true,
+    "noBytecode": true,
+    "noEmDash": true
+  }
+}

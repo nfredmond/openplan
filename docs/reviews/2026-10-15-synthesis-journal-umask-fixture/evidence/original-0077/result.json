@@ -1,0 +1,60 @@
+{
+  "label": "original-0077",
+  "umask": "0077",
+  "exitCode": 1,
+  "passed": 39,
+  "failed": 1,
+  "skipped": 0,
+  "failures": [
+    {
+      "name": "synthesis worker custody and recovery refuses nonprivate and malformed saved journals",
+      "messages": [
+        "Error: expected [Function] to throw error including 'connector_file_not_private' but got '[\\n  {\\n    \"code\": \"invalid_union\",\\\u2026'\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/.t3/worktrees/openplan/t3-bb278a60/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.t3/worktrees/openplan/t3-bb278a60/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.t3/worktrees/openplan/t3-bb278a60/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.t3/worktrees/openplan/t3-bb278a60/openplan/src/test/engagement-synthesis-generation-worker.test.ts:204:61\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-bb278a60/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      ]
+    }
+  ],
+  "sourceHashes": {
+    "openplan/src/test/engagement-synthesis-generation-worker.test.ts": "095f09817becbe7d642e93cb6412da3b968048720d6cfdf61194995eca1ed646",
+    "workers/planner_agent_connector/connector-client.mjs": "6a26291c3ed01de49e46096024e3caf753e73532659556b4cab3b735e44bf4ce",
+    "openplan/src/lib/engagement/synthesis-generation-worker.ts": "92544532a249a470b69d496b34f007360540999122f30c79cfd9394e035651f2"
+  },
+  "overlay": null,
+  "command": [
+    "bwrap",
+    "--die-with-parent",
+    "--ro-bind",
+    "/",
+    "/",
+    "--bind",
+    "/home/nathaniel/.local/state/openplan/synthesis-journal-umask-fixture-20261015",
+    "/home/nathaniel/.local/state/openplan/synthesis-journal-umask-fixture-20261015",
+    "--bind",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-bb278a60/docs/reviews/2026-10-15-synthesis-journal-umask-fixture/evidence/original-0077",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-bb278a60/docs/reviews/2026-10-15-synthesis-journal-umask-fixture/evidence/original-0077",
+    "--ro-bind",
+    "/home/nathaniel/code/openplan/openplan/node_modules",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-bb278a60/openplan/node_modules",
+    "--tmpfs",
+    "/tmp",
+    "--proc",
+    "/proc",
+    "--dev",
+    "/dev",
+    "--chdir",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-bb278a60/openplan",
+    "node",
+    "--max-old-space-size=640",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "--configLoader",
+    "runner",
+    "--config",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-bb278a60/docs/reviews/2026-10-15-synthesis-journal-umask-fixture/vitest.config.mts",
+    "src/test/engagement-synthesis-generation-worker.test.ts",
+    "--maxWorkers=1",
+    "--no-file-parallelism",
+    "--reporter=default",
+    "--reporter=json",
+    "--outputFile=/home/nathaniel/.t3/worktrees/openplan/t3-bb278a60/docs/reviews/2026-10-15-synthesis-journal-umask-fixture/evidence/original-0077/tests.json"
+  ]
+}

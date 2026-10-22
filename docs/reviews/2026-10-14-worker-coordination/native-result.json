@@ -1,0 +1,10 @@
+{
+  "database": "odm_worker_coordination_ab04a0500e494bd082ab5cbedd052b69",
+  "restContainer": "e9749df635447ea7fbdbffc80330cec9db6a7149dfb161a2d1c2d5b6b8d5ebd8",
+  "candidateSha256": "7005dcfb97fa97f8599887fff37f3f7be931e42fd22873da74a9196a094ab375",
+  "positiveCohorts": 4,
+  "casesPerCohort": 2,
+  "faults": 2,
+  "historyCandidate": 415,
+  "scope": "Actual isolated coordinator with PostgREST, copied original archive, supervised callback and artifact sockets on intended restored415 clone; fixture sink directly writes callback ledger; no application receiver route, new engine/input work, public TLS, hosted login, default, quality, placement, browser or V1 acceptance."
+}

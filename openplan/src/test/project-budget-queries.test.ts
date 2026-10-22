@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
+import { budgetDeliverable, budgetSpend, projectBudgetSnapshotFixture, type BudgetAnswer } from "./helpers/project-budget-snapshot";
+import { buildProjectBudgetSnapshot } from "@/lib/projects/budget";
 import {
   loadProjectBudgetInputs,
-  type ProjectBudgetQuerySupabaseLike,
+  type ProjectDeliverableBudgetRow,
 } from "@/lib/projects/budget-queries";
 
 /**
@@ -21,41 +23,9 @@ import {
  * leaves the other three answering.
  */
 
-type Answer = { data: unknown; error: { message?: string } | null };
-
-/**
- * A chainable stand-in for the PostgREST builder. Every link returns the same
- * node, and the node is thenable, so any order of `.select().eq().order()
- * .limit()` / `.in()` resolves to the table's answer — and `.maybeSingle()`
- * resolves to it too, which is how the stated-budget read is served.
- */
-function chain(answer: Answer) {
-  const node: Record<string, unknown> = {
-    maybeSingle: vi.fn(async () => answer),
-    then: (resolve: (value: Answer) => unknown, reject?: (reason: unknown) => unknown) =>
-      Promise.resolve(answer).then(resolve, reject),
-  };
-  for (const link of ["select", "eq", "order", "limit", "in"]) {
-    node[link] = vi.fn(() => node);
-  }
-  return node;
-}
-
-const OK_ROWS: Answer = { data: [], error: null };
-const OK_STATED_BUDGET: Answer = { data: { budget_amount: null }, error: null };
-
+type Answer = BudgetAnswer;
 function fakeSupabase(overrides: Partial<Record<string, Answer>> = {}) {
-  const answers: Record<string, Answer> = {
-    project_deliverables: OK_ROWS,
-    projects: OK_STATED_BUDGET,
-    project_spend_entries: OK_ROWS,
-    client_invoices: OK_ROWS,
-    ...overrides,
-  };
-
-  return {
-    from: (table: string) => chain(answers[table] ?? OK_ROWS),
-  } as unknown as ProjectBudgetQuerySupabaseLike;
+  return { rpc: vi.fn(async () => ({ data: projectBudgetSnapshotFixture(overrides), error: null })) };
 }
 
 const permissionDenied = (table: string): Answer => ({
@@ -173,57 +143,51 @@ describe("loadProjectBudgetInputs", () => {
    * basis" over budgets the database actually holds: a schema gap rendered as a
    * finding about an agency's money.
    *
-   * This fake answers by PROJECTION, which is the only way to see the rung.
+   * These transport fixtures name the returned rung. The migration source
+   * tests separately assert each projection; native fallback remains untested.
    */
   function laddered(pendingColumns: string[]) {
-    const row = {
-      id: "deliverable-1",
-      title: "Existing Conditions Memo",
-      budget_amount: 1000,
-      percent_complete: 50,
-      assignee_user_id: "user-2",
-    };
-    const asked: string[] = [];
-    const client = {
-      from: (table: string) => {
-        if (table !== "project_deliverables") return chain(table === "projects" ? OK_STATED_BUDGET : OK_ROWS);
-        return {
-          select: (columns: string) => {
-            asked.push(columns);
-            const missing = pendingColumns.find((column) => columns.includes(column));
-            return chain(
-              missing
-                ? { data: null, error: { message: `column project_deliverables.${missing} does not exist` } }
-                : { data: [row], error: null }
-            );
-          },
-        };
-      },
-    } as unknown as ProjectBudgetQuerySupabaseLike;
-    return { client, asked };
+    const row: Partial<ProjectDeliverableBudgetRow> = budgetDeliverable("deliverable-1");
+    row.assignee_user_id = "member-1";
+    row.title = "Existing Conditions Memo";
+    row.budget_amount = 1000;
+    const budget = pendingColumns.includes("budget_amount");
+    const assignee = pendingColumns.includes("assignee_user_id");
+    if (budget) { delete row.budget_amount; delete row.percent_complete; }
+    if (assignee) delete row.assignee_user_id;
+    const client = { rpc: vi.fn(async () => ({ data: projectBudgetSnapshotFixture({
+      project_deliverables: { data: [row], error: null },
+    }, { assignee, budget }), error: null })) };
+    return { client };
   }
 
   it("drops only the assignee column when only that migration is pending", async () => {
-    const { client, asked } = laddered(["assignee_user_id"]);
+    const { client } = laddered(["assignee_user_id"]);
     const inputs = await loadProjectBudgetInputs(client, "project-1");
 
     expect(inputs.pending.deliverableAssigneeColumn).toBe(true);
     // The rung that matters: the budget columns were NOT collateral damage.
     expect(inputs.pending.deliverableBudgetColumns).toBe(false);
     expect(inputs.deliverables[0]).toMatchObject({ budget_amount: 1000, percent_complete: 50 });
-    expect(asked[0]).toContain("assignee_user_id");
-    expect(asked[1]).toContain("budget_amount");
-    expect(asked[1]).not.toContain("assignee_user_id");
+    expect(inputs.deliverables[0]).not.toHaveProperty("assignee_user_id");
+  });
+
+  it("retains an existing nonnull assignee when only the budget columns are missing", async () => {
+    const { client } = laddered(["budget_amount"]);
+    const inputs = await loadProjectBudgetInputs(client, "project-1");
+    expect(inputs.pending.deliverableBudgetColumns).toBe(true);
+    expect(inputs.pending.deliverableAssigneeColumn).toBe(false);
+    expect(inputs.deliverables[0].assignee_user_id).toBe("member-1");
+    expect(inputs.deliverables[0]).not.toHaveProperty("budget_amount");
   });
 
   it("falls all the way back when both migrations are pending, and says so about both", async () => {
-    const { client, asked } = laddered(["assignee_user_id", "budget_amount"]);
+    const { client } = laddered(["assignee_user_id", "budget_amount"]);
     const inputs = await loadProjectBudgetInputs(client, "project-1");
 
     expect(inputs.pending.deliverableAssigneeColumn).toBe(true);
     expect(inputs.pending.deliverableBudgetColumns).toBe(true);
-    expect(asked).toHaveLength(3);
-    expect(asked[2]).not.toContain("budget_amount");
+    expect(inputs.deliverables[0]).not.toHaveProperty("budget_amount");
     // The deliverables themselves still load — the list is not the casualty.
     expect(inputs.deliverables).toHaveLength(1);
   });
@@ -241,6 +205,7 @@ describe("loadProjectBudgetInputs", () => {
       clientInvoices: false,
     });
     expect(inputs.pending).toEqual({
+      snapshot: false,
       deliverables: false,
       deliverableBudgetColumns: false,
       deliverableAssigneeColumn: false,
@@ -248,5 +213,117 @@ describe("loadProjectBudgetInputs", () => {
       spendEntries: false,
       clientInvoices: false,
     });
+  });
+});
+
+
+describe("complete project snapshot transport", () => {
+  it("requests one scoped snapshot and retains inputs above every old cap and the backend cap", async () => {
+    const deliverables = Array.from({ length: 1201 }, (_, i) => budgetDeliverable(`d${i}`));
+    const spends = Array.from({ length: 1201 }, (_, i) => budgetSpend(`s${i}`, `d${i}`));
+    const invoices = Array.from({ length: 1201 }, (_, i) => ({
+      id: `i${i}`, status: i % 2 ? "paid" : "sent",
+      client_invoice_line_items: [{ id: `l${i}`, deliverable_id: `d${i}`, amount: 2 }],
+    }));
+    // One parent has more lines than the backend cap, independently of parent count.
+    invoices[0].client_invoice_line_items.push(...Array.from({ length: 1201 }, (_, i) => ({
+      id: `nested${i}`, deliverable_id: "d1200", amount: 3,
+    })));
+    const client = fakeSupabase({
+      project_deliverables: { data: deliverables, error: null },
+      project_spend_entries: { data: spends, error: null },
+      client_invoices: { data: invoices, error: null },
+      projects: { data: { budget_amount: 9999 }, error: null },
+    });
+    const inputs = await loadProjectBudgetInputs(client, "project-1");
+    expect(client.rpc).toHaveBeenCalledExactlyOnceWith("project_budget_inputs_v1", { p_project_id: "project-1" });
+    expect(inputs.readFailures).toEqual([]);
+    expect(inputs.deliverables).toHaveLength(1201);
+    expect(inputs.spendEntries).toHaveLength(1201);
+    expect(inputs.billedLines).toHaveLength(2402);
+    expect(inputs.billedLines.at(-1)).toMatchObject({ id: "l1200", invoice_id: "i1200" });
+    const snapshot = buildProjectBudgetSnapshot({
+      project: { budget_amount: inputs.statedBudgetAmount }, ...inputs,
+    });
+    expect(snapshot.deliverableBudgetTotal).toBe(1201000);
+    expect(snapshot.spendToDate).toBe(1201);
+    expect(snapshot.billedToDate).toBe(6005);
+    expect(snapshot.actualToDate).toBe(1201);
+    expect(snapshot.remainingAgainstStatedBudget).toBe(8798);
+    expect(snapshot.deliverables.at(-1)).toMatchObject({ billedToDate: 3605, actualToDate: 1 });
+  });
+
+  it("keeps equal-valued distinct cost and billing identities without combining or deducting them", async () => {
+    const inputs = await loadProjectBudgetInputs(fakeSupabase({
+      project_deliverables: { data: [budgetDeliverable("d")], error: null },
+      project_spend_entries: { data: [budgetSpend("s1", "d"), budgetSpend("s2", "d")], error: null },
+      client_invoices: { data: [{ id: "i", status: "paid", client_invoice_line_items: [
+        { id: "l1", deliverable_id: "d", amount: 1 }, { id: "l2", deliverable_id: "d", amount: 1 },
+      ] }], error: null },
+    }), "project-1");
+    const snapshot = buildProjectBudgetSnapshot({ project: null, ...inputs });
+    expect(snapshot.spendToDate).toBe(2);
+    expect(snapshot.billedToDate).toBe(2);
+    expect(snapshot.actualToDate).toBe(2);
+    expect(inputs.billedLines.map((line) => line.id)).toEqual(["l1", "l2"]);
+  });
+
+  it.each(["deliverables", "spendEntries", "clientInvoices", "invoice lines"])("refuses repeated %s primary keys", async (kind) => {
+    const data = projectBudgetSnapshotFixture({
+      project_deliverables: { data: [budgetDeliverable("d")], error: null },
+      project_spend_entries: { data: [budgetSpend("s")], error: null },
+      client_invoices: { data: [{ id: "i", status: "sent", client_invoice_line_items: [
+        { id: "l", deliverable_id: "d", amount: 1 },
+      ] }], error: null },
+    });
+    if (kind === "invoice lines") {
+      const rows = data.clientInvoices.data as Array<{ client_invoice_line_items: unknown[] }>;
+      rows[0].client_invoice_line_items.push(rows[0].client_invoice_line_items[0]);
+    } else {
+      const rows = data[kind as "deliverables" | "spendEntries" | "clientInvoices"].data as unknown[];
+      rows.push(rows[0]);
+    }
+    const inputs = await loadProjectBudgetInputs({ rpc: async () => ({ data, error: null }) }, "project-1");
+    expect(inputs.unreadable.spendEntries).toBe(true);
+    expect(inputs.readFailures[0].message).toMatch(/repeated source identities/);
+    expect(inputs.billedLines).toEqual([]);
+  });
+
+  it.each([null, {}, { ...projectBudgetSnapshotFixture(), project_id: "another-project" },
+  ])("refuses absent, malformed or wrong-project envelopes (%#)", async (data) => {
+    const inputs = await loadProjectBudgetInputs({ rpc: async () => ({ data, error: null }) }, "project-1");
+    expect(Object.values(inputs.unreadable).every(Boolean)).toBe(true);
+    expect(inputs.readFailures[0].message).toMatch(/invalid or belongs/);
+  });
+
+  it("refuses omitted financial projection columns instead of inventing a budget basis", async () => {
+    const row: Partial<ReturnType<typeof budgetDeliverable>> = budgetDeliverable("d");
+    delete row.budget_amount;
+    const inputs = await loadProjectBudgetInputs(fakeSupabase({ project_deliverables: { data: [row], error: null } }), "project-1");
+    expect(inputs.unreadable.deliverables).toBe(true);
+    expect(inputs.readFailures[0].message).toMatch(/omitted required deliverable columns/);
+  });
+
+  it("returns thrown transport failures as unreadable without any table-read fallback", async () => {
+    const inputs = await loadProjectBudgetInputs({ rpc: async () => { throw new Error("connection closed"); } }, "project-1");
+    expect(Object.values(inputs.unreadable).every(Boolean)).toBe(true);
+    expect(inputs.readFailures[0].message).toBe("connection closed");
+  });
+
+  it("keeps whole-snapshot permission failures distinct from a missing snapshot migration", async () => {
+    const inputs = await loadProjectBudgetInputs({ rpc: async () => ({ data: null, error: { code: "42501", message: "permission denied for function project_budget_inputs_v1" } }) }, "project-1");
+    expect(inputs.pending.snapshot).toBe(false);
+    expect(Object.values(inputs.unreadable).every(Boolean)).toBe(true);
+    expect(inputs.readFailures[0].message).toMatch(/permission denied/);
+  });
+
+  it("marks a missing snapshot RPC pending and leaves every financial source unavailable", async () => {
+    const inputs = await loadProjectBudgetInputs({ rpc: async () => ({ data: null, error: { code: "PGRST202", message: "Could not find the function public.project_budget_inputs_v1 in the schema cache" } }) }, "project-1");
+    expect(inputs.pending.snapshot).toBe(true);
+    expect(inputs.pending.spendEntries).toBe(false);
+    expect(inputs.pending.deliverableAssigneeColumn).toBe(false);
+    expect(inputs.pending.deliverableBudgetColumns).toBe(false);
+    expect(Object.values(inputs.unreadable).some(Boolean)).toBe(false);
+    expect(inputs.readFailures).toEqual([]);
   });
 });

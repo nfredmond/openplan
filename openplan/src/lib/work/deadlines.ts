@@ -99,6 +99,32 @@ export function isDeadlinePast(dateInput: string | null | undefined, now: Date):
 }
 
 /**
+ * A browser-reported IANA time zone in its canonical spelling, or null when the
+ * value is missing or `Intl` rejects it. Only the canonical name leaves this
+ * function, so a caller can quote it without quoting what the client sent.
+ */
+export function validTimeZone(value: string | null | undefined): string | null {
+  if (!value) return null;
+  try {
+    return new Intl.DateTimeFormat("en-US", { timeZone: value }).resolvedOptions().timeZone;
+  } catch {
+    return null;
+  }
+}
+
+/** The calendar date, `YYYY-MM-DD`, in a time zone {@link validTimeZone} accepted. */
+export function calendarDateInTimeZone(now: Date, timeZone: string): string {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(now);
+  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((entry) => entry.type === type)?.value ?? "";
+  return `${part("year")}-${part("month")}-${part("day")}`;
+}
+
+/**
  * Soonest first, across the two date columns the project record types use
  * (`target_date` on milestones, `due_date` on submittals, invoices and
  * deliverables). Undated records sort last via the far-future sentinel.
@@ -153,13 +179,19 @@ export function sortDeadlineItemsBy<T>(
   });
 }
 
-/** Milestone lanes: blocked, then overdue, then open, then complete. */
+/**
+ * Milestone lanes: blocked, then overdue, then open, then complete.
+ *
+ * Overdue is {@link isDeadlinePast}, the rule the overdue counts use. These
+ * three priorities once compared midnight UTC with now, which put a record due
+ * on the 14th in the overdue tier at 5 p.m. Pacific on the 13th.
+ */
 export function milestonePriority(
   milestone: { status?: string | null; target_date?: string | null },
   now: Date
 ): number {
   if (milestone.status === "blocked") return 0;
-  if (milestone.status !== "complete" && parseSortableDate(milestone.target_date) < now.getTime()) return 1;
+  if (milestone.status !== "complete" && isDeadlinePast(milestone.target_date, now)) return 1;
   if (milestone.status !== "complete") return 2;
   return 3;
 }
@@ -169,7 +201,7 @@ export function submittalPriority(
   submittal: { status?: string | null; due_date?: string | null },
   now: Date
 ): number {
-  if (submittal.status !== "accepted" && parseSortableDate(submittal.due_date) < now.getTime()) return 0;
+  if (submittal.status !== "accepted" && isDeadlinePast(submittal.due_date, now)) return 0;
   if (submittal.status !== "accepted") return 1;
   return 2;
 }
@@ -183,8 +215,7 @@ export function invoicePriority(
   now: Date
 ): number {
   const status = invoice.status ?? "";
-  const dueAt = parseSortableDate(invoice.due_date);
-  if (!["paid", "rejected"].includes(status) && dueAt < now.getTime()) return 0;
+  if (!["paid", "rejected"].includes(status) && isDeadlinePast(invoice.due_date, now)) return 0;
   if (["internal_review", "submitted", "approved_for_payment"].includes(status)) return 1;
   if (status === "draft") return 2;
   return 3;
@@ -194,22 +225,26 @@ export function invoicePriority(
  * How a deadline reads on screen — ONE rendering, so a date does not appear as
  * `2026-08-20` in one place and `8/20/2026, 12:00:00 AM` in another.
  *
- * UTC, deliberately. Half these columns are `DATE` (deliverables, milestones,
- * submittals, invoices) and half are `TIMESTAMPTZ` (grant decisions, award
- * obligations); rendering the first group in the reader's local zone shifts a
- * plain calendar date backwards for anyone west of UTC, which is how a
- * deadline of the 20th shows as the 19th. An unparseable value is returned
- * verbatim rather than swallowed.
+ * Half these columns are `DATE` (deliverables, milestones, submittals,
+ * invoices) and half are `TIMESTAMPTZ` (grant decisions, award obligations).
+ * A `DATE` is already a calendar day and is shown as that day in every zone;
+ * read as an instant it would be midnight UTC, the evening before in the
+ * Americas. A `TIMESTAMPTZ` is shown on the calendar of `timeZone`, the
+ * workspace's zone (`lib/time/workspace-calendar.ts`), so an obligation due
+ * at 11 p.m. Pacific on the 20th reads as the 20th. A caller with no workspace
+ * calendar gets UTC, as before. An unparseable value is returned verbatim
+ * rather than swallowed.
  */
-export function formatWorkDeadlineDate(value: string | null | undefined): string | null {
+export function formatWorkDeadlineDate(value: string | null | undefined, timeZone: string = "UTC"): string | null {
   if (!value) return null;
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return value;
+  const calendarDay = /^\d{4}-\d{2}-\d{2}$/.test(value.trim());
   return parsed.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
-    timeZone: "UTC",
+    timeZone: calendarDay ? "UTC" : (validTimeZone(timeZone) ?? "UTC"),
   });
 }
 

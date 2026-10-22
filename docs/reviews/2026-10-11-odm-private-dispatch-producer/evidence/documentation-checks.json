@@ -1,0 +1,15 @@
+{
+  "allPassed": true,
+  "testsPassed": 14,
+  "checks": [
+    {
+      "check": "documentation",
+      "exit": 0
+    },
+    {
+      "check": "direction",
+      "exit": 0
+    }
+  ],
+  "scope": "Nested documentation/direction guards after revised native and deadline-control proof. No practitioner or browser acceptance."
+}

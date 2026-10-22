@@ -114,6 +114,7 @@ describe("GET /api/reports/[reportId]/artifacts/[artifactId]/download", () => {
 
     expect(response.status).toBe(307);
     expect(response.headers.get("location")).toBe("https://storage.example/signed?token=abc");
+    expect(response.headers.get("cache-control")).toBe("private, no-store");
     expect(createSignedUrlMock).toHaveBeenCalledWith(
       `${WORKSPACE_ID}/${REPORT_ID}/${ARTIFACT_ID}.pdf`,
       900,

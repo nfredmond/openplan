@@ -1,0 +1,403 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "uncommitted-admission",
+    "test": "test_committed_admission_survives_reopen",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "reopen must retain the complete original admission"
+  },
+  {
+    "control": "replay-calls-factory",
+    "test": "test_exact_replay_precedes_capacity",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "replay must not call a new admission factory"
+  },
+  {
+    "control": "changed-request-replay-test_changed_payload_conflicts",
+    "test": "test_changed_payload_conflicts",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "IdentityConflict not raised"
+  },
+  {
+    "control": "changed-request-replay-test_changed_source_url_conflicts",
+    "test": "test_changed_source_url_conflicts",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "IdentityConflict not raised"
+  },
+  {
+    "control": "missing-queue-bound-test_queue_ceiling_is_atomic",
+    "test": "test_queue_ceiling_is_atomic",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "QueueFull not raised"
+  },
+  {
+    "control": "missing-queue-bound-test_zero_queue_rejects_new_work",
+    "test": "test_zero_queue_rejects_new_work",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "QueueFull not raised"
+  },
+  {
+    "control": "boolean-queue-ceiling",
+    "test": "test_invalid_queue_ceiling",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "invalid-request-id",
+    "test": "test_invalid_request_id",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "nan-request",
+    "test": "test_non_json_request_is_not_saved",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "late-factory-refusal-test_factory_identity_guard",
+    "test": "test_factory_identity_guard",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "does not match"
+  },
+  {
+    "control": "late-factory-refusal-test_factory_reference_guard",
+    "test": "test_factory_reference_guard",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "does not match"
+  },
+  {
+    "control": "late-factory-refusal-test_factory_status_guard",
+    "test": "test_factory_status_guard",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "does not match"
+  },
+  {
+    "control": "swallowed-factory-interruption",
+    "test": "test_factory_exception_rolls_back",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "RuntimeError not raised"
+  },
+  {
+    "control": "missing-admission-directory-sync",
+    "test": "test_commit_directory_error_replays_original_admission",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "OSError not raised"
+  },
+  {
+    "control": "missing-start-directory-sync",
+    "test": "test_start_directory_error_retains_original_intent",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "OSError not raised"
+  },
+  {
+    "control": "caller-request-alias",
+    "test": "test_detached_request_and_receipt",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "caller mutation must not alter the returned request snapshot"
+  },
+  {
+    "control": "first-start-no-permission",
+    "test": "test_start_once_and_remove_from_accepted_queue",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "first start must commit its permission"
+  },
+  {
+    "control": "repeated-start-permission",
+    "test": "test_exact_start_replay_does_not_grant_another_start",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "start replay must not repeat uncertain external work"
+  },
+  {
+    "control": "changed-start-context",
+    "test": "test_changed_start_context_conflicts",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "IdentityConflict not raised"
+  },
+  {
+    "control": "foreign-start-reference",
+    "test": "test_wrong_or_missing_start_admission_conflicts",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "IdentityConflict not raised"
+  },
+  {
+    "control": "non-json-start-context",
+    "test": "test_start_context_must_be_json_object",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "caller-start-context-alias",
+    "test": "test_start_context_is_detached",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "caller mutation must not alter the returned start snapshot"
+  },
+  {
+    "control": "started-replay-receipt-change",
+    "test": "test_started_admission_replay_retains_original_receipt",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "started replay must retain original receipt"
+  },
+  {
+    "control": "accepted-leaks-into-started-list",
+    "test": "test_started_list_excludes_accepted",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "accepted work must not appear as started"
+  },
+  {
+    "control": "lost-start-context-field",
+    "test": "test_all_sqlite_fields_and_phase_persist",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "{'attempt': 'original'}"
+  },
+  {
+    "control": "stored-request-corruption",
+    "test": "test_stored_identity_corruption_is_rejected",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "stored-receipt-corruption",
+    "test": "test_stored_receipt_corruption_is_rejected",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "stored-start-corruption",
+    "test": "test_stored_start_corruption_is_rejected",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "stored-receipt-encoding",
+    "test": "test_stored_receipt_encoding_must_match",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "stored-receipt-nan",
+    "test": "test_stored_receipt_nonfinite_json_refuses",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "stored-context-encoding",
+    "test": "test_stored_context_encoding_must_match",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "stored-context-nan",
+    "test": "test_stored_context_nonfinite_json_refuses",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "new-root-parent-not-synchronized",
+    "test": "test_new_root_synchronizes_parent_before_database",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "new root must synchronize its parent before database creation"
+  },
+  {
+    "control": "unknown-phase-hidden-as-empty",
+    "test": "test_unknown_phase_is_not_an_empty_queue",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "public-root",
+    "test": "test_private_root_and_database",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "public-journal",
+    "test": "test_public_database_refuses",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "root-alias",
+    "test": "test_root_symlink_refuses",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "parent-alias-creation",
+    "test": "test_parent_symlink_refuses_before_creating_root",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "journal-hardlink",
+    "test": "test_database_symlink_and_hardlink_refuse",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "special-file-reaches-sqlite",
+    "test": "test_special_database_refuses",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "special path reached SQLite"
+  },
+  {
+    "control": "foreign-root-owner",
+    "test": "test_foreign_owner_refuses",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "unsafe-sqlite-companions",
+    "test": "test_private_sqlite_companions_before_database_access",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "unsafe companion reached SQLite"
+  },
+  {
+    "control": "transient-companion-disappearance-refuses",
+    "test": "test_sqlite_companions_disappearing_before_lstat_are_allowed",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "No such file or directory"
+  },
+  {
+    "control": "unavailable-companion-reaches-sqlite",
+    "test": "test_unavailable_companions_refuse_before_sqlite",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Unavailable companion reached SQLite"
+  },
+  {
+    "control": "unsupported-wal",
+    "test": "test_unavailable_wal_mode_refuses",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "normal-instead-of-full",
+    "test": "test_full_sync_overrides_a_normal_connection_default",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "journal must override NORMAL with FULL synchronization"
+  },
+  {
+    "control": "foreign-schema-overwritten",
+    "test": "test_foreign_schema_refuses_without_changing_it",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "foreign-version-accepted",
+    "test": "test_unsupported_schema_version_refuses",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "unknown-schema-objects",
+    "test": "test_unknown_schema_objects_refuse_without_changes",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "invalid-timeout-accepted",
+    "test": "test_timeout_and_absolute_root_guards",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "relative-root-accepted",
+    "test": "test_timeout_and_absolute_root_guards",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "process-exit-loses-admission",
+    "test": "test_subprocess_exit_retains_exact_admission",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "committed admission must survive process exit"
+  },
+  {
+    "control": "concurrent-uncommitted-admissions",
+    "test": "test_concurrent_admission_has_one_identity",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "concurrent admission must create only one identity"
+  },
+  {
+    "control": "concurrent-repeated-start-permission",
+    "test": "test_concurrent_start_grants_permission_once",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "concurrent start must grant only one permission"
+  },
+  {
+    "control": "lock-budget-not-forwarded",
+    "test": "test_busy_writer_wait_is_bounded",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "configured lock budget must reach native SQLite"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

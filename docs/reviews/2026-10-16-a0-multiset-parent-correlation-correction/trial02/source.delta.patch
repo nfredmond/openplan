@@ -1,0 +1,60 @@
+--- /home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/window.py
++++ /home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/window.py
+@@ -15,12 +15,13 @@
+ import traceback
+ 
+ HERE=Path(__file__).resolve().parent
++PACKET=HERE.parent
+ PRIVATE=Path('/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016')
+-ROOT=PRIVATE/'runner-preparation'
+-ATTEMPT=ROOT/'attempt-01'
+-MODEL=ROOT/'model-parent-01'
++ROOT=PRIVATE/'trial02'
++ATTEMPT=ROOT/'attempt-02'
++MODEL=ROOT/'model-parent-02'
+ LOCK=PRIVATE.parent/'compiler-repair-checks-20261015.lock'
+-UNIT='openplan-a0-multiset-parent-correlation-TEST-01-20261016'
++UNIT='openplan-a0-multiset-parent-correlation-TEST-02-20261016'
+ CAPS={'memory.max':'536870912','memory.swap.max':'0','cpu.max':'50000 100000','pids.max':'64'}
+ HOST_ENV={'PATH':'/usr/bin:/bin','LANG':'C','HOME':'/nonexistent','XDG_RUNTIME_DIR':'/run/user/1000',
+     'DBUS_SESSION_BUS_ADDRESS':'unix:path=/run/user/1000/bus'}
+@@ -141,7 +142,7 @@
+         argv+=['--ro-bind',name,name]
+     for name in config['barrierNames']:argv+=['--ro-bind',str(ATTEMPT/'barrier'),str(PRIVATE/name)]
+     argv+=['--proc','/proc','--remount-ro','/proc','--ro-bind','/sys/fs/cgroup','/sys/fs/cgroup',
+-        '--bind',str(ATTEMPT),str(ATTEMPT),'--bind',str(ATTEMPT/'tmp'),'/tmp','--remount-ro','/usr',
++        '--bind',str(ATTEMPT),str(ATTEMPT),'--bind',str(ATTEMPT/'tmp'),'/tmp','--ro-bind','/dev/null','/dev/null','--remount-ro','/usr',
+         '--remount-ro','/','--seccomp',str(fd),'--chdir',str(PRIVATE),
+         '--dev-bind','/dev/null','/dev/null','--clearenv']
+     for key,value in environment().items():argv+=['--setenv',key,value]
+@@ -265,8 +266,8 @@
+         need(not (PRIVATE/'pure-controls').exists(),'wrapper-fixed-scratch-not-absent')
+         record(ATTEMPT/'wrapper-control-entry.json',{'pid':os.getpid(),'steps':['prepare','frozen90','final_checks'],'subjectChecks':90,'wrapperControls':4})
+         prepare=module(HERE/'prepare.py','a0_pure_prepare');prepare.run(config,sys.modules[__name__]);steps.append('prepare')
+-        record(ATTEMPT/'control-entry-load-intent.json',{'path':str(HERE/'control_entry.py'),'sha256':digest(HERE/'control_entry.py'),'pid':os.getpid()})
+-        entry=module(HERE/'control_entry.py','a0_held_control_entry');entry.run(PRIVATE/'pure-controls');steps.append('frozen90')
++        record(ATTEMPT/'control-entry-load-intent.json',{'path':str(PACKET/'control_entry.py'),'sha256':digest(PACKET/'control_entry.py'),'pid':os.getpid()})
++        entry=module(PACKET/'control_entry.py','a0_held_control_entry');entry.run(PRIVATE/'pure-controls');steps.append('frozen90')
+         final=module(HERE/'final_checks.py','a0_pure_final');final.run(config,sys.modules[__name__]);steps.append('final_checks')
+     except BaseException as error:primary=error;trace=error.__traceback__
+     finally:
+--- /home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/final_checks.py
++++ /home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/final_checks.py
+@@ -3,7 +3,7 @@
+ 
+ 
+ def run(config,window):
+-    scratch=Path(config['scratch']);plan=window.loads(window.raw(window.HERE/'control-cases.json'))
++    scratch=Path(config['scratch']);plan=window.loads(window.raw(window.PACKET/'control-cases.json'))
+     result=window.loads(window.raw(scratch/'results.json',window.FILE_MAX))
+     expected_keys={'stage','results','readerControls','nativeOperationGranted','sourceClosureComplete','fixtureLaunchable','complete'}
+     window.need(type(result) is dict and set(result)==expected_keys,'final-model-result-fields')
+@@ -17,7 +17,7 @@
+         base=scratch/spec['name'];restoration=window.loads(window.raw(base/'restoration.json'))
+         window.need(restoration['allOwnedDescriptorsClosed'] is True and restoration['adapterCleanupErrors']==[],'final-model-restoration')
+         for name in ['outer.py','custody.py','collector.py']:
+-            wanted=config['inputs'][str(window.HERE/name)]
++            wanted=config['inputs'][str(window.PACKET/name)]
+             window.need(window.same(wanted,restoration['sources'][name]) and window.same(wanted,restoration['production'][name]),'final-model-source-restore')
+             window.need(window.same(wanted,window.filepin(base/'source'/name)),'final-model-overlay-readback')
+     readers=window.loads(window.raw(scratch/'reader-results.json'))

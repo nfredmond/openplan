@@ -1,0 +1,506 @@
+[
+  {
+    "control": "incomplete-draft-grants-commit-exact",
+    "accepted": true
+  },
+  {
+    "control": "incomplete-draft-grants-commit-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "incomplete-draft-grants-commit-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "incomplete-draft-grants-commit-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "incomplete-draft-grants-commit-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "incomplete-draft-grants-commit-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "incomplete-draft-grants-commit-success-output",
+    "accepted": false
+  },
+  {
+    "control": "acknowledged-commit-replayed-exact",
+    "accepted": true
+  },
+  {
+    "control": "acknowledged-commit-replayed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "acknowledged-commit-replayed-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "acknowledged-commit-replayed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "acknowledged-commit-replayed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "acknowledged-commit-replayed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "acknowledged-commit-replayed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "denied-permission-accepted-exact",
+    "accepted": true
+  },
+  {
+    "control": "denied-permission-accepted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "denied-permission-accepted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "denied-permission-accepted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "denied-permission-accepted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "denied-permission-accepted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "denied-permission-accepted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "uncertain-commit-reauthorized-exact",
+    "accepted": true
+  },
+  {
+    "control": "uncertain-commit-reauthorized-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "uncertain-commit-reauthorized-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "uncertain-commit-reauthorized-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "uncertain-commit-reauthorized-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "uncertain-commit-reauthorized-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "uncertain-commit-reauthorized-success-output",
+    "accepted": false
+  },
+  {
+    "control": "wrong-reply-accepted-exact",
+    "accepted": true
+  },
+  {
+    "control": "wrong-reply-accepted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "wrong-reply-accepted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "wrong-reply-accepted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "wrong-reply-accepted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "wrong-reply-accepted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "wrong-reply-accepted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "response-shape-unchecked-exact",
+    "accepted": true
+  },
+  {
+    "control": "response-shape-unchecked-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "response-shape-unchecked-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "response-shape-unchecked-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "response-shape-unchecked-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "response-shape-unchecked-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "response-shape-unchecked-success-output",
+    "accepted": false
+  },
+  {
+    "control": "authorization-plan-alias-exact",
+    "accepted": true
+  },
+  {
+    "control": "authorization-plan-alias-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "authorization-plan-alias-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "authorization-plan-alias-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "authorization-plan-alias-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "authorization-plan-alias-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "authorization-plan-alias-success-output",
+    "accepted": false
+  },
+  {
+    "control": "authorization-command-alias-exact",
+    "accepted": true
+  },
+  {
+    "control": "authorization-command-alias-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "authorization-command-alias-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "authorization-command-alias-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "authorization-command-alias-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "authorization-command-alias-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "authorization-command-alias-success-output",
+    "accepted": false
+  },
+  {
+    "control": "permission-deadline-not-checked-exact",
+    "accepted": true
+  },
+  {
+    "control": "permission-deadline-not-checked-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "permission-deadline-not-checked-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "permission-deadline-not-checked-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "permission-deadline-not-checked-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "permission-deadline-not-checked-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "permission-deadline-not-checked-success-output",
+    "accepted": false
+  },
+  {
+    "control": "owner-silently-restored-before-intent-exact",
+    "accepted": true
+  },
+  {
+    "control": "owner-silently-restored-before-intent-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "owner-silently-restored-before-intent-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "owner-silently-restored-before-intent-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "owner-silently-restored-before-intent-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "owner-silently-restored-before-intent-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "owner-silently-restored-before-intent-success-output",
+    "accepted": false
+  },
+  {
+    "control": "owner-silently-restored-after-transport-exact",
+    "accepted": true
+  },
+  {
+    "control": "owner-silently-restored-after-transport-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "owner-silently-restored-after-transport-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "owner-silently-restored-after-transport-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "owner-silently-restored-after-transport-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "owner-silently-restored-after-transport-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "owner-silently-restored-after-transport-success-output",
+    "accepted": false
+  },
+  {
+    "control": "processing-lock-omitted-exact",
+    "accepted": true
+  },
+  {
+    "control": "processing-lock-omitted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "processing-lock-omitted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "processing-lock-omitted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "processing-lock-omitted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "processing-lock-omitted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "processing-lock-omitted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "command-order-unchecked-exact",
+    "accepted": true
+  },
+  {
+    "control": "command-order-unchecked-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "command-order-unchecked-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "command-order-unchecked-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "command-order-unchecked-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "command-order-unchecked-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "command-order-unchecked-success-output",
+    "accepted": false
+  },
+  {
+    "control": "original-job-scope-unchecked-exact",
+    "accepted": true
+  },
+  {
+    "control": "original-job-scope-unchecked-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "original-job-scope-unchecked-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "original-job-scope-unchecked-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "original-job-scope-unchecked-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "original-job-scope-unchecked-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "original-job-scope-unchecked-success-output",
+    "accepted": false
+  },
+  {
+    "control": "constructor-adapters-not-required-exact",
+    "accepted": true
+  },
+  {
+    "control": "constructor-adapters-not-required-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "constructor-adapters-not-required-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "constructor-adapters-not-required-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "constructor-adapters-not-required-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "constructor-adapters-not-required-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "constructor-adapters-not-required-success-output",
+    "accepted": false
+  },
+  {
+    "control": "constructor-deadline-not-required-exact",
+    "accepted": true
+  },
+  {
+    "control": "constructor-deadline-not-required-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "constructor-deadline-not-required-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "constructor-deadline-not-required-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "constructor-deadline-not-required-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "constructor-deadline-not-required-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "constructor-deadline-not-required-success-output",
+    "accepted": false
+  },
+  {
+    "control": "malformed-job-not-refused-exact",
+    "accepted": true
+  },
+  {
+    "control": "malformed-job-not-refused-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "malformed-job-not-refused-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "malformed-job-not-refused-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "malformed-job-not-refused-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "malformed-job-not-refused-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "malformed-job-not-refused-success-output",
+    "accepted": false
+  },
+  {
+    "control": "existing-intent-sent-again-exact",
+    "accepted": true
+  },
+  {
+    "control": "existing-intent-sent-again-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "existing-intent-sent-again-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "existing-intent-sent-again-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "existing-intent-sent-again-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "existing-intent-sent-again-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "existing-intent-sent-again-success-output",
+    "accepted": false
+  }
+]

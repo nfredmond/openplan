@@ -11,6 +11,7 @@ import {
   FUNDING_AWARD_OPEN_SPENDING_STATUS_OPTIONS,
   FUNDING_AWARD_RISK_FLAG_OPTIONS,
 } from "@/lib/programs/catalog";
+import { calendarDayOf, loadWorkspaceCalendar } from "@/lib/time/workspace-calendar";
 
 const FUNDING_AWARD_MATCH_POSTURES = FUNDING_AWARD_MATCH_POSTURE_OPTIONS.map((option) => option.value) as [
   string,
@@ -297,7 +298,12 @@ export async function POST(request: NextRequest) {
     }
 
     if (parsed.data.obligationDueAt) {
-      const obligationTargetDate = parsed.data.obligationDueAt.slice(0, 10);
+      // The deadline's calendar day where the workspace is, not in UTC.
+      const calendar = await loadWorkspaceCalendar(supabase, access.project.workspace_id);
+      if (calendar.readError) {
+        audit.warn("workspace_calendar_unreadable", { awardId: award.id, message: calendar.readError });
+      }
+      const obligationTargetDate = calendarDayOf(parsed.data.obligationDueAt, calendar.timeZone);
       const { error: milestoneError } = await supabase.from("project_milestones").insert({
         project_id: access.project.id,
         funding_award_id: award.id,

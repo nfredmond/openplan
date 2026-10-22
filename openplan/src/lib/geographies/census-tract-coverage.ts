@@ -307,6 +307,12 @@ export function describeCoverageLoadFailure(options: {
   if (options.httpStatus === 401) {
     return [`Your session expired before the load finished, so it did not complete. Sign in again and retry. ${stored}`];
   }
+  if (options.httpStatus === 403) {
+    return [`${options.message}. Ask a workspace member to load ${name}. ${stored}`];
+  }
+  if (options.httpStatus === 429) {
+    return [`${options.message} ${stored}`];
+  }
   if (options.httpStatus === 504 || /timeout|abort/i.test(options.message)) {
     return [
       "The load ran past this deployment's 60-second limit and was cut off. " +

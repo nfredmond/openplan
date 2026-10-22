@@ -1,0 +1,32 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived",
+    "retainedDatabase": "openplan_attempt_cli_649c8c29e2294d8db4b621e89a71915d"
+  },
+  {
+    "case": "harmless-comment",
+    "outcome": "survived",
+    "retainedDatabase": "openplan_attempt_cli_850b8e5a68344fabbeef180a8db5ee66"
+  },
+  {
+    "case": "restored-after-harmless",
+    "outcome": "survived",
+    "retainedDatabase": "openplan_attempt_cli_23575ea3517f4cecaf0af7ff0252d0ed"
+  },
+  {
+    "case": "overwrite-restored",
+    "outcome": "intended_failure",
+    "diagnostic": "Error: Native retry replaces original stored bytes"
+  },
+  {
+    "case": "hash-ignored",
+    "outcome": "intended_failure",
+    "diagnostic": "Error: Native different retry bytes become held"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived",
+    "retainedDatabase": "openplan_attempt_cli_c025b9f5e93943c7a4cfcc6130ad1f15"
+  }
+]

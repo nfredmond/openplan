@@ -1,0 +1,78 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "case": "harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "case": "final-access-read-omitted",
+    "outcome": "intended_failure",
+    "diagnostic": "Saved inspection plus preparation needs nine actual access reads"
+  },
+  {
+    "case": "post-manifest-revocation-swallowed",
+    "outcome": "intended_failure",
+    "diagnostic": "Actual post-read actor revocation must refuse completion"
+  },
+  {
+    "case": "saved-native-manifest-altered",
+    "outcome": "intended_failure",
+    "diagnostic": "Existing source custody record differs"
+  },
+  {
+    "case": "native-delivery-promoted",
+    "outcome": "intended_failure",
+    "diagnostic": "Native preparation cannot permit delivery"
+  },
+  {
+    "case": "native-quality-promoted",
+    "outcome": "intended_failure",
+    "diagnostic": "Native preparation cannot promote processingQualityVerification"
+  },
+  {
+    "case": "child-does-not-interrupt",
+    "outcome": "intended_failure",
+    "diagnostic": "Actual preparation child must exit after frozen manifest bytes"
+  },
+  {
+    "case": "original-byte-hash-replaced",
+    "outcome": "intended_failure",
+    "diagnostic": "Native descriptor must bind actual original bytes"
+  },
+  {
+    "case": "native-original-scope-dropped",
+    "outcome": "intended_failure",
+    "diagnostic": "Native manifest must preserve original application scope"
+  },
+  {
+    "case": "native-absence-becomes-zero",
+    "outcome": "intended_failure",
+    "diagnostic": "Native absence cannot become zero or a file"
+  },
+  {
+    "case": "productReceiptSha256-not-bound",
+    "outcome": "intended_failure",
+    "diagnostic": "Native preparation must bind productReceiptSha256"
+  },
+  {
+    "case": "inspectionReceiptSha256-not-bound",
+    "outcome": "intended_failure",
+    "diagnostic": "Native preparation must bind inspectionReceiptSha256"
+  },
+  {
+    "case": "inspectionReportSha256-not-bound",
+    "outcome": "intended_failure",
+    "diagnostic": "Native preparation must bind inspectionReportSha256"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived"
+  }
+]

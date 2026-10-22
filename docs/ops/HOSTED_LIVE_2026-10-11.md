@@ -1,5 +1,27 @@
 # Hosted public cutover, October 11, 2026
 
+The [later demo AI and schema catch-up](HOSTED_DEMO_AI_AND_GTFS_SCHEMA_2026-10-11.md)
+supersedes this checkpoint's unconfigured-demo-AI and unapplied-GTFS statements.
+This record retains its initial deployment and test identities.
+
+**Corrections, October 12, 2026.** The text below is kept as written. These
+statements in it are superseded:
+
+- "401 migrations" and "transit candidate migrations 28 through 31 remain
+  unapplied": the hosted project records 405 migrations, ending at
+  `20261017000001`, matching the repository at `c03788c` (Management API read,
+  October 12). Later migrations follow the order in AGENTS.md. See the
+  catch-up record above.
+- "The final verified-TLS database archive contains 7,030,743 bytes": a later
+  capture of 7,179,228 bytes exists, and a daily encrypted offsite capture has
+  run since October 12 (`workers/hosted-backup/DEPLOY.md`).
+- "Preserve the prior May deployment for rollback": that build predates 405
+  migrations. Use the procedure and dated target in
+  [hosted recovery](../../openplan/docs/ops/HOSTED_RECOVERY.md#roll-back-the-hosted-app).
+- The independent review this record anticipates is complete. Its findings and
+  their status are in the
+  [October 12 follow-up](../reviews/2026-10-12-hosted-review-followup/STATUS.md).
+
 OpenPlan is live at [openplan-zeta.vercel.app](https://openplan-zeta.vercel.app).
 The public address serves checked `main` commit
 `8e721db11acf07755fbd6a4b6230d68ff912081b`, version 0.68.0, at this acceptance

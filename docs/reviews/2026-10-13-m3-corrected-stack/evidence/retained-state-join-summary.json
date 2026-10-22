@@ -1,0 +1,11 @@
+{
+  "appCases": 329,
+  "appFiles": 21,
+  "failed": 0,
+  "skipped": 0,
+  "workerSourcesMatchVerifiedRootCorrection": true,
+  "ownedPrHeads": 34,
+  "mainMerge": false,
+  "hostedWrite": false,
+  "newDefaultActivation": false
+}

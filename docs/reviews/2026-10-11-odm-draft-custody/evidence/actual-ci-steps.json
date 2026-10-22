@@ -1,0 +1,8 @@
+[
+  {
+    "name": "Captured draft harmless and targeted fault controls",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-draft-custody/verify_controls.py \\\n  --repo \"$GITHUB_WORKSPACE\" --out \"$RUNNER_TEMP/odm-draft-custody-controls\"\n",
+    "exit": 0,
+    "workflowSha256": "8f15ffec2c6454528fdd115e45c614d1d4975707a355e27d8fe37dba5bb197ff"
+  }
+]

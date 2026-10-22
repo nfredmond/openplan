@@ -1,0 +1,7 @@
+{
+  "state": "failed",
+  "reason": "omission injected before exec_module and overwritten by module initialization",
+  "firstCase": "owner-marker",
+  "targetReceiptRecoveryLaunched": false,
+  "failedSourceRetained": "failed-root-oracles-source.py"
+}

@@ -1,0 +1,13 @@
+{
+  "worktree": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-isolation-20261016",
+  "branch": "work/project-budget-reviewed-isolation-20261016",
+  "head": "4577951995969d002a8c89c56268cf34872a332c",
+  "appTree": "f520e01ef084e78f1bde90cbe4d6941facd2dae2",
+  "sourceReviewCommit": "75bf571d590de8f1bd57d67f601a86a788043501",
+  "patchSHA256": "404acef304a567807dc2ef2dda3292bc2e83eb0baaba9cce56d7567fe13af35c",
+  "allReviewedSourcePinsMatch": 13,
+  "originalStagedPatchUnchanged": true,
+  "canonicalUntrackedUnchanged": true,
+  "scope": "Exact independently reviewed source patch only; no new behavioral edits or tests, native/browser/finance/M11/v1 still open",
+  "checksReused": "Same app tree f520; author254related/scopedlint/types, independent26selected/sixfaults, not newly rerun"
+}

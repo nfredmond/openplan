@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
+import { MapUnavailableNotice } from "@/components/ui/map-unavailable-notice";
 import { keepMapSizedToContainer } from "@/lib/mapbox/keep-map-sized";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Button } from "@/components/ui/button";
@@ -841,11 +842,9 @@ export function FlightPlanEditor({
           ) : null}
         </div>
       ) : (
-        <StateBlock
+        <MapUnavailableNotice
           title="Map preview unavailable"
-          description="NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN is not set, so the flight lines cannot be drawn here. Generation, statistics, saving and exports still work."
-          tone="warning"
-          compact
+          stillWorks="Generation, statistics, saving and exports still work."
         />
       )}
 

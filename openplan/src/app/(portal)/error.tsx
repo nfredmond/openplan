@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { reportClientError } from "@/lib/observability/report-client-error";
 
 /**
  * What a resident sees when a public engagement page fails to load.
@@ -18,6 +19,7 @@ export default function PortalError({
 }) {
   useEffect(() => {
     console.error("[openplan/portal-error]", { message: error.message, digest: error.digest ?? null });
+    reportClientError("portal-error", error);
   }, [error]);
 
   return (

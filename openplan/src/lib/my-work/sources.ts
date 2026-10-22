@@ -113,6 +113,17 @@ export type MyWorkSource = {
   assigneeColumn: string | null;
   orderColumn: string;
   orderAscending: boolean;
+  /**
+   * The due-date column of a source whose rows may or may not have one. A
+   * dated row is a deadline and an undated row is not, so date bounds apply to
+   * this column and still keep the undated rows (see `loadMyWork`).
+   */
+  dueColumn?: string;
+  /**
+   * True when the due column is a TIMESTAMPTZ rather than a DATE. Date bounds
+   * on it then start and end at the workspace's midnight, not at midnight UTC.
+   */
+  dueIsInstant?: boolean;
   staticFilters: readonly MyWorkStaticFilter[];
   /**
    * How deep to read. Only the stage-gate source overrides it: the board keeps
@@ -133,6 +144,8 @@ export type MyWorkSource = {
 export type MyWorkSourceContext = {
   now: Date;
   limitPerSource: number;
+  /** The workspace's IANA zone. A TIMESTAMPTZ is shown as its day on this calendar. */
+  timeZone: string;
 };
 
 // ── row helpers ─────────────────────────────────────────────────────────────
@@ -255,7 +268,7 @@ const deliverablesSource: MyWorkSource = {
     { kind: "neq", column: "status", value: CLOSED_DELIVERABLE_STATUS },
     { kind: "notNull", column: "due_date" },
   ],
-  toItems: (rows, { now }) =>
+  toItems: (rows, { now, timeZone }) =>
     rows.map((row) => {
       const project = embedded(row.projects);
       const dueOn = asString(row.due_date);
@@ -273,7 +286,7 @@ const deliverablesSource: MyWorkSource = {
         ...assigneeKey(row),
         ownerLabel: asString(row.owner_label),
         badge: deadlineBadge("Deliverable", overdue),
-        detail: status ? `${status} · due ${formatWorkDeadlineDate(dueOn)}` : `Due ${formatWorkDeadlineDate(dueOn)}`,
+        detail: status ? `${status} · due ${formatWorkDeadlineDate(dueOn, timeZone)}` : `Due ${formatWorkDeadlineDate(dueOn, timeZone)}`,
         href: projectHref(asString(row.project_id), "project-deliverables"),
         dedupKey: null,
       } satisfies MyWorkItem;
@@ -298,7 +311,7 @@ const milestonesSource: MyWorkSource = {
     { kind: "neq", column: "status", value: CLOSED_MILESTONE_STATUS },
     { kind: "notNull", column: "target_date" },
   ],
-  toItems: (rows, { now }) =>
+  toItems: (rows, { now, timeZone }) =>
     rows.map((row) => {
       const project = embedded(row.projects);
       const dueOn = asString(row.target_date);
@@ -319,8 +332,8 @@ const milestonesSource: MyWorkSource = {
         ownerLabel: asString(row.owner_label),
         badge: deadlineBadge("Milestone", overdue),
         detail: phase
-          ? `${humanizeStatus(phase)} phase checkpoint · target ${formatWorkDeadlineDate(dueOn)}`
-          : `Project checkpoint · target ${formatWorkDeadlineDate(dueOn)}`,
+          ? `${humanizeStatus(phase)} phase checkpoint · target ${formatWorkDeadlineDate(dueOn, timeZone)}`
+          : `Project checkpoint · target ${formatWorkDeadlineDate(dueOn, timeZone)}`,
         href: projectHref(asString(row.project_id), `project-milestone-${row.id}`),
         // An obligation milestone mirrors a funding award's own
         // obligation_due_at (20260416000053). Both would otherwise appear —
@@ -348,7 +361,7 @@ const submittalsSource: MyWorkSource = {
     { kind: "neq", column: "status", value: CLOSED_SUBMITTAL_STATUS },
     { kind: "notNull", column: "due_date" },
   ],
-  toItems: (rows, { now }) =>
+  toItems: (rows, { now, timeZone }) =>
     rows.map((row) => {
       const project = embedded(row.projects);
       const dueOn = asString(row.due_date);
@@ -370,7 +383,7 @@ const submittalsSource: MyWorkSource = {
         // is rendered as one.
         ownerLabel: null,
         badge: deadlineBadge("Submittal", overdue),
-        detail: [type ? `${type} packet` : "Packet", agency ? `for ${agency}` : null, `due ${formatWorkDeadlineDate(dueOn)}`]
+        detail: [type ? `${type} packet` : "Packet", agency ? `for ${agency}` : null, `due ${formatWorkDeadlineDate(dueOn, timeZone)}`]
           .filter(Boolean)
           .join(" · "),
         href: projectHref(asString(row.project_id), `project-submittal-${row.id}`),
@@ -462,7 +475,7 @@ const stageGateHoldsSource: MyWorkSource = {
   orderAscending: false,
   staticFilters: [],
   readLimit: (limitPerSource) => Math.max(limitPerSource * 10, 200),
-  toItems: (rows, { now: _now, limitPerSource }) =>
+  toItems: (rows, { limitPerSource, timeZone }) =>
     collapseToHeldGates(rows)
       .slice(0, limitPerSource)
       .map((row) => {
@@ -483,7 +496,7 @@ const stageGateHoldsSource: MyWorkSource = {
           badge: { label: "Gate on hold", tone: "warning" },
           detail: [
             `Gate ${asString(row.gate_id) ?? "(unnamed)"}`,
-            asString(row.decided_at) ? `held ${formatWorkDeadlineDate(asString(row.decided_at))}` : null,
+            asString(row.decided_at) ? `held ${formatWorkDeadlineDate(asString(row.decided_at), timeZone)}` : null,
             rationale,
           ]
             .filter(Boolean)
@@ -550,7 +563,7 @@ const engagementModerationSource: MyWorkSource = {
     // console counts its review queue from this same list.
     { kind: "in", column: "status", values: ENGAGEMENT_ITEM_ACTIONABLE_STATUSES },
   ],
-  toItems: (rows) =>
+  toItems: (rows, { timeZone }) =>
     rows.map((row) => {
       const campaign = embedded(row.engagement_campaigns);
       const project = embedded(campaign?.projects);
@@ -574,7 +587,7 @@ const engagementModerationSource: MyWorkSource = {
             : { label: "Awaiting review", tone: "warning" },
         detail: [
           campaignTitle,
-          asString(row.created_at) ? `received ${formatWorkDeadlineDate(asString(row.created_at))}` : null,
+          asString(row.created_at) ? `received ${formatWorkDeadlineDate(asString(row.created_at), timeZone)}` : null,
           humanizeStatus(asString(row.source_type)),
         ]
           .filter(Boolean)
@@ -602,7 +615,7 @@ const failedModelRunsSource: MyWorkSource = {
   orderColumn: "created_at",
   orderAscending: false,
   staticFilters: [{ kind: "eq", column: "status", value: FAILED_RUN_STATUS }],
-  toItems: (rows, { now }) =>
+  toItems: (rows, { now, timeZone }) =>
     rows
       .filter((row) => isWithinFailedRunWindow(asString(row.created_at), now))
       .map((row) => {
@@ -624,7 +637,7 @@ const failedModelRunsSource: MyWorkSource = {
           // here is the same — this queue never guesses why a run failed.
           detail: [
             humanizeStatus(asString(row.engine_key)),
-            asString(row.created_at) ? `failed ${formatWorkDeadlineDate(asString(row.created_at))}` : null,
+            asString(row.created_at) ? `failed ${formatWorkDeadlineDate(asString(row.created_at), timeZone)}` : null,
             error ?? "No cause recorded — open the run to see how far it got.",
           ]
             .filter(Boolean)
@@ -654,7 +667,7 @@ const narrativeDraftsSource: MyWorkSource = {
     // ONLY REPORT SECTIONS, AND THE OMISSION IS DELIBERATE — see the note below.
     { kind: "eq", column: "target_kind", value: LINKABLE_DRAFT_TARGET_KIND },
   ],
-  toItems: (rows) =>
+  toItems: (rows, { timeZone }) =>
     rows.map((row) => {
       const grounded = asNumber(row.grounded_sentence_count);
       const total = asNumber(row.total_sentence_count);
@@ -676,7 +689,7 @@ const narrativeDraftsSource: MyWorkSource = {
         detail: [
           grounded !== null && total !== null ? `${grounded} of ${total} sentences grounded` : null,
           asString(row.model) ? `drafted by ${asString(row.model)}` : null,
-          asString(row.created_at) ? `${formatWorkDeadlineDate(asString(row.created_at))}` : null,
+          asString(row.created_at) ? `${formatWorkDeadlineDate(asString(row.created_at), timeZone)}` : null,
         ]
           .filter(Boolean)
           .join(" · "),
@@ -736,10 +749,11 @@ const landUsePlanActionsSource: MyWorkSource = {
   assigneeColumn: "assignee_user_id",
   orderColumn: "due_on",
   orderAscending: true,
+  dueColumn: "due_on",
   staticFilters: [
     { kind: "notIn", column: "status", values: ["completed", "deferred"] },
   ],
-  toItems: (rows, { now }) => rows.map((row) => {
+  toItems: (rows, { now, timeZone }) => rows.map((row) => {
     const version = embedded(row.land_use_plan_versions);
     const plan = embedded(version?.land_use_plans);
     const dueOn = asString(row.due_on);
@@ -757,7 +771,7 @@ const landUsePlanActionsSource: MyWorkSource = {
       ...assigneeKey(row),
       ownerLabel: asString(row.responsible_party),
       badge: dueOn ? deadlineBadge("Plan action", overdue) : { label: "Plan action", tone: "neutral" },
-      detail: `${humanizeStatus(asString(row.status)) ?? "Open"} · ${dueOn ? `due ${formatWorkDeadlineDate(dueOn)}` : "No due date"}`,
+      detail: `${humanizeStatus(asString(row.status)) ?? "Open"} · ${dueOn ? `due ${formatWorkDeadlineDate(dueOn, timeZone)}` : "No due date"}`,
       href: planId ? `/land-use-plans/${planId}` : "/land-use-plans",
       dedupKey: null,
     } satisfies MyWorkItem;
@@ -783,7 +797,7 @@ const contractPendingReviewsSource: MyWorkSource = {
 const contractTasksSource: MyWorkSource = {
   id: "contract_tasks", label: "Contract tasks", readLabel: "approved contract task assignments", block: "undated",
   table: "contract_active_tasks_my_work", select: "id, engagement_id, workspace_id, assignee_user_id, project_id, title, deadline",
-  workspaceFilterColumn: "workspace_id", assigneeColumn: "assignee_user_id", orderColumn: "id", orderAscending: true,
+  workspaceFilterColumn: "workspace_id", assigneeColumn: "assignee_user_id", orderColumn: "id", orderAscending: true, dueColumn: "deadline",
   staticFilters: [],
   toItems: (rows,{now}) => rows.map(row => { const task=row,dueOn=asString(task?.deadline),overdue=dueOn?isDeadlinePast(dueOn,now):false;return { sourceId:"contract_tasks",block:dueOn?"deadlines":"undated",id:String(row.id),title:asString(task?.title)??"Contract task",projectId:asString(task?.project_id),projectName:null,dueOn,isOverdue:overdue,assigneeUserId:asString(row.assignee_user_id),ownerLabel:null,badge:{label:"Contract task",tone:overdue?"warning":"neutral"},detail:dueOn?`Agreed deadline ${dueOn}`:"Agreed deadline unrecorded",href:`/invoicing/engagements/${row.engagement_id}?tab=remaining`,dedupKey:null } satisfies MyWorkItem; }),
 };
@@ -799,13 +813,13 @@ const workProgramPeriodsSource: MyWorkSource = {
 const workProgramReviewsSource: MyWorkSource = {
   id: "work_program_reviews", label: "Work program reviews", readLabel: "work program reviews", block: "undated",
   table: "program_work_program_reviews", select: "id, program_id, revision_id, assignee_user_id, due_on, status, programs!inner(title, workspace_id)",
-  workspaceFilterColumn: "workspace_id", assigneeColumn: "assignee_user_id", orderColumn: "due_on", orderAscending: true,
+  workspaceFilterColumn: "workspace_id", assigneeColumn: "assignee_user_id", orderColumn: "due_on", orderAscending: true, dueColumn: "due_on",
   staticFilters: [{ kind: "in", column: "status", values: ["pending", "returned"] }],
-  toItems: (rows, { now }) => rows.map(row => {
+  toItems: (rows, { now, timeZone }) => rows.map(row => {
     const program = embedded(row.programs), dueOn = asString(row.due_on), overdue = isDeadlinePast(dueOn, now);
     return { sourceId: "work_program_reviews", block: dueOn ? "deadlines" : "undated", id: String(row.id),
       title: `${row.status === "returned" ? "Revise" : "Review"} ${asString(program?.title) ?? "work program"}`, projectId: null, projectName: null, dueOn, isOverdue: overdue,
-      ...assigneeKey(row), ownerLabel: null, badge: dueOn ? deadlineBadge("OWP review", overdue) : { label: row.status === "returned" ? "Changes requested" : "OWP review", tone: "neutral" }, detail: dueOn ? `Due ${formatWorkDeadlineDate(dueOn)}` : "No due date assigned",
+      ...assigneeKey(row), ownerLabel: null, badge: dueOn ? deadlineBadge("OWP review", overdue) : { label: row.status === "returned" ? "Changes requested" : "OWP review", tone: "neutral" }, detail: dueOn ? `Due ${formatWorkDeadlineDate(dueOn, timeZone)}` : "No due date assigned",
       href: `/programs/${row.program_id}/work-program#work-program-review`, dedupKey: null } satisfies MyWorkItem;
   }),
 };
@@ -825,7 +839,7 @@ const landUsePlanProcessSource: MyWorkSource = {
     { kind: "notNull", column: "due_on" },
     { kind: "notIn", column: "status", values: ["complete", "not_applicable"] },
   ],
-  toItems: (rows, { now }) => rows.map((row) => {
+  toItems: (rows, { now, timeZone }) => rows.map((row) => {
     const plan = embedded(row.land_use_plans);
     const dueOn = asString(row.due_on);
     const overdue = isDeadlinePast(dueOn, now);
@@ -840,7 +854,7 @@ const landUsePlanProcessSource: MyWorkSource = {
       isOverdue: overdue,
       ownerLabel: null,
       badge: deadlineBadge("Plan process", overdue),
-      detail: `${humanizeStatus(asString(row.status)) ?? "Open"} · due ${formatWorkDeadlineDate(dueOn)}`,
+      detail: `${humanizeStatus(asString(row.status)) ?? "Open"} · due ${formatWorkDeadlineDate(dueOn, timeZone)}`,
       href: asString(row.plan_id) ? `/land-use-plans/${row.plan_id}` : "/land-use-plans",
       dedupKey: null,
     } satisfies MyWorkItem;
@@ -859,7 +873,7 @@ const landUsePlanReviewClosingSource: MyWorkSource = {
   orderColumn: "review_close_on",
   orderAscending: true,
   staticFilters: [{ kind: "eq", column: "status", value: "open" }],
-  toItems: (rows, { now }) => rows.map((row) => {
+  toItems: (rows, { now, timeZone }) => rows.map((row) => {
     const plan = embedded(row.land_use_plans);
     const dueOn = asString(row.review_close_on);
     const overdue = isDeadlinePast(dueOn, now);
@@ -874,7 +888,7 @@ const landUsePlanReviewClosingSource: MyWorkSource = {
       isOverdue: overdue,
       ownerLabel: null,
       badge: deadlineBadge("Plan review", overdue),
-      detail: `Public review closes ${formatWorkDeadlineDate(dueOn)}`,
+      detail: `Public review closes ${formatWorkDeadlineDate(dueOn, timeZone)}`,
       href: asString(row.plan_id) ? `/land-use-plans/${row.plan_id}` : "/land-use-plans",
       dedupKey: null,
     } satisfies MyWorkItem;
@@ -895,8 +909,9 @@ const grantDecisionsSource: MyWorkSource = {
   assigneeColumn: null,
   orderColumn: "decision_due_at",
   orderAscending: true,
+  dueIsInstant: true,
   staticFilters: [{ kind: "notNull", column: "decision_due_at" }],
-  toItems: (rows, { now }) =>
+  toItems: (rows, { now, timeZone }) =>
     rows
       .map((row) => {
         // The predicates come from lib/operations/funding-decision-status.ts
@@ -933,7 +948,7 @@ const grantDecisionsSource: MyWorkSource = {
           detail: [
             agency,
             closingSoon ? "closing soon" : null,
-            `decision due ${formatWorkDeadlineDate(facts.decisionDueAt)}`,
+            `decision due ${formatWorkDeadlineDate(facts.decisionDueAt, timeZone)}`,
           ]
             .filter(Boolean)
             .join(" · "),
@@ -942,6 +957,71 @@ const grantDecisionsSource: MyWorkSource = {
         } satisfies MyWorkItem;
       })
       .filter((item): item is MyWorkItem => item !== null),
+};
+
+// ── 9b. Application due dates on pursued opportunities ──────────────────────
+
+/**
+ * The decision state that means "we are applying" (20260410000042). Every later
+ * state (under_review, awarded, denied) means the application went in, and
+ * skip means it was dropped, so none of those rows is read: a call that closed
+ * after the planner recorded a submission or dropped it is never overdue.
+ */
+const PURSUED_DECISION_STATE = "pursue";
+
+/**
+ * Opportunity statuses that end the pursuit regardless of decision state
+ * (20260410000041): an archived call was set aside, an awarded one went in.
+ * A `closed` status stays readable, because a pursued call that closed with no
+ * recorded submission is exactly the missed deadline this source exists for.
+ */
+const PURSUIT_ENDED_OPPORTUNITY_STATUSES: readonly string[] = ["archived", "awarded"];
+
+const grantApplicationDueSource: MyWorkSource = {
+  id: "grant_application_due",
+  label: "Applications due",
+  readLabel: "pursued grant opportunities",
+  block: "workspace_deadlines",
+  table: "funding_opportunities",
+  select: "id, project_id, title, opportunity_status, decision_state, closes_at, agency_name, projects(id, name)",
+  workspaceFilterColumn: "workspace_id",
+  assigneeColumn: null,
+  orderColumn: "closes_at",
+  orderAscending: true,
+  dueIsInstant: true,
+  staticFilters: [
+    { kind: "notNull", column: "closes_at" },
+    { kind: "eq", column: "decision_state", value: PURSUED_DECISION_STATE },
+    { kind: "notIn", column: "opportunity_status", values: PURSUIT_ENDED_OPPORTUNITY_STATUSES },
+  ],
+  toItems: (rows, { now, timeZone }) =>
+    rows.map((row) => {
+      const project = embedded(row.projects);
+      const id = String(row.id);
+      const closesAt = asString(row.closes_at);
+      // closes_at is a full timestamp entered as a local date and time, so the
+      // shared rule compares instants.
+      const overdue = isDeadlinePast(closesAt, now);
+      const closes = formatWorkDeadlineDate(closesAt, timeZone);
+      return {
+        sourceId: "grant_application_due",
+        block: "workspace_deadlines",
+        id,
+        title: asString(row.title) ?? "(untitled opportunity)",
+        projectId: asString(row.project_id),
+        projectName: asString(project?.name),
+        dueOn: closesAt,
+        isOverdue: overdue,
+        // No assigneeUserId key: funding_opportunities has no assignee column.
+        ownerLabel: null,
+        badge: deadlineBadge("Application", overdue),
+        detail: overdue
+          ? `Call closed ${closes}. Set the decision to Under review if it went in, or Skip.`
+          : [asString(row.agency_name), `closes ${closes}`].filter(Boolean).join(" · "),
+        href: `/grants?focusOpportunityId=${id}#funding-opportunity-${id}`,
+        dedupKey: null,
+      } satisfies MyWorkItem;
+    }),
 };
 
 // ── 10. Award obligations — de-duplicated against mirrored milestones ────────
@@ -958,10 +1038,11 @@ const awardObligationsSource: MyWorkSource = {
   assigneeColumn: null,
   orderColumn: "obligation_due_at",
   orderAscending: true,
+  dueIsInstant: true,
   staticFilters: [
     { kind: "notNull", column: "obligation_due_at" },
   ],
-  toItems: (rows, { now }) =>
+  toItems: (rows, { now, timeZone }) =>
     rows.map((row) => {
       const project = embedded(row.projects);
       const dueOn = asString(row.obligation_due_at);
@@ -980,7 +1061,7 @@ const awardObligationsSource: MyWorkSource = {
         ownerLabel: null,
         badge: review ? { label: "Review obligation", tone: "warning" } : deadlineBadge("Obligation", overdue),
         detail: [
-          review ? `Recorded obligation deadline ${formatWorkDeadlineDate(dueOn)}. ${review}` : `Funds must be obligated by ${formatWorkDeadlineDate(dueOn)}`,
+          review ? `Recorded obligation deadline ${formatWorkDeadlineDate(dueOn, timeZone)}. ${review}` : `Funds must be obligated by ${formatWorkDeadlineDate(dueOn, timeZone)}`,
           risk && risk !== "none" ? `risk flag: ${risk}` : null,
         ]
           .filter(Boolean)
@@ -1011,7 +1092,7 @@ const invoiceWindowsSource: MyWorkSource = {
     // invoicePriority uses, imported rather than retyped.
     { kind: "notIn", column: "status", values: SETTLED_INVOICE_STATUSES },
   ],
-  toItems: (rows, { now }) =>
+  toItems: (rows, { now, timeZone }) =>
     rows.map((row) => {
       const project = embedded(row.projects);
       const dueOn = asString(row.due_date);
@@ -1036,7 +1117,7 @@ const invoiceWindowsSource: MyWorkSource = {
         detail: [
           submittedTo ? `Submitted to ${submittedTo}` : "Review and payment lane",
           humanizeStatus(asString(row.status)),
-          `due ${formatWorkDeadlineDate(dueOn)}`,
+          `due ${formatWorkDeadlineDate(dueOn, timeZone)}`,
         ]
           .filter(Boolean)
           .join(" · "),
@@ -1071,6 +1152,7 @@ export const MY_WORK_SOURCES: readonly MyWorkSource[] = [
   landUsePlanProcessSource,
   landUsePlanReviewClosingSource,
   grantDecisionsSource,
+  grantApplicationDueSource,
   awardObligationsSource,
   invoiceWindowsSource,
 ];

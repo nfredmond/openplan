@@ -1,0 +1,12 @@
+[
+  {
+    "memoryMaxBytes": 134217728,
+    "stopped": true,
+    "oomKilled": false
+  },
+  {
+    "memoryMaxBytes": 1073741824,
+    "stopped": true,
+    "oomKilled": false
+  }
+]

@@ -16,7 +16,7 @@ function fixture() {
     ],
   };
   const { client } = createFakeSupabase(db);
-  return { db, action, read: (userId = ME) => loadMyWork(client, { workspaceId: WS_A, userId, now: NOW, roster: ROSTER }) };
+  return { db, action, read: (userId = ME) => loadMyWork(client, { workspaceId: WS_A, userId, now: NOW, roster: ROSTER, timeZone: "UTC" }) };
 }
 
 describe("plan implementation handoff to My Work", () => {

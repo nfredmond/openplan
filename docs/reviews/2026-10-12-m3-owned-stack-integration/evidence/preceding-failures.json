@@ -1,0 +1,23 @@
+{
+  "aggregateOps": {
+    "unittestCases": 298,
+    "failures": 1,
+    "reason": "26 allocated pixels below28 required for the update/recovery label at640x700 and double scale"
+  },
+  "directPrecedingLayout": {
+    "returncode": 1,
+    "reason": "same clipped-label assertion"
+  },
+  "rejectedLayoutVariants": [
+    {
+      "name": "natural notebook request",
+      "reason": "output collapsed"
+    },
+    {
+      "name": "310px tab minimum",
+      "reason": "output collapsed"
+    }
+  ],
+  "firstCapture": "superseded because capture can overtake X11 redraw; final six views use a settled owned fixture",
+  "boundary": "Failed logs and proposed sources remain private; no running application or database was targeted."
+}

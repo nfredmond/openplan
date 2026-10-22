@@ -1,0 +1,217 @@
+{
+  "controls": {
+    "total": 607,
+    "outcomes": {
+      "survived": 99,
+      "intended_refusal": 508
+    },
+    "exactReviewedRows": true
+  },
+  "identityChallenges": [
+    {
+      "mutation": "harmless-manifest-whitespace",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "private-manifest-hash",
+      "outcome": "intended_refusal",
+      "reason": "files:app-env-private.json"
+    },
+    {
+      "mutation": "plan-head",
+      "outcome": "intended_refusal",
+      "reason": "plan:head"
+    },
+    {
+      "mutation": "plan-root",
+      "outcome": "intended_refusal",
+      "reason": "plan:root"
+    },
+    {
+      "mutation": "plan-source",
+      "outcome": "intended_refusal",
+      "reason": "plan:source"
+    },
+    {
+      "mutation": "plan-dbId",
+      "outcome": "intended_refusal",
+      "reason": "plan:dbId"
+    },
+    {
+      "mutation": "helper-name-upstream-mismatch",
+      "outcome": "intended_refusal",
+      "reason": "configuration:upstreams"
+    },
+    {
+      "mutation": "foreign-valid-target",
+      "outcome": "intended_refusal",
+      "reason": "configuration:endpoints"
+    },
+    {
+      "mutation": "app-head",
+      "outcome": "intended_refusal",
+      "reason": "configuration:appHead"
+    },
+    {
+      "mutation": "source-bytes",
+      "outcome": "intended_refusal",
+      "reason": "files:source-binding-private.json"
+    },
+    {
+      "mutation": "operational-intent",
+      "outcome": "intended_refusal",
+      "reason": "operational:clone-intent.json:absent"
+    },
+    {
+      "mutation": "bound-template-t3-6bf6371f",
+      "outcome": "intended_refusal",
+      "reason": "files:launcher.py"
+    },
+    {
+      "mutation": "bound-template-project-geography-preview-final-20261015",
+      "outcome": "intended_refusal",
+      "reason": "files:policy.py"
+    },
+    {
+      "mutation": "bound-template-06a108010ab39aa42eed4c2bcda3e1371b8aa813",
+      "outcome": "intended_refusal",
+      "reason": "files:policy.py"
+    },
+    {
+      "mutation": "actual-launcher-root",
+      "outcome": "intended_refusal",
+      "reason": "launcher-root:root"
+    },
+    {
+      "mutation": "checkout-command-baseline",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "checkout-repository",
+      "outcome": "intended_refusal",
+      "reason": "checkout-command:argv"
+    },
+    {
+      "mutation": "exact-restoration",
+      "outcome": "survived"
+    }
+  ],
+  "healthMutations": [
+    {
+      "mutation": "baseline",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "harmless-comment",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "harmless-comment:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "always-refuses",
+      "outcome": "killed",
+      "reason": "health-control:baseline-fixed-configured:unexpected-refusal:named-fault:health-always-refuses"
+    },
+    {
+      "mutation": "always-refuses:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "skip-health-policy",
+      "outcome": "killed",
+      "reason": "health-control:auth-status-201:expected-refusal:health:auth"
+    },
+    {
+      "mutation": "skip-health-policy:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "skip-health-request",
+      "outcome": "killed",
+      "reason": "health-control:baseline-fixed-configured:request-0"
+    },
+    {
+      "mutation": "skip-health-request:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "skip-old-request",
+      "outcome": "killed",
+      "reason": "health-control:baseline-fixed-configured:unexpected-refusal:health:oldOrigin"
+    },
+    {
+      "mutation": "skip-old-request:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "skip-verify-services-health",
+      "outcome": "killed",
+      "reason": "health-control:verify-services-baseline:requests-not-acquired"
+    },
+    {
+      "mutation": "skip-verify-services-health:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "old-none-only-regression",
+      "outcome": "killed",
+      "reason": "health-control:baseline-fixed-configured:unexpected-refusal:health:oldOrigin"
+    },
+    {
+      "mutation": "old-none-only-regression:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "allow-reflected-old",
+      "outcome": "killed",
+      "reason": "health-control:old-header-reflected:expected-refusal:health:oldOrigin"
+    },
+    {
+      "mutation": "allow-reflected-old:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "allow-wildcard-old",
+      "outcome": "killed",
+      "reason": "health-control:old-header-wildcard:expected-refusal:health:oldOrigin"
+    },
+    {
+      "mutation": "allow-wildcard-old:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "ignore-own-origin",
+      "outcome": "killed",
+      "reason": "health-control:own-header-absent:expected-refusal:health:ownOrigin"
+    },
+    {
+      "mutation": "ignore-own-origin:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "classifier:unrelated-runtime",
+      "outcome": "unclassified-runtime-error"
+    },
+    {
+      "mutation": "classifier:unrelated-value",
+      "outcome": "unclassified-runtime-error"
+    },
+    {
+      "mutation": "final-exact-restoration",
+      "outcome": "survived"
+    }
+  ],
+  "restoration": {
+    "functions": true,
+    "controlRows": true,
+    "templateBytes": true,
+    "templateSha256": {
+      "controls.py": "5ce62be0c8014884c394844ec0ff4e71ff3161f14d48fe5e6445be388c70a949",
+      "launcher.py": "830cda6f8bae69b46e5e6108ba22a82236817b340fe783ec4b4118e7c9ed36fb",
+      "policy.py": "9c63235a3505a4301cb7e0a7cc90c53fd6ddf796a101047a9f53ce3c4f4c214f"
+    }
+  },
+  "operationallyProved": false
+}

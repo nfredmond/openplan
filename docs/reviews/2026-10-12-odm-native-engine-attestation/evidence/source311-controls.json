@@ -1,0 +1,448 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "mounted-byte-hash-omitted",
+    "test": "test_valid_identity_and_exact_configuration",
+    "kind": "broken_behavior",
+    "reason": "Exact mounted configuration spelling must affect its hash",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "launch-image-unchecked",
+    "test": "test_launch_refusals",
+    "kind": "broken_behavior",
+    "reason": "Native launch guard: Image",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "launch-profile-unchecked",
+    "test": "test_launch_refusals",
+    "kind": "broken_behavior",
+    "reason": "Native launch guard: Config.Entrypoint",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "launch-environment-unchecked",
+    "test": "test_launch_refusals",
+    "kind": "broken_behavior",
+    "reason": "Native launch guard: Config.Env",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "launch-isolation-unchecked",
+    "test": "test_launch_refusals",
+    "kind": "broken_behavior",
+    "reason": "Native launch guard: HostConfig.",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "mount-profile-unchecked",
+    "test": "test_launch_refusals",
+    "kind": "broken_behavior",
+    "reason": "Native mount guard: Type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "mount-access-unchecked",
+    "test": "test_launch_refusals",
+    "kind": "broken_behavior",
+    "reason": "Native mount guard: RW",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "configuration-profile-unchecked",
+    "test": "test_launch_refusals",
+    "kind": "broken_behavior",
+    "reason": "Unsupported native configuration must refuse",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "original-identity-unchecked",
+    "test": "test_identity_and_state_refusals",
+    "kind": "broken_behavior",
+    "reason": [
+      "Native identity guard:",
+      "Native original configuration digest must match"
+    ],
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "original-state-unchecked",
+    "test": "test_identity_and_state_refusals",
+    "kind": "broken_behavior",
+    "reason": "Native identity guard: State.",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "bridge-unchecked",
+    "test": "test_network_and_endpoint_refusals",
+    "kind": "broken_behavior",
+    "reason": "Native network guard:",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "membership-unchecked",
+    "test": "test_network_and_endpoint_refusals",
+    "kind": "broken_behavior",
+    "reason": "Native member guard: EndpointID",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "endpoint-unchecked",
+    "test": "test_network_and_endpoint_refusals",
+    "kind": "broken_behavior",
+    "reason": "Native member guard: IPv4Address",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "json-duplicates-accepted",
+    "test": "test_json_refusals",
+    "kind": "broken_behavior",
+    "reason": "Native JSON bound, uniqueness and finite values must refuse",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "json-nonfinite-accepted",
+    "test": "test_json_refusals",
+    "kind": "broken_behavior",
+    "reason": "Native JSON bound, uniqueness and finite values must refuse",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "json-text-accepted",
+    "test": "test_json_refusals",
+    "kind": "broken_behavior",
+    "reason": "Native JSON bound, uniqueness and finite values must refuse",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "complete-observation-false",
+    "test": "test_supervised_three_read_only_requests",
+    "kind": "broken_behavior",
+    "reason": "Actual supervised observation must return true",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "host-path-substituted-for-mounted-bytes",
+    "test": "test_mounted_bytes_are_not_host_path_bytes",
+    "kind": "broken_behavior",
+    "reason": "Mounted bytes cannot be replaced by host path bytes",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "prechecks-omitted",
+    "test": "test_pre_refusals_never_start_an_observer",
+    "kind": "broken_behavior",
+    "reason": "Pre-refused observation cannot start a child",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "configured-original-unchecked",
+    "test": "test_pre_refusals_never_start_an_observer",
+    "kind": "broken_behavior",
+    "reason": "Changed configured original cannot attest",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "parent-deadline-unchecked",
+    "test": "test_stalled_observation_keeps_actual_deadline",
+    "kind": "broken_behavior",
+    "reason": "Native observation must report its actual deadline",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "active-owner-unchecked",
+    "test": "test_owner_ends_during_observation",
+    "kind": "broken_behavior",
+    "reason": "Native owner must interrupt its observation",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "peer-uid-unchecked",
+    "test": "test_peer_uid_requires_actual_unix_credentials",
+    "kind": "broken_behavior",
+    "reason": "Native daemon peer cannot differ",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "daemon-response-and-json-bounds-omitted",
+    "test": "test_daemon_bytes_and_diagnostics_refuse",
+    "kind": "broken_behavior",
+    "reason": "Malformed native daemon bytes must refuse",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "constructor-config-unchecked",
+    "test": "test_explicit_constructor_and_launch_port",
+    "kind": "broken_behavior",
+    "reason": "Native constructor must retain its explicit original",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "constructor-container-unchecked",
+    "test": "test_explicit_constructor_and_launch_port",
+    "kind": "broken_behavior",
+    "reason": "Native constructor must retain its explicit original",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "launch-port-unchecked",
+    "test": "test_explicit_constructor_and_launch_port",
+    "kind": "broken_behavior",
+    "reason": "Native launch port must remain valid",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "input-frame-bound-omitted",
+    "test": "test_child_frame_bound_precedes_body_read",
+    "kind": "broken_behavior",
+    "reason": "Oversized native observer frame must refuse before body",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "parent-receipt-unchecked",
+    "test": "test_parent_receipt_and_output_bounds",
+    "kind": "broken_behavior",
+    "reason": "Malformed native observer receipt must refuse",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "post-receipt-owner-unchecked",
+    "test": "test_owner_and_deadline_rechecked_after_receipt",
+    "kind": "broken_behavior",
+    "reason": "Native owner must be checked after the completed receipt",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "post-receipt-deadline-unchecked",
+    "test": "test_owner_and_deadline_rechecked_after_receipt",
+    "kind": "broken_behavior",
+    "reason": "Native deadline must be checked after the completed receipt",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "launch-fingerprint-omits-Config",
+    "test": "test_original_launch_metadata_affects_fingerprint",
+    "kind": "broken_behavior",
+    "reason": "Original native launch metadata must affect its fingerprint: Config",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "launch-fingerprint-omits-HostConfig",
+    "test": "test_original_launch_metadata_affects_fingerprint",
+    "kind": "broken_behavior",
+    "reason": "Original native launch metadata must affect its fingerprint: HostConfig",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "launch-fingerprint-omits-Mounts",
+    "test": "test_original_launch_metadata_affects_fingerprint",
+    "kind": "broken_behavior",
+    "reason": "Original native launch metadata must affect its fingerprint: Mounts",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "parent-buffer-bound-unchecked",
+    "test": "test_parent_buffers_stay_bounded",
+    "kind": "broken_behavior",
+    "reason": "Native observer buffer may not exceed its bound",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "child-input-shape-unchecked",
+    "test": "test_child_input_shape_refuses_before_daemon",
+    "kind": "broken_behavior",
+    "reason": "Foreign native input cannot query the daemon",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "parent-lifetime-watcher-omitted",
+    "test": "test_observer_ends_when_parent_exits",
+    "kind": "broken_behavior",
+    "reason": "Native observer must end with its parent lifetime",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "structural-launch-inspection-differs",
+    "test": "test_structural_projection_refusals",
+    "kind": "diagnostic_refusal",
+    "reason": "Required native refusal: Native engine launch inspection differs",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "structural-original-mounts-are-required",
+    "test": "test_structural_projection_refusals",
+    "kind": "diagnostic_refusal",
+    "reason": "Required native refusal: Native engine original mounts are required",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "structural-mount-scope-differs",
+    "test": "test_structural_projection_refusals",
+    "kind": "diagnostic_refusal",
+    "reason": "Required native refusal: Native engine mount scope differs",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "structural-original-network-differs",
+    "test": "test_structural_projection_refusals",
+    "kind": "diagnostic_refusal",
+    "reason": "Required native refusal: Native engine original network differs",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "address-refusal-type-changed",
+    "test": "test_structural_projection_refusals",
+    "kind": "diagnostic_refusal",
+    "reason": "Required native refusal: Native engine original address differs",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "socket-scope-unchecked",
+    "test": "test_socket_scope_before_daemon_access",
+    "kind": "broken_behavior",
+    "reason": "Required native refusal: Native engine daemon socket differs",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "Native-engine-daemon-response-shape-differs",
+    "test": "test_daemon_shape_and_status_refusals",
+    "kind": "broken_behavior",
+    "reason": "Required native refusal: Native engine daemon response shape differs",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "Native-engine-daemon-observation-is-unavailable",
+    "test": "test_daemon_shape_and_status_refusals",
+    "kind": "broken_behavior",
+    "reason": "Required native refusal: Native engine daemon observation is unavailable",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "parent-metadata-bound-unchecked",
+    "test": "test_parent_metadata_bound_precedes_spawn",
+    "kind": "broken_behavior",
+    "reason": "Oversized native metadata cannot start an observer",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "Native-engine-ownership-callback-is-required",
+    "test": "test_ownership_callback_refusal_types",
+    "kind": "diagnostic_refusal",
+    "reason": "Required native refusal: Native engine ownership callback is required",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "Native-engine-ownership-must-return-a-boolean",
+    "test": "test_ownership_callback_refusal_types",
+    "kind": "diagnostic_refusal",
+    "reason": "Required native refusal: Native engine ownership must return a boolean",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "child-Native-engine-original-network-differs",
+    "test": "test_child_network_shape_and_id_before_lookup",
+    "kind": "diagnostic_refusal",
+    "reason": "Required native refusal: Native engine original network differs",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "child-Native-engine-original-network-ID-differs",
+    "test": "test_child_network_shape_and_id_before_lookup",
+    "kind": "diagnostic_refusal",
+    "reason": "Required native refusal: Native engine original network ID differs",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "observer-failed-status-unchecked",
+    "test": "test_failed_observer_exit_and_stderr_refuse",
+    "kind": "broken_behavior",
+    "reason": "Required native refusal: Native engine observation refused",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "mount-enumeration-order-canonicalization-omitted",
+    "test": "test_mount_enumeration_order_does_not_change_identity",
+    "kind": "broken_behavior",
+    "reason": "Mount enumeration order cannot change native launch identity",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "Native-engine-process-is-unavailable",
+    "test": "test_process_configuration_and_refusals",
+    "kind": "broken_behavior",
+    "reason": "Required native refusal: Native engine process is unavailable",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "Native-engine-process-configuration-is-not-bounded-regular-bytes",
+    "test": "test_process_configuration_and_refusals",
+    "kind": "broken_behavior",
+    "reason": "Required native refusal: Native engine process configuration is not bounded regular bytes",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "kernel-configuration-leaf-followed",
+    "test": "test_process_configuration_and_refusals",
+    "kind": "broken_behavior",
+    "reason": "Kernel configuration cannot follow a substituted leaf",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "kernel-identity-unchecked",
+    "test": "test_process_identity_and_changed_read_refusals",
+    "kind": "broken_behavior",
+    "reason": "Required native refusal: Native engine process identity differs",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "kernel-read-change-unchecked",
+    "test": "test_process_identity_and_changed_read_refusals",
+    "kind": "broken_behavior",
+    "reason": "Required native refusal: Native engine process configuration changed while reading",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "kernel-process-after-read-unchecked",
+    "test": "test_process_identity_and_changed_read_refusals",
+    "kind": "broken_behavior",
+    "reason": "Required native refusal: Native engine process configuration changed while reading",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "original-changed-during-observation-unchecked",
+    "test": "test_process_and_configuration_rechecked",
+    "kind": "broken_behavior",
+    "reason": "Changed native process or configuration must refuse",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "kernel-stat-byte-bound-unchecked",
+    "test": "test_process_identity_and_changed_read_refusals",
+    "kind": "broken_behavior",
+    "reason": "Required native refusal: Native engine process identity differs",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "final-daemon-container-read-omitted",
+    "test": "test_supervised_three_read_only_requests",
+    "kind": "broken_behavior",
+    "reason": "Only exact original read-only native observations are allowed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

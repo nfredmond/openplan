@@ -97,6 +97,8 @@ function emptyResult() {
       },
     },
     notificationsCreated: 4,
+    notificationsAlreadyPresent: 0,
+    deferredByOldKey: [],
     digestsComposed: 2,
     emailsDelivered: 0,
     emailsSkipped: 2,
@@ -188,6 +190,30 @@ describe("the deadline sweep cron route", () => {
     sweepMock.mockRejectedValue(new Error("the database went away"));
     const response = await GET(request({ authorization: `Bearer ${SECRET}` }));
     expect(response.status).toBe(500);
+  });
+
+  it("exposes stage-one application reminders as pending instead of a quiet successful source", async () => {
+    const result = emptyResult();
+    sweepMock.mockResolvedValue({ ...result, perSource: { ...result.perSource,
+      grant_application_due: { scanned: 0, candidates: 0, pending: true, failed: false,
+        message: "Application reminders await the separate reminder-kind activation after older sweep writers retire.", truncated: false },
+    } });
+    const response = await GET(request({ authorization: `Bearer ${SECRET}` }));
+    expect(response.status).toBe(200);
+    expect((await response.json()).unreadableSources).toContain("grant_application_due:pending_migration");
+  });
+
+  it("returns deferred old-key identities separately from inserted and already-present counts", async () => {
+    const result = emptyResult();
+    const deferred = { workspace_id: "workspace", recipient_user_id: "recipient", subject_table: "funding_awards", subject_id: "award",
+      kind: "award_expenditure_due", due_on: "2026-10-19", blockingKind: "award_obligation_due" };
+    sweepMock.mockResolvedValue({ ...result, notificationsCreated: 1, notificationsAlreadyPresent: 1, deferredByOldKey: [deferred],
+      perSource: { ...result.perSource, award_expenditure_due: { ...result.perSource.award_expenditure_due, pending: true } },
+    });
+    const response = await GET(request({ authorization: `Bearer ${SECRET}` }));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ notificationsCreated: 1, notificationsAlreadyPresent: 1, deferredByOldKey: [deferred],
+      unreadableSources: expect.arrayContaining(["award_expenditure_due:pending_migration"]) });
   });
 
   it("is actually scheduled — daily, in vercel.json", () => {

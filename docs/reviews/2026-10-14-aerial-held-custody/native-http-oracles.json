@@ -1,0 +1,182 @@
+[
+  {
+    "case": "serialization-code-loop",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "serialization-code-loop",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "serialization-code-loop",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "serialization-code-loop",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "serialization-code-loop",
+    "oracle": "source-only",
+    "accepted": false
+  },
+  {
+    "case": "serialization-code-loop",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "conflict-recovery-disabled",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "conflict-recovery-disabled",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "conflict-recovery-disabled",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "conflict-recovery-disabled",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "conflict-recovery-disabled",
+    "oracle": "source-only",
+    "accepted": false
+  },
+  {
+    "case": "conflict-recovery-disabled",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "missing-roster-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "missing-roster-ignored",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "missing-roster-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "missing-roster-ignored",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "missing-roster-ignored",
+    "oracle": "source-only",
+    "accepted": false
+  },
+  {
+    "case": "missing-roster-ignored",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "retry-readiness-skipped",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "retry-readiness-skipped",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "retry-readiness-skipped",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "retry-readiness-skipped",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "retry-readiness-skipped",
+    "oracle": "source-only",
+    "accepted": false
+  },
+  {
+    "case": "retry-readiness-skipped",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "callback-readiness-skipped",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "callback-readiness-skipped",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "callback-readiness-skipped",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "callback-readiness-skipped",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "callback-readiness-skipped",
+    "oracle": "source-only",
+    "accepted": false
+  },
+  {
+    "case": "callback-readiness-skipped",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "human-readiness-replaced",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "human-readiness-replaced",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "human-readiness-replaced",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "human-readiness-replaced",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "human-readiness-replaced",
+    "oracle": "source-only",
+    "accepted": false
+  },
+  {
+    "case": "human-readiness-replaced",
+    "oracle": "syntax",
+    "accepted": false
+  }
+]

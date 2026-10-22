@@ -1,0 +1,22 @@
+[
+  {
+    "step": "types",
+    "exitCode": 0,
+    "seconds": 9.677
+  },
+  {
+    "step": "lint",
+    "exitCode": 0,
+    "seconds": 3.559
+  },
+  {
+    "step": "regression",
+    "exitCode": 0,
+    "seconds": 40.581
+  },
+  {
+    "step": "direction",
+    "exitCode": 0,
+    "seconds": 0.682
+  }
+]

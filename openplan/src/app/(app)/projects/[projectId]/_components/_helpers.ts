@@ -29,19 +29,33 @@ export function fmtDateTime(value: string | null | undefined): string {
   return parsed.toLocaleString("en-US");
 }
 
-/**
- * The project delivery board restates invoice records the invoicing register
- * also shows, so it writes them to the cent — the two screens must agree
- * digit for digit. An unreadable amount reads $0 here, as it always has.
- */
+/** Project money retains exact decimal strings and uses the shared absent-value contract. */
 export function fmtCurrency(value: number | string | null | undefined): string {
-  const parsed = typeof value === "number" ? value : Number.parseFloat(value ?? "0");
-  const safeValue = Number.isFinite(parsed) ? parsed : 0;
-  return formatMoney(safeValue, { precision: "cents" });
+  return formatMoney(value, { precision: "cents" });
 }
 
 export function buildProjectControlHref(targetId: string, targetRowId?: string | null): string {
   return `#${targetRowId ?? targetId}`;
+}
+
+/**
+ * Link text for a project control target: the section it opens, by name.
+ * These links used to read "Open control lane" and "Open deadline lane",
+ * which named how the page was built rather than where the link goes.
+ */
+export function projectControlLinkLabel(targetId: string): string {
+  switch (targetId) {
+    case "project-reporting":
+      return "Open reports";
+    case "project-milestones":
+      return "Open milestones";
+    case "project-submittals":
+      return "Open submittals";
+    case "project-invoices":
+      return "Open invoices";
+    default:
+      return "Open section";
+  }
 }
 
 export function toneForStatus(status: string): Tone {

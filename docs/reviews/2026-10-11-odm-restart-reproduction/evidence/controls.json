@@ -1,0 +1,94 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-key-order",
+    "outcome": "survived"
+  },
+  {
+    "control": "first-native-admission",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "queued-native-admission",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "predeath-replay-status",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "predeath-original-receipt",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "changed-metadata-old-receipt",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "queued-request-not-processing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "restart-creates-new-admission",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "same-request-id",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "new-job-reference",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "new-admission-callback-id",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "exact-original-request-bytes",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "new-worker-starts-new-intake",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "no-imagery-body-consumed",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "no-nodeodm-request",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "no-persisted-admission-record",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "no-persisted-admission-record",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "complete-root-copy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "original-root-unchanged",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "immutable-package-unchanged",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "executed-source-unchanged",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  }
+]

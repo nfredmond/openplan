@@ -1,0 +1,11 @@
+
+ RUN  v4.1.11 /home/nathaniel/.t3/worktrees/openplan/t3-bb278a60/openplan
+
+ ✓ src/test/engagement-synthesis-generation-worker.test.ts (40 tests | 39 skipped) 110ms
+
+ Test Files  1 passed (1)
+      Tests  1 passed | 39 skipped (40)
+   Start at  00:49:48
+   Duration  1.34s (transform 723ms, setup 69ms, import 1.02s, tests 110ms, environment 0ms)
+
+JSON report written to /home/nathaniel/.t3/worktrees/openplan/t3-bb278a60/docs/reviews/2026-10-15-synthesis-journal-umask-fixture/evidence/harmless-comment-0077/tests.json

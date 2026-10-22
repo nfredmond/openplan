@@ -1,0 +1,8 @@
+{
+  "trial": "pagination-late-error-fault",
+  "testFile": "src/test/project-workbook-export-pagination.test.ts",
+  "test": "refuses a later page error instead of exporting the earlier rows",
+  "exitCode": 1,
+  "marker": "later page read failure must not export a partial workbook",
+  "classification": "KILLED"
+}

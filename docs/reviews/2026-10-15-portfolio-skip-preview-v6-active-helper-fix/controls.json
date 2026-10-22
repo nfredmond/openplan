@@ -1,0 +1,379 @@
+{
+  "scope": "N1 selected full final/preflight composition only. All Docker/DB/HTTP/old-web observations are synthetic. No operating transport or stage.",
+  "cases": [
+    {
+      "case": "full-final-healthy-harmless-with-retired-inactive",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "rest-Running",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Running"
+    },
+    {
+      "case": "rest-Paused",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Paused"
+    },
+    {
+      "case": "rest-Restarting",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Restarting"
+    },
+    {
+      "case": "auth-Running",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Running"
+    },
+    {
+      "case": "auth-Paused",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Paused"
+    },
+    {
+      "case": "auth-Restarting",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Restarting"
+    },
+    {
+      "case": "storage-Running",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Running"
+    },
+    {
+      "case": "storage-Paused",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Paused"
+    },
+    {
+      "case": "storage-Restarting",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Restarting"
+    },
+    {
+      "case": "gateway-Running",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Running"
+    },
+    {
+      "case": "gateway-Paused",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Paused"
+    },
+    {
+      "case": "gateway-Restarting",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Restarting"
+    },
+    {
+      "case": "state-Running-null",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Running"
+    },
+    {
+      "case": "state-Running-number",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Running"
+    },
+    {
+      "case": "state-Running-text",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Running"
+    },
+    {
+      "case": "state-Running-missing",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Running"
+    },
+    {
+      "case": "state-Paused-null",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Paused"
+    },
+    {
+      "case": "state-Paused-number",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Paused"
+    },
+    {
+      "case": "state-Paused-text",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Paused"
+    },
+    {
+      "case": "state-Paused-missing",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Paused"
+    },
+    {
+      "case": "state-Restarting-null",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Restarting"
+    },
+    {
+      "case": "state-Restarting-number",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Restarting"
+    },
+    {
+      "case": "state-Restarting-text",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Restarting"
+    },
+    {
+      "case": "state-Restarting-missing",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Restarting"
+    },
+    {
+      "case": "State-null",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:mapping"
+    },
+    {
+      "case": "State-list",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:mapping"
+    },
+    {
+      "case": "State-text",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:mapping"
+    },
+    {
+      "case": "State-missing",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:mapping"
+    },
+    {
+      "case": "source-drift",
+      "outcome": "REFUSED",
+      "reason": "source-drift"
+    },
+    {
+      "case": "database-drift",
+      "outcome": "REFUSED",
+      "reason": "protected-database:snapshot"
+    },
+    {
+      "case": "configuration-drift-retained",
+      "outcome": "REFUSED",
+      "reason": "protected-helper:sha256"
+    },
+    {
+      "case": "retired-configuration-drift-retained",
+      "outcome": "REFUSED",
+      "reason": "prior-helper:sha256"
+    },
+    {
+      "case": "active-inspect",
+      "outcome": "REFUSED",
+      "reason": "inspect-unreadable"
+    },
+    {
+      "case": "active-wrongId",
+      "outcome": "REFUSED",
+      "reason": "protected-active-identity:Id"
+    },
+    {
+      "case": "baseline-id-set-missing",
+      "outcome": "REFUSED",
+      "reason": "protected-active-set:ids"
+    },
+    {
+      "case": "baseline-id-set-extra",
+      "outcome": "REFUSED",
+      "reason": "protected-active-set:ids"
+    },
+    {
+      "case": "baseline-id-set-substitute",
+      "outcome": "REFUSED",
+      "reason": "protected-active-set:ids"
+    },
+    {
+      "case": "baseline-role-id-swap",
+      "outcome": "REFUSED",
+      "reason": "files:rest"
+    },
+    {
+      "case": "active-receipt-source-drift",
+      "outcome": "REFUSED",
+      "reason": "active-helper-source:sha256"
+    },
+    {
+      "case": "prebaseline-healthy-acquisition",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "prebaseline-paused-refuses",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Paused"
+    },
+    {
+      "case": "preflight-healthy-exact-baseline",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "preflight-late-rest-Running",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Running"
+    },
+    {
+      "case": "preflight-late-rest-Paused",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Paused"
+    },
+    {
+      "case": "preflight-late-rest-Restarting",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Restarting"
+    },
+    {
+      "case": "preflight-late-auth-Running",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Running"
+    },
+    {
+      "case": "preflight-late-auth-Paused",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Paused"
+    },
+    {
+      "case": "preflight-late-auth-Restarting",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Restarting"
+    },
+    {
+      "case": "preflight-late-storage-Running",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Running"
+    },
+    {
+      "case": "preflight-late-storage-Paused",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Paused"
+    },
+    {
+      "case": "preflight-late-storage-Restarting",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Restarting"
+    },
+    {
+      "case": "preflight-late-gateway-Running",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Running"
+    },
+    {
+      "case": "preflight-late-gateway-Paused",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Paused"
+    },
+    {
+      "case": "preflight-late-gateway-Restarting",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Restarting"
+    },
+    {
+      "case": "codefault-Running",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Running"
+    },
+    {
+      "case": "remove-Running-guard",
+      "mutation": "harmless",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "remove-Running-guard",
+      "mutation": "fault",
+      "outcome": "KILLED",
+      "reason": "missing-refusal:codefault-Running"
+    },
+    {
+      "case": "codefault-Paused",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Paused"
+    },
+    {
+      "case": "remove-Paused-guard",
+      "mutation": "harmless",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "remove-Paused-guard",
+      "mutation": "fault",
+      "outcome": "KILLED",
+      "reason": "missing-refusal:codefault-Paused"
+    },
+    {
+      "case": "codefault-Restarting",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Restarting"
+    },
+    {
+      "case": "remove-Restarting-guard",
+      "mutation": "harmless",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "remove-Restarting-guard",
+      "mutation": "fault",
+      "outcome": "KILLED",
+      "reason": "missing-refusal:codefault-Restarting"
+    },
+    {
+      "case": "codefault-acquisition",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Paused"
+    },
+    {
+      "case": "omit-protected-acquisition-state-check",
+      "mutation": "harmless",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "omit-protected-acquisition-state-check",
+      "mutation": "fault",
+      "outcome": "KILLED",
+      "reason": "missing-refusal:codefault-acquisition"
+    },
+    {
+      "case": "codefault-preflight",
+      "outcome": "REFUSED",
+      "reason": "protected-active-state:Paused"
+    },
+    {
+      "case": "omit-preflight-state-check",
+      "mutation": "harmless",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "omit-preflight-state-check",
+      "mutation": "fault",
+      "outcome": "KILLED",
+      "reason": "missing-refusal:codefault-preflight"
+    }
+  ],
+  "counts": {
+    "SURVIVED": 8,
+    "REFUSED": 57,
+    "KILLED": 5
+  },
+  "exactActiveIds": {
+    "rest": "140c68675574a3705fa68aa46543d806d66d1f20739bf63273d6126108d5430d",
+    "auth": "174ab2d834b744022f4388f754cddfb2e75db0c449b712bc4032006c5a2d2984",
+    "storage": "f11687449419ad9e3e97677fde125c07755a92d4e354d1a2de62488546b4d932",
+    "gateway": "9df8243592d037ee9189cd74cb116824d5ae45166d20b7bde4e88109610b709f"
+  },
+  "preflightAndEveryAcquisitionTypedState": true,
+  "retiredStateNotRequired": true,
+  "configurationGuardRetained": true,
+  "noFailedObservationReachesWriter": true,
+  "specimensAndCodeRestoreInFinally": true,
+  "sealedInputsUnchanged": true,
+  "blindCategories": [
+    "Point-in-time state cannot establish continuous availability or unchanged process identity.",
+    "Synthetic inspect/DB/source/health observations do not establish current live preservation.",
+    "No actual new stage, PostgreSQL normalization, build, context unit or journey."
+  ]
+}

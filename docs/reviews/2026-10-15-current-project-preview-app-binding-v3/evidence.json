@@ -1,0 +1,1424 @@
+{
+  "preparedOnly": true,
+  "appHead": "21510042e94bcaf80f262205ad156a7bb639e35c",
+  "publicRuntimeOnlyMechanicalDelta": true,
+  "consumerCases": [
+    {
+      "case": "baseline actual build consumer",
+      "outcome": "survived"
+    },
+    {
+      "case": "baseline actual start consumer",
+      "outcome": "survived"
+    },
+    {
+      "case": "duplicate start intent",
+      "outcome": "refused",
+      "reason": "[Errno 17] File exists: '/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/fixtures-05/execution/start-intent.json'"
+    },
+    {
+      "case": "wrong local HEAD",
+      "outcome": "refused",
+      "reason": "app-head"
+    },
+    {
+      "case": "dirty checkout",
+      "outcome": "refused",
+      "reason": "app-dirty"
+    },
+    {
+      "case": "HTTP REST 503",
+      "outcome": "refused",
+      "reason": "health:rest"
+    },
+    {
+      "case": "CORS old origin",
+      "outcome": "refused",
+      "reason": "health:ownOrigin"
+    },
+    {
+      "case": "wrong helper observed ID",
+      "outcome": "refused",
+      "reason": "service:id"
+    },
+    {
+      "case": "source preservation failure",
+      "outcome": "refused",
+      "reason": "fixture-source-preservation"
+    },
+    {
+      "case": "prior input preservation failure",
+      "outcome": "refused",
+      "reason": "fixture-unchanged-inputs"
+    },
+    {
+      "case": "build nonzero",
+      "outcome": "refused",
+      "reason": "build-exit"
+    },
+    {
+      "case": "lost build acknowledgement",
+      "outcome": "refused",
+      "reason": "fixture-lost-build-ack"
+    },
+    {
+      "case": "lost build retry",
+      "outcome": "refused",
+      "reason": "[Errno 17] File exists: '/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/fixtures-05/execution/build-intent.json'"
+    },
+    {
+      "case": "wrong memory",
+      "outcome": "refused",
+      "reason": "cgroup-memory"
+    },
+    {
+      "case": "swap enabled",
+      "outcome": "refused",
+      "reason": "cgroup-memory"
+    },
+    {
+      "case": "current swap",
+      "outcome": "refused",
+      "reason": "cgroup-memory"
+    },
+    {
+      "case": "unbounded CPU",
+      "outcome": "refused",
+      "reason": "cgroup-cpu-format"
+    },
+    {
+      "case": "zero CPU",
+      "outcome": "refused",
+      "reason": "cgroup-cpu-bound"
+    },
+    {
+      "case": "zero CPU period",
+      "outcome": "refused",
+      "reason": "cgroup-cpu-bound"
+    },
+    {
+      "case": "excess CPU",
+      "outcome": "refused",
+      "reason": "cgroup-cpu-bound"
+    },
+    {
+      "case": "bad CPU",
+      "outcome": "refused",
+      "reason": "cgroup-cpu-format"
+    },
+    {
+      "case": "missing OOM",
+      "outcome": "refused",
+      "reason": "cgroup-events"
+    },
+    {
+      "case": "OOM observed",
+      "outcome": "refused",
+      "reason": "cgroup-events"
+    },
+    {
+      "case": "duplicate OOM",
+      "outcome": "refused",
+      "reason": "cgroup-events-format"
+    },
+    {
+      "case": "peak exceeds cap",
+      "outcome": "refused",
+      "reason": "cgroup-peak"
+    },
+    {
+      "case": "bounded CPU200 survives",
+      "outcome": "survived"
+    },
+    {
+      "case": "wrong env bytes",
+      "outcome": "refused",
+      "reason": "app-env-file"
+    },
+    {
+      "case": "migration byte change",
+      "outcome": "refused",
+      "reason": "migration-bytes"
+    },
+    {
+      "case": "dependency metadata change",
+      "outcome": "refused",
+      "reason": "deps-input-hash"
+    },
+    {
+      "case": "wrong private binding head",
+      "outcome": "refused",
+      "reason": "binding-identity"
+    },
+    {
+      "case": "wrong private env delta",
+      "outcome": "refused",
+      "reason": "binding-sha:app-env-private.json"
+    },
+    {
+      "case": "wrong target OID",
+      "outcome": "refused",
+      "reason": "target-identity:oid"
+    },
+    {
+      "case": "wrong replacement receipt ID",
+      "outcome": "refused",
+      "reason": "files:rest"
+    },
+    {
+      "case": "missing replacement start",
+      "outcome": "refused",
+      "reason": "replacement-started:running"
+    },
+    {
+      "case": "wrong pinned active hash",
+      "outcome": "refused",
+      "reason": "active-pin-hashes"
+    },
+    {
+      "case": "unowned environment",
+      "outcome": "refused",
+      "reason": "unowned-env"
+    },
+    {
+      "case": "old build receipt active hash",
+      "outcome": "refused",
+      "reason": "build-receipt-binding"
+    },
+    {
+      "case": "occupied web refuses only at start",
+      "outcome": "refused",
+      "reason": "fixture-web-occupied"
+    },
+    {
+      "case": "changed build inventory",
+      "outcome": "refused",
+      "reason": "build-inventory"
+    },
+    {
+      "case": "exclusive intent retry",
+      "outcome": "refused",
+      "reason": "[Errno 17] File exists: '/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/fixtures-05/execution/exclusive-fixture.json'"
+    },
+    {
+      "case": "existing checkout refuses creation",
+      "outcome": "refused",
+      "reason": "checkout-exists"
+    },
+    {
+      "case": "lost checkout acknowledgement",
+      "outcome": "refused",
+      "reason": "fixture-lost-clone-ack"
+    },
+    {
+      "case": "lost checkout duplicate refuses",
+      "outcome": "refused",
+      "reason": "[Errno 17] File exists: '/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/fixtures-05/execution/checkout-intent.json'"
+    },
+    {
+      "case": "changed helper SHA",
+      "outcome": "refused",
+      "reason": "helper-sha:rest_uri_recovery_01_policy.py"
+    },
+    {
+      "case": "wrong helper module root",
+      "outcome": "refused",
+      "reason": "helper-module-root"
+    },
+    {
+      "case": "wrong launcher root",
+      "outcome": "refused",
+      "reason": "launcher-root"
+    },
+    {
+      "case": "actual bubblewrap argv and clean environment",
+      "outcome": "survived"
+    }
+  ],
+  "consumerMutations": [
+    {
+      "mutation": "harmless comment",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "remove app HEAD guard",
+      "outcome": "detected",
+      "reason": "wrong local HEAD:unexpected:ValueError:checkout-receipt"
+    },
+    {
+      "mutation": "remove dirty guard",
+      "outcome": "detected",
+      "reason": "dirty checkout:accepted-broken-behavior"
+    },
+    {
+      "mutation": "remove acquisition HTTP",
+      "outcome": "detected",
+      "reason": "actual HTTP HEAD acquisition"
+    },
+    {
+      "mutation": "remove source acquisition",
+      "outcome": "detected",
+      "reason": "actual source acquisition"
+    },
+    {
+      "mutation": "remove unchanged inputs",
+      "outcome": "detected",
+      "reason": "actual unchanged inputs acquisition"
+    },
+    {
+      "mutation": "remove memory budget",
+      "outcome": "detected",
+      "reason": "wrong memory:unexpected:ValueError:invalid literal for int() with base 10: 'max'"
+    },
+    {
+      "mutation": "remove OOM guard",
+      "outcome": "detected",
+      "reason": "missing OOM:accepted-broken-behavior"
+    },
+    {
+      "mutation": "wrong start active receipt",
+      "outcome": "detected",
+      "reason": "old build receipt active hash:accepted-broken-behavior"
+    },
+    {
+      "mutation": "remove env bytes guard",
+      "outcome": "detected",
+      "reason": "wrong env bytes:unexpected:ValueError:checkout-receipt"
+    },
+    {
+      "mutation": "remove migration comparison",
+      "outcome": "detected",
+      "reason": "migration byte change:unexpected:ValueError:checkout-receipt"
+    },
+    {
+      "mutation": "overwrite exclusive intents",
+      "outcome": "detected",
+      "reason": "duplicate start intent:accepted-broken-behavior"
+    },
+    {
+      "mutation": "remove active pin hashes",
+      "outcome": "detected",
+      "reason": "wrong pinned active hash:accepted-broken-behavior"
+    },
+    {
+      "mutation": "bare npm bypasses confinement",
+      "outcome": "detected",
+      "reason": "baseline actual build consumer:unexpected:AssertionError:"
+    }
+  ],
+  "attestation": {
+    "cases": [
+      {
+        "case": "identified readback baseline",
+        "outcome": "survived"
+      },
+      {
+        "case": "unready HTTP",
+        "outcome": "refused",
+        "reason": "attest-http-status"
+      },
+      {
+        "case": "wrong HTTP commit",
+        "outcome": "refused",
+        "reason": "attest-http-identity"
+      },
+      {
+        "case": "old 678 HTTP identity",
+        "outcome": "refused",
+        "reason": "attest-http-identity"
+      },
+      {
+        "case": "wrong twelve characters",
+        "outcome": "refused",
+        "reason": "attest-http-identity"
+      },
+      {
+        "case": "full forty characters",
+        "outcome": "refused",
+        "reason": "attest-http-identity"
+      },
+      {
+        "case": "seven characters",
+        "outcome": "refused",
+        "reason": "attest-http-identity"
+      },
+      {
+        "case": "uppercase twelve characters",
+        "outcome": "refused",
+        "reason": "attest-http-identity"
+      },
+      {
+        "case": "arbitrary longer prefix",
+        "outcome": "refused",
+        "reason": "attest-http-identity"
+      },
+      {
+        "case": "wrong type null",
+        "outcome": "refused",
+        "reason": "attest-http-identity"
+      },
+      {
+        "case": "wrong type integer",
+        "outcome": "refused",
+        "reason": "attest-http-identity"
+      },
+      {
+        "case": "wrong type object",
+        "outcome": "refused",
+        "reason": "attest-http-identity"
+      },
+      {
+        "case": "wrong type list",
+        "outcome": "refused",
+        "reason": "attest-http-identity"
+      },
+      {
+        "case": "wrong type boolean",
+        "outcome": "refused",
+        "reason": "attest-http-identity"
+      },
+      {
+        "case": "unknown actual producer commit",
+        "outcome": "refused",
+        "reason": "attest-http-identity"
+      },
+      {
+        "case": "actual producer migration error",
+        "outcome": "refused",
+        "reason": "attest-http-identity"
+      },
+      {
+        "case": "wrong migration count",
+        "outcome": "refused",
+        "reason": "attest-http-identity"
+      },
+      {
+        "case": "wrong latest migration",
+        "outcome": "refused",
+        "reason": "attest-http-identity"
+      },
+      {
+        "case": "wrong listener address",
+        "outcome": "refused",
+        "reason": "attest-listener"
+      },
+      {
+        "case": "no listener owner",
+        "outcome": "refused",
+        "reason": "attest-listener-pid"
+      },
+      {
+        "case": "wrong process cwd",
+        "outcome": "refused",
+        "reason": "attest-process-cwd"
+      },
+      {
+        "case": "wrong process cgroup",
+        "outcome": "refused",
+        "reason": "attest-process-cgroup"
+      },
+      {
+        "case": "wrong process commit",
+        "outcome": "refused",
+        "reason": "attest-process-environment"
+      },
+      {
+        "case": "old 678 full process SHA",
+        "outcome": "refused",
+        "reason": "attest-process-environment"
+      },
+      {
+        "case": "short process commit refuses",
+        "outcome": "refused",
+        "reason": "attest-process-environment"
+      },
+      {
+        "case": "ambient provider credential",
+        "outcome": "refused",
+        "reason": "attest-ambient-environment"
+      },
+      {
+        "case": "inactive unit",
+        "outcome": "refused",
+        "reason": "attest-unit"
+      },
+      {
+        "case": "zero main PID",
+        "outcome": "refused",
+        "reason": "attest-unit"
+      },
+      {
+        "case": "wrong unit group",
+        "outcome": "refused",
+        "reason": "attest-unit"
+      },
+      {
+        "case": "old 678 web unit",
+        "outcome": "refused",
+        "reason": "attest-unit"
+      },
+      {
+        "case": "runtime OOM",
+        "outcome": "refused",
+        "reason": "cgroup-events"
+      },
+      {
+        "case": "changed built server bytes",
+        "outcome": "refused",
+        "reason": "attest-built-bytes"
+      },
+      {
+        "case": "runtime cache change survives",
+        "outcome": "survived"
+      },
+      {
+        "case": "old start receipt active hash",
+        "outcome": "refused",
+        "reason": "attest-inputs"
+      }
+    ],
+    "mutations": [
+      {
+        "mutation": "harmless comment",
+        "outcome": "survived"
+      },
+      {
+        "mutation": "restore old web unit",
+        "outcome": "detected",
+        "reason": "identified readback baseline:unexpected:attest-unit"
+      },
+      {
+        "mutation": "restore old full-SHA comparison",
+        "outcome": "detected",
+        "reason": "identified readback baseline:unexpected:attest-http-identity"
+      },
+      {
+        "mutation": "allow arbitrary prefix",
+        "outcome": "detected",
+        "reason": "full forty characters:accepted-broken-behavior"
+      },
+      {
+        "mutation": "remove migration identity",
+        "outcome": "detected",
+        "reason": "actual producer migration error:accepted-broken-behavior"
+      },
+      {
+        "mutation": "remove HTTP identity",
+        "outcome": "detected",
+        "reason": "wrong HTTP commit:accepted-broken-behavior"
+      },
+      {
+        "mutation": "remove process cwd",
+        "outcome": "detected",
+        "reason": "wrong process cwd:accepted-broken-behavior"
+      },
+      {
+        "mutation": "remove process env",
+        "outcome": "detected",
+        "reason": "wrong process commit:accepted-broken-behavior"
+      },
+      {
+        "mutation": "remove unit identity",
+        "outcome": "detected",
+        "reason": "inactive unit:accepted-broken-behavior"
+      },
+      {
+        "mutation": "remove immutable built bytes",
+        "outcome": "detected",
+        "reason": "changed built server bytes:accepted-broken-behavior"
+      }
+    ],
+    "restored": true
+  },
+  "producer": {
+    "baseline": {
+      "payload": {
+        "status": "ok",
+        "service": "openplan",
+        "checkedAt": "2026-10-15T11:38:26.122Z",
+        "deployment": {
+          "commit": "21510042e94b",
+          "version": "0.68.0",
+          "migrations": {
+            "expected": 419,
+            "latest": "20261017000016"
+          }
+        },
+        "checks": {
+          "app": "ok",
+          "database": "not_checked"
+        }
+      },
+      "appCommitSha": "21510042e94bcaf80f262205ad156a7bb639e35c"
+    },
+    "old": {
+      "payload": {
+        "status": "ok",
+        "service": "openplan",
+        "checkedAt": "2026-10-15T11:38:26.514Z",
+        "deployment": {
+          "commit": "06a108010ab3",
+          "version": "0.68.0",
+          "migrations": {
+            "expected": 419,
+            "latest": "20261017000016"
+          }
+        },
+        "checks": {
+          "app": "ok",
+          "database": "not_checked"
+        }
+      },
+      "appCommitSha": "06a108010ab39aa42eed4c2bcda3e1371b8aa813"
+    },
+    "unknown": {
+      "payload": {
+        "status": "ok",
+        "service": "openplan",
+        "checkedAt": "2026-10-15T11:38:26.522Z",
+        "deployment": {
+          "commit": "unknown",
+          "version": "0.68.0",
+          "migrations": {
+            "expected": 419,
+            "latest": "20261017000016"
+          }
+        },
+        "checks": {
+          "app": "ok",
+          "database": "not_checked"
+        }
+      },
+      "appCommitSha": null
+    },
+    "migrationError": {
+      "payload": {
+        "status": "ok",
+        "service": "openplan",
+        "checkedAt": "2026-10-15T11:38:26.613Z",
+        "deployment": {
+          "commit": "21510042e94b",
+          "version": "0.68.0",
+          "migrations": null
+        },
+        "checks": {
+          "app": "ok",
+          "database": "not_checked"
+        }
+      },
+      "appCommitSha": "21510042e94bcaf80f262205ad156a7bb639e35c"
+    },
+    "mutations": [
+      {
+        "mutation": "harmless producer comment",
+        "outcome": "survived"
+      },
+      {
+        "mutation": "producer emits seven characters",
+        "outcome": "detected",
+        "reason": "actual route twelve-character contract"
+      },
+      {
+        "mutation": "producer drops self-hosted identity",
+        "outcome": "detected",
+        "reason": "full environment identity"
+      }
+    ],
+    "restored": true,
+    "sourceCommit": "21510042e94bcaf80f262205ad156a7bb639e35c",
+    "sourceHashes": {
+      "openplan/src/app/api/health/route.ts": "d9e42a2ca04795334020528a866eb937126933dbcb5b83fbb65fd00d4938e4b1",
+      "openplan/src/lib/runtime/app-version.ts": "c11775f33effc4e66672fbf8898b846e541c2ac66d7596f81d57798fa33199ae",
+      "openplan/src/lib/ops/migration-manifest.ts": "1128e4efaaa8b5da5208c934e4b674b1f0c68d08a24710e7f2d49b6cb9a00954",
+      "openplan/package.json": "a857e933382f3a990db3bcb036f579af8b9c044cb6b77509ae4daf71ed498e71"
+    },
+    "adapters": [
+      "NextResponse response object only",
+      "build-time OPENPLAN_BUILD_MIGRATION_VERSIONS from pinned git filenames"
+    ],
+    "limits": "No Next server, build, HTTP transport, installed schema census or live process evidence."
+  },
+  "composition": {
+    "cases": [
+      {
+        "case": "baseline",
+        "phase": "build",
+        "outcome": "survived",
+        "observed": {
+          "childCount": 1,
+          "protectedReads": 3,
+          "EROFS": 3,
+          "privateDirectoryWrites": 4,
+          "tmpWrite": true,
+          "ownedBuildCache": true,
+          "networkPolicy": "build",
+          "healthCommit": "21510042e94b"
+        },
+        "resources": {
+          "memory.max": "536870912",
+          "memory.swap.max": "0",
+          "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+          "cpu.max": "50000 100000",
+          "memory.peak": "10014720",
+          "memory.swap.current": "0"
+        },
+        "recipeSha256": "73f06023f4a38d2331a26ffe39f932b23e38a5c19c428493bdda38993bd5d391",
+        "subjectSha256": "c195d3be5eb3bcafb016f8794bf77e704d940bbf878bd725a874d85559c58329"
+      },
+      {
+        "case": "harmless comment",
+        "phase": "build",
+        "outcome": "survived",
+        "observed": {
+          "childCount": 1,
+          "protectedReads": 3,
+          "EROFS": 3,
+          "privateDirectoryWrites": 4,
+          "tmpWrite": true,
+          "ownedBuildCache": true,
+          "networkPolicy": "build",
+          "healthCommit": "21510042e94b"
+        },
+        "resources": {
+          "memory.max": "536870912",
+          "memory.swap.max": "0",
+          "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+          "cpu.max": "50000 100000",
+          "memory.peak": "9605120",
+          "memory.swap.current": "0"
+        },
+        "recipeSha256": "77dcbc13e60d4b34a3b4abf4191711954815e5b2ee006f2f0d67ea9eb78b476b",
+        "subjectSha256": "da5c1fe0fa0645be49c95bf6c632b342acff1167bdae9f301589cfda36964ddc"
+      },
+      {
+        "case": "broken outer-inner composition",
+        "phase": "build",
+        "outcome": "detected",
+        "reason": "No permissions to create a new namespace",
+        "childCount": 0,
+        "recipeSha256": "58bfa696472b80a3dbb7cc05ece59d2f51d896f62022ebfb638096cf960782f9",
+        "subjectSha256": "c195d3be5eb3bcafb016f8794bf77e704d940bbf878bd725a874d85559c58329"
+      },
+      {
+        "case": "writable donor",
+        "phase": "build",
+        "outcome": "detected",
+        "reason": "protected-write-permitted:original",
+        "childCount": 1,
+        "recipeSha256": "551a3c323072552e67f3b9054aca6dca691b2883f329be891248335955602722",
+        "subjectSha256": "b8e5bc009a004a9eaa12d3a5679bb3d29df9527d4e27a1efa9db91511999c103"
+      },
+      {
+        "case": "writable env",
+        "phase": "build",
+        "outcome": "detected",
+        "reason": "protected-write-permitted:.env.local",
+        "childCount": 1,
+        "recipeSha256": "f7dfd65220125e2b204c7858194c2dd8e69981f34f3101dd798f9c7b22c418ab",
+        "subjectSha256": "99f178c906091d6523990c9207610de5bb5d0bf36ebf6d6fa7f3881a3a29da81"
+      },
+      {
+        "case": "wrong private HOME",
+        "phase": "build",
+        "outcome": "detected",
+        "reason": "private-env:HOME",
+        "childCount": 1,
+        "recipeSha256": "3e2ff5d662b69f621028bcf76921e21720ba4e6fac58b48b13187174a6042f1f",
+        "subjectSha256": "4018b60be4e8cfdde73c2b7eefaf1a3d73ff546a489d02a45fb0d93aaa5ceb88"
+      },
+      {
+        "case": "wrong cache path",
+        "phase": "build",
+        "outcome": "detected",
+        "reason": "private-env:npm_config_cache",
+        "childCount": 1,
+        "recipeSha256": "26caf2c159a95ddc7e9bc8e06df72164dfebe60740b05de394c5234707b44509",
+        "subjectSha256": "1bf78e6b147d360c6c33907b8f0bf4c375120b25fc5f057f11c1cf905b83efa0"
+      },
+      {
+        "case": "wrong log path",
+        "phase": "build",
+        "outcome": "detected",
+        "reason": "private-env:npm_config_logs_dir",
+        "childCount": 1,
+        "recipeSha256": "54297f5bca50b8db288bda381be883c866b061f9698845f83a39048c87aae43a",
+        "subjectSha256": "091835a226d19eb6439c0f06a2c2ba190a23fd12c7e285496a0593a7d7c02624"
+      },
+      {
+        "case": "wrong health payload",
+        "phase": "build",
+        "outcome": "detected",
+        "reason": "attest-http-identity",
+        "childCount": 1,
+        "recipeSha256": "7ae2ff352dcadd9d455f8942c921110b255c9f95f197086e2cb04ee00f6d7973",
+        "subjectSha256": "c195d3be5eb3bcafb016f8794bf77e704d940bbf878bd725a874d85559c58329"
+      },
+      {
+        "case": "wrong sealed subject",
+        "phase": "build",
+        "outcome": "detected",
+        "reason": "sealed-input-refused",
+        "childCount": 0,
+        "recipeSha256": "bd747c05dd2a069e5e25201d77f48100839c317d10aca46cbd58f618811e4476",
+        "subjectSha256": "c195d3be5eb3bcafb016f8794bf77e704d940bbf878bd725a874d85559c58329"
+      },
+      {
+        "case": "remove seal check",
+        "phase": "build",
+        "outcome": "detected",
+        "reason": "sealed-input-accepted",
+        "childCount": 1,
+        "recipeSha256": "e796cb4d20d1e78ad9cb4bdfa1e20cbb25f55c340ec33db838e6667087fd168c",
+        "subjectSha256": "c195d3be5eb3bcafb016f8794bf77e704d940bbf878bd725a874d85559c58329"
+      },
+      {
+        "case": "inherit interpreter environment",
+        "phase": "build",
+        "outcome": "detected",
+        "reason": "ambient-interpreter-code-loaded",
+        "childCount": 1,
+        "recipeSha256": "68d51ab574d28be53f747ecef6bc33bbc454866ed5758a9a2d91eecd368be2ba",
+        "subjectSha256": "c195d3be5eb3bcafb016f8794bf77e704d940bbf878bd725a874d85559c58329"
+      },
+      {
+        "case": "restored",
+        "phase": "build",
+        "outcome": "survived",
+        "observed": {
+          "childCount": 1,
+          "protectedReads": 3,
+          "EROFS": 3,
+          "privateDirectoryWrites": 4,
+          "tmpWrite": true,
+          "ownedBuildCache": true,
+          "networkPolicy": "build",
+          "healthCommit": "21510042e94b"
+        },
+        "resources": {
+          "memory.max": "536870912",
+          "memory.swap.max": "0",
+          "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+          "cpu.max": "50000 100000",
+          "memory.peak": "10137600",
+          "memory.swap.current": "0"
+        },
+        "recipeSha256": "fe4cbfa213869b2aae72723dc67039b31d3bfd2acce9e1bce1a4c301b44858a4",
+        "subjectSha256": "c195d3be5eb3bcafb016f8794bf77e704d940bbf878bd725a874d85559c58329"
+      },
+      {
+        "case": "baseline",
+        "phase": "start",
+        "outcome": "survived",
+        "observed": {
+          "childCount": 1,
+          "protectedReads": 3,
+          "EROFS": 3,
+          "privateDirectoryWrites": 4,
+          "tmpWrite": true,
+          "ownedBuildCache": true,
+          "networkPolicy": "start",
+          "healthCommit": "21510042e94b"
+        },
+        "resources": {
+          "memory.max": "536870912",
+          "memory.swap.max": "0",
+          "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+          "cpu.max": "50000 100000",
+          "memory.peak": "9736192",
+          "memory.swap.current": "0"
+        },
+        "recipeSha256": "5d72bd985c2d48f1b82151b1cc8d584a557cab43090f2e9689c3114db2e9cfb0",
+        "subjectSha256": "c195d3be5eb3bcafb016f8794bf77e704d940bbf878bd725a874d85559c58329"
+      },
+      {
+        "case": "harmless comment",
+        "phase": "start",
+        "outcome": "survived",
+        "observed": {
+          "childCount": 1,
+          "protectedReads": 3,
+          "EROFS": 3,
+          "privateDirectoryWrites": 4,
+          "tmpWrite": true,
+          "ownedBuildCache": true,
+          "networkPolicy": "start",
+          "healthCommit": "21510042e94b"
+        },
+        "resources": {
+          "memory.max": "536870912",
+          "memory.swap.max": "0",
+          "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+          "cpu.max": "50000 100000",
+          "memory.peak": "10092544",
+          "memory.swap.current": "0"
+        },
+        "recipeSha256": "6912622807708f9ac72b33592b7b964459b7806af47dbe20bcb2c37c94b8fe4c",
+        "subjectSha256": "da5c1fe0fa0645be49c95bf6c632b342acff1167bdae9f301589cfda36964ddc"
+      },
+      {
+        "case": "broken outer-inner composition",
+        "phase": "start",
+        "outcome": "detected",
+        "reason": "No permissions to create a new namespace",
+        "childCount": 0,
+        "recipeSha256": "9d9b2d8f36e52a0a097f15278557fb1c683181571d1c2dcdc6474742beedc46f",
+        "subjectSha256": "c195d3be5eb3bcafb016f8794bf77e704d940bbf878bd725a874d85559c58329"
+      },
+      {
+        "case": "writable donor",
+        "phase": "start",
+        "outcome": "detected",
+        "reason": "protected-write-permitted:original",
+        "childCount": 1,
+        "recipeSha256": "0a5fabb8c1cad236d20590acd4ec7cfd4bb495bdf7d21817090c5b2d886611f0",
+        "subjectSha256": "b8e5bc009a004a9eaa12d3a5679bb3d29df9527d4e27a1efa9db91511999c103"
+      },
+      {
+        "case": "writable env",
+        "phase": "start",
+        "outcome": "detected",
+        "reason": "protected-write-permitted:.env.local",
+        "childCount": 1,
+        "recipeSha256": "a171b27972428466a59b7ec5ca0e0be862505b9436adce84128685e8afefa877",
+        "subjectSha256": "99f178c906091d6523990c9207610de5bb5d0bf36ebf6d6fa7f3881a3a29da81"
+      },
+      {
+        "case": "wrong private HOME",
+        "phase": "start",
+        "outcome": "detected",
+        "reason": "private-env:HOME",
+        "childCount": 1,
+        "recipeSha256": "e7a097d60ec802054c6199939413d1bd001e67bb0e8b6bd1f0c8e86094f5ed38",
+        "subjectSha256": "4018b60be4e8cfdde73c2b7eefaf1a3d73ff546a489d02a45fb0d93aaa5ceb88"
+      },
+      {
+        "case": "wrong cache path",
+        "phase": "start",
+        "outcome": "detected",
+        "reason": "private-env:npm_config_cache",
+        "childCount": 1,
+        "recipeSha256": "ebee2e5cf22ec6f8c606e693eb081e260b748f3f916366da3cb9fc0101f50f18",
+        "subjectSha256": "1bf78e6b147d360c6c33907b8f0bf4c375120b25fc5f057f11c1cf905b83efa0"
+      },
+      {
+        "case": "wrong log path",
+        "phase": "start",
+        "outcome": "detected",
+        "reason": "private-env:npm_config_logs_dir",
+        "childCount": 1,
+        "recipeSha256": "bc0846c31197c870ebfff1ef5c3b93027dde36d7742b5189c83dfdcdf010241a",
+        "subjectSha256": "091835a226d19eb6439c0f06a2c2ba190a23fd12c7e285496a0593a7d7c02624"
+      },
+      {
+        "case": "wrong health payload",
+        "phase": "start",
+        "outcome": "detected",
+        "reason": "attest-http-identity",
+        "childCount": 1,
+        "recipeSha256": "1bec4d36a720c9299a8bbb6719fbf7d5fb5582de003db677707a08f93f43f112",
+        "subjectSha256": "c195d3be5eb3bcafb016f8794bf77e704d940bbf878bd725a874d85559c58329"
+      },
+      {
+        "case": "wrong sealed subject",
+        "phase": "start",
+        "outcome": "detected",
+        "reason": "sealed-input-refused",
+        "childCount": 0,
+        "recipeSha256": "0261bd473d0e7a7421069246dc183c5520457788ef26a950a67f1c81def4b09c",
+        "subjectSha256": "c195d3be5eb3bcafb016f8794bf77e704d940bbf878bd725a874d85559c58329"
+      },
+      {
+        "case": "remove seal check",
+        "phase": "start",
+        "outcome": "detected",
+        "reason": "sealed-input-accepted",
+        "childCount": 1,
+        "recipeSha256": "4f29e39ccac6f028cfd5dbcb81cebba17dd15b9b08e3e7224b3789f494f971ee",
+        "subjectSha256": "c195d3be5eb3bcafb016f8794bf77e704d940bbf878bd725a874d85559c58329"
+      },
+      {
+        "case": "inherit interpreter environment",
+        "phase": "start",
+        "outcome": "detected",
+        "reason": "ambient-interpreter-code-loaded",
+        "childCount": 1,
+        "recipeSha256": "b0a4b8b25218465ff510bd707f8d4d6a8ea1eb6cae53ac85f692d7079979eb0d",
+        "subjectSha256": "c195d3be5eb3bcafb016f8794bf77e704d940bbf878bd725a874d85559c58329"
+      },
+      {
+        "case": "restored",
+        "phase": "start",
+        "outcome": "survived",
+        "observed": {
+          "childCount": 1,
+          "protectedReads": 3,
+          "EROFS": 3,
+          "privateDirectoryWrites": 4,
+          "tmpWrite": true,
+          "ownedBuildCache": true,
+          "networkPolicy": "start",
+          "healthCommit": "21510042e94b"
+        },
+        "resources": {
+          "memory.max": "536870912",
+          "memory.swap.max": "0",
+          "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+          "cpu.max": "50000 100000",
+          "memory.peak": "10334208",
+          "memory.swap.current": "0"
+        },
+        "recipeSha256": "40e8f63d738f5897e75f5492e2827b0c56950a4654d33ac79f515378bb080c58",
+        "subjectSha256": "c195d3be5eb3bcafb016f8794bf77e704d940bbf878bd725a874d85559c58329"
+      }
+    ],
+    "restored": true,
+    "recipeSha256": "34339836f8503af3e583ca24ed5b74ddb6d764c6802b52d830809c8c1796353e",
+    "probeSha256": "66ed9f2443b725d9d06536ef511758d6be08096468164e757d594e80684c2958",
+    "controllerStandinSha256": "5e6d1c2d1b0985583762af1edfca1e84ec518adbf3ed108aa938bb37a1f45fcb",
+    "adapters": [
+      "owned specimen root and unit names",
+      "512 MiB fixture build budget",
+      "trusted controller business operation and npm payload replaced",
+      "fixture unit injects harmless PYTHONPATH sitecustomize trap"
+    ],
+    "limits": "No npm, app build/start, listener, real checkout, services, SQL or readiness acquisition; actual POSIX/systemd/inner bwrap construction and writes only."
+  },
+  "identity": {
+    "cases": [
+      {
+        "case": "v3 full identity baseline",
+        "outcome": "survived"
+      },
+      {
+        "case": "old 678 binding head",
+        "outcome": "refused",
+        "reason": "binding-identity"
+      },
+      {
+        "case": "old v2 launcher root",
+        "outcome": "refused",
+        "reason": "launcher-root"
+      },
+      {
+        "case": "full checkout identity baseline",
+        "outcome": "survived"
+      },
+      {
+        "case": "old 678 checkout head",
+        "outcome": "refused",
+        "reason": "app-head"
+      },
+      {
+        "case": "short checkout SHA",
+        "outcome": "refused",
+        "reason": "app-head"
+      },
+      {
+        "case": "old 678 env delta",
+        "outcome": "refused",
+        "reason": "app-env-delta"
+      },
+      {
+        "case": "short full env SHA",
+        "outcome": "refused",
+        "reason": "app-env-delta"
+      }
+    ],
+    "mutations": [
+      {
+        "mutation": "harmless identity comment",
+        "outcome": "survived"
+      },
+      {
+        "mutation": "remove binding head identity",
+        "outcome": "detected",
+        "reason": "old 678 binding head:accepted-broken-behavior"
+      },
+      {
+        "mutation": "remove launcher root guard",
+        "outcome": "detected",
+        "reason": "old v2 launcher root:unexpected:binding-identity"
+      },
+      {
+        "mutation": "remove full checkout head guard",
+        "outcome": "detected",
+        "reason": "old 678 checkout head:accepted-broken-behavior"
+      },
+      {
+        "mutation": "remove full env delta guard",
+        "outcome": "detected",
+        "reason": "old 678 env delta:unexpected:app-env-encoding"
+      }
+    ],
+    "restored": true,
+    "limits": "Actual pure consumers with commands and data acquisition replaced. Root/env guard removals reach redundant refusals and prove participation, not unsafe execution."
+  },
+  "mechanical": {
+    "cases": [
+      {
+        "case": "harmless observation text first",
+        "outcome": "survived"
+      },
+      {
+        "case": "old 678 runtime head",
+        "outcome": "refused",
+        "reason": "nonmechanical-runtime-delta"
+      },
+      {
+        "case": "old v2 runtime root",
+        "outcome": "refused",
+        "reason": "nonmechanical-runtime-delta"
+      },
+      {
+        "case": "old 678 web unit",
+        "outcome": "refused",
+        "reason": "nonmechanical-runtime-delta"
+      },
+      {
+        "case": "full SHA health comparison",
+        "outcome": "refused",
+        "reason": "nonmechanical-runtime-delta"
+      },
+      {
+        "case": "loosen full checkout SHA",
+        "outcome": "refused",
+        "reason": "nonmechanical-runtime-delta"
+      },
+      {
+        "case": "changed source anchor",
+        "outcome": "refused",
+        "reason": "nonmechanical-runtime-delta"
+      },
+      {
+        "case": "old unit runner",
+        "outcome": "refused",
+        "reason": "nonmechanical-runner-delta"
+      },
+      {
+        "case": "old root runner",
+        "outcome": "refused",
+        "reason": "nonmechanical-runner-delta"
+      },
+      {
+        "case": "restored exact runtime",
+        "outcome": "survived"
+      }
+    ],
+    "mutations": [
+      {
+        "mutation": "harmless checker comment",
+        "outcome": "survived"
+      },
+      {
+        "mutation": "remove runtime equality",
+        "outcome": "detected",
+        "reason": "old 678 runtime head:accepted-broken-behavior"
+      },
+      {
+        "mutation": "remove runner equality",
+        "outcome": "detected",
+        "reason": "old unit runner:accepted-broken-behavior"
+      }
+    ],
+    "restored": true,
+    "blindCategory": "Exact byte delta and identity constants, not application execution, host trust or production behavior."
+  },
+  "entry": {
+    "cases": [
+      {
+        "branch": "active-check",
+        "case": "harmless comment first",
+        "outcome": "survived",
+        "observed": {
+          "branch": "active-check",
+          "environmentKeys": [
+            "HOME",
+            "LC_CTYPE",
+            "PATH",
+            "PYTHONDONTWRITEBYTECODE"
+          ]
+        }
+      },
+      {
+        "branch": "active-check",
+        "case": "changed sealed input",
+        "outcome": "refused-before-systemd"
+      },
+      {
+        "branch": "active-check",
+        "case": "restored source",
+        "outcome": "survived",
+        "observed": {
+          "branch": "active-check",
+          "environmentKeys": [
+            "HOME",
+            "LC_CTYPE",
+            "PATH",
+            "PYTHONDONTWRITEBYTECODE"
+          ]
+        }
+      },
+      {
+        "branch": "checkout",
+        "case": "harmless comment first",
+        "outcome": "survived",
+        "observed": {
+          "branch": "checkout",
+          "environmentKeys": [
+            "HOME",
+            "LC_CTYPE",
+            "PATH",
+            "PYTHONDONTWRITEBYTECODE"
+          ]
+        }
+      },
+      {
+        "branch": "checkout",
+        "case": "changed sealed input",
+        "outcome": "refused-before-systemd"
+      },
+      {
+        "branch": "checkout",
+        "case": "restored source",
+        "outcome": "survived",
+        "observed": {
+          "branch": "checkout",
+          "environmentKeys": [
+            "HOME",
+            "LC_CTYPE",
+            "PATH",
+            "PYTHONDONTWRITEBYTECODE"
+          ]
+        }
+      },
+      {
+        "branch": "attest",
+        "case": "harmless comment first",
+        "outcome": "survived",
+        "observed": {
+          "branch": "attest",
+          "environmentKeys": [
+            "HOME",
+            "LC_CTYPE",
+            "PATH",
+            "PYTHONDONTWRITEBYTECODE"
+          ]
+        }
+      },
+      {
+        "branch": "attest",
+        "case": "changed sealed input",
+        "outcome": "refused-before-systemd"
+      },
+      {
+        "branch": "attest",
+        "case": "restored source",
+        "outcome": "survived",
+        "observed": {
+          "branch": "attest",
+          "environmentKeys": [
+            "HOME",
+            "LC_CTYPE",
+            "PATH",
+            "PYTHONDONTWRITEBYTECODE"
+          ]
+        }
+      }
+    ],
+    "restored": true,
+    "limits": "Owned payload replaces business code before dispatch. No checkout, active check, attestation, Docker, HTTP or database operation. Trusted /bin/sh and systemd user manager remain assumptions."
+  },
+  "actualPureInputConsumers": {
+    "accepted": true,
+    "helperGlobalsUnchanged": true,
+    "dependencyBindingDigest": "5bff54066d812bfaabb4a864ff8f50e90e616e68aed0c0097bf392d2e832834c",
+    "migrationDigest": "1f7ce06758c8a3e64d4a89cb4359d4035a38ffb5f18f9ce84c552876906c8ad4",
+    "migrationCount": 419,
+    "nonRootLockEntries": 1143,
+    "installedEntries": 969,
+    "environmentDelta": [
+      "OPENPLAN_COMMIT_SHA"
+    ],
+    "blindCategory": "No Docker, SQL, HTTP or live readiness; package metadata does not hash each installed JavaScript byte."
+  },
+  "preservation": {
+    "roots": {
+      "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/project-geography-preview-final-20261015": 20640,
+      "/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015": 3233,
+      "/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2": 27722,
+      "/home/nathaniel/.local/state/openplan/rest-recovery-parent-operation-20261015-01": 6,
+      "/home/nathaniel/.t3/worktrees/openplan/t3-c2662e5b/docs/reviews/2026-10-15-current-project-preview-health-contract-fix": 22,
+      "/home/nathaniel/.t3/worktrees/openplan/t3-c2662e5b/docs/reviews/2026-10-15-current-project-preview-app-binding": 15
+    },
+    "added": 0,
+    "removed": 0,
+    "changed": 0,
+    "historicalOriginalFiles": 18485,
+    "historicalOriginalUnchanged": true,
+    "inventoryAssays": [
+      "harmless read survives",
+      "changed bytes detected",
+      "changed mode detected",
+      "changed symlink text detected",
+      "exact restoration"
+    ],
+    "blindCategory": "File bytes, modes and link text only. No logical database, global or Storage acquisition."
+  },
+  "privacy": {
+    "knownValues": 9,
+    "harmlessSurvives": true,
+    "eachKnownInjectionDetected": true,
+    "blindCategory": "Unknown secrets and short/common values are outside this known-value screen."
+  },
+  "parentCompiler": {
+    "result": {
+      "before": {
+        "head": "21510042e94bcaf80f262205ad156a7bb639e35c",
+        "status": "",
+        "resources": {
+          "memory.max": "8589934592",
+          "memory.swap.max": "0",
+          "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+          "memory.peak": "16953344",
+          "memory.swap.current": "0",
+          "cpu.max": "100000 100000"
+        }
+      },
+      "after": {
+        "head": "21510042e94bcaf80f262205ad156a7bb639e35c",
+        "status": "",
+        "resources": {
+          "memory.max": "8589934592",
+          "memory.swap.max": "0",
+          "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+          "memory.peak": "5874405376",
+          "memory.swap.current": "0",
+          "cpu.max": "100000 100000"
+        }
+      },
+      "command": [
+        "/usr/bin/bwrap",
+        "--die-with-parent",
+        "--unshare-net",
+        "--ro-bind",
+        "/",
+        "/",
+        "--bind",
+        "/home/nathaniel/.local/state/openplan/project-combined-full-types-20261015-02",
+        "/home/nathaniel/.local/state/openplan/project-combined-full-types-20261015-02",
+        "--tmpfs",
+        "/tmp",
+        "--dev",
+        "/dev",
+        "--proc",
+        "/proc",
+        "--chdir",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-e33fc359/openplan",
+        "/usr/bin/env",
+        "-i",
+        "PATH=/usr/bin:/bin",
+        "HOME=/home/nathaniel/.local/state/openplan/project-combined-full-types-20261015-02/home",
+        "NODE_OPTIONS=--max-old-space-size=6144",
+        "XDG_CACHE_HOME=/home/nathaniel/.local/state/openplan/project-combined-full-types-20261015-02/cache",
+        "/usr/bin/node",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-e33fc359/openplan/node_modules/typescript/bin/tsc",
+        "--project",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-e33fc359/openplan/tsconfig.json",
+        "--noEmit",
+        "--incremental",
+        "false",
+        "--pretty",
+        "false"
+      ],
+      "exitCode": 0,
+      "seconds": 92.59529607900186,
+      "compilerLogSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "tsconfigSha256": "cb3404493257250c77d7145c9825ed31f79246b640eb30a59b8069d39091bf29",
+      "scope": "Full unchanged project tsconfig with all implementation/test roots and actual generated Next declaration inputs; noEmit, incremental output disabled. No source-specific diagnostic selection or new exclusions."
+    },
+    "proofFileHashes": {
+      "/home/nathaniel/.local/state/openplan/project-combined-full-types-20261015-02/result.json": "65ffebbd35adcb95cd98724a2802886e1e928b4427375fe5a21b263c3f9ec2da",
+      "/home/nathaniel/.local/state/openplan/project-combined-full-types-20261015-02/compiler.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "/home/nathaniel/.local/state/openplan/project-combined-full-types-20261015-02/run.py": "04714317354acfd38b234371a99da067f19b67a0af50b5416f70bdb50664cd2c",
+      "/home/nathaniel/.local/state/openplan/project-combined-full-types-20261015-02/prior-run.json": "bce0947a60a3a101798eb08ded4f8bde17de605076d52517f9092a88223a5c3b",
+      "/home/nathaniel/.local/state/openplan/project-combined-full-types-20261015-01/result.json": "1de544cc0f2a4dc209b7bf233b7bfdaf74af6812bdd120578f306a0d9c187e5c",
+      "/home/nathaniel/.local/state/openplan/project-combined-full-types-20261015-01/compiler.log": "d65728afd3de737fec6140faee0b807e21aca6ee9232d170ebf8e7600fde7c29",
+      "/home/nathaniel/.local/state/openplan/project-combined-full-types-20261015-01/generated-type-inputs.json": "1d51a4be356696f603b6712913f57cf35c9df10d84968b14e504ff3a3dcd7714"
+    },
+    "priorAttemptExit": 134,
+    "parentReportCommit": "fa696fa9a93b265649b454483ad8904e28fa1781",
+    "blindCategory": "Assignability only; retained Next declaration inputs are not an accepted build or new types-generation evidence."
+  },
+  "scriptHashes": {
+    "common.py": "1e65e5baa7043c6bd1f516633803f56721e16f9eac58d1fde3efc10a73674dd0",
+    "finalize.py": "c8d5614dbd9247be86550cf4e96b06a34d8b1b6a840a2424ea14a612c556767e",
+    "health_producer.cjs": "cf4bf707efb0a20f0d28a8623cadc7da31d5be6906a7236c52da5e7ca963b5ac",
+    "prepare_v3.py": "e926d2c5b755bdecdfabc8f3f5531b58dcf6ab9172b0102b125c20cdc0a62317",
+    "run_fixture.sh": "580f33b5ca901802f9ee886415ab702ac048b987b7cc9258bca97f9be8366c21",
+    "run_stage_v3.sh": "34339836f8503af3e583ca24ed5b74ddb6d764c6802b52d830809c8c1796353e",
+    "seal_v3.py": "be5e3dabe7bb2c63ec66c909d2d8d3b59c3dac872ca6fecd787ab72c99fda8c5",
+    "templates/app_binding_v1.py": "c195d3be5eb3bcafb016f8794bf77e704d940bbf878bd725a874d85559c58329",
+    "templates/attest_start_v1.py": "0f62106d862c4f691cd87ffdaee6c277f93f01908cadfbcf7c686c365fd27665",
+    "verify_attestation.py": "8392c1dba711205cb0bc22e78c6b0fdf8322b5f85cc6fc82db6432e300ac3a80",
+    "verify_composition.py": "7964f4ea7ac48ebecbbe85cd367e20cd7d4baad3b189f58b414b77bdba821591",
+    "verify_controls.py": "25348b8e074aa15f4e0165d8ab599309d49cf5e67223f887f95d85d3a67aa743",
+    "verify_entry.py": "1a495b53fef2c09b42ff78de9307e603b6ef4477868d07920b512d3710acf6ea",
+    "verify_identity.py": "5a7ec4c30bddf4a3ec79bc58633ef35482bd6edafd2b17da771a4ea00d2f814c",
+    "verify_mechanical.py": "1ea67684a3b5bd2f135f3230253115df7947f039924f9e8a78ce7e13b363f896"
+  },
+  "privateArtifactHashes": {
+    "seal-failed-01.py": "503a3a3bbd01241fd2275b7ea4ec3566a03d0a9fa3b00988eabf07d22d671306",
+    "seal-failed-01.json": "c60ef7619e81806410e9fd62c9ea4e921b542173d8723d3daf9fca27673de7e3",
+    "preparation-private.json": "55e598f452e7025bf8e73a5e329c1f5b5b36754e43016e1a70a2299f4e801c68",
+    "old-roots-before-private.json": "af0467be5a8cdb41567e4c3343166f059babd7adb512639620b17c8b12d1de3e",
+    "controls-baseline-05.json": "ee7610ca8de4f8f5af60e12963f74524ff3e1cf3f239ba21b381b13af6f823fe",
+    "controls-restored-05.json": "ee7610ca8de4f8f5af60e12963f74524ff3e1cf3f239ba21b381b13af6f823fe",
+    "mutations-05.json": "fd965c965dcb421429fafa8a27ea32a97828c199437eef88b0aaca1ee2b3b624",
+    "attestation-controls-01.json": "5f69112f44204ea4f20bb36f1e4341e7204c4a781d62215941098a49a814c96b",
+    "actual-health-producer.json": "88f39ae751c1fd640483e7aaa9d1dc0f5ddeb4b449b4f444f217cd9a6a171f39",
+    "composed-controls-07.json": "ed7dda4c248751900df61b80ae32f853b0763f8e6fe365d41c7a0206bb3a1ec9",
+    "identity-controls-01.json": "62988b1c575bf589438474c920cec3be28a42a6aea928df85f6e3bfb598df14b",
+    "mechanical-controls-01.json": "12a20cf548ad8645277354bcbe5ec180495881aa26ab2e0887efe705f3f3a934",
+    "entry-controls-01.json": "7ef007b23e83e607fc8f703537f83d33efc22b0fcde498783a8258389834282c",
+    "finalize-failed-01.py": "73c1281830a9634d7a750d195fe559b7740b352df1347a5dceb6a03a6fdbde69",
+    "finalize-failed-01.json": "2cf29d52f091748ed915572c814ae076bf77e42240468d0f897da14ccb61bdb1"
+  },
+  "candidateAbsent": true,
+  "executionFiles": [],
+  "retainedPreparationFailure": {
+    "unit": "openplan-binding-v3-seal-01.service",
+    "exitCode": 1,
+    "reason": "private-mode:entry-specimens/03-active-check/fake-bin/sha256sum",
+    "failedSourceSha256": "503a3a3bbd01241fd2275b7ea4ec3566a03d0a9fa3b00988eabf07d22d671306",
+    "boundary": "Reporting-only mode assumption. No application operation or frozen-file change."
+  },
+  "notReplayed": [
+    "Prior seven small resource/private-file controls",
+    "Prior five standalone boundary observations",
+    "Independent round2 seven retained-code/tool probes",
+    "121 page-focused cases",
+    "72 report-focused cases",
+    "Full QA/native artifacts"
+  ],
+  "limitations": [
+    "Execution blocked on new proportional independent review",
+    "No actual application checkout/build/start/attestation or listener",
+    "No helper/service transition, SQL/DB clone, source-anchor recapture, provider request or install",
+    "No full QA, native application, browser/fallback, desktop/390px/console/artifact/practitioner/public/scientific acceptance",
+    "Trusted controllers retain ordinary user filesystem/Docker permissions; npm payload uses kernel read-only boundary",
+    "No hostile-host, same-user adversary, crash/power-loss, concurrent-donor or large-build capacity proof"
+  ],
+  "preFinalSealOutputHashes": {
+    "manifest.json": "c61ccca941c878ce578309f1cbbe02fc9a30b4debe5d8ac0b5db6685c78ec609",
+    "evidence.json": "1e9fc6c7677588f040f69da116734db69c42366359568d52c0818465516d9266"
+  },
+  "retainedFinalizationFailure": {
+    "unit": "openplan-binding-v3-finalize-01.service",
+    "exitCode": 1,
+    "reason": "StopIteration: short identity fixture unit journal has no MEMORY_PEAK summary",
+    "failedSourceSha256": "73c1281830a9634d7a750d195fe559b7740b352df1347a5dceb6a03a6fdbde69",
+    "boundary": "Reporting assumption only; short-unit tool result remains observed success. No absent journal resource value is supplied."
+  },
+  "unitAccountingBoundary": "Short units can omit journal resource summaries; missing values stay null. Configured caps and retained journal accounting; terminal exits are observed from the tool results, not inferred from a systemd start request.",
+  "diffPresentation": "Final patches use zero context to preserve exact unified deltas without whitespace-only context records. Runtime/recipe/subjects and sealed inputs stay unchanged."
+}

@@ -1,0 +1,98 @@
+{
+  "state": "passed-native-managed-stage-recovery",
+  "http": [
+    {
+      "method": "POST",
+      "path": "/rest/v1/rpc/claim_model_stage_attempt",
+      "requestSha256": "5fdb672fa11870a955ffa9eab0b5ca4fbafdbf96bb5446a962642b51c11d5b1b",
+      "status": 200,
+      "responseSha256": "ad82ebbc516f015611d5f67d7185d66158c77690ce0ef2e5418373e080f74f81",
+      "dropped": false
+    },
+    {
+      "method": "GET",
+      "path": "/rest/v1/model_run_stages?id=eq.596a9b29-84aa-4fab-b5c7-bd1e4fea6592&run_id=eq.3d590774-e57d-4a69-986b-c94364178784&model_runs.workspace_id=eq.23e0723b-ae4b-46ec-8de5-7941d1b552e9&select=id%2Crun_id%2Cstatus%2Cattempt_managed%2Cactive_attempt_id%2Cmodel_runs%21inner%28id%2Cworkspace_id%2Cstatus%2Cattempt_managed%29",
+      "requestSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": 200,
+      "responseSha256": "57adc1acf43f74d56ebd2910f783402011a52e610f179de467beea4f7e4f0339",
+      "dropped": false
+    },
+    {
+      "method": "POST",
+      "path": "/rest/v1/rpc/write_model_stage_attempt",
+      "requestSha256": "ea41e17a8705533251c39432c491175dd1bd5fc92e0b86c29583b3df77c6bdfb",
+      "status": 200,
+      "responseSha256": "c26f60d54703299afa32577d00f0ccee624d1d8bf5bddf4b5d04a62521c3c78b",
+      "dropped": false
+    },
+    {
+      "method": "GET",
+      "path": "/rest/v1/model_run_stages?id=eq.b33bfaf8-a2f9-4dd1-8e46-bcdd947b3936&run_id=eq.e1aa4f0b-32cf-47a2-9023-58af2b8ad7ac&model_runs.workspace_id=eq.23e0723b-ae4b-46ec-8de5-7941d1b552e9&select=id%2Crun_id%2Cstatus%2Cattempt_managed%2Cactive_attempt_id%2Cmodel_runs%21inner%28id%2Cworkspace_id%2Cstatus%2Cattempt_managed%29",
+      "requestSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": 200,
+      "responseSha256": "76d46157b73a9bc5ab350fb7ee4f65d5f137a3ebfcc9acba348677bbb4c74211",
+      "dropped": false
+    }
+  ],
+  "commands": [
+    {
+      "name": "stop-exact-target-rest",
+      "exitCode": 0
+    },
+    {
+      "name": "target-final-role-dump",
+      "exitCode": 0
+    },
+    {
+      "name": "stop-exact-target-database",
+      "exitCode": 0
+    }
+  ],
+  "targetDatabaseId": "25ab5068a1c3c3e33d95350dfd56c75783d7f18716c035fb62e68ccc88f0c07a",
+  "targetDatabase": "openplan_attempt_cli_12d7175d419f43b1bf0f8985fe7adf5a",
+  "targetRestId": "85ffadf50b9cad1f471afd3de98465dd49e79de88998f3455f59e07564764f44",
+  "executionSourceSha256": {
+    "recovery_lifecycle.py": "247181f12d18d10943f8548e47c55cc180e5933ab8271105d3b5aeb9054ccb06",
+    "verify_recovery_lifecycle.py": "340aec848a17c39f33b5f8dc8703a87a126b8fce4fa26d885138a5400243962f",
+    "recovery_guards.py": "5da8413a23e910e885ea74261d751dde85c73f16177ff0d167b982d1adefc2d2",
+    "launch.py": "bc6500432e706e45546b9a4de161c5abee3281dce49676fb92026849a0f53228",
+    "run_recovery.py": "95e8dcf379339b67a53021d6cd2ecb05404bfba737f7436441aee1b7eebaed7d"
+  },
+  "journalCheckpoints": [
+    {
+      "journal": "claim",
+      "nativeResult": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "journal": "progress",
+      "nativeResult": [
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "wallSeconds": 63.324,
+  "native374TablesSixSequencesUnchanged": true,
+  "originalClaimAndProgressExchangeByteEqual": true,
+  "admissionsUnchanged": {
+    "claim": 0,
+    "progress": 1
+  },
+  "computationCallbacks": 0,
+  "reentryRefused": true,
+  "ownershipPointInTimeOnly": true,
+  "attemptOwnerInputsOutputsEmptyDirectoriesModesPreserved": true,
+  "onlyTwoOriginalReceiptsRetainedLocally": true,
+  "sourcePointUnchanged": true,
+  "targetApiAndDatabaseStopped": true,
+  "limits": "Synthetic admitted-stage custody on separate local clusters/volumes, same host/disk. No scientific engine, writer reconstruction, normal poller integration, distributed lease, physical-host, browser or hosted acceptance.",
+  "immutableOperatorPackagesUnchanged": true,
+  "allDependenciesUnchanged": true,
+  "exactOwnedTargetStoppedAfterFinally": true,
+  "workingRootOrigin": "Supported root CLI package copied to a fresh runtime root. Accepted retained point and original target files are unchanged."
+}

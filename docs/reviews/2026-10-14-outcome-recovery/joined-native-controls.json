@@ -1,0 +1,74 @@
+[
+  {
+    "case": "baseline-lost",
+    "outcome": "survived"
+  },
+  {
+    "case": "baseline-revoked",
+    "outcome": "survived"
+  },
+  {
+    "case": "baseline-ack-revoked",
+    "outcome": "survived"
+  },
+  {
+    "case": "baseline-missing",
+    "outcome": "survived"
+  },
+  {
+    "case": "harmless-lost",
+    "outcome": "survived"
+  },
+  {
+    "case": "harmless-revoked",
+    "outcome": "survived"
+  },
+  {
+    "case": "harmless-ack-revoked",
+    "outcome": "survived"
+  },
+  {
+    "case": "harmless-missing",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-after-harmless-lost",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-after-harmless-revoked",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-after-harmless-ack-revoked",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-after-harmless-missing",
+    "outcome": "survived"
+  },
+  {
+    "case": "completed-original-denied",
+    "outcome": "intended_failure"
+  },
+  {
+    "case": "revoked-original-granted",
+    "outcome": "intended_failure"
+  },
+  {
+    "case": "restored-final-lost",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-final-revoked",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-final-ack-revoked",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-final-missing",
+    "outcome": "survived"
+  }
+]

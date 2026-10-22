@@ -1,0 +1,74 @@
+{
+  "schema": 1,
+  "appHead": "67828c17c4c270529468eef1edd144e4a52b693a",
+  "helperHead": "06a108010ab39aa42eed4c2bcda3e1371b8aa813",
+  "recoveryProducer": "d71e0aa7aa1b2c3c945ee87a54ea49d6a5772378",
+  "sourceAnchor": "82fda3004c8dd5d3f1e26eb179e11d1da159eb79a33253a636de37ef68213547",
+  "privateRoot": "/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2",
+  "frozenRoot": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/project-geography-preview-final-20261015",
+  "templates": {
+    "app_binding_v1.py": "f29f3194af731f333aa1291f8addd0ef4319ba9569c83fd6a46162876f666eea",
+    "attest_start_v1.py": "e4e1cbb70803a9ae295a8b3ffa3c3059f3c7fc5ec71f86b7b1e4cc843d257f5f"
+  },
+  "bindingSha256": "a530b885c79fef57b1e7a74914cf67ec397c883f6b96a3ce4268c9843fc33e27",
+  "privateInputs": {
+    "app_binding_v1.py": "f29f3194af731f333aa1291f8addd0ef4319ba9569c83fd6a46162876f666eea",
+    "app-env-private.json": "c793c1e3b0c09c492584fc60e41495cc8a9171e248266e9e2c100ae3b2f8b730",
+    "app-v1.env": "f432d6a313e595774cd22c93e472a9682e6e0a871c722594066ba303cc1e3d4f",
+    "migrations.json": "56c984affb04f643bd3ccc74e7c4258771253cb7bbadcbbe6d130039cccc5317",
+    "dependency-binding.json": "75ffc3b6ddf0e6f934f9c0a070f475b648209b1f3c4cad67cf21142ed4571b3d",
+    "recovery-active-binding.json": "362c039646e1e561c1ae37fb5cab2fc45d80f6aedd7123ba46379960caf9416b",
+    "attest_start_v1.py": "e4e1cbb70803a9ae295a8b3ffa3c3059f3c7fc5ec71f86b7b1e4cc843d257f5f"
+  },
+  "helperModules": {
+    "rest_uri_recovery_01_launcher.py": "259fd6712429fcf4b4eafea7d9eef0a07685c5d7e6cc216b6d347a06700ff5fd",
+    "rest_uri_recovery_01_policy.py": "b8cd15dd1284aef71a302a2614724b1cb34e9783ee7049028eb08e16309df156",
+    "rest_uri_recovery_01_controller.py": "0a2abd7530658eedb033ba4c235393612ff364210f064a32b4ff3d903134f175"
+  },
+  "activeBinding": {
+    "producer": "d71e0aa7aa1b2c3c945ee87a54ea49d6a5772378",
+    "restId": "140c68675574a3705fa68aa46543d806d66d1f20739bf63273d6126108d5430d",
+    "files": {
+      "replacement-receipt-private.json": "a7b5210ad7e117ba9ee2c81eb92b7875ce1c6be70ad2e63f660856db98a35582",
+      "replacement-started-private.json": "445c90a887ab2d4839885892848bd2220f63a5a036392bd0759227564531168d",
+      "active-service-receipts-private.json": "89042f1acf194f483ab6e1e0b1e7e64c4ec217d3984200d167a589c43e215e8d",
+      "active-binding-private.json": "eb59fad42679f11ac2a6cd97f6267adbb21c25ea6298efcf10e2e578b37da72e"
+    },
+    "operationObservationSha256": "7353b5f98398c3f1f5ed0d08c48d92be08175dc6c7b5c8db3258b9331f0f09fc"
+  },
+  "migrationCount": 419,
+  "nonRootLockEntries": 1143,
+  "installedLockEntries": 969,
+  "applicationEnvironmentDelta": [
+    "OPENPLAN_COMMIT_SHA"
+  ],
+  "candidateExists": false,
+  "executionFiles": [],
+  "packetVersion": 2,
+  "supersedesPacketCommit": "f29968d67c8177f33122691ad5879c675d457e08",
+  "healthContract": {
+    "commit": "67828c17c4c2",
+    "migrations": {
+      "expected": 419,
+      "latest": "20261017000016"
+    }
+  },
+  "actualAppUnit": "openplan-current-project-preview-app-678-v1-web.service",
+  "independentReviewCommit": "bcd47064b87306fc742704a742c24ceeb873f25c",
+  "independentReviewFiles": {
+    "REVIEW.md": "9e4fb1ba4eb08af82fc39555c3a3f1c34831a09f88a289e9b714de3ed1fe410d",
+    "nested_probe.py": "b7b43c030d67e6197c46097defacab945e947e31a5c6d0f9c04cdb8fc0f2317d",
+    "health_probe.py": "e6c3053f7deec14970af455676bf0afabdb96f6bc8ae666343af0d34fec01c35",
+    "evidence.json": "9fb2305f549fac70c4e213e9e7ad4ee6b4b5b78cf4b875de3ebd6c834ee3e888"
+  },
+  "operationFilesSha256": "633b5adee9fb059145e453a72348e1670880788ee9e4840ab2841bc8650cacd5",
+  "runnerSha256": "503e91cd28479bfffeb6de257937ff7b2b61e1b3f941a15554d348a695a5aadb",
+  "recipeFiles": {
+    "PARENT_RECIPE.md": "0c1d134c633312647c90b0268773ab796d3a0703ba6c397288886b2241581344",
+    "run_stage_v2.sh": "503e91cd28479bfffeb6de257937ff7b2b61e1b3f941a15554d348a695a5aadb",
+    "operation-files.sha256": "633b5adee9fb059145e453a72348e1670880788ee9e4840ab2841bc8650cacd5",
+    "template-diff.patch": "8373b0d58ff8503ea8c58e1987795ffe4d92481502ea64d6b2a65bc25bd62868",
+    "recipe-diff.patch": "7d39c2ece47e6f3451da35cdb26cb2deb110cba05bd766c8695352df48b70cb8",
+    "verify_composition.py": "298b43608032b20d220350f99dcf573767e702da71d4052f8e6e527717e75403"
+  }
+}

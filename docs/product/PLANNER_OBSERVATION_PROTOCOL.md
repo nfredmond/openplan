@@ -1,5 +1,12 @@
 # Observe real planning work
 
+**Post-v1 only, October 17, 2026 direction.** Human feedback is optional research
+after v1. Do not recruit participants or ask Nathaniel for feedback unless he
+requests that work. Agent-run planner and public-participant tasks can satisfy
+milestone and v1 acceptance under the [v1 contract](V1_PRODUCT_CONTRACT.md#v1-acceptance-evidence).
+The protocol below remains available for later human research; its distinctions
+describe that research, not a pre-v1 release gate.
+
 This protocol prepares human research from the September 4 review and the September 6 consolidation.
 No participant has been recruited or observed through this document. Nathaniel
 owns recruitment, outreach and the product decisions arising from it. Agent

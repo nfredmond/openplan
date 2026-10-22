@@ -2,6 +2,7 @@ import Link from "next/link";
 import { formatMoney } from "@/lib/money/format";
 import { ArrowRight } from "lucide-react";
 import { FundingOpportunityDecisionControls } from "@/components/programs/funding-opportunity-decision-controls";
+import { FundingOpportunityDeadlineEditor } from "@/components/grants/funding-opportunity-deadline-editor";
 import {
   FundingOpportunityNarrativeDraftPanel,
   type FundingOpportunityNarrativeDraftRow,
@@ -306,7 +307,7 @@ export function GrantsOpportunityRegistryCard({
                 href={projectHref}
                 className="inline-flex items-center gap-2 text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]"
               >
-                Open project funding lane
+                Open project funding
                 <ArrowRight className="h-4 w-4" />
               </Link>
             ) : null}
@@ -324,12 +325,19 @@ export function GrantsOpportunityRegistryCard({
                 href={programHref}
                 className="inline-flex items-center gap-2 text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]"
               >
-                Open program funding lane
+                Open program funding
                 <ArrowRight className="h-4 w-4" />
               </Link>
             ) : null}
           </div>
         ) : null}
+
+        <FundingOpportunityDeadlineEditor
+          opportunityId={opportunity.id}
+          workspaceId={opportunity.workspace_id}
+          closesAt={opportunity.closes_at}
+          decisionDueAt={opportunity.decision_due_at}
+        />
 
         <details className="mt-4" open={isFocused || undefined}>
           <summary className="cursor-pointer text-sm font-semibold text-foreground">Record a decision and notes</summary>

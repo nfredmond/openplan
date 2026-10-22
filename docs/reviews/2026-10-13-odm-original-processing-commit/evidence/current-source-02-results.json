@@ -1,0 +1,26 @@
+[
+  {
+    "stage": "authority314-current-02",
+    "returncode": 0
+  },
+  {
+    "stage": "authority311-current-02",
+    "returncode": 0
+  },
+  {
+    "stage": "runtime314-current-02",
+    "returncode": 0
+  },
+  {
+    "stage": "runtime311-current-02",
+    "returncode": 0
+  },
+  {
+    "stage": "transport314-current-02",
+    "returncode": 0
+  },
+  {
+    "stage": "transport311-current-02",
+    "returncode": 0
+  }
+]

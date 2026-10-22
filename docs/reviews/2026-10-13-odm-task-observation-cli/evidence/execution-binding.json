@@ -1,0 +1,6 @@
+{
+  "workflowSha256": "30d949ebfcad61055ff4aaeef29f89994516f1d063688c11834d72ea9553db8b",
+  "executionSha256": "7036bef68f627d472d472e7f007bc7084ae6193cc1f0bbe706082fcf7825801b",
+  "actualStages": 34,
+  "scope": "Current locally executed operator recipe; earlier frozen bindings unchanged."
+}

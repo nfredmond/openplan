@@ -1,0 +1,9 @@
+{
+  "changelog": {
+    "url": "https://supabase.com/changelog.md",
+    "sha256": "15b3d0d1a7dc3b3f2c0af4788e49acfdf2d2edbd2613f22de0705fa43b1cf58b",
+    "read": true
+  },
+  "rls": "https://supabase.com/docs/guides/database/postgres/row-level-security",
+  "scope": "Existing reviewed migration only, no SQL or installed dependency update. No database access. Exposed-schema grants and RLS retained; major/minor upgrade changes remain parent runtime scope."
+}

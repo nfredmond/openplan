@@ -1,0 +1,24 @@
+{
+  "integrationBase": "65e000f31d07fca24f83c8daef479d0b161f8dd4",
+  "testFiles": 2,
+  "testsPassed": 18,
+  "nativeExecuted": false,
+  "migrationApplied": false,
+  "browserRetested": false,
+  "sourceSha256": {
+    "openplan/supabase/migrations/20261017000017_portfolio_skip_invalid_classifications.sql": "b129f80e37aa9be71069683acd42df3fb6fdb94078ed0458f20b6e9c5155a41b",
+    "openplan/src/test/portfolio-skip-invalid-transaction-migration.test.ts": "51d80855e6a2802f7d02afee2062144b12b388b42f50d5536983c78b7089c22f",
+    "openplan/src/test/project-portfolio-import-route.test.ts": "ba66b9f6a694a83fe68d503567a835317a9294515c98e6373d71ece6d564c601",
+    "openplan/src/test/fixtures/portfolio-import/skipped-invalid-status.csv.b64": "4bce2ce64dd2417f6a8dfdecaab9f96cf2a24d5c9d138e8dbc67fb205178e989",
+    "docs/reviews/2026-10-15-portfolio-skip-invalid-transaction-fix/prepare_native_probe.py": "33200c20c186f9e090b2e4e4f5ae2db7dc8cac297fc7c2d909b4e22aa5b0b680",
+    "docs/reviews/2026-10-15-portfolio-skip-invalid-transaction-fix/verify_controls.py": "3a93b6ee7d4dabb8f795067f5724f37c3b250adb516ab6b0ac517d212a90f713",
+    "docs/reviews/2026-10-15-portfolio-skip-invalid-transaction-fix/frozen-rpc-input.json": "488d6f5dab1ceb58cc60b34e29e37cd5d54a168e9187e247664dc91264f6706e"
+  },
+  "privateRoot": "/home/nathaniel/.local/state/openplan/portfolio-skip-invalid-transaction-fix-20261015",
+  "logs": [
+    "controls-final/restored-baseline.log",
+    "controls-final/controls.json",
+    "eslint-final.log",
+    "migration-inventory.json"
+  ]
+}

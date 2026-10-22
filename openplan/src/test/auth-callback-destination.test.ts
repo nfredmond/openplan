@@ -33,6 +33,22 @@ describe("auth callback destination", () => {
     expect(resolveCallbackDestination("/\n/elsewhere.example/x", ORIGIN).href).toBe(`${ORIGIN}/dashboard`);
   });
 
+  // The sign-in and sign-up pages pass safeNextPath straight to router.push,
+  // with no origin check of their own. Each value below passes a prefix-only
+  // check and resolves off site once the URL parser drops the control
+  // character or reads "\" as "/".
+  it.each(["/\t/evil.example", "/\n/evil.example", "/\r/evil.example", "/\t\\evil.example", "/x/../\t/evil.example"])(
+    "never returns a path that leaves the site: %j",
+    (hostile) => {
+      expect(safeNextPath(hostile)).toBe("/dashboard");
+    }
+  );
+
+  it("keeps an ordinary local path with its query and fragment", () => {
+    expect(safeNextPath("/projects/abc?tab=maps#layers")).toBe("/projects/abc?tab=maps#layers");
+    expect(safeNextPath("/dashboard?intent=engagement")).toBe("/dashboard?intent=engagement");
+  });
+
   it("falls back to the dashboard for a missing, absolute or protocol-relative `next`", () => {
     for (const hostile of [null, "", "https://evil.example/x", "//evil.example/x", "/\\evil.example/x", "dashboard"]) {
       expect(safeNextPath(hostile)).toBe("/dashboard");

@@ -31,6 +31,8 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pa
     const access = await loadProjectAccess(client, row.project_id, userId, "programs.write");
     if (access.error) throw new ProviderRequestError("map_package_storage_unavailable", 503);
     if (!access.project || access.project.workspace_id !== row.workspace_id || !access.allowed) throw new ProviderRequestError("map_package_access_denied", 403);
+    // A person's own upload, checked above; not an agent write. Agent output
+    // takes the connector route, whose header records the registry exception.
     const service = createServiceRoleClient();
     const measured = await measureStoredMapPackageObject(service, mapPackageObjectPath(row, row.upload_file_name), mapPackageZipMaxBytes());
     if (!measured) throw new ProviderRequestError("map_package_file_missing", 409);

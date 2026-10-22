@@ -1,0 +1,13 @@
+# The exact-money formatter throws on an extreme finite negative exponent
+
+October 16, 2026. Actual production formatter exports from candidate `360420ac42f34d2514bec91a0cd796804a8bd78f` throw `RangeError: Maximum BigInt size exceeded` for the supplied string `1e-9007199254740991`. The preceding formatter at `0ceedbbd174edb557e90b5bf6a144592e8120bb4` returns `$0.00` for that input. Candidate application tree is `98535591a5a5916e0ffaef4125196366d3816410`.
+
+The probe compiles the actual two money modules with the installed TypeScript compiler, then calls their exports. It does not copy the formatter algorithm into the oracle. `parseExactDecimal` accepts the input and returns units 1 with scale equal to Number.MAX_SAFE_INTEGER. The formatter then raises its BigInt size error. This is a helper regression on a supplied string. No stored database input, route, browser failure, exploit or critical/high severity is established.
+
+Ordinary zero and `1e-100` still format as `$0.00`. Both old and candidate formatters return `Not recorded` for nonfinite `1e309`. A harmless compiled comment produces the same candidate results, and original compiled input repeats them. A wrong `$0.01` reference fails equality. Both source-file hashes match before and after. No subject source changes or unbounded successful exponentiation occurs.
+
+The owned unit returns zero because the diagnostic completes and retains the mismatch. It is not a passing formatter result. The unit uses 1 GiB RAM, zero swap, CPU50, a 128 MiB Node heap and a 20-second runtime limit. It completes in 1.13 seconds. The in-probe sample records 99,344,384 bytes; the command recorder later records 104,587,264 bytes. Both record zero memory events. The host and dependency donor are kernel read-only, networking is unshared, and environment/output paths are private. The command recorder reuses the exact previously controlled resource assertion; only its private-root literal changes. Reused predicate controls do not prove a physical negative-cgroup or donor-write case.
+
+The exact-money independent reviewer receives this result and assesses its consequence within the candidate's declared domain. No source correction, source approval, native operation, merge or release follows from this readback. Native money/RLS/snapshot behavior, browser Intl, exports, practitioner finance and full v1 remain open. [evidence.json](evidence.json) pins commands, source, terminal output, resource observations and the retained private diagnostic.
+
+Correction: the first report described the earlier in-probe sample as the unit peak. The later recorder sample above supplies the stronger observed bound. Both original receipts and all 19 private pins remain unchanged; no command reruns.

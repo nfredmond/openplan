@@ -3,6 +3,7 @@ import { BookOpen, ExternalLink, Gauge, LifeBuoy, Wrench } from "lucide-react";
 import { PageHeader } from "@/components/ui/page-header";
 
 import { APP_NAV_ENTRIES, buildRailGroups } from "@/components/nav/nav-registry";
+import { AI_KEY_FEATURES } from "@/lib/help/ai-key-features";
 import { MODULE_DESCRIPTIONS } from "@/lib/help/module-descriptions";
 import {
   describePublishedErrorEnvelope,
@@ -151,40 +152,41 @@ export default function HelpPage() {
         </p>
       </article>
 
-      {/* Which features run on an AI key. The list mirrors the workspace setup
-          checklist's "Turn on your AI assistant" step — two different accounts
-          of the same boundary would be two things to keep true. */}
+      {/* Which features need AI. The key list is AI_KEY_FEATURES, the same list
+          the dashboard checklist's AI step names, so the two cannot disagree. */}
       <article className="mt-8 border-t border-border/60 pt-8">
         <div className="module-section-header">
           <div className="module-section-heading">
-            <h2 className="module-section-title">Which features need an AI key</h2>
+            <h2 className="module-section-title">Which features need AI</h2>
             <p className="module-section-description">
-              OpenPlan itself is free. Its AI features run on an AI-provider (Anthropic) key that is
-              your workspace&apos;s own account with that provider — usage is billed by the
-              provider, not by OpenPlan.
+              OpenPlan itself is free. AI features run on your own account with an AI provider, and
+              usage is billed by the provider, not by OpenPlan.
             </p>
           </div>
         </div>
-        <p className="mt-3 text-base leading-6 text-muted-foreground">
-          Engagement source capture and staff synthesis reviews work without an AI key. The earlier AI
-          synthesis generator is retired; new AI theme generation is not yet available.
-        </p>
-        <ul className="mt-4 list-disc space-y-1.5 pl-6 text-base text-foreground/90">
-          <li>The Planner Agent — the in-app assistant that answers from your workspace&apos;s own records.</li>
-          <li>Narrative drafting for reports and grant applications.</li>
-          <li>Comment translation on public engagement portals.</li>
+        <p className="mt-3 text-base leading-6 text-muted-foreground">These need an Anthropic key:</p>
+        <ul aria-label="Features that need an Anthropic key" className="mt-2 list-disc space-y-1.5 pl-6 text-base text-foreground/90">
+          {AI_KEY_FEATURES.map((feature) => (
+            <li key={feature.short}>{feature.help}</li>
+          ))}
         </ul>
         <p className="mt-3 text-base leading-6 text-muted-foreground">
-          Everything else works without a key, and pages say plainly when an AI feature is
-          unavailable rather than sitting silent. A workspace owner or admin adds the key on the{" "}
+          A workspace owner or admin adds the key on the{" "}
           <Link
             href="/workspace#workspace-ai-key"
             className="font-semibold underline underline-offset-4 hover:text-foreground"
           >
             Workspace setup &amp; health page
-          </Link>{" "}
-          or its Integration keys panel; a deployment-wide key set by whoever operates this
-          deployment works too.
+          </Link>
+          .
+        </p>
+        <p className="mt-3 text-base leading-6 text-muted-foreground">These need AI set up another way:</p>
+        <ul aria-label="Features that need AI set up another way" className="mt-2 list-disc space-y-1.5 pl-6 text-base text-foreground/90">
+          <li>Maps. Claude Fable 5.1 makes map packages on your own computer. Uploading a package you already have needs no AI.</li>
+          <li>Suggested comment themes. These need an AI connection, and whoever installed OpenPlan must turn them on.</li>
+        </ul>
+        <p className="mt-3 text-base leading-6 text-muted-foreground">
+          Everything else works without AI, including staff review of comments.
         </p>
       </article>
 

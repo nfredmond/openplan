@@ -1,0 +1,72 @@
+{
+  "classifier": {
+    "empty_rejected": true,
+    "crash_rejected": true,
+    "type_error_rejected": true,
+    "wrong_assertion_rejected": true,
+    "harmless_accepted": true,
+    "intended_accepted": true
+  },
+  "cases": [
+    {
+      "mode": "harmless",
+      "exit": 0,
+      "expectedExit": 0,
+      "expectedDiagnostic": null,
+      "outcome": true,
+      "result": "SURVIVED",
+      "diagnostic": null,
+      "checksReached": 30
+    },
+    {
+      "mode": "epoch:userId",
+      "exit": 1,
+      "expectedExit": 1,
+      "expectedDiagnostic": "original intent must not submit",
+      "outcome": true,
+      "result": "AssertionError",
+      "diagnostic": "original intent must not submit after committed scope round trip\n\n1 !== 0\n",
+      "checksReached": 0
+    },
+    {
+      "mode": "epoch:workspaceId",
+      "exit": 1,
+      "expectedExit": 1,
+      "expectedDiagnostic": "original intent must not submit",
+      "outcome": true,
+      "result": "AssertionError",
+      "diagnostic": "original intent must not submit after committed scope round trip\n\n1 !== 0\n",
+      "checksReached": 2
+    },
+    {
+      "mode": "epoch:projectId",
+      "exit": 1,
+      "expectedExit": 1,
+      "expectedDiagnostic": "original intent must not submit",
+      "outcome": true,
+      "result": "AssertionError",
+      "diagnostic": "original intent must not submit after committed scope round trip\n\n1 !== 0\n",
+      "checksReached": 4
+    },
+    {
+      "mode": "epoch:revision",
+      "exit": 1,
+      "expectedExit": 1,
+      "expectedDiagnostic": "original intent must not submit",
+      "outcome": true,
+      "result": "AssertionError",
+      "diagnostic": "original intent must not submit after committed scope round trip\n\n1 !== 0\n",
+      "checksReached": 6
+    },
+    {
+      "mode": "epoch:canWrite",
+      "exit": 1,
+      "expectedExit": 1,
+      "expectedDiagnostic": "original intent must not submit",
+      "outcome": true,
+      "result": "AssertionError",
+      "diagnostic": "original intent must not submit after committed scope round trip\n\n1 !== 0\n",
+      "checksReached": 8
+    }
+  ]
+}

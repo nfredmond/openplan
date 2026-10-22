@@ -1,0 +1,27 @@
+[
+  {
+    "case": "documentation",
+    "outcome": "survived",
+    "cases": 20
+  },
+  {
+    "case": "link-baseline",
+    "outcome": "survived",
+    "cases": 6
+  },
+  {
+    "case": "link-harmless",
+    "outcome": "survived",
+    "cases": 6
+  },
+  {
+    "case": "link-broken",
+    "outcome": "intended_failure",
+    "cases": 5
+  },
+  {
+    "case": "link-restored",
+    "outcome": "survived",
+    "cases": 6
+  }
+]

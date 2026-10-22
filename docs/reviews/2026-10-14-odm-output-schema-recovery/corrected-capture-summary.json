@@ -1,0 +1,22 @@
+{
+  "sourceBindingMethod": "selected_git_objects_and_clean_index_worktree",
+  "schemaSourceMain": "41cbd5a856c4da0824b408ac3ebabb459e205e3f",
+  "sourceHistoryCount": 406,
+  "expectedHistoryCount": 409,
+  "missingMigrations": [
+    "20261017000002",
+    "20261017000005",
+    "20261017000006"
+  ],
+  "extraMigrations": [],
+  "sourceDump": {
+    "bytes": 5519770,
+    "sha256": "087ec0c899e7c3143e758f54610e06429b0aa30d0ebbda74e71b1957ce4a7e3f"
+  },
+  "scope": "same_cluster_populated_fixture_capture",
+  "hostedCapture": false,
+  "executedSourceBindings": {
+    "capture_main41c.py": "0c73c9f44f2f0f218cc26105beca72f7c562bf44edde4b6b8cc65fa35fe32ff2",
+    "migration_source.py": "af8ecbae61e6c067826adb298cff271f987fea8e00d549c0236380753e3ee47c"
+  }
+}

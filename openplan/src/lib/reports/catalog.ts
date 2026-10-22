@@ -1,3 +1,4 @@
+import { isDateOnly } from "@/lib/time/workspace-calendar";
 import { type EvidenceChainSummary } from "@/lib/reports/evidence-chain";
 import {
   PACKET_FRESHNESS_DETAIL,
@@ -34,6 +35,8 @@ export type ReportStatusTone =
   | "warning"
   | "danger"
   | "neutral";
+
+export type ReportJurisdictionState = "untracked" | "current" | "changed" | "unavailable";
 
 export type ReportPacketFreshness = {
   label: string;
@@ -89,7 +92,46 @@ export type ReportComparisonSnapshotDigest = {
   detail: string;
 };
 
-export type ReportFundingSnapshot = ProjectFundingSnapshot;
+/** The dollar figures a saved packet snapshot can lack. */
+const REPORT_FUNDING_AMOUNT_KEYS = [
+  "fundingNeedAmount",
+  "localMatchNeedAmount",
+  "committedFundingAmount",
+  "committedMatchAmount",
+  "likelyFundingAmount",
+  "totalPotentialFundingAmount",
+  "remainingFundingGap",
+  "remainingMatchGap",
+  "unfundedAfterLikelyAmount",
+  "requestedReimbursementAmount",
+  "paidReimbursementAmount",
+  "outstandingReimbursementAmount",
+  "draftReimbursementAmount",
+  "uninvoicedAwardAmount",
+] as const satisfies readonly (keyof ProjectFundingSnapshot)[];
+
+type ReportFundingAmountKey = (typeof REPORT_FUNDING_AMOUNT_KEYS)[number];
+
+/**
+ * A funding snapshot as a report packet saved it, or the live one. A dollar
+ * figure the saved packet did not record is null, never 0: a missing gap read
+ * as 0 says the project is fully funded. A live ProjectFundingSnapshot is
+ * assignable to this type.
+ */
+export type ReportFundingSnapshot = Omit<ProjectFundingSnapshot, ReportFundingAmountKey> & {
+  [K in ReportFundingAmountKey]: number | null;
+};
+
+/** True when every dollar figure is recorded, so live-snapshot logic may run on it. */
+export function isCompleteFundingSnapshot(
+  snapshot: ReportFundingSnapshot
+): snapshot is ProjectFundingSnapshot {
+  return REPORT_FUNDING_AMOUNT_KEYS.every((key) => snapshot[key] !== null);
+}
+
+function isPositiveAmount(value: number | null): value is number {
+  return value !== null && value > 0;
+}
 
 export type ReportFundingDigest = {
   headline: string;
@@ -744,10 +786,14 @@ export function getReportPacketFreshness({
   latestArtifactKind,
   generatedAt,
   updatedAt,
+  generationWritebackCurrent,
+  jurisdictionState,
 }: {
   latestArtifactKind: string | null | undefined;
   generatedAt: string | null | undefined;
   updatedAt: string | null | undefined;
+  generationWritebackCurrent?: boolean;
+  jurisdictionState?: ReportJurisdictionState;
 }): ReportPacketFreshness {
   if (!latestArtifactKind || !generatedAt) {
     return {
@@ -755,6 +801,18 @@ export function getReportPacketFreshness({
       tone: "warning",
       detail: PACKET_FRESHNESS_DETAIL.NO_PACKET,
     };
+  }
+
+  if (jurisdictionState === "changed" || jurisdictionState === "unavailable") {
+    return { label: PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED, tone: "warning",
+      detail: jurisdictionState === "changed"
+        ? "Project jurisdiction context or registry inputs changed since this packet was generated. Regenerate it before handoff."
+        : "The packet's jurisdiction assessment could not be checked against current inputs. Review the jurisdiction context before handoff." };
+  }
+
+  if (generationWritebackCurrent === false) {
+    return { label: PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED, tone: "warning",
+      detail: "The report revision does not match a completed generation writeback. Review the changed report or interrupted generation before using this packet." };
   }
 
   const generatedAtMs = new Date(generatedAt).getTime();
@@ -1008,20 +1066,20 @@ export function parseStoredFundingSnapshot(
     capturedAt: asNullableString(summary.capturedAt),
     projectUpdatedAt: asNullableString(summary.projectUpdatedAt),
     latestSourceUpdatedAt: asNullableString(summary.latestSourceUpdatedAt),
-    fundingNeedAmount: asNullableNumber(summary.fundingNeedAmount) ?? 0,
-    localMatchNeedAmount: asNullableNumber(summary.localMatchNeedAmount) ?? 0,
-    committedFundingAmount: asNullableNumber(summary.committedFundingAmount) ?? 0,
-    committedMatchAmount: asNullableNumber(summary.committedMatchAmount) ?? 0,
-    likelyFundingAmount: asNullableNumber(summary.likelyFundingAmount) ?? 0,
-    totalPotentialFundingAmount: asNullableNumber(summary.totalPotentialFundingAmount) ?? 0,
-    remainingFundingGap: asNullableNumber(summary.remainingFundingGap) ?? 0,
-    remainingMatchGap: asNullableNumber(summary.remainingMatchGap) ?? 0,
-    unfundedAfterLikelyAmount: asNullableNumber(summary.unfundedAfterLikelyAmount) ?? 0,
-    requestedReimbursementAmount: asNullableNumber(summary.requestedReimbursementAmount) ?? 0,
-    paidReimbursementAmount: asNullableNumber(summary.paidReimbursementAmount) ?? 0,
-    outstandingReimbursementAmount: asNullableNumber(summary.outstandingReimbursementAmount) ?? 0,
-    draftReimbursementAmount: asNullableNumber(summary.draftReimbursementAmount) ?? 0,
-    uninvoicedAwardAmount: asNullableNumber(summary.uninvoicedAwardAmount) ?? 0,
+    fundingNeedAmount: asNullableNumber(summary.fundingNeedAmount),
+    localMatchNeedAmount: asNullableNumber(summary.localMatchNeedAmount),
+    committedFundingAmount: asNullableNumber(summary.committedFundingAmount),
+    committedMatchAmount: asNullableNumber(summary.committedMatchAmount),
+    likelyFundingAmount: asNullableNumber(summary.likelyFundingAmount),
+    totalPotentialFundingAmount: asNullableNumber(summary.totalPotentialFundingAmount),
+    remainingFundingGap: asNullableNumber(summary.remainingFundingGap),
+    remainingMatchGap: asNullableNumber(summary.remainingMatchGap),
+    unfundedAfterLikelyAmount: asNullableNumber(summary.unfundedAfterLikelyAmount),
+    requestedReimbursementAmount: asNullableNumber(summary.requestedReimbursementAmount),
+    paidReimbursementAmount: asNullableNumber(summary.paidReimbursementAmount),
+    outstandingReimbursementAmount: asNullableNumber(summary.outstandingReimbursementAmount),
+    draftReimbursementAmount: asNullableNumber(summary.draftReimbursementAmount),
+    uninvoicedAwardAmount: asNullableNumber(summary.uninvoicedAwardAmount),
     nextObligationAt: asNullableString(summary.nextObligationAt),
     awardRiskCount: asNullableNumber(summary.awardRiskCount) ?? 0,
     awardCount: asNullableNumber(summary.awardCount) ?? 0,
@@ -1162,14 +1220,18 @@ export function describeFundingSnapshot(
 
   const headlineParts = [
     summary.awardCount > 0 ? `${summary.awardCount} award${summary.awardCount === 1 ? "" : "s"}` : null,
-    summary.committedFundingAmount > 0 ? `${formatCurrency(summary.committedFundingAmount)} committed` : null,
-    summary.unfundedAfterLikelyAmount > 0
+    isPositiveAmount(summary.committedFundingAmount)
+      ? `${formatCurrency(summary.committedFundingAmount)} committed`
+      : null,
+    isPositiveAmount(summary.unfundedAfterLikelyAmount)
       ? `${formatCurrency(summary.unfundedAfterLikelyAmount)} uncovered`
-      : summary.remainingFundingGap > 0
+      : isPositiveAmount(summary.remainingFundingGap)
         ? `${formatCurrency(summary.remainingFundingGap)} current gap`
-        : summary.hasTargetNeed
-          ? "Gap covered in current pipeline"
-          : null,
+        : !summary.hasTargetNeed
+          ? null
+          : summary.unfundedAfterLikelyAmount !== null || summary.remainingFundingGap !== null
+            ? "Gap covered in current pipeline"
+            : "Funding gap unknown",
   ].filter((value): value is string => Boolean(value));
 
   const detailParts = [
@@ -1203,5 +1265,11 @@ export function describeFundingSnapshot(
 export function formatDateTime(value: string | null | undefined): string {
   if (!value) return "Unknown";
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString("en-US");
+  if (Number.isNaN(parsed.getTime())) return value;
+  if (isDateOnly(value)) {
+    return parsed.toISOString().startsWith(value.trim())
+      ? parsed.toLocaleDateString("en-US", { timeZone: "UTC" })
+      : value;
+  }
+  return parsed.toLocaleString("en-US");
 }

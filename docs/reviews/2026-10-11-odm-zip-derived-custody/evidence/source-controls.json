@@ -1,0 +1,333 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "changed-original-order",
+    "test": "test_exact_ordered_bytes_and_distinct_basenames",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "deterministic original order"
+  },
+  {
+    "control": "original-download-required",
+    "test": "test_replay_needs_no_original_download",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "original.zip"
+  },
+  {
+    "control": "missing-original-slot-not-recovered",
+    "test": "test_missing_slot_recovers_from_retained_original_zip",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "image-00001.bin"
+  },
+  {
+    "control": "changed-derived-identity",
+    "test": "test_changed_context_and_limits_refuse",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "changed-derived-record",
+    "test": "test_changed_derived_plan_mapping_refuses",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Derived bytes read before saved-plan validation"
+  },
+  {
+    "control": "changed-derived-shape",
+    "test": "test_changed_derived_plan_shape_and_identity_refuse",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "Existing source custody record differs"
+  },
+  {
+    "control": "changed-derived-census",
+    "test": "test_changed_derived_plan_shape_and_identity_refuse",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "Retained derived ZIP object mapping differs"
+  },
+  {
+    "control": "changed-retained-image",
+    "test": "test_changed_retained_image_refuses",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "unknown-retained-object",
+    "test": "test_unknown_derived_object_refuses",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Derived object enumeration read beyond declared bound"
+  },
+  {
+    "control": "changed-final-object-set",
+    "test": "test_late_object_mapping_refuses",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "orphan-derived-manifest",
+    "test": "test_manifest_without_original_plan_refuses",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "public-derived-root",
+    "test": "test_alias_public_and_overlapping_roots_refuse",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "overlapping-derived-root",
+    "test": "test_alias_public_and_overlapping_roots_refuse",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "invalid-derived-budgets",
+    "test": "test_invalid_budgets_and_timeout_refuse",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Source bytes read before derived budget admission"
+  },
+  {
+    "control": "invalid-derived-timeout",
+    "test": "test_invalid_budgets_and_timeout_refuse",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "missing-zip-footer",
+    "test": "test_footer_and_comment_guards",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "unpack requires a buffer of 22 bytes"
+  },
+  {
+    "control": "wrong-zip-comment",
+    "test": "test_footer_and_comment_guards",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "spanning-zip",
+    "test": "test_spanning_and_extent_guards",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "changed-directory-extent",
+    "test": "test_spanning_and_extent_guards",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "Original ZIP directory record is inconsistent"
+  },
+  {
+    "control": "unbounded-directory-index",
+    "test": "test_declared_directory_bounds_precede_zipfile_allocation",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ZIP index allocated before directory bounds"
+  },
+  {
+    "control": "unbounded-actual-count",
+    "test": "test_actual_directory_count_and_record_guards",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "Original ZIP directory record count differs"
+  },
+  {
+    "control": "changed-directory-count",
+    "test": "test_actual_directory_count_and_record_guards",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "changed-directory-record",
+    "test": "test_actual_directory_count_and_record_guards",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "zip64-unsupported",
+    "test": "test_zip64_original_bytes_supported",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Original ZIP64 locator is missing"
+  },
+  {
+    "control": "changed-zip64-locator",
+    "test": "test_zip64_locator_and_footer_guards",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "changed-zip64-footer",
+    "test": "test_zip64_locator_and_footer_guards",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "contradictory-zip64",
+    "test": "test_zip64_declarations_and_missing_locator_refuse",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "missing-zip64-locator",
+    "test": "test_zip64_declarations_and_missing_locator_refuse",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "Original ZIP directory exceeds its declared bounds"
+  },
+  {
+    "control": "short-zip64-footer",
+    "test": "test_zip64_short_footer_refuses",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "unpack requires a buffer of 56 bytes"
+  },
+  {
+    "control": "expired-directory-deadline",
+    "test": "test_direct_directory_and_expansion_deadlines_refuse",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "TimeoutError not raised"
+  },
+  {
+    "control": "expired-all-derived-deadlines",
+    "test": "test_direct_directory_and_expansion_deadlines_refuse",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "TimeoutError not raised"
+  },
+  {
+    "control": "unsafe-zip-member",
+    "test": "test_unsafe_repeated_and_noncanonical_members_refuse",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "encrypted-special-zip-member",
+    "test": "test_encrypted_and_special_members_refuse",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "loaded-index-count",
+    "test": "test_loaded_directory_census_refuses",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "no-image-members",
+    "test": "test_no_images_and_expanded_budget_precede_reads",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "expanded-byte-admission",
+    "test": "test_no_images_and_expanded_budget_precede_reads",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ZIP bytes read before expanded-budget admission"
+  },
+  {
+    "control": "actual-expanded-byte-limit",
+    "test": "test_actual_expanded_size_and_budget_guards",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "actual-expanded-size",
+    "test": "test_actual_expanded_size_and_budget_guards",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "original-descriptor-hash",
+    "test": "test_original_zip_descriptor_hash_is_rechecked",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "original-descriptor-size",
+    "test": "test_original_zip_descriptor_size_and_type_guards",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "original-source-type",
+    "test": "test_original_zip_descriptor_size_and_type_guards",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "unverified-slot-published",
+    "test": "test_copied_byte_comparison_precedes_publication",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Unverified ZIP copy published"
+  },
+  {
+    "control": "unsynced-slot-published",
+    "test": "test_copy_sync_precedes_fixed_slot",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "OSError not raised"
+  },
+  {
+    "control": "insufficient-disk-admission",
+    "test": "test_insufficient_disk_refuses_before_copy",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "public-replay-record",
+    "test": "test_original_bytes_and_modes_unchanged_on_replay",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "derived manifest must remain private"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

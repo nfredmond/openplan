@@ -1,0 +1,216 @@
+{
+  "at": "2026-10-15T14:02:02.002973+00:00",
+  "reviewedRootCommit": "49e3fa2004c1336ffa36c134a8f21bcc2d72d327",
+  "candidate": "aa93a3916e4a1464c774dd30a43ae2f7a4824311",
+  "round1Review": "41f9b71576510d6e478179e53faa410e5e801217",
+  "findings": [],
+  "nativeRerun": false,
+  "generatorSHA256": "4a9c497d90baa58075e90a81a2e2c6778e55eeb9540920e7278871df1ec488c4",
+  "migrationSHA256": "b129f80e37aa9be71069683acd42df3fb6fdb94078ed0458f20b6e9c5155a41b",
+  "probeSHA256": "39867a89e7b8bbdf237bedfe8f092790af8e67e95f2bcb1e6a0800dde986f4fe",
+  "completeSQLRegenerationExact": true,
+  "generatedSQLLines": 2219,
+  "transactionBegins": 1,
+  "finalRollbacks": 1,
+  "logs": [
+    {
+      "run": 1,
+      "returncode": 0,
+      "notices": 40,
+      "expectedErrorCalls": 32,
+      "rpcErrorContexts": 28,
+      "warnings": 1,
+      "rollbackEcho": true
+    },
+    {
+      "run": 2,
+      "returncode": 0,
+      "notices": 40,
+      "expectedErrorCalls": 32,
+      "rpcErrorContexts": 28,
+      "warnings": 1,
+      "rollbackEcho": true
+    }
+  ],
+  "privateHashes": {
+    "probe-result.json": {
+      "expected": "8bd6086cafc643f000618950362a80849ea954a63f69ccb012e6dce71c23fbd1",
+      "observed": "8bd6086cafc643f000618950362a80849ea954a63f69ccb012e6dce71c23fbd1"
+    },
+    "probe-02-result.json": {
+      "expected": "15f59849855a59facb330d966dc7b30d2ffe4dcaa654c14a59f326fad2da4f42",
+      "observed": "15f59849855a59facb330d966dc7b30d2ffe4dcaa654c14a59f326fad2da4f42"
+    },
+    "probe-stdout-private.log": {
+      "expected": "5d2b544550c55913900e78517452df759add10c3b5d57fb048d83f7f98482a56",
+      "observed": "5d2b544550c55913900e78517452df759add10c3b5d57fb048d83f7f98482a56"
+    },
+    "probe-stderr-private.log": {
+      "expected": "cde5bfa6d996cbd81644d60a203953cbb381ac74032b90e6e1ed95906c1d53e2",
+      "observed": "cde5bfa6d996cbd81644d60a203953cbb381ac74032b90e6e1ed95906c1d53e2"
+    },
+    "probe-02-stdout-private.log": {
+      "expected": "5d2b544550c55913900e78517452df759add10c3b5d57fb048d83f7f98482a56",
+      "observed": "5d2b544550c55913900e78517452df759add10c3b5d57fb048d83f7f98482a56"
+    },
+    "probe-02-stderr-private.log": {
+      "expected": "62f7afc9018bcb4203b5c771d0a34751c358603dd982a38bbb1f0e8422140c35",
+      "observed": "62f7afc9018bcb4203b5c771d0a34751c358603dd982a38bbb1f0e8422140c35"
+    },
+    "cluster-before.json": {
+      "expected": "929b14b4e657c20d288d238a71e69afc84bf6ef4ff2cbb6e8bc820fbabb38988",
+      "observed": "929b14b4e657c20d288d238a71e69afc84bf6ef4ff2cbb6e8bc820fbabb38988"
+    },
+    "cluster-after.json": {
+      "expected": "831ca6a1cdff29da4e256562fe169ba5fa91c9f0c34f7935828a269676378b1a",
+      "observed": "831ca6a1cdff29da4e256562fe169ba5fa91c9f0c34f7935828a269676378b1a"
+    },
+    "target-before-inventory.json": {
+      "expected": "452e8331709bc1a8c4e2cdecdac0ec3cde6fc15140567e21a021c23b972e499d",
+      "observed": "452e8331709bc1a8c4e2cdecdac0ec3cde6fc15140567e21a021c23b972e499d"
+    },
+    "target-after-inventory.json": {
+      "expected": "1dcbe0b8f12fd0ba1fb193fe608a7139b957ff99448098906f957683d7428dc9",
+      "observed": "1dcbe0b8f12fd0ba1fb193fe608a7139b957ff99448098906f957683d7428dc9"
+    },
+    "target-02-before-inventory.json": {
+      "expected": "c94fc2a97d79154b24fbe8065af1567cc6f008bab4d61c55e3e5a7115fc4ce06",
+      "observed": "c94fc2a97d79154b24fbe8065af1567cc6f008bab4d61c55e3e5a7115fc4ce06"
+    },
+    "target-02-after-inventory.json": {
+      "expected": "c94fc2a97d79154b24fbe8065af1567cc6f008bab4d61c55e3e5a7115fc4ce06",
+      "observed": "c94fc2a97d79154b24fbe8065af1567cc6f008bab4d61c55e3e5a7115fc4ce06"
+    }
+  },
+  "frozenFailureHashesMatch": {
+    "import-confirm-error-console.txt": true,
+    "import-confirm-request.json": true,
+    "import-confirm-response.json": true,
+    "import-confirmed-390.yml": true,
+    "import-review-390-layout.json": true,
+    "import-review-390.png": true,
+    "import-review-response.json": true,
+    "synthetic-project-import.csv": true
+  },
+  "dump": {
+    "bytes": 16232305,
+    "sha256": "181caa01d5ebe66b50da9dcba1242b225e75cfdc8bd0fe03e3c4a9ae86e4d398"
+  },
+  "sourceTableVersionSequenceProjectionMatches": true,
+  "inventory": {
+    "firstRecords": 394,
+    "firstMatching": 393,
+    "firstDifference": "pg_class digest only; original row detail unavailable; cause unattributed",
+    "repeatRecords": 395,
+    "repeatMatching": 395,
+    "repeatFullPgClassRows": 2702,
+    "tableRecords": 376,
+    "repeatSHA256": "c94fc2a97d79154b24fbe8065af1567cc6f008bab4d61c55e3e5a7115fc4ce06",
+    "clusterBefore": 609,
+    "clusterAfter": 610,
+    "oldDatabasePropertiesExact": true,
+    "addedDatabase": "openplan_portfolio_skip_137003c3b2dc1aa54af843e5",
+    "addedOID": "6134407",
+    "historyCount": 419,
+    "latest": "20261017000016"
+  },
+  "grantDiagnosis": {
+    "owner": "supabase_admin",
+    "currentRole": "postgres",
+    "sessionUser": "supabase_admin",
+    "serviceUsage": true,
+    "anonymousUsage": true,
+    "temporarySchema": "actual namespace in separate diagnostic session",
+    "authenticatedUsage": true
+  },
+  "copiedEvidenceControls": [
+    {
+      "case": "harmless-trailing-blank-line",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "original-frozen-22023-sqlstate",
+      "outcome": "REJECTED",
+      "reason": "sqlstate"
+    },
+    {
+      "case": "function-only-audit-23514-constraint",
+      "outcome": "REJECTED",
+      "reason": "constraint"
+    },
+    {
+      "case": "late-second-row-rolls-back-first-message",
+      "outcome": "REJECTED",
+      "reason": "message"
+    },
+    {
+      "case": "late-second-row-rolls-back-first-context",
+      "outcome": "REJECTED",
+      "reason": "rpc-reach"
+    },
+    {
+      "case": "invalid-late-cost-countsUnchanged",
+      "outcome": "REJECTED",
+      "reason": "counts"
+    },
+    {
+      "case": "full-candidate-frozen-success-cost",
+      "outcome": "REJECTED",
+      "reason": "success-custody"
+    },
+    {
+      "case": "authenticated-rpc-denied-sqlstate",
+      "outcome": "REJECTED",
+      "reason": "role-refusal"
+    },
+    {
+      "case": "native-audit-RLS-outsiderRows",
+      "outcome": "REJECTED",
+      "reason": "rls"
+    },
+    {
+      "case": "raw-skipped-plan-and-phase-retained",
+      "outcome": "REJECTED",
+      "reason": "raw-skip"
+    },
+    {
+      "case": "workbook-metadata-success-result",
+      "outcome": "REJECTED",
+      "reason": "workbook"
+    },
+    {
+      "case": "rollback-restored-original-migration17Applied",
+      "outcome": "REJECTED",
+      "reason": "rollback-notice"
+    },
+    {
+      "case": "missing-final-notice",
+      "outcome": "REJECTED",
+      "reason": "notice-cardinality"
+    },
+    {
+      "case": "changed-table-count",
+      "outcome": "REJECTED",
+      "reason": "inventory-difference"
+    },
+    {
+      "case": "changed-full-pg-class-row",
+      "outcome": "REJECTED",
+      "reason": "inventory-difference"
+    },
+    {
+      "case": "omitted-full-pg-class-record",
+      "outcome": "REJECTED",
+      "reason": "inventory-cardinality"
+    }
+  ],
+  "originalEvidenceUnchanged": true,
+  "limits": [
+    "retained-file readback, no new native execution",
+    "SQL metadata only, no Storage bytes or HTTP",
+    "no simultaneous commits or approval freshness",
+    "no corrected browser journey, native Excel/QGIS, practitioner or scientific acceptance",
+    "cluster properties do not fingerprint other database contents",
+    "inventories use recorded logical projections, not full installation or physical-state recovery"
+  ]
+}

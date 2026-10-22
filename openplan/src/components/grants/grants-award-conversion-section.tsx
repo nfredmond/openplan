@@ -112,13 +112,13 @@ export function GrantsAwardConversionSection({
                 <div className="mt-4 flex flex-wrap gap-3 text-sm font-semibold">
                   {projectHref ? (
                     <Link href={projectHref} className="inline-flex items-center gap-2 text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]">
-                      Open project award lane
+                      Open project awards
                       <ArrowRight className="h-4 w-4" />
                     </Link>
                   ) : null}
                   {programHref ? (
                     <Link href={programHref} className="inline-flex items-center gap-2 text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]">
-                      Open program funding lane
+                      Open program funding
                       <ArrowRight className="h-4 w-4" />
                     </Link>
                   ) : null}

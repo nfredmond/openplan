@@ -1,0 +1,9 @@
+{
+ "state":"SUPPLIED_TEXT_ONLY_NOT_ALLOCATION_OR_AUTHORITY",
+ "sourceCommit":"cddcccde756ec8103175d32a0d9a554ba50bb13c",
+ "appTree":"2b1916349d7379c96bf97b1708b3e4016d37384d",
+ "target":{"clusterSystemId":"1234567890123456789","databaseName":"synthetic_text_only_not_a_database","databaseOid":38888801,"exclusiveSynthetic":true,"allocationReceiptSha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+ "workspaceA":"20261016-0020-4000-8000-000000000001",
+ "workspaceB":"20261016-0020-4000-8000-000000000002",
+ "writer":"20261016-0020-4000-8000-000000000003"
+}

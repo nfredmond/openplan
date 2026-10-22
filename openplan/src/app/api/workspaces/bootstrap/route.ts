@@ -12,6 +12,12 @@ import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 // endpoint is off the real sign-up path (the handle_new_user trigger
 // provisions the workspace), so a list that lived only here was unreachable.
 import { NEW_WORKSPACE_GETTING_STARTED_STEPS } from "@/lib/onboarding/getting-started";
+import {
+  createOwnedWorkspace,
+  ownedWorkspaceLimitMessage,
+  resolveOwnedWorkspaceLimit,
+  type OwnedWorkspaceCreation,
+} from "@/lib/workspaces/owned-workspace-limit";
 
 const bootstrapSchema = z.object({
   workspaceName: z.string().trim().min(1).max(120),
@@ -21,14 +27,6 @@ const bootstrapSchema = z.object({
 const onboardingChecklist = NEW_WORKSPACE_GETTING_STARTED_STEPS;
 
 const DUPLICATE_KEY_CODE = "23505";
-
-type InsertWorkspaceResult = {
-  id: string;
-  slug: string;
-  stage_gate_template_id: string;
-  stage_gate_template_version: string;
-  stage_gate_template_selection: string;
-};
 
 function normalizeSlug(value: string): string {
   const normalized = value
@@ -61,38 +59,6 @@ function isDuplicateSlugError(error: { code?: string | null; message?: string } 
   }
 
   return /duplicate key/i.test(error.message ?? "") && /slug/i.test(error.message ?? "");
-}
-
-async function cleanupProvisionedWorkspace(
-  serviceSupabase: ReturnType<typeof createServiceRoleClient>,
-  workspaceId: string,
-  audit: ReturnType<typeof createApiAuditLogger>
-) {
-  const { error: memberCleanupError } = await serviceSupabase
-    .from("workspace_members")
-    .delete()
-    .eq("workspace_id", workspaceId);
-
-  if (memberCleanupError) {
-    audit.warn("workspace_bootstrap_cleanup_members_failed", {
-      workspaceId,
-      message: memberCleanupError.message,
-      code: memberCleanupError.code ?? null,
-    });
-  }
-
-  const { error: workspaceCleanupError } = await serviceSupabase
-    .from("workspaces")
-    .delete()
-    .eq("id", workspaceId);
-
-  if (workspaceCleanupError) {
-    audit.warn("workspace_bootstrap_cleanup_workspace_failed", {
-      workspaceId,
-      message: workspaceCleanupError.message,
-      code: workspaceCleanupError.code ?? null,
-    });
-  }
 }
 
 export async function POST(request: NextRequest) {
@@ -141,42 +107,57 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unsupported stage-gate template" }, { status: 400 });
     }
 
-    let workspace: InsertWorkspaceResult | null = null;
+    // The count of workspaces this person owns, the workspace and its owner
+    // membership are written together in one database function, so parallel
+    // requests cannot all pass the limit and a failed membership insert leaves
+    // no workspace behind.
+    const ownedLimit = resolveOwnedWorkspaceLimit();
+    let workspace: Extract<OwnedWorkspaceCreation, { status: "created" }>["workspace"] | null = null;
     for (let attempt = 0; attempt <= 3; attempt += 1) {
       const slug = slugWithSuffix(baseSlug, attempt);
 
-      const { data, error } = await serviceSupabase
-        .from("workspaces")
-        .insert({
-          name: workspaceName,
-          slug,
-          stage_gate_template_id: stageGateBinding.templateId,
-          stage_gate_template_version: stageGateBinding.templateVersion,
-          stage_gate_template_selection: stageGateBinding.templateSelection,
-          stage_gate_binding_source: stageGateBinding.bindingMode,
-        })
-        .select("id, slug, stage_gate_template_id, stage_gate_template_version, stage_gate_template_selection")
-        .single();
+      const creation = await createOwnedWorkspace(serviceSupabase, {
+        userId: user.id,
+        name: workspaceName,
+        slug,
+        stageGateTemplateId: stageGateBinding.templateId,
+        stageGateTemplateVersion: stageGateBinding.templateVersion,
+        stageGateTemplateSelection: stageGateBinding.templateSelection,
+        stageGateBindingSource: stageGateBinding.bindingMode,
+        limit: ownedLimit,
+      });
 
-      if (!error && data) {
-        workspace = data as InsertWorkspaceResult;
+      if (creation.status === "created") {
+        workspace = creation.workspace;
         break;
       }
 
-      if (isDuplicateSlugError(error) && attempt < 3) {
+      if (creation.status === "limit_reached") {
+        audit.warn("owned_workspace_limit_reached", {
+          userId: user.id,
+          owned: creation.owned,
+          limit: creation.limit,
+        });
+        return NextResponse.json(
+          { error: ownedWorkspaceLimitMessage(creation.limit), limit: creation.limit },
+          { status: 403 }
+        );
+      }
+
+      if (isDuplicateSlugError(creation.error) && attempt < 3) {
         audit.warn("workspace_slug_conflict", { baseSlug, retryAttempt: attempt + 1 });
         continue;
       }
 
       audit.error("workspace_insert_failed", {
-        message: error?.message ?? "unknown",
-        code: error?.code ?? null,
+        message: creation.error.message ?? "unknown",
+        code: creation.error.code ?? null,
       });
 
       return NextResponse.json(
         {
           error: "Failed to bootstrap workspace",
-          details: error?.message ?? "Unknown workspace insert failure",
+          details: creation.error.message ?? "Unknown workspace insert failure",
         },
         { status: 500 }
       );
@@ -185,28 +166,6 @@ export async function POST(request: NextRequest) {
     if (!workspace) {
       audit.error("workspace_insert_exhausted", { baseSlug });
       return NextResponse.json({ error: "Failed to bootstrap workspace" }, { status: 500 });
-    }
-
-    const { error: memberError } = await serviceSupabase
-      .from("workspace_members")
-      .insert({ workspace_id: workspace.id, user_id: user.id, role: "owner" });
-
-    if (memberError) {
-      audit.error("workspace_member_insert_failed", {
-        workspaceId: workspace.id,
-        message: memberError.message,
-        code: memberError.code ?? null,
-      });
-
-      await cleanupProvisionedWorkspace(serviceSupabase, workspace.id, audit);
-
-      return NextResponse.json(
-        {
-          error: "Failed to bootstrap workspace",
-          details: memberError.message,
-        },
-        { status: 500 }
-      );
     }
 
     audit.info("workspace_bootstrapped", {

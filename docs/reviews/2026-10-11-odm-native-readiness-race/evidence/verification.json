@@ -1,0 +1,14 @@
+[
+  {
+    "check": "readiness-controls311-02",
+    "exit": 0
+  },
+  {
+    "check": "readiness-controls314-02",
+    "exit": 0
+  },
+  {
+    "check": "readiness-native-02",
+    "exit": 0
+  }
+]

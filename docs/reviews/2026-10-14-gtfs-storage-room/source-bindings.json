@@ -1,0 +1,7 @@
+{
+  "openplan/src/lib/gtfs/managed-worker-intake.ts": "dd1ec8d94354a8edcd816d258eb35153e3aa45181052c42f7bdd0640464dda4e",
+  "openplan/src/lib/gtfs/managed-admission.ts": "66eb0e9de3a4a59a19f6a112925a155b575afa50ad7e57f0635cff04b1517cc8",
+  "openplan/src/test/gtfs-managed-worker-intake.test.ts": "230a0fece4a11d9f3fe465a503e08f0be535f7159d2c0d3e064e6c28e186152d",
+  "openplan/src/test/gtfs-managed-admission.test.ts": "fb6470a895e160b4cc9f9e643b3f7c845f0faa9a332e32b7d3e2fe9e16f56f01",
+  "openplan/src/test/gtfs-managed-storage-room.test.ts": "b2db6df365628a29d6e702b2df61e5469925db747cbd0b9603b3ae08864fb5d2"
+}

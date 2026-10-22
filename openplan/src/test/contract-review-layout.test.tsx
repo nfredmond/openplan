@@ -76,3 +76,14 @@ it("clears a returned-invoice form when recovered submission changes the retaine
  view.rerender(<ReceivedInvoicePanel state={{...f.state,receivedInvoices:[returned,{...returned,id:"submitted-version",version:3,state:"submitted"}]}} send={send} busy={false}/>);
  expect(screen.queryByRole("heading",{name:"Correct returned invoice SYNTHETIC-RECOVER"})).toBeNull();expect(screen.getByRole("heading",{name:"Submit a received invoice"})).toBeInTheDocument();expect(screen.getByLabelText("Received invoice number")).toHaveValue("");
 });
+it("offers finance approval only after the project manager review is recorded",()=>{
+ const f=deliveryFixture();f.state.role="owner";f.state.openForWork=true;
+ const submitted={id:"submitted-version",invoice_id:"invoice",version:1,state:"submitted" as const,created_at:"2026-09-08",content:{number:"SYNTHETIC-REVIEW",date:"2026-09-08",currency:"USD",total:"25.00",fileId:"synthetic-file",lines:[]},review_note:""};
+ const view=render(<ReceivedInvoicePanel state={{...f.state,receivedInvoices:[submitted]}} send={vi.fn()} busy={false}/>);
+ const decisions=()=>Array.from(screen.getByLabelText("Review decision for SYNTHETIC-REVIEW").querySelectorAll("option")).map(option=>option.getAttribute("value"));
+ expect(decisions()).toEqual(["reviewed","returned"]);
+ expect(screen.queryByText("Finance source matching, required for approval")).toBeNull();
+ view.rerender(<ReceivedInvoicePanel state={{...f.state,receivedInvoices:[submitted,{...submitted,id:"reviewed-version",version:2,state:"reviewed"}]}} send={vi.fn()} busy={false}/>);
+ expect(decisions()).toEqual(["reviewed","returned","approved"]);
+ expect(screen.getByText("Finance source matching, required for approval")).toBeInTheDocument();
+});

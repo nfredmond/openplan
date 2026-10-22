@@ -5,6 +5,7 @@ import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { providerProjectPacketSchema, providerProjectPacketHash, providerProjectPrompt } from "./provider-project-task";
 import { providerApiConfigurationSchema } from "@/lib/integrations/provider-api-credentials";
+import { checkedNativeUsageLimit } from "./provider-usage-limit";
 
 export const providerScopeSchema = z.object({ workspaceId: z.string().uuid(), projectId: z.string().uuid() }).strict();
 export const PROVIDER_CONNECTION_COLUMNS = "id,workspace_id,project_id,provider,device_label,expected_auth_mode,created_at,expires_at,revoked_at,last_seen_at,last_status";
@@ -113,6 +114,10 @@ export const retainedProviderTurnSchema = z.discriminatedUnion("provider", [
 export type RetainedProviderTurn = z.infer<typeof retainedProviderTurnSchema>;
 export function checkedProviderTurn(raw: unknown) {
   const turn = retainedProviderTurnSchema.parse(raw);
+  if (turn.provider_receipt && typeof turn.provider_receipt === "object" && "schemaVersion" in turn.provider_receipt &&
+    turn.provider_receipt.schemaVersion === 2 && !checkedNativeUsageLimit(turn)) {
+    throw new ProviderRequestError("provider_receipt_mismatch", 409);
+  }
   const packet = providerProjectPacketSchema.parse(JSON.parse(turn.packet_canonical));
   if (createHash("sha256").update(turn.packet_canonical).digest("hex") !== turn.packet_hash || packet.workspaceId !== turn.workspace_id || packet.project.id !== turn.project_id) {
     throw new ProviderRequestError("provider_packet_mismatch", 409);

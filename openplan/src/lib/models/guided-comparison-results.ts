@@ -1,3 +1,9 @@
+import {
+  isModelingClaimStatus,
+  MODELING_CLAIM_STATUS_RANK,
+  type ModelingClaimStatus,
+} from "@/lib/models/evidence-backbone";
+
 export type GuidedComparisonLink = {
   comparison_snapshot_id: string;
   model_run_id: string;
@@ -144,4 +150,17 @@ export function formatGuidedComparisonValue(value: number, key: GuidedComparison
     minimumFractionDigits: key === "daily_vmt" ? 1 : 0,
     maximumFractionDigits: key === "daily_vmt" ? 1 : 0,
   });
+}
+
+/**
+ * The claim tier one method's comparison can carry: the weaker of its baseline
+ * and build runs, since a change between two runs is no stronger than either.
+ * Null when either run has no recognized tier, so nothing is shown as a tier
+ * it was never given.
+ */
+export function guidedComparisonClaimStatus(result: GuidedComparisonResult): ModelingClaimStatus | null {
+  const baseline = result.baseline.claimStatus;
+  const build = result.build.claimStatus;
+  if (!isModelingClaimStatus(baseline) || !isModelingClaimStatus(build)) return null;
+  return MODELING_CLAIM_STATUS_RANK[baseline] <= MODELING_CLAIM_STATUS_RANK[build] ? baseline : build;
 }

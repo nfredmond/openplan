@@ -1,0 +1,185 @@
+{
+  "claim": "R6_ALLOCATION_ONLY_BILLING_CORRECTION_PENDING",
+  "at": "2026-10-16T21:55:54.457012+00:00",
+  "integrationBefore": "dfa7e7e0e9504a7a179f5aec9acc79d166b8c239",
+  "applicationTree": "44e638d6d79378042343bf5b18408f09ee991d57",
+  "copies": [
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-6cab117f/docs/reviews/2026-10-16-engagement-billed-exact-independent/REPORT.md",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-engagement-billed-exact-independent/REPORT.md",
+      "sourceCommit": "ab4a9f29540371fd4bf00466d385121b6906768d",
+      "sha256": "185a8de66555ee1a015871316c3cd806d0e6a8d6721b8c8de98a39c65bd471c1",
+      "bytes": 19619
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-6cab117f/docs/reviews/2026-10-16-engagement-billed-exact-independent/SHA256SUMS",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-engagement-billed-exact-independent/SHA256SUMS",
+      "sourceCommit": "ab4a9f29540371fd4bf00466d385121b6906768d",
+      "sha256": "6621721cba619caee58d273976a50ecf254c139b8a541421a6b4896e0ea312a6",
+      "bytes": 495
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-6cab117f/docs/reviews/2026-10-16-engagement-billed-exact-independent/evidence.json",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-engagement-billed-exact-independent/evidence.json",
+      "sourceCommit": "ab4a9f29540371fd4bf00466d385121b6906768d",
+      "sha256": "8223fc39f5591cf80f218f07791bc5c8efa47e11f369ce72dec2c8538fda1185",
+      "bytes": 4999
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-6cab117f/docs/reviews/2026-10-16-engagement-billed-exact-independent/findings.json",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-engagement-billed-exact-independent/findings.json",
+      "sourceCommit": "ab4a9f29540371fd4bf00466d385121b6906768d",
+      "sha256": "7304488045a3e2a600e1355b769610122e5f1cbbb36639e779b07641c36034a6",
+      "bytes": 2571
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-6cab117f/docs/reviews/2026-10-16-engagement-billed-exact-independent/private-evidence.sha256",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-engagement-billed-exact-independent/private-evidence.sha256",
+      "sourceCommit": "ab4a9f29540371fd4bf00466d385121b6906768d",
+      "sha256": "ec3ebc098cf307068c527f5cc1f035025d385358424bd4eb05ef315aa7808434",
+      "bytes": 466
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-6cab117f/docs/reviews/2026-10-16-engagement-billed-exact-independent/source-excerpts.txt",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-engagement-billed-exact-independent/source-excerpts.txt",
+      "sourceCommit": "ab4a9f29540371fd4bf00466d385121b6906768d",
+      "sha256": "83dbbef701aa9fc2eab598cee5693d44a95d360df7b0fcaf667460ba746e78b6",
+      "bytes": 11183
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-6cab117f/docs/reviews/2026-10-16-engagement-billed-exact-independent/source-pins.json",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-engagement-billed-exact-independent/source-pins.json",
+      "sourceCommit": "ab4a9f29540371fd4bf00466d385121b6906768d",
+      "sha256": "bd7de62e558ca21493614ed37a16c211ca26256814bbe7c41510e2f606fcf38b",
+      "bytes": 7916
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-0de241e8/docs/reviews/2026-10-16-a0-r6-observe-admission-independent/REVIEW.md",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-a0-r6-observe-admission-independent/REVIEW.md",
+      "sourceCommit": "71456da158df2f2dc660fa239eb67dab37e218cc",
+      "sha256": "7668b4eb93b871ea98d44db4819123427ea4db2ac71e323de2291c7dfbc576f8",
+      "bytes": 17553
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-0de241e8/docs/reviews/2026-10-16-a0-r6-observe-admission-independent/checks.json",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-a0-r6-observe-admission-independent/checks.json",
+      "sourceCommit": "71456da158df2f2dc660fa239eb67dab37e218cc",
+      "sha256": "11527cf51d8c1393629e17edda0b442c8031f0e5675c4c5a14399d4877a21a8c",
+      "bytes": 1341
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-0de241e8/docs/reviews/2026-10-16-a0-r6-observe-admission-independent/evidence-pins.json",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-a0-r6-observe-admission-independent/evidence-pins.json",
+      "sourceCommit": "71456da158df2f2dc660fa239eb67dab37e218cc",
+      "sha256": "870a0c3f64da79ab9ea9bf460590f60cc1cac5dcf6146e3116b925dc2b64b1e4",
+      "bytes": 1124
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-0de241e8/docs/reviews/2026-10-16-a0-r6-observe-admission-independent/source-pins.json",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-a0-r6-observe-admission-independent/source-pins.json",
+      "sourceCommit": "71456da158df2f2dc660fa239eb67dab37e218cc",
+      "sha256": "683f21255d129b362b4ad3d6a717efe312aa368e6ca0b78a3b05f720ada0c2ae",
+      "bytes": 2561
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-276573ef/docs/reviews/2026-10-16-a0-r6-allocate-admission-independent/REVIEW.md",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-a0-r6-allocate-admission-independent/REVIEW.md",
+      "sourceCommit": "fb77c74fc76622f762c39045a1919e94ea509a63",
+      "sha256": "74d11bdf7ad0c77b7c6d10514fef761cd0a0ee766b30fe0e2214432941fcb745",
+      "bytes": 22152
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-276573ef/docs/reviews/2026-10-16-a0-r6-allocate-admission-independent/checks.json",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-a0-r6-allocate-admission-independent/checks.json",
+      "sourceCommit": "fb77c74fc76622f762c39045a1919e94ea509a63",
+      "sha256": "1bce32107f8e33549787aabf346a483b44c2820e8fd4a124644d362583d20ab8",
+      "bytes": 3446
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-276573ef/docs/reviews/2026-10-16-a0-r6-allocate-admission-independent/evidence-pins.json",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-a0-r6-allocate-admission-independent/evidence-pins.json",
+      "sourceCommit": "fb77c74fc76622f762c39045a1919e94ea509a63",
+      "sha256": "08a265e014b23da6a315c1715ce6f0088035546caef56943cdf12e8c4d469239",
+      "bytes": 1104
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-276573ef/docs/reviews/2026-10-16-a0-r6-allocate-admission-independent/source-pins.json",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-a0-r6-allocate-admission-independent/source-pins.json",
+      "sourceCommit": "fb77c74fc76622f762c39045a1919e94ea509a63",
+      "sha256": "c97e03a3d7cfb45d45170db108483291afdc3f822992e1c5657b620948277ccb",
+      "bytes": 4270
+    }
+  ],
+  "actualAllocation": {
+    "at": "2026-10-16T21:54:03.599265+00:00",
+    "parentSession": 47572,
+    "parentExit": 0,
+    "seconds": 1.7451054849661887,
+    "target": {
+      "adminSuperuser": true,
+      "applicationName": "a0-limit-wrapper",
+      "currentRole": "supabase_admin",
+      "database": "openplan_a0_limit_c730358675ac8bb47ac15fdd",
+      "oid": 6227945,
+      "pid": 1475388,
+      "postgresSuperuser": false,
+      "serviceBypassRLS": true,
+      "sessionRole": "supabase_admin",
+      "systemIdentifier": "7683856985084612646"
+    },
+    "controllerRequests": 19,
+    "managerRequests": 1,
+    "allRequestExitsZero": true,
+    "oneFixedCreatedb": true,
+    "actualNameAbsenceBeforeCreate": true,
+    "originalScopeBeforeAfterEqualsObserve": true,
+    "proofFiles": 131,
+    "proofManifestSHA256": "0dc20c99be7152cb8e70b947c669f4bd84fae38b5a3bd2df30fe59f15282c4d8",
+    "unitIdentity": {
+      "ActiveState": "active",
+      "SubState": "running",
+      "InvocationID": "4df9e4d06a7b4aedaf476af02112db03",
+      "MainPID": "670799",
+      "Result": "success",
+      "ExecMainStatus": "0",
+      "ControlGroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-a0-native-parent-r6-allocate-20261016-01.service",
+      "MemoryPeak": "2453504",
+      "MemorySwapPeak": "0",
+      "CPUQuotaPerSecUSec": "500ms",
+      "MemoryMax": "1073741824",
+      "MemorySwapMax": "0"
+    },
+    "memoryPeakTier": "active-unit sample only, final exact peak unassessed",
+    "ownerLocaleReadback": false,
+    "restoreAccepted": false,
+    "successorDispatched": false
+  },
+  "allocationProofManifest": "/home/nathaniel/.local/state/openplan/a0-r6-allocate-root-decision-20261016/native-proof-pins.json",
+  "unexecutedRestoreProposalSHA256": "bf18b39c92d308ca7324a5556ac490881b31d8256498d327e6e4dd3d38264985",
+  "unexecutedRestoreRunnerSHA256": "ec482e26ed6f5dd955ae8a990198fca89b5b33744440a6d52f36b7b801b0b4b6",
+  "currencyTrial01": {
+    "wholeUnitExit": 1,
+    "invocation": "a22df8a436694d8880bb961f5b60d108",
+    "baseline": 15,
+    "harmless": 15,
+    "routeActualAssertionFailures": 6,
+    "acceptedMutationKills": 0,
+    "failure": "reader requires currency text in every AssertionError, but three exact deep.equal payload failures omit it",
+    "source18AndOld327Match": true,
+    "next": "reader-only02 preparation; no grant yet"
+  },
+  "callerBuilder": {
+    "commit": "700fc2b08dd70f0cfb99a022592481a0bb52176e",
+    "sourceOnlyIndependentReviewPending": true,
+    "nativeTargetAllocated": false
+  },
+  "rootMetadataErrors": [
+    "caller packet repository-relative manifest initially invoked from report cwd; corrected root13 entries pass",
+    "optional nonexistent caller final-handoff path; actual final-metadata discovered via inventory",
+    "allocation privateManifest is a descriptor; failed conversion retained then correct descriptor+9 entries read",
+    "unexecuted restore runner draft retained R5 root; source read caught it before review/admission; full draft retained then root path corrected"
+  ],
+  "sourceJoin": false,
+  "push": false,
+  "release": false
+}

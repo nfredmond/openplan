@@ -81,7 +81,7 @@ export function ProjectSpineReadinessRollup({
 
         <div className="overflow-hidden rounded-[0.75rem] border border-border/70 bg-card/70">
           <div className="grid grid-cols-[1fr_auto] gap-3 border-b border-border/70 px-4 py-3 text-label font-semibold text-muted-foreground md:grid-cols-[0.62fr_0.4fr_1.1fr]">
-            <span>Lane</span>
+            <span>Output</span>
             <span>Status</span>
             <span className="hidden md:block">Operator note</span>
           </div>

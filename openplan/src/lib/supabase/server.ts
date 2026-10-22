@@ -42,11 +42,12 @@ export async function createClient() {
   )
 }
 
-export function createServiceRoleClient() {
+export function createServiceRoleClient(options: { fetchImpl?: typeof fetch } = {}) {
   return createSupabaseClient(
     requireEnv('NEXT_PUBLIC_SUPABASE_URL'),
     requireEnv('SUPABASE_SERVICE_ROLE_KEY'),
     {
+      ...(options.fetchImpl ? { global: { fetch: options.fetchImpl } } : {}),
       auth: {
         persistSession: false,
         autoRefreshToken: false,

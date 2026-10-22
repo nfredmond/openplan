@@ -1,0 +1,11 @@
+{
+  "workers/odm_worker/application_dispatch_reader.py": "4d13873d6d0e908b934df76c994fec3a3559602f3a40ecd30266567790366a0b",
+  "openplan/supabase/migrations/20261017000003_aerial_private_dispatch_custody.sql": "4b0814b6f4e426261c8e3651b89812b50cc1c8226fd7ed2ec493c3b7f23d73f9",
+  "docs/reviews/2026-10-12-odm-private-draft-authority/native_client.py": "97d3f97151134efa253a9e248b71ffcd86e3631939688a580d5af14f30d7e7d3",
+  "docs/reviews/2026-10-12-odm-private-dispatch-reader/native_rpc_recovery.py": "57ef2ef657d8e038a767d1454e8d133e55637389681e3ee1c655fdc334f2667a",
+  "workers/odm_worker/application_draft_authority.py": "8d72265f7dbc2b90c5334049dcacfa2406c57dba4b2d0b0d4a55c045dbe1388b",
+  "workers/odm_worker/runtime_dispatch_custody.py": "dbdcd4e436a7c9cd274189a2ea4f47d67c7f8edd643fe5d4514d4a0b80a28056",
+  "workers/odm_worker/runtime_url_draft.py": "704f24ccaed770f4feec0a09f05f6a14debd6518a83c2ace3d8a5c7b711fa82a",
+  "workers/odm_worker/runtime_draft.py": "9ea25c0a6392315d13fc5a0256efb79d99f738dfb2483aa666e696461d0ae72a",
+  "docs/reviews/2026-10-12-odm-private-draft-authority/native_rpc_recovery.py": "8b3f8f1aa549f0571723230711d657617b0073a7a97767c758daa96dbfda6fe7"
+}

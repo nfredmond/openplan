@@ -1,0 +1,138 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "actual-reply-view-changed",
+    "outcome": "intended_failure",
+    "reason": "Native private record must equal its checked actual reply",
+    "exitCode": 1
+  },
+  {
+    "control": "extra-native-observation",
+    "outcome": "intended_failure",
+    "reason": "Native fixture must retain exactly one committed failed reply",
+    "exitCode": 1
+  },
+  {
+    "control": "producer-ownership-changed",
+    "outcome": "intended_failure",
+    "reason": "Native producer ownership must remain exact",
+    "exitCode": 1
+  },
+  {
+    "control": "producer-still-running",
+    "outcome": "intended_failure",
+    "reason": "Native producer must stop before the selected-root point",
+    "exitCode": 1
+  },
+  {
+    "control": "package-projection-changed",
+    "outcome": "intended_failure",
+    "reason": "Native selected-root package must verify exactly",
+    "exitCode": 1
+  },
+  {
+    "control": "reopened-reply-view-changed",
+    "outcome": "intended_failure",
+    "reason": "Native selected-root consumer must recover the original exact reply",
+    "exitCode": 1
+  },
+  {
+    "control": "actual-body-hash-changed",
+    "outcome": "intended_failure",
+    "reason": "Native retained response hash must bind actual reply bytes",
+    "exitCode": 1
+  },
+  {
+    "control": "reported-failure-relabeled",
+    "outcome": "intended_failure",
+    "reason": "Native reported failure must remain separate from success",
+    "exitCode": 1
+  },
+  {
+    "control": "reported-count-becomes-zero",
+    "outcome": "intended_failure",
+    "reason": "Native reported failure must remain separate from success",
+    "exitCode": 1
+  },
+  {
+    "control": "claim-promoted-engineIdentityVerification",
+    "outcome": "intended_failure",
+    "reason": "Native retained metadata cannot promote engineIdentityVerification",
+    "exitCode": 1
+  },
+  {
+    "control": "claim-promoted-originalActorAuthorization",
+    "outcome": "intended_failure",
+    "reason": "Native retained metadata cannot promote originalActorAuthorization",
+    "exitCode": 1
+  },
+  {
+    "control": "claim-promoted-sourceCustodyVerification",
+    "outcome": "intended_failure",
+    "reason": "Native retained metadata cannot promote sourceCustodyVerification",
+    "exitCode": 1
+  },
+  {
+    "control": "claim-promoted-effectiveExecutionSettingsVerification",
+    "outcome": "intended_failure",
+    "reason": "Native retained metadata cannot promote effectiveExecutionSettingsVerification",
+    "exitCode": 1
+  },
+  {
+    "control": "claim-promoted-processingQualityVerification",
+    "outcome": "intended_failure",
+    "reason": "Native retained metadata cannot promote processingQualityVerification",
+    "exitCode": 1
+  },
+  {
+    "control": "claim-promoted-freshnessVerification",
+    "outcome": "intended_failure",
+    "reason": "Native retained metadata cannot promote freshnessVerification",
+    "exitCode": 1
+  },
+  {
+    "control": "permission-promoted-transportPermission",
+    "outcome": "intended_failure",
+    "reason": "Native retained metadata cannot grant writes",
+    "exitCode": 1
+  },
+  {
+    "control": "permission-promoted-publicationPermission",
+    "outcome": "intended_failure",
+    "reason": "Native retained metadata cannot grant writes",
+    "exitCode": 1
+  },
+  {
+    "control": "original-selected-root-changed",
+    "outcome": "intended_failure",
+    "reason": "Native recovery must preserve the original root",
+    "exitCode": 1
+  },
+  {
+    "control": "original-engine-commands-changed",
+    "outcome": "intended_failure",
+    "reason": "Native metadata must leave original engine commands intact",
+    "exitCode": 1
+  },
+  {
+    "control": "immutable-package-changed",
+    "outcome": "intended_failure",
+    "reason": "Native recovery must preserve the immutable package",
+    "exitCode": 1
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

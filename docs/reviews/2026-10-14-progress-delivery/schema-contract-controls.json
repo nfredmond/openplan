@@ -1,0 +1,27 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived",
+    "field": null
+  },
+  {
+    "case": "harmless-message",
+    "outcome": "survived",
+    "field": null
+  },
+  {
+    "case": "unsupported-queued",
+    "outcome": "intended_failure",
+    "field": "status"
+  },
+  {
+    "case": "too-short-utf16",
+    "outcome": "intended_failure",
+    "field": "callbackId"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived",
+    "field": null
+  }
+]

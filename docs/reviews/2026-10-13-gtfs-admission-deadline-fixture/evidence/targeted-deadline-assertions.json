@@ -1,0 +1,51 @@
+[
+  {
+    "variant": "upload-signal",
+    "failedTests": [
+      "managed GTFS admission passes cancellation through the upload transport and refuses confirmation",
+      "managed GTFS admission bounds a stalled upload acknowledgement and leaves custody unconfirmed"
+    ],
+    "observedReasons": [
+      "Upload transport must observe cancellation before its reply",
+      "Upload must abort before archive reconciliation"
+    ]
+  },
+  {
+    "variant": "upload-deadline-signal",
+    "failedTests": [
+      "managed GTFS admission bounds a stalled upload acknowledgement and leaves custody unconfirmed"
+    ],
+    "observedReasons": [
+      "Upload must abort before archive reconciliation"
+    ]
+  },
+  {
+    "variant": "upload-parent-signal",
+    "failedTests": [
+      "managed GTFS admission passes cancellation through the upload transport and refuses confirmation"
+    ],
+    "observedReasons": [
+      "Upload transport must observe cancellation before its reply"
+    ]
+  },
+  {
+    "variant": "wrong-upload-timer",
+    "failedTests": [
+      "managed GTFS admission bounds a stalled upload acknowledgement and leaves custody unconfirmed"
+    ],
+    "observedReasons": [
+      "Upload must schedule its original deadline"
+    ]
+  },
+  {
+    "variant": "acknowledgement",
+    "failedTests": [
+      "managed GTFS admission passes cancellation through the upload transport and refuses confirmation",
+      "managed GTFS admission bounds a stalled upload acknowledgement and leaves custody unconfirmed"
+    ],
+    "observedReasons": [
+      "Cancelled admission must stop before the late upload acknowledgement",
+      "Admission must stop before the late upload acknowledgement"
+    ]
+  }
+]

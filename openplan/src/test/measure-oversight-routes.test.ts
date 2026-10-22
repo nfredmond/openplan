@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 /**
@@ -80,6 +80,8 @@ type Scenario = {
   reserves: Array<Record<string, unknown>>;
   updateReturns: Array<Record<string, unknown>>;
   errors: Record<string, { message: string }>;
+  /** The workspace's recorded time zone, read by the statement's date line. */
+  workspaceTimeZone?: string | null;
 };
 
 let scenario: Scenario;
@@ -94,7 +96,12 @@ function rowsFor(table: string): unknown {
     case "programs":
       return { id: PROGRAM_ID, title: "Example County Transportation Measure" };
     case "workspaces":
-      return { id: WORKSPACE_ID, name: "Example County Transportation Commission" };
+      return {
+        id: WORKSPACE_ID,
+        name: "Example County Transportation Commission",
+        time_zone: scenario.workspaceTimeZone ?? null,
+        home_country_code: null,
+      };
     case "measure_fund_periods":
       return scenario.periods;
     case "measure_recipients":
@@ -761,7 +768,7 @@ describe("the annual statement route", () => {
     const response = await getStatement(statementGet("?fiscalYearLabel=FY%202026"), measureContext());
 
     expect(response.status).toBe(503);
-    expect((await response.json()).hint).toContain("Apply the latest Supabase migrations");
+    expect((await response.json()).operatorDetail).toContain("Apply the latest Supabase migrations");
   });
 
   /**
@@ -797,7 +804,7 @@ describe("the annual statement route", () => {
     const response = await getStatement(statementGet("?fiscalYearLabel=FY%202026"), measureContext());
 
     expect(response.status).toBe(503);
-    expect((await response.json()).hint).toContain("Apply the latest Supabase migrations");
+    expect((await response.json()).operatorDetail).toContain("Apply the latest Supabase migrations");
   });
 
   /**
@@ -943,3 +950,28 @@ describe("the annual statement route", () => {
  * 3 real mutations killed (2 by vitest, 1 by tsc), 1 killed only by tsc and
  * recorded as such, 1 declared-neutral survivor.
  */
+
+/**
+ * THE STATEMENT IS DATED ON THE AGENCY'S CALENDAR (KI-2026-10-12-016).
+ * 01:00 UTC on Oct 13 is 6 p.m. Oct 12 in Los Angeles.
+ */
+describe("annual statement: the date it is prepared", () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-10-13T01:00:00Z"));
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("prints the workspace's calendar day, and the UTC day when no zone is recorded", async () => {
+    scenario.workspaceTimeZone = "America/Los_Angeles";
+    const pacific = await (await getStatement(statementGet("?fiscalYearLabel=FY%202026"), measureContext())).text();
+    expect(pacific).toContain("Prepared 2026-10-12");
+    expect(capturedSelects).toContainEqual({ table: "workspaces", columns: "time_zone, home_country_code" });
+
+    scenario.workspaceTimeZone = null;
+    const utc = await (await getStatement(statementGet("?fiscalYearLabel=FY%202026"), measureContext())).text();
+    expect(utc).toContain("Prepared 2026-10-13");
+  });
+});

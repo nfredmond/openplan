@@ -1,0 +1,258 @@
+{
+  "internalSchema": "openplan.project-jurisdiction-readiness-response.v2",
+  "internalPayloadSha256": "e4cc21e6b9e685e51f0f6b35b7c4677521adcd6d3cb1414128d27111067683ad",
+  "external": {
+    "schema": "openplan.project-jurisdiction-readiness-export.v3",
+    "scope": "external_handoff",
+    "attribution": "Recorded time and source attribution retained; internal actor identifier omitted.",
+    "projectId": "project",
+    "projectRevision": "2026-10-15T01:00:00.000Z",
+    "registryVersion": "2026-10-11.1",
+    "registrySha256": "531dca87cc6621786d4cff27b0fb52dd5b99105c3a78c6307a9a35322201c158",
+    "context": {
+      "schema": "openplan.project-jurisdiction-context-export.v1",
+      "state": "declared",
+      "recordedAt": "2026-10-15T00:00:00.000Z",
+      "entries": [
+        {
+          "label": "Source-defined sovereign context",
+          "countryCode": "CA",
+          "subdivisionCode": "BC",
+          "kind": "nation",
+          "reference": "nation:source",
+          "scope": "sovereign",
+          "identity": "staff_declared"
+        }
+      ]
+    },
+    "contextSource": "project_declaration",
+    "disclosure": "Human-declared project context. Resolved identity does not establish adopting authority or legal applicability. Registry guidance assesses administrative state-level scope only.",
+    "entries": [
+      {
+        "declaration": {
+          "label": "Source-defined sovereign context",
+          "countryCode": "CA",
+          "subdivisionCode": "BC",
+          "kind": "nation",
+          "reference": "nation:source",
+          "scope": "sovereign",
+          "identity": "staff_declared"
+        },
+        "assessmentScope": "Unverified staff declaration; jurisdiction-specific support is unassessed",
+        "assessment": {
+          "schema": "openplan.jurisdiction-readiness-response.v1",
+          "registryVersion": "2026-10-11.1",
+          "registrySha256": "531dca87cc6621786d4cff27b0fb52dd5b99105c3a78c6307a9a35322201c158",
+          "jurisdiction": {
+            "id": null,
+            "label": "Source-defined sovereign context",
+            "country": null,
+            "subdivision": null,
+            "assessmentKind": null
+          },
+          "reports": [
+            {
+              "schema": "openplan.jurisdiction-readiness-report.v1",
+              "registryVersion": "2026-10-11.1",
+              "registrySha256": "531dca87cc6621786d4cff27b0fb52dd5b99105c3a78c6307a9a35322201c158",
+              "reviewedAt": "2026-08-28",
+              "reviewBy": "2026-09-28",
+              "jurisdiction": {
+                "id": null,
+                "label": "Source-defined sovereign context",
+                "country": null,
+                "subdivision": null,
+                "assessmentKind": null
+              },
+              "job": {
+                "id": "project-evidence-handoff",
+                "label": "Project record and evidence handoff",
+                "description": "Carry one project record, its geography, linked evidence, review state, and exact files into a retained evidence package.",
+                "plannerIds": [
+                  "transportation-planner",
+                  "land-use-planner",
+                  "gis-data-and-records-planner"
+                ],
+                "organizationIds": [
+                  "local-and-county-government",
+                  "consultancies"
+                ],
+                "artifactIds": [
+                  "project-record",
+                  "interoperable-geospatial-exchange"
+                ]
+              },
+              "status": "unassessed",
+              "statusLabel": "Not assessed here",
+              "applicability": "The selected place has no country identity, so OpenPlan cannot choose a jurisdiction claim.",
+              "sources": [],
+              "adapterIds": [],
+              "authorities": [],
+              "limitations": [
+                "OpenPlan has no evidence-backed readiness claim for this exact jurisdiction and job. No other jurisdiction's rules or coverage were substituted."
+              ]
+            },
+            {
+              "schema": "openplan.jurisdiction-readiness-report.v1",
+              "registryVersion": "2026-10-11.1",
+              "registrySha256": "531dca87cc6621786d4cff27b0fb52dd5b99105c3a78c6307a9a35322201c158",
+              "reviewedAt": "2026-08-28",
+              "reviewBy": "2026-09-28",
+              "jurisdiction": {
+                "id": null,
+                "label": "Source-defined sovereign context",
+                "country": null,
+                "subdivision": null,
+                "assessmentKind": null
+              },
+              "job": {
+                "id": "land-use-plan",
+                "label": "Land-use plan",
+                "description": "Author, review, adopt, publish, and retain a statutory land-use plan under the applicable jurisdiction bundle.",
+                "plannerIds": [
+                  "land-use-planner"
+                ],
+                "organizationIds": [
+                  "local-and-county-government"
+                ],
+                "artifactIds": [
+                  "adopted-plan",
+                  "report-and-print-export"
+                ]
+              },
+              "status": "unassessed",
+              "statusLabel": "Not assessed here",
+              "applicability": "The selected place has no country identity, so OpenPlan cannot choose a jurisdiction claim.",
+              "sources": [],
+              "adapterIds": [],
+              "authorities": [],
+              "limitations": [
+                "OpenPlan has no evidence-backed readiness claim for this exact jurisdiction and job. No other jurisdiction's rules or coverage were substituted."
+              ]
+            },
+            {
+              "schema": "openplan.jurisdiction-readiness-report.v1",
+              "registryVersion": "2026-10-11.1",
+              "registrySha256": "531dca87cc6621786d4cff27b0fb52dd5b99105c3a78c6307a9a35322201c158",
+              "reviewedAt": "2026-08-28",
+              "reviewBy": "2026-09-28",
+              "jurisdiction": {
+                "id": null,
+                "label": "Source-defined sovereign context",
+                "country": null,
+                "subdivision": null,
+                "assessmentKind": null
+              },
+              "job": {
+                "id": "safety-analysis",
+                "label": "Safety analysis",
+                "description": "Acquire observed crash records for a project area, disclose source coverage, and retain the safety evidence.",
+                "plannerIds": [
+                  "transportation-planner"
+                ],
+                "organizationIds": [
+                  "local-and-county-government",
+                  "regional-and-metropolitan-organizations"
+                ],
+                "artifactIds": [
+                  "safety-evidence",
+                  "report-and-print-export"
+                ]
+              },
+              "status": "unassessed",
+              "statusLabel": "Not assessed here",
+              "applicability": "The selected place has no country identity, so OpenPlan cannot choose a jurisdiction claim.",
+              "sources": [],
+              "adapterIds": [],
+              "authorities": [],
+              "limitations": [
+                "OpenPlan has no evidence-backed readiness claim for this exact jurisdiction and job. No other jurisdiction's rules or coverage were substituted."
+              ]
+            },
+            {
+              "schema": "openplan.jurisdiction-readiness-report.v1",
+              "registryVersion": "2026-10-11.1",
+              "registrySha256": "531dca87cc6621786d4cff27b0fb52dd5b99105c3a78c6307a9a35322201c158",
+              "reviewedAt": "2026-08-28",
+              "reviewBy": "2026-09-28",
+              "jurisdiction": {
+                "id": null,
+                "label": "Source-defined sovereign context",
+                "country": null,
+                "subdivision": null,
+                "assessmentKind": null
+              },
+              "job": {
+                "id": "grants-and-reimbursement",
+                "label": "Grants and reimbursement",
+                "description": "Find applicable programs, preserve source limits, and carry an award through delivery and reimbursement records.",
+                "plannerIds": [
+                  "capital-programming-and-grants-planner"
+                ],
+                "organizationIds": [
+                  "local-and-county-government",
+                  "consultancies"
+                ],
+                "artifactIds": [
+                  "grant-application",
+                  "delivery-and-reimbursement-record"
+                ]
+              },
+              "status": "unassessed",
+              "statusLabel": "Not assessed here",
+              "applicability": "The selected place has no country identity, so OpenPlan cannot choose a jurisdiction claim.",
+              "sources": [],
+              "adapterIds": [],
+              "authorities": [],
+              "limitations": [
+                "OpenPlan has no evidence-backed readiness claim for this exact jurisdiction and job. No other jurisdiction's rules or coverage were substituted."
+              ]
+            },
+            {
+              "schema": "openplan.jurisdiction-readiness-report.v1",
+              "registryVersion": "2026-10-11.1",
+              "registrySha256": "531dca87cc6621786d4cff27b0fb52dd5b99105c3a78c6307a9a35322201c158",
+              "reviewedAt": "2026-08-28",
+              "reviewBy": "2026-09-28",
+              "jurisdiction": {
+                "id": null,
+                "label": "Source-defined sovereign context",
+                "country": null,
+                "subdivision": null,
+                "assessmentKind": null
+              },
+              "job": {
+                "id": "model-validation-evidence",
+                "label": "Model validation evidence",
+                "description": "Open a genuine baseline, inspect separate AequilibraE and ActivitySim assessments, and download exact scientific evidence.",
+                "plannerIds": [
+                  "transportation-planner"
+                ],
+                "organizationIds": [
+                  "local-and-county-government",
+                  "regional-and-metropolitan-organizations",
+                  "consultancies"
+                ],
+                "artifactIds": [
+                  "model-validation-record",
+                  "scenario-comparison"
+                ]
+              },
+              "status": "unassessed",
+              "statusLabel": "Not assessed here",
+              "applicability": "The selected place has no country identity, so OpenPlan cannot choose a jurisdiction claim.",
+              "sources": [],
+              "adapterIds": [],
+              "authorities": [],
+              "limitations": [
+                "OpenPlan has no evidence-backed readiness claim for this exact jurisdiction and job. No other jurisdiction's rules or coverage were substituted."
+              ]
+            }
+          ]
+        },
+        "administrativeGuidance": null
+      }
+    ],
+    "payloadSha256": "227a1a48160cbd34fd55fb2bb1c742ee967b1a81c710b9f0e1d6ae60db443e61"
+  }
+}

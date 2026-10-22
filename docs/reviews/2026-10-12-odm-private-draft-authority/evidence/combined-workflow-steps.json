@@ -1,0 +1,118 @@
+[
+  {
+    "stage": "workflow-00",
+    "name": "All aerial worker suites"
+  },
+  {
+    "stage": "workflow-01",
+    "name": "Journal harmless and targeted fault controls"
+  },
+  {
+    "stage": "workflow-02",
+    "name": "Disconnected journal root capture and replay"
+  },
+  {
+    "stage": "workflow-03",
+    "name": "Source custody harmless and targeted fault controls"
+  },
+  {
+    "stage": "workflow-04",
+    "name": "Interrupted source copy and stopped-root recovery"
+  },
+  {
+    "stage": "workflow-05",
+    "name": "Engine effect harmless and targeted fault controls"
+  },
+  {
+    "stage": "workflow-06",
+    "name": "Disconnected engine effect root capture and replay"
+  },
+  {
+    "stage": "workflow-07",
+    "name": "Captured draft harmless and targeted fault controls"
+  },
+  {
+    "stage": "workflow-08",
+    "name": "ZIP derived source harmless and targeted fault controls"
+  },
+  {
+    "stage": "workflow-09",
+    "name": "Interrupted ZIP image copy and stopped-root recovery"
+  },
+  {
+    "stage": "workflow-10",
+    "name": "ZIP engine lineage harmless and targeted fault controls"
+  },
+  {
+    "stage": "workflow-11",
+    "name": "Original ZIP engine stopped-root replay"
+  },
+  {
+    "stage": "workflow-12",
+    "name": "Durable HTTP admission harmless and targeted fault controls"
+  },
+  {
+    "stage": "workflow-13",
+    "name": "Actual HTTP admission and stopped-root held-start recovery"
+  },
+  {
+    "stage": "workflow-14",
+    "name": "Owned runtime preparation harmless and targeted fault controls"
+  },
+  {
+    "stage": "workflow-15",
+    "name": "Interrupted owned runtime preparation and stopped-root recovery"
+  },
+  {
+    "stage": "workflow-16",
+    "name": "Native readiness publication harmless and targeted controls"
+  },
+  {
+    "stage": "workflow-17",
+    "name": "Owned original runtime draft harmless and targeted fault controls"
+  },
+  {
+    "stage": "workflow-18",
+    "name": "Original supervised HTTP harmless and targeted fault controls"
+  },
+  {
+    "stage": "workflow-19",
+    "name": "Original URL source harmless and targeted fault controls"
+  },
+  {
+    "stage": "workflow-20",
+    "name": "Interrupted URL source and two stopped-root recovery"
+  },
+  {
+    "stage": "workflow-21",
+    "name": "Supervised URL transport harmless and targeted fault controls"
+  },
+  {
+    "stage": "workflow-22",
+    "name": "Interrupted network source and two stopped-root recovery"
+  },
+  {
+    "stage": "workflow-23",
+    "name": "Original URL intake settings harmless and targeted controls"
+  },
+  {
+    "stage": "workflow-24",
+    "name": "Interrupted owned URL intake and original settings recovery"
+  },
+  {
+    "stage": "workflow-25",
+    "name": "Original URL draft pipeline harmless and targeted controls"
+  },
+  {
+    "stage": "workflow-26",
+    "name": "Original dispatch custody harmless and targeted controls"
+  },
+  {
+    "stage": "workflow-27",
+    "name": "Private application dispatch reader and HTTP controls"
+  },
+  {
+    "stage": "workflow-28",
+    "name": "Current private application draft authority controls"
+  }
+]

@@ -1,0 +1,389 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "wrong-manifest-receipt",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "receipt must bind actual saved manifest bytes",
+    "test": "test_exact_zip_bytes_and_binding"
+  },
+  {
+    "control": "reversed-photo-slots",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "manifest must preserve original ordered slots",
+    "test": "test_photo_manifest_preserves_slots_and_metadata"
+  },
+  {
+    "control": "copy-before-plan",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "durable original plan must precede the first source copy",
+    "test": "test_plan_and_source_sync_precede_copy"
+  },
+  {
+    "control": "missing-original-byte-sync",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "original source bytes must synchronize before source copy",
+    "test": "test_plan_and_source_sync_precede_copy"
+  },
+  {
+    "control": "missing-copied-byte-sync",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "copied source bytes must synchronize before slot publication",
+    "test": "test_copy_sync_precedes_slot_publication"
+  },
+  {
+    "control": "first-slot-tamper-accepted",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "test": "test_slot_tampering_before_first_manifest_refuses"
+  },
+  {
+    "control": "replay-adds-partial",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "completed replay must not create new partial records",
+    "test": "test_complete_replay_without_original_sources_is_unchanged"
+  },
+  {
+    "control": "path-bound-receipt",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "relocated complete pack must retain original identity",
+    "test": "test_relocated_complete_pack_keeps_identity"
+  },
+  {
+    "control": "cached-slot-recopies-source",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "first-source",
+    "test": "test_partial_plan_resumes_only_missing_slots"
+  },
+  {
+    "control": "changed-original-late-refusal",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "does not match",
+    "test": "test_prepared_plan_refuses_changed_original_bytes"
+  },
+  {
+    "control": "missing-manifest-directory-sync",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "OSError not raised",
+    "test": "test_manifest_acknowledgment_loss_replays_original"
+  },
+  {
+    "control": "late-identity-refusal-test_changed_original_context_refuses",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "does not match",
+    "test": "test_changed_original_context_refuses"
+  },
+  {
+    "control": "late-identity-refusal-test_changed_original_request_refuses",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "does not match",
+    "test": "test_changed_original_request_refuses"
+  },
+  {
+    "control": "changed-source-mapping",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "test": "test_changed_mapping_or_budget_refuses"
+  },
+  {
+    "control": "missing-original-authority",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "test": "test_original_context_required_and_scope_bound"
+  },
+  {
+    "control": "foreign-authority-scope",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "test": "test_original_context_required_and_scope_bound"
+  },
+  {
+    "control": "caller-context-alias",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "caller context must not alias saved binding",
+    "test": "test_caller_and_returned_values_are_detached"
+  },
+  {
+    "control": "foreign-job-admitted",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "test": "test_original_admission_required"
+  },
+  {
+    "control": "nonfinite-context",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "test": "test_context_nonfinite_json_refuses"
+  },
+  {
+    "control": "boolean-source-limit",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "test": "test_limit_and_timeout_guards"
+  },
+  {
+    "control": "invalid-timeout",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "TimeoutError:",
+    "test": "test_limit_and_timeout_guards"
+  },
+  {
+    "control": "missing-source-mapping-check",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "test": "test_source_mapping_and_paths_refuse"
+  },
+  {
+    "control": "missing-source-path-check",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "No such file",
+    "test": "test_source_mapping_and_paths_refuse"
+  },
+  {
+    "control": "unknown-imagery-as-zip",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "test": "test_unsupported_imagery_shape_refuses"
+  },
+  {
+    "control": "source-size-late-refusal",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "does not match",
+    "test": "test_aggregate_byte_limit_refuses"
+  },
+  {
+    "control": "missing-declared-size",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "test": "test_declared_size_refuses_mismatch_and_boolean"
+  },
+  {
+    "control": "missing-photo-checksum",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "test": "test_declared_photo_checksum_refuses"
+  },
+  {
+    "control": "relative-destination",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "test": "test_absolute_alias_and_parent_guards"
+  },
+  {
+    "control": "public-original-root",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "test": "test_public_source_root_and_file_refuse"
+  },
+  {
+    "control": "public-original-file",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "test": "test_public_source_root_and_file_refuse"
+  },
+  {
+    "control": "public-nested-directory",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "test": "test_nested_public_source_directory_refuses"
+  },
+  {
+    "control": "foreign-original-owner",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "test": "test_foreign_source_owner_refuses"
+  },
+  {
+    "control": "public-destination-parent",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "test": "test_public_destination_parent_refuses"
+  },
+  {
+    "control": "source-hardlink",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "test": "test_symlink_hardlink_and_special_source_refuse"
+  },
+  {
+    "control": "special-source-kernel-refusal",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "Invalid argument",
+    "test": "test_symlink_hardlink_and_special_source_refuse"
+  },
+  {
+    "control": "missing-source-stability",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "test": "test_source_changed_during_hash_refuses"
+  },
+  {
+    "control": "expired-deadline",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "TimeoutError not raised",
+    "test": "test_expired_deadline_refuses"
+  },
+  {
+    "control": "busy-writer-not-locked",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "TimeoutError not raised",
+    "test": "test_busy_writer_refuses_with_bounded_lock"
+  },
+  {
+    "control": "missing-disk-admission",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "test": "test_disk_budget_refuses"
+  },
+  {
+    "control": "unknown-plan-late-refusal",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "does not match",
+    "test": "test_saved_plan_and_encoding_corruption_refuse"
+  },
+  {
+    "control": "changed-plan-encoding",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "test": "test_saved_plan_and_encoding_corruption_refuse"
+  },
+  {
+    "control": "corrupt-source-row-late-refusal",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "does not match",
+    "test": "test_saved_source_row_and_aggregate_corruption_refuse"
+  },
+  {
+    "control": "unbounded-saved-total",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "does not match",
+    "test": "test_saved_source_row_and_aggregate_corruption_refuse"
+  },
+  {
+    "control": "missing-saved-mapping-count",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "does not match",
+    "test": "test_saved_source_mapping_count_refuses"
+  },
+  {
+    "control": "numeric-boolean-binding-equality",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "test": "test_json_type_changes_do_not_rebind_plan"
+  },
+  {
+    "control": "numeric-float-metadata-equality",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "test": "test_json_type_changes_do_not_rebind_plan"
+  },
+  {
+    "control": "unbounded-metadata-read-diagnostic",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "does not match",
+    "test": "test_metadata_read_and_publication_size_bounds"
+  },
+  {
+    "control": "unbounded-metadata-publication",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "test": "test_metadata_read_and_publication_size_bounds"
+  },
+  {
+    "control": "missing-completed-plan",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "test": "test_missing_plan_in_complete_pack_refuses"
+  },
+  {
+    "control": "corrupt-slot-late-refusal",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "does not match",
+    "test": "test_corrupt_slot_and_extra_object_refuse"
+  },
+  {
+    "control": "extra-source-object",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "test": "test_corrupt_slot_and_extra_object_refuse"
+  },
+  {
+    "control": "overwrite-manifest",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "test": "test_existing_manifest_is_never_overwritten"
+  },
+  {
+    "control": "public-output-mode-late-refusal",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "Source file must be private and owned",
+    "test": "test_private_files_do_not_depend_on_caller_umask"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

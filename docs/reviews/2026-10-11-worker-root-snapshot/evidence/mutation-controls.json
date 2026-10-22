@@ -1,0 +1,342 @@
+{
+  "sourceSha256": "4ea3f9d9c084e0de5b45dee2b371f2ce6fcb5182ea6c2a0f2eac8a6a83040d24",
+  "testsSha256": "daca30a07203ef3762770a94949e1dd9423412bc01ecc7b46ab3bf4dfa084484",
+  "cases": [
+    {
+      "case": "baseline",
+      "result": "survived",
+      "method": null,
+      "exitCode": 0,
+      "expectedAssertion": null
+    },
+    {
+      "case": "harmless-comment",
+      "result": "survived",
+      "method": null,
+      "exitCode": 0,
+      "expectedAssertion": null
+    },
+    {
+      "case": "harmless-enumeration-order",
+      "result": "survived",
+      "method": null,
+      "exitCode": 0,
+      "expectedAssertion": null
+    },
+    {
+      "case": "harmless-manifest-formatting",
+      "result": "survived",
+      "method": null,
+      "exitCode": 0,
+      "expectedAssertion": null
+    },
+    {
+      "case": "quiescence",
+      "result": "failed intended oracle",
+      "method": "test_requires_declared_quiescence",
+      "exitCode": 1,
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "outside-source",
+      "result": "failed intended oracle",
+      "method": "test_nested_destination_refused",
+      "exitCode": 1,
+      "expectedAssertion": "does not match \"Worker source changed during capture\""
+    },
+    {
+      "case": "retained-path-set",
+      "result": "failed intended oracle",
+      "method": "test_extra_retained_path_refuses_publication",
+      "exitCode": 1,
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "copied-sqlite-mode",
+      "result": "failed intended oracle",
+      "method": "test_copied_sqlite_mode_change_refused",
+      "exitCode": 1,
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "source-stability",
+      "result": "failed intended oracle",
+      "method": "test_observed_source_mutation_refused",
+      "exitCode": 1,
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "orphan-sidecar",
+      "result": "failed intended oracle",
+      "method": "test_orphan_sidecar_refused",
+      "exitCode": 1,
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "named-header",
+      "result": "failed intended oracle",
+      "method": "test_named_journal_requires_sqlite_header",
+      "exitCode": 1,
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "model-schema",
+      "result": "failed intended oracle",
+      "method": "test_named_journal_requires_command_schema",
+      "exitCode": 1,
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "sqlite-integrity",
+      "result": "failed intended oracle",
+      "method": "test_native_copy_reports_bad_integrity_or_mode_refused",
+      "exitCode": 1,
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "sqlite-mode",
+      "result": "failed intended oracle",
+      "method": "test_native_copy_reports_bad_integrity_or_mode_refused",
+      "exitCode": 1,
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "copied-sqlite-type",
+      "result": "failed intended oracle",
+      "method": "test_changed_copied_sqlite_header_refused",
+      "exitCode": 1,
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "ordinary-byte-comparison",
+      "result": "failed intended oracle",
+      "method": "test_copy_byte_corruption_refuses_publication",
+      "exitCode": 1,
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "verify-sqlite-mappings",
+      "result": "failed intended oracle",
+      "method": "test_verify_missing_or_changed_sqlite_mappings_refused",
+      "exitCode": 1,
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "cli-mapping-refusal",
+      "result": "failed intended oracle",
+      "method": "test_cli_missing_sqlite_mapping_has_controlled_refusal",
+      "exitCode": 1,
+      "expectedAssertion": "manifest refusal was not controlled"
+    },
+    {
+      "case": "verify-format",
+      "result": "failed intended oracle",
+      "method": "test_verify_foreign_manifest_format_refused",
+      "exitCode": 1,
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "verify-extra-entry",
+      "result": "failed intended oracle",
+      "method": "test_verify_changed_file_missing_directory_and_extra_entry",
+      "exitCode": 1,
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "verify-root-comparison",
+      "result": "failed intended oracle",
+      "method": "test_verify_changed_file_missing_directory_and_extra_entry",
+      "exitCode": 1,
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "deadline",
+      "result": "failed intended oracle",
+      "method": "test_copy_deadline_refuses_publication",
+      "exitCode": 1,
+      "expectedAssertion": "TimeoutError not raised"
+    },
+    {
+      "case": "capture-finite-timeout",
+      "result": "failed intended oracle",
+      "method": "test_capture_infinite_timeout_refused",
+      "exitCode": 1,
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "verify-finite-timeout",
+      "result": "failed intended oracle",
+      "method": "test_verify_infinite_timeout_refused",
+      "exitCode": 1,
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "existing-destination",
+      "result": "failed intended oracle",
+      "method": "test_existing_destination_not_reused",
+      "exitCode": 1,
+      "expectedAssertion": "FileExistsError not raised"
+    },
+    {
+      "case": "source-privacy",
+      "result": "failed intended oracle",
+      "method": "test_aliases_and_accessible_sources_refused",
+      "exitCode": 1,
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "read-only-source",
+      "result": "failed intended oracle",
+      "method": "test_read_only_sqlite_connections",
+      "exitCode": 1,
+      "expectedAssertion": "source connection is writable"
+    },
+    {
+      "case": "missing-manifest-fsync",
+      "result": "failed intended oracle",
+      "method": "test_manifest_file_is_synced_before_publication",
+      "exitCode": 1,
+      "expectedAssertion": "manifest bytes were not synced"
+    },
+    {
+      "case": "cli-mixed-scope",
+      "result": "failed intended oracle",
+      "method": "test_cli_missing_source_and_mixed_verify_refused",
+      "exitCode": 1,
+      "expectedAssertion": "invalid CLI scope accepted"
+    },
+    {
+      "case": "cli-missing-source",
+      "result": "failed intended oracle",
+      "method": "test_cli_missing_source_and_mixed_verify_refused",
+      "exitCode": 1,
+      "expectedAssertion": "invalid CLI scope accepted"
+    },
+    {
+      "case": "missing-file-fsync",
+      "result": "failed intended oracle",
+      "method": "test_files_and_directories_and_parent_are_synced",
+      "exitCode": 1,
+      "expectedAssertion": "retained files were not all synced"
+    },
+    {
+      "case": "missing-parent-fsync",
+      "result": "failed intended oracle",
+      "method": "test_files_and_directories_and_parent_are_synced",
+      "exitCode": 1,
+      "expectedAssertion": "directories or parent were not synced"
+    },
+    {
+      "case": "false-publication-on-sync-error",
+      "result": "failed intended oracle",
+      "method": "test_directory_sync_failure_refuses_success_receipt",
+      "exitCode": 1,
+      "expectedAssertion": "failed publication retained a success receipt"
+    },
+    {
+      "case": "unbounded-native-busy-backup",
+      "result": "owned native lock exceeds wrapper deadline without callback guard",
+      "method": "test_busy_native_sqlite_backup_deadline_refused",
+      "ownedChildTimeoutSeconds": 4
+    },
+    {
+      "case": "ignore-populated-new-wal",
+      "result": "failed intended oracle",
+      "method": "test_new_nonempty_wal_cannot_be_ignored_as_reader_artifact",
+      "exitCode": 1,
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "redundant-predicate-selected-case-survives",
+      "result": "survived",
+      "method": "test_existing_populated_wal_change_refused",
+      "exitCode": 0,
+      "expectedAssertion": null
+    },
+    {
+      "case": "ignore-original-wal-changes",
+      "result": "failed intended oracle",
+      "method": "test_existing_populated_wal_change_refused",
+      "exitCode": 1,
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "cli-private-path-disclosure",
+      "result": "failed intended oracle",
+      "method": "test_cli_capture_and_verify_do_not_print_private_metadata",
+      "exitCode": 1,
+      "expectedAssertion": "private source path was printed"
+    },
+    {
+      "case": "main-file-only-loses-wal",
+      "result": "failed intended oracle",
+      "method": "test_complete_root_and_committed_wal_records",
+      "exitCode": 1,
+      "expectedAssertion": "lost SQLite logical records"
+    },
+    {
+      "case": "missing-empty-directory-scope",
+      "result": "failed intended oracle",
+      "method": "test_complete_root_and_committed_wal_records",
+      "exitCode": 1,
+      "expectedAssertion": "empty directory lost"
+    },
+    {
+      "case": "missing-state-file-scope",
+      "result": "failed intended oracle",
+      "method": "test_complete_root_and_committed_wal_records",
+      "exitCode": 1,
+      "expectedAssertion": "state file lost"
+    },
+    {
+      "case": "closed-wal-reader-empty-policy",
+      "result": "failed intended oracle",
+      "method": "test_closed_wal_databases_allow_only_reader_sidecars",
+      "exitCode": 1,
+      "expectedAssertion": "ValueError: Worker source changed during capture"
+    },
+    {
+      "case": "crashed-main-only-loses-blob",
+      "result": "failed intended oracle",
+      "method": "test_crashed_writer_committed_wal_and_blob_survive",
+      "exitCode": 1,
+      "expectedAssertion": "crashed committed blob lost"
+    },
+    {
+      "case": "nonobject-manifest-validation",
+      "result": "failed intended oracle",
+      "method": "test_verify_nonobject_manifest_refused",
+      "exitCode": 1,
+      "expectedAssertion": "AttributeError: 'list' object has no attribute 'get'"
+    },
+    {
+      "case": "ordinary-private-mode-preservation",
+      "result": "failed intended oracle",
+      "method": "test_private_modes_and_read_only_subdirectory_preserved",
+      "exitCode": 1,
+      "expectedAssertion": "ValueError: Retained ordinary bytes or directories differ"
+    },
+    {
+      "case": "sqlite-private-mode-preservation",
+      "result": "failed intended oracle",
+      "method": "test_private_sqlite_mode_preserved",
+      "exitCode": 1,
+      "expectedAssertion": "ValueError: Retained SQLite file mode or type differs"
+    },
+    {
+      "case": "all-invalid-deadline-parameters",
+      "result": "failed intended oracle",
+      "method": "test_finite_positive_deadline_required",
+      "exitCode": 1,
+      "expectedAssertion": "TimeoutError: Worker-root capture exceeded its deadline"
+    },
+    {
+      "case": "restored",
+      "result": "survived",
+      "method": null,
+      "exitCode": 0,
+      "expectedAssertion": null
+    }
+  ],
+  "scope": "Actual local private-directory/SQLite/CLI tests and targeted source mutations. Fake SQLite reports cover response-guard branches, not native corrupt-file acceptance. No host-loss, live-writer fence, complete installation or scientific acceptance."
+}

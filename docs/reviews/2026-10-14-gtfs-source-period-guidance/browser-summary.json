@@ -1,0 +1,90 @@
+{
+  "head": "406f86f97585057475880e26e8dd0a40a09a26c9",
+  "buildId": "9be5Kid-XcPUHWwdO4yMF",
+  "tab": "tab_9",
+  "observation": {
+    "areaRetained": true,
+    "engine": "aequilibrae",
+    "errors": [],
+    "feed": "bb28bb0b-1c4f-4e9d-9774-fc24a42d928c",
+    "oldMessagePresent": false,
+    "rows": [
+      {
+        "feedId": "41145384-4d4a-4cc0-b6e2-bf4ef09829ca",
+        "geometrySha256": "007c5ce9a3bea160193427fe1e6f769c33c239b3b448cd9e40ab623d9acdd8fd",
+        "response": {
+          "coverage": "yes",
+          "reason": null,
+          "serviceEndDate": "2027-01-10",
+          "stopServiceRowsInStudyArea": 238,
+          "usesFrequencies": false
+        },
+        "status": 200
+      },
+      {
+        "feedId": "bb28bb0b-1c4f-4e9d-9774-fc24a42d928c",
+        "geometrySha256": "007c5ce9a3bea160193427fe1e6f769c33c239b3b448cd9e40ab623d9acdd8fd",
+        "response": {
+          "coverage": "yes",
+          "reason": null,
+          "serviceEndDate": "2026-08-09",
+          "stopServiceRowsInStudyArea": 238,
+          "usesFrequencies": false
+        },
+        "status": 200
+      }
+    ],
+    "runsEmpty": true,
+    "scrollWidth": 390,
+    "staffMessagePresent": true,
+    "width": 390
+  },
+  "console": {
+    "console": [],
+    "networkErrors": [
+      {
+        "url": "http://127.74.9.10:3582/models/492638e4-9937-4e61-a31c-d69f7e36f49b?_rsc=Dn_dAdO9xYGadnhX",
+        "method": "GET",
+        "status": null,
+        "failed": true,
+        "errorText": "net::ERR_ABORTED",
+        "timestamp": "2026-10-14T03:02:03.712Z"
+      },
+      {
+        "url": "http://127.74.9.10:3582/models/492638e4-9937-4e61-a31c-d69f7e36f49b?_rsc=kYcON0M97ZsICjx7",
+        "method": "GET",
+        "status": null,
+        "failed": true,
+        "errorText": "net::ERR_ABORTED",
+        "timestamp": "2026-10-14T03:02:03.930Z"
+      }
+    ]
+  },
+  "captures": {
+    "desktopFeed": {
+      "sha256": "945468ac88052fd20f3d0767744a9de4a2c949217bfec4c9226edf75257fb89d",
+      "pngWidth": 1280,
+      "pngHeight": 800
+    },
+    "mobileFeed": {
+      "sha256": "426f3be54ddabe11a0795a182e9e2d7d5d78502e3653dc6289f0719b59167647",
+      "pngWidth": 566,
+      "pngHeight": 1224
+    },
+    "desktopDrawing": {
+      "sha256": "1e54ed90094ea8e44b27cc210c74ae08ca4c160ab30b3003b61f0ea84f8cd773",
+      "pngWidth": 1280,
+      "pngHeight": 800
+    },
+    "mobileDrawing": {
+      "sha256": "a40e8f7446fa21506fcc0d19cce90c528715a9a42af310ffefe425ae1d1f47b3",
+      "pngWidth": 566,
+      "pngHeight": 1224
+    }
+  },
+  "limits": [
+    "Older synthetic API29941, not current-main/hosted/demo data.",
+    "Native popup key press reports a T3 error; closed-select character choices work.",
+    "No map provider commissioned, no run/saved edit, no practitioner/scientific/independent-host acceptance."
+  ]
+}

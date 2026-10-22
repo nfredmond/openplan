@@ -15,6 +15,7 @@ import { readGtfsAttempt, verifyGtfsAttempt, verifyGtfsArchive } from "./managed
 import { processGtfsRetainedArchive } from "./managed-worker-publication";
 import type { GtfsArtifactOptions } from "./managed-worker-artifact";
 import type { GtfsOwnedWork } from "./managed-worker-attempt";
+import { checkWorkspaceStorageRoom, storageBytesNotYetStored } from "../workspaces/storage-quota";
 
 const positive = z.number().int().positive().safe();
 const archiveSchema = z.object({ path: z.string(), sha256: z.string().regex(/^[a-f0-9]{64}$/), bytes: positive }).strict();
@@ -55,6 +56,26 @@ export function gtfsIntakeStorage(target: string, key: string, signal: AbortSign
       const active = inherited ? AbortSignal.any([signal, inherited]) : signal;
       return transport(input, { ...init, signal: active });
     } } });
+}
+
+export class GtfsStorageRoomRefusal extends Error {}
+
+/** Count only additional immutable-key bytes. A recorded size grants no
+ * custody: callers still download and verify the complete original hash.
+ */
+export async function requireGtfsStorageRoom(
+  client: ReturnType<typeof gtfsIntakeStorage>, workspaceId: string,
+  archive: { path: string; bytes: number }, signal: AbortSignal,
+  env: Readonly<Record<string, string | undefined>> = process.env,
+) {
+  signal.throwIfAborted();
+  const incoming = await whileActive(storageBytesNotYetStored(client, GTFS_UPLOADS_BUCKET,
+    [{ path: archive.path, bytes: archive.bytes }]), signal);
+  signal.throwIfAborted();
+  if (incoming === 0) return;
+  const room = await whileActive(checkWorkspaceStorageRoom(client, workspaceId, incoming, env), signal);
+  signal.throwIfAborted();
+  if (room.status !== "room") throw new GtfsStorageRoomRefusal(room.message);
 }
 
 /** Bound acknowledgement even if a custom transport ignores cancellation.
@@ -189,11 +210,14 @@ export async function prepareGtfsSourceArchive(options: GtfsIntakeOptions) {
       const timer = setTimeout(() => timeout.abort(new Error("GTFS upload acknowledgement unavailable")), timeoutMs);
       try {
         const upload = gtfsIntakeStorage(normalizedTarget, options.serviceKey, uploadSignal, options.storageFetch);
+        await requireGtfsStorageRoom(upload, snapshot.workspaceId, archive, uploadSignal, options.fetchOptions?.env);
+        uploadSignal.throwIfAborted();
         // Never update or overwrite this key, including after an uncertain reply.
         await whileActive(upload.storage.from(GTFS_UPLOADS_BUCKET).upload(archive.path, local.bytes,
           { contentType: "application/zip", upsert: false }), uploadSignal);
-      } catch {
+      } catch (error) {
         signal.throwIfAborted();
+        if (error instanceof GtfsStorageRoomRefusal) throw error;
         // An upload error is neither failure nor success. Inspect actual bytes.
       } finally { clearTimeout(timer); timeout.abort(); }
       remote = await readRetainedGtfsArchive(service, identity, { signal, env: options.fetchOptions?.env });

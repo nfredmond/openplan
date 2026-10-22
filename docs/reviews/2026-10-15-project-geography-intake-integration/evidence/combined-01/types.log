@@ -1,0 +1,11 @@
+src/test/project-saved-map.test.tsx(73,135): error TS2339: Property 'toBeVisible' does not exist on type 'Assertion<HTMLElement>'.
+src/test/project-saved-map.test.tsx(83,105): error TS2339: Property 'toBeVisible' does not exist on type 'Assertion<HTMLElement>'.
+src/test/project-saved-map.test.tsx(99,77): error TS2339: Property 'toBeVisible' does not exist on type 'Assertion<HTMLElement>'.
+src/test/project-saved-map.test.tsx(105,105): error TS2339: Property 'toBeVisible' does not exist on type 'Assertion<HTMLElement>'.
+src/test/project-saved-map.test.tsx(106,80): error TS2339: Property 'toBeVisible' does not exist on type 'Assertion<HTMLElement>'.
+src/test/project-saved-map.test.tsx(123,40): error TS2339: Property 'toHaveTextContent' does not exist on type 'Assertion<HTMLElement>'.
+src/test/project-saved-map.test.tsx(124,71): error TS2339: Property 'toHaveAttribute' does not exist on type 'Assertion<HTMLElement>'.
+src/test/project-saved-map.test.tsx(125,69): error TS2339: Property 'toBeVisible' does not exist on type 'Assertion<HTMLElement>'.
+src/test/project-saved-map.test.tsx(196,80): error TS2339: Property 'toBeVisible' does not exist on type 'Assertion<HTMLElement>'.
+src/test/project-saved-map.test.tsx(287,42): error TS2339: Property 'toHaveTextContent' does not exist on type 'Assertion<HTMLElement>'.
+src/test/project-saved-map.test.tsx(296,40): error TS2339: Property 'toHaveTextContent' does not exist on type 'Assertion<HTMLElement>'.

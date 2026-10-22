@@ -76,7 +76,10 @@ understanding. Apply actual-user observation to consequential workflow design.
 
 Strategy-review expiry and the known partial full-journey assessment do not block
 every development release. Follow the [development release policy](docs/product/DEVELOPMENT_RELEASE_POLICY.md).
-Hosted deployment is deferred; Vercel is not a required check.
+Hosted operation follows the [public cutover record](docs/ops/HOSTED_LIVE_2026-10-11.md)
+and its dated evidence limits. For that installation, verify the checked source
+and exact public deployment before taking the next merge. Independent local
+development releases do not require Vercel or paid infrastructure.
 
 ## Pull requests and release handoff
 

@@ -1,0 +1,8 @@
+{
+  "trial": "pagination-unavailable-fault",
+  "testFile": "src/test/project-workbook-export-pagination.test.ts",
+  "test": "keeps an unavailable page distinct from an empty portfolio",
+  "exitCode": 1,
+  "marker": "unavailable data must not become a successful empty page",
+  "classification": "KILLED"
+}

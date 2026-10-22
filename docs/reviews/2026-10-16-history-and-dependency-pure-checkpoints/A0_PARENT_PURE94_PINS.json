@@ -1,0 +1,29 @@
+{
+  "tier": "DATED_EXACT_SUPPLIED94_EVIDENCE_ONLY",
+  "noteSHA256": "af89307cd2502c5842aca1a671224c6dc70978a3b0d08a57d1e3c54c5406b39d",
+  "references": [
+    {
+      "path": "/home/nathaniel/.local/state/openplan/a0-parent-root-preflight-20261017-04/ACCEPTANCE.json",
+      "bytes": 1708738,
+      "sha256": "f8968a5b7e2d7f8c7130441bb823bbb5408c5c39e7add640404c5865b829d844"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/a0-parent-root-preflight-20261017-04/PREFLIGHT.json",
+      "bytes": 2072,
+      "sha256": "06457ee561a5948f9274c7afd75c6bfbf6dc4fb5f898df248efab94aed04beb8"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/a0-parent-root-preflight-20261017-04/GRANT.json",
+      "bytes": 1296,
+      "sha256": "33ee400416f88a24765fab15533208c94fc2e7df9bec34c5e1a45d393ade81d2"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/a0-parent-root-preflight-20261017-04/READER_ERROR01.json",
+      "bytes": 570,
+      "sha256": "abe1e39dc9e00d30269196d7f30f863440568e739e8d9c9f3d3f12516868de48"
+    }
+  ],
+  "combinedApplicationTreeUnchanged": "42fc0315070f31269325acb264f0260723dbd56b",
+  "newNativeOrReleaseAcceptance": false,
+  "postTerminalTestsRepeated": false
+}

@@ -1,0 +1,5 @@
+{
+  "openplan/supabase/migrations/20261017000015_node_queue_process_observations.sql": "40a554ab2d1c97791f3e2875ca5ff24350d400bd3e1ec618896bcdeeed097113",
+  "openplan/src/test/migrations/inventory.test.ts": "8bc642c62aebd0d6a96e0f7acd8e8dd9919f1cdfd36749931ab6e05894347ee9",
+  "openplan/src/test/a-column-nothing-reads-is-a-question.test.ts": "fbb7d3564ccfd6358fddfcdfcde5e37d3a5b5f5bb8ed12d3e4435374c1fe5ca0"
+}

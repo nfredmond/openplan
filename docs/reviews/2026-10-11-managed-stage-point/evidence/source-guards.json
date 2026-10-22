@@ -1,0 +1,354 @@
+{
+  "sourceSha256": "bf2f2a886bd8f360c6ab2c4acc926680764277dded58e7e94d116630b035aa38",
+  "records": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    },
+    {
+      "function": "verify_uncertainty",
+      "reason": "stagepoint-delivery-uncertain",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_uncertainty",
+      "reason": "stagepoint-native-committed-drop",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_uncertainty",
+      "reason": "stagepoint-native-committed-drop",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_uncertainty",
+      "reason": "stagepoint-uncertain-claim-no-callback",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_uncertainty",
+      "reason": "stagepoint-uncertain-claim-no-callback",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_uncertainty",
+      "reason": "stagepoint-uncertain-admission-unconsumed",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_uncertainty",
+      "reason": "stagepoint-original-claim-pending",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_progress",
+      "reason": "stagepoint-progress-delivery-uncertain",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_progress",
+      "reason": "stagepoint-progress-admission-consumed-once",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_progress",
+      "reason": "stagepoint-progress-admission-consumed-once",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_progress",
+      "reason": "stagepoint-progress-writer-stopped",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_progress",
+      "reason": "stagepoint-progress-writer-stopped",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_progress",
+      "reason": "stagepoint-progress-committed-drop",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_progress",
+      "reason": "stagepoint-original-progress-pending",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_native_delta",
+      "reason": "stagepoint-native-structure",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_native_delta",
+      "reason": "stagepoint-native-changed-tables",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_native_delta",
+      "reason": "stagepoint-native-new-row-counts",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_server",
+      "reason": "stagepoint-native-command-pair-missing",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_server",
+      "reason": "stagepoint-native-request-identity",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_server",
+      "reason": "stagepoint-native-request-payload",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_server",
+      "reason": "stagepoint-native-response-payload",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_server",
+      "reason": "stagepoint-native-attempt-identity",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_server",
+      "reason": "stagepoint-native-attempt-identity",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_server",
+      "reason": "stagepoint-native-stage-owned",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_server",
+      "reason": "stagepoint-native-stage-owned",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_server",
+      "reason": "stagepoint-native-parent-owned",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_server",
+      "reason": "stagepoint-native-parent-owned",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_server",
+      "reason": "stagepoint-native-progress-effect",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_original_rows",
+      "reason": "stagepoint-original-row-images",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_model_touch",
+      "reason": "stagepoint-selected-model-timestamp-only",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_source",
+      "reason": "stagepoint-production-source",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_source",
+      "reason": "stagepoint-production-source",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_source",
+      "reason": "stagepoint-production-helpers",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_starts",
+      "reason": "stagepoint-native-execution-starts",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_starts",
+      "reason": "stagepoint-native-execution-starts",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_starts",
+      "reason": "stagepoint-native-execution-starts",
+      "brokenRefused": true
+    },
+    {
+      "function": "verify_uncertainty",
+      "reason": "stagepoint-delivery-uncertain",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_uncertainty",
+      "reason": "stagepoint-native-committed-drop",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_uncertainty",
+      "reason": "stagepoint-uncertain-claim-no-callback",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_uncertainty",
+      "reason": "stagepoint-uncertain-admission-unconsumed",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_uncertainty",
+      "reason": "stagepoint-original-claim-pending",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_progress",
+      "reason": "stagepoint-progress-delivery-uncertain",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_progress",
+      "reason": "stagepoint-progress-admission-consumed-once",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_progress",
+      "reason": "stagepoint-progress-writer-stopped",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_progress",
+      "reason": "stagepoint-progress-committed-drop",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_progress",
+      "reason": "stagepoint-original-progress-pending",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_native_delta",
+      "reason": "stagepoint-native-structure",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_native_delta",
+      "reason": "stagepoint-native-changed-tables",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_native_delta",
+      "reason": "stagepoint-native-new-row-counts",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_server",
+      "reason": "stagepoint-native-command-pair-missing",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "non-dict getter-compatible receipt isolates the missing native row type check from later content checks"
+    },
+    {
+      "function": "verify_server",
+      "reason": "stagepoint-native-request-identity",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_server",
+      "reason": "stagepoint-native-request-payload",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_server",
+      "reason": "stagepoint-native-response-payload",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "non-dict getter-compatible response isolates the response type check from later attempt checks"
+    },
+    {
+      "function": "verify_server",
+      "reason": "stagepoint-native-attempt-identity",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_server",
+      "reason": "stagepoint-native-stage-owned",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_server",
+      "reason": "stagepoint-native-parent-owned",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_server",
+      "reason": "stagepoint-native-progress-effect",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_original_rows",
+      "reason": "stagepoint-original-row-images",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_model_touch",
+      "reason": "stagepoint-selected-model-timestamp-only",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_source",
+      "reason": "stagepoint-production-source",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_source",
+      "reason": "stagepoint-production-helpers",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_starts",
+      "reason": "stagepoint-native-execution-starts",
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    }
+  ],
+  "limits": "Pure synthetic observation predicates and isolated in-memory AST omissions. No native claim/admission, writer behavior, server commit, full row retention or recovery acceptance."
+}

@@ -1,0 +1,73 @@
+number	theme	selection_reason
+4272	approvals	AI-reviewed Auto approval mode; contrast with OpenPlan human approval custody
+13726	approvals	subagent approvals routed to parent run
+19630	approvals	parent thread resurfaces when subagent needs approval
+18101	approvals	open: approval answered before its card arrives
+9786	approvals	split environment-admin permission scope (scope-split series 9786-9790)
+17370	approvals	show connection permissions; enforce session lifetime
+16335	mcp	every MCP tool declares who may call it
+15907	approvals	agent asks user for a secret through a private card
+9167	durability	continue active threads across server restarts
+15323	durability	restarts keep delegated tasks, queues, stops intact
+13895	durability	tell provider a restart killed background work
+4656	durability	schedule effects from durable deadlines
+5246	durability	command receipt replayed for a different aggregate (idempotency defect)
+16247	durability	prune finished outbox rows
+4400	durability	migrate v1 state into orchestration v2
+15442	durability	Stop recovers stalled runs
+12686	durability	resume limited threads when usage resets
+12352	handoff	budgeted history across provider handoffs
+16002	delegation	Stop also stops delegated tasks and PR watches
+17930	delegation	closed: task graphs for parallel agent work
+10231	delegation	closed: thread provenance and selective agent rollback
+16336	mcp	outside agents sign in with OAuth
+16718	mcp	hosted agents (ChatGPT) sign in
+15219	mcp	MCP tools take explicit thread and project targets
+8677	mcp	closed: MCP project management tools (rejected large batch)
+15464	mcp	open: MCP inbox and approvals tools
+15913	mcp	open: count which MCP tools agents use
+3638	scheduling	scheduled tasks introduced
+15085	scheduling	scheduled tasks run on webhook
+15487	scheduling	opt-in hold webhooks while offline
+15057	scheduling	watch PR and wake agent on change
+16270	scheduling	fingerprint check before full read
+14714	scheduling	closed: restrict scheduled tasks to days/hours/run caps
+15040	scheduling	open: restricted agents cannot rewrite full-access tasks
+10848	notifications	shared notification policy, waiting agents prioritized
+11570	notifications	opt-in in-app thread notifications
+3795	offline	persist offline environment data
+18351	offline	pull requests available offline on mobile
+8491	notifications	closed: server-side notification edges for web/desktop
+1697	observability	server tracing and metrics introduced
+13697	observability	event loop stalls recorded
+13698	observability	trace summary CLI
+2679	observability	native resource diagnostics
+3405	observability	sanitize client error diagnostics (redaction series)
+6563	observability	npx t3 triage support playbook
+14986	observability	failed telemetry batches stop resending
+5181	update	remote updates rollback-safe
+5374	update	remote updates with database migrations
+16102	update	one database owner; guard update rollback
+19311	update	service updates on full disks/large databases
+15925	update	migration id clash stops startup with clear error
+7708	portability	closed: export/import threads between state directories
+16731	portability	open: t3_thread_import conversation only
+8066	portability	import recent Codex/Claude threads at onboarding
+16236	artifacts	MCP apps render inline
+15968	artifacts	agents show HTML pages inline
+8962	licensing	open source license notices
+9146	citations	cite assistant responses inline
+12296	citations	attach threads as context
+18454	citations	prompt links with invisible-character stripping
+18124	review	guided reviews (PR tour)
+13491	accessibility	control announcements and sidebar traversal
+11199	accessibility	chat messages as headings for screen readers
+16087	i18n	closed: shared i18n foundation
+16047	plugins	open: consented local plugins in supervised child processes
+3699	plugins	closed: runtime plugin system and marketplace
+9325	provider-maintenance	provider updates only through owning installer
+2312	provider-maintenance	provider update advisories
+13533	testing	record Codex replay fixtures (replay-fixture method)
+9774	usage	custom model prices
+11176	settings	per-project overrides for scopable server settings
+12848	ux	undo settle/snooze/archive

@@ -1,0 +1,72 @@
+{
+  "tier": "LITERAL_READER_EXPECTATIONS_NOT_OBSERVED",
+  "sourcePath": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/strict_reader.py",
+  "sourceMetadata": [
+    8071,
+    33152,
+    1000,
+    1000,
+    66308,
+    162703790,
+    1792217762025219974,
+    1792217762059220379
+  ],
+  "original": {
+    "moduleName": "_m1_operation_reader",
+    "virtualFile": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/strict_reader.py::reader-original",
+    "sourceSHA256": "65a0b3dd9f2e1aa9cf4ef8607f59be8a74132c60e5c9ea5b451084d92e73613b"
+  },
+  "messageBypass": {
+    "moduleName": "_m1_operation_reader_message_bypass",
+    "virtualFile": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/strict_reader.py::reader-message-bypass",
+    "sourceSHA256": "4b1e4419cd4c00077dbe048d846ffbd4b55cdafb65a008dc1deafab23a3c86b5"
+  },
+  "restored": {
+    "moduleName": "_m1_operation_reader_restored",
+    "virtualFile": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/strict_reader.py::reader-restored",
+    "sourceSHA256": "65a0b3dd9f2e1aa9cf4ef8607f59be8a74132c60e5c9ea5b451084d92e73613b"
+  },
+  "rows": [
+    {
+      "name": "harmless-copy-first",
+      "outcome": "SURVIVED"
+    },
+    {
+      "name": "baseline",
+      "outcome": "PASS"
+    },
+    {
+      "name": "wrong-message",
+      "fullClass": "_m1_operation_reader.ReportRefusal",
+      "message": "operation-report:message:replace-primary:fault",
+      "suffix": "_m1_operation_reader.ReportRefusal: operation-report:message:replace-primary:fault",
+      "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/strict_reader.py::reader-original\", line 21,",
+      "tracePrefix": "Traceback "
+    },
+    {
+      "name": "wrong-origin",
+      "fullClass": "_m1_operation_reader.ReportRefusal",
+      "message": "operation-report:trace:replace-primary:fault",
+      "suffix": "_m1_operation_reader.ReportRefusal: operation-report:trace:replace-primary:fault",
+      "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/strict_reader.py::reader-original\", line 23,",
+      "tracePrefix": "Traceback "
+    },
+    {
+      "name": "message-bypass",
+      "fullClass": "builtins.AssertionError",
+      "message": "operation-reader-control:missing-refusal:message",
+      "suffix": "AssertionError: operation-reader-control:missing-refusal:message",
+      "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/reader_controls.py\", line 41,",
+      "tracePrefix": "Traceback "
+    },
+    {
+      "name": "restored",
+      "outcome": "PASS"
+    }
+  ],
+  "readerCalls": 6,
+  "readerDefinitionLoads": 3,
+  "messageAnchor": "    require(actual['message'] == wanted['message'], 'operation-report:message:' + name)\n",
+  "messageReplacement": "    # Supplied exact-message comparison omitted.\n",
+  "callerReplay": false
+}

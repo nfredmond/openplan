@@ -1,0 +1,56 @@
+[
+  {
+    "report": "source-controls.json",
+    "privateRun": "source-06",
+    "sha256": "28cf1f7f0103995f438bcb45303e06f3a46e43b74e1de910d42de5e0cfcf8ef3",
+    "blindCategory": "Process lifecycle, actual entry-body startup children with replaced imports, AST wiring and actual preparation CLI with synthetic HTTP replies. No live business database, provider or job acceptance."
+  },
+  {
+    "report": "reader-controls.json",
+    "privateRun": "reader-controls-03",
+    "sha256": "18feba19e163bd5868d673a4fea9d25d642b0e55c8b6bca86adab70830e169ba",
+    "blindCategory": "Report shape, exact microseconds, producer state/count consistency. Does not observe a database or business worker."
+  },
+  {
+    "report": "health-transport-controls.json",
+    "privateRun": "health-controls-01",
+    "sha256": "b8e2f7ee4f15d7e4c7ff78f90067ce8541a7aa4f5cc1569f2dfdeac8104b4dd2",
+    "blindCategory": "Installed SDK and owned loopback sockets, before response headers. Does not prove stalled response-body reading."
+  },
+  {
+    "report": "health-route-controls.json",
+    "privateRun": "health-route-controls-01",
+    "sha256": "f9500fb82be9b266958e0f6c60dcd09f2ff9000f460a7adcc3b7b5ad8c25655c",
+    "blindCategory": "Fake SDK route reporting and dedicated RPC arguments, not provider operation."
+  },
+  {
+    "report": "checker-controls.json",
+    "privateRun": "checker-controls-01",
+    "sha256": "4601258412bdd1cc88edba4e4a2005a64225102224c9da7a7e30f730109f5748",
+    "blindCategory": "Configured caller deadline and fake fetch, not elapsed hosted timing."
+  },
+  {
+    "report": "schema-controls.json",
+    "privateRun": "schema-controls-01",
+    "sha256": "1baf9be1af46416eaf7d5e989e0c36bc950e80e3cfcd3f2242a966de5629e0fd",
+    "blindCategory": "Source schema census and accounted SQL field. Does not establish live grants."
+  },
+  {
+    "report": "native-sql-controls.json",
+    "privateRun": "native-06",
+    "sha256": "9e3a04acaed488e03f9531ad320d1b15505e436aa6f466220b74e199f1c3d4ef",
+    "blindCategory": "Selected retained415 logical fixture to417 then418. Actual SQL/RLS and synthetic query load, not whole-installation restore or business capacity."
+  },
+  {
+    "report": "native-http-controls.json",
+    "privateRun": "native-http-05",
+    "sha256": "eefa20c32edc86dfbe2247201ad650de9e4e165c01abbce6c16fc6045951bbd1",
+    "blindCategory": "Owned actual PostgREST/SQL three-role operations and blocked late writes. No actual Auth signup, hosted, Storage or business queue."
+  },
+  {
+    "report": "idle-cli-controls.json",
+    "privateRun": "idle-cli-01",
+    "sha256": "8b9a4124fbedc29ea58d54ddb5a6f91ad57a97656295545e699c4853f1355c29",
+    "blindCategory": "Actual preparation CLI idle-signal request census against synthetic HTTP. No live queue recovery."
+  }
+]

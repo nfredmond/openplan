@@ -1,0 +1,47 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived",
+    "tests": 28
+  },
+  {
+    "case": "harmless-comment",
+    "outcome": "survived",
+    "tests": 28
+  },
+  {
+    "case": "restored-after-harmless",
+    "outcome": "survived",
+    "tests": 28
+  },
+  {
+    "case": "original-object-overwritten",
+    "outcome": "intended_failure",
+    "diagnostic": "A retry never replaces the original stored bytes"
+  },
+  {
+    "case": "overwrite-mode-restored",
+    "outcome": "intended_failure",
+    "diagnostic": "upsert"
+  },
+  {
+    "case": "original-hash-ignored",
+    "outcome": "intended_failure",
+    "diagnostic": "Unconfirmed actual bytes cannot become held: hash"
+  },
+  {
+    "case": "matching-recovery-denied",
+    "outcome": "intended_failure",
+    "diagnostic": "Matching retained bytes restore the missing custody row"
+  },
+  {
+    "case": "uncertain-upload-reply-treated-as-failure",
+    "outcome": "intended_failure",
+    "diagnostic": "An uncertain upload reply requires actual matching bytes"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived",
+    "tests": 28
+  }
+]

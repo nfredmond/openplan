@@ -1,0 +1,218 @@
+[
+  {
+    "accepted": true,
+    "control": "omit-engine-exact"
+  },
+  {
+    "accepted": false,
+    "control": "omit-engine-wrong-diagnostic"
+  },
+  {
+    "accepted": false,
+    "control": "omit-engine-wrong-type"
+  },
+  {
+    "accepted": true,
+    "control": "omit-metadata-exact"
+  },
+  {
+    "accepted": false,
+    "control": "omit-metadata-wrong-diagnostic"
+  },
+  {
+    "accepted": false,
+    "control": "omit-metadata-wrong-type"
+  },
+  {
+    "accepted": true,
+    "control": "corrupt-configuration-exact"
+  },
+  {
+    "accepted": false,
+    "control": "corrupt-configuration-wrong-diagnostic"
+  },
+  {
+    "accepted": false,
+    "control": "corrupt-configuration-wrong-type"
+  },
+  {
+    "accepted": true,
+    "control": "corrupt-component-exact"
+  },
+  {
+    "accepted": false,
+    "control": "corrupt-component-wrong-diagnostic"
+  },
+  {
+    "accepted": false,
+    "control": "corrupt-component-wrong-type"
+  },
+  {
+    "accepted": true,
+    "control": "changed-summary-exact"
+  },
+  {
+    "accepted": false,
+    "control": "changed-summary-wrong-diagnostic"
+  },
+  {
+    "accepted": false,
+    "control": "changed-summary-wrong-type"
+  },
+  {
+    "accepted": true,
+    "control": "change-source-exact"
+  },
+  {
+    "accepted": false,
+    "control": "change-source-wrong-diagnostic"
+  },
+  {
+    "accepted": false,
+    "control": "change-source-wrong-type"
+  },
+  {
+    "accepted": true,
+    "control": "missing-stopped-record-exact"
+  },
+  {
+    "accepted": false,
+    "control": "missing-stopped-record-wrong-diagnostic"
+  },
+  {
+    "accepted": false,
+    "control": "missing-stopped-record-wrong-type"
+  },
+  {
+    "accepted": true,
+    "control": "wrong-digest-exact"
+  },
+  {
+    "accepted": false,
+    "control": "wrong-digest-wrong-diagnostic"
+  },
+  {
+    "accepted": false,
+    "control": "wrong-digest-wrong-type"
+  },
+  {
+    "accepted": true,
+    "control": "configured-wrong-digest-exact"
+  },
+  {
+    "accepted": false,
+    "control": "configured-wrong-digest-wrong-diagnostic"
+  },
+  {
+    "accepted": false,
+    "control": "configured-wrong-digest-wrong-type"
+  },
+  {
+    "accepted": true,
+    "control": "configured-swapped-roots-exact"
+  },
+  {
+    "accepted": false,
+    "control": "configured-swapped-roots-wrong-diagnostic"
+  },
+  {
+    "accepted": false,
+    "control": "configured-swapped-roots-wrong-type"
+  },
+  {
+    "accepted": true,
+    "control": "configured-external-root-exact"
+  },
+  {
+    "accepted": false,
+    "control": "configured-external-root-wrong-diagnostic"
+  },
+  {
+    "accepted": false,
+    "control": "configured-external-root-wrong-type"
+  },
+  {
+    "accepted": true,
+    "control": "configured-equal-roots-exact"
+  },
+  {
+    "accepted": false,
+    "control": "configured-equal-roots-wrong-diagnostic"
+  },
+  {
+    "accepted": false,
+    "control": "configured-equal-roots-wrong-type"
+  },
+  {
+    "accepted": true,
+    "control": "configured-root-type-exact"
+  },
+  {
+    "accepted": false,
+    "control": "configured-root-type-wrong-diagnostic"
+  },
+  {
+    "accepted": false,
+    "control": "configured-root-type-wrong-type"
+  },
+  {
+    "accepted": true,
+    "control": "substitute-receipt-exact"
+  },
+  {
+    "accepted": false,
+    "control": "substitute-receipt-wrong-diagnostic"
+  },
+  {
+    "accepted": false,
+    "control": "substitute-receipt-wrong-type"
+  },
+  {
+    "accepted": true,
+    "control": "substitute-snapshot-exact"
+  },
+  {
+    "accepted": false,
+    "control": "substitute-snapshot-wrong-diagnostic"
+  },
+  {
+    "accepted": false,
+    "control": "substitute-snapshot-wrong-type"
+  },
+  {
+    "accepted": true,
+    "control": "substitute-root-exact"
+  },
+  {
+    "accepted": false,
+    "control": "substitute-root-wrong-diagnostic"
+  },
+  {
+    "accepted": false,
+    "control": "substitute-root-wrong-type"
+  },
+  {
+    "accepted": true,
+    "control": "prior-binding-exact"
+  },
+  {
+    "accepted": false,
+    "control": "prior-binding-wrong-diagnostic"
+  },
+  {
+    "accepted": false,
+    "control": "prior-binding-wrong-type"
+  },
+  {
+    "accepted": true,
+    "control": "reply-binding-exact"
+  },
+  {
+    "accepted": false,
+    "control": "reply-binding-wrong-diagnostic"
+  },
+  {
+    "accepted": false,
+    "control": "reply-binding-wrong-type"
+  }
+]

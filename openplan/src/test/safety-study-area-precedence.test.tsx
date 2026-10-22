@@ -142,6 +142,17 @@ function projectPlaceRow(overrides: Record<string, unknown> = {}) {
 }
 
 type Result = { data: unknown; error: { message: string } | null };
+type IngestFilter = { op: "eq" | "gte" | "lte"; column: string; value: unknown };
+type IngestBuilder = {
+  eq(column: string, value: unknown): IngestBuilder;
+  is(column: string, value: unknown): IngestBuilder;
+  gte(column: string, value: unknown): IngestBuilder;
+  lte(column: string, value: unknown): IngestBuilder;
+  order(): IngestBuilder;
+  limit(limit: number): IngestBuilder;
+  then(resolve: (value: Result) => unknown): Promise<unknown>;
+};
+const ingestQueries: Array<{ projection: string; filters: IngestFilter[]; limit: number | null }> = [];
 
 /**
  * A supabase-js query builder that answers with `result` however it is chained.
@@ -172,12 +183,16 @@ function mountSupabase({
    * could tell an agency it has no crash data — is unreachable by any test.
    */
   ingestsResult = null as Result | null,
+  currentIngestError = null as string | null,
+  historyIngestError = null as string | null,
 }: {
   workspace?: Result;
   projectPlace?: Result;
   projectOptions?: Array<{ id: string; name: string; status: string }>;
   ingests?: Array<Record<string, unknown>>;
   ingestsResult?: Result | null;
+  currentIngestError?: string | null;
+  historyIngestError?: string | null;
 } = {}) {
   createClientMock.mockResolvedValue({
     auth: { getUser: async () => ({ data: { user: { id: "user-1" } } }) },
@@ -193,8 +208,42 @@ function mountSupabase({
               : respondWith({ data: projectOptions, error: null }),
         };
       }
-      if (table === "safety_crash_ingests")
-        return respondWith(ingestsResult ?? { data: ingests, error: null });
+      if (table === "safety_crash_ingests") return {
+        select: (projection: string) => {
+          const query = { projection, filters: [] as IngestFilter[], limit: null as number | null };
+          ingestQueries.push(query);
+          const filter = (op: IngestFilter["op"], column: string, value: unknown): IngestBuilder => {
+            query.filters.push({ op, column, value });
+            return builder;
+          };
+          const result = () => {
+            if (currentIngestError && query.limit === 1) return { data: ingests, error: { message: currentIngestError } };
+            if (historyIngestError && query.limit === 8) return { data: null, error: { message: historyIngestError } };
+            if (ingestsResult) return ingestsResult;
+            const rows = ingests.map((row) => ({ workspace_id: WORKSPACE_ID, ...row }) as Record<string, unknown>)
+              .filter((row) => query.filters.every(({ op, column, value }) => {
+                if (op === "eq") return row[column] === value;
+                const actual = row[column];
+                return typeof actual === "number" && typeof value === "number"
+                  && (op === "gte" ? actual >= value : actual <= value);
+              }))
+              .sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)))
+              .slice(0, query.limit ?? ingests.length)
+              .map((row) => Object.fromEntries(projection.split(",").map((column) => [column.trim(), row[column.trim()]])));
+            return { data: rows, error: null };
+          };
+          const builder: IngestBuilder = {
+            eq: (column: string, value: unknown) => filter("eq", column, value),
+            is: (column: string, value: unknown) => filter("eq", column, value),
+            gte: (column: string, value: unknown) => filter("gte", column, value),
+            lte: (column: string, value: unknown) => filter("lte", column, value),
+            order: () => builder,
+            limit: (limit: number) => { query.limit = limit; return builder; },
+            then: (resolve: (value: Result) => unknown) => Promise.resolve(result()).then(resolve),
+          };
+          return builder;
+        },
+      };
       if (table === "reports") return respondWith({ data: [], error: null });
       throw new Error(`Unexpected table: ${table}`);
     },
@@ -224,6 +273,7 @@ describe("Safety opens on the right study area", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    ingestQueries.length = 0;
     loadCurrentWorkspaceMembershipMock.mockResolvedValue({
       membership: { workspace_id: WORKSPACE_ID, role: "admin" },
     });
@@ -290,7 +340,7 @@ describe("Safety opens on the right study area", () => {
     expect(
       await screen.findByText(/could not read the project this page was opened for/i)
     ).toBeInTheDocument();
-    expect(screen.getByText(/permission denied for table projects/)).toBeInTheDocument();
+    expect(screen.getByText(/permission denied for table projects/).closest("details")).not.toBeNull();
     expect(
       screen.getByText(/whose record could not be read, so its study area could not be used/i)
     ).toBeInTheDocument();
@@ -308,8 +358,10 @@ describe("Safety opens on the right study area", () => {
     await renderSafety({ projectId: PROJECT_ID });
 
     expect(
-      await screen.findByText(/does not record project study areas yet/i)
+      await screen.findByText(/Nothing could be inherited from the project this page was opened for/i)
     ).toBeInTheDocument();
+    // The migration is named only behind the operator disclosure.
+    expect(screen.getByText(/Apply migration 20260728000009/).closest("details")).not.toBeNull();
     expect(screen.queryByText(/Part of this page could not be read/i)).not.toBeInTheDocument();
   });
 
@@ -396,7 +448,7 @@ describe("Safety opens on the right study area", () => {
    */
   it("says the crash-import history could not be read, rather than that none exists", async () => {
     mountSupabase({
-      ingestsResult: { data: null, error: { message: "permission denied for table safety_crash_ingests" } },
+      historyIngestError: "permission denied for table safety_crash_ingests",
     });
     await renderSafety();
 
@@ -411,6 +463,80 @@ describe("Safety opens on the right study area", () => {
 
     expect(screen.getByText(/No crash data has been retrieved for this study area yet/i)).toBeInTheDocument();
     expect(screen.queryByText(/could not be read/i)).toBeNull();
+  });
+
+  function retainedAcquisition(overrides: Record<string, unknown> = {}) {
+    return {
+      id: "retained-corridor-acquisition",
+      project_id: PROJECT_ID,
+      source_label: "Retained corridor source",
+      coverage_state: "fars_fatal_only",
+      severity_completeness: "fatal_only",
+      status: "ready",
+      crash_count: 12,
+      geocoded_count: 12,
+      truncated: false,
+      years_requested: [2025],
+      created_at: "2026-07-01T00:00:00.000Z",
+      min_lon: -121.06, min_lat: 39.21, max_lon: -121.02, max_lat: 39.25,
+      ...overrides,
+    };
+  }
+
+  it.each(["project", "extent"])("restores coverage beyond eight newer acquisitions for another %s", async (scope) => {
+    const newer = Array.from({ length: 12 }, (_, index) => retainedAcquisition({
+      id: `unrelated-${index}`,
+      created_at: `2026-08-${String(index + 1).padStart(2, "0")}T00:00:00.000Z`,
+      ...(scope === "project"
+        ? { project_id: "33333333-3333-4333-8333-333333333333" }
+        : { min_lon: -120, max_lon: -119 }),
+    }));
+    mountSupabase({ projectPlace: { data: projectPlaceRow(), error: null }, ingests: [retainedAcquisition(), ...newer] });
+
+    await renderSafety({ projectId: PROJECT_ID });
+
+    const coverage = screen.getByLabelText("Crash data coverage");
+    expect(within(coverage).getByText("Retained corridor source")).toBeInTheDocument();
+    await waitFor(() => {
+      const call = fetchMock.mock.calls.find((args) => String(args[0]).includes("/api/safety/crashes?"));
+      expect(new URL(String(call?.[0]), "http://localhost").searchParams.get("ingestId")).toBe("retained-corridor-acquisition");
+    });
+    const currentQuery = ingestQueries.find((query) => query.limit === 1);
+    expect(currentQuery?.projection.split(",")).toEqual(expect.arrayContaining(["id", "project_id", "source_label", "min_lon", "min_lat", "max_lon", "max_lat"]));
+    expect(currentQuery?.filters).toEqual(expect.arrayContaining([
+      { op: "eq", column: "workspace_id", value: WORKSPACE_ID },
+      { op: "eq", column: "project_id", value: PROJECT_ID },
+    ]));
+    for (const column of ["min_lon", "min_lat", "max_lon", "max_lat"]) {
+      expect(currentQuery?.filters).toContainEqual(expect.objectContaining({ op: "gte", column }));
+      expect(currentQuery?.filters).toContainEqual(expect.objectContaining({ op: "lte", column }));
+    }
+  });
+
+  it("keeps round-trip coordinate tolerance when restoring a retained source", async () => {
+    mountSupabase({ projectPlace: { data: projectPlaceRow(), error: null }, ingests: [retainedAcquisition({ min_lon: -121.06 + 0.0000005 })] });
+    await renderSafety({ projectId: PROJECT_ID });
+    expect(within(screen.getByLabelText("Crash data coverage")).getByText("Retained corridor source")).toBeInTheDocument();
+  });
+
+  it("discloses a failed current-acquisition lookup even when recent history loads", async () => {
+    mountSupabase({ projectPlace: { data: projectPlaceRow(), error: null }, ingests: [retainedAcquisition()], currentIngestError: "acquisition lookup unavailable" });
+    await renderSafety({ projectId: PROJECT_ID });
+    const coverage = screen.getByLabelText("Crash data coverage");
+    expect(within(coverage).getByText(/current crash acquisition could not be read/i)).toBeInTheDocument();
+    expect(within(coverage).getByText(/failed lookup, not a finding/i)).toBeInTheDocument();
+    expect(within(coverage).queryByText(/crash-import history could not be read/i)).toBeNull();
+    expect(within(coverage).queryByText("Retained corridor source")).toBeNull();
+    expect(screen.getByText("Retained corridor source")).toBeInTheDocument();
+    expect(within(coverage).queryByText(/No crash data has been retrieved/i)).toBeNull();
+    expect(fetchMock.mock.calls.some(([url]) => String(url).startsWith("/api/safety/crashes?"))).toBe(false);
+  });
+
+  it("keeps verified current coverage readable when only the recent-history list fails", async () => {
+    mountSupabase({ projectPlace: { data: projectPlaceRow(), error: null }, ingests: [retainedAcquisition()], historyIngestError: "history unavailable" });
+    await renderSafety({ projectId: PROJECT_ID });
+    expect(within(screen.getByLabelText("Crash data coverage")).getByText("Retained corridor source")).toBeInTheDocument();
+    await waitFor(() => expect(fetchMock.mock.calls.some(([url]) => String(url).includes("ingestId=retained-corridor-acquisition"))).toBe(true));
   });
 
   it("does not present an older area's acquisition as the current area's coverage", async () => {

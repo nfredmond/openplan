@@ -1,0 +1,107 @@
+{
+  "candidate": "360420ac42f34d2514bec91a0cd796804a8bd78f",
+  "applicationTree": "98535591a5a5916e0ffaef4125196366d3816410",
+  "privateRoot": "/home/nathaniel/.local/state/openplan/project-money-decimal-scale-readback-20261016-01",
+  "privateManifestSHA256": "41035356e95e4d03c3e78e6a22b25bc7beea0fcd611ef7de81c0166f27ac2c54",
+  "privateFiles": 19,
+  "resultSHA256": "8e3c8cd1ddab969d86ba922ee9195a2a40b26abe51fe6ef235357dd4185ad97f",
+  "oldSource": "0ceedbbd174edb557e90b5bf6a144592e8120bb4",
+  "cases": {
+    "old": [
+      {
+        "name": "ordinary-zero",
+        "input": "0",
+        "expected": "$0.00",
+        "output": "$0.00",
+        "error": null,
+        "matches": true
+      },
+      {
+        "name": "ordinary-underflow",
+        "input": "1e-100",
+        "expected": "$0.00",
+        "output": "$0.00",
+        "error": null,
+        "matches": true
+      },
+      {
+        "name": "nonfinite-exponent",
+        "input": "1e309",
+        "expected": "Not recorded",
+        "output": "Not recorded",
+        "error": null,
+        "matches": true
+      },
+      {
+        "name": "extreme-scale",
+        "input": "1e-9007199254740991",
+        "expected": "$0.00",
+        "output": "$0.00",
+        "error": null,
+        "matches": true
+      }
+    ],
+    "candidate": [
+      {
+        "name": "ordinary-zero",
+        "input": "0",
+        "expected": "$0.00",
+        "output": "$0.00",
+        "error": null,
+        "matches": true
+      },
+      {
+        "name": "ordinary-underflow",
+        "input": "1e-100",
+        "expected": "$0.00",
+        "output": "$0.00",
+        "error": null,
+        "matches": true
+      },
+      {
+        "name": "nonfinite-exponent",
+        "input": "1e309",
+        "expected": "Not recorded",
+        "output": "Not recorded",
+        "error": null,
+        "matches": true
+      },
+      {
+        "name": "extreme-scale",
+        "input": "1e-9007199254740991",
+        "expected": "$0.00",
+        "output": null,
+        "error": {
+          "name": "RangeError",
+          "message": "Maximum BigInt size exceeded"
+        },
+        "matches": false
+      }
+    ]
+  },
+  "sourceFiles": {
+    "/home/nathaniel/.t3/worktrees/openplan/t3-88a8a5f3/openplan/src/lib/money/format.ts": {
+      "sha256": "3344a0eeef3ebb5e9c47f75fba4888c7f777875b10264c8ade3fa1893e4bb33f",
+      "bytes": 10106
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-88a8a5f3/openplan/src/lib/money/optional-amount.ts": {
+      "sha256": "c0d0f565439f5857a37c022adb88b49f62554aa47cb8d7206904037a7411c187",
+      "bytes": 6143
+    }
+  },
+  "nativeAcceptance": false,
+  "browserAcceptance": false,
+  "severityEstablished": false,
+  "resourcesInProbeSample": {
+    "memory.max": "1073741824",
+    "memory.swap.max": "0",
+    "cpu.max": "50000 100000",
+    "memory.peak": "99344384",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+  },
+  "resourcesRecorderAfterChild": {
+    "memory.peak": "104587264",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+  },
+  "correction": "The first report called the in-probe peak a unit peak. The recorder samples later; both observations remain, with later104587264 reported separately. No rerun."
+}

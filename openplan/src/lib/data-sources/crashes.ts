@@ -312,7 +312,11 @@ export function summarizeCrashFetch(
   const totalInjuryCrashes = fatalOnly ? null : injuryCrashes;
 
   const area = bboxAreaSquareMiles(bbox);
-  const yearsQueried = fetched.yearsCovered;
+  // The years the source answered for, including years with no crash in the
+  // study area. Dividing by only the years that returned a crash raised the
+  // annual rate whenever a year was empty: one crash in four years read as one
+  // a year.
+  const yearsQueried = fetched.yearsQueried ?? fetched.yearsCovered;
   const annualBasis = Math.max(1, yearsQueried.length || requestedYears.length);
   const densityCount = totalInjuryCrashes ?? totalFatalCrashes;
 
@@ -458,6 +462,9 @@ export async function fetchCrashesForBbox(
     matchedTotal: primary.fetched.matchedTotal + backstopMatched,
     geocodedTotal: primary.fetched.geocodedTotal + backstopGeocoded,
     yearsCovered: mergedYears.length > 0 ? mergedYears : primary.fetched.yearsCovered,
+    yearsQueried: Array.from(
+      new Set(contributingFetches.flatMap((fetched) => fetched.yearsQueried ?? fetched.yearsCovered))
+    ).sort((a, b) => a - b),
     truncated: contributingFetches.some((fetched) => fetched.truncated),
   };
 
@@ -681,10 +688,23 @@ export function describeCrashSafety(crashes: CrashSummaryCore): string {
       : "";
   const cutoffNote = publicationCutoffNote(crashes);
 
+  // The injury count belongs in this line for the same reason: the Planner
+  // Agent reads it, and without the count it told a planner that injury
+  // crashes were not recorded when the run held them (2026-10-11). A
+  // fatal-only source never saw an injury crash, so it says nothing here.
+  const injuryNote =
+    crashes.totalInjuryCrashes === null
+      ? ""
+      : ` ${crashes.totalInjuryCrashes} non-fatal injury crashes` +
+        (crashes.severeInjuryCrashes === null
+          ? " (the source does not separate suspected serious injuries)"
+          : ` (${crashes.severeInjuryCrashes} with a suspected serious injury)`) +
+        ` of ${crashes.reportedTotal.toLocaleString("en-US")} crashes reported.`;
+
   return (
     `**Safety (${yearsStr}, ${crashes.sourceLabel}):** ${crashes.totalFatalCrashes} fatal crashes, ` +
     `${crashes.totalFatalities} fatalities (${crashes.pedestrianFatalities} involving a pedestrian, ` +
-    `${crashes.bicyclistFatalities} involving a bicyclist). ${densityLabel}: ` +
+    `${crashes.bicyclistFatalities} involving a bicyclist).${injuryNote} ${densityLabel}: ` +
     `${crashes.crashesPerSquareMile}/sq mi/yr.${cutoffNote}${unclassifiedNote}${mergeNote}${backstopGapNote}`
   );
 }

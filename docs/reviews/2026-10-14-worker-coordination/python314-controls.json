@@ -1,0 +1,228 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "terminal-ack-dropped",
+    "test": "test_completed_original_keeps_engine_facts_and_exact_delivery",
+    "outcome": "intended_failure",
+    "reason": "Original completed task reaches its exact terminal delivery"
+  },
+  {
+    "control": "saved-terminal-rebuilds",
+    "test": "test_saved_terminal_replay_never_reobserves_or_rebuilds",
+    "outcome": "intended_failure",
+    "reason": "Saved terminal cannot rebuild products"
+  },
+  {
+    "control": "local-error-relabels-engine",
+    "test": "test_local_product_failure_does_not_invent_engine_failure",
+    "outcome": "intended_failure",
+    "reason": "Product failure cannot turn reported40 into30"
+  },
+  {
+    "control": "local-error-leaks-message",
+    "test": "test_local_product_failure_does_not_invent_engine_failure",
+    "outcome": "intended_failure",
+    "reason": "Private error messages never enter durable stage records"
+  },
+  {
+    "control": "failure-replay-replaces-record",
+    "test": "test_local_failure_replay_keeps_original_record_inode",
+    "outcome": "intended_failure",
+    "reason": "Local failure replay cannot replace its original record"
+  },
+  {
+    "control": "original-lease-renewed",
+    "test": "test_existing_lease_is_not_renewed_from_new_clock",
+    "outcome": "intended_failure",
+    "reason": "Changing clock cannot prevent original lease recovery"
+  },
+  {
+    "control": "failed-task-prepares-products",
+    "test": "test_reported_engine_failure_skips_product_and_lease_stages",
+    "outcome": "intended_failure",
+    "reason": "Reported failure cannot prepare products"
+  },
+  {
+    "control": "different-terminal-observation-accepted",
+    "test": "test_changed_terminal_observation_refuses_new_delivery",
+    "outcome": "intended_failure",
+    "reason": "Changed terminal observation remains a local refusal"
+  },
+  {
+    "control": "coordinator-unbounded",
+    "test": "test_constructor_refuses_foreign_graph_and_invalid_bounds",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "failure-engine-projection-unchecked",
+    "test": "test_failure_record_cannot_substitute_reported_engine_facts",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "uncertain-terminal-reobserves",
+    "test": "test_interrupted_terminal_delivery_replays_original_body",
+    "outcome": "intended_failure",
+    "reason": "Uncertain terminal cannot reobserve engine"
+  },
+  {
+    "control": "running-task-invents-terminal",
+    "test": "test_processing_observation_stays_pending_without_products_or_callback",
+    "outcome": "intended_failure",
+    "reason": "Running original task remains pending"
+  },
+  {
+    "control": "current-refusal-invents-ack",
+    "test": "test_revoked_current_terminal_actor_preserves_original_completed_fact",
+    "outcome": "intended_failure",
+    "reason": "Current authority refusal stays local"
+  },
+  {
+    "control": "old-failure-blocks-recovery",
+    "test": "test_product_failure_can_recover_without_replacing_its_record",
+    "outcome": "intended_failure",
+    "reason": "Local product recovery can finish original terminal delivery"
+  },
+  {
+    "control": "foreign-adapter-graph-accepted",
+    "test": "test_foreign_observer_graph_refuses_before_coordinator_use",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "precommand-reobserves",
+    "test": "test_precommand_context_recovers_original_selection_without_engine_get",
+    "outcome": "intended_failure",
+    "reason": "Precommand context cannot reobserve engine"
+  },
+  {
+    "control": "intake-reobserves",
+    "test": "test_earliest_intake_plan_recovers_without_reobserving",
+    "outcome": "intended_failure",
+    "reason": "Saved intake cannot reobserve engine"
+  },
+  {
+    "control": "partial-manifest-reobserves",
+    "test": "test_partial_manifest_completes_original_receipt_without_new_observation",
+    "outcome": "intended_failure",
+    "reason": "Partial manifest cannot reobserve engine"
+  },
+  {
+    "control": "partial-lease-reobserves",
+    "test": "test_partial_lease_completes_original_receipt_without_renewal",
+    "outcome": "intended_failure",
+    "reason": "Partial lease cannot reobserve engine"
+  },
+  {
+    "control": "initial-task-not-observed",
+    "test": "test_initial_completed_observation_prepares_new_lease_and_delivery",
+    "outcome": "intended_failure",
+    "reason": "Unselected original task uses one actual supplied engine observation"
+  },
+  {
+    "control": "selection-conflict-ignored",
+    "test": "test_conflicting_saved_selections_refuse_before_new_observation",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "intake-limits-unchecked",
+    "test": "test_changed_intake_limits_refuse_selection",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "terminal-selection-shape-unchecked",
+    "test": "test_noncanonical_terminal_selection_shape_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "saved-selection-hash-unchecked",
+    "test": "test_invalid_saved_selection_hash_refuses",
+    "outcome": "intended_failure",
+    "reason": "saved observation selections conflict"
+  },
+  {
+    "control": "output-selection-scope-unchecked",
+    "test": "test_foreign_output_engine_plan_refuses_selection",
+    "outcome": "intended_failure",
+    "reason": "original intake selection limits differ"
+  },
+  {
+    "control": "artifact-selection-scope-unchecked",
+    "test": "test_foreign_artifact_binding_refuses_selection",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "saved-selection-replaced",
+    "test": "test_explicit_new_hash_cannot_replace_saved_stage_selection",
+    "outcome": "intended_failure",
+    "reason": "Explicit changed hash cannot replace saved original selection"
+  },
+  {
+    "control": "nonfinite-clock-forwarded",
+    "test": "test_nonfinite_clock_refuses_before_new_lease_preparation",
+    "outcome": "intended_failure",
+    "reason": "Nonfinite clock cannot reach lease preparation"
+  },
+  {
+    "control": "output-selection-failure-allowed",
+    "test": "test_output_selection_cannot_bind_reported_failure",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "output-selection-running-allowed",
+    "test": "test_output_selection_cannot_bind_running_task",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "terminal-selection-running-allowed",
+    "test": "test_terminal_context_cannot_bind_running_task",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "orphan-selector-ignored",
+    "test": "test_orphan_intake_receipt_refuses_before_engine_get",
+    "outcome": "intended_failure",
+    "reason": "Orphan stage cannot reobserve engine"
+  },
+  {
+    "control": "harmless-publication-marker-refused",
+    "test": "test_harmless_partial_and_lock_without_plan_allow_initial_observation",
+    "outcome": "intended_failure",
+    "reason": "Harmless interrupted publication can finish its initial task"
+  },
+  {
+    "control": "isolated-derived-plan-accepted",
+    "test": "test_isolated_inspection_plan_needs_upstream_selection",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "unknown-partial-ignored",
+    "test": "test_unknown_partial_marker_refuses_before_engine_get",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { SEVERITY_LABELS, type SafetyCrashCollection } from "@/lib/safety/client-types";
@@ -13,23 +13,22 @@ import { isCrashSeverity } from "@/lib/safety/vocabulary";
 // The casualty sentence is SHARED with the shell map's inspector. Both used to
 // own a copy and both got it wrong the same way — a null count rendered as 0.
 import { describeCrashCasualtyLine } from "@/lib/cartographic/crash-feature-to-selection";
-import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
+import { deploymentMapEngine, startMap, styleForEngine } from "@/lib/maps/map-engine";
+import { whenStyleAccepts } from "@/lib/maps/when-style-accepts";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 import { OperatorDetail } from "@/components/ui/read-failure-notice";
 import type { WorkspaceGisMapTarget } from "@/lib/cartographic/workspace-gis-map-layers";
 import { applyFitInstruction, type FitInstruction } from "@/lib/cartographic/geometry-bbox";
+import type { HighInjuryNetworkFeatureCollection } from "@/lib/safety/high-injury-network";
 
-// Both accepted env names, resolved through the shared helper so this map has
-// the same token story as every other one. Reading only the newer name meant an
-// operator who had set the legacy `NEXT_PUBLIC_MAPBOX_TOKEN` got a working shell
-// map and a blank crash map, with nothing saying why.
-const MAPBOX_TOKEN = resolvePublicMapboxToken(
-  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
-  process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
-);
+// The shared engine choice: Mapbox with a public key (either env name), else
+// MapLibre with the operator's open style, else no map and the notice below.
+// Reading only the newer key name once meant an operator who had set the legacy
+// `NEXT_PUBLIC_MAPBOX_TOKEN` got a working shell map and a blank crash map.
+const MAP_ENGINE = deploymentMapEngine();
 
 /** True when this deployment can draw a map at all. Read by the shell above. */
-export const SAFETY_CRASH_MAP_CAN_DRAW = MAPBOX_TOKEN.length > 0;
+export const SAFETY_CRASH_MAP_CAN_DRAW = MAP_ENGINE.kind !== "none";
 
 // Crashes are only queried once a study area exists, so the constructed view
 // is strictly the "no study area chosen yet" state — the bbox effect below
@@ -40,6 +39,13 @@ const INITIAL_ZOOM = 3.4;
 const CRASH_SOURCE_ID = "safety-crashes";
 const CRASH_HALO_LAYER_ID = "safety-crash-halo";
 const CRASH_CORE_LAYER_ID = "safety-crash-core";
+/** The high-injury network sits under the crash points so no collision is hidden. */
+export const HIGH_INJURY_NETWORK_SOURCE_ID = "safety-high-injury-network";
+export const HIGH_INJURY_NETWORK_LINE_LAYER_ID = "safety-high-injury-network-line";
+export const HIGH_INJURY_NETWORK_FILL_LAYER_ID = "safety-high-injury-network-fill";
+/** One color, outside the severity palette, so the layer never reads as a severity. */
+const HIGH_INJURY_NETWORK_COLOR = "#6d28d9";
+const EMPTY_NETWORK: HighInjuryNetworkFeatureCollection = { type: "FeatureCollection", features: [] };
 
 /**
  * Where the workspace's own uploaded layers sit in this map's z-order.
@@ -145,6 +151,11 @@ type SafetyCrashMapProps = {
   focus?: FitInstruction | null;
   /** Called after `focus` has been applied, so the requester can clear it. */
   onFocusApplied?: () => void;
+  /**
+   * The listed high-injury segments to draw, already built by
+   * `highInjuryNetworkFeatureCollection`. Null or empty draws nothing.
+   */
+  highInjuryNetwork?: HighInjuryNetworkFeatureCollection | null;
 };
 
 /**
@@ -183,9 +194,16 @@ export function SafetyCrashMap({
   onMapReady,
   focus = null,
   onFocusApplied,
+  highInjuryNetwork = null,
 }: SafetyCrashMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
+  // The browser could not start the map library (no WebGL), or MapLibre never
+  // arrived. Shown as the notice below instead of a blank box.
+  const [cannotStart, setCannotStart] = useState(false);
+  // MapLibre arrives after the first effects ran. Bumped when it does, so the
+  // framing and focus effects below run again against a map that now exists.
+  const [mapGeneration, setMapGeneration] = useState(0);
   const onMapReadyRef = useRef(onMapReady);
   const onFocusAppliedRef = useRef(onFocusApplied);
   // The map is built once, so the click handlers close over a ref rather than
@@ -197,6 +215,7 @@ export function SafetyCrashMap({
   // must draw the crashes on screen now rather than the ones that were on screen
   // when the map was built.
   const collectionRef = useRef(collection);
+  const networkRef = useRef(highInjuryNetwork);
   // Which style the map has been TOLD to load. Compared before calling
   // `setStyle`, so a re-render that changes nothing does not throw the style
   // away and repaint.
@@ -210,201 +229,247 @@ export function SafetyCrashMap({
   useEffect(() => {
     onSelectRef.current = onSelect;
     collectionRef.current = collection;
+    networkRef.current = highInjuryNetwork;
     onMapReadyRef.current = onMapReady;
     onFocusAppliedRef.current = onFocusApplied;
-  }, [onSelect, collection, onMapReady, onFocusApplied]);
+  }, [onSelect, collection, highInjuryNetwork, onMapReady, onFocusApplied]);
 
   // Create the map once; data updates are handled by the effect below so a
   // filter change never tears down and rebuilds the map.
   useEffect(() => {
-    if (!containerRef.current || !MAPBOX_TOKEN || mapRef.current) return;
+    const container = containerRef.current;
+    if (!container || mapRef.current) return;
+    const style = styleForEngine(MAP_ENGINE, styleUrlRef.current);
+    if (!style) return;
 
-    mapboxgl.accessToken = MAPBOX_TOKEN;
-    const map = new mapboxgl.Map({
-      container: containerRef.current,
-      style: styleUrlRef.current,
-      center: CONTINENTAL_US_CENTER,
-      zoom: INITIAL_ZOOM,
-      attributionControl: false,
-    });
-    mapRef.current = map;
+    return startMap(MAP_ENGINE, mapboxgl, (gl) => {
+      const map = new gl.Map({
+        container,
+        style,
+        center: CONTINENTAL_US_CENTER,
+        zoom: INITIAL_ZOOM,
+        attributionControl: false,
+      });
+      mapRef.current = map;
+      if (gl !== mapboxgl) setMapGeneration((previous) => previous + 1);
 
-    map.addControl(new mapboxgl.NavigationControl(), "top-right");
-    map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-right");
+      map.addControl(new gl.NavigationControl(), "top-right");
+      // The style's own sources are credited: Mapbox and OpenStreetMap on a key,
+      // whatever the operator's style declares on MapLibre.
+      map.addControl(new gl.AttributionControl({ compact: true }), "bottom-right");
 
-    const popup = new mapboxgl.Popup({ closeButton: false, closeOnClick: false, maxWidth: "280px" });
+      const popup = new gl.Popup({ closeButton: false, closeOnClick: false, maxWidth: "280px" });
 
-    /**
-     * Put the crash layers back on the map.
-     *
-     * BOUND TO `style.load`, NOT `load`, AND THAT IS THE WHOLE POINT. A style
-     * swap — which is what the background picker does — throws away every source
-     * and layer the app added. `load` fires once, at mount; a map wired to it
-     * loses its crashes the first time somebody switches to satellite and never
-     * gets them back, with no error anywhere. `style.load` fires for the initial
-     * style AND for each later one, so this runs again on each swap.
-     *
-     * (The sentence above is worded around `safety-claim-boundaries.test.ts`,
-     * which reads this file as prose and refuses a coverage claim — "every …
-     * crashes" within a few words is the shape it forbids. It was right to fire:
-     * a guard that reads comments cannot tell a claim about a Mapbox event from
-     * a claim about a road, and the cheap fix is to say it differently.)
-     */
-    const paint = () => {
-      if (!map.getSource(CRASH_SOURCE_ID)) {
-        map.addSource(CRASH_SOURCE_ID, {
-          type: "geojson",
-          data: collectionRef.current ?? EMPTY_COLLECTION,
-        });
-      }
-
-      // Soft halo beneath the core dot, so dense clusters read as intensity
-      // without the individual points disappearing.
-      if (!map.getLayer(CRASH_HALO_LAYER_ID)) {
-        map.addLayer({
-          id: CRASH_HALO_LAYER_ID,
-          type: "circle",
-          source: CRASH_SOURCE_ID,
-          paint: {
-            "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 6, 11, 12],
-            "circle-color": SEVERITY_COLOR,
-            "circle-opacity": 0.18,
-            "circle-blur": 0.8,
-          },
-        });
-      }
-
-      if (!map.getLayer(CRASH_CORE_LAYER_ID)) {
-        map.addLayer({
-          id: CRASH_CORE_LAYER_ID,
-          type: "circle",
-          source: CRASH_SOURCE_ID,
-          paint: {
-            "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 3.5, 11, 7],
-            "circle-color": SEVERITY_COLOR,
-            "circle-stroke-color": "#fff7ed",
-            "circle-stroke-width": 1,
-            "circle-opacity": 0.95,
-          },
-        });
-      }
-
-      const source = map.getSource(CRASH_SOURCE_ID) as mapboxgl.GeoJSONSource | undefined;
-      source?.setData(collectionRef.current ?? EMPTY_COLLECTION);
-
-      // ANNOUNCED AFTER THE CRASH LAYERS EXIST, not before. Whoever is binding
-      // workspace layers to this map resolves its anchor by looking for a crash
-      // layer, and an anchor resolved against an empty style returns
-      // `undefined` — which Mapbox reads as "on top". Saying "ready" one line
-      // earlier is the difference between the agency's parcel fabric sitting
-      // under the collisions and sitting over them.
-      onMapReadyRef.current?.(map);
-    };
-
-    map.on("style.load", paint);
-
-    map.on("mouseenter", CRASH_CORE_LAYER_ID, (event) => {
-      map.getCanvas().style.cursor = "pointer";
-      const feature = event.features?.[0];
-      if (!feature) return;
-      const props = feature.properties ?? {};
-      const date = typeof props.collisionDate === "string" ? props.collisionDate : "Date not reported";
-      // The band's own label, not a de-underscored raw value. `unknown` reads
-      // "Not classified — no casualty count reported", which is a sentence
-      // that has to survive into the popup: "unknown" alone would be taken for
-      // an unknown SEVERITY rather than for an absent report.
-      const severity = isCrashSeverity(props.severity)
-        ? SEVERITY_LABELS[props.severity]
-        : "Severity not recognised";
-      const modes = [
-        props.pedestrianInvolved ? "pedestrian" : null,
-        props.bicyclistInvolved ? "bicyclist" : null,
-        props.motorcyclistInvolved ? "motorcyclist" : null,
-      ].filter(Boolean);
-
-      const root = document.createElement("div");
-      root.className = "op-map-popup";
-      root.dataset.testid = "safety-crash-popup";
-      root.append(popupLine("op-map-popup__title", severity));
-      root.append(popupLine("op-map-popup__kicker", date));
-      root.append(
-        popupLine(
-          "op-map-popup__line",
-          describeCrashCasualtyLine(props.killedCount, props.injuredCount)
-        )
-      );
-      if (modes.length) {
-        root.append(popupLine("op-map-popup__line", `Involved: ${modes.join(", ")}`));
-      }
-      // The popup is a summary of ONE point and cannot say which fields the
-      // source omitted — that needs the coverage declaration, which is in the
-      // sidebar. So it says where the rest is instead of implying there is no
-      // more.
-      root.append(popupLine("op-map-popup__note", "Click for the full record."));
-
-      popup.setLngLat(event.lngLat).setDOMContent(root).addTo(map);
-    });
-
-    // Clicking a collision opens its full record; clicking empty map closes
-    // it. The popup is a summary and cannot state which fields the source
-    // omitted — that distinction needs the acquisition's coverage declaration,
-    // which lives on the page, not on the point.
-    map.on("click", CRASH_CORE_LAYER_ID, (event) => {
-      const feature = event.features?.[0];
-      const id = feature?.properties?.id;
-      if (typeof id === "string") onSelectRef.current?.(id);
-    });
-
-    map.on("click", (event) => {
-      const hits = map.queryRenderedFeatures(event.point, { layers: [CRASH_CORE_LAYER_ID] });
-      if (hits.length === 0) onSelectRef.current?.(null);
-    });
-
-    map.on("mouseleave", CRASH_CORE_LAYER_ID, () => {
-      map.getCanvas().style.cursor = "";
-      popup.remove();
-    });
-
-    /**
-     * THE CANVAS HAS TO FOLLOW THE CONTAINER, AND MAPBOX'S OWN `trackResize`
-     * DID NOT.
-     *
-     * Measured in Chrome at 1600×900 on 2026-08-13, on /safety, after the route
-     * was given the full width of the window: the map ELEMENT was 1150×813 and
-     * the `<canvas>` inside it was 878×813 — 272px of the map was empty panel,
-     * and it stayed empty until the window itself was resized by a pixel, at
-     * which point the canvas snapped to 1151 and painted. So the defect is
-     * invisible to any check that reads the container's rectangle (this lane's
-     * first measurement reported 64.9% of the window and was wrong about a
-     * quarter of it) and invisible to every test in this repo, because jsdom
-     * runs no Mapbox and has no box model.
-     *
-     * The cause is the order of two effects that both run after mount:
-     * `SafetyMapFillsSurface` sets the body attribute that widens the route
-     * surface, and this effect builds the map. Mapbox's `trackResize` did not
-     * pick the change up. Rather than depend on which of the two wins, or on
-     * Mapbox's internal observer, the container is watched here and the map is
-     * told directly. That also covers every later cause — the Planner Agent
-     * panel docking, the sidebar wrapping, a devtools split — none of which
-     * change the window size either.
-     */
-    const resizeObserver =
-      typeof ResizeObserver === "undefined"
-        ? null
-        : new ResizeObserver(() => {
-            // `resize()` is a no-op when the dimensions already agree, so this
-            // costs nothing on the observer's initial synchronous callback.
-            map.resize();
+      /**
+       * Put the crash layers back on the map.
+       *
+       * BOUND TO `style.load`, NOT `load`, AND THAT IS THE WHOLE POINT. A style
+       * swap — which is what the background picker does — throws away every source
+       * and layer the app added. `load` fires once, at mount; a map wired to it
+       * loses its crashes the first time somebody switches to satellite and never
+       * gets them back, with no error anywhere. `style.load` fires for the initial
+       * style AND for each later one, so this runs again on each swap.
+       *
+       * (The sentence above is worded around `safety-claim-boundaries.test.ts`,
+       * which reads this file as prose and refuses a coverage claim — "every …
+       * crashes" within a few words is the shape it forbids. It was right to fire:
+       * a guard that reads comments cannot tell a claim about a Mapbox event from
+       * a claim about a road, and the cheap fix is to say it differently.)
+       */
+      const paint = () => {
+        // The network goes on first, so the crash layers added below sit on
+        // top of it after every style load.
+        if (!map.getSource(HIGH_INJURY_NETWORK_SOURCE_ID)) {
+          map.addSource(HIGH_INJURY_NETWORK_SOURCE_ID, {
+            type: "geojson",
+            data: networkRef.current ?? EMPTY_NETWORK,
           });
-    resizeObserver?.observe(map.getContainer());
+        }
+        if (!map.getLayer(HIGH_INJURY_NETWORK_FILL_LAYER_ID)) {
+          map.addLayer({
+            id: HIGH_INJURY_NETWORK_FILL_LAYER_ID,
+            type: "fill",
+            source: HIGH_INJURY_NETWORK_SOURCE_ID,
+            filter: ["==", ["geometry-type"], "Polygon"],
+            paint: {
+              "fill-color": HIGH_INJURY_NETWORK_COLOR,
+              "fill-opacity": 0.22,
+              "fill-outline-color": HIGH_INJURY_NETWORK_COLOR,
+            },
+          });
+        }
+        if (!map.getLayer(HIGH_INJURY_NETWORK_LINE_LAYER_ID)) {
+          map.addLayer({
+            id: HIGH_INJURY_NETWORK_LINE_LAYER_ID,
+            type: "line",
+            source: HIGH_INJURY_NETWORK_SOURCE_ID,
+            filter: ["==", ["geometry-type"], "LineString"],
+            layout: { "line-cap": "round", "line-join": "round" },
+            paint: {
+              "line-color": HIGH_INJURY_NETWORK_COLOR,
+              "line-width": ["interpolate", ["linear"], ["zoom"], 8, 3, 14, 8],
+              "line-opacity": 0.8,
+            },
+          });
+        }
+        const networkSource = map.getSource(HIGH_INJURY_NETWORK_SOURCE_ID) as mapboxgl.GeoJSONSource | undefined;
+        networkSource?.setData(networkRef.current ?? EMPTY_NETWORK);
 
-    return () => {
-      resizeObserver?.disconnect();
-      map.remove();
-      mapRef.current = null;
-      // The binding hook must stop painting into a map that no longer exists.
-      onMapReadyRef.current?.(null);
-    };
+        if (!map.getSource(CRASH_SOURCE_ID)) {
+          map.addSource(CRASH_SOURCE_ID, {
+            type: "geojson",
+            data: collectionRef.current ?? EMPTY_COLLECTION,
+          });
+        }
+
+        // Soft halo beneath the core dot, so dense clusters read as intensity
+        // without the individual points disappearing.
+        if (!map.getLayer(CRASH_HALO_LAYER_ID)) {
+          map.addLayer({
+            id: CRASH_HALO_LAYER_ID,
+            type: "circle",
+            source: CRASH_SOURCE_ID,
+            paint: {
+              "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 6, 11, 12],
+              "circle-color": SEVERITY_COLOR,
+              "circle-opacity": 0.18,
+              "circle-blur": 0.8,
+            },
+          });
+        }
+
+        if (!map.getLayer(CRASH_CORE_LAYER_ID)) {
+          map.addLayer({
+            id: CRASH_CORE_LAYER_ID,
+            type: "circle",
+            source: CRASH_SOURCE_ID,
+            paint: {
+              "circle-radius": ["interpolate", ["linear"], ["zoom"], 5, 3.5, 11, 7],
+              "circle-color": SEVERITY_COLOR,
+              "circle-stroke-color": "#fff7ed",
+              "circle-stroke-width": 1,
+              "circle-opacity": 0.95,
+            },
+          });
+        }
+
+        const source = map.getSource(CRASH_SOURCE_ID) as mapboxgl.GeoJSONSource | undefined;
+        source?.setData(collectionRef.current ?? EMPTY_COLLECTION);
+
+        // ANNOUNCED AFTER THE CRASH LAYERS EXIST, not before. Whoever is binding
+        // workspace layers to this map resolves its anchor by looking for a crash
+        // layer, and an anchor resolved against an empty style returns
+        // `undefined` — which Mapbox reads as "on top". Saying "ready" one line
+        // earlier is the difference between the agency's parcel fabric sitting
+        // under the collisions and sitting over them.
+        onMapReadyRef.current?.(map);
+      };
+
+      map.on("style.load", paint);
+
+      map.on("mouseenter", CRASH_CORE_LAYER_ID, (event) => {
+        map.getCanvas().style.cursor = "pointer";
+        const feature = event.features?.[0];
+        if (!feature) return;
+        const props = feature.properties ?? {};
+        const date = typeof props.collisionDate === "string" ? props.collisionDate : "Date not reported";
+        // The band's own label, not a de-underscored raw value. `unknown` reads
+        // "Not classified — no casualty count reported", which is a sentence
+        // that has to survive into the popup: "unknown" alone would be taken for
+        // an unknown SEVERITY rather than for an absent report.
+        const severity = isCrashSeverity(props.severity)
+          ? SEVERITY_LABELS[props.severity]
+          : "Severity not recognised";
+        const modes = [
+          props.pedestrianInvolved ? "pedestrian" : null,
+          props.bicyclistInvolved ? "bicyclist" : null,
+          props.motorcyclistInvolved ? "motorcyclist" : null,
+        ].filter(Boolean);
+
+        const root = document.createElement("div");
+        root.className = "op-map-popup";
+        root.dataset.testid = "safety-crash-popup";
+        root.append(popupLine("op-map-popup__title", severity));
+        root.append(popupLine("op-map-popup__kicker", date));
+        root.append(
+          popupLine(
+            "op-map-popup__line",
+            describeCrashCasualtyLine(props.killedCount, props.injuredCount)
+          )
+        );
+        if (modes.length) {
+          root.append(popupLine("op-map-popup__line", `Involved: ${modes.join(", ")}`));
+        }
+        // The popup is a summary of ONE point and cannot say which fields the
+        // source omitted — that needs the coverage declaration, which is in the
+        // sidebar. So it says where the rest is instead of implying there is no
+        // more.
+        root.append(popupLine("op-map-popup__note", "Click for the full record."));
+
+        popup.setLngLat(event.lngLat).setDOMContent(root).addTo(map);
+      });
+
+      // Clicking a collision opens its full record; clicking empty map closes
+      // it. The popup is a summary and cannot state which fields the source
+      // omitted — that distinction needs the acquisition's coverage declaration,
+      // which lives on the page, not on the point.
+      map.on("click", CRASH_CORE_LAYER_ID, (event) => {
+        const feature = event.features?.[0];
+        const id = feature?.properties?.id;
+        if (typeof id === "string") onSelectRef.current?.(id);
+      });
+
+      map.on("click", (event) => {
+        const hits = map.queryRenderedFeatures(event.point, { layers: [CRASH_CORE_LAYER_ID] });
+        if (hits.length === 0) onSelectRef.current?.(null);
+      });
+
+      map.on("mouseleave", CRASH_CORE_LAYER_ID, () => {
+        map.getCanvas().style.cursor = "";
+        popup.remove();
+      });
+
+      /**
+       * THE CANVAS HAS TO FOLLOW THE CONTAINER, AND MAPBOX'S OWN `trackResize`
+       * DID NOT.
+       *
+       * Measured in Chrome at 1600×900 on 2026-08-13, on /safety, after the route
+       * was given the full width of the window: the map ELEMENT was 1150×813 and
+       * the `<canvas>` inside it was 878×813 — 272px of the map was empty panel,
+       * and it stayed empty until the window itself was resized by a pixel, at
+       * which point the canvas snapped to 1151 and painted. So the defect is
+       * invisible to any check that reads the container's rectangle (this lane's
+       * first measurement reported 64.9% of the window and was wrong about a
+       * quarter of it) and invisible to every test in this repo, because jsdom
+       * runs no Mapbox and has no box model.
+       *
+       * The cause is the order of two effects that both run after mount:
+       * `SafetyMapFillsSurface` sets the body attribute that widens the route
+       * surface, and this effect builds the map. Mapbox's `trackResize` did not
+       * pick the change up. Rather than depend on which of the two wins, or on
+       * Mapbox's internal observer, the container is watched here and the map is
+       * told directly. That also covers every later cause — the Planner Agent
+       * panel docking, the sidebar wrapping, a devtools split — none of which
+       * change the window size either.
+       */
+      const resizeObserver =
+        typeof ResizeObserver === "undefined"
+          ? null
+          : new ResizeObserver(() => {
+              // `resize()` is a no-op when the dimensions already agree, so this
+              // costs nothing on the observer's initial synchronous callback.
+              map.resize();
+            });
+      resizeObserver?.observe(map.getContainer());
+
+      return () => {
+        resizeObserver?.disconnect();
+        map.remove();
+        mapRef.current = null;
+        // The binding hook must stop painting into a map that no longer exists.
+        onMapReadyRef.current?.(null);
+      };
+    }, () => setCannotStart(true));
     // Intentionally mount-only: data, framing and the background are applied by
     // the effects below, so re-renders never recreate the map. This used to
     // need an `exhaustive-deps` suppression because the setup read `collection`
@@ -419,26 +484,39 @@ export function SafetyCrashMap({
     const map = mapRef.current;
     if (!map || styleUrlRef.current === styleUrl) return;
     styleUrlRef.current = styleUrl;
+    // MapLibre draws the operator's one style; the picker offers nothing to swap to.
+    if (MAP_ENGINE.kind !== "mapbox") return;
     map.setStyle(styleUrl);
   }, [styleUrl]);
 
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
-    // `isStyleLoaded` rather than a "have I painted yet" flag of our own: during
-    // a background switch the source genuinely does not exist, and asking the
-    // map is the only answer that stays true across a style swap. The pending
-    // data is not lost — `paint` reads the ref when the new style lands.
-    if (!map.isStyleLoaded()) return;
-    const source = map.getSource(CRASH_SOURCE_ID) as mapboxgl.GeoJSONSource | undefined;
-    source?.setData(collection ?? EMPTY_COLLECTION);
+    // Asked of the map rather than a "have I painted yet" flag of our own: during
+    // a background switch the source genuinely does not exist, and the pending
+    // data is not lost, because `paint` reads the ref when the new style lands.
+    // It waits rather than bailing: a filter change that lands while tiles
+    // stream used to be dropped until the next one.
+    return whenStyleAccepts(map, () => {
+      const source = map.getSource(CRASH_SOURCE_ID) as mapboxgl.GeoJSONSource | undefined;
+      source?.setData(collection ?? EMPTY_COLLECTION);
+    });
   }, [collection]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    return whenStyleAccepts(map, () => {
+      const source = map.getSource(HIGH_INJURY_NETWORK_SOURCE_ID) as mapboxgl.GeoJSONSource | undefined;
+      source?.setData(highInjuryNetwork ?? EMPTY_NETWORK);
+    });
+  }, [highInjuryNetwork]);
 
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !bbox) return;
     map.fitBounds([bbox[0], bbox[1], bbox[2], bbox[3]], { padding: 40, duration: 0 });
-  }, [bbox]);
+  }, [bbox, mapGeneration]);
 
   /**
    * A "Show on the map" link asked for a camera. Give it one, then say so.
@@ -459,9 +537,9 @@ export function SafetyCrashMap({
     if (!map || !focus) return;
     applyFitInstruction(map, focus);
     onFocusAppliedRef.current?.();
-  }, [focus]);
+  }, [focus, mapGeneration]);
 
-  if (!MAPBOX_TOKEN) {
+  if (MAP_ENGINE.kind === "none" || cannotStart) {
     return (
       // What is off, what still works, and who can turn it on — before any
       // variable name a planner has no way to set.
@@ -470,16 +548,31 @@ export function SafetyCrashMap({
         data-testid="safety-crash-map-unavailable"
       >
         <p className="font-medium text-foreground">The crash map can&apos;t be drawn</p>
-        <p>
-          This OpenPlan deployment has no map key configured. The crash counts and rates on this
-          page are unaffected — only the map is missing. Whoever runs this deployment can add the
-          key.
-        </p>
-        <OperatorDetail className="text-left">
+        {cannotStart ? (
           <p>
-            Set NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to a public Mapbox token (it begins with pk.) and
-            rebuild.
+            This browser could not start the map. The crash counts and rates on this page are
+            unaffected, only the map is missing.
           </p>
+        ) : (
+          <p>
+            This OpenPlan deployment has no map key configured. The crash counts and rates on this
+            page are unaffected — only the map is missing. Whoever runs this deployment can add the
+            key.
+          </p>
+        )}
+        <OperatorDetail className="text-left">
+          {cannotStart ? (
+            <p>
+              The map library did not start in this browser. MapLibre needs WebGL2 and Mapbox needs
+              WebGL. The browser console holds the exact error.
+            </p>
+          ) : (
+            <p>
+              Set NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to a public Mapbox token (it begins with pk.) and
+              rebuild. To draw this map without a key, set NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL to a
+              MapLibre style instead; see docs/SELF_HOSTING.md.
+            </p>
+          )}
         </OperatorDetail>
       </div>
     );

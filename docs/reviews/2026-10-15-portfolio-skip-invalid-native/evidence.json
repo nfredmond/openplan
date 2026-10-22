@@ -1,0 +1,337 @@
+{
+  "at": "2026-10-15T13:54:35.949305+00:00",
+  "candidate": "aa93a3916e4a1464c774dd30a43ae2f7a4824311",
+  "migrationSHA256": "b129f80e37aa9be71069683acd42df3fb6fdb94078ed0458f20b6e9c5155a41b",
+  "review": "41f9b71576510d6e478179e53faa410e5e801217",
+  "generatorSHA256": "4a9c497d90baa58075e90a81a2e2c6778e55eeb9540920e7278871df1ec488c4",
+  "probeSHA256": "39867a89e7b8bbdf237bedfe8f092790af8e67e95f2bcb1e6a0800dde986f4fe",
+  "target": "openplan_portfolio_skip_137003c3b2dc1aa54af843e5",
+  "targetOID": "6134407",
+  "postgresVersion": "17.6",
+  "returncode": 0,
+  "notices": [
+    {
+      "case": "original-frozen-22023",
+      "sqlstate": "22023",
+      "constraint": "",
+      "countsUnchanged": true
+    },
+    {
+      "case": "original-status-only-diagnostic-success",
+      "counts": {
+        "created": 1,
+        "invalid": 1,
+        "skipped": 0,
+        "conflicted": 0,
+        "previouslyCreated": 0
+      }
+    },
+    {
+      "case": "original-harmless-survivor",
+      "sqlstate": "22023",
+      "constraint": "",
+      "countsUnchanged": true
+    },
+    {
+      "case": "function-only-audit-23514",
+      "sqlstate": "23514",
+      "constraint": "project_portfolio_import_rows_resolved_status_check",
+      "countsUnchanged": true
+    },
+    {
+      "case": "full-candidate-frozen-success",
+      "invalidStatusRetained": true,
+      "counts": {
+        "created": 1,
+        "invalid": 1,
+        "skipped": 0,
+        "conflicted": 0,
+        "previouslyCreated": 0
+      }
+    },
+    {
+      "case": "raw-skipped-plan-and-phase",
+      "retained": true,
+      "counts": {
+        "created": 0,
+        "invalid": 1,
+        "skipped": 0,
+        "conflicted": 0,
+        "previouslyCreated": 0
+      }
+    },
+    {
+      "case": "create-invalid-status",
+      "sqlstate": "22023",
+      "constraint": "",
+      "countsUnchanged": true
+    },
+    {
+      "case": "create-invalid-deliveryPhase",
+      "sqlstate": "22023",
+      "constraint": "",
+      "countsUnchanged": true
+    },
+    {
+      "case": "create-invalid-planType",
+      "sqlstate": "22023",
+      "constraint": "",
+      "countsUnchanged": true
+    },
+    {
+      "case": "create-invalid-planType-long",
+      "sqlstate": "22023",
+      "constraint": "",
+      "countsUnchanged": true
+    },
+    {
+      "case": "blocked-create",
+      "sqlstate": "22023",
+      "constraint": "",
+      "countsUnchanged": true
+    },
+    {
+      "case": "unconfirmed-formula",
+      "sqlstate": "22023",
+      "constraint": "",
+      "countsUnchanged": true
+    },
+    {
+      "case": "current-name-match",
+      "sqlstate": "22023",
+      "constraint": "",
+      "countsUnchanged": true
+    },
+    {
+      "case": "batch-name-match",
+      "sqlstate": "22023",
+      "constraint": "",
+      "countsUnchanged": true
+    },
+    {
+      "case": "duplicate-source-id",
+      "sqlstate": "22023",
+      "constraint": "",
+      "countsUnchanged": true
+    },
+    {
+      "case": "created-identity-replay",
+      "sqlstate": "23505",
+      "constraint": "project_portfolio_import_rows_created_identity_uidx",
+      "countsUnchanged": true
+    },
+    {
+      "case": "invalid-late-cost",
+      "sqlstate": "22023",
+      "constraint": "",
+      "countsUnchanged": true
+    },
+    {
+      "case": "invalid-late-text",
+      "sqlstate": "22023",
+      "constraint": "",
+      "countsUnchanged": true
+    },
+    {
+      "case": "late-second-row-rolls-back-first",
+      "sqlstate": "22023",
+      "constraint": "",
+      "countsUnchanged": true
+    },
+    {
+      "case": "viewer-actor-denied",
+      "sqlstate": "42501",
+      "constraint": "",
+      "countsUnchanged": true
+    },
+    {
+      "case": "outsider-actor-denied",
+      "sqlstate": "42501",
+      "constraint": "",
+      "countsUnchanged": true
+    },
+    {
+      "case": "foreign-source",
+      "sqlstate": "22023",
+      "constraint": "",
+      "countsUnchanged": true
+    },
+    {
+      "case": "source-hash-drift",
+      "sqlstate": "22023",
+      "constraint": "",
+      "countsUnchanged": true
+    },
+    {
+      "case": "malformed-preview-hash",
+      "sqlstate": "22023",
+      "constraint": "",
+      "countsUnchanged": true
+    },
+    {
+      "case": "worksheet-setup-drift",
+      "sqlstate": "22023",
+      "constraint": "",
+      "countsUnchanged": true
+    },
+    {
+      "case": "malformed-skipped-fingerprint",
+      "sqlstate": "22023",
+      "constraint": "",
+      "countsUnchanged": true
+    },
+    {
+      "case": "invalid-skipped-decision",
+      "sqlstate": "22023",
+      "constraint": "",
+      "countsUnchanged": true
+    },
+    {
+      "case": "format-filename-mismatch",
+      "sqlstate": "22023",
+      "constraint": "",
+      "countsUnchanged": true
+    },
+    {
+      "case": "source-status",
+      "sqlstate": "22023",
+      "constraint": "",
+      "countsUnchanged": true
+    },
+    {
+      "case": "source-content_type",
+      "sqlstate": "22023",
+      "constraint": "",
+      "countsUnchanged": true
+    },
+    {
+      "case": "source-storage_ref",
+      "sqlstate": "22023",
+      "constraint": "",
+      "countsUnchanged": true
+    },
+    {
+      "case": "authenticated-rpc-denied",
+      "sqlstate": "42501"
+    },
+    {
+      "case": "native-audit-RLS",
+      "memberOwnRows": 3,
+      "outsiderRows": 0
+    },
+    {
+      "case": "anonymous-rpc-denied",
+      "sqlstate": "42501"
+    },
+    {
+      "case": "direct-created-audit-resolved_status",
+      "sqlstate": "23514",
+      "constraint": "project_portfolio_import_rows_resolved_status_check",
+      "countsUnchanged": true
+    },
+    {
+      "case": "direct-created-audit-resolved_delivery_phase",
+      "sqlstate": "23514",
+      "constraint": "project_portfolio_import_rows_resolved_delivery_phase_check",
+      "countsUnchanged": true
+    },
+    {
+      "case": "immutable-project_portfolio_import_rows",
+      "sqlstate": "P0001",
+      "constraint": "",
+      "countsUnchanged": true
+    },
+    {
+      "case": "immutable-project_portfolio_import_batches",
+      "sqlstate": "P0001",
+      "constraint": "",
+      "countsUnchanged": true
+    },
+    {
+      "case": "workbook-metadata-success",
+      "counts": {
+        "created": 1,
+        "invalid": 0,
+        "skipped": 0,
+        "conflicted": 0,
+        "previouslyCreated": 0
+      }
+    },
+    {
+      "case": "rollback-restored-original",
+      "migration17Applied": false
+    }
+  ],
+  "expectedErrorCalls": 32,
+  "warnings": [
+    "WARNING:  no privileges were granted for \"pg_temp_<session>\""
+  ],
+  "inventory": {
+    "firstAttempt": {
+      "records": 394,
+      "matching": 393,
+      "difference": "pg_class digest only; original row detail unavailable; not retroactively attributed"
+    },
+    "repeat": {
+      "reason": "resolve first catalog discrepancy with full pg_class capture",
+      "SQLUnchanged": true,
+      "records": 395,
+      "allExact": true,
+      "beforeSHA256": "c94fc2a97d79154b24fbe8065af1567cc6f008bab4d61c55e3e5a7115fc4ce06",
+      "afterSHA256": "c94fc2a97d79154b24fbe8065af1567cc6f008bab4d61c55e3e5a7115fc4ce06"
+    },
+    "otherDatabasePropertiesUnchanged": true,
+    "oneNewDatabaseOnly": true,
+    "migrationHistoryAfter": 419,
+    "latestAfter": "20261017000016"
+  },
+  "limits": [
+    "SQL metadata custody only, no Storage bytes",
+    "no HTTP or corrected browser success",
+    "no simultaneous-commit test",
+    "no native Excel/QGIS or practitioner acceptance",
+    "no source-anchor/active-preview or hosted database mutation"
+  ],
+  "privateSummarySHA256": "8302ee438980b6f4f786074bf80098a84d22ade04f6bef99516b67bbcb0411d1",
+  "preparationControls": {
+    "at": "2026-10-15T13:47:13.296816+00:00",
+    "review": "41f9b71576510d6e478179e53faa410e5e801217",
+    "change": "exact recommended actual catalog temporary schema grant",
+    "generatorSHA256": "4a9c497d90baa58075e90a81a2e2c6778e55eeb9540920e7278871df1ec488c4",
+    "cases": [
+      {
+        "case": "harmless-comment",
+        "outcome": "SURVIVED"
+      },
+      {
+        "case": "literal-alias",
+        "outcome": "literal-alias-grant"
+      },
+      {
+        "case": "wrong-catalog-source",
+        "outcome": "actual-temp-namespace"
+      },
+      {
+        "case": "unquoted-identifier",
+        "outcome": "quoted-catalog-identifier"
+      }
+    ],
+    "nativeExecuted": false,
+    "scope": "Python assembly and emitted SQL checks only, not PostgreSQL execution",
+    "sourceBytesUnchangedDuringControls": true
+  },
+  "privateLogHashes": {
+    "probe-result.json": "8bd6086cafc643f000618950362a80849ea954a63f69ccb012e6dce71c23fbd1",
+    "probe-02-result.json": "15f59849855a59facb330d966dc7b30d2ffe4dcaa654c14a59f326fad2da4f42",
+    "probe-stdout-private.log": "5d2b544550c55913900e78517452df759add10c3b5d57fb048d83f7f98482a56",
+    "probe-stderr-private.log": "cde5bfa6d996cbd81644d60a203953cbb381ac74032b90e6e1ed95906c1d53e2",
+    "probe-02-stdout-private.log": "5d2b544550c55913900e78517452df759add10c3b5d57fb048d83f7f98482a56",
+    "probe-02-stderr-private.log": "62f7afc9018bcb4203b5c771d0a34751c358603dd982a38bbb1f0e8422140c35",
+    "cluster-before.json": "929b14b4e657c20d288d238a71e69afc84bf6ef4ff2cbb6e8bc820fbabb38988",
+    "cluster-after.json": "831ca6a1cdff29da4e256562fe169ba5fa91c9f0c34f7935828a269676378b1a",
+    "target-before-inventory.json": "452e8331709bc1a8c4e2cdecdac0ec3cde6fc15140567e21a021c23b972e499d",
+    "target-after-inventory.json": "1dcbe0b8f12fd0ba1fb193fe608a7139b957ff99448098906f957683d7428dc9",
+    "target-02-before-inventory.json": "c94fc2a97d79154b24fbe8065af1567cc6f008bab4d61c55e3e5a7115fc4ce06",
+    "target-02-after-inventory.json": "c94fc2a97d79154b24fbe8065af1567cc6f008bab4d61c55e3e5a7115fc4ce06"
+  }
+}

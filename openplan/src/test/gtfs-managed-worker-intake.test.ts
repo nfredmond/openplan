@@ -57,11 +57,25 @@ async function fixture() {
     if (command.operation === "stage") current.stage = command.input;
     return { commandId: id(7), receipt: { versionId: id(1), stage: "fetching" }, retained: false };
   });
+  let used: number | null = 0, listedBytes: number | null = null;
+  const capacityQueries: Array<{ name: string; args: unknown; active: boolean }> = [];
   const transport = vi.fn<typeof fetch>(async (input, init) => {
     const url = new URL(String(input));
     if (url.pathname.endsWith("/rpc/read_gtfs_ingest_attempt")) {
       events.push("refresh"); expect(JSON.parse(String(init?.body))).toEqual({ p_version: current.versionId, p_token: current.claim.token });
       return Response.json(current);
+    }
+    if (url.pathname.endsWith("/rpc/workspace_storage_bytes")) {
+      capacityQueries.push({ name: "workspace_storage_bytes", args: JSON.parse(String(init?.body)), active: !!init?.signal && !init.signal.aborted });
+      return used === null ? Response.json({ message: "Storage use unavailable" }, { status: 503 }) : Response.json(used);
+    }
+    if (url.pathname === "/storage/v1/object/list/gtfs-uploads") {
+      const path = archive.path;
+      const args = JSON.parse(String(init?.body));
+      expect(args.prefix).toBe(path.slice(0, path.lastIndexOf("/")));
+      expect(args.search).toBe(path.slice(path.lastIndexOf("/")+1));
+      expect(args.limit).toBe(100); expect(init?.signal).toBeDefined();
+      return Response.json(listedBytes === null ? [] : [{ name: args.search, metadata: { size: listedBytes } }]);
     }
     expect(url.pathname).toBe(`/storage/v1/object/gtfs-uploads/${archive.path}`);
     if (init?.method === "POST") {
@@ -86,10 +100,40 @@ async function fixture() {
   });
   const run = () => prepareGtfsSourceArchive(options);
   return { directory, bytes, archive, snapshot, current, controller, deliver, transport, options, events, saved, run,
+    capacityQueries, setUsed: (value: number | null) => { used = value; }, setListedBytes: (value: number | null) => { listedBytes = value; },
     setRemote: (value: Uint8Array | null) => { remote = value; } };
 }
 
 describe("managed GTFS source intake", () => {
+  it("checks storage use for the original workspace with active transport cancellation", async () => {
+    const f = await fixture(); expect((await f.run()).ok).toBe(true);
+    expect(f.capacityQueries, "Original workspace storage RPC projection differs").toEqual([{ name: "workspace_storage_bytes", args: { p_workspace_id: id(2) }, active: true }]);
+  });
+  it("refuses new archive bytes when the installation has no storage room", async () => {
+    const f = await fixture(); f.options.fetchOptions = { env: { OPENPLAN_WORKSPACE_STORAGE_QUOTA_BYTES: "1" } };
+    await expect(f.run()).rejects.toThrow("storage limit");
+    expect(f.events).not.toContain("upload"); expect(f.events).not.toContain("archive-confirmation");
+    expect(await readFile(join(f.directory, "archive.zip"))).toEqual(f.bytes);
+  });
+  it("refuses unreadable storage use before upload", async () => {
+    const f = await fixture(); f.setUsed(null);
+    await expect(f.run()).rejects.toThrow("Storage use could not be checked");
+    expect(f.events).not.toContain("upload"); expect(f.events).not.toContain("archive-confirmation");
+  });
+  it("reconciles exact retained bytes even when the installation is full", async () => {
+    const f = await fixture(); f.options.fetchOptions = { env: { OPENPLAN_WORKSPACE_STORAGE_QUOTA_BYTES: "1" } }; f.setUsed(100); f.setRemote(f.bytes);
+    expect((await f.run()).ok).toBe(true);
+    expect(f.capacityQueries).toEqual([]); expect(f.events).not.toContain("upload");
+    expect(f.events).toContain("archive-confirmation");
+  });
+  it("charges no additional bytes for a same-size immutable key without treating metadata as custody", async () => {
+    const f = await fixture(); f.options.fetchOptions = { env: { OPENPLAN_WORKSPACE_STORAGE_QUOTA_BYTES: "1" } }; f.setUsed(100); f.setListedBytes(f.bytes.length);
+    const normal = f.transport.getMockImplementation()!;
+    f.transport.mockImplementation(async (input, init) => init?.method === "POST" && String(input).includes("/storage/v1/object/gtfs-uploads/")
+      ? Response.json({ Key: "unconfirmed" }) : normal(input, init));
+    await expect(f.run()).rejects.toThrow("unconfirmed");
+    expect(f.capacityQueries).toEqual([]); expect(f.events).not.toContain("archive-confirmation");
+  });
   it("saves private synced bytes before preparation/upload and checks actual remote bytes before confirmation", async () => {
     const f = await fixture(), result = await f.run();
     expect(result.ok).toBe(true);
@@ -116,7 +160,7 @@ describe("managed GTFS source intake", () => {
   it("reconciles a lost upload reply using the actual immutable object", async () => {
     const f = await fixture(), normal = f.transport.getMockImplementation()!;
     f.transport.mockImplementation(async (input, init) => {
-      if (init?.method === "POST" && String(input).includes("/storage/v1/")) { await normal(input, init); throw new Error("Lost upload reply"); }
+      if (init?.method === "POST" && String(input).includes("/storage/v1/object/gtfs-uploads/")) { await normal(input, init); throw new Error("Lost upload reply"); }
       return normal(input, init);
     });
     expect((await f.run()).ok).toBe(true);
@@ -124,7 +168,7 @@ describe("managed GTFS source intake", () => {
   });
   it("refuses a path-only upload acknowledgement with no object bytes", async () => {
     const f = await fixture(), normal = f.transport.getMockImplementation()!;
-    f.transport.mockImplementation(async (input, init) => init?.method === "POST" ? Response.json({ Id: id(9), Key: `gtfs-uploads/${f.archive.path}` }) : normal(input, init));
+    f.transport.mockImplementation(async (input, init) => init?.method === "POST" && String(input).includes("/storage/v1/object/gtfs-uploads/") ? Response.json({ Id: id(9), Key: `gtfs-uploads/${f.archive.path}` }) : normal(input, init));
     await expect(f.run()).rejects.toThrow("uploaded archive is unconfirmed");
     expect(f.events).not.toContain("archive-confirmation"); expect(f.events).not.toContain("refresh");
   });
@@ -136,7 +180,7 @@ describe("managed GTFS source intake", () => {
   it("refuses a conflicting object after uncertain upload", async () => {
     const f = await fixture(), normal = f.transport.getMockImplementation()!;
     f.transport.mockImplementation(async (input, init) => {
-      if (init?.method === "POST") { f.setRemote(Buffer.from("altered saved archive!!")); return Response.json({ message: "Duplicate" }, { status: 409 }); }
+      if (init?.method === "POST" && String(input).includes("/storage/v1/object/gtfs-uploads/")) { f.setRemote(Buffer.from("altered saved archive!!")); return Response.json({ message: "Duplicate" }, { status: 409 }); }
       return normal(input, init);
     });
     await expect(f.run()).rejects.toThrow("uploaded archive is unconfirmed"); expect(f.events).not.toContain("archive-confirmation");
@@ -212,21 +256,32 @@ describe("managed GTFS source intake", () => {
   it("carries ownership cancellation to the external upload request and refuses confirmation", async () => {
     const f = await fixture(), normal = f.transport.getMockImplementation()!; let uploadSignal: AbortSignal | null | undefined;
     f.transport.mockImplementation(async (input, init) => {
-      if (init?.method === "POST") { uploadSignal = init.signal; f.controller.abort(new Error("Ownership ended")); return new Promise<Response>(() => {}); }
+      if (init?.method === "POST" && String(input).includes("/storage/v1/object/gtfs-uploads/")) { uploadSignal = init.signal; f.controller.abort(new Error("Ownership ended")); return new Promise<Response>(() => {}); }
       return normal(input, init);
     });
     await expect(f.run()).rejects.toThrow("Ownership ended"); expect(uploadSignal!.aborted).toBe(true);
     expect(f.events).not.toContain("archive-confirmation");
   });
   it("bounds an ignored upload deadline and recovers saved bytes on retry", async () => {
-    const f = await fixture(), normal = f.transport.getMockImplementation()!; let uploadSignal: AbortSignal | null | undefined;
+    const f = await fixture(), normal = f.transport.getMockImplementation()!;
+    const recoveryTimeoutMs = f.options.uploadTimeoutMs;
+    let uploadSignal: AbortSignal | null | undefined, abortedBeforeReconciliation = false;
     f.options.uploadTimeoutMs = 15;
     f.transport.mockImplementation(async (input, init) => {
-      if (init?.method === "POST") { uploadSignal = init.signal; return new Promise<Response>(() => {}); }
+      if (init?.method === "POST" && String(input).includes("/storage/v1/object/gtfs-uploads/")) { uploadSignal = init.signal; return new Promise<Response>(() => {}); }
+      if (uploadSignal) abortedBeforeReconciliation = uploadSignal.aborted;
       return normal(input, init);
     });
-    await expect(f.run()).rejects.toThrow("uploaded archive is unconfirmed"); expect(uploadSignal!.aborted).toBe(true);
-    f.transport.mockImplementation(normal); expect((await f.run()).ok).toBe(true); expect(fetchSource).toHaveBeenCalledTimes(1);
+    await expect(f.run()).rejects.toThrow("uploaded archive is unconfirmed");
+    expect(abortedBeforeReconciliation, "Ignored upload must receive its deadline before reconciliation").toBe(true);
+    expect(uploadSignal!.aborted).toBe(true);
+    f.options.uploadTimeoutMs = recoveryTimeoutMs;
+    f.transport.mockImplementation(async (input, init) => {
+      if (init?.method === "POST" && String(input).includes("/storage/v1/object/gtfs-uploads/")) await new Promise(resolve => setTimeout(resolve, 50));
+      return normal(input, init);
+    });
+    expect((await f.run()).ok).toBe(true);
+    expect(fetchSource, "Retry must reuse its saved original bytes").toHaveBeenCalledTimes(1);
   });
   it.each(["inactive", "actor", "archive", "unconfirmed"])("refuses %s refreshed custody before parsing", async kind => {
     const f = await fixture(), normal = f.transport.getMockImplementation()!;

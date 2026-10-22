@@ -1,5 +1,5 @@
 /** @vitest-environment jsdom */
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ProjectEvidenceBundlePanel } from "@/app/(app)/projects/[projectId]/_components/project-evidence-bundle-panel";
 
@@ -149,7 +149,7 @@ describe("project evidence bundle reachability", () => {
     const setTimer = vi.spyOn(window, "setTimeout");
     const clearTimer = vi.spyOn(window, "clearTimeout");
     const view = render(<ProjectEvidenceBundlePanel projectId={PROJECT_ID} canGenerate />);
-    fireEvent.click(await screen.findByRole("button", { name: "Copy manifest SHA-256" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Copy manifest fingerprint" }));
     await screen.findByText("Copied");
     await waitFor(() => expect(setTimer.mock.calls.some((call) => call[1] === 1_500)).toBe(true));
     const timerIndex = setTimer.mock.calls.findIndex((call) => call[1] === 1_500);
@@ -168,7 +168,7 @@ describe("project evidence bundle reachability", () => {
       INVENTORY.priorBundles[0].downloadHref
     );
     expect(screen.getByText(INVENTORY.priorBundles[0].manifestSha256)).toBeVisible();
-    fireEvent.click(screen.getByRole("button", { name: "Copy manifest SHA-256" }));
+    fireEvent.click(screen.getByRole("button", { name: "Copy manifest fingerprint" }));
     await waitFor(() => {
       expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
         INVENTORY.priorBundles[0].manifestSha256,
@@ -184,7 +184,7 @@ describe("project evidence bundle reachability", () => {
     expect(screen.getByText(/Review stops at 500 candidates/)).toBeVisible();
     expect(screen.getByRole("checkbox", { name: "Include Main Street GeoPackage" })).toBeChecked();
     expect(screen.getByRole("checkbox", { name: "Include Main Street GeoPackage" })).toBeDisabled();
-    expect(screen.getByRole("checkbox", { name: "Include Board packet" })).toBeChecked();
+    expect(screen.getByRole("checkbox", { name: /^Include Board packet · PDF · Generated/ })).toBeChecked();
     expect(screen.getByRole("checkbox", { name: "Include Orthomosaic" })).toBeDisabled();
     expect(screen.getByText("OpenPlan does not hold bytes for this deliverable.")).toBeVisible();
     expect(screen.getByRole("button", { name: "Freeze evidence bundle" })).toBeDisabled();
@@ -201,6 +201,51 @@ describe("project evidence bundle reachability", () => {
 
     fireEvent.keyDown(screen.getByRole("button", { name: "Close" }), { key: "Tab", shiftKey: true });
     expect(freeze).toHaveFocus();
+  });
+
+  it("distinguishes duplicate report files and freezes the exact selected artifact", async () => {
+    const report = INVENTORY.candidates[1];
+    const secondId = "88888888-8888-4888-8888-888888888888";
+    const olderId = "99999999-9999-4999-8999-999999999999";
+    const htmlId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+    vi.mocked(fetch).mockImplementation(async (_url, init) => ({
+      ok: true,
+      json: async () => init?.method === "POST" ? { downloadHref: "/frozen.zip" } : {
+        ...INVENTORY,
+        candidates: [...INVENTORY.candidates,
+          { ...report, id: `report_artifacts:${secondId}`, recordId: secondId, defaultSelected: false, revisionToken: "2".repeat(64) },
+          { ...report, id: `report_artifacts:${olderId}`, recordId: olderId, createdAt: "2026-08-25T18:00:00.000Z", defaultSelected: false },
+          { ...report, id: `report_artifacts:${htmlId}`, recordId: htmlId, sourceKind: "html", contentType: "text/html", defaultSelected: false },
+        ],
+      },
+    }) as Response);
+    render(<ProjectEvidenceBundlePanel projectId={PROJECT_ID} canGenerate />);
+    fireEvent.click(await screen.findByRole("button", { name: "Prepare evidence bundle" }));
+    const first = await screen.findByRole("checkbox", { name: `Include Board packet · PDF · Generated 2026-08-26 18:00:00.000 UTC · Artifact ${report.recordId}` });
+    const second = screen.getByRole("checkbox", { name: `Include Board packet · PDF · Generated 2026-08-26 18:00:00.000 UTC · Artifact ${secondId}` });
+    expect(within(second.closest("label")!).getByText(`PDF · Generated 2026-08-26 18:00:00.000 UTC · Artifact ${secondId}`)).toBeVisible();
+    expect(screen.getByRole("checkbox", { name: new RegExp(`PDF · Generated 2026-08-25.*${olderId}`) })).not.toBeChecked();
+    expect(screen.getByRole("checkbox", { name: new RegExp(`HTML · Generated 2026-08-26.*${htmlId}`) })).not.toBeChecked();
+    expect(screen.getByText(/Generation time identifies the file; it does not confirm/)).toBeVisible();
+    fireEvent.click(first);
+    fireEvent.click(second);
+    fireEvent.click(screen.getByText(/I reviewed this exact selection/));
+    fireEvent.click(screen.getByRole("button", { name: "Freeze evidence bundle" }));
+    await screen.findByRole("link", { name: "Download frozen bundle" });
+    const posted = vi.mocked(fetch).mock.calls.find(([, init]) => init?.method === "POST");
+    const selected = JSON.parse(posted?.[1]?.body as string).selected;
+    expect(selected).toContainEqual({ candidateId: `report_artifacts:${secondId}`, revisionToken: "2".repeat(64) });
+    expect(selected).not.toContainEqual(expect.objectContaining({ candidateId: report.id }));
+  });
+
+  it.each([null, "not-a-date"])("discloses an unavailable report generation time: %s", async (createdAt) => {
+    vi.mocked(fetch).mockResolvedValue({ ok: true, json: async () => ({
+      ...INVENTORY,
+      candidates: [{ ...INVENTORY.candidates[1], createdAt }],
+    }) } as Response);
+    render(<ProjectEvidenceBundlePanel projectId={PROJECT_ID} canGenerate />);
+    fireEvent.click(await screen.findByRole("button", { name: "Prepare evidence bundle" }));
+    expect(await screen.findByRole("checkbox", { name: /^Include Board packet · PDF · Generation time unavailable · Artifact/ })).toBeChecked();
   });
 
   it("lets a viewer inspect the selection but presents no enabled create control", async () => {

@@ -1,0 +1,422 @@
+[
+  {
+    "control": "uncertain-ack-promoted-exact",
+    "accepted": true
+  },
+  {
+    "control": "uncertain-ack-promoted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "uncertain-ack-promoted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "uncertain-ack-promoted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "uncertain-ack-promoted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "uncertain-ack-promoted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "uncertain-ack-promoted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "incomplete-draft-read-exact",
+    "accepted": true
+  },
+  {
+    "control": "incomplete-draft-read-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "incomplete-draft-read-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "incomplete-draft-read-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "incomplete-draft-read-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "incomplete-draft-read-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "incomplete-draft-read-success-output",
+    "accepted": false
+  },
+  {
+    "control": "unissued-processing-invented-exact",
+    "accepted": true
+  },
+  {
+    "control": "unissued-processing-invented-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "unissued-processing-invented-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "unissued-processing-invented-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "unissued-processing-invented-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "unissued-processing-invented-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "unissued-processing-invented-success-output",
+    "accepted": false
+  },
+  {
+    "control": "acknowledged-task-get-exact",
+    "accepted": true
+  },
+  {
+    "control": "acknowledged-task-get-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "acknowledged-task-get-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "acknowledged-task-get-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "acknowledged-task-get-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "acknowledged-task-get-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "acknowledged-task-get-success-output",
+    "accepted": false
+  },
+  {
+    "control": "original-dispatch-not-checked-exact",
+    "accepted": true
+  },
+  {
+    "control": "original-dispatch-not-checked-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "original-dispatch-not-checked-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "original-dispatch-not-checked-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "original-dispatch-not-checked-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "original-dispatch-not-checked-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "original-dispatch-not-checked-success-output",
+    "accepted": false
+  },
+  {
+    "control": "observation-plan-unchecked-exact",
+    "accepted": true
+  },
+  {
+    "control": "observation-plan-unchecked-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "observation-plan-unchecked-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "observation-plan-unchecked-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "observation-plan-unchecked-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "observation-plan-unchecked-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "observation-plan-unchecked-success-output",
+    "accepted": false
+  },
+  {
+    "control": "revocation-accepted-exact",
+    "accepted": true
+  },
+  {
+    "control": "revocation-accepted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "revocation-accepted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "revocation-accepted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "revocation-accepted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "revocation-accepted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "revocation-accepted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "wrong-constructor-adapter-exact",
+    "accepted": true
+  },
+  {
+    "control": "wrong-constructor-adapter-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "wrong-constructor-adapter-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "wrong-constructor-adapter-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "wrong-constructor-adapter-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "wrong-constructor-adapter-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "wrong-constructor-adapter-success-output",
+    "accepted": false
+  },
+  {
+    "control": "ended-owner-replaced-exact",
+    "accepted": true
+  },
+  {
+    "control": "ended-owner-replaced-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "ended-owner-replaced-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "ended-owner-replaced-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "ended-owner-replaced-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "ended-owner-replaced-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "ended-owner-replaced-success-output",
+    "accepted": false
+  },
+  {
+    "control": "changed-job-accepted-exact",
+    "accepted": true
+  },
+  {
+    "control": "changed-job-accepted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "changed-job-accepted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "changed-job-accepted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "changed-job-accepted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "changed-job-accepted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "changed-job-accepted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "runtime-alias-unchecked-exact",
+    "accepted": true
+  },
+  {
+    "control": "runtime-alias-unchecked-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "runtime-alias-unchecked-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "runtime-alias-unchecked-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "runtime-alias-unchecked-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "runtime-alias-unchecked-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "runtime-alias-unchecked-success-output",
+    "accepted": false
+  },
+  {
+    "control": "late-ack-ignored-exact",
+    "accepted": true
+  },
+  {
+    "control": "late-ack-ignored-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "late-ack-ignored-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "late-ack-ignored-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "late-ack-ignored-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "late-ack-ignored-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "late-ack-ignored-success-output",
+    "accepted": false
+  },
+  {
+    "control": "ended-owner-after-read-accepted-exact",
+    "accepted": true
+  },
+  {
+    "control": "ended-owner-after-read-accepted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "ended-owner-after-read-accepted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "ended-owner-after-read-accepted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "ended-owner-after-read-accepted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "ended-owner-after-read-accepted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "ended-owner-after-read-accepted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "expired-read-accepted-exact",
+    "accepted": true
+  },
+  {
+    "control": "expired-read-accepted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "expired-read-accepted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "expired-read-accepted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "expired-read-accepted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "expired-read-accepted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "expired-read-accepted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "observation-deadline-extended-exact",
+    "accepted": true
+  },
+  {
+    "control": "observation-deadline-extended-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "observation-deadline-extended-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "observation-deadline-extended-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "observation-deadline-extended-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "observation-deadline-extended-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "observation-deadline-extended-success-output",
+    "accepted": false
+  }
+]

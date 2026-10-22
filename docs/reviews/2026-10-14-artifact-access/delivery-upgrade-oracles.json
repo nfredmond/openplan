@@ -1,0 +1,152 @@
+[
+  {
+    "case": "delivery-migration-omitted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "delivery-migration-omitted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "delivery-migration-omitted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "delivery-migration-omitted",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "delivery-migration-omitted",
+    "oracle": "source-only",
+    "accepted": false
+  },
+  {
+    "case": "delivery-migration-omitted",
+    "oracle": "extra-error",
+    "accepted": false
+  },
+  {
+    "case": "delivery-function-omitted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "delivery-function-omitted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "delivery-function-omitted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "delivery-function-omitted",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "delivery-function-omitted",
+    "oracle": "source-only",
+    "accepted": false
+  },
+  {
+    "case": "delivery-function-omitted",
+    "oracle": "extra-error",
+    "accepted": false
+  },
+  {
+    "case": "member-delivery-granted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "member-delivery-granted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "member-delivery-granted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "member-delivery-granted",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "member-delivery-granted",
+    "oracle": "source-only",
+    "accepted": false
+  },
+  {
+    "case": "member-delivery-granted",
+    "oracle": "extra-error",
+    "accepted": false
+  },
+  {
+    "case": "delivery-definer-restored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "delivery-definer-restored",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "delivery-definer-restored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "delivery-definer-restored",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "delivery-definer-restored",
+    "oracle": "source-only",
+    "accepted": false
+  },
+  {
+    "case": "delivery-definer-restored",
+    "oracle": "extra-error",
+    "accepted": false
+  },
+  {
+    "case": "delivery-path-broadened",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "delivery-path-broadened",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "delivery-path-broadened",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "delivery-path-broadened",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "delivery-path-broadened",
+    "oracle": "source-only",
+    "accepted": false
+  },
+  {
+    "case": "delivery-path-broadened",
+    "oracle": "extra-error",
+    "accepted": false
+  }
+]

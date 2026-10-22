@@ -178,11 +178,25 @@ describe("a block already waiting in a chapter", () => {
 
   it("badges the block as transcribed, naming the document and page", () => {
     renderDraftCard();
-    expect(screen.getByText(/Transcribed — not written by anyone/i)).toBeInTheDocument();
+    expect(screen.getByText("Transcribed source text", { exact: true })).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: /Copied from “2020 Regional Transportation Plan”, page 112/ })
     ).toBeInTheDocument();
     expect(screen.getByText(/Nobody wrote this text/i)).toBeInTheDocument();
+  });
+
+  it("names the manual retained-page copy without denying its recorded authorship", () => {
+    const manual = buildTranscribedChapterGrounding(
+      { candidateId: CANDIDATE_ID, text: QUOTE, page: 112, quote: QUOTE, chunkRecheck: "retained_page_matched" },
+      { kbDocumentId: "doc-1", documentTitle: "2020 Regional Transportation Plan",
+        retainedPage: { extractionId: "retained-version-1", checksum: "original-checksum", contentSha256: "retained-checksum" } }
+    );
+    renderDraftCard({ draft: { id: "manual-draft", status: "draft", draftMarkdown: QUOTE,
+      acceptedMarkdown: null, groundingJson: manual } });
+    expect(screen.getByText("Copied manually from retained page", { exact: true })).toBeInTheDocument();
+    expect(screen.queryByText("Transcribed source text", { exact: true })).not.toBeInTheDocument();
+    expect(screen.queryByText(/not written by anyone/i)).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Copied from.*page 112/ })).toBeInTheDocument();
   });
 
   it("says plainly that accepting does not put it in the plan", () => {

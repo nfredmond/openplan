@@ -1,0 +1,10 @@
+{
+  "broken": 93,
+  "controls": 96,
+  "elapsedSeconds": 1.926,
+  "nativeImageryOrEngineExecuted": false,
+  "outcome": "interrupted_source_copy_recovery_passed",
+  "positive": 3,
+  "sourceBytes": 67174400,
+  "workerRecoveryAccepted": false
+}

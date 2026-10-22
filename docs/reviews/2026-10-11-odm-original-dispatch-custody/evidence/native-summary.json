@@ -1,0 +1,18 @@
+{
+  "allOwnedEnginesStopped": true,
+  "claimLimits": [
+    "supplied exact dispatch/application context and synthetic permission adapter, actual supervised URL and engine HTTP transports",
+    "observed reply deliberately omitted from worker journal, not native network loss",
+    "no processing/result/callback recovery",
+    "no independent planner or browser acceptance"
+  ],
+  "controls": 123,
+  "imageDecodingOrReconstructionExecuted": false,
+  "liveApplicationAuthorityVerified": false,
+  "nativeOriginalDraftCommands": 5,
+  "observations": 40,
+  "processingCommitExecuted": false,
+  "responseControls": 14,
+  "seconds": 11.582,
+  "workerRecoveryAccepted": false
+}

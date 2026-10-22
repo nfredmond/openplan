@@ -1,0 +1,74 @@
+{
+  "status": "FAILED_DEPENDENCY_DUPLICATE_ROW_BOUNDARY_FENCED_NO_REPLAY",
+  "statusSHA256": "372996f34bd1c55032c60ce0d8c82c6ad66df98ba6e66cee6c81ec8d68d26936",
+  "references": {
+    "SOURCE_PREFLIGHT_03.json": {
+      "path": "/home/nathaniel/.local/state/openplan/a0-trigger-catalogue-root-decision-20261016/SOURCE_PREFLIGHT_03.json",
+      "bytes": 618775,
+      "sha256": "23c175641e08b58f0237db0364b59257bac8d9ba9aff1e82a49ca3a8023bc7de"
+    },
+    "READER_DISPOSITION.json": {
+      "path": "/home/nathaniel/.local/state/openplan/a0-trigger-catalogue-root-decision-20261016/READER_DISPOSITION.json",
+      "bytes": 550,
+      "sha256": "24d60af13308ebb4df10d40d33999694f70bb400158315747a9f5a685f9c5e84"
+    },
+    "METADATA_PREFLIGHT_INTENT.json": {
+      "path": "/home/nathaniel/.local/state/openplan/a0-trigger-catalogue-root-decision-20261016/METADATA_PREFLIGHT_INTENT.json",
+      "bytes": 1679,
+      "sha256": "22db6296ec8bab111fd4aa7e6b1f20fba0e2fc6d9043ff856b12f540f8adabeb"
+    },
+    "METADATA_PREFLIGHT_RESULT.json": {
+      "path": "/home/nathaniel/.local/state/openplan/a0-trigger-catalogue-root-decision-20261016/METADATA_PREFLIGHT_RESULT.json",
+      "bytes": 2320,
+      "sha256": "7d4622e5529f1d45c7260b5acb2f88f6d4bc070d0ccf4986f26a90add01b2926"
+    },
+    "risk-evidence.json": {
+      "path": "/home/nathaniel/.local/state/openplan/a0-trigger-catalogue-root-decision-20261016/risk-evidence.json",
+      "bytes": 1264,
+      "sha256": "9341e6e71dbbbaf4d930f1a8423154994f9b8e5d9f11bdc45d61e7dbf6d509d9"
+    },
+    "risk-decision.json": {
+      "path": "/home/nathaniel/.local/state/openplan/a0-trigger-catalogue-root-decision-20261016/risk-decision.json",
+      "bytes": 2676,
+      "sha256": "357c5297a990e72b60176442835c188ecc069d7e746f2c8e99612dd4bfa72fba"
+    },
+    "PUBLICATION_INTENT.json": {
+      "path": "/home/nathaniel/.local/state/openplan/a0-trigger-catalogue-root-decision-20261016/PUBLICATION_INTENT.json",
+      "bytes": 1520,
+      "sha256": "e6a54e50c8fa3eca3256394f535fecdbb8e1b4c7c086398fdef0e80474b118fb"
+    },
+    "PUBLICATION_RECEIPT.json": {
+      "path": "/home/nathaniel/.local/state/openplan/a0-trigger-catalogue-root-decision-20261016/PUBLICATION_RECEIPT.json",
+      "bytes": 1500,
+      "sha256": "30b50124fff40bad69186c947897a66a98a56b9ced67c52c6c8399b87e5d3178"
+    },
+    "ROOT_DISPATCH_INTENT.json": {
+      "path": "/home/nathaniel/.local/state/openplan/a0-trigger-catalogue-root-decision-20261016/ROOT_DISPATCH_INTENT.json",
+      "bytes": 499,
+      "sha256": "1bfbdf039a82af57a1e7c68dd02785b017dcc5fe0652ef57c051d2b99c4491b2"
+    },
+    "FAILED_CAPTURE_AUDIT.json": {
+      "path": "/home/nathaniel/.local/state/openplan/a0-trigger-catalogue-root-decision-20261016/FAILED_CAPTURE_AUDIT.json",
+      "bytes": 9816,
+      "sha256": "a9eaddb625f6f24e4f04322de9d0dfb538c46c100ff8cec7797f50216314d020"
+    },
+    "FAILED_CAPTURE_MANIFEST.json": {
+      "path": "/home/nathaniel/.local/state/openplan/a0-trigger-catalogue-root-decision-20261016/FAILED_CAPTURE_MANIFEST.json",
+      "bytes": 20764,
+      "sha256": "a0068692555941b4757a85977abf85a01e545ddfb22d2a44f433a1222c52be01"
+    },
+    "PROTOCOL_AUDIT.json": {
+      "path": "/home/nathaniel/.local/state/openplan/a0-trigger-catalogue-root-decision-20261016/PROTOCOL_AUDIT.json",
+      "bytes": 3910,
+      "sha256": "5ac15f6fac64041b21ac7a80a7c98cee9d20008c19aeae6bcee857748f859da5"
+    }
+  },
+  "rawCataloguePublic": false,
+  "overallNativeAccepted": false,
+  "newAttemptPermanentlyFailed": true,
+  "backendDeath": "UNASSESSED",
+  "finalAfter": "UNASSESSED",
+  "fixtureLaunchable": false,
+  "sourceClosureComplete": false,
+  "successorGranted": false
+}

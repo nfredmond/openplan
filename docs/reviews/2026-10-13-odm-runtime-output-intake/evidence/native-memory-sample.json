@@ -1,0 +1,9 @@
+{
+  "anon": 30695424,
+  "file": 1006215168,
+  "kernel": 25071616,
+  "file_dirty": 130330624,
+  "file_writeback": 0,
+  "memoryCurrent": 1064001536,
+  "events": "low 0\nhigh 0\nmax 1375\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n"
+}

@@ -1,0 +1,82 @@
+{
+  "tier": "ACCEPTED_ONE_ALLOCATION_AND_DECLARED_EMPTY_INVENTORY_ONLY",
+  "source": "3f3639f54243f40dfe7ff093dbb7f4e982a18cbc",
+  "sourceApp": "44e638d6d79378042343bf5b18408f09ee991d57",
+  "sourceMigrations": 422,
+  "combinedApp": "42fc0315070f31269325acb264f0260723dbd56b",
+  "target": "openplan_budget_native_9c47bd610f2a49e8a35c706d",
+  "actualOid": 6243567,
+  "systemIdentifier": "7683856985084612646",
+  "invocation": "03ea813e927b48f9b3841757f9c9a269",
+  "nativeRequestCount": 14,
+  "rootPrivateEvidence": "/home/nathaniel/.local/state/openplan/budget-allocation-root-decision-20261016",
+  "rootAcceptance": {
+    "sha256": "c58b677eb4043a4b8969dbc5187a9e176b84be70e0447065738b6695ccd3b897",
+    "bytes": 1400,
+    "mode": 384,
+    "uid": 1000,
+    "gid": 1000
+  },
+  "rootAudit": {
+    "sha256": "7231f7fed96e9202b83f3c905f8416a6a12280a99aa318e2f9236564bad2d20b",
+    "bytes": 7551,
+    "mode": 384,
+    "uid": 1000,
+    "gid": 1000
+  },
+  "manifest": {
+    "sha256": "6ed4e8dd64a1a0956d6facab1b874fb71cfa0fae244e6bb94729c9925aa70079",
+    "bytes": 41437,
+    "mode": 384,
+    "uid": 1000,
+    "gid": 1000
+  },
+  "manifestFiles": 131,
+  "admission": {
+    "sha256": "4d394eb9e2497d6d63614603cd5f66d4a18d6560be92b41490c3b2984e9ae183",
+    "bytes": 1549,
+    "mode": 384,
+    "uid": 1000,
+    "gid": 1000
+  },
+  "outerIntent": {
+    "sha256": "a405bcc177c17ff1db26ac0cb0c1262e212e6a644cbbc829ea015b958494a6a6",
+    "bytes": 2390,
+    "mode": 384,
+    "uid": 1000,
+    "gid": 1000
+  },
+  "managerSelfAck": {
+    "sha256": "ed772d2b9fb4ada47c0b7f7bf063fa9261282f06aa70242231ff8f9d3c11e169",
+    "bytes": 1331,
+    "mode": 384,
+    "uid": 1000,
+    "gid": 1000
+  },
+  "complete": {
+    "sha256": "1f771000a6018ba22bb2a4b5f0f3751e501851a931ae57177768b10d624e1a42",
+    "bytes": 1142,
+    "mode": 384,
+    "uid": 1000,
+    "gid": 1000
+  },
+  "parentTerminal": {
+    "sha256": "7388d8a242e9be7a473e8e3dcf3c5241b9e66b4b4144c50017dec6164c875093",
+    "bytes": 486,
+    "mode": 384,
+    "uid": 1000,
+    "gid": 1000
+  },
+  "toolTerminal": {
+    "sha256": "a90b9515d56ce636acaba999aab1a777d649253ce4c2f7a624c271dfd048df22",
+    "bytes": 480,
+    "mode": 384,
+    "uid": 1000,
+    "gid": 1000
+  },
+  "sourceFinalDescriptorCount": 635,
+  "successorGranted": false,
+  "backendDeath": "UNASSESSED",
+  "exactPeakBytesAndEvents": "UNASSESSED",
+  "statusSHA256": "ca5597414c235e641458c47b1fa022812b068e0a221e2213d240f5e39e9f1e36"
+}

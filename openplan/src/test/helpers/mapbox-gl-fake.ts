@@ -263,6 +263,33 @@ export class FakeMapboxMap {
   }
 
   /**
+   * THE RACE (two-month review finding 6). The style arrives and `style.load`
+   * fires, but `isStyleLoaded()` still answers false because tiles are still
+   * streaming. A paint that checks now and then waits for one more
+   * `style.load` waits forever. Measured in Chrome on /safety: 2 of 5 loads.
+   */
+  loadStyleWhileTilesStream(): void {
+    this.tilesStillLoading = true;
+    this.loadStyle();
+  }
+
+  /**
+   * The tiles finish. `isStyleLoaded()` turns true and the map reports it the
+   * way Mapbox and MapLibre do: `styledata` while the style settles, then
+   * `idle`. No `style.load`, because that already fired.
+   */
+  settleTiles(): void {
+    this.tilesStillLoading = false;
+    this.emit("styledata");
+    this.emit("idle");
+  }
+
+  /** Listeners still attached for an event, `on` and `once` together. */
+  listenerCount(type: string): number {
+    return (this.listeners.get(type)?.length ?? 0) + (this.onceListeners.get(type)?.length ?? 0);
+  }
+
+  /**
    * Mapbox reports a revoked token, a URL-restricted one, a wrong-scope one and
    * a blocked host all the same way: an `error` EVENT. Never a throw — which is
    * why a stage without an error handler shows a grey rectangle forever.
@@ -297,7 +324,13 @@ export class FakeMapboxMap {
     this.onceListeners.set(type, [...(this.onceListeners.get(type) ?? []), handler]);
   }
 
-  off(): void {}
+  off(type: string, layerIdOrHandler?: string | Listener, maybeHandler?: Listener): void {
+    const key = typeof layerIdOrHandler === "string" ? `${type}::${layerIdOrHandler}` : type;
+    const handler = typeof layerIdOrHandler === "string" ? maybeHandler : layerIdOrHandler;
+    if (!handler) return;
+    this.listeners.set(key, (this.listeners.get(key) ?? []).filter((listener) => listener !== handler));
+    this.onceListeners.set(key, (this.onceListeners.get(key) ?? []).filter((listener) => listener !== handler));
+  }
 
   addControl(control: unknown): void {
     const pendingError = (globalThis as Record<symbol, unknown>)[SETUP_ERROR];

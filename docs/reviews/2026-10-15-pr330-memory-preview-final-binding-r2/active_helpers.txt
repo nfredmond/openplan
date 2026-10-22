@@ -1,0 +1,24 @@
+def active_helper_identities():
+    binding=read('active-helper-identities.json')
+    groups=binding['groups']
+    p.exact({'groups':['original','v6']},{'groups':sorted(groups)},'protected-active-groups')
+    sources={'original':FROZEN/'rest-uri-recovery-01/active-service-receipts-private.json',
+        'v6':Path('/home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v6/service-receipts-private.json')}
+    combined={}
+    for group,source in sources.items():
+        item=groups[group]
+        p.exact({'source':str(source)},item,'active-helper-source')
+        p.exact({'regular':True,'sha256':item['sourceSHA256']},
+            {'regular':source.is_file() and not source.is_symlink(),'sha256':sha(source)},'active-helper-source')
+        original=json.loads(source.read_text())
+        ids=item['ids']
+        p.exact({'roles':['auth','gateway','rest','storage'],'unique':4,'valid':True},
+            {'roles':sorted(ids),'unique':len(set(ids.values())),
+             'valid':all(type(value) is str and len(value)==64 and all(c in '0123456789abcdef' for c in value) for value in ids.values())},'active-helper-identities')
+        p.files(ids,{kind:receipt['id'] for kind,receipt in original.items()})
+        combined.update({group+':'+kind:identity for kind,identity in ids.items()})
+    p.exact({'unique':8},{'unique':len(set(combined.values()))},'protected-active-eight')
+    p.exact({'valid':True},{'valid':type(binding['configurationDigests']) is dict and
+        set(binding['configurationDigests'])==set(combined.values()) and all(type(v) is str and
+        len(v)==64 and all(c in '0123456789abcdef' for c in v) for v in binding['configurationDigests'].values())},'protected-active-config-set')
+    return combined

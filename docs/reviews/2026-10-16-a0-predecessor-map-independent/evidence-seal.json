@@ -1,0 +1,101 @@
+{
+  "authorLocalCommitSeparate": {
+    "bytes": 4641,
+    "gid": 1000,
+    "mode": 384,
+    "regular": true,
+    "sha256": "a1131657cda7d65c75c9e08f1f48428995070932a06836f494821e41ec7da637",
+    "symlink": false,
+    "uid": 1000
+  },
+  "authorNewPrivateManifest": {
+    "bytes": 644445,
+    "gid": 1000,
+    "mode": 384,
+    "regular": true,
+    "sha256": "43eeb160c155bd445b9542852056ada6dd4b52ac484d2a09090c3aeae680d625",
+    "symlink": false,
+    "uid": 1000
+  },
+  "custodyMismatches": 0,
+  "fileComparisonCount": 4311,
+  "files": {
+    "/home/nathaniel/.local/state/openplan/a0-predecessor-map-independent-20261016/comparisons.json": {
+      "bytes": 956915,
+      "gid": 1000,
+      "mode": 384,
+      "regular": true,
+      "sha256": "583205322c4ed237a9c0e9fee771c0024383f31945dd9cead8503a03e4aea3e6",
+      "symlink": false,
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-predecessor-map-independent-20261016/git-identity.json": {
+      "bytes": 9592,
+      "gid": 1000,
+      "mode": 384,
+      "regular": true,
+      "sha256": "d13c52598df24e20d43a88c1d1261f9362511ab646dc0ecb28beca930f8f5df0",
+      "symlink": false,
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-predecessor-map-independent-20261016/input-custody-after.json": {
+      "bytes": 149,
+      "gid": 1000,
+      "mode": 384,
+      "regular": true,
+      "sha256": "3ee39c4bd456bccb513f7ff102839d9117de966c0a258f382058c2555e0c825e",
+      "symlink": false,
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-predecessor-map-independent-20261016/input-pins-before.json": {
+      "bytes": 1450200,
+      "gid": 1000,
+      "mode": 384,
+      "regular": true,
+      "sha256": "b8240bec4416ee9c19a3d5c2ebd4b212f80a545a4e2ab04b180bb3888459c262",
+      "symlink": false,
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-predecessor-map-independent-20261016/metadata-summary.json": {
+      "bytes": 1965,
+      "gid": 1000,
+      "mode": 384,
+      "regular": true,
+      "sha256": "63c7a7360ee1fec6a03283b224743040567a80ee24eff2578cdb2188e5431b54",
+      "symlink": false,
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-predecessor-map-independent-20261016/retained-relations.json": {
+      "bytes": 39505,
+      "gid": 1000,
+      "mode": 384,
+      "regular": true,
+      "sha256": "c7649688366f9d58676d66381f894f4b929d449e104179215f95a652f1398523",
+      "symlink": false,
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-predecessor-map-independent-20261016/retained-semantics.json": {
+      "bytes": 19450,
+      "gid": 1000,
+      "mode": 384,
+      "regular": true,
+      "sha256": "85c3dde34ef9c1cab4e1bcd718dfd527fa113b2416435d36f2ccee8e2b2667f0",
+      "symlink": false,
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-predecessor-map-independent-20261016/subject-git-tree.txt": {
+      "bytes": 3534,
+      "gid": 1000,
+      "mode": 384,
+      "regular": true,
+      "sha256": "dbe8428e3992a4383557f4290e39c4cc0497ad6e781ec50da66c271c5e2eed30",
+      "symlink": false,
+      "uid": 1000
+    }
+  },
+  "nativeAccepted": false,
+  "operatingApproval": false,
+  "retainedRelationCount": 281,
+  "scope": "Source and retained evidence only. No subject imports, tests or native operations. No new window.",
+  "selectedInputs": 4176
+}

@@ -1,0 +1,803 @@
+{
+  "schema": 1,
+  "scope": "Additive handoff custody, not a new runtime trial",
+  "failed01": "FAILED1 HARNESS_TYPE_CLOSURE_FAILURE",
+  "trial02": "ROOT terminal0 types/lint/direction only",
+  "files": {
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/BASE_MIGRATION_BLOBS.txt": {
+      "sha256": "238ab7cec1ec625436cc5547071a2ddd862fb1a4a4fa0f9ee2175e40cea9123c",
+      "bytes": 42660,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/EMPTY_ENV_DIR.txt": {
+      "sha256": "61e7ae00e374d4e0ac4f892e96d6f89803c6e1dcbd703ec3bc2f07b4a86a7b3f",
+      "bytes": 594,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/EMPTY_ENV_INITIAL_ENTRIES.txt": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/PACKET_SHA256.before-generation01-status.txt": {
+      "sha256": "a5e214ccdbd40eaeccbb88591464cd95da1c893a69d321ad274c211c8cf7918e",
+      "bytes": 1164,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/PACKET_SHA256.txt": {
+      "sha256": "24b4aa5ee4a89c6b5fa19299940f92f02723c14a0607f91af80c4ab55002eb83",
+      "bytes": 2646,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/SETUP_CLOSURE.sha256": {
+      "sha256": "60e2c3b51e83702f3a81a95c8a101e64d45fde93c8f4cc26e5b7ee3ef203687e",
+      "bytes": 71279,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/SUBJECT_MODES.txt": {
+      "sha256": "e1bbdaea8bcd0e474613e5741009add1b8a0a6d80325c2ddf47533d632e12a34",
+      "bytes": 956,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/SUBJECT_PINS.sha256": {
+      "sha256": "066861e8394c3bf231dd56802cf39f46dde89a504bf11ddb5ba4060c5b4e02e4",
+      "bytes": 1452,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/WINDOW_PINS.sha256": {
+      "sha256": "06f2729e64561a0e1454a9308fcb9305bfbf9993cd8e98193be55d89af6f4468",
+      "bytes": 4097,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/classifier-controls/controls.json": {
+      "sha256": "194871d6c82ba569f9c212d92f7a7f13b2a6f332436ca54bae4d7a60567b8f29",
+      "bytes": 2706,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/classifier-controls/source-readback.json": {
+      "sha256": "f8e9fbc5dfc9822bb36efb1b6b7df0201ae77ed3a62ea453d0cf9ecaff8c24fe",
+      "bytes": 295,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/classifier-controls.py": {
+      "sha256": "66de04e42af0b758d4fe30579238e09ecc6f140c3a5635d0c4b25baad69cc98b",
+      "bytes": 6956,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/envdir-preparation-before/FINITE_WINDOW.md": {
+      "sha256": "f762c1f1563214186763b83286daf06434b6287a8fcc4503694c6b8c83c5ab88",
+      "bytes": 9207,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/envdir-preparation-before/PACKET_SHA256.txt": {
+      "sha256": "3b724725fe010978d09bb08c76ab5ed094d42d84aec49555767bc23c884fd070",
+      "bytes": 2296,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/envdir-preparation-before/SOURCE_PINS.txt": {
+      "sha256": "9088b5d1bd04cfef9d8a8072ae4469e8c6ffcf55fe2c43b8ca86147f336e322c",
+      "bytes": 3650,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/envdir-preparation-before/WINDOW_PINS.sha256": {
+      "sha256": "409ae9b7c4dc6677e512cd29020e23d0512076753619ec03619e0bc886329114",
+      "bytes": 3747,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/envdir-preparation-before/vitest.focused.mjs": {
+      "sha256": "77546a178e07663a9f9e47ae240e7f1f1fbac987e974f16e0c1a0254c2a10a5a",
+      "bytes": 882,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/finite-window/classifier.stderr": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/finite-window/classifier.stdout": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/finite-window/failure.json": {
+      "sha256": "ddb11dcc0a5ab1b9881243dc245df2da5ea68172cb77d25f706c194893fdb2d5",
+      "bytes": 823,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/finite-window/focused.stderr": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/finite-window/focused.stdout": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/finite-window/restoration.json": {
+      "sha256": "34f0bb7e1dfc7a27a6ef508c6441ac6d56d8893a19855fa0a47b856038fd4475",
+      "bytes": 508,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/finite-window/steps.json": {
+      "sha256": "2bdac025b2c8cbf4609d9f5016f0d70e59eab24414d812773b4d1fe9086175db",
+      "bytes": 1374,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/finite-window/types.stderr": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/finite-window/types.stdout": {
+      "sha256": "18c664e0fd1959c502de7d8bfe2af7e14324358f1f3bbaeabf26cee3d15138be",
+      "bytes": 175,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/focused-controls.py": {
+      "sha256": "a84d01d5d6ca2bc76667e85908ab865ad3302b6c8b5933c3aa7835764a2af220",
+      "bytes": 14829,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/generation02-reader-bases/CHANGELOG.before.md": {
+      "sha256": "b97aa32e29af31dbfb39b60ba79211a9e071bc30fca56c4a8dc6dea7d57e3ad5",
+      "bytes": 252514,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/generation02-reader-bases/PACKET_SHA256.before.txt": {
+      "sha256": "f471169fd29ddb543cb0dab225006b89169b251b2781642deb8086119fbcb46d",
+      "bytes": 1164,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/generation02-reader-bases/SOURCE_PINS.before.txt": {
+      "sha256": "5df448a40b67f72b2b099b803524feddd9ba0fd40ebd794d3e17fc897569a35c",
+      "bytes": 2378,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/generation02-reader-bases/SUBJECT_MODES.before.txt": {
+      "sha256": "5606bbae3a82a81612293723ad687cd22ddc708e112d07923a21171b69b6dd30",
+      "bytes": 821,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/generation02-reader-bases/SUBJECT_PINS.before.sha256": {
+      "sha256": "8e350cdd0dbd1df48faa9e4e54c9970f0088f74b3525036d791cde89652a9dfb",
+      "bytes": 1255,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/generation02-reader-bases/focused-controls.before.py": {
+      "sha256": "2037a2c146bcf91cb99e4a1a652139b9dfad43c895cecd5ca8000490a14755d0",
+      "bytes": 10148,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/generation02-reader-bases/focused-controls.path-only.py": {
+      "sha256": "f43d675e6c8a90472a9348524c2ed1b4377e559adda7eacaf91212f194ed20a4",
+      "bytes": 10140,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/generation02-reader-bases/land-use-plan-geography-source.before.test.ts": {
+      "sha256": "4df97d233c3f0dbbf12da7005f24bb6e057ca52ec8b1b7e97fa8c85f310f4ed7",
+      "bytes": 2831,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/harness-preparation.diff": {
+      "sha256": "d472b3ea446772e0f5467419a73b39b763d401724e3c539cce1d1207b489a369",
+      "bytes": 13295,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/owned-overlay/geography.sql": {
+      "sha256": "b083241e879913afe93e848f4bb81191acf5439569c8226a86e14852bf3ee002",
+      "bytes": 6500,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/owned-overlay/route.ts": {
+      "sha256": "6b65912243a91795841d06d1e30ee5d4f697699f7855e30245d423968cbd6016",
+      "bytes": 16347,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/source-audit-20261016/PACKET_SHA256.before.txt": {
+      "sha256": "2ab8a8eb371c5f3ec98de22f82889598b5792fc52d9e7a3d70fdf5e0e45a0b9a",
+      "bytes": 1020,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/source-audit-20261016/SOURCE_PINS.before.txt": {
+      "sha256": "c9a96726ae0799f6d61c6ae0e39344c9e74d93a0812d2a78b87cc806a3d299b3",
+      "bytes": 2203,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/source-audit-20261016/STATUS.before.md": {
+      "sha256": "f269024c9310c18ba53871b81a955140d90fc0233bbc0f2ffc6e93c22a815d0f",
+      "bytes": 13649,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/source-audit-20261016/SUBJECT_MODES.before.txt": {
+      "sha256": "5606bbae3a82a81612293723ad687cd22ddc708e112d07923a21171b69b6dd30",
+      "bytes": 821,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/source-audit-20261016/SUBJECT_PINS.before.sha256": {
+      "sha256": "39ad7da38ef3c8083705789a753b4d9e014ab219d7d8405722f348b037eae702",
+      "bytes": 1255,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/source-audit-20261016/focused-controls.before.py": {
+      "sha256": "4c5f4f7b7ff40bbed6b30c57e64aed9f56a3267b754f938a95bf49ab2e2977e3",
+      "bytes": 9878,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/source-reader.diff": {
+      "sha256": "dfe202fda7e7773da599244a29049dd0a3f997e4860d7bc43c4be173d2b237e9",
+      "bytes": 1429,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/tsconfig.focused.json": {
+      "sha256": "62c1c4cd0e57218faffeb18abf69d7d3b2cc0ed2d3071ac8eb678c70b15f3689",
+      "bytes": 666,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/allow_patch_geography_after_context.json": {
+      "sha256": "3a23868f07ca4642fad3a3e09966702cf824c0c3aa5511375f982d2534308492",
+      "bytes": 15327,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/allow_patch_geography_after_context.stderr": {
+      "sha256": "ad00f9b54f957135f4fa4c93d0ac72615c38e36a811ec6cabc5e7088ce837678",
+      "bytes": 2391,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/allow_patch_geography_after_context.stdout": {
+      "sha256": "248408d66f42e1965e79199cfbbff81d4677e959d58f2e7b5aa7df2b52f6efcd",
+      "bytes": 6617,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/allow_patch_repair_of_divergent_context.json": {
+      "sha256": "db44bc0866b3d6ed5f5841e8411cbd1206863864341b4b037d47b45b859ce9c2",
+      "bytes": 14147,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/allow_patch_repair_of_divergent_context.stderr": {
+      "sha256": "e4ae9a6154828b1f7d08eeaa1af268ca3cb530ccbdbcb6e61a48bff71a92b2a6",
+      "bytes": 942,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/allow_patch_repair_of_divergent_context.stdout": {
+      "sha256": "89a60636700c9c02f4ddd2666abc7a5e23b01cc6d28404811cec638989abda4e",
+      "bytes": 6468,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/baseline-inventory.json": {
+      "sha256": "bd61c2a03b6b5e4a0ef1eb8090f2ddc486f17526b71359ea42b7975ab53be605",
+      "bytes": 8126,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/check_label_but_ignore_geometry.json": {
+      "sha256": "d78166b5a856d017428bb9466e775f4849edd3071a3074315528c9a74e48206d",
+      "bytes": 13752,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/check_label_but_ignore_geometry.stderr": {
+      "sha256": "2c427b51e203af29a758094858c356e6b4f0ac819ba77edeb003448f9f858fb4",
+      "bytes": 968,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/check_label_but_ignore_geometry.stdout": {
+      "sha256": "8ba3ffb0ddeedffa7fd74e99627e532d5006e092e863b8a2a23e071a1998e6f2",
+      "bytes": 6409,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/controls.json": {
+      "sha256": "07f47f6691ade6bb417901d693a6ff26e6665ea877f855d72d57e3fe80eb3e1e",
+      "bytes": 62781,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/database_broad_conflict_identifier.json": {
+      "sha256": "bbea7731aca54f6fec969a34f331c557e643670ca85b2946b94ca87c644517a5",
+      "bytes": 14651,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/database_broad_conflict_identifier.stderr": {
+      "sha256": "0c97741c66fd607cb516d72e79c9129e88a2728beb69265899ca82da007def98",
+      "bytes": 1003,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/database_broad_conflict_identifier.stdout": {
+      "sha256": "d107b3fe5947329da0c6157ad548dc7b1cae439e5ba0421dbb2228b95566a2ad",
+      "bytes": 6478,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/database_ignore_geometry_on_new_context.json": {
+      "sha256": "fad15aa3086a7fa2b4ad6f3764063ccfa54647373d5605224d9697a2e32f6473",
+      "bytes": 14644,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/database_ignore_geometry_on_new_context.stderr": {
+      "sha256": "04804bd969ffaa81c35ff738184ed462cafefcb2cc8e59b41e0c3a47fea6cfeb",
+      "bytes": 7186,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/database_ignore_geometry_on_new_context.stdout": {
+      "sha256": "0503574c5ea85c768a2412c937a23c0d146296fb0d38dc90ed6d5ab1215f5394",
+      "bytes": 6478,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/database_revalidate_unrelated_history.json": {
+      "sha256": "6daa69d93fe57840656cf433311af5bc67cecaffcd41410d14f8690fdc361d9f",
+      "bytes": 14643,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/database_revalidate_unrelated_history.stderr": {
+      "sha256": "51d76d297a343fc70fe563dee6993fdd7524ebff93ec2144fe23d26811cc0f38",
+      "bytes": 6821,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/database_revalidate_unrelated_history.stdout": {
+      "sha256": "39eb84cdbd489cbdd7052780c643b24fe459fa11f9275efd635299669d4615e1",
+      "bytes": 6477,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/final-restored-baseline.json": {
+      "sha256": "4d85155de67f85e4223411f433d7eb4ebb40f65e0cd41f6198e831d499de2e06",
+      "bytes": 13357,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/final-restored-baseline.stderr": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/final-restored-baseline.stdout": {
+      "sha256": "771e7f5c0ca61917234a78345bbf06e7ce45bf9affd27e9b60b017fd00e13a62",
+      "bytes": 6327,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/harmless-comment-survived.json": {
+      "sha256": "da165d172fe71097a144b4d543917d7a08d01db3f21c3816db0625a6995f2dbd",
+      "bytes": 13362,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/harmless-comment-survived.stderr": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/harmless-comment-survived.stdout": {
+      "sha256": "6522ed7c87914b5d1efed2f8136e661eb3d642e95152a9612046d7957ce25f01",
+      "bytes": 6330,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/legacy_absence_on_unreadable_context.json": {
+      "sha256": "3b6a09eaaa0e02daac1939c61a7e0c4f269ab609064c9687d1efc000ca2bc139",
+      "bytes": 16511,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/legacy_absence_on_unreadable_context.stderr": {
+      "sha256": "0a3d6bb6667d4be6a00831c5424991e9b7d802d8d871895bb122beb67059bfbc",
+      "bytes": 3074,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/legacy_absence_on_unreadable_context.stdout": {
+      "sha256": "3be9fb99d1d3e8f2b69d2c8413be3abec0cf05eae181e334f4647ca2e4001e20",
+      "bytes": 6772,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/load_context_for_unrelated_patch.json": {
+      "sha256": "fc6e8a7423abb85ff71d2977d69ea7ee1b86a8d66f53e54cd83f81f815a32239",
+      "bytes": 14538,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/load_context_for_unrelated_patch.stderr": {
+      "sha256": "bb34f26f03ce4edfaeea9043ee9a6f9ff9519e78815e915f174bf6a66eedddd0",
+      "bytes": 1235,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/load_context_for_unrelated_patch.stdout": {
+      "sha256": "8816dba4f07eecedb71a66b2eea4999baadf6f24cb50a699a40f0e723a4d663d",
+      "bytes": 6512,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/mask_database_conflict_as_500.json": {
+      "sha256": "ea8bb20badb6a4fa205d6264ac6fa4519460c41c4ea058b42a3567916ef2539c",
+      "bytes": 13753,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/mask_database_conflict_as_500.stderr": {
+      "sha256": "ef578e9b9df223f571903ab232d1dcf674517c4695b931934373db3663ba7515",
+      "bytes": 884,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/mask_database_conflict_as_500.stdout": {
+      "sha256": "b86ca0cb4c0cecadc98c3e73410bd5f8b39670744f0e7407ee862b1d0b750368",
+      "bytes": 6408,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/omit_database_geography_invariant.json": {
+      "sha256": "85fefc06ff9142fd6b69b737ac529fc7a970649b52dd5ecdc665ccfef1bddd61",
+      "bytes": 14639,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/omit_database_geography_invariant.stderr": {
+      "sha256": "0f440805681f6b3b051f330ba4c0f01f18c334b8f08b0a36b0c14247921e2c58",
+      "bytes": 6671,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/omit_database_geography_invariant.stdout": {
+      "sha256": "bfe052aa23ec23885ce50099840031faa2d3e0e826b082059711c0515fb4392c",
+      "bytes": 6470,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/omit_write_workspace_filter.json": {
+      "sha256": "e2d20df8e4a358917740a41996e85b2eb709f507ff23784afc893941372cd6d9",
+      "bytes": 14254,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/omit_write_workspace_filter.stderr": {
+      "sha256": "b2ed63e5fccff53257c720819c18a2ffd661be44c93ea2f7949658e63a454202",
+      "bytes": 2338,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/omit_write_workspace_filter.stdout": {
+      "sha256": "37ab77b7d9873321b1041b3056f54491f4a7ab07166812bb5bc6964b776d076c",
+      "bytes": 6568,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/relabel_generic_database_error.json": {
+      "sha256": "70419272cc04ad8b6afe8af9ce580c9e2d9eb1044b2ad1bf4527a554855d5a5a",
+      "bytes": 14538,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/relabel_generic_database_error.stderr": {
+      "sha256": "cc77e8871490242b7322fe7266a81317c2a4dec874a041b4a2c3a009fa7a0198",
+      "bytes": 1284,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/relabel_generic_database_error.stdout": {
+      "sha256": "1b0465ff609a215d3997f6cf50a457718c337142acf7d7571d3ed398d8cd573e",
+      "bytes": 6510,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/restoration.json": {
+      "sha256": "684e60d7cbaf75416c90e416eed5da01b4463793267a2eb6361ab3ce311a1bfa",
+      "bytes": 704,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/restored-baseline.json": {
+      "sha256": "ee5d3b9c342fb0fac174c09f079c879c29d5cc4e3a5a9ca5f88ab53ee5b56e6c",
+      "bytes": 13359,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/restored-baseline.stderr": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/restored-baseline.stdout": {
+      "sha256": "809e90054dd3a3b8c47b74a77419a8bb58de4815e08ac125851252aedaea51de",
+      "bytes": 6322,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/wrong_workspace_in_context_read.json": {
+      "sha256": "87441c3df0b38f4d69fad54b9ece2b46378924d8fe1111809695f4ac7c5d73bf",
+      "bytes": 14710,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/wrong_workspace_in_context_read.stderr": {
+      "sha256": "abf3286e3365245497f73104ae5e1e37c33c222ca9068afb826128e94125dd64",
+      "bytes": 1944,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/unit-controls/wrong_workspace_in_context_read.stdout": {
+      "sha256": "247e7c2c807161d6973ee78e3b16440b0b1f269075fecade7154afb833897b51",
+      "bytes": 6691,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/vite-cache/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/results.json": {
+      "sha256": "a1d5244f077a72f072c18f563457163571ca805e039cc6ee37572ce76b5b2535",
+      "bytes": 231,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/vitest.focused.mjs": {
+      "sha256": "34856aa1825ef9ce4f1140476705e040c4e950a4ac65629cc1be6965d2df5291",
+      "bytes": 1006,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/window-controls.py": {
+      "sha256": "773f385f72a97871e5c58470d146b5d9300ecc6240959a27760b23a6a4920b78",
+      "bytes": 5893,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/dispatch.py": {
+      "sha256": "e72195376965e811a159cf3eb3eef4684c9bcbcca32677a50a79e196ab8ea5b0",
+      "bytes": 1862,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/empty-npmrc": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/failed01-inventory.json": {
+      "sha256": "62188f03c6f7ef7a26d45c65bb5ee3b06955dba20ebbd1a42dc1ef568fdfc96b",
+      "bytes": 30446,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/grant.json": {
+      "sha256": "9fdebd5d01f77776ca5cae84aca5115d51de0a23d60d1c629dce49787ae45d97",
+      "bytes": 5464,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/inner-terminal.json": {
+      "sha256": "323bc1f919d157fde5e125a5ddbc3fdad6ddc869813889a6a473b121a5ede2f1",
+      "bytes": 339,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/inner.py": {
+      "sha256": "1964dbfece5157167d2c6b74ea82ca95fff058f5d41a52030c77452d4f457f2b",
+      "bytes": 2283,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/mountpoint-preparation.json": {
+      "sha256": "2f001d0e0fd94c572f701593a4872c79924afadbfa38a0748cfeb3b6c94bd601",
+      "bytes": 235,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/prepared-outer.json": {
+      "sha256": "59c6ae069c9e2b7150f1b28ccd20ff8db8b75fb37c0f7bbe1c91dcfa22b8cee1",
+      "bytes": 4026,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/runtime-before.json": {
+      "sha256": "89fc1367b0c4af4977918eb3fbd678c32e6b8e7707fc6b4a86ce112c183c7ff8",
+      "bytes": 140134,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/tmp/node-compile-cache/v24.22.0-x64-964aae3f-1000/1c447a4d": {
+      "sha256": "926a65b07bc8a90fb2c4b9c3de422c5343e33f7068b08635630e330647841ad2",
+      "bytes": 1357724,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/direction-exit.json": {
+      "sha256": "5b3f234a1b859bacfc2a86c8c50aa01b5dec1d4c19b1c421b77d4739444f3578",
+      "bytes": 45,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/direction-intent.json": {
+      "sha256": "9dd37b66cd3b9db10bf5892927d5f106b3fa44651eef97d48e2162c164d1af25",
+      "bytes": 177,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/direction-returned-process.json": {
+      "sha256": "c98a1d8c2d454f281e96d890db1041bd28fe3e13a39d31183b581bb6410665bf",
+      "bytes": 16,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/direction.stderr": {
+      "sha256": "f68445367cddf2dc482988cce2c102768990039ee4d491468a145718612a4640",
+      "bytes": 648,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/direction.stdout": {
+      "sha256": "2d21f390f2609c705836afd80f7e9059cb7633f9b87fe51c3e19eed02579d912",
+      "bytes": 286,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/dispatch.py": {
+      "sha256": "969f0aecaf0c7a5c848f756039a0fe44304b9d6f50ebf415476bed54702d799b",
+      "bytes": 1870,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/empty-npmrc": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/grant.json": {
+      "sha256": "63fe6818def7a7c68c478ca6113b65039811dc078e31e57a1adc2aca2a99596a",
+      "bytes": 5647,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/inner-terminal.json": {
+      "sha256": "20cfec416daaaa43a8458ea3eb056457423c57cf08aa288a0adec7cbbdd356cc",
+      "bytes": 542,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/inner.py": {
+      "sha256": "7960643ca5aec62cee2454b5ce83348d5e1d51259a245274548d6f32997b8005",
+      "bytes": 5332,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/lint-exit.json": {
+      "sha256": "ffee9706167d0adc01404209104c1c1a6b50bfb0a2d87f210382f233c2687492",
+      "bytes": 40,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/lint-intent.json": {
+      "sha256": "826b86be61fb17b5c09fd6614a46096690574cc2fd417060eabe82a8a4b38363",
+      "bytes": 447,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/lint-returned-process.json": {
+      "sha256": "77ce936471c84acafc2eb286f9669e42f05c811ce28a3a66bd5551eb02f18d2e",
+      "bytes": 16,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/lint.stderr": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/lint.stdout": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/npm-logs/2026-10-17T01_59_59_975Z-debug-0.log": {
+      "sha256": "15aa3eef8d7de3f5f009467ab72fde73da74bd8e9662757bb2f9f0026c30dcaf",
+      "bytes": 1041,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/reuse-context.json": {
+      "sha256": "9fe5e4689921c32eacf4e1f25a8c5b1ae68d6d2b1660b90239922fb01f5a6ef4",
+      "bytes": 239,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/runtime-before.json": {
+      "sha256": "ebd9347d8a6f60384d07045ec692e6583eec44f46ac7c7a11d93438973197a9e",
+      "bytes": 139759,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/success.json": {
+      "sha256": "f34509fd99cbf47b983e894c089416f9b532f57639a877149204a81381c2cb8a",
+      "bytes": 247,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/tsconfig.focused.json": {
+      "sha256": "c92b20579650a313cd30fe3b5e9aa8a0ff82ac203ad171273923887ca60c0016",
+      "bytes": 707,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/types-exit.json": {
+      "sha256": "af0b1f3076145bc74cf25c58215009457afeef87ca3c8612833eed5e6b0e494a",
+      "bytes": 41,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/types-intent.json": {
+      "sha256": "7722b3110f9d061f3fa44e33c8b77abd7839556d830e0f054c57fce91b123896",
+      "bytes": 368,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/types-returned-process.json": {
+      "sha256": "1a30c3e4683a182c4fb6ec6b64b01caca3aeb3f0994b4e882b4f382aa36bb8d9",
+      "bytes": 15,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/types.stderr": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/types.stdout": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/unit-01/intent.json": {
+      "sha256": "3e613c7ff28a3edbbc3dda775ae7d15f5e0c29c914f8e577544c64f10545e489",
+      "bytes": 3059,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/unit-01/returned-process.json": {
+      "sha256": "06f11ac2be849c23396a2942ce63bdf6deb9bd01bcbd745db8f7286e52b3e9cd",
+      "bytes": 73,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/unit-01/stderr.bin": {
+      "sha256": "76f69dacafe340d6bc603a444f83b45eede5f9f78d2d475bc3a8a432f4ecaa1e",
+      "bytes": 353,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/unit-01/stdout.bin": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/unit-01/terminal.json": {
+      "sha256": "f7cde01c2d51d53843156d5e506d298a854cf87b7de5c4c22c868dd1052766b3",
+      "bytes": 484,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/unit-01/intent.json": {
+      "sha256": "e0c414d59c9f84ba986b5da1cc9dc12f78efae707a8b65c00df5fea42ac3626a",
+      "bytes": 3269,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/unit-01/returned-process.json": {
+      "sha256": "0be3e6c271f02084f5cd8066a15e90cc0b918cc9f89ff476fb9b7faa13880782",
+      "bytes": 73,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/unit-01/stderr.bin": {
+      "sha256": "58d2163fc1becb709a5ae68a2b40b89fc9466146a522f9ab17ac09f275733878",
+      "bytes": 1207,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/unit-01/stdout.bin": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/unit-01/terminal.json": {
+      "sha256": "7dd5567d8e010caf214bb56087cda0a4e170a2ee3b41853213d4f17000b7c49d",
+      "bytes": 488,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-geography-correction/geography-guard.draft.sql": {
+      "sha256": "07a78359bfe47c9846162cf35ba71f2bff2e3deed5c93ab675280a06c3b2dc21",
+      "bytes": 6577,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/openplan/src/app/api/land-use-plans/[planId]/route.ts": {
+      "sha256": "6b65912243a91795841d06d1e30ee5d4f697699f7855e30245d423968cbd6016",
+      "bytes": 16347,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/openplan/src/test/fixtures/land-use-plans/context-persistence.sql": {
+      "sha256": "1093f5a175882095b3892520654e1121f98fee05fa70f48924526145a0aff354",
+      "bytes": 18341,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/openplan/src/test/fixtures/land-use-plans/draft-revision.sql": {
+      "sha256": "24a76523f1da9333131b1a95d11da2c5bb33af7e903369d82c6638ddca25da9c",
+      "bytes": 13920,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/openplan/src/test/land-use-plan-geography-patch.test.ts": {
+      "sha256": "a263b162cb346c116d1d45b5112584708c0482cd4851cc110a4792239f26e6d6",
+      "bytes": 9985,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/openplan/src/test/land-use-plan-geography-source.test.ts": {
+      "sha256": "9871ff83aea93e5ada8639931776f81f6bda329bda2dc83ba0b1e0f78bb9877c",
+      "bytes": 2801,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/openplan/supabase/migrations/20261017014010_land_use_plan_context_geography.sql": {
+      "sha256": "b083241e879913afe93e848f4bb81191acf5439569c8226a86e14852bf3ee002",
+      "bytes": 6500,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-geography-correction/CLI_SOURCE.txt": {
+      "sha256": "b492ea19830475d4953004568efe63a4c06c67ef112ba72122d92f03991b0ba1",
+      "bytes": 1432,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-geography-correction/FINITE_WINDOW.md": {
+      "sha256": "e8a6d88ae366bc461c63af243d484ecba8cfee0ddf84f64f9217796205ff78ba",
+      "bytes": 9934,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-geography-correction/GENERATION02.md": {
+      "sha256": "1ab99ae2bbc5dd885441627c4c994b9972288169daf4b1c0ddc5769014f2532e",
+      "bytes": 2891,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-geography-correction/SOURCE_AUDIT.md": {
+      "sha256": "b802e9c64e52f86c5451adaab75f5d4d54b5033061c7257d967a82060e60d30f",
+      "bytes": 2561,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-geography-correction/SOURCE_PINS.txt": {
+      "sha256": "a15c30ab2ab327c962ab07eb928eef7fa446b199fca03ed834c9c102fd6aa113",
+      "bytes": 4134,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-geography-correction/STATUS.md": {
+      "sha256": "5a22246b12bc01711e52a9513b9961413867e78c6ad748ac26bc4558fe681ec6",
+      "bytes": 16435,
+      "mode": "0664"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-geography-correction/production-from-draft.diff": {
+      "sha256": "5f8e383eae0e5917de278f16b888455007c2192a9a93edcfbc38c38e76ff6dfd",
+      "bytes": 539,
+      "mode": "0664"
+    }
+  }
+}

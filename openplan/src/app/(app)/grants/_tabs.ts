@@ -29,6 +29,7 @@ export const GRANTS_TABS: readonly PageTabDefinition<GrantsTabKey>[] = [
       "application-sections",
       "application-attachments",
       "application-export",
+      "atp-scoring-packet",
       "narrative-draft-panel",
       "narrative-grounding-line",
       "never-ai-note",

@@ -1,0 +1,23 @@
+{
+  "boundary": "selected current bytes only; no entire old corpus rehash",
+  "files": {
+    "/home/nathaniel/.local/state/openplan/engagement-summary-completeness-20261016/final-handoff.json": "64ba283f9418c2b5e701167d7353ab3aaa4b521b2f43431aa93db86837e6500e",
+    "/home/nathaniel/.local/state/openplan/engagement-summary-completeness-20261016/trial01/dispatch-intent.json": "d8c190a79fa616f277d8848a5ac7f2b330b31e256761ac6ef77543d8ca859f97",
+    "/home/nathaniel/.local/state/openplan/engagement-summary-completeness-20261016/trial01/grant.json": "30fc3d7a4bc972b2593cff937d812208fc739f5e47f9104e867a73634199ddb1",
+    "/home/nathaniel/.local/state/openplan/engagement-summary-completeness-20261016/trial01/manager-entry.txt": "2d605df16772ce798e31e3b38df55cab15333561a8364d1cb146f28529d4431e",
+    "/home/nathaniel/.local/state/openplan/engagement-summary-completeness-20261016/trial01/preparation-pins.json": "6eea50d7d72cce5e8cab75dac9a2158fbeec2dd2d7a22369444aa2f47c0abaab",
+    "/home/nathaniel/.local/state/openplan/engagement-summary-completeness-20261016/trial01/restoration.json": "076e0f4d097378a3e2002307ad34f126d52932dc067ed3ca665660795997d9a3",
+    "/home/nathaniel/.local/state/openplan/engagement-summary-completeness-20261016/trial01/results/direction.terminal.json": "c2c49d55adb3b212e48b180dee586628222e9d4016f94e8f9c394e91b6a0fe11",
+    "/home/nathaniel/.local/state/openplan/engagement-summary-completeness-20261016/trial01/results/focused-lint.terminal.json": "e57b14da9e7090fba745bb0b9b29eb5ba4b495c368133de5ff7525201db74fcb",
+    "/home/nathaniel/.local/state/openplan/engagement-summary-completeness-20261016/trial01/results/focused-types.terminal.json": "1eb3ae76d6dee766e7cf30f593c4a7e6da1e9f69b42019738062a7100f33702c",
+    "/home/nathaniel/.local/state/openplan/engagement-summary-completeness-20261016/trial01/runtime.json": "ec346ddc25231a222dc23c0c83909e3176b3b3e4248f422f46a743f40c4f005a",
+    "/home/nathaniel/.local/state/openplan/engagement-summary-completeness-20261016/trial01/stderr.txt": "2cb6f928ea721252056376409990cd4c39b58885b675ca9e8ba597a54286f870",
+    "/home/nathaniel/.local/state/openplan/engagement-summary-completeness-20261016/trial01/terminal.json": "dcfc069638c263093939dd917e38d8baacd21b6cd2c860ee6de4ddd71613daf3",
+    "/home/nathaniel/.local/state/openplan/engagement-summary-completeness-20261016/trial01/test-results.json": "62238a9c250a88f9e0e02865ef5977c69dd6947b4c192f1459180845a91f3050",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/docs/reviews/2026-10-16-engagement-summary-completeness/SHA256SUMS": "921d91982ea11d4c2e6a7fc0d242c884faaa8fc038c78bda30b8414c76e77a69",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/docs/reviews/2026-10-16-engagement-summary-completeness/fault-observations.json": "154a43b07ea9272033ed3575c6d7e09eec02f27af758249bf3447043d2c5d5cf",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/docs/reviews/2026-10-16-engagement-summary-completeness/preparation-pins.json": "6eea50d7d72cce5e8cab75dac9a2158fbeec2dd2d7a22369444aa2f47c0abaab",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/docs/reviews/2026-10-16-engagement-summary-completeness/private-evidence.sha256": "de1a15f30ef246a8a85eebd33f7680b85dbb3bef26b8040f994e9e088606e7e2",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/docs/reviews/2026-10-16-engagement-summary-completeness/source.diff": "22d3df0801a4f5d28cd22fbe6366e0cfd5f9a8074b46dfd82e9569d52097750e"
+  }
+}

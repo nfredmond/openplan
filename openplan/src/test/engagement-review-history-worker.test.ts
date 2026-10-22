@@ -8,21 +8,25 @@ const m=vi.hoisted(()=>({service:vi.fn(),pdf:vi.fn()}));
 vi.mock("@/lib/supabase/server",()=>({createServiceRoleClient:m.service}));
 vi.mock("@/lib/reports/pdf",()=>({renderReportPdf:m.pdf}));
 import { processNextEngagementReport } from "@/lib/engagement/review-export-worker";
+import { WORKSPACE_STORAGE_UNREADABLE_MESSAGE, workspaceStorageFullMessage } from "@/lib/workspaces/storage-quota";
 const hash=(s:string|Buffer)=>createHash("sha256").update(s).digest("hex");
 let root:string;
 let job:{id:string;report_id:string;workspace_id:string;campaign_id:string;scope:string;snapshot_text:string;snapshot_sha256:string};
 let updates:Record<string,unknown>[];
 let upload:ReturnType<typeof vi.fn>;
 let rpc:ReturnType<typeof vi.fn>;
+// What workspace_storage_bytes answers (storage-quota.ts reads it through the real module).
+let storageUse:{data:unknown;error:{message:string}|null};
 beforeEach(async()=>{
  vi.clearAllMocks();root=await mkdtemp(join(tmpdir(),"openplan-synthetic-history-worker-"));updates=[];
  const snapshot={schema:2,capturedAt:"2026-09-14T12:00:00Z",scope:"internal",filters:{},campaign:{id:native.scope.campaignId,title:"SYNTHETIC worker archive",summary:null,configurationVersionId:null},items:[],sessions:[],answers:[],responses:[],definitions:[],workspaceId:native.scope.workspaceId,decisionLinkHistoryScope:"campaign",decisionLinkCount:2,decisionLinks:native.withdrawn.entries};
  const raw=JSON.stringify(snapshot);job={id:"50000000-0000-4000-8000-000000000005",report_id:"60000000-0000-4000-8000-000000000006",campaign_id:native.scope.campaignId,workspace_id:native.scope.workspaceId,scope:"internal",snapshot_text:raw,snapshot_sha256:hash(raw)};
- upload=vi.fn(async()=>({error:null}));rpc=vi.fn(async(name:string)=>({data:name==="claim_engagement_report"?{...job}:null,error:null}));
+ upload=vi.fn(async()=>({error:null}));storageUse={data:0,error:null};
+ rpc=vi.fn(async(name:string)=>name==="workspace_storage_bytes"?storageUse:({data:name==="claim_engagement_report"?{...job}:null,error:null}));
  m.pdf.mockResolvedValue({engine:"chrome",bytes:new Uint8Array([37,80,68,70])});
  m.service.mockReturnValue({rpc,storage:{from:()=>({upload})},from:()=>({update:(value:Record<string,unknown>)=>{updates.push(value);const builder={eq:()=>builder,select:()=>builder,maybeSingle:async()=>({data:{id:job.id},error:null})};return builder;}})});
 });
-afterEach(async()=>{await rm(root,{recursive:true,force:true});});
+afterEach(async()=>{vi.unstubAllEnvs();await rm(root,{recursive:true,force:true});});
 describe("private decision-history worker recovery",()=>{
  it("reuses a verified cache on an interrupted retry without rendering again",async()=>{
   expect(await processNextEngagementReport(root)).toBe(true);expect(upload).toHaveBeenCalledTimes(3);expect(m.pdf).toHaveBeenCalledOnce();
@@ -38,6 +42,27 @@ describe("private decision-history worker recovery",()=>{
   expect(await processNextEngagementReport(root)).toBe(true);
   expect(upload).not.toHaveBeenCalled();expect(m.pdf).toHaveBeenCalledOnce();
   expect(updates.at(-1)).toMatchObject({status:"failed",failure_detail:"Private decision history scope differs"});
+  expect(rpc.mock.calls.some(([name])=>name==="finish_engagement_report")).toBe(false);
+ });
+ it("checks the workspace storage limit for the review files before storing them",async()=>{
+  expect(await processNextEngagementReport(root)).toBe(true);
+  expect(rpc).toHaveBeenCalledWith("workspace_storage_bytes",{p_workspace_id:job.workspace_id});
+  const storageCheck=rpc.mock.invocationCallOrder[rpc.mock.calls.findIndex(([name])=>name==="workspace_storage_bytes")];
+  expect(storageCheck).toBeLessThan(upload.mock.invocationCallOrder[0]);
+  expect(upload).toHaveBeenCalledTimes(3);
+ });
+ it("fails the job with the planner storage message when the workspace is at its limit, storing nothing",async()=>{
+  vi.stubEnv("OPENPLAN_WORKSPACE_STORAGE_QUOTA_BYTES","1000");storageUse={data:1000,error:null};
+  expect(await processNextEngagementReport(root)).toBe(true);
+  expect(upload).not.toHaveBeenCalled();
+  expect(updates.at(-1)).toMatchObject({status:"failed",failure_detail:workspaceStorageFullMessage(1000,1000,1)});
+  expect(rpc.mock.calls.some(([name])=>name==="finish_engagement_report")).toBe(false);
+ });
+ it("fails the job when storage use cannot be read, storing nothing",async()=>{
+  storageUse={data:null,error:{message:"permission denied for function workspace_storage_bytes"}};
+  expect(await processNextEngagementReport(root)).toBe(true);
+  expect(upload).not.toHaveBeenCalled();
+  expect(updates.at(-1)).toMatchObject({status:"failed",failure_detail:WORKSPACE_STORAGE_UNREADABLE_MESSAGE});
   expect(rpc.mock.calls.some(([name])=>name==="finish_engagement_report")).toBe(false);
  });
  it("rebuilds a damaged cache from the original retained snapshot",async()=>{

@@ -1,0 +1,9 @@
+{
+  "database": "odm_delivery_http_022b99ea39c3409c8d17a3edea7888fe",
+  "restContainer": "1a86d85adfd66d778e17e2ddca83028b204bed1511d03a62573de23c2d441e88",
+  "candidateSha256": "7005dcfb97fa97f8599887fff37f3f7be931e42fd22873da74a9196a094ab375",
+  "positiveCohorts": 4,
+  "casesPerCohort": 3,
+  "faults": 3,
+  "scope": "Actual supervised terminal callback socket, PostgREST authority and copied original runtime with synthetic failure observation. Fixture callback sink writes the original callback ledger directly; no application receiver-route, public DNS/TLS, hosted login, default worker, photogrammetry quality, browser or V1 acceptance."
+}

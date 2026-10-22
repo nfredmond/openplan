@@ -51,6 +51,7 @@ import {
   HOME_GEOGRAPHY_SCOPE_COLUMNS,
   parseWorkspaceHomeGeography,
 } from "@/lib/workspaces/home-geography";
+import { calendarDayOf, loadWorkspaceCalendar, todayIn } from "@/lib/time/workspace-calendar";
 import { moduleMetadata } from "@/lib/ui/page-title";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 
@@ -63,11 +64,14 @@ const NEEDS_YOU_LIMIT = 6;
 const UPCOMING_CAP_PER_SOURCE = 10;
 const BACKLOG_CAP_PER_SOURCE = 20;
 
-/** Sources that returned their full cap: more rows may exist than were read. */
-function cappedLabels(result: MyWorkResult, cap: number, blocks: readonly string[]): string[] {
+/**
+ * Sources that returned their full cap: more rows may exist than were read.
+ * `"every"` counts every source the read touched, for the dated-only read.
+ */
+function cappedLabels(result: MyWorkResult, cap: number, blocks: readonly string[] | "every"): string[] {
   return Object.entries(result.rowsRead).flatMap(([sourceId, rows]) => {
     const source = MY_WORK_SOURCES_BY_ID[sourceId as keyof typeof MY_WORK_SOURCES_BY_ID];
-    if (!source || rows === undefined || !blocks.includes(source.block)) return [];
+    if (!source || rows === undefined || (blocks !== "every" && !blocks.includes(source.block))) return [];
     return rows >= cap ? [source.label.toLowerCase()] : [];
   });
 }
@@ -116,13 +120,20 @@ export default async function DashboardPage({
   const workspaceRole = membership.role ?? "member";
   const canManageWorkspace = workspaceRole === "owner" || workspaceRole === "admin";
 
-  // One clock for the whole render, so every window agrees where it starts.
+  // One clock and one calendar for the whole render, so every window agrees
+  // where it starts and every date lands on the workspace's day.
   const now = new Date();
+  const { timeZone } = await loadWorkspaceCalendar(supabase, workspaceId);
+  // A day more than the chart's weeks: its first week starts at midnight on
+  // the workspace's calendar, which a daylight-saving hour can put just
+  // before an exact twelve-week cut.
   const commentWindowStart = new Date(now);
-  commentWindowStart.setUTCDate(commentWindowStart.getUTCDate() - COMMENT_WINDOW_WEEKS * 7);
+  commentWindowStart.setUTCDate(commentWindowStart.getUTCDate() - (COMMENT_WINDOW_WEEKS * 7 + 1));
   // A day of margin either side of the server's date. The browser places
   // "today" in the reader's own time zone; these bounds only decide which
-  // read an item arrives in, and no item falls between them.
+  // read an item arrives in, and no item falls between them. No zone is
+  // behind UTC by more than twelve hours, so today in every zone is on or
+  // after this boundary and nothing due today is read as missed.
   const boundary = addDays(now.toISOString().slice(0, 10), -1);
   const windowEnd = addDays(boundary, COMING_UP_DAYS + 1);
   const chartEnd = addDays(boundary, DEADLINE_CHART_MONTHS * 31 + 1);
@@ -155,6 +166,7 @@ export default async function DashboardPage({
       limitPerSource: BACKLOG_CAP_PER_SOURCE,
       dueBefore: boundary,
       now,
+      timeZone,
     }),
     // Dated work from the boundary forward, soonest first. Read separately so
     // a long overdue backlog cannot push every upcoming item past the cap.
@@ -168,8 +180,16 @@ export default async function DashboardPage({
       dueOnOrBefore: chartEnd,
       datedOnly: true,
       now,
+      timeZone,
     }),
-    loadWorkspaceDates(supabase as unknown as WorkspaceDatesSupabaseLike, workspaceId, boundary, chartEnd),
+    loadWorkspaceDates(
+      supabase as unknown as WorkspaceDatesSupabaseLike,
+      workspaceId,
+      boundary,
+      chartEnd,
+      now,
+      timeZone
+    ),
     supabase
       .from("projects")
       .select("id, name, status, delivery_phase")
@@ -205,12 +225,12 @@ export default async function DashboardPage({
   );
 
   // ── Coming up ──
-  const overdue = sortComingUp(comingUpFromMyWork(backlog.items));
-  const allUpcoming = sortComingUp([...comingUpFromMyWork(upcoming.items), ...workspaceDates.items]);
+  const overdue = sortComingUp([...comingUpFromMyWork(backlog.items, timeZone), ...workspaceDates.missed]);
+  const allUpcoming = sortComingUp([...comingUpFromMyWork(upcoming.items, timeZone), ...workspaceDates.items]);
   const nextDays = withinWindow(allUpcoming, windowEnd);
   const comingUpCapped = cappedSourcesSentence(
     [
-      ...cappedLabels(upcoming, UPCOMING_CAP_PER_SOURCE, ["deadlines", "workspace_deadlines"]),
+      ...cappedLabels(upcoming, UPCOMING_CAP_PER_SOURCE, "every"),
       ...cappedLabels(backlog, BACKLOG_CAP_PER_SOURCE, ["deadlines", "workspace_deadlines"]),
       ...workspaceDates.capped,
     ].map((label) => ({ label, shown: UPCOMING_CAP_PER_SOURCE }))
@@ -221,7 +241,7 @@ export default async function DashboardPage({
   ]);
 
   const nextDateByProject = new Map<string, ComingUpItem>();
-  for (const entry of comingUpFromMyWork(upcoming.items)) {
+  for (const entry of comingUpFromMyWork(upcoming.items, timeZone)) {
     const projectId = upcoming.items.find((row) => `${row.sourceId}:${row.id}` === entry.key)?.projectId;
     if (projectId && !nextDateByProject.has(projectId)) nextDateByProject.set(projectId, entry);
   }
@@ -229,10 +249,11 @@ export default async function DashboardPage({
   // ── Figures ──
   const drawdown = awardDrawdownTotals(chartRows.awards, chartRows.invoices);
   const moderation = operationsSummary.moduleObservations?.engagement.moderationActionableItems ?? null;
-  const thisYear = String(now.getUTCFullYear());
+  // The year on the workspace's calendar, and each run counted in the year of its own day there.
+  const [thisYear] = todayIn(timeZone, now).split("-");
   const runsThisYear = runsRead.failed || runsRead.pending
     ? null
-    : runsRead.rows.filter((row) => String(row.created_at ?? "").startsWith(thisYear)).length;
+    : runsRead.rows.filter((row) => calendarDayOf(row.created_at, timeZone)?.startsWith(`${thisYear}-`)).length;
   const figures: DashboardFigure[] = [
     {
       key: "awarded",
@@ -262,10 +283,18 @@ export default async function DashboardPage({
   const deadlineCounts = deadlinesByMonth(allUpcoming, boundary, DEADLINE_CHART_MONTHS);
 
   // ── Setup ──
-  const setupSteps = [aiKeyConfigured, homeGeographyIsSet, kpis.totalRuns > 0];
+  // The operations summary reads every project in the workspace, whatever its
+  // status; this page's own list keeps only open ones, so it cannot say "none".
+  const projectCountUnreadable = (operationsSummary.moduleObservations?.unreadable ?? []).some(
+    (failure) => failure.label === "projects"
+  );
+  const projectCount = projectCountUnreadable ? null : operationsSummary.counts.projects;
+  // The AI key is optional, so it is not one of the steps counted here.
+  const setupSteps = [projectCount !== null && projectCount > 0, homeGeographyIsSet, kpis.totalRuns > 0];
   const setupDone = setupSteps.filter(Boolean).length;
   const checklist = (
     <FirstRunChecklist
+      projectCount={projectCount}
       aiKeyConfigured={aiKeyConfigured}
       homeGeographyIsSet={homeGeographyIsSet}
       homeGeographyUnreadable={homeGeographyUnreadable}
@@ -353,7 +382,7 @@ export default async function DashboardPage({
         workspaceId={workspaceId}
         series={{
           "award-drawdown": awardDrawdown(chartRows.awards, chartRows.invoices),
-          "comments-received": commentsReceivedOverTime(chartRows.comments, now),
+          "comments-received": commentsReceivedOverTime(chartRows.comments, now, timeZone),
           "deadlines-by-month": deadlinesByMonthSeries(deadlineCounts, Boolean(comingUpFailed), Boolean(comingUpCapped)),
           "runs-per-month": runsPerMonth(runsRead),
           "composite-scores": recentOverallScores(runsRead),

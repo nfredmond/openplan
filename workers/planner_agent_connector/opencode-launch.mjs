@@ -3,8 +3,9 @@ import { promisify } from "node:util";
 import { realpath, lstat, mkdir } from "node:fs/promises";
 import { join, isAbsolute, parse } from "node:path";
 import { prepareOpenCodeCredentials } from "./opencode-credentials.mjs";
+import { assertTestedCliVersion, testedCliRecord } from "./tested-cli-versions.mjs";
 
-export const OPENCODE_PROTOCOL_VERSION = "1.18.30";
+export const OPENCODE_PROTOCOL_VERSION = testedCliRecord("opencode").version;
 
 // This first adapter supports native OpenAI API credentials only. Mount the
 // inspected native auth snapshot read-only; OAuth refresh is unsupported.
@@ -23,7 +24,7 @@ export async function openCodeLaunch({ binaryPath, providerHome, scratchPath, re
   const version = await promisify(execFile)(binary, ["--version"], {
     timeout: 5000, maxBuffer: 8192, env: { PATH: "/usr/bin:/bin" },
   }).catch(() => { throw new Error("native_version_unavailable"); });
-  if (version.stdout.trim() !== OPENCODE_PROTOCOL_VERSION) throw new Error("native_version_unsupported");
+  assertTestedCliVersion("opencode", version.stdout);
   const profile = await realpath(providerHome), scratch = await realpath(scratchPath);
   if (profile === parse(profile).root || scratch === parse(scratch).root || profile === scratch ||
     profile.startsWith(`${scratch}/`) || scratch.startsWith(`${profile}/`) ||

@@ -6,6 +6,7 @@ import { loadProgramAccess } from "@/lib/programs/api";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { loadWorkProgramPreparation } from "@/lib/programs/work-program/server";
 import { WorkProgramEditor } from "@/components/programs/work-program/editor";
+import { loadWorkspaceCalendar } from "@/lib/time/workspace-calendar";
 
 export default async function WorkProgramPage({ params }: { params: Promise<{ programId: string }> }) {
   const { programId } = await params;
@@ -33,15 +34,23 @@ export default async function WorkProgramPage({ params }: { params: Promise<{ pr
       projects.push(...(result.data ?? []));
       if ((result.data?.length ?? 0) < 100) break;
     }
+    // Adoption decides the page order: until a version is adopted the job is
+    // preparing it, so preparation comes first; after that, reporting does.
+    // The read only orders the page and states nothing, so a failure falls back
+    // to preparation first instead of refusing the whole page.
+    const workflow = await supabase.from("program_work_program_workflow").select("effective_revision_id").eq("program_id", programId).maybeSingle();
+    const adopted = !workflow.error && Boolean(workflow.data?.effective_revision_id);
     const staff = await supabase.from("invoicing_staff").select("id, name").eq("workspace_id", access.program.workspace_id).order("name");
     const contracts = await supabase.from("invoicing_engagements").select("id, title").eq("workspace_id", access.program.workspace_id).order("title");
     if (staff.error || contracts.error) throw new Error("Staff and contracts could not be read");
+    // New entries are dated today on the workspace calendar. A failed read answers UTC.
+    const calendar = await loadWorkspaceCalendar(supabase, access.program.workspace_id);
+    const reporting = <section aria-labelledby="reporting" className="space-y-4 min-w-0"><h2 id="reporting" className="text-2xl font-semibold">Reporting</h2><ReportingPanel programId={programId} workspaceId={access.program.workspace_id} userId={user.id} timeZone={calendar.timeZone} /></section>;
+    const preparationSection = <section aria-labelledby="preparation" className="space-y-4 min-w-0"><h2 id="preparation" className="text-2xl font-semibold">Preparation and adoption history</h2><WorkProgramEditor programId={programId} workspaceId={access.program.workspace_id} userId={user.id} agency={access.program.sponsor_agency ?? ""} initial={preparation} documents={documents} evidenceDocuments={evidenceDocuments} projects={projects} staff={(staff.data ?? []).map((row) => ({ value: row.id, label: row.name }))} contracts={(contracts.data ?? []).map((row) => ({ value: row.id, label: row.title }))} canWrite={canAccessWorkspaceAction("programs.write", access.membership.role)} /></section>;
     return <section className="space-y-6 min-w-0">
       <Link href={`/programs/${programId}`} className="underline">Back to {access.program.title}</Link>
-      <header><h1 className="text-3xl font-semibold">Work program</h1><p className="mt-2 text-muted-foreground">Prepare an OWP, UPWP or agency work program from retained sources. Link proposed narrative, funding and staffing to the retained originals.</p></header>
-      <ReportingPanel programId={programId} workspaceId={access.program.workspace_id} userId={user.id} />
-      <h2 id="preparation" className="text-2xl font-semibold">Preparation and adoption history</h2>
-      <WorkProgramEditor programId={programId} workspaceId={access.program.workspace_id} userId={user.id} agency={access.program.sponsor_agency ?? ""} initial={preparation} documents={documents} evidenceDocuments={evidenceDocuments} projects={projects} staff={(staff.data ?? []).map((row) => ({ value: row.id, label: row.name }))} contracts={(contracts.data ?? []).map((row) => ({ value: row.id, label: row.title }))} canWrite={canAccessWorkspaceAction("programs.write", access.membership.role)} />
+      <header><h1 className="text-3xl font-semibold">Work program</h1><p className="mt-2 text-muted-foreground">Prepare this year&apos;s work program from last year&apos;s adopted copy.</p></header>
+      {adopted ? <>{reporting}{preparationSection}</> : <>{preparationSection}{reporting}</>}
     </section>;
   } catch {
     return <section className="space-y-4"><Link href={`/programs/${programId}`} className="underline">Back to program</Link><p role="alert">The work program could not be loaded. Check Workspace setup &amp; health and retry. Your saved proposal is unchanged.</p></section>;

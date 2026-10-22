@@ -83,6 +83,7 @@ describe("project GeoPackage", () => {
           { table_name: "project_area", data_type: "features", srs_id: 4326 },
           { table_name: "project_corridors", data_type: "features", srs_id: 4326 },
           { table_name: "project_info", data_type: "attributes", srs_id: null },
+          { table_name: "project_jurisdiction_context", data_type: "attributes", srs_id: null },
           { table_name: "project_location", data_type: "features", srs_id: 4326 },
           { table_name: "safety_crash_ksi", data_type: "features", srs_id: 4326 },
         ]);

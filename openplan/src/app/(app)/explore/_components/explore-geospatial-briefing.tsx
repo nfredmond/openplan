@@ -80,7 +80,7 @@ export function ExploreGeospatialBriefing({
           </div>
 
           <div className="rounded-[0.75rem] border border-border/80 bg-background p-5 shadow-[0_12px_36px_rgba(15,23,42,0.06)]">
-            <p className="text-label font-semibold text-muted-foreground">Citations & next geospatial lanes</p>
+            <p className="text-label font-semibold text-muted-foreground">Sources</p>
             <div className="mt-4 space-y-3">
               <div className="rounded-[0.5rem] border border-border/80 bg-card p-3.5">
                 <p className="text-sm font-medium text-foreground">Census retrieval</p>
@@ -92,7 +92,7 @@ export function ExploreGeospatialBriefing({
                 </p>
               </div>
               <div className="rounded-[0.5rem] border border-border/80 bg-card p-3.5">
-                <p className="text-sm font-medium text-foreground">Crash lane posture</p>
+                <p className="text-sm font-medium text-foreground">Crash data</p>
                 {/*
                   This panel used to tell every planner that "SWITRS remains the
                   preferred California-grade upgrade path" — a system retired on
@@ -108,15 +108,6 @@ export function ExploreGeospatialBriefing({
                     : "No crash source answered for this study area, so this run carries no crash figures. That is a gap in coverage, not a finding that no crashes occurred."}
                   {sourceSnapshots?.crashes?.note ? ` ${sourceSnapshots.crashes.note}` : ""}
                 </p>
-              </div>
-              <div className="rounded-[0.5rem] border border-border/80 bg-card p-3.5">
-                <p className="text-sm font-medium text-foreground">Next layer buildout</p>
-                <ul className="mt-2 list-disc space-y-1.5 pl-4 text-xs text-muted-foreground">
-                  <li>Census tract geometry + choropleth overlays</li>
-                  <li>Crash point severity filters on the registered crash sources</li>
-                  <li>Project and engagement overlays tied into the workspace</li>
-                  <li>CARTO workflow lane for derived spatial products and scheduled refreshes</li>
-                </ul>
               </div>
             </div>
           </div>

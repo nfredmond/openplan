@@ -101,9 +101,8 @@ const theBasics = [
   },
   {
     label: "Getting started",
-    value: "Sign up and you are in",
-    detail:
-      "Your workspace is ready immediately. No waiting list, no sales call, and nobody you have to talk to first.",
+    value: "Sign up, confirm your email, and you are in",
+    detail: "No waiting list, no sales call, and nobody you have to talk to first.",
   },
 ];
 
@@ -173,8 +172,8 @@ export default function PublicLandingPage() {
             </Link>
           </div>
           <p className="public-fine-print mt-2 text-sm text-muted-foreground">
-            Free and open source. Sign up and your workspace is ready immediately — no waiting
-            list, no approval step, and no payment at any point.
+            Free and open source. No waiting list, no approval step, and no payment at any
+            point.
           </p>
 
           <div className="public-fact-grid public-fact-grid--three">

@@ -141,12 +141,11 @@ export const APP_NAV_ENTRIES: AppNavEntry[] = [
     railGroup: "plans",
     icon: "programs",
     // "local measure" and its neighbours are here because a voter-approved
-    // sales-tax fund lives at /programs/<id>/measure — a CHILD of a program
+    // sales-tax fund lives at /programs/<id>/measure, a CHILD of a program
     // record, since the measure IS a program (`program_type = 'local_measure'`).
     // No registry entry can point at it: entries are static prefixes and that
-    // path has an id in the middle. A planner who types "measure" or "sales
-    // tax" into the palette would otherwise get nothing at all, which is the
-    // shipped-invisible defect in its cheapest form.
+    // path has an id in the middle. APP_NAV_SHORTCUTS below gives the palette
+    // its own named rows for the measure funds and the work programs.
     paletteKeywords:
       "rtip stip funding windows programs local measure sales tax self-help ordinance oversight " +
       "committee allocation claims",
@@ -257,6 +256,38 @@ export const APP_NAV_ENTRIES: AppNavEntry[] = [
   },
 ];
 
+/**
+ * Command-palette rows for places INSIDE a registered module. They are not
+ * surfaces: no rail item, no auth prefix of their own (each href sits under a
+ * registered, protected prefix, which the nav-registry test checks). They exist
+ * because a finished capability whose only door is a child route reads, to a
+ * planner, as a capability that does not exist.
+ */
+export type AppNavShortcut = {
+  href: string;
+  label: string;
+  railGroup: AppNavRailGroup;
+  paletteKeywords?: string;
+};
+
+export const APP_NAV_SHORTCUTS: AppNavShortcut[] = [
+  {
+    // The section on Programming Cycles that lists every work program.
+    // UPWP is the federal name (23 CFR 450.308); several states, California
+    // among them, call the same document an OWP.
+    href: "/programs#work-programs",
+    label: "Work programs (OWP/UPWP)",
+    railGroup: "plans",
+    paletteKeywords: "overall work program unified planning work program annual planning budget",
+  },
+  {
+    href: "/programs?programType=local_measure",
+    label: "Local measure funds",
+    railGroup: "plans",
+    paletteKeywords: "local measure sales tax self-help ordinance oversight committee allocation claims",
+  },
+];
+
 export type AppNavRailGroupDefinition = {
   title: string;
   items: Array<{ href: string; label: string; icon: string }>;
@@ -279,9 +310,9 @@ export type AppNavPaletteCommand = {
   keywords?: string;
 };
 
-/** Every registered surface as a command, grouped like the rail. */
+/** Every registered surface, then every shortcut, as a command grouped like the rail. */
 export function buildPaletteCommands(): AppNavPaletteCommand[] {
-  return APP_NAV_ENTRIES.map((entry) => ({
+  return [...APP_NAV_ENTRIES, ...APP_NAV_SHORTCUTS].map((entry) => ({
     label: entry.label,
     href: entry.href,
     group: RAIL_GROUP_TITLES[entry.railGroup],

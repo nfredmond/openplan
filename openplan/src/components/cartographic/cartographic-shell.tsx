@@ -23,7 +23,9 @@ import { CartographicLayerDeepLink } from "./cartographic-layer-deep-link";
 import { CartographicLayersPanel } from "./cartographic-layers-panel";
 import { CartographicMapReadingToggle } from "./cartographic-map-reading-toggle";
 import { MapSurfaceOnly } from "./map-surface-only";
-import { CartographicMapBackdrop } from "./cartographic-map-backdrop";
+// The loader, not the backdrop: the backdrop and mapbox-gl load only on a
+// route that draws the shell map.
+import { CartographicMapBackdropLoader } from "./cartographic-map-backdrop-loader";
 import { CartographicMapLegend } from "./cartographic-map-legend";
 import { CartographicOverviewSurface } from "./cartographic-overview-surface";
 import {
@@ -105,7 +107,7 @@ export async function CartographicShell({ children }: { children: React.ReactNod
         workspaceId={membership?.workspace_id ?? null}
       >
       <div className="op-cart-shell">
-        <CartographicMapBackdrop
+        <CartographicMapBackdropLoader
           homeMapView={homeMapView}
           workspaceId={membership?.workspace_id ?? null}
         />

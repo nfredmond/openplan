@@ -1,0 +1,297 @@
+name: Aerial worker custody regression
+on:
+  push:
+    branches: [main]
+  pull_request: {}
+permissions:
+  contents: read
+jobs:
+  odm-worker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install lightweight worker dependencies
+        run: python3 -m pip install requests pyproj python-dotenv
+      - name: All aerial worker suites
+        run: |
+          set -eu
+          for suite in workers/odm_worker/test_*.py; do
+            python3 -B "$suite"
+          done
+      - name: Journal harmless and targeted fault controls
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-admission-journal/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-admission-journal-controls"
+      - name: Disconnected journal root capture and replay
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-admission-journal/native_recovery.py \
+            --out "$RUNNER_TEMP/odm-admission-journal-native"
+      - name: Source custody harmless and targeted fault controls
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-source-custody/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-source-custody-controls"
+      - name: Interrupted source copy and stopped-root recovery
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-source-custody/native_recovery.py \
+            --out "$RUNNER_TEMP/odm-source-custody-native"
+      - name: Engine effect harmless and targeted fault controls
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-engine-effects/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-engine-effects-controls"
+      - name: Disconnected engine effect root capture and replay
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-engine-effects/native_recovery.py \
+            --out "$RUNNER_TEMP/odm-engine-effects-native"
+      - name: Captured draft harmless and targeted fault controls
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-draft-custody/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-draft-custody-controls"
+      - name: ZIP derived source harmless and targeted fault controls
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-zip-derived-custody/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-zip-derived-controls"
+      - name: Interrupted ZIP image copy and stopped-root recovery
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-zip-derived-custody/native_recovery.py \
+            --out "$RUNNER_TEMP/odm-zip-derived-native"
+      - name: ZIP engine lineage harmless and targeted fault controls
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-zip-engine-integration/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-zip-engine-controls"
+      - name: Original ZIP engine stopped-root replay
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-zip-engine-integration/native_recovery.py \
+            --out "$RUNNER_TEMP/odm-zip-engine-native"
+      - name: Durable HTTP admission harmless and targeted fault controls
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-runtime-admission/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-runtime-admission-controls"
+      - name: Actual HTTP admission and stopped-root held-start recovery
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-runtime-admission/native_recovery.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-runtime-admission-native"
+      - name: Owned runtime preparation harmless and targeted fault controls
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-runtime-preparation/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-runtime-preparation-controls"
+      - name: Interrupted owned runtime preparation and stopped-root recovery
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-runtime-preparation/native_recovery.py \
+            --out "$RUNNER_TEMP/odm-runtime-preparation-native"
+      - name: Native readiness publication harmless and targeted controls
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-native-readiness-race/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-native-readiness-controls"
+          python3 -B docs/reviews/2026-10-11-odm-native-readiness-race/verify_native_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-native-readiness-native-controls"
+      - name: Owned original runtime draft harmless and targeted fault controls
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-runtime-draft/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-runtime-draft-controls"
+      - name: Original supervised HTTP harmless and targeted fault controls
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-draft-http/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-draft-http-controls"
+      - name: Original URL source harmless and targeted fault controls
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-url-source-custody/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-url-source-controls"
+      - name: Interrupted URL source and two stopped-root recovery
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-url-source-custody/native_recovery.py \
+            --out "$RUNNER_TEMP/odm-url-source-native"
+      - name: Supervised URL transport harmless and targeted fault controls
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-url-transport/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-url-transport-controls"
+      - name: Interrupted network source and two stopped-root recovery
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-url-transport/native_recovery.py \
+            --out "$RUNNER_TEMP/odm-url-transport-native"
+      - name: Original URL intake settings harmless and targeted controls
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-runtime-url-intake/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-runtime-url-intake-controls"
+      - name: Interrupted owned URL intake and original settings recovery
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-runtime-url-intake/native_recovery.py \
+            --out "$RUNNER_TEMP/odm-runtime-url-intake-native"
+      - name: Original URL draft pipeline harmless and targeted controls
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-url-draft-pipeline/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-url-draft-pipeline-controls"
+          python3 -B docs/reviews/2026-10-11-odm-url-draft-pipeline/verify_transport_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-url-draft-pipeline-transport-controls"
+      - name: Original dispatch custody harmless and targeted controls
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-original-dispatch-custody/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-original-dispatch-controls"
+      - name: Private application dispatch reader and HTTP controls
+        run: |
+          python3 -B docs/reviews/2026-10-12-odm-private-dispatch-reader/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-private-dispatch-reader-controls"
+      - name: Current private application draft authority controls
+        run: |
+          python3 -B docs/reviews/2026-10-12-odm-private-draft-authority/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-private-draft-authority-controls"
+      - name: Native engine observation controls
+        run: |
+          python3 -B docs/reviews/2026-10-12-odm-native-engine-attestation/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-native-engine-controls"
+      - name: Retired SQLite companion controls
+        run: |
+          python3 -B docs/reviews/2026-10-13-odm-retired-sqlite-companions/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-retired-companion-controls"
+      - name: Supplied task metadata controls
+        run: |
+          python3 -B docs/reviews/2026-10-13-odm-task-observation/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-task-observation-controls"
+      - name: Separate retained task metadata root controls
+        run: |
+          python3 -B docs/reviews/2026-10-13-odm-task-observation-retention/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-task-observation-retention-controls"
+      - name: Local task metadata command controls
+        run: |
+          python3 -B docs/reviews/2026-10-13-odm-task-observation-cli/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-task-observation-cli-controls"
+      - name: Original task HTTP read controls
+        run: |
+          python3 -B docs/reviews/2026-10-13-odm-original-task-read/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-original-task-read-controls"
+      - name: Original task operator command controls
+        run: |
+          python3 -B docs/reviews/2026-10-13-odm-original-task-command/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-original-task-command-controls"
+      - name: Owned runtime task observation controls
+        run: |
+          python3 -B docs/reviews/2026-10-13-odm-runtime-observation/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-runtime-observation-controls"
+      - name: Original processing authority controls
+        run: |
+          python3 -B docs/reviews/2026-10-13-odm-original-processing-commit/verify_authority_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-processing-authority-controls"
+      - name: Original processing commit HTTP controls
+        run: |
+          python3 -B docs/reviews/2026-10-13-odm-original-processing-commit/verify_transport_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-processing-commit-http-controls"
+      - name: Original processing commit journal controls
+        run: |
+          python3 -B docs/reviews/2026-10-13-odm-original-processing-commit/verify_runtime_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-processing-commit-journal-controls"
+      - name: Original uncertain commit inspection controls
+        run: |
+          python3 -B docs/reviews/2026-10-13-odm-uncertain-commit-inspection/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-uncertain-commit-inspection-controls"
+      - name: Supplied output archive custody controls
+        run: |
+          python3 -B docs/reviews/2026-10-13-odm-output-archive-custody/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-output-archive-controls"
+      - name: Interrupted output archive root recovery
+        run: |
+          python3 -B docs/reviews/2026-10-13-odm-output-archive-custody/native_recovery.py \
+            --out "$RUNNER_TEMP/odm-output-archive-native"
+      - name: Output archive recovery fault controls
+        run: |
+          python3 -B docs/reviews/2026-10-13-odm-output-archive-custody/verify_native_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-output-archive-native-controls"
+      - name: Original output archive HTTP controls
+        run: |
+          python3 -B docs/reviews/2026-10-13-odm-original-output-http/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-original-output-http-controls"
+      - name: Original runtime output intake controls
+        run: |
+          python3 -B docs/reviews/2026-10-13-odm-runtime-output-intake/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-runtime-output-intake-controls"
+      - name: Private original product file controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-odm-private-products/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-private-product-controls"
+      - name: Selected migration capture source controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-odm-output-schema-recovery/verify_migration_source_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-migration-source-controls"
+      - name: Rotated native raster spacing controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-rotated-raster-spacing/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-rotated-raster-spacing-controls"
+      - name: Private native raster inspection controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-private-raster-inspection/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-private-raster-inspection-controls"
+      - name: Private original artifact preparation controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-private-artifact-preparation/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-private-artifact-preparation-controls"
+      - name: Original artifact access and separate delivery authority controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-artifact-access/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-original-artifact-access-controls"
+          python3 -B docs/reviews/2026-10-14-artifact-access/verify_authority_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-delivery-authority-controls"
+
+      - name: Original terminal callback and explicit byte allowance controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-terminal-delivery/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-terminal-delivery-controls"
+      - name: Original retained artifact HTTP and stalled socket controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-artifact-http/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-artifact-http-controls"
+          python3 -B docs/reviews/2026-10-14-artifact-http/verify_cleanup.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-artifact-http-cleanup-controls"
+      - name: Original worker coordination and local failure controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-worker-coordination/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-worker-coordination-controls"
+      - name: Original input commit and held-start recovery controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-original-pipeline/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-original-pipeline-controls"
+      - name: Original running progress and historical receipt controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-running-progress/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-running-progress-controls"
+      - name: Original outcome repair and pinned terminal retry controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-outcome-recovery/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-outcome-recovery-controls"
+          python3 -B docs/reviews/2026-10-14-outcome-recovery/verify_oracle_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-outcome-summary-controls"
+      - name: Explicit original runtime assembly controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-runtime-assembly/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-runtime-assembly-controls"
+      - name: Explicit owned HTTP service controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-owned-worker-service/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-owned-service-controls"
+      - name: Explicit original worker command controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-owned-worker-cli/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-owned-cli-controls"
+      - name: Original operator configuration controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-runtime-binding/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-runtime-binding-controls"
+      - name: Original recovery scheduling and capture guard controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-recovery-execution/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-recovery-execution-controls"
+          python3 -B docs/reviews/2026-10-14-recovery-execution/verify_capture_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-execution-capture-controls"
+      - name: Exact progress callback journal controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-progress-delivery/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-progress-delivery-controls"
+      - name: Supervised progress POST controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-progress-delivery/verify_http_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-progress-http-controls"
+      - name: Interrupted progress POST recovery controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-progress-delivery/verify_native_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-progress-native-controls"

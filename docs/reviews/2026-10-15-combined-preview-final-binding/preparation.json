@@ -1,0 +1,79 @@
+{
+  "reviewedCommit": "a72f012ced074cadbfeb8981e2944e056e6373d2",
+  "independentCommit": "ce93566f4f0daf2234f6ef5424a9f5393e404484",
+  "candidate": "06a108010ab39aa42eed4c2bcda3e1371b8aa813",
+  "repository": "/home/nathaniel/.t3/worktrees/openplan/t3-6bf6371f",
+  "privateRoot": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/project-geography-preview-final-20261015",
+  "sourceDatabase": "openplan_jurisdiction_native_3d281df106064b8cbb9e0c82_up",
+  "postgresContainerId": "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce",
+  "plannedTargetDatabase": "openplan_project_combined_preview_0752bc2e8104b7a40faab27f",
+  "helperNames": {
+    "rest": "openplan-combined-final-rest-64be34b53235",
+    "auth": "openplan-combined-final-auth-516814944a59",
+    "storage": "openplan-combined-final-storage-25aebf81ee30",
+    "gateway": "openplan-combined-final-gateway-6e6f51a922fb"
+  },
+  "api": "http://127.74.19.10:29948",
+  "web": "http://127.74.19.10:3585",
+  "migrationCount": 419,
+  "migrationLatest": "20261017000016",
+  "migrationBindingSha256": "56c984affb04f643bd3ccc74e7c4258771253cb7bbadcbbe6d130039cccc5317",
+  "all419MigrationBytesMatchReviewed": true,
+  "sourceLogicalFingerprintSha256": "82fda3004c8dd5d3f1e26eb179e11d1da159eb79a33253a636de37ef68213547",
+  "sourceBindingCopiedExactly": true,
+  "configuredSourceValuesAndFullHashRemainPrivate": true,
+  "engineCredentialsUnchanged": true,
+  "localJwtKeysFresh": true,
+  "priorPacketRootsPreserved": 8,
+  "readonlyPreflight": {
+    "readonlyPreflight": true,
+    "sourceAnchorNotRecaptured": true,
+    "sourceAnchor": "82fda3004c8dd5d3f1e26eb179e11d1da159eb79a33253a636de37ef68213547",
+    "sourceGlobalsHelpersStorageMatchExistingBindings": true,
+    "targetDatabaseExists": false,
+    "ownedHelperCounts": {
+      "rest": 0,
+      "auth": 0,
+      "storage": 0,
+      "gateway": 0
+    },
+    "bothBindProbesSucceeded": true,
+    "priorPacketsByteModeUnchanged": true,
+    "noOperationalPhaseExecuted": true,
+    "boundary": "Read-only observations and bind probes at this time; ports are not reserved."
+  },
+  "units": [
+    {
+      "name": "openplan-final-binding-verify-20261015-03",
+      "result": "success",
+      "memoryPeak": "93.7M",
+      "swap": "0B"
+    },
+    {
+      "name": "openplan-final-binding-preflight-20261015-01",
+      "result": "success",
+      "memoryPeak": "93M",
+      "swap": "0B"
+    }
+  ],
+  "failedTrialsRetained": 2,
+  "applicationDeltaPaths": [
+    "openplan/.env.example",
+    "openplan/docs/SELF_HOSTING.md",
+    "openplan/docs/ops/BACKUP_AND_RESTORE.md",
+    "openplan/docs/ops/HOSTED_OPERATIONS.md",
+    "openplan/docs/ops/HOSTED_RECOVERY.md",
+    "openplan/src/app/(app)/projects/[projectId]/_components/project-jurisdiction-readiness.tsx",
+    "openplan/src/app/(app)/projects/[projectId]/_components/project-map-presence-panel.tsx",
+    "openplan/src/components/projects/project-jurisdiction-editor.tsx",
+    "openplan/src/components/projects/project-saved-map.tsx",
+    "openplan/src/lib/integrations/key-crypto.ts",
+    "openplan/src/test/engagement-synthesis-generation-worker.test.ts",
+    "openplan/src/test/integration-key-rotation.test.ts",
+    "openplan/src/test/integration-rotation-consumer-chain.test.ts",
+    "openplan/src/test/planner-copy-says-the-plain-thing.test.ts",
+    "openplan/src/test/reference-count-projection-guard.test.ts",
+    "openplan/src/test/supabase-call-sites.ts"
+  ],
+  "operationallyProved": false
+}

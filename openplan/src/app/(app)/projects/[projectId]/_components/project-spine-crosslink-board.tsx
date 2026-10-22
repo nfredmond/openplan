@@ -62,14 +62,14 @@ export function ProjectSpineCrosslinkBoard({
           <div>
             <p className="text-label font-semibold text-muted-foreground">
               {isLoading
-                ? "Loading state"
+                ? "Loading"
                 : summary.boardState === "unreadable"
-                  ? "Read failure"
+                  ? "Could not load"
                   : summary.boardState === "schema_pending"
-                    ? "Setup fallback"
+                    ? "Not set up yet"
                     : summary.boardState === "empty"
-                      ? "Empty state"
-                      : "Operator queue"}
+                      ? "Nothing linked yet"
+                      : "Next steps"}
             </p>
             <h3 className="mt-2 text-sm font-semibold text-foreground">
               {isLoading ? "Loading crosslink queue" : summary.stateHeadline}

@@ -67,6 +67,24 @@ describe('campaign review records',()=>{
   expect(workbook.Sheets.Summary.B2.f).toBe("COUNTA('Contributions'!A2:A3)");
   expect(workbook.Sheets.Summary.B2.v).toBe(2);
  });
+ it('retains the extracted review styles, frozen headers and recalculation settings on every sheet',async()=>{
+  const zip=await JSZip.loadAsync(await buildCampaignReviewWorkbook(snapshot,'checksum'));
+  const xml=async(path:string)=>new DOMParser().parseFromString(await zip.file(path)!.async('string'),'application/xml');
+  const styles=await xml('xl/styles.xml');
+  expect(styles.querySelector('parsererror')).toBeNull();
+  expect([...styles.querySelectorAll('cellXfs > xf > alignment')].map(node=>node.getAttribute('wrapText')), 'engagement wrap styles unchanged').toEqual(['1','1','1']);
+  expect(styles.querySelector('fills > fill:nth-child(3) fgColor')?.getAttribute('rgb'),'engagement header color unchanged').toBe('FF136B73');
+  const book=await xml('xl/workbook.xml');
+  expect(book.querySelector('calcPr')?.getAttribute('forceFullCalc'),'engagement recalc retained').toBe('1');
+  for(const path of Object.keys(zip.files).filter(path=>/^xl\/worksheets\/sheet\d+\.xml$/.test(path))){
+   const sheet=await xml(path);
+   expect(sheet.querySelector('parsererror')).toBeNull();
+   expect(sheet.querySelector('pane')?.getAttribute('topLeftCell'),'engagement frozen header retained').toBe('A2');
+   expect(sheet.querySelector('c[r="A1"]')?.getAttribute('s'),'engagement header style retained').toBe('1');
+   for(const cell of [...sheet.querySelectorAll('row:not([r="1"]) c')])expect(cell.getAttribute('s'),'engagement body style retained').toBe('2');
+   expect(sheet.querySelector('pageSetup'),'engagement print behavior unchanged').toBeNull();
+  }
+ });
  it('renders historical absence and escapes participant markup',()=>{
   const html=buildCampaignReviewHtml(snapshot,'checksum');
   expect(html).toContain('Historical definition unavailable');

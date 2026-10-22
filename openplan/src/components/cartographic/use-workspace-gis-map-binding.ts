@@ -2,18 +2,24 @@
 
 import { useEffect, useRef, useState } from "react";
 import type mapboxgl from "mapbox-gl";
+import { deploymentMapEngine, labelFontsFor } from "@/lib/maps/map-engine";
+import { whenStyleAccepts } from "@/lib/maps/when-style-accepts";
 
 import {
   applyWorkspaceGisEmphasis,
   applyWorkspaceGisVisibility,
   paintWorkspaceGisLayers,
   viewportKeyFor,
+  WORKSPACE_GIS_MAPBOX_LABEL_FONTS,
   type WorkspaceGisMapTarget,
 } from "@/lib/cartographic/workspace-gis-map-layers";
 import { fetchWorkspaceGisFeatures, fetchWorkspaceGisLayers } from "@/lib/workspace-gis/client";
 import type { WorkspaceGisFeatureCollection } from "@/lib/workspace-gis/types";
 
 import { useWorkspaceMapLayers } from "./cartographic-context";
+
+/** The library this deployment draws with, so labels use fonts its style serves. */
+const MAP_ENGINE = deploymentMapEngine();
 
 /**
  * Everything that has to happen between "this workspace has uploaded layers"
@@ -321,7 +327,7 @@ export function useWorkspaceGisMapBinding({
    *
    * ═══ THE ONE-THIRD-OF-LOADS BUG THIS REPLACED (2026-08-13) ═══
    *
-   * It used to say `map.once("style.load", paint)` when the style was not ready.
+   * It used to wait for one `style.load` with `once` when the style was not ready.
    * `style.load` fires ONCE per style, early — and `isStyleLoaded()` keeps
    * returning false for a while AFTER it, while sources and sprites settle. So
    * whenever the agency's geometry arrived inside that window, the paint was
@@ -345,7 +351,8 @@ export function useWorkspaceGisMapBinding({
    * mid-load kept a handler holding the whole binding closure alive.
    *
    * Shared by three maps (shell backdrop, Corridor Analysis, Safety), so this
-   * was one bug in three places.
+   * was one bug in three places. The retry now lives in `whenStyleAccepts`,
+   * which every other paint in the product uses too.
    */
   useEffect(() => {
     const map = mapRef.current;
@@ -357,27 +364,11 @@ export function useWorkspaceGisMapBinding({
         collections,
         anchorLayerId: resolveAnchorRef.current(map),
         theme,
+        labelFonts: labelFontsFor(MAP_ENGINE, map, WORKSPACE_GIS_MAPBOX_LABEL_FONTS),
       });
     };
 
-    if (map.isStyleLoaded()) {
-      paint();
-      return;
-    }
-
-    const paintWhenStyleAccepts = () => {
-      if (!map.isStyleLoaded()) return;
-      map.off("styledata", paintWhenStyleAccepts);
-      map.off("idle", paintWhenStyleAccepts);
-      paint();
-    };
-
-    map.on("styledata", paintWhenStyleAccepts);
-    map.on("idle", paintWhenStyleAccepts);
-    return () => {
-      map.off("styledata", paintWhenStyleAccepts);
-      map.off("idle", paintWhenStyleAccepts);
-    };
+    return whenStyleAccepts(map, paint);
   }, [mapRef, ready, enabled, workspaceLayers, collections, theme]);
 
   useEffect(() => {

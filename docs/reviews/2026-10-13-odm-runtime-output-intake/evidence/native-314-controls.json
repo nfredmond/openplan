@@ -1,0 +1,62 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "cases": 5
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived",
+    "cases": 5
+  },
+  {
+    "control": "restored",
+    "outcome": "survived",
+    "cases": 5
+  },
+  {
+    "control": "revoked-actor-ignored",
+    "outcome": "intended_failure",
+    "reason": "Native output must refuse a revoked original actor"
+  },
+  {
+    "control": "download-current-read-lost",
+    "outcome": "intended_failure",
+    "reason": "Native output download must use five current permissions, one archive GET and two engine checks"
+  },
+  {
+    "control": "saved-replay-refetches",
+    "outcome": "intended_failure",
+    "reason": "Native saved output must check three current permissions without another archive GET"
+  },
+  {
+    "control": "native-archive-corrupted",
+    "outcome": "intended_failure",
+    "reason": "Native retained output file must match independent useful archive bytes"
+  },
+  {
+    "control": "post-download-revocation-swallowed",
+    "outcome": "intended_failure",
+    "reason": "Native post-download revocation cannot confirm bytes or archive custody"
+  },
+  {
+    "control": "unconfirmed-attempt-removed",
+    "outcome": "intended_failure",
+    "reason": "Native recovery must retain both bounded attempts and preserve useful bytes"
+  },
+  {
+    "control": "archive-provenance-promoted",
+    "outcome": "intended_failure",
+    "reason": "Native saved output must preserve exact useful archive custody"
+  },
+  {
+    "control": "publication-promoted",
+    "outcome": "intended_failure",
+    "reason": "Native output cannot promote callback, publication or quality"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived",
+    "cases": 5
+  }
+]

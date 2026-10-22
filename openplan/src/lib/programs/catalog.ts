@@ -4,6 +4,8 @@ export const PROGRAM_TYPE_OPTIONS = [
   { value: "itip", label: "ITIP" },
   { value: "tcep", label: "TCEP" },
   { value: "local_measure", label: "Local Measure" },
+  // UPWP is the federal name (23 CFR 450.308); California calls it the OWP.
+  { value: "owp_upwp", label: "Overall Work Program (OWP/UPWP)" },
   { value: "other", label: "Other Program Lane" },
 ] as const;
 

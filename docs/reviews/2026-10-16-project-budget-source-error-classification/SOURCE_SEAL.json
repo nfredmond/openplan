@@ -1,0 +1,10 @@
+{
+  "baseCommit": "93c5a1efc514d53db953bdba5a8322dcf844e14b",
+  "baseApplicationTree": "e04a8509926c27065e77537f1816071811bb5b4d",
+  "files": {
+    "openplan/src/lib/projects/budget-queries.ts": "c763dfe4041b9f6390f93b2329312a539a2d13796a74719d84f9630413bf9743",
+    "openplan/src/test/project-budget-source-error-classification.test.ts": "1c04f10c8204005125a67637f26b46b699300f26aa67da0647f150554ca3f5a5",
+    "openplan/src/test/project-budget-stated-budget-isolation.test.ts": "b6256dc699f1841bcc39c703663bb8dfd6b79efde45f7bbb689db97b5ac59a0f",
+    "openplan/src/test/project-budget-complete-inputs-corrections.test.ts": "91f76cbb668d6f6a471e2fbe0cb5742b95a08bead069ee143967b6ee674cd35e"
+  }
+}

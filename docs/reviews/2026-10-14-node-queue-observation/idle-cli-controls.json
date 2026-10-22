@@ -1,0 +1,27 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "test": "stops the continuous worker during its idle delay"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived",
+    "test": "stops the continuous worker during its idle delay"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived",
+    "test": "stops the continuous worker during its idle delay"
+  },
+  {
+    "control": "unexpected-diagnostic-target",
+    "outcome": "intended_failure",
+    "test": "stops the continuous worker during its idle delay"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived",
+    "test": "stops the continuous worker during its idle delay"
+  }
+]

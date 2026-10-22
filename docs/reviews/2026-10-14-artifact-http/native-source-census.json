@@ -1,0 +1,14 @@
+{
+  "workers/odm_worker/admission_journal.py": "c1e4abf32a80d9c69b7e83e44d3af5015d7774688e94d2661a2872be54ad06fc",
+  "workers/odm_worker/main.py": "d331bbd2a76c5300e0d0cd434f3e0cae434cf13713b7d8d4631f1a176b5f71f2",
+  "workers/odm_worker/runtime_artifact_access.py": "fcdd99bf35efbaa33eaa2f6e591d790778080abd5e955ef35852649c98541705",
+  "workers/odm_worker/runtime_artifact_http.py": "024c72c6d8116eaca9700c61ca0cab0ca63ab420e3cd3a8928e57fd87536edc4",
+  "workers/odm_worker/test_reference_lookup.py": "102659030c82107f900aa92abb27b7a06058f3e051a95ded0993123b9029fe91",
+  "workers/odm_worker/test_runtime_artifact_http.py": "08c5777d8e2c9a69bd15b77d48b6ba6b587dfa13ae705a1c6360b3d310af3887",
+  "workers/odm_worker/test_artifact_socket_backpressure.py": "06e0c99fa3281d31f9c0d23edfcdb1ad88c40a2bc45b12d4b4818979fed51acb",
+  "docs/reviews/2026-10-14-artifact-http/verify_preflight.py": "068d7f89569d71913fb4e015590591e5a91691e7eafe720ed5146abb924aa2b6",
+  "docs/reviews/2026-10-14-artifact-http/verify_cleanup.py": "0d6224a134acc253f1d642505ab18185c57d27ecf8f45a7776531d5d7e199372",
+  "docs/reviews/2026-10-14-artifact-http/verify_controls.py": "486a6b788aefe6f0e333460c73b2547ed2d4e46d98867c556b6ae1e18949c7d0",
+  "docs/reviews/2026-10-14-artifact-http/native_client.py": "e637fb5fbfcc86a37079fd3b8bdc6ae72401318f47529b8bb986675088b06b11",
+  "docs/reviews/2026-10-14-artifact-http/native_http.py": "2806d754ddfa77be351094364128fcaa86b571a946685034e7280ee2feae2274"
+}

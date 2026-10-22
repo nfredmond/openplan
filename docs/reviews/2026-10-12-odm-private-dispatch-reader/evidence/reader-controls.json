@@ -1,0 +1,472 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "exact-text-changed",
+    "test": "test_exact_original_and_fixed_rpc_scope_reach_capture",
+    "source": "reader",
+    "outcome": "intended_failure",
+    "reason": "Private reader must preserve exact UTF-8 original bytes",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "target-query-changed",
+    "test": "test_exact_original_and_fixed_rpc_scope_reach_capture",
+    "source": "reader",
+    "outcome": "intended_failure",
+    "reason": "Private read must bind the operator installation and target",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "runtime-owner-not-forwarded",
+    "test": "test_exact_original_and_fixed_rpc_scope_reach_capture",
+    "source": "reader",
+    "outcome": "intended_failure",
+    "reason": "Private transport must receive the current runtime ownership adapter",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "timeout-unchecked",
+    "test": "test_constructor_requires_custody_adapter_and_finite_timeout",
+    "source": "reader",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "constructor-adapters-unchecked",
+    "test": "test_constructor_requires_custody_adapter_and_finite_timeout",
+    "source": "reader",
+    "outcome": "intended_failure",
+    "reason": [
+      "'NoneType' object has no attribute 'timeout'",
+      "ValueError not raised"
+    ],
+    "kind": "diagnostic_refusal"
+  },
+  {
+    "control": "owner-start-check-after-query",
+    "test": "test_owner_and_original_start_precede_transport",
+    "source": "reader",
+    "outcome": "intended_failure",
+    "reason": "Unowned or unstarted capture must not read private RPC",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "changed-admission-unchecked",
+    "test": "test_changed_admission_refuses_before_transport",
+    "source": "reader",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "outer-deadline-not-clamped",
+    "test": "test_shared_deadline_clamps_before_transport",
+    "source": "reader",
+    "outcome": "intended_failure",
+    "reason": "TimeoutError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "deadline-type-unchecked",
+    "test": "test_invalid_deadline_refuses_before_transport",
+    "source": "reader",
+    "outcome": "intended_failure",
+    "reason": "Original dispatch deadline must be finite",
+    "kind": "diagnostic_refusal"
+  },
+  {
+    "control": "late-receipt-validation",
+    "test": "test_late_response_refuses_before_receipt_validation",
+    "source": "reader",
+    "outcome": "intended_failure",
+    "reason": "Late read reached validation",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "wire-bound-unchecked",
+    "test": "test_wire_bytes_bound_and_type_precede_json_parse",
+    "source": "reader",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "duplicates-accepted",
+    "test": "test_duplicate_nonfinite_and_invalid_utf8_json_refuse",
+    "source": "reader",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "scope-envelope-unchecked",
+    "test": "test_scope_format_fields_and_flags_refuse",
+    "source": "reader",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "timestamp-syntax-unchecked",
+    "test": "test_observation_timestamp_requires_valid_offset_time",
+    "source": "reader",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "timestamp-date-unchecked",
+    "test": "test_observation_timestamp_requires_valid_offset_time",
+    "source": "reader",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "job-uuid-unchecked",
+    "test": "test_exact_job_projection_and_canonical_uuid_are_required",
+    "source": "reader",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "job-projection-unchecked",
+    "test": "test_exact_job_projection_and_canonical_uuid_are_required",
+    "source": "reader",
+    "outcome": "intended_failure",
+    "reason": "Original dispatch project projection is required",
+    "kind": "diagnostic_refusal"
+  },
+  {
+    "control": "original-hash-unchecked",
+    "test": "test_original_byte_count_hash_and_encoding_are_verified",
+    "source": "reader",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "admitted-request-unchecked",
+    "test": "test_full_request_and_admitted_scope_are_independently_validated",
+    "source": "reader",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "revoked-capture-allowed",
+    "test": "test_revoked_actor_refuses_first_capture_without_source_work",
+    "source": "reader",
+    "outcome": "intended_failure",
+    "reason": "PermissionError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "false-observation-promoted",
+    "test": "test_fresh_false_observation_preserves_saved_original_and_false_engine_permission",
+    "source": "reader",
+    "outcome": "intended_failure",
+    "reason": "Fresh revoked observation must remain false",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "observation-permits-engine",
+    "test": "test_fresh_false_observation_preserves_saved_original_and_false_engine_permission",
+    "source": "reader",
+    "outcome": "intended_failure",
+    "reason": "Private observation must not permit an engine command",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "saved-original-not-compared",
+    "test": "test_changed_original_actor_refuses_observation",
+    "source": "reader",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "lost-original-queried",
+    "test": "test_missing_saved_original_refuses_before_fresh_query",
+    "source": "reader",
+    "outcome": "intended_failure",
+    "reason": "Missing original cannot be replaced by another query",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "response-bytes-changed",
+    "test": "test_exact_post_headers_scope_and_response_without_proxy",
+    "source": "http",
+    "outcome": "intended_failure",
+    "reason": "Private response bytes must reach the validator unchanged",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "rpc-path-changed",
+    "test": "test_exact_post_headers_scope_and_response_without_proxy",
+    "source": "http",
+    "outcome": "intended_failure",
+    "reason": "Private endpoint must use only its fixed RPC path",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "api-key-changed",
+    "test": "test_exact_post_headers_scope_and_response_without_proxy",
+    "source": "http",
+    "outcome": "intended_failure",
+    "reason": "API key must use its dedicated header",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "opaque-key-as-bearer",
+    "test": "test_gateway_prefix_and_secret_key_without_bearer",
+    "source": "http",
+    "outcome": "intended_failure",
+    "reason": "Opaque API keys cannot become bearer tokens",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "http-unconditionally-allowed",
+    "test": "test_constructor_refuses_unapproved_http_and_ambiguous_endpoint",
+    "source": "http",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "constructor-byte-bound-unchecked",
+    "test": "test_invalid_constructor_adapters_and_byte_limits_refuse",
+    "source": "http",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "constructor-adapters-unchecked",
+    "test": "test_invalid_constructor_adapters_and_byte_limits_refuse",
+    "source": "http",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "pre-cancellation-unchecked",
+    "test": "test_pre_cancelled_read_never_resolves_credentials_or_spawns",
+    "source": "http",
+    "outcome": "intended_failure",
+    "reason": "Cancelled read spawned child",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "cancellation-type-unchecked",
+    "test": "test_invalid_cancellation_and_deadline_refuse_before_http",
+    "source": "http",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "expired-read-continues",
+    "test": "test_expired_deadline_refuses_before_credentials",
+    "source": "http",
+    "outcome": "intended_failure",
+    "reason": "Expired private read spawned child",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "rpc-parameters-unchecked",
+    "test": "test_credentials_and_parameters_refuse_without_request",
+    "source": "http",
+    "outcome": "intended_failure",
+    "reason": "Invalid input spawned child",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "credential-shape-unchecked",
+    "test": "test_credentials_and_parameters_refuse_without_request",
+    "source": "http",
+    "outcome": "intended_failure",
+    "reason": "Invalid input spawned child",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "credential-token-unchecked",
+    "test": "test_credentials_and_parameters_refuse_without_request",
+    "source": "http",
+    "outcome": "intended_failure",
+    "reason": "Invalid input spawned child",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "credential-error-exposed",
+    "test": "test_credential_exceptions_refuse_with_static_reason",
+    "source": "http",
+    "outcome": "intended_failure",
+    "reason": "synthetic-private-error",
+    "kind": "diagnostic_refusal"
+  },
+  {
+    "control": "redirect-status-accepted",
+    "test": "test_redirect_or_denial_refuses_without_retry",
+    "source": "http",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "response-encoding-accepted",
+    "test": "test_response_encoding_type_and_ambiguous_length_refuse",
+    "source": "http",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "partial-length-unchecked",
+    "test": "test_oversized_and_partial_response_cannot_return_original",
+    "source": "http",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "declared-response-limit-unchecked",
+    "test": "test_declared_overflow_refuses_before_reading_a_stalled_body",
+    "source": "http",
+    "outcome": "intended_failure",
+    "reason": "Private dispatch deadline exceeded",
+    "kind": "diagnostic_refusal"
+  },
+  {
+    "control": "stalled-deadline-unchecked",
+    "test": "test_actual_stalled_header_deadline_closes_connection_and_joins_child",
+    "source": "http",
+    "outcome": "intended_failure",
+    "reason": "Private dispatch RPC read did not complete",
+    "kind": "diagnostic_refusal"
+  },
+  {
+    "control": "body-cancellation-unchecked",
+    "test": "test_actual_body_cancellation_closes_connection_and_joins_child",
+    "source": "http",
+    "outcome": "intended_failure",
+    "reason": "Private dispatch deadline exceeded",
+    "kind": "diagnostic_refusal"
+  },
+  {
+    "control": "ownership-type-unchecked",
+    "test": "test_runtime_ownership_refuses_before_credentials",
+    "source": "http",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "ownership-adapter-unchecked",
+    "test": "test_runtime_ownership_refuses_before_credentials",
+    "source": "http",
+    "outcome": "intended_failure",
+    "reason": "'NoneType' object is not callable",
+    "kind": "diagnostic_refusal"
+  },
+  {
+    "control": "runtime-ownership-loss-unchecked",
+    "test": "test_runtime_ownership_end_closes_actual_stalled_connection",
+    "source": "http",
+    "outcome": "intended_failure",
+    "reason": "Private dispatch deadline exceeded",
+    "kind": "diagnostic_refusal"
+  },
+  {
+    "control": "metadata-limit-unchecked",
+    "test": "test_metadata_bound_refuses_before_child_spawn",
+    "source": "http",
+    "outcome": "intended_failure",
+    "reason": "Oversized metadata spawned child",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "parent-output-limit-unchecked",
+    "test": "test_child_output_bounds_stop_and_join_before_return",
+    "source": "http",
+    "outcome": "intended_failure",
+    "reason": [
+      "ValueError not raised",
+      "Private dispatch RPC read did not complete"
+    ],
+    "kind": "diagnostic_refusal"
+  },
+  {
+    "control": "resolver-deadline-unchecked",
+    "test": "test_stalled_resolver_cannot_start_a_late_private_request",
+    "source": "http",
+    "outcome": "intended_failure",
+    "reason": "TimeoutError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "parent-lifetime-unwatched",
+    "test": "test_parent_exit_stops_and_reaps_private_rpc_child",
+    "source": "http",
+    "outcome": "intended_failure",
+    "reason": "Owner exit must stop the private RPC child",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "private-environment-inherited",
+    "test": "test_child_credentials_stay_in_pipe_and_environment_is_narrow",
+    "source": "http",
+    "outcome": "intended_failure",
+    "reason": "Private child cannot inherit unrelated credentials",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "child-metadata-bound-unchecked",
+    "test": "test_child_metadata_bound_refuses_before_waiting_for_body",
+    "source": "http",
+    "outcome": "intended_failure",
+    "reason": "Oversized child metadata must refuse before waiting for its body",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "child-envelope-unchecked",
+    "test": "test_child_envelope_and_bound_refuse_before_network",
+    "source": "http",
+    "outcome": "intended_failure",
+    "reason": "Invalid child envelope or bound must precede network work",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "child-response-bound-unchecked",
+    "test": "test_child_envelope_and_bound_refuse_before_network",
+    "source": "http",
+    "outcome": "intended_failure",
+    "reason": "Invalid child envelope or bound must precede network work",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "child-invocation-unchecked",
+    "test": "test_child_invocation_refuses_before_network",
+    "source": "http",
+    "outcome": "intended_failure",
+    "reason": "Invalid child invocation must precede network work",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

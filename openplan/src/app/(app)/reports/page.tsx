@@ -1,3 +1,4 @@
+import { reportJurisdictionState } from "@/lib/reports/jurisdiction-freshness";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -63,9 +64,15 @@ import {
   artifactSafetyEvidenceReadFailed,
   buildReportRegistryDriftSummary,
   resolveTrackedReportSourceUpdatedAt,
+  artifactGenerationWritebackIsCurrent,
 } from "@/lib/reports/report-registry-freshness";
 import { resolveRtpFundingFollowThrough } from "@/lib/operations/grants-links";
-import type { ModelingClaimStatus } from "@/lib/models/evidence-backbone";
+import {
+  countyRunDisplayableClaim,
+  countyRunValidationFromBasisRow,
+  type CountyRunScientificBasisRow,
+  type ModelingClaimStatus,
+} from "@/lib/models/evidence-backbone";
 import { moduleMetadata } from "@/lib/ui/page-title";
 import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
 import { formatMoney } from "@/lib/money/format";
@@ -89,7 +96,7 @@ type ReportArtifactRow = {
   metadata_json: Record<string, unknown> | null;
 };
 
-type CountyRunModelingOptionRow = {
+type CountyRunModelingOptionRow = CountyRunScientificBasisRow & {
   id: string;
   workspace_id: string;
   run_name: string;
@@ -171,7 +178,7 @@ export default async function ReportsPage({
       // out of its own picker for multi-workspace members (2026-08-03 review).
       supabase
         .from("projects")
-        .select("id, workspace_id, name")
+        .select("workspace_id, name, id, updated_at, jurisdiction_context, place_label, place_country_code, place_subdivision_code")
         .eq("workspace_id", membership.workspace_id)
         .order("updated_at", { ascending: false }),
       supabase
@@ -182,7 +189,11 @@ export default async function ReportsPage({
         .limit(30),
       supabase
         .from("county_runs")
-        .select("id, workspace_id, run_name, geography_label, stage, updated_at")
+        // The basis columns let a stored claim tier be shown only as far as
+        // the run's rules-v4 outcome supports it (countyRunDisplayableClaim).
+        .select(
+          "id, workspace_id, run_name, geography_label, stage, updated_at, basis_rules_version:validation_summary_json->validation_rules_version, basis_outcome:validation_summary_json->model_validation_assessment->>scientific_outcome, basis_evidence_write:validation_summary_json->model_validation_assessment->>validation_evidence_write, basis_reasons:validation_summary_json->model_validation_assessment->reasons"
+        )
         .eq("workspace_id", membership.workspace_id)
         .order("updated_at", { ascending: false })
         .limit(20),
@@ -252,13 +263,15 @@ export default async function ReportsPage({
   }
 
   const reportIds = ((reportsData ?? []) as ReportRow[]).map((report) => report.id);
-  const { data: artifactsData } = reportIds.length
+  const artifactsRead = reportIds.length
     ? await supabase
         .from("report_artifacts")
         .select("report_id, generated_at, metadata_json")
         .in("report_id", reportIds)
         .order("generated_at", { ascending: false })
-    : { data: [] };
+    : { data: [], error: null };
+  const artifactsReadFailed = reads.check("report artifacts used for packet freshness", artifactsRead);
+  const artifactsData = artifactsRead.data;
 
   const latestArtifactByReportId = new Map<string, ReportArtifactRow>();
   for (const artifact of (artifactsData ?? []) as ReportArtifactRow[]) {
@@ -275,6 +288,12 @@ export default async function ReportsPage({
   const modelingCountyRuns: ModelingCountyRunOption[] = ((countyRunsData ?? []) as CountyRunModelingOptionRow[]).map(
     (run) => {
       const claimDecision = modelingClaimByCountyRunId.get(run.id) ?? null;
+      const displayable = claimDecision
+        ? countyRunDisplayableClaim(
+            { claimStatus: claimDecision.claim_status, statusReason: claimDecision.status_reason, reasons: [] },
+            countyRunValidationFromBasisRow(run)
+          )
+        : null;
 
       return {
         id: run.id,
@@ -283,8 +302,8 @@ export default async function ReportsPage({
         geographyLabel: run.geography_label,
         stage: run.stage,
         updatedAt: run.updated_at,
-        claimStatus: claimDecision?.claim_status ?? null,
-        statusReason: claimDecision?.status_reason ?? null,
+        claimStatus: displayable?.claimStatus ?? null,
+        statusReason: displayable?.statusReason ?? null,
         validationSummary: claimDecision?.validation_summary_json ?? null,
         decidedAt: claimDecision?.decided_at ?? null,
       };
@@ -322,6 +341,9 @@ export default async function ReportsPage({
         : null;
       const computedPacketFreshness = getReportPacketFreshness({
         latestArtifactKind: report.latest_artifact_kind,
+        jurisdictionState: artifactsReadFailed ? "unavailable" : reportJurisdictionState(latestArtifact?.metadata_json,
+          (projectsData ?? []).find((project) => project.id === report.project_id)),
+        generationWritebackCurrent: artifactGenerationWritebackIsCurrent(latestArtifact?.metadata_json, report.updated_at),
         generatedAt: packetGeneratedAt,
         updatedAt: resolveTrackedReportSourceUpdatedAt({
           generatedAt: packetGeneratedAt,
@@ -911,6 +933,7 @@ export default async function ReportsPage({
                         <h3 className="module-record-title transition group-hover:text-primary">{report.title}</h3>
                         <p className="module-record-stamp shrink-0">Updated {formatDateTime(report.updated_at)}</p>
                       </div>
+                      <p className="text-sm text-muted-foreground">{report.packetFreshness.detail}</p>
                       <p className="module-record-summary line-clamp-2">
                         {report.summary || "No summary provided."}
                       </p>
@@ -984,10 +1007,13 @@ export default async function ReportsPage({
                       <span className="module-record-chip">
                         {report.fundingSnapshot.label}
                       </span>
-                      {report.fundingSnapshot.unfundedAfterLikelyAmount > 0 ? (
+                      {(report.fundingSnapshot.unfundedAfterLikelyAmount ?? 0) > 0 ? (
                         <span className="module-record-chip">
                           Uncovered {formatMoney(report.fundingSnapshot.unfundedAfterLikelyAmount, { precision: "whole" })}
                         </span>
+                      ) : report.fundingSnapshot.hasTargetNeed &&
+                        report.fundingSnapshot.unfundedAfterLikelyAmount === null ? (
+                        <span className="module-record-chip">Funding gap unknown</span>
                       ) : null}
                     </>
                   ) : null}

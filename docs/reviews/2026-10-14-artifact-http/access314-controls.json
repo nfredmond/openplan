@@ -1,0 +1,318 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "scope-not-original",
+    "test": "test_original_scope_roster_urls_and_private_records",
+    "outcome": "intended_failure",
+    "reason": "original descriptor binding differs"
+  },
+  {
+    "control": "replay-regenerates-token",
+    "test": "test_replay_keeps_token_expiry_and_inode",
+    "outcome": "intended_failure",
+    "reason": "Replay cannot replace token"
+  },
+  {
+    "control": "interrupted-token-replaced",
+    "test": "test_interrupted_lease_recovers_original",
+    "outcome": "intended_failure",
+    "reason": "Recovery cannot replace token"
+  },
+  {
+    "control": "changed_base_refuses_redirect",
+    "test": "test_changed_base_refuses_redirect",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "changed_expiry_refuses_renewal",
+    "test": "test_changed_expiry_refuses_renewal",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "expiry-ignored",
+    "test": "test_expiry_refuses_prepare_and_serve",
+    "outcome": "intended_failure",
+    "reason": "PermissionError not raised"
+  },
+  {
+    "control": "revocation_precedes_preparation",
+    "test": "test_revocation_precedes_preparation",
+    "outcome": "intended_failure",
+    "reason": "PermissionError not raised"
+  },
+  {
+    "control": "revocation_after_lease_prevents_completion",
+    "test": "test_revocation_after_lease_prevents_completion",
+    "outcome": "intended_failure",
+    "reason": "PermissionError not raised"
+  },
+  {
+    "control": "nonboolean-authority",
+    "test": "test_nonboolean_authority_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "stream-discards-final-byte",
+    "test": "test_original_bytes_and_descriptor",
+    "outcome": "intended_failure",
+    "reason": "Download serves exact original bytes"
+  },
+  {
+    "control": "serve-reenters-processing",
+    "test": "test_completed_processing_does_not_reenter_stages",
+    "outcome": "intended_failure",
+    "reason": "Serving cannot reenter processing"
+  },
+  {
+    "control": "wrong_token_refuses_before_output",
+    "test": "test_wrong_token_refuses_before_output",
+    "outcome": "intended_failure",
+    "reason": "PermissionError not raised"
+  },
+  {
+    "control": "wrong_job_refuses",
+    "test": "test_wrong_job_refuses",
+    "outcome": "intended_failure",
+    "reason": "PermissionError not raised"
+  },
+  {
+    "control": "absent-file-granted",
+    "test": "test_unavailable_file_refuses",
+    "outcome": "intended_failure",
+    "reason": "FileNotFoundError not raised"
+  },
+  {
+    "control": "unknown-file-granted",
+    "test": "test_traversal_file_refuses",
+    "outcome": "intended_failure",
+    "reason": "FileNotFoundError not raised"
+  },
+  {
+    "control": "size-precheck-omitted",
+    "test": "test_size_refuses_before_output",
+    "outcome": "intended_failure",
+    "reason": "original file checksum differs"
+  },
+  {
+    "control": "checksum-ignored",
+    "test": "test_checksum_refuses_complete_body",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "final-actor-access-omitted",
+    "test": "test_revocation_during_stream_withholds_final_chunk",
+    "outcome": "intended_failure",
+    "reason": "PermissionError not raised"
+  },
+  {
+    "control": "stream-expiry-ignored",
+    "test": "test_expiry_during_stream_withholds_final_chunk",
+    "outcome": "intended_failure",
+    "reason": "PermissionError not raised"
+  },
+  {
+    "control": "owner-loss-ignored",
+    "test": "test_owner_loss_during_stream_withholds_final_chunk",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "lease-binding-ignored",
+    "test": "test_saved_lease_alteration_refuses",
+    "outcome": "intended_failure",
+    "reason": "original completion differs"
+  },
+  {
+    "control": "completion-ignored",
+    "test": "test_saved_completion_alteration_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "lost-lease-inferred",
+    "test": "test_missing_lease_cannot_be_replaced",
+    "outcome": "intended_failure",
+    "reason": "Existing source custody record differs"
+  },
+  {
+    "control": "observation-substituted",
+    "test": "test_changed_observation_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "symlink-followed",
+    "test": "test_symlink_product_refuses",
+    "outcome": "intended_failure",
+    "reason": "Source file changed during custody"
+  },
+  {
+    "control": "hardlink-allowed",
+    "test": "test_hardlink_product_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "deadline-extended",
+    "test": "test_expired_deadline_refuses",
+    "outcome": "intended_failure",
+    "reason": "TimeoutError not raised"
+  },
+  {
+    "control": "owner-invented",
+    "test": "test_no_owner_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "short-write-dropped",
+    "test": "test_partial_writes_keep_every_byte",
+    "outcome": "intended_failure",
+    "reason": "Partial writes keep every original byte"
+  },
+  {
+    "control": "stalled-output-accepted",
+    "test": "test_no_progress_output_refuses",
+    "outcome": "intended_failure",
+    "reason": "OSError not raised"
+  },
+  {
+    "control": "credential-base-accepted",
+    "test": "test_invalid_base_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "empty-query-base-accepted",
+    "test": "test_invalid_base_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "empty-fragment-base-accepted",
+    "test": "test_invalid_base_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "infinite-expiry-accepted",
+    "test": "test_nonfinite_expiry_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "constructor-accepts-no-authority",
+    "test": "test_invalid_constructor_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "constructor-accepts-zero-timeout",
+    "test": "test_invalid_constructor_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "partial-loop-owner-unchecked",
+    "test": "test_owner_loss_during_final_partial_write_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "resume-renews-original",
+    "test": "test_resume_uses_saved_settings_after_interruption",
+    "outcome": "intended_failure",
+    "reason": "cannot renew or redirect"
+  },
+  {
+    "control": "resume-invents-lease",
+    "test": "test_resume_without_original_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "duplicate-filename-accepted",
+    "test": "test_duplicate_filename_refuses",
+    "outcome": "intended_failure",
+    "reason": "original upstream descriptors differ"
+  },
+  {
+    "control": "upstream-hashes-ignored",
+    "test": "test_upstream_receipt_change_refuses",
+    "outcome": "intended_failure",
+    "reason": "original upstream descriptors differ"
+  },
+  {
+    "control": "upstream-descriptors-ignored",
+    "test": "test_self_consistent_changed_descriptor_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "stream-lease-change-ignored",
+    "test": "test_lease_change_during_stream_refuses_complete_body",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "partial-loop-deadline-unchecked",
+    "test": "test_deadline_during_final_partial_write_refuses",
+    "outcome": "intended_failure",
+    "reason": "TimeoutError not raised"
+  },
+  {
+    "control": "numeric-plan-permission-accepted",
+    "test": "test_numeric_plan_permission_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "numeric-lease-permission-accepted",
+    "test": "test_numeric_lease_permission_refuses",
+    "outcome": "intended_failure",
+    "reason": "original completion differs"
+  },
+  {
+    "control": "numeric-completion-permission-accepted",
+    "test": "test_numeric_completion_permission_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "contract-coverage-omitted",
+    "test": "test_changed_contract_coverage_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "manifest-object-omitted",
+    "test": "test_nonobject_original_manifest_refuses",
+    "outcome": "intended_failure",
+    "reason": "has no attribute 'get'"
+  },
+  {
+    "control": "stream-receipt-type-change-ignored",
+    "test": "test_receipt_type_change_during_stream_refuses_complete_body",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

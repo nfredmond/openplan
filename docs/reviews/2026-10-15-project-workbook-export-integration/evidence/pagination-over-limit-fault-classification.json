@@ -1,0 +1,8 @@
+{
+  "trial": "pagination-over-limit-fault",
+  "testFile": "src/test/project-workbook-export-pagination.test.ts",
+  "test": "refuses 2001 projects explicitly instead of generating a partial workbook",
+  "exitCode": 1,
+  "marker": "over-limit portfolio must refuse before creating a workbook",
+  "classification": "KILLED"
+}

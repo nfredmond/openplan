@@ -1,0 +1,28 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "size",
+    "outcome": "intended_failure",
+    "reason": "Capture size change cannot survive guard"
+  },
+  {
+    "control": "hash",
+    "outcome": "intended_failure",
+    "reason": "Capture hash change cannot survive guard"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

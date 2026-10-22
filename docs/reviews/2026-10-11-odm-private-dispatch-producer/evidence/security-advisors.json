@@ -1,0 +1,25 @@
+{
+  "baselineCount": 8,
+  "candidateCount": 8,
+  "newFindings": 0,
+  "removedFindings": 0,
+  "levels": {
+    "WARN": 7,
+    "ERROR": 1
+  },
+  "inheritedNames": [
+    "extension_in_public",
+    "function_search_path_mutable",
+    "rls_disabled_in_public"
+  ],
+  "inheritedErrorMetadata": [
+    {
+      "name": "spatial_ref_sys",
+      "type": "table",
+      "schema": "public"
+    }
+  ],
+  "runnerSha256": "21c098d041ffb927fc237a60c5c8d6530c17c301b47c1d80d7259e97b47adeee",
+  "migrationSha256": "4b0814b6f4e426261c8e3651b89812b50cc1c8226fd7ed2ec493c3b7f23d73f9",
+  "scope": "Installed CLI security advisor comparison in an isolated restored cluster. Seven inherited warnings and one spatial_ref_sys error remain. No hosted or whole-installation acceptance."
+}

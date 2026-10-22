@@ -1,0 +1,12 @@
+[
+  {
+    "step": "Engine effect harmless and targeted fault controls",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-engine-effects/verify_controls.py \\\n  --repo \"$GITHUB_WORKSPACE\" --out \"$RUNNER_TEMP/odm-engine-effects-controls\"\n",
+    "exit": 0
+  },
+  {
+    "step": "Disconnected engine effect root capture and replay",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-engine-effects/native_recovery.py \\\n  --out \"$RUNNER_TEMP/odm-engine-effects-native\"\n",
+    "exit": 0
+  }
+]

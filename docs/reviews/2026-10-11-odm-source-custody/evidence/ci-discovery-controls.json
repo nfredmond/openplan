@@ -1,0 +1,24 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-suite-and-comment",
+    "outcome": "survived"
+  },
+  {
+    "control": "failing-suite",
+    "exit": 19,
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "removed-fail-fast",
+    "outcome": "intended_failure",
+    "reason": "ODM CI must stop at failing suite"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  }
+]

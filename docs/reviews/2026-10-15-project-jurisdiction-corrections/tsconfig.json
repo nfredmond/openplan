@@ -1,0 +1,6 @@
+{
+  "extends": "../../../openplan/tsconfig.json",
+  "compilerOptions": { "incremental": false, "types": ["node", "react", "geojson"], "typeRoots": ["../../../openplan/node_modules/@types"], "baseUrl": "../../../openplan" },
+  "include": ["../../../openplan/next-env.d.ts", "../../../openplan/src/lib/projects/project-jurisdiction.ts", "../../../openplan/src/lib/jurisdiction-readiness/payload.ts", "../../../openplan/src/lib/jurisdiction-readiness/evidence-bundle.ts", "../../../openplan/src/components/projects/project-jurisdiction-editor.tsx", "../../../openplan/src/test/project-jurisdiction*.ts", "../../../openplan/src/test/project-jurisdiction*.tsx", "../../../openplan/src/test/jurisdiction-readiness-routes.test.ts"],
+  "exclude": ["../../../openplan/node_modules"]
+}

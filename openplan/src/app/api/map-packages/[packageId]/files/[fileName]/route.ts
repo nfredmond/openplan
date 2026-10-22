@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { signedStorageRedirect } from "@/lib/http/signed-redirect";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { ProviderRequestError, providerError, providerUser } from "@/lib/assistant/provider-server";
 import { MAP_PACKAGE_FILE_LIMITS } from "@/lib/map-packages/contracts";
@@ -32,7 +33,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ pac
     const service = createServiceRoleClient();
     if (file.role === "package_zip") {
       audit.info("map_package_zip_signed", { packageId });
-      return NextResponse.redirect(await signedMapPackageDownload(service, file.object_path, file.name));
+      return signedStorageRedirect(await signedMapPackageDownload(service, file.object_path, file.name));
     }
     const original = await fetch(await signedMapPackageDownload(service, file.object_path, false), { signal: AbortSignal.timeout(30_000), cache: "no-store" });
     if (!original.ok || !original.body) throw new ProviderRequestError("map_package_storage_unavailable", 503);

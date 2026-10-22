@@ -272,7 +272,7 @@ describe("project and program funding operations", () => {
     const action = links.find((link) => link.id === "project-reimbursement-lane");
 
     expect(action).toBeDefined();
-    expect(action?.label).toBe("Open reimbursement lane");
+    expect(action?.label).toBe("Open reimbursement invoices");
     expect(action?.href).toBe("/projects/project-1#project-invoices");
     expect(links.find((link) => link.id === "project-create-reimbursement-record")).toBeUndefined();
   });
@@ -306,7 +306,7 @@ describe("project and program funding operations", () => {
     const action = links.find((link) => link.id === "program-reimbursement-lane");
 
     expect(action).toBeDefined();
-    expect(action?.label).toBe("Open reimbursement lane");
+    expect(action?.label).toBe("Open reimbursement invoices");
     expect(action?.href).toBe("/projects/project-1#project-invoices");
     expect(links.find((link) => link.id === "program-create-reimbursement-record")).toBeUndefined();
   });

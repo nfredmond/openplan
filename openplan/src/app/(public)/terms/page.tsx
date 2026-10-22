@@ -33,7 +33,7 @@ const accessBoundaries = [
 ];
 
 const permittedUses = [
-  "Accessing your own workspace, running analyses, generating reports, and managing the engagement, project, and RTP lanes for work you are authorized to perform.",
+  "Accessing your own workspace, running analyses, generating reports, and managing engagement, project, and RTP work you are authorized to perform.",
   "Exporting your own workspace data for planning deliverables, board packets, or archival purposes.",
   "Collaborating with invited workspace members under row-level access controls enforced by the platform.",
 ];

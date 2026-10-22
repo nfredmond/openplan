@@ -1,0 +1,16 @@
+{
+  "refused": [
+    "runtime-exit",
+    "empty-selection",
+    "runtime-suite",
+    "extra-failure",
+    "false-success",
+    "skipped-peer",
+    "no-suite",
+    "wrong-title",
+    "wrong-diagnostic",
+    "import-error"
+  ],
+  "harmlessWrapper": "survived",
+  "permissiveFault": "Classifier must refuse runtime-exit"
+}

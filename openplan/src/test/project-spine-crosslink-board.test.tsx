@@ -119,7 +119,7 @@ describe("ProjectSpineCrosslinkBoard", () => {
 
     render(<ProjectSpineCrosslinkBoard summary={summary} />);
 
-    expect(screen.getByText("Empty state")).toBeInTheDocument();
+    expect(screen.getByText("Nothing linked yet")).toBeInTheDocument();
     expect(screen.getByText(/No downstream outputs are linked yet/i)).toBeInTheDocument();
     expect(screen.getByText(/clean setup queue, not a broken board/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Attach this project to the right RTP cycle/i).length).toBeGreaterThan(0);
@@ -137,7 +137,7 @@ describe("ProjectSpineCrosslinkBoard", () => {
 
     render(<ProjectSpineCrosslinkBoard summary={summary} />);
 
-    expect(screen.getByText("Setup fallback")).toBeInTheDocument();
+    expect(screen.getByText("Not set up yet")).toBeInTheDocument();
     expect(screen.getByText(/Some spine lanes are waiting on schema setup/i)).toBeInTheDocument();
     expect(screen.getAllByText("Schema setup pending")).toHaveLength(2);
     expect(screen.getAllByText("Setup needed")).toHaveLength(2);
@@ -217,7 +217,7 @@ describe("ProjectSpineCrosslinkBoard", () => {
 
     render(<ProjectSpineCrosslinkBoard summary={summary} />);
 
-    expect(screen.getByText("Read failure")).toBeInTheDocument();
+    expect(screen.getByText("Could not load")).toBeInTheDocument();
     expect(screen.getByText(/Some spine lanes could not be read/i)).toBeInTheDocument();
 
     // Scoped to the row: every OTHER lane on this empty board is legitimately
@@ -267,7 +267,7 @@ describe("ProjectSpineCrosslinkBoard", () => {
 
     expect(screen.queryByText("Unavailable")).toBeNull();
     expect(screen.queryByText("Could not be read")).toBeNull();
-    expect(screen.queryByText("Read failure")).toBeNull();
+    expect(screen.queryByText("Could not load")).toBeNull();
     const inspector = screen.getByText("Crosslink inspector").closest("aside") as HTMLElement;
     expect(within(inspector).queryByText("failed")).toBeNull();
     expect(screen.getAllByText("Not linked").length).toBeGreaterThan(0);
@@ -278,7 +278,7 @@ describe("ProjectSpineCrosslinkBoard", () => {
 
     render(<ProjectSpineCrosslinkBoard summary={summary} isLoading />);
 
-    expect(screen.getByText("Loading state")).toBeInTheDocument();
+    expect(screen.getByText("Loading")).toBeInTheDocument();
     expect(screen.getByText("Loading crosslink queue")).toBeInTheDocument();
     expect(screen.getByText(/Keep the board open while it finishes loading/i)).toBeInTheDocument();
     // Derived from PROJECT_SPINE_CROSSLINK_ROW_COUNT rather than hard-coded, so

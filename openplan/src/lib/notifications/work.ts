@@ -39,9 +39,9 @@ import { fundingAwardObligationReview } from "@/lib/programs/catalog";
  *
  * ====================================================== IDEMPOTENCY, EXACTLY
  *
- * The insert names the unique index from 20260811000007 as its ON CONFLICT
- * target and asks for only the rows that were actually created. Those rows —
- * not the candidate list — are what the email is built from. So a second run on
+ * The service-only batch RPC uses targetless ON CONFLICT DO NOTHING and
+ * classifies every request. Only rows actually inserted form the digest.
+ * The email uses those rows, rather than the candidate list. A second run on
  * the same day inserts nothing and sends nothing, and the guarantee is a
  * database constraint rather than a timestamp comparison somebody has to keep
  * getting right. {@link WORK_NOTIFICATION_IDEMPOTENCY_COLUMNS} is pinned
@@ -125,6 +125,13 @@ import {
   type RosterServiceClient,
 } from "@/lib/workspaces/roster";
 
+import { addDays } from "@/lib/dashboard/coming-up";
+import {
+  latestTodayAnywhere,
+  resolveWorkspaceTimeZone,
+  todayIn,
+} from "@/lib/time/workspace-calendar";
+
 import { enqueueEmail } from "./engagement";
 import { formatMoney } from "@/lib/money/format";
 import {
@@ -136,7 +143,7 @@ import {
 /**
  * The `kind` vocabulary, matching the CHECK constraint as the migration corpus
  * leaves it — 20260811000007 created six, 20260812000010 added the seventh,
- * 20260812000013 the eighth.
+ * 20260812000013 the eighth; 20261018000001 adds application reminders and recorded changes.
  */
 export const WORK_NOTIFICATION_KINDS = [
   "deliverable_due",
@@ -144,23 +151,27 @@ export const WORK_NOTIFICATION_KINDS = [
   "submittal_due",
   "invoice_due",
   "grant_decision_due",
+  "grant_application_due",
+  "grant_deadline_changed",
   "award_obligation_due",
   "award_expenditure_due",
   "measure_claim_review_due",
 ] as const;
 
 export type WorkNotificationKind = (typeof WORK_NOTIFICATION_KINDS)[number];
+export type WorkReminderKind = Exclude<WorkNotificationKind, "grant_deadline_changed">;
 
 /**
- * The unique index that makes the sweep idempotent. Named here because the
- * insert has to send it as its ON CONFLICT target, and asserted against the
- * migration so the two can never drift.
+ * The full reminder identity enforced after activation. The batch RPC handles
+ * both indexes without choosing an arbiter. An opposite kind suppressed by the
+ * old key is explicitly deferred; a same-kind duplicate is already present.
  */
 export const WORK_NOTIFICATION_IDEMPOTENCY_COLUMNS = [
   "subject_table",
   "subject_id",
   "recipient_user_id",
   "due_on",
+  "kind",
 ] as const;
 
 /** How far ahead a reminder looks. Everything already overdue is included regardless. */
@@ -178,7 +189,7 @@ export const WORK_SWEEP_SOURCE_LIMIT = 2000;
 export type WorkNotificationRow = {
   workspace_id: string;
   recipient_user_id: string;
-  kind: WorkNotificationKind;
+  kind: WorkReminderKind;
   subject_table: string;
   subject_id: string;
   project_id: string | null;
@@ -187,15 +198,92 @@ export type WorkNotificationRow = {
   body: string;
 };
 
-/** A candidate before the roster has been consulted. */
-type Candidate = WorkNotificationRow & { isOverdue: boolean };
+/** Exact nested outcome fields; the scalar RPC has no table projection. */
+export const WORK_NOTIFICATION_WRITE_COLUMNS =
+  "workspace_id, recipient_user_id, kind, subject_table, subject_id, project_id, due_on, title, body, classification, blocking_kind";
+export const WORK_NOTIFICATION_WRITE_PROTOCOL = "work_reminder_batch_v1";
+
+type ReminderWriteOutcome = WorkNotificationRow & {
+  classification: "inserted" | "duplicate" | "deferred_old_key";
+  blocking_kind: WorkReminderKind | null;
+};
+
+export type DeferredWorkReminder = Pick<WorkNotificationRow,
+  "workspace_id" | "recipient_user_id" | "kind" | "subject_table" | "subject_id" | "due_on"
+> & { blockingKind: WorkReminderKind };
+
+function reminderIdentity(row: WorkNotificationRow): string {
+  return JSON.stringify([row.workspace_id, row.subject_table, row.subject_id, row.recipient_user_id, row.due_on, row.kind]);
+}
+
+/** Refuse incomplete, duplicated, foreign or altered response rows before counting or sending. */
+function readReminderWriteOutcomes(data: unknown, requested: readonly WorkNotificationRow[]): ReminderWriteOutcome[] {
+  if (!data || typeof data !== "object" || Array.isArray(data)) throw new Error("The reminder write returned an invalid scalar envelope.");
+  const envelope = data as Record<string, unknown>;
+  const envelopeFields = ["protocol", "requested_count", "inserted_count", "duplicate_count", "deferred_count", "outcomes"];
+  const countFields = ["requested_count", "inserted_count", "duplicate_count", "deferred_count"] as const;
+  if (Object.keys(envelope).length !== envelopeFields.length || envelopeFields.some((field) => !Object.hasOwn(envelope, field)) ||
+    envelope.protocol !== WORK_NOTIFICATION_WRITE_PROTOCOL || countFields.some((field) =>
+      typeof envelope[field] !== "number" || !Number.isSafeInteger(envelope[field]) || (envelope[field] as number) < 0)) {
+    throw new Error("The reminder write returned an invalid envelope protocol or count.");
+  }
+  const counts = {
+    requested: envelope.requested_count as number, inserted: envelope.inserted_count as number,
+    duplicate: envelope.duplicate_count as number, deferred: envelope.deferred_count as number,
+  };
+  if (counts.requested !== requested.length || counts.inserted + counts.duplicate + counts.deferred !== counts.requested) {
+    throw new Error("The reminder write returned inconsistent envelope counts.");
+  }
+  const rows = envelope.outcomes;
+  const expected = new Map(requested.map((row) => [reminderIdentity(row), row]));
+  if (expected.size !== requested.length || !Array.isArray(rows) || rows.length !== requested.length) {
+    throw new Error("The reminder write returned an incomplete or ambiguous batch classification.");
+  }
+  const fields = WORK_NOTIFICATION_WRITE_COLUMNS.split(", ");
+  const seen = new Set<string>();
+  const outcomes = rows.map((value: unknown): ReminderWriteOutcome => {
+    if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error("The reminder write returned an invalid row.");
+    const row = value as Record<string, unknown>;
+    if (Object.keys(row).length !== fields.length || fields.some((field) => !Object.hasOwn(row, field))) {
+      throw new Error("The reminder write returned an invalid projection.");
+    }
+    const original = expected.get(JSON.stringify([row.workspace_id, row.subject_table, row.subject_id, row.recipient_user_id, row.due_on, row.kind]));
+    if (!original || seen.has(reminderIdentity(original)) ||
+      (Object.keys(original) as Array<keyof WorkNotificationRow>).some((field) => row[field] !== original[field])) {
+      throw new Error("The reminder write returned a duplicate, foreign or altered identity or fact.");
+    }
+    const classification = row.classification;
+    const blocker = WORK_NOTIFICATION_KINDS.find((kind): kind is WorkReminderKind => kind !== "grant_deadline_changed" && kind === row.blocking_kind);
+    if (classification !== "inserted" && classification !== "duplicate" && classification !== "deferred_old_key") {
+      throw new Error("The reminder write returned an invalid conflict classification.");
+    }
+    if (classification === "deferred_old_key" ? !blocker || blocker === original.kind : row.blocking_kind !== null) {
+      throw new Error("The reminder write returned an invalid conflict classification.");
+    }
+    seen.add(reminderIdentity(original));
+    return { ...original, classification, blocking_kind: blocker ?? null };
+  });
+  if (outcomes.filter((row) => row.classification === "inserted").length !== counts.inserted ||
+    outcomes.filter((row) => row.classification === "duplicate").length !== counts.duplicate ||
+    outcomes.filter((row) => row.classification === "deferred_old_key").length !== counts.deferred) {
+    throw new Error("The reminder write returned counts that disagree with its outcomes.");
+  }
+  return outcomes;
+}
+
+/**
+ * A candidate before the roster has been consulted. `needsReview` marks a
+ * closed award whose obligation deadline a person must check: it is listed for
+ * review, never counted as overdue or as due.
+ */
+type Candidate = WorkNotificationRow & { isOverdue: boolean; needsReview?: boolean };
 
 export type WorkSweepSourceOutcome = {
   /** Rows the database returned. */
   scanned: number;
   /** Of those, rows that became a notification candidate. */
   candidates: number;
-  /** The deployment is behind 20260811000007 or an earlier migration. */
+  /** The source needs a migration or the separate reminder-kind activation. */
   pending: boolean;
   failed: boolean;
   message: string | null;
@@ -216,9 +304,12 @@ export type WorkSweepResult = {
   /** When the sweep considered itself to be running. */
   now: string;
   horizonDays: number;
-  perSource: Record<WorkNotificationKind, WorkSweepSourceOutcome>;
+  perSource: Record<WorkReminderKind, WorkSweepSourceOutcome>;
   /** Notification rows the database actually created (duplicates are not counted). */
   notificationsCreated: number;
+  notificationsAlreadyPresent: number;
+  /** Exact suppressed identities, never counted as inserted or delivered. */
+  deferredByOldKey: DeferredWorkReminder[];
   /** Digest emails composed — one per recipient with at least one new notification. */
   digestsComposed: number;
   emailsDelivered: number;
@@ -231,7 +322,7 @@ export type WorkSweepResult = {
   departedRecipients: number;
   /** Workspaces skipped because no roster read succeeded — named, never silent. */
   workspacesWithoutRoster: string[];
-  /** The insert's own failure, if the database refused it. */
+  /** A refused write or untrusted response; no inserted count or digest is claimed. */
   writeError: string | null;
   /**
    * The digest names the workspace it is about. True when that read failed, so
@@ -241,12 +332,19 @@ export type WorkSweepResult = {
    */
   workspaceNamesUnavailable: boolean;
   reminderPreferencesUnavailable: boolean;
+  /**
+   * Each workspace's window ("due in the next N days") and a claim's days
+   * waiting are counted on that workspace's calendar. True when the calendars
+   * could not be read, so those workspaces were counted on UTC days instead.
+   */
+  workspaceCalendarsUnavailable: boolean;
   emailDigestsDisabled: number;
 };
 
 // ── the seven sources ───────────────────────────────────────────────────────
 
 type StaticFilter =
+  | { kind: "eq"; column: string; value: string }
   | { kind: "neq"; column: string; value: string }
   | { kind: "notIn"; column: string; values: readonly string[] };
 
@@ -301,7 +399,7 @@ const EMPTY_SWEEP_CONTEXT: SweepSourceContext = {
 };
 
 type SweepSource = {
-  kind: WorkNotificationKind;
+  kind: WorkReminderKind;
   table: string;
   select: string;
   /** The column holding the deadline. */
@@ -334,9 +432,14 @@ type SweepSource = {
   toCandidates: (
     rows: Array<Record<string, unknown>>,
     now: Date,
-    context: SweepSourceContext
+    context: SweepSourceContext,
+    todayFor: WorkspaceToday,
+    timeZoneFor?: (workspaceId: string) => string
   ) => Candidate[];
 };
+
+/** Today's calendar date, `YYYY-MM-DD`, on one workspace's calendar. */
+type WorkspaceToday = (workspaceId: string) => string;
 
 function asString(value: unknown): string | null {
   return typeof value === "string" && value ? value : null;
@@ -365,10 +468,17 @@ export function workDeadlineDueOn(value: string | null | undefined): string | nu
   return parsed.toISOString().slice(0, 10);
 }
 
-/** The upper bound of the reminder window, in the literal the column accepts. */
+/**
+ * The upper bound of the reminder window, in the literal the column accepts.
+ *
+ * The read spans every workspace, so it reaches the last day of the window in
+ * the zone furthest ahead (UTC+14). Each workspace's own window is decided
+ * afterwards, on its own calendar. A `timestamptz` deadline is dated by its
+ * UTC day ({@link workDeadlineDueOn}), so its bound covers that whole day.
+ */
 export function horizonBound(now: Date, horizonDays: number, kind: "date" | "timestamptz"): string {
-  const end = new Date(now.getTime() + horizonDays * 86400000);
-  return kind === "date" ? end.toISOString().slice(0, 10) : end.toISOString();
+  const lastDay = addDays(latestTodayAnywhere(now), horizonDays);
+  return kind === "date" ? lastDay : `${addDays(lastDay, 1)}T00:00:00.000Z`;
 }
 
 function projectContext(row: Record<string, unknown>): { workspaceId: string | null; projectName: string | null } {
@@ -563,6 +673,41 @@ const grantDecisionsSource: SweepSource = {
     }),
 };
 
+/** The existing live My Work pursuit semantics, with creator-only reminders. */
+const grantApplicationsSource: SweepSource = {
+  kind: "grant_application_due",
+  table: "funding_opportunities",
+  select: "id, workspace_id, project_id, title, opportunity_status, decision_state, closes_at, agency_name, created_by",
+  dateColumn: "closes_at",
+  dateColumnKind: "timestamptz",
+  recipientColumn: "created_by",
+  staticFilters: [
+    { kind: "eq", column: "decision_state", value: "pursue" },
+    { kind: "notIn", column: "opportunity_status", values: ["archived", "awarded"] },
+  ],
+  toCandidates: (rows, now, _context, _todayFor, timeZoneFor = () => "UTC") => rows.flatMap((row) => {
+    if (row.decision_state !== "pursue" || ["archived", "awarded"].includes(String(row.opportunity_status))) return [];
+    const workspaceId = asString(row.workspace_id);
+    const closesAt = asString(row.closes_at);
+    const recipient = asString(row.created_by);
+    if (!workspaceId || !closesAt || !recipient || !Number.isFinite(Date.parse(closesAt))) return [];
+    const dueOn = todayIn(timeZoneFor(workspaceId), new Date(closesAt));
+    const isOverdue = isDeadlinePast(closesAt, now);
+    return [{
+      workspace_id: workspaceId,
+      recipient_user_id: recipient,
+      kind: "grant_application_due" as const,
+      subject_table: "funding_opportunities",
+      subject_id: String(row.id),
+      project_id: asString(row.project_id),
+      due_on: dueOn,
+      title: asString(row.title) ?? "(untitled opportunity)",
+      body: `Application closing deadline recorded in OpenPlan: ${closesAt}. ${isOverdue ? "The call has closed. Set the decision to Under review if it went in, or Skip." : "Check the official notice before submitting."} You recorded this opportunity; grant deadlines carry no assignee.`,
+      isOverdue,
+    }];
+  }),
+};
+
 const awardObligationsSource: SweepSource = {
   kind: "award_obligation_due",
   table: "funding_awards",
@@ -578,8 +723,9 @@ const awardObligationsSource: SweepSource = {
       const dueOn = workDeadlineDueOn(asString(row.obligation_due_at));
       const recipient = asString(row.created_by);
       if (!workspaceId || !dueOn || !recipient) return [];
-      const isOverdue = isDeadlinePast(asString(row.obligation_due_at), now);
       const review = fundingAwardObligationReview(asString(row.spending_status), asString(row.closure_basis));
+      // A closed award may have met its deadline; the closure record cannot say.
+      const isOverdue = review ? false : isDeadlinePast(asString(row.obligation_due_at), now);
       return [
         {
           workspace_id: workspaceId,
@@ -594,6 +740,7 @@ const awardObligationsSource: SweepSource = {
             ? `Review recorded obligation deadline ${dueOn}. ${review}`
             : `${deadlineSentence("Award funds must be obligated", null, dueOn, isOverdue)} You recorded this award; obligation deadlines carry no assignee.`,
           isOverdue,
+          needsReview: Boolean(review),
         },
       ];
     }),
@@ -920,12 +1067,12 @@ const MEASURE_CLAIM_SETTLED_STATUSES: readonly string[] = MEASURE_CLAIM_STATUSES
   (status) => !(MEASURE_CLAIM_AWAITING_DECISION_STATUSES as readonly string[]).includes(status)
 );
 
-/** Whole days between two ISO dates, in UTC. Never negative. */
-function daysWaiting(submittedOn: string, now: Date): number {
-  const submitted = new Date(`${submittedOn}T00:00:00Z`).getTime();
-  if (Number.isNaN(submitted)) return 0;
-  const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
-  return Math.max(0, Math.round((today - submitted) / 86400000));
+/** Whole days from the submission date to today, both calendar dates on the workspace's calendar. Never negative. */
+function daysWaiting(submittedOn: string, today: string): number {
+  const submitted = Date.parse(`${submittedOn}T00:00:00Z`);
+  const current = Date.parse(`${today}T00:00:00Z`);
+  if (Number.isNaN(submitted) || Number.isNaN(current)) return 0;
+  return Math.max(0, Math.round((current - submitted) / 86400000));
 }
 
 /**
@@ -1051,7 +1198,7 @@ const measureClaimReviewsSource: SweepSource = {
   recipientColumn: "created_by",
   staticFilters: [{ kind: "notIn", column: "status", values: MEASURE_CLAIM_SETTLED_STATUSES }],
   loadContext: loadMeasureFundCurrencies,
-  toCandidates: (rows, now, context) =>
+  toCandidates: (rows, _now, context, todayFor) =>
     rows.flatMap((row) => {
       const workspaceId = asString(row.workspace_id);
       const submittedOn = workDeadlineDueOn(asString(row.submitted_on));
@@ -1088,7 +1235,7 @@ const measureClaimReviewsSource: SweepSource = {
             amount,
             currencyCode,
             submittedOn,
-            waitedDays: daysWaiting(submittedOn, now),
+            waitedDays: daysWaiting(submittedOn, todayFor(workspaceId)),
           })} You recorded this claim; measure claims carry no assignee.`,
           // NOT A DEADLINE. See the source header — this is the one deliberate
           // constant in the file, and changing it to `isDeadlinePast(...)` would
@@ -1104,6 +1251,7 @@ export const WORK_SWEEP_SOURCES: readonly SweepSource[] = [
   milestonesSource,
   submittalsSource,
   grantDecisionsSource,
+  grantApplicationsSource,
   awardObligationsSource,
   awardExpendituresSource,
   invoiceWindowsSource,
@@ -1133,12 +1281,10 @@ type SweepQuery = PromiseLike<SweepReadResult> & {
  * convention, and visible where it happens.
  */
 export type WorkSweepClient = {
+  rpc(name: "work_notification_kind_activation"): PromiseLike<SweepReadResult>;
+  rpc(name: "insert_work_notification_reminders", args: { p_rows: readonly WorkNotificationRow[] }): PromiseLike<SweepReadResult>;
   from(table: string): {
     select(columns: string): SweepQuery;
-    upsert(
-      rows: readonly WorkNotificationRow[],
-      options: { onConflict: string; ignoreDuplicates: boolean }
-    ): { select(columns: string): PromiseLike<SweepReadResult> };
   };
   auth: RosterServiceClient["auth"];
 };
@@ -1183,9 +1329,11 @@ async function readSource(
 
     for (const filter of source.staticFilters) {
       query =
-        filter.kind === "neq"
-          ? query.neq(filter.column, filter.value)
-          : query.not(filter.column, "in", `(${filter.values.join(",")})`);
+        filter.kind === "eq"
+          ? query.eq(filter.column, filter.value)
+          : filter.kind === "neq"
+            ? query.neq(filter.column, filter.value)
+            : query.not(filter.column, "in", `(${filter.values.join(",")})`);
     }
 
     const result = await query.order(source.dateColumn, { ascending: true }).limit(limit);
@@ -1230,14 +1378,17 @@ async function rosterForWorkspace(
   return null;
 }
 
-function digestSubject(overdue: number, upcoming: number, horizonDays: number): string {
+function digestSubject(overdue: number, upcoming: number, toReview: number, horizonDays: number): string {
+  const review = toReview > 0 ? `${toReview} closed ${toReview === 1 ? "award" : "awards"} to review` : null;
+  let due: string | null = null;
   if (overdue > 0 && upcoming > 0) {
-    return `OpenPlan: ${overdue} overdue, ${upcoming} due in the next ${horizonDays} days`;
+    due = `${overdue} overdue, ${upcoming} due in the next ${horizonDays} days`;
+  } else if (overdue > 0) {
+    due = `${overdue} overdue ${overdue === 1 ? "deadline" : "deadlines"}`;
+  } else if (upcoming > 0 || !review) {
+    due = `${upcoming} due in the next ${horizonDays} days`;
   }
-  if (overdue > 0) {
-    return `OpenPlan: ${overdue} overdue ${overdue === 1 ? "deadline" : "deadlines"}`;
-  }
-  return `OpenPlan: ${upcoming} due in the next ${horizonDays} days`;
+  return `OpenPlan: ${[due, review].filter(Boolean).join(", ")}`;
 }
 
 function digestBody(
@@ -1246,10 +1397,13 @@ function digestBody(
   horizonDays: number,
   appOrigin: string | null
 ): string {
+  const toReview = items.filter((item) => item.needsReview);
   const overdue = items.filter((item) => item.isOverdue);
-  const upcoming = items.filter((item) => !item.isOverdue);
+  const upcoming = items.filter((item) => !item.isOverdue && !item.needsReview);
   const line = (item: Candidate) =>
     `  - ${item.title} — ${formatWorkDeadlineDate(item.due_on) ?? item.due_on}`;
+  const reviewLine = (item: Candidate) =>
+    `  - ${item.title}, obligation deadline ${formatWorkDeadlineDate(item.due_on) ?? item.due_on}`;
 
   const parts: string[] = [
     workspaceName
@@ -1263,10 +1417,18 @@ function digestBody(
   if (upcoming.length > 0) {
     parts.push(`Due in the next ${horizonDays} days (${upcoming.length}):`, ...upcoming.map(line), "");
   }
+  if (toReview.length > 0) {
+    parts.push(
+      `Closed awards to review (${toReview.length}):`,
+      ...toReview.map(reviewLine),
+      "Closing an award does not show whether this deadline was met. Check the award terms and obligation records.",
+      ""
+    );
+  }
   parts.push(
     appOrigin ? `See everything: ${appOrigin}/my-work` : "See everything on the My Work page in OpenPlan.",
     "",
-    `This is a once-a-day summary of deadlines recorded in OpenPlan. It is sent only when something is due within the next ${horizonDays} ${horizonDays === 1 ? "day" : "days"} or already overdue.`
+    `This is a once-a-day summary of deadlines recorded in OpenPlan. It is sent only when something is due within the next ${horizonDays} ${horizonDays === 1 ? "day" : "days"}, is overdue, or needs review.`
   );
   return parts.join("\n");
 }
@@ -1311,10 +1473,39 @@ export async function sweepWorkDeadlines(
 
   const perSource = Object.fromEntries(
     WORK_SWEEP_SOURCES.map((source) => [source.kind, emptyOutcome()])
-  ) as Record<WorkNotificationKind, WorkSweepSourceOutcome>;
+  ) as Record<WorkReminderKind, WorkSweepSourceOutcome>;
 
-  const candidates: Candidate[] = [];
+  const reads: Array<{
+    source: SweepSource;
+    rows: Array<Record<string, unknown>>;
+    outcome: WorkSweepSourceOutcome;
+    context: SweepSourceContext;
+  }> = [];
   for (const source of WORK_SWEEP_SOURCES) {
+    if (source.kind === "grant_application_due") {
+      const outcome = emptyOutcome();
+      try {
+        const activation = await client.rpc("work_notification_kind_activation");
+        if (activation.error) {
+          outcome.message = activation.error.message ?? "The reminder activation read failed.";
+          outcome.pending = looksLikePendingSchema(outcome.message);
+          outcome.failed = !outcome.pending;
+        } else if (activation.data === false) {
+          outcome.pending = true;
+          outcome.message = "Application reminders await the separate reminder-kind activation after older sweep writers retire.";
+        } else if (activation.data !== true) {
+          outcome.failed = true;
+          outcome.message = "The reminder activation read returned an invalid value.";
+        }
+      } catch (error) {
+        outcome.failed = true;
+        outcome.message = error instanceof Error ? error.message : "The reminder activation read threw.";
+      }
+      if (outcome.pending || outcome.failed) {
+        reads.push({ source, rows: [], outcome, context: EMPTY_SWEEP_CONTEXT });
+        continue;
+      }
+    }
     const { rows, outcome } = await readSource(client, source, now, horizonDays, limit);
     // The second read, when a source declares one, and only when the first
     // found something: a failure here costs the reminder its figure, never the
@@ -1324,12 +1515,24 @@ export async function sweepWorkDeadlines(
         ? await source.loadContext(client, rows, limit)
         : EMPTY_SWEEP_CONTEXT;
     outcome.contextUnavailable = context.unavailable;
-    const produced = source.toCandidates(rows, now, context);
+    reads.push({ source, rows, outcome, context });
+  }
+
+  const calendars = await loadSweepCalendars(
+    client,
+    [...new Set(reads.flatMap(({ rows }) => rows.map(rowWorkspaceId)).filter((id): id is string => !!id))],
+    now
+  );
+
+  const candidates: Candidate[] = [];
+  for (const { source, rows, outcome, context } of reads) {
+    const produced = source.toCandidates(rows, now, context, calendars.todayFor, calendars.timeZoneFor);
     const filtered = produced.filter((candidate) => {
       if (candidate.isOverdue) return true;
       const preference = preferences.get(candidate.workspace_id);
       const advanceDays = options.horizonDays ?? preference?.advanceDays ?? DEFAULT_REMINDER_ADVANCE_DAYS;
-      return new Date(candidate.due_on).getTime() <= now.getTime() + advanceDays * 86400000;
+      // Calendar dates, so string order is date order.
+      return candidate.due_on <= addDays(calendars.todayFor(candidate.workspace_id), advanceDays);
     });
     outcome.candidates = filtered.length;
     perSource[source.kind] = outcome;
@@ -1341,6 +1544,8 @@ export async function sweepWorkDeadlines(
     horizonDays,
     perSource,
     notificationsCreated: 0,
+    notificationsAlreadyPresent: 0,
+    deferredByOldKey: [],
     digestsComposed: 0,
     emailsDelivered: 0,
     emailsSkipped: 0,
@@ -1351,6 +1556,7 @@ export async function sweepWorkDeadlines(
     writeError: null,
     workspaceNamesUnavailable: false,
     reminderPreferencesUnavailable: preferencesUnavailable,
+    workspaceCalendarsUnavailable: calendars.unavailable,
     emailDigestsDisabled: 0,
   };
 
@@ -1385,22 +1591,29 @@ export async function sweepWorkDeadlines(
 
   if (eligible.length === 0) return result;
 
-  // ── the write. ON CONFLICT DO NOTHING against the migration's unique index,
-  // returning ONLY what was created — which is what the digest is built from.
-  let created: Array<Record<string, unknown>> = [];
+  // Classify the complete batch before trusting any inserted count or digest.
+  let created: ReminderWriteOutcome[] = [];
   try {
-    const write = await client
-      .from("work_notifications")
-      .upsert(
-        eligible.map(({ isOverdue: _isOverdue, ...row }) => row),
-        { onConflict: WORK_NOTIFICATION_IDEMPOTENCY_COLUMNS.join(","), ignoreDuplicates: true }
-      )
-      .select("subject_table, subject_id, recipient_user_id, due_on, workspace_id");
+    const requested = eligible.map(({ isOverdue: _isOverdue, needsReview: _needsReview, ...row }) => row);
+    if (new Set(requested.map(reminderIdentity)).size !== requested.length) {
+      throw new Error("The reminder request contains duplicate identities.");
+    }
+    const write = await client.rpc("insert_work_notification_reminders", { p_rows: requested });
     if (write.error) {
       result.writeError = write.error.message ?? "the database returned no reason";
       return result;
     }
-    created = (write.data ?? []) as Array<Record<string, unknown>>;
+    const outcomes = readReminderWriteOutcomes(write.data, requested);
+    created = outcomes.filter((row) => row.classification === "inserted");
+    result.notificationsAlreadyPresent = outcomes.filter((row) => row.classification === "duplicate").length;
+    result.deferredByOldKey = outcomes.flatMap((row) => row.classification === "deferred_old_key" && row.blocking_kind ? [{
+      workspace_id: row.workspace_id, recipient_user_id: row.recipient_user_id, kind: row.kind,
+      subject_table: row.subject_table, subject_id: row.subject_id, due_on: row.due_on, blockingKind: row.blocking_kind,
+    }] : []);
+    for (const kind of new Set(result.deferredByOldKey.map((row) => row.kind))) {
+      result.perSource[kind].pending = true;
+      result.perSource[kind].message = "Reminders blocked by an existing opposite kind await the separate reminder-kind activation.";
+    }
   } catch (error) {
     result.writeError = error instanceof Error ? error.message : "the reminder write threw";
     return result;
@@ -1413,12 +1626,12 @@ export async function sweepWorkDeadlines(
   const createdKeys = new Set(
     created.map(
       (row) =>
-        `${asString(row.subject_table)}::${asString(row.subject_id)}::${asString(row.recipient_user_id)}`
+        `${asString(row.subject_table)}::${asString(row.subject_id)}::${asString(row.recipient_user_id)}::${asString(row.kind)}::${asString(row.due_on)}`
     )
   );
   const newlyNotified = eligible.filter((candidate) =>
     createdKeys.has(
-      `${candidate.subject_table}::${candidate.subject_id}::${candidate.recipient_user_id}`
+      `${candidate.subject_table}::${candidate.subject_id}::${candidate.recipient_user_id}::${candidate.kind}::${candidate.due_on}`
     )
   );
 
@@ -1456,17 +1669,19 @@ export async function sweepWorkDeadlines(
       continue;
     }
 
+    const toReview = items.filter((item) => item.needsReview).length;
     const overdue = items.filter((item) => item.isOverdue).length;
+    const upcoming = items.filter((item) => !item.isOverdue && !item.needsReview).length;
     // The cast is the repo's untyped-client convention (`service as
     // RosterServiceClient`): every Supabase client here is structural, and the
     // outbox helper declares the slice it needs rather than the whole client.
     const outcome = await enqueueEmail(client as unknown as Parameters<typeof enqueueEmail>[0], {
       campaignId: null,
       to: email,
-      subject: digestSubject(overdue, items.length - overdue, preference.advanceDays),
+      subject: digestSubject(overdue, upcoming, toReview, preference.advanceDays),
       text: digestBody(items, workspaceNames.names.get(workspaceId) ?? null, preference.advanceDays, appOrigin),
       template: "work_deadline_digest",
-      payload: { workspaceId, recipientUserId: recipientId, itemCount: items.length, overdue },
+      payload: { workspaceId, recipientUserId: recipientId, itemCount: items.length, overdue, toReview },
     });
     if (outcome.status === "sent") result.emailsDelivered += 1;
     else if (outcome.status === "skipped") result.emailsSkipped += 1;
@@ -1490,13 +1705,15 @@ export async function sweepWorkDeadlines(
  */
 export type WorkNotificationInboxRow = {
   id: string;
-  kind: WorkNotificationKind | string;
   title: string;
   body: string;
-  dueOn: string;
+  opportunity?: { id: string; workspaceId: string };
   projectId: string | null;
   createdAt: string | null;
-};
+} & (
+  | { kind: "grant_deadline_changed"; dueOn: null; eventId: string }
+  | { kind: WorkReminderKind | "unknown"; dueOn: string }
+);
 
 export type WorkNotificationInbox =
   | { ok: true; rows: WorkNotificationInboxRow[]; truncated: boolean }
@@ -1509,7 +1726,7 @@ export type WorkNotificationInbox =
 
 /** The columns the panel renders — asserted as a projection by its test. */
 export const WORK_NOTIFICATION_INBOX_COLUMNS =
-  "id, kind, title, body, due_on, project_id, created_at";
+  "id, kind, title, body, due_on, project_id, created_at, subject_table, subject_id, workspace_id, deadline_change_id";
 
 export const WORK_NOTIFICATION_INBOX_LIMIT = 50;
 
@@ -1524,7 +1741,7 @@ type InboxQuery = PromiseLike<SweepReadResult> & {
 };
 
 /**
- * This person's UNREAD reminders, soonest deadline first.
+ * This person's UNREAD notices, newest first so cleared dates stay visible.
  *
  * Unread only, deliberately: the queue on the same page already lists every
  * deadline that exists, so a reminder that has been read has nothing left to
@@ -1546,7 +1763,7 @@ export async function loadWorkNotifications(
       // on its own terms does not depend on a policy staying written.
       .eq("recipient_user_id", recipientUserId)
       .eq("is_read", false)
-      .order("due_on", { ascending: true })
+      .order("created_at", { ascending: false })
       .limit(limit);
 
     if (result.error) {
@@ -1554,21 +1771,86 @@ export async function loadWorkNotifications(
       return { ok: false, pending: looksLikePendingSchema(message), message };
     }
 
-    const rows = ((result.data ?? []) as Array<Record<string, unknown>>).map((row) => ({
-      id: String(row.id),
-      kind: asString(row.kind) ?? "deliverable_due",
-      title: asString(row.title) ?? "(untitled reminder)",
-      body: asString(row.body) ?? "",
-      dueOn: asString(row.due_on) ?? "",
-      projectId: asString(row.project_id),
-      createdAt: asString(row.created_at),
-    }));
+    const rows = ((result.data ?? []) as Array<Record<string, unknown>>).map((row): WorkNotificationInboxRow => {
+      const kind = asString(row.kind);
+      const dueOn = asString(row.due_on);
+      const common = {
+        id: String(row.id),
+        title: asString(row.title) ?? "(untitled reminder)",
+        body: asString(row.body) ?? "",
+        ...(row.subject_table === "funding_opportunities" && asString(row.subject_id) && asString(row.workspace_id)
+          ? { opportunity: { id: String(row.subject_id), workspaceId: String(row.workspace_id) } } : {}),
+        projectId: asString(row.project_id),
+        createdAt: asString(row.created_at),
+      };
+      if (kind === "grant_deadline_changed") {
+        const eventId = asString(row.deadline_change_id);
+        if (row.due_on !== null || !eventId) throw new Error("Recorded deadline change has invalid event identity or due date.");
+        return { ...common, kind, dueOn: null, eventId };
+      }
+      if (!dueOn) throw new Error("Deadline reminder has no recorded due date.");
+      const reminderKind = WORK_NOTIFICATION_KINDS.find((value): value is WorkReminderKind => value !== "grant_deadline_changed" && value === kind) ?? "unknown";
+      return { ...common, kind: reminderKind, dueOn };
+    });
 
     return { ok: true, rows, truncated: rows.length >= limit };
   } catch (error) {
     const message = error instanceof Error ? error.message : "the reminder read threw";
     return { ok: false, pending: looksLikePendingSchema(message), message };
   }
+}
+
+/** The workspace a source row belongs to: its own column, or its project's. */
+function rowWorkspaceId(row: Record<string, unknown>): string | null {
+  return asString(row.workspace_id) ?? projectContext(row).workspaceId;
+}
+
+/** Workspace ids per calendar read: well under PostgREST's row cap and a URL's length. */
+const CALENDAR_READ_BATCH = 200;
+
+/**
+ * Each workspace's calendar, for the window and the days a claim has waited.
+ *
+ * A failed read does not withhold anybody's reminders. Those workspaces are
+ * counted on UTC days, which is what the sweep did before it read calendars,
+ * and the sweep reports `workspaceCalendarsUnavailable` instead of absorbing it.
+ */
+async function loadSweepCalendars(
+  client: WorkSweepClient,
+  workspaceIds: readonly string[],
+  now: Date
+): Promise<{ todayFor: WorkspaceToday; timeZoneFor: (workspaceId: string) => string; unavailable: boolean }> {
+  const todays = new Map<string, string>();
+  const zones = new Map<string, string>();
+  let unavailable = false;
+  for (let start = 0; start < workspaceIds.length; start += CALENDAR_READ_BATCH) {
+    const batch = workspaceIds.slice(start, start + CALENDAR_READ_BATCH);
+    try {
+      const { data, error } = await client
+        .from("workspaces")
+        // A literal, so the projection guard checks it against the schema.
+        .select("id, time_zone, home_country_code")
+        .in("id", batch);
+      if (error) {
+        unavailable = true;
+        continue;
+      }
+      for (const row of (data ?? []) as Array<Record<string, unknown>>) {
+        const id = asString(row.id);
+        if (id) {
+          const zone = resolveWorkspaceTimeZone(row).timeZone;
+          zones.set(id, zone);
+          todays.set(id, todayIn(zone, now));
+        }
+      }
+      // An omitted workspace is still an unavailable calendar, even without an error.
+      if (batch.some((id) => !todays.has(id))) unavailable = true;
+    } catch {
+      unavailable = true;
+    }
+  }
+  const utcToday = todayIn("UTC", now);
+  return { todayFor: (workspaceId) => todays.get(workspaceId) ?? utcToday, timeZoneFor: (workspaceId) => zones.get(workspaceId) ?? "UTC", unavailable };
 }
 
 /**

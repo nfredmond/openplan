@@ -82,7 +82,7 @@ describe("aerial orthophoto layer selection", () => {
     fireEvent.click(checkbox);
     expect(checkbox).toBeChecked();
     expect(readStoredAerialOrthoSelection(WORKSPACE_ID)).toEqual({ [CUSTODY_ID]: true });
-    fireEvent.click(screen.getByText("Custody and placement"));
+    fireEvent.click(screen.getByText("Storage and placement"));
     expect(screen.getByText(/SHA-256 aaaaaaaaaaaa/)).toBeInTheDocument();
     expect(screen.getByText("Collected 2026-08-22")).toBeInTheDocument();
     expect(screen.getByText("Ground sample distance 0.04 m")).toBeInTheDocument();

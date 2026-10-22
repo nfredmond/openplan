@@ -1,0 +1,14 @@
+{
+  "number": 19703,
+  "title": "feat(review): unify pull request and Git review across clients",
+  "html_url": "https://github.com/pingdotgg/t3code/pull/19703",
+  "state": "open",
+  "draft": true,
+  "created_at": "2026-10-15T01:45:00Z",
+  "updated_at": "2026-10-15T01:45:45Z",
+  "merged_at": null,
+  "bodyOmitted": true,
+  "rawResponseSha256": "d90669327a41f3c74db2c4509777710e648363daa281368b1fdc922c32e2c9e2",
+  "rawResponseRetainedAt": "/home/nathaniel/.local/state/openplan/t3code-opus-research-20261015/post-cutoff-pr-19703.json",
+  "scope": "Metadata for the separately labelled post-cutoff addendum. Full source text is available through the primary GitHub PR and the retained local response; it is not republished here."
+}

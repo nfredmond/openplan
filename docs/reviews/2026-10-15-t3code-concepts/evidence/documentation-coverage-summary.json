@@ -1,0 +1,33 @@
+{
+  "totalPaths": 1014,
+  "firstPartyNonVendoredPaths": 117,
+  "externalVendoredRepoPaths": 897,
+  "note": "Only firstPartyNonVendoredPaths are T3-owned prose. External .repos paths are upstream library docs. Retrieval is script-verified; reading is a researcher declaration.",
+  "byCategory": {
+    "t3-agent-skill": 4,
+    "t3-repo-policy": 10,
+    "vendored-upstream:alchemy-effect (Apache-2.0)": 739,
+    "vendored-upstream:effect-smol (MIT)": 158,
+    "t3-component-readme": 13,
+    "t3-test-fixture-readme": 5,
+    "t3-internals-design": 30,
+    "t3-operations-runbook": 9,
+    "t3-orchestration-v2-design": 9,
+    "t3-user-doc": 37
+  },
+  "byRetrieval": {
+    "retrieved": 117,
+    "not retrieved": 897
+  },
+  "byResearcherDeclaration": {
+    "researcher declares read in full (not script-verifiable)": 117,
+    "path-screened only (external upstream library docs under .repos; not T3 product docs)": 895,
+    "README head viewed via git show (output not retained) + license checked": 2
+  },
+  "bySource": {
+    "sparse-checkout": 97,
+    "git-show-at-pinned-commit": 20,
+    "not-fetched (tree path only)": 897
+  },
+  "firstPartyLinesRetrieved": 13938
+}

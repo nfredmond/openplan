@@ -1,0 +1,353 @@
+250	closed-unmerged		docs: add contributing guide for fork PR workflow
+312	closed-unmerged		Add fork management automation
+522	closed-unmerged		Feature/session handoff compaction
+637	closed-unmerged		feat: terminal-to-desktop project-open handoff (`t3 .`)
+904	closed-unmerged	XL	fix(server): respect fork remotes when creating PRs
+1199	closed-unmerged	XXL	Add subagent work units across providers
+1296	closed-unmerged	XXL	feat: support mid-session model/provider switching with history handoff
+1366	closed-unmerged	XXL	feat: add provider-aware skills and subagent support
+1766	closed-unmerged	XXL	Codex/skills appserver handoff
+1779	closed-unmerged	M	Add parent/child thread delegation primitives
+1911	closed-unmerged	XL	Add provider handoff compaction on model switches
+2333	closed-unmerged	XXL	Syncing fork
+2721	closed-unmerged	L	Personal fork setup: .bnpnecode home dir, worktree default, .env* carryover
+2739	closed-unmerged	L	chore: set up fork devops workflow
+2744	closed-unmerged	XS	Prefer upstream repo when creating fork PRs
+2795	closed-unmerged	M	Handle auth timestamps and SSH ControlMaster handoff
+3077	closed-unmerged	XXL	sync forks
+3144	closed-unmerged	XXL	Atlas/fork bootstrap
+3146	closed-unmerged	XL	[codex] Add PATCH.md fork upgrade workflow
+3176	closed-unmerged	XXL	Add subagent activity visibility
+3549	closed-unmerged	XL	feat: delegate task
+3680	closed-unmerged	L	Add PatchMD fork maintenance workflow
+3720	merged	M	fix: delegate OpenCode session titles to provider
+3754	merged	XL	Add worktree handoff and status tools to the t3-code MCP server
+3861	closed-unmerged	XXL	feat(sidebar): reveal nested subagent threads
+3866	merged	M	feat(subagents): disclose projected results consistently
+3871	closed-unmerged	XXL	feat(mobile): nested subagent threads behind a toggle
+3878	closed-unmerged	XXL	feat(orchestrator): archive and delete owned subagent subtrees
+3907	closed-unmerged	L	fix(server): fork checkouts find and open PRs on upstream
+3908	merged	L	[orchestrator-v2] fix(orchestrator): Codex background command completion and subagent resume
+3935	closed-unmerged	L	Fix fork-only checkout repository grouping
+4220	closed-unmerged	XXL	(WIP) feat: subagent & workflow observability — Agents panel
+4246	closed-unmerged	XXL	feat: add agent-managed forked side threads
+4248	closed-unmerged	XL	feat(web): fork from a selected assistant response
+4390	closed-unmerged	XXL	Add basic thread forking from the sidebar
+4458	closed-unmerged	XXL	feat(sidebar-v2): add task tabs and context forks
+4499	merged	L	fix(orchestrator): Wake settled parents when delegated children finish
+4502	merged	M	fix: hide subagent threads from v2 lists
+4551	closed-unmerged	XXL	feat(orchestration-v2): add subagent observability
+4626	closed-unmerged	L	feat(orchestration-v2): add subagent observability data model (1/5)
+4629	merged	XXL	feat(orchestration-v2): populate subagent observability from providers (2/5)
+4662	closed-unmerged	XL	feat(orchestration-v2): attribute reused subagents to the run driving them (2/4)
+4768	merged	L	feat(orchestration-v2): add subagent observability data model (1/5)
+4779	closed-unmerged	XXL	feat(orchestration-v2): subagent observability — data model and providers (1/4)
+4793	merged	L	fix(orchestrator): Show when a completed delegated child still has work
+4813	closed-unmerged	L	subagent ui
+4993	closed-unmerged	XL	fix(mobile): keep threads visibly working while background subagents run
+5193	closed-unmerged	L	feat(web): add a since-fork diff scope
+5219	merged	XXL	feat: native subagent & workflow observability
+5308	closed-unmerged	L	fix(orchestration): route subagent-attributed Claude text to the child thread
+5311	merged	XXL	fix(orchestrator): Prevent redundant delegated completion turns
+5388	closed-unmerged	XXL	fix(orchestration): Preserve Claude subagent attribution after settle
+5456	closed-unmerged	L	fix(orchestrator): Keep Claude child work on the child thread
+5565	closed-unmerged	M	fix(server): dedupe codex subagent item events
+5568	merged	M	fix(server): settle stopped Claude subagents
+5634	closed-unmerged	M	fix(server): dedupe codex subagent item events
+5677	merged	S	fix(server): stop the reaper from silently killing live background subagents
+5682	closed-unmerged	L	fix(server): bound Codex subagent progress events
+5718	closed-unmerged	S	fix(codex): interactions no longer revive idle sub-agents
+5745	merged	M	feat(web): show how many subagents are running at a glance
+5811	closed-unmerged	L	fix(server): exclude inherited Codex fork usage
+5887	merged	M	fix(server): usage no longer double-counts forked Codex sessions
+5955	closed-unmerged	L	fix(codex): keep delegated child-agent output out of parent chats
+6148	closed-unmerged	M	fix(server): prevent silent session forks when switching provider accounts
+6340	closed-unmerged	M	fix(web): align subagent bar corners
+6410	closed-unmerged	L	feat(server): show Grok subagents in the Agents panel
+6438	closed-unmerged	XXL	Accidental cross-fork PR — please disregard
+6584	closed-unmerged	L	fix(server): subagent runs no longer delay replies
+6586	closed-unmerged	M	fix(claude): subagent usage no longer fills the context meter
+6616	closed-unmerged	XXL	feat(mobile): subagent visibility with agents sheet and liveness
+7069	closed-unmerged	L	docs: document fork-to-upstream development workflow
+7101	closed-unmerged	XL	feat(web): add cross-provider model handoff with structured context
+7207	merged	XS	fix(web): fix subagent row left border being cut off
+7287	closed-unmerged	L	fix(claude): report subagent model and effort
+7393	closed-unmerged	XL	feat(opencode): show native Task subagents in the Agents panel
+7414	closed-unmerged	M	fix(server): fork Codex threads with active writers
+7471	closed-unmerged	M	fix(server): fix opencode sessions getting stuck running after subagents
+7487	closed-unmerged	XXL	feat(threads): add agent-requested handoffs
+7507	closed-unmerged	L	fix(codex): show spawned subagents in the sidebar
+7520	closed-unmerged	L	fix(server): bound Claude subagent usage
+7583	merged	M	fix(server): keep the authoritative subagent model when snapshots race task_started
+7585	closed-unmerged	M	fix(server): emit terminal task rows for subagents that survive a stop sweep
+8017	closed-unmerged	L	refactor(web): isolate terminal shell as fork addon
+8274	closed-unmerged	L	docs: add vouched contributor handoff guide
+8311	closed-unmerged	M	fix(client-runtime): preserve queries during connection handoff
+8412	closed-unmerged	XL	feat(grok): show Grok subagents in the Agents panel
+8492	closed-unmerged	XXL	feat(handoff): let an agent hand its thread off to a fresh one
+8502	merged	L	fix(codex): show sub-agent models
+8696	closed-unmerged	XL	feat(mcp): fork existing conversations
+8697	closed-unmerged	L	feat(mcp): merge back conversation context
+8716	closed-unmerged	XXL	feat(mcp): answer delegated user-input requests
+8755	closed-unmerged	L	feat(web): continue handoffs in a new thread
+8827	closed-unmerged	M	fix(git): support fork heads when creating upstream PRs
+9016	closed-unmerged	XXL	feat(usage): add thread and subagent breakdown
+9079	closed-unmerged	M	fix(web): keep linked PR handoffs in current thread
+9089	closed-unmerged	L	fix(mobile): invalidate stale scheduler delegates
+9103	closed-unmerged	L	fix(orchestrator): Wake idle parents for each delegated sibling
+9169	closed-unmerged	M	fix(server): fork Codex threads at native turn boundary
+9187	closed-unmerged	XXL	feat: fork a conversation from any completed point
+9295	closed-unmerged	L	fix(server): show opencode subagents in the Agents panel
+9396	closed-unmerged	XXL	feat: side chats and forking
+9408	closed-unmerged	M	fix(claude): resumed subagents no longer read as stopped
+9436	closed-unmerged	XXL	feat(server): fork threads and side chats
+9437	closed-unmerged	XXL	feat: side chat and fork surfaces for web and mobile
+9515	merged	L	feat(antigravity): show subagent calls and results
+9531	closed-unmerged	M	ci: delete superseded pending-approval runs on fork PRs
+9579	merged	M	fix(antigravity): keep subagent batches active after launch
+9616	merged	L	fix: show idle subagent batches without completion marks
+9992	merged	M	refactor(client-runtime): remove unused subagent selectors
+10211	merged	L	fix(mobile): fold subagent lifecycle rows into one batch per spawn
+10273	merged	L	fix(mobile): stop the work log flickering during subagent runs and failing calls
+10558	merged	L	feat(mcp): expose fork and merge-back commands
+10575	closed-unmerged	S	fix(claude): isolate subagent tool streams
+10858	closed-unmerged	M	fix(server): show OpenCode subagents in the Agents panel
+11011	closed-unmerged	L	fix(server): keep forks separate from their upstream repository in project grouping
+11096	closed-unmerged	XXL	feat(threads): add cross-provider conversation forks
+11154	closed-unmerged	XS	fix(server): select an available provider for delegated tasks
+11262	closed-unmerged	L	feat(server): show OpenCode subagents in the Agents panel and work log
+11433	merged	L	feat(web): subagent spawns render as an expandable work row
+11474	merged	M	fix(web): keep subagent rows visible under folded turns
+11490	merged	L	fix(server): fork Codex threads at the native turn boundary
+11539	closed-unmerged	XS	Merge coding-app-elie fork base history onto latest main (agent fleets, provider fixes, transport fixes)
+11578	merged	M	fix(server): align MCP delegation support with live provider adapter registry
+11608	closed-unmerged	XS	fix(client-runtime): map cancelled and interrupted subagent terminal statuses
+11725	closed-unmerged	L	fix(grok): show spawn_subagent children in the Agents panel
+11760	merged	XXL	ci(desktop): sign fork PR macOS previews without exposing signing secrets
+11807	closed-unmerged	L	fix(server): prevent duplicate and subagent history imports
+11870	merged	S	fix(server): select an available provider for delegated tasks
+11954	merged	L	fix(server): keep Claude rewind when fork history length changes
+11980	closed-unmerged	XL	feat(chat): add handoff and second-opinion actions
+11996	closed-unmerged	L	fix(server): preserve native Codex subagent lifecycle in v2
+11997	closed-unmerged	L	fix(mcp): bound delegation waits and recover completion delivery
+12013	closed-unmerged	L	feat(web): show subagent context in Agents panel
+12079	merged	L	feat(web): show subagent details and history in workspace card
+12177	merged	XL	feat(mobile): port worktree setup progress and agent handoff
+12210	closed-unmerged	M	feat(web): show subagent lineage in the thread header
+12213	closed-unmerged	XL	feat(sidebar): show subagent counts in an expandable thread row
+12226	merged	XL	fix(orchestrator): defer queued provider handoff until delivery
+12255	merged	L	fix(v2): preserve running turns during provider handoff
+12352	merged	XXL	feat(server): preserve budgeted history across provider handoffs
+12367	merged	M	refactor(mobile): share subagent status indicators
+12483	merged	L	fix(mobile): synchronize native notification delegates
+12484	merged	XXL	fix(relay): accept delegated thread IDs in activity routes
+12491	merged	S	fix(web): show subagent models and running count in Lineage
+12539	closed-unmerged	XS	fix(notifications): silence subagent threads
+12608	closed-unmerged	L	fix(mobile): recover connections on a Wi-Fi/cellular handoff
+12834	merged	S	feat(web): color handoff model names with their provider brand color
+12839	merged	L	feat(web): show a turn's subagents as one collapsible card
+12842	merged	L	feat(web): give lineage subagent hovers the thread hover card
+12903	closed-unmerged	S	fix(notifications): keep subagent runs active
+12961	merged	L	feat(mobile): show subagents in a collapsible card
+12974	merged	L	fix(orchestration): settle subagent statuses and activation timers
+13056	merged	L	fix(web): show subagent effort and speed in hover cards
+13067	merged	L	fix(orchestration): report subagent models and use live model choices
+13123	closed-unmerged	XL	fix(v2): compact full sessions before provider handoffs
+13333	closed-unmerged	S	fix(claude): 🐛 show the effort a subagent actually runs at
+13338	closed-unmerged	M	fix(server): stop stranding late delegated task reports
+13343	open	L	fix(server): tell parents when a delegated task is waiting for input
+13345	closed-unmerged	L	fix(server): report delegated tasks stopped by a server restart
+13347	merged	XL	fix(server): keep Claude subagent output in the subagent's thread
+13438	closed-unmerged	L	feat(web): show nested subagents in Lineage and their full parent chain
+13452	closed-unmerged	XXL	feat(opencode): native v2 server integration, subagents panel, and lifecycle hardening
+13508	merged	XL	test(server): record Codex multi-agent V2 subagents live on 0.156.1
+13517	merged	XXL	test(server): record Claude background task and subagent lifecycles live
+13541	merged	M	fix(server): allow forks from provider-finished runs
+13609	merged	XL	fix(server): finish Grok background subagents from subagent_finished
+13614	merged	L	fix(clients): native subagent threads show when they are working
+13619	merged	M	fix(server): startup recovery settles native subagent threads
+13624	merged	XL	fix(clients): native subagent threads show status instead of a composer
+13626	merged	M	fix(server): Claude subagent threads show their thinking
+13652	closed-unmerged	L	feat(web): stop active subagents from Lineage
+13668	merged	M	fix(server): a resumed Claude subagent's thread shows the message that resumed it
+13703	merged	L	fix(server): Codex subagent approvals show up in the parent thread
+13709	closed-unmerged	L	feat(web): show subagent progress on waiting sidebar rows
+13725	merged	L	fix(clients): subagent threads fold their work like other threads
+13726	merged	XL	fix(server): subagent approvals always land in the parent run
+13727	merged	M	fix(clients): provider subagent threads never show a composer
+13730	merged	M	fix(server): finished Claude subagents leave no running rows
+13735	merged	L	fix(server): a Claude subagent resumed after a server restart stays in its thread
+13871	merged	M	fix(server): preserve context occupancy across model handoffs
+13882	merged	S	fix(server): allow handoff after a provider session detaches
+13894	merged	L	fix(server): detect fork PRs for branches without upstreams
+13906	closed-unmerged	L	fix(cursor): show Task subagents in the Agents panel
+13928	closed-unmerged	L	fix(server): keep OpenCode sessions alive while background subagents run
+13938	merged	M	fix(server): parents keep getting woken for every delegated task that finishes
+13948	merged	XL	feat(server): background wakes say which subagent, command, or monitor finished
+13949	merged	L	feat(clients): background work says what it is and which subagent finished
+13998	closed-unmerged	XXL	chore(fork): remove fork stack commit-count cap
+14020	closed-unmerged	M	fix(agents): reopen resumed Claude subagents
+14030	closed-unmerged	L	fix(server): reopen delegated tasks for child follow-ups
+14031	closed-unmerged	M	fix(client): reactivate resumed Claude subagents
+14108	merged	M	fix(orchestration-v2): show reported subagent models
+14199	merged	S	fix(server): OpenCode background subagents keep their session alive
+14223	closed-unmerged	L	fix(usage): distinguish subagent context from cumulative tokens
+14272	closed-unmerged	M	fix(server): resumed Claude subagents keep their own model and effort label
+14416	merged	XS	fix(server): delegate_task explains that supervised runtime modes pause the child
+14418	closed-unmerged	M	fix(clients): keep running subagents visible after their turn ends
+14423	closed-unmerged	L	feat(server): tell the parent when a delegated task pauses on a request
+14468	merged	XXL	feat(server): OpenCode 2 native steering, fork and rollback
+14474	merged	XXL	feat(server): OpenCode 2 subagents and background wake-ups
+14481	open	XS	fix(ci): forward fork PR events to Cursor
+14484	closed-unmerged	XS	ci: forward fork PRs to hygiene via pull_request_target
+14530	closed-unmerged	XL	feat(web): list a waiting thread's subagents under its sidebar card
+14540	merged	L	fix(server): Claude subagents with their own model no longer show the parent's model
+14559	closed-unmerged	XL	feat: fork Codex and Claude threads from cmd+k
+14583	merged	L	fix(server): a Claude subagent's own subagents run on their requested model
+14630	closed-unmerged	XS	fix(web): stop showing dead subagents as working after a restart
+14639	closed-unmerged	M	fix(server): keep forks separate from their upstream repository in project grouping
+14641	merged	L	fix(server): a Claude subagent's own subagents no longer wake the root agent
+14665	merged	M	fix(server): a subagent's events are no longer stored twice across runs
+14679	merged	M	fix(server): OpenCode 2 keeps a reused subagent's background work and forks before continuations
+14696	closed-unmerged	M	fix(client-runtime): a resumed Claude subagent no longer stays failed or stopped in the Agents panel
+14732	open	L	fix(server): a delegated result whose steer never landed wakes the parent after it settles
+14760	merged	L	fix(server): OpenCode 2 stops subagents a dropped background reply started
+14764	closed-unmerged	XXL	feat: orchestrator chats that delegate to worker threads
+14918	merged	XS	fix(server): subagents no longer inherit parent pull-request links
+14963	open	S	fix(server): PR checkout looks up forks on the pull request's host
+14994	merged	L	fix(server): Claude subagents show the model their agent file picks
+14999	merged	XS	fix(client-runtime): format subagent descriptions as display names
+15004	closed-unmerged	XXL	fix(orchestration): deliver results from subagent follow-ups
+15016	merged	S	fix(server): subagent threads stop publishing tombstones to the relay
+15022	merged	XS	test(server): replay checks a Claude subagent's thread takes its reported model
+15092	closed-unmerged	L	fix(chat): merging a fork back shows a pending-context notice
+15115	merged	S	fix(server): keep delegated review rounds on the task API
+15163	open	M	fix(web): keep the parent thread highlighted while viewing its subagent
+15168	closed-unmerged	M	feat(web): show a subagent's parent threads in the header breadcrumb
+15170	closed-unmerged	L	fix(orchestration): reconcile held delegated tasks after child completion
+15189	merged	L	fix(mobile): show complete subagent details
+15191	closed-unmerged	L	fix(orchestration): resume delegated work after workspace handoffs
+15201	open	M	fix(orchestration): reconcile stale delegated task and held queue state
+15203	open	L	fix(orchestration): resume continuations after planned worktree handoffs
+15211	merged	M	feat(web): stop T3-owned subagents from Lineage
+15213	open	XXL	fix(v2): compact full sessions before provider handoffs
+15281	merged	L	fix(web): subagent finish notifications look like subagent cards
+15323	merged	XL	fix(server): restarts keep delegated tasks, queued threads, and stops intact
+15331	open	S	fix(server): Stop on a completion-wake run also disposes the tasks it delegated
+15334	merged	M	fix(web): subagents sent a follow-up show as running in Lineage
+15446	open	M	fix(claude): subagent token usage shows again in lineage tooltips
+15477	open	M	fix(clients): handoffs between accounts show which account is on each side
+15493	merged	M	fix(web): subagent cards name the provider account
+15598	closed-unmerged	M	fix(claude): fork history in the provider environment
+15622	open	S	fix(mcp): return delegated task handles before client timeouts
+15710	open	M	fix(clients): subagent bar stops guessing the subagent's effort
+15727	closed-unmerged	L	fix(server): Codex subagents resume tracking after restarts
+15777	open	S	fix(server): OpenCode forks keep the selected permission mode
+15785	open	M	fix(server): bound delegated completion delivery retries
+15812	open	M	fix(web): hide subagent threads from legacy sidebar history
+15813	closed-unmerged	S	fix(client): subagent threads open over T3 Connect again
+15844	merged	S	fix(mobile): back from a finished subagent in the feed returns to its parent
+15922	open	L	fix(mobile): the composer, model sheet and subagent bar show which account a thread uses
+16002	merged	XL	fix(server): Stop also stops delegated tasks and pull request watches
+16022	open	S	fix(web): stop repeating the subagent name in the waiting banner
+16151	merged	XS	fix(web): match subagent timestamp fonts to chat
+16217	closed-unmerged	M	fix(server): subagents stop burning tokens on pull request watch wakes
+16219	merged	S	fix(server): delegation sees a fixed provider without the app open
+16244	closed-unmerged	XS	fix(server): defer context handoffs that cannot fit instead of failing every turn
+16245	closed-unmerged	M	fix(web): anchor a continued sub-agent's fold with the turn that started it
+16353	merged	M	fix(server): forks no longer merge into their upstream repo's project group
+16474	open	L	fix(server): storage cleanup counts a thread's subagents as part of its worktree
+16475	open	M	fix(server): driver-only delegation re-checks a stale provider before refusing it
+16486	merged	L	fix(server): a background Claude subagent's work shows while its parent is idle
+16595	open	M	fix: preserve subagent reasoning effort and fast mode
+16598	open	M	fix(server): a Claude /goal no longer reads as complete while a background subagent runs
+16609	closed-unmerged	L	fix(server): a Claude subagent waiting on its own background work no longer shows as finished
+16623	open	XS	fix(server): forks no longer inherit pull request watches
+16634	merged	L	fix(chat): surface pending subagent questions on parents
+16662	open	S	fix(server): session import skips Codex subagent sessions
+16719	open	XXL	feat(server): delegate_task to a linked environment
+16785	closed-unmerged	M	fix(server): keep delegated tasks waiting for background commands
+16807	closed-unmerged	L	fix(mcp): admit delegated tasks using known provider cooldowns
+16811	closed-unmerged	L	fix(server): background subagents sharing an OpenCode 2 child session all finish
+16814	open	M	fix(server): Claude subagents from a closed process no longer stay running
+16878	merged	M	fix(clients): running subagent cards stay visible after their parent turn settles
+16882	closed-unmerged	L	fix(server): subagent file reads stop asking under full access
+16948	closed-unmerged	M	feat(server): delegated, created and forked threads come with a link
+17028	merged	M	fix(server): held queued wakes no longer keep delegated tasks running
+17037	closed-unmerged	S	fix(client-runtime): subagent threads load over T3 Connect without two 401s
+17042	open	S	fix(server): Claude subagents no longer show the parent's effort
+17097	open	XS	fix(server): Claude subagents keep their model after a usage-limit notice
+17109	open	L	fix(server): Claude background subagents end when their wake can't run on Claude
+17134	merged	M	fix(server): settle every OpenCode subagent call one report answers
+17137	merged	S	fix(clients): copy button is back in its old spot, before fork
+17223	merged	L	fix(server): stopped native subagents no longer read as Running
+17245	closed-unmerged	L	fix(server): cascade conversation lifecycle to subagent descendants
+17329	merged	L	fix(muse): workflow subagents no longer stall on hidden approvals
+17393	open	XL	fix(provider-pi): show async pi-subagents runs as running subagents
+17406	closed-unmerged	L	perf(server): skip hidden ancestor payloads in filled fork pages
+17419	open	S	fix(web,client-runtime): subagent cards show Cursor reasoning effort
+17420	open	L	feat(web): subagent rows show model, effort, and fast mode
+17462	open	M	fix(provider-cursor): use the selected context window for handoff budgets
+17496	merged	L	fix(server): Claude subagents show the reasoning effort they run at
+17596	open	L	fix(server): resumed Claude subagents are found on instances with their own home
+17604	closed-unmerged	M	feat(provider): add Claude fork-subagents instance setting
+17696	merged	L	fix(server): track resumed subagent follow-ups as separate tasks
+17714	merged	L	fix(server): route Copilot ACP subagent output into subagent threads
+17752	closed-unmerged	XL	feat(threads): option to fork a thread into a new worktree or use the current worktree/checkout
+17763	open	L	fix(orchestration): fork from a response a steer cut off
+17779	open	L	fix(provider-acp): Grok runs finish with their reply while background subagents keep working
+17790	closed-unmerged	M	test(client): cover delegated MCP thread ids in signed relay URLs
+17826	merged	L	feat(server): stop Claude subagents without stopping their owner
+17828	closed-unmerged	L	fix(server): PR wakeups follow provider handoffs
+18065	merged	M	fix(server): delegated Muse tasks no longer ask approval for every command
+18071	closed-unmerged	L	perf(server): fork threads load faster when local turns fill the first page
+18082	closed-unmerged	L	fix(server): Codex sessions stall after a native subagent finishes
+18099	open	M	fix(web): a resumed subagent's notification row shows it running, not failed
+18173	closed-unmerged	L	fix(server): cascade conversation lifecycle to subagent descendants
+18219	open	XXL	perf: desktop and server start without shell and fork waits, and thread views stay mounted
+18312	open	M	fix(server): review guides in a fork checkout cover only the pull request's change
+18353	merged	XL	feat(provider-muse): native subagents open in their own child threads
+18362	open	S	fix(server): Claude subagents resumed after a missed launch get their child thread
+18369	merged	L	feat(chat): show pending context handoff when selecting a model
+18375	merged	M	fix(server): Claude subagent progress no longer re-stores the unchanged prompt
+18394	closed-unmerged	XL	fix(server): subagent task updates reach Claude task lists
+18396	merged	S	chore(mobile): sync Screens fork with upstream v5 fixes
+18413	open	XS	fix(server): preserve unrelated branch upstreams when opening fork PRs
+18433	merged	XS	docs(mobile): point fork links to pingdotgg
+18459	open	M	fix(server): a cancelled delegated task no longer shows its child's question
+18493	open	M	fix(client): show Input when a hidden subagent needs an answer
+18620	closed-unmerged	XXL	fix(server): deferred context handoffs are retried after ordinary turns
+18649	closed-unmerged	L	fix(server): deliver run-specific delegated results exactly once
+18655	closed-unmerged	L	feat(web): nest subagent threads under their parent in the legacy sidebar
+18662	open	M	fix(server): forking a Claude thread works on instances with their own home
+18668	closed-unmerged	L	feat(server): archive and unarchive cascade to subagent threads
+18697	closed-unmerged	M	feat(web): show the agent type on subagent rows
+18778	merged	L	fix(server): apply confirmed Claude subagent outcomes
+18826	open	XS	perf(server): stop each delegated child conversation once
+18919	open	M	fix(web): usage limit banner no longer hides behind waiting subagents
+18967	closed-unmerged	L	fix(server): Claude subagents stopped by a replaced session no longer stay Running
+18996	merged	S	fix(client): "Subagent needs input" no longer sticks after the subagent finishes
+19019	open	S	fix(server): a steered send no longer leaves a subagent task running
+19054	closed-unmerged	M	fix(server): subagents drop pull request links they inherited from their parent
+19058	open	S	fix(server): take a delegated task's result from its newest turn item
+19098	merged	XS	fix(web): let context handoff details use the available width
+19102	merged	L	feat(server): run delegated tasks in separate worktrees
+19146	closed-unmerged	L	fix(server): handoff delivery no longer blocks prompts when the window has room
+19147	open	S	fix(server): storage cleanup no longer keeps worktrees that a provider subagent used
+19170	merged	M	fix(web): subagent lists in the composer banner no longer start lines with a comma
+19184	closed-unmerged	L	fix(server): restarts wake threads to resume their subagents
+19210	open	L	fix(server): steering no longer ends running subagents
+19237	open	L	fix(server): background subagents keep T3 tools after the parent turn ends
+19338	merged	M	fix(clients): a resumed subagent no longer moves the later turn's Worked for row
+19414	open	M	fix(server): a handoff too large for the context window no longer wedges the thread
+19521	open	L	fix(server): a delegated task's question now wakes its parent agent
+19523	open	M	fix(web,mobile): no pending handoff for a provider the next send would skip
+19538	open	M	fix(server): a delegated task's question ends the parent's blocking wait
+19544	open	M	fix(server): Stop clears native subagents whose runtime is gone
+19588	open	L	fix(server): wake threads whose subagents' background work a restart cut
+19614	closed-unmerged	L	fix(clients): a thread comes back when its subagent needs approval
+19621	open	L	feat(web): side chats keep their own composer, open from the panel, and show where they fork
+19630	merged	L	fix(clients): a thread comes back when its subagent needs approval
+19631	merged	M	fix(server): restarts no longer stall on old subagent result deliveries
+19665	open	M	fix(server): subagent threads settle with their parent instead of sweeping on their own
+19687	open	S	fix(clients): allow portable provider handoffs after detach

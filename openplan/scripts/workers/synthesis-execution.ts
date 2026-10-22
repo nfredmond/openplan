@@ -1,13 +1,14 @@
+import { observeNodeQueue } from "../../src/lib/ops/node-queue-observation";
 import { createServiceRoleClient } from "../../src/lib/supabase/server";
 import { runSynthesisExecutionService, synthesisExecutionOptions, synthesisExecutionDiagnostics } from "../../src/lib/engagement/synthesis-execution-service";
 
-async function main() {
+async function main(noticeStopping: () => void) {
   const options = synthesisExecutionOptions(process.argv.slice(2), process.env);
   if (options.help) {
     console.log("Usage: npm run worker:synthesis-execution -- [--once|--help]. No arguments polls explicit execution requests. --once runs one bounded page, not a full drain. Use the same private OPENPLAN_SYNTHESIS_GENERATION_WORK_DIR as the single-grant CLI. Scheduling does not approve outputs or create additional permission.");
     return;
   }
-  const stopping = new AbortController(), stop = () => stopping.abort();
+  const stopping = new AbortController(), stop = () => { stopping.abort(); noticeStopping(); };
   process.on("SIGINT", stop); process.on("SIGTERM", stop);
   try {
     const status = await runSynthesisExecutionService({ ...options, service: createServiceRoleClient(), signal: stopping.signal,
@@ -22,7 +23,7 @@ async function main() {
     process.exitCode = status === "unconfirmed" ? 2 : status === "error" || (status === "stopped" && options.once) ? 1 : 0;
   } finally { process.off("SIGINT", stop); process.off("SIGTERM", stop); }
 }
-void main().catch(() => {
+void observeNodeQueue("synthesis-execution", main).catch(() => {
   console.error("Execution worker could not run. Check the database URL, service credential and absolute private journal root. Use --once, --help or no arguments. Keep existing journals.");
   process.exitCode = 1;
 });

@@ -494,9 +494,10 @@ describe("public page claims guardrails", () => {
     // The hero and header must offer real sign-up.
     expect(landing).toMatch(/\/sign-up/);
     expect(layout).toMatch(/\/sign-up/);
-    // And state the posture plainly: free, immediate, no gate.
+    // And state the posture plainly: free, no queue, no gate. Email
+    // confirmation is required, so "ready immediately" is not the claim.
     expect(landing).toMatch(/free/i);
-    expect(landing).toMatch(/immediately|no access queue|no founder|ready immediately/i);
+    expect(landing).toMatch(/no waiting list|no approval step|no access queue|no founder/i);
 
     // The front door must NOT route software access through the request-access
     // queue. (The /request-access page may still exist for services inquiries —

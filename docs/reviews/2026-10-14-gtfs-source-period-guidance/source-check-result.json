@@ -1,0 +1,14 @@
+{
+  "stages": [
+    {
+      "stage": "lint",
+      "exitCode": 0
+    },
+    {
+      "stage": "related-tests",
+      "exitCode": 0
+    }
+  ],
+  "passedTests": 66,
+  "failedTests": 0
+}

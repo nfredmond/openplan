@@ -127,6 +127,7 @@ describe("GET /api/knowledge-base/documents/[documentId]/download", () => {
 
     expect(response.status).toBe(307);
     expect(response.headers.get("location")).toBe("https://storage.example/signed?token=kb");
+    expect(response.headers.get("cache-control")).toBe("private, no-store");
     expect(createSignedUrlMock).toHaveBeenCalledWith(
       `${WORKSPACE_ID}/${DOCUMENT_ID}/2045-rtp.pdf`,
       15 * 60,

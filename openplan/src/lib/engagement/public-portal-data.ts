@@ -10,6 +10,8 @@ import { isEmailTransportConfigured } from "@/lib/notifications/email";
 import {
   placeOfRecordFromProject,
   PROJECT_PLACE_SCOPE_COLUMNS,
+  projectPlaceReference,
+  type ProjectPlaceReference,
   type ProjectPlaceRow,
 } from "@/lib/projects/project-place";
 import {
@@ -199,6 +201,14 @@ export type PortalPlaceCandidates = {
   campaign: PortalPlaceCandidate;
   project: PortalPlaceCandidate;
   workspaceHome: PortalPlaceCandidate;
+  /**
+   * The linked project's area as a reference the staff console can copy onto
+   * the campaign in one step. Read from the same row as `project`, so it costs
+   * no extra query. Staff only: the public portal picks its fields by name and
+   * never passes this on. Null when the project read failed, when there is no
+   * project, or when its area has no reference (drawn or uploaded).
+   */
+  projectReference?: ProjectPlaceReference | null;
 };
 
 /**
@@ -563,6 +573,55 @@ export function resolvePortalMapFraming(candidates: {
   return framed(null, "none", null);
 }
 
+/**
+ * Where the publish checklist says the resident map opens, decided by
+ * `resolvePortalMapFraming`, the same resolver the resident map runs.
+ *
+ * The step counts every area the resident map falls back through: the
+ * campaign's own, the linked project's, then the workspace home. All three are
+ * passed to the resolver, so the checklist cannot name a different area from
+ * the one residents see. The approved-pins fallback is not counted: pins are
+ * answers, not a choice of where the question is.
+ *
+ * A campaign area that could not be read stays `unreadable`, because it would
+ * outrank the others and nothing about where the map opens is known. The same
+ * holds for a failed project read under a workspace-home framing. A campaign
+ * area on record whose extent cannot frame the map stays `set`, as before; the
+ * console's area panel reports that problem.
+ */
+export function publishChecklistMapArea(
+  candidates: Pick<PortalPlaceCandidates, "campaign" | "project" | "workspaceHome">
+): {
+  state: PortalPlaceCandidate["state"];
+  label: string | null;
+  source?: "campaign" | "project" | "workspace";
+} {
+  if (candidates.campaign.state === "unreadable") return { state: "unreadable", label: null };
+
+  const framing = resolvePortalMapFraming({
+    campaignPlace: candidates.campaign,
+    projectPlace: candidates.project,
+    workspaceHome: candidates.workspaceHome,
+  });
+  if (framing.origin === "campaign_place") {
+    return { state: "set", label: framing.originLabel, source: "campaign" };
+  }
+  if (framing.origin === "project_place") {
+    return { state: "set", label: framing.originLabel, source: "project" };
+  }
+  if (framing.origin === "workspace_home") {
+    // The resolver stops at the first area that frames the map, so a read gap
+    // here belongs to an area that would have outranked the workspace home.
+    if (framing.unreadable.some((gap) => gap.reason === "read")) return { state: "unreadable", label: null };
+    return { state: "set", label: framing.originLabel, source: "workspace" };
+  }
+  if (candidates.campaign.state === "set") {
+    return { state: "set", label: candidates.campaign.label, source: "campaign" };
+  }
+  if (framing.unreadable.some((gap) => gap.reason === "read")) return { state: "unreadable", label: null };
+  return { state: "unset", label: null };
+}
+
 /** Only `from` is used, so any Supabase client — caller-RLS or service-role — fits. */
 type QueryClient = Pick<SupabaseClient, "from">;
 
@@ -611,6 +670,9 @@ export async function loadPortalPlaceCandidates(
     project: projectPlace.error
       ? UNREADABLE_PORTAL_PLACE
       : portalPlaceCandidate(placeOfRecordFromProject(projectPlace.data as Partial<ProjectPlaceRow> | null)),
+    projectReference: projectPlace.error
+      ? null
+      : projectPlaceReference(projectPlace.data as Partial<ProjectPlaceRow> | null),
     workspaceHome: workspaceRow.error
       ? UNREADABLE_PORTAL_PLACE
       : portalPlaceCandidate(

@@ -391,6 +391,23 @@ describe("crash density is annualised, and the year count is the divisor", () =>
     expect(result.crashesPerSquareMile).toBeLessThan(3);
   });
 
+  it("counts a year with no crashes in the study area as a year", async () => {
+    // Found live on 2026-10-11: a downtown study area had mapped crashes in
+    // 2022, 2023 and 2025 and none in 2024, and the run divided by 3 years
+    // instead of 4. The divisor was the years that RETURNED a crash. Here 2024
+    // answers with no rows: 20 crashes over 2 years is 1.1/sq mi/year, and the
+    // old divisor reports 2.2.
+    const SMALL_CA_BBOX = { minLon: -121.05, minLat: 39.2, maxLon: -121.0, maxLat: 39.25 };
+    vi.stubGlobal("fetch", ccrsFetchForYears([2025], 20) as unknown as typeof fetch);
+
+    const result = await fetchCrashesForBbox(SMALL_CA_BBOX, { now: NOW });
+
+    expect(result.observed).toBe(true);
+    expect(result.totalInjuryCrashes).toBe(20);
+    expect(result.yearsQueried).toEqual([2024, 2025]);
+    expect(result.crashesPerSquareMile).toBeCloseTo(1.1, 1);
+  });
+
 });
 
 describe("a fatal crash killed at least one person", () => {

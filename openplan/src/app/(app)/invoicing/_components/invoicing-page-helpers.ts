@@ -6,6 +6,7 @@ import {
   type FundingAwardSubstantiationSummary,
 } from "@/lib/invoicing/invoice-records";
 import { formatMoney } from "@/lib/money/format";
+import { isDeadlinePast } from "@/lib/work/deadlines";
 
 export function titleCase(input: string | null | undefined): string {
   if (!input) {
@@ -35,17 +36,17 @@ export function toneForSupportingDocs(status: string): "info" | "success" | "war
   return "neutral";
 }
 
-export function isInvoiceOverdue(status: string, dueDate: string | null | undefined): boolean {
-  if (!dueDate || status === "paid" || status === "rejected") {
+/** Unsettled and past its due date, by the shared {@link isDeadlinePast} rule. */
+export function isInvoiceOverdue(
+  status: string,
+  dueDate: string | null | undefined,
+  now: Date = new Date()
+): boolean {
+  if (status === "paid" || status === "rejected") {
     return false;
   }
 
-  const parsed = new Date(dueDate);
-  if (Number.isNaN(parsed.getTime())) {
-    return false;
-  }
-
-  return parsed.getTime() < Date.now();
+  return isDeadlinePast(dueDate, now);
 }
 
 export function billingRowRiskState(invoice: InvoiceRegisterRow): {

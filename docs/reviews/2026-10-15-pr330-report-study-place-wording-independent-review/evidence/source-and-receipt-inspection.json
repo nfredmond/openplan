@@ -1,0 +1,144 @@
+{
+  "candidate": "6476c93b30db17f612d872ad4c02b201e20a8bce",
+  "sourceBase": "f00465a86ee546e6b261a663f4611cde7b56cb6e",
+  "baseAppTree": "a13c491da3ad3ba5b237ca5fa8802b236c4ef27b",
+  "assignedCheckout": "/home/nathaniel/.t3/worktrees/openplan/t3-32becb34",
+  "reviewCheckoutHead": "05dd3e8da4a4572437f06e771b0a2477873e681f",
+  "reviewBranch": "t3/pr330-study-place-wording-review",
+  "candidateSourceBlob": "cb3d31e6d22b051b0a05adb0aef8971a2a4c4331",
+  "candidateTestBlob": "6e765b12fe068336357e0fa4c379ddaea83b6fec",
+  "candidateSourceSha256": "8218090f7ab3c6c39610691883021228c428c52706a80b2c506bd0251c9968aa",
+  "baseSourceSha256": "4cee16f36e2a3d25720a5d6e985b68a95cfca86857e812d96812b0878d1e2bd4",
+  "candidateTestSha256": "2cbf64e8ed06d18bf7c4cb7deaf40603bc471f8cba69780516c6de0f4d2f38b6",
+  "changedPaths": [
+    "docs/reviews/2026-10-15-pr330-report-study-place-wording/REPORT.md",
+    "docs/reviews/2026-10-15-pr330-report-study-place-wording/check_controls.py",
+    "docs/reviews/2026-10-15-pr330-report-study-place-wording/evidence/baseline.json",
+    "docs/reviews/2026-10-15-pr330-report-study-place-wording/evidence/baseline.log",
+    "docs/reviews/2026-10-15-pr330-report-study-place-wording/evidence/controls.json",
+    "docs/reviews/2026-10-15-pr330-report-study-place-wording/evidence/direction-check.log",
+    "docs/reviews/2026-10-15-pr330-report-study-place-wording/evidence/harmless-comment.json",
+    "docs/reviews/2026-10-15-pr330-report-study-place-wording/evidence/harmless-comment.log",
+    "docs/reviews/2026-10-15-pr330-report-study-place-wording/evidence/initial-runner-controls.json",
+    "docs/reviews/2026-10-15-pr330-report-study-place-wording/evidence/initial-runner-startup-failure.log",
+    "docs/reviews/2026-10-15-pr330-report-study-place-wording/evidence/initial-summary-check-controls.json",
+    "docs/reviews/2026-10-15-pr330-report-study-place-wording/evidence/initial-summary-check-old-inference.json",
+    "docs/reviews/2026-10-15-pr330-report-study-place-wording/evidence/initial-summary-check-old-inference.log",
+    "docs/reviews/2026-10-15-pr330-report-study-place-wording/evidence/old-inference.json",
+    "docs/reviews/2026-10-15-pr330-report-study-place-wording/evidence/old-inference.log",
+    "docs/reviews/2026-10-15-pr330-report-study-place-wording/evidence/restored.json",
+    "docs/reviews/2026-10-15-pr330-report-study-place-wording/evidence/restored.log",
+    "docs/reviews/2026-10-15-pr330-report-study-place-wording/evidence/scope.json",
+    "openplan/src/lib/reports/geography-figure.ts",
+    "openplan/src/test/packet-geography-figure.test.ts"
+  ],
+  "applicationChangedPaths": [
+    "openplan/src/lib/reports/geography-figure.ts",
+    "openplan/src/test/packet-geography-figure.test.ts"
+  ],
+  "expectedApplicationScope": true,
+  "otherChangesLimitedToCandidatePacket": true,
+  "oneFixedSentence": true,
+  "replacementRecreatesEntireBaseHelper": true,
+  "sourceHashMatchesControls": true,
+  "sourceHashesMatchScope": true,
+  "baseAppTreeMatchesBrief": true,
+  "caseInspections": [
+    {
+      "case": "baseline",
+      "recordedExitCode": 0,
+      "recordedPassed": 20,
+      "recordedFailed": 0,
+      "jsonPassed": 20,
+      "jsonFailed": 0,
+      "assertionStatuses": {
+        "passed": 20,
+        "failed": 0,
+        "pending": 0
+      },
+      "failedTitles": [],
+      "computedSourceSha256": "8218090f7ab3c6c39610691883021228c428c52706a80b2c506bd0251c9968aa",
+      "receiptSourceHashMatches": true,
+      "receiptCountsMatchJson": true,
+      "expectedAssignedPathInLog": true,
+      "expectedFailureTextInLog": null,
+      "jsonSuiteNames": [
+        "/home/nathaniel/.t3/worktrees/openplan/t3-e444198e/openplan/src/test/packet-geography-figure.test.ts"
+      ]
+    },
+    {
+      "case": "harmless-comment",
+      "recordedExitCode": 0,
+      "recordedPassed": 20,
+      "recordedFailed": 0,
+      "jsonPassed": 20,
+      "jsonFailed": 0,
+      "assertionStatuses": {
+        "passed": 20,
+        "failed": 0,
+        "pending": 0
+      },
+      "failedTitles": [],
+      "computedSourceSha256": "fda1f489f26ccd8d91d15fd8f94b3f3991d77832940786d81ec8def66d2d19e8",
+      "receiptSourceHashMatches": true,
+      "receiptCountsMatchJson": true,
+      "expectedAssignedPathInLog": true,
+      "expectedFailureTextInLog": null,
+      "jsonSuiteNames": [
+        "/home/nathaniel/.t3/worktrees/openplan/t3-e444198e/openplan/src/test/packet-geography-figure.test.ts"
+      ]
+    },
+    {
+      "case": "old-inference",
+      "recordedExitCode": 1,
+      "recordedPassed": 19,
+      "recordedFailed": 1,
+      "jsonPassed": 19,
+      "jsonFailed": 1,
+      "assertionStatuses": {
+        "passed": 19,
+        "failed": 1,
+        "pending": 0
+      },
+      "failedTitles": [
+        "keeps resolved study-place identity separate from jurisdiction and legal authority"
+      ],
+      "computedSourceSha256": "4cee16f36e2a3d25720a5d6e985b68a95cfca86857e812d96812b0878d1e2bd4",
+      "receiptSourceHashMatches": true,
+      "receiptCountsMatchJson": true,
+      "expectedAssignedPathInLog": true,
+      "expectedFailureTextInLog": true,
+      "jsonSuiteNames": [
+        "/home/nathaniel/.t3/worktrees/openplan/t3-e444198e/openplan/src/test/packet-geography-figure.test.ts"
+      ]
+    },
+    {
+      "case": "restored",
+      "recordedExitCode": 0,
+      "recordedPassed": 20,
+      "recordedFailed": 0,
+      "jsonPassed": 20,
+      "jsonFailed": 0,
+      "assertionStatuses": {
+        "passed": 20,
+        "failed": 0,
+        "pending": 0
+      },
+      "failedTitles": [],
+      "computedSourceSha256": "8218090f7ab3c6c39610691883021228c428c52706a80b2c506bd0251c9968aa",
+      "receiptSourceHashMatches": true,
+      "receiptCountsMatchJson": true,
+      "expectedAssignedPathInLog": true,
+      "expectedFailureTextInLog": null,
+      "jsonSuiteNames": [
+        "/home/nathaniel/.t3/worktrees/openplan/t3-e444198e/openplan/src/test/packet-geography-figure.test.ts"
+      ]
+    }
+  ],
+  "limits": [
+    "Read-only blob and retained receipt inspection, no tests or product direction command executed by reviewer.",
+    "No cryptographic runtime attestation for test bytes, dependency tree, process, or browser build.",
+    "Recorded source restoration independently matches candidate bytes; historical writes were not observed live.",
+    "No universal boundary/county-filter recoverability claim established."
+  ]
+}

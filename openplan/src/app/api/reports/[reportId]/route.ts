@@ -23,6 +23,12 @@ import {
   readReportSafetyIngestSelections,
   writeReportSafetyIngestSelections,
 } from "@/lib/reports/safety-evidence-selection";
+import {
+  normalizeSafetyActionPlanAttachments,
+  SAFETY_ACTION_PLAN_MAX_ATTACHMENTS,
+  SAFETY_ACTION_PLAN_MAX_COUNTERMEASURES_PER_SEGMENT,
+  writeReportSafetyActionPlan,
+} from "@/lib/reports/safety-action-plan";
 
 const paramsSchema = z.object({
   reportId: z.string().uuid(),
@@ -53,6 +59,25 @@ const patchReportSchema = z
     safetyIngestSelections: z
       .array(z.object({ ingestId: z.string().uuid() }))
       .max(1)
+      .optional(),
+    // Countermeasures a planner attached to high-injury segments. Tied to the
+    // report's selected crash acquisition, which the segments were ranked from.
+    safetyActionPlan: z
+      .object({
+        ingestId: z.string().uuid(),
+        attachments: z
+          .array(
+            z.object({
+              segmentId: z.string().trim().min(1).max(260),
+              segmentLabel: z.string().trim().min(1).max(200),
+              countermeasureIds: z
+                .array(z.string().trim().min(1).max(80))
+                .min(1)
+                .max(SAFETY_ACTION_PLAN_MAX_COUNTERMEASURES_PER_SEGMENT),
+            })
+          )
+          .max(SAFETY_ACTION_PLAN_MAX_ATTACHMENTS),
+      })
       .optional(),
     countyRunIds: z.array(z.string().uuid()).max(20).optional(),
     sections: z
@@ -536,6 +561,33 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       }
     }
 
+    const submittedPlan = parsed.data.safetyActionPlan;
+    if (submittedPlan) {
+      if (!access.report.project_id) {
+        return NextResponse.json({ error: "A safety action plan requires a project report" }, { status: 400 });
+      }
+      if (finalSafetyIngestSelections[0]?.ingestId !== submittedPlan.ingestId) {
+        return NextResponse.json(
+          { error: "The action plan must use the crash acquisition selected for this report" },
+          { status: 400 },
+        );
+      }
+      // Refuse rather than drop: a planner who chose a countermeasure must not
+      // find it silently missing from the saved plan.
+      const kept = normalizeSafetyActionPlanAttachments(submittedPlan.attachments);
+      const submittedPairs = submittedPlan.attachments.reduce(
+        (sum, attachment) => sum + new Set(attachment.countermeasureIds).size,
+        0,
+      );
+      const keptPairs = kept.reduce((sum, attachment) => sum + attachment.countermeasureIds.length, 0);
+      if (kept.length !== submittedPlan.attachments.length || keptPairs !== submittedPairs) {
+        return NextResponse.json(
+          { error: "One or more segments or countermeasures in the action plan are not recognized" },
+          { status: 400 },
+        );
+      }
+    }
+
     const reportUpdate: Record<string, unknown> = {};
     if (parsed.data.title !== undefined) {
       reportUpdate.title = parsed.data.title;
@@ -570,6 +622,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
     if (parsed.data.safetyIngestSelections) {
       nextReportMetadata = writeReportSafetyIngestSelections(nextReportMetadata, finalSafetyIngestSelections);
+    }
+    if (submittedPlan) {
+      nextReportMetadata = writeReportSafetyActionPlan(nextReportMetadata, submittedPlan);
     }
     if (nextReportMetadata !== access.report.metadata_json) reportUpdate.metadata_json = nextReportMetadata;
 

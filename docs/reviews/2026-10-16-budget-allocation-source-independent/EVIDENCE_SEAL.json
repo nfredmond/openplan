@@ -1,0 +1,104 @@
+{
+  "schema": 1,
+  "status": "SOURCE_AND_METADATA_REVIEW_NO_OPERATING_AUTHORITY",
+  "subject": "9b6da72af62732eb4ac773caad15473fe3ad13b6",
+  "parent": "59105b0ac8b87276f674ee493c13cf091ef9e410",
+  "privateRecords": {
+    "/home/nathaniel/.local/state/openplan/budget-allocation-source-independent-20261016/final-source-readback.json": {
+      "sha256": "5d679650d493f2b4e66f45cbcc2f7d61018f2ca78b76eb41909b5302be440ae9",
+      "bytes": 9847,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-allocation-source-independent-20261016/identity.json": {
+      "sha256": "b2deeb1228503241da8e7ee40fac567c4573c7de243c24b7719544988fde3142",
+      "bytes": 2745,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-allocation-source-independent-20261016/input-pins.json": {
+      "sha256": "3ecf9dbb967612833b3dce6ea120986cf8c9d377afc4357de94d6c1cce0f3c68",
+      "bytes": 1047233,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-allocation-source-independent-20261016/live-configuration.json": {
+      "sha256": "453fa0e782aa9897b3d9201f4dc0473428767dba6e96c3462fbaca9eb9020422",
+      "bytes": 412,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-allocation-source-independent-20261016/metadata-readback.json": {
+      "sha256": "5a988b625156d8e2c406e31f87cdbaa66272361def25ae28c5ead0a37292a179",
+      "bytes": 44132,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-allocation-source-independent-20261016/metadata_reader.py": {
+      "sha256": "d81f5c775e87190ca63dc5891ed03dd79d5efc5e264e76e4fd316bb54969de9f",
+      "bytes": 10260,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-allocation-source-independent-20261016/reader-notes.json": {
+      "sha256": "3b9ebcc21c1ccf82e7a8b4acd6136bac4f6c2234883ed39ff2634916c8f61e77",
+      "bytes": 1046,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-allocation-source-independent-20261016/source-fragment-readback.json": {
+      "sha256": "32ce74ffe3450fd4b73ea54045237c3daa6603ae804e265b3e120dca0e0f77b3",
+      "bytes": 63,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    }
+  },
+  "subjectPins": {
+    "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-native-allocation-preparation/REPORT.md": {
+      "sha256": "42fadf47765a53895b9f430eaf3f145d1b4ed370dda2958e1f73ab9ee45e96ab",
+      "bytes": 12877
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-native-allocation-preparation/VALIDATION.md": {
+      "sha256": "b73ba72a0ed32c7baaf353e1f16a7f214fb8adcd39bf51d72f4fe43dc8f21b51",
+      "bytes": 6269
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-native-allocation-preparation/RESULT.json": {
+      "sha256": "6500b3d910504e3155b3d34572a68d5819c9df9d81f894fdadc68fbf93d1ae8a",
+      "bytes": 9841
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-native-allocation-preparation/RESULT_SEAL.json": {
+      "sha256": "a8d131bb60b663be07602900600e1b145045e9d132279d7e8a6f3c3345d6b57e",
+      "bytes": 13585
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-native-allocation-preparation/source-capsule.json": {
+      "sha256": "12dfc523c45072556be7ae9ef019684236bdf98b25e86b22279676e4e78ee800",
+      "bytes": 15408
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-native-allocation-preparation/SOURCE_PREPARATION_SEAL.json": {
+      "sha256": "1b41b15e2ec5370a3c9280d3db2277511f70577aa4733b1a4653e3d63182616b",
+      "bytes": 13788
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-native-allocation-preparation/PURE_REQUEST.json": {
+      "sha256": "62e0089237d0d2893ef67bfa5110be111728ad6c5876bf7534ced6d201bda56d",
+      "bytes": 16975
+    }
+  },
+  "findings": {
+    "P1": [],
+    "P2": [],
+    "P3": [],
+    "PREP": []
+  },
+  "verdict": "APPROVE_BOUNDED_SOURCE_PREPARATION",
+  "nativeOperationGranted": false,
+  "runtimeWindowRequested": false,
+  "successorGranted": false
+}

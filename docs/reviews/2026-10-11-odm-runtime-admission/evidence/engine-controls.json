@@ -1,0 +1,298 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "photo-format-changed",
+    "test": "test_original_plan_and_commands",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "photo plan format must remain original"
+  },
+  {
+    "control": "photo-field-added",
+    "test": "test_original_plan_and_commands",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "photo plan fields must remain original"
+  },
+  {
+    "control": "wrong-original-plan-hash",
+    "test": "test_original_plan_and_commands",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "intent must bind exact saved plan bytes"
+  },
+  {
+    "control": "uncertain-init-reissued",
+    "test": "test_unresolved_intent_never_issues_again",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "uncertain init must not issue twice"
+  },
+  {
+    "control": "wrong-command-hash",
+    "test": "test_all_commands_have_independent_once_only_intents",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "each command must bind its exact descriptor"
+  },
+  {
+    "control": "omit-name-from-identity",
+    "test": "test_changed_original_plan_refuses",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "unknown-engine-fields",
+    "test": "test_engine_descriptor_refuses_unknown_fields_credentials_and_digests",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "endpoint-credentials",
+    "test": "test_engine_descriptor_refuses_unknown_fields_credentials_and_digests",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "mutable-engine-digest",
+    "test": "test_engine_descriptor_refuses_unknown_fields_credentials_and_digests",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "noncanonical-task-uuid",
+    "test": "test_task_name_options_and_filename_guards",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "invalid-task-name",
+    "test": "test_task_name_options_and_filename_guards",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "missing-option-shape-check",
+    "test": "test_task_name_options_and_filename_guards",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "unsafe-upload-name",
+    "test": "test_task_name_options_and_filename_guards",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "zip-as-upload-image",
+    "test": "test_zip_is_not_an_upload_image",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "does not match"
+  },
+  {
+    "control": "source-not-rechecked",
+    "test": "test_original_source_bytes_rechecked_before_issue",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "altered-intent-accepted",
+    "test": "test_saved_plan_and_intent_corruption_refuse",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "altered-plan-accepted",
+    "test": "test_saved_plan_and_intent_corruption_refuse",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "orphan-reply-diagnostic",
+    "test": "test_orphan_and_unknown_records_refuse",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "does not match"
+  },
+  {
+    "control": "unknown-command-record",
+    "test": "test_orphan_and_unknown_records_refuse",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "orphan-plan-rebuilt",
+    "test": "test_missing_plan_never_recreates_command_identity",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "reply-before-intent",
+    "test": "test_reply_requires_original_intent",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "raw-reply-hash-lost",
+    "test": "test_exact_reply_preserved_without_custody_promotion",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "reply must bind exact original raw bytes"
+  },
+  {
+    "control": "acknowledgment-promotes-custody",
+    "test": "test_exact_reply_preserved_without_custody_promotion",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "HTTP acknowledgment must not promote custody"
+  },
+  {
+    "control": "nonboolean-success",
+    "test": "test_upload_commit_reply_success_is_exact_boolean",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "response-status-type-or-bound",
+    "test": "test_response_bounds_types_json_and_uuid",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "duplicate-json-keys",
+    "test": "test_response_bounds_types_json_and_uuid",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "nonfinite-json-diagnostic",
+    "test": "test_response_bounds_types_json_and_uuid",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "wrong-original-uuid",
+    "test": "test_response_bounds_types_json_and_uuid",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "saved-reply-hash-ignored",
+    "test": "test_stored_reply_revalidated",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "malformed-saved-reply-diagnostic",
+    "test": "test_stored_reply_revalidated",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "bytes-like object"
+  },
+  {
+    "control": "actual-manifest-receipt-ignored",
+    "test": "test_changed_actual_manifest_receipt_refuses",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "first-flag-before-publication",
+    "test": "test_first_issue_waits_for_durable_publication",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "OSError not raised"
+  },
+  {
+    "control": "reply-flag-before-publication",
+    "test": "test_reply_sync_interruption_recovers_exact_bytes",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "OSError not raised"
+  },
+  {
+    "control": "concurrent-command-reissued",
+    "test": "test_concurrent_callers_only_one_first_issue",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "concurrent callers must have one first issue"
+  },
+  {
+    "control": "path-bound-engine-receipt",
+    "test": "test_relocated_copy_replays_without_original_source",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "Saved engine command intent differs"
+  },
+  {
+    "control": "returned-intent-alias",
+    "test": "test_mutable_caller_and_returned_values_do_not_alias",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "Saved engine command intent differs"
+  },
+  {
+    "control": "source-root-overlap",
+    "test": "test_private_root_alias_and_overlap_guards",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "invalid-journal-timeout",
+    "test": "test_busy_lock_timeout_and_unknown_operation",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "unsupported-operation-diagnostic",
+    "test": "test_busy_lock_timeout_and_unknown_operation",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "does not match"
+  },
+  {
+    "control": "erase-interrupted-partials",
+    "test": "test_partial_records_preserved_and_files_private",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "No such file"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

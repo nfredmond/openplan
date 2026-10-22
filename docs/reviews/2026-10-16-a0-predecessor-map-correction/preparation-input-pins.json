@@ -1,0 +1,48 @@
+{
+  "inputs": {
+    "/home/nathaniel/.local/state/openplan/a0-migration-history-literal-correction-20261016/bindings/external-predecessor.json": {
+      "bytes": 126449,
+      "sha256": "ef4bd64e74f670c4eb8fa805b7d7bf1fc2f5720df2c1aaab9110612d98654b03"
+    },
+    "/home/nathaniel/.local/state/openplan/a0-migration-history-literal-correction-20261016/bindings/package-pins.json": {
+      "bytes": 1495,
+      "sha256": "3fcc19fb18b09c0b38ed7fc262c58c06a73f155fc5bc1ec4ea02aea3e5164dc2"
+    },
+    "/home/nathaniel/.local/state/openplan/a0-migration-history-literal-correction-20261016/local-commit.json": {
+      "bytes": 4661,
+      "sha256": "7e51241b69e20b13156909e149cc6bdbfaeafee9e6f9b413f3db500d485ac9d8"
+    },
+    "/home/nathaniel/.local/state/openplan/a0-migration-history-literal-correction-20261016/plan.json": {
+      "bytes": 61975,
+      "sha256": "f8b8a36f4439703964cd5d66d9e6408d37bc984215c6c07a5909a728af7db4e5"
+    },
+    "/home/nathaniel/.local/state/openplan/a0-migration-history-literal-correction-20261016/private-manifest.json": {
+      "bytes": 1168313,
+      "sha256": "76c0d0bb22567aeffc5ef45543ad1fb23177ec282960fe64cf3b4ed305e18316"
+    },
+    "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/stages/restore419/snapshot.json": {
+      "bytes": 41476,
+      "sha256": "936054d47550fa7003177ddbf877fb1fd1b3c529e10536637bfbb1d85118d3db"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-411de75e/docs/reviews/2026-10-16-a0-history-literal-independent/REPORT.md": {
+      "bytes": 21133,
+      "sha256": "6dbaf165dd38692125d9ab4fea9025a66ce781e5d683d71577e40174c9145c58"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-411de75e/docs/reviews/2026-10-16-a0-history-literal-independent/VALIDATION.md": {
+      "bytes": 4572,
+      "sha256": "badd429b6d5dfaf62bea84a5fa1463e0f8547ffc8a8c8089d19ca52ef7d9d280"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-411de75e/docs/reviews/2026-10-16-a0-history-literal-independent/source-pins.json": {
+      "bytes": 13318,
+      "sha256": "ec6d9a5dacde258d53b6877cf1305d0e9c7285a2a6b9a21f24ad20c7bdadf8ee"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/public-seal.json": {
+      "bytes": 4169,
+      "sha256": "9f2492b5288a0faf26b8477f24a922d7393855f665215f5a2b088b6e40be9862"
+    }
+  },
+  "newFindingReview": "1fcb68f39abba8baac3b0235cce8dc208633fbbe",
+  "priorSubject": "34e67a05ad8fc54b67345726d1d43a553b8c54c7",
+  "retainedMapLabels": 383,
+  "scope": "Source/retained metadata only; no old campaign expansion or native operation"
+}

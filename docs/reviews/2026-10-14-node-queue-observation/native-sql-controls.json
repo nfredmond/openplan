@@ -1,0 +1,92 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "registry",
+    "outcome": "intended_failure",
+    "reason": "Process registry preserves every declared queue"
+  },
+  {
+    "control": "replay-refresh",
+    "outcome": "intended_failure",
+    "reason": "Original replay cannot refresh process time"
+  },
+  {
+    "control": "late-revival",
+    "outcome": "intended_failure",
+    "reason": "Stopped process cannot revive"
+  },
+  {
+    "control": "build-change",
+    "outcome": "intended_failure",
+    "reason": "Changed build cannot replace process identity"
+  },
+  {
+    "control": "state-regression",
+    "outcome": "intended_failure",
+    "reason": "Stopping process cannot become running"
+  },
+  {
+    "control": "stale-window",
+    "outcome": "intended_failure",
+    "reason": "Old process observations remain stale"
+  },
+  {
+    "control": "future-time",
+    "outcome": "intended_failure",
+    "reason": "Future process observations remain unknown"
+  },
+  {
+    "control": "latest-stop-precedence",
+    "outcome": "intended_failure",
+    "reason": "Mixed latest and active process states remain separate"
+  },
+  {
+    "control": "claim-tier",
+    "outcome": "intended_failure",
+    "reason": "Process observation cannot approve jobs"
+  },
+  {
+    "control": "scale-baseline",
+    "outcome": "survived",
+    "retiredRows": 10000,
+    "runningRows": 256,
+    "statementTimeoutMs": 3000,
+    "executionMs": 0.345
+  },
+  {
+    "control": "scale-harmless",
+    "outcome": "survived",
+    "retiredRows": 10000,
+    "runningRows": 256,
+    "statementTimeoutMs": 3000,
+    "executionMs": 0.349
+  },
+  {
+    "control": "scale-restored",
+    "outcome": "survived",
+    "retiredRows": 10000,
+    "runningRows": 256,
+    "statementTimeoutMs": 3000,
+    "executionMs": 0.484
+  },
+  {
+    "control": "scale-inflated-count",
+    "outcome": "intended_failure",
+    "reason": "Retired history cannot inflate active process counts"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

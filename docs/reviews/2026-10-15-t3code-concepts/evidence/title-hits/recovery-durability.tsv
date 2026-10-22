@@ -1,0 +1,734 @@
+23	merged		Delete orphaned worktree when removing a thread
+71	merged		Surface orphaned worktree removal failures after thread deletion
+73	merged		Force orphan worktree cleanup to remove dirty worktrees
+112	closed-unmerged		Add manual GitHub Actions workflow for macOS releases
+135	merged		Add tagged multi-platform desktop release workflow and unified artifact builder
+164	merged		fix(desktop): prevent Electron dev process leaks on restart
+166	merged		Defer release commit+tag to finalize job
+279	merged		Fix crash when rendering code blocks with unsupported languages (#266 & #210)
+344	merged		Handle prerelease tags in GitHub release publishing
+368	closed-unmerged		chore(release): enforce homebrew cask release contract
+374	closed-unmerged		T3code/fix release typecheck layer scoped
+381	closed-unmerged		Fix duplicate assistant messages when streaming is enabled
+591	closed-unmerged		feat: interactive install wizard + CI/release fixes
+597	merged		fix(contracts): align terminal restart input type across IPC, WS, and server
+608	merged		Fix release finalize lockfile refresh
+614	closed-unmerged		Fix/session resume
+722	closed-unmerged		fix(server): stop existing codex session before restarting for same thread
+863	closed-unmerged		[codex] fix resume state drift
+886	closed-unmerged		Fix resumed thread working indicators
+914	closed-unmerged		feat: Open in Warp with Claude Code session resume
+933	merged		chore(release): align package versions before building artifacts
+944	closed-unmerged		fix stale web build getting into server build/release
+986	merged	XS	fix: don't restart the app on normal exists in dev runner
+1167	closed-unmerged	XXL	Fix Claude session crash from fiber scope termination
+1175	merged	S	Use GitHub App token when checking out main in release workflow
+1191	closed-unmerged	L	Persist desktop settings to settings.json across releases
+1217	merged	XS	Use secret release app ID in release workflow
+1231	closed-unmerged	M	fix(server): auto-recover from corrupted SQLite database on startup
+1340	closed-unmerged	XL	Add optional Linux installer bundle for AppImage releases
+1409	closed-unmerged	XXL	fix(harness): reconcile stale sessions on recovery
+1424	closed-unmerged	XXL	[codex] recover queued follow-up dispatch from stale pending turns
+1428	closed-unmerged	XL	Add changelog dialog with GitHub releases in settings
+1445	merged	S	fix(web): Fix duplicate highlight in composer slash command menu
+1448	closed-unmerged	XS	fix(web): Differentiate duplicate "Plan" button labels
+1560	merged	XXL	Refactor web orchestration sync to incremental events and isolated recovery
+1575	closed-unmerged	XXL	fix: prevent duplicate text and premature turn completion in Droid adapter
+1593	closed-unmerged	XXL	Publish server settings schema with release versions
+1611	closed-unmerged	XXL	Server releases
+1655	closed-unmerged	L	feat(release): add deb packaging pipeline
+1705	merged	L	Persist server OTLP tracing settings across restarts
+1706	closed-unmerged	M	fix(web): narrow stale send spinner recovery to composer state
+1716	closed-unmerged	L	Fix orchestration reconnect recovery
+1718	closed-unmerged	M	Fix chat replay recovery during WebSocket reconnect (resubscribe)
+1728	merged	L	Return replay retry state from orchestration recovery
+1730	merged	XXL	Add WebSocket disconnect recovery and slow RPC toast UX
+1785	closed-unmerged	XXL	feat(git): friendly checkout error messages with stash & switch recovery
+1819	closed-unmerged	XXL	[codex] Add thread loop scheduling and restart recovery
+1825	merged	XS	Add explicit timeouts to CI and release workflows
+1827	closed-unmerged	XXL	chore(release): add Linux packaging and stable install path
+1839	merged	S	[codex] Fix snapshot recovery across environment rebinds
+1843	closed-unmerged	L	fix: renderer OOM crash recovery and memory management
+1864	merged	L	[codex] Harden WebSocket reconnect recovery
+1938	merged	XS	fix: lost provider session recovery
+2012	merged	XXL	Nightly release channel
+2089	closed-unmerged	M	fix(desktop): recover when Electron runtime is missing
+2095	merged	L	[codex] Fix Windows release manifest publishing
+2100	merged	XS	ci(release): install deps before finalize version bump
+2101	merged	M	try out blacksmith for releases
+2102	closed-unmerged	M	Install Spectre MSVC libs for Windows release builds
+2116	closed-unmerged	L	fix(web): reconcile stale approval state after responses
+2129	merged	S	Modernize release workflow runners
+2134	merged	M	Throttle nightly release workflow to every 3 hours
+2146	merged	XS	Guard release workflow jobs from upstream failures
+2147	merged	XS	Guard release workflow jobs on upstream success
+2149	merged	S	Use GitHub App token for release uploads
+2186	merged	S	fix(release): use v<semver> tag format for nightly releases
+2253	closed-unmerged	S	fix: persist project collapse state across app restarts
+2292	merged	M	Fix Claude session cwd resume drift
+2302	closed-unmerged	L	fix(server): resume OpenCode sessions from resumeCursor
+2364	merged	XS	fix(release): use configured node for smoke manifest merge
+2382	closed-unmerged	L	Enable Windows ARM64 release builds
+2429	merged	L	Add Discord release announcements
+2430	merged	S	Optimize release workflow job execution
+2431	merged	L	Add structured Discord webhook logging for release notifications
+2449	merged	S	[codex] fix Discord release version flag
+2454	closed-unmerged	L	feat(desktop): show toast with release notes link when app updates to a new version
+2474	closed-unmerged	S	Add Ubuntu deb release artifact
+2507	merged	L	Deploy hosted web app from release workflow
+2520	closed-unmerged	L	Add desktop update release notes tooltip
+2543	merged	L	Cache desktop build assets in CI and release workflows
+2568	merged	L	Revert "Cache desktop build assets in CI and release workflows"
+2606	merged	M	[codex] Fix Windows release signing setup
+2610	merged	XS	Update deployment command in release workflow
+2611	merged	XS	[codex] Fix Vercel release web deploy scope
+2636	merged	M	Alias stable releases to the router domain
+2666	closed-unmerged	L	reconcile provider session state and settle stuck turns
+2671	closed-unmerged	L	Fix duplicate native and custom tooltips
+2677	merged	XS	Skip healthy env reconnects after browser resume
+2777	closed-unmerged	XL	Avoid duplicate provider startup probes
+2814	closed-unmerged	M	fix: sync resume sessions after CLI modifications
+2861	merged	XS	Ensure Electron runtime is installed in release workflow
+2934	merged	S	fix: build web before desktop release packaging
+2937	merged	L	fix(release): surface desktop packaging subprocess output
+2938	merged	XXL	fix(release): use workspace electron-builder for desktop packaging
+2939	merged	L	[codex] remove duplicated pnpm root config
+2941	merged	S	fix(release): install dependency closures in partial jobs
+2943	merged	XS	fix(release): preserve desktop artifact arch
+2949	merged	XS	fix(release): install hosted web workspace closure
+2961	merged	XS	[codex] fix release finalize install
+2968	merged	L	Refactor recoverable Effect fallbacks to orElseSucceed
+3029	closed-unmerged	XXL	use github hosted runners for release workflow
+3058	merged	XS	fix(desktop): mac start:desktop crash from rewritten framework symlinks
+3106	closed-unmerged	M	Reconcile stopped provider session projections
+3156	merged	XXL	fix(grok): Harden ACP resume with replay-idle load readiness
+3285	merged	M	[codex] Structure Discord release webhook failures
+3296	merged	M	[codex] Structure release metadata failures
+3341	merged	L	[codex] Structure mobile thread outbox failures
+3420	merged	S	[codex] Bound relay registration replay diagnostics
+3467	merged	L	[codex] Structure release metadata failures
+3468	merged	M	[codex] Structure release package updater failures
+3470	merged	L	[codex] Structure release output failures
+3494	closed-unmerged	XXL	Unify connection state and harden session recovery
+3512	closed-unmerged	XXL	fix(workspaces): persist durable workspace identity
+3520	closed-unmerged	M	fix: auto-retry the startup error boundary on focus/online so a recovered backend un-sticks the app
+3540	closed-unmerged	L	ci: add Windows ARM desktop release support
+3617	merged	L	fix(opencode): resume the OpenCode session on follow-ups instead of starting an empty one
+3642	closed-unmerged	L	fix(orchestration): show follow-up assistant replies after Cursor session resume
+3677	closed-unmerged	XXL	fix(orchestrator): session audit remediation — error fidelity, session resume, reconcile visibility
+3686	closed-unmerged	XL	Opened against wrong repo — please ignore
+3750	closed-unmerged	XS	[orchestrator-v2] fix(orchestrator): Resume persisted Claude sessions after provider session recycle
+3756	closed-unmerged	L	[orchestrator-v2] fix(orchestrator): Prevent Claude session release from hanging on idle CLI reads
+3781	merged	M	fix(release): stage pnpm 11 allowBuilds for desktop installs
+3790	merged	L	fix(release): bump electron-builder so pnpm 11 deduped deps land in the asar
+3825	closed-unmerged	XL	perf: reduce CPU usage in event replay, projections, and sidebar
+3829	merged	L	Prevent duplicate project workspace roots
+3860	merged	XXL	[orchestrator-v2] fix(orchestrator): Restore Claude session continuity for resume, wake, and idle release
+3908	merged	L	[orchestrator-v2] fix(orchestrator): Codex background command completion and subagent resume
+3910	closed-unmerged	XXL	fix(mobile): Harden iOS reconnect, crash capture, and chat layout on main
+3932	merged	M	[codex] prevent ACP assistant ID collisions after restarts
+3952	merged	M	fix(server): image upload crashed dispatchCommand with a stack overflow
+3969	merged	XS	Fix duplicate keybinding rule when replacing with an existing rule
+4000	merged	M	Fix Legal modal header crash
+4033	open	M	fix(mobile): Persist crash diagnostics before runtime fatals
+4034	closed-unmerged	XL	fix(mobile): Recover thread state reliably after reconnects
+4071	closed-unmerged	S	feat(release): publish Linux .deb and .rpm alongside the AppImage
+4072	closed-unmerged	L	T3code/apk GitHub release update
+4080	merged	XXL	Refresh app icons across release variants
+4206	closed-unmerged	M	Avoid packaged Windows console pipe crashes
+4213	merged	XS	fix(desktop): handle EPIPE errors on stdout/stderr to prevent crash dialog
+4229	merged	XXL	fix(orchestrator): Preserve claude/codex post-interrupt recovery state
+4267	closed-unmerged	XXL	Add durable local GitHub waitpoints for Codex
+4290	closed-unmerged	S	fix(ssh): restart managed server after runner update
+4318	closed-unmerged	M	Recover stalled draft thread promotion
+4343	closed-unmerged	M	fix(desktop): recover zoom from the upper limit
+4367	merged	S	[codex] Deduplicate connection failure messaging
+4381	closed-unmerged	S	fix(server): resolve orphaned OpenCode permissions on session error
+4386	closed-unmerged	L	Recover stranded provider turns
+4408	closed-unmerged	XXL	Persist desktop preferences across builds and restarts
+4454	closed-unmerged	M	fix(desktop): treat an undecryptable connection catalog as empty instead of crashing environment discovery
+4457	merged	M	test(orchestrator): align Codex approval reviewer replays
+4484	closed-unmerged	M	Recover draft thread IDs after failed bootstrap cleanup
+4511	merged	XS	fix: add missing space before 'GitHub releases page' link on download page
+4528	closed-unmerged	L	fix(client-runtime): re-read network status when the app resumes
+4531	merged	L	feat(connect): release the Cloudflare tunnel when the environment shuts down
+4540	closed-unmerged	XS	Fix missing space before GitHub releases link
+4562	closed-unmerged	L	fix(server): reconcile stopped sessions after restart
+4577	closed-unmerged	XXL	Make preview automation bounded and recoverable
+4593	closed-unmerged	L	fix(web): reconcile client state when a settle does not land
+4602	closed-unmerged	M	fix(client-runtime): recover subscriptions that lose their transport
+4605	closed-unmerged	XXL	Fix quadratic thread-reopen replay: batch client apply + cap server resume gap
+4624	closed-unmerged	L	perf(mobile): cut thread-reopen replay churn in the feed pipeline
+4656	merged	L	fix(orchestrator): schedule effects from durable deadlines
+4666	closed-unmerged	XXL	Resume Claude Code sessions + Remote Control support
+4687	closed-unmerged	L	fix(desktop): stop duplicate authorized clients after restarts
+4698	closed-unmerged	XXL	fix(desktop): surface Tailscale Serve failures and fix AppImage restarts on Linux
+4743	closed-unmerged	M	fix(desktop): link downloaded update release notes
+4760	closed-unmerged	L	perf(mobile): smooth workspace resume
+4771	merged	M	fix(desktop): link release notes from the update downloaded toast
+4777	closed-unmerged	L	fix(desktop): reduce update restart time
+4791	merged	L	perf(server): trim stale context-window rows and drop dead replay RPC
+4796	merged	XS	fix(release): skip scripts during Vercel installs
+4803	closed-unmerged	L	fix(mobile): avoid duplicate Clerk auth back buttons
+4821	closed-unmerged	M	fix(server): stop replayed history from re-arming mouse reporting
+4822	closed-unmerged	XXL	Codex/issue 3 release safe
+4838	closed-unmerged	M	fix(claude): classify stop diagnostics as interrupted
+4868	closed-unmerged	M	fix(mobile): bound thread resume replay
+4878	merged	L	perf(mobile): reconnect environments immediately on resume
+4887	closed-unmerged	M	feat(release): publish a Linux .deb alongside the AppImage
+4899	merged	S	fix(mobile): prevent crash on sign out in settings
+4900	closed-unmerged	M	feat(desktop): Add a Linux .deb to releases
+4918	closed-unmerged	L	fix(desktop): make AppImage restarts come back on Linux
+4936	closed-unmerged	L	fix(web): treat server update restart as expected
+4937	closed-unmerged	L	fix(web): treat server update restart as expected
+5003	closed-unmerged	XXL	Add durable GitHub waitpoints to orchestration V2
+5095	merged	S	fix(server): self-update no longer rolls itself back on restart
+5097	closed-unmerged	XXL	test(trading): replay recorded account fixtures and harden the ws smoke
+5104	closed-unmerged	XS	fix(server): harden SQLite durability under streaming writes
+5142	closed-unmerged	S	fix(server): treat signal-killed Claude subprocess as interrupted
+5147	merged	M	fix(server): bound thread catch-up replay and stop full-DB snapshot hydration
+5148	merged	M	fix(desktop,web): contain renderer memory growth and recover from renderer OOM crashes
+5154	closed-unmerged	L	fix(mobile): probe network changes and refresh activity leases
+5195	merged	XS	fix(server): recover stale Codex approval callbacks
+5205	closed-unmerged	XXL	feat(mobile): make archives one-swipe and recoverable
+5246	merged	M	fix(server): stop replaying a command receipt for a different aggregate
+5295	closed-unmerged	XS	fix(marketing): preserve spacing before releases link
+5319	merged	M	fix(server): strip replayable terminal queries from history
+5324	closed-unmerged	XXL	fix(web): reconcile terminal opens and closes
+5337	closed-unmerged	XS	fix(web): keep release notes tooltip open on hover
+5357	merged	M	fix(server): generate durable thread titles
+5386	merged	XS	fix(mobile): prevent Android thread search crash
+5394	merged	S	fix(ci): isolate releases from shared API rate limits
+5433	closed-unmerged	L	fix(server): recover provider sessions when resume history is missing
+5458	closed-unmerged	XS	test(release): prevent duplicate stable release runs
+5547	merged	XS	fix(web): update tooltip no longer dismisses when scrolling release notes
+5609	merged	L	Automate production mobile EAS releases
+5701	closed-unmerged	M	fix(usage): stop counting replayed codex rollout heads
+5710	merged	M	fix(server): stop Claude resume handshakes from completing turns that never ran
+5723	closed-unmerged	L	fix(codex): early child completion no longer gets lost
+5752	closed-unmerged	XXL	fix(server): recover provider lifecycle across updates
+5759	closed-unmerged	L	fix(server): recover empty collaboration-wait loops
+5814	closed-unmerged	L	fix(server): reconcile Codex cumulative usage
+5851	closed-unmerged	XXL	fix: make T3 connection and automatic recovery restart-safe
+5902	closed-unmerged	M	fix(desktop): recover corrupt connection catalog documents
+5910	closed-unmerged	XL	perf(release): cut build and publish time
+5976	closed-unmerged	XXL	feat(swift-ios): share into durable composer drafts
+6013	merged	XS	feat(web): add duplicate action to the T3 Code default theme
+6016	closed-unmerged	XXL	fix(vcs): release passive sidebar subscriptions
+6034	merged	XS	fix(ci): extend release publish timeout
+6064	closed-unmerged	M	fix(web): file tree no longer blanks on whitespace-padded duplicate paths
+6162	closed-unmerged	L	feat(clients): reload provider sessions per thread without restarting T3 Code
+6177	merged	M	fix(mobile): guard App Store release versions
+6197	closed-unmerged	L	fix(server): recover threads whose worktree was removed
+6217	closed-unmerged	M	fix(ssh): preserve remote runtime during tunnel recovery
+6233	closed-unmerged	XS	fix(web): keep interrupted environment queries pending
+6266	closed-unmerged	S	test(web): remove duplicate orchestration recovery test
+6305	merged	M	fix(server): prevent duplicate desktop clients after restart
+6322	merged	XS	fix(web): align update toast release notes link
+6324	merged	XL	fix(mobile): prevent OTA update restart crashes
+6366	closed-unmerged	M	fix(web): resume interrupted thread creation
+6400	closed-unmerged	S	fix(server): avoid full history on Codex resume
+6412	merged	S	fix(desktop): keep release notes visible while downloading
+6438	closed-unmerged	XXL	Accidental cross-fork PR — please disregard
+6487	merged	S	fix(mobile): recover the QR pairing scanner when camera access is denied
+6495	merged	S	fix(mobile): prevent invalid HTML entities from crashing markdown
+6496	closed-unmerged	L	fix(web): show tool call output instead of the duplicated command
+6498	closed-unmerged	M	fix(web): avoid duplicate command details
+6500	closed-unmerged	M	fix(web): pull request action menus no longer show duplicate dividers
+6623	closed-unmerged	M	fix(web): restart from downloaded update toast
+6627	closed-unmerged	M	feat(web): restart from downloaded update toast
+6633	merged	S	fix(search): oversized thread queries no longer crash clients
+6671	merged	XS	fix(server): treat a missing Codex rollout as a recoverable resume error
+7193	closed-unmerged	L	fix(web): refresh T3 Connect switch after startup reconcile
+7198	closed-unmerged	L	fix(server): point Claude resume cursor at reverted transcript
+7202	closed-unmerged	L	fix(server): start Claude turns after idle session restart
+7308	closed-unmerged	L	fix(codex): recover turns after usage limits
+7315	closed-unmerged	L	fix(server): settle orphaned provider sessions at startup
+7364	merged	XS	test(web): remove duplicate lookup assertion
+7405	closed-unmerged	XS	refactor(mobile): drop the ignored busy input from outbox delivery
+7412	merged	M	fix(server): recover from provider interrupt failures
+7422	closed-unmerged	M	fix(web): resume an in-progress draft when returning to the index
+7451	closed-unmerged	XXL	spike: isolate pure plugin reconciler
+7463	closed-unmerged	M	fix(server): reconcile active sessions after restart
+7538	merged	XS	fix(server): replay all un-applied events during projection bootstrap
+7541	closed-unmerged	XXL	experiment(relay): prototype a Durable Object transport for T3 Connect
+7602	merged	M	chore(desktop): use stable Clerk Electron release
+7617	closed-unmerged	L	fix(clients): reconcile tool activity lifecycles
+7646	closed-unmerged	M	fix(service): make install reconcile current service
+7704	closed-unmerged	L	fix(desktop): explain a backend that keeps dying instead of restarting in silence
+7719	merged	M	fix(server): reconcile orphaned provider sessions
+7725	merged	XS	fix(contracts): reconcile provider default tests
+7761	merged	M	fix(web): remove duplicate provider update progress
+7809	merged	S	fix(web): render oversized terminal graphemes without crashing
+7814	closed-unmerged	M	fix(server): recover skill frontmatter Claude Code itself accepts
+7867	closed-unmerged	S	fix(mobile): stop the changed files widget from crashing
+7873	merged	XS	test(desktop): remove redundant release note assertion
+7876	closed-unmerged	L	fix(web): update release notes stay open for interaction
+7898	closed-unmerged	M	fix(ci): shrink release app token lifetime in manual mobile builds
+7974	merged	XXL	fix(swift-ios): prevent lost messages and stale account access
+7975	merged	L	perf(ci): speed up release builds and Windows packaging
+7999	merged	XS	fix(web): stop recovered tool failures from marking work logs red
+8018	merged	M	perf(desktop): skip duplicate browser updates
+8177	merged	S	docs(release): verify remote updates with database migrations
+8212	closed-unmerged	L	fix(mobile): recover keyboard composers after Android resume
+8229	closed-unmerged	M	fix(mobile): open the existing project when adding a duplicate path
+8250	merged	M	perf(ci): cut about a minute from every release
+8252	merged	S	test(server): remove duplicate missing worktree test
+8342	closed-unmerged	L	fix(server): Codex threads survive protocol drift on resume
+8379	closed-unmerged	XS	fix(server): recover collided thread migration
+8427	closed-unmerged	M	fix(server): back off relay client restarts
+8457	closed-unmerged	S	fix(web): prevent duplicate terminal paste
+8464	merged	S	fix(orchestration): exclude rolled-back work from bounded recovery
+8486	closed-unmerged	XXL	fix(desktop): recover preview automation after snapshot timeouts
+8509	merged	XS	fix(release): move nightly schedule to minute 38
+8558	closed-unmerged	M	fix(release): preserve resource monitor executable modes
+8577	closed-unmerged	XXL	feat: resume threads after usage limits reset
+8585	merged	S	fix(web): stop session activity timing test from blocking releases
+8629	closed-unmerged	S	fix(server): avoid loading Codex history on resume
+8702	closed-unmerged	XL	feat(mcp): inspect durable checkpoints
+8703	open	XXL	feat(mcp): restore durable checkpoints
+8753	closed-unmerged	M	fix(desktop): recover from obsolete catalog keys
+8788	merged	M	fix(server): back off relay client restarts after rapid exits
+8842	closed-unmerged	S	fix(server): ignore replayed Claude resume snapshots
+8845	closed-unmerged	XL	fix(server): bound DPoP replay state
+8858	closed-unmerged	M	fix(server): background service no longer crash-loops on Linux npm 12 installs
+8864	closed-unmerged	M	fix(server): cleanup tasklist/findstr orphaned processes on Windows (#8575)
+8897	merged	M	fix(codex): accept rate limit errors on thread resume
+8906	closed-unmerged	S	fix(cloud): back off relay connector restarts
+8923	closed-unmerged	M	fix(mobile): preserve saved environments across catalog recovery
+8976	closed-unmerged	XXL	feat(desktop): support custom update release sources
+8992	merged	L	fix(server): bound orchestration replay payloads
+9052	merged	L	perf(clients): lease sidebar status by visibility
+9068	merged	M	fix(desktop): preview CDP sessions no longer hard-crash the app
+9121	open	L	perf(ci): cut duplicate release and dependency work
+9129	merged	XXL	chore: delete dead code, unused deps, and duplicate helpers
+9130	closed-unmerged	L	fix(claude): guard completed agent resumes
+9167	merged	XL	feat(updates): continue active threads across server restarts
+9189	closed-unmerged	L	feat(chat): continue an interrupted turn from the tool call it stopped at
+9211	closed-unmerged	M	fix(server): release compatible writers before cross-instance resume
+9250	merged	XS	fix(release): pin patched expo-sharing version
+9308	closed-unmerged	XXL	perf(usage): serve durable snapshots during background refresh
+9344	closed-unmerged	L	fix(claude): recover missing sessions before first prompt admission
+9360	closed-unmerged	L	fix(server): resume active turns when T3 Code reopens
+9399	merged	S	perf(ci): reuse dependency checks in release builds
+9408	closed-unmerged	M	fix(claude): resumed subagents no longer read as stopped
+9419	merged	M	fix(web): avoid duplicate Antigravity install status
+9445	closed-unmerged	M	fix(shared): preserve hyphens inside semver prerelease identifiers
+9501	closed-unmerged	L	fix(server): open stable Zed when a prerelease Zed is first on PATH
+9560	merged	M	fix(web): keep codex restart responses continuous
+9584	merged	L	fix(usage): deduplicate CLI proxy subscription accounts
+9618	merged	S	perf(shared): skip duplicate PATH entries and per-probe tracing
+9643	closed-unmerged	XS	fix(antigravity): replay auth state to late subscribers
+9647	merged	M	fix(web): resume Antigravity threads without repeated sign-in
+9652	closed-unmerged	XL	fix(server): prevent duplicate servers for one state directory
+9707	merged	L	perf(web): stop replaying terminal buffers on rollover
+9726	merged	L	perf(server): replay only the selected thread
+9803	merged	L	fix(server): recover opted-in threads after machine restarts
+9852	closed-unmerged	L	fix: recover threads after worktree deletion
+9859	merged	XS	fix(release): install the correct Windows Spectre component
+9878	merged	M	fix(web): keep file autosaves active after effect replay
+9900	closed-unmerged	L	fix(server): reconcile historical V2 migration manifests
+9913	merged	S	fix(client): keep warm thread resumes live instead of flashing sync
+9933	merged	L	fix(settings): share restart continuation across environments
+9939	closed-unmerged	XXL	refactor: remove duplicate runtime logic and test scaffolding
+9948	merged	L	fix(web): deduplicate PR project filter choices
+9994	merged	XS	refactor(web): remove unused aspect ratio reconciler
+10019	merged	M	fix(projects): prevent invalid script IDs from crashing threads
+10042	merged	S	test(server): remove duplicate VCS error constructor checks
+10051	merged	L	fix(orchestrator): preserve task-step elapsed time across restart
+10078	merged	S	fix(server): resume checkpointing after git init
+10107	closed-unmerged	M	refactor(mobile): make outbox ownership checks explicit
+10143	closed-unmerged	M	fix(web): Antigravity restart no longer shows Needs attention
+10184	merged	M	fix(web): resume imported custom-provider threads
+10205	closed-unmerged	M	fix(mobile): release confirmed thread model overrides
+10244	merged	M	fix(server): keep the Antigravity Google sign-in across server restarts
+10272	merged	M	fix(release): space automatic nightlies at least six hours apart
+10299	closed-unmerged	XXL	fix(server): recover interrupted checkpoint rewinds
+10312	open	S	fix(server): recover the login shell SSH agent
+10357	closed-unmerged	XXL	feat(server): resume unavailable provider sessions with mobile-safe status
+10373	merged	M	fix(codex): accept misalignment policy errors on thread resume
+10386	closed-unmerged	L	feat(web): auto-reconcile external agent sessions on project open
+10405	merged	L	feat(mobile): show when an existing thread has a message waiting in the outbox
+10410	merged	L	feat(ci): ship stable releases from the latest nightly commit
+10420	merged	XS	fix(web): deduplicate expanded tool labels and keep errors expandable
+10421	merged	M	fix(server): keep interrupted threads resumable after restarts
+10443	merged	M	fix(marketing): deploy site with nightly releases
+10451	closed-unmerged	S	fix(server): load V2 replay fixtures on Windows
+10452	closed-unmerged	L	test(server): replay denied Claude writes through V2
+10482	closed-unmerged	M	fix(server): recover checkpoint revert sessions after restart
+10483	merged	S	fix(mobile): release initial scroll target after dragging
+10505	closed-unmerged	S	fix(server): resume archived Codex sessions
+10537	closed-unmerged	M	fix(desktop): recover failed shell environment capture
+10585	merged	XS	fix(shared): release relay install locks on cancellation
+10586	closed-unmerged	M	fix(server): dismiss orphaned provider questions
+10602	closed-unmerged	M	fix(chat): prevent duplicate statuses and timeline ID collisions
+10607	merged	M	fix(grok): recover from crashed provider sessions
+10611	closed-unmerged	XXL	fix(server): restore queued turn identity after restart
+10700	open	M	fix(usage): deduplicate native subscription accounts
+10716	open	XXL	feat(relay): T3 relay transport on Durable Objects, opt-in beside Cloudflare Tunnel
+10739	closed-unmerged	M	fix(swift-ios): recover when a keepalive send stalls
+10758	closed-unmerged	XXL	fix(swift-ios): release accepted commands before optional refreshes
+10759	closed-unmerged	XXL	fix(swift-ios): recover missing completed thread replies
+10762	closed-unmerged	XXL	perf(swift-ios): skip validated stale detail replay
+10763	closed-unmerged	XXL	fix(swift-ios): reconcile silent selected-thread streams
+10766	closed-unmerged	XXL	fix(swift-ios): record thread receipts and keep tool history chronological
+10777	merged	M	fix(server): release consumed event replay pages
+10817	closed-unmerged	M	fix(desktop): restore native macOS fullscreen on restart
+10874	closed-unmerged	M	fix(server): recover Codex sessions after signal exits
+10878	open	XS	fix(usage): recover missing Codex hub plans from auth metadata
+10939	closed-unmerged	S	fix(server): preserve reasoning effort after restart
+10969	closed-unmerged	L	feat(web): auto-reconcile external agent sessions on project open
+10972	closed-unmerged	L	Make Linux boot faster: splash earlier, defer reconcile, skip redundant shell probe
+10981	merged	XS	fix(web): allow expanding duplicate tool call commands
+11007	merged	L	fix(server): preserve recent PR reads across server restarts
+11075	merged	S	fix(web): keep a file-to-symlink type change from crashing the diff view
+11147	closed-unmerged	M	fix(codex): pick up a new login without restarting T3
+11149	closed-unmerged	S	fix(server): replay launches with server-allocated thread IDs
+11151	closed-unmerged	XS	fix(server): report the missing forced restart capability
+11152	closed-unmerged	XS	fix(orchestrator): restart the live provider session on model changes
+11157	closed-unmerged	XS	fix(server): wake paused Cursor replay runs on mismatch
+11160	closed-unmerged	S	fix(server): replay all command events across persistence pages
+11196	merged	M	perf(web): resume syntax highlighting from completed lines
+11205	closed-unmerged	S	fix(desktop): local desktop builds crash when a GitHub token is in the shell
+11215	closed-unmerged	XXL	feat(usage-limit): recover gracefully when a subscription runs out
+11217	closed-unmerged	M	fix(acp): raise ACP wire-message cap so large sessions resume
+11233	merged	XS	fix(mobile): prevent Hermes crashes when opening threads
+11242	closed-unmerged	L	fix(server): detect GitHub sign-in on gh releases without `--json`
+11291	merged	XS	fix(web): retry startup after the server recovers
+11314	merged	S	fix(web): offer recovery from missing pages
+11317	merged	XXL	ci(release): build, sign, and publish self-contained CLI archives
+11318	merged	XL	feat(server): install preview runtimes from release archives
+11319	merged	L	feat(ssh): run preview builds on remotes from the release archive
+11322	open	L	fix(server): reconcile Codex usage counters
+11381	merged	XS	fix(server): release preview hosts after unanswered requests
+11426	merged	XS	fix(mobile): pin expo-audio so the release smoke patch stays in use
+11447	closed-unmerged	M	fix(web): prevent duplicate diff file ids
+11471	closed-unmerged	S	fix(server): bound Codex session startup to release stalled commands
+11486	merged	M	fix(mobile): stop crashing on launch when a thread has a PR stack
+11495	closed-unmerged	L	fix(desktop): restore SnapShot shortcuts after portal restarts
+11499	merged	M	fix(server): replay command events across persistence pages
+11505	merged	S	fix(server): restart the live session on model changes after dead records
+11508	merged	S	fix(server): replay launches with server-allocated thread IDs
+11510	merged	XL	feat(server): manage runtimes as release archives only, never from npm
+11518	merged	L	fix(mobile): pin expo-audio so the release smoke patch stays in use
+11535	merged	XS	fix(server): wake paused Cursor replay runs on mismatch
+11537	merged	XS	fix(mobile): stop crashing on launch before the shell snapshot arrives
+11540	merged	L	feat(mobile): show startup crashes in Settings → Diagnostics
+11565	merged	XS	fix(server): report missing interrupt-and-restart capability for forced restarts
+11566	merged	S	fix(server): load V2 replay fixtures through the platform path service
+11583	closed-unmerged	M	feat(desktop): group update release notes
+11597	merged	L	test(server): replay denied Claude writes through V2
+11605	merged	L	ci(release): build CLI archives for five targets, each on its own architecture
+11606	merged	XXL	ci(release): build the JS bundle once and run every platform and architecture in parallel
+11607	merged	XL	feat(release): publish npx t3 as a launcher over per-platform executable packages
+11608	closed-unmerged	XS	fix(client-runtime): map cancelled and interrupted subagent terminal statuses
+11613	closed-unmerged	M	fix(server): reconcile delayed OpenCode prompt admission
+11616	closed-unmerged	M	fix(web): allow reverting interrupted turns to edit and restart
+11630	closed-unmerged	XS	fix(desktop): make snapshot extension enable idempotent
+11640	closed-unmerged	M	fix(server): recover OpenCode turns from live busy status
+11674	open	XXL	feat(relay): serve all of a user's environments from one Durable Object
+11689	merged	L	feat(swift-ios): show native crash reports in settings
+11702	merged	L	feat(cli): add t3 service restart and make t3 update repoint the service eagerly
+11716	closed-unmerged	L	feat(chat): continue interrupted turns with one tap
+11719	closed-unmerged	L	fix(server): recover Antigravity sessions after a clean provider close
+11721	closed-unmerged	M	fix(server): Claude rewind no longer orphans its history worker on shutdown
+11732	merged	M	fix(release): preserve updates from npm-based services
+11750	merged	M	fix(release): stop npm from pruning the platform packages' shipped node_modules
+11753	merged	S	fix(desktop): keep preview releases out of the nightly update changelog
+11764	merged	L	chore(deps): bump the Clerk stack to current releases
+11807	closed-unmerged	L	fix(server): prevent duplicate and subagent history imports
+11839	closed-unmerged	L	fix(server): dismiss orphaned approvals
+11924	closed-unmerged	S	fix(acp): decode standards-compliant JSON-RPC errors instead of crashing
+11952	closed-unmerged	S	fix(codex): deduplicate child task start events
+11984	merged	S	fix(contracts): avoid Intl.Segmenter in monogram validation (Hermes crash)
+11997	closed-unmerged	L	fix(mcp): bound delegation waits and recover completion delivery
+12003	merged	S	fix(server): OpenCode stop no longer hangs when a turn is interrupted before submission
+12070	closed-unmerged	L	fix(server): recover OpenCode chats with unsupported text attachments
+12221	closed-unmerged	XS	fix(server): mark superseded running turns interrupted
+12402	merged	M	fix(server): recover Linux runtime directory for device hub
+12468	closed-unmerged	S	fix(server): fall back to fresh Codex thread when resume hits unsupported list_turns
+12469	merged	S	fix(server): keep OpenCode timeouts from crashing the error formatter
+12506	open	M	fix(pi): resume persisted sessions at spawn instead of switch_session
+12517	merged	M	fix(ci): reconcile native change labels against pinned commits
+12518	merged	XS	fix(release): read relay configuration without loading deployment providers
+12519	merged	S	fix(release): strip Alchemy progress before parsing relay state
+12523	merged	S	fix(server): release oversized pull request diff cache entries
+12535	merged	M	fix(preview): recover host registration after request timeouts
+12544	merged	XS	fix(release): drop placeholder allowBuilds entry that broke desktop builds
+12608	closed-unmerged	L	fix(mobile): recover connections on a Wi-Fi/cellular handoff
+12610	open	S	fix(mobile): a stuck attachment upload no longer holds the whole outbox
+12619	closed-unmerged	S	perf(server): index thread activities by kind for the startup reconcile
+12629	closed-unmerged	M	fix(server): the service no longer crash-loops after t3 update crosses a launcher protocol
+12639	merged	L	fix(devices): recover simulator streams after failures
+12644	closed-unmerged	S	fix(web): prevent duplicate quotes from dead keys
+12663	closed-unmerged	M	docs: define visible recovery for thread organization
+12669	closed-unmerged	XXL	feat(desktop): brutal Keep Awake toggle with save/restore and crash recovery
+12672	closed-unmerged	L	fix(server): show new skills in the picker without restarting
+12686	merged	L	feat(v2): resume limited threads when usage resets
+12706	closed-unmerged	XXL	fix(preview): recover automation after timeouts and paused rendering
+12717	closed-unmerged	L	fix(server): sweep stale Antigravity _MEI orphans on Windows
+12733	closed-unmerged	M	fix(mobile): recover Android sidebar after fullscreen Terminal
+12772	closed-unmerged	M	fix(server): resume interrupted turns only for the environment that started them
+12795	merged	L	refactor(server): share scheduling for tasks and limit recovery
+12830	closed-unmerged	L	fix(web): keep terminal prompts aligned after attach and replay
+12853	closed-unmerged	S	fix(cli): authenticate release checks
+12876	closed-unmerged	L	fix(mobile): expose thread recovery actions
+12879	closed-unmerged	L	fix(v2): resume interrupted runs only for the environment that started them
+12922	closed-unmerged	L	fix(server): recover Codex sessions after process exits
+12933	merged	L	fix(server): recover Pi resumes without reusing native history
+13144	merged	L	fix(mobile): keep ordinary offline outbox failures out of console.warn
+13145	closed-unmerged	XL	fix(mobile): recover from render errors in-place with scoped boundaries
+13177	closed-unmerged	XXL	feat(release): ship .deb and .rpm packages that update through apt and dnf
+13197	merged	L	fix(mobile): recover from screen render errors
+13310	merged	XS	fix(mobile): keep composer within folded screen after resume
+13321	merged	M	fix(ci): shard release tests like pull request CI
+13340	merged	S	fix(server): stop replaying old agent alerts on restart
+13345	closed-unmerged	L	fix(server): report delegated tasks stopped by a server restart
+13367	closed-unmerged	L	fix(server): serialize Claude session start and recovery
+13380	closed-unmerged	L	fix(server): serialize Claude session start and recovery
+13387	closed-unmerged	L	fix(antigravity): say why the runtime crashed instead of a generic line
+13424	closed-unmerged	M	fix(server): settle and snooze see open questions after a restart
+13449	closed-unmerged	XL	fix(mobile): prevent crashes when opening large turn diffs
+13459	merged	S	test(server): remove skipped, duplicate, and constant-restating V2 tests
+13463	merged	XS	fix(shared): local-path remotes no longer crash legacy PR link projection
+13468	closed-unmerged	M	fix(desktop): recover from malformed connection catalogs
+13493	merged	XXL	test(server): re-record Cursor replay fixtures and cover skills live
+13494	merged	M	test(server): make the provider-switch resume-failure test reach the fallback
+13509	merged	S	fix(codex): replay legacy user-input requests as blocking
+13515	merged	XXL	test(server): replace Pi adapter unit tests with live replay fixtures
+13521	closed-unmerged	XS	fix(ssh): reconnecting no longer restarts the remote server
+13531	merged	S	test(server): remove replay harness self-tests
+13533	merged	XXL	test(server): record Codex replay fixtures on gpt-6-luna and Codex 0.156.1
+13537	merged	XXL	test(server): record Grok replay fixtures from a live grok agent
+13545	closed-unmerged	L	fix(server): start a fresh Claude session when the resumed session no longer exists
+13556	merged	XL	refactor(server): record Cursor replay fixtures with Effect
+13565	merged	L	feat(relay): clean up tunnels of hosts that never registered recovery
+13575	merged	L	feat(release): ship a Linux .deb that updates itself
+13583	closed-unmerged	L	fix(server): recover assistant text when completion extends a prefix
+13591	open	L	test(web): remove duplicate change request parser tests
+13594	merged	XL	test(server): support replay gates for ACP providers
+13619	merged	M	fix(server): startup recovery settles native subagent threads
+13627	closed-unmerged	M	fix(client): retry durable subscriptions after transport loss
+13656	closed-unmerged	M	fix(desktop): recover undecryptable connection catalogs safely
+13668	merged	M	fix(server): a resumed Claude subagent's thread shows the message that resumed it
+13695	merged	M	fix(server): prune expired replay-protection files from the secrets directory
+13735	merged	L	fix(server): a Claude subagent resumed after a server restart stays in its thread
+13744	closed-unmerged	XXL	feat(threads): resume after connection loss
+13754	open	S	fix(server): recover from stale Homebrew provider metadata
+13757	open	S	perf(server): restarts no longer replay PR discovery for every old thread
+13770	closed-unmerged	XL	feat(web): show release notes when the server can be updated
+13782	closed-unmerged	L	fix(mobile): release iPhone voice session when leaving a thread
+13787	merged	L	fix(server): Codex rollback works after the app-server restarts
+13788	closed-unmerged	L	fix: suppress completion alert when a background task finishes and the agent resumes
+13806	merged	S	fix(server): a Cursor command you stop shows as interrupted
+13839	merged	L	fix(server): reconcile Pi native session rewinds
+13870	merged	M	fix(clients): hide duplicate Cursor Keychain prompts
+13878	merged	M	fix(server): recover Cursor sends from abandoned local runs
+13879	merged	L	fix(server): stop OpenCode servers left behind by a crashed server
+13895	merged	L	fix(server): tell the provider when a restart killed its background work
+13901	merged	L	feat(server): continue settled threads that lost background work in a restart
+13933	closed-unmerged	L	fix(server): hold background liveness until a waking task resumes
+13961	closed-unmerged	XXL	feat: resume external CLI sessions from new threads
+13969	closed-unmerged	L	fix(server): resume agents after quit or restart
+13993	closed-unmerged	M	fix(release): .deb shows up properly in Linux software centres
+14012	merged	XL	refactor(server): project reads and replay stats leave ProjectionSnapshotQuery
+14020	closed-unmerged	M	fix(agents): reopen resumed Claude subagents
+14027	merged	L	perf(release): start Windows builds without waiting for the Linux job
+14028	merged	M	perf(release): build and publish npm platform packages concurrently
+14029	merged	L	perf(release): build Vercel deployments early and go live after publish
+14031	closed-unmerged	M	fix(client): reactivate resumed Claude subagents
+14037	merged	M	perf(release): trim Windows packaging setup
+14047	closed-unmerged	M	fix(server): replay shell updates after projection read failures
+14052	closed-unmerged	L	fix(web): recover thread loading from closed IndexedDB
+14098	open	L	fix(client-runtime): speed up mobile reconnect after resume
+14122	closed-unmerged	M	fix(server): first pull request open no longer fails as interrupted
+14135	closed-unmerged	S	fix(server): bound managed-tunnel recovery retry window to 10 minutes
+14179	merged	M	fix(server): prevent Windows PTY helper crashes in watch mode
+14182	merged	XS	fix(server): threads mid-turn continue after a restart on every provider
+14202	closed-unmerged	M	fix(server): a migration id clash stops startup with a clear error instead of a crash loop
+14208	closed-unmerged	L	fix(server): a stuck provider call no longer freezes its thread until restart
+14230	closed-unmerged	L	fix(client-runtime): reconnects no longer stall until reload after an interrupted connection check
+14234	open	L	test(web): remove duplicate change request parser tests
+14272	closed-unmerged	M	fix(server): resumed Claude subagents keep their own model and effort label
+14323	merged	XS	test(server): stop pinning codex install advisory to a release range
+14340	open	S	fix(server): switching between Claude accounts that share ~/.claude/projects resumes the same session
+14361	open	L	fix(server): `t3 update` and `t3 service restart` run from inside T3 no longer leave the service stopped
+14376	merged	XS	fix(server): managed Codex refreshes after sign-out even when a check was interrupted
+14386	merged	XXL	feat(server): OpenCode 2 text generation, MCP injection and restart reconciliation
+14419	open	XS	fix(server): abort ACP MCP fetches when calls are interrupted
+14433	closed-unmerged	S	fix(server): clear recovered message streaming flags
+14434	closed-unmerged	M	fix(server): recover runless native child provider turns
+14457	closed-unmerged	XS	fix(server): make SQLite checkpoints durable on macOS
+14494	closed-unmerged	S	fix(server): one damaged event row no longer crash-loops startup
+14500	closed-unmerged	M	fix(server): replay projection bootstrap in event order across projectors
+14507	closed-unmerged	L	fix(server): a run no longer stays working after its idle session is released
+14542	merged	L	feat(web): restart the agent session from cmd+k to load new skills and plugins
+14553	merged	S	fix(release): Windows CLI smoke test no longer fails on temp dir cleanup
+14556	closed-unmerged	S	fix(mobile): stop duplicate Android header in split-screen
+14558	merged	XS	test(web): remove duplicate sidebar ordering tests
+14577	closed-unmerged	M	fix(server): complete messages an orphaned session left streaming
+14594	closed-unmerged	L	fix(server): recover from incompatible optional CLI executables
+14617	open	M	feat(web): resume a paused queue from the queue itself
+14630	closed-unmerged	XS	fix(web): stop showing dead subagents as working after a restart
+14688	merged	XXL	feat(server): Pi 1.0 support, with replay fixtures recorded on 1.0
+14696	closed-unmerged	M	fix(client-runtime): a resumed Claude subagent no longer stays failed or stopped in the Agents panel
+14708	closed-unmerged	S	fix(server): a Claude command you stop shows as interrupted
+14710	merged	XS	fix: remove outdated restart setting update advice
+14729	open	XL	fix(server): a restart that never starts settles the work its run inherited
+14740	closed-unmerged	L	fix(desktop): recover when WSL backend crashes during connect
+14752	merged	L	fix(server): OpenCode 2 continuations replay only their own background reply
+14763	closed-unmerged	L	fix(desktop): recover when a wsl-only backend never becomes ready
+14774	closed-unmerged	M	fix(web): suppress terminal key releases for app-handled shortcuts
+14797	closed-unmerged	S	fix(server): release the Codex writer before switching accounts
+14826	closed-unmerged	XXL	fix(preview): recover automation after timeouts and paused rendering
+14850	merged	M	fix(mobile): opening a thread no longer crashes Android release builds
+14863	merged	M	fix(server): released builds keep the OpenCode policy for their own version
+14896	merged	S	fix(server): a Claude command you stop shows as interrupted
+14968	closed-unmerged	M	fix(web): floating portrait previews no longer crash beside the details card
+15020	open	M	fix(web): suppress terminal key releases for app-handled shortcuts
+15022	merged	XS	test(server): replay checks a Claude subagent's thread takes its reported model
+15030	open	L	fix(mobile): restore lost iOS race fixes and Android keyboard parity
+15074	closed-unmerged	L	fix(desktop): recover V1 stash and drafts after upgrading
+15105	closed-unmerged	L	fix(server): recover Claude proxy quota limits
+15142	merged	S	fix(mobile): Android usage widget no longer sticks on "Loading widget" in release builds
+15170	closed-unmerged	L	fix(orchestration): reconcile held delegated tasks after child completion
+15191	closed-unmerged	L	fix(orchestration): resume delegated work after workspace handoffs
+15201	open	M	fix(orchestration): reconcile stale delegated task and held queue state
+15203	open	L	fix(orchestration): resume continuations after planned worktree handoffs
+15261	open	XL	fix(server): recover Stable history missing after V2 migration
+15275	open	L	fix(usage): recover missing initial Codex service tiers
+15290	merged	M	fix(web): sending past the resume banner compacts first
+15308	closed-unmerged	L	fix(server): close stale request prompts during recovery and detach
+15309	closed-unmerged	L	fix(server): preserve provider activity through failed starts and recovery
+15318	closed-unmerged	M	fix(server): fresh claude sessions no longer resume a missing id
+15323	merged	XL	fix(server): restarts keep delegated tasks, queued threads, and stops intact
+15376	open	M	fix(server): imported Claude Code sessions resume on their first follow-up
+15385	merged	L	perf(mobile): omit duplicated turn items from bounded thread snapshots
+15389	merged	S	fix(codex): resume archived native sessions
+15438	closed-unmerged	L	fix(server): threads waiting on background work wake after a restart
+15442	merged	L	fix(orchestration-v2): let Stop recover stalled runs
+15452	merged	S	fix(server): recover claude skill scalar frontmatter
+15495	open	M	fix(server): a restart no longer resends imported history to a session that already has it
+15553	open	L	feat(clients): show scheduled usage-limit recovery in thread lists
+15571	merged	L	fix(server): provider sessions clean up when their start is interrupted
+15577	merged	L	refactor(server): share one keyed lock that releases idle keys
+15604	merged	M	fix(server): keep settled threads asleep after restarts
+15630	open	M	fix(ssh): deduplicate configured host suggestions
+15681	open	M	fix(desktop): Linux AppImage settings restarts launch a fresh instance
+15727	closed-unmerged	L	fix(server): Codex subagents resume tracking after restarts
+15738	open	XS	fix(web): keep reporting client activity after an interrupted report
+15754	merged	L	feat(release): include nightly changelogs in Discord announcements
+15771	merged	M	revert(web): remove automatic compaction before resume
+15786	open	S	fix(server): continue recovery after a thread fails
+15789	open	L	fix(server): release provider activity by run attempt
+15820	open	S	fix(server): restarts continue every Codex thread, not just the first
+15837	closed-unmerged	XS	fix(server): the server starts again after a duplicate Option import
+15847	merged	XS	fix(server): drop the duplicate Option import that breaks main CI
+15859	closed-unmerged	M	fix(web): recover timeline following and bottom navigation
+15866	open	L	fix(server): Claude turns no longer resume a session the CLI never persisted
+15925	merged	M	fix(server): a migration id clash stops startup with a clear error instead of crash-looping
+15978	open	L	test: remove orphaned timeline and activity helper tests
+16052	open	S	fix(mobile): crash report shows the store build number
+16207	merged	L	fix(server): metrics count interrupted work on the monotonic clock
+16247	merged	L	fix(server): finished outbox rows and old PR cache files are pruned
+16271	merged	L	ci(mobile): publish nightly Android APKs to a GitHub prerelease
+16311	merged	L	fix(web): recover from a closed IndexedDB connection
+16349	merged	M	refactor(server): replay guards stay in CloudLink
+16402	closed-unmerged	M	fix(connect): recover a reaped tunnel the connector cannot register
+16411	merged	S	fix(release): resolve version-qualified catalog overrides
+16515	merged	S	fix(release): unblock nightly browser tests and cli builds
+16555	closed-unmerged	M	fix(server): a child killed with unread input no longer crashes the server on html_render
+16580	open	M	fix(server): provider settings saved during startup are no longer lost
+16626	closed-unmerged	S	fix(server): a crash no longer hangs the server on the idle browser channel
+16648	merged	M	fix(server): recover a deleted tunnel when Cloudflare says "Tunnel not found"
+16649	merged	S	fix(relay): a host restarting onto a deleted tunnel gets a new one
+16674	merged	S	fix(server): restart inactivity after snoozed threads wake
+16749	closed-unmerged	M	fix(server): tool calls cut off by a lost provider stream no longer wait forever
+16750	merged	L	fix: composer picks up new project skills without a server restart
+16805	closed-unmerged	M	fix(server): Codex recovers after its shared app-server dies
+16849	open	M	fix(server): managed Codex conversations recover after ChatGPT token renewal
+17002	closed-unmerged	L	fix(workspace): recover threads after worktree deletion
+17041	merged	XS	fix(server): replaying a command no longer freezes the server
+17044	closed-unmerged	L	fix(server): shell snapshots release the database before decoding
+17046	closed-unmerged	L	fix(server): Codex threads recover when the app-server exits
+17243	closed-unmerged	XL	fix(desktop): recover preview recording startup when native capture fails
+17284	closed-unmerged	L	refactor(provider-testing): extract the provider replay toolkit
+17391	closed-unmerged	L	fix(usage): unchanged Antigravity databases are not decoded again after a restart
+17452	closed-unmerged	L	test: remove orphaned codex and grok helper tests
+17457	open	S	fix(web): usage limit recovery errors no longer crush the composer banner
+17481	open	L	fix(server): released provider sessions are marked stopped after their thread detaches
+17566	merged	M	fix(devices): recover stalled video without losing simulator input
+17589	open	XXL	fix(server): restarts keep queued steering and continue every thread
+17596	open	L	fix(server): resumed Claude subagents are found on instances with their own home
+17630	closed-unmerged	M	fix(client-runtime): T3 Connect setup timeouts say which side lost its network
+17684	closed-unmerged	M	fix(ssh): reconnecting no longer restarts the managed remote server
+17696	merged	L	fix(server): track resumed subagent follow-ups as separate tasks
+17723	merged	L	fix(clients): restart continuations show as a T3 Code notice, not another agent's message
+17773	open	S	fix(server): queued messages land after a resume that ran before them
+17778	merged	M	fix(server): restore auto resume for wrapped Claude gateway rate limits
+17786	merged	M	perf(server): expired PR diffs no longer stay in memory until restart
+17789	open	S	fix(server): an interrupted run no longer starts the settle timer on a snoozed thread
+17862	closed-unmerged	L	fix(server): limited threads resume after background wakes that did nothing
+17866	open	L	fix(server): usage-limited threads on a pooling proxy now resume when the pool recovers
+17867	merged	XS	fix(web): Resume continues on the model picked in the composer
+17902	closed-unmerged	XL	feat(threads): recover exhausted native Codex streams
+17910	open	S	fix(server): storage cleanup no longer counts hardlinked files as recovered space
+18059	open	L	fix(desktop): restore SnapShot shortcuts after portal restarts
+18095	open	L	fix(desktop): restart prompt returns after relaunching with a downloaded update
+18099	open	M	fix(web): a resumed subagent's notification row shows it running, not failed
+18139	open	M	fix(server): release Codex sessions when the app-server dies
+18217	open	L	fix(browser): share headless fallback and recover native profiles
+18237	open	M	fix(server): first pull request open no longer fails as interrupted
+18251	closed-unmerged	L	fix(release): wait for npm to serve platform packages before publishing t3
+18280	open	L	fix(server): recover stalled checkpoint captures
+18359	open	L	fix(server): a thread whose worktree was deleted recovers on the next message
+18360	open	M	fix(server): a retried thread creation replays after the project turns its provider off
+18362	open	S	fix(server): Claude subagents resumed after a missed launch get their child thread
+18363	closed-unmerged	L	fix(composer): remove duplicate image chips
+18378	open	M	fix(server): a dropped HTTP/2 connection no longer crashes the server
+18390	closed-unmerged	L	test(server): replay fixture for Claude 5 task lists
+18398	open	M	fix(server): Claude task lists survive a server restart
+18430	open	S	fix(web): release orphaned diff comment drafts
+18435	open	XS	fix(preview): release original browser downloads after saving copies
+18452	closed-unmerged	L	feat(web): update everything counts interrupted threads and offers to continue them
+18466	open	M	fix(web): deleted composer chips release their payloads on thread switch
+18526	closed-unmerged	M	perf(desktop,server): avoid duplicate Windows shell environment probes on startup
+18539	open	L	fix(mobile): release iOS audio session after video playback
+18558	open	S	fix(server): Claude threads recover after you log in again
+18560	merged	XS	fix(release): drop placeholder allowBuilds entry that broke nightly builds
+18566	merged	M	fix(desktop): avoid Hyprland 0.48–0.50 Wayland color-manager startup crashes
+18573	merged	M	fix(release): avoid PowerShell crashes on Windows ARM
+18596	open	S	fix(server): T3 Connect exposure stays off after a restart
+18612	closed-unmerged	L	fix: release sent composer model choices across clients
+18649	closed-unmerged	L	fix(server): deliver run-specific delegated results exactly once
+18666	merged	XS	fix(web): a numeric q in the pull requests URL no longer crashes the page
+18667	closed-unmerged	M	fix(mobile): open the existing project when adding a duplicate path
+18726	closed-unmerged	L	fix(devices): closing, archiving, or deleting a thread releases its devices for other threads
+18764	open	L	fix(server): Codex runs fail and recover instead of hanging when the app-server dies or stops answering
+18776	merged	XS	fix(mobile): Browser page no longer logs a duplicate key warning
+18820	open	XS	fix(server): release webhook claims when acceptance fails
+18825	merged	S	perf(server): avoid quadratic resource history replay
+18830	merged	XS	fix(server): bound activity publishes so stalled responses release the worker
+18937	open	M	fix(server): inactivity auto-settle waits for an armed usage-limit auto-resume
+18955	merged	S	fix(web): Android beta links point to the APK release, not the banned Google group
+18973	closed-unmerged	L	fix(usage): unchanged Antigravity databases are not decoded again after a restart
+19063	closed-unmerged	M	fix(mobile): voice input recovers when native audio calls hang
+19093	open	XXL	feat(mobile): report crashes to Axiom with symbolicated stacks
+19148	closed-unmerged	S	fix(opencode): restarts no longer leave OpenCode servers running in their systemd scopes
+19178	closed-unmerged	L	fix(desktop): keep Linux deb update restarts responsive
+19184	closed-unmerged	L	fix(server): restarts wake threads to resume their subagents
+19229	open	M	fix(server): agent questions stay answerable after a server restart
+19241	open	M	fix(mobile): Android image viewer keeps panning after an interrupted pinch
+19277	open	XS	fix(desktop): local desktop builds no longer crash when a GitHub token is in the shell
+19304	merged	XS	fix(server): make SQLite checkpoints durable on macOS
+19338	merged	M	fix(clients): a resumed subagent no longer moves the later turn's Worked for row
+19355	merged	L	fix(server): settled and idle-released threads no longer stay Waiting
+19395	merged	S	fix(web): terminal tells the shell its new width as soon as you release a resize drag
+19482	closed-unmerged	L	fix(bitbucket): recover terminal timestamps for thread settlement
+19501	open	L	fix(server): T3 Connect recovers by itself once a wrong clock is fixed
+19554	open	M	fix(desktop): prevent duplicate backends on macOS
+19570	open	M	fix(client-runtime): threads no longer stay on "Syncing messages..." after a failed resume
+19588	open	L	fix(server): wake threads whose subagents' background work a restart cut
+19613	closed-unmerged	S	fix(web): balance headings and avoid orphan words in chat and dialogs
+19631	merged	M	fix(server): restarts no longer stall on old subagent result deliveries
+19646	open	M	fix(server): persist run failures after storage recovers

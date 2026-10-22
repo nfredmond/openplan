@@ -1,0 +1,25 @@
+{
+  "finish_assistant_provider_turn(uuid,uuid,uuid,uuid,text,jsonb,jsonb,text)": {
+    "acl": [
+      {
+        "grantable": false,
+        "grantee": "16384",
+        "grantor": "16384",
+        "privilege": "EXECUTE"
+      },
+      {
+        "grantable": false,
+        "grantee": "16445",
+        "grantor": "16384",
+        "privilege": "EXECUTE"
+      }
+    ],
+    "config": [
+      "search_path=pg_catalog, public, pg_temp"
+    ],
+    "definer": true,
+    "owner": "postgres",
+    "sha256": "62bc6dee9f86785dcd05c399a75ffba562632e89730d291c64f48ad269cc00df",
+    "volatility": "v"
+  }
+}

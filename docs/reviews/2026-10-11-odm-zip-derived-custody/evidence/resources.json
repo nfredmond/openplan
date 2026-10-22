@@ -1,0 +1,62 @@
+[
+  {
+    "run": "controls-07",
+    "invocation": "dfd270f0924847f6b16de3384f1ad9f2",
+    "exit": 0,
+    "peakBytes": 34463744,
+    "limitBytes": 268435456,
+    "extraSwapBytes": 0,
+    "cpuQuota": "1s",
+    "serviceStopped": true
+  },
+  {
+    "run": "native-01",
+    "invocation": "032bff5a74614be4beaa2bf30116fa1f",
+    "exit": 0,
+    "peakBytes": 32751616,
+    "limitBytes": 268435456,
+    "extraSwapBytes": 0,
+    "cpuQuota": "1s",
+    "serviceStopped": true
+  },
+  {
+    "run": "suites-01",
+    "invocation": "88a710cb4a8a49b987ebe025bc6c09ee",
+    "exit": 0,
+    "peakBytes": 54198272,
+    "limitBytes": 268435456,
+    "extraSwapBytes": 0,
+    "cpuQuota": "1s",
+    "serviceStopped": true
+  },
+  {
+    "run": "ci-01",
+    "invocation": "5e096fe70d6a4ea6a6e8bd2bc4ac8e85",
+    "exit": 0,
+    "peakBytes": 66838528,
+    "limitBytes": 268435456,
+    "extraSwapBytes": 0,
+    "cpuQuota": "1s",
+    "serviceStopped": true
+  },
+  {
+    "run": "haiku-01",
+    "invocation": "33119db77c074f299c77e9ada16a80b6",
+    "exit": 0,
+    "peakBytes": 378822656,
+    "limitBytes": 1073741824,
+    "extraSwapBytes": 0,
+    "cpuQuota": "1s",
+    "serviceStopped": true
+  },
+  {
+    "run": "docs-01",
+    "invocation": "5a842330f1c342fc80af38afd89fa4af",
+    "exit": 0,
+    "peakBytes": 391639040,
+    "limitBytes": 1073741824,
+    "extraSwapBytes": 0,
+    "cpuQuota": "1s",
+    "serviceStopped": true
+  }
+]

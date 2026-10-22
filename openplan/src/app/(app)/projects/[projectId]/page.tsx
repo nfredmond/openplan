@@ -1,3 +1,5 @@
+import { reportJurisdictionState } from "@/lib/reports/jurisdiction-freshness";
+import { resolveReportPacketRowFreshness } from "@/lib/reports/report-registry-freshness";
 import { notFound, redirect } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -23,7 +25,6 @@ import {
   describeComparisonSnapshotAggregate,
   describeEvidenceChainSummary,
   getReportNavigationHref,
-  getReportPacketFreshness,
   getReportPacketPriority,
   parseStoredComparisonSnapshotAggregate,
   parseStoredEvidenceChainSummary,
@@ -43,7 +44,8 @@ import { buildProjectTabs } from "./_components/_tabs";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { collectUnlessPending, laneOutcome, laneRows, looksLikePendingSchema } from "./_components/_read-lanes";
 import { loadEngagementCampaignsCoveringProject } from "@/lib/engagement/campaign-projects";
-import { compareDateValues, invoicePriority, latestKnownDate, milestonePriority, parseSortableDate, submittalPriority } from "./_components/_ordering";
+import { compareDateValues, invoicePriority, latestKnownDate, milestonePriority, submittalPriority } from "./_components/_ordering";
+import { isDeadlinePast } from "@/lib/work/deadlines";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { loadProjectAssigneeRoster } from "@/lib/projects/assignee-roster";
 import { resolveRtpPriorityFrameworkForWorkspace } from "@/lib/rtp/priority-framework-binding";
@@ -82,7 +84,7 @@ import {
   type ProjectCorridorRow,
 } from "@/lib/cartographic/project-corridor-record";
 import { deriveHomeMapView, homeGeographyLabel, parseWorkspaceHomeGeography } from "@/lib/workspaces/home-geography";
-import { canAccessWorkspaceAction, isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
+import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import type {
   BillingInvoiceRow,
   FundingAwardRow,
@@ -162,7 +164,7 @@ export default async function ProjectDetailPage({
   const projectResult = await supabase
     .from("projects")
     .select(
-      "id, workspace_id, name, summary, status, plan_type, delivery_phase, estimated_cost_amount, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, estimated_cost_recorded_at, created_at, updated_at, rtp_posture, rtp_posture_updated_at, latitude, longitude, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_geometry_geojson, place_set_at"
+      "id, workspace_id, name, summary, status, plan_type, delivery_phase, estimated_cost_amount, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, estimated_cost_recorded_at, created_at, updated_at, rtp_posture, rtp_posture_updated_at, jurisdiction_context, latitude, longitude, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_geometry_geojson, place_set_at"
     )
     .eq("id", projectId)
     .single();
@@ -186,9 +188,15 @@ export default async function ProjectDetailPage({
 
   const project = projectData as ProjectRow;
 
+  // Project controls follow the workspace that owns the RLS-readable project.
+  // The active workspace remains the navigation context, not write authority.
+  const projectMembershipResult = await supabase.from("workspace_members").select("role").eq("workspace_id", project.workspace_id).eq("user_id", user.id).maybeSingle();
+  const projectRole = projectMembershipResult.error ? null : projectMembershipResult.data?.role;
+
   // Every optional read on this page registers here so an empty panel can be
   // told apart from a panel whose query failed. See src/lib/ui/read-failures.ts.
   const reads = new ReadFailureLog();
+  reads.check("your role in this project's workspace", projectMembershipResult);
 
   // The home-geography columns come along because the stage-gate binding is only
   // honest next to them: the stored template id has a database default, so
@@ -349,8 +357,8 @@ export default async function ProjectDetailPage({
 
   // The documents lane: the posture header's exact KB head-count (null on any
   // failed read, never zero) plus the project's slice of the Document Library,
-  // with per-source read outcomes the panel below discloses itself.
-  const documentsLane = await loadProjectDocumentsLane(supabase, project.id, project.workspace_id);
+  // with per-source read outcomes, and the estimate's exact linked source.
+  const documentsLane = await loadProjectDocumentsLane(supabase, project.id, project.workspace_id, project.estimated_cost_source_document_id);
 
   // Prefer runs attributed to THIS project (run-provenance migration). A
   // deployment without the project_id column falls back to the workspace-wide
@@ -472,20 +480,17 @@ export default async function ProjectDetailPage({
     reads
   );
 
-  // Budget & pace inputs: ALL deliverables (with their budget columns), the
-  // stated project budget, the spend ledger, and billed client-invoice lines —
-  // each read pending-schema tolerant inside the loader.
+  // Read every budget source from one caller-scoped snapshot. The server
+  // retains the deliverable schema fallbacks and classifies each source error.
   const budgetInputs = await loadProjectBudgetInputs(
     supabase as unknown as ProjectBudgetQuerySupabaseLike,
     project.id
   );
-  // The loader classifies and RETURNS its failures rather than swallowing them;
-  // this is where they become something a planner can see. Without it a failed
-  // client-invoice or spend read renders as "Billed to date $0" — an agency's
-  // money stated as zero because a query broke. The panel below still shows the
-  // decomposed totals, so the banner is the only thing standing between a
-  // failed read and a number a planner would act on.
+  // Disclose failed sources and withhold financial totals and pace until the
+  // full financial input is readable. Missing assignee alone is not a money gap.
   budgetInputs.readFailures.forEach((failure) => reads.check(failure.label, { error: failure }));
+  const budgetInputsUnavailable = Object.values(budgetInputs.unreadable).some(Boolean) ||
+    Object.entries(budgetInputs.pending).some(([key, pending]) => key !== "deliverableAssigneeColumn" && pending);
   const projectBudgetSnapshot = buildProjectBudgetSnapshot({
     project: { budget_amount: budgetInputs.statedBudgetAmount },
     deliverables: budgetInputs.deliverables,
@@ -493,7 +498,7 @@ export default async function ProjectDetailPage({
     billedLines: budgetInputs.billedLines,
   });
   const budgetSummaryByDeliverableId = new Map<string, DeliverableBudgetSummary>(
-    projectBudgetSnapshot.deliverables
+    (budgetInputsUnavailable ? [] : projectBudgetSnapshot.deliverables)
       .filter((summary): summary is DeliverableBudgetSummary & { deliverableId: string } => Boolean(summary.deliverableId))
       .map((summary) => [summary.deliverableId, summary])
   );
@@ -762,15 +767,15 @@ export default async function ProjectDetailPage({
   const firstBlockedMilestone = prioritizedMilestones.find((milestone) => milestone.status === "blocked") ?? null;
   const firstOverdueMilestone =
     prioritizedMilestones.find(
-      (milestone) => milestone.status !== "complete" && parseSortableDate(milestone.target_date) < now.getTime()
+      (milestone) => milestone.status !== "complete" && isDeadlinePast(milestone.target_date, now)
     ) ?? null;
   const firstOverdueSubmittal =
     prioritizedSubmittals.find(
-      (submittal) => submittal.status !== "accepted" && parseSortableDate(submittal.due_date) < now.getTime()
+      (submittal) => submittal.status !== "accepted" && isDeadlinePast(submittal.due_date, now)
     ) ?? null;
   const firstOverdueInvoice =
     prioritizedProjectInvoices.find(
-      (invoice) => !["paid", "rejected"].includes(invoice.status) && parseSortableDate(invoice.due_date) < now.getTime()
+      (invoice) => !["paid", "rejected"].includes(invoice.status) && isDeadlinePast(invoice.due_date, now)
     ) ?? null;
   const awardLinkedProjectInvoices = projectInvoices.filter((invoice) => Boolean(invoice.funding_award_id));
   const fundingStackSummary = buildProjectFundingStackSummary(
@@ -880,11 +885,9 @@ export default async function ProjectDetailPage({
 
       return {
         ...report,
-        packetFreshness: getReportPacketFreshness({
-          latestArtifactKind: report.latest_artifact_kind,
-          generatedAt: latestArtifactByReportId.get(report.id)?.generated_at ?? report.generated_at,
-          updatedAt: report.updated_at,
-        }),
+        packetFreshness: resolveReportPacketRowFreshness(report, latestArtifactByReportId.get(report.id),
+          reportJurisdictionState(latestArtifactByReportId.get(report.id)?.metadata_json, project)),
+
         comparisonAggregate,
         comparisonDigest,
         evidenceChainSummary,
@@ -1300,7 +1303,7 @@ export default async function ProjectDetailPage({
             availableModelRuns,
             rtpSafetyEvidence,
             rtpPriorityCriteria: resolveRtpPriorityFrameworkForWorkspace(parseWorkspaceHomeGeography(workspaceData)).criteria,
-            canWriteProjects: canAccessWorkspaceAction("plans.write", membership.role),
+            canWriteProjects: canAccessWorkspaceAction("plans.write", projectRole),
             deliverableCount: budgetInputs.deliverables.length,
             openRiskCount,
             openIssueCount,
@@ -1324,7 +1327,7 @@ export default async function ProjectDetailPage({
           spineRollup={projectSpineReadiness}
           stageGateSummary={stageGateSummary}
           stageGateRunOptions={buildStageGateRunOptions(availableRunRows, recentRuns)}
-          canRecordDecision={canAccessWorkspaceAction("stage_gates.decisions.write", membership.role)}
+          canRecordDecision={canAccessWorkspaceAction("stage_gates.decisions.write", projectRole)}
           identity={{
             id: project.id,
             name: project.name,
@@ -1333,8 +1336,9 @@ export default async function ProjectDetailPage({
             planType: project.plan_type,
             deliveryPhase: project.delivery_phase,
             place: placeIdentityOnly(projectPlaceOfRecord),
+            jurisdiction: { context: project.jurisdiction_context, revision: project.updated_at, userId: user.id, workspaceId: project.workspace_id },
           }}
-          canWriteIdentity={!isReadOnlyWorkspaceRole(membership.role)}
+          canWriteIdentity={canAccessWorkspaceAction("plans.write", projectRole)}
           workspaceHomeGeographyLabel={workspaceHomeGeographyLabel ?? ""}
         />
       </PageTabPanel>
@@ -1364,16 +1368,16 @@ export default async function ProjectDetailPage({
             budgetSummaryByDeliverableId={budgetSummaryByDeliverableId}
             assigneeRoster={assigneeRoster}
             deliverableAssigneeColumnPending={budgetInputs.pending.deliverableAssigneeColumn}
-            canWrite={!isReadOnlyWorkspaceRole(membership.role)}
+            canWrite={canAccessWorkspaceAction("plans.write", projectRole)}
           />
       </PageTabPanel>
 
       <PageTabPanel tabKey="funding" active={activeTab === "funding"}>
-          <ProjectEstimatedCostEditor project={project} canWrite={!isReadOnlyWorkspaceRole(membership.role)} documents={documentsLane.library.entries} />
+          <ProjectEstimatedCostEditor project={project} canWrite={canAccessWorkspaceAction("plans.write", projectRole)} documents={documentsLane.library.entries} estimateSource={documentsLane.estimateSource} />
           <ProjectFundingPanel
             projectId={project.id}
             workspaceId={project.workspace_id}
-            canWriteAwards={canAccessWorkspaceAction("programs.write", membership.role)}
+            canWriteAwards={canAccessWorkspaceAction("programs.write", projectRole)}
             projectFundingProfile={projectFundingProfile}
             projectFundingProfilePending={projectFundingProfilePending}
             fundingAwardsPending={fundingAwardsPending}
@@ -1413,11 +1417,8 @@ export default async function ProjectDetailPage({
           <ProjectBudgetPanel
             projectId={project.id}
             snapshot={projectBudgetSnapshot}
-            pendingSchema={{
-              deliverableBudgetColumns: budgetInputs.pending.deliverableBudgetColumns,
-              spendEntries: budgetInputs.pending.spendEntries,
-              clientInvoices: budgetInputs.pending.clientInvoices,
-            }}
+            inputsUnavailable={budgetInputsUnavailable}
+            pendingSchema={budgetInputs.pending}
             deliverableOptions={budgetInputs.deliverables.map((deliverable) => ({
               id: deliverable.id,
               title: deliverable.title,
@@ -1432,7 +1433,7 @@ export default async function ProjectDetailPage({
             corridors={projectCorridors}
             corridorsPending={projectCorridorsPending}
             {...(projectMapHomeView ? { homeCenter: projectMapHomeView.center, homeZoom: projectMapHomeView.zoom } : {})}
-            canWrite={!isReadOnlyWorkspaceRole(membership.role)}
+            canWrite={canAccessWorkspaceAction("plans.write", projectRole)}
           />
 
           <ProjectEvidenceAndActivity
@@ -1451,7 +1452,7 @@ export default async function ProjectDetailPage({
             projectPlaceLabel={project.place_label ?? null}
           />
 
-          <ProjectDocumentsPanel library={documentsLane.library} projectId={project.id} canGenerateEvidenceBundle={canAccessWorkspaceAction("programs.write", membership.role)} />
+          <ProjectDocumentsPanel library={documentsLane.library} projectId={project.id} canGenerateEvidenceBundle={canAccessWorkspaceAction("programs.write", projectRole)} />
       </PageTabPanel>
 
       <PageTabPanel tabKey="record" active={activeTab === "record"}>
@@ -1460,7 +1461,7 @@ export default async function ProjectDetailPage({
           <ProjectRiskAndDecisionLog
             projectId={project.id}
             workspaceId={project.workspace_id}
-            canWrite={!isReadOnlyWorkspaceRole(membership.role)}
+            canWrite={canAccessWorkspaceAction("plans.write", projectRole)}
             risks={risks}
             issues={issues}
             decisions={decisions}

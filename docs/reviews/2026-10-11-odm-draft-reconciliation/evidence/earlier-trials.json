@@ -1,0 +1,15 @@
+[
+  {
+    "trial": "native-01",
+    "reason": "Proof parent directory was not prepared; no container or API started."
+  },
+  {
+    "trial": "native-02",
+    "reason": "Real init succeeded, but receipt parser did not account for the installed Node wrapper version prelude. Container stopped cleanly; draft and logs remain retained."
+  },
+  {
+    "trial": "native-03",
+    "outcome": "passed_superseded",
+    "reason": "Final native-04 retains identical counterexample after ownership guard extraction and driver controls."
+  }
+]

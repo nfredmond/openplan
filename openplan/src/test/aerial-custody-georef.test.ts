@@ -235,8 +235,17 @@ function engineHarness(): EngineHarness {
         eq: () => ({ select: () => Promise.resolve({ data: [{ id: JOB.processingJobId }], error: null }) }),
       }),
     }),
+    rpc: () => Promise.resolve({ data: 0, error: null }),
     storage: {
-      from: () => ({ upload: () => Promise.resolve({ error: null }) }),
+      from: () => ({
+        upload: () => Promise.resolve({ error: null }),
+        download: () => ({ asStream: async () => ({
+          data: new ReadableStream({ start(controller) {
+            controller.enqueue(new Uint8Array([1, 2, 3]));
+            controller.close();
+          } }), error: null,
+        }) }),
+      }),
     },
   } as unknown as CustodySupabaseLike;
 
@@ -275,6 +284,7 @@ describe("runAerialCustodyPass — georef columns", () => {
 
     await runAerialCustodyPass({
       supabase: h.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient,
       job: JOB,
       candidates: [
         previewCandidate(REPORTED_GEOREF),
@@ -313,6 +323,7 @@ describe("runAerialCustodyPass — georef columns", () => {
 
     await runAerialCustodyPass({
       supabase: h.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient,
       job: JOB,
       candidates: [previewCandidate(REPORTED_GEOREF)],
       fetchImpl: failingFetch,
@@ -334,6 +345,7 @@ describe("runAerialCustodyPass — georef columns", () => {
 
     const result = await runAerialCustodyPass({
       supabase: h.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient,
       job: JOB,
       candidates: [previewCandidate(REPORTED_GEOREF)],
       fetchImpl: okFetch(),
@@ -357,6 +369,7 @@ describe("runAerialCustodyPass — georef columns", () => {
 
     const result = await runAerialCustodyPass({
       supabase: h.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient,
       job: JOB,
       candidates: [previewCandidate(REPORTED_GEOREF)],
       fetchImpl: okFetch(),

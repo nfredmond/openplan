@@ -1,0 +1,294 @@
+{
+  "sourceSha256": "b3dff0da5f3ca57ef2245229389dff73801db42fcfeeae35329304db25868ec8",
+  "testsSha256": "bcbe37e6fd849f763bdf489dd873a40641cd178387e377cd8d8a03b1bf3192d5",
+  "cases": [
+    {
+      "case": "baseline",
+      "method": null,
+      "exitCode": 0,
+      "result": "survived",
+      "expectedAssertion": null
+    },
+    {
+      "case": "harmless-comment",
+      "method": null,
+      "exitCode": 0,
+      "result": "survived",
+      "expectedAssertion": null
+    },
+    {
+      "case": "harmless-manifest-indentation",
+      "method": null,
+      "exitCode": 0,
+      "result": "survived",
+      "expectedAssertion": null
+    },
+    {
+      "case": "quiescence",
+      "method": "test_quiescence_required",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "declaration-format",
+      "method": "test_declaration_format_refused",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "duplicate-json-binding",
+      "method": "test_duplicate_json_keys_refused",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "required-categories",
+      "method": "test_missing_category_refused",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "unsupported-category-diagnostic",
+      "method": "test_extra_category_refused",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "KeyError"
+    },
+    {
+      "case": "declared-kind",
+      "method": "test_wrong_declared_kind_refused",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "duplicate-artifact-path",
+      "method": "test_duplicate_artifact_paths_refused",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "existing-publication",
+      "method": "test_publication_state_refused",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "publication began over existing receipt"
+    },
+    {
+      "case": "declaration-read-binding",
+      "method": "test_changed_declaration_during_read_refused",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "initial-declaration-binding",
+      "method": "test_changed_declaration_before_inventory_refused",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "final-packet-binding",
+      "method": "test_changed_packet_during_sync_refused",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "verify-content-binding",
+      "method": "test_verify_extra_or_changed_entries_refused",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "verify-mode-binding",
+      "method": "test_verify_changed_mode_refused",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "verify-manifest-format",
+      "method": "test_verify_manifest_format_refused",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "unsafe-relative-path",
+      "method": "test_unsafe_path_refused",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "nonscalar-path-diagnostic",
+      "method": "test_nonscalar_path_refused",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "TypeError"
+    },
+    {
+      "case": "declaration-call-bypassed",
+      "method": "test_complete_native_packet",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "packet declaration validation bypassed"
+    },
+    {
+      "case": "installation-acceptance-promoted",
+      "method": "test_complete_native_packet",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "packet promoted installation acceptance"
+    },
+    {
+      "case": "storage-directory-support-removed",
+      "method": "test_storage_directory_supported",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "declared artifact kind differs"
+    },
+    {
+      "case": "missing-declared-file",
+      "method": "test_missing_declared_file_refused",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "wrong-actual-kind",
+      "method": "test_actual_kind_differs_refused",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "empty-declared-file",
+      "method": "test_empty_declared_file_refused",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "all-private-path-checks-bypassed",
+      "method": "test_private_packet_paths_refused",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "nested-set-capture-validation-bypassed",
+      "method": "test_invalid_worker_set_refused_before_publication",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "OSError not raised"
+    },
+    {
+      "case": "nested-set-final-validation-bypassed",
+      "method": "test_worker_set_rechecked_after_sync",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "nested-set-verify-validation-bypassed",
+      "method": "test_verify_rebound_invalid_worker_set_refused",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "verify-artifact-validation-bypassed",
+      "method": "test_verify_rebound_missing_artifact_refused",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "original-worker-source-required",
+      "method": "test_relocated_packet_without_worker_sources",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "FileNotFoundError"
+    },
+    {
+      "case": "retained-file-sync-omitted",
+      "method": "test_file_and_directory_sync",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "retained database file not synced"
+    },
+    {
+      "case": "retained-directory-sync-omitted",
+      "method": "test_file_and_directory_sync",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "empty configuration directory not synced"
+    },
+    {
+      "case": "final-parent-sync-omitted",
+      "method": "test_file_and_directory_sync",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "final packet and parent not synced"
+    },
+    {
+      "case": "manifest-sync-omitted",
+      "method": "test_manifest_fsynced_before_link",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "packet manifest not synced before publication"
+    },
+    {
+      "case": "failed-publication-retains-success-receipt",
+      "method": "test_failed_final_sync_removes_receipt",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "failed packet published receipt"
+    },
+    {
+      "case": "retained-file-sync-failure-swallowed",
+      "method": "test_retained_file_sync_failure_refused",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "OSError not raised"
+    },
+    {
+      "case": "caller-deadline-ignored",
+      "method": "test_invalid_deadlines_refused",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "ValueError not raised"
+    },
+    {
+      "case": "cli-private-path-disclosure",
+      "method": "test_cli_seal_verify_private_stdout",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "packet CLI disclosed private path"
+    },
+    {
+      "case": "cli-mixed-scope-guard-omitted",
+      "method": "test_cli_mixed_or_missing_scope_refused",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedAssertion": "mixed or missing packet CLI scope survived"
+    },
+    {
+      "case": "restored",
+      "method": null,
+      "exitCode": 0,
+      "result": "survived",
+      "expectedAssertion": null
+    }
+  ],
+  "scope": "Native private filesystem/SQLite packet fixtures; opaque database/Storage test bytes are not native restore evidence. Some malformed-value controls establish controlled diagnostics. Reported failures do not establish hardware loss. No installation discovery, live fence, coordinated live cut, encryption, browser, scientific or hosted acceptance."
+}

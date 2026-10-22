@@ -1,0 +1,5 @@
+{
+  "openplan/src/test/gtfs-managed-worker-intake.test.ts": "91ac03fe92ba4dd32adf5cb0603f7b5f3028a6cf7b449acc8d7aa795bb39d4c1",
+  "openplan/src/lib/gtfs/managed-worker-intake.ts": "5f104b03240e2b7143c097a9bc51686c45eaee0eeaf20efbcf71a9bc3d79673e",
+  "docs/reviews/2026-10-13-gtfs-intake-deadline-fixture/verify_controls.py": "fea03cf881d362d1144fe2fad7156fa3bfca505248e40dd3ed0f234bec826c6f"
+}

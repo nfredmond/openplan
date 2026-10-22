@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import ts from "typescript";
 import { describe, expect, it } from "vitest";
 import {
   collectHelperCallSites,
@@ -104,6 +106,21 @@ const SERVICE_ROLE_ONLY_WRITES: Record<string, { functions: string[]; reason: st
       "an RLS policy to, so these tables are written service-role and read only through the " +
       "campaign-scoped helpers this module exposes.",
   },
+  "src/lib/engagement/photo-upload-allowance.ts": {
+    functions: ["reservePhotoUpload", "releasePhotoUpload"],
+    reason:
+      "Public photo uploads are counted in usage_events so every server instance sees one limit. " +
+      "The uploader is anonymous, reached by share token with no session, so there is no member " +
+      "to scope a write policy to; usage_events has a member SELECT policy and no write policy. " +
+      "Reached only from /api/engage/[shareToken]/photo-upload, which passes createServiceRoleClient().",
+  },
+  "src/lib/engagement/photo-sweep.ts": {
+    functions: ["sweepUnattachedEngagementPhotos"],
+    reason:
+      "The daily sweep removes public photos nothing took up and clears their usage_events rows. " +
+      "It runs from /api/cron/sweep-engagement-photos with no auth.uid() at all and passes " +
+      "createServiceRoleClient(); no member may delete these rows, since they are the upload limit.",
+  },
   "src/lib/knowledge-base/documents.ts": {
     functions: ["insertKbChunks"],
     reason:
@@ -159,17 +176,6 @@ const SERVICE_ROLE_ONLY_WRITES: Record<string, { functions: string[]; reason: st
       "member can reach them through PostgREST at all; the confinement of the reads is enforced " +
       "separately by engagement-notifications-reader-inventory.test.ts.",
   },
-  "src/lib/notifications/work.ts": {
-    functions: ["sweepWorkDeadlines"],
-    reason:
-      "work_notifications has a SELECT and a mark-read UPDATE policy and NO insert policy " +
-      "(20260811000007), on the engagement_notifications model: the rows are authored by the " +
-      "daily deadline sweep, which runs from /api/cron/sweep-deadlines with no auth.uid() at " +
-      "all. It matters more here than in most of this list — a reminder is EVIDENCE that a " +
-      "person was told something was due, so the person it is about must not be able to write " +
-      "one, and a workspace-member INSERT policy would let anyone mint a reminder for a " +
-      "colleague. Reached only from that cron route, which passes createServiceRoleClient().",
-  },
   "src/lib/observability/action-audit.ts": {
     functions: ["recordAssistantActionExecution"],
     reason:
@@ -200,6 +206,69 @@ const SERVICE_ROLE_ONLY_WRITES: Record<string, { functions: string[]; reason: st
       "second, weaker door on a table no planner should reach.",
   },
 };
+
+/** Forwarding ownership is separate from exceptions for direct table writes. */
+const SERVICE_ROLE_FORWARDERS = [{
+  file: "src/lib/notifications/work.ts",
+  entry: "sweepWorkDeadlines",
+  parameter: "client",
+  helper: "enqueueEmail",
+}];
+
+/** Certify only a direct parameter pass inside the declared entry function. */
+function forwardedCalls(entry: (typeof SERVICE_ROLE_FORWARDERS)[number]): Array<{ line: number; argumentText: string }> {
+  const source = ts.createSourceFile(
+    entry.file, readFileSync(entry.file, "utf8"), ts.ScriptTarget.Latest, true
+  );
+  const owner = source.statements.find(
+    (node): node is ts.FunctionDeclaration => ts.isFunctionDeclaration(node) && node.name?.text === entry.entry
+  );
+  const parameter = owner?.parameters[0];
+  expect(parameter?.name.getText(source), `${entry.entry} must own its first client parameter`).toBe(entry.parameter);
+  expect(parameter?.initializer).toBeUndefined();
+  expect(parameter?.dotDotDotToken).toBeUndefined();
+
+  const calls: Array<{ line: number; argumentText: string }> = [];
+  const invalid: string[] = [];
+  const visit = (node: ts.Node) => {
+    // Reject shadowing and reassignment rather than guessing which client wins.
+    if (node !== parameter &&
+        (ts.isVariableDeclaration(node) || ts.isParameter(node) || ts.isBindingElement(node) ||
+         ts.isFunctionDeclaration(node) || ts.isClassDeclaration(node)) &&
+        node.name?.getText(source) === entry.parameter) {
+      invalid.push("client parameter is shadowed");
+    }
+    if ((ts.isBinaryExpression(node) && node.operatorToken.kind >= ts.SyntaxKind.FirstAssignment &&
+         node.operatorToken.kind <= ts.SyntaxKind.LastAssignment &&
+         node.left.getText(source).split(/\W+/).includes(entry.parameter)) ||
+        ((ts.isPrefixUnaryExpression(node) || ts.isPostfixUnaryExpression(node)) &&
+         (node.operator === ts.SyntaxKind.PlusPlusToken || node.operator === ts.SyntaxKind.MinusMinusToken) &&
+         node.operand.getText(source) === entry.parameter)) {
+      invalid.push("client parameter is reassigned");
+    }
+    if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === entry.helper) {
+      let enclosing: ts.Node | undefined = node.parent;
+      while (enclosing && !ts.isFunctionLike(enclosing)) enclosing = enclosing.parent;
+      let argument = node.arguments[0];
+      while (argument && (ts.isAsExpression(argument) || ts.isParenthesizedExpression(argument))) {
+        argument = argument.expression;
+      }
+      if (enclosing !== owner || !argument || !ts.isIdentifier(argument) || argument.text !== entry.parameter) {
+        invalid.push(`${entry.helper} does not forward the entry client parameter`);
+      } else {
+        calls.push({
+          line: source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1,
+          argumentText: node.arguments[0].getText(source),
+        });
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  if (owner) visit(owner);
+  expect(invalid, `${entry.file}: forwarding ownership must remain explicit`).toEqual([]);
+  expect(calls.length, `${entry.file}: stale forwarding entry`).toBeGreaterThan(0);
+  return calls;
+}
 
 /**
  * UPDATE and DELETE writes through the caller's client that cannot observe how
@@ -243,7 +312,10 @@ const UNVERIFIED_CALLER_WRITES: Record<string, number> = {
   "src/app/api/funding-opportunities/[opportunityId]/application/route.ts": 1,
   "src/app/api/funding-opportunities/[opportunityId]/sections/[sectionId]/draft/route.ts": 1,
   "src/app/api/funding-opportunities/[opportunityId]/sections/[sectionId]/route.ts": 1,
-  "src/app/api/invoicing/client-invoices/[invoiceId]/route.ts": 4,
+  // 4 -> 1: line replacement moved into replace_client_invoice_lines, one
+  // transaction that refuses a short stamp count itself. The void release of
+  // time entries is the one write left here.
+  "src/app/api/invoicing/client-invoices/[invoiceId]/route.ts": 1,
   "src/app/api/invoicing/rate-tables/[rateTableId]/route.ts": 1,
   "src/app/api/invoicing/time-entries/[timeEntryId]/route.ts": 1,
   // 4 -> 3: the relaunch re-queue now chains `.select("id").maybeSingle()` and
@@ -273,7 +345,7 @@ const UNVERIFIED_CALLER_WRITES: Record<string, number> = {
   // projection on purpose: a DELETE returns the caller no record, and asking
   // for the financial columns would 503 every delete on a deployment that has
   // not run 20260805000003.
-  "src/app/api/reports/[reportId]/generate/route.ts": 6,
+  // 6 -> 0: generation-writeback observes all returned revisions and handles zero rows.
   "src/app/api/reports/[reportId]/route.ts": 4,
   "src/app/api/rtp-cycles/[rtpCycleId]/public-share/route.ts": 1,
   "src/app/api/rtp-cycles/packet-presets/route.ts": 2,
@@ -333,14 +405,28 @@ describe("write policy coverage", () => {
   });
 
   it("proves every allowlisted module is handed a service-role client", { timeout: 30_000 }, () => {
-    // The entries above claim a fact the type system cannot express. This is
-    // where the claim is checked: resolve the client at every call site OUTSIDE
-    // the module itself and require it to be service-role. Internal pass-throughs
-    // (one helper calling another in the same file) are excluded — the client
-    // there is the same parameter, already covered by its own callers.
-    const functions = Object.values(SERVICE_ROLE_ONLY_WRITES).flatMap((entry) => entry.functions);
-    const external = collectHelperCallSites(functions).filter(
-      (site) => !(site.file in SERVICE_ROLE_ONLY_WRITES)
+    // Direct-write entries keep their existing module-level census. A forwarding
+    // entry exempts only the checked call, after all callers prove provenance.
+    const functions = [
+      ...Object.values(SERVICE_ROLE_ONLY_WRITES).flatMap((entry) => entry.functions),
+      ...SERVICE_ROLE_FORWARDERS.map((entry) => entry.entry),
+    ];
+    const calls = collectHelperCallSites(functions);
+    const forwarded = new Set<string>();
+    for (const entry of SERVICE_ROLE_FORWARDERS) {
+      const callers = calls.filter((site) => site.fn === entry.entry);
+      expect(callers.length, `${entry.entry} must have checked callers`).toBeGreaterThan(0);
+      expect(
+        callers.filter((site) => site.clientKind !== "service-role"),
+        `${entry.entry}: forwarding entry callers must supply a service-role client`
+      ).toEqual([]);
+      for (const call of forwardedCalls(entry)) {
+        forwarded.add(`${entry.file}:${call.line}:${entry.helper}:${call.argumentText}`);
+      }
+    }
+    const external = calls.filter(
+      (site) => !(site.file in SERVICE_ROLE_ONLY_WRITES) &&
+        !forwarded.has(`${site.file}:${site.line}:${site.fn}:${site.argumentText}`)
     );
 
     const wrong = external

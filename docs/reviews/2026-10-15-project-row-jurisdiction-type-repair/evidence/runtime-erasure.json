@@ -1,0 +1,6 @@
+{
+  "equal": true,
+  "emittedSha256": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881",
+  "emittedBytes": 11,
+  "scope": "Isolated TypeScript transpilation of the type module; no full Next.js bundle claim."
+}

@@ -1,0 +1,5 @@
+{
+  "cases": 120,
+  "outcome": "passed",
+  "scope": "Execution, outcome recovery, running pipeline, progress journal and original pipeline fixtures; no native/default acceptance"
+}

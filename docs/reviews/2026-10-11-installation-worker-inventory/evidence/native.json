@@ -1,0 +1,154 @@
+{
+  "state": "passed-declared-inventory-and-five-historical-roots",
+  "roots": [
+    {
+      "id": "managed-stage",
+      "files": 5,
+      "directories": 13,
+      "bytes": 41676,
+      "sqliteCopies": 2,
+      "completeOrdinaryCensusAndAllLogicalRecordsEqual": true
+    },
+    {
+      "id": "legacy-model",
+      "files": 5,
+      "directories": 7,
+      "bytes": 33499,
+      "sqliteCopies": 2,
+      "completeOrdinaryCensusAndAllLogicalRecordsEqual": true
+    },
+    {
+      "id": "transit-configured",
+      "files": 699,
+      "directories": 620,
+      "bytes": 274085334,
+      "sqliteCopies": 0,
+      "completeOrdinaryCensusAndAllLogicalRecordsEqual": true
+    },
+    {
+      "id": "transit-replacement",
+      "files": 29,
+      "directories": 23,
+      "bytes": 2873176,
+      "sqliteCopies": 0,
+      "completeOrdinaryCensusAndAllLogicalRecordsEqual": true
+    },
+    {
+      "id": "transit-capacity",
+      "files": 787,
+      "directories": 780,
+      "bytes": 235651073,
+      "sqliteCopies": 0,
+      "completeOrdinaryCensusAndAllLogicalRecordsEqual": true
+    }
+  ],
+  "sourcePointFiles": 1557,
+  "sourcePointUnchanged": true,
+  "exactSelectionBytesAndModeRetained": true,
+  "relocatedSetVerified": true,
+  "immutableSetUnchanged": true,
+  "allDependenciesUnchanged": true,
+  "observationControls": {
+    "baseline": true,
+    "harmlessOrder": true,
+    "missingFileRefused": true,
+    "changedHashRefused": true,
+    "omittedOracleProducesAssertionFailure": true,
+    "restored": true,
+    "sourceWrites": 0
+  },
+  "commands": [
+    {
+      "label": "capture",
+      "exitCode": 0,
+      "summary": {
+        "format": "openplan-worker-root-set-snapshot-v1",
+        "installationConsistency": "unassessed",
+        "manifestSha256": "49b386d88b115975849f7438d544c591acc965629b43d3dcba505f92685033d0",
+        "selectedRoots": 5,
+        "verified": false
+      }
+    },
+    {
+      "label": "verify",
+      "exitCode": 0,
+      "summary": {
+        "format": "openplan-worker-root-set-snapshot-v1",
+        "installationConsistency": "unassessed",
+        "manifestSha256": "49b386d88b115975849f7438d544c591acc965629b43d3dcba505f92685033d0",
+        "selectedRoots": 5,
+        "verified": true
+      }
+    },
+    {
+      "label": "relocated-verify",
+      "exitCode": 0,
+      "summary": {
+        "format": "openplan-worker-root-set-snapshot-v1",
+        "installationConsistency": "unassessed",
+        "manifestSha256": "49b386d88b115975849f7438d544c591acc965629b43d3dcba505f92685033d0",
+        "selectedRoots": 5,
+        "verified": true
+      }
+    },
+    {
+      "label": "changed-selection-refused",
+      "exitCode": 1,
+      "summary": null
+    },
+    {
+      "label": "harmless-manifest-order",
+      "exitCode": 0,
+      "summary": {
+        "format": "openplan-worker-root-set-snapshot-v1",
+        "installationConsistency": "unassessed",
+        "manifestSha256": "4aa5f93d49b3cc73b98aa4a0df7e48d266d12e09f8443fd5e8099535de71c287",
+        "selectedRoots": 5,
+        "verified": true
+      }
+    },
+    {
+      "label": "missing-component-binding-refused",
+      "exitCode": 1,
+      "summary": null
+    },
+    {
+      "label": "restored-verify",
+      "exitCode": 0,
+      "summary": {
+        "format": "openplan-worker-root-set-snapshot-v1",
+        "installationConsistency": "unassessed",
+        "manifestSha256": "49b386d88b115975849f7438d544c591acc965629b43d3dcba505f92685033d0",
+        "selectedRoots": 5,
+        "verified": true
+      }
+    }
+  ],
+  "inventoryCommands": [
+    {
+      "label": "inventory-capture",
+      "exitCode": 0,
+      "summary": {
+        "format": "openplan-installation-worker-inventory-v1",
+        "installationCoverage": "unassessed",
+        "entries": 9
+      }
+    },
+    {
+      "label": "inventory-verify",
+      "exitCode": 0,
+      "summary": {
+        "format": "openplan-installation-worker-inventory-v1",
+        "installationCoverage": "unassessed",
+        "entries": 9
+      }
+    }
+  ],
+  "knownFamiliesAssessed": 15,
+  "unassessedFamilies": 15,
+  "retainedConfigurationFiles": 4,
+  "exactProfileConfigurationAndSelectionRetained": true,
+  "inventoryPackageUnchanged": true,
+  "wallSeconds": 30.271,
+  "limits": "Fifteen operator declarations remain unassessed; four exact historical configuration files and five known retained roots on this host. No live writer fence, installation-wide discovery, new database/Storage cut, encryption, worker continuation, physical host-loss, scientific, browser or agency acceptance. Native source journals are already normalized; populated WAL is tested separately."
+}

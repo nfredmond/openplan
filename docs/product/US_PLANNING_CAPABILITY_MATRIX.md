@@ -3,7 +3,7 @@
 <!-- openplan-planning-capability-matrix
 review_date: 2026-09-06
 review_by: 2026-10-05
-current_release: v0.68.0
+current_release: v0.70.0
 capabilities:
 - long-range-transportation-and-regional-planning
 - land-use-comprehensive-and-community-planning
@@ -52,11 +52,17 @@ The destination remains every core planning job across all 50 states and DC, Cal
 
 ## Status and evidence rules
 
+**October 17, 2026 acceptance policy.** Agent-run checks can establish planner
+and public-participant workflow acceptance for v1 under the
+[contract](V1_PRODUCT_CONTRACT.md#v1-acceptance-evidence). Human feedback is
+post-v1. This policy supersedes older human-observation requirements in the
+matrix without promoting any existing status or changing required coverage.
+
 The unchanged machine-readable inventory is `docs/product/US_PLANNING_CAPABILITY_REGISTRY.json`. Its 99 dimension entries contain **37 partial, 62 not-assessed, and zero proven**. These are independent planner, organization, state/territory, practice, artifact, accessibility, and operations entries; they are not 99 completed jobs or a complete set of their interactions. This reconciliation does not change those statuses.
 
 | Status | Meaning |
 |---|---|
-| Proven | A current identified candidate has evidence that the named planner completed the actual job, a recipient reused the required artifact, and the applicable permission, geography, source, accessibility, recovery, and export checks could reject failure. Professional usefulness requires observed humans as well as regression checks. |
+| Proven | A current identified candidate has evidence that the named planner-role task reached its outcome, a recipient-role task reused the required artifact, and the applicable permission, geography, source, accessibility, recovery, and export checks could reject failure. Agents can perform and assess these tasks; record the outcome and executor separately from unit regression results. |
 | Partial | An implemented foundation exists, with bounded historical evidence where cited, but some required behavior, context, or proof remains open. This review's source inventory alone does not establish current reachability. |
 | Missing | The specific required behavior or handoff has been established absent. It does not mean an entire module must be rebuilt. |
 | Not assessed | Evidence is insufficient to distinguish partial from missing for the required complete job or context. A national source or generic template cannot fill the gap by inference. |

@@ -1,0 +1,56 @@
+{
+  "selectedMigrations": 409,
+  "actualReadsPerCompletedOperation": 5,
+  "originalArchive": {
+    "bytes": 3245368,
+    "sha256": "8ffd925c402a0534a1a188a62ee881d6c20034c2eac62dc8493952f0e27efac2"
+  },
+  "products": [
+    {
+      "kind": "orthomosaic",
+      "filename": "orthophoto.tif",
+      "member": "odm_orthophoto/odm_orthophoto.tif",
+      "availability": "retained",
+      "reason": null,
+      "bytes": 82774,
+      "sha256": "5291421186f9ae1bf3f8d77ec4621ed044d30fd2e8f4c99c34727132e166b12b"
+    },
+    {
+      "kind": "dsm",
+      "filename": "dsm.tif",
+      "member": "odm_dem/dsm.tif",
+      "availability": "unavailable",
+      "reason": "absent_from_original_archive",
+      "bytes": null,
+      "sha256": null
+    },
+    {
+      "kind": "dtm",
+      "filename": "dtm.tif",
+      "member": "odm_dem/dtm.tif",
+      "availability": "unavailable",
+      "reason": "absent_from_original_archive",
+      "bytes": null,
+      "sha256": null
+    },
+    {
+      "kind": "point_cloud",
+      "filename": "georeferenced_model.laz",
+      "member": "odm_georeferencing/odm_georeferenced_model.laz",
+      "availability": "retained",
+      "reason": null,
+      "bytes": 31623,
+      "sha256": "5e29bd70f8a0e5877e1bc88ae344cec4b077e07d0206bbb89967e9713534dc6d"
+    }
+  ],
+  "savedReplayExact": true,
+  "actualChildExit": 44,
+  "interruptedReplayExact": true,
+  "postCopyRevocationRefused": true,
+  "revokedBytesRetained": true,
+  "callbackPermission": false,
+  "publicationPermission": false,
+  "scope": "isolated_selected_schema_private_original_product_custody",
+  "physicalHostRecovery": false,
+  "scientificAcceptance": false
+}

@@ -1,0 +1,14 @@
+Running as unit: openplan-jurisdiction-types-01.service; invocation ID: f0132682a29b49d1a09073209cd0d2cb
+src/lib/projects/project-jurisdiction.ts(75,22): error TS2322: Type 'string | null' is not assignable to type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/test/project-jurisdiction-route.test.ts(52,46): error TS2345: Argument of type '{ origin: string; "x-openplan-expected-user"?: undefined; "x-openplan-expected-workspace"?: undefined; "sec-fetch-site"?: undefined; } | { "x-openplan-expected-user": string; origin?: undefined; "x-openplan-expected-workspace"?: undefined; "sec-fetch-site"?: undefined; } | { ...; } | { ...; }' is not assignable to parameter of type 'Record<string, string> | undefined'.
+  Type '{ origin: string; "x-openplan-expected-user"?: undefined; "x-openplan-expected-workspace"?: undefined; "sec-fetch-site"?: undefined; }' is not assignable to type 'Record<string, string>'.
+    Property '"x-openplan-expected-user"' is incompatible with index signature.
+      Type 'undefined' is not assignable to type 'string'.
+src/test/project-jurisdiction.test.ts(57,103): error TS2339: Property 'label' does not exist on type '{ label: string; countryCode: string | null; subdivisionCode: string | null; kind: string; reference: string | null; scope: "other" | "administrative" | "sovereign" | "overlap"; mode: "staff"; } | { ...; }'.
+  Property 'label' does not exist on type '{ mode: "resolved"; kind: "county" | "city" | "cdp" | "metro" | "micro"; geoid: string; }'.
+          Finished with result: exit-code
+Main processes terminated with: code=exited, status=2/INVALIDARGUMENT
+               Service runtime: 4.843s
+             CPU time consumed: 9.836s
+                   Memory peak: 775M (swap: 0B)

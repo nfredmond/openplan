@@ -1,0 +1,42 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "reason": null
+  },
+  {
+    "control": "harmless-json-whitespace",
+    "outcome": "survived",
+    "reason": null
+  },
+  {
+    "control": "changed-original-uuid",
+    "outcome": "intended_refusal",
+    "reason": "Task metadata original UUID or name differs"
+  },
+  {
+    "control": "changed-added-option",
+    "outcome": "intended_refusal",
+    "reason": "Task metadata automatic option additions differ"
+  },
+  {
+    "control": "changed-raw-body-hash",
+    "outcome": "intended_refusal",
+    "reason": "Retained native observation claims differ"
+  },
+  {
+    "control": "claimed-quality-promotion",
+    "outcome": "intended_refusal",
+    "reason": "Retained native observation claims differ"
+  },
+  {
+    "control": "synthetic-failure-relabeled-completed",
+    "outcome": "intended_refusal",
+    "reason": "Retained invalid-task observation differs"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived",
+    "reason": null
+  }
+]

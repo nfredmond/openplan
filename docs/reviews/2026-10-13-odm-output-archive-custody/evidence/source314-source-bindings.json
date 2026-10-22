@@ -1,0 +1,5 @@
+{
+  "workers/odm_worker/retained_output_archive.py": "176cb929a9232b24104008c25fd91e8c47a51f2b4ff2a31b120174fe4c70786f",
+  "workers/odm_worker/test_retained_output_archive.py": "851dbd9c82b5951d1f1d106cde5e3e9011caa4183d304554df36453807ed2f5b",
+  "docs/reviews/2026-10-13-odm-output-archive-custody/verify_controls.py": "635149ecd738f6c3d59f8ba1bc4473fb3986a11395f4358f1f62125af07ed053"
+}

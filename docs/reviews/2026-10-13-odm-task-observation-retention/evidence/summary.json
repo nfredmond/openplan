@@ -1,0 +1,17 @@
+{
+  "actualWorkflowStages": 33,
+  "unitSuites": 25,
+  "unitCases": 630,
+  "sourceTests": 29,
+  "sourceControlsPerInterpreter": 36,
+  "sourceSurvivors": 4,
+  "sourceFaults": 32,
+  "nativeControls": 24,
+  "nativeSurvivors": 4,
+  "nativeFaults": 20,
+  "nativeOracleControls": 13,
+  "sourceOracleControls": 17,
+  "documentationCases": 20,
+  "allSourceBindingsMatch": true,
+  "scope": "Local exact source and known selected-root synthetic API evidence, not CI, activation, full worker recovery or M3/v1 acceptance."
+}

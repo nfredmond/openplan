@@ -1,0 +1,53 @@
+{
+  "cases": [
+    {
+      "mode": "upload-deadline",
+      "posts": 1,
+      "reads": 0,
+      "bytesSent": 0,
+      "responseClosed": true,
+      "state": "failed"
+    },
+    {
+      "mode": "upload-cancellation",
+      "posts": 1,
+      "reads": 0,
+      "bytesSent": 0,
+      "responseClosed": true,
+      "state": "failed"
+    },
+    {
+      "mode": "read-deadline",
+      "posts": 1,
+      "reads": 1,
+      "bytesSent": 0,
+      "responseClosed": true,
+      "state": "failed"
+    },
+    {
+      "mode": "read-cancellation",
+      "posts": 1,
+      "reads": 1,
+      "bytesSent": 0,
+      "responseClosed": true,
+      "state": "failed"
+    },
+    {
+      "mode": "read-size",
+      "posts": 1,
+      "reads": 1,
+      "bytesSent": 65536,
+      "responseClosed": true,
+      "state": "failed"
+    },
+    {
+      "mode": "thrown-acknowledgement",
+      "posts": 1,
+      "reads": 1,
+      "bytesSent": 0,
+      "responseClosed": true,
+      "state": "held"
+    }
+  ],
+  "scope": "Installed SDK and compiled engine against owned loopback HTTP fixtures; database writes and storage permissions simulated. Not hosted DNS/TLS, live RLS, browser or concurrent recovery."
+}

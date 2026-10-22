@@ -493,6 +493,7 @@ describe("the my-work board", () => {
         roster={ROSTER}
         departedIncludedInUnassigned={result.departedIncludedInUnassigned}
         isViewer={false}
+        timeZone="UTC"
       />
     );
 
@@ -585,7 +586,7 @@ describe("the mission map's preview notice", () => {
       <AerialMissionMap
         missionId="11111111-1111-4111-8111-111111111111"
         preview={null}
-        previewNotice="This deployment could not mint a display link for held imagery, so the map cannot draw the preview. The custody records below are unaffected, and whoever runs this OpenPlan can fix the deployment setting behind it."
+        previewNotice="This deployment could not mint a display link for held imagery, so the map cannot draw the preview. The stored imagery records below are unaffected, and whoever runs this OpenPlan can fix the deployment setting behind it."
         previewNoticeDetail="The Supabase service-role key is not configured on this deployment, so signed display links cannot be minted."
       />
     );

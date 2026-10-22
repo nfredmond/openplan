@@ -1,0 +1,14 @@
+[
+  {
+    "service": "database",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 1073741824
+  },
+  {
+    "service": "rpc",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 134217728
+  }
+]

@@ -1,0 +1,112 @@
+{
+  "sourceSha256": "94614a7f990b7fbcab2aaf8e6e1f067a0a84cb0161f6252cf9d97cb7f7332424",
+  "controls": [
+    {
+      "name": "baseline",
+      "result": "survived",
+      "failedTests": []
+    },
+    {
+      "name": "harmless comment",
+      "result": "survived",
+      "failedTests": []
+    },
+    {
+      "name": "omit original save",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "POST /api/aerial/missions/[missionId]/process optional private original request storage stores and reads exact original bytes before sending the same worker body"
+      ]
+    },
+    {
+      "name": "omit current read",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "POST /api/aerial/missions/[missionId]/process optional private original request storage refuses an uncertain current read after a saved storage receipt"
+      ]
+    },
+    {
+      "name": "ignore revoked scope",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "POST /api/aerial/missions/[missionId]/process optional private original request storage refuses a revoked current scope without sending saved bytes"
+      ]
+    },
+    {
+      "name": "stop waiting for custody",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "POST /api/aerial/missions/[missionId]/process optional private original request storage waits for the storage receipt before reading scope or dispatching"
+      ]
+    },
+    {
+      "name": "rewrite worker body",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "POST /api/aerial/missions/[missionId]/process optional private original request storage stores and reads exact original bytes before sending the same worker body"
+      ]
+    },
+    {
+      "name": "omit manifest original save",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "POST /api/aerial/missions/[missionId]/process optional private original request storage saves original signed photo URLs privately before a v1.1 dispatch"
+      ]
+    },
+    {
+      "name": "enable default custody",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "POST /api/aerial/missions/[missionId]/process optional private original request storage keeps the default external dispatch independent of candidate RPCs"
+      ]
+    },
+    {
+      "name": "ignore incomplete configuration",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "POST /api/aerial/missions/[missionId]/process optional private original request storage refuses incomplete settings before inserting a job or dispatching"
+      ]
+    },
+    {
+      "name": "lose failure writeback",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "POST /api/aerial/missions/[missionId]/process optional private original request storage records a dispatch failure and refuses external work after an uncertain storage reply"
+      ]
+    },
+    {
+      "name": "forward another actor",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "POST /api/aerial/missions/[missionId]/process optional private original request storage stores and reads exact original bytes before sending the same worker body"
+      ]
+    },
+    {
+      "name": "mission projection",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "POST /api/aerial/missions/[missionId]/process optional private original request storage stores and reads exact original bytes before sending the same worker body"
+      ]
+    },
+    {
+      "name": "insert projection",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "POST /api/aerial/missions/[missionId]/process optional private original request storage stores and reads exact original bytes before sending the same worker body"
+      ]
+    },
+    {
+      "name": "POST membership projection",
+      "result": "intended assertion failure",
+      "failedTests": [
+        "POST /api/aerial/missions/[missionId]/process optional private original request storage stores and reads exact original bytes before sending the same worker body"
+      ]
+    },
+    {
+      "name": "restored",
+      "result": "survived",
+      "failedTests": []
+    }
+  ],
+  "scope": "Real route and helper with simulated database and worker replies. No live authentication, SQL, worker transport, browser or atomic external revocation acceptance."
+}

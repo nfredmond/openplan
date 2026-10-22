@@ -1,7 +1,7 @@
 import { createServiceRoleClient, type createClient } from "@/lib/supabase/server";
 import { WORKSPACE_GIS_BBOX_DRAW_LIMIT } from "@/lib/workspace-gis/coverage";
+import { readWgs84QueryViewport, type Wgs84QueryViewport } from "@/lib/geo/wgs84-query-viewport";
 
-type Bbox = [number, number, number, number];
 type FrozenDesignation = {
   id?: string;
   layer_version_id?: string;
@@ -34,9 +34,11 @@ export function publicMapIsTooDense(matchedCount: number, drawLimit = WORKSPACE_
 export async function loadPublicDesignationMap(
   frozenSnapshot: Record<string, unknown>,
   designationId: string,
-  bbox: Bbox,
+  bbox: Wgs84QueryViewport,
   scope?: { client: Awaited<ReturnType<typeof createClient>>; workspaceId: string },
 ) {
+  const viewport = readWgs84QueryViewport(bbox);
+  if (!viewport) return { ok: false as const, reason: "incomplete" as const };
   const designation = (records(frozenSnapshot.designations) as FrozenDesignation[])
     .find((candidate) => candidate.id === designationId);
   const versionId = designation?.layer_version_id;
@@ -57,9 +59,9 @@ export async function loadPublicDesignationMap(
     || versionResult.data.feature_hash !== expectedFeatureHash || (scope && versionResult.data.workspace_id !== scope.workspaceId)) {
     return { ok: false as const, reason: "incomplete" as const };
   }
-  const { data, error } = await service.rpc("workspace_gis_features_in_bbox", {
+  const { data, error } = await service.rpc("workspace_gis_features_in_query_viewport", {
     p_version_id: versionId,
-    p_west: bbox[0], p_south: bbox[1], p_east: bbox[2], p_north: bbox[3],
+    p_west: viewport[0], p_south: viewport[1], p_east: viewport[2], p_north: viewport[3],
     p_limit: WORKSPACE_GIS_BBOX_DRAW_LIMIT,
   });
   if (error) return { ok: false as const, reason: "read_failure" as const };
@@ -80,7 +82,9 @@ export async function loadPublicDesignationMap(
     const attributes = pickPublicAttributes(source, publicFields);
     return [{ type: "Feature" as const, id: row.id, geometry: row.geometry_geojson, properties: { featureIndex: row.feature_index ?? 0, attributes } }];
   });
-  if (!tooDenseToDraw && features.length !== matchedCount) return { ok: false as const, reason: "incomplete" as const };
+  if (!tooDenseToDraw && (features.length !== matchedCount || new Set(features.map(feature => feature.id)).size !== features.length)) {
+    return { ok: false as const, reason: "incomplete" as const };
+  }
   return {
     ok: true as const,
     payload: {
@@ -93,7 +97,7 @@ export async function loadPublicDesignationMap(
       designationLabel: designation.designation_set_label ?? "Mapped designations",
       legendField: designation.legend_field ?? null,
       coverageNotes: tooDenseToDraw
-        ? [`${matchedCount.toLocaleString("en-US")} features intersect this view. Nothing is drawn until you zoom in; OpenPlan never shows a misleading subset.`]
+        ? [`${matchedCount.toLocaleString("en-US")} feature bounds overlap this view. Nothing is drawn until you zoom in; OpenPlan never shows a misleading subset.`]
         : [],
     },
   };

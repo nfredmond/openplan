@@ -1,0 +1,106 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "cases": 13
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived",
+    "cases": 13
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived",
+    "cases": 13
+  },
+  {
+    "control": "remove-second-v1",
+    "outcome": "intended_failure",
+    "test": "reads retained v1 bytes under the previous secret",
+    "reason": "Retained ciphertext needs the configured second secret"
+  },
+  {
+    "control": "remove-second-v2",
+    "outcome": "intended_failure",
+    "test": "reads retained v2 bytes under the previous secret",
+    "reason": "Retained ciphertext needs the configured second secret"
+  },
+  {
+    "control": "remove-second-v3",
+    "outcome": "intended_failure",
+    "test": "reads retained v3 bytes under the previous secret",
+    "reason": "Retained ciphertext needs the configured second secret"
+  },
+  {
+    "control": "unprepared-rolling-read",
+    "outcome": "intended_failure",
+    "test": "lets prepared old-primary and new-primary processes read each other's writes",
+    "reason": "Prepared old-primary readers must accept new-primary writes"
+  },
+  {
+    "control": "write-with-old",
+    "outcome": "intended_failure",
+    "test": "writes only with the primary secret while both secrets are configured",
+    "reason": "New ciphertext needs the primary secret"
+  },
+  {
+    "control": "skip-primary-read",
+    "outcome": "intended_failure",
+    "test": "reads the primary without depending on a valid previous secret",
+    "reason": "Primary ciphertext must remain readable"
+  },
+  {
+    "control": "second-without-primary",
+    "outcome": "intended_failure",
+    "test": "requires a usable primary even when the previous secret matches",
+    "reason": "A missing or short primary must refuse decryption"
+  },
+  {
+    "control": "short-second",
+    "outcome": "intended_failure",
+    "test": "ignores an absent or invalid previous secret and trims a usable one",
+    "reason": "Short second secrets cannot authenticate"
+  },
+  {
+    "control": "untrimmed-second",
+    "outcome": "intended_failure",
+    "test": "ignores an absent or invalid previous secret and trims a usable one",
+    "reason": "A usable second secret follows existing trim semantics"
+  },
+  {
+    "control": "foreign-workspace",
+    "outcome": "intended_failure",
+    "test": "authenticates workspace under the previous secret",
+    "reason": "A second secret cannot change workspace binding"
+  },
+  {
+    "control": "skip-authentication",
+    "outcome": "intended_failure",
+    "test": "rejects a changed tag under the previous secret",
+    "reason": "Second-secret authentication must reject a changed tag"
+  },
+  {
+    "control": "empty-value-lost",
+    "outcome": "intended_failure",
+    "test": "does not return partial plaintext when neither secret authenticates",
+    "reason": "Authenticated empty plaintext remains a value"
+  },
+  {
+    "control": "foreign-envelope",
+    "outcome": "intended_failure",
+    "test": "opens the exact queued translation envelope after rotation and retains its identity checks",
+    "reason": "Queued credentials retain their original workspace"
+  },
+  {
+    "control": "foreign-api-revision",
+    "outcome": "intended_failure",
+    "test": "opens an existing API connection revision without changing its destination or identity",
+    "reason": "An API revision cannot change its original workspace"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived",
+    "cases": 13
+  }
+]

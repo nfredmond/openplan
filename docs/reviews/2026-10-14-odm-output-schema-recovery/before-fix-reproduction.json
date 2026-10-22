@@ -1,0 +1,11 @@
+[
+  {
+    "legacyTwoCommitDiffAcceptedDirtyWorktree": true,
+    "selectedCommit": "cb05d3885280e201946baa290f88d7509ac3a2fd",
+    "selectedBytesSha256": "b4e0497804e46e0a0b0b8c31975b062152d551bac49c3c2e80932567b4085dcd",
+    "dirtyBytesSha256": "15acf897761bfd15cd387bb2f1cf30cba8b92f817d8565fa423721f7c93a562a",
+    "correctedRefusal": "Selected migration worktree differs",
+    "scope": "retained_real_git_fixture_source_guard_only",
+    "databaseCapture": false
+  }
+]

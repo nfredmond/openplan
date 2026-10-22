@@ -1,0 +1,94 @@
+{
+  "status": "SOURCE_DESIGN_PENDING_ROOT_TECHNICAL_DISPOSITION",
+  "baseCommit": "d37b64b117d87b5edabe766dd42db4422407b40f",
+  "newReviewRoot": "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-catalog-settings-correction",
+  "newPrivateRoot": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016",
+  "files": {
+    "REPORT.md": {
+      "review": {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-catalog-settings-correction/REPORT.md",
+        "sha256": "8e016621f2ffe46726f85262bfe75302a5e281470c0a0260d7af55a4753e0d33",
+        "mode": "600",
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 7190
+      },
+      "private": {
+        "path": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/REPORT.md",
+        "sha256": "8e016621f2ffe46726f85262bfe75302a5e281470c0a0260d7af55a4753e0d33",
+        "mode": "600",
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 7190
+      }
+    },
+    "DELTA.md": {
+      "review": {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-catalog-settings-correction/DELTA.md",
+        "sha256": "d1ef00fbae6f2fdbd972c0ac3dc1bb1549a29b68fd03a0bf0466502a80e6d2cd",
+        "mode": "600",
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 10802
+      },
+      "private": {
+        "path": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/DELTA.md",
+        "sha256": "d1ef00fbae6f2fdbd972c0ac3dc1bb1549a29b68fd03a0bf0466502a80e6d2cd",
+        "mode": "600",
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 10802
+      }
+    },
+    "ORACLES.md": {
+      "review": {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-catalog-settings-correction/ORACLES.md",
+        "sha256": "efc44218d4142b4cff106fe8111c7d19799f08194104a9d32b3aeffffce63fc1",
+        "mode": "600",
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 2701
+      },
+      "private": {
+        "path": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/ORACLES.md",
+        "sha256": "efc44218d4142b4cff106fe8111c7d19799f08194104a9d32b3aeffffce63fc1",
+        "mode": "600",
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 2701
+      }
+    },
+    "preserved-pins.json": {
+      "review": {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-catalog-settings-correction/preserved-pins.json",
+        "sha256": "f400245c28cbec1f349b78d1d2cb2ed3191ea168f5c6b5961e2951d0a3e0ac3a",
+        "mode": "600",
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 16041
+      },
+      "private": {
+        "path": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/preserved-pins.json",
+        "sha256": "f400245c28cbec1f349b78d1d2cb2ed3191ea168f5c6b5961e2951d0a3e0ac3a",
+        "mode": "600",
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 16041
+      }
+    }
+  },
+  "preservedPinsBeforeAfter": {
+    "count": 45,
+    "allMatch": true,
+    "failedAttemptFiles": 19,
+    "failedAttemptModesOwnersBytesMatch": true
+  },
+  "executablesAuthored": [],
+  "runtimeCommandsRun": [],
+  "testsRun": [],
+  "nativeGrant": "NONE",
+  "pureRequest": "NOT_AUTHORED",
+  "consumerSource": "NOT_AUTHORED",
+  "localCommit": "NOT_CREATED",
+  "limits": "Metadata and primary-source assessment only; no source approval or native acceptance."
+}

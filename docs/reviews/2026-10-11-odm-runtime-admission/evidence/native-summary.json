@@ -1,0 +1,18 @@
+{
+  "nativeAdmissionRecovery": true,
+  "observations": 30,
+  "controls": 93,
+  "sourceBodyBytesSent": 0,
+  "nodeodmRequests": 0,
+  "startedWorkHeld": true,
+  "workerRecoveryAccepted": false,
+  "seconds": 1.228,
+  "originalRootAndPackageUnchanged": true,
+  "claimLimits": [
+    "admission and held-start recovery only",
+    "no imagery processing",
+    "no engine-stage or artifact recovery",
+    "no live application authority",
+    "no browser or practitioner acceptance"
+  ]
+}

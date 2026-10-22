@@ -1,3 +1,5 @@
+import { safetySeedFixture, seedId } from "./fixtures/grants/safety-seed";
+import { buildSafetySeedPreview } from "@/lib/grants/ss4a-safety-seed";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { GRANT_PROGRAM_CATALOG } from "@/lib/grants/program-catalog";
@@ -351,6 +353,73 @@ describe("POST /api/funding-opportunities/[opportunityId]/application", () => {
     >;
     expect(insertedAttachments).toHaveLength(atp.requiredAttachments!.length);
     expect(insertedAttachments.every((row) => row.status === "missing")).toBe(true);
+  });
+
+  describe("a federal program seeds in the words of the state that runs it", () => {
+    const WORKSPACE_JURISDICTION_COLUMNS =
+      "home_geography_source, home_geography_kind, home_geography_ref, home_country_code, home_subdivision_code";
+
+    function homeIn(subdivision: string) {
+      return {
+        home_geography_source: "census_tiger",
+        home_geography_kind: "county",
+        home_geography_ref: "placeholder-ref",
+        home_country_code: "US",
+        home_subdivision_code: subdivision,
+      };
+    }
+
+    async function seedHsip(workspaceChain: QueryChain) {
+      const existingChain = makeQuery({ data: [], error: null });
+      const sectionInsertChain = makeQuery({ data: [{ id: SECTION_ID }], error: null });
+      const attachmentInsertChain = makeQuery({ data: [{ id: ATTACHMENT_ID }], error: null });
+      installTables({
+        workspaces: () => workspaceChain,
+        funding_opportunity_application_sections: tableSequence(existingChain, sectionInsertChain),
+        funding_opportunity_attachments: () => attachmentInsertChain,
+      });
+
+      const response = await initApplication(jsonRequest(url, "POST", { catalogKey: "hsip" }), context);
+      expect(response.status).toBe(201);
+
+      const sections = sectionInsertChain.insert.mock.calls[0][0] as Array<Record<string, unknown>>;
+      const attachments = attachmentInsertChain.insert.mock.calls[0][0] as Array<Record<string, unknown>>;
+      return JSON.stringify([...sections, ...attachments]);
+    }
+
+    it("gives a California workspace Caltrans's call and the LRSM tool", async () => {
+      const workspaceChain = makeQuery({ data: homeIn("CA"), error: null });
+
+      const seeded = await seedHsip(workspaceChain);
+
+      expect(seeded).toContain("Caltrans Local Assistance");
+      expect(seeded).toContain("Benefit/cost calculation (LRSM tool)");
+      expect(seeded).toContain("LRSM benefit/cost tool output");
+      // The jurisdiction comes from the opportunity's own workspace, through the
+      // columns `resolveJurisdiction` reads.
+      expect(workspaceChain.select).toHaveBeenCalledWith(WORKSPACE_JURISDICTION_COLUMNS);
+      expect(workspaceChain.eq).toHaveBeenCalledWith("id", WORKSPACE_ID);
+    });
+
+    it("gives an Ohio workspace the federal text, which names no state", async () => {
+      const seeded = await seedHsip(makeQuery({ data: homeIn("OH"), error: null }));
+
+      expect(seeded).not.toContain("Caltrans");
+      expect(seeded).not.toContain("LRSM");
+      expect(seeded).toContain("your state DOT");
+    });
+
+    it("seeds the federal text and logs it when the workspace geography cannot be read", async () => {
+      const seeded = await seedHsip(
+        makeQuery({ data: null, error: { message: "permission denied for table workspaces", code: "42501" } })
+      );
+
+      expect(seeded).not.toContain("Caltrans");
+      expect(mockAudit.warn).toHaveBeenCalledWith(
+        "application_workspace_geography_failed",
+        expect.objectContaining({ message: "permission denied for table workspaces", code: "42501" })
+      );
+    });
   });
 
   it("initializes an empty custom scaffold when no catalog key is given", async () => {
@@ -973,6 +1042,43 @@ describe("PATCH sections/[sectionId] — finalization gates", () => {
     total_sentence_count: 2,
     is_fully_grounded: false,
   };
+
+  it("finalizes a protected code-built Safety draft without inventing an AI grounding verdict", async () => {
+    const provenance = buildSafetySeedPreview(safetySeedFixture()).sections[0].provenance;
+    const loadChain = makeQuery({ data: { ...baseSectionRow, status: "operator_review", ai_drafting_enabled: false }, error: null });
+    const updateChain = makeQuery({ data: { ...baseSectionRow, status: "final" }, error: null });
+    const draftChain = makeQuery({ data: { id: DRAFT_ID, section_id: SECTION_ID, draft_markdown: "Code-built Safety draft.",
+      origin: "safety_plan_seed", safety_seed_id: seedId(70), grounding_json: provenance }, error: null });
+    installTables({ funding_opportunity_application_sections: tableSequence(loadChain, updateChain), funding_opportunity_section_drafts: () => draftChain });
+    const response = await patchSection(jsonRequest(url, "PATCH", { status: "final", finalizedFromDraftId: DRAFT_ID }), context);
+    expect(response.status).toBe(200);
+    expect(updateChain.update).toHaveBeenCalledWith(expect.objectContaining({ final_markdown: "Code-built Safety draft.", finalized_from_draft_id: DRAFT_ID }));
+    expect(draftChain.select).toHaveBeenCalledWith("id, section_id, draft_markdown, grounding_json, origin, safety_seed_id");
+    expect(draftChain.eq).toHaveBeenCalledWith("section_id", SECTION_ID);
+    expect(draftChain.eq).toHaveBeenCalledWith("opportunity_id", OPPORTUNITY_ID);
+    expect(draftChain.eq).toHaveBeenCalledWith("workspace_id", WORKSPACE_ID);
+  });
+
+  it("retains the original draft link for later operator edits and rejects a foreign edited-draft link", async () => {
+    const load = makeQuery({ data: { ...baseSectionRow, status: "operator_review", finalized_from_draft_id: DRAFT_ID }, error: null });
+    const update = makeQuery({ data: { ...baseSectionRow, status: "final" }, error: null });
+    const linked = makeQuery({ data: { id: DRAFT_ID, section_id: SECTION_ID }, error: null });
+    installTables({ funding_opportunity_application_sections: tableSequence(load, update), funding_opportunity_section_drafts: () => linked });
+    expect((await patchSection(jsonRequest(url, "PATCH", { status: "final", finalMarkdown: "Later operator edit" }), context)).status).toBe(200);
+    expect(update.update).toHaveBeenCalledWith(expect.objectContaining({ finalized_from_draft_id: DRAFT_ID, final_markdown: "Later operator edit" }));
+    expect(linked.eq).toHaveBeenCalledWith("section_id", SECTION_ID);
+    expect(linked.eq).toHaveBeenCalledWith("workspace_id", WORKSPACE_ID);
+    installTables({ funding_opportunity_application_sections: () => load, funding_opportunity_section_drafts: () => makeQuery({ data: null, error: null }) });
+    expect((await patchSection(jsonRequest(url, "PATCH", { status: "final", finalMarkdown: "Edited text", finalizedFromDraftId: seedId(80) }), context)).status).toBe(422);
+  });
+
+  it("refuses malformed protected Safety provenance rather than trusting an AI verdict", async () => {
+    const update = makeQuery({ data: baseSectionRow, error: null });
+    installTables({ funding_opportunity_application_sections: tableSequence(makeQuery({ data: baseSectionRow, error: null }), update),
+      funding_opportunity_section_drafts: () => makeQuery({ data: { id: DRAFT_ID, section_id: SECTION_ID, draft_markdown: "Broken seed", origin: "safety_plan_seed", safety_seed_id: seedId(70), grounding_json: exportableGrounding }, error: null }) });
+    expect((await patchSection(jsonRequest(url, "PATCH", { status: "final", finalizedFromDraftId: DRAFT_ID }), context)).status).toBe(422);
+    expect(update.update).not.toHaveBeenCalled();
+  });
 
   it("commits an UNEDITED draft only when its stored grounding is exportable", async () => {
     const loadChain = makeQuery({ data: { ...baseSectionRow, status: "operator_review" }, error: null });

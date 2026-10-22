@@ -1,0 +1,6 @@
+{
+  "docs/reviews/2026-10-14-aerial-held-custody/verify_upgrade_controls.py": "361d050eda04d0e23e01148949a886193aaca3131677d01d3bb95956b9886334",
+  "docs/reviews/2026-10-14-aerial-held-custody/verify_native_controls.py": "464922ec1c9896d1f5b3a1cc4d5db9b74596335480ed74b36ab121c253e24f01",
+  "docs/reviews/2026-10-14-aerial-held-custody/verify_aftermath_controls.py": "78d834c72d02ad45de1eede8a2672e615a597cca3111b2e09ed75d8273b81e53",
+  "docs/reviews/2026-10-14-aerial-held-custody/test_controller_cleanup.py": "fb666d1beb06fc2cddc187310f1f677bd9cfe52eae39d206ed57735c02cb635d"
+}

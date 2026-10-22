@@ -1,0 +1,117 @@
+{
+  "readAtUtc": "2026-10-15T06:39:31.069024+00:00",
+  "reviewBase": "b259d73e56d22d4935ef2789874cf69901786b33",
+  "candidate": "54537205a4f7c47f1f68f0827209bbf55de505d9",
+  "directParent": "702ee1270de23cb9e469711398c580d9a977878b",
+  "candidateProductionChanges": [
+    "openplan/src/test/project-portfolio-export-route.test.ts"
+  ],
+  "sourceObjects": [
+    {
+      "path": "openplan/src/app/api/projects/export/workbook/route.ts",
+      "gitBlob": "3450738a603e2a2bb5fa2d26c3570efdb94c0901",
+      "sha256": "efd81d2e4a2bc9b181dca617d60c5ce6b21f9db65b596f306f4fa1d11257bbd9"
+    },
+    {
+      "path": "openplan/src/test/project-portfolio-export-route.test.ts",
+      "gitBlob": "0f1471aefbe4d4880f27fb82010656cc09d5795c",
+      "sha256": "4cfa8720b9382ebbd83a49e459e4db175bc8c6c7d87612774960e80f27e223c9"
+    },
+    {
+      "path": "openplan/src/test/project-workbook-export-pagination.test.ts",
+      "gitBlob": "ed30f2d4d41bba3809eed07801021e8fc667452d",
+      "sha256": "be5f01ad6b195f5726d041b281ce028cb1a43eccb5c0e261263dee4f922eb1a6"
+    },
+    {
+      "path": "openplan/src/lib/projects/portfolio-export.ts",
+      "gitBlob": "030b599aec4a9bfe46cd565c7909a1c08b0b7161",
+      "sha256": "24f201a4eed2fa91dabecca90352c6620a7f5d4d8ead442d4b1d7457bfa54e5d"
+    },
+    {
+      "path": "openplan/src/lib/projects/portfolio-round-trip-contract.ts",
+      "gitBlob": "84e8f917f9b21194b621b2bb9109d40f04174fcf",
+      "sha256": "ad012e38746d24039fbc0d7da7206e5254088e83958410baeeb03349de89d7ec"
+    },
+    {
+      "path": "openplan/src/lib/projects/portfolio-workbook.ts",
+      "gitBlob": "c6dfbdab91569fcc7a7f700e66e677ee07b6f85b",
+      "sha256": "beb55521add02d4ca6a0ddc8788fa5094fbbd0528cac96a79d672442be178e89"
+    },
+    {
+      "path": "openplan/supabase/config.toml",
+      "gitBlob": "e28ba83878e53242188c82f465628724c14c2724",
+      "sha256": "a91e2c6282775296f9470066696530618d8768ca0adc21fad8a9b4b3e7bf105e"
+    },
+    {
+      "path": "docs/reviews/2026-10-15-project-workbook-export-pagination/STATUS.md",
+      "gitBlob": "88157ce61cf52a611cf3086ab573c23b474ef315",
+      "sha256": "d1fe5eb2cfafd5736f90a8eb1063fdaa7c5c4c0a96e63efdeb4f6adcd2a8c36c"
+    },
+    {
+      "path": "docs/reviews/2026-10-15-project-workbook-export-pagination/verify_controls.py",
+      "gitBlob": "28ba8d85e2722d7a7c0e4abf52a58dcb54ca3c86",
+      "sha256": "0a45f3160e0ec202152bfaae2b769f4c518a488b64c522886878c5fb15f12501"
+    },
+    {
+      "path": "docs/reviews/2026-10-15-project-workbook-export-pagination/evidence/source-bindings.json",
+      "gitBlob": "7f63084b992f9e44a982e76fd31b578d21187fa0",
+      "sha256": "c4b0c4bd5a65e2b94dc2fd852bd3d6fa2251d477e5642726906c9e0be1633e64"
+    },
+    {
+      "path": "docs/reviews/2026-10-15-project-workbook-export-pagination/evidence/controls.json",
+      "gitBlob": "c6744c0a4660355ccfc3f045e4302adb352100eb",
+      "sha256": "5aeb2c1fd87bfbe858cab5d6e644657004373dfc6372c9563743410e258fefcf"
+    },
+    {
+      "path": "docs/reviews/2026-10-15-project-workbook-export-integration/STATUS.md",
+      "gitBlob": "e43153b9be58e073d0142d4d9e1359356be89970",
+      "sha256": "7c61cdf792de4a7d278e733b2ef52b11c1884556aa99ccdf3cfaed65e20924fd"
+    },
+    {
+      "path": "docs/reviews/2026-10-15-project-workbook-export-integration/verify_controls.py",
+      "gitBlob": "9fb9da3e92bcf2731a4064c289e9d156b6215ea6",
+      "sha256": "a8cb09314e5d956cf09979bfeacfb9c6e2dffdab9b6024e68031ced2358ec0e8"
+    },
+    {
+      "path": "docs/reviews/2026-10-15-project-workbook-export-integration/evidence/source-bindings.json",
+      "gitBlob": "7a3575eaa884f05cbd93a7859f06b90ff5e22579",
+      "sha256": "4e9e9abbd5897181621057b75cb22bc865ff77f4ce72520f77bdc32f8c762c5c"
+    },
+    {
+      "path": "docs/reviews/2026-10-15-project-workbook-export-integration/evidence/controls.json",
+      "gitBlob": "ecc27dce1aa468e3c3c807c9d7d137eff4d3423c",
+      "sha256": "4e6d0bda5b9712fff94e95643efc40ee0d40dc8f646eca0035c66a2685d66795"
+    },
+    {
+      "path": "docs/reviews/2026-10-15-project-workbook-export-integration/evidence/continuation/controls.json",
+      "gitBlob": "b270022ba973f16d2c66d8bfb9ebfcef15b31d06",
+      "sha256": "33273da9c40f8e2cbf7b992e8fdb5c83008b9e4d065f56bd76021ea67251bd4f"
+    },
+    {
+      "path": "docs/reviews/2026-10-15-project-workbook-export-integration/evidence/cohort-count-corrected/combined-focused.json",
+      "gitBlob": "5543f2f29cf9761d1220564e594e5ad4661bab03",
+      "sha256": "30ce0db251d5676078742d9ad3957964044fda278c5ca1fbd3e60f7d4e728d22"
+    },
+    {
+      "path": "docs/reviews/2026-10-15-project-workbook-export-integration/evidence/cohort-final/combined-focused.json",
+      "gitBlob": "23a07228237195ac2e0aed8a4c4be9b51afea887",
+      "sha256": "1137e9b7890ebffbebf97bf31bb6c1e0e2b848bbe9c54460e790eb3e8cc055e9"
+    }
+  ],
+  "coordinationPath": "/home/nathaniel/.local/state/openplan/COORDINATION.md",
+  "coordinationFirstEntriesAtStart": "MERGE HOLD ON at 2026-10-15T06:11:19.706295+00:00; workbook integration complete at 06:30:56.187062+00:00",
+  "coordinationCurrentFirstLine": "> **MERGE HOLD ON (2026-10-15T06:11:19.706295+00:00, parent #327 delivery owner).** PR327 exact031e merged as b259d73e56d22d4935ef2789874cf69901786b33 at06:09:19Z. Fresh protected capture20261015T055856Z decrypts with archive SHA/index7529 and220 Storage objects/117871050bytes matching; non-atomic activewriter scope remains. ONLY migration15 applied via standard CLI verified singleton pending set; hosted418/latest15, forcedRLS/invoker RPC/ordinary-role refusal/eight unobserved kinds verified. Candidate16 absent. Service_role retains trusted default DELETE; initial verifier narrower assumption preserved as refusal, no changedSQL. Mainb259 CI and exactweb/seven Nodeworker delivery pending. No next main merge until explicit release. GTFS stays disabled.",
+  "ownerTrees": [
+    {
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-9142741a",
+      "head": "702ee1270de23cb9e469711398c580d9a977878b",
+      "status": ""
+    },
+    {
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-32433c82",
+      "head": "54537205a4f7c47f1f68f0827209bbf55de505d9",
+      "status": ""
+    }
+  ],
+  "installedPostgrestTransformSha256": "ad9d2f29f2b8736ef7d4167a902f127c8e94dae8686225decf3549418eaeb15a"
+}

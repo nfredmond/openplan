@@ -1,0 +1,12 @@
+{
+  "numTotalTests": 14,
+  "numPassedTests": 14,
+  "numFailedTests": 0,
+  "success": true,
+  "files": 3,
+  "cwd": "openplan/",
+  "vitestWorkers": 1,
+  "productDirectionCheck": "passed",
+  "reviewDeadline": "2026-11-06",
+  "reviewRemindersRetained": true
+}

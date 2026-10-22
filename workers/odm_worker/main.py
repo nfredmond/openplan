@@ -50,6 +50,7 @@ import hmac
 import json
 import mimetypes
 import os
+from pathlib import Path
 import queue
 import secrets
 import shutil
@@ -58,6 +59,7 @@ import tempfile
 import threading
 import time
 import uuid
+from contextlib import nullcontext
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -116,9 +118,41 @@ def env_int(name, default):
         return default
 
 
+def managed_state_directory(value, work_dir):
+    """Require a declared state root outside scratch before managed startup.
+
+    The operator must retain or mount this root across replacement. A path alone
+    cannot prove the backing storage or installation-wide recovery inventory.
+    """
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError('ODM_WORKER_MANAGED_STATE_DIR is required for managed admission')
+    requested = Path(value.strip())
+    if not requested.is_absolute():
+        raise ValueError('ODM managed state directory must be absolute')
+    root = requested.resolve()
+    scratch = Path(work_dir).resolve()
+    if root == scratch or scratch in root.parents or root in scratch.parents:
+        raise ValueError('ODM managed state and scratch directories must not overlap')
+    for default in (Path(tempfile.gettempdir())/'odm_worker_jobs', Path('/tmp/odm_worker_jobs')):
+        default = default.resolve()
+        if root == default or default in root.parents or root in default.parents:
+            raise ValueError('ODM managed state cannot use the default scratch directory')
+    return str(root)
+
+
 def config():
+    managed = os.environ.get('ODM_WORKER_MANAGED_ADMISSION', '').strip()
+    if managed not in ('', '0', '1'):
+        raise ValueError('ODM_WORKER_MANAGED_ADMISSION must be 0 or 1')
     port = env_int("ODM_WORKER_PORT", env_int("PORT", 8484))
+    work_dir = os.environ.get('ODM_WORKER_WORK_DIR', '').strip() or os.path.join(tempfile.gettempdir(), 'odm_worker_jobs')
+    state_dir = os.environ.get('ODM_WORKER_MANAGED_STATE_DIR', '').strip()
+    if managed == '1':
+        state_dir = managed_state_directory(state_dir, work_dir)
     return {
+        "managed_admission": managed == '1',
+        "managed_state_dir": state_dir,
+        "installation_id": os.environ.get('ODM_WORKER_INSTALLATION_ID', '').strip(),
         "worker_token": os.environ.get(
             "OPENPLAN_AERIAL_PROCESSING_WORKER_TOKEN", ""
         ).strip(),
@@ -132,8 +166,7 @@ def config():
             os.environ.get("ODM_WORKER_PUBLIC_URL", "").strip()
             or f"http://localhost:{port}"
         ).rstrip("/"),
-        "work_dir": os.environ.get("ODM_WORKER_WORK_DIR", "").strip()
-        or os.path.join(tempfile.gettempdir(), "odm_worker_jobs"),
+        "work_dir": work_dir,
         "artifact_ttl_seconds": env_int("ODM_WORKER_ARTIFACT_TTL_SECONDS", 86400),
         "sweep_interval_seconds": env_int("ODM_WORKER_SWEEP_INTERVAL_SECONDS", 600),
         "max_queued": env_int("ODM_WORKER_MAX_QUEUED", 4),
@@ -142,6 +175,7 @@ def config():
 
 
 CONFIG = config()
+ADMISSIONS = None
 
 # ── Job registry ─────────────────────────────────────────────────────────────
 # request_id -> job dict. The accepted callback is stored so a retried
@@ -321,6 +355,7 @@ def process_job(job, make_client=None, prepare=None, publish=None, send=None, sl
             odm_progress = float(info.get("progress") or 0)
             overall = 10 + int(odm_progress * 0.8)
             if status_code in TERMINAL_STATUSES:
+                job['reportedEngineTerminal'] = {'taskUuid': task_uuid, 'statusCode': status_code}
                 break
             if overall >= last_sent_progress + 5:
                 last_sent_progress = overall
@@ -434,6 +469,13 @@ PIPELINE = process_job
 
 
 def worker_loop():
+    if ADMISSIONS is not None:
+        while True:
+            try:
+                if not ADMISSIONS.run_one(): time.sleep(0.2)
+            except Exception:  # preserve the start intent and queue hold
+                print('[odm-worker] durable pipeline requires reconciliation', flush=True)
+                time.sleep(0.2)
     while True:
         job = JOB_QUEUE.get()
         if job is None:
@@ -484,6 +526,16 @@ class WorkerHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):  # noqa: N802 - BaseHTTPRequestHandler's naming
         if self.path == "/healthz":
+            admissions = getattr(self.server, 'admissions', None)
+            admission_status = None
+            queued = JOB_QUEUE.qsize()
+            if admissions is not None:
+                try:
+                    admission_status = {'available': True, **admissions.status()}
+                    queued = admission_status['accepted']
+                except Exception:
+                    admission_status = {'available': False, 'detail': 'Durable admission state could not be read.'}
+                    queued = None
             nodeodm = {"reachable": False, "detail": "not probed"}
             try:
                 from nodeodm_client import NodeODMClient
@@ -505,12 +557,17 @@ class WorkerHandler(BaseHTTPRequestHandler):
                     "status": "ok",
                     "contract": list(contract.SCHEMA_VERSIONS),
                     "nodeodm": nodeodm,
-                    "queued": JOB_QUEUE.qsize(),
+                    "queued": queued,
+                    **({'admission': admission_status} if admissions is not None else {}),
                 },
             )
             return
 
         if self.path.startswith("/artifacts/"):
+            download = getattr(self.server, 'artifact_download', None)
+            if download is not None:
+                download(self)
+                return
             parts = self.path.split("/")
             # /artifacts/<job_reference>/<token>/<filename>
             if len(parts) != 5:
@@ -574,6 +631,21 @@ class WorkerHandler(BaseHTTPRequestHandler):
             )
             return
 
+        admissions = getattr(self.server, 'admissions', None)
+        if admissions is not None:
+            from admission_journal import IdentityConflict, QueueFull
+            try:
+                entry, first = admissions.submit(payload)
+            except IdentityConflict:
+                self._send_json(409, {'error': 'request_identity_conflict', 'detail': 'The original request ID already binds another payload.'})
+            except QueueFull:
+                self._send_json(503, {'error': 'queue_full', 'detail': 'The durable pending queue is full.'})
+            except Exception:
+                self._send_json(503, {'error': 'admission_unavailable', 'detail': 'The durable admission journal could not confirm this request.'})
+            else:
+                self._send_json(202 if first else 200, entry.admission)
+            return
+
         with JOBS_LOCK:
             existing = JOBS.get(payload["requestId"])
         if existing:
@@ -601,17 +673,32 @@ class WorkerHandler(BaseHTTPRequestHandler):
         self._send_json(202, job["accepted_callback"])
 
     def log_message(self, fmt, *args):  # noqa: A003 - quieter default logging
-        print(f"[odm-worker] {self.address_string()} {fmt % args}")
+        # Download URLs carry private tokens. No raw request or error is logged.
+        print('[odm-worker] HTTP request.')
+
+    def log_request(self, code='-', size='-'):
+        method = self.command if self.command in ('GET', 'POST', 'HEAD') else 'other'
+        status = str(code) if str(code).isdigit() and 100 <= int(code) <= 599 else 'unknown'
+        print(f'[odm-worker] HTTP {method} status {status}.')
 
 
-def build_server(host="0.0.0.0", port=None):
-    return ThreadingHTTPServer(
+def build_server(host="0.0.0.0", port=None, admissions=None, artifact_download=None):
+    resolved_admissions = ADMISSIONS if admissions is None else admissions
+    if artifact_download is not None:
+        from runtime_artifact_http import Download
+        if not isinstance(artifact_download, Download) or artifact_download.runtime is not resolved_admissions:
+            raise ValueError('Artifact HTTP server needs the same original admission runtime')
+    server = ThreadingHTTPServer(
         (host, CONFIG["port"] if port is None else port),
         WorkerHandler,
     )
+    server.admissions = resolved_admissions
+    server.artifact_download = artifact_download
+    return server
 
 
 def main():
+    global ADMISSIONS
     missing = [
         name
         for name, key in (
@@ -623,22 +710,27 @@ def main():
     if missing:
         print(
             "[odm-worker] REFUSING TO START: missing required environment "
-            f"variables: {', '.join(missing)}. Both bearer tokens must be set — "
+            f"variables: {', '.join(missing)}. Both bearer tokens must be set. "
             "an unauthenticated processing endpoint would let anyone start "
             "minutes of compute and read mission outputs."
         )
         sys.exit(2)
 
-    os.makedirs(CONFIG["work_dir"], exist_ok=True)
-    threading.Thread(target=worker_loop, daemon=True, name="odm-pipeline").start()
-    threading.Thread(target=sweep_loop, daemon=True, name="odm-artifact-sweep").start()
-    server = build_server()
-    print(
-        f"[odm-worker] serving on :{CONFIG['port']} "
-        f"(NodeODM at {CONFIG['nodeodm_url']}; artifact links under "
-        f"{CONFIG['public_url']}; contract {', '.join(contract.SCHEMA_VERSIONS)})"
-    )
-    server.serve_forever()
+    state_dir = managed_state_directory(CONFIG['managed_state_dir'], CONFIG['work_dir']) if CONFIG['managed_admission'] else None
+    if CONFIG['managed_admission']:
+        from runtime_admission import Runtime
+        ADMISSIONS = Runtime(state_dir, CONFIG['installation_id'], max_queued=CONFIG['max_queued'], pipeline=PIPELINE)
+    os.makedirs(CONFIG["work_dir"], mode=0o700, exist_ok=True)
+    with ADMISSIONS.owner() if ADMISSIONS is not None else nullcontext():
+        threading.Thread(target=worker_loop, daemon=True, name="odm-pipeline").start()
+        threading.Thread(target=sweep_loop, daemon=True, name="odm-artifact-sweep").start()
+        server = build_server()
+        print(
+            f"[odm-worker] serving on :{CONFIG['port']} "
+            f"(NodeODM at {CONFIG['nodeodm_url']}; artifact links under "
+            f"{CONFIG['public_url']}; contract {', '.join(contract.SCHEMA_VERSIONS)})"
+        )
+        server.serve_forever()
 
 
 if __name__ == "__main__":

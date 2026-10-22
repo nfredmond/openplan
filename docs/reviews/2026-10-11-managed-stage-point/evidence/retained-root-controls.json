@@ -1,0 +1,35 @@
+{
+  "baselineHarmlessRestored": true,
+  "cases": [
+    {
+      "case": "owner-marker",
+      "refused": "model-point-worker-root-differs"
+    },
+    {
+      "case": "missing-input",
+      "refused": "model-point-worker-root-differs"
+    },
+    {
+      "case": "missing-output",
+      "refused": "model-point-worker-root-differs"
+    },
+    {
+      "case": "missing-empty-directory",
+      "refused": "model-point-worker-root-differs"
+    },
+    {
+      "case": "private-mode",
+      "refused": "model-point-worker-root-differs"
+    },
+    {
+      "case": "claim-missing-admission",
+      "refused": "model-point-journal-records-differ"
+    },
+    {
+      "case": "progress-missing-admission",
+      "refused": "model-point-journal-records-differ"
+    }
+  ],
+  "sourceRootUnchanged": true,
+  "scope": "Inventory and complete SQLite-record checks on disposable copies. Does not revive writer objects, authorize predecessor reuse or fence a hostile/concurrent writer."
+}

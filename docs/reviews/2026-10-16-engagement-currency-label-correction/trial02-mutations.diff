@@ -1,0 +1,24 @@
+--- trial01/mutations.json
++++ trial02/mutations.json
+@@ -1,12 +1,4 @@
+ [
+-  {
+-    "name": "harmless-context-annotation",
+-    "file": "src/lib/invoicing/invoice-currency.ts",
+-    "find": "/** Legacy engagement context",
+-    "replace": "/** Bounded label check. Legacy engagement context",
+-    "survivor": true,
+-    "expectedPassed": 15
+-  },
+   {
+     "name": "route-current-invoice-currency-inheritance",
+     "file": "src/app/api/invoicing/client-invoices/route.ts",
+@@ -55,7 +47,7 @@
+     "test": "src/test/client-invoice-pdf.test.ts",
+     "pattern": "adds the engagement reference|keeps .* invoice amounts separate",
+     "expectedFailed": 3,
+-    "failureText": "currency unassessed"
++    "failureText": "Not-to-exceed 50000"
+   },
+   {
+     "name": "context-currency-disclosure-removed",

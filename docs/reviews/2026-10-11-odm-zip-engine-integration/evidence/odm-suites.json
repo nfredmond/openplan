@@ -1,0 +1,72 @@
+[
+  {
+    "exit": 0,
+    "path": "workers/odm_worker/test_admission_journal.py",
+    "sha256": "6e9a5e391c45d8b11b6baa20807d6fa345c05f5c885b4326c7063cd9064a90f0"
+  },
+  {
+    "exit": 0,
+    "path": "workers/odm_worker/test_callbacks.py",
+    "sha256": "da0c2159017e68dbf057ea066177e23c3b756b84aa8d87d57a9aa3ccd6144372"
+  },
+  {
+    "exit": 0,
+    "path": "workers/odm_worker/test_contract.py",
+    "sha256": "b7ca4e34a1f0aa84506b4f87bb191d956d31e0f553d86773b77c60bebe795ea0"
+  },
+  {
+    "exit": 0,
+    "path": "workers/odm_worker/test_deploy_surface.py",
+    "sha256": "0caf6a8b41c07979c0bee48b25e02a279bf7fb3d79c35ee4c05d563b58d614b4"
+  },
+  {
+    "exit": 0,
+    "path": "workers/odm_worker/test_derived_zip.py",
+    "sha256": "602283e5efd8dc25ef86d0193fce8747d92b7cd73ae3e25481a2b683b2f070d6"
+  },
+  {
+    "exit": 0,
+    "path": "workers/odm_worker/test_draft_custody.py",
+    "sha256": "36575dfc38f9b3cafa79b94732530ca4ceab85bd5700328588388edd76eea286"
+  },
+  {
+    "exit": 0,
+    "path": "workers/odm_worker/test_engine_effects.py",
+    "sha256": "258deea9ce382b73a529c23e51e8fbeb542f18c7d1d2aa42f2b67869ead94e01"
+  },
+  {
+    "exit": 0,
+    "path": "workers/odm_worker/test_georef.py",
+    "sha256": "805309202132038df18227d36a616c65a9d3f95beb8403281277aa61a3cce528"
+  },
+  {
+    "exit": 0,
+    "path": "workers/odm_worker/test_intake.py",
+    "sha256": "f3c5d9bef76c0218ef1d51ee85dec784aef3115f9b3f1556b1aa18068f1775d5"
+  },
+  {
+    "exit": 0,
+    "path": "workers/odm_worker/test_nodeodm_client.py",
+    "sha256": "89971b8c5b34c970406e8d1ee165c65a680c86f36a95b51c215c114b12a06fb1"
+  },
+  {
+    "exit": 0,
+    "path": "workers/odm_worker/test_pipeline.py",
+    "sha256": "5266db2954d1c9335f331e00a8198d7c62b2037e849bf2e75e76ce8222f5e5b8"
+  },
+  {
+    "exit": 0,
+    "path": "workers/odm_worker/test_retained_source.py",
+    "sha256": "483d6b640b29522cfa21daa441025ba1fbcf85fbfdc282494ab226ca34afc40b"
+  },
+  {
+    "exit": 0,
+    "path": "workers/odm_worker/test_worker_http.py",
+    "sha256": "d2233d36f9895a132bae7f9944bb2e3a256a7bbf2761acc255c1d5355646dc4c"
+  },
+  {
+    "exit": 0,
+    "path": "workers/odm_worker/test_zip_engine.py",
+    "sha256": "6af3ebb1dbb305c381b623eca02b2513391d312eee8bf905151e7dd853e1726e"
+  }
+]

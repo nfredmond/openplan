@@ -444,10 +444,10 @@ async function main() {
     await cycleRow.getByText(/Funding-backed release review/i).first().waitFor({ timeout: 30000 });
     await cycleRow.getByText(/Funding gap review|Award follow-through pending|Reimbursement in flight|Pipeline-backed review/i).first().waitFor({ timeout: 30000 });
     await page.getByText(/Funding review/i).first().waitFor({ timeout: 30000 });
-    await page.getByRole('link', { name: /Open release-review lane/i }).waitFor({ timeout: 30000 });
+    await page.getByRole('link', { name: /Review current packets for release/i }).waitFor({ timeout: 30000 });
     const reviewCurrentPacketLink = page.getByRole('link', { name: /Review current packet/i }).first();
     await reviewCurrentPacketLink.waitFor({ timeout: 30000 });
-    notes.push('Production RTP registry rendered the release-review lane CTA, the row-level current-packet action, and funding-backed release-review cues before opening the packet detail.');
+    notes.push('Production RTP registry rendered the release-review next step, the row-level current-packet action, and funding-backed release-review cues before opening the packet detail.');
     await screenshot('prod-rtp-release-review-01-registry');
 
     await Promise.all([

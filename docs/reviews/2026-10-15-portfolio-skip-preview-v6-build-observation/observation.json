@@ -1,0 +1,153 @@
+{
+  "observedAt": "2026-10-15T16:03:23.648752+00:00",
+  "scope": "Query-only observation of one already-running owned V6 build. No runtime or UI acceptance.",
+  "unit": "openplan-portfolio-skip-preview-49e3fa200-v6-build.service",
+  "invocationId": "382d4e9515014dc393e79e8f3d0046e3",
+  "terminalDriverResult": "success; code=exited; status=0/SUCCESS",
+  "terminalJournal": [
+    {
+      "__REALTIME_TIMESTAMP": "1792079538162174",
+      "USER_INVOCATION_ID": "382d4e9515014dc393e79e8f3d0046e3",
+      "USER_UNIT": "openplan-portfolio-skip-preview-49e3fa200-v6-build.service",
+      "MESSAGE": "Started openplan-portfolio-skip-preview-49e3fa200-v6-build.service - [systemd-run] /usr/bin/env -i PATH=/usr/bin:/bin HOME=/home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v6/home PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 -B /home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v6/app_binding_v1.py build."
+    },
+    {
+      "__REALTIME_TIMESTAMP": "1792080107821235",
+      "USER_INVOCATION_ID": "382d4e9515014dc393e79e8f3d0046e3",
+      "USER_UNIT": "openplan-portfolio-skip-preview-49e3fa200-v6-build.service",
+      "MESSAGE": "openplan-portfolio-skip-preview-49e3fa200-v6-build.service: Consumed 4min 14.569s CPU time over 9min 29.658s wall clock time, 6.3G memory peak.",
+      "CPU_USAGE_NSEC": "254569180000",
+      "MEMORY_PEAK": "6774874112",
+      "MEMORY_SWAP_PEAK": "0"
+    }
+  ],
+  "postGcUnitPropertiesNotEvidence": true,
+  "app": {
+    "head": "49e3fa2004c1336ffa36c134a8f21bcc2d72d327",
+    "environmentSha256": "61ad3c8ae7c2c54f260a37e9bb7a2777d32cf88996a8ee602143ea90b438186f",
+    "migrationDigest": "d2290c518df6cd1e6774c9fa4478a6632dfff012db3f4ddf89fd5e0faecc72fd",
+    "dependencyBindingSha256": "5bff54066d812bfaabb4a864ff8f50e90e616e68aed0c0097bf392d2e832834c"
+  },
+  "target": {
+    "oid": "6150036",
+    "owner": "postgres",
+    "database": "openplan_project_portfolio_preview_8f43260b95a071cc4e6d2b90"
+  },
+  "buildId": "7X3x8RgohlUwVf_lPZa5r",
+  "compilerReturncode": 0,
+  "compilerSeconds": 503.6080985140288,
+  "controllerWallSecondsFromDriver": 569.658,
+  "resourcesBefore": {
+    "memory.max": "10737418240",
+    "memory.swap.max": "0",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.max": "50000 100000",
+    "memory.peak": "93343744",
+    "memory.swap.current": "0"
+  },
+  "resourcesAfterCompiler": {
+    "memory.max": "10737418240",
+    "memory.swap.max": "0",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.max": "50000 100000",
+    "memory.peak": "6774874112",
+    "memory.swap.current": "0"
+  },
+  "finalResourceLimit": "memory.events and swap.current are sampled after npm exits, before controller postchecks/inventory. The final journal supplies whole-controller CPU/peak/swap-peak, but no final memory.events.",
+  "buildFilesSha256": "170cd236a961e45d719574c303f344d4e720f2f061d799803c7e02ccd4e1a85d",
+  "buildInventoryDigest": "a040bf376704129a97424c937413bf2c80cdc76b392fa0a81300084ed7320c12",
+  "savedInventoryEntries": 2587,
+  "savedInventoryTotalBytes": 1872149963,
+  "generatedMigrationManifest": {
+    "count": 420,
+    "latest": "20261017000017",
+    "equalsSealedVersionSet": true,
+    "sha256": "bb5479656684165f597181e7e421ecb383b03986c2f043ea42ccfc76b2c8525d"
+  },
+  "comparisonResults": {
+    "resultAppEqualsIntentAndCheckout": true,
+    "resultActiveEqualsIntent": true,
+    "resultResourcesBeforeEqualsIntent": true,
+    "resultResourcesAfterEqualsExit": true,
+    "bothReturnCodesZero": true,
+    "savedInventoryFileHashMatchesResult": true,
+    "savedInventoryCanonicalDigestMatchesResult": true,
+    "buildIdEqualsResult": true,
+    "buildIdHashMatchesSavedInventory": true,
+    "generatedManifestHashMatchesSavedInventory": true,
+    "generatedMigrationVersionsEqualSealedSet": true,
+    "launcherHashMatchesResult": true,
+    "bindingHashMatchesResult": true
+  },
+  "sourceReceipts": {
+    "build-intent.json": {
+      "source": "/home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v6/execution/build-intent.json",
+      "retained": "/home/nathaniel/.local/state/openplan/portfolio-skip-preview-v6-build-observer-20261015-1555/build-intent.json",
+      "bytes": 1760,
+      "sha256": "ebe9f7165ec99fcbdb5b4484a096877421ede8e1254719c1a5fd65e1b07b51a7"
+    },
+    "checkout-ready.json": {
+      "source": "/home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v6/execution/checkout-ready.json",
+      "retained": "/home/nathaniel/.local/state/openplan/portfolio-skip-preview-v6-build-observer-20261015-1555/checkout-ready.json",
+      "bytes": 334,
+      "sha256": "af59977bf8745c263afb41809f19eba9449df5c46bd9036727a88d8622c01309"
+    },
+    "build-exit.json": {
+      "source": "/home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v6/execution/build-exit.json",
+      "retained": "/home/nathaniel/.local/state/openplan/portfolio-skip-preview-v6-build-observer-20261015-1555/build-exit.json",
+      "bytes": 332,
+      "sha256": "49d702aa5ca44ed156a7c3078188123812371f3f6c006ca09d52ecc80451afdb"
+    },
+    "build-result.json": {
+      "source": "/home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v6/execution/build-result.json",
+      "retained": "/home/nathaniel/.local/state/openplan/portfolio-skip-preview-v6-build-observer-20261015-1555/build-result.json",
+      "bytes": 2685,
+      "sha256": "e112b928e755fa0b37d35fea1d16f13538719a78bdbcd2e5753cd2d8ff936556"
+    },
+    "build-files.json": {
+      "source": "/home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v6/execution/build-files.json",
+      "retained": "/home/nathaniel/.local/state/openplan/portfolio-skip-preview-v6-build-observer-20261015-1555/build-files.json",
+      "bytes": 451736,
+      "sha256": "170cd236a961e45d719574c303f344d4e720f2f061d799803c7e02ccd4e1a85d"
+    },
+    "build-private.log": {
+      "source": "/home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v6/execution/build-private.log",
+      "retained": "/home/nathaniel/.local/state/openplan/portfolio-skip-preview-v6-build-observer-20261015-1555/build-private.log",
+      "bytes": 19679,
+      "sha256": "837ed619df2c51e4bdb1313512a082787b1c7430217999a975f72ba94ad58ae3"
+    },
+    "build-driver-final.log": {
+      "source": "/home/nathaniel/.local/state/openplan/portfolio-skip-preview-v6-parent-operation-20261015/build-driver.log",
+      "retained": "/home/nathaniel/.local/state/openplan/portfolio-skip-preview-v6-build-observer-20261015-1555/build-driver-final.log",
+      "bytes": 365,
+      "sha256": "21da03bf0bbdb8d9357d66428b47406b665589555f3e3fdc09ddac4d8aa63b42"
+    },
+    "required-server-files-private.json": {
+      "source": "/home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v6/candidate/openplan/.next/required-server-files.json",
+      "retained": "/home/nathaniel/.local/state/openplan/portfolio-skip-preview-v6-build-observer-20261015-1555/required-server-files-private.json",
+      "bytes": 17705,
+      "sha256": "bb5479656684165f597181e7e421ecb383b03986c2f043ea42ccfc76b2c8525d"
+    },
+    "BUILD_ID": {
+      "source": "/home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v6/candidate/openplan/.next/BUILD_ID",
+      "retained": "/home/nathaniel/.local/state/openplan/portfolio-skip-preview-v6-build-observer-20261015-1555/BUILD_ID",
+      "bytes": 21,
+      "sha256": "c18a094815615520a65600fd52c7deaf5f1f61303d10aba662219f924b23fcd9"
+    },
+    "parent-round3-admission.json": {
+      "source": "/home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v6/execution/parent-round3-admission.json",
+      "retained": "/home/nathaniel/.local/state/openplan/portfolio-skip-preview-v6-build-observer-20261015-1555/parent-round3-admission.json",
+      "bytes": 69,
+      "sha256": "eca13f861e954cb60cddd5bf27daeac66cf0e1eddd640ab82c12177a7b8b6d03"
+    }
+  },
+  "rawLogDisclosure": "Full raw log retained privately. No raw environment values printed. Sole error-text match is the /api/client-errors route listing; no warning-text matches.",
+  "unverified": [
+    "Runtime readiness and strict process attestation",
+    "Desktop and 390px front-door import journey",
+    "Console and downloaded artifacts",
+    "Post-journey preservation",
+    "Scientific or practitioner acceptance",
+    "Parent exec-session completion receipt, which observer does not access"
+  ]
+}

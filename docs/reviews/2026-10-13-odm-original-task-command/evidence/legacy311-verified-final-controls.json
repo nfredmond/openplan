@@ -1,0 +1,116 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comments",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "summary-body-hash-replaced",
+    "test": "test_actual_record_read_and_private_root_relocation",
+    "source": "workers/odm_worker/task_observation_cli.py",
+    "outcome": "intended_failure",
+    "reason": "Command summary must bind actual supplied reply bytes"
+  },
+  {
+    "control": "raw-body-in-summary",
+    "test": "test_summary_excludes_raw_body_error_details_and_engine_configuration",
+    "source": "workers/odm_worker/task_observation_cli.py",
+    "outcome": "intended_failure",
+    "reason": "Command summary must exclude private detail field bodyBase64"
+  },
+  {
+    "control": "invalid-mode-reaches-plan-read",
+    "test": "test_mode_validation_precedes_any_plan_read",
+    "source": "workers/odm_worker/task_observation_cli.py",
+    "outcome": "intended_failure",
+    "reason": "Invalid mode reached plan read"
+  },
+  {
+    "control": "invalid-status-reaches-plan-read",
+    "test": "test_explicit_status_type_and_read_status_refuse_before_plan_read",
+    "source": "workers/odm_worker/task_observation_cli.py",
+    "outcome": "intended_failure",
+    "reason": "Invalid status reached plan read"
+  },
+  {
+    "control": "invalid-timeout-reaches-plan-read",
+    "test": "test_timeout_validation_precedes_any_plan_read",
+    "source": "workers/odm_worker/task_observation_cli.py",
+    "outcome": "intended_failure",
+    "reason": "Invalid timeout reached plan read"
+  },
+  {
+    "control": "oversized-input-read",
+    "test": "test_supplied_file_size_refuses_before_reading_the_body",
+    "source": "workers/odm_worker/task_observation_cli.py",
+    "outcome": "intended_failure",
+    "reason": "Oversized input reached body reading"
+  },
+  {
+    "control": "public-input-file-accepted",
+    "test": "test_supplied_body_paths_aliases_and_permissions_refuse",
+    "source": "workers/odm_worker/retained_source.py",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "public-input-directory-accepted",
+    "test": "test_public_input_directory_refuses_even_with_a_private_reply",
+    "source": "workers/odm_worker/task_observation_cli.py",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "body-read-restarts-deadline",
+    "test": "test_shared_deadline_covers_input_read_and_recording",
+    "source": "workers/odm_worker/task_observation_cli.py",
+    "outcome": "intended_failure",
+    "reason": "Late input cannot publish a record"
+  },
+  {
+    "control": "refusal-prints-summary",
+    "test": "test_actual_failure_has_no_summary_or_private_diagnostic",
+    "source": "workers/odm_worker/task_observation_cli.py",
+    "outcome": "intended_failure",
+    "reason": "Refused command cannot print a success summary"
+  },
+  {
+    "control": "refusal-exit-success",
+    "test": "test_actual_failure_has_no_summary_or_private_diagnostic",
+    "source": "workers/odm_worker/task_observation_cli.py",
+    "outcome": "intended_failure",
+    "reason": "Actual refused command must exit two"
+  },
+  {
+    "control": "missing-roots-reach-execution",
+    "test": "test_parser_requires_roots_and_exactly_one_operation",
+    "source": "workers/odm_worker/task_observation_cli.py",
+    "outcome": "intended_failure",
+    "reason": "Incomplete command must fail argument validation"
+  },
+  {
+    "control": "missing-mode-skips-parser",
+    "test": "test_parser_requires_roots_and_exactly_one_operation",
+    "source": "workers/odm_worker/task_observation_cli.py",
+    "outcome": "intended_failure",
+    "reason": "Incomplete command must fail in the argument parser"
+  },
+  {
+    "control": "summary-grants-publication",
+    "test": "test_record_replay_preserves_the_original_file_and_denied_claims",
+    "source": "workers/odm_worker/task_observation_cli.py",
+    "outcome": "intended_failure",
+    "reason": "Command cannot grant publicationPermission"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

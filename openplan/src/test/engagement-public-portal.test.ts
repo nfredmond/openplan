@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { getPublicPortalReadiness, getPublicPortalState, normalizeShareToken } from "@/lib/engagement/public-portal";
+import {
+  getPublicPortalReadiness,
+  getPublicPortalState,
+  normalizeShareToken,
+  participationDateClosure,
+} from "@/lib/engagement/public-portal";
 
 describe("engagement public portal helpers", () => {
   it("normalizes configured share tokens", () => {
@@ -108,7 +113,7 @@ describe("engagement public portal helpers", () => {
       // five is complete while the other four are the real gaps.
       completeCount: 1,
       totalChecks: 5,
-      nextAction: "Generate and save a share token before sending public outreach.",
+      nextAction: "The link stays closed to residents until the last step is done.",
     });
     expect(readiness.checks.map((check) => [check.id, check.passed])).toEqual([
       ["share_token", false],
@@ -117,5 +122,108 @@ describe("engagement public portal helpers", () => {
       ["submission_mode", false],
       ["map_opens_somewhere", true],
     ]);
+  });
+});
+
+/**
+ * STAFF COPY FOLLOWS THE PARTICIPATION DATES.
+ *
+ * The public page, the submit routes and the database triggers refuse comments
+ * before the start date and from the end date on. The console read only the
+ * staff close switch, so a reopened page whose end date had passed said "Live ·
+ * accepting submissions" while residents were refused. The dates are named in
+ * the workspace calendar, never the server's UTC day.
+ */
+describe("staff copy follows the participation dates", () => {
+  const NOW = new Date("2026-10-14T18:00:00.000Z");
+  // 19:30 on October 10 in Los Angeles; 15:30 on October 11 in Auckland.
+  const ENDED = "2026-10-11T02:30:00+00:00";
+  const LIVE = {
+    status: "active",
+    share_token: "pilotlink123",
+    allow_public_submissions: true,
+    submissions_closed_at: null,
+  };
+
+  it("does not say a reopened page accepts comments after its end date", () => {
+    const state = getPublicPortalState(
+      { ...LIVE, participation_ends_at: ENDED },
+      { now: NOW, timeZone: "America/Los_Angeles" }
+    );
+    expect(state).toMatchObject({
+      visibility: "live_closed",
+      label: "Live · submissions closed",
+      isPubliclyReachable: true,
+      isAcceptingSubmissions: false,
+    });
+    expect(state.detail).toBe(
+      "Comments are closed because the participation period ended on October 10, 2026 at 19:30 (America/Los_Angeles)."
+    );
+  });
+
+  it("names the end date in the workspace calendar, not the server's", () => {
+    expect(
+      getPublicPortalState({ ...LIVE, participation_ends_at: ENDED }, { now: NOW, timeZone: "Pacific/Auckland" }).detail
+    ).toBe("Comments are closed because the participation period ended on October 11, 2026 at 15:30 (Pacific/Auckland).");
+    // No zone known: UTC, and the sentence says so.
+    expect(getPublicPortalState({ ...LIVE, participation_ends_at: ENDED }, { now: NOW }).detail).toBe(
+      "Comments are closed because the participation period ended on October 11, 2026 at 02:30 (UTC)."
+    );
+  });
+
+  it("names the end date over a staff close, because reopening would not change it", () => {
+    expect(
+      getPublicPortalState(
+        { ...LIVE, submissions_closed_at: "2026-10-01T00:00:00+00:00", participation_ends_at: ENDED },
+        { now: NOW, timeZone: "America/Los_Angeles" }
+      ).detail
+    ).toMatch(/participation period ended on October 10, 2026/);
+  });
+
+  it("still accepts comments up to the end instant, and says when a period has not started", () => {
+    expect(
+      getPublicPortalState({ ...LIVE, participation_ends_at: "2026-10-14T18:00:01+00:00" }, { now: NOW })
+    ).toMatchObject({ visibility: "live_open", isAcceptingSubmissions: true });
+    // The end instant itself is closed, as the database's `<=` has it.
+    expect(
+      getPublicPortalState({ ...LIVE, participation_ends_at: "2026-10-14T18:00:00+00:00" }, { now: NOW })
+    ).toMatchObject({ visibility: "live_closed", isAcceptingSubmissions: false });
+    expect(
+      getPublicPortalState(
+        { ...LIVE, participation_starts_at: "2026-10-20T16:00:00+00:00" },
+        { now: NOW, timeZone: "America/Los_Angeles" }
+      )
+    ).toMatchObject({
+      label: "Live · comments not open yet",
+      detail: "Comments open on October 20, 2026 at 09:00 (America/Los_Angeles), when the participation period starts.",
+      isAcceptingSubmissions: false,
+    });
+  });
+
+  it("leaves a page that never took comments as view only", () => {
+    expect(
+      getPublicPortalState({ ...LIVE, allow_public_submissions: false, participation_ends_at: ENDED }, { now: NOW })
+    ).toMatchObject({ label: "Live · view only" });
+  });
+
+  it("puts the end date in the comments step of the checklist", () => {
+    const check = getPublicPortalReadiness(
+      { ...LIVE, public_description: null, participation_ends_at: ENDED },
+      "set",
+      { now: NOW, timeZone: "America/Los_Angeles" }
+    ).checks.find((entry) => entry.id === "submission_mode");
+    expect(check?.detail).toBe(
+      "Comments are closed because the participation period ended on October 10, 2026 at 19:30 (America/Los_Angeles)."
+    );
+  });
+
+  it("reads no closure from open or missing dates", () => {
+    expect(participationDateClosure({}, { now: NOW })).toBeNull();
+    expect(
+      participationDateClosure(
+        { participation_starts_at: "2026-10-01T00:00:00+00:00", participation_ends_at: "2026-10-30T00:00:00+00:00" },
+        { now: NOW }
+      )
+    ).toBeNull();
   });
 });

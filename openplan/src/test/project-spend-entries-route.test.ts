@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 const createClientMock = vi.fn();
@@ -42,6 +42,13 @@ const deleteProjectEqMock = vi.fn(() => ({ select: deleteSelectMock }));
 const deleteIdEqMock = vi.fn(() => ({ eq: deleteProjectEqMock }));
 const deleteMock = vi.fn(() => ({ eq: deleteIdEqMock }));
 
+// The workspace calendar read: select(columns).eq("id", workspaceId).maybeSingle().
+const workspaceCalendarMaybeSingleMock = vi.fn();
+const workspaceCalendarEqMock = vi.fn((_column: string, _value: string) => ({
+  maybeSingle: workspaceCalendarMaybeSingleMock,
+}));
+const workspaceCalendarSelectMock = vi.fn((_columns: string) => ({ eq: workspaceCalendarEqMock }));
+
 function supabaseMock() {
   return {
     auth: { getUser: authGetUserMock },
@@ -71,6 +78,9 @@ function supabaseMock() {
       }
       if (table === "project_spend_entries") {
         return { insert: insertMock, update: updateMock, delete: deleteMock };
+      }
+      if (table === "workspaces") {
+        return { select: workspaceCalendarSelectMock };
       }
       throw new Error(`Unexpected table: ${table}`);
     }),
@@ -127,6 +137,15 @@ describe("/api/projects/[projectId]/spend-entries", () => {
       error: null,
     });
     deleteMaybeSingleMock.mockResolvedValue({ data: { id: ENTRY_ID }, error: null });
+    workspaceCalendarMaybeSingleMock.mockReset();
+    workspaceCalendarMaybeSingleMock.mockResolvedValue({
+      data: { time_zone: "America/Los_Angeles", home_country_code: "US" },
+      error: null,
+    });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("rejects a non-uuid project id", async () => {
@@ -194,11 +213,85 @@ describe("/api/projects/[projectId]/spend-entries", () => {
     expect(inserted.created_by).toBe(USER_ID);
   });
 
-  it("omits entry_date when not provided so the DB default applies", async () => {
-    const response = await POST(jsonRequest("POST", VALID_CREATE), routeContext());
-    expect(response.status).toBe(201);
-    const inserted = (insertMock.mock.calls[0] as unknown[])[0] as Record<string, unknown>;
-    expect("entry_date" in inserted).toBe(false);
+  /**
+   * A BLANK ENTRY DATE IS TODAY ON THE WORKSPACE'S CALENDAR.
+   *
+   * The route used to omit entry_date and let the column default
+   * (CURRENT_DATE) stamp the database server's UTC day, so a spend saved at
+   * 6 p.m. Pacific on October 14 was dated October 15.
+   */
+  describe("a blank entry date", () => {
+    async function insertedEntryDateAt(instant: string, timeZone: string | null, workspaceId = WORKSPACE_ID) {
+      vi.useFakeTimers({ toFake: ["Date"] });
+      vi.setSystemTime(new Date(instant));
+      projectMaybeSingleMock.mockResolvedValue({ data: { id: PROJECT_ID, workspace_id: workspaceId }, error: null });
+      membershipMaybeSingleMock.mockResolvedValue({ data: { workspace_id: workspaceId, role: "admin" }, error: null });
+      workspaceCalendarMaybeSingleMock.mockResolvedValue({
+        data: { time_zone: timeZone, home_country_code: null },
+        error: null,
+      });
+
+      const response = await POST(jsonRequest("POST", VALID_CREATE), routeContext());
+      expect(response.status).toBe(201);
+      const inserted = (insertMock.mock.calls.at(-1) as unknown[])[0] as Record<string, unknown>;
+      return inserted.entry_date;
+    }
+
+    it("is the Pacific date at 6 p.m. Pacific, not the UTC date", async () => {
+      expect(await insertedEntryDateAt("2026-10-15T01:00:00Z", "America/Los_Angeles")).toBe("2026-10-14");
+    });
+
+    it("reads the calendar of the project's own workspace", async () => {
+      const otherWorkspace = "66666666-6666-4666-8666-666666666666";
+      await insertedEntryDateAt("2026-10-15T01:00:00Z", "America/Los_Angeles");
+      await insertedEntryDateAt("2026-10-15T01:00:00Z", "Asia/Tokyo", otherWorkspace);
+
+      expect(workspaceCalendarSelectMock).toHaveBeenCalledWith("time_zone, home_country_code");
+      expect(workspaceCalendarEqMock.mock.calls).toEqual([
+        ["id", WORKSPACE_ID],
+        ["id", otherWorkspace],
+      ]);
+    });
+
+    it("follows standard time after US DST ends on November 1", async () => {
+      // 11:30 p.m. PST on November 1; at the summer offset it would be November 2.
+      expect(await insertedEntryDateAt("2026-11-02T07:30:00Z", "America/Los_Angeles")).toBe("2026-11-01");
+      expect(await insertedEntryDateAt("2026-11-02T08:00:00Z", "America/Los_Angeles")).toBe("2026-11-02");
+    });
+
+    it("follows zones far from UTC on both sides", async () => {
+      // 11 p.m. October 14 in Honolulu; 1 a.m. October 15 in Tokyo.
+      expect(await insertedEntryDateAt("2026-10-15T09:00:00Z", "Pacific/Honolulu")).toBe("2026-10-14");
+      expect(await insertedEntryDateAt("2026-10-14T16:00:00Z", "Asia/Tokyo")).toBe("2026-10-15");
+    });
+
+    it("is the UTC date, said in the audit log, when the calendar cannot be read", async () => {
+      vi.useFakeTimers({ toFake: ["Date"] });
+      vi.setSystemTime(new Date("2026-10-15T01:00:00Z"));
+      workspaceCalendarMaybeSingleMock.mockResolvedValue({
+        data: null,
+        error: { message: "column workspaces.time_zone does not exist" },
+      });
+
+      const response = await POST(jsonRequest("POST", VALID_CREATE), routeContext());
+
+      expect(response.status).toBe(201);
+      const inserted = (insertMock.mock.calls[0] as unknown[])[0] as Record<string, unknown>;
+      expect(inserted.entry_date).toBe("2026-10-15");
+      expect(mockAudit.warn).toHaveBeenCalledWith("workspace_calendar_unreadable", {
+        workspaceId: WORKSPACE_ID,
+        message: "column workspaces.time_zone does not exist",
+      });
+    });
+
+    it("does not read the calendar when the planner gave a date", async () => {
+      const response = await POST(jsonRequest("POST", { ...VALID_CREATE, entryDate: "2026-07-01" }), routeContext());
+
+      expect(response.status).toBe(201);
+      const inserted = (insertMock.mock.calls[0] as unknown[])[0] as Record<string, unknown>;
+      expect(inserted.entry_date).toBe("2026-07-01");
+      expect(workspaceCalendarSelectMock).not.toHaveBeenCalled();
+    });
   });
 
   it("PATCH refuses a cross-project deliverable reattribution", async () => {

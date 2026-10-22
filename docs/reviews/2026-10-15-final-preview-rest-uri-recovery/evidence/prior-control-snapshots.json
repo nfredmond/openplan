@@ -1,0 +1,32 @@
+{
+  "snapshots": [
+    {
+      "trial": "03",
+      "retainedPrivatePath": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/project-geography-preview-final-20261015/rest-uri-recovery-01/controls-03/result-private.json",
+      "sha256": "969f32e17cc8007c3c972d4310ac95a5a82274ceee594f2fca5cac6703d5e41a",
+      "observations": 232,
+      "historicalControls": 607,
+      "codeFaultsKilled": 11,
+      "templateHashes": {
+        "rest_uri_recovery_01_launcher.py": "e4469933109f2a06a2036072051acc4c07a31ea6fdc885c25d5beb485d3eb7a3",
+        "rest_uri_recovery_01_policy.py": "b8cd15dd1284aef71a302a2614724b1cb34e9783ee7049028eb08e16309df156",
+        "rest_uri_recovery_01_controller.py": "0a2abd7530658eedb033ba4c235393612ff364210f064a32b4ff3d903134f175"
+      },
+      "status": "Historical source/proof boundary; superseded by controls-05.json."
+    },
+    {
+      "trial": "04",
+      "retainedPrivatePath": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/project-geography-preview-final-20261015/rest-uri-recovery-01/controls-04/result-private.json",
+      "sha256": "43290eaef3b47c67cff0d38a3c5031192a6d47ec218ecbe5e904de1589b8d522",
+      "observations": 329,
+      "historicalControls": 607,
+      "codeFaultsKilled": 13,
+      "templateHashes": {
+        "rest_uri_recovery_01_launcher.py": "259fd6712429fcf4b4eafea7d9eef0a07685c5d7e6cc216b6d347a06700ff5fd",
+        "rest_uri_recovery_01_policy.py": "b8cd15dd1284aef71a302a2614724b1cb34e9783ee7049028eb08e16309df156",
+        "rest_uri_recovery_01_controller.py": "0a2abd7530658eedb033ba4c235393612ff364210f064a32b4ff3d903134f175"
+      },
+      "status": "Historical source/proof boundary; superseded by controls-05.json."
+    }
+  ]
+}

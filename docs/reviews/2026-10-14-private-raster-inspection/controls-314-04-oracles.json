@@ -1,0 +1,1002 @@
+[
+  {
+    "case": "missing-product-reported-as-failed",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "missing-product-reported-as-failed",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "missing-product-reported-as-failed",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "missing-product-reported-as-failed",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "missing-product-reported-as-failed",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "missing-product-reported-as-failed",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "missing-product-reported-as-failed",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "missing-product-reported-as-failed",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "rotated-vector-doubled",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "rotated-vector-doubled",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "rotated-vector-doubled",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "rotated-vector-doubled",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "rotated-vector-doubled",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "rotated-vector-doubled",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "rotated-vector-doubled",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "rotated-vector-doubled",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "unsupported-format-labelled-failed",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "unsupported-format-labelled-failed",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "unsupported-format-labelled-failed",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "unsupported-format-labelled-failed",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "unsupported-format-labelled-failed",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "unsupported-format-labelled-failed",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "unsupported-format-labelled-failed",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "unsupported-format-labelled-failed",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "saved-report-reparsed",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "saved-report-reparsed",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "saved-report-reparsed",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "saved-report-reparsed",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "saved-report-reparsed",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "saved-report-reparsed",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "saved-report-reparsed",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "saved-report-reparsed",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "interrupted-report-recomputed",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "interrupted-report-recomputed",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "interrupted-report-recomputed",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "interrupted-report-recomputed",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "interrupted-report-recomputed",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "interrupted-report-recomputed",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "interrupted-report-recomputed",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "interrupted-report-recomputed",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "raster-content-hash-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "raster-content-hash-ignored",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "raster-content-hash-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "raster-content-hash-ignored",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "raster-content-hash-ignored",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "raster-content-hash-ignored",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "raster-content-hash-ignored",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "raster-content-hash-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "post-read-access-omitted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "post-read-access-omitted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "post-read-access-omitted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "post-read-access-omitted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "post-read-access-omitted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "post-read-access-omitted",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "post-read-access-omitted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "post-read-access-omitted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "saved-report-not-compared",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "saved-report-not-compared",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "saved-report-not-compared",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "saved-report-not-compared",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "saved-report-not-compared",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "saved-report-not-compared",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "saved-report-not-compared",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "saved-report-not-compared",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "original-product-plan-not-compared",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "original-product-plan-not-compared",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "original-product-plan-not-compared",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "original-product-plan-not-compared",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "original-product-plan-not-compared",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "original-product-plan-not-compared",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "original-product-plan-not-compared",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "original-product-plan-not-compared",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "missing-plan-inferred",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "missing-plan-inferred",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "missing-plan-inferred",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "missing-plan-inferred",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "missing-plan-inferred",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "missing-plan-inferred",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "missing-plan-inferred",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "missing-plan-inferred",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "frozen-claim-limits-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "frozen-claim-limits-ignored",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "frozen-claim-limits-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "frozen-claim-limits-ignored",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "frozen-claim-limits-ignored",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "frozen-claim-limits-ignored",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "frozen-claim-limits-ignored",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "frozen-claim-limits-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "frozen-code-profile-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "frozen-code-profile-ignored",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "frozen-code-profile-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "frozen-code-profile-ignored",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "frozen-code-profile-ignored",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "frozen-code-profile-ignored",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "frozen-code-profile-ignored",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "frozen-code-profile-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "product-census-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "product-census-ignored",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "product-census-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "product-census-ignored",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "product-census-ignored",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "product-census-ignored",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "product-census-ignored",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "product-census-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "original-member-binding-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "original-member-binding-ignored",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "original-member-binding-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "original-member-binding-ignored",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "original-member-binding-ignored",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "original-member-binding-ignored",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "original-member-binding-ignored",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "original-member-binding-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "absence-promoted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "absence-promoted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "absence-promoted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "absence-promoted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "absence-promoted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "absence-promoted",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "absence-promoted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "absence-promoted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "cloud-reading-promoted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "cloud-reading-promoted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "cloud-reading-promoted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "cloud-reading-promoted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "cloud-reading-promoted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "cloud-reading-promoted",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "cloud-reading-promoted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "cloud-reading-promoted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "native-units-relabelled",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "native-units-relabelled",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "native-units-relabelled",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "native-units-relabelled",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "native-units-relabelled",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "native-units-relabelled",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "native-units-relabelled",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "native-units-relabelled",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "failed-read-keeps-coordinates",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "failed-read-keeps-coordinates",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "failed-read-keeps-coordinates",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "failed-read-keeps-coordinates",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "failed-read-keeps-coordinates",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "failed-read-keeps-coordinates",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "failed-read-keeps-coordinates",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "failed-read-keeps-coordinates",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "invalid-native-dimensions-accepted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "invalid-native-dimensions-accepted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "invalid-native-dimensions-accepted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "invalid-native-dimensions-accepted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "invalid-native-dimensions-accepted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "invalid-native-dimensions-accepted",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "invalid-native-dimensions-accepted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "invalid-native-dimensions-accepted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "invalid-native-vectors-accepted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "invalid-native-vectors-accepted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "invalid-native-vectors-accepted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "invalid-native-vectors-accepted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "invalid-native-vectors-accepted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "invalid-native-vectors-accepted",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "invalid-native-vectors-accepted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "invalid-native-vectors-accepted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "invalid-constructor-accepted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "invalid-constructor-accepted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "invalid-constructor-accepted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "invalid-constructor-accepted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "invalid-constructor-accepted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "invalid-constructor-accepted",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "invalid-constructor-accepted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "invalid-constructor-accepted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "callbackPermission-promoted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "callbackPermission-promoted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "callbackPermission-promoted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "callbackPermission-promoted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "callbackPermission-promoted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "callbackPermission-promoted",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "callbackPermission-promoted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "callbackPermission-promoted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "publicationPermission-promoted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "publicationPermission-promoted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "publicationPermission-promoted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "publicationPermission-promoted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "publicationPermission-promoted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "publicationPermission-promoted",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "publicationPermission-promoted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "publicationPermission-promoted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "processingQualityVerification-promoted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "processingQualityVerification-promoted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "processingQualityVerification-promoted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "processingQualityVerification-promoted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "processingQualityVerification-promoted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "processingQualityVerification-promoted",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "processingQualityVerification-promoted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "processingQualityVerification-promoted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "mapPlacementVerification-promoted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "mapPlacementVerification-promoted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "mapPlacementVerification-promoted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "mapPlacementVerification-promoted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "mapPlacementVerification-promoted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "mapPlacementVerification-promoted",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "mapPlacementVerification-promoted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "mapPlacementVerification-promoted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  }
+]

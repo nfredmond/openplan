@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-32433c82/docs/reviews/2026-10-15-project-workbook-export-integration/verify_controls.py", line 302, in <module>
+    main(args.start_at, args.cohort_only)
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-32433c82/docs/reviews/2026-10-15-project-workbook-export-integration/verify_controls.py", line 271, in main
+    assert len(report['testResults']) == len(files) and len(active) == 67 and all(a['status'] == 'passed' for a in active)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

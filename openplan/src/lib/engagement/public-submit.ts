@@ -90,18 +90,25 @@ function parseRefererHost(request: NextRequest): string | null {
 }
 
 /**
- * One browser's token, hashed; null when the request carried none or a
- * malformed one. Used to tell people on a shared connection apart, never to
- * identify anyone. See `participant-device.ts`.
+ * One browser's token, hashed for ONE campaign; null when the request carried
+ * none or a malformed one. Used to tell people on a shared connection apart,
+ * never to identify anyone. See `participant-device.ts`.
+ *
+ * The campaign id is part of the hash, so the same browser leaves a different
+ * value in every consultation and stored activity cannot be joined across
+ * campaigns. Before 2026-10-12 the hash was the same everywhere.
  */
-export function buildPublicParticipantDeviceFingerprint(request: NextRequest): string | null {
+export function buildPublicParticipantDeviceFingerprint(request: NextRequest, campaignId: string): string | null {
   const raw = request.headers.get(PARTICIPANT_DEVICE_HEADER)?.trim() ?? "";
-  return PARTICIPANT_DEVICE_ID_PATTERN.test(raw) ? hashValue(`device:${raw.toLowerCase()}`) : null;
+  return PARTICIPANT_DEVICE_ID_PATTERN.test(raw)
+    ? hashValue(`device:${campaignId.toLowerCase()}:${raw.toLowerCase()}`)
+    : null;
 }
 
 export function buildPublicSubmissionSupportMetadata(
   request: NextRequest,
   input: {
+    campaignId: string;
     title?: string | null;
     body: string;
     receivedAt?: string;
@@ -111,7 +118,7 @@ export function buildPublicSubmissionSupportMetadata(
   return {
     submitted_via: "public_portal",
     source_fingerprint: buildPublicSubmissionClientFingerprint(request),
-    device_fingerprint: buildPublicParticipantDeviceFingerprint(request),
+    device_fingerprint: buildPublicParticipantDeviceFingerprint(request, input.campaignId),
     body_fingerprint: buildPublicSubmissionBodyFingerprint(input),
     referer_host: parseRefererHost(request),
     user_agent: getPublicSubmissionUserAgent(request),
@@ -122,6 +129,7 @@ export function buildPublicSubmissionSupportMetadata(
 
 export function evaluatePublicSubmissionSafety(input: {
   request: NextRequest;
+  campaignId: string;
   title?: string | null;
   body: string;
   recentItems: RecentPublicSubmissionRecord[];
@@ -149,7 +157,7 @@ export function evaluatePublicSubmissionSafety(input: {
     meeting may well type the same short sentence, and each is a person heard.
     Without a device token the connection stands in for the device, as before.
   */
-  const deviceFingerprint = buildPublicParticipantDeviceFingerprint(input.request);
+  const deviceFingerprint = buildPublicParticipantDeviceFingerprint(input.request, input.campaignId);
   const sameSender = (item: RecentPublicSubmissionRecord) =>
     deviceFingerprint
       ? item.metadata_json?.device_fingerprint === deviceFingerprint

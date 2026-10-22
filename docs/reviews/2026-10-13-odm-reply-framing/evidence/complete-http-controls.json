@@ -1,0 +1,347 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "original-status-replaced",
+    "test": "test_actual_init_preserves_fields_header_and_credential",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Exact original HTTP status and body must return"
+  },
+  {
+    "control": "original-uuid-header-omitted",
+    "test": "test_actual_init_preserves_fields_header_and_credential",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "'set-uuid'"
+  },
+  {
+    "control": "credential-query-omitted",
+    "test": "test_actual_init_preserves_fields_header_and_credential",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "synthetic token+only"
+  },
+  {
+    "control": "initialization-multipart-type-removed",
+    "test": "test_actual_init_preserves_fields_header_and_credential",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Pinned engine initialization requires multipart fields"
+  },
+  {
+    "control": "original-initialization-fields-replaced",
+    "test": "test_actual_init_preserves_fields_header_and_credential",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Original initialization fields must reach multipart unchanged"
+  },
+  {
+    "control": "original-upload-body-replaced",
+    "test": "test_actual_upload_preserves_original_image_and_filename",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Original image bytes must reach multipart unchanged"
+  },
+  {
+    "control": "original-filename-replaced",
+    "test": "test_actual_upload_preserves_original_image_and_filename",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "original.jpg"
+  },
+  {
+    "control": "pre-cancel-ignored",
+    "test": "test_pre_cancelled_transport_refuses_before_credentials_or_spawn",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Precancelled transport spawned child"
+  },
+  {
+    "control": "response-cancel-ignored",
+    "test": "test_actual_response_cancellation_closes_connection_and_reaps_child",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "Original draft HTTP deadline exceeded"
+  },
+  {
+    "control": "changed-engine-accepted",
+    "test": "test_changed_engine_refuses_before_credentials_or_spawn",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Changed engine spawned child"
+  },
+  {
+    "control": "commit-path-accepted",
+    "test": "test_commit_command_never_reaches_credentials_or_spawn",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Commit spawned child"
+  },
+  {
+    "control": "invalid-deadline-accepted",
+    "test": "test_invalid_deadline_refuses_before_credentials_or_spawn",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Invalid deadline resolved credentials"
+  },
+  {
+    "control": "expired-deadline-accepted",
+    "test": "test_invalid_deadline_refuses_before_credentials_or_spawn",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Invalid deadline spawned child"
+  },
+  {
+    "control": "implicit-cancellation-type",
+    "test": "test_cancellation_adapter_requires_exact_boolean",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "invalid-credential-value-accepted",
+    "test": "test_credentials_refuse_invalid_values_and_keep_diagnostics_private",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "credential-diagnostic-leaks",
+    "test": "test_credentials_refuse_invalid_values_and_keep_diagnostics_private",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "does not match"
+  },
+  {
+    "control": "parent-metadata-bound-ignored",
+    "test": "test_metadata_bound_precedes_child_launch",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Oversized metadata spawned child"
+  },
+  {
+    "control": "streamed-hash-ignored",
+    "test": "test_streamed_hash_mismatch_cannot_finish_multipart",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "RuntimeError not raised"
+  },
+  {
+    "control": "response-envelope-ignored",
+    "test": "test_response_envelope_duplicate_keys_and_base64_refuse",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "duplicate-response-keys-accepted",
+    "test": "test_response_envelope_duplicate_keys_and_base64_refuse",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "invalid-base64-accepted",
+    "test": "test_response_envelope_duplicate_keys_and_base64_refuse",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "decoded-wire-bound-ignored",
+    "test": "test_response_bounds_refuse_before_or_after_decoding",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Oversized wire reached JSON parser"
+  },
+  {
+    "control": "decoded-body-bound-ignored",
+    "test": "test_response_bounds_refuse_before_or_after_decoding",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "actual-child-body-bound-ignored",
+    "test": "test_actual_oversized_response_refuses_from_child",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "Original HTTP response exceeds its bound"
+  },
+  {
+    "control": "credential-replaces-engine-snapshot",
+    "test": "test_credential_adapter_cannot_replace_original_engine_snapshot",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Original draft HTTP child failed"
+  },
+  {
+    "control": "implicit-platform-or-adapters",
+    "test": "test_constructor_requires_linux_and_callable_adapters",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "non-post-command-reaches-credentials",
+    "test": "test_initialization_shape_and_fields_refuse_before_credentials",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Invalid initialization reached credentials"
+  },
+  {
+    "control": "initialization-shape-ignored",
+    "test": "test_initialization_shape_and_fields_refuse_before_credentials",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Invalid initialization reached credentials"
+  },
+  {
+    "control": "initialization-fields-ignored",
+    "test": "test_initialization_shape_and_fields_refuse_before_credentials",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Invalid initialization reached credentials"
+  },
+  {
+    "control": "upload-descriptor-ignored",
+    "test": "test_upload_descriptors_refuse_before_credentials",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Invalid upload reached credentials"
+  },
+  {
+    "control": "short-stream-accepted",
+    "test": "test_short_or_nonbyte_stream_refuses_and_stops_child",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "Original draft HTTP deadline exceeded"
+  },
+  {
+    "control": "extra-image-byte-ignored",
+    "test": "test_extra_image_byte_refuses_complete_stream_claim",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "response-deadline-ignored",
+    "test": "test_actual_response_deadline_stops_owned_child",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "Original draft HTTP child failed"
+  },
+  {
+    "control": "resolver-stop-not-reaped",
+    "test": "test_stalled_resolver_cannot_start_a_late_request",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Stalled resolver child must be reaped before return"
+  },
+  {
+    "control": "live-child-not-signalled",
+    "test": "test_owned_stop_signals_before_waiting",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Owned live child wait preceded its stop signal"
+  },
+  {
+    "control": "exited-child-signalled",
+    "test": "test_owned_stop_never_signals_an_exited_child",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Exited child received another signal"
+  },
+  {
+    "control": "body-cancel-ignored",
+    "test": "test_actual_body_cancellation_stops_a_partial_upload",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "Original draft HTTP deadline exceeded"
+  },
+  {
+    "control": "runtime-init-cannot-acknowledge",
+    "test": "test_actual_runtime_bridge_saves_original_replies_and_holds_commit",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "Engine reply status, byte type or bound is invalid"
+  },
+  {
+    "control": "parent-lifetime-stop-removed",
+    "test": "test_abrupt_parent_exit_stops_and_reaps_owned_http_child",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Parent exit must stop the owned HTTP child"
+  },
+  {
+    "control": "child-output-bound-ignored",
+    "test": "test_child_stdout_and_stderr_bounds_precede_response_decode",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Oversized child output reached response decoder"
+  },
+  {
+    "control": "child-metadata-bound-ignored",
+    "test": "test_child_metadata_bound_precedes_payload_read",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Oversized child metadata reached payload read"
+  },
+  {
+    "control": "child-frame-eof-ignored",
+    "test": "test_incomplete_child_frame_refuses_at_original_eof",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Incomplete child input continued after original EOF"
+  },
+  {
+    "control": "unrelated-environment-inherited",
+    "test": "test_child_environment_does_not_inherit_unrelated_credentials",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "HTTP child cannot inherit unrelated credentials"
+  },
+  {
+    "control": "incomplete-json-reply-accepted",
+    "test": "test_incomplete_content_length_refuses_valid_json_prefix",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "RuntimeError not raised"
+  },
+  {
+    "control": "incomplete-empty-reply-accepted",
+    "test": "test_incomplete_content_length_refuses_empty_prefix",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "RuntimeError not raised"
+  },
+  {
+    "control": "complete-close-delimiter-refused",
+    "test": "test_complete_close_delimited_reply_preserves_exact_bytes",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Original draft HTTP child failed"
+  },
+  {
+    "control": "complete-empty-frame-refused",
+    "test": "test_complete_zero_length_reply_is_not_a_framing_error",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Original draft HTTP child failed"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

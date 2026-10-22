@@ -219,6 +219,10 @@ describe("module lane loaders", () => {
       { id: "opp-2", title: "Closing outside the window", opportunity_status: "open", decision_state: "pursue", closes_at: iso(20), decision_due_at: null, program_id: null, updated_at: iso(-2) },
       { id: "opp-3", title: "Overdue monitored decision", opportunity_status: "open", decision_state: "monitor", closes_at: iso(60), decision_due_at: iso(-3), program_id: null, updated_at: iso(-3) },
       { id: "opp-4", title: "Archived skip", opportunity_status: "archived", decision_state: "skip", closes_at: iso(2), decision_due_at: iso(-30), program_id: null, updated_at: iso(-4) },
+      // Closed eleven days ago with the status never updated: not closing soon
+      // on either surface (a live agent test on 2026-10-11 caught both
+      // counting it). It is still a monitored, undecided opportunity.
+      { id: "opp-5", title: "Close date passed, status still open", opportunity_status: "open", decision_state: "monitor", closes_at: iso(-11), decision_due_at: null, program_id: null, updated_at: iso(-5) },
     ];
 
     const supabase = createRecordingSupabase({
@@ -247,7 +251,7 @@ describe("module lane loaders", () => {
     // And both surfaces see the real pressure — agreement on zero proves nothing.
     expect(lane?.overdueDecision).toBe(1);
     expect(lane?.closingSoon).toBe(1);
-    expect(lane?.awaitingDecision).toBe(1);
+    expect(lane?.awaitingDecision).toBe(2);
   });
 
   it("invoicing: separates funder reimbursements from client receivables", async () => {
@@ -777,6 +781,22 @@ describe("module lane chat serialization", () => {
     expect(lines).toContain("Engagement campaigns: 3 total");
     expect(lines).toContain("Moderation queue: 4 pending review · 2 flagged");
     expect(lines).toContain("submission text is not loaded into this context");
+  });
+
+  it("states a close date on the same calendar as the prompt's TODAY line", () => {
+    // 06:59 UTC Oct 1 is 11:59 p.m. Sep 30 in Los Angeles. With TODAY dated in
+    // that zone, a UTC day here would put the close a day after the planner's.
+    const grants = baseContext("grants");
+    grants.moduleLane = {
+      module: "grants",
+      opportunities: {
+        total: 1, awaitingDecision: 0, monitor: 1, pursue: 0, skip: 0, closingSoon: 1, overdueDecision: 0,
+        lead: { id: "opp-1", title: "Closing soon", status: "open", decisionState: "monitor", closesAt: "2026-10-01T06:59:00.000Z" },
+      },
+      awards: { total: 0, awardedAmount: 0, activeSpending: 0, riskFlagged: 0 },
+    };
+    expect(buildAssistantChatContextLines(grants, { timeZone: "America/Los_Angeles" }).join("\n")).toContain("closes 2026-09-30");
+    expect(buildAssistantChatContextLines(grants).join("\n")).toContain("closes 2026-10-01");
   });
 
   it("serializes every lane it loads: grants, invoicing, aerial, knowledge base, data hub", () => {

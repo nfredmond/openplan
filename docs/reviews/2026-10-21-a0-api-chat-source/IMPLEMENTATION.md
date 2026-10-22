@@ -152,3 +152,77 @@ categories under the dated private a0-custody-codec-budget-repair and
 a0-codec-budget-independent roots. The full 19 contexts, API choice, installed
 Codex, Claude Code and OpenCode, complete v1 contract and sole roadmap remain
 binding. Root owns the next join and native admission.
+
+## R27 joins the reviewed source to the pinned release candidate
+
+October 22, 2026 UTC. The normal uncommitted merge retains HEAD
+`758abcf995d043b0bb7bbe01393c2e86def5c47a` and MERGE_HEAD
+`82989d0f4972878ba1898da1866a6be6330def5b`. This joins the release candidate,
+not current main, and does not declare a new v0.70.0 capability. Root owns final
+review and the merge commit. No rebase, reset, history removal, commit or push
+occurs in R27.
+
+The sole content conflict is the `chat-tools.ts` import block. Resolution keeps
+the released survey aggregation import removal and the six reviewed chat
+imports. Automatic copilot and stream merges retain the released layout,
+context, provider-selection and ordinary workflow changes alongside the chat
+path. All 429 release SQL files, 51 current connector inputs and six inspected
+action/registry/route/receipt authority bodies equal the release. The historical
+connector manifest remains unchanged. The joined migration census is 430, with
+the allocated chat migration strictly after the released high-water mark.
+The R25 SQL and native-fixture hashes remain exact.
+
+One maintained source guard initially mistakes the new reservation
+`WeakSet.delete` call for a database write. R27 retains that failure and changes
+only local reservation representation to a WeakMap availability flag. Invocation
+consumes the flag before the original catalog and input checks. The guard stays
+unchanged. A comment-only control passes all 28 focused tests; removing flag
+consumption fails the existing second-use refusal at projection test line 61.
+Exact bytes and mode are restored, and all 28 tests pass again. These controls
+cover local object consumption, not durable SQL claims, races or RLS. The static
+write-verb regex cannot distinguish receivers or prove every indirect side effect.
+
+The installed hidden lock initially has 12 record mismatches and one extra
+record against the joined release lock. The authorized private `npm ci
+--no-audit --no-fund` exits 0. All 969 installed records and package versions then
+match the release lock. The other 175 lock records are the root record and
+optional packages. No package or lock source changes, donor links or upgrades
+outside that release lock occur. Historical results keep their original source
+and dependency identities.
+
+The final maintained serial run passes 441 tests across 26 files, with zero
+failures, skips or todo. This includes the nine new files, nine old-profile
+files and eight current copilot/chat/approval/registry files. The old-profile
+census is now 273, including three upstream additions, rather than R12's 270.
+No native fixture is discovered or executed. Strict lint passes all 25 changed
+TypeScript subjects. Product direction checking exits 0 and retains its expiry,
+version and intervening-change reminders.
+
+The maintained migration-ordering file initially passes five tests and fails
+the missing Unreleased migration reference. Root then authorizes replacement of
+only that placeholder. The new forward entry names
+`20261021215752_assistant_chat_turns.sql`, requires migration before dependent
+code in a future deployment, and retains closed admission and unproved tiers.
+The complete file then passes all six tests. Its logic, the released 429 count,
+all v0.70.0 and older changelog bytes, and historical SQL remain unchanged.
+
+After exact restoration and a full 18,611-file source freeze, the single admitted
+configured compiler exits 0 at `2026-10-22T00:59:12.689448+00:00`, after 60.298
+seconds, with empty stdout and stderr. Root receives immediate compiler handback.
+No successor compiler or build runs. All frozen source bytes and modes still
+match after compilation. Candidate-relative whitespace checking reports existing
+whitespace in 17 imported release evidence files; every such body equals the
+release. The release-relative delta has no whitespace errors. No historical
+evidence is cleaned up.
+
+The private R27 packet is
+`/home/nathaniel/.local/state/openplan/a0-current-release-join-20261022-r27/`.
+It retains the release-relative JOIN.patch, full pins, actual commands and raw
+outputs, both initial failures, reservation controls and authority dispositions.
+No database, fresh installation, native fixture, provider/account/profile,
+browser, hosted or scientific operation occurs. The repaired maintained native
+21-case outcome remains UNRUN. R23's one pass and 20 failures and its unknown
+cache-failure iteration remain historical failures. Profile admission stays
+CLOSED, with no admission seed. All 19 contexts, API choice, installed Codex,
+Claude Code and OpenCode, the full v1 contract and the sole roadmap remain
+binding. The join establishes source and ordinary evidence only.

@@ -368,7 +368,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         .limit(limit);
     };
     const connectionFingerprint = buildPublicSubmissionClientFingerprint(request);
-    const deviceFingerprint = buildPublicParticipantDeviceFingerprint(request);
+    const deviceFingerprint = buildPublicParticipantDeviceFingerprint(request, campaign.id);
     const [fromClient, sameText] = await Promise.all([
       recentMatching(
         [["source_fingerprint", connectionFingerprint]],
@@ -403,6 +403,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const safety = evaluatePublicSubmissionSafety({
       request,
+      campaignId: campaign.id,
       title: parsed.data.title,
       body: parsed.data.body,
       recentItems: (recentItemsData ?? []) as RecentPublicSubmissionRecord[],
@@ -435,6 +436,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const receivedAt = new Date().toISOString();
     const metadata = buildPublicSubmissionSupportMetadata(request, {
+      campaignId: campaign.id,
       title: parsed.data.title,
       body: parsed.data.body,
       receivedAt,

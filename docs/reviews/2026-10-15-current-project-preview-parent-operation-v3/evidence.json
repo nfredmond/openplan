@@ -1,0 +1,244 @@
+{
+  "appHead": "21510042e94bcaf80f262205ad156a7bb639e35c",
+  "packetCandidate": "a968f2ec4ed6dd018b82fe09c4d6558c16a4dca3",
+  "independentReview": "b3ef5fd0ef3e30cfd556c1fa44971f5a865f8fca",
+  "admission": {
+    "at": "2026-10-15T12:03:17.413783+00:00",
+    "candidate": "a968f2ec4ed6dd018b82fe09c4d6558c16a4dca3",
+    "review": "b3ef5fd0ef3e30cfd556c1fa44971f5a865f8fca",
+    "appHead": "21510042e94bcaf80f262205ad156a7bb639e35c",
+    "manifestSha256": "011bdb57b4eb347660fbbde6c5bbdb88738995314b22bf6ba82b2a226e3fae14",
+    "checks": {
+      "app_binding_v1.py": true,
+      "app-env-private.json": true,
+      "app-v1.env": true,
+      "migrations.json": true,
+      "dependency-binding.json": true,
+      "recovery-active-binding.json": true,
+      "attest_start_v1.py": true,
+      "binding": true,
+      "runner": true,
+      "checksum-list": true,
+      "candidate-absent": true,
+      "execution-empty": true
+    },
+    "operationChecksumRows": 9,
+    "ownership": "Parent sole actual v3 stage owner; no other QA/build units in running user inventory",
+    "memoryAvailableBytes": 18378461184,
+    "diskAvailableBytes": 21396856832,
+    "execution": "not started"
+  },
+  "activeCheck": {
+    "exit": 0,
+    "seconds": 10.672,
+    "peakRounded": "152.5M",
+    "swap": "0B"
+  },
+  "checkout": {
+    "exit": 0,
+    "seconds": 29.982,
+    "peakRounded": "512M",
+    "swap": "0B"
+  },
+  "buildUnit": "openplan-current-project-preview-app-21510042e-v3-build.service",
+  "buildInvocation": "2f7b863d8a5f4ef9b0efb44be5aebfbb",
+  "controllerResult": {
+    "exit": 0,
+    "seconds": 533.991,
+    "CPUSeconds": 256.556,
+    "parentExecSessionReadback": 36302
+  },
+  "buildExit": {
+    "returncode": 0,
+    "resources": {
+      "memory.max": "10737418240",
+      "memory.swap.max": "0",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "cpu.max": "50000 100000",
+      "memory.peak": "6637461504",
+      "memory.swap.current": "0"
+    },
+    "seconds": 509.40769416699186
+  },
+  "acceptedBuild": {
+    "schema": 1,
+    "app": {
+      "head": "21510042e94bcaf80f262205ad156a7bb639e35c",
+      "environmentSha256": "a283c64f3002d46ad879ea313f618166b94ff7712e3c9d7fd8dba11f977b69f9",
+      "migrationDigest": "1f7ce06758c8a3e64d4a89cb4359d4035a38ffb5f18f9ce84c552876906c8ad4",
+      "dependencyBindingSha256": "5bff54066d812bfaabb4a864ff8f50e90e616e68aed0c0097bf392d2e832834c"
+    },
+    "active": {
+      "activeReceiptSha256": "89042f1acf194f483ab6e1e0b1e7e64c4ec217d3984200d167a589c43e215e8d",
+      "sourceAnchor": "82fda3004c8dd5d3f1e26eb179e11d1da159eb79a33253a636de37ef68213547",
+      "helperHead": "06a108010ab39aa42eed4c2bcda3e1371b8aa813",
+      "producer": "d71e0aa7aa1b2c3c945ee87a54ea49d6a5772378",
+      "clusterId": "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce",
+      "target": {
+        "oid": "6118831",
+        "owner": "postgres",
+        "database": "openplan_project_combined_preview_0752bc2e8104b7a40faab27f"
+      },
+      "images": {
+        "rest": "sha256:2f8e7b656f09db697a8875177694b417b35cb76c21370de07fc54e711e902326",
+        "auth": "sha256:2b352c02adf11a2025cd5993c246ef85db73743553c39194d2b1862d1cc4d1fd",
+        "storage": "sha256:a4846b3329f3afd52cd2ae31b89a0c1ae841221e9d3a22d55db65f9dca2a72b6",
+        "gateway": "sha256:1b53405d8680a09d6f44494b7990bf7da2ea43f84a258c59717d4539abf09f6d"
+      }
+    },
+    "resourcesBefore": {
+      "memory.max": "10737418240",
+      "memory.swap.max": "0",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "cpu.max": "50000 100000",
+      "memory.peak": "47407104",
+      "memory.swap.current": "0"
+    },
+    "resourcesAfter": {
+      "memory.max": "10737418240",
+      "memory.swap.max": "0",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "cpu.max": "50000 100000",
+      "memory.peak": "6637461504",
+      "memory.swap.current": "0"
+    },
+    "returncode": 0,
+    "buildId": "u1jUSo57HKk72eLd1Qv43",
+    "buildFilesSha256": "a9301eaa823c4b3689f72315a2cf849be2abde81765ed9ecf06c4d694e241dc4",
+    "buildInventoryDigest": "fe3a11d7cf20e11e927f3e2c8ca04d37db1121fe2d0815c5ab1b4c9cf78dab55",
+    "launcherSha256": "c195d3be5eb3bcafb016f8794bf77e704d940bbf878bd725a874d85559c58329",
+    "bindingSha256": "493af5c631b4b420d6f5b6c0723879e9d555240395a41aca7dde367051f0070f",
+    "executables": {
+      "/usr/bin/node": "67ca5783febb8bf85736c79fcdd92c8d6d465a0eb2a082672bcdfa76a506751c",
+      "/usr/bin/npm": "8e5f6f3429f8cdbe693cdc29904e9d5a7b127a494bd15c804bd54c7403bfcbe7",
+      "/usr/bin/bwrap": "523da3e7399044be5163aee6f57a77a6bef7454376e28f0a0627920bae1b76b6"
+    }
+  },
+  "proofFiles": {
+    "/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/execution/build-exit.json": {
+      "sha256": "db75e6d969941112102de5bcf2c6a1d247e8e407a880e06c2d927939350de96e",
+      "bytes": 333
+    },
+    "/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/execution/build-result.json": {
+      "sha256": "ea1708fc7a766797a9e2fc1c019f2ed3de602dafc76e17b9330fc88766b00f72",
+      "bytes": 2588
+    },
+    "/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/execution/build-files.json": {
+      "sha256": "a9301eaa823c4b3689f72315a2cf849be2abde81765ed9ecf06c4d694e241dc4",
+      "bytes": 451735
+    },
+    "/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/candidate/openplan/.next/BUILD_ID": {
+      "sha256": "9eed90869b609b5159c0e4c22b2cdf42b082b192f08d2d9cd0161c8c97303ddc",
+      "bytes": 21
+    }
+  },
+  "runtimeState": "web HTTP ready; strict attestor refused attest-listener-pid; no runtime receipt",
+  "limits": [
+    "Active-check and checkout resource peaks are rounded; their event counters were not captured by parent readback",
+    "Build receipt records actual current source/global/helper/Storage checker success, not independent disaster-recovery acceptance",
+    "No browser, desktop or 390px, console, downloaded artifact, practitioner or scientific acceptance"
+  ],
+  "observer": {
+    "path": "/home/nathaniel/.local/state/openplan/current-project-preview-build-observation-20261015-v3-01/summary.json",
+    "sha256": "b28a8bf709c1af1655d8f6f7a68e45a573c51de9f4a2bac4d188e66dabe9655c",
+    "checks": {
+      "invocationExact": true,
+      "unitSucceeded": true,
+      "privateRootMode": true,
+      "packetFilesMatchBinding": true,
+      "fullHeadExact": true,
+      "candidateClean": true,
+      "bindingHeadExact": true,
+      "environmentHeadExact": true,
+      "environmentEncoding": true,
+      "environmentOnlyApprovedHeadDelta": true,
+      "environmentBytesExact": true,
+      "environmentHashExact": true,
+      "migrationInventoryExact": true,
+      "dependencyInputsExact": true,
+      "dependencyGraphExact": true,
+      "dependencyManifestExact": true,
+      "installedMetadataExact": true,
+      "dependencyLinkExact": true,
+      "operationManifestReferencesExact": true,
+      "systemdCapsExact": true,
+      "systemdPeakWithinCap": true,
+      "receiptReferencesExact": true,
+      "inventoryExact": true,
+      "controllerAppUnchanged": true,
+      "controllerZeroExit": true,
+      "controllerResourcesWithinActualCaps": true,
+      "receiptControlsBehaveAsNamed": true,
+      "controlBaselineReceiptsUnchanged": true
+    },
+    "inventory": {
+      "files": 2587,
+      "actualDigest": "fe3a11d7cf20e11e927f3e2c8ca04d37db1121fe2d0815c5ab1b4c9cf78dab55",
+      "receiptFileSha256": "a9301eaa823c4b3689f72315a2cf849be2abde81765ed9ecf06c4d694e241dc4",
+      "executables": {
+        "/usr/bin/node": "67ca5783febb8bf85736c79fcdd92c8d6d465a0eb2a082672bcdfa76a506751c",
+        "/usr/bin/npm": "8e5f6f3429f8cdbe693cdc29904e9d5a7b127a494bd15c804bd54c7403bfcbe7",
+        "/usr/bin/bwrap": "523da3e7399044be5163aee6f57a77a6bef7454376e28f0a0627920bae1b76b6"
+      }
+    },
+    "controls": [
+      {
+        "mutation": "harmless-extra-metadata",
+        "refusals": [],
+        "expected": []
+      },
+      {
+        "mutation": "wrong-head",
+        "refusals": [
+          "wrong-head"
+        ],
+        "expected": [
+          "wrong-head"
+        ]
+      },
+      {
+        "mutation": "wrong-build-id",
+        "refusals": [
+          "wrong-build-id"
+        ],
+        "expected": [
+          "wrong-build-id"
+        ]
+      },
+      {
+        "mutation": "wrong-files-hash",
+        "refusals": [
+          "wrong-files-hash"
+        ],
+        "expected": [
+          "wrong-files-hash"
+        ]
+      },
+      {
+        "mutation": "wrong-inventory-digest",
+        "refusals": [
+          "wrong-inventory-digest"
+        ],
+        "expected": [
+          "wrong-inventory-digest"
+        ]
+      }
+    ],
+    "limits": [
+      "Read-only controller/build receipt observation. No DB/SQL, provider, browser or HTTP acquisition.",
+      "No application start, runtime attestation, desktop/390px journey, real artifact, scientific or human acceptance.",
+      "Dependency metadata and pinned lock identity do not hash every installed dependency byte.",
+      "No re-execution of controller acquire(), which includes live service and database boundaries.",
+      "IO counters remain unavailable when systemd reports [not set]; no values inferred.",
+      "Transient unit was released before terminal sampling; terminal invocation/counters come from exact USER_INVOCATION_ID journal entries and retained running samples. Parent separately reports controller exit 0."
+    ]
+  },
+  "failedAttestation": {
+    "unit": "openplan-current-project-preview-app-21510042e-v3-attest.service",
+    "invocation": "be8cba835bbe4c14af8ed007cd61bbb2",
+    "exit": 1,
+    "reason": "attest-listener-pid",
+    "seconds": 13.653
+  },
+  "contextDiagnosisFileSha256": "25eda3e8296a654f702b578b57d0d928b6420055a357c5accfb1e2fc94bb4669"
+}

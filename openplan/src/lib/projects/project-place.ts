@@ -1,4 +1,4 @@
-import type { PlaceBoundaryResponse } from "@/lib/api/place-geographies";
+import { placeKindSchema, type PlaceBoundaryResponse, type PlaceKind } from "@/lib/api/place-geographies";
 import {
   bboxOfGeometry,
   DRAWN_PLACE_SOURCE,
@@ -173,6 +173,26 @@ export function projectPlaceFromUploadedArea(
   options?: { label?: string | null; setAt?: Date }
 ): ProjectPlaceRow | null {
   return projectPlaceFromUnresolvedArea(geometry, UPLOADED_PLACE_SOURCE, options);
+}
+
+/**
+ * A project's area as a reference another record can copy: the kind and GEOID
+ * of a searched place, which the receiving route re-resolves itself.
+ *
+ * Null for a drawn or uploaded area, which has no reference to send, and for
+ * any stored value the place resolver would refuse. A caller that gets null
+ * offers the picker instead of a one-click copy.
+ */
+export type ProjectPlaceReference = { kind: PlaceKind; geoid: string; label: string | null };
+
+export function projectPlaceReference(
+  row: Partial<ProjectPlaceRow> | null | undefined
+): ProjectPlaceReference | null {
+  if (row?.place_source !== TIGERWEB_GEOGRAPHY_SOURCE) return null;
+  const kind = placeKindSchema.safeParse(row.place_kind);
+  const geoid = row.place_ref?.trim() ?? "";
+  if (!kind.success || geoid.length < 5 || geoid.length > 7) return null;
+  return { kind: kind.data, geoid, label: row.place_label?.trim() || null };
 }
 
 /** Every place column blanked — what clearing a project's area writes. */

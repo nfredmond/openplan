@@ -51,15 +51,13 @@ export function buildCampaignTabs(flags: CampaignTabReadFlags): PageTabDefinitio
         "campaign-control-project",
         "campaign-control-rtp-cycle",
         "campaign-control-rtp-chapter",
+        "campaign-control-participation-ends",
       ],
-      // `closeloop-broadcast-notice-` is a prefix, not an exact anchor: the
-      // close-the-loop builder renders one notice per entry and suffixes each
-      // with the entry id. There is deliberately no `survey-` prefix here — the
-      // only `survey-*` ids in the repo belong to the PUBLIC form
-      // (`public-survey-form.tsx`, served at /engage/<token>), which this
-      // console never renders, so claiming them switched a tab and scrolled to
-      // nothing.
-      anchorPrefixes: ["engagement-category-", "context-layer-", "closeloop-broadcast-notice-"],
+      // There is deliberately no `survey-` prefix here. The only `survey-*`
+      // ids in the repo belong to the PUBLIC form (`public-survey-form.tsx`,
+      // served at /engage/<token>), which this console never renders, so
+      // claiming them switched a tab and scrolled to nothing.
+      anchorPrefixes: ["engagement-category-", "context-layer-"],
       unreadable: unreadableLanes([
         ["this campaign's comment categories", flags.categoriesUnreadable],
         ["the RTP cycle this campaign is attached to", flags.rtpCycleUnreadable],
@@ -73,7 +71,11 @@ export function buildCampaignTabs(flags: CampaignTabReadFlags): PageTabDefinitio
       // rendered inside the Setup panel, so this tab claiming it opened
       // Responses on an element that is not in it.
       anchors: ["email-delivery-panel", "engagement-map-unavailable"],
-      anchorPrefixes: ["engagement-item-"],
+      // `closeloop-broadcast-notice-` is a prefix, not an exact anchor: the
+      // report-back builder renders one notice per entry and suffixes each
+      // with the entry id. The builder moved here from Setup on October 13,
+      // 2026, because it answers comments that only exist once responses do.
+      anchorPrefixes: ["engagement-item-", "closeloop-broadcast-notice-"],
       unreadable: unreadableLanes([["the comments on this campaign", flags.itemsUnreadable]]),
     },
     {

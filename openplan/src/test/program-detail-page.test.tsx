@@ -144,7 +144,32 @@ const modelLinksEqMock = vi.fn((column: string) => {
 });
 const modelLinksSelectMock = vi.fn(() => ({ eq: modelLinksEqMock, in: supportingModelLinksInMock }));
 
+/**
+ * The three work program record reads: `.select("id").eq("program_id", id).limit(1)`.
+ * One limit mock per table, so a test can put a record in any one of them.
+ */
+type RecordRead = { data: Array<{ id: string }> | null; error: { message: string } | null };
+const workProgramRecordLimitMocks = {
+  program_work_program_sources: vi.fn<(count: number) => Promise<RecordRead>>(),
+  program_work_program_revisions: vi.fn<(count: number) => Promise<RecordRead>>(),
+  work_program_reporting_periods: vi.fn<(count: number) => Promise<RecordRead>>(),
+};
+type WorkProgramRecordTable = keyof typeof workProgramRecordLimitMocks;
+const workProgramRecordEqMock = vi.fn((table: WorkProgramRecordTable, column: string, value: string) => {
+  void column;
+  void value;
+  return { limit: workProgramRecordLimitMocks[table] };
+});
+const workProgramRecordSelectMock = vi.fn((table: WorkProgramRecordTable, columns: string) => {
+  void columns;
+  return { eq: (column: string, value: string) => workProgramRecordEqMock(table, column, value) };
+});
+
 const fromMock = vi.fn((table: string) => {
+  if (table in workProgramRecordLimitMocks) {
+    const recordTable = table as WorkProgramRecordTable;
+    return { select: (columns: string) => workProgramRecordSelectMock(recordTable, columns) };
+  }
   if (table === "programs") {
     return { select: programSelectMock };
   }
@@ -343,6 +368,10 @@ describe("ProgramDetailPage", () => {
       ],
       error: null,
     });
+
+    for (const limit of Object.values(workProgramRecordLimitMocks)) {
+      limit.mockResolvedValue({ data: [], error: null });
+    }
 
     modelsProjectOrderMock.mockResolvedValue({ data: [], error: null });
     modelsInMock.mockResolvedValue({ data: [], error: null });
@@ -545,6 +574,114 @@ describe("ProgramDetailPage", () => {
       expect(screen.getByText("0 runs")).toBeInTheDocument();
       expect(screen.queryByText(/linkage counts unavailable/)).not.toBeInTheDocument();
       expect(screen.queryByText(/No readiness verdict is shown for this model/)).not.toBeInTheDocument();
+    });
+  });
+
+  /**
+   * The measure fund lives on a child route, so this link on the default tab is
+   * its door from the program. Rendered rather than read from source, so a
+   * link that exists in the file but never reaches the screen fails here.
+   */
+  describe("the way into the measure fund", () => {
+    it("offers the measure fund on a local measure's overview", async () => {
+      const { data } = await programMaybeSingleMock();
+      programMaybeSingleMock.mockResolvedValue({
+        data: { ...data, title: "Measure A", program_type: "local_measure" },
+        error: null,
+      });
+
+      await renderPage("overview");
+
+      expect(screen.getByRole("link", { name: /Measure fund/ })).toHaveAttribute(
+        "href",
+        "/programs/program-1/measure"
+      );
+    });
+
+    it("does not offer a measure fund on an RTIP", async () => {
+      // An RTIP that already has a work program, so the control below has a door to find.
+      workProgramRecordLimitMocks.program_work_program_revisions.mockResolvedValue({
+        data: [{ id: "revision-1" }],
+        error: null,
+      });
+
+      await renderPage("overview");
+
+      expect(screen.queryByRole("link", { name: /Measure fund/ })).not.toBeInTheDocument();
+      // The control: the overview's other doors did render.
+      expect(screen.getByRole("link", { name: /Work program/ })).toBeInTheDocument();
+    });
+  });
+
+  /**
+   * THE WAY INTO THE WORK PROGRAM.
+   *
+   * Offered on an Overall Work Program, and on any other program that already
+   * holds work program records, so a work program started before the type
+   * existed stays reachable. Hidden on other programs without one.
+   */
+  describe("the way into the work program", () => {
+    async function asType(programType: string) {
+      const { data } = await programMaybeSingleMock();
+      programMaybeSingleMock.mockResolvedValue({ data: { ...data, program_type: programType }, error: null });
+    }
+
+    function workProgramLinks() {
+      return [
+        screen.queryByRole("link", { name: /Work program/ }),
+        screen.queryByRole("link", { name: "Administer a reporting period" }),
+      ];
+    }
+
+    it("offers it on an Overall Work Program without reading for records", async () => {
+      await asType("owp_upwp");
+
+      await renderPage("overview");
+
+      const [prepare, report] = workProgramLinks();
+      expect(prepare).toHaveAttribute("href", "/programs/program-1/work-program");
+      expect(report).toHaveAttribute("href", "/programs/program-1/work-program#actual-work");
+      expect(screen.getByText("Overall Work Program (OWP/UPWP)")).toBeInTheDocument();
+      expect(workProgramRecordSelectMock).not.toHaveBeenCalled();
+    });
+
+    it("hides it on an RTIP with no work program records", async () => {
+      await renderPage("overview");
+
+      expect(workProgramLinks()).toEqual([null, null]);
+      expect(screen.queryByText("Part of this page could not be read")).not.toBeInTheDocument();
+      // One row is enough to know, from each of the three tables, for this program.
+      for (const table of Object.keys(workProgramRecordLimitMocks) as WorkProgramRecordTable[]) {
+        expect(workProgramRecordSelectMock).toHaveBeenCalledWith(table, "id");
+        expect(workProgramRecordEqMock).toHaveBeenCalledWith(table, "program_id", "program-1");
+        expect(workProgramRecordLimitMocks[table]).toHaveBeenCalledWith(1);
+      }
+    });
+
+    it.each(Object.keys(workProgramRecordLimitMocks) as WorkProgramRecordTable[])(
+      "offers it on an RTIP that already has a record in %s",
+      async (table) => {
+        workProgramRecordLimitMocks[table].mockResolvedValue({ data: [{ id: "record-1" }], error: null });
+
+        await renderPage("overview");
+
+        const [prepare, report] = workProgramLinks();
+        expect(prepare).toHaveAttribute("href", "/programs/program-1/work-program");
+        expect(report).toBeInTheDocument();
+      },
+    );
+
+    it("offers it, and says so, when a record read fails", async () => {
+      workProgramRecordLimitMocks.program_work_program_sources.mockResolvedValue({
+        data: null,
+        error: { message: "permission denied for table program_work_program_sources" },
+      });
+
+      await renderPage("overview");
+
+      expect(workProgramLinks()[0]).toBeInTheDocument();
+      expect(screen.getByText("Part of this page could not be read")).toBeInTheDocument();
+      expect(screen.getByText(/work program sources: permission denied/)).toBeInTheDocument();
     });
   });
 });

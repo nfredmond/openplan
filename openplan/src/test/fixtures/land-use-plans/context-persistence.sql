@@ -15,6 +15,16 @@ RETURNS void LANGUAGE plpgsql AS $$ BEGIN
   END;
   RAISE EXCEPTION '%: accepted', p_message;
 END $$;
+-- Geography failures need the narrow identifier, not an arbitrary PT409.
+CREATE FUNCTION pg_temp.context_geography_refuses(p_sql text, p_message text)
+RETURNS void LANGUAGE plpgsql AS $$ BEGIN
+  BEGIN EXECUTE p_sql;
+  EXCEPTION WHEN OTHERS THEN
+    IF SQLSTATE = 'PT409' AND SQLERRM = 'Land-use plan geography must match saved context' THEN RETURN; END IF;
+    RAISE EXCEPTION '%: unexpected % %', p_message, SQLSTATE, SQLERRM;
+  END;
+  RAISE EXCEPTION '%: accepted', p_message;
+END $$;
 DO $test$
 DECLARE
   actor uuid := gen_random_uuid(); viewer uuid := gen_random_uuid(); outsider uuid := gen_random_uuid();
@@ -24,6 +34,7 @@ DECLARE
   prepared jsonb := '{"schemaVersion":1,"place":{"source":"uploaded_file","label":"SYNTHETIC study","kind":null,"ref":null,"countryCode":null,"subdivisionCode":null,"bbox":{"minLon":0,"minLat":0,"maxLon":1,"maxLat":1},"geometry":{"type":"Polygon","coordinates":[[[0,0],[1,0],[1,1],[0,0]]]}},"assessment":{"authorities":[{"id":"11111111-1111-4111-8111-111111111111","label":"SYNTHETIC body","role":"adopting","kind":"unassessed","jurisdiction":null,"sourceUrls":[]}],"applicability":{"status":"unresolved","explanation":"Synthetic persistence exercise, no legal assessment."}},"savedBy":"00000000-0000-0000-0000-000000000000","savedAt":"1900-01-01T00:00:00Z"}';
   raw_command text := '{"place":{"mode":"uploaded","label":"SYNTHETIC study","geometry":{"type":"Polygon","coordinates":[[[0,0],[1,0],[1,1],[0,0]]]}},"assessment":{"authorities":[{"id":"11111111-1111-4111-8111-111111111111","label":"SYNTHETIC body","role":"adopting","kind":"unassessed","jurisdiction":null,"sourceUrls":[]}],"applicability":{"status":"unresolved","explanation":"Synthetic persistence exercise, no legal assessment."}}}';
   result jsonb; replay jsonb; second_result jsonb; call_sql text; freeze_sql text;
+  before_plan jsonb; before_revision integer;
 BEGIN
   INSERT INTO auth.users(id,email) VALUES(actor,actor||'@example.test'),(viewer,viewer||'@example.test'),
     (outsider,outsider||'@example.test'),(member,member||'@example.test');
@@ -60,11 +71,23 @@ BEGIN
   PERFORM pg_temp.context_refuses(format('SELECT public.save_land_use_plan_context(%L,%L,%L,%L,NULL,%L,%L,%L,%L)',plan,version,actor,command,raw_command,prepared,'local-unconfigured','wrong-kind'),'PT409','changed plan kind refused');
   PERFORM pg_temp.context_refuses(format('SELECT pg_temp.save_context(%L,%L,%L,%L,NULL,%L,%L)',plan,version,actor,gen_random_uuid(),jsonb_set(raw_command::jsonb,'{place}','{"mode":"retained"}')::text,prepared),'PT409','cannot retain an absent study area');
   EXECUTE call_sql INTO result;
+  SELECT to_jsonb(p) INTO before_plan FROM public.land_use_plans p WHERE id=plan;
+  SELECT draft_revision INTO before_revision FROM public.land_use_plan_versions WHERE id=version;
   SET LOCAL ROLE authenticated;
+  PERFORM pg_temp.context_geography_refuses(format('UPDATE public.land_use_plans SET geography_label=%L WHERE id=%L','SYNTHETIC conflicting area',plan),'authenticated label conflict');
+  PERFORM pg_temp.context_geography_refuses(format('UPDATE public.land_use_plans SET geography_geojson=%L WHERE id=%L','{"type":"Polygon","coordinates":[[[10,0],[11,0],[11,1],[10,0]]]}',plan),'authenticated geometry conflict');
+  PERFORM pg_temp.context_geography_refuses(format('UPDATE public.land_use_plans SET geography_label=%L,geography_geojson=%L WHERE id=%L','SYNTHETIC conflicting area','{"type":"Polygon","coordinates":[[[10,0],[11,0],[11,1],[10,0]]]}',plan),'authenticated combined conflict');
+  PERFORM pg_temp.context_assert((SELECT to_jsonb(p)=before_plan FROM public.land_use_plans p WHERE id=plan),'refused geography leaves exact plan row');
+  PERFORM pg_temp.context_assert((SELECT draft_revision=before_revision FROM public.land_use_plan_versions WHERE id=version),'refused geography leaves revision');
+  UPDATE public.land_use_plans SET geography_label=geography_label,geography_geojson=geography_geojson WHERE id=plan;
+  PERFORM pg_temp.context_assert((SELECT draft_revision=before_revision FROM public.land_use_plan_versions WHERE id=version),'same-value geography preserves revision');
   PERFORM pg_temp.context_refuses(format('UPDATE public.land_use_plans SET descriptor_id=%L WHERE id=%L','wrong-checklist',plan),'42501','direct checklist change refused');
   PERFORM pg_temp.context_refuses(format('UPDATE public.land_use_plans SET plan_kind_key=%L WHERE id=%L','wrong-kind',plan),'42501','direct plan kind change refused');
   UPDATE public.land_use_plans SET title='SYNTHETIC permitted label edit' WHERE id=plan;
   SET LOCAL ROLE service_role;
+  PERFORM pg_temp.context_geography_refuses(format('UPDATE public.land_use_plans SET geography_geojson=NULL WHERE id=%L',plan),'service geometry cannot clear retained place');
+  PERFORM pg_temp.context_geography_refuses(format('UPDATE public.land_use_plans SET plan_context=NULL WHERE id=%L',plan),'service context cannot become legacy');
+  PERFORM pg_temp.context_geography_refuses(format('INSERT INTO public.land_use_plans(workspace_id,title,descriptor_id,plan_kind_key,authority_label,geography_label,geography_geojson,plan_context) VALUES(%L,%L,%L,%L,%L,%L,%L,%L)',workspace,'SYNTHETIC','local-unconfigured','community','SYNTHETIC',prepared#>>'{place,label}','{"type":"Polygon","coordinates":[[[10,0],[11,0],[11,1],[10,0]]]}',prepared),'service insert geometry conflict');
   PERFORM pg_temp.context_assert(result->>'replayed'='false','first save is new');
   PERFORM pg_temp.context_assert(result#>>'{context,savedBy}'=actor::text,'database actor attribution');
   PERFORM pg_temp.context_assert((result#>>'{context,savedAt}')::timestamptz BETWEEN transaction_timestamp() AND clock_timestamp(),'database time attribution');
@@ -88,6 +111,16 @@ BEGIN
   second_result := pg_temp.save_context(plan,version,actor,gen_random_uuid(),second_result->>'contextHash',jsonb_set(raw_command::jsonb,'{place}','{"mode":"retained"}')::text,prepared);
   PERFORM pg_temp.context_assert(second_result#>'{context,place}'=prepared->'place','retained area stays exact');
   PERFORM pg_temp.context_assert((SELECT geography_label=prepared#>>'{place,label}' AND geography_geojson=prepared#>'{place,geometry}' FROM public.land_use_plans WHERE id=plan),'plan geography agrees with retained context');
+  -- Replacing a working study area stays available through the existing command.
+  prepared := jsonb_set(jsonb_set(prepared,'{place,label}','"SYNTHETIC replacement area"'),'{place,geometry}','{"type":"Polygon","coordinates":[[[10,0],[11,0],[11,1],[10,0]]]}');
+  prepared := jsonb_set(prepared,'{place,bbox}','{"minLon":10,"minLat":0,"maxLon":11,"maxLat":1}');
+  raw_command := jsonb_set(raw_command::jsonb,'{place}',jsonb_build_object('mode','uploaded','label',prepared#>>'{place,label}','geometry',prepared#>'{place,geometry}'))::text;
+  second_result := pg_temp.save_context(plan,version,actor,gen_random_uuid(),second_result->>'contextHash',raw_command,prepared);
+  PERFORM pg_temp.context_assert((SELECT plan_context=second_result->'context' AND geography_label='SYNTHETIC replacement area' AND geography_geojson=prepared#>'{place,geometry}' FROM public.land_use_plans WHERE id=plan),'context replacement updates all geography together');
+  PERFORM pg_temp.context_assert(second_result#>'{context,assessment}'=result#>'{context,assessment}','study-area replacement preserves stated authority');
+  EXECUTE call_sql INTO replay;
+  PERFORM pg_temp.context_assert(replay-'replayed'=result-'replayed','original receipt survives replacement');
+  PERFORM pg_temp.context_assert((SELECT plan_context=second_result->'context' FROM public.land_use_plans WHERE id=plan),'original receipt does not overwrite replacement');
   SET LOCAL ROLE postgres;
   UPDATE public.workspace_members SET role='owner' WHERE workspace_id=workspace AND user_id=member;
   UPDATE public.workspace_members SET role='viewer' WHERE workspace_id=workspace AND user_id=actor;
@@ -104,7 +137,7 @@ BEGIN
   EXECUTE replace(freeze_sql,quote_literal('{}'),quote_literal(jsonb_build_object('planContext',second_result->'context')::text));
   SET LOCAL ROLE service_role;
   PERFORM pg_temp.context_refuses(format('SELECT pg_temp.save_context(%L,%L,%L,%L,%L,%L,%L)',plan,version,actor,gen_random_uuid(),second_result->>'contextHash',raw_command,prepared),'PT409','frozen version save refused');
-  replay := pg_temp.save_context(plan,version,actor,command,NULL,raw_command,NULL);
+  EXECUTE call_sql INTO replay;
   PERFORM pg_temp.context_assert(replay-'replayed'=result-'replayed','lost acknowledgment recoverable after freeze');
   SET LOCAL ROLE postgres;
   IF current_setting('openplan.test_cascade_workspace',true)='1' THEN

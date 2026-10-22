@@ -10,6 +10,14 @@ describe("published distributed work loading", () => {
     const study = await loadPublishedDistributedWorkLoadingStudy();
     expect(study.version).toBe("0.44.0");
     expect(study.releaseSha).toBe("a7c2afa71debdf3d61af8fe3967d8198e4f4ae09");
+    expect(study.recordedConfiguration).toEqual({
+      registryPath: "scripts/modeling/development/california_distributed_work_loading_study.v1.json",
+      registrySha256: "5eb3378b01e7212c61efbf503f822e275a403808f3d693850fab2a975d2c9b03",
+      arbitraryPointCap: null, arbitraryGatewayCap: null, aggregateOnlySameRoutableNode: true,
+      preserveMethodWorkTotals: true, nonWorkUnchanged: true, acceptanceHoldoutOpened: false,
+      legacyPathNote: expect.stringContaining("already consumed"), sourceRelease: "LODES 8.4", sourceYear: 2023,
+      sourceLimitation: "LODES describes jobs and home-to-work relationships. It does not describe all-purpose travel or vehicle trips.",
+    });
     expect(study.scientificOutcome).toBe("inconclusive");
     expect(study.records).toHaveLength(14);
     expect(new Set(study.records.map((record) => record.method))).toEqual(new Set(["aequilibrae", "activitysim"]));

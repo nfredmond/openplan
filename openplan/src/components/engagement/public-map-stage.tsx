@@ -4,10 +4,9 @@ import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "rea
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { resolveOpenMapStyleUrl } from "@/lib/cartographic/open-map-style";
+import { deploymentMapEngine, labelFontsFor, startMap } from "@/lib/maps/map-engine";
 import { cn } from "@/lib/utils";
 import { keepMapSizedToContainer } from "@/lib/mapbox/keep-map-sized";
-import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 import { hasEngagementLocation, readStoredEngagementGeometry, type EngagementGeometry } from "@/lib/engagement/geometry";
 import {
@@ -29,10 +28,12 @@ import { PublicMapPickers } from "./public-map-pickers";
 import { PublicMapPlaceSearch } from "./public-map-place-search";
 import type { PlaceSearchResult } from "@/lib/engagement/place-search";
 
-const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
-  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
-  process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
-);
+/**
+ * The engine choice is shared with the staff maps (`src/lib/maps/map-engine.ts`).
+ * It started here, as the only map that could draw without a Mapbox key.
+ */
+const DEPLOYMENT_MAP_ENGINE = deploymentMapEngine();
+const MAPBOX_ACCESS_TOKEN = DEPLOYMENT_MAP_ENGINE.kind === "mapbox" ? DEPLOYMENT_MAP_ENGINE.token : "";
 
 /*
   THERE IS NO STYLE LIST IN THIS FILE, deliberately. The backgrounds a resident
@@ -63,33 +64,10 @@ const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
  * A deployment with no Mapbox key may still draw a map: MapLibre with the
  * operator's own style (see `open-map-style.ts`). A key, when set, wins.
  */
-const OPEN_MAP_STYLE_URL = resolveOpenMapStyleUrl(process.env.NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL);
-const MAP_ENGINE: "mapbox" | "maplibre" | null = MAPBOX_ACCESS_TOKEN ? "mapbox" : OPEN_MAP_STYLE_URL ? "maplibre" : null;
+const OPEN_MAP_STYLE_URL = DEPLOYMENT_MAP_ENGINE.kind === "maplibre" ? DEPLOYMENT_MAP_ENGINE.styleUrl : null;
+const MAP_ENGINE: "mapbox" | "maplibre" | null = DEPLOYMENT_MAP_ENGINE.kind === "none" ? null : DEPLOYMENT_MAP_ENGINE.kind;
 
 export const PARTICIPANT_MAP_CAN_DRAW = MAP_ENGINE !== null;
-
-/**
- * MapLibre, loaded only on a deployment that uses it, with the `pmtiles://`
- * protocol registered once so a style can point at a local `.pmtiles` file.
- * Typed as Mapbox's module: the stage uses only the API the two share.
- */
-let mapLibreLoad: Promise<typeof mapboxgl> | null = null;
-function loadMapLibre(): Promise<typeof mapboxgl> {
-  mapLibreLoad ??= Promise.all([import("maplibre-gl"), import("pmtiles")]).then(([maplibre, pmtiles]) => {
-    // The bundler may hand the module over as its namespace or under `default`.
-    const loaded = maplibre as unknown as { default?: unknown };
-    const gl = (loaded.default ?? maplibre) as unknown as typeof mapboxgl & {
-      addProtocol: (name: string, load: unknown) => void;
-      setWorkerUrl: (url: string) => void;
-    };
-    // MapLibre finds its tile worker beside its own file, which a bundle moves.
-    // The bundler emits the worker as a file and hands back where it put it.
-    gl.setWorkerUrl(new URL("maplibre-gl/dist/maplibre-gl-worker.mjs", import.meta.url).href);
-    gl.addProtocol("pmtiles", new pmtiles.Protocol().tile);
-    return gl;
-  });
-  return mapLibreLoad;
-}
 
 /**
  * Fonts for the cluster counts. Mapbox serves its own. An operator's style
@@ -97,14 +75,7 @@ function loadMapLibre(): Promise<typeof mapboxgl> {
  * at all gets circles without a count rather than a layer that fails.
  */
 function clusterFonts(map: mapboxgl.Map): string[] | null {
-  if (MAP_ENGINE === "mapbox") return ["DIN Pro Medium", "Arial Unicode MS Bold"];
-  const style = map.getStyle() as { glyphs?: string; layers?: Array<{ layout?: Record<string, unknown> }> } | undefined;
-  if (!style?.glyphs) return null;
-  for (const layer of style.layers ?? []) {
-    const font = layer.layout?.["text-font"];
-    if (Array.isArray(font) && font.length > 0 && font.every((name) => typeof name === "string")) return font;
-  }
-  return ["Noto Sans Regular"];
+  return labelFontsFor(DEPLOYMENT_MAP_ENGINE, map, ["DIN Pro Medium", "Arial Unicode MS Bold"]);
 }
 
 const NO_BASEMAP_CHOICES: PublicBasemapChoice[] = [];
@@ -795,31 +766,24 @@ export function PublicMapStage({
       };
     };
 
-    if (MAP_ENGINE === "mapbox") {
-      mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN as string;
-      glRef.current = mapboxgl;
-      return mount(mapboxgl, container);
-    }
-
-    let cancelled = false;
-    let unmount: (() => void) | null = null;
-    loadMapLibre().then(
+    /*
+      A library that never arrives, or a map that cannot be built (no WebGL2
+      for MapLibre), gets the same honest notice as a background that never
+      arrived, not a blank stage.
+    */
+    return startMap(
+      DEPLOYMENT_MAP_ENGINE,
+      mapboxgl,
       (gl) => {
-        if (cancelled) return;
         glRef.current = gl;
-        unmount = mount(gl, container);
-        setMapGeneration((previous) => previous + 1);
+        const unmount = mount(gl, container);
+        // Mapbox is built in this effect's own pass; MapLibre arrives later, and
+        // the paint effect is told the map now exists.
+        if (gl !== mapboxgl) setMapGeneration((previous) => previous + 1);
+        return unmount;
       },
-      () => {
-        // The library itself could not load: the same honest notice as a
-        // background that never arrived.
-        if (!cancelled) setStyleFailed(true);
-      }
+      () => setStyleFailed(true),
     );
-    return () => {
-      cancelled = true;
-      unmount?.();
-    };
     // Registered once; the handlers above read live state through refs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -1472,7 +1436,8 @@ export function PublicMapStage({
                   The map style in NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL did not load, or the map library
                   itself did not. Check that the style address opens in a browser, and that its tile, font
                   and sprite hosts are listed in OPENPLAN_MAP_EXTRA_ORIGINS when they differ from the
-                  style&apos;s own host. The browser console holds the exact error.
+                  style&apos;s own host. A browser without WebGL2 cannot start MapLibre at all. The browser
+                  console holds the exact error.
                 </p>
               ) : (
                 <p>

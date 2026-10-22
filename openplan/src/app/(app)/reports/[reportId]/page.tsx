@@ -1,3 +1,6 @@
+import { reportJurisdictionState } from "@/lib/reports/jurisdiction-freshness";
+import { getReportPacketFreshness } from "@/lib/reports/catalog";
+import { artifactGenerationWritebackIsCurrent } from "@/lib/reports/report-registry-freshness";
 import { notFound, redirect } from "next/navigation";
 import { ReportReadFailureDisclosure, ReportUnreadableShell } from "@/components/reports/report-read-failure-notice";
 import { RtpReportDetail } from "@/components/reports/rtp-report-detail";
@@ -149,7 +152,7 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
     supabase
       .from("projects")
         .select(
-          "id, workspace_id, name, summary, status, plan_type, delivery_phase, updated_at"
+          "workspace_id, name, summary, status, plan_type, delivery_phase, id, updated_at, jurisdiction_context, place_label, place_country_code, place_subdivision_code"
         )
         .eq("id", report.project_id)
         .maybeSingle(),
@@ -609,6 +612,7 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
           id: artifact.id,
           artifact_kind: artifact.artifact_kind,
           generated_at: artifact.generated_at,
+          metadata_json: artifact.metadata_json,
         }))}
         comparisonDigest={rtpComparisonDigest}
         latestHtml={latestHtml}
@@ -1227,14 +1231,21 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
   // current": one of the sources this check covers was never checked, so the
   // packet cannot be called clean, and the detail says plainly that no change
   // was observed — only that observation failed.
+  const jurisdictionFreshness = getReportPacketFreshness({ latestArtifactKind: report.latest_artifact_kind,
+    generatedAt: latestArtifact?.generated_at ?? report.generated_at, updatedAt: null,
+    jurisdictionState: reportJurisdictionState(latestArtifact?.metadata_json, project) });
+  const jurisdictionNeedsRefresh = jurisdictionFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED;
+  const writebackNotCurrent = artifactGenerationWritebackIsCurrent(latestArtifact?.metadata_json, report.updated_at) === false;
   const currentReportPacketFreshness = artifactsUnreadable
     ? PACKET_FRESHNESS_WHEN_ARTIFACTS_UNREADABLE
     : latestArtifact?.generated_at ?? report.generated_at
-    ? driftedItems.length > 0 || stageGateLiveReadFailure || safetyEvidenceLiveReadFailure
+    ? driftedItems.length > 0 || stageGateLiveReadFailure || safetyEvidenceLiveReadFailure || writebackNotCurrent || jurisdictionNeedsRefresh
       ? {
           label: PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED,
           tone: "warning" as const,
           detail: [
+            jurisdictionNeedsRefresh ? jurisdictionFreshness.detail : null,
+            writebackNotCurrent ? "The report revision differs from its completed generation writeback, or generation did not finish recording it." : null,
             driftedItems.length > 0
               ? "Live source changes are visible against the latest packet snapshot, so refresh this packet before leaning on it for grant prioritization or release review."
               : "Do not treat this packet as verified against live sources yet.",

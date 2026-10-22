@@ -1,0 +1,5 @@
+{
+  "workers/odm_worker/original_commit_http.py": "37cc3e99b460aeb8c140d732d74eb2ea68bbfee5d93d1a87e6e3bc1fc6e00cac",
+  "workers/odm_worker/test_original_commit_http.py": "b11ee41c202d142bc4acf2722eb4e1383993151815caf4c716fa2b85fec31ad9",
+  "docs/reviews/2026-10-13-odm-original-processing-commit/verify_transport_controls.py": "18ac4778d44ad3d5e48530335b0f771f821c0e114e156822fd565564fa25b36f"
+}

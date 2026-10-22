@@ -1,0 +1,9 @@
+{
+  "workers/odm_worker/uncertain_commit_inspection.py": "0e5e765a23b34705c76c22a53fa763625e631b04c3d3fcc464d4a00c8d368538",
+  "workers/odm_worker/runtime_observation.py": "cb567b77b5b6688c6533577c641069c3dd43068f59369e899db352f4de7d1f19",
+  "workers/odm_worker/runtime_draft.py": "55204540a2f58325701ffc0c35f0c8e408b31c882292f26095c14323c9fc0eed",
+  "workers/odm_worker/engine_effects.py": "a1a6ccc6f4a5f518e2dc802683bcd8fa1e75afc85b626d78c2a041198527e2e3",
+  "workers/odm_worker/runtime_preparation.py": "6b79ff5cf91b5dd4c416e224351d3594f98d257eb922446da9881710cd6d3cc7",
+  "workers/odm_worker/test_uncertain_commit_inspection.py": "32a9e598b4c6f02221e9094bb652b7cd5525d10ee1c86c5434052132629fdc42",
+  "docs/reviews/2026-10-13-odm-uncertain-commit-inspection/verify_controls.py": "41ca194d60889b2b1a2f8fd05454f3001ca95c3466aa856c27a53a605efe415a"
+}

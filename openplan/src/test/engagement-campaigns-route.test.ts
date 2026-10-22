@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { pagingFake } from "./helpers/paging-fake";
 
 const createClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
@@ -14,8 +15,18 @@ const campaignsSingleMock = vi.fn();
 const campaignsInsertSelectMock = vi.fn(() => ({ single: campaignsSingleMock }));
 const campaignsInsertMock = vi.fn(() => ({ select: campaignsInsertSelectMock }));
 
+// The fixture behind the list's comment read. The read pages, so the chain is a
+// paging fake holding the server's 1,000-row cap: a read that stops after one
+// request sees at most 1,000 comments, as it would against PostgREST.
 const itemsInMock = vi.fn();
-const itemsSelectMock = vi.fn(() => ({ in: itemsInMock }));
+const itemsPaging = pagingFake(() => itemsInMock(), { serverCap: 1000 });
+const itemsChainInMock = vi.fn(() => itemsPaging.chain);
+const itemsChainOrderMock = vi.fn(() => itemsPaging.chain);
+const itemsRangeMock = vi.fn(itemsPaging.range);
+itemsPaging.chain.in = itemsChainInMock;
+itemsPaging.chain.order = itemsChainOrderMock;
+itemsPaging.chain.range = itemsRangeMock;
+const itemsSelectMock = vi.fn(() => itemsPaging.chain);
 
 const projectMaybeSingleMock = vi.fn();
 const projectEqMock = vi.fn(() => ({ maybeSingle: projectMaybeSingleMock }));
@@ -111,6 +122,7 @@ function jsonRequest(payload: unknown) {
 describe("/api/engagement/campaigns", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    itemsPaging.reset();
 
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
     authGetUserMock.mockResolvedValue({
@@ -247,6 +259,101 @@ describe("/api/engagement/campaigns", () => {
           }),
         }),
       ],
+    });
+  });
+
+  describe("GET with more comments than the server returns in one response", () => {
+    const FIRST = "11111111-1111-4111-8111-111111111111";
+    const SECOND = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+
+    function comments(campaignId: string, count: number, prefix: string) {
+      return Array.from({ length: count }, (_, index) => ({
+        id: `${prefix}-${String(index).padStart(6, "0")}`,
+        campaign_id: campaignId,
+        status: index % 2 === 0 ? "approved" : "pending",
+        category_id: null,
+        source_type: "public",
+        latitude: null,
+        longitude: null,
+        moderation_notes: null,
+        created_at: "2026-03-12T00:00:00.000Z",
+        updated_at: "2026-03-12T00:00:00.000Z",
+      }));
+    }
+
+    function twoCampaigns() {
+      campaignsOrderMock.mockResolvedValueOnce({
+        data: [
+          { id: FIRST, title: "Downtown listening campaign", status: "active", engagement_type: "map_feedback" },
+          { id: SECOND, title: "Riverside corridor survey", status: "active", engagement_type: "comment_collection" },
+        ],
+        error: null,
+      });
+    }
+
+    it("counts every comment past the 1,000-row server cap", async () => {
+      twoCampaigns();
+      // 1,234 comments on the first campaign, then 3 on the second, last in
+      // the read order: a read that stops at 1,000 rows undercounts the first
+      // and shows the second as empty.
+      itemsInMock.mockResolvedValueOnce({
+        data: [...comments(FIRST, 1234, "first"), ...comments(SECOND, 3, "second")],
+        error: null,
+      });
+
+      const response = await getCampaigns(new NextRequest("http://localhost/api/engagement/campaigns"));
+
+      expect(response.status).toBe(200);
+      const body = (await response.json()) as {
+        campaigns: Array<{ id: string; counts: { totalItems: number; statusCounts: Record<string, number> } }>;
+      };
+      const countsFor = (id: string) => body.campaigns.find((campaign) => campaign.id === id)?.counts;
+      expect(countsFor(FIRST)).toMatchObject({ totalItems: 1234, statusCounts: { approved: 617, pending: 617 } });
+      expect(countsFor(SECOND)).toMatchObject({ totalItems: 3, statusCounts: { approved: 2, pending: 1 } });
+
+      // The projection carries the columns the counts are computed from, and the
+      // order is total (`id` breaks ties) so no comment is read twice or skipped.
+      expect(itemsSelectMock).toHaveBeenCalledWith(
+        "id, campaign_id, status, category_id, source_type, latitude, longitude, moderation_notes, created_at, updated_at"
+      );
+      expect(itemsChainInMock).toHaveBeenCalledWith("campaign_id", [FIRST, SECOND]);
+      expect(itemsChainOrderMock.mock.calls.slice(0, 2).map((call) => (call as unknown[])[0])).toEqual(["created_at", "id"]);
+    });
+
+    it("refuses the counts when a later page of comments fails", async () => {
+      twoCampaigns();
+      itemsInMock.mockResolvedValueOnce({ data: comments(FIRST, 1234, "first"), error: null });
+      // The first page arrives; the second times out.
+      itemsRangeMock.mockImplementationOnce(itemsPaging.range).mockImplementationOnce(async () => ({
+        data: null,
+        error: { message: "canceling statement due to statement timeout", code: "57014" },
+      }));
+
+      const response = await getCampaigns(new NextRequest("http://localhost/api/engagement/campaigns"));
+
+      expect(response.status).toBe(500);
+      expect(await response.json()).toEqual({ error: "Failed to summarize engagement items" });
+      expect(mockAudit.error).toHaveBeenCalledWith("campaign_item_summary_failed", {
+        message: "canceling statement due to statement timeout",
+        code: "57014",
+      });
+    });
+
+    it("refuses the counts when the comment read stops before it is finished", async () => {
+      twoCampaigns();
+      // More rows than the read will request before giving up (200 pages of
+      // 500). The read ends with rows still coming and no error; that is an
+      // unfinished count, never a total.
+      itemsInMock.mockResolvedValueOnce({ data: comments(FIRST, 100_001, "first"), error: null });
+
+      const response = await getCampaigns(new NextRequest("http://localhost/api/engagement/campaigns"));
+
+      expect(response.status).toBe(500);
+      expect(await response.json()).toEqual({ error: "Failed to summarize engagement items" });
+      expect(mockAudit.error).toHaveBeenCalledWith(
+        "campaign_item_summary_failed",
+        expect.objectContaining({ message: expect.stringContaining("could not be completed"), code: null })
+      );
     });
   });
 

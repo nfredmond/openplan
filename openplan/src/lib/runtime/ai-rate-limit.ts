@@ -1,3 +1,4 @@
+import { anthropicKeySource } from "@/lib/integrations/anthropic-access";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 
 /**
@@ -59,9 +60,36 @@ type CountSupabaseLike = {
 };
 
 /**
- * Counts recent AI usage events for a workspace. Fails OPEN (allows the request)
- * on any lookup error or missing schema — the limiter must never take the AI
- * features offline, only cap runaway volume.
+ * Thrown instead of a verdict when usage cannot be counted or recorded while
+ * the deployment's own key would pay for the call. Callers let it reach their
+ * error handler: it is not "too many requests", and saying so would invent a
+ * cause.
+ */
+export class AiUsageMeterUnavailableError extends Error {
+  constructor(detail: string) {
+    super(`AI usage could not be metered, so the deployment's shared AI key is not used: ${detail}`);
+    this.name = "AiUsageMeterUnavailableError";
+  }
+}
+
+/**
+ * Whether the effective Anthropic key for this request is the deployment's
+ * shared key rather than the workspace's own. Read inside the request's
+ * integration context, where the workspace key (if any) takes precedence.
+ */
+function deploymentKeyPays(): boolean {
+  return anthropicKeySource() === "env";
+}
+
+/**
+ * Counts recent AI usage events for a workspace.
+ *
+ * On a lookup error the answer depends on who pays. With the workspace's own
+ * key it fails OPEN (allows the request), as it always has: the limiter must
+ * never take a workspace's AI offline, and the spend is the workspace's own.
+ * With the deployment's shared key it fails CLOSED by throwing
+ * {@link AiUsageMeterUnavailableError}, because an unmetered call bills the
+ * operator for every workspace on the deployment.
  */
 export async function checkAiUsageRateLimit(
   workspaceId: string,
@@ -74,6 +102,8 @@ export async function checkAiUsageRateLimit(
     // buckets; public translation passes its own bucket so the two meter
     // independently and public traffic can't lock out staff AI.
     bucketKeys?: readonly string[];
+    // Defaults to whether the deployment's shared key pays for this request.
+    failClosed?: boolean;
   }
 ): Promise<AiRateLimitResult> {
   const windowSeconds = options?.windowSeconds ?? AI_RATE_LIMIT_WINDOW_SECONDS;
@@ -81,7 +111,9 @@ export async function checkAiUsageRateLimit(
   const nowMs = options?.nowMs ?? Date.now();
   const bucketKeys = options?.bucketKeys ?? AI_RATE_LIMIT_BUCKET_KEYS;
   const sinceIso = new Date(nowMs - windowSeconds * 1000).toISOString();
+  const failClosed = options?.failClosed ?? deploymentKeyPays();
 
+  let observed: number;
   try {
     const supabase = options?.serviceSupabase ?? createServiceRoleClient();
     const { count, error } = await supabase
@@ -92,18 +124,21 @@ export async function checkAiUsageRateLimit(
       .gte("occurred_at", sinceIso);
 
     if (error) {
+      if (failClosed) throw new AiUsageMeterUnavailableError(error.message);
       return { allowed: true, count: 0, retryAfterSeconds: 0 };
     }
-
-    const observed = count ?? 0;
-    return {
-      allowed: observed < max,
-      count: observed,
-      retryAfterSeconds: observed < max ? 0 : windowSeconds,
-    };
-  } catch {
+    observed = count ?? 0;
+  } catch (error) {
+    if (error instanceof AiUsageMeterUnavailableError) throw error;
+    if (failClosed) throw new AiUsageMeterUnavailableError(error instanceof Error ? error.message : String(error));
     return { allowed: true, count: 0, retryAfterSeconds: 0 };
   }
+
+  return {
+    allowed: observed < max,
+    count: observed,
+    retryAfterSeconds: observed < max ? 0 : windowSeconds,
+  };
 }
 
 /**
@@ -113,12 +148,11 @@ export async function checkAiUsageRateLimit(
  * is the per-workspace spend limiter above. (The table itself is retained from
  * migration 20260424000072; its stripe_* columns stay NULL forever.)
  *
- * BEST-EFFORT by design: call sites fire this after a successful model call
- * and must never fail the user's request because metering hiccuped, so any
- * insert error is swallowed with a single console warning. The asymmetry is
- * deliberate — the limiter fails open on lookup errors, and recording fails
- * silent on insert errors; a broken usage_events table can only ever mean
- * "unmetered", never "AI offline".
+ * BEST-EFFORT by design: most call sites fire this after a successful model
+ * call and must never fail the user's request because metering hiccuped, so
+ * any insert error is swallowed with a single console warning and reported
+ * only through the returned boolean. {@link reserveAiUsage} is the caller that
+ * acts on that boolean.
  */
 export async function recordAiUsageEvent(params: {
   workspaceId: string;
@@ -127,7 +161,7 @@ export async function recordAiUsageEvent(params: {
   sourceRoute?: string;
   metadataJson?: Record<string, unknown>;
   serviceSupabase?: CountSupabaseLike;
-}): Promise<void> {
+}): Promise<boolean> {
   try {
     const supabase = params.serviceSupabase ?? createServiceRoleClient();
     const { error } = await supabase.from("usage_events").insert({
@@ -142,12 +176,45 @@ export async function recordAiUsageEvent(params: {
       console.warn(
         `[ai-rate-limit] usage event insert failed (${params.bucketKey}): ${error.message}`
       );
+      return false;
     }
+    return true;
   } catch (error) {
     console.warn(
       `[ai-rate-limit] usage event insert failed (${params.bucketKey}): ${
         error instanceof Error ? error.message : String(error)
       }`
     );
+    return false;
   }
+}
+
+/**
+ * Check the limit and record the call BEFORE it is dispatched, for calls the
+ * provider bills even when the caller never sees the end: a streamed chat
+ * reply the planner closes mid-stream still costs every token generated so
+ * far. Recording after the stream finished left those calls uncounted.
+ *
+ * A refused check records nothing. When the deployment's shared key pays, a
+ * failed lookup or a failed insert throws {@link AiUsageMeterUnavailableError}
+ * instead of letting an unmetered call through; with the workspace's own key
+ * both stay best-effort, as {@link checkAiUsageRateLimit} describes.
+ */
+export async function reserveAiUsage(params: {
+  workspaceId: string;
+  bucketKey: string;
+  eventKey: string;
+  sourceRoute?: string;
+  metadataJson?: Record<string, unknown>;
+  serviceSupabase?: CountSupabaseLike;
+}): Promise<AiRateLimitResult> {
+  const failClosed = deploymentKeyPays();
+  const limit = await checkAiUsageRateLimit(params.workspaceId, {
+    serviceSupabase: params.serviceSupabase,
+    failClosed,
+  });
+  if (!limit.allowed) return limit;
+  const recorded = await recordAiUsageEvent(params);
+  if (!recorded && failClosed) throw new AiUsageMeterUnavailableError("the usage event was not recorded");
+  return limit;
 }

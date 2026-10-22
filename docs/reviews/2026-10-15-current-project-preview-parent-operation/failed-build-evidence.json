@@ -1,0 +1,124 @@
+{
+  "at": "2026-10-15T11:17:48.650262+00:00",
+  "observerSummary": {
+    "schema": 1,
+    "observationEndedUtc": "2026-10-15T11:15:08.622393+00:00",
+    "outcome": "nonzero-build-exit-no-accepted-result",
+    "packet": "/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2",
+    "unit": {
+      "Id": "openplan-current-project-preview-app-678-v1-build.service",
+      "LoadState": "loaded",
+      "ActiveState": "failed",
+      "SubState": "failed",
+      "InvocationID": "c24248dcd7ba45c4959c78cc280ca97f",
+      "Result": "exit-code",
+      "ExecMainCode": "1",
+      "ExecMainStatus": "1",
+      "MemoryPeak": "7319392256",
+      "CPUQuotaPerSecUSec": "500ms",
+      "MemoryMax": "10737418240",
+      "MemorySwapMax": "0"
+    },
+    "expectedInvocation": "c24248dcd7ba45c4959c78cc280ca97f",
+    "invocationMatches": true,
+    "expected": {
+      "appHead": "67828c17c4c270529468eef1edd144e4a52b693a",
+      "helperHead": "06a108010ab39aa42eed4c2bcda3e1371b8aa813",
+      "producer": "d71e0aa7aa1b2c3c945ee87a54ea49d6a5772378",
+      "sourceAnchor": "82fda3004c8dd5d3f1e26eb179e11d1da159eb79a33253a636de37ef68213547",
+      "activeReceiptSha256": "89042f1acf194f483ab6e1e0b1e7e64c4ec217d3984200d167a589c43e215e8d"
+    },
+    "candidateHead": "67828c17c4c270529468eef1edd144e4a52b693a",
+    "candidateHeadReadReturncode": 0,
+    "intentBindingsMatchExpected": {
+      "appHead": true,
+      "helperHead": true,
+      "producer": true,
+      "sourceAnchor": true,
+      "activeReceiptSha256": true
+    },
+    "activeReceiptFileSha256": "89042f1acf194f483ab6e1e0b1e7e64c4ec217d3984200d167a589c43e215e8d",
+    "activeReceiptFileMatchesExpected": true,
+    "buildExit": {
+      "returncode": 1,
+      "resources": {
+        "memory.max": "10737418240",
+        "memory.swap.max": "0",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000",
+        "memory.peak": "7319392256",
+        "memory.swap.current": "0"
+      },
+      "seconds": 420.70987476897426
+    },
+    "resourcesBefore": {
+      "memory.max": "10737418240",
+      "memory.swap.max": "0",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "cpu.max": "50000 100000",
+      "memory.peak": "51101696",
+      "memory.swap.current": "0"
+    },
+    "evidenceFiles": {
+      "build-intent.json": {
+        "exists": true,
+        "bytes": 1663,
+        "sha256": "8368449b760e850c3706c74ce1c67e3e9f8b262257cc88d5971327135fc62a11"
+      },
+      "build-exit.json": {
+        "exists": true,
+        "bytes": 333,
+        "sha256": "69dcbc79f357cbb1541cec916d373e33a5e499511f074af33eca087c730ca340"
+      },
+      "build-private.log": {
+        "exists": true,
+        "bytes": 1252,
+        "sha256": "681b0af2de3e34634e5e99075c2ec06e9109fff39d7616e171803216e9db7e1f"
+      },
+      "build-files.json": {
+        "exists": false,
+        "sha256": null
+      },
+      "build-result.json": {
+        "exists": false,
+        "sha256": null
+      }
+    },
+    "buildId": null,
+    "buildIdFileExists": false,
+    "inventoryManifestExists": false,
+    "inventoryDigest": null,
+    "acceptedResultExists": false,
+    "filteredFailureLines": [
+      "src/app/(app)/projects/[projectId]/page.tsx(1337,46): error TS2339: Property 'jurisdiction_context' does not exist on type 'ProjectRow'.",
+      "src/test/report-generate-route.test.ts(4314,12): error TS18048: 'inserted.metadata_json' is possibly 'undefined'.",
+      "src/test/report-generate-route.test.ts(4314,12): error TS18046: 'inserted.metadata_json.sourceContext' is of type 'unknown'.",
+      "src/test/report-generate-route.test.ts(4315,27): error TS18048: 'inserted.metadata_json' is possibly 'undefined'.",
+      "src/test/report-generate-route.test.ts(4315,27): error TS18046: 'inserted.metadata_json.sourceContext' is of type 'unknown'.",
+      "src/test/report-generate-route.test.ts(4328,98): error TS18048: 'inserted.metadata_json' is possibly 'undefined'.",
+      "src/test/report-generate-route.test.ts(4328,98): error TS18046: 'inserted.metadata_json.sourceContext' is of type 'unknown'."
+    ],
+    "observations": 12,
+    "limitations": [
+      "Observed existing build only. No build, test, service, database connection, browser call, start, attestation, retry, cleanup or delegation initiated.",
+      "Nonzero npm exit and missing accepted result preclude build acceptance. No complete inventory or BUILD_ID exists.",
+      "Resources describe the actual build cgroup, not the whole PostgreSQL server.",
+      "No performance, practitioner, native Excel, browser, scientific or production acceptance established.",
+      "Parent exec session 81770 remains untouched; parent must inspect its buffer for controller and wrapper completion details."
+    ],
+    "nextOwner": "Parent owns diagnosis and any later authorized actions."
+  },
+  "observerSummarySha256": "925caf9147f185b8e6280b42a4f5a87fb11e01bf240894c80bb14e5070471e95",
+  "parentExecResult": {
+    "session": 81770,
+    "exit": 1,
+    "reason": "REFUSED build: build-exit",
+    "systemdSeconds": 431.434,
+    "systemdCpuSeconds": 210.405
+  },
+  "correctionScope": [
+    "ProjectRow raw jurisdiction field",
+    "report test metadata/sourceContext narrowing"
+  ],
+  "nextGate": "Full-project TypeScript after reviewed corrections, before new build; never reuse old build intent"
+}

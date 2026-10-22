@@ -1,3 +1,4 @@
+import { Blob as ServerBlob } from "node:buffer";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
@@ -29,6 +30,7 @@ const jobUpdateEqMock = vi.fn();
 const packageUpdateEqMock = vi.fn();
 const packageUpdateMock = vi.fn();
 const storageUploadMock = vi.fn();
+const storageObjects = new Map<string, Uint8Array>();
 const membershipMaybeSingleMock = vi.fn();
 const authGetUserMock = vi.fn();
 const fetchMock = vi.fn();
@@ -121,10 +123,26 @@ function request(body: unknown) {
 describe("POST /api/aerial/processing-callback/custody", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    storageObjects.clear();
     createApiAuditLoggerMock.mockReturnValue(audit);
     createServiceRoleClientMock.mockReturnValue({
       from: serviceFromMock,
-      storage: { from: () => ({ upload: storageUploadMock }) },
+      // workspace_storage_bytes: an empty workspace, so custody may store.
+      rpc: async () => ({ data: 0, error: null }),
+      storage: { from: () => ({
+        upload: async (path: string, body: Uint8Array, options: { upsert?: boolean }) => {
+          const result = await storageUploadMock(path, body, options);
+          if (!result.error) {
+            if (storageObjects.has(path) && options?.upsert !== true) return { error: { message: "Object already exists" } };
+            storageObjects.set(path, new Uint8Array(body));
+          }
+          return result;
+        },
+        download: (path: string) => ({ asStream: async () => ({
+          data: storageObjects.has(path) ? new ServerBlob([storageObjects.get(path)!]).stream() : null,
+          error: null,
+        }) }),
+      }) },
     });
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
@@ -144,7 +162,8 @@ describe("POST /api/aerial/processing-callback/custody", () => {
     jobUpdateEqMock.mockReturnValue({
       select: () => Promise.resolve({ data: [{ id: JOB_ID }], error: null }),
     });
-    packageUpdateEqMock.mockResolvedValue({ error: null });
+    packageUpdateEqMock.mockReturnValue({ eq: packageUpdateEqMock,
+      select: () => Promise.resolve({ data: [{ id: JOB_ID }], error: null }) });
     packageUpdateMock.mockReturnValue({ eq: packageUpdateEqMock });
     ledgerLimitMock.mockResolvedValue({ data: [{ payload: ledgerPayload() }], error: null });
     storageUploadMock.mockResolvedValue({ error: null });
@@ -227,6 +246,7 @@ describe("POST /api/aerial/processing-callback/custody", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock.mock.calls[0][0]).toBe(SIGNED_URL);
     expect(storageUploadMock).toHaveBeenCalledTimes(1);
+    expect(custodyUpsertMock.mock.calls[0]?.[0]?.[0]?.state, "Retried artifact records actual held custody").toBe("held");
 
     // And the package's claim moves with the bytes.
     expect(packageUpdateMock).toHaveBeenCalledWith({ verification_readiness: "partial" });
@@ -234,7 +254,10 @@ describe("POST /api/aerial/processing-callback/custody", () => {
 
   it("answers without touching the worker when everything is already held", async () => {
     custodySelectEqMock.mockResolvedValue({
-      data: [{ kind: "orthomosaic", ordinal: 0, state: "held" }],
+      data: [
+        { kind: "orthomosaic", ordinal: 0, state: "held" },
+        { kind: "point_cloud", ordinal: 0, state: "held" },
+      ],
       error: null,
     });
 
@@ -243,7 +266,55 @@ describe("POST /api/aerial/processing-callback/custody", () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ custodyState: "complete", retriedCount: 0 });
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(ledgerLimitMock).not.toHaveBeenCalled();
+    expect(ledgerLimitMock, "Held retry validates original roster before completeness").toHaveBeenCalled();
+    expect(custodyUpsertMock).not.toHaveBeenCalled();
+    expect(packageUpdateMock, "Held retry repairs stale package readiness").toHaveBeenCalledWith({ verification_readiness: "partial" });
+    expect(packageUpdateEqMock, "Custody retry preserves human verification").toHaveBeenCalledWith("verification_readiness", "pending");
+  });
+
+  it("preserves package readiness when a conflicting bulk write leaves a missing artifact", async () => {
+    custodySelectEqMock.mockResolvedValueOnce({ data: [], error: null })
+      .mockResolvedValueOnce({ data: [], error: null })
+      .mockResolvedValue({ data: [{ kind: "orthomosaic", ordinal: 0, state: "held" }], error: null });
+    custodyUpsertMock.mockResolvedValue({ error: { code: "23514", message: "Original held aerial custody cannot be replaced" } });
+    const response = await postCustodyRetry(request({ processingJobId: JOB_ID }));
+    expect(response.status, "Partial conflict roster remains retryable").toBe(503);
+    expect(packageUpdateMock, "Unreadable retry cannot downgrade package readiness").not.toHaveBeenCalled();
+  });
+
+  it("retries an absent original artifact even when all existing rows are held", async () => {
+    custodySelectEqMock.mockResolvedValueOnce({ data: [{ kind: "orthomosaic", ordinal: 0, state: "held" }], error: null })
+      .mockResolvedValueOnce({ data: [{ kind: "orthomosaic", ordinal: 0, state: "held" }], error: null })
+      .mockResolvedValue({ data: [
+        { kind: "orthomosaic", ordinal: 0, state: "held" },
+        { kind: "point_cloud", ordinal: 0, state: "held" },
+      ], error: null });
+    const response = await postCustodyRetry(request({ processingJobId: JOB_ID }));
+    expect(response.status).toBe(200);
+    expect(fetchMock, "Missing original identity is retried").toHaveBeenCalledTimes(1);
+    expect(await response.json()).toMatchObject({ retriedCount: 1, custodyState: "complete" });
+  });
+
+  it("does not lower package readiness from a readable pending pass", async () => {
+    custodySelectEqMock.mockResolvedValue({ data: [
+      { kind: "orthomosaic", ordinal: 0, state: "failed", source_expires_at: "2099-01-01T00:00:00Z" },
+      { kind: "point_cloud", ordinal: 0, state: "failed", source_expires_at: "2099-01-01T00:00:00Z" },
+    ], error: null });
+    fetchMock.mockImplementation(async () => new Response(null, { status: 502 }));
+    const response = await postCustodyRetry(request({ processingJobId: JOB_ID }));
+    expect(response.status).toBe(200);
+    expect(packageUpdateMock, "Older pending posture cannot lower package readiness").not.toHaveBeenCalled();
+  });
+
+  it("returns a retryable error if pending package readiness cannot be repaired", async () => {
+    custodySelectEqMock.mockResolvedValue({ data: [
+      { kind: "orthomosaic", ordinal: 0, state: "held" },
+      { kind: "point_cloud", ordinal: 0, state: "held" },
+    ], error: null });
+    packageUpdateEqMock.mockReturnValue({ eq: packageUpdateEqMock,
+      select: () => Promise.resolve({ data: null, error: { message: "Synthetic package write failure" } }) });
+    const response = await postCustodyRetry(request({ processingJobId: JOB_ID }));
+    expect(response.status, "Package readiness repair failure remains retryable").toBe(503);
   });
 
   it("says a missing source is a missing source, not 'nothing to do'", async () => {

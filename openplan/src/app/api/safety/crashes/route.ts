@@ -25,7 +25,9 @@ import { ACS_YEAR } from "@/lib/data-sources/census";
 import {
   matchSafetyRoadIdentity,
   readCachedUsRoadContext,
+  type SafetyRoadContextFeature,
 } from "@/lib/safety/road-context";
+import { retainedCrashRoadProvider } from "@/lib/safety/road-provider";
 import { loadUsTigerRoadContext } from "@/lib/safety/us-road-context-adapter";
 import {
   hasCompleteCrashCustody,
@@ -33,6 +35,10 @@ import {
   SAFETY_ACQUISITION_CUSTODY_UNAVAILABLE,
   SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION,
 } from "@/lib/safety/crash-evidence";
+import {
+  buildHighInjuryNetworkForIngest,
+  type HighInjuryNetworkSupabaseLike,
+} from "@/lib/safety/high-injury-network-loader";
 
 /**
  * Crash query for the Safety map and list.
@@ -223,6 +229,7 @@ export async function GET(request: NextRequest) {
             roadContextCoverageLimit: "No crash acquisition is attached to this project, so no concentration can be matched to a road.",
             ksiEquityTracts: null,
             ksiEquityDemographicSource: { label: "U.S. Census ACS 5-year", vintage: ACS_YEAR },
+            highInjuryNetwork: null,
             truncated: false,
             limit,
           },
@@ -241,6 +248,7 @@ export async function GET(request: NextRequest) {
         ksiConcentrations: null, ksiEquityTracts: null, roadContext: null,
         roadContextCoverageLimit: SAFETY_ACQUISITION_CUSTODY_UNAVAILABLE,
         custodyWarning: SAFETY_ACQUISITION_CUSTODY_UNAVAILABLE,
+        highInjuryNetwork: { status: "unavailable", reason: "custody_unavailable", basis: null },
         truncated: false, limit,
       });
     }
@@ -362,20 +370,34 @@ export async function GET(request: NextRequest) {
         // blocks crash evidence; the response below discloses the missing road identity.
       }
     }
-    let roadContext = roadContextResult.error && networkRoadRows.length === 0
+    const usableRoadContext = readCachedUsRoadContext([
+      ...(roadContextResult.error ? [] : roadContextResult.data ?? []).map((row) => ({
+        id: row.id,
+        name: row.road_name,
+        geometry_geojson: row.geometry_geojson,
+        source: row.source_id,
+        vintage: row.source_vintage,
+        cached_at: row.cached_at,
+      })),
+      ...networkRoadRows,
+    ]);
+    let roadContext = roadContextResult.error && usableRoadContext.length === 0
+      ? null
+      : usableRoadContext;
+    // The network ranks only the project's frozen Safety road lines, the same
+    // ones a report reads back, so a segment saved here is found there. Model
+    // network corridors stay road-name context only.
+    let networkRoads: SafetyRoadContextFeature[] | null = roadContextResult.error
       ? null
       : readCachedUsRoadContext(
-          [
-            ...(roadContextResult.data ?? []).map((row) => ({
-              id: row.id,
-              name: row.road_name,
-              geometry_geojson: row.geometry_geojson,
-              source: row.source_id,
-              vintage: row.source_vintage,
-              cached_at: row.cached_at,
-            })),
-            ...networkRoadRows,
-          ]
+          (roadContextResult.data ?? []).map((row) => ({
+            id: row.id,
+            name: row.road_name,
+            geometry_geojson: row.geometry_geojson,
+            source: row.source_id,
+            vintage: row.source_vintage,
+            cached_at: row.cached_at,
+          }))
         );
     let roadContextCoverageLimit = roadContext === null
       ? "Cached road evidence could not be read. Road identity is unavailable, not absent."
@@ -473,14 +495,16 @@ export async function GET(request: NextRequest) {
       ? null
       : readSafetyKsiConcentrations(concentrationResult.data);
     if (
-      query.roadContextCountry === "US"
+      retainedCrashRoadProvider([acquisition], [activeIngestId]) === "us-census-tiger-line"
       && parsedKsiConcentrations
       && parsedKsiConcentrations.length > 0
-      && (!roadContext || roadContext.length === 0)
+      && roadContext !== null
+      && roadContext.length === 0
     ) {
       const tigerContext = await loadUsTigerRoadContext(parsedKsiConcentrations);
       roadContext = tigerContext.roads;
       roadContextCoverageLimit = tigerContext.coverageLimit;
+      if (networkRoads !== null && networkRoads.length === 0) networkRoads = tigerContext.roads;
       if (query.projectId && tigerContext.roads.length > 0) {
         try {
           const serviceSupabase = createServiceRoleClient();
@@ -531,6 +555,33 @@ export async function GET(request: NextRequest) {
       audit.warn("safety_ksi_equity_unavailable", {
         workspaceId: query.workspaceId,
         error: equityResult.error.message,
+      });
+    }
+
+    // The high-injury network reads its own severe crashes rather than the
+    // capped map rows, and uses only the year filters: it ranks road pieces by
+    // every mode of fatal or serious-injury crash, not the facets on screen.
+    const networkYears = (acquisition.yearsRequested ?? []).filter((year) =>
+      (query.yearFrom === undefined || year >= query.yearFrom) &&
+      (query.yearTo === undefined || year <= query.yearTo)
+    );
+    const highInjuryNetwork = await buildHighInjuryNetworkForIngest(
+      supabase as unknown as HighInjuryNetworkSupabaseLike,
+      {
+        workspaceId: query.workspaceId,
+        ingestId: activeIngestId,
+        severityCompleteness: acquisition.severityCompleteness,
+        bbox: { minLon: query.minLon, minLat: query.minLat, maxLon: query.maxLon, maxLat: query.maxLat },
+        years: networkYears,
+        yearFrom: query.yearFrom,
+        yearTo: query.yearTo,
+        roads: networkRoads,
+      }
+    );
+    if (highInjuryNetwork.status === "unavailable") {
+      audit.warn("safety_high_injury_network_unavailable", {
+        workspaceId: query.workspaceId,
+        reason: highInjuryNetwork.reason,
       });
     }
 
@@ -587,6 +638,7 @@ export async function GET(request: NextRequest) {
         roadContextCoverageLimit,
         ksiEquityTracts,
         ksiEquityDemographicSource: { label: "U.S. Census ACS 5-year", vintage: ACS_YEAR },
+        highInjuryNetwork,
         truncated: features.length + undrawableCount < matchedCount,
         limit,
       },

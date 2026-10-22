@@ -1,6 +1,7 @@
 import { buildAerialProjectPosture, type AerialProjectPosture } from "@/lib/aerial/public";
 import { loadWorkspaceAerialPostureInputs } from "@/lib/aerial/queries";
 import { computeNetInvoiceAmount } from "@/lib/invoicing/invoice-records";
+import { isDeadlinePast } from "@/lib/work/deadlines";
 import {
   isClosingSoonFundingOpportunity,
   isOverdueFundingDecision,
@@ -1936,10 +1937,7 @@ export function buildWorkspaceOperationsSummary({
         project,
         award: awards[0],
         invoice: unlinkedInvoices[0],
-        overdue:
-          Boolean(unlinkedInvoices[0].dueDate) &&
-          !Number.isNaN(new Date(unlinkedInvoices[0].dueDate ?? "").getTime()) &&
-          new Date(unlinkedInvoices[0].dueDate ?? "").getTime() < now.getTime(),
+        overdue: isDeadlinePast(unlinkedInvoices[0].dueDate, now),
         netAmount: computeNetInvoiceAmount(
           unlinkedInvoices[0].amount,
           unlinkedInvoices[0].retentionAmount,
@@ -2118,7 +2116,7 @@ export function buildWorkspaceOperationsSummary({
       moduleKey: "grants",
       moduleLabel: "Grants",
       title: "Record what each project needs",
-      detail: `${projectFundingNeedAnchorProjects.length} project funding lane${projectFundingNeedAnchorProjects.length === 1 ? " has" : "s have"} linked grant opportunities but no recorded funding target, so the gap cannot be measured.${firstFundingNeedAnchorProject ? ` Start with ${firstFundingNeedAnchorProject.project.name}.` : ""}`,
+      detail: `${projectFundingNeedAnchorProjects.length} project${projectFundingNeedAnchorProjects.length === 1 ? " has" : "s have"} grant opportunities but no funding target, so the funding gap cannot be measured.${firstFundingNeedAnchorProject ? ` Start with ${firstFundingNeedAnchorProject.project.name}.` : ""}`,
       href: firstFundingNeedAnchorProject
         ? `/projects/${firstFundingNeedAnchorProject.project.id}#project-funding-opportunities`
         : "/projects",
@@ -2127,7 +2125,7 @@ export function buildWorkspaceOperationsSummary({
       tone: "warning",
       priority: 3,
       badges: [
-        { label: "Missing anchors", value: projectFundingNeedAnchorProjects.length },
+        { label: "No funding target", value: projectFundingNeedAnchorProjects.length },
         { label: "Open windows", value: firstFundingNeedAnchorProject?.openCount ?? null },
       ],
     });
@@ -2199,7 +2197,7 @@ export function buildWorkspaceOperationsSummary({
       moduleKey: "grants",
       moduleLabel: "Grants",
       title: "Relink invoice reimbursement records",
-      detail: `${invoiceAwardRelinkProjects.length} project reimbursement lane${invoiceAwardRelinkProjects.length === 1 ? " has" : "s have"} an exact invoice-to-award relink available right now.${firstInvoiceAwardRelinkProject ? ` Reopen ${firstInvoiceAwardRelinkProject.project.name} first and attach ${firstInvoiceAwardRelinkProject.invoice.id} to ${firstInvoiceAwardRelinkProject.award.title}.` : ""}`,
+      detail: `${invoiceAwardRelinkProjects.length === 1 ? "1 project has an invoice that can be linked to its funding award." : `${invoiceAwardRelinkProjects.length} projects have an invoice that can be linked to their funding award.`}${firstInvoiceAwardRelinkProject ? ` Start with ${firstInvoiceAwardRelinkProject.project.name}: link its invoice to ${firstInvoiceAwardRelinkProject.award.title}.` : ""}`,
       href: firstInvoiceAwardRelinkProject
         ? `/projects/${firstInvoiceAwardRelinkProject.project.id}#project-invoices`
         : "/projects",

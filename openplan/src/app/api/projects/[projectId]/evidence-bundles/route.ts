@@ -14,6 +14,7 @@ import { resolveProjectEvidenceCandidateBytes } from "@/lib/project-evidence-bun
 import { loadProjectEvidenceGeneratedFiles } from "@/lib/project-evidence-bundles/generated-records";
 import { loadProjectEvidenceCandidateInventory } from "@/lib/project-evidence-bundles/inventory";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
+import { checkWorkspaceStorageRoom, workspaceStorageRefusal } from "@/lib/workspaces/storage-quota";
 
 export const runtime = "nodejs";
 
@@ -38,6 +39,28 @@ function errorStatus(error: ProjectEvidenceBundleError): number {
   if (error.code === "stale_review") return 409;
   if (["selected_file_limit", "file_too_large", "bundle_too_large"].includes(error.code)) return 413;
   return 422;
+}
+
+/** Close a preparing bundle row as failed; the row keeps the reason for the planner's history. */
+async function markBundleFailed(
+  service: ReturnType<typeof createServiceRoleClient>,
+  audit: ReturnType<typeof createApiAuditLogger>,
+  bundleId: string,
+  failureCode: string
+): Promise<void> {
+  const failed = await service
+    .from("project_evidence_bundles")
+    .update({ status: "failed", failure_code: failureCode, completed_at: new Date().toISOString() })
+    .eq("id", bundleId)
+    .eq("status", "preparing")
+    .select("id");
+  if (failed.error || failed.data?.length !== 1) {
+    audit.error("project_evidence_bundle_failure_row_not_finalized", {
+      bundleId,
+      failureCode,
+      message: failed.error?.message ?? null,
+    });
+  }
 }
 
 function assistantAttempt(request: NextRequest): boolean {
@@ -213,6 +236,26 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
       } : null,
     });
 
+    // The finished ZIP counts toward the workspace storage limit like any
+    // upload. A full or unreadable total fails this bundle row and stores
+    // nothing; the planner can delete files and freeze the bundle again.
+    const room = await checkWorkspaceStorageRoom(service, access.project.workspace_id, built.bytes.length);
+    if (room.status !== "room") {
+      const failureCode = room.status === "full" ? "workspace_storage_full" : "workspace_storage_unreadable";
+      await markBundleFailed(service, audit, bundleId, failureCode);
+      audit.warn("project_evidence_bundle_storage_refused", {
+        projectId: access.project.id,
+        workspaceId: access.project.workspace_id,
+        bundleId,
+        incomingBytes: built.bytes.length,
+        status: room.status,
+        ...(room.status === "full"
+          ? { usedBytes: room.usedBytes, quotaBytes: room.quotaBytes }
+          : { detail: room.detail }),
+      });
+      return workspaceStorageRefusal(room);
+    }
+
     const upload = await service.storage.from(BUNDLE_BUCKET).upload(storagePath, built.bytes, {
       contentType: "application/zip",
       upsert: false,
@@ -262,21 +305,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
     );
   } catch (error) {
     const failureCode = error instanceof ProjectEvidenceBundleError ? error.code : "generation_failed";
-    if (bundleId) {
-      const failed = await service
-        .from("project_evidence_bundles")
-        .update({ status: "failed", failure_code: failureCode, completed_at: new Date().toISOString() })
-        .eq("id", bundleId)
-        .eq("status", "preparing")
-        .select("id");
-      if (failed.error || failed.data?.length !== 1) {
-        audit.error("project_evidence_bundle_failure_row_not_finalized", {
-          bundleId,
-          failureCode,
-          message: failed.error?.message ?? null,
-        });
-      }
-    }
+    if (bundleId) await markBundleFailed(service, audit, bundleId, failureCode);
     audit.error("project_evidence_bundle_failed", {
       projectId: parsedParams.data.projectId,
       bundleId,

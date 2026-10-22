@@ -1,0 +1,22 @@
+[
+  {
+    "stage": "shuffled-intake-and-docs",
+    "returncode": 0,
+    "seconds": 4.898
+  },
+  {
+    "stage": "scoped-types",
+    "returncode": 0,
+    "seconds": 1.975
+  },
+  {
+    "stage": "changed-file-lint",
+    "returncode": 0,
+    "seconds": 1.31
+  },
+  {
+    "stage": "product-direction",
+    "returncode": 0,
+    "seconds": 0.328
+  }
+]

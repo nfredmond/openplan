@@ -1,0 +1,8 @@
+{
+  "trial": "pagination-membership-restored",
+  "testFile": "src/test/project-workbook-export-pagination.test.ts",
+  "test": "stops callers without active membership before project reads",
+  "exitCode": 0,
+  "marker": null,
+  "classification": "SURVIVED"
+}

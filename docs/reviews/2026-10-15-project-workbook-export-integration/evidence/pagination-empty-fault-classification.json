@@ -1,0 +1,8 @@
+{
+  "trial": "pagination-empty-fault",
+  "testFile": "src/test/project-workbook-export-pagination.test.ts",
+  "test": "exports a genuinely empty portfolio with the original workbook headers",
+  "exitCode": 1,
+  "marker": "empty successful read must still export the workbook",
+  "classification": "KILLED"
+}

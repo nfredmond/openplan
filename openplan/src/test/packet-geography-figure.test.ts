@@ -377,7 +377,7 @@ describe("packet geography figure — the caveat travels with the drawing", () =
     expect(figure.legend[0].detail).not.toMatch(/drawn by hand/i);
   });
 
-  it("does not attach the no-identity caveat to a place that actually resolves", () => {
+  it("keeps resolved study-place identity separate from jurisdiction and legal authority", () => {
     const figure = buildPacketGeographyFigure(
       input({ studyArea: resolvedPlace(GRASS_VALLEY_RING, "Nevada County") })
     );
@@ -385,6 +385,14 @@ describe("packet geography figure — the caveat travels with the drawing", () =
     expect(figure.caveats.join(" ")).not.toMatch(/no place identity/);
     expect(figure.legend[0].label).toBe("Nevada County");
     expect(figure.legend[0].detail).toMatch(/area of record/);
+    expect(figure.legend[0].detail).toContain(
+      "Project jurisdiction requires a separate human declaration and assessment."
+    );
+    expect(figure.legend[0].detail).toContain("boundary and county filter can be recovered");
+    expect(figure.legend[0].detail).toContain(
+      "Geography does not resolve adopting authority or legal applicability."
+    );
+    expect(figure.legend[0].detail).not.toMatch(/jurisdiction can all be re-derived/);
   });
 
   it("draws a bbox-only area as a dashed box and refuses to call it a boundary", () => {

@@ -1,8 +1,45 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { buildSafetySeedPreview } from "@/lib/grants/ss4a-safety-seed";
+import { SAFETY_PLAN_PERSISTENCE_VERSION, type SafetyPlanPersistence } from "@/lib/reports/safety-plan-persistence";
+import { safetySeedFixture } from "./fixtures/grants/safety-seed";
+import { readSafetyPlanSnapshot } from "@/lib/reports/safety-plan-snapshot";
+import * as safetyPlanBuilder from "@/lib/reports/safety-action-plan";
+import type { HighInjuryNetworkCrashQuery } from "@/lib/safety/high-injury-network-loader";
+import { PROJECT_PLACE_COLUMN_NAMES } from "@/lib/projects/project-place";
+import { collectSupabaseSelectSites } from "./supabase-call-sites";
+import Database from "better-sqlite3";
+import { canonicalizeActionPayload } from "@/lib/runtime/action-metadata";
+import { buildProjectGeoPackage } from "@/lib/projects/project-geopackage";
+import { loadProjectEvidenceGeneratedFiles } from "@/lib/project-evidence-bundles/generated-records";
+vi.mock("server-only", () => ({}));
+import { actor as jurisdictionActor, exportProject } from "./project-jurisdiction-export-fixture";
+import { buildProjectJurisdictionReadinessExportPayload } from "@/lib/jurisdiction-readiness/payload";
+import { readProjectJurisdiction } from "@/lib/projects/project-jurisdiction";
+import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
+import { assert, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { expectProvenanceLanguageOnly } from "./provenance-language-guards";
+import { pagingFake } from "./helpers/paging-fake";
 import { parseReportAerialEvidenceSourceContext } from "@/lib/reports/aerial-source-context";
 import { createHash } from "node:crypto";
+import { WORKSPACE_STORAGE_UNREADABLE_MESSAGE, workspaceStorageFullMessage } from "@/lib/workspaces/storage-quota";
+
+// The workspace storage limit (storage-quota.ts). Room by default; a test that
+// wants a full or unreadable workspace queues it.
+const checkWorkspaceStorageRoomMock = vi.hoisted(() => vi.fn());
+vi.mock("@/lib/workspaces/storage-quota", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/workspaces/storage-quota")>()),
+  checkWorkspaceStorageRoom: (...args: unknown[]) =>
+    checkWorkspaceStorageRoomMock(...args) ?? Promise.resolve({ status: "room", usedBytes: 0, quotaBytes: 5 * 1024 ** 3 }),
+}));
+
+const tigerRoadsMock = vi.hoisted(() => vi.fn());
+vi.mock("@/lib/safety/us-road-context-adapter", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/safety/us-road-context-adapter")>()),
+  loadUsTigerRoadContext: (...args: unknown[]) => tigerRoadsMock(...args),
+}));
+const safetyRoadReadMock = vi.fn();
+const safetyRoadWriteMock = vi.fn();
+const safetyRoadSelectMock = vi.fn((_projection: string) => ({ eq: () => ({ eq: () => ({ limit: safetyRoadReadMock }) }) }));
 
 const createClientMock = vi.fn();
 const createServiceRoleClientMock = vi.fn();
@@ -11,9 +48,22 @@ const authGetUserMock = vi.fn();
 const executionInsertMock = vi.fn();
 
 const reportMaybeSingleMock = vi.fn();
-const reportEqMock = vi.fn(() => ({ maybeSingle: reportMaybeSingleMock }));
-const reportSelectMock = vi.fn(() => ({ eq: reportEqMock }));
-const reportUpdateEqMock = vi.fn().mockResolvedValue({ error: null });
+// Existing scenarios share the newly selected report revision; their explicit
+// report fields and all original scenario assertions remain unchanged.
+const reportEqMock = vi.fn(() => ({ maybeSingle: async () => {
+  const result = await reportMaybeSingleMock();
+  return result?.data ? { ...result, data: { updated_at: "2026-03-14T00:00:00.000Z", ...result.data } } : result;
+} }));
+const reportSelectMock = vi.fn((_columns: string) => ({ eq: reportEqMock }));
+const reportWritebackSingleMock = vi.fn().mockResolvedValue({ data: { updated_at: "2026-03-14T02:00:01.000Z" }, error: null });
+const reportWritebackSelectMock = vi.fn(() => ({ maybeSingle: reportWritebackSingleMock }));
+const reportWritebackQuery = { eq: vi.fn(), select: reportWritebackSelectMock };
+const reportUpdateEqMock = reportWritebackQuery.eq.mockReturnValue(reportWritebackQuery);
+const artifactWritebackSingleMock = vi.fn().mockResolvedValue({ data: { id: "artifact" }, error: null });
+const artifactWritebackSelectMock = vi.fn(() => ({ maybeSingle: artifactWritebackSingleMock }));
+const artifactWritebackQuery = { eq: vi.fn(), select: artifactWritebackSelectMock };
+const artifactWritebackEqMock = artifactWritebackQuery.eq.mockReturnValue(artifactWritebackQuery);
+const artifactWritebackUpdateMock = vi.fn(() => ({ eq: artifactWritebackEqMock }));
 const reportUpdateMock = vi.fn(() => ({ eq: reportUpdateEqMock }));
 
 const membershipMaybeSingleMock = vi.fn();
@@ -31,7 +81,7 @@ const rtpCycleSelectMock = vi.fn(() => ({ eq: rtpCycleEqMock }));
 
 const projectMaybeSingleMock = vi.fn();
 const projectEqMock = vi.fn(() => ({ maybeSingle: projectMaybeSingleMock }));
-const projectSelectMock = vi.fn(() => ({ eq: projectEqMock }));
+const projectSelectMock = vi.fn((_columns: string) => ({ eq: projectEqMock }));
 
 const sectionsOrderMock = vi.fn();
 const sectionsEqMock = vi.fn(() => ({ order: sectionsOrderMock }));
@@ -214,7 +264,10 @@ const engagementCampaignEqIdMock = vi.fn(() => ({ maybeSingle: engagementCampaig
 const rtpEngagementCampaignsOrderMock = vi.fn();
 const engagementCampaignEqWorkspaceMock = vi.fn((column?: string) => {
   if (column === "rtp_cycle_id") {
-    return { order: rtpEngagementCampaignsOrderMock };
+    // Two reads take this chain: the packet's campaign list awaits it, and the
+    // comment-response record pages it. Each read draws one answer from
+    // `rtpEngagementCampaignsOrderMock`, held to the server's 1,000-row cap.
+    return pagingFake(() => rtpEngagementCampaignsOrderMock(), { serverCap: 1000 }).chain;
   }
 
   return { eq: engagementCampaignEqIdMock };
@@ -226,14 +279,35 @@ const engagementCategoriesOrderSortMock = vi.fn(() => ({ order: engagementCatego
 const engagementCategoriesEqCampaignMock = vi.fn(() => ({ order: engagementCategoriesOrderSortMock }));
 const engagementCategoriesSelectMock = vi.fn(() => ({ eq: engagementCategoriesEqCampaignMock }));
 
+// The fixture behind the campaign's comment read. The read pages, so the chain
+// is a paging fake holding the server's 1,000-row cap: a read that stops after
+// one request sees at most 1,000 comments, as it would against PostgREST.
 const engagementItemsOrderMock = vi.fn();
-const engagementItemsEqCampaignMock = vi.fn(() => ({ order: engagementItemsOrderMock }));
+const engagementItemsPaging = pagingFake(() => engagementItemsOrderMock(), { serverCap: 1000 });
+const engagementItemsChainOrderMock = vi.fn(() => engagementItemsPaging.chain);
+const engagementItemsRangeMock = vi.fn(engagementItemsPaging.range);
+engagementItemsPaging.chain.order = engagementItemsChainOrderMock;
+engagementItemsPaging.chain.range = engagementItemsRangeMock;
+const engagementItemsEqCampaignMock = vi.fn(() => engagementItemsPaging.chain);
 // The RTP packet reads the cycle's items across every linked campaign at once,
-// so this table answers `.in` as well as `.eq`.
+// so this table answers `.in` as well as `.eq`. That read pages, so `.in`
+// returns a paging fake over what `engagementItemsInMock` answers for the
+// latest `.in` arguments, holding the server's 1,000-row cap. The order and
+// range mocks record what the read asked for, so a test can see it paged.
 const engagementItemsInMock = vi.fn();
+let engagementItemsInArgs: unknown[] = [];
+const engagementItemsInPaging = pagingFake(() => engagementItemsInMock(...engagementItemsInArgs), { serverCap: 1000 });
+const engagementItemsInOrderMock = vi.fn((_column: string, _options?: { ascending?: boolean }) => engagementItemsInPaging.chain);
+const engagementItemsInRangeMock = vi.fn(engagementItemsInPaging.range);
+engagementItemsInPaging.chain.order = engagementItemsInOrderMock;
+engagementItemsInPaging.chain.range = engagementItemsInRangeMock;
+const engagementItemsInPagedMock = vi.fn((column: string, values: string[]) => {
+  engagementItemsInArgs = [column, values];
+  return engagementItemsInPaging.chain;
+});
 const engagementItemsSelectMock = vi.fn(() => ({
   eq: engagementItemsEqCampaignMock,
-  in: engagementItemsInMock,
+  in: engagementItemsInPagedMock,
 }));
 
 /**
@@ -268,16 +342,20 @@ type ArtifactInsertPayload = {
 } & Record<string, unknown>;
 const artifactsInsertMock = vi.fn((_payload: ArtifactInsertPayload) => ({ select: artifactsInsertSelectMock }));
 
-const storageUploadMock = vi.fn();
-const storageFromMock = vi.fn(() => ({ upload: storageUploadMock }));
+// The signed-in member's own Storage client. Migration 20261017000013 removed
+// member INSERT on report-artifacts, so by default it refuses the way row
+// level security does; the route must never write through it.
+const memberStorageUploadMock = vi.fn();
+const memberStorageFromMock = vi.fn(() => ({ upload: memberStorageUploadMock }));
 const aerialCustodyMaybeSingleMock = vi.fn();
 const aerialCustodyEqMock = vi.fn(() => ({ eq: aerialCustodyEqMock, maybeSingle: aerialCustodyMaybeSingleMock }));
 const aerialCustodySelectMock = vi.fn(() => ({ eq: aerialCustodyEqMock }));
 const serviceStorageDownloadMock = vi.fn();
 const serviceStorageUploadMock = vi.fn();
+const serviceStorageRemoveMock = vi.fn();
 const serviceStorageFromMock = vi.fn((bucket: string) => bucket === "aerial-artifacts"
   ? { download: serviceStorageDownloadMock, upload: serviceStorageUploadMock }
-  : { download: serviceStorageDownloadMock, upload: serviceStorageUploadMock });
+  : { download: serviceStorageDownloadMock, upload: serviceStorageUploadMock, remove: serviceStorageRemoveMock });
 const renderReportPdfMock = vi.fn();
 
 const mockAudit = {
@@ -514,6 +592,8 @@ const fromMock = vi.fn((table: string) => {
     };
   }
 
+  if (table === "safety_road_context_features") return { select: safetyRoadSelectMock };
+
   if (table === "safety_crash_ingests") {
     return { select: safetyIngestSelectMock };
   }
@@ -521,6 +601,7 @@ const fromMock = vi.fn((table: string) => {
   if (table === "report_artifacts") {
     return {
       insert: artifactsInsertMock,
+      update: artifactWritebackUpdateMock,
       select: agreementArtifactsSelectMock,
     };
   }
@@ -554,6 +635,8 @@ const fromMock = vi.fn((table: string) => {
       empty[method] = () => empty;
     }
     empty.then = (resolve: (value: unknown) => unknown) => Promise.resolve({ data: [], error: null }).then(resolve);
+    // The comment-response record pages its responses; an empty table ends on the first page.
+    empty.range = async () => ({ data: [], error: null });
     return empty;
   }
 
@@ -590,6 +673,19 @@ const LINKED_COUNTY_RUN_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
  * that names no run states the absence instead. So a test that wants evidence
  * must NAME the run, which is also the only way the product produces it.
  */
+/**
+ * Queue the loader's rules-v4 basis read for a county run that recorded a
+ * confirmed pass. Without it the stored screening tier is lowered to
+ * prototype-only (KI-2026-10-12-001); call it after the route's own
+ * county run read is queued.
+ */
+function countyRunBasisConfirmsPass() {
+  countyRunsMaybeSingleMock.mockResolvedValueOnce({
+    data: { basis_rules_version: 4, basis_outcome: "pass", basis_evidence_write: "recorded", basis_reasons: [] },
+    error: null,
+  });
+}
+
 function reportNamesCountyRun(overrides: Record<string, unknown> = {}) {
   reportMaybeSingleMock.mockResolvedValueOnce({
     data: {
@@ -614,6 +710,10 @@ function reportNamesCountyRun(overrides: Record<string, unknown> = {}) {
 describe("POST /api/reports/[reportId]/generate", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    safetyRoadReadMock.mockReset().mockResolvedValue({ data: [], error: null });
+    safetyRoadWriteMock.mockReset().mockResolvedValue({ error: null });
+    tigerRoadsMock.mockReset().mockResolvedValue({ roads: [], coverageLimit: "No source road fixture", sourceVintage: null });
+    engagementItemsPaging.reset();
     executionInsertMock.mockReset().mockResolvedValue({ error: null });
 
     modelingDiagnosisOrderMock.mockResolvedValue({ data: [], error: null });
@@ -701,6 +801,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
         delivery_phase: "analysis",
         created_at: "2026-03-13T00:00:00.000Z",
         updated_at: "2026-03-14T01:00:00.000Z",
+        jurisdiction_context: null,
         place_label: "Nevada County, California",
         place_country_code: "US",
         place_subdivision_code: "CA",
@@ -920,6 +1021,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
     });
 
     engagementItemsInMock.mockResolvedValue({ data: [], error: null });
+    engagementItemsInPaging.reset();
 
     engagementItemsOrderMock.mockResolvedValue({
       data: [
@@ -950,8 +1052,10 @@ describe("POST /api/reports/[reportId]/generate", () => {
       error: null,
     });
 
-    storageUploadMock.mockResolvedValue({ error: null });
+    memberStorageUploadMock.mockResolvedValue({ error: { message: "new row violates row-level security policy" } });
+    checkWorkspaceStorageRoomMock.mockReset();
     serviceStorageUploadMock.mockResolvedValue({ error: null });
+    serviceStorageRemoveMock.mockReset().mockResolvedValue({ error: null });
     renderReportPdfMock.mockResolvedValue({
       bytes: new Uint8Array([37, 80, 68, 70]),
       engine: "chrome",
@@ -963,10 +1067,12 @@ describe("POST /api/reports/[reportId]/generate", () => {
       auth: { getUser: authGetUserMock },
       from: fromMock,
       rpc: rpcMock,
-      storage: { from: storageFromMock },
+      storage: { from: memberStorageFromMock },
     });
     createServiceRoleClientMock.mockReturnValue({
       from: vi.fn((table: string) => {
+        if (table === "report_artifacts") return { insert: artifactsInsertMock };
+        if (table === "safety_road_context_features") return { upsert: safetyRoadWriteMock };
         if (table === "assistant_action_executions") {
           return {
             insert: executionInsertMock,
@@ -976,6 +1082,21 @@ describe("POST /api/reports/[reportId]/generate", () => {
       }),
       storage: { from: serviceStorageFromMock },
     });
+  });
+
+  it("reads the report revision and joins completed writeback to the generated artifact", async () => {
+    const response = await postGenerate(new NextRequest("http://localhost/api/reports/1/generate", {
+      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ format: "html" }),
+    }), { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) });
+    expect(response.status).toBe(200);
+    expect(reportSelectMock.mock.calls[0][0].split(", ")).toContain("updated_at");
+    expect(reportUpdateEqMock).toHaveBeenCalledWith("updated_at", "2026-03-14T00:00:00.000Z");
+    expect(reportWritebackSelectMock).toHaveBeenCalledWith("updated_at");
+    expect(artifactWritebackEqMock.mock.calls).toEqual([["id", "artifact-1"], ["report_id", "11111111-1111-4111-8111-111111111111"]]);
+    expect(artifactWritebackUpdateMock).toHaveBeenCalledWith({ metadata_json: expect.objectContaining({
+      generationWriteback: { schema: "openplan.report-generation-writeback.v1", reportUpdatedAt: "2026-03-14T02:00:01.000Z" },
+    }) });
+    expect(artifactsInsertMock.mock.calls[0][0].metadata_json?.generationWriteback).toBeNull();
   });
 
   for (const target of ["project", "rtp", "campaign"] as const) {
@@ -999,7 +1120,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
       }), { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) });
       expect(response.status).toBe(403);
       expect(await response.json()).toMatchObject({ error: "Planner Agent approval hash mismatch." });
-      expect(storageUploadMock).not.toHaveBeenCalled();
+      expect(serviceStorageUploadMock).not.toHaveBeenCalled();
       expect(artifactsInsertMock).not.toHaveBeenCalled();
       expect(reportUpdateMock).not.toHaveBeenCalled();
       expect(executionInsertMock).not.toHaveBeenCalled();
@@ -1096,8 +1217,15 @@ describe("POST /api/reports/[reportId]/generate", () => {
       previewBytes,
       { contentType: "image/png", upsert: false },
     );
-    const htmlUpload = storageUploadMock.mock.calls.find((call) => String(call[0]).endsWith(".html"));
+    const htmlUpload = serviceStorageUploadMock.mock.calls.find((call) => String(call[0]).endsWith(".html"));
     expect(String(htmlUpload?.[1])).toContain("data:image/png;base64");
+    // The frozen preview is checked as "already at the limit?" before it is
+    // copied, then the packet is checked with its own byte count.
+    expect(checkWorkspaceStorageRoomMock.mock.calls.map((call) => [call[1], call[2]])).toEqual([
+      ["33333333-3333-4333-8333-333333333333", 0],
+      ["33333333-3333-4333-8333-333333333333", (htmlUpload?.[1] as Buffer).byteLength],
+    ]);
+    expect(memberStorageUploadMock).not.toHaveBeenCalled();
   });
 
   it("persists a pdf artifact with storage_path + sets latest_artifact_kind to pdf", async () => {
@@ -1114,9 +1242,9 @@ describe("POST /api/reports/[reportId]/generate", () => {
 
     expect(response.status).toBe(200);
     expect(renderReportPdfMock).toHaveBeenCalledTimes(1);
-    expect(storageFromMock).toHaveBeenCalledWith("report-artifacts");
-    expect(storageUploadMock).toHaveBeenCalledTimes(1);
-    const uploadArgs = storageUploadMock.mock.calls[0];
+    expect(serviceStorageFromMock).toHaveBeenCalledWith("report-artifacts");
+    expect(serviceStorageUploadMock).toHaveBeenCalledTimes(1);
+    const uploadArgs = serviceStorageUploadMock.mock.calls[0];
     const uploadPath: string = uploadArgs[0];
     expect(uploadPath.startsWith("33333333-3333-4333-8333-333333333333/11111111-1111-4111-8111-111111111111/")).toBe(
       true
@@ -1190,7 +1318,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(storageUploadMock).toHaveBeenCalled();
+    expect(serviceStorageUploadMock).toHaveBeenCalled();
     expect(artifactsInsertMock).toHaveBeenCalledWith(
       expect.objectContaining({
         metadata_json: expect.objectContaining({ pdfEngine: "builtin" }),
@@ -1198,8 +1326,214 @@ describe("POST /api/reports/[reportId]/generate", () => {
     );
   });
 
+  it.each([
+    { requestedYears: [2022, 2020, 2022], selectedYears: [2020, 2022], count: 2 },
+    { requestedYears: [2024], selectedYears: [2024], count: 0 },
+    { requestedYears: [], selectedYears: null, count: null },
+  ])("freezes exact Safety membership and period labels for $requestedYears through generation and seed preview", async ({ requestedYears, selectedYears, count }) => {
+    const fixture = safetySeedFixture();
+    const projectId = "44444444-4444-4444-8444-444444444444";
+    const reportId = "11111111-1111-4111-8111-111111111111";
+    const workspaceId = "33333333-3333-4333-8333-333333333333";
+    const report = { id: reportId, workspace_id: workspaceId, project_id: projectId,
+      rtp_cycle_id: null, modeling_county_run_id: null, title: "Safety packet", summary: null,
+      report_type: "project_status", status: "draft", created_at: "2026-03-14T00:00:00.000Z", generated_at: null,
+      metadata_json: fixture.report.metadata_json };
+    reportMaybeSingleMock.mockResolvedValueOnce({ data: report, error: null });
+    // Deliberate out-of-period and undated fixture rows challenge the query.
+    // They do not assert that a real acquisition contains out-of-period rows.
+    const crashRows = [2019, 2020, 2021, 2022, 2023, null].map((year, index) => ({
+      id: `crash-${index}`, workspace_id: workspaceId, ingest_id: fixture.acquisition.id,
+      longitude: 0, latitude: 0, severity: "fatal", collision_year: year,
+    }));
+    const predicates: Array<{ method: string; column: string; value: unknown }> = [];
+    const crashSelect = vi.fn((_columns: string, _options?: { count: "exact" }) => {
+      const filters: Array<(row: typeof crashRows[number]) => boolean> = [];
+      let start = 0;
+      let end = 999;
+      const query: HighInjuryNetworkCrashQuery = {
+        eq: (column, value) => {
+          predicates.push({ method: "eq", column, value });
+          filters.push((row) => row[column as keyof typeof row] === value);
+          return query;
+        },
+        gte: (column, value) => {
+          predicates.push({ method: "gte", column, value });
+          filters.push((row) => row[column as keyof typeof row] !== null && Number(row[column as keyof typeof row]) >= Number(value));
+          return query;
+        },
+        lte: (column, value) => {
+          predicates.push({ method: "lte", column, value });
+          filters.push((row) => row[column as keyof typeof row] !== null && Number(row[column as keyof typeof row]) <= Number(value));
+          return query;
+        },
+        in: (column, values) => {
+          predicates.push({ method: "in", column, value: values });
+          filters.push((row) => values.includes(row[column as keyof typeof row]));
+          return query;
+        },
+        order: () => query,
+        range: (from, to) => { start = from; end = to; return query; },
+        then(resolve, reject) {
+          const matching = crashRows.filter((row) => filters.every((filter) => filter(row)));
+          return Promise.resolve({ data: matching.slice(start, end + 1).map(({ id, longitude, latitude, severity }) => ({ id, longitude, latitude, severity })), count: matching.length, error: null }).then(resolve, reject);
+        },
+      };
+      return query;
+    });
+    const member = await createClientMock();
+    createClientMock.mockResolvedValue({ ...member, from: (table: string) => table === "safety_crashes" ? { select: crashSelect } : fromMock(table) });
+    const acquisition: typeof fixture.acquisition = { ...fixture.acquisition, project_id: projectId, min_lon: -1, min_lat: -1, max_lon: 1, max_lat: 1,
+      years_requested: requestedYears, crash_count: crashRows.length, geocoded_count: crashRows.length, stored_count: crashRows.length };
+    safetyIngestOrderMock.mockResolvedValueOnce({ data: [acquisition], error: null });
+    rpcMock.mockImplementation(async (name: string) => ({ data: name === "safety_crash_evidence_counts"
+      ? [{ ingest_id: acquisition.id, dimension: "severity", value: "fatal", record_count: crashRows.length }] : [], error: null }));
+    const effects: string[] = [];
+    const persisted: Array<{ artifact: { id: string; report_id: string; generated_at: string; metadata_json: Record<string, unknown> }; reportUpdatedAt: string; projectUpdatedAt: string; persistence: SafetyPlanPersistence }> = [];
+    const service = createServiceRoleClientMock.getMockImplementation()!();
+    const persistenceRpc = vi.fn(async (_name: string, args: { p_actor: string; p_artifact: { id: string; report_id: string; generated_at: string; metadata_json: Record<string, unknown> }; p_report_update: Record<string, unknown> }) => {
+      const snapshot = readSafetyPlanSnapshot(args.p_artifact.metadata_json.safetyPlanSnapshotV1)!;
+      // Model the inherited AFTER ROW effects. Native trigger execution remains unproved.
+      effects.push("artifact insert: P1", "report writeback: P2", "artifact receipt: P3");
+      const projectUpdatedAt = "2026-10-18T12:00:03.000003+00:00";
+      const reportUpdatedAt = "2026-10-18T12:00:02.000002+00:00";
+      const persistence: SafetyPlanPersistence = { artifact_id: snapshot.artifactId, report_id: reportId, project_id: projectId, workspace_id: workspaceId,
+        schema_version: SAFETY_PLAN_PERSISTENCE_VERSION, snapshot_hash: snapshot.hash,
+        source_project_updated_at: snapshot.projectUpdatedAt, persisted_project_updated_at: projectUpdatedAt,
+        source_report_updated_at: snapshot.reportUpdatedAt, report_updated_at: reportUpdatedAt };
+      persisted.push({ artifact: { ...args.p_artifact, metadata_json: { ...args.p_artifact.metadata_json,
+        generationWriteback: { schema: "openplan.report-generation-writeback.v1", reportUpdatedAt } } }, reportUpdatedAt, projectUpdatedAt, persistence });
+      return { data: persistence, error: null };
+    });
+    createServiceRoleClientMock.mockReturnValue({ ...service, rpc: persistenceRpc });
+    const builder = vi.spyOn(safetyPlanBuilder, "buildSafetyActionPlanSection");
+    try {
+      const response = await postGenerate(new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ format: "html" }),
+      }), { params: Promise.resolve({ reportId }) });
+      expect(response.status).toBe(200);
+      expect(persistenceRpc).toHaveBeenCalledWith("persist_safety_plan_generation", expect.objectContaining({ p_actor: "22222222-2222-4222-8222-222222222222" }));
+      const result = persisted.at(-1)!;
+      const snapshot = readSafetyPlanSnapshot(result.artifact.metadata_json.safetyPlanSnapshotV1)!;
+      expect(snapshot).not.toBeNull(); expect(snapshot.draft).toEqual(builder.mock.results.at(-1)!.value);
+      expect(snapshot.selection).toEqual(fixture.report.metadata_json.safetyActionPlan);
+      expect(snapshot.acquisition.years_requested).toEqual(requestedYears);
+      if (selectedYears === null) {
+        expect(crashSelect).not.toHaveBeenCalled();
+        expect(snapshot.draft.network).toMatchObject({ kind: "unavailable", reason: expect.stringContaining("Requested crash years are missing") });
+      } else {
+        expect(crashSelect).toHaveBeenCalledWith("id, longitude, latitude, severity", { count: "exact" });
+        expect(predicates).toContainEqual({ method: "in", column: "collision_year", value: selectedYears });
+        expect(predicates).toContainEqual({ method: "eq", column: "workspace_id", value: workspaceId });
+        expect(predicates).toContainEqual({ method: "eq", column: "ingest_id", value: acquisition.id });
+        expect(builder.mock.calls.at(-1)![0].network).toMatchObject({ status: "computed", years: selectedYears, crashesConsidered: count });
+        const network = snapshot.draft.network;
+        if (network.kind !== "computed") throw new Error("expected generated network");
+        expect(network.years).toBe(`Requested crash years: ${selectedYears.join(", ")}`);
+        expect(network.rows.reduce((sum, row) => sum + row.crashCount, 0)).toBe(count);
+        expect(network.coverage).toContain("do not establish complete observation coverage or an annual denominator");
+        expect(result.artifact.metadata_json.htmlContent).toContain(network.years);
+        expect(result.artifact.metadata_json.htmlContent).toContain("do not establish complete observation coverage");
+        expect(network.sourceLine).not.toContain("2020–2022");
+        expect(network.measureLabel).toContain("fatal crashes only");
+        expect(network.rows.every((row) => row.seriousInjuryCrashCount === null)).toBe(true);
+      }
+      expect(effects).toEqual(["artifact insert: P1", "report writeback: P2", "artifact receipt: P3"]);
+      const rows = { ...fixture, opportunity: { ...fixture.opportunity, project_id: projectId, workspace_id: workspaceId },
+        project: { ...fixture.project, id: projectId, workspace_id: workspaceId, updated_at: result.projectUpdatedAt },
+        report: { ...fixture.report, id: reportId, project_id: projectId, workspace_id: workspaceId, updated_at: result.reportUpdatedAt },
+        artifact: result.artifact, acquisition, persistence: result.persistence,
+        sections: fixture.sections.map((section) => ({ ...section, workspace_id: workspaceId })) };
+      expect(buildSafetySeedPreview(rows).sections).toHaveLength(6);
+      rows.project.updated_at = "2026-10-18T12:00:03.000004+00:00";
+      rows.project.name = "Genuine later source edit";
+      expect(() => buildSafetySeedPreview(rows)).toThrow(/custody.*stale/);
+      expect(artifactsInsertMock).not.toHaveBeenCalled(); expect(artifactWritebackUpdateMock).not.toHaveBeenCalled();
+      expect(safetyIngestSelectMock).toHaveBeenCalledWith(expect.stringContaining("published_through_provenance"));
+    } finally { builder.mockRestore(); }
+  });
+
+  it.each([
+    ["html", "40001", 409, true, "ok"], ["pdf", "40001", 409, true, "ok"],
+    ["html", "42501", 500, true, "ok"], ["html", "23514", 500, true, "ok"],
+    ["html", "08006", 500, false, "ok"], ["html", "invalid-receipt", 500, false, "ok"],
+    ["html", "40001", 409, true, "error"], ["html", "40001", 409, true, "throw"],
+  ] as const)("handles uploaded Safety %s after %s refusal and cleanup %s/%s/%s", async (format, code, status, remove, cleanup) => {
+    const fixture = safetySeedFixture();
+    const projectId = "44444444-4444-4444-8444-444444444444";
+    const reportId = "11111111-1111-4111-8111-111111111111";
+    const workspaceId = "33333333-3333-4333-8333-333333333333";
+    reportMaybeSingleMock.mockResolvedValueOnce({ data: { id: reportId, workspace_id: workspaceId, project_id: projectId,
+      rtp_cycle_id: null, modeling_county_run_id: null, title: "Safety packet", summary: null,
+      report_type: "project_status", status: "draft", created_at: "2026-03-14T00:00:00.000Z", generated_at: null,
+      metadata_json: fixture.report.metadata_json }, error: null });
+    safetyIngestOrderMock.mockResolvedValueOnce({ data: [{ ...fixture.acquisition, project_id: projectId }], error: null });
+    const service = createServiceRoleClientMock.getMockImplementation()!();
+    const persistenceRpc = vi.fn().mockResolvedValue({ data: null, error: code === "invalid-receipt" ? null : { code, message: "Safety persistence refused" } });
+    createServiceRoleClientMock.mockReturnValue({ ...service, rpc: persistenceRpc });
+    if (cleanup === "error") serviceStorageRemoveMock.mockResolvedValueOnce({ error: { message: "Storage unavailable" } });
+    if (cleanup === "throw") serviceStorageRemoveMock.mockRejectedValueOnce(new Error("Storage response lost"));
+    const response = await postGenerate(new NextRequest("http://localhost/api/reports/1/generate", {
+      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ format }),
+    }), { params: Promise.resolve({ reportId }) });
+    expect(response.status).toBe(status);
+    expect(persistenceRpc).toHaveBeenCalledTimes(1);
+    expect(serviceStorageUploadMock).toHaveBeenCalledTimes(1);
+    if (remove) expect(serviceStorageRemoveMock).toHaveBeenCalledWith([serviceStorageUploadMock.mock.calls[0][0]]);
+    else expect(serviceStorageRemoveMock).not.toHaveBeenCalled();
+    expect(artifactsInsertMock).not.toHaveBeenCalled();
+    expect((await response.json()).cleanupPending).toBe(cleanup === "ok" ? undefined : true);
+  });
+
+  it("prints a safety action plan saved against another acquisition as a stale notice, and no plan section without one", async () => {
+    const report = {
+      id: "11111111-1111-4111-8111-111111111111",
+      workspace_id: "33333333-3333-4333-8333-333333333333",
+      project_id: "44444444-4444-4444-8444-444444444444",
+      rtp_cycle_id: null,
+      modeling_county_run_id: null,
+      title: "Project Status Packet",
+      summary: "Packet summary",
+      report_type: "project_status",
+      status: "draft",
+      created_at: "2026-03-14T00:00:00.000Z",
+      generated_at: null,
+    };
+    const generate = () => postGenerate(
+      new NextRequest("http://localhost/api/reports/1/generate", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ format: "html" }),
+      }),
+      { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) },
+    );
+
+    reportMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        ...report,
+        metadata_json: {
+          safetyActionPlan: {
+            ingestId: "99999999-9999-4999-8999-999999999999",
+            attachments: [{ segmentId: "road:0000abcd:0", segmentLabel: "Main Street", countermeasureIds: ["lighting"] }],
+          },
+        },
+      },
+      error: null,
+    });
+    expect((await generate()).status).toBe(200);
+    const stale = String(artifactsInsertMock.mock.calls.at(-1)?.[0]?.metadata_json?.htmlContent);
+    expect(stale).toContain('<section id="safety_action_plan">');
+    expect(stale).toContain("used a different crash acquisition");
+    expect(stale).not.toContain("Main Street");
+
+    reportMaybeSingleMock.mockResolvedValueOnce({ data: { ...report, metadata_json: {} }, error: null });
+    expect((await generate()).status).toBe(200);
+    const none = String(artifactsInsertMock.mock.calls.at(-1)?.[0]?.metadata_json?.htmlContent);
+    expect(none).not.toContain('id="safety_action_plan"');
+  });
+
   it("returns 500 when PDF storage upload fails", async () => {
-    storageUploadMock.mockResolvedValueOnce({ error: { message: "bucket unavailable" } });
+    serviceStorageUploadMock.mockResolvedValueOnce({ error: { message: "bucket unavailable" } });
 
     const response = await postGenerate(
       new NextRequest("http://localhost/api/reports/1/generate", {
@@ -1215,6 +1549,170 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expect(response.status).toBe(500);
     expect(renderReportPdfMock).toHaveBeenCalledTimes(1);
     expect(artifactsInsertMock).not.toHaveBeenCalled();
+  });
+
+  describe("the workspace storage limit", () => {
+    const WORKSPACE_ID = "33333333-3333-4333-8333-333333333333";
+    const QUOTA = 5 * 1024 ** 3;
+
+    function generate(format: "pdf" | "html") {
+      return postGenerate(
+        new NextRequest("http://localhost/api/reports/1/generate", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ format }),
+        }),
+        { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) }
+      );
+    }
+
+    function serviceClient() {
+      return createServiceRoleClientMock.mock.results[0]?.value;
+    }
+
+    for (const format of ["pdf", "html"] as const) {
+      it(`stores a ${format} packet with the service role after checking the limit with its byte count`, async () => {
+        const response = await generate(format);
+
+        expect(response.status).toBe(200);
+        expect(serviceStorageUploadMock).toHaveBeenCalledTimes(1);
+        const [path, bytes] = serviceStorageUploadMock.mock.calls[0];
+        expect(String(path).startsWith(`${WORKSPACE_ID}/11111111-1111-4111-8111-111111111111/`)).toBe(true);
+        expect(String(path).endsWith(`.${format}`)).toBe(true);
+        expect(serviceStorageFromMock).toHaveBeenCalledWith("report-artifacts");
+        expect(checkWorkspaceStorageRoomMock).toHaveBeenCalledTimes(1);
+        expect(checkWorkspaceStorageRoomMock).toHaveBeenCalledWith(serviceClient(), WORKSPACE_ID, (bytes as Buffer).byteLength);
+        expect((bytes as Buffer).byteLength).toBeGreaterThan(0);
+        expect(memberStorageFromMock).not.toHaveBeenCalled();
+        expect(memberStorageUploadMock).not.toHaveBeenCalled();
+      });
+
+      it(`refuses a ${format} packet that would pass the limit, naming the limit and current use, and stores nothing`, async () => {
+        const usedBytes = QUOTA - 2;
+        checkWorkspaceStorageRoomMock.mockResolvedValueOnce({
+          status: "full",
+          usedBytes,
+          quotaBytes: QUOTA,
+          message: workspaceStorageFullMessage(usedBytes, QUOTA, 100),
+        });
+
+        const response = await generate(format);
+
+        expect(response.status).toBe(413);
+        const body = await response.json();
+        expect(body).toEqual({ error: workspaceStorageFullMessage(usedBytes, QUOTA, 100), usedBytes, quotaBytes: QUOTA });
+        expect(body.error).toContain("5 GiB storage limit (5 GiB used)");
+        expect(serviceStorageUploadMock).not.toHaveBeenCalled();
+        expect(memberStorageUploadMock).not.toHaveBeenCalled();
+        expect(artifactsInsertMock).not.toHaveBeenCalled();
+        expect(reportUpdateMock).not.toHaveBeenCalled();
+        expect(mockAudit.warn).toHaveBeenCalledWith(
+          "report_artifact_storage_refused",
+          expect.objectContaining({ workspaceId: WORKSPACE_ID, status: "full", usedBytes, quotaBytes: QUOTA })
+        );
+      });
+
+      it(`refuses a ${format} packet when storage use cannot be read`, async () => {
+        checkWorkspaceStorageRoomMock.mockResolvedValueOnce({
+          status: "unreadable",
+          message: WORKSPACE_STORAGE_UNREADABLE_MESSAGE,
+          detail: "permission denied for function workspace_storage_bytes",
+        });
+
+        const response = await generate(format);
+
+        expect(response.status).toBe(503);
+        expect(await response.json()).toEqual({ error: WORKSPACE_STORAGE_UNREADABLE_MESSAGE });
+        expect(serviceStorageUploadMock).not.toHaveBeenCalled();
+        expect(artifactsInsertMock).not.toHaveBeenCalled();
+      });
+    }
+
+    for (const target of ["rtp", "campaign"] as const) {
+      function selectTarget() {
+        reportNamesCountyRun({
+          project_id: null,
+          rtp_cycle_id: target === "rtp" ? "77777777-7777-4777-8777-777777777777" : null,
+          engagement_campaign_id: target === "campaign" ? "99999999-9999-4999-8999-999999999999" : null,
+          modeling_county_run_id: null,
+        });
+      }
+
+      it(`stores a ${target} pdf packet with the service role after checking the limit`, async () => {
+        selectTarget();
+        const response = await generate("pdf");
+
+        expect(response.status).toBe(200);
+        expect(serviceStorageUploadMock).toHaveBeenCalledTimes(1);
+        const [path, bytes] = serviceStorageUploadMock.mock.calls[0];
+        expect(String(path).endsWith(".pdf")).toBe(true);
+        expect(checkWorkspaceStorageRoomMock).toHaveBeenCalledWith(serviceClient(), WORKSPACE_ID, (bytes as Buffer).byteLength);
+        expect(memberStorageUploadMock).not.toHaveBeenCalled();
+      });
+
+      it(`refuses a ${target} pdf packet at the limit and stores nothing`, async () => {
+        selectTarget();
+        checkWorkspaceStorageRoomMock.mockResolvedValueOnce({
+          status: "full",
+          usedBytes: QUOTA,
+          quotaBytes: QUOTA,
+          message: workspaceStorageFullMessage(QUOTA, QUOTA, 4),
+        });
+
+        const response = await generate("pdf");
+
+        expect(response.status).toBe(413);
+        expect((await response.json()).error).toBe(workspaceStorageFullMessage(QUOTA, QUOTA, 4));
+        expect(serviceStorageUploadMock).not.toHaveBeenCalled();
+        expect(memberStorageUploadMock).not.toHaveBeenCalled();
+        expect(artifactsInsertMock).not.toHaveBeenCalled();
+      });
+
+      it(`stores no file and checks no limit for a ${target} html packet, which lives in the artifact record`, async () => {
+        selectTarget();
+        const response = await generate("html");
+
+        expect(response.status).toBe(200);
+        expect(serviceStorageUploadMock).not.toHaveBeenCalled();
+        expect(checkWorkspaceStorageRoomMock).not.toHaveBeenCalled();
+      });
+    }
+
+    it("refuses before copying a selected aerial preview into a workspace already at its limit", async () => {
+      reportMaybeSingleMock.mockResolvedValueOnce({
+        data: {
+          id: "11111111-1111-4111-8111-111111111111",
+          workspace_id: WORKSPACE_ID,
+          project_id: "44444444-4444-4444-8444-444444444444",
+          rtp_cycle_id: null,
+          modeling_county_run_id: null,
+          title: "Project Status Packet",
+          summary: "Packet summary",
+          report_type: "project_status",
+          status: "draft",
+          created_at: "2026-03-14T00:00:00.000Z",
+          generated_at: null,
+          metadata_json: { aerialOrthoSelections: [{ custodyId: "55555555-5555-4555-8555-555555555555" }] },
+        },
+        error: null,
+      });
+      checkWorkspaceStorageRoomMock.mockResolvedValueOnce({
+        status: "full",
+        usedBytes: QUOTA,
+        quotaBytes: QUOTA,
+        message: workspaceStorageFullMessage(QUOTA, QUOTA, 0),
+      });
+
+      const response = await generate("html");
+
+      expect(response.status).toBe(413);
+      expect((await response.json()).error).toBe(workspaceStorageFullMessage(QUOTA, QUOTA, 0));
+      expect(checkWorkspaceStorageRoomMock).toHaveBeenCalledWith(serviceClient(), WORKSPACE_ID, 0);
+      expect(aerialCustodyMaybeSingleMock).not.toHaveBeenCalled();
+      expect(serviceStorageDownloadMock).not.toHaveBeenCalled();
+      expect(serviceStorageUploadMock).not.toHaveBeenCalled();
+      expect(artifactsInsertMock).not.toHaveBeenCalled();
+    });
   });
 
   it("returns 403 when workspace role is unsupported", async () => {
@@ -1254,14 +1752,15 @@ describe("POST /api/reports/[reportId]/generate", () => {
     );
 
     expect(response.status).toBe(200);
-    const htmlUpload = storageUploadMock.mock.calls.find((call) => String(call[0]).endsWith(".html"));
+    const htmlUpload = serviceStorageUploadMock.mock.calls.find((call) => String(call[0]).endsWith(".html"));
     expect(htmlUpload?.[2]).toEqual({ contentType: "text/html", upsert: false });
     expect(await response.json()).toMatchObject({
       reportId: "11111111-1111-4111-8111-111111111111",
       artifactId: "artifact-1",
       format: "html",
     });
-    expect(artifactsInsertMock).toHaveBeenCalledWith(
+    expect(projectSelectMock).toHaveBeenCalledWith(expect.stringContaining("jurisdiction_context"));
+    expect(artifactsInsertMock, "Report freezes external readiness version").toHaveBeenCalledWith(
       expect.objectContaining({
         report_id: "11111111-1111-4111-8111-111111111111",
         artifact_kind: "html",
@@ -1271,13 +1770,15 @@ describe("POST /api/reports/[reportId]/generate", () => {
           sourceContext: expect.objectContaining({
             linkedRunCount: 1,
             jurisdictionReadiness: expect.objectContaining({
-              jurisdiction: expect.objectContaining({ id: "US-CA" }),
-              reports: expect.arrayContaining([
-                expect.objectContaining({
-                  job: expect.objectContaining({ id: "project-evidence-handoff" }),
-                  status: "supported",
+              schema: "openplan.project-jurisdiction-readiness-export.v4",
+              contextSource: "legacy_study_place",
+              payloadSha256: expect.stringMatching(/^[a-f0-9]{64}$/),
+              entries: expect.arrayContaining([expect.objectContaining({
+                assessment: expect.objectContaining({
+                  jurisdiction: expect.objectContaining({ id: "US-CA" }),
+                  reports: expect.arrayContaining([expect.objectContaining({ job: expect.objectContaining({ id: "project-evidence-handoff" }), status: "supported" })]),
                 }),
-              ]),
+              })]),
             }),
             evidenceChainSummary: expect.objectContaining({
               linkedRunCount: 1,
@@ -1313,6 +1814,60 @@ describe("POST /api/reports/[reportId]/generate", () => {
         rtp_basis_stale_marked_at: null,
       })
     );
+  });
+
+  it.each([
+    ["known source", "ccrs-ca", false, false, false, true, true],
+    ["cache failure", "ccrs-ca", true, false, false, true, false],
+    ["cache throws", "ccrs-ca", true, false, false, true, false],
+    ["road read failure", "ccrs-ca", false, true, false, false, false],
+    ["unknown source", "unknown", false, false, false, false, false],
+    ["missing source", null, false, false, false, false, false],
+    ["missing selection", "ccrs-ca", false, false, true, false, false],
+  ])("selects retained road evidence for an imported packet: %s", async (label, sourceId, cacheFailure, roadReadFailure, missingSelection, fetchExpected, roadExpected) => {
+    reportNamesCountyRun({ metadata_json: { safetyIngestSelections: [
+      { ingestId: missingSelection ? "missing" : "ingest-roads" },
+    ] } });
+    sectionsOrderMock.mockResolvedValueOnce({ data: [{ id: "section-safety", section_key: "project_safety_evidence",
+      title: "Reported collisions", enabled: true, sort_order: 0, config_json: {} }], error: null });
+    safetyIngestOrderMock.mockResolvedValueOnce({ data: [{ id: "ingest-roads", source_id: sourceId,
+      project_id: "44444444-4444-4444-8444-444444444444", status: "ready",
+      min_lon: -121.2, min_lat: 39.1, max_lon: -120.8, max_lat: 39.5,
+      source_label: "Retained source", severity_completeness: "kabco_full", crash_count: 4,
+      geocoded_count: 4, years_requested: [2024], truncated: false,
+    }], error: null });
+    safetyRoadReadMock.mockResolvedValue({ data: roadReadFailure ? null : [], error: roadReadFailure ? { message: "read failed" } : null });
+    safetyRoadWriteMock.mockResolvedValue({ error: cacheFailure ? { message: "write failed" } : null });
+    if (label === "cache throws") safetyRoadWriteMock.mockRejectedValueOnce(new Error("write failed"));
+    tigerRoadsMock.mockResolvedValue({ roads: [{ id: "tiger-road", name: "Source Road",
+      sourceId: "us-census-tiger-line-cache", sourceLabel: "U.S. Census TIGER/Line roads", vintage: "2025-01-01",
+      geometry: { type: "LineString", coordinates: [[-121.061, 39.218], [-121.061, 39.220]] },
+    }], coverageLimit: "Nearest source line within 150 meters", sourceVintage: "2025-01-01" });
+    rpcMock.mockImplementation((name: string) => Promise.resolve({ data:
+      name === "safety_ksi_concentrations_for_ingests" ? [{ rank: 1, longitude: -121.061, latitude: 39.219,
+        crash_count: 4, fatal_crash_count: 1, serious_injury_crash_count: 3, radius_meters: 150 }]
+      : name === "safety_crash_evidence_counts" ? [
+        { ingest_id: "ingest-roads", dimension: "severity", value: "fatal", record_count: 1 },
+        { ingest_id: "ingest-roads", dimension: "severity", value: "severe_injury", record_count: 3 },
+      ] : [], error: null }));
+    const response = await postGenerate(new NextRequest("http://localhost/api/reports/1/generate", {
+      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ format: "html" }),
+    }), { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) });
+    expect(response.status).toBe(200);
+    expect(safetyIngestSelectMock).toHaveBeenCalledWith(expect.stringContaining("source_id"));
+    expect(safetyRoadSelectMock).toHaveBeenCalledWith("id, road_name, geometry_geojson, source_id, source_vintage");
+    expect(tigerRoadsMock).toHaveBeenCalledTimes(fetchExpected ? 1 : 0);
+    expect(safetyRoadWriteMock).toHaveBeenCalledTimes(fetchExpected ? 1 : 0);
+    if (fetchExpected) {
+      expect(tigerRoadsMock).toHaveBeenCalledWith([expect.objectContaining({ longitude: -121.061, latitude: 39.219 })]);
+      expect(safetyRoadWriteMock).toHaveBeenCalledWith([expect.objectContaining({
+        workspace_id: "33333333-3333-4333-8333-333333333333", project_id: "44444444-4444-4444-8444-444444444444",
+        country_code: "US", source_id: "us-census-tiger-line-cache", source_vintage: "2025-01-01", source_feature_id: "tiger-road",
+      })], { onConflict: "workspace_id,project_id,source_id,source_vintage,source_feature_id" });
+    }
+    const html = artifactsInsertMock.mock.calls.at(-1)?.[0]?.metadata_json?.htmlContent;
+    if (roadExpected) expect(html).toContain("Source Road");
+    else expect(html).not.toContain("Source Road");
   });
 
   it("carries project-linked KSI concentration ranks into the generated packet", async () => {
@@ -1613,7 +2168,11 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expect(htmlContent).toContain("f".repeat(64));
     // The cited county run carries its name, stage, and validation posture.
     expect(htmlContent).toContain("County screening baseline");
-    expect(htmlContent).toContain("Validated Screening");
+    // The retired validated-screening stage renders as a count check and
+    // never as a pass pill (KI-2026-10-12-001).
+    expect(htmlContent).toContain("Count Check Complete");
+    expect(htmlContent).not.toContain("Validated Screening");
+    expect(htmlContent).toMatch(/<span class="pill pill-hold">Count Check Complete<\/span>/);
     expect(htmlContent).toContain("3 pass");
     expect(htmlContent).toContain("1 warning");
     expectProvenanceLanguageOnly(htmlContent);
@@ -1773,6 +2332,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
       },
       error: null,
     });
+    countyRunBasisConfirmsPass();
     modelingClaimMaybeSingleMock.mockResolvedValueOnce({
       data: {
         track: "assignment",
@@ -1903,6 +2463,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
       },
       error: null,
     });
+    countyRunBasisConfirmsPass();
     modelingClaimMaybeSingleMock.mockResolvedValueOnce({
       data: {
         track: "assignment",
@@ -1941,12 +2502,14 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expect(generatedArtifact?.metadata_json?.sourceContext).toEqual(
       expect.objectContaining({
         modelingEvidenceCount: 1,
-        modelingEvidenceClaimStatuses: ["claim_grade_passed"],
+        // The stored row says claim_grade_passed; a confirmed rules-v4 pass
+        // supports screening grade at most, so that is what is shown.
+        modelingEvidenceClaimStatuses: ["screening_grade"],
         modelingEvidence: [
           expect.objectContaining({
             countyRunId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
             geographyLabel: "Nevada County explicit run",
-            claimStatus: "claim_grade_passed",
+            claimStatus: "screening_grade",
           }),
         ],
       })
@@ -2208,6 +2771,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
       },
       error: null,
     });
+    countyRunBasisConfirmsPass();
     modelingClaimMaybeSingleMock.mockResolvedValueOnce({
       data: {
         track: "assignment",
@@ -2624,6 +3188,159 @@ describe("POST /api/reports/[reportId]/generate", () => {
       "99999999-9999-4999-8999-999999999999",
     ]);
     expect(artifactsInsertMock).toHaveBeenCalled();
+  });
+
+  describe("an RTP cycle with more comments than the server returns in one response", () => {
+    const FIRST_CAMPAIGN = "99999999-9999-4999-8999-999999999999";
+    const SECOND_CAMPAIGN = "88888888-8888-4888-8888-888888888888";
+    const ITEM_COLUMNS =
+      "id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at";
+
+    function comments(campaignId: string, count: number, prefix: string) {
+      return Array.from({ length: count }, (_, index) => ({
+        id: `${prefix}-${String(index).padStart(6, "0")}`,
+        campaign_id: campaignId,
+        category_id: null,
+        status: index % 2 === 0 ? "approved" : "pending",
+        source_type: "public",
+        latitude: null,
+        longitude: null,
+        moderation_notes: null,
+        created_at: "2026-04-20T00:00:00.000Z",
+        updated_at: "2026-04-20T00:00:00.000Z",
+      }));
+    }
+
+    function rtpPacketWithTwoCampaigns() {
+      reportMaybeSingleMock.mockResolvedValueOnce({
+        data: {
+          id: "11111111-1111-4111-8111-111111111111",
+          workspace_id: "33333333-3333-4333-8333-333333333333",
+          project_id: null,
+          rtp_cycle_id: "77777777-7777-4777-8777-777777777777",
+          title: "RTP Packet",
+          summary: "Packet summary",
+          report_type: "rtp_packet",
+          status: "draft",
+          created_at: "2026-04-24T00:00:00.000Z",
+          generated_at: null,
+          metadata_json: {},
+        },
+        error: null,
+      });
+      rtpEngagementCampaignsOrderMock.mockResolvedValueOnce({
+        data: [
+          {
+            id: FIRST_CAMPAIGN,
+            title: "Draft RTP listening campaign",
+            status: "active",
+            engagement_type: "comment_collection",
+            summary: "Comments on the draft plan.",
+            rtp_cycle_chapter_id: null,
+          },
+          {
+            id: SECOND_CAMPAIGN,
+            title: "Corridor chapter survey",
+            status: "active",
+            engagement_type: "comment_collection",
+            summary: "Comments on one chapter.",
+            rtp_cycle_chapter_id: null,
+          },
+        ],
+        error: null,
+      });
+    }
+
+    function generate() {
+      return postGenerate(
+        new NextRequest("http://localhost/api/reports/1/generate", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ format: "html" }),
+        }),
+        { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) }
+      );
+    }
+
+    it("counts every comment past the 1,000-row server cap", async () => {
+      rtpPacketWithTwoCampaigns();
+      // 1,234 comments on the first campaign, then 3 on the second, last in
+      // the read order: a read that stops at 1,000 rows undercounts the first
+      // campaign and drops the second entirely.
+      engagementItemsInMock.mockResolvedValueOnce({
+        data: [...comments(FIRST_CAMPAIGN, 1234, "first"), ...comments(SECOND_CAMPAIGN, 3, "second")],
+        error: null,
+      });
+
+      const response = await generate();
+
+      expect(response.status).toBe(200);
+      const sourceContext = artifactsInsertMock.mock.calls.at(-1)?.[0]?.metadata_json?.sourceContext;
+      // 617 + 2 approved and 617 + 1 pending across the 1,237 comments.
+      expect(sourceContext).toMatchObject({
+        engagementApprovedCommentCount: 619,
+        engagementPendingCommentCount: 618,
+      });
+
+      // The projection carries the columns the counts are computed from, the
+      // order is total (`id` breaks ties) so no comment is read twice or
+      // skipped, and the read asked for every page until one came back empty.
+      expect(engagementItemsSelectMock).toHaveBeenCalledWith(ITEM_COLUMNS);
+      expect(engagementItemsInMock).toHaveBeenCalledWith("campaign_id", [FIRST_CAMPAIGN, SECOND_CAMPAIGN]);
+      expect(engagementItemsInRangeMock.mock.calls.map(([from, toInclusive]) => [from, toInclusive])).toEqual([
+        [0, 499],
+        [500, 999],
+        [1000, 1499],
+        [1237, 1736],
+      ]);
+      // Every page request carries the same total order.
+      expect(engagementItemsInOrderMock.mock.calls.map(([column]) => column)).toEqual(
+        Array.from({ length: 4 }, () => ["created_at", "id"]).flat()
+      );
+    });
+
+    it("refuses the packet when a later page of comments fails", async () => {
+      rtpPacketWithTwoCampaigns();
+      engagementItemsInMock.mockResolvedValueOnce({ data: comments(FIRST_CAMPAIGN, 1234, "first"), error: null });
+      // The first page arrives; the second times out. What was read is a
+      // prefix, and a packet built on it would print a short count.
+      engagementItemsInRangeMock
+        .mockImplementationOnce(engagementItemsInPaging.range)
+        .mockImplementationOnce(async () => ({
+          data: null,
+          error: { message: "canceling statement due to statement timeout", code: "57014" },
+        }));
+
+      const response = await generate();
+
+      expect(response.status).toBe(500);
+      expect(await response.json()).toMatchObject({ error: "Failed to load RTP packet engagement records" });
+      expect(mockAudit.error).toHaveBeenCalledWith(
+        "rtp_report_engagement_load_failed",
+        expect.objectContaining({ message: "canceling statement due to statement timeout", code: "57014" })
+      );
+      expect(artifactsInsertMock).not.toHaveBeenCalled();
+      expect(reportUpdateMock).not.toHaveBeenCalled();
+    });
+
+    it("refuses the packet when the comment read stops before it is finished", async () => {
+      rtpPacketWithTwoCampaigns();
+      // More rows than the read will request before giving up (200 pages of
+      // 500). The read ends with rows still coming and no error; that is an
+      // unfinished count, never a total.
+      engagementItemsInMock.mockResolvedValueOnce({ data: comments(FIRST_CAMPAIGN, 100_001, "first"), error: null });
+
+      const response = await generate();
+
+      expect(response.status).toBe(500);
+      expect(await response.json()).toMatchObject({ error: "Failed to load RTP packet engagement records" });
+      expect(mockAudit.error).toHaveBeenCalledWith(
+        "rtp_report_engagement_load_failed",
+        expect.objectContaining({ message: expect.stringContaining("could not be completed"), code: null })
+      );
+      expect(artifactsInsertMock).not.toHaveBeenCalled();
+      expect(reportUpdateMock).not.toHaveBeenCalled();
+    });
   });
 
   it("persists a compact stage-gate snapshot in artifact metadata and html", async () => {
@@ -3130,6 +3847,163 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expectProvenanceLanguageOnly(generatedHtml);
   });
 
+  describe("a campaign with more comments than the server returns in one response", () => {
+    const CAMPAIGN_ID = "99999999-9999-4999-8999-999999999999";
+    const ITEM_COLUMNS =
+      "id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at";
+
+    // 1,234 comments: past PostgREST's 1,000-row cap, so a read that stops
+    // after one request counts 1,000 and reports no error.
+    function commentRows(count: number) {
+      return Array.from({ length: count }, (_, index) => ({
+        id: `item-${String(index).padStart(6, "0")}`,
+        campaign_id: CAMPAIGN_ID,
+        category_id: "category-1",
+        status: "approved",
+        source_type: "public",
+        latitude: null,
+        longitude: null,
+        moderation_notes: null,
+        created_at: "2026-03-12T00:00:00.000Z",
+        updated_at: "2026-03-14T03:00:00.000Z",
+      }));
+    }
+
+    function projectReportCitingTheCampaign() {
+      sectionsOrderMock.mockResolvedValueOnce({
+        data: [
+          {
+            id: "section-1",
+            section_key: "engagement_summary",
+            title: "Engagement campaign summary",
+            enabled: true,
+            sort_order: 0,
+            config_json: { campaignId: CAMPAIGN_ID },
+          },
+        ],
+        error: null,
+      });
+    }
+
+    function campaignTargetedReport() {
+      reportMaybeSingleMock.mockResolvedValueOnce({
+        data: {
+          id: "11111111-1111-4111-8111-111111111111",
+          workspace_id: "33333333-3333-4333-8333-333333333333",
+          project_id: null,
+          rtp_cycle_id: null,
+          engagement_campaign_id: CAMPAIGN_ID,
+          title: "Campaign packet",
+          summary: null,
+          report_type: "project_status",
+          status: "draft",
+          created_at: "2026-03-14T00:00:00.000Z",
+        },
+        error: null,
+      });
+      sectionsOrderMock.mockResolvedValueOnce({
+        data: [
+          { id: "section-1", section_key: "engagement_summary", title: "Engagement campaign summary", enabled: true, sort_order: 0, config_json: {} },
+        ],
+        error: null,
+      });
+      reportRunsOrderMock.mockResolvedValueOnce({ data: [], error: null });
+    }
+
+    function generate() {
+      return postGenerate(
+        new NextRequest("http://localhost/api/reports/1/generate", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ format: "html" }),
+        }),
+        { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) }
+      );
+    }
+
+    function expectTheFullTotalIsRead() {
+      // The projection carries the columns the counts are computed from, and the
+      // order is total (`id` breaks ties) so no comment is read twice or skipped
+      // across page boundaries.
+      expect(engagementItemsSelectMock).toHaveBeenCalledWith(ITEM_COLUMNS);
+      expect(engagementItemsEqCampaignMock).toHaveBeenCalledWith("campaign_id", CAMPAIGN_ID);
+      expect(engagementItemsChainOrderMock.mock.calls.slice(0, 2).map((call) => (call as unknown[])[0])).toEqual([
+        "updated_at",
+        "id",
+      ]);
+    }
+
+    it("counts every comment in a project packet", async () => {
+      projectReportCitingTheCampaign();
+      engagementItemsOrderMock.mockResolvedValueOnce({ data: commentRows(1234), error: null });
+
+      const response = await generate();
+
+      expect(response.status).toBe(200);
+      const sourceContext = artifactsInsertMock.mock.calls.at(-1)?.[0]?.metadata_json?.sourceContext;
+      expect(sourceContext).toMatchObject({ engagementCampaignId: CAMPAIGN_ID, engagementItemCount: 1234 });
+      expectTheFullTotalIsRead();
+    });
+
+    it("counts every comment in a campaign packet", async () => {
+      campaignTargetedReport();
+      engagementItemsOrderMock.mockResolvedValueOnce({ data: commentRows(1234), error: null });
+
+      const response = await generate();
+
+      expect(response.status).toBe(200);
+      const sourceContext = artifactsInsertMock.mock.calls.at(-1)?.[0]?.metadata_json?.sourceContext;
+      expect(sourceContext).toMatchObject({ engagementCampaignId: CAMPAIGN_ID, engagementItemCount: 1234 });
+      expectTheFullTotalIsRead();
+    });
+
+    it("refuses a project packet when a later page of comments fails", async () => {
+      projectReportCitingTheCampaign();
+      engagementItemsOrderMock.mockResolvedValueOnce({ data: commentRows(1234), error: null });
+      // The first page arrives; the second times out. What was read is a prefix,
+      // and a packet built on it would print a short count as the campaign's.
+      engagementItemsRangeMock
+        .mockImplementationOnce(engagementItemsPaging.range)
+        .mockImplementationOnce(async () => ({
+          data: null,
+          error: { message: "canceling statement due to statement timeout", code: "57014" },
+        }));
+
+      const response = await generate();
+
+      expect(response.status).toBe(500);
+      expect(await response.json()).toEqual({ error: "Failed to load engagement handoff context" });
+      expect(mockAudit.error).toHaveBeenCalledWith(
+        "report_engagement_load_failed",
+        expect.objectContaining({ message: "canceling statement due to statement timeout", code: "57014" })
+      );
+      expect(artifactsInsertMock).not.toHaveBeenCalled();
+      expect(reportUpdateMock).not.toHaveBeenCalled();
+    });
+
+    it("refuses a campaign packet when the comment read stops before it is finished", async () => {
+      campaignTargetedReport();
+      // More rows than the read will request before giving up (200 pages of
+      // 500). The read ends with rows still coming and no error; that is an
+      // unfinished count, never a total.
+      engagementItemsOrderMock.mockResolvedValueOnce({ data: commentRows(100_001), error: null });
+
+      const response = await generate();
+
+      expect(response.status).toBe(500);
+      expect(await response.json()).toEqual({ error: "Failed to load engagement campaign records" });
+      expect(mockAudit.error).toHaveBeenCalledWith(
+        "report_engagement_load_failed",
+        expect.objectContaining({
+          campaignId: CAMPAIGN_ID,
+          message: expect.stringContaining("could not be completed"),
+        })
+      );
+      expect(artifactsInsertMock).not.toHaveBeenCalled();
+      expect(reportUpdateMock).not.toHaveBeenCalled();
+    });
+  });
+
   it("renders disclosed not-applicable blocks for project-scoped sections on a campaign packet", async () => {
     reportMaybeSingleMock.mockResolvedValueOnce({
       data: {
@@ -3529,7 +4403,9 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expect(response.status).toBe(503);
     const body = await response.json();
     expect(body.error).toBe("This packet's modeling evidence cannot be read yet");
-    expect(body.hint).toContain("Apply the latest Supabase migrations");
+    expect(body.hint).toContain("never established");
+    expect(body.hint).not.toMatch(/migration/i);
+    expect(body.operatorDetail).toContain("Apply the latest Supabase migrations");
     expect(artifactsInsertMock).not.toHaveBeenCalled();
   });
 
@@ -3694,4 +4570,236 @@ describe("POST /api/reports/[reportId]/generate", () => {
       expect.anything()
     );
   });
+  // Answer from the actual projection. An omitted column never reappears in a fallback row.
+  function pendingProjectSchema(missing: string[], style: "postgres" | "cache" = "postgres", malformed = false) {
+    const row: Record<string, unknown> = { ...exportProject,
+      jurisdiction_context: malformed ? { invalid: true } : exportProject.jurisdiction_context,
+      estimated_cost_amount: 125000, estimated_cost_currency: "EUR",
+      estimated_cost_basis_year: 2026, estimated_cost_source_document_id: null,
+    };
+    projectMaybeSingleMock.mockImplementation(async () => {
+      const columns = projectSelectMock.mock.calls.at(-1)![0].split(",").map(column => column.trim());
+      const unavailable = missing.find(column => columns.includes(column));
+      if (unavailable) return { data: null, error: {
+        message: style === "postgres" ? `column projects.${unavailable} does not exist`
+          : `Could not find the '${unavailable}' column of 'projects' in the schema cache`,
+        code: style === "postgres" ? "42703" : "PGRST204",
+      } };
+      return { data: Object.fromEntries(columns.filter(column => column in row).map(column => [column, row[column]])), error: null };
+    });
+  }
+
+  async function generatePendingSchemaReport() {
+    return postGenerate(new NextRequest("http://localhost/api/reports/1/generate", {
+      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ format: "html" }),
+    }), { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) });
+  }
+
+  function generatedPendingSchemaOutput() {
+    const inserted = artifactsInsertMock.mock.calls.at(-1)?.[0];
+    assert(inserted?.metadata_json, "Pending-schema report records artifact metadata");
+    const source = inserted.metadata_json.sourceContext;
+    assert(source && typeof source === "object" && "jurisdictionReadiness" in source, "Pending-schema report records readiness custody");
+    const readiness = source.jurisdictionReadiness;
+    assert(readiness && typeof readiness === "object", "Pending-schema readiness is an object");
+    const html = serviceStorageUploadMock.mock.calls.findLast(call => String(call[0]).endsWith(".html"))?.[1].toString();
+    assert(typeof html === "string", "Pending-schema report uploads actual HTML");
+    expect(inserted.metadata_json.htmlContent, "Stored HTML snapshot matches uploaded report").toBe(html);
+    return { readiness: readiness as Record<string, unknown>, html,
+      contextText: new DOMParser().parseFromString(html, "text/html").querySelector("#project-jurisdiction-context")?.textContent ?? "",
+      source: source as Record<string, unknown> };
+  }
+
+  it("keeps the initial project projection literal and equal to every optional group", async () => {
+    const expected = [
+      "id", "workspace_id", "name", "summary", "status", "plan_type", "delivery_phase", "created_at", "updated_at",
+      "jurisdiction_context", ...PROJECT_PLACE_COLUMN_NAMES,
+      "estimated_cost_amount", "estimated_cost_currency", "estimated_cost_basis_year", "estimated_cost_source_document_id",
+      "latitude", "longitude",
+    ].join(", ");
+    expect((await generatePendingSchemaReport()).status).toBe(200);
+    expect(projectSelectMock.mock.calls[0][0], "Actual initial projection retains every group in order").toBe(expected);
+    const sites = collectSupabaseSelectSites({
+      files: ["src/app/api/reports/[reportId]/generate/route.ts"],
+    }).filter(site =>
+      site.file === "src/app/api/reports/[reportId]/generate/route.ts" && site.table === "projects"
+    );
+    expect(sites.filter(site => site.projection !== null).map(site => site.projection), "Source guard resolves the actual initial projection").toEqual([expected]);
+    expect(sites.filter(site => site.projection === null), "Computed fallback stays honestly unchecked").toHaveLength(1);
+  });
+
+  it.each([
+    ["jurisdiction_context"], [...PROJECT_PLACE_COLUMN_NAMES],
+    ["estimated_cost_amount", "estimated_cost_currency", "estimated_cost_basis_year", "estimated_cost_source_document_id"],
+    ["latitude", "longitude"],
+  ])("removes exactly the confirmed optional group beginning %s", async (...columns: string[]) => {
+    pendingProjectSchema([columns[0]]);
+    expect((await generatePendingSchemaReport()).status, "Single-group recovery generates").toBe(200);
+    const projections = projectSelectMock.mock.calls.map(call => call[0]);
+    expect(projections, "Single missing group takes exactly one retry").toHaveLength(2);
+    expect(projections[1], "Fallback removes the complete named group and nothing else").toBe(
+      projections[0].split(", ").filter(column => !columns.includes(column)).join(", ")
+    );
+  });
+
+  it.each(["postgres", "cache"] as const)("generates schema-pending jurisdiction with readable place and cost (%s)", async style => {
+    pendingProjectSchema(["jurisdiction_context"], style);
+    const response = await generatePendingSchemaReport();
+    expect(response.status, "Schema-pending jurisdiction still generates").toBe(200);
+    expect(projectSelectMock.mock.calls, "Jurisdiction-only fallback is bounded").toHaveLength(2);
+    const [wide, fallback] = projectSelectMock.mock.calls.map(call => call[0]);
+    expect(wide, "Initial projection reads jurisdiction").toContain("jurisdiction_context");
+    expect(fallback, "Fallback removes only unavailable jurisdiction").not.toContain("jurisdiction_context");
+    for (const column of ["place_geometry_geojson", "place_label", "estimated_cost_amount", "estimated_cost_currency", "latitude", "longitude"]) {
+      expect(fallback, `Fallback retains readable ${column}`).toContain(column);
+    }
+    expect(projectEqMock.mock.calls, "Fallback retains project predicate").toEqual([["id", "44444444-4444-4444-8444-444444444444"], ["id", "44444444-4444-4444-8444-444444444444"]]);
+    const { readiness, html, contextText, source } = generatedPendingSchemaOutput();
+    expect(readiness, "Pending custody never invents a human declaration or registry assessment").toEqual({
+      schema: "openplan.report-project-jurisdiction-schema-pending.v1", scope: "external_handoff",
+      projectId: exportProject.id, projectRevision: exportProject.updated_at,
+      registrySha256: jurisdictionReadinessRegistrySha256(),
+      jurisdictionReadState: "schema_pending", studyAreaReadState: "ok",
+      disclosure: "SCHEMA-PENDING: Project jurisdiction could not be read because this deployment's database is missing the jurisdiction column. Declaration status, adopting authority and legal applicability are unknown. No jurisdiction readiness or support assessment is made. Study geography has a separate read state.",
+      payloadSha256: expect.stringMatching(/^[a-f0-9]{64}$/),
+    });
+    const { payloadSha256, ...material } = readiness;
+    expect(payloadSha256, "Pending custody hashes its actual disclosed read state").toBe(createHash("sha256").update(canonicalizeActionPayload(material)).digest("hex"));
+    expect(contextText, "Actual HTML discloses schema-pending jurisdiction").toContain("SCHEMA-PENDING");
+    expect(contextText, "Actual HTML retains truthful pending disclosure").toContain(String(readiness.disclosure));
+    expect(contextText, "Actual HTML prints pending payload hash").toContain(String(payloadSha256));
+    expect(contextText, "Actual HTML prints pending schema identity").toContain(String(readiness.schema));
+    expect(contextText, "Pending HTML never substitutes an unset or unresolved declaration").not.toMatch(/No separate declaration|explicitly unresolved|Legacy study-place context|Human-declared project context/);
+    expect(source.projectGeographyReadState, "Custody retains readable study geography").toBe("ok");
+    expect(html, "Actual report retains readable study boundary").toContain("Uploaded study boundary");
+    expect(html, "Actual report retains readable project cost").toContain("EUR");
+    expect(html, "Actual report retains readable project cost amount").toContain("125,000");
+    expect(html, "External report does not leak actor").not.toContain(jurisdictionActor);
+  });
+
+  it.each([["place_label", "jurisdiction_context"], ["jurisdiction_context", "place_label"]])("generates truthful older place and jurisdiction schema disclosure (%j, %j)", async (first, second) => {
+    pendingProjectSchema([first, second]);
+    expect((await generatePendingSchemaReport()).status, "Older schema still generates").toBe(200);
+    expect(projectSelectMock.mock.calls, "Older-schema fallback remains bounded").toHaveLength(3);
+    const { readiness, html, source } = generatedPendingSchemaOutput();
+    expect(readiness.jurisdictionReadState, "Older schema never claims jurisdiction read success").toBe("schema_pending");
+    expect(readiness.studyAreaReadState, "Pending payload records missing study geography").toBe("schema_pending");
+    expect(source.projectGeographyReadState, "Custody records missing study geography").toBe("schema_pending");
+    expect(html, "Actual HTML discloses unread study area").toContain("This project&#39;s study area could not be read at generation time");
+    expect(html, "Older schema retains independently readable cost").toContain("125,000");
+    const { payloadSha256, ...material } = readiness;
+    expect(payloadSha256, "Older-schema hash reflects actual read states").toBe(createHash("sha256").update(canonicalizeActionPayload(material)).digest("hex"));
+  });
+
+  it("keeps schema-pending custody identical across generation clocks", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      pendingProjectSchema(["jurisdiction_context"]);
+      vi.setSystemTime(new Date("2028-01-01T00:00:00Z"));
+      expect((await generatePendingSchemaReport()).status).toBe(200);
+      const first = generatedPendingSchemaOutput().readiness;
+      vi.setSystemTime(new Date("2030-01-01T00:00:00Z"));
+      expect((await generatePendingSchemaReport()).status).toBe(200);
+      expect(generatedPendingSchemaOutput().readiness, "Pending custody excludes the generation clock").toEqual(first);
+    } finally { vi.useRealTimers(); }
+  });
+
+  it("retains strict jurisdiction validation when only place schema is pending", async () => {
+    pendingProjectSchema(["place_label"]);
+    expect((await generatePendingSchemaReport()).status).toBe(200);
+    const { readiness, source } = generatedPendingSchemaOutput();
+    expect(projectSelectMock.mock.calls.at(-1)![0], "Place fallback still selects jurisdiction").toContain("jurisdiction_context");
+    expect(readiness.schema, "Readable jurisdiction retains strict external contract").toBe("openplan.project-jurisdiction-readiness-export.v4");
+    expect(readiness.contextSource, "Readable jurisdiction stays a declaration").toBe("project_declaration");
+    expect(source.projectGeographyReadState).toBe("schema_pending");
+  });
+
+  it("recovers the older core projection only after each optional group is confirmed missing", async () => {
+    pendingProjectSchema(["place_label", "jurisdiction_context", "estimated_cost_amount", "latitude"]);
+    expect((await generatePendingSchemaReport()).status, "Old core projection still generates").toBe(200);
+    expect(projectSelectMock.mock.calls, "Every optional group is retried at most once").toHaveLength(5);
+    expect(projectSelectMock.mock.calls.at(-1)![0], "Final fallback retains the documented core projection").toBe("id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at");
+    const { readiness } = generatedPendingSchemaOutput();
+    expect(readiness.jurisdictionReadState).toBe("schema_pending");
+    expect(readiness.studyAreaReadState).toBe("schema_pending");
+  });
+
+  it("refuses malformed existing jurisdiction even with pending place schema", async () => {
+    pendingProjectSchema(["place_label"], "postgres", true);
+    expect((await generatePendingSchemaReport()).status, "Malformed saved jurisdiction fails closed").toBe(500);
+    expect(serviceStorageUploadMock, "Malformed jurisdiction writes no artifact").not.toHaveBeenCalled();
+    expect(artifactsInsertMock).not.toHaveBeenCalled();
+    expect(() => readProjectJurisdiction({ id: "project" }), "Ordinary readers still reject missing projection").toThrow("Project jurisdiction was not read.");
+  });
+
+  it.each([
+    "permission denied for table projects", "connection terminated unexpectedly",
+    "column projects.unrecognized_field does not exist", "schema cache unavailable",
+    "column projects.unrelated_place_label does not exist",
+    "schema cache connection lost while reading jurisdiction_context",
+    "column reports.jurisdiction_context does not exist",
+    "Could not find the 'jurisdiction_context' column of 'reports' in the schema cache",
+    "permission denied: column projects.jurisdiction_context does not exist",
+    'column projects."Jurisdiction_Context" does not exist',
+  ])("refuses unclassified project read errors without dropping fields: %s", async message => {
+    projectMaybeSingleMock.mockResolvedValue({ data: null, error: { message } });
+    expect((await generatePendingSchemaReport()).status, "Unclassified failure refuses report").toBe(500);
+    expect(projectSelectMock.mock.calls, "Unclassified failure never retries a narrower projection").toHaveLength(1);
+    expect(serviceStorageUploadMock).not.toHaveBeenCalled();
+    expect(artifactsInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("refuses a failed fallback read instead of generating a partial artifact", async () => {
+    projectMaybeSingleMock.mockResolvedValueOnce({ data: null, error: { message: "column projects.jurisdiction_context does not exist" } })
+      .mockResolvedValueOnce({ data: null, error: { message: "permission denied for table projects" } });
+    expect((await generatePendingSchemaReport()).status, "Failed fallback refuses report").toBe(500);
+    expect(projectSelectMock).toHaveBeenCalledTimes(2);
+    expect(serviceStorageUploadMock).not.toHaveBeenCalled();
+    expect(artifactsInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("freezes non-null export-safe report readiness with canonical hash parity", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] }); vi.setSystemTime(new Date("2028-01-01T00:00:00Z"));
+    try {
+    projectMaybeSingleMock.mockResolvedValue({ data: exportProject, error: null });
+    const expected = buildProjectJurisdictionReadinessExportPayload(exportProject, jurisdictionReadinessRegistrySha256());
+    const response = await postGenerate(new NextRequest("http://localhost/api/reports/1/generate", {
+      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ format: "html" }),
+    }), { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) });
+    expect(response.status).toBe(200);
+    const inserted = artifactsInsertMock.mock.calls[0][0];
+    assert(inserted.metadata_json, "Generated report includes metadata");
+    const sourceContext = inserted.metadata_json.sourceContext;
+    assert(
+      typeof sourceContext === "object" && sourceContext !== null && "jurisdictionReadiness" in sourceContext,
+      "Generated report metadata includes jurisdiction readiness source context"
+    );
+    const reportReadiness = sourceContext.jurisdictionReadiness;
+    expect(reportReadiness, "Report metadata shares external canonical material").toEqual(expected);
+    expect(JSON.stringify(reportReadiness), "Report readiness omits internal actor").not.toContain(jurisdictionActor);
+    const html = serviceStorageUploadMock.mock.calls.find(call => String(call[0]).endsWith(".html"))?.[1].toString();
+    expect(html, "Actual generated report prints shared canonical hash").toContain(expected.payloadSha256);
+    expect(html, "Actual generated report excludes jurisdiction actor UUID").not.toContain(jurisdictionActor);
+    vi.setSystemTime(new Date("2030-01-01T00:00:00Z"));
+    const client = { from() {
+      const query = { select() { return query; }, eq() { return query; }, in() { return query; }, order() { return query; }, range() { return query; },
+        async maybeSingle() { return { data: exportProject, error: null }; },
+        then(resolve: (value: unknown) => unknown) { return Promise.resolve(resolve({ data: [], error: null })); },
+      }; return query;
+    } };
+    const bundle = await loadProjectEvidenceGeneratedFiles(client, exportProject, new Date());
+    const json = JSON.parse(bundle.files.find(file => file.path === "project/jurisdiction-readiness.json")!.bytes.toString());
+    expect(json, "Actual report and bundle JSON share canonical material across clocks").toEqual(reportReadiness);
+    const standalone = buildProjectGeoPackage({ project: exportProject, corridors: [], generatedAt: new Date() });
+    for (const bytes of [standalone.bytes, bundle.files.find(file => file.path === "project/project.gpkg")!.bytes]) {
+      const db = new Database(bytes, { readonly: true });
+      try {
+        const row = db.prepare("SELECT payload_sha256, readiness_payload_json FROM project_jurisdiction_context").get() as { payload_sha256: string; readiness_payload_json: string };
+        expect(row.payload_sha256, "Actual report JSON and both GeoPackages share a hash across clocks").toBe(expected.payloadSha256);
+        expect(row.readiness_payload_json, "Actual report JSON and both GeoPackages share canonical bytes").toBe(canonicalizeActionPayload(expected));
+      } finally { db.close(); }
+    }
+    } finally { vi.useRealTimers(); }
+  });
+
 });

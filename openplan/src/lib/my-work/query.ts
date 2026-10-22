@@ -31,8 +31,10 @@
  * that could tick its own items off would be a queue nobody could trust.
  */
 
+import { addDays } from "@/lib/dashboard/coming-up";
 import type { ProjectAssigneeRoster } from "@/lib/projects/assignee-roster";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
+import { instantFromWallClock, UTC_TIME_ZONE } from "@/lib/time/workspace-calendar";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { parseSortableDate, sortDeadlineItemsBy } from "@/lib/work/deadlines";
 
@@ -173,10 +175,17 @@ export type LoadMyWorkOptions = {
   /** Injectable clock — every overdue test in this module reads it, none calls Date.now() directly. */
   now?: Date;
   /**
+   * The workspace's IANA zone (`loadWorkspaceCalendar`). A TIMESTAMPTZ due
+   * date is shown on this calendar, and the date bounds below are days on it.
+   */
+  timeZone: string;
+  /**
    * Date bounds for the dated groups only (`deadlines`, `workspace_deadlines`),
    * applied to each source's due column. The dashboard reads the overdue
    * backlog and the coming weeks separately, so a long backlog cannot push
    * every upcoming item past the per-source cap. Undated groups ignore them.
+   * Each bound is a calendar day in `timeZone`: on a TIMESTAMPTZ column a day
+   * starts at that zone's midnight, not at midnight UTC.
    */
   dueBefore?: string;
   dueOnOrAfter?: string;
@@ -192,6 +201,63 @@ const MY_WORK_DATED_BLOCKS: readonly MyWorkBlockId[] = ["deadlines", "workspace_
 export const MY_WORK_SOURCES_BY_ID = Object.fromEntries(
   MY_WORK_SOURCES.map((source) => [source.id, source])
 ) as Record<MyWorkSourceId, MyWorkSource>;
+
+/**
+ * The column date bounds apply to, or null for a source with no due dates.
+ * Most dated sources order by their due column; a source whose rows may be
+ * undated names it in `dueColumn`.
+ */
+function dueDateColumn(source: MyWorkSource): string | null {
+  if (source.dueColumn) return source.dueColumn;
+  return MY_WORK_DATED_BLOCKS.includes(source.block) ? source.orderColumn : null;
+}
+
+const CALENDAR_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+type DueBounds = { dueBefore?: string; dueOnOrAfter?: string; dueOnOrBefore?: string };
+
+/** The instant a calendar day begins in a zone, as an ISO 8601 literal. */
+function dayStartIn(day: string, timeZone: string): string {
+  return instantFromWallClock(`${day}T00:00`, timeZone) ?? `${day}T00:00:00.000Z`;
+}
+
+/**
+ * Bound a read by due date. With `keepUndated`, rows with no due date pass
+ * too: an undated contract task belongs in the backlog read even though a
+ * dated one belongs only in the window its date falls in.
+ *
+ * A DATE column is compared with the day itself. A TIMESTAMPTZ column is
+ * compared with the instants the workspace's day starts and ends, so an
+ * obligation due at 11 p.m. Pacific on the last day of a window (06:00 UTC the
+ * next day) is inside it.
+ */
+function applyDueBounds(
+  query: WorkQuery,
+  column: string,
+  bounds: DueBounds,
+  keepUndated: boolean,
+  instant: { timeZone: string } | null
+): WorkQuery {
+  const days: Array<["lt" | "gte" | "lte", string]> = [];
+  if (bounds.dueBefore) days.push(["lt", bounds.dueBefore]);
+  if (bounds.dueOnOrAfter) days.push(["gte", bounds.dueOnOrAfter]);
+  if (bounds.dueOnOrBefore) days.push(["lte", bounds.dueOnOrBefore]);
+  if (days.length === 0) return query;
+  // The bounds are interpolated into a filter string below, so only a plain
+  // calendar date is accepted. The throw becomes a reported failed read.
+  if (!days.every(([, value]) => CALENDAR_DATE.test(value))) throw new Error("due-date bound is not a calendar date");
+  const ranges: Array<["lt" | "gte" | "lte", string]> = instant
+    ? days.map(([op, day]) =>
+        op === "lte" ? ["lt", dayStartIn(addDays(day, 1), instant.timeZone)] : [op, dayStartIn(day, instant.timeZone)]
+      )
+    : days;
+  if (!keepUndated) {
+    return ranges.reduce((next, [op, value]) => next[op](column, value), query);
+  }
+  const clauses = ranges.map(([op, value]) => `${column}.${op}."${value}"`);
+  const dated = clauses.length === 1 ? clauses[0] : `and(${clauses.join(",")})`;
+  return query.or(`${column}.is.null,${dated}`);
+}
 
 function clampLimit(requested: number | undefined): number {
   if (
@@ -277,6 +343,8 @@ async function readSource(
     dueBefore?: string;
     dueOnOrAfter?: string;
     dueOnOrBefore?: string;
+    datedOnly?: boolean;
+    timeZone: string;
   }
 ): Promise<{ result: WorkReadResult; departedIncluded: boolean }> {
   try {
@@ -286,16 +354,27 @@ async function readSource(
       .eq(source.workspaceFilterColumn, options.workspaceId);
     const scoped = applyScope(base, source, options);
     let filtered = applyStaticFilters(scoped.query, source);
-    if (MY_WORK_DATED_BLOCKS.includes(source.block)) {
-      if (options.dueBefore) filtered = filtered.lt(source.orderColumn, options.dueBefore);
-      if (options.dueOnOrAfter) filtered = filtered.gte(source.orderColumn, options.dueOnOrAfter);
-      if (options.dueOnOrBefore) filtered = filtered.lte(source.orderColumn, `${options.dueOnOrBefore}T23:59:59Z`);
+    const dueColumn = dueDateColumn(source);
+    // A source that may be undated keeps its undated rows, except in a read
+    // of dated work only, which also takes its soonest rows first.
+    const datedRead = Boolean(source.dueColumn && options.datedOnly);
+    if (dueColumn) {
+      filtered = applyDueBounds(
+        filtered,
+        dueColumn,
+        options,
+        Boolean(source.dueColumn) && !options.datedOnly,
+        source.dueIsInstant ? { timeZone: options.timeZone } : null
+      );
     }
+    if (datedRead && dueColumn) filtered = filtered.not(dueColumn, "is", null);
     const readLimit = source.readLimit
       ? source.readLimit(options.limitPerSource)
       : options.limitPerSource;
     const result = await filtered
-      .order(source.orderColumn, { ascending: source.orderAscending })
+      .order(datedRead && dueColumn ? dueColumn : source.orderColumn, {
+        ascending: datedRead ? true : source.orderAscending,
+      })
       .limit(readLimit);
     return { result, departedIncluded: scoped.departedIncluded };
   } catch (error) {
@@ -366,10 +445,11 @@ export async function loadMyWork(
   const limitPerSource = clampLimit(options.limitPerSource);
   const scope = options.scope ?? DEFAULT_MY_WORK_SCOPE;
   const now = options.now ?? new Date();
+  const timeZone = options.timeZone || UTC_TIME_ZONE;
 
   const reads = new ReadFailureLog();
   const sources = options.datedOnly
-    ? MY_WORK_SOURCES.filter((source) => MY_WORK_DATED_BLOCKS.includes(source.block))
+    ? MY_WORK_SOURCES.filter((source) => dueDateColumn(source) !== null)
     : MY_WORK_SOURCES;
   const outcomes = await Promise.all(
     sources.map((source) =>
@@ -382,6 +462,8 @@ export async function loadMyWork(
         dueBefore: options.dueBefore,
         dueOnOrAfter: options.dueOnOrAfter,
         dueOnOrBefore: options.dueOnOrBefore,
+        datedOnly: options.datedOnly,
+        timeZone,
       })
     )
   );
@@ -400,7 +482,7 @@ export async function loadMyWork(
     const failed = pending ? false : reads.check(source.readLabel, result);
     const rows = pending || failed ? [] : ((result.data ?? []) as Array<Record<string, unknown>>);
     rowsRead[source.id] = rows.length;
-    collected.push(...source.toItems(rows, { now, limitPerSource }));
+    collected.push(...source.toItems(rows, { now, limitPerSource, timeZone }));
     perSource[source.id] = { count: 0, pending, failed };
   });
 

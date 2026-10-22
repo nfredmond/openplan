@@ -8,7 +8,7 @@ import { acquireConnectorLock, writeConnectorJournal } from "../../../../workers
 import { readPrivateJson } from "../../../../workers/planner_agent_connector/connector-client.mjs";
 import { normalizeGtfsSourceUrl } from "./ingest";
 import { resolveGtfsLimits, type GtfsLimitEnv } from "./limits";
-import { gtfsIntakeStorage } from "./managed-worker-intake";
+import { gtfsIntakeStorage, requireGtfsStorageRoom, GtfsStorageRoomRefusal } from "./managed-worker-intake";
 import { sendGtfsPreparedCommand, readGtfsStatus } from "./managed-worker-service";
 import { GTFS_UPLOADS_BUCKET } from "./persist";
 import { readRetainedGtfsArchive } from "./retained-archive";
@@ -202,8 +202,13 @@ export async function admitGtfsSubmission(options: GtfsAdmissionOptions) {
         const timer = setTimeout(() => deadline.abort(new Error("GTFS admission upload acknowledgement unavailable")), timeoutMs);
         try {
           const storage = gtfsIntakeStorage(binding.target, options.serviceKey, uploadSignal, options.storageFetch);
+          await requireGtfsStorageRoom(storage, binding.workspaceId, archive, uploadSignal, options.env);
+          uploadSignal.throwIfAborted();
           await whileActive(storage.storage.from(GTFS_UPLOADS_BUCKET).upload(archive.path, retainedBytes, { contentType: "application/zip", upsert: false }), uploadSignal);
-        } catch { signal.throwIfAborted(); }
+        } catch (error) {
+          signal.throwIfAborted();
+          if (error instanceof GtfsStorageRoomRefusal) throw error;
+        }
         finally { clearTimeout(timer); deadline.abort(); }
         remote = await readRetainedGtfsArchive(options.service, remoteIdentity, { signal, env: options.env });
       }

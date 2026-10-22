@@ -1,8 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
-import Link from "next/link";
-import { ErrorState } from "@/components/ui/state-block";
+import { ModuleError } from "@/components/ui/module-error";
 
 export default function RootError({
   error,
@@ -11,40 +9,14 @@ export default function RootError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  useEffect(() => {
-    console.error("[openplan/root-error]", {
-      message: error.message,
-      digest: error.digest ?? null,
-    });
-  }, [error]);
-
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col justify-center px-6 py-16">
-      <ErrorState
-        title="Something went wrong while loading this page."
-        description={
-          error.digest
-            ? `Reference ${error.digest}. Nothing has been deleted. This screen failed to load. Try again, or go back to the dashboard.`
-            : "Nothing has been deleted. This screen failed to load. Try again, or go back to the dashboard."
-        }
-        action={
-          <div className="flex flex-wrap gap-3 text-sm">
-            <button
-              type="button"
-              onClick={reset}
-              className="inline-flex items-center rounded border border-destructive/40 px-3 py-1.5 font-medium text-destructive hover:bg-destructive/10"
-            >
-              Try again
-            </button>
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center rounded border border-border px-3 py-1.5 font-medium text-foreground hover:bg-muted/40"
-            >
-              Back to the dashboard
-            </Link>
-          </div>
-        }
-      />
-    </main>
+    <ModuleError
+      error={error}
+      reset={reset}
+      backHref="/dashboard"
+      backLabel="Back to the dashboard"
+      logTag="root-error"
+      as="main"
+    />
   );
 }

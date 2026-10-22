@@ -1,0 +1,11 @@
+def load_recovery():
+    # Only the new sealed helper module is imported. No old launcher is invoked.
+    for name,expected in HELPERS.items():
+        private_file(ROOT/name);require(sha(ROOT/name)==expected,'helper-sha:'+name)
+    require('helper' not in sys.modules or Path(sys.modules['helper'].__file__)==ROOT/'helper.py','helper-module-root')
+    sys.path.insert(0,str(ROOT))
+    try:r=importlib.import_module('helper')
+    finally:sys.path.pop(0)
+    require(Path(r.__file__)==ROOT/'helper.py' and Path(r.p.__file__)==ROOT/'policy.py' and r.OUT==ROOT and
+        r.p.HEAD==APP_HEAD and r.p.SOURCE_ANCHOR==SOURCE_ANCHOR and r.p.API==API and r.p.WEB==WEB,'helper-root-head')
+    return r

@@ -1,0 +1,29 @@
+{
+  "focusedMethods": 56,
+  "controls": {
+    "cases": 63,
+    "survivors": 4,
+    "intendedFailures": 59,
+    "unit": "openplan-installation-worker-inventory-controls-20261011-06.service",
+    "invocationId": "a851b360fd414cf596594eb03d8bb623",
+    "exitCode": 0,
+    "wallSeconds": 5.87,
+    "journalRoundedPeakMiB": 30.5
+  },
+  "ops": {
+    "unit": "openplan-installation-worker-inventory-ops-20261011-02.service",
+    "invocationId": "c7baca9494d946f4bed16a4c0d0973d0",
+    "exitCode": 0,
+    "testsPassed": 298,
+    "testSeconds": 14.653,
+    "wallSeconds": 14.864,
+    "journalRoundedPeakMiB": 72.4
+  },
+  "testAndControlMemoryLimitBytes": 536870912,
+  "extraSwapBytes": 0,
+  "cpuQuotaPercent": 100,
+  "tasksMax": 128,
+  "scope": "local unit and targeted mutation checks",
+  "installationCoverage": "unassessed",
+  "publicReadiness": "unassessed"
+}

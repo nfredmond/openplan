@@ -1,0 +1,789 @@
+{
+  "schema": 1,
+  "disposition": "SCOPED_SOURCE_APPROVAL_NO_NEW_ACTIONABLE_P1_P2_P3",
+  "subjectCommit": "e894f895c7f0e4a1a328a80d4ea8abeb5a8be9a9",
+  "subjectDirectory": "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-catalog-settings-correction",
+  "reviewer": {
+    "worktree": "/home/nathaniel/.t3/worktrees/openplan/t3-c93f6f08",
+    "branch": "t3/review-budget-catalog-settings-correction",
+    "baseCommit": "05dd3e8da4a4572437f06e771b0a2477873e681f",
+    "appTree": "1e0b6522002b2485d37086790808c0217ff77cfe",
+    "T3BindingConfirmed": true,
+    "model": "gpt-6.1-sol",
+    "reasoning": "high",
+    "nestedAgents": false
+  },
+  "identities": {
+    "authorAndParentApp": "3e85cdc3916a81260bebc96c86ced4fd2c76b168",
+    "donorCommit": "3f3639f54243f40dfe7ff093dbb7f4e982a18cbc",
+    "donorApp": "44e638d6d79378042343bf5b18408f09ee991d57",
+    "donorMigrationFiles": 422,
+    "rootIntegrationCommitFromBrief": "3e1d563326c653f7f6e8cd813ca7ad645ef2963e",
+    "rootIntegrationApp": "2b1916349d7379c96bf97b1708b3e4016d37384d",
+    "rootIntegrationMigrationFilesFromBrief": 423,
+    "automaticRebind": false
+  },
+  "directMetadata": {
+    "subjectGitObjectComparisons": 72,
+    "allMatch": true,
+    "selectedOriginalCopyComparisons": 36,
+    "allMatchOriginalBytesAndRecordedMetadata": true,
+    "privateInputsCompared": 50,
+    "all50CurrentPinsMatch": true,
+    "selectedReuseProofPinsMatch": true,
+    "privateInventoryManifests": {
+      "original-private": {
+        "path": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/final-metadata/original-private-inventory.json",
+        "bytes": 686211,
+        "sha256": "4c672cdc38dcf5e89c01959e1fb48b0e9ddfb0d20ea7a4fa5738adcba5a7dc2e",
+        "matches": true,
+        "declaredFiles": 1966
+      },
+      "trial02-private": {
+        "path": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/final-metadata/trial02-private-inventory.json",
+        "bytes": 476714,
+        "sha256": "acfb4a9de8c06c96fde99db335c8e8d1890b275063cfcc55e2984774bc4cc750",
+        "matches": true,
+        "declaredFiles": 1334
+      }
+    },
+    "underlying2050And2067ComparisonsRepeated": false,
+    "postCustodyRecordsReadInFull": {
+      "trial01Entries": 106,
+      "trial02Entries": 2067,
+      "allRecordedTrue": true
+    },
+    "authorHEAD": "e894f895c7f0e4a1a328a80d4ea8abeb5a8be9a9",
+    "authorStatus": "",
+    "finalSourceAndSelectedEvidenceUnchanged": true
+  },
+  "keySubjectPins": {
+    "source-pins.json": {
+      "sha256": "b9c0e7c418df4a295f44f1374a539e6e33dbd242a210c2840dd07831a6b1a35c",
+      "bytes": 104868,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "unchangedFromInitial": true
+    },
+    "SOURCE_MANIFEST.json": {
+      "sha256": "af76b8d7c32a82fc64a4c99b4e815ca5d233715d9a728b5edaa08e978d4f14a8",
+      "bytes": 25248,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "unchangedFromInitial": true
+    },
+    "plan.json": {
+      "sha256": "d0ad2a5fc8e738d0b0f2c696199a7509009aa273c724dfc1217853459383e33d",
+      "bytes": 54907,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "unchangedFromInitial": true
+    },
+    "catalog-capture.sql": {
+      "sha256": "f5ed533bd42136ff7b7f5a1feb071d01004fc50bc712ca1ba83d41db7438a582",
+      "bytes": 2334,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "unchangedFromInitial": true
+    },
+    "catalog-capture-request.json": {
+      "sha256": "9d98505c0569d764e11e6137d9d213b7d5ebb0d39e4215bcd9e6b8e094fb0979",
+      "bytes": 2518,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "unchangedFromInitial": true
+    },
+    "runtime/controller.py": {
+      "sha256": "328b1f84a12925345f95aa6d52996f0b1d980bd7ac84de6571f44d8eb6e6788e",
+      "bytes": 24313,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "unchangedFromInitial": true
+    },
+    "runtime/journal.py": {
+      "sha256": "18ea275bf28c931979af1ef774ab5e40ec8aca2277308f77695a6c9883905eb6",
+      "bytes": 11349,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "unchangedFromInitial": true
+    },
+    "runtime/policy.py": {
+      "sha256": "87918149e6a20accac0fc5d7be2decbe7a75929c5ca7deb74a1f2caf4b4d2d4c",
+      "bytes": 11394,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "unchangedFromInitial": true
+    },
+    "runtime/sql.py": {
+      "sha256": "f9f612ed9f411f4347566b0d0d0d442049e89be0af81882f5014c1e04352df90",
+      "bytes": 18278,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "unchangedFromInitial": true
+    },
+    "collector.py": {
+      "sha256": "aeff4a9f7a5420cbd0c47b99af379ae03e1b0c16258ea64e6504addb90e935a5",
+      "bytes": 13769,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "unchangedFromInitial": true
+    },
+    "capture_catalog.py": {
+      "sha256": "32e3c7de6844b4b76eb592975cf02b79edb9a00668d0a8a9d702ffe1410c832c",
+      "bytes": 7811,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "unchangedFromInitial": true
+    },
+    "build_observe_proposal.py": {
+      "sha256": "65297e44c70366d6adaab3a8085e67f32a3747133ee696d1f94463eb9d894338",
+      "bytes": 7000,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "unchangedFromInitial": true
+    },
+    "pure-window-request.json": {
+      "sha256": "e7ed74156793d8cc04dcaca5facb3ce78891ef4d56f38c2a99fcf84ebabfd1c4",
+      "bytes": 30480,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "unchangedFromInitial": true
+    },
+    "TRIAL02_REQUEST.json": {
+      "sha256": "972e3e88479b88b6f4e8b0d2503e87caf7dd3a7b1b2dbb511e13c3831a7e0648",
+      "bytes": 619885,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "unchangedFromInitial": true
+    },
+    "TRIAL02_READER.diff": {
+      "sha256": "779c62149a058015d6de59dc87837600b2edea645a8722a30399bc911e682ad3",
+      "bytes": 14978,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "unchangedFromInitial": true
+    },
+    "TRIAL02_REUSE_PINS.json": {
+      "sha256": "d803de8762ed7b6694b0e1b6b67e7074965ed7504341eace7504a6cf94a4f161",
+      "bytes": 12095,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "unchangedFromInitial": true
+    },
+    "FINAL_REPORT.md": {
+      "sha256": "03e4ab5e515e0457a1bd93363c053d3da5c1a981655646e02772ae9ff97fdd79",
+      "bytes": 8476,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "unchangedFromInitial": true
+    },
+    "FINAL_VALIDATION.md": {
+      "sha256": "08208cc8d4883c7e57719059d1d359b93e3172e51fd17ff5711505d80dd0fb31",
+      "bytes": 6395,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "unchangedFromInitial": true
+    },
+    "FINAL_EVIDENCE_SEAL.json": {
+      "sha256": "0e2e8e5dd9998d104f3a98a32a074dcf4fb3ed2917591eb7a89e4f527b501d90",
+      "bytes": 27598,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "unchangedFromInitial": true
+    },
+    "evidence/trial01/pure-grant.json": {
+      "sha256": "d8d8f503e950f37faa6010fe38509365377858f0fc8147d830c8300f9af2996f",
+      "bytes": 634,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "unchangedFromInitial": true
+    },
+    "evidence/trial02/pure-grant.json": {
+      "sha256": "28b43036ec39a9d92116c60a0c77d11b8b6d48703dd8cd4a0be06d1aaa40d016",
+      "bytes": 335,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "unchangedFromInitial": true
+    },
+    "evidence/trial01/pure-attempt/controls.json": {
+      "sha256": "41fc80e1d5b33e7c0a724e0c4c1c0170a9880aa3648185efaf7b16af74f640dd",
+      "bytes": 407,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "unchangedFromInitial": true
+    },
+    "evidence/trial02/pure-attempt/controls.json": {
+      "sha256": "a61d6e98d16e6cf88bc9ae45f016461ae9a178e8a247e53982ffe9fda86e9929",
+      "bytes": 2309,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "unchangedFromInitial": true
+    },
+    "evidence/trial02/pure-attempt/complete.json": {
+      "sha256": "ee57e4bf61d53eb5de75bf6e0785653092e3eb244c6610003b28fe7276baa9fb",
+      "bytes": 232,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "unchangedFromInitial": true
+    },
+    "evidence/trial02/actual-result-readback.json": {
+      "sha256": "3954ceff7b70b0275f7977794eef7b21ff7ab2d029558d3f0a02ba42750f5717",
+      "bytes": 6080,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "unchangedFromInitial": true
+    }
+  },
+  "selectedEvidenceSeals": {
+    "evidence/trial02/actual-result-readback.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-trial02-root-decision-20261016/actual-result-readback.json",
+      "actual": {
+        "sha256": "3954ceff7b70b0275f7977794eef7b21ff7ab2d029558d3f0a02ba42750f5717",
+        "bytes": 6080,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/trial02/root-reader-error-01.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-trial02-root-decision-20261016/root-reader-error-01.json",
+      "actual": {
+        "sha256": "83439fe82b7be6dbd03d350f9f4bdbbbed87b62e44d9430c2b7fa103c76cd26a",
+        "bytes": 611,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/trial02/grant-record.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-trial02-root-decision-20261016/grant-record.json",
+      "actual": {
+        "sha256": "da1fc5c874200c8bc0a9568d9b1fbe34d218a3d69fef2e25f12f5a12fccf7391",
+        "bytes": 402,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/trial02/pre-dispatch-review.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-trial02-root-decision-20261016/pre-dispatch-review.json",
+      "actual": {
+        "sha256": "f8c8fd7db1f970c31deb1349b5162ef657363cb222e06557b007147ccb77d318",
+        "bytes": 853,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/trial02/pure-grant.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/trial02/pure-grant.json",
+      "actual": {
+        "sha256": "28b43036ec39a9d92116c60a0c77d11b8b6d48703dd8cd4a0be06d1aaa40d016",
+        "bytes": 335,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/trial02/root-outer-intent.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/trial02/root-outer-intent.json",
+      "actual": {
+        "sha256": "a4b091b2faf9fe3a8e9a17b9e924da4a68aa3ccde72286668b0e07ea6d27dd3d",
+        "bytes": 429,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/trial02/parent/intent.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-trial02-root-decision-20261016/parent/intent.json",
+      "actual": {
+        "sha256": "a7c6bd9f82676b21af37e2c8252e3832b9289ddc4816e829686b5da206cb856b",
+        "bytes": 575,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/trial02/parent/returned-process.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-trial02-root-decision-20261016/parent/returned-process.json",
+      "actual": {
+        "sha256": "650a67cc21ae44c167bb68093525f7b864828c9ad3364463f26225208f863304",
+        "bytes": 73,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/trial02/parent/terminal.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-trial02-root-decision-20261016/parent/terminal.json",
+      "actual": {
+        "sha256": "e19078e02ef0fd8622b71fd4ae247fed337277da7b3f925d5a4eec8cd99313d2",
+        "bytes": 489,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/trial02/parent/source-final-readback.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-trial02-root-decision-20261016/parent/source-final-readback.json",
+      "actual": {
+        "sha256": "9a256c78e0a76b7f1a3b6560354062d81c3e78cc9b7e382b4773fc5fd017ea83",
+        "bytes": 25,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/trial02/parent/stdout.bin": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-trial02-root-decision-20261016/parent/stdout.bin",
+      "actual": {
+        "sha256": "6b3645b4b1f0b4fc1ba8a8d4c323b509f631d1d8918c3e74da8555143fb94797",
+        "bytes": 330,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/trial02/parent/stderr.bin": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-trial02-root-decision-20261016/parent/stderr.bin",
+      "actual": {
+        "sha256": "8c65eff4a02774b54e6e73444225539429a4a58069cd0a42ddb6782264744c7e",
+        "bytes": 298,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/trial02/pure-attempt/intent.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/trial02/pure-attempt/intent.json",
+      "actual": {
+        "sha256": "8ac2c7a36508c280cb087adf584e2be41b600397e3e16a67e8b68d8538ec5d7e",
+        "bytes": 370,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/trial02/pure-attempt/resources-before.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/trial02/pure-attempt/resources-before.json",
+      "actual": {
+        "sha256": "c94f8a9b298d6f36c011666b76230ba4a8cdc8bc4d52555f220428b57b59efd5",
+        "bytes": 1182,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/trial02/pure-attempt/controls.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/trial02/pure-attempt/controls.json",
+      "actual": {
+        "sha256": "a61d6e98d16e6cf88bc9ae45f016461ae9a178e8a247e53982ffe9fda86e9929",
+        "bytes": 2309,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/trial02/pure-attempt/post-custody.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/trial02/pure-attempt/post-custody.json",
+      "actual": {
+        "sha256": "9b77d93f685bc61f7cf2c665b97da786829adfe02574ac8d12cfb2c613a882c4",
+        "bytes": 304017,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/trial02/pure-attempt/complete.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/trial02/pure-attempt/complete.json",
+      "actual": {
+        "sha256": "ee57e4bf61d53eb5de75bf6e0785653092e3eb244c6610003b28fe7276baa9fb",
+        "bytes": 232,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/trial01/failed-pure-disposition.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016/failed-pure-disposition.json",
+      "actual": {
+        "sha256": "0df0f982ef97e9f046ff2357d70e64b516d35cd9104430634d983856f44443b1",
+        "bytes": 983,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/trial01/failed-terminal-seal.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016/failed-terminal-seal.json",
+      "actual": {
+        "sha256": "f70283a0c8fb1aa87d44c7436d9fb1216bebd35849d33689428a670aae583ebf",
+        "bytes": 2600,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/trial01/parent/intent.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016/parent/intent.json",
+      "actual": {
+        "sha256": "6979416c6ddbd8f191a02b672dadfd844becc55a202630deb7e1c51bf0532e85",
+        "bytes": 567,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/trial01/parent/returned-process.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016/parent/returned-process.json",
+      "actual": {
+        "sha256": "e2f3658631c85b86c4a78b78f6bdcfb349fe898bc1e22eb47d50bfe31302e81a",
+        "bytes": 73,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/trial01/parent/terminal.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016/parent/terminal.json",
+      "actual": {
+        "sha256": "e4203351d343e67c662b85ebd95d5d86355dead1d6e8ec53efeac681be3d706d",
+        "bytes": 494,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/trial01/parent/source-final-readback.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016/parent/source-final-readback.json",
+      "actual": {
+        "sha256": "7b1091156e395cfd14143e1422db96bdd4af83edae5ef286f4f90f2a49480c8f",
+        "bytes": 19,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/trial01/parent/stdout.bin": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016/parent/stdout.bin",
+      "actual": {
+        "sha256": "3303b4f262ada6e1eaae9a422eba964c65d6214f40d1258a260c81a94ffe7490",
+        "bytes": 337,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/trial01/parent/stderr.bin": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016/parent/stderr.bin",
+      "actual": {
+        "sha256": "d9fab0ad0bb17fe986fb04b2320d6ad82db41c5a9d65516cea86474cee6b978d",
+        "bytes": 2402,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/trial01/pure-attempt/intent.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/pure-attempt/intent.json",
+      "actual": {
+        "sha256": "3d597392f32b2a818ac43bf87ecbfc3b79d134cefdeca4f319ad49c62994fdaf",
+        "bytes": 370,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/trial01/pure-attempt/resources-before.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/pure-attempt/resources-before.json",
+      "actual": {
+        "sha256": "ebc069a00b48ee33d5991f3fecd3ba67e1bf8793b1d325c683030a60e2977d0b",
+        "bytes": 948,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/trial01/pure-attempt/controls.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/pure-attempt/controls.json",
+      "actual": {
+        "sha256": "41fc80e1d5b33e7c0a724e0c4c1c0170a9880aa3648185efaf7b16af74f640dd",
+        "bytes": 407,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/trial01/pure-attempt/post-custody.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/pure-attempt/post-custody.json",
+      "actual": {
+        "sha256": "863a7af500909f3199c92c958f71eb4ca22be07c8060d57b56c77809dcb50f68",
+        "bytes": 10337,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/trial01/pure-grant.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/pure-grant.json",
+      "actual": {
+        "sha256": "d8d8f503e950f37faa6010fe38509365377858f0fc8147d830c8300f9af2996f",
+        "bytes": 634,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/trial01/root-outer-intent.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/root-outer-intent.json",
+      "actual": {
+        "sha256": "9038a409b24787356465f3250ff4a4289abdb9075084cf82c990324151c369d0",
+        "bytes": 600,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/prior-native-failure/failed-native-attempt-disposition.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-catalog-root-decision-20261016/failed-native-attempt-disposition.json",
+      "actual": {
+        "sha256": "4f7058be943512af95fbb5cf0b270c2766bb09a25b5c5cd4a959f57b4a15f75d",
+        "bytes": 1455,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/prior-native-failure/failed-native-attempt-seal.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-catalog-root-decision-20261016/failed-native-attempt-seal.json",
+      "actual": {
+        "sha256": "03af0418d965e06b23d72f095bb043b064f841beb93adf35ec4c9a26a1ad1f47",
+        "bytes": 5330,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/prior-native-failure/query-stderr.bin": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-native-observe-preparation-20261016/capture-attempt/request-002/stderr.bin",
+      "actual": {
+        "sha256": "88cb46494b3249cb7cc354338357ec6718eae891e2a2bbf86715ce129869ecff",
+        "bytes": 55,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/prior-native-failure/query-stdout.bin": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-native-observe-preparation-20261016/capture-attempt/request-002/stdout.bin",
+      "actual": {
+        "sha256": "501c829fca9556b1fc82b4517243d8422b0526784a66083a26ab62aab352dd31",
+        "bytes": 72,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    },
+    "evidence/prior-native-failure/query-terminal.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-native-observe-preparation-20261016/capture-attempt/request-002/terminal.json",
+      "actual": {
+        "sha256": "6eaaecca347c82c4d79bb98608a10d98f07093363a2f5d241f7078c6effd8907",
+        "bytes": 325,
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000
+      },
+      "originalMetadataMatches": true,
+      "copyBytesMatch": true
+    }
+  },
+  "privateReadbacks": {
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-independent-20261016/diff-reader-mismatch.txt": {
+      "sha256": "7098dd6df8d7375510b26c84774d5471e615b9508d99457737e1fd11da7385fa",
+      "bytes": 1154,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-independent-20261016/diff-reader-resolution.json": {
+      "sha256": "a7638cf29c7b9ae298d858bc4a332a9e696eb2c40c80bf3e6620790f93dc3e83",
+      "bytes": 992,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-independent-20261016/native-request-metadata.json": {
+      "sha256": "5f55719bd33bdc56af4ab7b3d9ad859521dbf671f270c7bd9312c60485640979",
+      "bytes": 222,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-independent-20261016/prep1-response-readback.json": {
+      "sha256": "8c012c0de2b5c44a8ad75dda131ebe8d35da0338b7e9e822da54732dddcd5119",
+      "bytes": 1090,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-independent-20261016/readback-final.json": {
+      "sha256": "68f345c87d896873e0e209ad323f7de1babfb174b159f1de80ff86f7565c03af",
+      "bytes": 51604,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-independent-20261016/readback-initial.json": {
+      "sha256": "fe06cf96abd6cacfe1253273bf0bd514a9c4245e47ae5fb78f8fd2f7d0d1b82a",
+      "bytes": 35257,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-independent-20261016/selected-private-readback.json": {
+      "sha256": "97d707e06dac765cf76387279c3cb8150af00408780b5975eea658a9e2da9128",
+      "bytes": 51226,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    }
+  },
+  "priorPREP1": {
+    "reviewCommit": "7d9875a25ea513fadc231fd402bb82caaf0d87da",
+    "responseCommit": "91fbccd5e52abad57713843d7477c8e4772bd749",
+    "disposition": "METADATA_REQUEST_GRANT_JOIN_RESOLVED_NO_NATIVE_APPROVAL",
+    "addedExactRequestSHA256": "20526f8b4e4343791d71a3f72133e964a170fd4489b1f47750492fdf3cddb4c9",
+    "oldDraftSHA256": "d4a1079b2b20770b3aeb509375efd3cafd9fa911faab7f52fcb76f2289126f26",
+    "runtime4UnchangedAcrossResponse": true
+  },
+  "evidenceTiers": {
+    "oldNativeCapture": "FAILED_FENCED_UNKNOWN_NO_REPLAY_NO_ACCEPTED_CATALOG_OR_SCOPE",
+    "pure01": "FAILED_HARNESS_MUTATION_ORACLE_MISMATCH_PARTIAL_BASELINE_SURVIVOR_TWO_FAULTS_REUSED",
+    "pure02": "ACCEPTED_SAVED_SELECTED_INERT_REMAINDER_SEVEN_FAULTS_NINE_REASONS_ONE_RESTORED_BASELINE",
+    "pure02ManagerInnerIdentityCorrelation": "UNPROVED",
+    "postShow": "RAW_UNBOUND_DEFAULTS",
+    "RuntimeMaxEnforcement": "UNPROVED_INDEPENDENT_POST_TERMINAL",
+    "exactPeakBytes": "UNPROVED_ROUNDED_36.9M_ONLY",
+    "findAndPostgresSettingsSemantics": "UNPROVED",
+    "backendDeath": "UNASSESSED",
+    "nativeCaptureObserveTargetApproval": false,
+    "RLS_SDK_Auth_MVCC_History_Rollback_Recovery_Finance_Browser_Practitioner_M11_V1": "NOT_ESTABLISHED_BY_THIS_REVIEW"
+  },
+  "reviewerOperations": {
+    "candidateImports": 0,
+    "tests": 0,
+    "emitters": 0,
+    "directionChecks": 0,
+    "dependencyOperations": 0,
+    "locks": 0,
+    "managerCalls": 0,
+    "DockerCalls": 0,
+    "SQLCalls": 0,
+    "sockets": 0,
+    "helperCalls": 0,
+    "browserCalls": 0,
+    "hostedOrProviderCalls": 0,
+    "pushes": 0,
+    "PRs": 0,
+    "sourceEdits": 0,
+    "caseCorporaCopied": 0,
+    "metadataReaderIssues": "Preserved and narrowly resolved; see VALIDATION and private readbacks."
+  },
+  "requiredNextBoundary": "NEW later native proposal, independent review and root admission before any fresh capture. No automatic successor."
+}
