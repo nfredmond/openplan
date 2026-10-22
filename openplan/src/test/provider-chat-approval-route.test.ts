@@ -1,3 +1,4 @@
+import { canonicalChat } from "@/lib/assistant/provider-chat-task";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { POST } from "@/app/api/assistant/actions/approvals/route";
@@ -15,7 +16,7 @@ function request(changes: Record<string, unknown> = {}) {
 }
 beforeEach(() => {
  vi.clearAllMocks(); f.role = "owner"; f.queries.length = 0;
- f.rpc.mockResolvedValue({ data: { approvalId: id.accept, inputHash: hashAssistantActionPayload(action), expiresAt: "2099-01-01T00:00:00Z", replayed: true }, error: null });
+ f.rpc.mockResolvedValue({ data: { wireVersion: 1, canonicalResult: canonicalChat({ approvalId: id.accept, inputHash: hashAssistantActionPayload(action), expiresAt: "2099-01-01T00:00:00Z", replayed: true }) }, error: null });
  f.client.mockResolvedValue({ auth: { getUser: async () => ({ data: { user: { id: id.user } }, error: null }) }, rpc: f.rpc,
   from: (table: string) => { const q = { table, select: vi.fn(), eq: vi.fn(), maybeSingle: vi.fn() }; q.select.mockReturnValue(q); q.eq.mockReturnValue(q);
    q.maybeSingle.mockResolvedValue({ data: table === "workspace_members" ? { workspace_id: id.workspace, role: f.role } : { id: id.project, workspace_id: id.workspace, name: "Synthetic project" }, error: null }); f.queries.push(q); return q; } });

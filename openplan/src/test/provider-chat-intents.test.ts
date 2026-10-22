@@ -6,10 +6,11 @@ import { issueChatIntentApproval, readChatIntentReview } from "@/lib/assistant/p
 import type { ChatSession } from "@/lib/assistant/provider-chat-projection";
 import { executableProjectSubmittalAction, type ProjectSubmittalAction } from "@/lib/assistant/project-submittal-receipt";
 import { chatIds as id } from "./fixtures/provider-chat-fixture";
+const wire = (value: unknown) => ({ wireVersion: 1, canonicalResult: canonicalChat(value) });
 const action: ProjectSubmittalAction = { kind: "create_project_record", projectId: id.project, recordType: "submittal", title: "Synthetic draft", submittalType: "other", status: "draft" };
 describe("original intent association", () => {
  it("uses the session atomic issuance with exact normalized action, grant and original context", async () => {
-  const hash = hashAssistantActionPayload(action), rpc = vi.fn(async () => ({ data: { approvalId: id.accept, inputHash: hash, expiresAt: "2099-01-01T00:00:00Z", replayed: true }, error: null }));
+  const hash = hashAssistantActionPayload(action), rpc = vi.fn(async () => ({ data: wire({ approvalId: id.accept, inputHash: hash, expiresAt: "2099-01-01T00:00:00Z", replayed: true }), error: null }));
   const session = { rpc } as unknown as ChatSession, context = { version: 1, action: executableProjectSubmittalAction(action), project: { id: id.project, workspaceId: id.workspace, name: "Synthetic project" } };
   const binding = { intentId: id.call, approvalRequestId: id.request, expectedExecutableHash: hash, expectedGrantDigest: "a".repeat(64) };
   const result = await issueChatIntentApproval(session, binding, { action, workspaceId: id.workspace, inputHash: hash, approvalId: id.accept, expiresAt: "2099-01-01T00:00:00Z", executionContext: context });
@@ -25,8 +26,8 @@ describe("original intent association", () => {
  ])("reviews normalized executable bytes with effective draft defaults %j", async fields => {
   const normalized = executableProjectSubmittalAction({ ...action, ...fields });
   const canonical = canonicalizeActionPayload(normalized), hash = hashAssistantActionPayload(normalized);
-  const rpc = vi.fn(async () => ({ data: { released: true, intent: { id: id.call, workspace_id: id.workspace,
-   executable_canonical: canonical, executable_hash: hash, grant_digest: "a".repeat(64), state: "proposed", original_approval_id: null, execution_state: "not_requested" } }, error: null }));
+  const rpc = vi.fn(async () => ({ data: wire({ released: true, intent: { id: id.call, workspace_id: id.workspace,
+   executable_canonical: canonical, executable_hash: hash, grant_digest: "a".repeat(64), state: "proposed", original_approval_id: null, execution_state: "not_requested" } }), error: null }));
   const review = await readChatIntentReview({ rpc } as unknown as ChatSession, id.call);
   expect(review?.action).toEqual(normalized); expect(review?.executableHash).toBe(hash);
   expect(review?.action.status ?? "draft").toBe("draft");
@@ -36,17 +37,17 @@ describe("original intent association", () => {
  it.each(["submitted", "wrong_hash", "explicit_defaults"])("refuses a proposed intent with %s", async fault => {
   const normalized = executableProjectSubmittalAction(action);
   const raw = fault === "submitted" ? { ...normalized, status: "submitted" } : fault === "explicit_defaults" ? action : normalized;
-  const rpc = vi.fn(async () => ({ data: { released: true, intent: { id: id.call, workspace_id: id.workspace,
-   executable_canonical: canonicalizeActionPayload(raw), executable_hash: fault === "wrong_hash" ? "b".repeat(64) : hashAssistantActionPayload(raw), grant_digest: "a".repeat(64), state: "proposed", original_approval_id: null, execution_state: "not_requested" } }, error: null }));
+  const rpc = vi.fn(async () => ({ data: wire({ released: true, intent: { id: id.call, workspace_id: id.workspace,
+   executable_canonical: canonicalizeActionPayload(raw), executable_hash: fault === "wrong_hash" ? "b".repeat(64) : hashAssistantActionPayload(raw), grant_digest: "a".repeat(64), state: "proposed", original_approval_id: null, execution_state: "not_requested" } }), error: null }));
   await expect(readChatIntentReview({ rpc } as unknown as ChatSession, id.call)).rejects.toThrow("chat_intent_executable_mismatch");
  });
  it.each(["approved", "execution_requested", "reconciling", "succeeded", "expired"])("does not return a fresh actionable card for %s", async state => {
-  const rpc = vi.fn(async () => ({ data: { released: true, intent: { id: id.call, workspace_id: id.workspace, executable_canonical: canonicalizeActionPayload(action), executable_hash: hashAssistantActionPayload(action), grant_digest: "a".repeat(64), state,
-   original_approval_id: id.accept, execution_state: "uncertain" } }, error: null }));
+  const rpc = vi.fn(async () => ({ data: wire({ released: true, intent: { id: id.call, workspace_id: id.workspace, executable_canonical: canonicalizeActionPayload(action), executable_hash: hashAssistantActionPayload(action), grant_digest: "a".repeat(64), state,
+   original_approval_id: id.accept, execution_state: "uncertain" } }), error: null }));
   expect(await readChatIntentReview({ rpc } as unknown as ChatSession, id.call)).toBeNull();
  });
  it("does not convert unavailable body/status into permission", async () => {
-  const rpc = vi.fn(async () => ({ data: { released: false }, error: null }));
+  const rpc = vi.fn(async () => ({ data: wire({ released: false }), error: null }));
   await expect(readChatIntentReview({ rpc } as unknown as ChatSession, id.call)).rejects.toThrow("chat_intent_body_unavailable");
  });
 });

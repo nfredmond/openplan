@@ -301,3 +301,230 @@ approval/registry/record navigation, real provider/account/billing, every one of
 upgrade/restore, desktop/390px/practitioner journeys, hosted, science, release or
 full-v1 acceptance. Full v1 and API/installed provider choice remain binding.
 PR363 priority and profile admission remain with root. No human decision is missing.
+
+
+## R31 signed HTTP cohort stops at a synthetic cleanup defect
+
+R31 adds `openplan/src/test/provider-chat-custody-http-native.test.ts` on the
+R30 checkpoint `2aab11afb9c6a7ca442f90450d9bbc928b0f2c67`. Production TypeScript,
+SQL, the old 21-case native file, package/lock and index remain unchanged.
+The new six-case cohort uses the locked Supabase client, public PostgREST RPCs,
+locally HMAC-signed synthetic authenticated identities and existing
+canonical/fixture/server/tool helpers. It mocks neither session RPCs nor network
+responses. Installer SQL creates and removes synthetic fixture rows only.
+Both LIVE_RLS and OPENPLAN_CHAT_NATIVE_FIXTURE admissions are required. The
+20-second test and 60-second lease limits remain unchanged. Profile stays CLOSED.
+
+**The bounded HTTP product outcome remains unaccepted.** Normal discovery without
+admissions reports six skipped cases. Strict scoped lint passes. The first
+admitted authoring invocation fails before fixture SQL or HTTP with
+`chat_envelope_mismatch`: rebinding synthetic UUIDs changes projected content
+without its derived content hash. The failed source and terminal remain retained.
+Recomputing those fixture hashes is the only subsequent authoring correction.
+The next strict scoped lint passes. Neither lint nor default skips proves HTTP.
+
+The one actual HTTP product baseline then fails during cleanup. Its runner
+registers six cases, reports one failed and zero passed; bail leaves five cases
+not run. Those five are not counted as passing or as explicit skips. Inserting
+two synthetic auth users also creates their onboarding workspaces. The draft
+cleanup removes its explicit workspace but omits the onboarding workspaces.
+Deleting the synthetic users therefore raises `enforce_workspace_owner_floor`,
+SQLSTATE OP409, because their onboarding workspaces would lose their owners.
+The finally error masks any earlier body error or success. No canonical/NUL or
+authorization pass is credited. No production defect is established. The three
+remaining question vectors, retained NUL terminal/progress and denial case do
+not execute. No harmless/fault controls, compiler, build or retry follows this
+setup failure. All new guards remain unproved for sensitivity.
+
+Read-only captures identify exactly the attempt's two users, three workspaces,
+selected project, provider revision/admission and retained chat IDs. A separate
+exact-row cleanup deletes these UUID rows, including the two onboarding
+workspaces before their users. It changes no grants, roles, functions, settings
+or history. All post-cleanup catalogue/privilege/bridge, 430 full history rows,
+eleven seed bodies and full auth/workspace/project/member bodies match the
+R29 installed baseline byte-for-byte. Nine chat tables are empty. Provider,
+approval, execution and usage extras are zero; no fixture transaction stays
+open. The sole R28 stack retains six running containers and two volumes. The
+DB/network IDs, workdir labels and API59721/DB59722 binding match the admission.
+All 969 installed records, all other tracked source records and index remain
+exact. Foreign stacks and hosted operation receive no operation.
+
+The private packet is
+`/home/nathaniel/.local/state/openplan/a0-signed-http-custody-20261022-r31`.
+It retains redacted terminals, source/lock/runtime custody and a concrete
+`PROPOSED_CLEANUP.patch`. That unapplied patch captures onboarding workspace IDs
+created for the two owned users during fixture installation and deletes those
+exact IDs before user cleanup. Root owns review and admission of any retry.
+No commit, push or PR operation occurs. Live settings confirm codex,
+gpt-6.1-sol, reasoning high and service tier priority throughout this run.
+
+Full v1, all 19 contexts and API/Codex/Claude Code/OpenCode scope remain binding.
+HTTP NUL transport and concrete wrong-actor/service denial remain unproved.
+Mounted human approval/action registry/business records, real provider/account
+and charges, races/contention, installed backends, browser/desktop/390px,
+hosted, upgrade/restore, science and release acceptance remain separate open
+boundaries. R30's 21-pass native receipt remains its own dated evidence. PR363
+priority remains with root.
+
+
+## R32 stops after the authorized HTTP baseline exposes a body failure
+
+The cleanup correction is implemented in the new HTTP fixture only. The one
+admitted ordinary serial baseline exits 1 with six registered, four passed,
+one failed, zero explicit skipped/todo and one not run after bail. No retry,
+control campaign, configured compiler or build follows. The terminal/progress
+HTTP outcome remains unaccepted. Profile stays CLOSED. No production defect is
+established by this mapped error alone.
+
+The prior R31 packet, failed source and document prefix are preserved before
+edits. Its proposed cleanup patch matches SHA256
+`508fd46e8f0386f8907cfa7841b3569948469cae8177716513574d98e41d33ea`.
+R32 applies that reviewed patch, then makes the admitted narrow fixture checks
+concrete. Setup captures both onboarding workspace IDs created for the exact
+two random fixture users. Setup validates two distinct owner workspaces inside
+its existing transaction. A SQL setup failure rolls back on connection close;
+it authorizes no broad cleanup. Captured IDs must be two unique UUID strings,
+separate from the explicit fixture workspace. Cleanup locks those exact three
+workspaces, refuses foreign members or a mismatched synthetic email, and deletes
+those exact workspaces before the two users. The existing owner-floor trigger
+remains unchanged. An invalid postcommit identity capture refuses cleanup rather
+than searching for substitute rows. Such a failure would need root review.
+
+Body failures are rethrown. If exact cleanup also fails, AggregateError retains
+both errors and the original body error as its cause. No unknown error becomes
+a pass. All original HTTP case bodies, assertions, vectors, hashes, selected
+counts, configured 20-second test limit and 60-second lease remain unchanged.
+The existing old 21-case native file and all SQL remain byte-exact.
+
+Strict scoped eslint exits 0 before baseline. The one baseline starts
+2026-10-22T01:31:55.607564+00:00 and ends 2026-10-22T01:32:02.815958+00:00,
+7.208406 seconds process wall. Vitest reports 6.73 seconds separately. The command
+uses both native opt-ins, the absolute owned R28 stack workdir, maxWorkers=1,
+no file parallelism and bail=1. Actual locked Supabase clients use local
+PostgREST/JWT subjects. No network/RPC mock or SET ROLE supplies HTTP identity.
+No real provider call or installation profile enablement occurs.
+
+Four question cases pass: plain text, actual NUL, literal backslash-u0000 and
+the combined private-use/emoji/control vector. They observe exact canonical
+question bytes and digest over HTTP, within this synthetic boundary. They have
+no R32 assertion-sensitivity credit. The fifth case fails at readChatSnapshot
+following finish_step, source test line 160, with provider_storage_unavailable.
+Its raw stack points to providerRpcError at provider-server.ts:60 and
+readChatSnapshot at provider-chat-server.ts:82. Fixture cleanup succeeds; it no
+longer masks the body error. The mapped error does not identify the underlying
+PostgREST cause. No diagnostic replay, correction or production repair follows.
+The sixth wrong-actor/anonymous/service denial case does not run. Its bullet-only
+reporter line is not an explicit skip or a pass.
+
+Harmless survivor, deterministic decoded-response wrong-behavior controls and
+the restored full six-case run remain NOT RUN because the baseline fails.
+Those controls would establish assertion sensitivity, not HTTP authorization.
+Actual wrong-actor/anonymous/service denial observations remain absent. The
+cleanup ownership checks, partial-setup rollback, dual-error preservation and
+all HTTP assertions lack new fault-sensitivity evidence. R30 native controls
+and R31 discovery do not supply those missing tiers. R31's failed authoring
+attempt and failed product baseline retain their original distinct accounting.
+
+The sole runtime remains R28 project openplan-a0-current-release-r28-20261022,
+API59721/DB59722, full DB ID
+6adc9422b32835a896b17ba03bbf4ae3cef62b552bd741c29387f38614f875a9 and network
+176f431d1668d6223d3e692b494c23b380d44cf223449a4bde11834acb2b8bf5.
+Existing maintained environment/container helpers and exact Docker bindings
+are verified before operations. Before and after baseline, full catalogue,
+privileges, bridge, all 430 history rows, eleven seeded bodies/counts and full
+auth/workspace/project/member rows equal the R29 postinstall baseline. Nine chat
+tables are empty; provider/approval/execution/usage extras are zero; no fixture
+transaction remains open. All 969 installed records/versions, source locks and
+index remain exact. Six owned containers and two volumes remain running.
+Foreign R19/R21/Reports/shared stacks and hosted operation receive no operation.
+
+Private packet is
+/home/nathaniel/.local/state/openplan/a0-signed-http-fixture-repair-20261022-r32.
+REPORT/RESULT, exact failed source, patch, pins, raw redacted terminals and
+HANDBACK preserve this stop. Only this test and this append change. No commit,
+push, PR/CI watch, server, browser, worker, provider/account or hosted operation
+runs. Compiler remains CLOSED for this lane; no configured tsc/build result is
+claimed. Live settings at intake and terminal are codex/gpt-6.1-sol, high
+reasoning and priority service. R31/R30/original R29 reports, full v1 contract
+and sole roadmap remain binding. Product direction check exits 0 with dated
+review reminders; it does not close any A0 requirement.
+
+Mounted human approval/action registry/business records, all 19 contexts,
+API/installed Codex/Claude Code/OpenCode, real providers/charges, races,
+upgrade/restore, browser, scientific, hosted, release and full-v1 acceptance
+remain unproved here. Root retains final-main CI and hosted delivery priority,
+all integration authority and any next admission. No Nathaniel decision is missing.
+
+## R34 implements the versioned response envelope at source and ordinary-check tier
+
+October 22, 2026. Candidate remains branch
+`work/v1-a0-chat-provider-scope-20261021`, HEAD
+`2aab11afb9c6a7ca442f90450d9bbc928b0f2c67`. Root admits R33's ten-path
+proposal plus this append. The private handback packet is
+`/home/nathaniel/.local/state/openplan/a0-canonical-response-repair-20261022-r34`.
+The R31/R32 HTTP test and this note's existing prefix are handed-back inputs.
+R31, R32 and R33 sealed packets remain historical evidence.
+
+The two public JSON-returning wrappers now return exactly version 1 and the
+existing canonical logical result as a string. The shared decoder requires
+that closed envelope, duplicate-aware inner JSON, an object result and exact
+canonical equality. There is no legacy-response fallback. Both production
+session adapters check the RPC error before decoding. Existing logical refusal,
+grant, action, receipt and event verification remain unchanged.
+
+All 22 literal native public calls unwrap only after the original public RPC
+executes under its original caller. NUL-bearing raw read outputs stay json/text
+until JavaScript decoding. Existing NUL-free jsonb assertion helpers retain
+their prior limitation. The HTTP fixture decodes its two successful raw intent
+responses. Its raw actor/anonymous/service error, status, null-data and no-leak
+assertions remain exact. Fixture setup, cleanup, vectors, hashes, counts,
+20-second tests and 60-second lease remain unchanged. Neither native fixture
+file executes or receives discovery/pass credit in R34.
+
+Only the SQL transport comments and two outer public RETURNs change. Private
+functions, roles, owners, ACLs, paths, actor checks, original action/receipt
+authority, connector inputs and the other 429 SQL source files remain exact
+against R34 intake. Source migration 430 remains an unmerged candidate. The
+already installed R28 history retains its original source and is not reapplied
+or rewritten. No database operation or installed-definition change occurs.
+
+The initial and complete restored ordinary cohorts each pass 384 tests across
+19 files, zero failures/skips/todo. They include the new decoder, all nine
+existing ordinary chat files and nine relevant old transport/action/receipt
+seams. Runs are serial with one worker and a 6144 MiB Node heap cap. These
+ordinary controlled fixtures do not establish live SQL or signed HTTP behavior.
+
+A comment-only control survives all 36 selected tests. Six decoder faults each
+fail the selected intended assertion: unknown wire version accepted, extra key
+accepted, legacy result accepted, noncanonical inner JSON accepted, duplicate
+inner JSON accepted and actual logical NUL removed. Each selects one of 16
+decoder cases and leaves 15 selector skips. The duplicate fault removes both
+duplicate parsing and canonical equality, because either guard otherwise
+rejects that input. Omitting the decoder in the actual session helper fails
+five retained-state comparisons. Omitting it in the intent helper fails 13 of
+15 intent/normal-approval-route cases. No startup error counts as a kill.
+Every control restores exact production bytes and modes before the next run.
+The initial harmless script's ambiguous import assertion fails before any
+mutation or runner invocation; the packet retains that authoring failure.
+
+Strict scoped lint passes for the nine changed TypeScript files. Root later
+admits exactly one configured compiler check after ordinary restoration and
+lint. `npm exec -- tsc --noEmit --incremental false -p tsconfig.json` exits 0
+at `2026-10-22T01:53:05.894133Z`, after 59.125713 seconds, with empty
+stdout/stderr and the same 6144 MiB cap. Root receives the immediate compiler
+release notice. No compiler repeat or build runs.
+
+This is source and ordinary-check evidence only. R32 remains four HTTP passes,
+one terminal/progress failure and one case not run after bail. R33's six
+read-only expressions explain the serialization boundary without accepting a
+repaired HTTP workflow. R30's original 21-case native pass remains dated
+evidence for its old response source. No R34 native/HTTP baseline, installed
+repair, provider/account/profile/browser/hosted/scientific/release operation,
+commit or push occurs. Nine empty chat tables and seed/history custody remain
+R33's last observations, not fresh R34 database evidence. Profile stays CLOSED.
+All 19 contexts, API choice and installed Codex/Claude Code/OpenCode, mounted
+approval/registry/record flows, races, restore/upgrade and full v1 acceptance
+remain open. No human judgment is missing.
+
+
+R35 independent source review, October 22, 2026 UTC. The complete eleven-path response-envelope repair receives ACCEPT at SOURCE-ONLY tier, with no reachable P1/P2 finding. All candidate pins remain exact during review. The review preserves original public-call roles, strict decoding, approved-action hashes and receipt boundaries. Its report is retained at /home/nathaniel/.local/state/openplan/a0-response-envelope-independent-20261022-r35/REPORT.md. Repaired native/HTTP behavior and all wider A0 requirements remain unproved. Prefer a fresh populated 429 predecessor and apply the corrected unmerged 430 once; the old installed 430 history remains immutable. Profile stays CLOSED.

@@ -37,8 +37,10 @@ live("chat custody native fixtures", () => {
   const admission = canonicalChat({ workspaceId: id.workspace, selection, profileCanonical: grant.profile.definitionCanonical, projectionCanonical: grant.scope.projectionDefinitions,
    catalogCanonicals: [grant.catalog.definitionCanonical], evidence: { sourceReview: "Synthetic fixture only", databaseEvidence: "Synthetic fixture only", protocolEvidence: "Synthetic fixture only", browserEvidence: "Synthetic fixture only", admittedBy: id.user, admittedAt: grant.preparedAt } });
   grant.selection.capabilityRecordHash = chatHash(admission); const canonical = canonicalChat(grant), digest = chatGrantDigest(grant);
-  const rpc = (op: string, payload: unknown = {}) => `(public.assistant_chat_session(${literal(op)},'${id.turn}',${literal(JSON.stringify({ canonicalPayload: canonicalChat(payload) }))}::jsonb)::jsonb)`;
-  const intent = (op: string, payload: unknown = {}) => `(public.assistant_chat_intent(${literal(op)},'${intentId}',${literal(JSON.stringify({ canonicalPayload: canonicalChat(payload) }))}::jsonb)::jsonb)`;
+  // Decode only the public transport envelope. Every call retains its original
+  // authenticated/service role and public authorization path. Logical assertions stay exact.
+  const rpc = (op: string, payload: unknown = {}) => `(((public.assistant_chat_session(${literal(op)},'${id.turn}',${literal(JSON.stringify({ canonicalPayload: canonicalChat(payload) }))}::jsonb)->>'canonicalResult')::json)::jsonb)`;
+  const intent = (op: string, payload: unknown = {}) => `(((public.assistant_chat_intent(${literal(op)},'${intentId}',${literal(JSON.stringify({ canonicalPayload: canonicalChat(payload) }))}::jsonb)->>'canonicalResult')::json)::jsonb)`;
   const sql = `BEGIN;
    INSERT INTO auth.users(id,email) VALUES('${id.user}','${id.user}@example.test'),('${secondOwner}','${secondOwner}@example.test');
    INSERT INTO public.workspaces(id,name,slug) VALUES('${id.workspace}','Synthetic workspace','${id.workspace}'),('${id.pool}','Synthetic move destination','${id.pool}');
@@ -68,7 +70,7 @@ live("chat custody native fixtures", () => {
   expect(output).toContain("CHAT_NATIVE_ASSERTIONS_REACHED"); return output;
  }
  function dispatch(sequence: number, stepId: string) {
-  return `public.assistant_chat_session('dispatch','${id.turn}',jsonb_build_object('sequence',${sequence},'stepId','${stepId}','request',pg_temp.chat_wire_request()))`;
+  return `((public.assistant_chat_session('dispatch','${id.turn}',jsonb_build_object('sequence',${sequence},'stepId','${stepId}','request',pg_temp.chat_wire_request()))->>'canonicalResult')::json)`;
  }
  function terminal(rpc: (op: string, payload?: unknown) => string, stepId: string, calls: Array<{ name: string; input: unknown; id: string }>) {
   const raw = calls.length ? frame({ role: "assistant", tool_calls: calls.map((c, index) => ({ index, id: c.id, type: "function", function: { name: c.name, arguments: JSON.stringify(c.input) } })) }, "tool_calls") + "data: [DONE]\n\n" : frame({ role: "assistant", content: "Synthetic complete answer" }, "stop") + "data: [DONE]\n\n";
@@ -102,7 +104,7 @@ live("chat custody native fixtures", () => {
  });
  it.each(["Plain question", "\u0000", "a\u0000\u0000b", "literal \\u0000", "$openplan_chat_nul_v1", "\ue000😀\n\u0000\t"])("prepares, accepts and reads exact question %j without a jsonb NUL cast", question => {
   const grant = chatFixture(); grant.packet.question = question;
-  const output = exercise(() => `SELECT 'CHAT_LOSSLESS:'||public.assistant_chat_session('read','${id.turn}','{}')::text;`, grant);
+  const output = exercise(() => `SELECT 'CHAT_LOSSLESS:'||((public.assistant_chat_session('read','${id.turn}','{}')->>'canonicalResult')::json)::text;`, grant);
   const record = JSON.parse(output.split("\n").find(line => line.startsWith("CHAT_LOSSLESS:"))!.slice("CHAT_LOSSLESS:".length));
   expect(record.released).toBe(true); expect(record.state).toBe("running");
   expect(record.canonical).toBe(canonicalChat(grant)); expect(record.digest).toBe(chatGrantDigest(grant));
@@ -115,7 +117,7 @@ live("chat custody native fixtures", () => {
   const output = exercise(rpc => `SELECT ${dispatch(1, id.step)};
    SELECT ${rpc("progress", { stepId: id.step, frameSequence: 1, text })};
    SELECT ${rpc("finish_step", { stepId: id.step, receipt, receiptHash })};
-   SELECT 'CHAT_LOSSLESS:'||public.assistant_chat_session('read','${id.turn}','{}')::text;`);
+   SELECT 'CHAT_LOSSLESS:'||((public.assistant_chat_session('read','${id.turn}','{}')->>'canonicalResult')::json)::text;`);
   const record = JSON.parse(output.split("\n").find(line => line.startsWith("CHAT_LOSSLESS:"))!.slice("CHAT_LOSSLESS:".length));
   expect(record.state).toBe("succeeded"); expect(record.steps[0].receipt).toEqual(receipt);
   expect(record.steps[0].receipt_hash).toBe(receiptHash);
@@ -133,18 +135,18 @@ live("chat custody native fixtures", () => {
   const output = exercise((rpc, intent) => `SELECT ${dispatch(1, id.step)};
    SELECT ${rpc("finish_step", { stepId: id.step, receipt, receiptHash: chatHash(canonicalChat(receipt)) })};
    DO $$ BEGIN
-    PERFORM public.assistant_chat_session('claim_tool','${id.turn}',jsonb_build_object('callId',pg_temp.chat_first_call()));
-    PERFORM public.assistant_chat_session('finish_tool','${id.turn}',jsonb_build_object('callId',pg_temp.chat_first_call(),'handle',pg_temp.chat_first_handle(),'executableCanonical',${literal(executableCanonical)},'envelopes','[]'::jsonb,
-     'result',${literal(canonicalChat(broker.result))}::jsonb));
+    PERFORM ((public.assistant_chat_session('claim_tool','${id.turn}',jsonb_build_object('callId',pg_temp.chat_first_call()))->>'canonicalResult')::json);
+    PERFORM ((public.assistant_chat_session('finish_tool','${id.turn}',jsonb_build_object('callId',pg_temp.chat_first_call(),'handle',pg_temp.chat_first_handle(),'executableCanonical',${literal(executableCanonical)},'envelopes','[]'::jsonb,
+     'result',${literal(canonicalChat(broker.result))}::jsonb))->>'canonicalResult')::json);
    END $$;
    SELECT ${dispatch(2, id.request)}; SELECT ${terminal(rpc, id.request, [])};
    DO $$ BEGIN
     BEGIN PERFORM ${intent("issue", { expectedExecutableHash: executableHash, expectedGrantDigest: chatGrantDigest(grant), executableCanonical, approvalRequestId: id.prepare, approvalId: id.accept, expiresAt: new Date(Date.now() + 60000).toISOString(), executionContext: { version: 1, action, project: { id: id.project, workspaceId: id.workspace, name: "Synthetic selected project" } } })};
      RAISE EXCEPTION 'NUL draft minted original approval';
     EXCEPTION WHEN SQLSTATE '22023' THEN IF SQLERRM<>'chat_action_storage_unavailable' THEN RAISE; END IF; END;
-    IF public.assistant_chat_intent('status','${broker.intentId}','{}')->>'originalApprovalId' IS NOT NULL THEN RAISE EXCEPTION 'Refused draft retained an approval'; END IF;
+    IF ((public.assistant_chat_intent('status','${broker.intentId}','{}')->>'canonicalResult')::json)->>'originalApprovalId' IS NOT NULL THEN RAISE EXCEPTION 'Refused draft retained an approval'; END IF;
    END $$;
-   SELECT 'CHAT_LOSSLESS:'||public.assistant_chat_session('read','${id.turn}','{}')::text;
+   SELECT 'CHAT_LOSSLESS:'||((public.assistant_chat_session('read','${id.turn}','{}')->>'canonicalResult')::json)::text;
    RESET ROLE; DO $$ BEGIN IF EXISTS(SELECT 1 FROM public.assistant_action_approvals WHERE id='${id.accept}') THEN RAISE EXCEPTION 'Refused draft created a detached approval'; END IF; END $$;`, grant, broker.intentId);
   const record = JSON.parse(output.split("\n").find(line => line.startsWith("CHAT_LOSSLESS:"))!.slice("CHAT_LOSSLESS:".length));
   expect(record.calls[0].input).toEqual(input); expect(record.intents).toHaveLength(1);
@@ -185,9 +187,9 @@ live("chat custody native fixtures", () => {
   exercise(rpc => `SELECT ${rpc("dispatch", { sequence: 1, stepId: id.step, request })};
    SELECT ${rpc("finish_step", { stepId: id.step, receipt: step.receipt, receiptHash: step.receiptHash })};
    DO $$ DECLARE c jsonb; r jsonb; BEGIN
-    c:=public.assistant_chat_session('claim_tool','${id.turn}',jsonb_build_object('callId',${rpc("read")}->'calls'->0->>'id'));
-    r:=public.assistant_chat_session('finish_tool','${id.turn}',jsonb_build_object('callId',c->>'callId','handle',c->>'handle','executableCanonical',${literal(executableCanonical)},'envelopes','[]'::jsonb,
-     'result',${literal(canonicalChat(broker.result))}::jsonb));
+    c:=((public.assistant_chat_session('claim_tool','${id.turn}',jsonb_build_object('callId',${rpc("read")}->'calls'->0->>'id'))->>'canonicalResult')::json);
+    r:=((public.assistant_chat_session('finish_tool','${id.turn}',jsonb_build_object('callId',c->>'callId','handle',c->>'handle','executableCanonical',${literal(executableCanonical)},'envelopes','[]'::jsonb,
+     'result',${literal(canonicalChat(broker.result))}::jsonb))->>'canonicalResult')::json);
     IF r->>'released' IS DISTINCT FROM 'true' THEN RAISE EXCEPTION 'Actual SDK draft was not retained'; END IF;
     r:=${rpc("read")};
     IF jsonb_array_length(r->'intents')<>1 OR r->'intents'->0->>'executable_canonical' IS DISTINCT FROM ${literal(executableCanonical)}
@@ -217,7 +219,7 @@ live("chat custody native fixtures", () => {
   RESET ROLE; SET LOCAL ROLE service_role;
   DO $$ BEGIN
    BEGIN PERFORM ${rpc("read")}; RAISE EXCEPTION 'Service impersonated source session'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
-   BEGIN PERFORM public.assistant_chat_intent('issue','${id.call}','{}'); RAISE EXCEPTION 'Service minted human approval'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+   BEGIN PERFORM ((public.assistant_chat_intent('issue','${id.call}','{}')->>'canonicalResult')::json); RAISE EXCEPTION 'Service minted human approval'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
   END $$;`));
  it("executes the twelfth reserved tool once, refuses a thirteenth, and meters one model dispatch", () => exercise(rpc => {
   const stepId = randomUUID(), nextStep = randomUUID(), envelope = chatFixture().packet.initialEnvelopes[1];
@@ -225,10 +227,10 @@ live("chat custody native fixtures", () => {
   return `SELECT ${dispatch(1, stepId)}; SELECT ${terminal(rpc, stepId, calls)};
    DO $$ DECLARE c jsonb; row jsonb; done jsonb; again jsonb; count_tools int:=0; BEGIN
     FOR row IN SELECT value FROM jsonb_array_elements(${rpc("read")}->'calls') LOOP
-     c:=public.assistant_chat_session('claim_tool','${id.turn}',jsonb_build_object('callId',row->>'id'));
+     c:=((public.assistant_chat_session('claim_tool','${id.turn}',jsonb_build_object('callId',row->>'id'))->>'canonicalResult')::json);
      IF c->>'cached'<>'false' OR (c->>'usedCalls')::int<>12 THEN RAISE EXCEPTION 'Current reservation double counted'; END IF;
-     done:=public.assistant_chat_session('finish_tool','${id.turn}',jsonb_build_object('callId',row->>'id','handle',c->>'handle','result',jsonb_build_object('envelope',${literal(JSON.stringify(envelope))}::jsonb),'envelopes',jsonb_build_array(${literal(JSON.stringify(envelope))}::jsonb)));
-     again:=public.assistant_chat_session('claim_tool','${id.turn}',jsonb_build_object('callId',row->>'id'));
+     done:=((public.assistant_chat_session('finish_tool','${id.turn}',jsonb_build_object('callId',row->>'id','handle',c->>'handle','result',jsonb_build_object('envelope',${literal(JSON.stringify(envelope))}::jsonb),'envelopes',jsonb_build_array(${literal(JSON.stringify(envelope))}::jsonb)))->>'canonicalResult')::json);
+     again:=((public.assistant_chat_session('claim_tool','${id.turn}',jsonb_build_object('callId',row->>'id'))->>'canonicalResult')::json);
      IF done->>'released'<>'true' OR again->>'cached'<>'true' THEN RAISE EXCEPTION 'Completed tool replay executed again'; END IF; count_tools:=count_tools+1;
     END LOOP;
     IF count_tools<>12 THEN RAISE EXCEPTION 'Twelfth tool failed to execute'; END IF;
@@ -247,8 +249,8 @@ live("chat custody native fixtures", () => {
    const stepId = randomUUID();
    sql += `SELECT ${dispatch(sequence, stepId)}; SELECT ${terminal(rpc, stepId, [{ name: "get_surface_context", input: { kind: "project", id: id.project }, id: `step_call_${sequence}` }])};`;
    if (sequence < 6) sql += `DO $$ DECLARE c jsonb; BEGIN
-    c:=public.assistant_chat_session('claim_tool','${id.turn}',jsonb_build_object('callId',(SELECT v->>'id' FROM jsonb_array_elements(${rpc("read")}->'calls') v WHERE v->>'call_id'='step_call_${sequence}')));
-    PERFORM public.assistant_chat_session('finish_tool','${id.turn}',jsonb_build_object('callId',c->>'callId','handle',c->>'handle','result',jsonb_build_object('envelope',${literal(JSON.stringify(envelope))}::jsonb),'envelopes',jsonb_build_array(${literal(JSON.stringify(envelope))}::jsonb)));
+    c:=((public.assistant_chat_session('claim_tool','${id.turn}',jsonb_build_object('callId',(SELECT v->>'id' FROM jsonb_array_elements(${rpc("read")}->'calls') v WHERE v->>'call_id'='step_call_${sequence}')))->>'canonicalResult')::json);
+    PERFORM ((public.assistant_chat_session('finish_tool','${id.turn}',jsonb_build_object('callId',c->>'callId','handle',c->>'handle','result',jsonb_build_object('envelope',${literal(JSON.stringify(envelope))}::jsonb),'envelopes',jsonb_build_array(${literal(JSON.stringify(envelope))}::jsonb)))->>'canonicalResult')::json);
    END $$;`;
   }
   // Check the sixth terminal before probing dispatch with its retained request.
@@ -258,7 +260,7 @@ live("chat custody native fixtures", () => {
     IF (SELECT state FROM public.assistant_chat_turns WHERE id='${id.turn}')<>'interrupted' THEN RAISE EXCEPTION 'Tool-bearing sixth response became success'; END IF;
     SELECT request_canonical INTO STRICT retained_request FROM public.assistant_chat_steps WHERE turn_id='${id.turn}' AND sequence=6;
     SET LOCAL ROLE authenticated;
-    IF public.assistant_chat_session('dispatch','${id.turn}',jsonb_build_object('sequence',7,'stepId','${randomUUID()}','request',retained_request))->>'released' IS DISTINCT FROM 'false' THEN RAISE EXCEPTION 'Seventh invocation admitted'; END IF;
+    IF ((public.assistant_chat_session('dispatch','${id.turn}',jsonb_build_object('sequence',7,'stepId','${randomUUID()}','request',retained_request))->>'canonicalResult')::json)->>'released' IS DISTINCT FROM 'false' THEN RAISE EXCEPTION 'Seventh invocation admitted'; END IF;
     RESET ROLE;
     IF (SELECT model_steps FROM public.assistant_chat_turns WHERE id='${id.turn}')<>6 OR (SELECT count(*) FROM public.assistant_chat_steps WHERE turn_id='${id.turn}')<>6 THEN RAISE EXCEPTION 'Model-step count is not six'; END IF;
     IF (SELECT state FROM public.assistant_chat_turns WHERE id='${id.turn}')<>'interrupted' THEN RAISE EXCEPTION 'Tool-bearing sixth response became success'; END IF;
@@ -274,17 +276,17 @@ live("chat custody native fixtures", () => {
   const actionCanonical = broker.executableCanonical, hash = broker.executableHash;
   return `SELECT ${dispatch(1, stepId)}; SELECT ${terminal(rpc, stepId, [{ name: "propose_create_project_record", input: draft, id: "proposal_1" }])};
    DO $$ DECLARE c jsonb; BEGIN
-    c:=public.assistant_chat_session('claim_tool','${id.turn}',jsonb_build_object('callId',(${rpc("read")}->'calls'->0->>'id')));
-    PERFORM public.assistant_chat_session('finish_tool','${id.turn}',jsonb_build_object('callId',c->>'callId','handle',c->>'handle','result',${literal(canonicalChat(broker.result))}::jsonb,
-     'envelopes','[]'::jsonb,'executableCanonical',${literal(actionCanonical)}));
+    c:=((public.assistant_chat_session('claim_tool','${id.turn}',jsonb_build_object('callId',(${rpc("read")}->'calls'->0->>'id')))->>'canonicalResult')::json);
+    PERFORM ((public.assistant_chat_session('finish_tool','${id.turn}',jsonb_build_object('callId',c->>'callId','handle',c->>'handle','result',${literal(canonicalChat(broker.result))}::jsonb,
+     'envelopes','[]'::jsonb,'executableCanonical',${literal(actionCanonical)}))->>'canonicalResult')::json);
    END $$;
    SELECT ${dispatch(2, finalStep)}; SELECT ${terminal(rpc, finalStep, [])};
    DO $$ DECLARE bound jsonb; g text; issued jsonb; again jsonb; claim jsonb; BEGIN
     g:=${rpc("read")}->>'digest';
     bound:=jsonb_build_object('approvalRequestId','${id.request}','expectedGrantDigest',g,'expectedExecutableHash','${hash}','executableCanonical',${literal(actionCanonical)},'approvalId','${approvalId}',
      'expiresAt',to_char((clock_timestamp()+interval '4 minutes') AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'),'executionContext',jsonb_build_object('version',1,'action',${literal(actionCanonical)}::jsonb,'project',jsonb_build_object('id','${id.project}','workspaceId','${id.workspace}','name','Synthetic selected project')));
-    issued:=public.assistant_chat_intent('issue','${broker.intentId}',bound);
-    again:=public.assistant_chat_intent('issue','${broker.intentId}',bound||jsonb_build_object('approvalRequestId','${id.prepare}','approvalId','${randomUUID()}'));
+    issued:=((public.assistant_chat_intent('issue','${broker.intentId}',bound)->>'canonicalResult')::json);
+    again:=((public.assistant_chat_intent('issue','${broker.intentId}',bound||jsonb_build_object('approvalRequestId','${id.prepare}','approvalId','${randomUUID()}'))->>'canonicalResult')::json);
     IF issued->>'approvalId'<>'${approvalId}' OR again->>'approvalId'<>issued->>'approvalId' OR again->>'replayed'<>'true' THEN RAISE EXCEPTION 'Lost reply reminted approval'; END IF;
     claim:=${intent("claim_execution", { originalApprovalId: approvalId, expectedExecutableHash: hash })};
     IF claim->>'dispatch'<>'true' OR ${intent("claim_execution", { originalApprovalId: approvalId, expectedExecutableHash: hash })}->>'dispatch'<>'false' THEN RAISE EXCEPTION 'Execution claim replayed'; END IF;

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { parseChatRpcResult } from "./provider-chat-rpc";
 import { canonicalChat } from "./provider-chat-task";
 import { canonicalizeActionPayload } from "@/lib/runtime/action-metadata";
 import { assistantApprovalActionSchema, hashAssistantActionPayload } from "./action-approval-server";
@@ -12,7 +13,7 @@ export type ChatApprovalBinding = z.infer<typeof chatApprovalBindingSchema>;
 export async function chatIntentRpc(session: ChatSession, operation: string, intentId: string, payload: Record<string, unknown> = {}) {
   const { data, error } = await session.rpc("assistant_chat_intent", { p_operation: operation, p_intent_id: intentId, p_payload: { canonicalPayload: canonicalChat(payload) } });
   providerRpcError(error);
-  const response = z.record(z.string(), z.unknown()).parse(data);
+  const response = parseChatRpcResult(data);
   if (response.released === false) throw new ProviderRequestError("chat_intent_body_unavailable", 409);
   return response;
 }

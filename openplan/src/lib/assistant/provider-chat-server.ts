@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
+import { parseChatRpcResult } from "./provider-chat-rpc";
 import { providerRpcError, ProviderRequestError } from "./provider-server";
 import { CHAT_LIMITS, CHAT_PROFILE, CHAT_PROJECTION, CHAT_INSTRUCTIONS, canonicalChat, chatDefinitions, chatGrantDigest, chatHash,
   chatScopeSchema, chatSelectionSchema, chatProjectionDefinition, checkChatGrant, parseChatJson, unknownChatCost, type AssistantChatAcceptedGrantV1 } from "./provider-chat-task";
@@ -11,7 +12,7 @@ import { checkChatStream, chatWireMessageSchema, type ChatWireMessage } from "./
 export async function chatSessionRpc(session: ChatSession, operation: string, turnId: string | null, payload: Record<string, unknown> = {}) {
   const { data, error } = await session.rpc("assistant_chat_session", { p_operation: operation, p_turn_id: turnId, p_payload: { canonicalPayload: canonicalChat(payload) } });
   providerRpcError(error);
-  return z.record(z.string(), z.unknown()).parse(data);
+  return parseChatRpcResult(data);
 }
 function released(value: Record<string, unknown>) {
   if (value.released === false) throw new ProviderRequestError(typeof value.failureCode === "string" ? value.failureCode : "chat_release_unavailable", 409);

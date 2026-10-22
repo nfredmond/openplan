@@ -133,7 +133,8 @@ GRANT SELECT ON assistant_chat_private.source_policy_pins TO openplan_chat_autho
 -- The reserved key cannot occur in this profile's closed object schemas.
 -- Literal occurrences inside strings remain ordinary strings, without escaping
 -- or normalization. Original canonical consent/request/raw-provider bytes stay
--- text. Public wrappers serialize logical JSON, including escaped NUL, as json.
+-- text. Public wrappers transport canonical logical JSON inside a versioned
+-- string envelope. Application callers decode it after PostgREST serialization.
 CREATE FUNCTION assistant_chat_private.no_duplicate_keys(v json) RETURNS boolean LANGUAGE plpgsql IMMUTABLE SET search_path=pg_catalog AS $$
 DECLARE item json;
 BEGIN
@@ -995,7 +996,8 @@ BEGIN
   payload:=assistant_chat_private.lossless((p_payload->>'canonicalPayload')::json);
  ELSE payload:=assistant_chat_private.lossless(p_payload::json); END IF;
  result:=assistant_chat_private.session(p_operation,p_turn_id,payload);
- RETURN assistant_chat_private.canonical(result)::json;
+ -- Transport canonical text so PostgREST's json_agg(...)->0 cannot decode logical NUL.
+ RETURN json_build_object('wireVersion',1,'canonicalResult',assistant_chat_private.canonical(result));
 END $$;
 CREATE FUNCTION public.assistant_chat_intent(p_operation text,p_intent_id uuid,p_payload jsonb DEFAULT '{}') RETURNS json
 LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,assistant_chat_private AS $$
@@ -1007,7 +1009,8 @@ BEGIN
   payload:=assistant_chat_private.lossless((p_payload->>'canonicalPayload')::json);
  ELSE payload:=assistant_chat_private.lossless(p_payload::json); END IF;
  result:=assistant_chat_private.intent(p_operation,p_intent_id,payload);
- RETURN assistant_chat_private.canonical(result)::json;
+ -- Transport canonical text so PostgREST's json_agg(...)->0 cannot decode logical NUL.
+ RETURN json_build_object('wireVersion',1,'canonicalResult',assistant_chat_private.canonical(result));
 END $$;
 REVOKE ALL ON FUNCTION public.assistant_chat_session(text,uuid,jsonb),public.assistant_chat_intent(text,uuid,jsonb) FROM PUBLIC,anon,service_role;
 GRANT EXECUTE ON FUNCTION public.assistant_chat_session(text,uuid,jsonb),public.assistant_chat_intent(text,uuid,jsonb) TO authenticated;
