@@ -916,3 +916,44 @@ The prior R123 admission and root orchestration exception remain unchanged.
 Strict first-private-failure compliance for R122 remains false. This source
 join adds no kill credit or native acceptance. Exact joined CI and an identified
 current visible journey remain pending; no release or full M3/S1 claim follows.
+
+
+## PR367 ordinary CI repair, October 22, 2026 UTC
+
+Completed CI run39787487342 tests synthetic merge076eb20a of headb0f8444
+into the Model retry base0403948. QA job119854381084 stops at dead-code
+analysis: the test-only HTTP helper imports an undeclared smol-toml package.
+Worker job119854381100 stops because the run-state source census expects
+three calls although managed Artifact Extraction adds a fourth. No unchanged
+CI rerun occurs.
+
+The app and root lock metadata now declare the already locked smol-toml1.9.0
+as a direct development dependency. No installed package, resolved version or
+nonroot lock record changes. Dead-code analysis passes with the existing
+unused-export/type warnings unchanged. Removing the declaration reproduces
+the single unlisted-dependency failure; a harmless comment and restored
+metadata pass. No warnings or guard rules are disabled.
+
+The worker guard identifies all four exact stage owners and checks complete
+retained payloads. The Artifact Extraction call must retain its managed-only
+guard. Its harmless and restored runs each pass five tests; four individual
+faults fail the intended census, scope or payload assertion. Every temporary
+production body restores exactly. The final adjacent worker cohort passes
+35 tests across three files. The HTTP/package ordinary cohort passes79 tests
+across two files, with zero skips or pending/todo.
+
+These are ordinary unit and static dependency checks. No engine/model,
+SQL/native/HTTP, compiler, build or browser runs. The AST extraction does not
+execute stage handlers or prove managed writer or scientific behavior. The
+initial private log-redaction reader failure remains retained; it requires
+a second read of the same two completed logs but no subject or CI retry.
+R123's independent disposition and R122's orchestration exception remain
+unchanged. Fresh exact-head CI and the outstanding visible, managed and
+scientific gates remain pending.
+
+The final pre-stage raw-index equality assertion fails. Retained index decoding
+shows only cached ctime/mtime differences for restored main.py. All paths,
+blobs, modes, flags and extensions remain exact; writer provenance is unassessed.
+Both raw forms and the failed assertion remain retained. Root admits the current
+semantic-equivalent index for normal staging without reset or normalization.
+This is not a raw-byte custody pass.
