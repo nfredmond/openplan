@@ -2,7 +2,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-const sql = readFileSync("supabase/migrations/20261019070000_guided_comparison_report_evidence.sql", "utf8")
+const sql = readFileSync("supabase/migrations/20261022010002_guided_comparison_report_evidence.sql", "utf8")
   .replace(/--[^\n]*/g, "");
 const guard = sql.slice(sql.indexOf("CREATE FUNCTION public.guard_report_guided_comparison_artifact()"),
   sql.indexOf("REVOKE ALL ON FUNCTION public.guard_report_guided_comparison_artifact()"));

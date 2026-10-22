@@ -36,7 +36,7 @@ class PopulationSourceRegistryTests(unittest.TestCase):
                 (profile['sample_years'][0], profile['income_dollar_year'], profile['puma_fields']))
         projection = [{'profile': e['profile'], 'purposes': [p for p in registry.PURPOSES if e['capabilities'].get(p) == 'supported']} for e in entries]
         frozen = json.dumps(projection, sort_keys=True, separators=(',', ':'), ensure_ascii=True)
-        sql = (SCRIPT_DIR.parents[1] / 'openplan/supabase/migrations/20261021000002_model_common_population_profiles.sql').read_text()
+        sql = (SCRIPT_DIR.parents[1] / 'openplan/supabase/migrations/20261022010004_model_common_population_profiles.sql').read_text()
         self.assertIn('$population_catalog$' + frozen + '$population_catalog$::pg_catalog.jsonb', sql)
         self.assertIn(hashlib.sha256(frozen.encode()).hexdigest(), sql)
         self.assertEqual(registry.PRODUCTION_REGISTRY.validate(CANONICAL_2023, 'new_guided_launch'), CANONICAL_2023)
