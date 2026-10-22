@@ -473,5 +473,84 @@ export class GuidedNativeFixture {
     }
   }
 
+  /** Arm one owned file transition, leaving bytes present until the successful
+   * ordinary post-entry sections query activates it. No native row changes. */
+  async withPostEntryOutputQuarantine<T>(f: Fixture, reportId: string, operation: (quarantine: (rows: readonly EvidenceRow[]) => {
+    artifact: Artifact; originalPath: string; quarantinePath: string;
+    recordUnavailable: (error: unknown) => { code: "ENOENT"; path: string; message: string };
+  }) => Promise<T>): Promise<T> {
+    const report = await this.member.from("reports")
+      .select("id,workspace_id,project_id,rtp_cycle_id,engagement_campaign_id")
+      .eq("id", uuid.parse(reportId)).eq("workspace_id", f.workspaceId).eq("project_id", f.projectId).single();
+    expect(report.error).toBeNull();
+    expect(report.data).toEqual({ id: reportId, workspace_id: f.workspaceId, project_id: f.projectId,
+      rtp_cycle_id: null, engagement_campaign_id: null });
+    const artifact = exactlyOne(f.currentArtifacts.filter(item => item.id === f.outputIds[0]), "owned current output");
+    expect(f.runIds).toContain(artifact.run_id);
+    expect(artifact.file_url.startsWith("local://")).toBe(true);
+    const registered = await this.member.from("model_run_artifacts").select("*")
+      .eq("id", artifact.id).eq("run_id", artifact.run_id).single();
+    expect(registered.error).toBeNull(); expect(registered.data).toMatchObject(artifact);
+    const originalPath = artifact.file_url.slice("local://".length);
+    const directory = path.join(this.workerRoot, "runs", uuid.parse(artifact.run_id), "attempts", uuid.parse(artifact.attempt_id));
+    expect(path.dirname(originalPath)).toBe(directory);
+    expect(realpathSync(this.workerRoot)).toBe(this.workerRoot);
+    expect(realpathSync(directory)).toBe(directory);
+    expect(realpathSync(originalPath)).toBe(originalPath);
+    const originalStat = lstatSync(originalPath);
+    expect(originalStat.isFile()).toBe(true); expect(originalStat.isSymbolicLink()).toBe(false);
+    expect(originalStat.nlink).toBe(1);
+    const mode = originalStat.mode & 0o7777;
+    expect(mode).toBe(0o600);
+    const bytes = readFileSync(originalPath);
+    const requireOriginal = () => {
+      expect(realpathSync(directory)).toBe(directory);
+      expect(realpathSync(originalPath)).toBe(originalPath);
+      const current = lstatSync(originalPath);
+      expect(current.isFile()).toBe(true); expect(current.isSymbolicLink()).toBe(false);
+      expect(current.nlink).toBe(1); expect(current.nlink).toBe(originalStat.nlink);
+      expect(current.mode & 0o7777).toBe(0o600); expect(mode).toBe(0o600);
+      expect(readFileSync(originalPath)).toEqual(bytes);
+      expect(bytes.byteLength).toBe(Number(artifact.file_size_bytes)); expect(hashBytes(bytes)).toBe(artifact.content_hash);
+    };
+    requireOriginal();
+    let moved = false;
+    let activations = 0;
+    let quarantinePath: string | null = null;
+    try {
+      return await operation(rows => {
+        activations += 1;
+        expect(activations, "owned post-entry output transition must occur once").toBe(1);
+        requireOriginal();
+        this.record("prestorage_entry_sections_completed", { reportId, workspaceId: f.workspaceId,
+          projection: "id, section_key, title, enabled, sort_order, config_json", filter: { report_id: reportId },
+          order: { column: "sort_order", ascending: true }, rowIds: rows.map(row => uuid.parse(row.id)),
+          rowsSha256: hashBytes(Buffer.from(JSON.stringify(rows), "utf8")), activations });
+        const quarantineDirectory = mkdtempSync(path.join(directory, "quarantine-prestorage-"));
+        expect(realpathSync(quarantineDirectory)).toBe(quarantineDirectory);
+        quarantinePath = path.join(quarantineDirectory, path.basename(originalPath));
+        this.record("quarantine_intent", { artifactId: artifact.id, runId: artifact.run_id, originalPath, quarantinePath,
+          sha256: hashBytes(bytes), bytes: bytes.byteLength, mode, phase: "after_entry_sections" });
+        renameSync(originalPath, quarantinePath); moved = true;
+        expect(realpathSync(quarantinePath)).toBe(quarantinePath);
+        return { artifact, originalPath, quarantinePath, recordUnavailable: (error: unknown) => {
+          const actual = z.object({ code: z.literal("ENOENT"), path: z.literal(originalPath), message: z.string().min(1) }).parse(error);
+          this.record("prestorage_owned_file_enoent", { artifactId: artifact.id, ...actual });
+          return actual;
+        } };
+      });
+    } finally {
+      if (moved) {
+        if (!quarantinePath) throw new Error("Owned post-entry quarantine path is unavailable");
+        expect(realpathSync(quarantinePath)).toBe(quarantinePath);
+        renameSync(quarantinePath, originalPath);
+        chmodSync(originalPath, mode);
+        requireOriginal();
+        this.record("quarantine_restored", { artifactId: artifact.id, originalPath, quarantinePath,
+          sha256: hashBytes(readFileSync(originalPath)), bytes: lstatSync(originalPath).size, mode, phase: "after_entry_sections" });
+      }
+    }
+  }
+
   async close() { await this.member.auth.signOut(); /* Retain all immutable synthetic rows, files and stack. No DELETE or rm. */ }
 }

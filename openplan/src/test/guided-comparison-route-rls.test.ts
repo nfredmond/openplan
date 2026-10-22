@@ -52,8 +52,65 @@ function pick(row: Record<string, unknown>) {
 }
 function sorted(rows: Record<string, unknown>[]) { return rows.map(pick).sort((a, b) => String(a.id).localeCompare(String(b.id))); }
 
+// Observe one exact ordinary read after Generate's entry verifier. Every real
+// builder method and result remains in use; unexpected shape/order fails closed.
+function observePostEntrySections(member: SupabaseClient, reportId: string,
+  expectedRows: unknown[], completed: (rows: Record<string, unknown>[]) => Promise<void>) {
+  const trace = { started: 0, completed: 0, hookCompleted: 0, failure: null as unknown };
+  const steps: ReadonlyArray<{ method: string; args: unknown[] }> = [
+    { method: "select", args: ["id, section_key, title, enabled, sort_order, config_json"] },
+    { method: "eq", args: ["report_id", reportId] },
+    { method: "order", args: ["sort_order", { ascending: true }] },
+  ];
+  function observe(query: object, step: number): object {
+    return new Proxy(query, { get(target, property) {
+      if (property === "then") {
+        expect(step, "post-entry sections read must keep its exact projection/scope/order").toBe(steps.length);
+        return (fulfilled?: (value: unknown) => unknown, rejected?: (error: unknown) => unknown) => {
+          const actualThen: unknown = Reflect.get(target, "then", target);
+          if (typeof actualThen !== "function") throw new Error("Actual sections builder is not thenable");
+          return new Promise<unknown>((resolve, reject) => {
+            Reflect.apply(actualThen, target, [resolve, reject]);
+          }).then(async result => {
+            const actual = z.object({ error: z.null(), status: z.literal(200),
+              data: z.array(z.record(z.string(), z.unknown())) }).passthrough().parse(result);
+            expect(actual.data, "actual post-entry sections read must match the saved report").toEqual(expectedRows);
+            trace.completed += 1;
+            expect(trace.completed, "post-entry sections result must complete once").toBe(1);
+            await completed(actual.data);
+            trace.hookCompleted += 1;
+            return result; // Return the original real result, never the parsed copy.
+          }).catch((error: unknown) => { trace.failure = error; throw error; }).then(fulfilled, rejected);
+        };
+      }
+      const expected = steps[step];
+      if (!expected || property !== expected.method) throw new Error("Post-entry sections query seam changed");
+      return (...args: unknown[]) => {
+        expect(args, `post-entry sections ${expected.method} arguments`).toEqual(expected.args);
+        const actualMethod: unknown = Reflect.get(target, property, target);
+        if (typeof actualMethod !== "function") throw new Error("Actual sections builder method is unavailable");
+        const next: unknown = Reflect.apply(actualMethod, target, args);
+        if (!next || typeof next !== "object") throw new Error("Actual sections method did not return its builder");
+        return observe(next, step + 1);
+      };
+    } });
+  }
+  const client = new Proxy(member, { get(target, property) {
+    if (property === "from") return (relation: string) => {
+      const actual = target.from(relation);
+      if (relation !== "report_sections") return actual;
+      trace.started += 1;
+      expect(trace.started, "Generate must perform exactly one observed sections read").toBe(1);
+      return observe(actual, 0);
+    };
+    const actual: unknown = Reflect.get(target, property, target);
+    return typeof actual === "function" ? actual.bind(target) : actual;
+  } });
+  return { client, trace };
+}
+
 // The ordinary mode skips native cases. No source-string guard substitutes for
-// these subjects. A future full native invocation must register all six cases.
+// these subjects. A future full native invocation must register all seven cases.
 describe.skipIf(!LIVE_RLS)("Reports actual managed current KPI authority with retained evidence", () => {
   let native: GuidedNativeFixture;
   beforeAll(async () => {
@@ -260,6 +317,60 @@ describe.skipIf(!LIVE_RLS)("Reports actual managed current KPI authority with re
     const unchanged = await persistedSelection(reportId);
     expect(unchanged.selection).toEqual(selection);
     expect(unchanged.report).toEqual(saved.report);
+    await native.assertAuthority(f);
+  });
+  it("refuses HTML immediately before Storage when an owned output disappears only after the real entry verifier and sections read", async () => {
+    const f = await native.prepare("current");
+    await native.assertAuthority(f);
+    const selection = await verifyGuidedComparisonReport(input(f));
+    requireCurrentSelection(selection, f);
+    const reportId = await createPlain(f, true);
+    const saved = await saveReport(request(`http://localhost/api/reports/${reportId}`, "PATCH", {
+      guidedComparisonSelectionV1: { snapshotId: f.snapshotId },
+      summary: "SYNTHETIC isolated pre-Storage file-availability refusal; no scientific authority change.",
+    }), context(reportId));
+    expect(saved.status, await saved.clone().text()).toBe(200);
+    const persisted = await persistedSelection(reportId);
+    expect(persisted.selection).toEqual(selection);
+    const sections = await native.member.from("report_sections")
+      .select("id, section_key, title, enabled, sort_order, config_json")
+      .eq("report_id", reportId).order("sort_order", { ascending: true });
+    expect(sections.error).toBeNull(); expect(sections.data).not.toBeNull();
+    const before = native.persisted(f);
+    expect(before.artifacts).toEqual([]); expect(before.storage).toEqual([]);
+    const ordinary = session.member;
+    try {
+      await native.withPostEntryOutputQuarantine(f, reportId, async quarantine => {
+        let unavailable: { code: "ENOENT"; path: string; message: string } | null = null;
+        const observed = observePostEntrySections(native.member, reportId, sections.data!, async rows => {
+          // This actual successful query is downstream of Generate's awaited
+          // entry verifier. Its original real result reaches Promise.all.
+          const file = quarantine(rows);
+          expect(selection.payload.sources.some(source => source.output.id === file.artifact.id)).toBe(true);
+          unavailable = await loadArtifactBytes(file.artifact.file_url, {
+            bucket: "run-artifacts", objectPathPrefix: `model-runs/${file.artifact.run_id}/`,
+            localRoot: resolveRunWorkDir(native.workerRoot, file.artifact.run_id),
+          }).then(() => { throw new Error("Post-entry quarantined output unexpectedly remained readable"); },
+            (error: unknown) => file.recordUnavailable(error));
+        });
+        session.member = observed.client;
+        const generated = await generateReport(request(`http://localhost/api/reports/${reportId}/generate`, "POST", { format: "html" }), context(reportId));
+        // Hook/query failures cannot count as a pre-Storage refusal. The entry
+        // read must really complete once and the actual ENOENT must be captured.
+        expect(observed.trace).toEqual({ started: 1, completed: 1, hookCompleted: 1, failure: null });
+        expect(unavailable).not.toBeNull();
+        expect(generated.status, await generated.clone().text()).toBe(409);
+        const actualUnavailable = z.object({ code: z.literal("ENOENT"), path: z.string(), message: z.string().min(1) }).parse(unavailable);
+        expect(await generated.json()).toEqual({ error: actualUnavailable.message });
+        expect(native.persisted(f)).toEqual(before);
+        await native.assertAuthority(f);
+      });
+    } finally { session.member = ordinary; }
+    // The fixture's inner finally restores the exact owned file even if the
+    // real Generate, query observer or any assertion fails. Retain empty dirs.
+    expect(native.persisted(f)).toEqual(before);
+    const unchanged = await persistedSelection(reportId);
+    expect(unchanged).toEqual(persisted);
     await native.assertAuthority(f);
   });
 });

@@ -808,3 +808,33 @@ types, a new checkpoint and a separately admitted baseline using the retained
 R109 state. Full Reports Save/Generate/reopen, four native refusals, quarantine,
 KPI-after-Save transitions, separate pre-Storage/TOCTOU, hosted operation, M3/S1
 science and full v1 remain unproved by this source response.
+
+
+## R118 joins the independently reviewed pre-Storage fixture, October 22, 2026
+
+R112 retains six native passes and R113 retains bounded current-selector
+sensitivity. R114 authors the deferred file-loss case. R115 accepts source
+preparation only. The seventh native case, query observer, deferred quarantine
+and restoration remain unrun at this source checkpoint. Production, SQL and
+existing six native case bodies remain unchanged.
+
+R116 stops before tests on private umask-created source modes and restores the
+original source. R117 stops before apply on a private bootstrap syntax error.
+Its read-only custody finds historical index stat-cache differences, with
+identical staged semantics and source. Root preserves both forms and admits
+the current raw index for a new window without reset or normalization.
+
+R118 writes only the reviewed existing file bodies in place, preserving 0664
+source modes under the private evidence umask. A harmless comment survives all
+nine strict request checks. Restoring version only at new request site six
+fails its real-schema assertion; eight other checks pass. Exact bytes and mode
+restore. The final ordinary cohort passes 26 tests; all seven native cases are
+explicitly skipped. Scoped lint and diff/reverse checks pass.
+
+The deterministic fixture excludes a co-writer or filesystem adversary. It
+does not provide inode identity or no-clobber restoration. Static request-site
+checks do not execute the Proxy, native file transition or pre-Storage refusal.
+Configured types, native behavior and sensitivity remain separately admitted
+work. The four KPI-after-Save transitions remain blocked under the reviewed
+legitimate commands. No authority, producer, retention or scientific rule is
+weakened to create coverage. Hosted, race, M3/S1 and full v1 remain open.

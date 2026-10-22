@@ -19,14 +19,14 @@ function visit(node: ts.Node) {
 }
 visit(source);
 
-// This guards the five static inline sites, without evaluating the native test.
+// This guards the six static inline sites, without evaluating the native test.
 // Indirect builders or new serialization paths require separate coverage.
 describe("native guided comparison request contract", () => {
-  it("retains exactly five static inline request sites", () => {
-    expect(sites).toHaveLength(5);
+  it("retains exactly six static inline request sites", () => {
+    expect(sites).toHaveLength(6);
   });
 
-  it.each([1, 2, 3, 4, 5])("request site %i satisfies the real strict request schema", number => {
+  it.each([1, 2, 3, 4, 5, 6])("request site %i satisfies the real strict request schema", number => {
     const site = sites[number - 1];
     expect(site, `request site ${number} exists`).toBeDefined();
     const sample: Record<string, unknown> = {};
