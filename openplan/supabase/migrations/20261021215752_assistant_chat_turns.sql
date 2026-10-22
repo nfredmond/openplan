@@ -375,8 +375,14 @@ BEGIN
     AND r.configuration_canonical=selection->>'configurationCanonical' AND r.configuration_hash=selection->>'configurationHash') THEN
   UPDATE public.assistant_chat_turns SET state='interrupted',failure_code='chat_selection_unavailable' WHERE id=t.id; RETURN false;
  END IF;
- PERFORM assistant_chat_private.append_event(t.id,'scope_checked',jsonb_build_object('purpose',p_purpose,'bindingHash',p_body_hash,
-  'dependencySetHash',assistant_chat_private.dependencies(t.id),'checkId',gen_random_uuid(),'checkedAt',to_char(clock_timestamp() AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')));
+ -- Observational reads retain their current access check in the private ledger.
+ -- Polling must not append to the progress stream it is trying to drain.
+ IF p_purpose IN ('read','intent_read') THEN
+  PERFORM assistant_chat_private.record_check(t.id,p_purpose,p_body_hash);
+ ELSE
+  PERFORM assistant_chat_private.append_event(t.id,'scope_checked',jsonb_build_object('purpose',p_purpose,'bindingHash',p_body_hash,
+   'dependencySetHash',assistant_chat_private.dependencies(t.id),'checkId',gen_random_uuid(),'checkedAt',to_char(clock_timestamp() AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')));
+ END IF;
  RETURN true;
 END $$;
 

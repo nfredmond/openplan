@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { advanceRetainedChatProgress, type RetainedChatProgress } from "@/lib/assistant/chat-stream";
+import { blankComments } from "./migrations/read-migrations";
 const hash = "a".repeat(64);
 const base: RetainedChatProgress = { turnId: "synthetic-turn", released: true, state: "running", cursor: 1, complete: false,
  texts: [{ stepId: "synthetic-step", text: "Progress only", terminal: "tool_calls", receiptHash: hash }],
@@ -73,5 +74,46 @@ describe("bounded retained event pages", () => {
   expect(read, "SQL cursor must end at the last event actually returned").toContain("'cursor',n,");
   expect(read).toContain("'events',e,");
   expect(read).not.toContain("'cursor',t.cursor");
+ });
+ it("audits observational access after all current checks without appending its own progress", () => {
+  const sql = blankComments(readFileSync(`${process.cwd()}/supabase/migrations/20261021215752_assistant_chat_turns.sql`, "utf8"));
+  const access = sql.split("CREATE FUNCTION assistant_chat_private.require_access(")[1].split("END $$;")[0];
+  const branch = access.indexOf(" IF p_purpose IN ('read','intent_read') THEN");
+  expect(branch).toBeGreaterThan(0);
+  const checks = access.slice(0, branch);
+  for (const required of ["assistant_chat_private.actor()", "pg_advisory_xact_lock", "WHERE id=t.grant_id FOR UPDATE", "WHERE id=p_turn FOR UPDATE",
+   "g.digest IS DISTINCT FROM p_digest", "assistant_chat_private.policy_fingerprint(table_oid)", "has_table_privilege", "public.workspace_members",
+   "jsonb_array_elements(e.envelope->'accessAnchors')", "IF NOT okay THEN", "'access_lost',failed,'chat_source_access_lost'",
+   "append_event(t.id,'access_lost','{}')", "capability.admitted", "capability.record_hash", "r.configuration_hash=selection->>'configurationHash'"])
+   expect(checks, required + " remains ahead of the observational audit branch").toContain(required);
+  const normalize = (text: string) => text.replace(/\s+/g, "");
+  expect(normalize(access.slice(branch))).toBe(normalize(`
+   IF p_purpose IN ('read','intent_read') THEN
+    PERFORM assistant_chat_private.record_check(t.id,p_purpose,p_body_hash);
+   ELSE
+    PERFORM assistant_chat_private.append_event(t.id,'scope_checked',jsonb_build_object('purpose',p_purpose,'bindingHash',p_body_hash,
+     'dependencySetHash',assistant_chat_private.dependencies(t.id),'checkId',gen_random_uuid(),'checkedAt',to_char(clock_timestamp() AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')));
+   END IF;
+   RETURN true;
+  `));
+  const ledger = sql.split("CREATE FUNCTION assistant_chat_private.record_check(")[1].split("$$;")[0];
+  expect(ledger).toContain("INSERT INTO public.assistant_chat_access_checks(owner_user_id,workspace_id,turn_id,attempt_id,grant_digest,purpose,exact_body_hash,dependency_set_hash,result)");
+  expect(ledger).toContain("t.owner_user_id,t.workspace_id,t.id,t.attempt_id,g.digest,p_purpose,p_body_hash,assistant_chat_private.dependencies(t.id),'allowed'");
+  const table = sql.split("CREATE TABLE public.assistant_chat_access_checks(")[1].split(");")[0];
+  expect(table).toContain("id uuid PRIMARY KEY DEFAULT gen_random_uuid()");
+  expect(table).toContain("checked_at timestamptz NOT NULL DEFAULT clock_timestamp()");
+ });
+ it("retains independent exact-body release audits in both observational owner paths", () => {
+  const sql = blankComments(readFileSync(`${process.cwd()}/supabase/migrations/20261021215752_assistant_chat_turns.sql`, "utf8"));
+  const session = sql.split("CREATE FUNCTION assistant_chat_private.session(")[1].split("CREATE FUNCTION assistant_chat_private.intent(")[0];
+  const intent = sql.split("CREATE FUNCTION assistant_chat_private.intent(")[1].split("END $$;")[0];
+  expect(session).toContain("require_access(t.id,coalesce(p_payload->>'digest',g.digest),p_operation,coalesce(p_payload->>'bodyHash',g.digest))");
+  const read = session.slice(session.indexOf(" IF p_operation='read' THEN"), session.indexOf(" IF g.status<>'accepted'"));
+  expect(read).toContain("PERFORM assistant_chat_private.record_check(t.id,'transcript_replay',assistant_chat_private.sha(assistant_chat_private.canonical(result))); RETURN result;");
+  expect(read.indexOf("record_check(")).toBeGreaterThan(read.indexOf("result:=jsonb_build_object("));
+  expect(intent).toContain("require_access(i.turn_id,coalesce(p_payload->>'expectedGrantDigest',i.grant_digest),'intent_'||p_operation,i.executable_hash)");
+  const intentRead = intent.slice(intent.indexOf(" IF p_operation='read' THEN"), intent.indexOf(" SELECT role INTO member_role"));
+  expect(intentRead).toContain("PERFORM assistant_chat_private.record_check(i.turn_id,'owner_release',assistant_chat_private.sha(assistant_chat_private.canonical(jsonb_build_object('released',true,'intent',to_jsonb(i)))));");
+  expect(intentRead).toContain("RETURN jsonb_build_object('released',true,'intent',to_jsonb(i));");
  });
 });

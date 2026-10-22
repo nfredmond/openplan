@@ -138,17 +138,29 @@ live("saved API chat custody over signed local HTTP", () => {
   expect(await chatSessionRpc(f.owner, "finish_step", f.grant.turnId, { stepId, receipt, receiptHash })).toMatchObject({ released: true });
   return { receipt, receiptHash };
  }
- // Authored only. Historical R36 installed430 is not this corrected installation.
+ // Fresh-install coverage only. Historical R52 installed430 is not rewritten.
  it.each([100, 101, 205])("pages %i events over signed HTTP with replay, later append and terminal reconnect", async total => {
   await fixture("Read every retained event page", async f => {
    await start(f); const stepId = randomUUID(); await dispatch(f, 1, stepId);
-   const seed = await readChatSnapshot(f.owner, f.grant.turnId);
-   expect(seed.snapshot.cursor).toBe(3);
-   // Seed real progress through the same public RPC under the fixture owner.
-   // Page observations below still cross actual PostgREST and the locked decoder.
+   let seed = (await readChatSnapshot(f.owner, f.grant.turnId)).snapshot;
+   expect(seed.events.map(event => event.kind)).toEqual([["scope_checked"], ["scope_checked", "grant_accepted"], ["scope_checked", "started"], ["scope_checked", "model_dispatch_reserved"]].flat());
+   expect(seed.cursor).toBe(seed.events.length); expect(seed.cursor).toBeLessThan(total);
+   if ((total - seed.cursor) % 2) {
+    expect(await chatSessionRpc(f.owner, "start", f.grant.turnId)).toMatchObject({ started: false, state: "running" });
+    const next = (await readChatSnapshot(f.owner, f.grant.turnId)).snapshot;
+    expect(next.cursor).toBe(seed.cursor + 1); expect(next.revision).toBe(seed.revision + 1);
+    expect(next.events.at(-1)).toMatchObject({ kind: "scope_checked", body: { purpose: "start" } });
+    const { cursor: _cursor, revision: _revision, events: _events, ...before } = seed;
+    const { cursor: _nextCursor, revision: _nextRevision, events: _nextEvents, ...after } = next;
+    expect(after, "start replay preserves owner, attempt, model count and all effect-bearing state").toEqual(before);
+    seed = next;
+   }
+   const frameCount = (total - seed.cursor) / 2;
+   expect(Number.isInteger(frameCount)).toBe(true);
+   // Each real progress command retains one scope check and one text frame.
    sql(`BEGIN; SET LOCAL ROLE authenticated;
     SELECT set_config('request.jwt.claims',${literal(JSON.stringify({ sub: f.grant.owner.userId, role: "authenticated", is_anonymous: false }))},true);
-    DO $$ DECLARE n int; BEGIN FOR n IN 1..${total - 3} LOOP
+    DO $$ DECLARE n int; BEGIN FOR n IN 1..${frameCount} LOOP
      PERFORM public.assistant_chat_session('progress','${f.grant.turnId}',jsonb_build_object('stepId','${stepId}','frameSequence',n,'text','x'));
     END LOOP; END $$; COMMIT;`);
    let after = 0, previousHash: string | null = null;
@@ -168,16 +180,30 @@ live("saved API chat custody over signed local HTTP", () => {
    for (let n = 0; n < Math.ceil(total / 100); n++) await readPage();
    expect(sequences).toEqual(Array.from({ length: total }, (_, n) => n + 1));
    expect((await readPage()).events).toEqual([]);
-   expect(await chatSessionRpc(f.owner, "progress", f.grant.turnId, { stepId, frameSequence: total - 2, text: "x" })).toMatchObject({ released: true });
-   expect((await readPage()).events).toHaveLength(1);
-   const raw = chatStreamFrame({ role: "assistant", content: "x".repeat(total - 2) }, "stop") + "data: [DONE]\n\n";
+   expect(await chatSessionRpc(f.owner, "progress", f.grant.turnId, { stepId, frameSequence: frameCount + 1, text: "x" })).toMatchObject({ released: true });
+   const appended = await readPage();
+   expect(appended.events.map(event => event.kind)).toEqual(["scope_checked", "text_delta"]);
+   expect(appended.events[0].body).toMatchObject({ purpose: "progress" });
+   expect(appended.events[1].body).toMatchObject({ frameSequence: frameCount + 1, text: "x" });
+   expect(after).toBe(total + 2);
+   const raw = chatStreamFrame({ role: "assistant", content: "x".repeat(frameCount + 1) }, "stop") + "data: [DONE]\n\n";
    await finish(f, stepId, raw);
-   const terminal = await readPage(); expect(terminal.state).toBe("succeeded"); expect(terminal.events).toHaveLength(2);
-   expect(after).toBe(total + 3); expect((await readPage()).events).toEqual([]);
+   const terminal = await readPage(); expect(terminal.state).toBe("succeeded");
+   expect(terminal.events.map(event => event.kind)).toEqual(["scope_checked", "model_terminal", "completed"]);
+   expect(after).toBe(total + 5); expect((await readPage()).events).toEqual([]);
    after = 0; previousHash = null; sequences.length = 0;
-   for (let n = 0; n < Math.ceil((total + 3) / 100); n++) expect((await readPage()).state).toBe("succeeded");
-   expect(sequences).toEqual(Array.from({ length: total + 3 }, (_, n) => n + 1));
+   for (let n = 0; n < Math.ceil((total + 5) / 100); n++) expect((await readPage()).state).toBe("succeeded");
+   expect(sequences).toEqual(Array.from({ length: total + 5 }, (_, n) => n + 1));
    expect((await readPage()).events).toEqual([]);
+   const checks = JSON.parse(sql(`SELECT jsonb_build_object('reads',(SELECT count(*) FROM public.assistant_chat_access_checks WHERE turn_id='${f.grant.turnId}' AND purpose='read'),
+    'releases',(SELECT count(*) FROM public.assistant_chat_access_checks WHERE turn_id='${f.grant.turnId}' AND purpose='transcript_replay'),
+    'observationEvents',(SELECT count(*) FROM public.assistant_chat_events WHERE turn_id='${f.grant.turnId}' AND kind='scope_checked' AND body->>'purpose' IN ('read','intent_read')),
+    'steps',(SELECT count(*) FROM public.assistant_chat_steps WHERE turn_id='${f.grant.turnId}'),
+    'dispatches',(SELECT count(*) FROM public.usage_events WHERE workspace_id='${f.grant.owner.workspaceId}' AND idempotency_key LIKE 'assistant_chat_dispatch:%'),
+    'approvals',(SELECT count(*) FROM public.assistant_action_approvals WHERE workspace_id='${f.grant.owner.workspaceId}'),
+    'executions',(SELECT count(*) FROM public.assistant_action_executions WHERE workspace_id='${f.grant.owner.workspaceId}'));`));
+   expect(checks.reads).toBeGreaterThan(0); expect(checks.releases).toBe(checks.reads);
+   expect(checks).toMatchObject({ observationEvents: 0, steps: 1, dispatches: 1, approvals: 0, executions: 0 });
   });
  });
  it.each(["Plain question", "\u0000", "literal \\u0000", "\ue000😀\n\u0000\t\b\f\r"])("round-trips exact canonical question %j through PostgREST", async question => {

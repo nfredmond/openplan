@@ -203,16 +203,34 @@ live("chat custody native fixtures", () => {
    SELECT set_config('request.jwt.claims',${literal(canonicalChat({ sub: id.user, role: "authenticated", is_anonymous: false }))},true);
    SELECT 'CHAT_DIRECT_RLS_ASSERTIONS_REACHED:60:4';`;
  }
- // New pagination cases are authored only. Run later on a fresh 429-to-corrected-430 stack.
+ // Fresh-install coverage only. Historical R52's installed430 remains unchanged.
  it.each([100, 101, 205])("drains %i real retained events without skipping a page or hash link", total => {
-  const raw = frame({ role: "assistant", content: "x".repeat(total - 2) }, "stop") + "data: [DONE]\n\n";
+  // Bind receipt text to the actual command chain, not one event per frame.
+  const seedKinds = [["scope_checked"], ["scope_checked", "grant_accepted"], ["scope_checked", "started"], ["scope_checked", "model_dispatch_reserved"]].flat();
+  const frameCount = Math.floor((total - seedKinds.length) / 2);
+  const raw = frame({ role: "assistant", content: "x".repeat(frameCount + 1) }, "stop") + "data: [DONE]\n\n";
   const receipt = checkChatStream(raw, "synthetic-model", []);
   const read = (after: string) => `(((public.assistant_chat_session('read','${id.turn}',jsonb_build_object('afterSequence',${after}))->>'canonicalResult')::json)::jsonb)`;
   const progress = (sequence: string) => `public.assistant_chat_session('progress','${id.turn}',jsonb_build_object('stepId','${id.step}','frameSequence',${sequence},'text','x'))`;
   exercise(rpc => `SELECT ${dispatch(1, id.step)};
-   DO $$ DECLARE p jsonb; replay jsonb; ev jsonb; after_seq bigint:=0; prev text; i int; BEGIN
-    IF (${rpc("read")}->>'cursor')::int<>3 THEN RAISE EXCEPTION 'Pagination seed cursor differs'; END IF;
-    FOR i IN 1..${total - 3} LOOP PERFORM ${progress("i")}; END LOOP;
+   DO $$ DECLARE seed jsonb; p jsonb; replay jsonb; ev jsonb; after_seq bigint:=0; prev text; i int; seeded int; frames int; BEGIN
+    seed:=${read("0")};
+    IF seed->>'released' IS DISTINCT FROM 'true' OR (SELECT jsonb_agg(value->>'kind' ORDER BY ordinality) FROM jsonb_array_elements(seed->'events') WITH ORDINALITY) IS DISTINCT FROM ${literal(JSON.stringify(seedKinds))}::jsonb
+     OR (seed->>'cursor')::int<>jsonb_array_length(seed->'events') THEN RAISE EXCEPTION 'Pagination seeded command chain differs'; END IF;
+    seeded:=(seed->>'cursor')::int;
+    IF seeded>=${total} THEN RAISE EXCEPTION 'Pagination target cannot contain setup'; END IF;
+    IF (${total}-seeded)%2=1 THEN
+     replay:=${rpc("start")}; p:=${read("0")};
+     IF replay->>'started' IS DISTINCT FROM 'false' OR replay->>'state'<>'running'
+      OR (p-ARRAY['events','cursor','revision']) IS DISTINCT FROM (seed-ARRAY['events','cursor','revision'])
+      OR (p->>'revision')::bigint<>(seed->>'revision')::bigint+1 OR (p->>'cursor')::int<>seeded+1
+      OR jsonb_array_length(p->'events')<>seeded+1 OR p->'events'->seeded->>'kind'<>'scope_checked'
+      OR p->'events'->seeded->'body'->>'purpose'<>'start' THEN RAISE EXCEPTION 'Parity start replay changed effects or lost its check'; END IF;
+     seeded:=(p->>'cursor')::int;
+    END IF;
+    frames:=(${total}-seeded)/2;
+    IF (${total}-seeded)%2<>0 OR frames<>${frameCount} THEN RAISE EXCEPTION 'Frame/event accounting differs'; END IF;
+    FOR i IN 1..frames LOOP PERFORM ${progress("i")}; END LOOP;
     LOOP
      p:=${read("after_seq")}; replay:=${read("after_seq")};
      IF p IS DISTINCT FROM replay THEN RAISE EXCEPTION 'Same page replay differs'; END IF;
@@ -226,16 +244,23 @@ live("chat custody native fixtures", () => {
      IF (p->>'cursor')::bigint<>after_seq THEN RAISE EXCEPTION 'Page cursor skipped returned events'; END IF;
     END LOOP;
     IF after_seq<>${total} OR (p->>'cursor')::bigint<>after_seq THEN RAISE EXCEPTION 'Empty last page lost boundary'; END IF;
-    PERFORM ${progress(String(total - 2))};
+    PERFORM ${progress("frames+1")};
     p:=${read("after_seq")};
-    IF jsonb_array_length(p->'events')<>1 OR (p->>'cursor')::int<>${total + 1}
-     OR p->'events'->0->>'previous_hash' IS DISTINCT FROM prev THEN RAISE EXCEPTION 'Later append was skipped'; END IF;
+    IF jsonb_array_length(p->'events')<>2 OR (p->>'cursor')::int<>${total + 2}
+     OR p->'events'->0->>'kind'<>'scope_checked' OR p->'events'->0->'body'->>'purpose'<>'progress'
+     OR p->'events'->1->>'kind'<>'text_delta' OR (p->'events'->1->'body'->>'frameSequence')::int<>frames+1
+     OR p->'events'->0->>'previous_hash' IS DISTINCT FROM prev
+     OR p->'events'->1->>'previous_hash' IS DISTINCT FROM p->'events'->0->>'body_hash'
+     THEN RAISE EXCEPTION 'Later append lost its command check or frame'; END IF;
    END $$;
    SELECT ${rpc("finish_step", { stepId: id.step, receipt, receiptHash: chatHash(canonicalChat(receipt)) })};
-   DO $$ DECLARE p jsonb; ev jsonb; after_seq bigint:=0; prev text; BEGIN
+   DO $$ DECLARE p jsonb; replay jsonb; ev jsonb; after_seq bigint:=0; prev text; BEGIN
+    p:=${read(String(total + 2))};
+    IF jsonb_array_length(p->'events')<>3 OR (SELECT jsonb_agg(value->>'kind' ORDER BY ordinality) FROM jsonb_array_elements(p->'events') WITH ORDINALITY)
+     IS DISTINCT FROM '["scope_checked","model_terminal","completed"]'::jsonb THEN RAISE EXCEPTION 'Terminal command event count differs'; END IF;
     LOOP
-     p:=${read("after_seq")};
-     IF p->>'state'<>'succeeded' THEN RAISE EXCEPTION 'Terminal turn lost succeeded state'; END IF;
+     p:=${read("after_seq")}; replay:=${read("after_seq")};
+     IF p IS DISTINCT FROM replay OR p->>'state'<>'succeeded' THEN RAISE EXCEPTION 'Terminal replay changed or lost succeeded state'; END IF;
      EXIT WHEN jsonb_array_length(p->'events')=0;
      FOR ev IN SELECT value FROM jsonb_array_elements(p->'events') LOOP
       IF (ev->>'sequence')::bigint<>after_seq+1 OR ev->>'previous_hash' IS DISTINCT FROM prev THEN RAISE EXCEPTION 'Reconnect chain differs'; END IF;
@@ -243,7 +268,24 @@ live("chat custody native fixtures", () => {
      END LOOP;
      IF (p->>'cursor')::bigint<>after_seq THEN RAISE EXCEPTION 'Terminal page cursor skipped events'; END IF;
     END LOOP;
-    IF after_seq<>${total + 3} OR (p->>'cursor')::bigint<>after_seq THEN RAISE EXCEPTION 'Reconnect lost terminal events'; END IF;
+    IF after_seq<>${total + 5} OR (p->>'cursor')::bigint<>after_seq THEN RAISE EXCEPTION 'Reconnect lost terminal events'; END IF;
+    PERFORM set_config('openplan.fixture.last_page',p::text,true);
+   END $$;
+   RESET ROLE; DO $$ DECLARE reads int; releases int; BEGIN
+    SELECT count(*) INTO reads FROM public.assistant_chat_access_checks WHERE turn_id='${id.turn}' AND purpose='read';
+    SELECT count(*) INTO releases FROM public.assistant_chat_access_checks WHERE turn_id='${id.turn}' AND purpose='transcript_replay';
+    IF reads=0 OR reads<>releases THEN RAISE EXCEPTION 'Read access/release audit missing'; END IF;
+    IF EXISTS(SELECT 1 FROM public.assistant_chat_access_checks a JOIN public.assistant_chat_turns t ON t.id=a.turn_id JOIN public.assistant_chat_grants g ON g.id=t.grant_id
+     WHERE a.turn_id='${id.turn}' AND a.purpose='read' AND (a.owner_user_id<>t.owner_user_id OR a.workspace_id<>t.workspace_id OR a.attempt_id<>t.attempt_id
+      OR a.grant_digest<>g.digest OR a.exact_body_hash<>g.digest OR a.dependency_set_hash<>assistant_chat_private.dependencies(t.id) OR a.result<>'allowed'
+      OR a.id IS NULL OR a.checked_at<transaction_timestamp())) THEN RAISE EXCEPTION 'Read access audit identity or binding differs'; END IF;
+    IF NOT EXISTS(SELECT 1 FROM public.assistant_chat_access_checks WHERE turn_id='${id.turn}' AND purpose='transcript_replay'
+     AND exact_body_hash=assistant_chat_private.sha(assistant_chat_private.canonical(current_setting('openplan.fixture.last_page')::jsonb))) THEN RAISE EXCEPTION 'Exact released page audit missing'; END IF;
+    IF EXISTS(SELECT 1 FROM public.assistant_chat_events WHERE turn_id='${id.turn}' AND kind='scope_checked' AND body->>'purpose' IN ('read','intent_read')) THEN RAISE EXCEPTION 'Observation appended to progress'; END IF;
+    IF (SELECT count(*) FROM public.assistant_chat_steps WHERE turn_id='${id.turn}')<>1
+     OR (SELECT count(*) FROM public.usage_events WHERE workspace_id='${id.workspace}' AND idempotency_key LIKE 'assistant_chat_dispatch:%')<>1
+     OR EXISTS(SELECT 1 FROM public.assistant_action_approvals WHERE workspace_id='${id.workspace}')
+     OR EXISTS(SELECT 1 FROM public.assistant_action_executions WHERE workspace_id='${id.workspace}') THEN RAISE EXCEPTION 'Pagination or parity replay added an effect'; END IF;
    END $$;`);
  });
  it("matches JS trim, UTF-16 length, UTF-8 bytes and hashes across lossless strings", () => {
