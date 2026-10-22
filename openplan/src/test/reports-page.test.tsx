@@ -147,7 +147,9 @@ describe("ReportsPage", () => {
         projects: { id: "project-1", name: "Synthetic project" }, rtp_cycles: null }], error: null });
       reportArtifactsOrderMock.mockResolvedValueOnce({ data: basis === "first packet" ? [] : [{ report_id: "report-1",
         generated_at: "2026-03-28T20:00:00.000Z", metadata_json: { guidedComparisonSelectionV1: retained,
-          sourceContext: { evidenceChainSummary: { linkedRunCount: 4 } } } }], error: null });
+          sourceContext: { evidenceChainSummary: { linkedRunCount: 4 }, scenarioSetLinks: [{
+            comparisonSnapshots: [{ status: "ready", indicatorDeltaCount: 3 }],
+          }] } } }], error: null });
       await renderPage();
       expect(reportsSelectMock).toHaveBeenCalledWith(expect.stringContaining("metadata_json"));
       expect(reportArtifactsSelectMock).toHaveBeenCalledWith("report_id, generated_at, metadata_json");
@@ -161,12 +163,15 @@ describe("ReportsPage", () => {
         expect(screen.queryByText("Release review ready")).not.toBeInTheDocument();
         expect(screen.queryByText(/Changed sources:/)).not.toBeInTheDocument();
         expect(screen.queryByText("Refresh recommended")).not.toBeInTheDocument();
+        expect(screen.getByText(/Grant release review: Modeling evidence unassessed/)).toBeInTheDocument();
+        expect(screen.queryByText(/Grant release review: Appears decision-ready/)).not.toBeInTheDocument();
       } else if (basis === "invalid digest") {
         expect(screen.getByText("Saved comparison binding is invalid")).toBeInTheDocument();
       } else if (basis === "first packet") {
         expect(screen.getByText("No generated packet yet")).toBeInTheDocument();
       } else {
         expect(screen.getByText("Changed source context")).toBeInTheDocument();
+        expect(screen.getByText(/Grant release review: Refresh recommended/)).toBeInTheDocument();
         expect(screen.getByText(basis === "known source change" ? /Changed sources: Report metadata/ : /Changed sources: Selected guided comparison/)).toBeInTheDocument();
       }
     }

@@ -88,3 +88,33 @@ an unchanged shared grant-support helper that maps unassessed packet evidence
 to stale evidence and refresh advice. That reachable consumer needs correction
 before the named truthful-warning outcome can close. No new generation, native,
 hosted, scientific or release acceptance is claimed. Full v1 remains unchanged.
+
+
+## October 22 UTC: grant-support advice preserves unknown evidence
+
+The shared grant-modeling consumer previously classifies every non-current
+packet label as stale. The detail page and catalog therefore still recommend
+refreshing an unchanged retained comparison when its live evidence is
+unassessed. This source response supersedes that open consumer gap above.
+
+The helper now returns explicit unassessed readiness, monitor and review advice.
+It retains the packet and mandatory planning caveat. Known source changes retain
+refresh advice. Existing ready, stale, thin and absent queue priorities remain
+zero, one, two and three; unassessed evidence receives a separate review priority
+of 1.5. Evidence-readiness, workspace counts and badges, and the Grants triage
+section carry the distinct state without treating it as absent or thin support.
+
+The maintained final cohort passes 511 cases in seventeen files, with zero
+failures or skips. Strict lint passes all twelve changed paths. A 170-case
+harmless survivor precedes ten behavioral faults producing 21 named assertion
+failures and 431 explicit unrelated selector skips. Exact bytes and modes
+restore. The two original authoring-failure cohorts remain failed. Root reviews
+the exact source response before this checkpoint.
+
+Consumer tests inject a prepared unknown state at the existing builder boundary.
+They do not establish loader-wide assessment or current worker bytes. No new
+loader I/O, accepting verification, SQL, provider or scientific criterion changes.
+Configured compilation and a renewed identified-build desktop/390px retained
+report and catalog journey remain pending. This source checkpoint does not
+promote the earlier partial browser outcome or declare publication. The complete
+v1 contract and sole roadmap remain binding.

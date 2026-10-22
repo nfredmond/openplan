@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import * as grantModeling from "@/lib/grants/modeling-evidence";
+import { describe, expect, it, vi } from "vitest";
 import {
   buildWorkspaceOperationsSummary,
   loadWorkspaceOperationsSummaryForWorkspace,
@@ -603,4 +604,30 @@ describe("workspace summary reads that failed", () => {
     expect(summary.detail).toContain("plans");
     expect(summary.detail).toContain("model runs");
   });
+});
+
+it("counts prepared unassessed grant evidence separately from absent support", () => {
+  const original = grantModeling.buildProjectGrantModelingEvidenceByProjectId;
+  const spy = vi.spyOn(grantModeling, "buildProjectGrantModelingEvidenceByProjectId").mockImplementation((...args) => {
+    const result = original(...args);
+    for (const evidence of result.values()) evidence.leadComparisonReport.packetFreshness = {
+      label: "Source evidence unassessed", tone: "warning", detail: "Historical totals remain unassessed.",
+    };
+    return result;
+  });
+  try {
+    const summary = buildWorkspaceOperationsSummary({
+      projects: [{ id: "project-1", name: "Retained project", status: "active", deliveryPhase: "delivery", updatedAt: "2026-04-12T20:00:00Z" }],
+      plans: [], programs: [],
+      reports: [{ id: "report-1", projectId: "project-1", title: "Retained packet", status: "generated", latestArtifactKind: "html", generatedAt: "2026-04-12T20:00:00Z", updatedAt: "2026-04-12T20:00:00Z",
+        metadataJson: { sourceContext: { scenarioSetLinks: [{ comparisonSnapshots: [{ status: "ready", indicatorDeltaCount: 3 }] }] } } }],
+      fundingOpportunities: [{ id: "opp-1", title: "Retained opportunity", opportunityStatus: "open", decisionState: "monitor", expectedAwardAmount: 100, closesAt: null, decisionDueAt: null, programId: null, projectId: "project-1", updatedAt: "2026-04-12T20:00:00Z" }],
+      fundingAwards: [], fundingInvoices: [], projectSubmittals: [], projectFundingProfiles: [{ project_id: "project-1", funding_need_amount: 1000 }],
+    });
+    expect(summary.grantModelingSummary?.breakdown).toEqual({ decisionReady: 0, refreshRecommended: 0, thin: 0, noVisibleSupport: 0, unassessed: 1 });
+    expect(summary.grantModelingSummary?.breakdownSummary).toBe("1 opportunity-linked project: 0 appears decision-ready, 0 refresh recommended, 0 appears thin, 1 evidence unassessed, 0 without visible support.");
+    expect(summary.grantModelingSummary?.leadDecisionDetail).toContain("Review unassessed supporting evidence");
+    expect(summary.grantModelingSummary?.leadDecisionDetail).not.toContain("Refresh supporting packet");
+    expect(summary.fullCommandQueue.find((item) => item.key === "review-comparison-backed-reports")?.badges).toContainEqual(expect.objectContaining({ value: "0 ready · 0 refresh · 0 thin · 1 unassessed · 0 none" }));
+  } finally { spy.mockRestore(); }
 });

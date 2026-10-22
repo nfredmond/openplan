@@ -1987,4 +1987,28 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
       expect(screen.queryByText(/The report record could not be read/i)).not.toBeInTheDocument();
     });
   });
+it.each(["legacy", "explicit"] as const)("renders unassessed grant support for a retained %s comparison with no known drift", async (summary) => {
+  selectRetainedScenarioFixture(summary);
+  await renderReport("packet");
+  expectNoGuidedWorkerReads();
+  expect(guidedPageMocks.controls).toHaveBeenLastCalledWith(expect.objectContaining({ driftSummary: expect.objectContaining({ changedCount: 0, labels: [] }) }));
+  const analysis = screen.getByText("Analysis behind a grant case").parentElement!;
+  expect(analysis).toHaveTextContent("Modeling evidence unassessed");
+  expect(analysis).not.toHaveTextContent(/Refresh recommended|should be refreshed|Appears thin|Appears decision-ready|No visible support/);
+  expect(screen.getByText("Review unassessed supporting evidence")).toBeInTheDocument();
+  expect(screen.getByText("Suggested decision: Monitor")).toBeInTheDocument();
+  expect(screen.queryByText("Refresh supporting packet before final pursue language")).not.toBeInTheDocument();
+  expect(screen.queryByText(/Changed sources:/)).not.toBeInTheDocument();
+  expect(screen.getByText("How current the generated file is").parentElement!).toHaveTextContent("Comparison evidence unassessed");
+});
+
+it("renders grant refresh advice for a known retained source change even with unassessed comparison evidence", async () => {
+  selectRetainedScenarioFixture("legacy");
+  scenarioSetsInMock.mockResolvedValue({ data: [{ id: "scenario-set-1", updated_at: "2026-03-28T17:36:00.000Z" }], error: null });
+  await renderReport("packet");
+  expect(screen.getByText("Analysis behind a grant case").parentElement!).toHaveTextContent("Refresh recommended");
+  expect(screen.getByText("Refresh supporting packet before final pursue language")).toBeInTheDocument();
+  expect(screen.getByText("Suggested decision: Monitor")).toBeInTheDocument();
+});
+
 });
