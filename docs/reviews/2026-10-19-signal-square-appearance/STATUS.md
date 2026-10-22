@@ -116,3 +116,39 @@ integration CI and any 0.71 tag/publication. This prepares the bounded appearanc
 increment after published v0.70; it does not close M2c, science or v1. Private
 commands, control failures and restoration receipts remain under
 `pr359-current-main-v071-preparation-20261022-08` on this host.
+
+
+Identified v0.71 candidate view, October 22, 2026 UTC. The first R9 wrapper
+stops before npm because its private destination guard rejects the already
+preserved R7 artifact. That original setup failure remains unchanged. The
+separately admitted continuation corrects only private preparation and performs
+the first actual maintained build, not a second product build.
+
+One npm build passes at e9b2ee855925e8ee20150cbc212cf21e598093a5, application
+tree 7df75024527dd224c8140e8495327c0a220e896e, version 0.71.0 and BUILD_ID
+WMfdR2GPbM4yxsRMtXOyW. Webpack and configured TypeScript pass within the 6 GiB
+cap; elapsed time is 141.040 seconds. No install or standalone compiler runs.
+
+The identified bounded view passes desktop 1440px and phone 390px. Actual
+keyboard selection reaches Signal and Square; settled launcher/card radii are
+zero. Rounded retains nonzero launcher geometry and a 14px card while preserving
+Signal and Dark. Mobile More reaches Appearance, fits onscreen and closes.
+Changing palette preserves corner and light-mode choices. Document scrollWidth
+matches 390px. Inspected opaque launcher text/icon contrast is 17.9375:1 at
+rest and hover. Actual dashboard status spans retain circular corners.
+
+Root inspects desktop and phone captures and reads build, browser and final
+custody receipts. Forty distinct served static responses match build bytes.
+The browser records no console/page/body errors or HTTP errors, with 44 aborted
+requests retained. One server report-only eval CSP warning remains. T3 opens
+the actual local HTTP URL, then two same-step snapshot timeouts permit the
+documented private Chrome fallback. No source repair or additional build runs.
+
+All 18,591 tracked descriptors, raw index, 969 installed records and 66 links
+remain exact through the child handback at 04:14:14.944144 UTC. The complete
+4,212-entry R7 artifact and original R9 packet remain exact. Owned runtime is
+closed, port 3430 is free, and the new 4,216-entry build remains identified.
+Private receipts are under pr359-v071-identified-view-20261022-09-continuation-01.
+This bounded current-candidate check does not replay the full R7 matrix or
+establish full M2c, hosted, scientific, final-main CI or release acceptance.
+Those tiers remain distinct. Root owns publication after the relevant gates.
