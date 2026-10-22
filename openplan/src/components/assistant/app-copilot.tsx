@@ -2191,10 +2191,10 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
         variant="outline"
         size="sm"
         aria-label="Planner Agent"
-        className="op-cart-copilot-launch rounded-full border-[color:color-mix(in_srgb,var(--accent-2)_35%,transparent)] bg-[rgba(7,14,20,0.92)] px-4 text-foreground backdrop-blur-xl hover:border-[color:color-mix(in_srgb,var(--accent-2)_35%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--accent-2)_12%,transparent)] hover:text-foreground"
+        className="op-cart-copilot-launch rounded-full border-[color:color-mix(in_srgb,var(--accent-2)_35%,transparent)] bg-background px-4 text-foreground backdrop-blur-xl hover:border-[color:color-mix(in_srgb,var(--accent-2)_35%,transparent)] hover:bg-background hover:text-foreground"
         onClick={() => setOpen(true)}
       >
-        <Sparkles className="h-4 w-4 text-[color:var(--accent-2)]" />
+        <Sparkles className="h-4 w-4" />
         <span>Planner Agent</span>
       </Button>
 

@@ -28,6 +28,44 @@ migration seeds no admission; profile admission remains CLOSED. Source review
 and ordinary checks do not establish native database, provider, or browser
 acceptance. This entry records pending work, with no new v0.70.0 capability claim.
 
+## 0.71.0 (2026-10-22)
+
+**Signal palette and independent corners.** Appearance adds Signal beside the
+five existing palettes. Rounded and Square remain separate from palette and
+light/dark mode. Defaults remain Cartographic, Rounded and device mode.
+Preferences persist across reloads and propagate between tabs. Square applies
+to the shared application surfaces while selected status symbols stay round.
+The Planner Agent launcher uses matching theme text, icon and background colors.
+
+**No new migrations since v0.70.0.** The tree retains all 429 migration files,
+with the same high-water version `20261019000002`. An installation already at
+v0.70.0 needs no schema addition for this increment. Older installations still
+compare their applied history and follow the earlier upgrade instructions.
+The dependency graph remains unchanged from the joined appearance candidate.
+
+**Verification and limits.** A fresh identified 0.71.0 candidate build passes
+webpack and configured TypeScript. Ordinary front-door and cookie sign-in reach
+Appearance at 1440x900 and 390x844. Keyboard selection, focus return, independent
+palette/mode/corner choices, settled Square and Rounded radii, and the mobile
+More menu work. Inspected Signal launcher text/icon contrast is 17.94:1 at rest
+and hover. Forty distinct served static responses match build bytes. The run
+retains 44 aborted requests and one report-only CSP warning; observed console,
+page and body-reader errors are zero. No clean-system claim follows.
+
+Earlier identified R7 observations separately cover reload, cross-tab propagation
+and device mode, with their original controller failure and successful remaining
+mobile continuation preserved. The current bounded journey does not replay that
+whole matrix. The existing appearance record identifies both builds and their
+limits. A fresh exact-lock npm installation and the maintained dependency audit pass,
+with zero reported advisories at the recorded checkpoint. Final-main and hosted
+delivery retain their separate release gates.
+
+First paint, browser storage-disabled use, mobile keyboard, map/chart geometry,
+universal control coverage and other-palette dark contrast remain unassessed.
+The known Reports jurisdiction-readiness contradiction from v0.70 remains open
+in this appearance increment. Complete M2c, all other roadmap requirements and
+separate nationwide AequilibraE and ActivitySim validation remain open.
+
 ## 0.70.0 (2026-10-21)
 
 **Manual source-page plan proposals.** Document review stages quoted records

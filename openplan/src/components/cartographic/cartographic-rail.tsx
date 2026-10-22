@@ -218,7 +218,7 @@ export function CartographicRail({ groups, accountControl }: CartographicRailPro
                 </section>
               ))}
               <div className="op-cart-navsheet__ft">
-                <ThemeControls />
+                <ThemeControls className="op-cart-navsheet__appearance" />
                 {accountControl}
               </div>
             </div>
