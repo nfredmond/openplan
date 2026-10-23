@@ -8,7 +8,7 @@ import type { ReportArtifactAttachOption } from "./funding-opportunity-applicati
 
 type Preview = { artifactId: string; previewHash: string; snapshotHash: string; sections: { section_key: string; draft_markdown: string }[] };
 const sourcePageSchema = z.object({
-  artifacts: z.array(z.object({ id: z.string().uuid(), reportTitle: z.string(), artifactKind: z.enum(["html", "pdf"]), generatedAt: z.string().nullable() })).max(50),
+  artifacts: z.array(z.object({ id: z.string().uuid(), reportTitle: z.string(), artifactKind: z.enum(["html", "pdf"]), generatedAt: z.string().nullable(), sourceVersion: z.enum(["v1", "v2", "invalid", "absent"]).optional() })).max(50),
   nextCursor: z.string().uuid().nullable(), requiresProject: z.boolean(),
 });
 
@@ -16,7 +16,7 @@ const sourcePageSchema = z.object({
 export function SafetyPlanSeedPanel({ opportunityId, onApplied }: {
   opportunityId: string; onApplied: () => Promise<void>;
 }) {
-  const [artifacts, setArtifacts] = useState<ReportArtifactAttachOption[]>([]);
+  const [artifacts, setArtifacts] = useState<(ReportArtifactAttachOption & { sourceVersion?: string })[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loadingSources, setLoadingSources] = useState(true);
   const [sourceError, setSourceError] = useState<string | null>(null);
@@ -88,7 +88,7 @@ export function SafetyPlanSeedPanel({ opportunityId, onApplied }: {
         onChange={(event) => { setArtifactId(event.target.value); setPreview(null); setMessage(null); setError(null); }}>
         <option value="">Select a generated report</option>
         {artifacts.map((artifact) => <option key={artifact.id} value={artifact.id}>
-          {artifact.reportTitle} · {artifact.generatedAt ?? "Date not recorded"} · {artifact.id}
+          {artifact.reportTitle} · {artifact.sourceVersion === "v2" ? "Input comparison v2, notice mapping unavailable" : artifact.sourceVersion === "invalid" ? "Unsupported or malformed snapshot" : "Safety plan v1"} · {artifact.generatedAt ?? "Date not recorded"} · {artifact.id}
         </option>)}
       </select>
     </label>

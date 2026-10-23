@@ -1365,6 +1365,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
 
     try {
       render(await ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }) }));
+      expect(screen.getByRole("link", { name: "Open Safety evidence and applicability comparison" })).toHaveAttribute("href", "/reports/report-1?safetyComparison=1");
 
       expect(
         consoleErrorSpy.mock.calls.some((call) =>

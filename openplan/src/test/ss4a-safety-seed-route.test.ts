@@ -5,6 +5,9 @@ import { NextRequest } from "next/server";
 import { safetySeedFixture, seedId } from "./fixtures/grants/safety-seed";
 import { buildSafetySeedPreview, SS4A_ARTIFACT_PROJECTION, SS4A_PROJECT_PROJECTION, SS4A_REPORT_PROJECTION, SS4A_SECTION_PROJECTION } from "@/lib/grants/ss4a-safety-seed";
 import { SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION } from "@/lib/safety/crash-evidence";
+import { comparisonFixture, rehashComparison } from "./fixtures/safety/comparison";
+import { buildSafetyComparisonSnapshot } from "@/lib/reports/safety-comparison-snapshot";
+import { SAFETY_V2_NOFO_REFUSAL } from "@/lib/safety/candidate-comparison";
 
 const mocks = vi.hoisted(() => ({ create: vi.fn(), service: vi.fn(), access: vi.fn(), rpc: vi.fn() }));
 vi.mock("@/lib/supabase/server", () => ({ createClient: mocks.create, createServiceRoleClient: mocks.service }));
@@ -17,8 +20,8 @@ const { GET, POST } = safetySeedRoute;
 
 type Result = { count?: number | null; data: unknown; error: { message: string; code?: string } | null };
 function chain(result: Result) {
-  const q = { select: vi.fn(), eq: vi.fn(), not: vi.fn(), lt: vi.fn(), order: vi.fn(), limit: vi.fn(), maybeSingle: vi.fn(), then: (resolve: (value: Result) => unknown) => Promise.resolve(result).then(resolve) };
-  for (const method of ["select", "eq", "not", "lt", "order", "limit"] as const) q[method].mockReturnValue(q);
+  const q = { select: vi.fn(), eq: vi.fn(), not: vi.fn(), or: vi.fn(), lt: vi.fn(), order: vi.fn(), limit: vi.fn(), maybeSingle: vi.fn(), then: (resolve: (value: Result) => unknown) => Promise.resolve(result).then(resolve) };
+  for (const method of ["select", "eq", "not", "or", "lt", "order", "limit"] as const) q[method].mockReturnValue(q);
   q.maybeSingle.mockResolvedValue(result);
   return q;
 }
@@ -39,25 +42,59 @@ function install() {
 }
 beforeEach(() => { vi.clearAllMocks(); rows = safetySeedFixture(); install(); });
 
+function v2Metadata() {
+  const comparison = comparisonFixture();
+  comparison.workspace_id = rows.opportunity.workspace_id; comparison.project_id = rows.project.id; comparison.report_id = rows.report.id;
+  comparison.payload.source.projectId = rows.project.id; rehashComparison(comparison);
+  comparison.payload.source.acquisition.workspace_id = rows.opportunity.workspace_id; comparison.payload.source.acquisition.project_id = rows.project.id; rehashComparison(comparison);
+  return { safetyPlanSnapshotV2: buildSafetyComparisonSnapshot({ comparison, artifactId: rows.artifact.id, reportId: rows.report.id,
+    projectId: rows.project.id, workspaceId: rows.opportunity.workspace_id, generatedAt: rows.artifact.generated_at,
+    projectUpdatedAt: rows.project.updated_at, reportUpdatedAt: rows.report.updated_at }) };
+}
+
+describe("v2 is visible and refuses missing notice mapping", () => {
+  it("pages v2 in the same scoped ordered stream and refuses preview/apply without a legacy fallback", async () => {
+    const metadata = v2Metadata();
+    tables.report_artifacts = chain({ data: [{ id: rows.artifact.id, artifact_kind: "html", generated_at: rows.artifact.generated_at, metadata_json: metadata, reports: { id: rows.report.id, title: "Input comparison" } }], error: null });
+    const page = await GET(new NextRequest("http://localhost/api/source"), context());
+    expect(page.status).toBe(200); expect((await page.json()).artifacts[0].sourceVersion).toBe("v2");
+    expect(tables.report_artifacts.or).toHaveBeenCalledWith("metadata_json->>safetyPlanSnapshotV1.not.is.null,metadata_json->>safetyPlanSnapshotV2.not.is.null");
+    tables.report_artifacts = chain({ data: { ...rows.artifact, metadata_json: metadata }, error: null });
+    for (const operation of ["preview", "apply"]) {
+      const result = await call({ operation, artifactId: rows.artifact.id, ...(operation === "apply" ? { previewHash: "a".repeat(64) } : {}) });
+      expect(result.status).toBe(422); expect((await result.json()).error).toBe(SAFETY_V2_NOFO_REFUSAL);
+    }
+    expect(mocks.rpc).not.toHaveBeenCalled(); expect(tables.safety_crash_ingests.select).not.toHaveBeenCalled();
+  });
+  it("refuses foreign project ownership and dual snapshot keys", async () => {
+    tables.report_artifacts = chain({ data: { ...rows.artifact, metadata_json: { ...rows.artifact.metadata_json, ...v2Metadata() } }, error: null });
+    expect((await call({ operation: "preview", artifactId: rows.artifact.id })).status).toBe(422);
+    tables.report_artifacts = chain({ data: { ...rows.artifact, metadata_json: v2Metadata() }, error: null });
+    tables.reports = chain({ data: null, error: null });
+    expect((await call({ operation: "preview", artifactId: rows.artifact.id })).status).toBe(422);
+    expect(mocks.rpc).not.toHaveBeenCalled();
+  });
+});
+
 describe("linked-project Safety artifact pages", () => {
   it("exports only supported route handlers", () => {
     expect(Object.keys(safetySeedRoute).sort()).toEqual(["GET", "POST"]);
   });
   const get = (suffix = "") => GET(new NextRequest(`http://localhost/api/source${suffix}`), context());
   it("filters before the page bound and reaches older project artifacts with a stable cursor", async () => {
-    const artifacts = Array.from({ length: 51 }, (_, index) => ({ id: seedId(200 - index), artifact_kind: "html", generated_at: rows.artifact.generated_at,
+    const artifacts = Array.from({ length: 51 }, (_, index) => ({ id: seedId(200 - index), artifact_kind: "html", generated_at: rows.artifact.generated_at, metadata_json: rows.artifact.metadata_json,
       reports: { id: rows.report.id, title: "Older linked project report" } }));
     tables.report_artifacts = chain({ data: artifacts, error: null });
     const result = await get(); expect(result.status).toBe(200);
     const page = await result.json(); expect(page.artifacts).toHaveLength(50); expect(page.nextCursor).toBe(artifacts[49].id);
     const q = tables.report_artifacts;
-    expect(q.select).toHaveBeenCalledWith("id, artifact_kind, generated_at, reports!inner(id, title)");
+    expect(q.select).toHaveBeenCalledWith("id, artifact_kind, generated_at, metadata_json, reports!inner(id, title)");
     expect(q.eq).toHaveBeenCalledWith("reports.workspace_id", rows.opportunity.workspace_id);
     expect(q.eq).toHaveBeenCalledWith("reports.project_id", rows.project.id);
-    expect(q.not).toHaveBeenCalledWith("metadata_json->>safetyPlanSnapshotV1", "is", null);
+    expect(q.or).toHaveBeenCalledWith("metadata_json->>safetyPlanSnapshotV1.not.is.null,metadata_json->>safetyPlanSnapshotV2.not.is.null");
     expect(q.order).toHaveBeenCalledWith("id", { ascending: false }); expect(q.limit).toHaveBeenCalledWith(51);
     expect(from).not.toHaveBeenCalledWith("reports");
-    expect(page.artifacts[0]).toEqual({ id: artifacts[0].id, reportTitle: "Older linked project report", artifactKind: "html", generatedAt: rows.artifact.generated_at });
+    expect(page.artifacts[0]).toEqual({ id: artifacts[0].id, reportTitle: "Older linked project report", artifactKind: "html", generatedAt: rows.artifact.generated_at, sourceVersion: "v1" });
     tables.report_artifacts = chain({ data: artifacts.slice(50), error: null });
     const last = await (await get(`?before=${page.nextCursor}`)).json();
     expect(tables.report_artifacts.lt).toHaveBeenCalledWith("id", page.nextCursor);
