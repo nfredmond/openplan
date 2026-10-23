@@ -1,0 +1,119 @@
+import { readFileSync } from "node:fs";
+import { describe, expect, it } from "vitest";
+import { advanceRetainedChatProgress, type RetainedChatProgress } from "@/lib/assistant/chat-stream";
+import { blankComments } from "./migrations/read-migrations";
+const hash = "a".repeat(64);
+const base: RetainedChatProgress = { turnId: "synthetic-turn", released: true, state: "running", cursor: 1, complete: false,
+ texts: [{ stepId: "synthetic-step", text: "Progress only", terminal: "tool_calls", receiptHash: hash }],
+ events: [{ sequence: 1, kind: "model_terminal", body: {}, bodyHash: hash, previousHash: null }] };
+describe("retained progress is not stream EOF success", () => {
+ it("retains progress without declaring completion", () => expect(advanceRetainedChatProgress(null, base).complete).toBe(false));
+ it("requires state and retained stop receipt for completion", () => {
+  expect(() => advanceRetainedChatProgress(null, { ...base, complete: true })).toThrow("chat_progress_terminal_missing");
+  expect(advanceRetainedChatProgress(null, { ...base, state: "succeeded", complete: true, texts: [{ ...base.texts![0], terminal: "stop" }] }).complete).toBe(true);
+ });
+ it("withholds the whole retained body on one lost contributor", () => {
+  const result = advanceRetainedChatProgress(base, { ...base, released: false, state: "access_lost" });
+  expect(result).not.toHaveProperty("texts"); expect(result).not.toHaveProperty("intents"); expect(result).not.toHaveProperty("events");
+ });
+ it("appends only contiguous retained sequences and rejects mismatched hashes", () => {
+  const next = { ...base, cursor: 2, events: [{ sequence: 2, kind: "completed", body: {}, bodyHash: "b".repeat(64), previousHash: hash }] };
+  expect(advanceRetainedChatProgress(base, next).events).toHaveLength(2);
+  expect(() => advanceRetainedChatProgress(base, { ...next, events: [{ ...next.events[0], previousHash: "c".repeat(64) }] })).toThrow("chat_progress_cursor_gap");
+ });
+});
+
+// Ordinary reducer and source assertions. These never execute PostgreSQL.
+describe("bounded retained event pages", () => {
+ const event = (sequence: number) => ({ sequence, kind: "text_delta", body: { text: `part-${sequence}` },
+  bodyHash: sequence.toString(16).padStart(64, "0"), previousHash: sequence > 1 ? (sequence - 1).toString(16).padStart(64, "0") : null });
+ const page = (after: number, total: number): RetainedChatProgress => {
+  const events = Array.from({ length: Math.min(100, Math.max(0, total - after)) }, (_, n) => event(after + n + 1));
+  return { ...base, state: "succeeded", complete: true, texts: [{ ...base.texts![0], terminal: "stop" }],
+   cursor: events.at(-1)?.sequence ?? after, events };
+ };
+ it.each([100, 101, 205])("drains %i events with page replay, empty tail, later append and reconnect", total => {
+  let retained: RetainedChatProgress | null = null;
+  for (let after = 0; after < total; after = retained.cursor) {
+   const next = page(after, total);
+   retained = advanceRetainedChatProgress(retained, next);
+   const replay = advanceRetainedChatProgress(retained, next);
+   expect(replay.events, "replayed pages do not duplicate or drop retained events").toEqual(retained.events);
+   retained = replay;
+  }
+  expect(retained!.events).toEqual(Array.from({ length: total }, (_, n) => event(n + 1)));
+  const empty = advanceRetainedChatProgress(retained, page(total, total));
+  expect(empty.cursor).toBe(total); expect(empty.events).toEqual(retained!.events);
+  const appended = advanceRetainedChatProgress(empty, page(total, total + 1));
+  expect(appended.cursor).toBe(total + 1); expect(appended.events).toHaveLength(total + 1);
+  let reconnected: RetainedChatProgress | null = null;
+  for (let after = 0; after < total + 1; after = reconnected.cursor) reconnected = advanceRetainedChatProgress(reconnected, page(after, total + 1));
+  expect(reconnected).toEqual(appended);
+ });
+ it("rejects the old full-turn cursor on a bounded page before it can skip events", () => {
+  expect(() => advanceRetainedChatProgress(null, { ...page(0, 205), cursor: 205 })).toThrow("chat_progress_cursor_gap");
+  const first = advanceRetainedChatProgress(null, page(0, 205));
+  expect(() => advanceRetainedChatProgress(first, { ...page(100, 205), cursor: 205 })).toThrow("chat_progress_cursor_gap");
+  expect(() => advanceRetainedChatProgress(first, { ...page(100, 205), events: [] })).toThrow("chat_progress_cursor_gap");
+ });
+ it("rejects changed replays and broken boundaries while preserving an older exact page", () => {
+  const first = advanceRetainedChatProgress(null, page(0, 205));
+  const second = advanceRetainedChatProgress(first, page(100, 205));
+  expect(advanceRetainedChatProgress(second, page(0, 205))).toBe(second);
+  const changed = page(0, 205); changed.events![99].body = { text: "changed" };
+  expect(() => advanceRetainedChatProgress(second, changed)).toThrow("chat_progress_chain_invalid");
+  const broken = page(200, 205); broken.events![0].previousHash = hash;
+  expect(() => advanceRetainedChatProgress(second, broken)).toThrow("chat_progress_cursor_gap");
+  expect(() => advanceRetainedChatProgress(null, page(100, 205))).toThrow("chat_progress_cursor_gap");
+ });
+ it("binds the actual SQL read cursor and events to the same limited page", () => {
+  const sql = readFileSync(`${process.cwd()}/supabase/migrations/20261021215752_assistant_chat_turns.sql`, "utf8");
+  const read = sql.slice(sql.indexOf(" IF p_operation='read' THEN"), sql.indexOf(" IF g.status<>'accepted'"));
+  expect(read).toContain("SELECT coalesce(jsonb_agg(to_jsonb(x) ORDER BY sequence),'[]'),coalesce(max(sequence),coalesce((p_payload->>'afterSequence')::bigint,0)) INTO e,n");
+  expect(read).toContain("sequence>coalesce((p_payload->>'afterSequence')::bigint,0) ORDER BY sequence LIMIT 100) x;");
+  expect(read, "SQL cursor must end at the last event actually returned").toContain("'cursor',n,");
+  expect(read).toContain("'events',e,");
+  expect(read).not.toContain("'cursor',t.cursor");
+ });
+ it("audits observational access after all current checks without appending its own progress", () => {
+  const sql = blankComments(readFileSync(`${process.cwd()}/supabase/migrations/20261021215752_assistant_chat_turns.sql`, "utf8"));
+  const access = sql.split("CREATE FUNCTION assistant_chat_private.require_access(")[1].split("END $$;")[0];
+  const branch = access.indexOf(" IF p_purpose IN ('read','intent_read') THEN");
+  expect(branch).toBeGreaterThan(0);
+  const checks = access.slice(0, branch);
+  for (const required of ["assistant_chat_private.actor()", "pg_advisory_xact_lock", "WHERE id=t.grant_id FOR UPDATE", "WHERE id=p_turn FOR UPDATE",
+   "g.digest IS DISTINCT FROM p_digest", "assistant_chat_private.policy_fingerprint(table_oid)", "has_table_privilege", "public.workspace_members",
+   "jsonb_array_elements(e.envelope->'accessAnchors')", "IF NOT okay THEN", "'access_lost',failed,'chat_source_access_lost'",
+   "append_event(t.id,'access_lost','{}')", "capability.admitted", "capability.record_hash", "r.configuration_hash=selection->>'configurationHash'"])
+   expect(checks, required + " remains ahead of the observational audit branch").toContain(required);
+  const normalize = (text: string) => text.replace(/\s+/g, "");
+  expect(normalize(access.slice(branch))).toBe(normalize(`
+   IF p_purpose IN ('read','intent_read') THEN
+    PERFORM assistant_chat_private.record_check(t.id,p_purpose,p_body_hash);
+   ELSE
+    PERFORM assistant_chat_private.append_event(t.id,'scope_checked',jsonb_build_object('purpose',p_purpose,'bindingHash',p_body_hash,
+     'dependencySetHash',assistant_chat_private.dependencies(t.id),'checkId',gen_random_uuid(),'checkedAt',to_char(clock_timestamp() AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')));
+   END IF;
+   RETURN true;
+  `));
+  const ledger = sql.split("CREATE FUNCTION assistant_chat_private.record_check(")[1].split("$$;")[0];
+  expect(ledger).toContain("INSERT INTO public.assistant_chat_access_checks(owner_user_id,workspace_id,turn_id,attempt_id,grant_digest,purpose,exact_body_hash,dependency_set_hash,result)");
+  expect(ledger).toContain("t.owner_user_id,t.workspace_id,t.id,t.attempt_id,g.digest,p_purpose,p_body_hash,assistant_chat_private.dependencies(t.id),'allowed'");
+  const table = sql.split("CREATE TABLE public.assistant_chat_access_checks(")[1].split(");")[0];
+  expect(table).toContain("id uuid PRIMARY KEY DEFAULT gen_random_uuid()");
+  expect(table).toContain("checked_at timestamptz NOT NULL DEFAULT clock_timestamp()");
+ });
+ it("retains independent exact-body release audits in both observational owner paths", () => {
+  const sql = blankComments(readFileSync(`${process.cwd()}/supabase/migrations/20261021215752_assistant_chat_turns.sql`, "utf8"));
+  const session = sql.split("CREATE FUNCTION assistant_chat_private.session(")[1].split("CREATE FUNCTION assistant_chat_private.intent(")[0];
+  const intent = sql.split("CREATE FUNCTION assistant_chat_private.intent(")[1].split("END $$;")[0];
+  expect(session).toContain("require_access(t.id,coalesce(p_payload->>'digest',g.digest),p_operation,coalesce(p_payload->>'bodyHash',g.digest))");
+  const read = session.slice(session.indexOf(" IF p_operation='read' THEN"), session.indexOf(" IF g.status<>'accepted'"));
+  expect(read).toContain("PERFORM assistant_chat_private.record_check(t.id,'transcript_replay',assistant_chat_private.sha(assistant_chat_private.canonical(result))); RETURN result;");
+  expect(read.indexOf("record_check(")).toBeGreaterThan(read.indexOf("result:=jsonb_build_object("));
+  expect(intent).toContain("require_access(i.turn_id,coalesce(p_payload->>'expectedGrantDigest',i.grant_digest),'intent_'||p_operation,i.executable_hash)");
+  const intentRead = intent.slice(intent.indexOf(" IF p_operation='read' THEN"), intent.indexOf(" SELECT role INTO member_role"));
+  expect(intentRead).toContain("PERFORM assistant_chat_private.record_check(i.turn_id,'owner_release',assistant_chat_private.sha(assistant_chat_private.canonical(jsonb_build_object('released',true,'intent',to_jsonb(i)))));");
+  expect(intentRead).toContain("RETURN jsonb_build_object('released',true,'intent',to_jsonb(i));");
+ });
+});

@@ -518,6 +518,135 @@ describe("AppCopilot", () => {
     });
   });
 
+  // jsdom can check event cancellation and retained DOM state, but cannot prove
+  // native Escape defaults, native focus containment, geometry or scrolling.
+  it("prevents Escape default during exact draft approval and renews the same retained intent without POSTs", async () => {
+    const projectId = "33333333-3333-4333-8333-333333333333";
+    const turnId = "44444444-4444-4444-8444-444444444444";
+    const intentId = "55555555-5555-4555-8555-555555555555";
+    navigation.pathname = `/projects/${projectId}`;
+    const action = { kind: "create_project_record", projectId, recordType: "submittal", title: "Synthetic retained draft",
+      submittalType: "progress_report", notes: "Complete original synthetic notes for planner review. No business record is authorized by dismissal.", status: "draft" };
+    const status = { intentId, state: "proposed", executionState: "not_requested", receiptState: "not_checked", originalApprovalId: null, recoveryHref: "/assistant-activity" };
+    const review = { intentId, workspaceId: WORKSPACE_ID, action, executableHash: "a".repeat(64), grantDigest: "b".repeat(64) };
+    let intentReadCount = 0;
+    let holdCancellationRefresh = false, cancellationRefreshStarted = false;
+    let finishCancellationRefresh!: () => void;
+    const cancellationRefresh = new Promise<void>(resolve => { finishCancellationRefresh = resolve; });
+    let finishCancellationStatus!: (response: Response) => void;
+    const cancellationStatus = new Promise<Response>(resolve => { finishCancellationStatus = resolve; });
+    const originalFetch = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementation((input, init) => {
+      const url = String(input);
+      if (url.startsWith("/api/assistant/providers/chat")) {
+        if ((init as RequestInit | undefined)?.method === "POST") throw new Error("No chat write is authorized during retained review");
+        if (url.includes("operation=options")) return jsonResponse({ options: [] });
+        if (url.includes("operation=history")) return jsonResponse({ turns: [{ id: turnId, state: "succeeded" }] });
+        if (url.includes("/intents?")) {
+          intentReadCount += 1;
+          return intentReadCount === 2 ? cancellationStatus : jsonResponse({ status, review });
+        }
+        const retained = () => jsonResponse({ released: true, turnId, state: "succeeded", cursor: 0, complete: true, events: [],
+          texts: [{ stepId: "original-step", text: "Original retained answer.", terminal: "stop", receiptHash: "c".repeat(64) }], intents: [status] });
+        if (holdCancellationRefresh) {
+          holdCancellationRefresh = false; cancellationRefreshStarted = true;
+          return cancellationRefresh.then(retained);
+        }
+        return retained();
+      }
+      return originalFetch(input, init);
+    });
+    await openPanel();
+    const parent = screen.getByRole("dialog");
+    expect(parent.tagName).toBe("DIALOG");
+    fireEvent.click(screen.getByRole("button", { name: /Saved API chat · shared context/ }));
+    const turns = await screen.findByLabelText("Retained chat turns");
+    fireEvent.change(turns, { target: { value: turnId } });
+    const reviewButton = await screen.findByRole("button", { name: "Review exact draft submittal" });
+    reviewButton.focus();
+    fireEvent.click(reviewButton);
+    const sheetElement = await screen.findByRole("dialog", { name: "Approve Planner Agent action" });
+    const sheet = within(sheetElement);
+    expect(sheetElement.tagName, "approval uses the existing native modal shell").toBe("DIALOG");
+    expect(sheetElement).toHaveAttribute("open");
+    const cancel = sheet.getByRole("button", { name: "Cancel" });
+    expect(cancel, "initial approval focus belongs on the safe Cancel control").toHaveFocus();
+    const payload = sheet.getByText("Exactly what you are approving").nextElementSibling as HTMLElement;
+    expect(payload, "full original payload is keyboard scrollable").toHaveAttribute("tabindex", "0");
+    const approve = sheet.getByRole("button", { name: "Approve action" });
+    approve.focus();
+    fireEvent.keyDown(approve, { key: "Tab" });
+    expect(payload).toHaveFocus();
+    fireEvent.keyDown(payload, { key: "Tab", shiftKey: true });
+    expect(approve).toHaveFocus();
+    for (const value of [projectId, action.recordType, action.title, action.notes, action.submittalType, action.status]) {
+      expect(sheet.getByText(value, { exact: true })).toBeInTheDocument();
+    }
+    const escape = new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true });
+    fireEvent(sheet.getByRole("button", { name: "Cancel" }), escape);
+    expect(escape.defaultPrevented, "active approval must cancel the native Escape default").toBe(true);
+    await waitFor(() => expect(sheetElement).not.toBeInTheDocument());
+    await waitFor(() => expect(intentReadCount).toBe(2));
+    expect(reviewButton, "review stays disabled while cancellation status is pending").toBeDisabled();
+    expect(reviewButton).not.toHaveFocus();
+    const retainedPanel = screen.getByRole("region", { name: "Saved API Planner Agent chat" });
+    expect(retainedPanel, "pending cancellation has a programmatic focus target").toHaveAttribute("tabindex", "-1");
+    expect(retainedPanel, "status-pending focus stays on the retained panel").toHaveFocus();
+    expect(parent, "status-pending focus stays inside the native parent").toContainElement(document.activeElement as HTMLElement);
+    expect(sheetElement).not.toContainElement(document.activeElement as HTMLElement);
+    holdCancellationRefresh = true;
+    await act(async () => finishCancellationStatus(jsonResponse({ status, review })));
+    await waitFor(() => expect(cancellationRefreshStarted).toBe(true));
+    expect(reviewButton, "review stays disabled while the retained refresh is pending").toBeDisabled();
+    expect(retainedPanel, "refresh-pending focus stays on the retained panel").toHaveFocus();
+    expect(parent, "refresh-pending focus stays inside the native parent").toContainElement(document.activeElement as HTMLElement);
+    expect(sheetElement).not.toContainElement(document.activeElement as HTMLElement);
+    await act(async () => finishCancellationRefresh());
+    await waitFor(() => expect(reviewButton).toBeEnabled());
+    await waitFor(() => expect(reviewButton, "cancellation restores the original enabled review control").toHaveFocus());
+    expect(parent).toBeInTheDocument();
+    expect(parent).toHaveAttribute("open");
+    expect(turns).toHaveValue(turnId);
+    expect(screen.getByText("Original retained answer.")).toBeInTheDocument();
+    expect(fetchMock.mock.calls.filter(call => (call[1] as RequestInit | undefined)?.method === "POST")).toHaveLength(0);
+
+    // Renew the original review in the same mounted panel, then cancel normally.
+    fireEvent.click(reviewButton);
+    const renewed = within(await screen.findByRole("dialog", { name: "Approve Planner Agent action" }));
+    expect(renewed.getByText(action.notes)).toBeInTheDocument();
+    const intentReads = fetchMock.mock.calls.filter(call => String(call[0]).includes("/intents?"));
+    expect(intentReads.length).toBeGreaterThanOrEqual(3);
+    expect(intentReads.every(call => String(call[0]).includes(`intentId=${intentId}&review=true`))).toBe(true);
+    fireEvent.click(renewed.getByRole("button", { name: "Cancel" }));
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Approve Planner Agent action" })).not.toBeInTheDocument());
+    await waitFor(() => expect(reviewButton).toBeEnabled());
+    await waitFor(() => expect(reviewButton, "Cancel button also restores the same review control").toHaveFocus());
+    expect(fetchMock.mock.calls.filter(call => (call[1] as RequestInit | undefined)?.method === "POST")).toHaveLength(0);
+
+    const ordinaryEscape = new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true });
+    fireEvent(window, ordinaryEscape);
+    expect(ordinaryEscape.defaultPrevented, "Escape without approval must remain available to the native dialog").toBe(false);
+    fireEvent(parent, new Event("cancel", { cancelable: true }));
+    expect(parent).not.toBeInTheDocument();
+  });
+
+  it("does not swallow Escape when the Planner Agent has no pending approval", async () => {
+    render(<AppCopilot workspaceId={WORKSPACE_ID} workspaceName="Foothill COG" />);
+    const launcher = screen.getByRole("button", { name: "Planner Agent" });
+    launcher.focus();
+    fireEvent.click(launcher);
+    await screen.findAllByText("Grounded workspace summary.");
+    const escape = new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true });
+    // Window dispatch isolates the app capture listener from the existing jsdom
+    // dialog shim. It does not stand in for the browser's native cancel action.
+    fireEvent(window, escape);
+    expect(escape.defaultPrevented).toBe(false);
+    const parent = screen.getByRole("dialog");
+    fireEvent(parent, new Event("cancel", { cancelable: true }));
+    expect(parent).not.toBeInTheDocument();
+    expect(launcher, "ordinary parent dismissal returns focus to its launcher").toHaveFocus();
+  });
+
   it("runs an approved chat proposal through the existing approval modal and registry dispatch", async () => {
     await streamProposalReply();
 

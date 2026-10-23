@@ -173,7 +173,7 @@ function foreachBindings(body: string): Bindings[] | null {
   if (close === -1) return null;
 
   const variable = match[1];
-  const values = splitTopLevel(body.slice(open, close), ",").map((cell) => unquoteLiteral(cell));
+  const values = splitTopLevel(body.slice(open, close), ",").map((cell) => unquoteLiteral(cell.replace(/::regclass\s*$/i, "")));
   if (!values.length || values.some((value) => value === null)) return null;
 
   return values.map((value) => ({ [variable]: value as string }));
@@ -325,6 +325,35 @@ function applyFormat(template: string, args: string[]): string | null {
   return next === args.length ? out : null;
 }
 
+export type CatalogPolicy = { table: string; command: string; kind: string; roles: readonly string[]; body: string };
+
+/** Expand the closed authenticated/public SELECT-copy query against prior DDL.
+ * pg_policy has no ORDER BY here. Generated ordinal names are source enumeration
+ * identities; installed ordinal-to-source mappings still require a catalogue.
+ */
+function policyCopyBindings(body: string, catalog: readonly CatalogPolicy[]): Bindings[] | null {
+  const normalized = body.replace(/\s+/g, " ");
+  if (!/FOR p IN SELECT \* FROM pg_policy WHERE polrelid=t AND polcmd IN \('r','\*'\) AND \(0=ANY\(polroles\) OR 'authenticated'::regrole::oid=ANY\(polroles\)\) LOOP/i.test(normalized)) return null;
+  if (!/n int\s*:=\s*0\s*;/.test(normalized) || !/n\s*:=\s*n\s*\+\s*1\s*;/.test(normalized)) return null;
+  const tables = foreachBindings(body);
+  if (!tables || tables.some(row => !/^public\.[a-z_][a-z0-9_]*$/.test(row.t ?? ""))) return null;
+  const qualification = (sql: string) => {
+    const using = sql.match(/\bUSING\s*\(/i);
+    if (!using) return "true";
+    const open = (using.index ?? 0) + using[0].length - 1;
+    const close = matchingParen(sql, open);
+    if (close === -1) throw new Error("Unterminated source policy qualification");
+    return sql.slice(open + 1, close - 1);
+  };
+  let ordinal = 0;
+  return tables.flatMap(row => catalog.filter(policy => policy.table === row.t.slice(7) &&
+    ["SELECT", "ALL"].includes(policy.command) && policy.roles.some(role => ["public", "authenticated"].includes(role)))
+    .map(policy => ({ ...row, n: String(++ordinal),
+      "CASE WHEN p.polpermissive THEN 'PERMISSIVE' ELSE 'RESTRICTIVE' END": policy.kind,
+      "coalesce(pg_get_expr(p.polqual,t),'true')": qualification(policy.body),
+    })));
+}
+
 type ExpandOptions = {
   /** What the rendered statements are, for the error message. */
   noun: string;
@@ -332,6 +361,7 @@ type ExpandOptions = {
   interesting: (argument: string) => boolean;
   /** Every table the schema declares — required only by Form C. */
   tables?: readonly string[];
+  catalog?: (offset: number, preceding: readonly ExpandedStatement[]) => readonly CatalogPolicy[];
 };
 
 function expandDynamicStatements(file: string, sql: string, options: ExpandOptions): ExpandedStatement[] {
@@ -344,7 +374,10 @@ function expandDynamicStatements(file: string, sql: string, options: ExpandOptio
     const unexpandable = (offset: number, detail: string) =>
       new UnexpandableDynamicSqlError(file, lineAt(sql, block.offset + offset), detail, options.noun);
 
-    const rows =
+    if (/\bFROM\s+pg_policy\b/i.test(block.body) && !options.catalog) throw unexpandable(0, "a policy catalogue query without prior policy DDL");
+    const copied = /\bFROM\s+pg_policy\b/i.test(block.body) ? policyCopyBindings(block.body, options.catalog!(block.offset, statements)) : null;
+    if (/\bFROM\s+pg_policy\b/i.test(block.body) && !copied) throw unexpandable(0, "an unsupported policy catalogue query");
+    const rows = copied ??
       foreachBindings(block.body) ??
       forPgTablesBindings(block.body, options.tables ?? []) ??
       forRecordBindings(block.body) ??
@@ -416,9 +449,10 @@ function expandDynamicStatements(file: string, sql: string, options: ExpandOptio
   return statements;
 }
 
-export function expandDynamicPolicyStatements(file: string, sql: string): ExpandedStatement[] {
+export function expandDynamicPolicyStatements(file: string, sql: string, catalog?: ExpandOptions["catalog"]): ExpandedStatement[] {
   return expandDynamicStatements(file, sql, {
     noun: "policy",
+    catalog,
     interesting: (argument) => /\b(?:CREATE|DROP)\s+POLICY\b/i.test(argument),
   });
 }
@@ -444,4 +478,9 @@ export function expandDynamicGrantStatements(
     interesting: (argument) =>
       /\b(?:GRANT|REVOKE)\b/i.test(argument) && !/\bON\s+(?:ALL\s+)?SEQUENCES?\b/i.test(argument),
   });
+}
+
+/** RLS state must include literal-array dynamic ALTERs, just like policies. */
+export function expandDynamicRlsStatements(file: string, sql: string): ExpandedStatement[] {
+  return expandDynamicStatements(file, sql, { noun: "RLS statement", interesting: argument => /\bALTER\s+TABLE\b[\s\S]*\b(?:ENABLE|DISABLE)\s+ROW\s+LEVEL\s+SECURITY\b/i.test(argument) });
 }

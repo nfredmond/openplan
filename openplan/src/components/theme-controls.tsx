@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, Monitor, Moon, Palette, Sun } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 import { useTheme } from "@/components/theme-provider";
 import type { PaletteDefinition } from "@/lib/theme/palettes";
@@ -42,10 +42,12 @@ function swatchFor(palette: PaletteDefinition, mode: "light" | "dark") {
 }
 
 export function ThemeControls({ className = "" }: { className?: string }) {
-  const { theme, resolvedTheme, setTheme, palette, palettes, setPalette } = useTheme();
+  const { theme, resolvedTheme, setTheme, palette, palettes, setPalette, corners, setCorners } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const paletteRef = useRef<HTMLDivElement | null>(null);
+  const triggerRef = useRef<HTMLButtonElement | null>(null);
+  const chooserId = useId();
 
   useEffect(() => {
     // The rendered state depends on localStorage, which the server cannot read.
@@ -55,12 +57,16 @@ export function ThemeControls({ className = "" }: { className?: string }) {
 
   useEffect(() => {
     if (!paletteOpen) return;
+    paletteRef.current?.querySelector<HTMLElement>('[aria-selected="true"]')?.focus();
 
     function handlePointerDown(event: MouseEvent) {
       if (!paletteRef.current?.contains(event.target as Node)) setPaletteOpen(false);
     }
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") setPaletteOpen(false);
+      if (event.key === "Escape") {
+        setPaletteOpen(false);
+        triggerRef.current?.focus();
+      }
     }
 
     document.addEventListener("mousedown", handlePointerDown);
@@ -144,7 +150,15 @@ export function ThemeControls({ className = "" }: { className?: string }) {
           type="button"
           onClick={() => setPaletteOpen((open) => !open)}
           aria-expanded={paletteOpen}
-          aria-haspopup="listbox"
+          ref={triggerRef}
+          aria-haspopup="dialog"
+          aria-controls={paletteOpen ? chooserId : undefined}
+          onKeyDown={(event) => {
+            if (event.key === "ArrowDown") {
+              event.preventDefault();
+              setPaletteOpen(true);
+            }
+          }}
           data-testid="theme-palette-trigger"
           /*
             The palette NAME is not shown until the menu is open. Knowing you are
@@ -155,8 +169,8 @@ export function ThemeControls({ className = "" }: { className?: string }) {
             wrapping. The swatch identifies the palette; the name is available
             the moment it could matter, which is when you are choosing.
           */
-          title={`Colour palette: ${activePalette.label}`}
-          aria-label={`Colour palette: ${activePalette.label}`}
+          title={`Appearance: ${activePalette.label}, ${corners} corners`}
+          aria-label={`Appearance: ${activePalette.label}, ${corners} corners`}
           className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground"
         >
           <Palette className="h-4 w-4 shrink-0" strokeWidth={1.9} />
@@ -169,11 +183,39 @@ export function ThemeControls({ className = "" }: { className?: string }) {
 
         {paletteOpen ? (
           <div
-            role="listbox"
-            aria-label="Colour palette"
+            id={chooserId}
+            role="dialog"
+            aria-label="Appearance"
             data-testid="theme-palette-list"
-            className="absolute right-0 top-[calc(100%+0.5rem)] z-50 w-64 rounded-xl border border-border/70 bg-popover p-1.5 shadow-[0_24px_48px_rgba(0,0,0,0.22)]"
+            className="theme-appearance-menu absolute right-0 top-[calc(100%+0.5rem)] z-50 max-h-[calc(100dvh-6rem)] w-64 max-w-[calc(100vw-2rem)] overflow-y-auto rounded-xl border border-border/70 bg-popover p-1.5 shadow-[0_24px_48px_rgba(0,0,0,0.22)]"
           >
+            <div role="group" aria-label="Corners" className="mb-1.5 border-b border-border px-2.5 pb-2 pt-1">
+              <span className="mb-1 block text-xs font-semibold text-foreground">Corners</span>
+              <div className="flex gap-1">
+                {(["rounded", "square"] as const).map((choice) => (
+                  <button
+                    key={choice}
+                    type="button"
+                    aria-pressed={corners === choice}
+                    onClick={() => setCorners(choice)}
+                    className={`flex-1 rounded-md px-2.5 py-1.5 text-xs ${
+                      corners === choice ? "bg-primary text-primary-foreground" : "text-foreground hover:bg-secondary"
+                    }`}
+                  >
+                    {choice === "rounded" ? "Rounded" : "Square"}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div role="listbox" aria-label="Colour palette" onKeyDown={(event) => {
+              if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+              event.preventDefault();
+              const options = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="option"]'));
+              const index = options.indexOf(document.activeElement as HTMLButtonElement);
+              const next = event.key === "Home" ? 0 : event.key === "End" ? options.length - 1
+                : (index + (event.key === "ArrowDown" ? 1 : -1) + options.length) % options.length;
+              options[next]?.focus();
+            }}>
             {palettes.map((entry) => {
               const swatch = swatchFor(entry, resolvedTheme);
               const isCurrent = entry.id === palette;
@@ -187,6 +229,7 @@ export function ThemeControls({ className = "" }: { className?: string }) {
                   onClick={() => {
                     setPalette(entry.id);
                     setPaletteOpen(false);
+                    triggerRef.current?.focus();
                   }}
                   className={`flex w-full items-start gap-2.5 rounded-lg px-2.5 py-2 text-left transition-colors ${
                     isCurrent ? "bg-secondary" : "hover:bg-secondary/60"
@@ -217,6 +260,7 @@ export function ThemeControls({ className = "" }: { className?: string }) {
                 </button>
               );
             })}
+            </div>
           </div>
         ) : null}
       </div>

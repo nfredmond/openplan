@@ -216,6 +216,13 @@ const DEDICATED_LIVE_RLS_PROBES = new Set([
   "workspace_provider_api_revisions",
   "assistant_provider_connections",
   "assistant_provider_turns",
+  // provider-chat-custody-native: both original approval/receipt variants probe all four direct operations
+  // as owner/outsider/anon on populated rows, plus owner RPC reads and nonowner RPC refusals.
+  "assistant_action_approvals",
+  "assistant_chat_access_checks",
+  "assistant_chat_grants",
+  "assistant_chat_proposal_intents",
+  "assistant_chat_turns",
   // project-map-packages-rls: every member reads, outsiders and anon do not, no direct writes, locked state functions.
   "project_map_packages",
   "project_map_package_files",
@@ -1780,6 +1787,11 @@ describe("workspace RLS isolation inventory", () => {
       "workspace_provider_api_revisions",
       "assistant_provider_connections",
       "assistant_provider_turns",
+      "assistant_action_approvals",
+      "assistant_chat_access_checks",
+      "assistant_chat_grants",
+      "assistant_chat_proposal_intents",
+      "assistant_chat_turns",
       "project_map_packages",
       "project_map_package_files",
       "program_work_program_sources",
