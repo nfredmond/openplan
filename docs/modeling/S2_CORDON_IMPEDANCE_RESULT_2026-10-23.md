@@ -870,3 +870,261 @@ keeps the round 1 scientific sections byte-identical. The new lock must be
 committed before scientific execution. At this preparation checkpoint no real
 county assignment, receipt or result exists. Historical closures match
 190/190 and 201/201 files, and the prior 49,421 report bytes remain intact.
+
+### Sealed execution and flow sanity check
+
+The second successor completes the sealed protocol with `evaluated_once` and
+`rejected`. Development decision: **retire**. Scientific accuracy
+remains **inconclusive**. All five preparations and all 11 assignments complete.
+The validator accepts the registered arithmetic, not a scientific accuracy claim.
+
+Preregistration commit: `60bc3874d907e7321feb54abb34f061259193724`.
+Lock commit, pushed before execution: `5c23d44931141c8fa35a26640a7f8f653f61376b`.
+
+Lock SHA-256: `9757977bbc41ab42ba232235e6d0a87df5381ae1b33a18964ddf19777c312ba9`.
+Receipt SHA-256: `7def6a935709480e18b887f3248f5bdaddde6dc33e4612dca2775dd5d21d02c9`.
+Aggregate SHA-256: `4adf3df8cf164b32d26ea1f8fc9fa59c210ee73c742ad008012efb5c5d086e3f`.
+
+Exact command, run once from this checkout:
+
+```bash
+systemd-run --user --scope -p MemoryMax=6G -p MemorySwapMax=0 /home/nathaniel/.local/state/openplan/s2-cordon-py311-round5-20261023/venv/bin/python3 -B scripts/research/sealed_study.py run data/modeling/s2-cordon-py311-round5-2026-10-23/lock.json
+```
+
+The [execution precheck](../../data/modeling/s2-cordon-py311-round5-2026-10-23/execution-precheck.json)
+confirms all 215 closure files and both command entry points exist, the archive
+hash matches, all 30 member records remain unchanged, and receipt/result paths
+are absent before execution. The candidate output is deliberately absent until
+the evaluator writes it. The scratch directory exists. The live scope record
+confirms `run-p1208951-i59793145.scope`, MemoryMax 6,442,450,944 bytes and
+MemorySwapMax 0.
+
+Evaluator exit: 0, signal: None, peak RSS:
+1,114,337,280 bytes. Stdout: 0 bytes; stderr:
+952193 bytes, SHA-256 `c7cb17fb29f1c648b861c06b7e532bc878ef2b60e2fadc71946b3d2efd98aa93`.
+The protocol retains stream hashes, not stderr text; its contents remain unknown.
+
+The [read-only sanity record](../../data/modeling/s2-cordon-py311-round5-2026-10-23/flow-sanity.json)
+checks all 11 new link outputs before interpreting county scores. All use
+`class_pce=1` and peak factor 0.10. Daily PCE agrees with class vehicle flow
+divided by 0.10, including both directions. The output contains vehicle flows,
+not capacity ratios. Positive-link medians and upper ranges have daily traffic
+units and scale; very small positive flows remain in the record. This check
+does not establish local traffic accuracy or annual-average-day comparability.
+
+The station ratio is the median modeled daily corridor flow divided by the
+published count, across every matched station including zeros. It is diagnostic,
+not a fitted scalar. Baseline/candidate order applies below.
+
+| County | Positive-link median daily vehicles | Positive-link 95th percentile daily vehicles | Maximum daily vehicles | Median modeled/observed ratio | Maximum PCE versus class-daily error |
+|---|---:|---:|---:|---:|---:|
+| Merced | 5827.506499/5960.483343 | 37163.164544/35374.676326 | 81359.147567/71461.857924 | 1.608085/1.538469 | 0 |
+| San Benito | 3400.533813/3394.457438 | 28225.352097/27774.157542 | 60651.109457/57642.288263 | 0.631708/0.627092 | 0 |
+| Tulare | 5141.187143/5122.673609 | 28244.433224/27802.461426 | 78048.114090/77718.318976 | 1.753845/1.753409 | 0 |
+| Broomfield | 5795.753453/5258.491641 | 25487.605747/22605.223367 | 49279.520000/43133.107708 | 0.376348/0.406477 | 0 |
+| Pueblo | 3696.105379/3618.668932 | 27885.827573/27116.483981 | 47954.960045/46468.151464 | 1.358120/1.326691 | 0 |
+
+### County results and unchanged progression rules
+
+Raw APE means absolute percent error against published counts. Improvement is
+baseline median APE minus candidate median APE, in percentage points. These
+are exposed development diagnostics. No pooled measure substitutes for a county.
+
+| County | Split | Matched | Unmatched/excluded | Baseline APE (%) | Candidate APE (%) | Improvement (points) | Loaded stations baseline/candidate | Decision and reasons |
+|---|---|---:|---:|---:|---:|---:|---:|---|
+| Merced | diagnosis | 78 | 27 | 79.260000 | 69.935000 | 9.325000 | 75/75 | advance: all criteria pass |
+| San Benito | evaluation | 18 | 9 | 71.960000 | 73.440000 | -1.480000 | 16/16 | retire: evaluation_improvement_below_5_points, road_class_worsened:motorway |
+| Tulare | evaluation | 140 | 42 | 94.080000 | 93.550000 | 0.530000 | 131/132 | retire: evaluation_improvement_below_5_points, road_class_worsened:secondary, road_class_worsened:tertiary |
+| Broomfield | diagnosis | 21 | 0 | 78.590000 | 76.620000 | 1.970000 | 18/18 | advance: all criteria pass |
+| Pueblo | evaluation | 80 | 5 | 45.720000 | 41.875000 | 3.845000 | 77/77 | retire: evaluation_improvement_below_5_points |
+
+Uncertainty-aware excess APE remains unavailable for all 337 matched stations.
+All 83 unmatched or excluded observations remain in coverage. None of the
+five inputs supplies documented observation intervals and comparable model
+day/year. No interval is invented, and no uncertainty adjustment rescues the
+registered raw-error decision.
+
+| County | Median signed residual, vehicles/day | Median absolute residual, vehicles/day | Uncertainty-aware excess APE | Affected matched observations |
+|---|---:|---:|---|---:|
+| Merced | 10888.450000/8377.100000 | 18494.150000/17714.700000 | unavailable/unavailable | 78/78 |
+| San Benito | -6624.250000/-6542.600000 | 15041.750000/14815.800000 | unavailable/unavailable | 18/18 |
+| Tulare | 7692.650000/7898.850000 | 13252.500000/13472.300000 | unavailable/unavailable | 140/140 |
+| Broomfield | -17000.000000/-17000.000000 | 21501.400000/18303.200000 | unavailable/unavailable | 21/21 |
+| Pueblo | 6500.850000/6191.350000 | 9262.950000/8529.000000 | unavailable/unavailable | 80/80 |
+
+### Every scored road class remains visible
+
+Values use baseline/candidate order. A class with fewer than five stations
+still appears, although the preregistered class non-inferiority rule applies
+at five stations. Missing count coverage is not a zero-error result.
+
+| County | Road class | Matched | Median APE (%) | Signed residual, vehicles/day | Absolute residual, vehicles/day | Loaded stations | Uncertainty-aware excess APE |
+|---|---|---:|---:|---:|---:|---:|---|
+| Merced | motorway | 29 | 57.870000/53.230000 | -6379.400000/-9522.700000 | 29156.000000/27679.700000 | 28/28 | unavailable for 29/29 |
+| Merced | primary | 33 | 144.770000/132.670000 | 12333.300000/10827.100000 | 12609.000000/10830.800000 | 33/33 | unavailable for 33/33 |
+| Merced | secondary | 2 | 100.000000/100.000000 | -2100.000000/-2100.000000 | 2100.000000/2100.000000 | 0/0 | unavailable for 2/2 |
+| Merced | tertiary | 1 | 27.780000/25.990000 | 2361.500000/2209.200000 | 2361.500000/2209.200000 | 1/1 | unavailable for 1/1 |
+| Merced | trunk | 13 | 123.060000/91.980000 | 34272.900000/30812.400000 | 34272.900000/30812.400000 | 13/13 | unavailable for 13/13 |
+| San Benito | motorway | 5 | 60.310000/63.980000 | -34584.600000/-36749.000000 | 34584.600000/36749.000000 | 4/4 | unavailable for 5/5 |
+| San Benito | primary | 6 | 207.325000/180.125000 | 14792.300000/13043.850000 | 14792.300000/13043.850000 | 5/5 | unavailable for 6/6 |
+| San Benito | secondary | 2 | 99.315000/99.350000 | -20902.100000/-20906.800000 | 20902.100000/20906.800000 | 2/2 | unavailable for 2/2 |
+| San Benito | tertiary | 1 | 51.160000/52.790000 | -14581.900000/-15043.900000 | 14581.900000/15043.900000 | 1/1 | unavailable for 1/1 |
+| San Benito | trunk | 4 | 26.750000/26.230000 | -4826.350000/-4887.150000 | 5926.700000/5905.450000 | 4/4 | unavailable for 4/4 |
+| Tulare | motorway | 26 | 36.805000/36.605000 | -4234.500000/-8434.200000 | 25956.800000/25118.400000 | 26/26 | unavailable for 26/26 |
+| Tulare | primary | 69 | 146.140000/145.100000 | 13404.300000/12849.300000 | 17704.600000/17776.000000 | 67/67 | unavailable for 69/69 |
+| Tulare | secondary | 35 | 97.200000/99.930000 | -567.300000/-572.100000 | 5237.300000/5237.300000 | 28/29 | unavailable for 35/35 |
+| Tulare | tertiary | 5 | 86.070000/89.510000 | -22379.400000/-23273.600000 | 22379.400000/23273.600000 | 5/5 | unavailable for 5/5 |
+| Tulare | trunk | 5 | 313.900000/305.860000 | 36419.000000/35954.400000 | 36419.000000/35954.400000 | 5/5 | unavailable for 5/5 |
+| Broomfield | motorway | 5 | 75.790000/76.620000 | -65098.900000/-66757.300000 | 65098.900000/66757.300000 | 5/5 | unavailable for 5/5 |
+| Broomfield | primary | 8 | 78.980000/59.640000 | -1449.050000/-7351.750000 | 20075.300000/17055.800000 | 7/7 | unavailable for 8/8 |
+| Broomfield | secondary | 1 | 46.370000/57.280000 | -7418.400000/-9164.300000 | 7418.400000/9164.300000 | 1/1 | unavailable for 1/1 |
+| Broomfield | tertiary | 3 | 100.000000/100.000000 | -17000.000000/-17000.000000 | 17000.000000/17000.000000 | 1/1 | unavailable for 3/3 |
+| Broomfield | trunk | 4 | 91.980000/81.725000 | 3258.050000/487.150000 | 20501.400000/17311.400000 | 4/4 | unavailable for 4/4 |
+| Pueblo | motorway | 26 | 37.155000/37.455000 | 11295.800000/9803.400000 | 15898.950000/13832.000000 | 26/26 | unavailable for 26/26 |
+| Pueblo | primary | 34 | 40.755000/37.300000 | 7822.850000/7149.000000 | 7892.800000/7333.850000 | 34/34 | unavailable for 34/34 |
+| Pueblo | secondary | 12 | 255.695000/248.205000 | 5048.750000/4953.300000 | 5722.600000/5633.300000 | 12/12 | unavailable for 12/12 |
+| Pueblo | tertiary | 2 | 100.000000/100.000000 | -24500.000000/-24500.000000 | 24500.000000/24500.000000 | 0/0 | unavailable for 2/2 |
+| Pueblo | trunk | 6 | 47.580000/44.605000 | 4167.250000/4113.850000 | 5813.950000/5266.150000 | 5/5 | unavailable for 6/6 |
+
+| County | Network class | Links | Loaded baseline/candidate | Unloaded baseline/candidate |
+|---|---|---:|---:|---:|
+| Merced | centroid_connector | 213 | 191/191 | 22/22 |
+| Merced | construction | 127 | 0/0 | 127/127 |
+| Merced | living_street | 3 | 0/0 | 3/3 |
+| Merced | motorway | 1183 | 620/565 | 563/618 |
+| Merced | pedestrian | 86 | 0/0 | 86/86 |
+| Merced | primary | 3283 | 1378/1254 | 1905/2029 |
+| Merced | residential | 40682 | 982/960 | 39700/39722 |
+| Merced | rest_area | 4 | 0/0 | 4/4 |
+| Merced | secondary | 5535 | 1813/1771 | 3722/3764 |
+| Merced | service | 34915 | 56/56 | 34859/34859 |
+| Merced | services | 12 | 0/0 | 12/12 |
+| Merced | tertiary | 8119 | 1440/1380 | 6679/6739 |
+| Merced | trunk | 635 | 491/491 | 144/144 |
+| Merced | unclassified | 3953 | 158/160 | 3795/3793 |
+| San Benito | centroid_connector | 60 | 49/49 | 11/11 |
+| San Benito | construction | 1 | 0/0 | 1/1 |
+| San Benito | living_street | 42 | 0/0 | 42/42 |
+| San Benito | motorway | 609 | 198/196 | 411/413 |
+| San Benito | pedestrian | 51 | 0/0 | 51/51 |
+| San Benito | primary | 695 | 184/184 | 511/511 |
+| San Benito | residential | 13688 | 176/172 | 13512/13516 |
+| San Benito | rest_area | 3 | 0/0 | 3/3 |
+| San Benito | secondary | 2644 | 394/389 | 2250/2255 |
+| San Benito | service | 11360 | 17/11 | 11343/11349 |
+| San Benito | services | 2 | 0/0 | 2/2 |
+| San Benito | tertiary | 3446 | 502/506 | 2944/2940 |
+| San Benito | trunk | 682 | 344/344 | 338/338 |
+| San Benito | unclassified | 757 | 0/0 | 757/757 |
+| Tulare | bridleway | 7 | 0/0 | 7/7 |
+| Tulare | centroid_connector | 333 | 300/298 | 33/35 |
+| Tulare | construction | 132 | 1/1 | 131/131 |
+| Tulare | living_street | 124 | 0/0 | 124/124 |
+| Tulare | motorway | 824 | 729/724 | 95/100 |
+| Tulare | primary | 3577 | 2569/2567 | 1008/1010 |
+| Tulare | residential | 32350 | 702/676 | 31648/31674 |
+| Tulare | rest_area | 1 | 0/0 | 1/1 |
+| Tulare | secondary | 5942 | 4297/4244 | 1645/1698 |
+| Tulare | service | 32377 | 39/39 | 32338/32338 |
+| Tulare | services | 3 | 0/0 | 3/3 |
+| Tulare | tertiary | 8988 | 3666/3631 | 5322/5357 |
+| Tulare | trunk | 489 | 234/233 | 255/256 |
+| Tulare | unclassified | 5543 | 723/731 | 4820/4812 |
+| Broomfield | bus_stop | 2 | 0/0 | 2/2 |
+| Broomfield | centroid_connector | 96 | 85/85 | 11/11 |
+| Broomfield | construction | 91 | 0/0 | 91/91 |
+| Broomfield | living_street | 75 | 0/0 | 75/75 |
+| Broomfield | motorway | 742 | 375/375 | 367/367 |
+| Broomfield | pedestrian | 4 | 0/0 | 4/4 |
+| Broomfield | planned | 5 | 0/0 | 5/5 |
+| Broomfield | primary | 3039 | 818/818 | 2221/2221 |
+| Broomfield | residential | 23146 | 119/128 | 23027/23018 |
+| Broomfield | secondary | 3643 | 926/938 | 2717/2705 |
+| Broomfield | service | 12898 | 2/4 | 12896/12894 |
+| Broomfield | tertiary | 3703 | 301/298 | 3402/3405 |
+| Broomfield | trunk | 238 | 200/200 | 38/38 |
+| Broomfield | unclassified | 1544 | 57/57 | 1487/1487 |
+| Pueblo | centroid_connector | 198 | 165/165 | 33/33 |
+| Pueblo | construction | 77 | 0/0 | 77/77 |
+| Pueblo | living_street | 47 | 0/0 | 47/47 |
+| Pueblo | motorway | 621 | 467/466 | 154/155 |
+| Pueblo | pedestrian | 3 | 0/0 | 3/3 |
+| Pueblo | primary | 824 | 737/737 | 87/87 |
+| Pueblo | residential | 14904 | 579/570 | 14325/14334 |
+| Pueblo | road | 3 | 1/1 | 2/2 |
+| Pueblo | secondary | 1502 | 1259/1236 | 243/266 |
+| Pueblo | service | 14325 | 22/22 | 14303/14303 |
+| Pueblo | services | 1 | 0/0 | 1/1 |
+| Pueblo | tertiary | 3354 | 1454/1440 | 1900/1914 |
+| Pueblo | trunk | 936 | 590/589 | 346/347 |
+| Pueblo | unclassified | 1583 | 220/219 | 1363/1364 |
+
+### Convergence and repeat determinism
+
+| County | Arm | Iterations | Final relative gap | Converged |
+|---|---|---:|---:|---|
+| Merced | baseline | 41 | 0.000482686045 | True |
+| Merced | candidate | 37 | 0.000466567940 | True |
+| San Benito | baseline | 128 | 0.000467925865 | True |
+| San Benito | candidate | 132 | 0.000486724979 | True |
+| San Benito | repeat | 132 | 0.000486724979 | True |
+| Tulare | baseline | 80 | 0.000455896765 | True |
+| Tulare | candidate | 82 | 0.000422417907 | True |
+| Broomfield | baseline | 14 | 0.000290918141 | True |
+| Broomfield | candidate | 11 | 0.000350972101 | True |
+| Pueblo | baseline | 25 | 0.000410838195 | True |
+| Pueblo | candidate | 27 | 0.000471251579 | True |
+
+San Benito candidate/repeat median APE difference is
+0.000000000000 percentage points, against the unchanged
+0.1-point limit. Link-volume CSV hashes match:
+True.
+
+
+### Disposition, custody and remaining limits
+
+**Retire the candidate from advancement under this preregistration.** All three
+evaluation counties miss the five-point improvement rule. San Benito motorway
+median APE worsens by 3.670 points; Tulare secondary worsens by 2.730 and
+tertiary by 3.440. Each class has at least five matched stations and exceeds
+the unchanged one-point worsening limit. Merced and Broomfield pass their
+diagnosis rules, but cannot rescue those failures. No county loses a loaded
+observed station. All assignments converge, candidate cells change, conservation
+holds, and repeat is deterministic. Those checks do not override failed criteria.
+
+This corrected development comparison does not show the round 2 capacity-ratio
+artifact. Across all 11 outputs, total and directional PCE versus expanded
+class-flow differences are exactly zero at retained CSV precision. Positive-link
+medians span 3,394 to 5,960 daily vehicles, and maxima span 43,133 to 81,359.
+These are plausible daily flow magnitudes, not evidence that each local road
+is modeled accurately. The raw residuals and observation limits remain material.
+The read-only sanity scope is `run-p1306269-i59894438.scope`; all 33 output
+files exist before inspection. No output is repaired or rescored to change the
+registered decision. The sanity script records both volume and capacity-ratio
+distributions and retains all zero-flow matches in its station ratios.
+
+The [post-execution preservation record](../../data/modeling/s2-cordon-py311-round5-2026-10-23/post-execution-preservation.json)
+confirms **190/190 round 1, 201/201 round 2 and 215/215 current closure files**.
+All **8,353 recorded installed files** and the interpreter hash match the
+runtime manifest. All 30 original member records and the archive hash match.
+The original 49,421-byte result-report prefix remains unchanged. Scientific
+preregistration sections remain byte-identical to round 1. This round changes
+no existing source under `scripts/` or `workers/`; the lead's import projection
+is preserved. `git diff --check` passes.
+
+The runtime manifest, prechecks, mutation proof, lock, receipt, aggregate,
+flow sanity record and preservation accounting remain versioned under
+`data/modeling/s2-cordon-py311-round5-2026-10-23/`. Retained county diagnostics
+remain under `/home/nathaniel/.local/state/openplan/s2-cordon-py311-round5-20261023/execution/`.
+No frozen predecessor byte, receipt, negative result or consumed partition is
+changed. No holdout source is opened. ActivitySim does not run; methods are
+never averaged. No scalar, default, criterion or claim tier changes.
+
+Keep PR #375 draft and the opt-in candidate off by default. S2 remains incomplete.
+Uncertainty-aware accuracy, model day/year comparability, input-stage scientific
+validity, independent geographic acceptance and nationwide accuracy remain
+unverified. Historical runtime gaps in the round 4 audit remain unresolved.
+Full worker delivery, full app QA, browser, database, hosted operation and
+machine-crash recovery are not tested. No `next build`, Docker stack, production,
+Vercel, Railway, managed Supabase or secret is accessed. This round does not
+authorize another experiment or select a successor from new evidence.
