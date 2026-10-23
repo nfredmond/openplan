@@ -5,6 +5,7 @@ import { SafetyPlanSeedPanel } from "@/components/grants/safety-plan-seed-panel"
 import { SAFETY_SEED_CAVEAT } from "@/lib/grants/safety-seed-origin";
 import { buildSafetySeedPreview } from "@/lib/grants/ss4a-safety-seed";
 import { safetySeedFixture } from "./fixtures/grants/safety-seed";
+import { SAFETY_V2_NOFO_REFUSAL } from "@/lib/safety/candidate-comparison";
 
 const rows = safetySeedFixture(); const preview = buildSafetySeedPreview(rows);
 const artifacts = [{ id: rows.artifact.id, reportTitle: "Example Safety report", artifactKind: "html", generatedAt: rows.artifact.generated_at }];
@@ -17,6 +18,16 @@ beforeEach(() => {
 const response = (data: unknown, status = 200) => ({ ok: status < 400, status, json: async () => data });
 
 describe("explicit Safety artifact preview and apply UI", () => {
+  it("shows v2 as a recognized input comparison and displays the missing-notice refusal without an apply action", async () => {
+    sourcesMock.mockResolvedValue(response({ artifacts: artifacts.map(a => ({ ...a, sourceVersion: "v2" })), nextCursor: null, requiresProject: false }));
+    fetchMock.mockResolvedValue(response({ error: SAFETY_V2_NOFO_REFUSAL }, 422));
+    render(<SafetyPlanSeedPanel opportunityId={rows.opportunity.id} onApplied={vi.fn()} />);
+    await screen.findByRole("option", { name: /Input comparison v2, notice mapping unavailable/ });
+    fireEvent.change(screen.getByLabelText("Exact project Safety report"), { target: { value: rows.artifact.id } });
+    fireEvent.click(screen.getByRole("button", { name: "Preview Safety seed" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(SAFETY_V2_NOFO_REFUSAL);
+    expect(screen.queryByRole("button", { name: "Apply six working drafts" })).toBeNull();
+  });
   it("requires selection and review, sends only the bound preview, and refreshes after apply", async () => {
     fetchMock.mockResolvedValueOnce(response({ preview })).mockResolvedValueOnce(response({ applied: true }));
     const onApplied = vi.fn().mockResolvedValue(undefined);

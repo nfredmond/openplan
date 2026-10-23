@@ -2,10 +2,11 @@ import { requireProviderBrowserOrigin } from "@/lib/assistant/provider-server";
 import { projectJurisdictionInputSchema, resolveProjectJurisdiction } from "@/lib/projects/project-jurisdiction";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { projectEstimateDecimal, projectEstimateRequestData } from "@/lib/projects/estimated-cost";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadProjectAccess } from "@/lib/programs/api";
-import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
+import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import {
   projectDeliveryPhaseSchema,
@@ -59,7 +60,13 @@ export const runtime = "nodejs";
 const paramsSchema = z.object({ projectId: z.string().uuid() });
 
 const estimatedCostSchema = z.object({
-  amount: z.number().finite().positive().max(1_000_000_000_000_000),
+  amount: z.union([z.number(), z.string()]).transform((value, context) => {
+    try { return projectEstimateDecimal(value); }
+    catch {
+      context.addIssue({ code: "custom", message: "Use a positive decimal estimate with whole cents, at most 1000000000000000." });
+      return z.NEVER;
+    }
+  }),
   currency: z.string().trim().toUpperCase().regex(/^[A-Z]{3}$/, "Use a three-letter currency code."),
   basisYear: z.number().int().min(1800).max(3000).nullable().optional(),
   sourceDocumentId: z.string().uuid().nullable().optional(),
@@ -169,10 +176,10 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ p
       return NextResponse.json({ error: "Invalid project id" }, { status: 400 });
     }
 
-    const body = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
+    const body = await readJsonWithLimit(request, BODY_LIMITS.normalJson);
     if (!body.ok) return body.response;
 
-    const payload = patchProjectSchema.safeParse(body.data);
+    const payload = patchProjectSchema.safeParse(projectEstimateRequestData(body.text, body.parseError ? null : body.data));
     if (!payload.success) {
       audit.warn("validation_failed", { issues: payload.error.issues });
       return NextResponse.json(
@@ -311,7 +318,7 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ p
       .from("projects")
       .update(updates)
       .eq("id", project.id)
-      .select(`id, name, summary, status, plan_type, delivery_phase, estimated_cost_amount, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, estimated_cost_recorded_at, updated_at, ${PROJECT_PLACE_COLUMNS}`)
+      .select(`id, name, summary, status, plan_type, delivery_phase, estimated_cost_amount::text, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, estimated_cost_recorded_at, updated_at, ${PROJECT_PLACE_COLUMNS}`)
       .single();
 
     if (isWriteFailure(error)) {

@@ -1,5 +1,8 @@
 import { act, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
+import { Children, isValidElement, type ComponentProps, type ReactElement, type ReactNode } from "react";
+import { SafetyWorkspace } from "@/components/safety/safety-workspace";
+import { HIGH_INJURY_NETWORK_PARAMETERS } from "@/lib/safety/high-injury-network";
 
 /**
  * WHICH AREA SAFETY OPENS ON, AND WHETHER IT SAYS SO.
@@ -153,6 +156,8 @@ type IngestBuilder = {
   then(resolve: (value: Result) => unknown): Promise<unknown>;
 };
 const ingestQueries: Array<{ projection: string; filters: IngestFilter[]; limit: number | null }> = [];
+const reportProjections: string[] = [];
+const reportFilters: Array<[string, unknown]> = [];
 
 /**
  * A supabase-js query builder that answers with `result` however it is chained.
@@ -185,6 +190,7 @@ function mountSupabase({
   ingestsResult = null as Result | null,
   currentIngestError = null as string | null,
   historyIngestError = null as string | null,
+  reports = [] as Array<Record<string, unknown>>,
 }: {
   workspace?: Result;
   projectPlace?: Result;
@@ -193,6 +199,7 @@ function mountSupabase({
   ingestsResult?: Result | null;
   currentIngestError?: string | null;
   historyIngestError?: string | null;
+  reports?: Array<Record<string, unknown>>;
 } = {}) {
   createClientMock.mockResolvedValue({
     auth: { getUser: async () => ({ data: { user: { id: "user-1" } } }) },
@@ -244,7 +251,12 @@ function mountSupabase({
           return builder;
         },
       };
-      if (table === "reports") return respondWith({ data: [], error: null });
+      if (table === "reports") return { select: (projection: string) => {
+        reportProjections.push(projection);
+        const builder = respondWith({ data: reports.map((row) => Object.fromEntries(projection.split(",").map((column) => [column.trim(), row[column.trim()]]))), error: null });
+        builder.eq = (column: string, value: unknown) => { reportFilters.push([column, value]); return builder; };
+        return builder;
+      } };
       throw new Error(`Unexpected table: ${table}`);
     },
   });
@@ -274,6 +286,8 @@ describe("Safety opens on the right study area", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     ingestQueries.length = 0;
+    reportProjections.length = 0;
+    reportFilters.length = 0;
     loadCurrentWorkspaceMembershipMock.mockResolvedValue({
       membership: { workspace_id: WORKSPACE_ID, role: "admin" },
     });
@@ -286,6 +300,45 @@ describe("Safety opens on the right study area", () => {
 
   afterEach(() => {
     vi.unstubAllGlobals();
+  });
+
+  it("loads exact comparison eligibility without promoting other report types or plan reports", async () => {
+    mountSupabase({ projectPlace: { data: projectPlaceRow(), error: null },
+      projectOptions: [{ id: PROJECT_ID, name: "SR-49 corridor improvements", status: "active" }],
+      ingests: [retainedAcquisition({ severity_completeness: "kabco_full" })], reports: [
+      { id: "analysis", title: "Analysis", report_type: "analysis_summary", land_use_plan_id: null },
+      { id: "standard", title: "Project status", report_type: "project_status", land_use_plan_id: null },
+      { id: "plan", title: "Plan report", report_type: "project_status", land_use_plan_id: "plan-id" },
+      { id: "unknown", title: "Unknown type" },
+    ] });
+    const page = await SafetyPage({ searchParams: Promise.resolve({ projectId: PROJECT_ID }) });
+    // Loader contract only. The panel suite exercises the resulting link; this
+    // assertion does not claim a browser or database query executed.
+    const findWorkspace = (node: ReactNode): ReactElement<ComponentProps<typeof SafetyWorkspace>> | undefined => {
+      for (const child of Children.toArray(node)) {
+        if (!isValidElement<{ children?: ReactNode }>(child)) continue;
+        if (child.type === SafetyWorkspace) return child as ReactElement<ComponentProps<typeof SafetyWorkspace>>;
+        const found = findWorkspace(child.props.children);
+        if (found) return found;
+      }
+      return undefined;
+    };
+    expect(reportProjections).toEqual(["id, title, report_type, land_use_plan_id, metadata_json"]);
+    expect(reportFilters).toEqual([["workspace_id", WORKSPACE_ID], ["project_id", PROJECT_ID]]);
+    expect(findWorkspace(page)?.props.projectReports?.map(({ id, supportsSafetyComparison }) => ({ id, supportsSafetyComparison }))).toEqual([
+      { id: "analysis", supportsSafetyComparison: false }, { id: "standard", supportsSafetyComparison: true },
+      { id: "plan", supportsSafetyComparison: false }, { id: "unknown", supportsSafetyComparison: false },
+    ]);
+    fetchMock.mockResolvedValue({ ok: true, json: async () => ({
+      type: "FeatureCollection", features: [], returnedCount: 0, matchedCount: 0,
+      highInjuryNetwork: {
+        status: "computed", basis: "ksi", method: "road_segments", years: [2025], segments: [],
+        crashesConsidered: 0, crashesPlaced: 0, segmentsWithCrashes: 0, roadMilesReviewed: 0,
+        listedMiles: 0, listedCrashes: 0, roadSources: [], parameters: HIGH_INJURY_NETWORK_PARAMETERS,
+      },
+    }) });
+    await act(async () => { render(page); });
+    expect(await screen.findByRole("link", { name: "Review No Build, alternatives and applicability in this report" })).toHaveAttribute("href", "/reports/standard?safetyComparison=1&safetyIngestId=retained-corridor-acquisition");
   });
 
   it("retrieves crashes for the project's corridor, not the workspace's county", async () => {

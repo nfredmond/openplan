@@ -34,6 +34,7 @@ import {
 } from "@/lib/safety/high-injury-network-loader";
 import { ACS_YEAR } from "@/lib/data-sources/census";
 import { NextRequest, NextResponse } from "next/server";
+import { generateSafetyComparison, safetyComparisonGenerateSchema } from "@/lib/reports/safety-comparison-server";
 import { readGuidedComparisonSelection, includeGuidedScenarioBasis, type GuidedComparisonSelectionV1 } from "@/lib/reports/guided-comparison";
 import { verifyGuidedComparisonReport } from "@/lib/reports/guided-comparison-server";
 import { z } from "zod";
@@ -152,7 +153,7 @@ const PACKET_PROJECT_OPTIONAL_COLUMN_GROUPS = [
 ] as const;
 // Keep the initial projection literal so the source guard checks every column.
 // Route tests pin parity with the four independently removable groups above.
-const PACKET_PROJECT_COLUMNS = "id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at, jurisdiction_context, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_geometry_geojson, place_set_at, estimated_cost_amount, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, latitude, longitude";
+const PACKET_PROJECT_COLUMNS = "id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at, jurisdiction_context, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_geometry_geojson, place_set_at, estimated_cost_amount::text, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, latitude, longitude";
 
 /**
  * A read whose ABSENCE is honest when the schema is genuinely not there: no
@@ -570,6 +571,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     const payload = bodyRead.data ?? {};
+    if (payload && typeof payload === "object" && "safetyComparison" in payload) {
+      const comparison = z.object({ safetyComparison: safetyComparisonGenerateSchema }).strict().safeParse(payload);
+      if (!comparison.success) return NextResponse.json({ error: "Use an exclusive Safety comparison generation command", outcome: "refused" }, { status: 400 });
+      return generateSafetyComparison(request, parsedParams.data.reportId, comparison.data.safetyComparison);
+    }
     const parsed = generateSchema.safeParse(payload);
 
     if (!parsed.success) {
@@ -624,6 +630,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     if (!report) {
       return NextResponse.json({ error: "Report not found" }, { status: 404 });
+    }
+
+    if (report.metadata_json?.safetyComparisonV2 !== undefined) {
+      return NextResponse.json({ error: "Generate this frozen Safety comparison through its explicit revision command. Legacy generation is unavailable." }, { status: 422 });
     }
 
     const { data: membership, error: membershipError } = await supabase
@@ -1620,12 +1630,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const message = projectResultForPacket.error?.message;
       const missingColumn = readPendingSchemaMissingColumn(message, "projects");
       const missing = PACKET_PROJECT_OPTIONAL_COLUMN_GROUPS.find(group => group.columns.some(column =>
-        column === missingColumn && projectColumnsForPacket.includes(column)
+        column === missingColumn && projectColumnsForPacket.some(selected => selected.split("::")[0] === column)
       ));
       if (!missing) break;
       if (missing.kind === "geography") projectGeographyReadState = "schema_pending";
       if (missing.kind === "jurisdiction") projectJurisdictionSchemaPending = true;
-      projectColumnsForPacket = projectColumnsForPacket.filter(column => !missing.columns.some(unavailable => unavailable === column));
+      projectColumnsForPacket = projectColumnsForPacket.filter(column => !missing.columns.some(unavailable => unavailable === column.split("::")[0]));
       audit.warn("report_project_columns_schema_pending", {
         reportId: report.id,
         projectId: report.project_id,

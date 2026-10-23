@@ -20,7 +20,7 @@ const PROJECT_EXPORT_COLUMNS = [
   "status",
   "plan_type",
   "delivery_phase",
-  "estimated_cost_amount",
+  "estimated_cost_amount::text",
   "estimated_cost_currency",
   "estimated_cost_basis_year",
   "estimated_cost_source_document_id",
