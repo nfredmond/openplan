@@ -152,6 +152,12 @@ export function getReportPacketWorkStatus(
   freshnessLabel: string
 ): ReportPacketWorkStatus {
   switch (freshnessLabel) {
+    case "Source evidence unassessed":
+      return { key: "release-review", label: "Review source evidence", tone: "warning",
+        detail: "Some current inputs or historical baselines cannot be compared. Review the evidence limits before handoff." };
+    case "Comparison evidence unassessed":
+      return { key: "release-review", label: "Review comparison evidence", tone: "warning",
+        detail: "The retained comparison binding is checked; live artifact bytes and custody remain unassessed. Open the report to review its evidence limits." };
     case PACKET_FRESHNESS_LABELS.NO_PACKET:
       return {
         key: "generate-first",
@@ -180,6 +186,8 @@ export function getReportPacketWorkStatus(
 }
 
 export function getReportPacketActionLabel(freshnessLabel: string) {
+  if (freshnessLabel === "Source evidence unassessed") return "Next action: open this report and review the unassessed source evidence.";
+  if (freshnessLabel === "Comparison evidence unassessed") return "Next action: open this report and review the unassessed comparison evidence.";
   switch (getReportPacketWorkStatus(freshnessLabel).key) {
     case "refresh":
       return "Next action: open this report and regenerate the packet.";
@@ -803,27 +811,24 @@ export function getReportPacketFreshness({
     };
   }
 
-  if (jurisdictionState === "changed" || jurisdictionState === "unavailable") {
-    return { label: PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED, tone: "warning",
-      detail: jurisdictionState === "changed"
-        ? "Project jurisdiction context or registry inputs changed since this packet was generated. Regenerate it before handoff."
-        : "The packet's jurisdiction assessment could not be checked against current inputs. Review the jurisdiction context before handoff." };
-  }
-
-  if (generationWritebackCurrent === false) {
-    return { label: PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED, tone: "warning",
-      detail: "The report revision does not match a completed generation writeback. Review the changed report or interrupted generation before using this packet." };
-  }
-
+  const jurisdictionLimitation = jurisdictionState === "unavailable"
+    ? "The packet's jurisdiction assessment could not be checked against current inputs. Review the jurisdiction context before handoff."
+    : jurisdictionState === "untracked"
+      ? "The historical packet did not track a comparable jurisdiction baseline. Review its jurisdiction evidence before handoff; missing history does not establish a source change or unchanged inputs."
+      : null;
   const generatedAtMs = new Date(generatedAt).getTime();
   const updatedAtMs = new Date(updatedAt ?? generatedAt).getTime();
-
-  if (Number.isFinite(generatedAtMs) && Number.isFinite(updatedAtMs) && updatedAtMs > generatedAtMs) {
-    return {
-      label: PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED,
-      tone: "warning",
-      detail: PACKET_FRESHNESS_DETAIL.REFRESH_RECOMMENDED,
-    };
+  const refreshReasons = [
+    jurisdictionState === "changed" ? "Project jurisdiction context or registry inputs changed since this packet was generated. Regenerate it before handoff." : null,
+    generationWritebackCurrent === false ? "The report revision does not match a completed generation writeback. Review the changed report or interrupted generation before using this packet." : null,
+    Number.isFinite(generatedAtMs) && Number.isFinite(updatedAtMs) && updatedAtMs > generatedAtMs ? PACKET_FRESHNESS_DETAIL.REFRESH_RECOMMENDED : null,
+  ].filter((reason): reason is string => Boolean(reason));
+  if (refreshReasons.length > 0) {
+    return { label: PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED, tone: "warning",
+      detail: [...refreshReasons, jurisdictionLimitation].filter(Boolean).join(" ") };
+  }
+  if (jurisdictionLimitation) {
+    return { label: "Source evidence unassessed", tone: "warning", detail: jurisdictionLimitation };
   }
 
   return {

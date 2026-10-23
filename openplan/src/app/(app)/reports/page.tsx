@@ -1,3 +1,4 @@
+import { readScopedGuidedComparisonBinding } from "@/lib/reports/guided-comparison-binding";
 import { reportJurisdictionState } from "@/lib/reports/jurisdiction-freshness";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import Link from "next/link";
@@ -339,11 +340,13 @@ export default async function ReportsPage({
       const safetyUpdatedAt = report.project_id
         ? latestSafetyAtByProjectId.get(report.project_id) ?? null
         : null;
+      const jurisdictionState = artifactsReadFailed ? "unavailable" : reportJurisdictionState(latestArtifact?.metadata_json,
+        (projectsData ?? []).find((project) => project.id === report.project_id));
+      const generationWritebackCurrent = artifactGenerationWritebackIsCurrent(latestArtifact?.metadata_json, report.updated_at);
       const computedPacketFreshness = getReportPacketFreshness({
         latestArtifactKind: report.latest_artifact_kind,
-        jurisdictionState: artifactsReadFailed ? "unavailable" : reportJurisdictionState(latestArtifact?.metadata_json,
-          (projectsData ?? []).find((project) => project.id === report.project_id)),
-        generationWritebackCurrent: artifactGenerationWritebackIsCurrent(latestArtifact?.metadata_json, report.updated_at),
+        jurisdictionState,
+        generationWritebackCurrent,
         generatedAt: packetGeneratedAt,
         updatedAt: resolveTrackedReportSourceUpdatedAt({
           generatedAt: packetGeneratedAt,
@@ -356,31 +359,60 @@ export default async function ReportsPage({
       const packetSafetyEvidenceReadFailed = artifactSafetyEvidenceReadFailed(
         latestArtifact?.metadata_json
       );
-      const packetFreshness =
-        (packetSafetyEvidenceReadFailed || (safetyIngestReadFailed && report.project_id)) &&
-        computedPacketFreshness.label === PACKET_FRESHNESS_LABELS.CURRENT
-          ? {
-              label: PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED,
-              tone: "warning" as const,
-              detail: packetSafetyEvidenceReadFailed
-                ? "This packet recorded a failed project crash-evidence read and is not ready until it regenerates successfully."
-                : "Project-linked crash evidence could not be checked, so this packet is not verified against every live source.",
-            }
-          : computedPacketFreshness;
+      let guidedComparison: { liveEvidenceStatus?: "unassessed"; problem: string | null } | undefined;
+      let guidedSelectionChanged = false;
+      try {
+        const scope = { ...report, metadata_json: report.metadata_json ?? null };
+        const projectScope = report.project_id ? { id: report.project_id, workspace_id: report.workspace_id } : null;
+        const saved = readScopedGuidedComparisonBinding({ reportId: report.id, report: scope, project: projectScope });
+        const retained = readScopedGuidedComparisonBinding({ reportId: report.id,
+          report: { ...scope, metadata_json: latestArtifact?.metadata_json ?? null }, project: projectScope });
+        guidedSelectionChanged = Boolean(packetGeneratedAt && saved?.bindingSha256 !== retained?.bindingSha256);
+        if (saved || retained) guidedComparison = { liveEvidenceStatus: "unassessed" as const, problem: null };
+      } catch (error) {
+        guidedComparison = { problem: error instanceof Error ? error.message : "The saved comparison binding cannot be checked." };
+      }
+      const safetyReadLimitation = packetSafetyEvidenceReadFailed
+        ? "This packet recorded a failed project crash-evidence read. Review the unavailable evidence; that failure does not establish a source change."
+        : safetyIngestReadFailed && report.project_id
+          ? "Project-linked crash evidence could not be checked. This is an unassessed source, not an observed change."
+          : null;
+      const trackedPacketFreshness = safetyReadLimitation && computedPacketFreshness.label !== PACKET_FRESHNESS_LABELS.NO_PACKET
+        ? { ...computedPacketFreshness,
+            label: computedPacketFreshness.label === PACKET_FRESHNESS_LABELS.CURRENT ? "Source evidence unassessed" : computedPacketFreshness.label,
+            tone: "warning" as const,
+            detail: `${computedPacketFreshness.label === PACKET_FRESHNESS_LABELS.CURRENT ? "" : `${computedPacketFreshness.detail} `}${safetyReadLimitation}` }
+        : computedPacketFreshness;
+      const packetFreshness = (trackedPacketFreshness.label === PACKET_FRESHNESS_LABELS.CURRENT || trackedPacketFreshness.label === "Source evidence unassessed") && guidedComparison
+        ? guidedComparison.problem || guidedSelectionChanged
+          ? { label: PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED, tone: "warning" as const,
+              detail: guidedComparison.problem ?? "The saved guided comparison differs from the retained artifact." }
+          : { label: "Comparison evidence unassessed", tone: "warning" as const,
+              detail: "The saved comparison binding is checked. Live files and their source history remain unassessed; save and generation check them again." }
+        : trackedPacketFreshness;
       const grantsFollowThrough = resolveRtpFundingFollowThrough(fundingSnapshot);
       const sourceReviewDriftSummary = buildReportRegistryDriftSummary({
-        packetFreshnessLabel: packetFreshness.label,
+        packetFreshnessLabel: trackedPacketFreshness.label,
         generatedAt: packetGeneratedAt,
         reportUpdatedAt: report.updated_at,
         rtpCycleUpdatedAt: rtpCycle?.updated_at ?? null,
         safetyUpdatedAt,
         safetyEvidenceReadFailed: packetSafetyEvidenceReadFailed,
+        jurisdictionState,
+        generationWritebackCurrent,
+        unassessedLabels: safetyIngestReadFailed && report.project_id ? ["Live crash evidence unavailable"] : [],
       });
+      if (guidedSelectionChanged) {
+        sourceReviewDriftSummary.labels.push("Selected guided comparison");
+        sourceReviewDriftSummary.changedCount = sourceReviewDriftSummary.labels.length;
+        sourceReviewDriftSummary.totalCount = sourceReviewDriftSummary.labels.length;
+      }
       const evidenceChainDigest = describeEvidenceChainSummary(evidenceChainSummary);
       const sourceReviewPosture = describeReportSourceReviewPosture({
         hasGeneratedArtifact: Boolean(report.latest_artifact_kind),
         evidenceSummary: evidenceChainDigest,
         driftSummary: sourceReviewDriftSummary,
+        guidedComparison,
       });
       const rtpReleaseReviewSummary = storedRtpPublicReviewSummary
         ? buildRtpReleaseReviewSummary({

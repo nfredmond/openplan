@@ -30,8 +30,9 @@ def oracle_controls(out):
 def run(repo,out):
     os.umask(0o077);out.mkdir(parents=True,mode=0o700)
     app=repo/'openplan';route=app/'supabase/migrations/20261017000015_node_queue_process_observations.sql'
+    population=app/'supabase/migrations/20261022010001_model_population_replacement.sql'
     manual=app/'supabase/migrations/20261019000002_rtp_manual_source_page_proposals.sql'
-    test=app/'src/test/migrations/inventory.test.ts';columns=app/'src/test/a-column-nothing-reads-is-a-question.test.ts';original={path:path.read_bytes() for path in (route,test,columns,manual)}
+    test=app/'src/test/migrations/inventory.test.ts';columns=app/'src/test/a-column-nothing-reads-is-a-question.test.ts';original={path:path.read_bytes() for path in (route,test,columns,population,manual)}
     oracle_controls(out)
     def swap(text,before,after):
         if text.count(before)!=1:raise ValueError('Health mutation anchor must be unique: '+before)
@@ -43,9 +44,12 @@ def run(repo,out):
         if len(values)!=1:raise ValueError('Schema expectation must be a unique literal: '+field)
         return int(values[0])
     manual_entry=next(line for line in columns.read_text().splitlines(keepends=True) if 'column: "rtp_extraction_runs.manual_request_payload"' in line)
+    population_entry=next(line for line in columns.read_text().splitlines(keepends=True) if 'column: "model_population_checkpoint_receipts.context_json"' in line)
     cases=[
         ('unaccounted-table',route,'reads every relation the migrations declare',lambda text:text+'\nCREATE TABLE public.node_queue_unaccounted_probe (probe text);\n','have a length of '+str(expected_count('relations'))),
         ('disabled-rls',route,'reads every relation the migrations declare',change('ENABLE ROW LEVEL SECURITY','DISABLE ROW LEVEL SECURITY'),'have a length of '+str(expected_count('rlsEnabledTables'))),
+        ('population-field-projection',population,'reads every relation the migrations declare',change('context_json jsonb NOT NULL','context_probe jsonb NOT NULL'),'context_json'),
+        ('unaccounted-population-context',columns,'finds no unread column that is not accounted for',change(population_entry,''),'these columns exist and nothing in the application ever names them'),
         ('manual-field-projection',manual,'reads every relation the migrations declare',change('ADD COLUMN manual_request_payload jsonb','ADD COLUMN manual_request_probe jsonb'),'manual_request_payload'),
         ('unaccounted-manual-request',columns,'finds no unread column that is not accounted for',change(manual_entry,''),'rtp_extraction_runs.manual_request_payload'),
         ('unaccounted-build',columns,'finds no unread column that is not accounted for',change(entry,''),'these columns exist and nothing in the application ever names them'),

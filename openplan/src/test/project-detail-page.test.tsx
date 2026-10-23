@@ -1,3 +1,5 @@
+import { buildProjectJurisdictionReadinessExportPayload } from "@/lib/jurisdiction-readiness/payload";
+import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
 import { projectBudgetSnapshotFixture, type BudgetAnswer } from "./helpers/project-budget-snapshot";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { isValidElement, type ComponentPropsWithoutRef, type ReactNode } from "react";
@@ -687,6 +689,27 @@ function expectLinkByHref(name: RegExp, href: string) {
 
   expect(link).toBeDefined();
   expect(link).toHaveAttribute("href", href);
+}
+
+// Comparable inputs do not establish adopting authority or legal applicability.
+const REPORT_JURISDICTION_INPUT = {
+  id: "project-1",
+  jurisdiction_context: {
+    version: 1, state: "unresolved", entries: [],
+    recordedBy: "99999999-9999-4999-8999-999999999999",
+    recordedAt: "2026-03-28T18:00:00.000Z",
+  },
+};
+
+/** Keep absent history and invalid retained custody distinct from a current fingerprint. */
+function retainedReportJurisdiction(baseline: "current" | "missing" | "invalid") {
+  if (baseline === "missing") return {};
+  const snapshot = buildProjectJurisdictionReadinessExportPayload(
+    REPORT_JURISDICTION_INPUT, jurisdictionReadinessRegistrySha256(),
+  );
+  return { jurisdictionReadiness: baseline === "invalid"
+    ? { ...snapshot, payloadSha256: "f".repeat(64) }
+    : snapshot };
 }
 
 describe("ProjectDetailPage", () => {
@@ -1495,10 +1518,14 @@ describe("ProjectDetailPage", () => {
     expect(within(summary as HTMLElement).getByText(supported ? "2" : "0")).toBeInTheDocument();
   });
 
-  it("prioritizes a governance-only report hold over a newer clean current packet", async () => {
+  it.each([
+    { baseline: "current", title: "prioritizes a governance-only report hold over a newer clean current packet" },
+    { baseline: "missing", title: "combines a missing jurisdiction baseline warning with the governance hold" },
+    { baseline: "invalid", title: "combines an invalid jurisdiction baseline warning with the governance hold" },
+  ] as const)("$title", async ({ baseline }) => {
     projectSingleMock.mockResolvedValueOnce({
       data: {
-        id: "project-1",
+        ...REPORT_JURISDICTION_INPUT,
         workspace_id: "workspace-1",
         name: "Downtown Mobility Plan",
         summary: "Planning effort focused on corridor safety and access.",
@@ -1543,6 +1570,7 @@ describe("ProjectDetailPage", () => {
           generated_at: "2026-03-28T21:30:00.000Z",
           metadata_json: {
             sourceContext: {
+              ...retainedReportJurisdiction(baseline),
               evidenceChainSummary: {
                 linkedRunCount: 1,
                 scenarioSetLinkCount: 1,
@@ -1564,6 +1592,7 @@ describe("ProjectDetailPage", () => {
           generated_at: "2026-03-28T20:00:00.000Z",
           metadata_json: {
             sourceContext: {
+              ...retainedReportJurisdiction(baseline),
               evidenceChainSummary: {
                 linkedRunCount: 2,
                 scenarioSetLinkCount: 1,
@@ -1588,14 +1617,47 @@ describe("ProjectDetailPage", () => {
     await renderPage();
 
     expect(screen.getByText(/Downtown Safety Packet needs attention/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Board Packet needs attention/i)).not.toBeInTheDocument();
     expect(
-      screen.getByText(/Next action: open this report and review the governance hold before release reuse\./i)
+      screen.getByText(baseline === "current"
+        ? "Next action: open this report and review the governance hold before release reuse."
+        : "Next action: open this report and review the unassessed source evidence, then review the governance hold before release reuse.")
     ).toBeInTheDocument();
+    if (baseline === "current") {
+      expect(screen.getAllByText("The latest packet is current with the saved report record and tracked source timestamps.").length).toBeGreaterThan(0);
+      expect(screen.queryByText("Source evidence unassessed")).not.toBeInTheDocument();
+    } else {
+      expect(screen.getAllByText("Source evidence unassessed").length).toBeGreaterThan(0);
+      expect(screen.queryByText("Packet current")).not.toBeInTheDocument();
+      const refreshSummary = screen.getByText("Refresh recommended").closest("div");
+      expect(within(refreshSummary as HTMLElement).getByText("0")).toBeInTheDocument();
+      expect(screen.queryByText("The latest packet is current with the saved report record and tracked source timestamps.")).not.toBeInTheDocument();
+      expect(screen.queryByText(/regenerate the packet/i)).not.toBeInTheDocument();
+      expect(screen.getAllByText(baseline === "missing"
+        ? /historical packet did not track a comparable jurisdiction baseline/i
+        : /jurisdiction assessment could not be checked against current inputs/i).length).toBeGreaterThan(0);
+    }
+    expect(projectSelectMock).toHaveBeenCalledWith(expect.stringContaining("jurisdiction_context"));
+    expect(reportArtifactsSelectMock).toHaveBeenCalledWith("report_id, generated_at, metadata_json");
     expect(screen.getAllByText(/Blocked gate: G02/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/1 need attention/i).length).toBeGreaterThan(0);
   });
 
   it("keeps artifact-backed linked reports in current-packet posture when report generated_at is null", async () => {
+    const projectResult = await projectSingleMock();
+    projectSingleMock.mockResolvedValueOnce({
+      ...projectResult, data: { ...projectResult.data, ...REPORT_JURISDICTION_INPUT },
+    });
+    const artifactResult = await reportArtifactsOrderMock();
+    reportArtifactsOrderMock.mockResolvedValueOnce({
+      ...artifactResult,
+      data: artifactResult.data.map((artifact: {
+        report_id: string; generated_at: string;
+        metadata_json: { sourceContext: Record<string, unknown> };
+      }) => ({ ...artifact, metadata_json: { ...artifact.metadata_json,
+        sourceContext: { ...artifact.metadata_json.sourceContext, ...retainedReportJurisdiction("current") },
+      } })),
+    });
     reportsLimitMock.mockResolvedValueOnce({
       data: [
         {
@@ -1632,7 +1694,13 @@ describe("ProjectDetailPage", () => {
 
     expect(boardPacketCard).not.toBeNull();
     expect(boardPacketCard).toHaveAttribute("href", "/reports/report-2#packet-release-review");
-    expect(screen.getAllByText(/Packet current/i).length).toBeGreaterThan(0);
+    expect(within(boardPacketCard as HTMLElement).getByText(
+      "The latest packet is current with the saved report record and tracked source timestamps."
+    )).toBeInTheDocument();
+    expect(within(boardPacketCard as HTMLElement).queryByText("No packet yet")).not.toBeInTheDocument();
+    expect(within(boardPacketCard as HTMLElement).queryByText("Source evidence unassessed")).not.toBeInTheDocument();
+    expect(projectSelectMock).toHaveBeenCalledWith(expect.stringContaining("jurisdiction_context"));
+    expect(reportArtifactsSelectMock).toHaveBeenCalledWith("report_id, generated_at, metadata_json");
   });
 
   it("surfaces deliverable budget chips and honest coverage copy", async () => {

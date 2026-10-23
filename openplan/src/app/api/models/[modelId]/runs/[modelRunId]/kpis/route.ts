@@ -13,6 +13,7 @@ import {
   buildBehavioralDemandComparison,
   normalizeBehavioralComparisonSource,
 } from "@/lib/models/behavioral-kpi-comparison";
+import { readModelAttemptOutputs, currentCompletedModelOutputs, filterCompletedAttemptRows } from "@/lib/models/attempt-output-read";
 import { getManagedRunModeDefinition } from "@/lib/models/run-modes";
 
 const paramsSchema = z.object({
@@ -51,7 +52,7 @@ async function loadAuthorizedRun(
 
   const { data: run, error: runError } = await supabase
     .from("model_runs")
-    .select("id, model_id, engine_key, status")
+    .select("id, model_id, engine_key, status, attempt_managed")
     .eq("id", modelRunId)
     .eq("model_id", access.model.id)
     .maybeSingle();
@@ -66,10 +67,10 @@ async function loadAuthorizedRun(
   return { supabase, access, run } as const;
 }
 
-async function loadBehavioralArtifactSource(supabase: Awaited<ReturnType<typeof createClient>>, runId: string) {
+async function loadBehavioralArtifactSource(supabase: Awaited<ReturnType<typeof createClient>>, runId: string, workspaceId: string, managed: boolean) {
   const { data: artifacts, error } = await supabase
     .from("model_run_artifacts")
-    .select("artifact_type, file_url")
+    .select("id, run_id, attempt_id, artifact_type, file_url")
     .eq("run_id", runId)
     .order("created_at", { ascending: true });
 
@@ -77,7 +78,13 @@ async function loadBehavioralArtifactSource(supabase: Awaited<ReturnType<typeof 
     throw new Error(error.message);
   }
 
-  const rows = (artifacts ?? []) as Array<{ artifact_type: string; file_url: string | null }>;
+  let rows = (artifacts ?? []) as Array<{ artifact_type: string; file_url: string | null }>;
+  if (managed) {
+    const custody = await readModelAttemptOutputs(workspaceId, runId);
+    if (!custody.available) throw new Error("Current behavioral output custody could not be verified");
+    rows = filterCompletedAttemptRows(custody, "artifact", rows);
+    if (rows.length !== currentCompletedModelOutputs(custody, "artifact").length) throw new Error("Current behavioral artifact records are incomplete");
+  }
   const candidates = rows.filter(
     (artifact) =>
       typeof artifact.file_url === "string" &&
@@ -133,12 +140,13 @@ export async function GET(req: NextRequest, context: RouteContext) {
 
   const baselineRunId = req.nextUrl.searchParams.get("baseline_run_id");
 
-  const { data: kpis, error } = await auth.supabase
-    .from("model_run_kpis")
-    .select("*")
-    .eq("run_id", parsedParams.data.modelRunId)
-    .order("kpi_category", { ascending: true })
-    .order("kpi_name", { ascending: true });
+  const custody = auth.run.attempt_managed === true ? await readModelAttemptOutputs(auth.access.model.workspace_id, auth.run.id) : null;
+  if (custody && !custody.available) return NextResponse.json({ error: "Current model output custody could not be read" }, { status: 503 });
+  const currentIds = custody?.available ? currentCompletedModelOutputs(custody, "kpi").map(row => row.id) : null;
+  let kpiQuery = auth.supabase.from("model_run_kpis").select("*").eq("run_id", parsedParams.data.modelRunId);
+  if (currentIds) kpiQuery = kpiQuery.in("id", currentIds);
+  const { data: storedKpis, error } = currentIds?.length === 0 ? { data: [], error: null }
+    : await kpiQuery.order("kpi_category", { ascending: true }).order("kpi_name", { ascending: true });
 
   if (error) {
     audit.error("model_run_kpis_lookup_failed", {
@@ -149,10 +157,14 @@ export async function GET(req: NextRequest, context: RouteContext) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
+
+  const kpis = custody?.available ? filterCompletedAttemptRows(custody, "kpi", storedKpis ?? []) : storedKpis;
+  if (currentIds && kpis?.length !== currentIds.length) return NextResponse.json({ error: "Current KPI records are incomplete or disagree with custody. No total is returned." }, { status: 503 });
+
   if (baselineRunId) {
     const { data: baselineRun, error: baselineRunError } = await auth.supabase
       .from("model_runs")
-      .select("id, engine_key, status")
+      .select("id, engine_key, status, attempt_managed")
       .eq("id", baselineRunId)
       .eq("model_id", auth.access.model.id)
       .maybeSingle();
@@ -187,8 +199,8 @@ export async function GET(req: NextRequest, context: RouteContext) {
       }
 
       const [currentBehavioralSource, baselineBehavioralSource] = await Promise.all([
-        loadBehavioralArtifactSource(auth.supabase, parsedParams.data.modelRunId),
-        loadBehavioralArtifactSource(auth.supabase, baselineRunId),
+        loadBehavioralArtifactSource(auth.supabase, parsedParams.data.modelRunId, auth.access.model.workspace_id, auth.run.attempt_managed === true),
+        loadBehavioralArtifactSource(auth.supabase, baselineRunId, auth.access.model.workspace_id, baselineRun.attempt_managed === true),
       ]);
       const behavioralComparison = buildBehavioralDemandComparison(
         currentBehavioralSource,
@@ -232,16 +244,21 @@ export async function GET(req: NextRequest, context: RouteContext) {
       });
     }
 
-    const { data: baselineKpis, error: baselineError } = await auth.supabase
-      .from("model_run_kpis")
-      .select("*")
-      .eq("run_id", baselineRunId)
-      .order("kpi_category", { ascending: true })
-      .order("kpi_name", { ascending: true });
+    const baselineCustody = baselineRun.attempt_managed === true ? await readModelAttemptOutputs(auth.access.model.workspace_id, baselineRun.id) : null;
+    if (baselineCustody && !baselineCustody.available) return NextResponse.json({ error: "Baseline model output custody could not be read" }, { status: 503 });
+    const baselineIds = baselineCustody?.available ? currentCompletedModelOutputs(baselineCustody, "kpi").map(row => row.id) : null;
+    let baselineQuery = auth.supabase.from("model_run_kpis").select("*").eq("run_id", baselineRunId);
+    if (baselineIds) baselineQuery = baselineQuery.in("id", baselineIds);
+    const { data: storedBaselineKpis, error: baselineError } = baselineIds?.length === 0 ? { data: [], error: null }
+      : await baselineQuery.order("kpi_category", { ascending: true }).order("kpi_name", { ascending: true });
 
     if (baselineError) {
       return NextResponse.json({ error: baselineError.message }, { status: 500 });
     }
+
+
+    const baselineKpis = baselineCustody?.available ? filterCompletedAttemptRows(baselineCustody, "kpi", storedBaselineKpis ?? []) : storedBaselineKpis;
+    if (baselineIds && baselineKpis?.length !== baselineIds.length) return NextResponse.json({ error: "Baseline KPI records are incomplete or disagree with custody. No comparison is returned." }, { status: 503 });
 
     const baselineMap = new Map(
       (baselineKpis ?? []).map((k: Record<string, unknown>) => [

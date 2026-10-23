@@ -48,7 +48,7 @@ type ProjectGrantComparisonDigest = NonNullable<
 >;
 
 export type ProjectGrantModelingReadinessPosture = {
-  key: "decision-ready" | "stale" | "thin";
+  key: "decision-ready" | "stale" | "unassessed" | "thin";
   label: string;
   tone: "success" | "warning" | "neutral";
   detail: string;
@@ -57,6 +57,7 @@ export type ProjectGrantModelingReadinessPosture = {
 export type ProjectGrantModelingQueuePosture =
   | "decision-ready"
   | "refresh-recommended"
+  | "unassessed"
   | "thin"
   | "no-visible-support";
 
@@ -125,6 +126,16 @@ export function describeProjectGrantModelingReadiness(
   }
 
   const leadReport = evidence.leadComparisonReport;
+  // A retained packet can need evidence review without an observed source change.
+  if (![PACKET_FRESHNESS_LABELS.CURRENT, PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED,
+    PACKET_FRESHNESS_LABELS.NO_PACKET].some((label) => label === leadReport.packetFreshness.label)) {
+    return {
+      key: "unassessed",
+      label: "Modeling evidence unassessed",
+      tone: "warning",
+      detail: `${leadReport.title} retains comparison-backed planning support, but its evidence remains unassessed for grant readiness or prioritization. ${leadReport.packetFreshness.detail}`,
+    };
+  }
   if (leadReport.packetFreshness.label !== PACKET_FRESHNESS_LABELS.CURRENT) {
     return {
       key: "stale",
@@ -171,6 +182,8 @@ export function resolveProjectGrantModelingQueuePosture(
     return "refresh-recommended";
   }
 
+  if (readiness.key === "unassessed") return "unassessed";
+
   return "thin";
 }
 
@@ -182,6 +195,9 @@ export function getProjectGrantModelingQueuePriority(
       return 0;
     case "refresh-recommended":
       return 1;
+    // Keep known-state priorities intact; review unknown evidence before thin support.
+    case "unassessed":
+      return 1.5;
     case "thin":
       return 2;
     case "no-visible-support":
@@ -469,6 +485,18 @@ export function buildGrantDecisionModelingSupport(
       recommendedNextActionTitle: "Advance to pursue now",
       recommendedNextActionSummary: `${leadReport.title} appears decision-ready, so operators can advance this opportunity to pursue now while the packet is current. ${GRANT_MODELING_PLANNING_CAVEAT}`,
       recommendedDecisionState: "pursue",
+    };
+  }
+
+  if (readiness?.key === "unassessed") {
+    return {
+      title: leadReport.title,
+      summary: `${readiness.detail} ${GRANT_MODELING_PLANNING_CAVEAT}`,
+      readinessNoteSuggestion: `Recommended next action: keep this opportunity in monitor posture and review the unassessed evidence in ${leadReport.title} before final pursue language. ${leadReport.packetFreshness.detail} ${GRANT_MODELING_PLANNING_CAVEAT}`,
+      decisionRationaleSuggestion: `Keep this opportunity in monitor posture until operators review the unassessed evidence in ${leadReport.title}. ${GRANT_MODELING_PLANNING_CAVEAT}`,
+      recommendedNextActionTitle: "Review unassessed supporting evidence",
+      recommendedNextActionSummary: `${leadReport.title} retains planning context. Review its unassessed evidence before relying on it for final pursue language. ${GRANT_MODELING_PLANNING_CAVEAT}`,
+      recommendedDecisionState: "monitor",
     };
   }
 

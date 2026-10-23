@@ -1,3 +1,4 @@
+import { currentModelResultRows } from "@/lib/models/attempt-output-read";
 import { reportJurisdictionState } from "@/lib/reports/jurisdiction-freshness";
 import { resolveReportPacketRowFreshness } from "@/lib/reports/report-registry-freshness";
 import { notFound, redirect } from "next/navigation";
@@ -296,7 +297,7 @@ export default async function ProjectDetailPage({
     evidenceRunIds.length
       ? supabase
           .from("model_run_kpis")
-          .select("run_id, kpi_name, value, geometry_ref")
+          .select("id, run_id, attempt_id, kpi_name, value, geometry_ref")
           .in("run_id", evidenceRunIds)
           .in("kpi_name", [...RTP_EVIDENCE_KPI_NAMES])
       : Promise.resolve({ data: [], error: null }),
@@ -307,9 +308,11 @@ export default async function ProjectDetailPage({
   const evidenceDisclosures = await loadRtpEvidenceRunDisclosures(supabase as unknown as RtpEvidenceSupabaseLike, evidenceRunIds, { knownRuns: availableRunRows });
   const availableModelRuns = evidenceDisclosures.pickerRuns;
   const runTitleById = evidenceDisclosures.titleByRunId;
-  const evidenceKpiRows = (evidenceKpisResult.data ?? []) as RtpModelingEvidenceKpiRow[];
+  const currentKpis = evidenceKpisResult.error ? { data: [], error: evidenceKpisResult.error }
+    : await currentModelResultRows(supabase, project.workspace_id, evidenceRunIds, "kpi", evidenceKpisResult.data ?? [], false, RTP_EVIDENCE_KPI_NAMES);
+  const evidenceKpiRows = currentKpis.data as RtpModelingEvidenceKpiRow[];
   // A failed read renders as "could not be read", never "No VMT/GHG KPIs".
-  const evidenceKpiOptions = { kpiReadFailed: Boolean(evidenceKpisResult.error) };
+  const evidenceKpiOptions = { kpiReadFailed: Boolean(evidenceKpisResult.error || currentKpis.error) };
   const modelingEvidenceByRunId = new Map(
     evidenceRunIds.map((runId) => [runId, summarizeRtpModelingEvidence(runId, runTitleById.get(runId) ?? null, evidenceKpiRows, evidenceKpiOptions)])
   );

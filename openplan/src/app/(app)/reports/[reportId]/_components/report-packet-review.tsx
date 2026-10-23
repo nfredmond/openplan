@@ -152,7 +152,7 @@ export function ReportPacketReview({
             </p>
           </div>
           <StatusBadge tone={reportGenerationReadinessTone(generationReadiness.status)}>
-            {generationReadiness.status === "not_started" ? "First packet" : titleize(generationReadiness.status)}
+            {generationReadiness.status === "not_started" ? "First packet" : generationReadiness.status === "unknown" ? "Unassessed" : titleize(generationReadiness.status)}
           </StatusBadge>
         </div>
         <p className="mt-2 max-w-[36rem] text-[0.95rem] leading-[1.6] text-muted-foreground">

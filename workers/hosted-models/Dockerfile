@@ -17,6 +17,7 @@ COPY workers/aequilibrae_worker ./workers/aequilibrae_worker
 RUN cd /app/workers/aequilibrae_worker && /opt/aequilibrae/bin/python -c "from model_assignment_graph_adapter import supported_engine; supported_engine()"
 COPY workers/activitysim_worker ./workers/activitysim_worker
 COPY scripts/modeling ./scripts/modeling
+RUN cd /app/workers/aequilibrae_worker && /opt/aequilibrae/bin/python -c "from model_common_population_package import population_library; population_library(); from synthetic_population import synthesize_study_area; assert callable(synthesize_study_area)"
 COPY data/modeling ./data/modeling
 RUN /opt/activitysim/bin/python -c "import sys; sys.path.insert(0, '/app/scripts/modeling'); from activitysim_accepted_components import resolve_accepted_components; print('Verified accepted component assets:', len(resolve_accepted_components()))"
 COPY workers/hosted-models/supervise.py ./supervise.py

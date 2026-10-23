@@ -429,7 +429,14 @@ export function normalizeEvidencePacket({
     inputs: {
       query_text: asString(rawInputs.query_text) ?? asString(runRecord.query_text),
       corridor_geojson: rawInputs.corridor_geojson ?? runRecord.corridor_geojson ?? null,
-      input_snapshot: (asRecord(rawInputs.input_snapshot) ?? asRecord(runRecord.input_snapshot_json) ?? {}),
+      input_snapshot: {
+        ...(asRecord(rawInputs.input_snapshot) ?? asRecord(runRecord.input_snapshot_json) ?? {}),
+        // The native new-run record supplies replacement lineage even when an
+        // engine packet retains an older input presentation. Raw bytes stay saved.
+        ...(asRecord(runRecord.input_snapshot_json)?.populationReplacement ? {
+          populationReplacement: asRecord(runRecord.input_snapshot_json)?.populationReplacement,
+        } : {}),
+      },
       network_package: networkPackage,
       zone_count: asNumber(rawInputs.zone_count) ?? asNumber(rawNetwork?.zones),
       skim_config: (asRecord(rawInputs.skim_config) ?? asRecord(runRecord.skim_config_json) ?? null),
@@ -591,6 +598,7 @@ function markdownList(value: unknown): string {
  * packet as the run page. It contains no new calculation and therefore cannot
  * disagree with the UI about which evidence supports a claim. */
 export function renderModelRunProvenanceMarkdown(packet: NormalizedEvidencePacket): string {
+  const replacement = asRecord(packet.inputs.input_snapshot.populationReplacement);
   const countSource = packet.count_source ?? { status: "not_recorded" as const };
   const gateways = packet.gateway_volume_basis ?? {};
   const selection = packet.calibration_selection ?? {};
@@ -612,6 +620,12 @@ export function renderModelRunProvenanceMarkdown(packet: NormalizedEvidencePacke
     `- Generated: ${packet.generated_at}`,
     `- Engine: ${packet.engine} (${packet.provenance.engine_version})`,
     `- Artifact schema: ${packet.packet_version}`,
+    ...(replacement ? ['', '## Saved population used in a new run', '',
+      `- Replacement request: ${markdownValue(replacement.requestId)}`,
+      `- Original failed run: ${markdownValue(replacement.sourceRunId)}`,
+      `- Registered checkpoint: ${markdownValue(replacement.checkpointId)}`,
+      'The population is retained data. This run has new execution and publication identities. The original failure is preserved.',
+      'Fresh network work and completed execution do not establish scientific accuracy.'] : []),
     "",
     "## Observed-count source",
     "",

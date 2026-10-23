@@ -14,6 +14,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - name: Uncertain commit verifier evidence regression
+        run: python3 -B docs/reviews/2026-10-13-odm-uncertain-commit-inspection/test_verify_controls_evidence.py
       - name: Install lightweight worker dependencies
         run: python3 -m pip install requests pyproj python-dotenv
       - name: All aerial worker suites
@@ -183,9 +185,18 @@ jobs:
           python3 -B docs/reviews/2026-10-13-odm-original-processing-commit/verify_runtime_controls.py \
             --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-processing-commit-journal-controls"
       - name: Original uncertain commit inspection controls
+        id: uncertain_commit_controls
         run: |
           python3 -B docs/reviews/2026-10-13-odm-uncertain-commit-inspection/verify_controls.py \
             --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-uncertain-commit-inspection-controls"
+      - name: Upload failed uncertain commit control diagnostics
+        if: ${{ failure() && steps.uncertain_commit_controls.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: odm-uncertain-commit-inspection-failure
+          path: ${{ runner.temp }}/odm-uncertain-commit-inspection-controls/
+          if-no-files-found: error
+          retention-days: 14
       - name: Supplied output archive custody controls
         run: |
           python3 -B docs/reviews/2026-10-13-odm-output-archive-custody/verify_controls.py \

@@ -193,14 +193,15 @@ export function isGuidedProjectComparisonModel(config: unknown, method: "aequili
 
 /**
  * Detect a guided record even when a later edit damaged one part of its
- * contract. Once a record declares guided intent, readers must fail closed;
+ * contract. An explicit null or unknown version marker also declares intent.
+ * Once a record declares guided intent, readers must fail closed;
  * they may not silently reinterpret its generic run or snapshot rows as truth.
  */
 export function hasGuidedProjectComparisonIntent(config: unknown): boolean {
   if (!config || typeof config !== "object" || Array.isArray(config)) return false;
   const record = config as Record<string, unknown>;
   const basis = record.networkBasis;
-  return record.guidedProjectComparison === GUIDED_PROJECT_COMPARISON_VERSION ||
+  return Object.prototype.hasOwnProperty.call(record, "guidedProjectComparison") ||
     ((record.method === "aequilibrae" || record.method === "activitysim") &&
       Boolean(basis && typeof basis === "object" && !Array.isArray(basis) &&
         (basis as Record<string, unknown>).kind === GUIDED_WORKER_NETWORK_BASIS.kind));

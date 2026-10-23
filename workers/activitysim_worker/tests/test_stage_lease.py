@@ -149,22 +149,26 @@ class ActivitySimPollLoopTest(unittest.TestCase):
         return mock.Mock(status_code=200, json=lambda: [{"id": STAGE_ID, "run_id": RUN_A,
                                                          "stage_name": supabase_poll.STAGE_BUNDLE_PREFLIGHT}])
 
-    def test_an_unconfirmed_write_is_reported_with_identity_and_no_compensating_write(self):
-        out = io.StringIO()
-        with mock.patch.object(supabase_poll, "WorkerHeartbeat"), \
-                mock.patch.object(supabase_poll.model_stage_lease, "reconcile_lapsed_stages", return_value=[]), \
-                mock.patch.object(supabase_poll.requests, "get", return_value=self.queued()), \
-                mock.patch.object(supabase_poll, "classify_stage_readiness", return_value=("ready", None)), \
-                mock.patch.object(supabase_poll, "process_stage", side_effect=supabase_poll.WorkerStateReadUnconfirmed(
-                    "Worker completion read unconfirmed")), \
-                mock.patch.object(supabase_poll.requests, "patch", side_effect=UnexpectedWrite), \
-                mock.patch.object(supabase_poll.time, "sleep", side_effect=StopPoll), redirect_stdout(out):
-            with self.assertRaises(StopPoll):
-                supabase_poll.poll_for_jobs()
-        text = out.getvalue()
-        self.assertIn("UNCONFIRMED STATE WRITE", text)
-        self.assertIn(f"run={RUN_A} stage={STAGE_ID} ({supabase_poll.STAGE_BUNDLE_PREFLIGHT})", text)
-        self.assertNotIn("Poll loop error", text)
+    def test_unconfirmed_operations_keep_their_kind_identity_and_no_compensating_write(self):
+        for operation, error_type in (("READ", supabase_poll.WorkerStateReadUnconfirmed),
+                                      ("WRITE", supabase_poll.WorkerStateWriteUnconfirmed)):
+            with self.subTest(operation=operation):
+                out = io.StringIO()
+                with mock.patch.object(supabase_poll, "WorkerHeartbeat"), \
+                        mock.patch.object(supabase_poll.model_stage_lease, "reconcile_lapsed_stages", return_value=[]), \
+                        mock.patch.object(supabase_poll.requests, "get", return_value=self.queued()), \
+                        mock.patch.object(supabase_poll, "classify_stage_readiness", return_value=("ready", None)), \
+                        mock.patch.object(supabase_poll, "process_stage", side_effect=error_type(
+                            "Worker completion operation unconfirmed")), \
+                        mock.patch.object(supabase_poll.requests, "patch", side_effect=UnexpectedWrite), \
+                        mock.patch.object(supabase_poll.time, "sleep", side_effect=StopPoll), redirect_stdout(out):
+                    with self.assertRaises(StopPoll):
+                        supabase_poll.poll_for_jobs()
+                text = out.getvalue()
+                self.assertIn(f"UNCONFIRMED STATE {operation}", text)
+                self.assertNotIn("UNCONFIRMED STATE " + ("WRITE" if operation == "READ" else "READ"), text)
+                self.assertIn(f"run={RUN_A} stage={STAGE_ID} ({supabase_poll.STAGE_BUNDLE_PREFLIGHT})", text)
+                self.assertNotIn("Poll loop error", text)
 
     def test_reconciles_first_and_claims_nothing_after_sigterm(self):
         order = []

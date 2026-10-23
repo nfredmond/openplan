@@ -62,3 +62,30 @@ type errors are suppressed. Full application CI remains required.
 
 The native SQL and HTTP report bytes are unchanged. These CLI corrections do
 not qualify live queue recovery, hosted observations or browser acceptance.
+
+
+## Forward-allocated schema control locator, October 22, 2026 UTC
+
+PR367 head6f8fd01 fails Node process observations job119866659147 before
+the schema driver's baseline. The first six control drivers complete. The
+schema driver still opens20261019051430_model_population_replacement.sql,
+which the pending migration allocation moved to
+20261022010001_model_population_replacement.sql. The new path has exactly
+the prior parent migration's bytes. The failure is a stale source locator,
+with no observed product/runtime failure.
+
+The maintained driver changes only that one filename literal. Its cases,
+37-test positive census, exact diagnostic oracle, deadlines and source
+restoration remain unchanged. The complete driver exits0 in30.983 seconds.
+Baseline, harmless, restored-after-harmless and final-restored runs each pass
+37 individual assertions with zero skips/pending/todo. All seven wrong-behavior
+variants fail the named assertion, each with36 selector-skips and no pending
+or todo. The oracle's three positives and seven rejected malformed outcomes
+remain intact. All five controlled source files restore in bytes and modes.
+
+All437 SQL bytes/modes and other tracked source remain exact. The current
+window's raw index and staged entries/flags remain exact before normal
+staging. Historical bindings and failed CI stay dated and unchanged. This
+checks source inventories and SQL-read field accounting. It adds no installed
+SQL, native database, process lifecycle, HTTP, browser, compiler, model/scientific
+or release acceptance. New-head CI remains pending under the existing watch.

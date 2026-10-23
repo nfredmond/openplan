@@ -54,6 +54,6 @@ it("does not regrade older snapshot formats through a v4 comparison", () => {
 });
 it("does not render unavailable current context as changed inputs", () => {
   const result = getReportPacketFreshness({ latestArtifactKind: "pdf", generatedAt: report.generated_at, updatedAt: null, jurisdictionState: "unavailable" });
-  expect(result.label).toBe("Refresh recommended");
+  expect(result.label).toBe("Source evidence unassessed");
   expect(result.detail).toContain("could not be checked");
 });

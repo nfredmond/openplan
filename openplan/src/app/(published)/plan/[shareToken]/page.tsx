@@ -1,3 +1,4 @@
+import { currentModelResultRows } from "@/lib/models/attempt-output-read";
 import { notFound } from "next/navigation";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { formatRtpPortfolioRoleLabel } from "@/lib/rtp/catalog";
@@ -224,16 +225,18 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
   // cannot tell a reader whether it is a calibrated run or a failed sketch.
   const [kpiResult, evidenceDisclosures] = await Promise.all([
     evidenceRunIds.length
-      ? supabase.from("model_run_kpis").select("run_id, kpi_name, value, geometry_ref").in("run_id", evidenceRunIds).in("kpi_name", [...RTP_EVIDENCE_KPI_NAMES])
+      ? supabase.from("model_run_kpis").select("id, run_id, attempt_id, kpi_name, value, geometry_ref").in("run_id", evidenceRunIds).in("kpi_name", [...RTP_EVIDENCE_KPI_NAMES])
       : Promise.resolve({ data: [], error: null }),
     loadRtpEvidenceRunDisclosures(supabase as unknown as RtpEvidenceSupabaseLike, evidenceRunIds),
   ]);
 
-  const kpiRows = (kpiResult.data ?? []) as RtpModelingEvidenceKpiRow[];
+  const currentKpis = kpiResult.error ? { data: [], error: kpiResult.error }
+    : await currentModelResultRows(supabase, cycle.workspace_id, evidenceRunIds, "kpi", kpiResult.data ?? [], true, RTP_EVIDENCE_KPI_NAMES);
+  const kpiRows = currentKpis.data as RtpModelingEvidenceKpiRow[];
   // A failed KPI read must not publish "No VMT/GHG KPIs on this run" (or a
   // silent omission of attributed evidence) on a public page. The failure
   // travels into the evidence summary as its own state.
-  const evidenceKpiReadFailed = Boolean(kpiResult.error);
+  const evidenceKpiReadFailed = Boolean(kpiResult.error || currentKpis.error);
   const runTitleById = evidenceDisclosures.titleByRunId;
 
   // The law this agency may cite comes from its own home geography. A failed

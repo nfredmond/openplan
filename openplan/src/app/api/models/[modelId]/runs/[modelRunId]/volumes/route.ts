@@ -1,3 +1,4 @@
+import { readModelAttemptOutputs, currentCompletedModelOutputs, filterCompletedAttemptRows } from "@/lib/models/attempt-output-read";
 import { NextRequest, NextResponse } from "next/server";
 import { readFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
@@ -82,7 +83,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
   const { data: run, error: runError } = await supabase
     .from("model_runs")
-    .select("id, status, engine_key")
+    .select("id, status, engine_key, attempt_managed")
     .eq("id", modelRunId)
     .eq("model_id", access.model.id)
     .maybeSingle();
@@ -114,7 +115,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
   try {
     const { data: artifacts, error: artifactError } = await supabase
       .from("model_run_artifacts")
-      .select("artifact_type, file_url")
+      .select("id, run_id, attempt_id, artifact_type, file_url")
       .eq("run_id", modelRunId)
       .order("created_at", { ascending: true });
 
@@ -130,7 +131,13 @@ export async function GET(request: NextRequest, context: RouteContext) {
       );
     }
 
-    const artifactRows = (artifacts ?? []) as ArtifactRow[];
+    let artifactRows = (artifacts ?? []) as ArtifactRow[];
+    if (run.attempt_managed === true) {
+      const custody = await readModelAttemptOutputs(access.model.workspace_id, modelRunId);
+      if (!custody.available) return NextResponse.json({ error: "Current volume custody could not be verified" }, { status: 503 });
+      artifactRows = filterCompletedAttemptRows(custody, "artifact", artifactRows);
+      if (artifactRows.length !== currentCompletedModelOutputs(custody, "artifact").length) return NextResponse.json({ error: "Current volume records are incomplete" }, { status: 503 });
+    }
     const volumesGeojsonArtifact = artifactRows.find(
       (artifact) =>
         artifact.artifact_type === "volumes_geojson" &&
@@ -211,6 +218,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       );
     }
 
+    if (run.attempt_managed === true) return NextResponse.json({ error: "No current completed volume artifact is available. Retained files are not current results." }, { status: 409 });
     const runWorkDir = resolveRunWorkDir(localRoot, modelRunId);
     const volumesPath = path.join(runWorkDir, "run_output", "link_volumes.csv");
     const dbPath = path.join(runWorkDir, "aeq_project", "project_database.sqlite");

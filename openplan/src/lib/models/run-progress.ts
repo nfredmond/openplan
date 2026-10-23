@@ -8,15 +8,16 @@
  * hours. Somebody watching one needs to know it is progressing and roughly how
  * far it has to go, and "the log moved" is not enough over a day.
  *
- * The honest measure is STAGES COMPLETED, because every stage row is created
- * up front when the run is launched — so the denominator is known, not
+ * The honest measure is STAGES SUCCESSFULLY COMPLETED, because every stage row
+ * is created up front at launch, so the denominator is known, not
  * guessed. What is deliberately NOT offered is a time estimate: stages differ
  * in duration by an order of magnitude and an equilibrium assignment's length
  * is not knowable until it converges, so minutes-remaining would be a
  * fabrication presented with a progress bar's authority.
  *
- * The percentage therefore answers "how much of this run is done" and never
- * "how long until it finishes", and `describeProgress` says which stage is
+ * Skipped, failed and cancelled stages are terminal, but add no completed work.
+ * The percentage answers "how many stages completed successfully" and never
+ * "how long until it finishes", and `summarizeRunProgress` says which stage is
  * running so the number is never the only thing a reader has.
  */
 
@@ -29,7 +30,7 @@ export type ProgressStageLike = {
 };
 
 export type RunProgress = {
-  /** Stages finished, out of the stages the run declared at launch. */
+  /** Stages that succeeded or completed, out of those declared at launch. */
   completed: number;
   total: number;
   /** 0-100, whole numbers. Null when the run declared no stages. */
@@ -44,8 +45,8 @@ export type RunProgress = {
   label: string;
 };
 
-const FINISHED_STATUSES = new Set(["succeeded", "completed", "skipped"]);
-const TERMINAL_STATUSES = new Set([...FINISHED_STATUSES, "failed", "cancelled"]);
+const COMPLETED_STATUSES = new Set(["succeeded", "completed"]);
+const TERMINAL_STATUSES = new Set([...COMPLETED_STATUSES, "skipped", "failed", "cancelled"]);
 
 function inOrder(stages: readonly ProgressStageLike[]): ProgressStageLike[] {
   return [...stages].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0));
@@ -66,26 +67,35 @@ export function summarizeRunProgress(stages: readonly ProgressStageLike[] | null
     };
   }
 
-  const completed = ordered.filter((stage) => FINISHED_STATUSES.has((stage.status ?? "").toLowerCase())).length;
+  const completed = ordered.filter((stage) => COMPLETED_STATUSES.has((stage.status ?? "").toLowerCase())).length;
   const runningIndex = ordered.findIndex((stage) => (stage.status ?? "").toLowerCase() === "running");
   const failed = ordered.find((stage) => (stage.status ?? "").toLowerCase() === "failed");
+  const failedCount = ordered.filter((stage) => (stage.status ?? "").toLowerCase() === "failed").length;
+  const skipped = ordered.filter((stage) => (stage.status ?? "").toLowerCase() === "skipped").length;
   const cancelled = ordered.filter((stage) => (stage.status ?? "").toLowerCase() === "cancelled").length;
   const isFinished = ordered.every((stage) => TERMINAL_STATUSES.has((stage.status ?? "").toLowerCase()));
 
   const running = runningIndex >= 0 ? ordered[runningIndex] : null;
   const percent = Math.round((completed / total) * 100);
 
+  const outcomes = [
+    failedCount > 0 ? `${failedCount} failed` : null,
+    skipped > 0 ? `${skipped} skipped` : null,
+    cancelled > 0 ? `${cancelled} cancelled` : null,
+  ].filter(Boolean);
+  const summary = `${completed} of ${total} stages completed${outcomes.length > 0 ? `; ${outcomes.join("; ")}` : ""}`;
+
   let label: string;
   if (failed) {
-    label = `Stopped at ${failed.stage_name ?? "an unnamed stage"} — ${completed} of ${total} stages finished.`;
+    label = `Stopped at ${failed.stage_name ?? "an unnamed stage"}. ${summary}.`;
   } else if (running) {
-    label = `Stage ${runningIndex + 1} of ${total}: ${running.stage_name ?? "unnamed stage"}.`;
-  } else if (cancelled > 0) {
-    label = `${completed} of ${total} stages finished; ${cancelled} cancelled.`;
+    label = `Stage ${runningIndex + 1} of ${total}: ${running.stage_name ?? "unnamed stage"}.${outcomes.length > 0 ? ` ${summary}.` : ""}`;
+  } else if (outcomes.length > 0) {
+    label = `${summary}.`;
   } else if (isFinished) {
     label = `All ${total} stages finished.`;
   } else {
-    label = `${completed} of ${total} stages finished; the next has not started.`;
+    label = `${summary}; the next has not started.`;
   }
 
   return {

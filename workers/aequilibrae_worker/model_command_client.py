@@ -178,6 +178,10 @@ def validate_command(command: dict):
     _uuid(command['request_id'])
     args = command['arguments']
     operation = command['operation']
+    if operation in ('register_model_population_checkpoint', 'create_model_population_replacement'):
+        import model_population_replacement
+        model_population_replacement.validate(command)
+        return
     if operation == 'abandon_model_run_execution':
         import model_recovery_decision_command as recovery_decision
         recovery_decision.validate(command)
@@ -272,6 +276,12 @@ def _skip_receipt(command: dict, receipt: object) -> dict:
 
 
 def checked_receipt(command: dict, receipt: object) -> dict:
+    if command['operation'] in ('register_model_population_checkpoint', 'create_model_population_replacement'):
+        import model_population_replacement
+        try:
+            return model_population_replacement.check_receipt(command, receipt)
+        except (ValueError, TypeError, KeyError, AttributeError):
+            raise DeliveryUnconfirmed('Population replacement receipt differs') from None
     if command['operation'] == 'abandon_model_run_execution':
         import model_recovery_decision_command as recovery_decision
         try:
@@ -357,6 +367,8 @@ def rpc_arguments(command: dict) -> dict:
     result = {'p_request_id': command['request_id']}
     keys = {
         'abandon_model_run_execution': ('workspace_id', 'run_id', 'actor_id', 'expected_state', 'reason', 'evidence'),
+        'register_model_population_checkpoint': ('workspace_id', 'run_id', 'stage_id', 'deployment_id', 'facts'),
+        'create_model_population_replacement': ('workspace_id', 'run_id', 'actor_id', 'expected_state', 'checkpoint_id', 'checkpoint_sha256', 'reason', 'acknowledged_new_run'),
         'skip_blocked_model_stage': ('workspace_id', 'run_id', 'stage_id', 'blocker_id', 'blocker_status'),
         'claim_model_stage_attempt': ('stage_id', 'worker_id'),
         'write_model_stage_attempt': ('attempt_id', 'status', 'log_tail', 'error'),

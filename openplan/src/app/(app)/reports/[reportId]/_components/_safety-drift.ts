@@ -74,8 +74,8 @@ export function buildArtifactSafetyReadDriftItem(
     ? {
         key: "safety-evidence-read",
         label: "Crash evidence read",
-        status: "updated",
-        detail: "This packet recorded that its project-linked crash evidence could not be read. It is not current or ready until regeneration completes with a readable safety section.",
+        status: "unassessed",
+        detail: "This packet recorded that its project-linked crash evidence could not be read. Review the unavailable evidence before relying on it; a failed read does not establish a source change or unchanged inputs.",
       }
     : null;
 }
