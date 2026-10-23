@@ -1,0 +1,6 @@
+{
+  "commit": "076c84a6de678c1116fc2bf9f29092ac3b0fd242",
+  "path": "scripts/modeling/common_population.py",
+  "sha256": "51c0263b9ee0640294c9b5089d6e4bb422d908bd2254da514537a8c2674b752f",
+  "purpose": "Pre-memory-repair byte parity fixture; not a scientific reference"
+}

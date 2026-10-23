@@ -1,0 +1,72 @@
+[
+  {
+    "name": "comment",
+    "expected": "survive",
+    "exit_codes": [
+      0,
+      0
+    ],
+    "expected_observed": true,
+    "restored_sha256": "5f0e2ec0df73ca0a61c6fd9bf916aeec9323ab95a5d3e70b0ff9fea506b07328"
+  },
+  {
+    "name": "household-count",
+    "expected": "assertion failure",
+    "exit_codes": [
+      1,
+      0
+    ],
+    "expected_observed": true,
+    "restored_sha256": "5f0e2ec0df73ca0a61c6fd9bf916aeec9323ab95a5d3e70b0ff9fea506b07328"
+  },
+  {
+    "name": "worker-count",
+    "expected": "assertion failure",
+    "exit_codes": [
+      1,
+      0
+    ],
+    "expected_observed": true,
+    "restored_sha256": "5f0e2ec0df73ca0a61c6fd9bf916aeec9323ab95a5d3e70b0ff9fea506b07328"
+  },
+  {
+    "name": "person-numbers",
+    "expected": "assertion failure",
+    "exit_codes": [
+      1,
+      0
+    ],
+    "expected_observed": true,
+    "restored_sha256": "5f0e2ec0df73ca0a61c6fd9bf916aeec9323ab95a5d3e70b0ff9fea506b07328"
+  },
+  {
+    "name": "row-width",
+    "expected": "assertion failure",
+    "exit_codes": [
+      1,
+      0
+    ],
+    "expected_observed": true,
+    "restored_sha256": "5f0e2ec0df73ca0a61c6fd9bf916aeec9323ab95a5d3e70b0ff9fea506b07328"
+  },
+  {
+    "name": "canonical-spacing",
+    "expected": "assertion failure",
+    "exit_codes": [
+      0,
+      1
+    ],
+    "expected_observed": true,
+    "restored_sha256": "5f0e2ec0df73ca0a61c6fd9bf916aeec9323ab95a5d3e70b0ff9fea506b07328"
+  },
+  {
+    "name": "nonfinite",
+    "expected": "assertion failure",
+    "exit_codes": [
+      0,
+      1
+    ],
+    "expected_observed": true,
+    "restored_sha256": "5f0e2ec0df73ca0a61c6fd9bf916aeec9323ab95a5d3e70b0ff9fea506b07328"
+  }
+]

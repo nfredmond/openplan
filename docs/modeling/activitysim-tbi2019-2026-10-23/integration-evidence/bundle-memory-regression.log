@@ -1,0 +1,10 @@
+test_builds_bundle_from_manifest_and_can_symlink_skim (test_build_activitysim_input_bundle.BuildActivitySimInputBundleTests.test_builds_bundle_from_manifest_and_can_symlink_skim) ... ok
+test_builds_bundle_from_screening_run_dir (test_build_activitysim_input_bundle.BuildActivitySimInputBundleTests.test_builds_bundle_from_screening_run_dir) ... ok
+test_mtc_retains_raw_realization_and_uses_its_profile_and_school_inputs (test_build_activitysim_input_bundle.BuildMtcConfigPackageTests.test_mtc_retains_raw_realization_and_uses_its_profile_and_school_inputs) ... ok
+test_mtc_with_a_scaffold_population_is_refused (test_build_activitysim_input_bundle.BuildMtcConfigPackageTests.test_mtc_with_a_scaffold_population_is_refused) ... ok
+test_the_mtc_bundle_is_runnable_shaped_end_to_end (test_build_activitysim_input_bundle.BuildMtcConfigPackageTests.test_the_mtc_bundle_is_runnable_shaped_end_to_end) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.216s
+
+OK

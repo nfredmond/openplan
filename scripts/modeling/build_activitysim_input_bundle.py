@@ -994,6 +994,9 @@ def build_activitysim_input_bundle(
             from common_population import retained_school_enrollment
 
             retained_enrollment = retained_school_enrollment(loaded_population)
+        # The reader verified all raw diagnostic bytes. Keep their full retained
+        # file, copied below, but release weights unused by engine conversion.
+        loaded_population["diagnostics"].pop("zone_fits", None)
 
     output_path = Path(output_dir).expanduser().resolve()
     if output_path.exists():

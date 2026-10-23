@@ -8,17 +8,20 @@ The integration merges #379 and #382. The merge resolves only the competing
 
 ## Synthetic and source checks
 
-The new bulk-Census, fare/coverage, WAC and retained-skim suites run 25 tests.
+The new bulk-Census, fare/coverage, WAC and retained-skim suites run 27 tests.
 The existing transit suite runs 24; the 2019-profile and tour-fixture suites
 run 11. The MTC adapter runs 50 tests with four explicit skips, leaving 46
 passed tests. Its skipped stock checks expect an environment inside this
 checkout; the actual native interpreter lives in the main checkout. Those
 skips concern stock person coding, skim inventory, overlay columns and config
 resolution. The TypeScript population registry runs 34 tests with Vitest
-`--pool=forks --maxWorkers=2`. None reads TBI outcome records.
+`--pool=forks --maxWorkers=2`. None reads TBI outcome records. The memory repair also passes 24 common-population,
+11 common-package and five bundle tests. Two parity tests compare every retained
+file byte and loaded record against the committed pre-repair implementation,
+and preserve nonfinite-value refusal before directory creation.
 
-The three mutation campaigns contain 48 controls: four harmless changes
-survive and 44 targeted wrong behaviors reach assertion failures. Each campaign
+The four mutation campaigns contain 55 controls: five harmless changes
+survive and 50 targeted wrong behaviors reach assertion failures. Each campaign
 restores the exact source hash. The ledgers and individual logs reside in
 `integration-evidence/`. These controls cover decoding, membership, uniqueness,
 coverage, source binding, fare periods, missingness, employment conservation and
@@ -84,3 +87,25 @@ not a household sample or a coefficient change. The named candidate reproduces
 all 27 frozen substitutions and the original candidate hash. No outcome
 opening is implied by preparing those recipes. The readiness report records
 whether each native stage actually completes.
+
+## Full-population retention failure and repair
+
+The first complete fit reports 1,219,702 households, 3,150,169 persons and
+1,496,481 workers, with households in 700 of 704 zones. These are synthetic
+input counts, not modeled travel outcomes. Its next retention stage exceeds
+6 GiB and the scope records `Result=oom-kill`, memory peak 6,442,450,944 bytes
+and elapsed time 31 minutes 12.790 seconds. No complete retained population
+package survives that attempt. The initial controller records both model arms
+as not started. Those records remain separately retained.
+
+The repair retains compact person-number/worker pairs during roster checks,
+streams canonical diagnostic JSON through a temporary file, shares equal source
+strings while parsing and releases consumed byte buffers. The builder releases
+in-memory fit-weight arrays after validation and preserves their full retained
+file. Small-fixture output bytes and loaded records match the original writer
+and reader. Six targeted mutation controls preserve household count, worker
+count, person-number, row-width, canonical-byte and nonfinite-value protection;
+one harmless change passes. No fitting target, population, source, tolerance or
+scientific gate changes. The retry uses the same sources and fitter and retains
+a hash-bound owned fit checkpoint before writing the common package. Native
+completion remains a separate result.

@@ -1,0 +1,7 @@
+test_nonfinite_diagnostic_refuses_before_creating_directory (test_common_population_memory.MemoryParity.test_nonfinite_diagnostic_refuses_before_creating_directory) ... ok
+test_retained_bytes_and_loaded_rows_match_original (test_common_population_memory.MemoryParity.test_retained_bytes_and_loaded_rows_match_original) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.010s
+
+OK
