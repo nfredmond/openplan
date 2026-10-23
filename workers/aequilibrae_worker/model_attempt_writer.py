@@ -11,6 +11,7 @@ import uuid
 import model_command_client as client
 import model_command_journal as journal
 from model_attempt_invocation import AttemptContext, ReconciliationRequired
+from supabase_service_headers import service_key_headers
 
 RUN_CONFIGURATION_FIELDS = ('scenario_entry_id', 'corridor_geojson', 'query_text', 'engine_key', 'run_title', 'input_snapshot_json')
 
@@ -97,7 +98,7 @@ class AttemptWriter:
             run_projection += ',' + ','.join(RUN_CONFIGURATION_FIELDS)
         try:
             response = get(self.base_url.rstrip('/') + '/rest/v1/model_run_stages',
-                headers={'apikey': self.service_key, 'Authorization': 'Bearer ' + self.service_key},
+                headers=service_key_headers(self.service_key),
                 params={'id': 'eq.' + ctx.stage_id, 'run_id': 'eq.' + ctx.run_id,
                         'model_runs.workspace_id': 'eq.' + ctx.workspace_id,
                         'select': ('stage_name,' if expected_stage_name is not None else '') + 'id,run_id,status,attempt_managed,active_attempt_id,log_tail,error_message,model_runs!inner(' + run_projection + ')'},

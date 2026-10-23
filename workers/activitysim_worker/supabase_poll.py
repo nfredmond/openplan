@@ -48,6 +48,7 @@ if _SHARED_WORKER_DIR not in sys.path:
     sys.path.append(_SHARED_WORKER_DIR)
 from model_receipt_values import same_json_value
 import model_stage_lease
+from supabase_service_headers import service_key_headers
 
 # Locally load .env (worker dir) then the app's .env.local; in a container these
 # come from the environment. override=False so real env vars always win.
@@ -64,8 +65,7 @@ if not SUPABASE_URL or not SUPABASE_KEY:
     )
 
 HEADERS = {
-    "apikey": SUPABASE_KEY,
-    "Authorization": f"Bearer {SUPABASE_KEY}",
+    **service_key_headers(SUPABASE_KEY),
     "Content-Type": "application/json",
     "Prefer": "return=representation",
 }
@@ -491,7 +491,7 @@ def sb_upload_evidence(
         requests.post(
             f"{SUPABASE_URL}/storage/v1/object/run-artifacts/{object_path}",
             headers={
-                "apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}",
+                **service_key_headers(SUPABASE_KEY),
                 "Content-Type": content_type, "x-upsert": "false",
             },
             data=data, timeout=60,

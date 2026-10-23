@@ -16,6 +16,7 @@ import model_common_population_package as package
 import model_common_population_handoff as handoff
 import model_common_population_setup_recovery as recovery
 import model_package_inputs as snapshots
+from supabase_service_headers import service_key_headers
 
 SCHEMA = 'openplan.population-replacement.v1'
 NAMESPACE = UUID('34842a38-af5e-4163-8ae7-f4e3690229dc')
@@ -39,7 +40,7 @@ def rpc(reader, name, arguments):
         import requests
         post = requests.post
     with closing(post(reader.base_url.rstrip('/') + '/rest/v1/rpc/' + name,
-            headers={'apikey': reader.service_key, 'Authorization': 'Bearer ' + reader.service_key},
+            headers=service_key_headers(reader.service_key),
             json=arguments, timeout=(5, 30), allow_redirects=False)) as response:
         if response.status_code != 200:
             raise ValueError('Registered population access is unconfirmed')

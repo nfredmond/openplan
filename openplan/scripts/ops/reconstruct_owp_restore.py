@@ -4,15 +4,27 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import urllib.request
+
+
+# Three base64url segments, the first an encoded JSON object ("{" -> "eyJ").
+LEGACY_JWT = re.compile(r'eyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+')
+
+
+def service_key_headers(key):
+    """apikey always; Bearer only for a legacy service_role JWT, not an sb_secret_ key."""
+    headers = {'apikey': key}
+    if LEGACY_JWT.fullmatch(key):
+        headers['Authorization'] = 'Bearer ' + key
+    return headers
 
 
 def request(path, body=None):
     key = os.environ['RESTORE_SERVICE_KEY']
     req = urllib.request.Request(os.environ['RESTORE_API_URL'] + path,
         data=json.dumps(body).encode() if body is not None else None,
-        headers={'apikey': key, 'Authorization': 'Bearer '+key,
-                 'Content-Type': 'application/json', 'Prefer': 'count=exact'})
+        headers={**service_key_headers(key), 'Content-Type': 'application/json', 'Prefer': 'count=exact'})
     with urllib.request.urlopen(req, timeout=30) as response:
         data = json.load(response)
         if isinstance(data, list):
