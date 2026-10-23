@@ -1,0 +1,22 @@
+{
+  "s2-cordon-impedance-2026-10-23": {
+    "files": 190,
+    "matched": 190,
+    "mismatches": []
+  },
+  "s2-cordon-impedance-successor-2026-10-23": {
+    "files": 201,
+    "matched": 201,
+    "mismatches": []
+  },
+  "earlier_report": {
+    "bytes": 42672,
+    "sha256": "99998f3971bf138eabbe2ed63cf2117553e375b33c96d49d561edf3ca8c6b991",
+    "unchanged_prefix": true
+  },
+  "audited_records_except_append": {
+    "checked": 897,
+    "mismatches": []
+  },
+  "note": "Read-only integrity accounting after the tooling stop. No scientific opening, reassessment, test suite or mutation retry."
+}

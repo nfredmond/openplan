@@ -1,0 +1,64 @@
+{
+  "preregistration_commit": "60bc3874d907e7321feb54abb34f061259193724",
+  "lock_sha256": "9757977bbc41ab42ba232235e6d0a87df5381ae1b33a18964ddf19777c312ba9",
+  "shape_valid": true,
+  "command_files": [
+    {
+      "path": "/usr/bin/env",
+      "exists": true,
+      "role": "existing executable, input or directory"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/s2-cordon-py311-round5-20261023/venv/bin/python3",
+      "exists": true,
+      "role": "existing executable, input or directory"
+    },
+    {
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/scripts/modeling/s2_cordon/evaluate_py311.py",
+      "exists": true,
+      "role": "existing executable, input or directory"
+    },
+    {
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/data/modeling/s2-cordon-py311-round5-2026-10-23/inputs.json",
+      "exists": true,
+      "role": "existing executable, input or directory"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/s2-cordon-py311-round5-20261023/execution",
+      "exists": true,
+      "role": "existing executable, input or directory"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/s2-cordon-py311-round5-20261023/execution/candidate.json",
+      "exists": false,
+      "role": "future candidate output"
+    },
+    {
+      "path": "/usr/bin/env",
+      "exists": true,
+      "role": "existing executable, input or directory"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/s2-cordon-py311-round5-20261023/venv/bin/python3",
+      "exists": true,
+      "role": "existing executable, input or directory"
+    },
+    {
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/scripts/modeling/s2_cordon/validate.py",
+      "exists": true,
+      "role": "existing executable, input or directory"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/s2-cordon-py311-round5-20261023/execution/candidate.json",
+      "exists": false,
+      "role": "future candidate output"
+    }
+  ],
+  "closure_files": 215,
+  "all_closure_files_exist": true,
+  "archive_exists": true,
+  "archive_sha256_matches": true,
+  "original_members_unchanged": true,
+  "receipt_absent": true,
+  "aggregate_absent": true
+}

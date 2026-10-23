@@ -1,0 +1,33 @@
+{
+  "status": "stopped_before_preregistration_and_lock",
+  "reason": "Verification driver invokes nonexistent scripts/modeling/tests/test_screening_assignment_settings.py; interpreter exits 2. Owner stops under task tooling-failure rule without correction or retry.",
+  "audit_input_runtime_condition": "satisfied; all five original input run summaries record Python 3.11.15 / NumPy 2.0.2; 30 source hashes match",
+  "tests_passed": 40,
+  "tests_failed": 0,
+  "test_setup_command_errors": 1,
+  "tests_skipped": 0,
+  "mutation_campaigns_executed": 0,
+  "real_county_assignments": 0,
+  "synthetic_assignments": 5,
+  "scientific_result": "not measured",
+  "advance_retire_decision": "not reached; no registered execution",
+  "preregistration_committed": false,
+  "lock_created": false,
+  "receipt_created": false,
+  "memory_scope": "run-p1037863-i59683146.scope",
+  "MemoryMax": 6442450944,
+  "MemorySwapMax": 0,
+  "unexecuted": [
+    "county assignment regression (incorrect path)",
+    "existing two-test synthetic successor regression",
+    "11-test study suite",
+    "native graph compatibility probe",
+    "dependency pin suite",
+    "runtime mutation campaign",
+    "new successor mutation campaign",
+    "second-successor preregistration and lock",
+    "11 scientific assignments",
+    "county and road-class scientific scoring and repeat"
+  ],
+  "next_step_requires_lead": "Review preserved command error and authorize a continuation; scripts/modeling/tests/test_assignment_convergence_settings.py is the existing relevant filename. Do not reuse a consumed lock or treat these partial checks as completed preparation."
+}

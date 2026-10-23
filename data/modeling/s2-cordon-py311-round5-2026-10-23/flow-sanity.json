@@ -1,0 +1,836 @@
+{
+  "lock_sha256": "9757977bbc41ab42ba232235e6d0a87df5381ae1b33a18964ddf19777c312ba9",
+  "records": [
+    {
+      "geography": "06047",
+      "arm": "baseline",
+      "peak_hour_factor": 0.1,
+      "class_pce": 1,
+      "output_hashes": {
+        "assignment.json": "e89b072cdd283847073de436762ae5d06ed6910a5a322df93f82c09fa0dd2667",
+        "diagnostic.json": "879118069b44c100435ca30916d9fc1b037c209859cf376ee84b300a8ee88e32",
+        "link_volumes.csv": "961a6ea4e2148ef6cbc34a7873f1457ea7c73a10b3ad008c4910a33cea2211c0"
+      },
+      "daily_vehicle_flow": {
+        "links": 98750,
+        "zero": 91621,
+        "positive": 7129,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 0.06262588083398504,
+        "median_positive": 5827.506499347412,
+        "p95_positive": 37163.16454418498,
+        "maximum": 81359.14756742175
+      },
+      "period_class_flow": {
+        "links": 98750,
+        "zero": 91621,
+        "positive": 7129,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 0.006262588083398505,
+        "median_positive": 582.7506499347412,
+        "p95_positive": 3716.316454418499,
+        "maximum": 8135.914756742175
+      },
+      "pce_minus_class_daily_max_absolute": 0.0,
+      "directional_pce_minus_class_daily_max_absolute": {
+        "AB": 0.0,
+        "BA": 0.0
+      },
+      "daily_pce_equals_class_flow": true,
+      "capacity_ratio_div_peak": {
+        "links": 98750,
+        "zero": 91621,
+        "positive": 7129,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 6.958431203776115e-05,
+        "median_positive": 4.1755638114867715,
+        "p95_positive": 12.403175898916416,
+        "maximum": 37.15119516962705
+      },
+      "matched_stations": 78,
+      "median_modeled_to_observed_ratio": 1.6080852509778358,
+      "ratio_definition": "Median of modeled daily corridor vehicle flow divided by published count, all matched stations including zero flows",
+      "road_classes": {
+        "motorway": {
+          "stations": 29,
+          "median_modeled_to_observed_ratio": 0.8922670349907919
+        },
+        "primary": {
+          "stations": 33,
+          "median_modeled_to_observed_ratio": 2.4477414965986397
+        },
+        "secondary": {
+          "stations": 2,
+          "median_modeled_to_observed_ratio": 0.0
+        },
+        "tertiary": {
+          "stations": 1,
+          "median_modeled_to_observed_ratio": 1.2778235294117648
+        },
+        "trunk": {
+          "stations": 13,
+          "median_modeled_to_observed_ratio": 2.230585074626866
+        }
+      }
+    },
+    {
+      "geography": "06047",
+      "arm": "candidate",
+      "peak_hour_factor": 0.1,
+      "class_pce": 1,
+      "output_hashes": {
+        "assignment.json": "76db4e417819bb5a4d988e22583ba3a23143efcbe1f0024c2da1d7f11300bc1b",
+        "diagnostic.json": "7cf5915320258a1fd1a83266c504cb2baab82760c8680f012ed35abf02a18d82",
+        "link_volumes.csv": "26679f952dad97ea7e65a30f4b36b52a56e319a365c5bb1e5507a53d3ab6f11f"
+      },
+      "daily_vehicle_flow": {
+        "links": 98750,
+        "zero": 91922,
+        "positive": 6828,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 0.0024108142371155107,
+        "median_positive": 5960.483342846744,
+        "p95_positive": 35374.67632640635,
+        "maximum": 71461.85792435563
+      },
+      "period_class_flow": {
+        "links": 98750,
+        "zero": 91922,
+        "positive": 6828,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 0.0002410814237115511,
+        "median_positive": 596.0483342846744,
+        "p95_positive": 3537.467632640635,
+        "maximum": 7146.185792435564
+      },
+      "pce_minus_class_daily_max_absolute": 0.0,
+      "directional_pce_minus_class_daily_max_absolute": {
+        "AB": 0.0,
+        "BA": 0.0
+      },
+      "daily_pce_equals_class_flow": true,
+      "capacity_ratio_div_peak": {
+        "links": 98750,
+        "zero": 91922,
+        "positive": 6828,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 4.018023728525851e-06,
+        "median_positive": 4.228333732037053,
+        "p95_positive": 11.778739860567297,
+        "maximum": 41.40583379652911
+      },
+      "matched_stations": 78,
+      "median_modeled_to_observed_ratio": 1.538468608597285,
+      "ratio_definition": "Median of modeled daily corridor vehicle flow divided by published count, all matched stations including zero flows",
+      "road_classes": {
+        "motorway": {
+          "stations": 29,
+          "median_modeled_to_observed_ratio": 0.846408064516129
+        },
+        "primary": {
+          "stations": 33,
+          "median_modeled_to_observed_ratio": 2.3267192982456137
+        },
+        "secondary": {
+          "stations": 2,
+          "median_modeled_to_observed_ratio": 0.0
+        },
+        "tertiary": {
+          "stations": 1,
+          "median_modeled_to_observed_ratio": 1.2599058823529412
+        },
+        "trunk": {
+          "stations": 13,
+          "median_modeled_to_observed_ratio": 1.9197731343283582
+        }
+      }
+    },
+    {
+      "geography": "06069",
+      "arm": "baseline",
+      "peak_hour_factor": 0.1,
+      "class_pce": 1,
+      "output_hashes": {
+        "assignment.json": "b2372486371218428e8f8e5cacc0cc15f925d745eb52ec630cf6b7222ca2fd2b",
+        "diagnostic.json": "5929afa5699bfd5af8f58b4c33c0d231cdf6780670cb75d316c1215a5479ec91",
+        "link_volumes.csv": "21aed7550e35a92b814fa32425b8828235a78edd0606be1ed9286f14bd78a065"
+      },
+      "daily_vehicle_flow": {
+        "links": 34040,
+        "zero": 32176,
+        "positive": 1864,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 0.3865421430172499,
+        "median_positive": 3400.5338126658453,
+        "p95_positive": 28225.352096550567,
+        "maximum": 60651.10945722261
+      },
+      "period_class_flow": {
+        "links": 34040,
+        "zero": 32176,
+        "positive": 1864,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 0.03865421430172499,
+        "median_positive": 340.05338126658455,
+        "p95_positive": 2822.535209655057,
+        "maximum": 6065.110945722261
+      },
+      "pce_minus_class_daily_max_absolute": 0.0,
+      "directional_pce_minus_class_daily_max_absolute": {
+        "AB": 0.0,
+        "BA": 0.0
+      },
+      "daily_pce_equals_class_flow": true,
+      "capacity_ratio_div_peak": {
+        "links": 34040,
+        "zero": 32176,
+        "positive": 1864,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 1.062058118418717e-05,
+        "median_positive": 2.6422896242563967,
+        "p95_positive": 14.080498152269323,
+        "maximum": 55.650930495265406
+      },
+      "matched_stations": 18,
+      "median_modeled_to_observed_ratio": 0.6317082744173868,
+      "ratio_definition": "Median of modeled daily corridor vehicle flow divided by published count, all matched stations including zero flows",
+      "road_classes": {
+        "motorway": {
+          "stations": 5,
+          "median_modeled_to_observed_ratio": 0.396871186440678
+        },
+        "primary": {
+          "stations": 6,
+          "median_modeled_to_observed_ratio": 3.0732600000000003
+        },
+        "secondary": {
+          "stations": 2,
+          "median_modeled_to_observed_ratio": 0.0068535714285714285
+        },
+        "tertiary": {
+          "stations": 1,
+          "median_modeled_to_observed_ratio": 0.4883543859649123
+        },
+        "trunk": {
+          "stations": 4,
+          "median_modeled_to_observed_ratio": 0.8014754385964913
+        }
+      }
+    },
+    {
+      "geography": "06069",
+      "arm": "candidate",
+      "peak_hour_factor": 0.1,
+      "class_pce": 1,
+      "output_hashes": {
+        "assignment.json": "342cb65b21f34b7cbabb0f1da1d37374195f2c9e63cf3d37ae759a1e35d6fab3",
+        "diagnostic.json": "a51a8344702cbd2c069c4a2191edd8d1455e37c5b1c45b5c2f15f64c8d734051",
+        "link_volumes.csv": "e204d69f4b533a705d6ccd402b0a013ad36980f90b06d7be75b50cab468ae643"
+      },
+      "daily_vehicle_flow": {
+        "links": 34040,
+        "zero": 32189,
+        "positive": 1851,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 0.1870577353440122,
+        "median_positive": 3394.45743798106,
+        "p95_positive": 27774.15754219808,
+        "maximum": 57642.28826342511
+      },
+      "period_class_flow": {
+        "links": 34040,
+        "zero": 32189,
+        "positive": 1851,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 0.018705773534401223,
+        "median_positive": 339.44574379810604,
+        "p95_positive": 2777.415754219808,
+        "maximum": 5764.228826342511
+      },
+      "pce_minus_class_daily_max_absolute": 0.0,
+      "directional_pce_minus_class_daily_max_absolute": {
+        "AB": 0.0,
+        "BA": 0.0
+      },
+      "daily_pce_equals_class_flow": true,
+      "capacity_ratio_div_peak": {
+        "links": 34040,
+        "zero": 32189,
+        "positive": 1851,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 7.811004239708928e-06,
+        "median_positive": 2.662929701133392,
+        "p95_positive": 14.198175232080535,
+        "maximum": 53.404701516892516
+      },
+      "matched_stations": 18,
+      "median_modeled_to_observed_ratio": 0.6270916993977481,
+      "ratio_definition": "Median of modeled daily corridor vehicle flow divided by published count, all matched stations including zero flows",
+      "road_classes": {
+        "motorway": {
+          "stations": 5,
+          "median_modeled_to_observed_ratio": 0.3601864406779661
+        },
+        "primary": {
+          "stations": 6,
+          "median_modeled_to_observed_ratio": 2.801266666666667
+        },
+        "secondary": {
+          "stations": 2,
+          "median_modeled_to_observed_ratio": 0.006501785714285714
+        },
+        "tertiary": {
+          "stations": 1,
+          "median_modeled_to_observed_ratio": 0.4721438596491228
+        },
+        "trunk": {
+          "stations": 4,
+          "median_modeled_to_observed_ratio": 0.801581052631579
+        }
+      }
+    },
+    {
+      "geography": "06069",
+      "arm": "repeat",
+      "peak_hour_factor": 0.1,
+      "class_pce": 1,
+      "output_hashes": {
+        "assignment.json": "49a565543863aa8933a11b666bb685fcf516730d7b287c6608f0d07dcd3e2dc2",
+        "diagnostic.json": "a51a8344702cbd2c069c4a2191edd8d1455e37c5b1c45b5c2f15f64c8d734051",
+        "link_volumes.csv": "e204d69f4b533a705d6ccd402b0a013ad36980f90b06d7be75b50cab468ae643"
+      },
+      "daily_vehicle_flow": {
+        "links": 34040,
+        "zero": 32189,
+        "positive": 1851,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 0.1870577353440122,
+        "median_positive": 3394.45743798106,
+        "p95_positive": 27774.15754219808,
+        "maximum": 57642.28826342511
+      },
+      "period_class_flow": {
+        "links": 34040,
+        "zero": 32189,
+        "positive": 1851,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 0.018705773534401223,
+        "median_positive": 339.44574379810604,
+        "p95_positive": 2777.415754219808,
+        "maximum": 5764.228826342511
+      },
+      "pce_minus_class_daily_max_absolute": 0.0,
+      "directional_pce_minus_class_daily_max_absolute": {
+        "AB": 0.0,
+        "BA": 0.0
+      },
+      "daily_pce_equals_class_flow": true,
+      "capacity_ratio_div_peak": {
+        "links": 34040,
+        "zero": 32189,
+        "positive": 1851,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 7.811004239708928e-06,
+        "median_positive": 2.662929701133392,
+        "p95_positive": 14.198175232080535,
+        "maximum": 53.404701516892516
+      },
+      "matched_stations": 18,
+      "median_modeled_to_observed_ratio": 0.6270916993977481,
+      "ratio_definition": "Median of modeled daily corridor vehicle flow divided by published count, all matched stations including zero flows",
+      "road_classes": {
+        "motorway": {
+          "stations": 5,
+          "median_modeled_to_observed_ratio": 0.3601864406779661
+        },
+        "primary": {
+          "stations": 6,
+          "median_modeled_to_observed_ratio": 2.801266666666667
+        },
+        "secondary": {
+          "stations": 2,
+          "median_modeled_to_observed_ratio": 0.006501785714285714
+        },
+        "tertiary": {
+          "stations": 1,
+          "median_modeled_to_observed_ratio": 0.4721438596491228
+        },
+        "trunk": {
+          "stations": 4,
+          "median_modeled_to_observed_ratio": 0.801581052631579
+        }
+      }
+    },
+    {
+      "geography": "06107",
+      "arm": "baseline",
+      "peak_hour_factor": 0.1,
+      "class_pce": 1,
+      "output_hashes": {
+        "assignment.json": "78fde10b9cf9904260534a1e02991a29c7a65b74b55e5cd86baf11ea32e54ba5",
+        "diagnostic.json": "bfe2d3003f4ec316ff28ddddc83c3c97cbc60c492f437f35956b16579eeae38d",
+        "link_volumes.csv": "c80750f651ba4c7f67c671e63eed68e73cf445f5b55cbacb639cf2bd9ef55994"
+      },
+      "daily_vehicle_flow": {
+        "links": 90690,
+        "zero": 77430,
+        "positive": 13260,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 0.002305400778301087,
+        "median_positive": 5141.187143390421,
+        "p95_positive": 28244.43322362708,
+        "maximum": 78048.11409028697
+      },
+      "period_class_flow": {
+        "links": 90690,
+        "zero": 77430,
+        "positive": 13260,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 0.00023054007783010873,
+        "median_positive": 514.1187143390421,
+        "p95_positive": 2824.443322362708,
+        "maximum": 7804.811409028697
+      },
+      "pce_minus_class_daily_max_absolute": 0.0,
+      "directional_pce_minus_class_daily_max_absolute": {
+        "AB": 0.0,
+        "BA": 0.0
+      },
+      "daily_pce_equals_class_flow": true,
+      "capacity_ratio_div_peak": {
+        "links": 90690,
+        "zero": 77430,
+        "positive": 13260,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 1.2342371354084673e-07,
+        "median_positive": 2.894905722437469,
+        "p95_positive": 12.030374174178261,
+        "maximum": 81.53903276884117
+      },
+      "matched_stations": 140,
+      "median_modeled_to_observed_ratio": 1.7538453525641025,
+      "ratio_definition": "Median of modeled daily corridor vehicle flow divided by published count, all matched stations including zero flows",
+      "road_classes": {
+        "motorway": {
+          "stations": 26,
+          "median_modeled_to_observed_ratio": 0.9353212997281937
+        },
+        "primary": {
+          "stations": 69,
+          "median_modeled_to_observed_ratio": 2.461411764705882
+        },
+        "secondary": {
+          "stations": 35,
+          "median_modeled_to_observed_ratio": 0.88115
+        },
+        "tertiary": {
+          "stations": 5,
+          "median_modeled_to_observed_ratio": 0.13925384615384614
+        },
+        "trunk": {
+          "stations": 5,
+          "median_modeled_to_observed_ratio": 4.138985815602837
+        }
+      }
+    },
+    {
+      "geography": "06107",
+      "arm": "candidate",
+      "peak_hour_factor": 0.1,
+      "class_pce": 1,
+      "output_hashes": {
+        "assignment.json": "4114dc7b8c953f3a82b25d448f559577675dca78497dd4093f52686df7d50338",
+        "diagnostic.json": "8af46ecdefd6527a48707d8d9c0d67150e49b450131029f49916d926f88a99c4",
+        "link_volumes.csv": "a7d90a32d1923c1109c1c6170060387d8bb8806fc11dd6844039dccc49b9c641"
+      },
+      "daily_vehicle_flow": {
+        "links": 90690,
+        "zero": 77546,
+        "positive": 13144,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 0.001225128052295973,
+        "median_positive": 5122.673609112632,
+        "p95_positive": 27802.461426409653,
+        "maximum": 77718.31897644114
+      },
+      "period_class_flow": {
+        "links": 90690,
+        "zero": 77546,
+        "positive": 13144,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 0.0001225128052295973,
+        "median_positive": 512.2673609112633,
+        "p95_positive": 2780.2461426409654,
+        "maximum": 7771.831897644114
+      },
+      "pce_minus_class_daily_max_absolute": 0.0,
+      "directional_pce_minus_class_daily_max_absolute": {
+        "AB": 0.0,
+        "BA": 0.0
+      },
+      "daily_pce_equals_class_flow": true,
+      "capacity_ratio_div_peak": {
+        "links": 90690,
+        "zero": 77546,
+        "positive": 13144,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 1.3510735173614945e-07,
+        "median_positive": 2.892633450513239,
+        "p95_positive": 11.81610310290472,
+        "maximum": 78.94290108285504
+      },
+      "matched_stations": 140,
+      "median_modeled_to_observed_ratio": 1.7534086622807017,
+      "ratio_definition": "Median of modeled daily corridor vehicle flow divided by published count, all matched stations including zero flows",
+      "road_classes": {
+        "motorway": {
+          "stations": 26,
+          "median_modeled_to_observed_ratio": 0.8579029404497158
+        },
+        "primary": {
+          "stations": 69,
+          "median_modeled_to_observed_ratio": 2.4509558823529414
+        },
+        "secondary": {
+          "stations": 35,
+          "median_modeled_to_observed_ratio": 0.8894766666666667
+        },
+        "tertiary": {
+          "stations": 5,
+          "median_modeled_to_observed_ratio": 0.10486153846153846
+        },
+        "trunk": {
+          "stations": 5,
+          "median_modeled_to_observed_ratio": 4.058631205673759
+        }
+      }
+    },
+    {
+      "geography": "08014",
+      "arm": "baseline",
+      "peak_hour_factor": 0.1,
+      "class_pce": 1,
+      "output_hashes": {
+        "assignment.json": "37545e548089b7edbf1994b2548b368372f9ad5ca5c0b39cc142f716aa79572b",
+        "diagnostic.json": "0c1ecdfb88a5b9abbb4e03d550ee02036e020152aa32975265248b5ff10cbb9a",
+        "link_volumes.csv": "a27b9af47b67747787d17dea28a5e0354baba97d795df52ae67fe4dbfe44368a"
+      },
+      "daily_vehicle_flow": {
+        "links": 49226,
+        "zero": 46343,
+        "positive": 2883,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 0.4800000000000002,
+        "median_positive": 5795.753453173863,
+        "p95_positive": 25487.605747269372,
+        "maximum": 49279.52000000002
+      },
+      "period_class_flow": {
+        "links": 49226,
+        "zero": 46343,
+        "positive": 2883,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 0.04800000000000002,
+        "median_positive": 579.5753453173863,
+        "p95_positive": 2548.760574726937,
+        "maximum": 4927.952000000002
+      },
+      "pce_minus_class_daily_max_absolute": 0.0,
+      "directional_pce_minus_class_daily_max_absolute": {
+        "AB": 0.0,
+        "BA": 0.0
+      },
+      "daily_pce_equals_class_flow": true,
+      "capacity_ratio_div_peak": {
+        "links": 49226,
+        "zero": 46343,
+        "positive": 2883,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 5.600056000560007e-06,
+        "median_positive": 2.2850786281545226,
+        "p95_positive": 9.782844697352232,
+        "maximum": 36.810722822235014
+      },
+      "matched_stations": 21,
+      "median_modeled_to_observed_ratio": 0.3763478723404255,
+      "ratio_definition": "Median of modeled daily corridor vehicle flow divided by published count, all matched stations including zero flows",
+      "road_classes": {
+        "motorway": {
+          "stations": 5,
+          "median_modeled_to_observed_ratio": 0.2421411111111111
+        },
+        "primary": {
+          "stations": 8,
+          "median_modeled_to_observed_ratio": 0.9506720241518114
+        },
+        "secondary": {
+          "stations": 1,
+          "median_modeled_to_observed_ratio": 0.53635
+        },
+        "tertiary": {
+          "stations": 3,
+          "median_modeled_to_observed_ratio": 0.0
+        },
+        "trunk": {
+          "stations": 4,
+          "median_modeled_to_observed_ratio": 1.5300003663003663
+        }
+      }
+    },
+    {
+      "geography": "08014",
+      "arm": "candidate",
+      "peak_hour_factor": 0.1,
+      "class_pce": 1,
+      "output_hashes": {
+        "assignment.json": "73e846532fb41be7f9ca0ab7e9b9d7da43f9f91eb252c306f0984d7131d67f47",
+        "diagnostic.json": "c092449b5d9a2c746d79910c0187a8fb552dcef706b86786577ea918a74706c9",
+        "link_volumes.csv": "13193e00f9ef4e79d0285ccb2a48b49884e4b86438e6b3b33de62e59d27abbe5"
+      },
+      "daily_vehicle_flow": {
+        "links": 49226,
+        "zero": 46323,
+        "positive": 2903,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 0.46643086036678916,
+        "median_positive": 5258.491640810431,
+        "p95_positive": 22605.223366702037,
+        "maximum": 43133.107708484335
+      },
+      "period_class_flow": {
+        "links": 49226,
+        "zero": 46323,
+        "positive": 2903,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 0.04664308603667892,
+        "median_positive": 525.8491640810431,
+        "p95_positive": 2260.522336670204,
+        "maximum": 4313.310770848434
+      },
+      "pce_minus_class_daily_max_absolute": 0.0,
+      "directional_pce_minus_class_daily_max_absolute": {
+        "AB": 0.0,
+        "BA": 0.0
+      },
+      "daily_pce_equals_class_flow": true,
+      "capacity_ratio_div_peak": {
+        "links": 49226,
+        "zero": 46323,
+        "positive": 2903,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 5.600056000560005e-06,
+        "median_positive": 2.1594725506256025,
+        "p95_positive": 9.704105498199546,
+        "maximum": 42.431467315801235
+      },
+      "matched_stations": 21,
+      "median_modeled_to_observed_ratio": 0.40647659574468087,
+      "ratio_definition": "Median of modeled daily corridor vehicle flow divided by published count, all matched stations including zero flows",
+      "road_classes": {
+        "motorway": {
+          "stations": 5,
+          "median_modeled_to_observed_ratio": 0.23381555555555558
+        },
+        "primary": {
+          "stations": 8,
+          "median_modeled_to_observed_ratio": 0.8008871477860839
+        },
+        "secondary": {
+          "stations": 1,
+          "median_modeled_to_observed_ratio": 0.42723125
+        },
+        "tertiary": {
+          "stations": 3,
+          "median_modeled_to_observed_ratio": 0.0
+        },
+        "trunk": {
+          "stations": 4,
+          "median_modeled_to_observed_ratio": 1.385920512820513
+        }
+      }
+    },
+    {
+      "geography": "08101",
+      "arm": "baseline",
+      "peak_hour_factor": 0.1,
+      "class_pce": 1,
+      "output_hashes": {
+        "assignment.json": "cd187d907df6896bfa3c5cf8ad7f14273d2d7c8688763120180b751113000a59",
+        "diagnostic.json": "6b718fc917603ab46bffb42ee3172a50aa514123f281e626ebd0f94fdd3d53c1",
+        "link_volumes.csv": "f2f0308fcdda893f5b04ce9f2d334e66892627588b899a4a724304ce77432098"
+      },
+      "daily_vehicle_flow": {
+        "links": 38378,
+        "zero": 32884,
+        "positive": 5494,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 0.03711870248173802,
+        "median_positive": 3696.105378742673,
+        "p95_positive": 27885.827573449336,
+        "maximum": 47954.96004526695
+      },
+      "period_class_flow": {
+        "links": 38378,
+        "zero": 32884,
+        "positive": 5494,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 0.0037118702481738026,
+        "median_positive": 369.6105378742673,
+        "p95_positive": 2788.5827573449337,
+        "maximum": 4795.496004526695
+      },
+      "pce_minus_class_daily_max_absolute": 0.0,
+      "directional_pce_minus_class_daily_max_absolute": {
+        "AB": 0.0,
+        "BA": 0.0
+      },
+      "daily_pce_equals_class_flow": true,
+      "capacity_ratio_div_peak": {
+        "links": 38378,
+        "zero": 32884,
+        "positive": 5494,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 7.428730354249622e-07,
+        "median_positive": 2.4017417482770385,
+        "p95_positive": 9.889117326284277,
+        "maximum": 63.6915325677629
+      },
+      "matched_stations": 80,
+      "median_modeled_to_observed_ratio": 1.3581203933747412,
+      "ratio_definition": "Median of modeled daily corridor vehicle flow divided by published count, all matched stations including zero flows",
+      "road_classes": {
+        "motorway": {
+          "stations": 26,
+          "median_modeled_to_observed_ratio": 1.206127857142857
+        },
+        "primary": {
+          "stations": 34,
+          "median_modeled_to_observed_ratio": 1.3885470238095237
+        },
+        "secondary": {
+          "stations": 12,
+          "median_modeled_to_observed_ratio": 3.5569922794117645
+        },
+        "tertiary": {
+          "stations": 2,
+          "median_modeled_to_observed_ratio": 0.0
+        },
+        "trunk": {
+          "stations": 6,
+          "median_modeled_to_observed_ratio": 1.396728356807512
+        }
+      }
+    },
+    {
+      "geography": "08101",
+      "arm": "candidate",
+      "peak_hour_factor": 0.1,
+      "class_pce": 1,
+      "output_hashes": {
+        "assignment.json": "de811ab835e1e50f787f1c4f5fb39d9e3f71737091140435bb216e7005e09c3f",
+        "diagnostic.json": "43c5ae05ccaac96e4350f2a7a72188504206ead159d044b6541159f0d3630998",
+        "link_volumes.csv": "3ff436483b81b0dbcaef0dd37ef01374301a7c544bec0f68dceade84483b5f3e"
+      },
+      "daily_vehicle_flow": {
+        "links": 38378,
+        "zero": 32933,
+        "positive": 5445,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 0.1458718184783094,
+        "median_positive": 3618.6689317027617,
+        "p95_positive": 27116.483981245532,
+        "maximum": 46468.15146358427
+      },
+      "period_class_flow": {
+        "links": 38378,
+        "zero": 32933,
+        "positive": 5445,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 0.01458718184783094,
+        "median_positive": 361.86689317027617,
+        "p95_positive": 2711.6483981245533,
+        "maximum": 4646.815146358427
+      },
+      "pce_minus_class_daily_max_absolute": 0.0,
+      "directional_pce_minus_class_daily_max_absolute": {
+        "AB": 0.0,
+        "BA": 0.0
+      },
+      "daily_pce_equals_class_flow": true,
+      "capacity_ratio_div_peak": {
+        "links": 38378,
+        "zero": 32933,
+        "positive": 5445,
+        "finite": true,
+        "negative": 0,
+        "minimum_positive": 3.128555995115207e-06,
+        "median_positive": 2.3326379973302704,
+        "p95_positive": 9.663736650541884,
+        "maximum": 60.58152963164366
+      },
+      "matched_stations": 80,
+      "median_modeled_to_observed_ratio": 1.3266909523809525,
+      "ratio_definition": "Median of modeled daily corridor vehicle flow divided by published count, all matched stations including zero flows",
+      "road_classes": {
+        "motorway": {
+          "stations": 26,
+          "median_modeled_to_observed_ratio": 1.1820871428571427
+        },
+        "primary": {
+          "stations": 34,
+          "median_modeled_to_observed_ratio": 1.3449751190476191
+        },
+        "secondary": {
+          "stations": 12,
+          "median_modeled_to_observed_ratio": 3.482077573529412
+        },
+        "tertiary": {
+          "stations": 2,
+          "median_modeled_to_observed_ratio": 0.0
+        },
+        "trunk": {
+          "stations": 6,
+          "median_modeled_to_observed_ratio": 1.3797279487179486
+        }
+      }
+    }
+  ],
+  "all_outputs_keep_vehicle_flow_units": true,
+  "limits": [
+    "Units and scale check only; does not prove model accuracy",
+    "Model day and year remain unknown",
+    "Source-supported observation intervals remain unavailable"
+  ]
+}
