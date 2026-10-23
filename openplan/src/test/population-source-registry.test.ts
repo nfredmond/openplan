@@ -21,6 +21,11 @@ const canonical2022 = {
   pums_endpoint: "https://api.census.gov/data/2022/acs/acs5/pums", sample_years: [2018, 2022],
   income_dollar_year: 2022, puma_fields: { "2020": "PUMA20", "2010": "PUMA10" },
 };
+const canonical2019 = {
+  adapter: "us_census_acs5_pums", acs_summary_endpoint: "https://api.census.gov/data/2019/acs/acs5",
+  pums_endpoint: "https://api.census.gov/data/2019/acs/acs5/pums", sample_years: [2015, 2019],
+  income_dollar_year: 2019, puma_fields: { "2010": "PUMA" },
+};
 const badProfiles: unknown[] = [
   undefined, null, [], "profile", {}, { ...canonical2023, adapter: "unknown" },
   { ...canonical2023, income_dollar_year: 2024 }, { ...canonical2023, income_dollar_year: "2023" },
@@ -32,9 +37,17 @@ const badProfiles: unknown[] = [
 ];
 
 describe("registered technical population profiles, without scientific acceptance", () => {
-  it("keeps exactly the two canonical retained identities and the actual one-adapter selection", () => {
+  it("adds the explicit 2019 retained identity without changing actual adapter selection", () => {
     expect(catalog.schema).toBe("openplan.population-source-profiles.v1");
-    expect(catalog.profiles.map((entry) => entry.profile)).toEqual([canonical2022, canonical2023]);
+    expect(catalog.profiles.map((entry) => entry.profile)).toEqual([canonical2022, canonical2023, canonical2019]);
+    expect(populationSourceRegistry.profileAllowed(canonical2019, "new_guided_launch")).toBe(false);
+    for (const purpose of ["retained_validation", "aequilibrae_production", "activitysim_consumption"] as const) {
+      expect(populationSourceRegistry.profileAllowed(canonical2019, purpose)).toBe(true);
+    }
+    for (const broken of [{ ...canonical2019, puma_fields: { "2020": "PUMA" } },
+      { ...canonical2019, sample_years: [2019, 2019] }, { ...canonical2019, income_dollar_year: 2022 }]) {
+      expect(isRetainedPopulationSourceProfile(broken)).toBe(false);
+    }
     expect(ZONE_ATTRIBUTE_SOURCES).toHaveLength(1);
     expect(resolveZoneAttributeSource()).toBe(ZONE_ATTRIBUTE_SOURCES[0]);
     expect(resolveZoneAttributeSource().retainedPopulation?.profile("new_guided_launch"))
@@ -77,7 +90,7 @@ describe("registered technical population profiles, without scientific acceptanc
       .toEqual({ status: "supported", profile: canonical2023 });
   });
 
-  it.each([canonical2022, canonical2023, ...badProfiles.filter((value) => value !== undefined)])("uses the same registry in the actual evidence reader without stripping %j", (profile) => {
+  it.each([canonical2022, canonical2023, canonical2019, ...badProfiles.filter((value) => value !== undefined)])("uses the same registry in the actual evidence reader without stripping %j", (profile) => {
     const f = populationFixture();
     const basis = { ...f.metadata.population_basis, source_profile: profile };
     const payload = sortedCompactJson(basis);
@@ -85,7 +98,7 @@ describe("registered technical population profiles, without scientific acceptanc
       population_basis_digest: createHash("sha256").update(payload).digest("hex") };
     const before = structuredClone(metadata);
     const evidence = verifiedGuidedPopulation(metadata);
-    const expected = [canonical2022, canonical2023].some((known) => sortedCompactJson(known) === sortedCompactJson(profile));
+    const expected = [canonical2022, canonical2023, canonical2019].some((known) => sortedCompactJson(known) === sortedCompactJson(profile));
     expect(evidence.state).toBe(expected ? "verified" : "invalid");
     if (evidence.state === "verified") {
       expect(evidence.basis.source_profile).toBe(profile);

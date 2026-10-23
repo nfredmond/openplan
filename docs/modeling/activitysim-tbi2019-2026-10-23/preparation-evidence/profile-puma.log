@@ -1,0 +1,54 @@
+test_2010_boundary_and_2019_microdata_predicate (test_population_2019.Population2019.test_2010_boundary_and_2019_microdata_predicate) ... FAIL
+test_2019_income_and_provenance_without_default_change (test_population_2019.Population2019.test_2019_income_and_provenance_without_default_change) ... FAIL
+test_exact_profile_and_capabilities (test_population_2019.Population2019.test_exact_profile_and_capabilities) ... FAIL
+
+======================================================================
+FAIL: test_2010_boundary_and_2019_microdata_predicate (test_population_2019.Population2019.test_2010_boundary_and_2019_microdata_predicate)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-1038cfe9/scripts/modeling/tests/test_population_2019.py", line 37, in test_2010_boundary_and_2019_microdata_predicate
+    self.assertEqual(fetch.call_args.args[0], cp.PUMA_LAYERS['2010'])
+AssertionError: 'http[34 chars]/rest/services/TIGERweb/tigerWMS_Census2020/MapServer/86/query' != 'http[34 chars]/rest/services/TIGERweb/tigerWMS_ACS2019/MapServer/0/query'
+- https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2020/MapServer/86/query
+?                                                                         ^^^^^  ^^           ^^
++ https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_ACS2019/MapServer/0/query
+?                                                                        + ^  ^^           ^
+
+
+======================================================================
+FAIL: test_2019_income_and_provenance_without_default_change (test_population_2019.Population2019.test_2019_income_and_provenance_without_default_change)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-1038cfe9/scripts/modeling/tests/test_population_2019.py", line 70, in test_2019_income_and_provenance_without_default_change
+    self.assertEqual(provenance['puma_fields'], {'2010': 'PUMA'})
+AssertionError: {'2020': 'PUMA'} != {'2010': 'PUMA'}
+- {'2020': 'PUMA'}
+?     ^
+
++ {'2010': 'PUMA'}
+?     ^
+
+
+======================================================================
+FAIL: test_exact_profile_and_capabilities (test_population_2019.Population2019.test_exact_profile_and_capabilities)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-1038cfe9/scripts/modeling/tests/test_population_2019.py", line 21, in test_exact_profile_and_capabilities
+    self.assertEqual(registry.census_endpoint_profile(SUMMARY, PUMS), PROFILE)
+AssertionError: {'ada[193 chars]], 'income_dollar_year': 2019, 'puma_fields': {'2020': 'PUMA'}} != {'ada[193 chars]], 'income_dollar_year': 2019, 'puma_fields': {'2010': 'PUMA'}}
+  {'acs_summary_endpoint': 'https://api.census.gov/data/2019/acs/acs5',
+   'adapter': 'us_census_acs5_pums',
+   'income_dollar_year': 2019,
+-  'puma_fields': {'2020': 'PUMA'},
+?                     ^
+
++  'puma_fields': {'2010': 'PUMA'},
+?                     ^
+
+   'pums_endpoint': 'https://api.census.gov/data/2019/acs/acs5/pums',
+   'sample_years': [2015, 2019]}
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.002s
+
+FAILED (failures=3)

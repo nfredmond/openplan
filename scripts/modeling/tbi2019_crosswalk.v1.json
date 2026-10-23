@@ -1,0 +1,307 @@
+{
+  "schema": "openplan.tbi2019.tour-crosswalk.v1",
+  "source": "https://metropolitan-council.github.io/TBI_Household_Synthesis_Report/appendices/combined_codebook.xlsx",
+  "source_sha256": "62371369fbffd1cace453802888afc1ddb1bf12307ce35898a0117a7ea4ef7f3",
+  "scope": "2019 codebook labels and explicit unified aliases only; hosted release mapping remains unverified",
+  "modes": {
+    "Missing: Non-response": "unsupported",
+    "Northstar": "transit",
+    "Light rail (e.g., Blue Line, Green Line)": "transit",
+    "Other rail": "unsupported",
+    "School bus": "unsupported",
+    "Bus Rapid Transit (BRT) (e.g., A Line, C Line, Red Line)": "transit",
+    "Express bus": "transit",
+    "Local bus": "transit",
+    "Dial-A-Ride (e.g., Transit Link)": "unsupported",
+    "Metro Mobility": "unsupported",
+    "Employer shuttle/bus": "unsupported",
+    "University shuttle/bus": "unsupported",
+    "Other private shuttle/bus (e.g., a hotel's, an airport's)": "unsupported",
+    "Vanpool": "unsupported",
+    "Other bus": "unsupported",
+    "Intercity rail (e.g., Amtrak)": "unsupported",
+    "Intercity bus (e.g., Greyhound, Bolt Bus)": "unsupported",
+    "Airplane/helicopter": "unsupported",
+    "Lyft Line, Uberpool, or other shared-ride": "hired",
+    "Uber, Lyft, or other smartphone-app ride service": "hired",
+    "Regular taxi": "hired",
+    "Other hired car service (e.g., black car, limo)": "hired",
+    "Household vehicle 1": "auto",
+    "Household vehicle 2": "auto",
+    "Household vehicle 3": "auto",
+    "Household vehicle 4": "auto",
+    "Household vehicle 5": "auto",
+    "Household vehicle 6": "auto",
+    "Household vehicle 7": "auto",
+    "Household vehicle 8": "auto",
+    "Other vehicle in household": "auto",
+    "Other motorcycle": "unsupported",
+    "Car from work": "auto",
+    "Friend/relative/colleague's car": "auto",
+    "Rental car": "auto",
+    "Carpool match (e.g., Waze Carpool)": "auto",
+    "Carshare service (e.g., HOURCAR, Car2Go, Zipcar, Maven)": "auto",
+    "Peer-to-peer car rental (e.g., Turo, Getaround)": "auto",
+    "Other vehicle": "unsupported",
+    "Bicycle owned by my household": "bicycle",
+    "Borrowed bicycle (e.g., from friend)": "bicycle",
+    "Bike-share (regular bicycle)": "bicycle",
+    "Bike-share (electric bicycle)": "bicycle",
+    "Other rented bicycle": "bicycle",
+    "Personal scooter or moped (not shared)": "unsupported",
+    "Scooter share: electric push scooter": "unsupported",
+    "Scooter share: non-electric push scooter": "unsupported",
+    "Moped share (e.g., Scoot)": "unsupported",
+    "Segway": "unsupported",
+    "Other scooter or moped": "unsupported",
+    "Skateboard/rollerblade": "unsupported",
+    "Boat/ferry/water taxi": "unsupported",
+    "Golf cart": "unsupported",
+    "ATV or snowmobile": "unsupported",
+    "Medical transportation service (non-emergency)": "unsupported",
+    "Other": "unsupported",
+    "Walk, jog, or roll using a wheelchair": "walk",
+    "Missing: Skip logic": "unsupported",
+    "Missing": "unsupported",
+    "Light rail": "transit",
+    "Bus rapid transit (e.g., A Line, C Line, Red Line)": "transit",
+    "Express/commuter bus": "transit",
+    "Local fixed-route bus": "transit",
+    "Paratransit/Dial-A-Ride": "unsupported",
+    "Employer-provided shuttle/bus": "unsupported",
+    "University/college shuttle/bus": "unsupported",
+    "Other private shuttle/bus (e.g., Bellair Charters, Airporter Shuttle)": "unsupported",
+    "Intercity bus (e.g., BoltBus, Greyhound)": "unsupported",
+    "Regular taxi (e.g., Yellow Cab)": "hired",
+    "Work vehicle": "auto",
+    "Friend's vehicle": "auto",
+    "Car rental": "auto",
+    "Carshare service (e.g., Zipcar)": "auto",
+    "Peer-to-peer car rental (e.g., Turo)": "auto",
+    "Other car": "unsupported",
+    "Standard bicycle (my household's)": "bicycle",
+    "Borrowed bicycle (e.g., a friend's)": "bicycle",
+    "Bike-share - standard bicycle": "bicycle",
+    "Bike-share - electric bicycle": "bicycle",
+    "Scooter-share (e.g., Bird, Lime)": "unsupported",
+    "Moped-share (e.g., Scoot)": "unsupported",
+    "Skateboard or rollerblade": "unsupported",
+    "Boat/ferry": "unsupported",
+    "Medical transportation service": "unsupported",
+    "Walk (or jog/wheelchair)": "walk"
+  },
+  "purposes": {
+    "Missing: Non-response": "unsupported",
+    "Went home": "home",
+    "Primary workplace": "work",
+    "Work-related activity (e.g., meeting, delivery, worksite)": "work",
+    "Traveling for work (e.g., going to airport)": "work",
+    "Volunteering": "discretionary",
+    "Other work-related": "work",
+    "K-12 school": "school",
+    "College/university": "university",
+    "Other type of class (e.g., cooking class)": "discretionary",
+    "Other education-related (e.g., field trip)": "discretionary",
+    "Vocational education": "unsupported",
+    "Daycare or preschool": "school",
+    "Grocery shopping": "shopping",
+    "Get gas": "maintenance",
+    "Other routine shopping (e.g., pharmacy)": "shopping",
+    "Errand without appointment (e.g., post office, dry cleaning)": "maintenance",
+    "Medical visit (e.g., doctor, dentist)": "maintenance",
+    "Shopping for major item (e.g., furniture, car)": "shopping",
+    "Errand with appointment (e.g., haircut, accountant)": "maintenance",
+    "Pick-up/drop-off to/from childcare/preschool/adult care": "escort",
+    "Pick-up/drop-off to/from K-12 school or college": "escort",
+    "Pick-up/drop-off to/from other person's workplace": "escort",
+    "Pick-up/drop-off to/from other person's scheduled activity (e.g., lesson, appointment)": "escort",
+    "Other place to pick-up/drop-off": "escort",
+    "Pick-up/drop-off to/from other person's home": "escort",
+    "Dine out/get coffee or take-out": "eating_out",
+    "Exercise (e.g., gym, jog, bike, walk dog)": "discretionary",
+    "Social (e.g., visit friends/relatives)": "social",
+    "Leisure/entertain/cultural (e.g., cinema, museum)": "discretionary",
+    "Religious/civic/volunteer activity": "discretionary",
+    "Vacation/traveling": "discretionary",
+    "Family activity (e.g., watch child's game)": "social",
+    "Change/transfer mode (e.g., wait for bus, change planes)": "unsupported",
+    "Other errand": "maintenance",
+    "Other social/leisure/vacation activity": "discretionary",
+    "Other reason": "unsupported",
+    "To/from other person's home": "social",
+    "Split loop purpose": "unsupported",
+    "Missing: Skip logic": "unsupported",
+    "Other purpose": "unsupported",
+    "Missing": "unsupported",
+    "Pick-up/drop-off to/fromother person's scheduled activity (e.g., lesson, appointment)": "escort"
+  },
+  "postsecondary_school_types": [
+    "2-year college/university",
+    "4-year college/university",
+    "Graduate or professional school",
+    "2-year college",
+    "4-year college"
+  ],
+  "aliases": [
+    [
+      "d_purpose_reported",
+      "Missing: Non-response",
+      "Missing"
+    ],
+    [
+      "d_purpose_reported",
+      "Pick-up/drop-off to/from other person's scheduled activity (e.g., lesson, appointment)",
+      "Pick-up/drop-off to/fromother person's scheduled activity (e.g., lesson, appointment)"
+    ],
+    [
+      "d_purpose_reported",
+      "Missing: Skip logic",
+      "Missing"
+    ],
+    [
+      "mode_type_detailed",
+      "Missing: Non-response",
+      "Missing"
+    ],
+    [
+      "mode_type_detailed",
+      "Light rail (e.g., Blue Line, Green Line)",
+      "Light rail"
+    ],
+    [
+      "mode_type_detailed",
+      "Bus Rapid Transit (BRT) (e.g., A Line, C Line, Red Line)",
+      "Bus rapid transit (e.g., A Line, C Line, Red Line)"
+    ],
+    [
+      "mode_type_detailed",
+      "Express bus",
+      "Express/commuter bus"
+    ],
+    [
+      "mode_type_detailed",
+      "Local bus",
+      "Local fixed-route bus"
+    ],
+    [
+      "mode_type_detailed",
+      "Dial-A-Ride (e.g., Transit Link)",
+      "Paratransit/Dial-A-Ride"
+    ],
+    [
+      "mode_type_detailed",
+      "Employer shuttle/bus",
+      "Employer-provided shuttle/bus"
+    ],
+    [
+      "mode_type_detailed",
+      "University shuttle/bus",
+      "University/college shuttle/bus"
+    ],
+    [
+      "mode_type_detailed",
+      "Other private shuttle/bus (e.g., a hotel's, an airport's)",
+      "Other private shuttle/bus (e.g., Bellair Charters, Airporter Shuttle)"
+    ],
+    [
+      "mode_type_detailed",
+      "Intercity bus (e.g., Greyhound, Bolt Bus)",
+      "Intercity bus (e.g., BoltBus, Greyhound)"
+    ],
+    [
+      "mode_type_detailed",
+      "Regular taxi",
+      "Regular taxi (e.g., Yellow Cab)"
+    ],
+    [
+      "mode_type_detailed",
+      "Car from work",
+      "Work vehicle"
+    ],
+    [
+      "mode_type_detailed",
+      "Friend/relative/colleague's car",
+      "Friend's vehicle"
+    ],
+    [
+      "mode_type_detailed",
+      "Rental car",
+      "Car rental"
+    ],
+    [
+      "mode_type_detailed",
+      "Carshare service (e.g., HOURCAR, Car2Go, Zipcar, Maven)",
+      "Carshare service (e.g., Zipcar)"
+    ],
+    [
+      "mode_type_detailed",
+      "Peer-to-peer car rental (e.g., Turo, Getaround)",
+      "Peer-to-peer car rental (e.g., Turo)"
+    ],
+    [
+      "mode_type_detailed",
+      "Other vehicle",
+      "Other car"
+    ],
+    [
+      "mode_type_detailed",
+      "Bicycle owned by my household",
+      "Standard bicycle (my household's)"
+    ],
+    [
+      "mode_type_detailed",
+      "Borrowed bicycle (e.g., from friend)",
+      "Borrowed bicycle (e.g., a friend's)"
+    ],
+    [
+      "mode_type_detailed",
+      "Bike-share (regular bicycle)",
+      "Bike-share - standard bicycle"
+    ],
+    [
+      "mode_type_detailed",
+      "Bike-share (electric bicycle)",
+      "Bike-share - electric bicycle"
+    ],
+    [
+      "mode_type_detailed",
+      "Scooter share: electric push scooter",
+      "Scooter-share (e.g., Bird, Lime)"
+    ],
+    [
+      "mode_type_detailed",
+      "Scooter share: non-electric push scooter",
+      "Scooter-share (e.g., Bird, Lime)"
+    ],
+    [
+      "mode_type_detailed",
+      "Moped share (e.g., Scoot)",
+      "Moped-share (e.g., Scoot)"
+    ],
+    [
+      "mode_type_detailed",
+      "Skateboard/rollerblade",
+      "Skateboard or rollerblade"
+    ],
+    [
+      "mode_type_detailed",
+      "Boat/ferry/water taxi",
+      "Boat/ferry"
+    ],
+    [
+      "mode_type_detailed",
+      "Medical transportation service (non-emergency)",
+      "Medical transportation service"
+    ],
+    [
+      "mode_type_detailed",
+      "Walk, jog, or roll using a wheelchair",
+      "Walk (or jog/wheelchair)"
+    ],
+    [
+      "mode_type_detailed",
+      "Missing: Skip logic",
+      "Missing"
+    ]
+  ]
+}

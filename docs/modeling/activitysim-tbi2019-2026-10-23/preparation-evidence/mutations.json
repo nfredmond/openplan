@@ -1,0 +1,284 @@
+{
+  "results": [
+    {
+      "name": "tour-harmless",
+      "file": "scripts/modeling/tbi2019_tours.py",
+      "exit_code": 0,
+      "expected": "survive",
+      "output_sha256": "b83a4f8398b927b0422e40490d5038b94213bedc408ff7a863b727a840d87076"
+    },
+    {
+      "name": "catalog-harmless",
+      "file": "scripts/modeling/population_source_profiles.v1.json",
+      "exit_code": 0,
+      "expected": "survive",
+      "output_sha256": "de1155d2a77e3cefbb84463c939a6046056a3d6f36f0284c41ed7f10eb3b9676"
+    },
+    {
+      "name": "mtc-harmless",
+      "file": "scripts/modeling/activitysim_mtc_inputs.py",
+      "exit_code": 0,
+      "expected": "survive",
+      "output_sha256": "a9ef93b9eebc614774e6b6cc389ec9322c9aee11d2f9778b60f0a76066b02c2d"
+    },
+    {
+      "name": "sql-harmless",
+      "file": "openplan/supabase/migrations/20261023224145_population_profile_2019.sql",
+      "exit_code": 0,
+      "expected": "survive",
+      "output_sha256": "41f6beb44cf9aeef0eb319bf391a50e1b72bfbba68171bf9b3af2ae8b3c37f00"
+    },
+    {
+      "name": "tour-weight",
+      "file": "scripts/modeling/tbi2019_tours.py",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "3a0b4ac600cbbcdb4443327519a5591b509f6900113304c65bf65aab2647f03f"
+    },
+    {
+      "name": "nonpositive-weight",
+      "file": "scripts/modeling/tbi2019_tours.py",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "d0e4f8ee2be14f514d46f8914c71ee9c0b8b8c82541ec3e1273a350953951820"
+    },
+    {
+      "name": "primary-priority",
+      "file": "scripts/modeling/tbi2019_tours.py",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "68d156a09d32ffbcb55f69d5addc755a58a49d6e96df798833f1237c3a738638"
+    },
+    {
+      "name": "primary-duration",
+      "file": "scripts/modeling/tbi2019_tours.py",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "e325ed4c05d9aba58d27af204bffcdebd54f9ab6853915732231a5a271e1f2c2"
+    },
+    {
+      "name": "primary-arrival",
+      "file": "scripts/modeling/tbi2019_tours.py",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "e3200860fada0463a8794ae969ba9d3d1ff8ef0b70ac53e4e2ac9c5a6893b5ca"
+    },
+    {
+      "name": "university-evidence",
+      "file": "scripts/modeling/tbi2019_tours.py",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "c7f725ae76c6269c3eef0533fda19e63ee6f2676e64c73bc659ecd4776c537f9"
+    },
+    {
+      "name": "unknown-mode",
+      "file": "scripts/modeling/tbi2019_tours.py",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "1be1c6797ddc093de1a9083fd25a2bc4f4f894628273dcc9148afac0b882790d"
+    },
+    {
+      "name": "unsupported-mode",
+      "file": "scripts/modeling/tbi2019_tours.py",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "d5c46f7eb3e38e39d02a9ce7b0b330941f765f408c4f4af84934238e943379bc"
+    },
+    {
+      "name": "auto-evidence",
+      "file": "scripts/modeling/tbi2019_tours.py",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "b47193f4a9f550c76a7b6b6057b855458a262d8acd6526f316ef408570575bea"
+    },
+    {
+      "name": "transit-evidence",
+      "file": "scripts/modeling/tbi2019_tours.py",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "90f745f26a3d185eb1d9fca475c086c6ac8c281a6ed8b9167afe0baea1cb59dc"
+    },
+    {
+      "name": "incomplete-diary",
+      "file": "scripts/modeling/tbi2019_tours.py",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "aee2d92a87023cd338cb3cfeb1dbc54ecb03a5d86c648fb188a6a3c3d9b9504c"
+    },
+    {
+      "name": "unknown-diary",
+      "file": "scripts/modeling/tbi2019_tours.py",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "aa7b8a9459236dc9a65206bf0479cbcc2b7f886688aa3e792ebf7c0b83b73262"
+    },
+    {
+      "name": "proxy",
+      "file": "scripts/modeling/tbi2019_tours.py",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "1f90d584fc00e29446b932225bb7cdfb84a94545b82e060c0b590d62458c63f7"
+    },
+    {
+      "name": "overnight",
+      "file": "scripts/modeling/tbi2019_tours.py",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "d46481b17d3a346b91cc416efd6b0ff4fedbdb91b682ae38a854c27f0524af6b"
+    },
+    {
+      "name": "time-order",
+      "file": "scripts/modeling/tbi2019_tours.py",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "5473fce20c1781983d020caaab5a25ed68316c38670956ecb38a2394fcdbef8b"
+    },
+    {
+      "name": "region",
+      "file": "scripts/modeling/tbi2019_tours.py",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "3a3a0ec6dd42619c3c8238103a51a37db26523607f293a56af9184dce54516d1"
+    },
+    {
+      "name": "region-unknown",
+      "file": "scripts/modeling/tbi2019_tours.py",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "af1cccc408220a8898c2c3a88b1815ae950d8e0cc5cf6d212146c4244e8fd2db"
+    },
+    {
+      "name": "quality",
+      "file": "scripts/modeling/tbi2019_tours.py",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "54bf6d6caa21cb475db0ad4c1ab3d26fff6917503c62c6a74689bdc35b9f09dc"
+    },
+    {
+      "name": "derived",
+      "file": "scripts/modeling/tbi2019_tours.py",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "976ae1a91d8202e195c72d8c3c73e146b610d3005f042e55699b4e4292b21538"
+    },
+    {
+      "name": "joint",
+      "file": "scripts/modeling/tbi2019_tours.py",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "f51ca783f923afc97ee102aa47dd5b0713bdc999927414dc1f90034e9d1372da"
+    },
+    {
+      "name": "continuity",
+      "file": "scripts/modeling/tbi2019_tours.py",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "3abf90752daa0c1d8ac2acfdd5c9573d50eae4346bd5cbc1ee0dff0d48f91772"
+    },
+    {
+      "name": "duplicate-trip",
+      "file": "scripts/modeling/tbi2019_tours.py",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "0ecf5437d32f70dd235e1a9dfb8b4654af2ef664f6d0dffb574c0eff2190c9c2"
+    },
+    {
+      "name": "home-return",
+      "file": "scripts/modeling/tbi2019_tours.py",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "2f8bcb08bb4ddb8d2a430cbde2fb657f96f64b5499f19869cf2cf38f25ad2368"
+    },
+    {
+      "name": "mixed-family",
+      "file": "scripts/modeling/tbi2019_tours.py",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "c18e3b5b08fa76cfb28e6488186711e039a51feb9c53c760a6498cc437cd0e34"
+    },
+    {
+      "name": "atwork-identity",
+      "file": "scripts/modeling/tbi2019_tours.py",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "e19b9d053a08f42733b691ad7c4567d6ed110625641e9f1698e745337b540114"
+    },
+    {
+      "name": "decoder-location",
+      "file": "scripts/modeling/tbi2019_tours.py",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "4b07cea719e736567bcb8d1bedd3ca29de4106d758bfdc2518f031f2fbe65c90"
+    },
+    {
+      "name": "decoder-quality",
+      "file": "scripts/modeling/tbi2019_tours.py",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "2e3deb818f8b5940e510d279fb758175521eb33714428be89ea976ec74693c5c"
+    },
+    {
+      "name": "decoder-dst",
+      "file": "scripts/modeling/tbi2019_tours.py",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "4f163f8a53a07ce8c34c68bed1f19c8c5cb8a26a1f7af0f63b19c9e7e062dbb8"
+    },
+    {
+      "name": "profile-window",
+      "file": "scripts/modeling/population_source_profiles.v1.json",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "a6bdeef411af6ca5427ba07ae77334ed27a1820fb134d5c1f58bc5ad118ccc99"
+    },
+    {
+      "name": "profile-puma",
+      "file": "scripts/modeling/population_source_profiles.v1.json",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "2f8ec6a8b83d8e49c05ea3d6f5de661d7b5d993b09bd5926dacb6da5b377a6aa"
+    },
+    {
+      "name": "profile-guided",
+      "file": "scripts/modeling/population_source_profiles.v1.json",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "e920749f0cc5f43434db0f43bf30f335de6388871fa8d2927a3728567d5e3ada"
+    },
+    {
+      "name": "income-deflator",
+      "file": "scripts/modeling/activitysim_mtc_inputs.py",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "126e38dc64884fa26f8a37c5e8385a60103f47f2fb7e2ce95904e823e3684c6b"
+    },
+    {
+      "name": "sql-permission",
+      "file": "openplan/supabase/migrations/20261023224145_population_profile_2019.sql",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "d38935767c03d5eaec83674732cd78ae95ceed8bb7a6ca2e5b53a8c407c754a0"
+    },
+    {
+      "name": "sql-profile",
+      "file": "openplan/supabase/migrations/20261023224145_population_profile_2019.sql",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "194ccd9727a1694bf57d586ec3f657f70f511b41651153796be0f1ecbd4f374f"
+    },
+    {
+      "name": "ts-membership",
+      "file": "openplan/src/lib/geographies/population-source-registry.ts",
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "output_sha256": "3cc469f513646f33ce4f923412e9062688e7bdf52aac10dfb03e5dc50d205fa1"
+    }
+  ],
+  "restored_sha256": {
+    "scripts/modeling/tbi2019_tours.py": "0bece9a6f5e703caad4be42706688dad2b70a172d83c8a40a418d1e0fde1b681",
+    "scripts/modeling/population_source_profiles.v1.json": "c54111b7438bce87c2c260af68b7eef55a41c24ed8856747b6fb3f0c917ddac5",
+    "scripts/modeling/activitysim_mtc_inputs.py": "be08d16b619759492821e0eb73403251f75d6c4c550d2562197352f9faab9376",
+    "openplan/supabase/migrations/20261023224145_population_profile_2019.sql": "980cf2b07ab7d61a67e24a70b5274e5ea18d59b0a6b497f682b1459e4b07646f",
+    "openplan/src/lib/geographies/population-source-registry.ts": "f8d2e6ac2e3ee1bfadc61969274e6fb1fbd6a978bc91ec90c8cbcfdfff572a37"
+  }
+}

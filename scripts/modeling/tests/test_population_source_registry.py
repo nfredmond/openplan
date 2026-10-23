@@ -23,12 +23,17 @@ CANONICAL_2022 = {'adapter': 'us_census_acs5_pums',
     'pums_endpoint': 'https://api.census.gov/data/2022/acs/acs5/pums',
     'sample_years': [2018, 2022], 'income_dollar_year': 2022, 'puma_fields': {'2020': 'PUMA20', '2010': 'PUMA10'}}
 
+CANONICAL_2019 = {'adapter': 'us_census_acs5_pums',
+    'acs_summary_endpoint': 'https://api.census.gov/data/2019/acs/acs5',
+    'pums_endpoint': 'https://api.census.gov/data/2019/acs/acs5/pums',
+    'sample_years': [2015, 2019], 'income_dollar_year': 2019, 'puma_fields': {'2010': 'PUMA'}}
+
 
 class PopulationSourceRegistryTests(unittest.TestCase):
     def test_exact_construction_and_frozen_sql_projection(self):
         entries = registry._catalog()
-        self.assertEqual([e['profile'] for e in entries], [CANONICAL_2022, CANONICAL_2023])
-        for profile in (CANONICAL_2022, CANONICAL_2023):
+        self.assertEqual([e['profile'] for e in entries], [CANONICAL_2022, CANONICAL_2023, CANONICAL_2019])
+        for profile in (CANONICAL_2022, CANONICAL_2023, CANONICAL_2019):
             self.assertEqual(common.census_source_profile(profile['acs_summary_endpoint'], profile['pums_endpoint']), profile)
             self.assertEqual(common.validate_source_profile(profile, canonical=True), profile)
             vintage = cp.census_vintage_profile(profile['acs_summary_endpoint'], profile['pums_endpoint'])
@@ -36,7 +41,7 @@ class PopulationSourceRegistryTests(unittest.TestCase):
                 (profile['sample_years'][0], profile['income_dollar_year'], profile['puma_fields']))
         projection = [{'profile': e['profile'], 'purposes': [p for p in registry.PURPOSES if e['capabilities'].get(p) == 'supported']} for e in entries]
         frozen = json.dumps(projection, sort_keys=True, separators=(',', ':'), ensure_ascii=True)
-        sql = (SCRIPT_DIR.parents[1] / 'openplan/supabase/migrations/20261022010004_model_common_population_profiles.sql').read_text()
+        sql = (SCRIPT_DIR.parents[1] / 'openplan/supabase/migrations/20261023224145_population_profile_2019.sql').read_text()
         self.assertIn('$population_catalog$' + frozen + '$population_catalog$::pg_catalog.jsonb', sql)
         self.assertIn(hashlib.sha256(frozen.encode()).hexdigest(), sql)
         self.assertEqual(registry.PRODUCTION_REGISTRY.validate(CANONICAL_2023, 'new_guided_launch'), CANONICAL_2023)
@@ -78,7 +83,7 @@ class PopulationSourceRegistryTests(unittest.TestCase):
         self.assertIs(checked['puma_fields'], value['puma_fields'])
 
     def test_all_optional_slash_spellings_stay_lower_level_and_unmodified(self):
-        for canonical in (CANONICAL_2022, CANONICAL_2023):
+        for canonical in (CANONICAL_2022, CANONICAL_2023, CANONICAL_2019):
             for summary_slash, pums_slash in (('', '/'), ('/', ''), ('/', '/')):
                 summary = canonical['acs_summary_endpoint'] + summary_slash
                 microdata = canonical['pums_endpoint'] + pums_slash

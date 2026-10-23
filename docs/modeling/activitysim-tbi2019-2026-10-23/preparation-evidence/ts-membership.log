@@ -1,0 +1,74 @@
+
+ RUN  v4.1.11 /home/nathaniel/.t3/worktrees/openplan/t3-1038cfe9/openplan
+
+ ❯ src/test/model-common-population-profiles-migration.test.ts (7 tests | 1 failed) 12ms
+     × pins catalog/TS/SQL membership independently for all technical purposes 5ms
+ ❯ src/test/population-source-registry.test.ts (34 tests | 2 failed) 20ms
+     × adds the explicit 2019 retained identity without changing actual adapter selection 6ms
+     × does not default missing capabilities or enroll descriptor copies 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/model-common-population-profiles-migration.test.ts > latest population profile DDL source and frozen projection > pins catalog/TS/SQL membership independently for all technical purposes
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/test/model-common-population-profiles-migration.test.ts:86:79
+     84|     expect(profile2019).toContain(`Frozen catalog projection SHA-256 (…
+     85|     for (const entry of catalog.profiles) for (const purpose of POPULA…
+     86|       expect(populationSourceRegistry.profileAllowed(entry.profile, pu…
+       |                                                                               ^
+     87|     }
+     88|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/test/population-source-registry.test.ts > registered technical population profiles, without scientific acceptance > adds the explicit 2019 retained identity without changing actual adapter selection
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/test/population-source-registry.test.ts:43:89
+     41|     expect(catalog.schema).toBe("openplan.population-source-profiles.v…
+     42|     expect(catalog.profiles.map((entry) => entry.profile)).toEqual([ca…
+     43|     expect(populationSourceRegistry.profileAllowed(canonical2019, "new…
+       |                                                                                         ^
+     44|     for (const purpose of ["retained_validation", "aequilibrae_product…
+     45|       expect(populationSourceRegistry.profileAllowed(canonical2019, pu…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/test/population-source-registry.test.ts > registered technical population profiles, without scientific acceptance > does not default missing capabilities or enroll descriptor copies
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ src/test/population-source-registry.test.ts:75:63
+     73|     for (const purpose of POPULATION_PROFILE_PURPOSES) {
+     74|       expect(registry.forDescriptor(entry.descriptor, purpose).status)…
+     75|       expect(registry.profileAllowed(entry.profile, purpose)).toBe(fal…
+       |                                                               ^
+     76|     }
+     77|     for (const field of ["id", "vintage", "retrievalUrl"] as const) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  3 failed | 38 passed (41)
+   Start at  15:57:34
+   Duration  665ms (transform 156ms, setup 111ms, import 189ms, tests 32ms, environment 697ms)
+

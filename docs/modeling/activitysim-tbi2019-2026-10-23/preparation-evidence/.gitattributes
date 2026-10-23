@@ -1,0 +1,2 @@
+# Preserve exact runner output, including trailing whitespace.
+*.log -whitespace

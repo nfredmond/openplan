@@ -169,9 +169,12 @@ def derive_ptype(age: int, pemploy: int, pstudent: int) -> int:
 # --------------------------------------------------------------------------
 
 CPI_U_ANNUAL_2000 = 172.2
+# BLS historical CPI-U, February 2020 release, annual-average column.
+# https://www.bls.gov/cpi/tables/supplemental-files/historical-cpi-u-202002.pdf
+CPI_U_ANNUAL_2019 = 255.657
 CPI_U_ANNUAL_2022 = 292.655
 CPI_U_ANNUAL_2023 = 304.702
-CPI_U_ANNUAL_BY_SOURCE_YEAR = {2022: CPI_U_ANNUAL_2022, 2023: CPI_U_ANNUAL_2023}
+CPI_U_ANNUAL_BY_SOURCE_YEAR = {2019: CPI_U_ANNUAL_2019, 2022: CPI_U_ANNUAL_2022, 2023: CPI_U_ANNUAL_2023}
 
 
 def check_income_vintage(acs5_url: str, pums_url: str | None = None) -> int:
