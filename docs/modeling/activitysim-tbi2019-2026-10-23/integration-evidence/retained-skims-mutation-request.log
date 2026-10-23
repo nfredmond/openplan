@@ -1,0 +1,96 @@
+test_artifact_and_inventory_changes_refuse (test_retained_skim_expansion.RetainedExpansion.test_artifact_and_inventory_changes_refuse) ... ok
+test_exact_copy_and_accounting (test_retained_skim_expansion.RetainedExpansion.test_exact_copy_and_accounting) ... ok
+test_existing_destination_refuses_unchanged (test_retained_skim_expansion.RetainedExpansion.test_existing_destination_refuses_unchanged) ... ok
+test_request_changes_refuse_before_write (test_retained_skim_expansion.RetainedExpansion.test_request_changes_refuse_before_write) ... 
+  test_request_changes_refuse_before_write (test_retained_skim_expansion.RetainedExpansion.test_request_changes_refuse_before_write) (key='zone_rows') ... FAIL
+  test_request_changes_refuse_before_write (test_retained_skim_expansion.RetainedExpansion.test_request_changes_refuse_before_write) (key='centroid_map') ... FAIL
+  test_request_changes_refuse_before_write (test_retained_skim_expansion.RetainedExpansion.test_request_changes_refuse_before_write) (key='transit_config') ... FAIL
+  test_request_changes_refuse_before_write (test_retained_skim_expansion.RetainedExpansion.test_request_changes_refuse_before_write) (key='source_omx_sha256') ... FAIL
+  test_request_changes_refuse_before_write (test_retained_skim_expansion.RetainedExpansion.test_request_changes_refuse_before_write) (key='stock_configs_sha256') ... FAIL
+  test_request_changes_refuse_before_write (test_retained_skim_expansion.RetainedExpansion.test_request_changes_refuse_before_write) (key='stock_skims_sha256') ... FAIL
+  test_request_changes_refuse_before_write (test_retained_skim_expansion.RetainedExpansion.test_request_changes_refuse_before_write) (key='implementations') ... FAIL
+
+======================================================================
+FAIL: test_request_changes_refuse_before_write (test_retained_skim_expansion.RetainedExpansion.test_request_changes_refuse_before_write) (key='zone_rows')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/scripts/modeling/tests/test_retained_skim_expansion.py", line 47, in test_request_changes_refuse_before_write
+    with self.assertRaisesRegex(ValueError, 'inputs differ'):
+AssertionError: ValueError not raised
+
+======================================================================
+FAIL: test_request_changes_refuse_before_write (test_retained_skim_expansion.RetainedExpansion.test_request_changes_refuse_before_write) (key='centroid_map')
+----------------------------------------------------------------------
+ValueError: Retained expansion destination must be new
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/scripts/modeling/tests/test_retained_skim_expansion.py", line 47, in test_request_changes_refuse_before_write
+    with self.assertRaisesRegex(ValueError, 'inputs differ'):
+AssertionError: "inputs differ" does not match "Retained expansion destination must be new"
+
+======================================================================
+FAIL: test_request_changes_refuse_before_write (test_retained_skim_expansion.RetainedExpansion.test_request_changes_refuse_before_write) (key='transit_config')
+----------------------------------------------------------------------
+ValueError: Retained expansion destination must be new
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/scripts/modeling/tests/test_retained_skim_expansion.py", line 47, in test_request_changes_refuse_before_write
+    with self.assertRaisesRegex(ValueError, 'inputs differ'):
+AssertionError: "inputs differ" does not match "Retained expansion destination must be new"
+
+======================================================================
+FAIL: test_request_changes_refuse_before_write (test_retained_skim_expansion.RetainedExpansion.test_request_changes_refuse_before_write) (key='source_omx_sha256')
+----------------------------------------------------------------------
+ValueError: Retained expansion destination must be new
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/scripts/modeling/tests/test_retained_skim_expansion.py", line 47, in test_request_changes_refuse_before_write
+    with self.assertRaisesRegex(ValueError, 'inputs differ'):
+AssertionError: "inputs differ" does not match "Retained expansion destination must be new"
+
+======================================================================
+FAIL: test_request_changes_refuse_before_write (test_retained_skim_expansion.RetainedExpansion.test_request_changes_refuse_before_write) (key='stock_configs_sha256')
+----------------------------------------------------------------------
+ValueError: Retained expansion destination must be new
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/scripts/modeling/tests/test_retained_skim_expansion.py", line 47, in test_request_changes_refuse_before_write
+    with self.assertRaisesRegex(ValueError, 'inputs differ'):
+AssertionError: "inputs differ" does not match "Retained expansion destination must be new"
+
+======================================================================
+FAIL: test_request_changes_refuse_before_write (test_retained_skim_expansion.RetainedExpansion.test_request_changes_refuse_before_write) (key='stock_skims_sha256')
+----------------------------------------------------------------------
+ValueError: Retained expansion destination must be new
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/scripts/modeling/tests/test_retained_skim_expansion.py", line 47, in test_request_changes_refuse_before_write
+    with self.assertRaisesRegex(ValueError, 'inputs differ'):
+AssertionError: "inputs differ" does not match "Retained expansion destination must be new"
+
+======================================================================
+FAIL: test_request_changes_refuse_before_write (test_retained_skim_expansion.RetainedExpansion.test_request_changes_refuse_before_write) (key='implementations')
+----------------------------------------------------------------------
+ValueError: Retained expansion destination must be new
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/scripts/modeling/tests/test_retained_skim_expansion.py", line 47, in test_request_changes_refuse_before_write
+    with self.assertRaisesRegex(ValueError, 'inputs differ'):
+AssertionError: "inputs differ" does not match "Retained expansion destination must be new"
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.009s
+
+FAILED (failures=7)

@@ -97,6 +97,7 @@ Use the [current modeling status](modeling/STATUS_AND_VALIDATION.md) before inte
   [retired, inconclusive result](modeling/activitysim-coefficients-2026-10-23/RESULT.md)
   and [verification](modeling/activitysim-coefficients-2026-10-23/VERIFICATION.md).
 - [TBI 2019 development admission result](modeling/activitysim-tbi2019-2026-10-23/RESULT.md):
+- [TBI 2019 integration readiness](modeling/activitysim-tbi2019-2026-10-23/INTEGRATION_READINESS.md): combined input preparation, source custody, native run health and remaining opening gates.
   frozen household split, public-source custody, synthetic instrument checks and
   historical-input blockers. Both arms remain inconclusive; survey outcomes stay unopened.
 - [Opt-in ActivitySim GTFS transit skims](modeling/activitysim-transit-2026-10-23/README.md): scheduled skim definitions, source custody, synthetic controls, and dated regional plausibility.

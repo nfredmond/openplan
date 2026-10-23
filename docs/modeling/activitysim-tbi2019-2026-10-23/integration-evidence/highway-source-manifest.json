@@ -1,0 +1,56 @@
+[
+  {
+    "url": "https://overpass-api.de/api/interpreter",
+    "query": "[out:json][date:\"2019-10-08T12:00:00Z\"][timeout:540];(way[\"highway\"][\"area\"!~\"yes\"][\"highway\"!~\"escalator|trail|cycleway|path|track|corridor|footway|bus_guideway|elevator|steps|proposed|raceway|abandoned|platform|via_ferrata|busway\"][\"service\"!~\"parking|parking_aisle|driveway|private|emergency_access\"][\"access\"!~\"private\"](44.442163,-94.053448,44.942973,-93.599278);>;);out;",
+    "http_status": 200,
+    "sha256": "e98420835e2730344b134a042c361d71b7c1d0c9b4aa1ce961bd679446ca11ea",
+    "bytes": 8988816,
+    "path": "data/_screening_cache/tbi2019-integration/highway-get/sources/overpass-000.json",
+    "retrieved_at": "2026-10-23T23:26:20.712765+00:00"
+  },
+  {
+    "url": "https://overpass-api.de/api/interpreter",
+    "query": "[out:json][date:\"2019-10-08T12:00:00Z\"][timeout:540];(way[\"highway\"][\"area\"!~\"yes\"][\"highway\"!~\"escalator|trail|cycleway|path|track|corridor|footway|bus_guideway|elevator|steps|proposed|raceway|abandoned|platform|via_ferrata|busway\"][\"service\"!~\"parking|parking_aisle|driveway|private|emergency_access\"][\"access\"!~\"private\"](44.942973,-94.053448,45.443784,-93.599278);>;);out;",
+    "http_status": 200,
+    "sha256": "ef0c1a86936812b5e4ff001cb5f185f0a22b3c4b5f2ffe438912804beaf1f2f8",
+    "bytes": 13974356,
+    "path": "data/_screening_cache/tbi2019-integration/highway-get/sources/overpass-001.json",
+    "retrieved_at": "2026-10-23T23:27:07.450236+00:00"
+  },
+  {
+    "url": "https://overpass-api.de/api/interpreter",
+    "query": "[out:json][date:\"2019-10-08T12:00:00Z\"][timeout:540];(way[\"highway\"][\"area\"!~\"yes\"][\"highway\"!~\"escalator|trail|cycleway|path|track|corridor|footway|bus_guideway|elevator|steps|proposed|raceway|abandoned|platform|via_ferrata|busway\"][\"service\"!~\"parking|parking_aisle|driveway|private|emergency_access\"][\"access\"!~\"private\"](44.442163,-93.599278,44.942973,-93.145109);>;);out;",
+    "http_status": 200,
+    "sha256": "bbbfee2ec0a6cb9384b7087b6fe85e9f2d18ca2f55cabd7238979fba648f0489",
+    "bytes": 39967376,
+    "path": "data/_screening_cache/tbi2019-integration/highway-get/sources/overpass-002.json",
+    "retrieved_at": "2026-10-23T23:28:06.586659+00:00"
+  },
+  {
+    "url": "https://overpass-api.de/api/interpreter",
+    "query": "[out:json][date:\"2019-10-08T12:00:00Z\"][timeout:540];(way[\"highway\"][\"area\"!~\"yes\"][\"highway\"!~\"escalator|trail|cycleway|path|track|corridor|footway|bus_guideway|elevator|steps|proposed|raceway|abandoned|platform|via_ferrata|busway\"][\"service\"!~\"parking|parking_aisle|driveway|private|emergency_access\"][\"access\"!~\"private\"](44.942973,-93.599278,45.443784,-93.145109);>;);out;",
+    "http_status": 200,
+    "sha256": "3de4238f7cd6dfb094cd0bcd06feabc665cf5e3bb29495ba1d43fb2626658341",
+    "bytes": 49600343,
+    "path": "data/_screening_cache/tbi2019-integration/highway-get/sources/overpass-003.json",
+    "retrieved_at": "2026-10-23T23:29:14.391679+00:00"
+  },
+  {
+    "url": "https://overpass-api.de/api/interpreter",
+    "query": "[out:json][date:\"2019-10-08T12:00:00Z\"][timeout:540];(way[\"highway\"][\"area\"!~\"yes\"][\"highway\"!~\"escalator|trail|cycleway|path|track|corridor|footway|bus_guideway|elevator|steps|proposed|raceway|abandoned|platform|via_ferrata|busway\"][\"service\"!~\"parking|parking_aisle|driveway|private|emergency_access\"][\"access\"!~\"private\"](44.442163,-93.145109,44.942973,-92.690939);>;);out;",
+    "http_status": 200,
+    "sha256": "1eb8097cf2ead51434ab667fe3b5cb5ef0ce1a92ac3efe0f55379d792a4e04ad",
+    "bytes": 18280483,
+    "path": "data/_screening_cache/tbi2019-integration/highway-get/sources/overpass-004.json",
+    "retrieved_at": "2026-10-23T23:29:54.205537+00:00"
+  },
+  {
+    "url": "https://overpass-api.de/api/interpreter",
+    "query": "[out:json][date:\"2019-10-08T12:00:00Z\"][timeout:540];(way[\"highway\"][\"area\"!~\"yes\"][\"highway\"!~\"escalator|trail|cycleway|path|track|corridor|footway|bus_guideway|elevator|steps|proposed|raceway|abandoned|platform|via_ferrata|busway\"][\"service\"!~\"parking|parking_aisle|driveway|private|emergency_access\"][\"access\"!~\"private\"](44.942973,-93.145109,45.443784,-92.690939);>;);out;",
+    "http_status": 200,
+    "sha256": "e95aa1b1850d8aa12cdd19f6dec522d076db83cb7e2f11b3d6eb49e10fa2033f",
+    "bytes": 24553659,
+    "path": "data/_screening_cache/tbi2019-integration/highway-get/sources/overpass-005.json",
+    "retrieved_at": "2026-10-23T23:30:33.542965+00:00"
+  }
+]

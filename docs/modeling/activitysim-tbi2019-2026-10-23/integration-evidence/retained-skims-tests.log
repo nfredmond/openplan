@@ -1,0 +1,9 @@
+test_artifact_and_inventory_changes_refuse (test_retained_skim_expansion.RetainedExpansion.test_artifact_and_inventory_changes_refuse) ... ok
+test_exact_copy_and_accounting (test_retained_skim_expansion.RetainedExpansion.test_exact_copy_and_accounting) ... ok
+test_existing_destination_refuses_unchanged (test_retained_skim_expansion.RetainedExpansion.test_existing_destination_refuses_unchanged) ... ok
+test_request_changes_refuse_before_write (test_retained_skim_expansion.RetainedExpansion.test_request_changes_refuse_before_write) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.007s
+
+OK
