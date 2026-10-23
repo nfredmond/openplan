@@ -1,0 +1,210 @@
+{
+  "url": "https://data.transportation.gov/api/views/42um-tgh5",
+  "sha256": "18c7c5743debc6c688e1e69a54cde27e7ec0603495e8d9ad9e8c614b3daee779",
+  "rowsUpdatedAt": 1762967831,
+  "fields": [
+    {
+      "field": "aadt",
+      "name": "AADT",
+      "description": "Annual Average Daily Traffic"
+    },
+    {
+      "field": "aadt_combination",
+      "name": "AADT_COMBINATION",
+      "description": "Combination Truck AADT"
+    },
+    {
+      "field": "aadt_d",
+      "name": "AADT_D",
+      "description": "Date of AADT Collection"
+    },
+    {
+      "field": "aadt_single_unit",
+      "name": "AADT_SINGLE_UNIT",
+      "description": "Single-Unit Truck and Bus AADT"
+    },
+    {
+      "field": "counter_peak_lanes",
+      "name": "COUNTER_PEAK_LANES",
+      "description": "Counter-Peak Lanes"
+    },
+    {
+      "field": "county_id",
+      "name": "COUNTY_ID",
+      "description": "County FIPS Code"
+    },
+    {
+      "field": "dir_factor",
+      "name": "DIR_FACTOR",
+      "description": "Directional Factor"
+    },
+    {
+      "field": "dir_through_lanes",
+      "name": "DIR_THROUGH_LANES",
+      "description": "Directional Through Lanes"
+    },
+    {
+      "field": "future_aadt_year",
+      "name": "FUTURE_AADT_YEAR",
+      "description": "Year of Forecasted AADT"
+    },
+    {
+      "field": "future_aadt",
+      "name": "Future_AADT",
+      "description": "Forecasted AADT"
+    },
+    {
+      "field": "k_factor",
+      "name": "K_FACTOR",
+      "description": "K-Factor"
+    },
+    {
+      "field": "lane_width",
+      "name": "LANE_WIDTH",
+      "description": "Lane Width"
+    },
+    {
+      "field": "managed_lanes",
+      "name": "MANAGED_LANES",
+      "description": "Number of Managed Lanes"
+    },
+    {
+      "field": "managed_lanes_type",
+      "name": "MANAGED_LANES_TYPE",
+      "description": "Managed Lane Operations Type"
+    },
+    {
+      "field": "peak_lanes",
+      "name": "PEAK_LANES",
+      "description": "Number of Peak Lanes"
+    },
+    {
+      "field": "through_lanes",
+      "name": "THROUGH_LANES",
+      "description": "Number of Through Lanes"
+    },
+    {
+      "field": "turn_lanes_l",
+      "name": "TURN_LANES_L",
+      "description": "Presence of Left Turn Lanes"
+    },
+    {
+      "field": "turn_lanes_r",
+      "name": "TURN_LANES_R",
+      "description": "Presence of Right Turn Lanes"
+    },
+    {
+      "field": "year_last_construction",
+      "name": "YEAR_LAST_CONSTRUCTION",
+      "description": "Date of Last Construction"
+    },
+    {
+      "field": "year_last_improvement",
+      "name": "YEAR_LAST_IMPROVEMENT",
+      "description": "Date of Last Improvement"
+    },
+    {
+      "field": "year_record",
+      "name": "YEAR_RECORD",
+      "description": "Record Year"
+    }
+  ],
+  "all_column_names": [
+    "aadt",
+    "aadt_combination",
+    "aadt_d",
+    "aadt_single_unit",
+    "access_control",
+    "at_grade_other",
+    "base_thickness",
+    "base_type",
+    "begin_point",
+    "counter_peak_lanes",
+    "county_id",
+    "cracking_percent",
+    "cracking_percent_d",
+    "curves_a",
+    "curves_b",
+    "curves_c",
+    "curves_d",
+    "curves_e",
+    "curves_f",
+    "dir_factor",
+    "dir_through_lanes",
+    "end_point",
+    "facility_type",
+    "faulting",
+    "faulting_d",
+    "future_aadt_year",
+    "f_system",
+    "future_aadt",
+    "grades_a",
+    "grades_b",
+    "grades_c",
+    "grades_d",
+    "grades_e",
+    "grades_f",
+    "iri",
+    "iri_d",
+    "is_restricted",
+    "k_factor",
+    "lane_width",
+    "last_overlay_thickness",
+    "maintenance_operations",
+    "managed_lanes",
+    "managed_lanes_type",
+    "median_type",
+    "median_width",
+    "nhfn",
+    "nhs",
+    "nn",
+    "number_signals",
+    "ownership",
+    "pct_dh_combination",
+    "pct_dh_single_unit",
+    "pct_green_time",
+    "pct_pass_sight",
+    "peak_lanes",
+    "peak_parking",
+    "psr",
+    "psr_d",
+    "route_id",
+    "route_number",
+    "route_qualifier",
+    "route_signing",
+    "rutting",
+    "rutting_d",
+    "routename",
+    "sample_id",
+    "shoulder_type",
+    "shoulder_width_l",
+    "shoulder_width_r",
+    "signal_type",
+    "soil_type",
+    "speed_limit",
+    "srid",
+    "stop_signs",
+    "strahnet_type",
+    "structure_type",
+    "surface_type",
+    "sectionlength",
+    "shapeid",
+    "stateid",
+    "terrain_type",
+    "thickness_flexible",
+    "thickness_rigid",
+    "through_lanes",
+    "toll_id",
+    "travel_time_code",
+    "turn_lanes_l",
+    "turn_lanes_r",
+    "urban_id",
+    "widening_obstacle",
+    "widening_potential",
+    "year_last_construction",
+    "year_last_improvement",
+    "year_record",
+    "line"
+  ],
+  "retrieved_at_utc": "2026-10-23"
+}
