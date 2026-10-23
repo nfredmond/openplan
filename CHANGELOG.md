@@ -25,7 +25,10 @@ GHSA-mrhx-c7xc-m3w5, a memory-exhaustion advisory in validating oversized
 constrained collections; OpenPlan validates request bodies with Zod.
 puppeteer-core moves from 25.6.0 to 25.16.0, which brings a `chromium-bidi`
 build on fixed Zod. The development-only shadcn CLI moves from 3.8.5 to 4.22.1
-for the same reason. `npm audit` reports no advisories afterward.
+for the same reason. The development-only `body-parser`, through Express, moves
+from 2.3.0 to 2.4.0 for GHSA-27r3-jxmh-p828, a denial of service through
+trailing bytes after a compressed request body. `npm audit` reports no
+advisories afterward.
 
 This tree contains 439 source migrations, nine more than v0.72.0. Self-hosted
 installations apply the seven Models and Reports migrations, the estimate
