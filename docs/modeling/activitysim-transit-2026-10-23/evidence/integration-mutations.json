@@ -1,0 +1,50 @@
+{
+  "cases": [
+    {
+      "mutation": "stock_scale_guard_removed",
+      "verified": true,
+      "test": "test_opt_in_refuses_incompatible_stock_scale",
+      "exit_code": 1,
+      "output": "test_opt_in_refuses_incompatible_stock_scale (test_activitysim_transit_skims.TransitTests.test_opt_in_refuses_incompatible_stock_scale) ... FAIL\n\n======================================================================\nFAIL: test_opt_in_refuses_incompatible_stock_scale (test_activitysim_transit_skims.TransitTests.test_opt_in_refuses_incompatible_stock_scale)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/scripts/modeling/tests/test_activitysim_transit_skims.py\", line 338, in test_opt_in_refuses_incompatible_stock_scale\n    with self.assertRaisesRegex(mtc.MtcInputError,'TRANSIT_SCALE_FACTOR'):\nAssertionError: MtcInputError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.109s\n\nFAILED (failures=1)\n",
+      "source_sha256": "89c76e75b2cbf8eb7f0f4d56b0d70a38598789d9d97dfccd2c09ddcc7a8ee0eb",
+      "source_unchanged": true
+    },
+    {
+      "mutation": "default_version_drift",
+      "verified": true,
+      "test": "test_default_bundle_bytes_match_prechange_source",
+      "exit_code": 1,
+      "output": "test_default_bundle_bytes_match_prechange_source (test_activitysim_transit_skims.TransitTests.test_default_bundle_bytes_match_prechange_source) ... FAIL\n\n======================================================================\nFAIL: test_default_bundle_bytes_match_prechange_source (test_activitysim_transit_skims.TransitTests.test_default_bundle_bytes_match_prechange_source)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/scripts/modeling/tests/test_activitysim_transit_skims.py\", line 371, in test_default_bundle_bytes_match_prechange_source\n    self.assertEqual(actual,expected)\nAssertionError: {'man[1327 chars]n\": \"changed\",\\n    \"runnable\": false,\\n    \"n[11720 chars]s\\n'} != {'man[1327 chars]n\": \"v0\",\\n    \"runnable\": false,\\n    \"notes\"[11695 chars]s\\n'}\nDiff is 37464 characters long. Set self.maxDiff to None to see it.\n\n----------------------------------------------------------------------\nRan 1 test in 0.110s\n\nFAILED (failures=1)\n",
+      "source_sha256": "1288b1fc9adf01ec77cdb1bb4535cee8af1f07d69e0f37c3926813e5be37a813",
+      "source_unchanged": true
+    },
+    {
+      "mutation": "default_transit_enabled",
+      "verified": true,
+      "test": "test_default_skim_bytes_match_prechange_source",
+      "exit_code": 1,
+      "output": "test_default_skim_bytes_match_prechange_source (test_activitysim_transit_skims.TransitTests.test_default_skim_bytes_match_prechange_source) ... FAIL\n\n======================================================================\nFAIL: test_default_skim_bytes_match_prechange_source (test_activitysim_transit_skims.TransitTests.test_default_skim_bytes_match_prechange_source)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/contextlib.py\", line 81, in inner\n    return func(*args, **kwds)\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/scripts/modeling/tests/test_activitysim_transit_skims.py\", line 331, in test_default_skim_bytes_match_prechange_source\n    self.assertEqual(current,old_record)\nAssertionError: {'mat[53 chars]me': 13, 'distance': 7, 'zero': 5}, 'required_[555 chars]omx'} != {'mat[53 chars]me': 5, 'distance': 7, 'zero': 13}, 'required_[555 chars]omx'}\nDiff is 963 characters long. Set self.maxDiff to None to see it.\n\n----------------------------------------------------------------------\nRan 1 test in 0.131s\n\nFAILED (failures=1)\n",
+      "source_sha256": "89c76e75b2cbf8eb7f0f4d56b0d70a38598789d9d97dfccd2c09ddcc7a8ee0eb",
+      "source_unchanged": true
+    },
+    {
+      "mutation": "full_default_auto_drift",
+      "verified": true,
+      "test": "test_default_full_mtc_bundle_matches_parent_bytes",
+      "exit_code": 1,
+      "output": "test_default_full_mtc_bundle_matches_parent_bytes (test_activitysim_transit_skims.TransitTests.test_default_full_mtc_bundle_matches_parent_bytes) ... FAIL\n\n======================================================================\nFAIL: test_default_full_mtc_bundle_matches_parent_bytes (test_activitysim_transit_skims.TransitTests.test_default_full_mtc_bundle_matches_parent_bytes)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/contextlib.py\", line 81, in inner\n    return func(*args, **kwds)\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/scripts/modeling/tests/test_activitysim_transit_skims.py\", line 283, in test_default_full_mtc_bundle_matches_parent_bytes\n    for name in expected:self.assertEqual(actual[name],expected[name],name)\n                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: b'{\\n[7515 chars]e at 30 mph\",\\n      \"source_omx\": \"/tmp/tmpwl[2865 chars]n}\\n' != b'{\\n[7515 chars]e at 15 mph\",\\n      \"source_omx\": \"/tmp/tmpwl[2865 chars]n}\\n' : manifest.json\n\n----------------------------------------------------------------------\nRan 1 test in 0.122s\n\nFAILED (failures=1)\n",
+      "source_sha256": "89c76e75b2cbf8eb7f0f4d56b0d70a38598789d9d97dfccd2c09ddcc7a8ee0eb",
+      "source_unchanged": true
+    },
+    {
+      "mutation": "opt_in_caveat_dropped",
+      "verified": true,
+      "test": "test_full_opt_in_bundle_records_custody_and_replaces_disabled_caveat",
+      "exit_code": 1,
+      "output": "test_full_opt_in_bundle_records_custody_and_replaces_disabled_caveat (test_activitysim_transit_skims.TransitTests.test_full_opt_in_bundle_records_custody_and_replaces_disabled_caveat) ... FAIL\n\n======================================================================\nFAIL: test_full_opt_in_bundle_records_custody_and_replaces_disabled_caveat (test_activitysim_transit_skims.TransitTests.test_full_opt_in_bundle_records_custody_and_replaces_disabled_caveat)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/scripts/modeling/tests/test_activitysim_transit_skims.py\", line 303, in test_full_opt_in_bundle_records_custody_and_replaces_disabled_caveat\n    self.assertIn('Opt-in GTFS transit status: available',(out/'README.md').read_text())\nAssertionError: 'Opt-in GTFS transit status: available' not found in \"# OpenPlan ActivitySim Input Bundle \u2014 prototype_mtc config package\\n\\nSource screening run: `MTC package test run`\\n\\nThis bundle is runnable by the stock ActivitySim `prototype_mtc` example, layered\\nover the unmodified installed configuration (see `configs/README.md`). The\\npopulation is fitted from real Census microdata; the travel behaviour is the\\nBay Area's, and every artifact says so.\\n\\n## Contents\\n\\n- `manifest.json`: bundle provenance, file registry, and caveats\\n- `land_use.csv`: zone table in the MTC vocabulary (TOTHH/TOTEMP/area_type\u2026)\\n- `households.csv`: fitted households with MTC codes (HHT, year-2000 income)\\n- `persons.csv`: fitted persons with MTC person types (ptype/pemploy/pstudent)\\n- `skims/mtc_skims.omx`: the full stock skim inventory \u2014 real auto times and\\n  distances, zero transit and tolls\\n- `skims/travel_time_skims.omx`: the raw screening skim this was expanded from,\\n  materialized via `copy`\\n- `configs/`: the settings overlay layered over the stock configuration\\n- `metadata/source_screening_bundle_manifest.json`: copied source screening manifest\\n\\n## Caveats\\n\\n- seed drawn from real PUMS records\\n- graded against margins\\n- ActivitySim behavioural coefficients carry separate provenance for each component. A population drawn from local survey records does not make the travel behaviour local.\\n- Auto ownership uses the nationally estimated component accepted by the recorded fresh holdout study. Every other behavioral component still uses ActivitySim's stock prototype_mtc coefficients estimated for the San Francisco Bay Area. Component acceptance does not establish destination, mode, timing, assignment, or corridor accuracy.\\n- All five skim periods carry the same free-flow travel time; congestion by time of day is not represented.\\n- Every transit skim is zero. Unknown fares and unavailable paths disable mode-choice alternatives. Time-of-day skims represent the configured departures, not period averages. See the transit custody and limitations in mtc_inputs.skim_expansion.transit.\\n- Household incomes were deflated to year-2000 dollars (BLS CPI-U annual averages 172.2/292.655, source dollar year 2022) because the MTC specifications segment income in 2000 dollars.\\n- School and college enrolment come from ACS table B14001, which counts enrolled residents of each zone, not seats at schools located there.\\n- Employment sectors FPSEMPN, AGREMPN and MWTEMPN are zero because the screening land-use source does not distinguish them; uncategorised employment is carried in OTHEMPN.\\n- Zone densities and area types are computed over gross zone acreage; a large, mostly undeveloped zone reads as more rural than its developed core is.\\n\"\n\n----------------------------------------------------------------------\nRan 1 test in 0.198s\n\nFAILED (failures=1)\n",
+      "source_sha256": "1288b1fc9adf01ec77cdb1bb4535cee8af1f07d69e0f37c3926813e5be37a813",
+      "source_unchanged": true
+    }
+  ],
+  "skipped": 0
+}

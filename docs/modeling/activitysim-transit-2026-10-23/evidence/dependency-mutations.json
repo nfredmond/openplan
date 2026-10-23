@@ -1,0 +1,25 @@
+{
+  "cases": [
+    {
+      "mutation": "harmless_comment",
+      "verified": true,
+      "exit_code": 0,
+      "output": "\n RUN  v4.1.12 /home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/openplan\n\n\n Test Files  1 passed (1)\n      Tests  2 passed (2)\n   Start at  15:52:56\n   Duration  734ms (transform 37ms, setup 76ms, import 19ms, tests 53ms, environment 485ms)\n\n"
+    },
+    {
+      "mutation": "bisect_not_admitted",
+      "verified": true,
+      "exit_code": 1,
+      "output": "\n RUN  v4.1.12 /home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/openplan\n\n \u276f src/test/transit-dependency-mutation.test.ts (2 tests | 1 failed) 44ms\n     \u00d7 lists every third-party module scripts/modeling imports 25ms\n\n Test Files  1 failed (1)\n      Tests  1 failed | 1 passed (2)\n   Start at  15:52:57\n   Duration  564ms (transform 35ms, setup 58ms, import 15ms, tests 44ms, environment 347ms)\n\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 1 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL  src/test/transit-dependency-mutation.test.ts > the modeling requirements cover what the modeling code imports > lists every third-party module scripts/modeling imports\nAssertionError: expected [ Array(1) ] to deeply equal []\n\n- Expected\n+ Received\n\n- []\n+ [\n+   \"bisect (imported by scripts/modeling/activitysim_transit_skims.py) is not in scripts/modeling/requirements.txt \u2014 add it there, map the script to its real runtime, or add it to PYTHON_STDLIB if it is standard library\",\n+ ]\n\n \u276f src/test/transit-dependency-mutation.test.ts:207:21\n    205|     }\n    206|\n    207|     expect(missing).toEqual([]);\n       |                     ^\n    208|   });\n    209|\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/1]\u23af\n\n"
+    },
+    {
+      "mutation": "undeclared_library",
+      "verified": true,
+      "exit_code": 1,
+      "output": "\n RUN  v4.1.12 /home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/openplan\n\n \u276f src/test/transit-dependency-mutation.test.ts (2 tests | 1 failed) 44ms\n     \u00d7 lists every third-party module scripts/modeling imports 26ms\n\n Test Files  1 failed (1)\n      Tests  1 failed | 1 passed (2)\n   Start at  15:52:58\n   Duration  580ms (transform 35ms, setup 57ms, import 15ms, tests 44ms, environment 361ms)\n\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af Failed Tests 1 \u23af\u23af\u23af\u23af\u23af\u23af\u23af\n\n FAIL  src/test/transit-dependency-mutation.test.ts > the modeling requirements cover what the modeling code imports > lists every third-party module scripts/modeling imports\nAssertionError: expected [ Array(1) ] to deeply equal []\n\n- Expected\n+ Received\n\n- []\n+ [\n+   \"transit_library_not_installed (imported by scripts/modeling/transit_dependency_mutation.py) is not in scripts/modeling/requirements.txt \u2014 add it there, map the script to its real runtime, or add it to PYTHON_STDLIB if it is standard library\",\n+ ]\n\n \u276f src/test/transit-dependency-mutation.test.ts:207:21\n    205|     }\n    206|\n    207|     expect(missing).toEqual([]);\n       |                     ^\n    208|   });\n    209|\n\n\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af\u23af[1/1]\u23af\n\n"
+    }
+  ],
+  "source_sha256": "873e81880d8df8f38adc41607103ade176a82d54e7cbdf6904dc5e33b8ee1b3d",
+  "source_unchanged": true,
+  "skipped": 0
+}
