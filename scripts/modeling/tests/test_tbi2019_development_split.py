@@ -1,5 +1,4 @@
 """Synthetic checks for roster-only access and whole-household splitting."""
-import copy
 import hashlib
 import json
 from pathlib import Path

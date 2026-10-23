@@ -1,0 +1,197 @@
+{
+  "source_sha256": "b1e7ff0b36a188fdf0a7e4f0b477ee780af03c66a5123f89fd28f5e6c398901b",
+  "restored_sha256": "b1e7ff0b36a188fdf0a7e4f0b477ee780af03c66a5123f89fd28f5e6c398901b",
+  "tests": 13,
+  "targeted_controls": 17,
+  "records": [
+    {
+      "name": "baseline",
+      "exit_code": 0,
+      "output_sha256": "6eebf20d39bdf57bb3c5be3fd3d0cf465b0c9bee7fe747b8717f7c2737e75b72"
+    },
+    {
+      "name": "harmless_comment",
+      "exit_code": 0,
+      "output_sha256": "8cd1d581f60f2e5fa9f9b5493beddbcb4d62c259e4ade986688557ea7a9682d6"
+    },
+    {
+      "name": "outcome_projection",
+      "test": "test_outcome_field_refused",
+      "exit_code": 1,
+      "intended_assertion_failed": true,
+      "output_sha256": "7de074d4dafd4413aba12fffeb5968455dd0478ac81d17fc33238cf26b10387f",
+      "assertion_lines": [
+        "AssertionError: ValueError not raised"
+      ]
+    },
+    {
+      "name": "positive_id",
+      "test": "test_invalid_id_refused",
+      "exit_code": 1,
+      "intended_assertion_failed": true,
+      "output_sha256": "3830f873c5a085599280eaf559eed7c65aef8dd438da0c9cc5d414c01050e74d",
+      "assertion_lines": [
+        "AssertionError: ValueError not raised",
+        "AssertionError: ValueError not raised",
+        "AssertionError: ValueError not raised",
+        "AssertionError: ValueError not raised",
+        "AssertionError: ValueError not raised"
+      ]
+    },
+    {
+      "name": "duplicate_id",
+      "test": "test_duplicate_refused",
+      "exit_code": 1,
+      "intended_assertion_failed": true,
+      "output_sha256": "98b8f52346f90c7aa5f6b50af60fcbef607ab62b874ee83644d1138334fa5f63",
+      "assertion_lines": [
+        "AssertionError: ValueError not raised"
+      ]
+    },
+    {
+      "name": "wave",
+      "test": "test_wrong_wave_refused",
+      "exit_code": 1,
+      "intended_assertion_failed": true,
+      "output_sha256": "14a10b0a77747ed1591bb0b15662853617aec0e1360de9126454004ae1f8cba2",
+      "assertion_lines": [
+        "AssertionError: ValueError not raised"
+      ]
+    },
+    {
+      "name": "county_type",
+      "test": "test_bad_county_refused",
+      "exit_code": 1,
+      "intended_assertion_failed": true,
+      "output_sha256": "fe2fe4d9130d21c5d0b35544f3f22c2a26c4a3d34ca1e4d25409de299527b8d7",
+      "assertion_lines": [
+        "AssertionError: ValueError not raised"
+      ]
+    },
+    {
+      "name": "split_hash",
+      "test": "test_spec_tamper",
+      "exit_code": 1,
+      "intended_assertion_failed": true,
+      "output_sha256": "aee8246a0a9ae0244abfc26dac3f8273cb4d8ddd3a8b4eaa61eaef468cc7dd72",
+      "assertion_lines": [
+        "AssertionError: ValueError not raised"
+      ]
+    },
+    {
+      "name": "publisher_error",
+      "test": "test_page_refusals",
+      "exit_code": 1,
+      "intended_assertion_failed": true,
+      "output_sha256": "51c9c71fccc20939db88a679948b0c8c62bb8ba75ee3f4baf4c708947dfefefa",
+      "assertion_lines": [
+        "AssertionError: ValueError not raised"
+      ]
+    },
+    {
+      "name": "page_count",
+      "test": "test_page_refusals",
+      "exit_code": 1,
+      "intended_assertion_failed": true,
+      "output_sha256": "badc5e1cf255069e55cce6156bb8e96c8d6d1cea0d3ea1e51b902015aa936750",
+      "assertion_lines": [
+        "AssertionError: ValueError not raised"
+      ]
+    },
+    {
+      "name": "response_projection",
+      "test": "test_page_refusals",
+      "exit_code": 1,
+      "intended_assertion_failed": true,
+      "output_sha256": "53d35ebf29c4e830f71e15e848468cf5a04501219f1990343428bc66588a4a71",
+      "assertion_lines": [
+        "AssertionError: ValueError not raised"
+      ]
+    },
+    {
+      "name": "census_positive",
+      "test": "test_invalid_census",
+      "exit_code": 1,
+      "intended_assertion_failed": true,
+      "output_sha256": "2d34aa0b39317663577cfeec7d3f9b5e0e29a71e5c42f7b946aa9013fe64a8ef",
+      "assertion_lines": [
+        "AssertionError: ValueError not raised"
+      ]
+    },
+    {
+      "name": "census_stability",
+      "test": "test_census_change",
+      "exit_code": 1,
+      "intended_assertion_failed": true,
+      "output_sha256": "e79239646f85a72902b8f2fdb5a79532d4b2b0b823c78d743b47464d437ae976",
+      "assertion_lines": [
+        "AssertionError: ValueError not raised"
+      ]
+    },
+    {
+      "name": "partition_fraction",
+      "test": "test_exact_independent_rank_and_conservation",
+      "exit_code": 1,
+      "intended_assertion_failed": true,
+      "output_sha256": "a5183f15389e5ad7afbb39b0e1129a71bc29db13b88e007dc6115def98dbb105",
+      "assertion_lines": [
+        "AssertionError: Items in the first set but not the second:"
+      ]
+    },
+    {
+      "name": "county_partition",
+      "test": "test_county_stratification_and_missing",
+      "exit_code": 1,
+      "intended_assertion_failed": true,
+      "output_sha256": "a3098c644ef75f2ba53e96d26d09ada7dbea51b48ee37f953a8b2c14274cc55a",
+      "assertion_lines": [
+        "AssertionError: 0 != 5"
+      ]
+    },
+    {
+      "name": "query_outcomes",
+      "test": "test_query_projection",
+      "exit_code": 1,
+      "intended_assertion_failed": true,
+      "output_sha256": "070fa50f6a2ec80e16e2370cf40013bcd2750276ee5d6d262fbe19fa5ef20d40",
+      "assertion_lines": [
+        "AssertionError: '*' != 'hh_id,home_county,survey_year'"
+      ]
+    },
+    {
+      "name": "query_order",
+      "test": "test_query_projection",
+      "exit_code": 1,
+      "intended_assertion_failed": true,
+      "output_sha256": "7f443d81f78b31f38ef707967d07cfb42147ae7e770caa971bc3263722c569b7",
+      "assertion_lines": [
+        "AssertionError: 'hh_id DESC' != 'hh_id ASC'"
+      ]
+    },
+    {
+      "name": "summary_census",
+      "test": "test_county_stratification_and_missing",
+      "exit_code": 1,
+      "intended_assertion_failed": true,
+      "output_sha256": "25956bac7479f94ec4c05fc08d5632e74cac649e298032a5561b3ff4643a00b2",
+      "assertion_lines": [
+        "AssertionError: 19 != 15"
+      ]
+    },
+    {
+      "name": "overwrite_refusal",
+      "test": "test_acquisition_end_to_end_synthetic",
+      "exit_code": 1,
+      "intended_assertion_failed": true,
+      "output_sha256": "e568d2123853298e2c65ed6a6534b29337a3bcb7e31e198d606c65bc66c2df2f",
+      "assertion_lines": [
+        "AssertionError: FileExistsError not raised"
+      ]
+    },
+    {
+      "name": "restored",
+      "exit_code": 0,
+      "output_sha256": "399d6e022716dba927ef54e296bf298b60e7392f1bc5cc28ad5e5e7c79a2b958"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "native_closure_mismatches": [],
+  "aggregate_sha256_matches": true,
+  "source_response_mismatches": [],
+  "synthetic_joint_tours": 9,
+  "split_hash_matches": true,
+  "preregistration_hash_matches": true,
+  "private_assignment_hash_matches": true
+}

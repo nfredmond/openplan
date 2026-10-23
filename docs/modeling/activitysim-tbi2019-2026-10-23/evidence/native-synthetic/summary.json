@@ -1,0 +1,105 @@
+{
+  "status": "evaluated_once",
+  "decision": "inconclusive",
+  "meaning": "Synthetic instrument result only; not a TBI behavioral decision",
+  "native_stages": [
+    {
+      "exit_code": 0,
+      "log_sha256": "0f26672af79141b1b35a99d73d3f4ed9145cdb6ac7e528f7c8d6df4768ff031c",
+      "stage": "upstream"
+    },
+    {
+      "exit_code": 0,
+      "log_sha256": "3b62c646518e6320796193854a956f7163003c0a0f3d3b2a57becfaccc9b55cc",
+      "stage": "baseline"
+    },
+    {
+      "exit_code": 0,
+      "log_sha256": "9fcaf938174d1519b4d57e90ccde8d6a027a56fafa94fd02c7a84782a8435837",
+      "stage": "candidate"
+    },
+    {
+      "exit_code": 0,
+      "log_sha256": "f8559f964246a85d17be74339c29b228a5ba602321ec1bbbb69db6f14bac53ae",
+      "stage": "replay"
+    }
+  ],
+  "checks": {
+    "baseline_replay_identical": true,
+    "complete_coverage": true,
+    "fixed_inputs": true,
+    "joint_unchanged": true,
+    "probability_conservation": true
+  },
+  "tour_count": 284,
+  "stratum_records": 67,
+  "mode_count": 21,
+  "execution": {
+    "candidate_result": {
+      "bytes": 621953,
+      "sha256": "3a5bf1d48a9134905ef9df502040374343b2dbe32f99046c405c5333851fc053"
+    },
+    "evaluator": {
+      "exit_status": 0,
+      "peak_rss_bytes": 499748864,
+      "signal": null,
+      "stderr": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "receipt_sha256": "0dd707b0020abad762283309b4f1642ec45390382f8a412e3caf6afc8f3c370a"
+  },
+  "all_shares": {
+    "baseline": {
+      "BIKE": 0.020573490985153063,
+      "DRIVEALONEFREE": 0.2611973445161377,
+      "DRIVEALONEPAY": 0.0,
+      "DRIVE_COM": 0.0,
+      "DRIVE_EXP": 0.0,
+      "DRIVE_HVY": 0.0,
+      "DRIVE_LOC": 0.0,
+      "DRIVE_LRF": 0.0,
+      "SHARED2FREE": 0.17662064465208807,
+      "SHARED2PAY": 0.0,
+      "SHARED3FREE": 0.20591134767229638,
+      "SHARED3PAY": 0.0,
+      "TAXI": 0.001583079130835634,
+      "TNC_SHARED": 0.0010891117737434463,
+      "TNC_SINGLE": 0.011610144870632498,
+      "WALK": 0.32141483639911317,
+      "WALK_COM": 0.0,
+      "WALK_EXP": 0.0,
+      "WALK_HVY": 0.0,
+      "WALK_LOC": 0.0,
+      "WALK_LRF": 0.0
+    },
+    "candidate": {
+      "BIKE": 0.031836058811337484,
+      "DRIVEALONEFREE": 0.27560197390086477,
+      "DRIVEALONEPAY": 0.0,
+      "DRIVE_COM": 0.0,
+      "DRIVE_EXP": 0.0,
+      "DRIVE_HVY": 0.0,
+      "DRIVE_LOC": 0.0,
+      "DRIVE_LRF": 0.0,
+      "SHARED2FREE": 0.20374419157496718,
+      "SHARED2PAY": 0.0,
+      "SHARED3FREE": 0.2556636660805456,
+      "SHARED3PAY": 0.0,
+      "TAXI": 0.002188902152510495,
+      "TNC_SHARED": 0.0012352113157171165,
+      "TNC_SINGLE": 0.01293024854166657,
+      "WALK": 0.21679974762239076,
+      "WALK_COM": 0.0,
+      "WALK_EXP": 0.0,
+      "WALK_HVY": 0.0,
+      "WALK_LOC": 0.0,
+      "WALK_LRF": 0.0
+    }
+  }
+}
