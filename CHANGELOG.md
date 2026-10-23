@@ -20,6 +20,13 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Security dependency update.** Zod moves from 4.4.3 to 4.6.7 for
+GHSA-mrhx-c7xc-m3w5, a memory-exhaustion advisory in validating oversized
+constrained collections; OpenPlan validates request bodies with Zod.
+puppeteer-core moves from 25.6.0 to 25.16.0, which brings a `chromium-bidi`
+build on fixed Zod. The development-only shadcn CLI moves from 3.8.5 to 4.22.1
+for the same reason. `npm audit` reports no advisories afterward.
+
 **Vercel builds skip Next's duplicate type check.** Next's type check needs
 more than 5 GB of heap on its own, and on October 23, 2026 it pushed Vercel's
 standard 8 GB builder out of memory. Builds with `VERCEL=1` now skip it. Every
