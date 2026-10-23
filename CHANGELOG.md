@@ -20,9 +20,13 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-This integration tree contains 437 source migrations. The seven pending Models
-and Reports additions below remain outside the prepared v0.72.0 saved API
-candidate, which contains 430. This join does not publish either increment.
+This tree contains 437 source migrations, seven more than v0.72.0. Self-hosted
+installations apply the seven Models and Reports migrations below, in version
+order, before deploying this code. The managed database received all seven on
+October 23, 2026, in one transaction after a fresh capture and a rollback-only
+dry run; its history now holds 438 rows, including the separate Award record.
+The catalogue after installation equals the catalogue before plus exactly the
+change measured in the dry run.
 
 **Managed comparison readiness source candidate:** apply
 `20261022070000_managed_comparison_readiness.sql` after the managed retry
