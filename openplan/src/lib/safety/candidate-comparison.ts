@@ -3,7 +3,7 @@ import { CRASH_DIMENSION_COLUMNS, CRASH_SEVERITIES } from "./vocabulary";
 import { projectEstimateDecimal } from "@/lib/projects/estimated-cost";
 
 export const SAFETY_COMPARISON_VERSION = "openplan.safety-comparison.v2";
-export const SAFETY_COMPARISON_MIGRATION = "20261019120000_safety_comparison_inputs";
+export const SAFETY_COMPARISON_MIGRATION = "20261023190100_safety_comparison_inputs";
 export const SAFETY_COMPARISON_POINTER = "safetyComparisonV2";
 export const SAFETY_COMPARISON_ACQUISITION_SELECT = "id, workspace_id, project_id, evidence_revision::text, min_lon, min_lat, max_lon, max_lat, status, source_id, source_label, attribution, coverage_state, severity_completeness, years_requested, crash_count, geocoded_count, stored_count, truncated, created_at, updated_at, dimension_coverage, party_completeness, party_count, involvement_basis, published_through, published_through_provenance";
 export const SAFETY_COMPARISON_PROJECT_SELECT = "id, workspace_id, updated_at, estimated_cost_amount::text, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, estimated_cost_recorded_at";

@@ -122,7 +122,7 @@ export const PROJECT_DELETE_RELATIONS: readonly ProjectDeleteRelation[] = [
       `${pluralize(count, "Safety generation custody receipts")} would be destroyed along with the project. These immutable receipts retain the snapshot hash and source revisions; retire the project to preserve them.`,
   },
 
-  // Migration 20261019120000 declares NO ACTION, not a cascade. Immutable
+  // Migration 20261023190100 declares NO ACTION, not a cascade. Immutable
   // comparison revisions retain the project that supplied their inputs.
   {
     table: "report_safety_comparison_revisions",

@@ -4624,7 +4624,9 @@ describe("POST /api/reports/[reportId]/generate", () => {
     ].join(", ");
     expect((await generatePendingSchemaReport()).status).toBe(200);
     expect(projectSelectMock.mock.calls[0][0], "Actual initial projection retains every group in order").toBe(expected);
-    const sites = collectSupabaseSelectSites().filter(site =>
+    const sites = collectSupabaseSelectSites({
+      files: ["src/app/api/reports/[reportId]/generate/route.ts"],
+    }).filter(site =>
       site.file === "src/app/api/reports/[reportId]/generate/route.ts" && site.table === "projects"
     );
     expect(sites.filter(site => site.projection !== null).map(site => site.projection), "Source guard resolves the actual initial projection").toEqual([expected]);

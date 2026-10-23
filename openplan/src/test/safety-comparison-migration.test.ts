@@ -1,7 +1,7 @@
 /** AUTHORED, UNEXECUTED. Source assertions cannot prove SQL syntax, locks, RLS or interleavings. */
 import { readFileSync } from "node:fs";
 import { describe,expect,it } from "vitest";
-const sql=readFileSync("supabase/migrations/20261019120000_safety_comparison_inputs.sql","utf8");
+const sql=readFileSync("supabase/migrations/20261023190100_safety_comparison_inputs.sql","utf8");
 const functionBody=(name:string)=>{const start=sql.indexOf(`CREATE FUNCTION ${name}(`);expect(start).toBeGreaterThan(-1);return sql.slice(start,sql.indexOf("\n$$;",start));};
 describe("Safety comparison database source graph",()=>{
  it("admits stored or ready shared project estimate references without publishing private export metadata",()=>{

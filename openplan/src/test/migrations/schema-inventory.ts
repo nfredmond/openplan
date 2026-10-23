@@ -1,3 +1,4 @@
+import { expandDynamicRlsStatements } from "./plpgsql-expansion";
 import {
   MIGRATIONS_DIR,
   blankComments,
@@ -126,11 +127,17 @@ export function loadSchemaInventory(options: { dir?: string } = {}): SchemaInven
     }
 
     // ALTER TABLE [IF EXISTS] [ONLY] [public.]<name> <clause>[, <clause>…];
-    for (const match of sql.matchAll(
+    const alters = [...sql.matchAll(
       /ALTER\s+TABLE\s+(?:IF\s+EXISTS\s+)?(?:ONLY\s+)?(?:public\.)?"?([A-Za-z0-9_]+)"?([^;]*);/gi
-    )) {
-      const table = bare(match[1]);
-      const clauses = match[2];
+    )].map(match => ({ at: match.index ?? 0, table: match[1], clauses: match[2] }));
+    for (const row of expandDynamicRlsStatements(file, sql)) {
+      const match = row.sql.match(/ALTER\s+TABLE\s+(?:public\.)?"?([A-Za-z0-9_]+)"?([^;]*);/i);
+      if (!match) throw new Error(`${file}: expanded RLS statement did not parse: ${row.sql}`);
+      alters.push({ at: row.blockOffset, table: match[1], clauses: match[2] });
+    }
+    for (const match of alters.sort((a, b) => a.at - b.at)) {
+      const table = bare(match.table);
+      const clauses = match.clauses;
 
       if (/\bENABLE\s+ROW\s+LEVEL\s+SECURITY\b/i.test(clauses)) rlsTables.add(table);
       if (/\bDISABLE\s+ROW\s+LEVEL\s+SECURITY\b/i.test(clauses)) rlsTables.delete(table);
