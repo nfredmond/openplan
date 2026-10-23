@@ -1,0 +1,20 @@
+[
+  {
+    "name": "pums-h-wi",
+    "url": "https://www2.census.gov/programs-surveys/acs/data/pums/2019/5-Year/csv_hwi.zip",
+    "path": "data/_screening_cache/tbi2019-integration/pums-h-wi.response",
+    "sha256": "4ab80b6d824e81e56159e13e8975d9311218d5381582f3631714cacd78710b9f",
+    "bytes": 18184855,
+    "http_status": 200,
+    "retrieved_at": "2026-10-23T23:18:51.867374+00:00"
+  },
+  {
+    "name": "pums-p-wi",
+    "url": "https://www2.census.gov/programs-surveys/acs/data/pums/2019/5-Year/csv_pwi.zip",
+    "path": "data/_screening_cache/tbi2019-integration/pums-p-wi.response",
+    "sha256": "51e54070dbce4536a1512645fb4f1ee806cad7b17ddeeb3a9effaf4d6899e646",
+    "bytes": 40498098,
+    "http_status": 200,
+    "retrieved_at": "2026-10-23T23:19:02.316764+00:00"
+  }
+]

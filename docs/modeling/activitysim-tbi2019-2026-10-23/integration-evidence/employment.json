@@ -1,0 +1,14 @@
+{
+  "selected_tracts": 704,
+  "selected_blocks": 18378,
+  "selected_jobs": 1813674,
+  "outside_jobs": 1075214,
+  "source_blocks": 45679,
+  "source_sha256": "325c6a9d36963b6ea79d72ebf6be3281e2411217f57a124dc9593d7f42c44b64",
+  "source_url": "https://lehd.ces.census.gov/data/lodes/LODES7/mn/wac/mn_wac_S000_JT00_2019.csv.gz",
+  "geographic_basis": "LODES7 2010 blocks, 11-digit tract prefix, every selected TIGER2019 tract present",
+  "limitations": [
+    "Jobs, not unique workers or observed trips.",
+    "Existing MTC sector pooling remains explicit."
+  ]
+}

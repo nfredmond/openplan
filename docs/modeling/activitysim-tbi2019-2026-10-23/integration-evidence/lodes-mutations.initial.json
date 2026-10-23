@@ -1,0 +1,16 @@
+[
+  {
+    "name": "comment",
+    "expected": "survive",
+    "exit_code": 0,
+    "expected_observed": true,
+    "restored_sha256": "cdbe017b70d6d3f53f8f99e3389e38d6231f4706115069cacfc63c70eab0e46f"
+  },
+  {
+    "name": "columns",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": false,
+    "restored_sha256": "cdbe017b70d6d3f53f8f99e3389e38d6231f4706115069cacfc63c70eab0e46f"
+  }
+]

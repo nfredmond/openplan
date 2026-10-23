@@ -191,6 +191,20 @@ def connectors(zones, stops, served, settings):
 def fare_for_path(boardings, fares, rules, policy):
     """Return nominal USD or None. Complex fares remain unknown, never zero."""
     if policy:
+        if policy.get("kind") == "route_period_single_boarding":
+            # This bounded policy cannot price transfers, zone fares or discounts.
+            if not policy.get("source"):
+                raise TransitUnavailable("Fare policy source is required")
+            if len(boardings) != 1:
+                return None
+            route, when = boardings[0]
+            schedule = policy.get("route_fares", {}).get(route)
+            if schedule is None:
+                return None
+            matching = [r for r in schedule if seconds(r["start"]) <= when < seconds(r["end"])]
+            if len(matching) != 1:
+                return None
+            return number(matching[0]["usd"], "route fare usd")
         if not policy.get("source") or policy.get("kind") != "flat_per_boarding":
             raise TransitUnavailable("Only sourced flat_per_boarding fare overrides are supported")
         return len(boardings) * number(policy["usd"], "fare usd")
@@ -390,10 +404,29 @@ def build_transit_skims(zones, config):
         record["feed_sha256"] = sha256(path)
         if record["feed_sha256"] != config["feed_sha256"]:
             raise TransitUnavailable("GTFS hash differs from configured custody")
+        policy = config.get("fare_policy", {})
+        if policy.get("kind") == "route_period_single_boarding":
+            if policy["service_date"] != config["service_date"]:
+                raise TransitUnavailable("Fare schedule service date differs")
+            if not policy["effective_from"] <= config["service_date"] <= policy["verified_through"]:
+                raise TransitUnavailable("Service date outside verified fare policy dates")
+            if sha256(policy["source_path"]) != policy["source_sha256"]:
+                raise TransitUnavailable("Fare source hash differs from configured custody")
         stops, services, transfers, custody, fares, rules = load_feed(path, config["service_date"], config.get("route_families", {}))
         record.update(custody)
         served = {r[1] for service in services for r in service[4]}
         walk, drive_in, drive_out, points = connectors(zones, stops, served, config)
+        exclusions = config.get("coverage_exclusions", {})
+        if exclusions:
+            if not exclusions.get("source"):
+                raise TransitUnavailable("Coverage exclusions need a source")
+            excluded = set(exclusions["zone_ids"])
+            if not excluded <= set(record["zone_ids"]):
+                raise TransitUnavailable("Excluded zone outside supplied zone system")
+            for i, zone_id in enumerate(record["zone_ids"]):
+                if zone_id in excluded:
+                    walk[i], drive_in[i], drive_out[i] = {}, {}, {}
+            record["coverage_exclusions"] = exclusions
         record["walk_access_zone_ids"] = [record["zone_ids"][i] for i,a in enumerate(walk) if a]
         record["zones_without_walk_access"] = [record["zone_ids"][i] for i,a in enumerate(walk) if not a]
         if not any(walk):

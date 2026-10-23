@@ -1,0 +1,8 @@
+{
+  "url": "https://overpass-api.de/api/interpreter?data=%5Bout%3Ajson%5D%5Btimeout%3A30%5D%5Bdate%3A%222019-10-08T12%3A00%3A00Z%22%5D%3Bway%5B%22highway%22%5D%2844.97%2C-93.27%2C44.98%2C-93.26%29%3Bout+count%3B",
+  "status": 200,
+  "bytes": 414,
+  "sha256": "d87371da05b893031e878d932ae2cde1b966e80eebe9cd6f3dee79011a6f1491",
+  "path": "data/_screening_cache/tbi2019-integration/overpass-get-probe.json",
+  "retrieved_at": "2026-10-23T23:25:14.938300+00:00"
+}

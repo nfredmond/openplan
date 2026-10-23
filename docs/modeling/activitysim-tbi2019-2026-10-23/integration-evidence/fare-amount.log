@@ -1,0 +1,35 @@
+test_available_fare_direct_unknown_transfer (test_activitysim_integration_inputs.IntegrationInputs.test_available_fare_direct_unknown_transfer) ... FAIL
+test_direct_peak_offpeak_and_boundary (test_activitysim_integration_inputs.IntegrationInputs.test_direct_peak_offpeak_and_boundary) ... FAIL
+test_excluded_endpoint_stays_unknown_and_disclosed (test_activitysim_integration_inputs.IntegrationInputs.test_excluded_endpoint_stays_unknown_and_disclosed) ... ok
+test_exclusion_source_and_zone_refuse (test_activitysim_integration_inputs.IntegrationInputs.test_exclusion_source_and_zone_refuse) ... ok
+test_missing_source_date_and_hash_refuse (test_activitysim_integration_inputs.IntegrationInputs.test_missing_source_date_and_hash_refuse) ... ok
+test_unknown_transfer_overlap_and_negative_fares (test_activitysim_integration_inputs.IntegrationInputs.test_unknown_transfer_overlap_and_negative_fares) ... FAIL
+
+======================================================================
+FAIL: test_available_fare_direct_unknown_transfer (test_activitysim_integration_inputs.IntegrationInputs.test_available_fare_direct_unknown_transfer)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/scripts/modeling/tests/test_activitysim_integration_inputs.py", line 48, in test_available_fare_direct_unknown_transfer
+    self.assertEqual(raw['WLK_LOC_WLK_FAR__AM'][0,1],2.5)
+AssertionError: 0.0 != 2.5
+
+======================================================================
+FAIL: test_direct_peak_offpeak_and_boundary (test_activitysim_integration_inputs.IntegrationInputs.test_direct_peak_offpeak_and_boundary)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/scripts/modeling/tests/test_activitysim_integration_inputs.py", line 25, in test_direct_peak_offpeak_and_boundary
+    self.assertEqual(ts.fare_for_path([('r',ts.seconds(when))],[],[],self.policy),expected)
+AssertionError: 0.0 != 2
+
+======================================================================
+FAIL: test_unknown_transfer_overlap_and_negative_fares (test_activitysim_integration_inputs.IntegrationInputs.test_unknown_transfer_overlap_and_negative_fares)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/scripts/modeling/tests/test_activitysim_integration_inputs.py", line 33, in test_unknown_transfer_overlap_and_negative_fares
+    with self.assertRaisesRegex(ts.TransitUnavailable,'nonnegative'):ts.fare_for_path([('r',28800)],[],[],self.policy)
+AssertionError: TransitUnavailable not raised
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.099s
+
+FAILED (failures=3)

@@ -1,0 +1,8 @@
+test_counts_and_outside_scope (test_lodes_wac_inputs.WacInputs.test_counts_and_outside_scope) ... ok
+test_invalid_sources_refuse (test_lodes_wac_inputs.WacInputs.test_invalid_sources_refuse) ... ok
+test_missing_tract_is_not_zero (test_lodes_wac_inputs.WacInputs.test_missing_tract_is_not_zero) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.002s
+
+OK

@@ -1,0 +1,29 @@
+test_duplicate_household (test_census_bulk_inputs.BulkInputs.test_duplicate_household) ... ok
+test_duplicate_person (test_census_bulk_inputs.BulkInputs.test_duplicate_person) ... ok
+test_geography_identity_not_row_order (test_census_bulk_inputs.BulkInputs.test_geography_identity_not_row_order) ... ok
+test_join_projects_only_required_fields_and_keeps_adjustment (test_census_bulk_inputs.BulkInputs.test_join_projects_only_required_fields_and_keeps_adjustment) ... ok
+test_lookup_missing_start_duplicate_and_dual_vintage (test_census_bulk_inputs.BulkInputs.test_lookup_missing_start_duplicate_and_dual_vintage) ... ok
+test_missing_person (test_census_bulk_inputs.BulkInputs.test_missing_person) ... ok
+test_orphan_person_and_group_quarters (test_census_bulk_inputs.BulkInputs.test_orphan_person_and_group_quarters) ... FAIL
+test_partial_puma_coverage_refuses (test_census_bulk_inputs.BulkInputs.test_partial_puma_coverage_refuses) ... ok
+test_puma_join_and_no_residents (test_census_bulk_inputs.BulkInputs.test_puma_join_and_no_residents) ... ok
+test_pums_member_count (test_census_bulk_inputs.BulkInputs.test_pums_member_count) ... ok
+test_sequence_positions_estimates_margins_and_identity (test_census_bulk_inputs.BulkInputs.test_sequence_positions_estimates_margins_and_identity) ... ok
+test_wrong_vintage_and_empty_area (test_census_bulk_inputs.BulkInputs.test_wrong_vintage_and_empty_area) ... ok
+
+======================================================================
+FAIL: test_orphan_person_and_group_quarters (test_census_bulk_inputs.BulkInputs.test_orphan_person_and_group_quarters)
+----------------------------------------------------------------------
+ValueError: Household person count differs from NP
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/scripts/modeling/tests/test_census_bulk_inputs.py", line 52, in test_orphan_person_and_group_quarters
+    with self.assertRaisesRegex(ValueError,'matching household'):self.read(people=[orphan])
+AssertionError: "matching household" does not match "Household person count differs from NP"
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.012s
+
+FAILED (failures=1)

@@ -1,0 +1,11 @@
+[
+  {
+    "name": "lodes-wac2019",
+    "url": "https://lehd.ces.census.gov/data/lodes/LODES7/mn/wac/mn_wac_S000_JT00_2019.csv.gz",
+    "http_status": 200,
+    "bytes": 1067094,
+    "sha256": "325c6a9d36963b6ea79d72ebf6be3281e2411217f57a124dc9593d7f42c44b64",
+    "path": "data/_screening_cache/tbi2019-integration/lodes-wac2019.response",
+    "retrieved_at": "2026-10-23T23:28:28.211557+00:00"
+  }
+]

@@ -1,0 +1,17 @@
+[
+  {
+    "unit": "run-p2193324-i60830086.scope",
+    "exit_code": 0,
+    "properties": "ActiveState=active\nResult=success\nMemoryPeak=2649952256\nMemoryMax=6442450944\nMemorySwapMax=0\n"
+  },
+  {
+    "unit": "run-p2300823-i60870545.scope",
+    "exit_code": 0,
+    "properties": "ActiveState=active\nResult=success\nMemoryPeak=1269018624\nMemoryMax=6442450944\nMemorySwapMax=0\n"
+  },
+  {
+    "unit": "run-p2275654-i60876934.scope",
+    "exit_code": 0,
+    "properties": "ActiveState=active\nResult=success\nMemoryPeak=4350369792\nMemoryMax=6442450944\nMemorySwapMax=0\n"
+  }
+]

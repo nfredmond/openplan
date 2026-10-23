@@ -1,0 +1,23 @@
+Running as unit: run-p2193604-i60783505.scope; invocation ID: 7eab3b050b0241e4b32021c12028aaa5
+{
+  "source": "MVTA 2020 audited financial report, government profile and service area; historical membership statement; TIGER2019 place and tract geometry",
+  "member_cities": [
+    "Apple Valley",
+    "Burnsville",
+    "Eagan",
+    "Prior Lake",
+    "Rosemount",
+    "Savage",
+    "Shakopee"
+  ],
+  "zones_total": 704,
+  "zones_excluded": 66,
+  "zones_remaining": 638,
+  "survey_records_excluded_for_mvta": null,
+  "survey_reason": "Frozen roster has county only; endpoint dependence cannot be computed without prohibited outcome fields. Member-area mask does not identify all trips using MVTA outside its member cities.",
+  "drive_transit": {
+    "status": "unavailable",
+    "reason": "No verified park-and-ride to highway-node and GTFS-stop crosswalk yet",
+    "connectors": 0
+  }
+}

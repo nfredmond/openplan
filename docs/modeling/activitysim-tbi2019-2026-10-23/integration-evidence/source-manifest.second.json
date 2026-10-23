@@ -1,0 +1,52 @@
+[
+  {
+    "name": "acs-bulk-index",
+    "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2019/data/5_year_seq_by_state/Minnesota/Tracts_Block_Groups_Only/",
+    "resolved_url": "https://www2.census.gov/programs-surveys/acs/summary_file/2019/data/5_year_seq_by_state/Minnesota/Tracts_Block_Groups_Only/",
+    "http_status": 200,
+    "bytes": 45637,
+    "sha256": "199bd495d931d6c6f3b2d6097e250ba417c8cacf1e7cd9045662e231f0689841",
+    "path": "data/_screening_cache/tbi2019-integration/acs-bulk-index.response",
+    "retrieved_at": "2026-10-23T23:13:28.106954+00:00"
+  },
+  {
+    "name": "pums-bulk-index",
+    "url": "https://www2.census.gov/programs-surveys/acs/data/pums/2019/5-Year/",
+    "resolved_url": "https://www2.census.gov/programs-surveys/acs/data/pums/2019/5-Year/",
+    "http_status": 200,
+    "bytes": 58003,
+    "sha256": "a6e6a93c4c6c6cca4ba04d537030b35577467412299cc9a06bdfed6d8d762725",
+    "path": "data/_screening_cache/tbi2019-integration/pums-bulk-index.response",
+    "retrieved_at": "2026-10-23T23:13:27.586362+00:00"
+  },
+  {
+    "name": "fare-resolution",
+    "url": "https://metrocouncil.org/Council-Meetings/Committees/Metropolitan-Council/2017/7-26-17/0724_2017_154-SW.aspx",
+    "resolved_url": "https://metrocouncil.org/Council-Meetings/Committees/Metropolitan-Council/2017/7-26-17/0724_2017_154-SW.aspx",
+    "http_status": 200,
+    "bytes": 124782,
+    "sha256": "513f826585e5f8df8dbf4ccb4cfca6fe6cab4509bf57054d58e1c75ec54d3b20",
+    "path": "data/_screening_cache/tbi2019-integration/fare-resolution.response",
+    "retrieved_at": "2026-10-23T23:13:27.607447+00:00"
+  },
+  {
+    "name": "park-ride-2019",
+    "url": "https://metrocouncil.org/Transportation/Publications-And-Resources/Transit/Park-and-ride/2019-Park-and-Ride-Report.aspx",
+    "resolved_url": "https://metrocouncil.org/Transportation/Publications-And-Resources/Transit/Park-and-ride/2019-Park-and-Ride-Report.aspx",
+    "http_status": 200,
+    "bytes": 1322516,
+    "sha256": "0bc83f4d182e3c008b9e276c2cace6177a2e56e2fec0df506ed6bc3f06881fe5",
+    "path": "data/_screening_cache/tbi2019-integration/park-ride-2019.response",
+    "retrieved_at": "2026-10-23T23:13:28.293541+00:00"
+  },
+  {
+    "name": "mvta-2019-cafr",
+    "url": "https://www.applevalleymn.gov/DocumentCenter/View/14419",
+    "resolved_url": "https://www.applevalleymn.gov/DocumentCenter/View/14419",
+    "http_status": 404,
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "path": "data/_screening_cache/tbi2019-integration/mvta-2019-cafr.response",
+    "retrieved_at": "2026-10-23T23:13:28.250651+00:00"
+  }
+]

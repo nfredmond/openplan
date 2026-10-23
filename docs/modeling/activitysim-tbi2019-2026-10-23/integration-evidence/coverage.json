@@ -1,0 +1,420 @@
+{
+  "source": "MVTA 2020 audited financial report, government profile and service area; historical membership statement; TIGER2019 place and tract geometry",
+  "member_cities": [
+    "Apple Valley",
+    "Burnsville",
+    "Eagan",
+    "Prior Lake",
+    "Rosemount",
+    "Savage",
+    "Shakopee"
+  ],
+  "zones_total": 704,
+  "zones_excluded": 66,
+  "zones_remaining": 638,
+  "zone_exclusions": [
+    {
+      "zone_id": 125,
+      "GEOID": "27037060709",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 3981620.834797936
+    },
+    {
+      "zone_id": 126,
+      "GEOID": "27037060710",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 10562204.534153745
+    },
+    {
+      "zone_id": 127,
+      "GEOID": "27037060711",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 3600485.8866156302
+    },
+    {
+      "zone_id": 128,
+      "GEOID": "27037060713",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 2892436.4000124955
+    },
+    {
+      "zone_id": 129,
+      "GEOID": "27037060714",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 4280176.621453836
+    },
+    {
+      "zone_id": 130,
+      "GEOID": "27037060716",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 4072182.449213479
+    },
+    {
+      "zone_id": 131,
+      "GEOID": "27037060717",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 12295729.923723636
+    },
+    {
+      "zone_id": 132,
+      "GEOID": "27037060721",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 1924526.213779254
+    },
+    {
+      "zone_id": 133,
+      "GEOID": "27037060725",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 12199165.381860385
+    },
+    {
+      "zone_id": 134,
+      "GEOID": "27037060726",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 4951611.766803183
+    },
+    {
+      "zone_id": 135,
+      "GEOID": "27037060727",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 2557125.173601463
+    },
+    {
+      "zone_id": 136,
+      "GEOID": "27037060728",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 4768057.038655129
+    },
+    {
+      "zone_id": 137,
+      "GEOID": "27037060729",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 4903933.892806622
+    },
+    {
+      "zone_id": 138,
+      "GEOID": "27037060730",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 5099395.5051868735
+    },
+    {
+      "zone_id": 139,
+      "GEOID": "27037060731",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 10157800.000742927
+    },
+    {
+      "zone_id": 140,
+      "GEOID": "27037060732",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 5241420.053359404
+    },
+    {
+      "zone_id": 141,
+      "GEOID": "27037060733",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 3703456.825842886
+    },
+    {
+      "zone_id": 142,
+      "GEOID": "27037060734",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 5501910.608845449
+    },
+    {
+      "zone_id": 143,
+      "GEOID": "27037060735",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 3620918.5610443847
+    },
+    {
+      "zone_id": 144,
+      "GEOID": "27037060737",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 2177249.3577975165
+    },
+    {
+      "zone_id": 145,
+      "GEOID": "27037060738",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 2153279.038430643
+    },
+    {
+      "zone_id": 146,
+      "GEOID": "27037060739",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 8569446.291211162
+    },
+    {
+      "zone_id": 147,
+      "GEOID": "27037060741",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 5071784.437164628
+    },
+    {
+      "zone_id": 148,
+      "GEOID": "27037060742",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 4966799.018327792
+    },
+    {
+      "zone_id": 149,
+      "GEOID": "27037060743",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 793656.1555831333
+    },
+    {
+      "zone_id": 150,
+      "GEOID": "27037060744",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 2146215.2335478216
+    },
+    {
+      "zone_id": 151,
+      "GEOID": "27037060745",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 3887031.5528453067
+    },
+    {
+      "zone_id": 152,
+      "GEOID": "27037060746",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 1992368.3788202188
+    },
+    {
+      "zone_id": 153,
+      "GEOID": "27037060747",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 1965615.1248869968
+    },
+    {
+      "zone_id": 154,
+      "GEOID": "27037060748",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 13437462.864484172
+    },
+    {
+      "zone_id": 155,
+      "GEOID": "27037060749",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 750337.6691661944
+    },
+    {
+      "zone_id": 156,
+      "GEOID": "27037060750",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 1933111.330262907
+    },
+    {
+      "zone_id": 157,
+      "GEOID": "27037060805",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 1578886.9596105157
+    },
+    {
+      "zone_id": 158,
+      "GEOID": "27037060806",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 5599878.813006557
+    },
+    {
+      "zone_id": 159,
+      "GEOID": "27037060811",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 4364889.332017185
+    },
+    {
+      "zone_id": 160,
+      "GEOID": "27037060812",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 3902635.3905257415
+    },
+    {
+      "zone_id": 170,
+      "GEOID": "27037060822",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 3170175.1226388915
+    },
+    {
+      "zone_id": 171,
+      "GEOID": "27037060823",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 4328953.233842471
+    },
+    {
+      "zone_id": 172,
+      "GEOID": "27037060824",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 2846682.640377286
+    },
+    {
+      "zone_id": 173,
+      "GEOID": "27037060825",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 9346580.871881232
+    },
+    {
+      "zone_id": 174,
+      "GEOID": "27037060826",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 5296830.792979205
+    },
+    {
+      "zone_id": 175,
+      "GEOID": "27037060828",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 1956267.277431585
+    },
+    {
+      "zone_id": 176,
+      "GEOID": "27037060829",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 3275322.0349863814
+    },
+    {
+      "zone_id": 183,
+      "GEOID": "27037061003",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 74027025.31945527
+    },
+    {
+      "zone_id": 184,
+      "GEOID": "27037061004",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 5588593.354619215
+    },
+    {
+      "zone_id": 185,
+      "GEOID": "27037061005",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 1285331.1083075723
+    },
+    {
+      "zone_id": 186,
+      "GEOID": "27037061007",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 3122542.336100412
+    },
+    {
+      "zone_id": 187,
+      "GEOID": "27037061008",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 1459523.9979122465
+    },
+    {
+      "zone_id": 188,
+      "GEOID": "27037061009",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 5674015.791004907
+    },
+    {
+      "zone_id": 634,
+      "GEOID": "27139080100",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 3422159.8996636113
+    },
+    {
+      "zone_id": 635,
+      "GEOID": "27139080201",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 12485302.071868313
+    },
+    {
+      "zone_id": 636,
+      "GEOID": "27139080202",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 5233887.33516674
+    },
+    {
+      "zone_id": 637,
+      "GEOID": "27139080203",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 5506001.290564952
+    },
+    {
+      "zone_id": 638,
+      "GEOID": "27139080204",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 4854816.346615961
+    },
+    {
+      "zone_id": 639,
+      "GEOID": "27139080205",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 10950465.972056404
+    },
+    {
+      "zone_id": 640,
+      "GEOID": "27139080301",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 32053112.73538478
+    },
+    {
+      "zone_id": 641,
+      "GEOID": "27139080302",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 31837791.252557047
+    },
+    {
+      "zone_id": 642,
+      "GEOID": "27139080400",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 2354236.974414674
+    },
+    {
+      "zone_id": 643,
+      "GEOID": "27139080500",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 2877358.0323918667
+    },
+    {
+      "zone_id": 644,
+      "GEOID": "27139080600",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 3676883.4888880085
+    },
+    {
+      "zone_id": 645,
+      "GEOID": "27139080700",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 2707246.6489375886
+    },
+    {
+      "zone_id": 647,
+      "GEOID": "27139080903",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 22268610.447249997
+    },
+    {
+      "zone_id": 648,
+      "GEOID": "27139080904",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 7011287.29489569
+    },
+    {
+      "zone_id": 649,
+      "GEOID": "27139080905",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 11907709.880374894
+    },
+    {
+      "zone_id": 650,
+      "GEOID": "27139080906",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 7065620.324477925
+    },
+    {
+      "zone_id": 651,
+      "GEOID": "27139081000",
+      "reason": "mvta_member_city_overlap_service_missing",
+      "overlap_square_meters": 1771161.3958729466
+    }
+  ],
+  "survey_records_excluded_for_mvta": null,
+  "survey_reason": "Frozen roster has county only; endpoint dependence cannot be computed without prohibited outcome fields. Member-area mask does not identify all trips using MVTA outside its member cities.",
+  "drive_transit": {
+    "status": "unavailable",
+    "reason": "No verified park-and-ride to highway-node and GTFS-stop crosswalk yet",
+    "connectors": 0
+  }
+}
