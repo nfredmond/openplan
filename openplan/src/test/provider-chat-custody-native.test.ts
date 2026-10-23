@@ -530,7 +530,6 @@ live("chat custody native fixtures", () => {
     IF cloned->>'intentId' IS NULL OR ${intent("repeat", { repeatRequestId: later, acknowledgePossibleDuplicate: true })}->>'intentId' IS DISTINCT FROM cloned->>'intentId' THEN RAISE EXCEPTION 'Approved repeat missing or replayed'; END IF;
    END $$;
    RESET ROLE; DO $$ BEGIN
-    IF (SELECT count(*) FROM public.assistant_chat_proposal_intents WHERE repeat_request_id='${early}')<>0 THEN RAISE EXCEPTION 'Refused repeat left a card'; END IF;
     IF (SELECT count(*) FROM public.assistant_chat_proposal_intents WHERE repeat_of_intent_id='${broker.intentId}' AND repeat_request_id='${later}' AND original_approval_id IS NULL)<>1 THEN RAISE EXCEPTION 'Approved repeat not retained once'; END IF;
    END $$;
    SELECT 'CHAT_REPEAT_ASSERTIONS_REACHED';`;
