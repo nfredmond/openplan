@@ -3,7 +3,10 @@ import { reviewRecoveryCopy, restoreRecoveryCopy, readRecoveryArchives, readReco
 const [userId, workspaceId, modelId, runId, requestId, stageId] = Array.from({ length: 6 }, (_, i) => `${String(i + 1).padStart(8, "0")}-1111-4111-8111-111111111111`);
 export const scope = { userId, workspaceId, modelId, runId };
 export const saved = (): SavedRecoveryDecision => ({ version: 1, scope, phase: "pending", receipt: null, decision: { requestId, decision: "abandon_execution", reason: "Synthetic operator review", evidence: { process_termination: "unconfirmed" }, expectedState: { run_id: runId, workspace_id: workspaceId, model_id: modelId, status: "running", attempt_managed: true, updated_at: "2026-10-08T19:00:00Z", stages: [{ id: stageId, status: "running", updated_at: "2026-10-08T19:00:00Z", attempt_managed: true, active_attempt_id: null }] } } });
-export const receipt = (record = saved()) => ({ request_id: record.decision.requestId, workspace_id: workspaceId, run_id: runId, actor_id: userId, outcome: "execution_abandoned", run_status: "cancelled", process_termination_verified: false, continuation_authorized: false, model_resumed: false, reported_evidence_verified: false, request_payload: { workspace_id: workspaceId, run_id: runId, actor_id: userId, expected_state: record.decision.expectedState, reason: record.decision.reason, reported_evidence: record.decision.evidence } });
+export const receipt = (record = saved()) => {
+ if (record.decision.decision !== "abandon_execution") throw new Error("Expected the abandonment fixture decision");
+ return { request_id: record.decision.requestId, workspace_id: workspaceId, run_id: runId, actor_id: userId, outcome: "execution_abandoned", run_status: "cancelled", process_termination_verified: false, continuation_authorized: false, model_resumed: false, reported_evidence_verified: false, request_payload: { workspace_id: workspaceId, run_id: runId, actor_id: userId, expected_state: record.decision.expectedState, reason: record.decision.reason, reported_evidence: record.decision.evidence } };
+};
 beforeEach(() => { localStorage.clear(); vi.restoreAllMocks(); });
 it("retains exact bytes before transport and recovers a lost reply after reload", async () => {
  const original = retainRecoveryDecision(localStorage, saved()); let body: string | undefined;

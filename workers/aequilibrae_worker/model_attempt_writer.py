@@ -562,6 +562,18 @@ class AttemptWriter:
             self.stopped = True
             raise
 
+    def materialize_working_state(self, directory, state):
+        """Write owned mutable state without sealing the outgoing handoff."""
+        self.require_open()
+        try:
+            if self.files is None or Path(directory) != self.files.path:
+                raise ValueError('Working state requires the owned attempt directory')
+            self.files.publish_state(state)
+            self.files.verify()
+        except BaseException:
+            self.stopped = True
+            raise
+
     def publish_state(self, directory, state):
         self.require_open()
         try:

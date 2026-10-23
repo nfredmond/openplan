@@ -11,7 +11,6 @@ import model_command_client as client
 import model_command_journal as journal
 from test_model_command_client import command, receipt, IDS, URL, STAMP
 from test_model_command_ownership import snapshot
-from test_model_skip_dispatch import aeq, activity
 
 
 class WriterTests(unittest.TestCase):
@@ -106,6 +105,7 @@ class WriterTests(unittest.TestCase):
         self.get.assert_not_called()
 
     def test_binding_is_scoped_and_both_worker_adapters_use_command(self):
+        from test_model_skip_dispatch import aeq, activity
         self.assertIsNone(managed.current())
         with managed.bind(self.writer):
             with self.assertRaises(invocation.ReconciliationRequired):
@@ -124,6 +124,7 @@ class WriterTests(unittest.TestCase):
         self.assertIsNone(managed.current())
 
     def test_both_worker_adapters_stop_on_uncertainty_without_fallback(self):
+        from test_model_skip_dispatch import aeq, activity
         with managed.bind(self.writer):
             for worker in (aeq, activity):
                 with patch.object(worker.requests, 'patch', side_effect=AssertionError('Legacy PATCH forbidden')):
@@ -137,6 +138,82 @@ class WriterTests(unittest.TestCase):
             with managed.bind(self.writer):
                 raise RuntimeError('Synthetic callback')
         self.assertIsNone(managed.current())
+
+
+class WorkingStateTests(unittest.TestCase):
+    """Real writer, journal and owned files; no stage engine or native service."""
+    setUp = WriterTests.setUp
+
+    def response(self, url, **kwargs):
+        if not url.endswith('/write_model_attempt_artifact'):
+            return WriterTests.response(self, url, **kwargs)
+        import uuid
+        args = kwargs['json']
+        saved = journal.pending(self.directory, self.cmd['destination'])
+        self.assertEqual(len(saved), 1)
+        self.assertEqual(saved[0]['command']['request_id'], args['p_request_id'])
+        return Mock(status_code=200, json=lambda: {
+            'id': str(uuid.uuid5(uuid.UUID(IDS[3]), args['p_request_id'])),
+            'run_id': IDS[1], 'stage_id': IDS[2], 'attempt_id': IDS[3], **args['p_payload'],
+        })
+
+    def retained_inputs(self, path, assignment=None):
+        original = b'{"package":{"package_dir":"/original/producer/package"}}\n'
+        (path / 'predecessor_state_input.json').write_bytes(original)
+        mapped = {'package': {'package_dir': str(path / 'package')}, 'setup': {'source': 'synthetic'}}
+        if assignment is not None:
+            mapped['assignment'] = assignment
+        mapping = {'schema': 'openplan.input-mapping.v1', 'mapped_fields': ['package.package_dir'],
+                   'inputs': {'state': {'attempt_id': 'original-producer'}}, 'state': mapped, 'execution_ready': False}
+        self.writer.retain_input_mapping(mapping)
+        return mapped, original, (path / 'input_mapping.json').read_bytes()
+
+    def test_working_state_then_single_immutable_handoff_and_terminal(self):
+        import json
+        import hashlib
+        path = self.writer.workspace(self.directory / 'work', IDS[1])
+        mapped, original, mapping = self.retained_inputs(path)
+        self.post.reset_mock()
+        self.writer.materialize_working_state(path, mapped)
+        self.assertEqual(json.loads((path / 'state.json').read_bytes()), mapped)
+        self.assertFalse((path / 'predecessor_state.json').exists())
+        self.post.assert_not_called()
+        final = {**mapped, 'assignment': {'handoff_step': 'synthetic-completion'}}
+        self.writer.publish_state(path, final)
+        retained = (path / 'predecessor_state.json').read_bytes()
+        self.assertEqual(json.loads(retained), final)
+        self.assertEqual((path / 'predecessor_state_input.json').read_bytes(), original)
+        self.assertEqual((path / 'input_mapping.json').read_bytes(), mapping)
+        self.assertNotEqual((path / 'state.json').stat().st_ino, (path / 'predecessor_state.json').stat().st_ino)
+        payload = self.post.call_args.kwargs['json']['p_payload']
+        self.assertEqual(payload['artifact_type'], 'model_predecessor_state')
+        self.assertEqual(payload['file_url'], 'local://' + str(path / 'predecessor_state.json'))
+        self.assertEqual(payload['content_hash'], hashlib.sha256(retained).hexdigest())
+        self.assertEqual(payload['file_size_bytes'], len(retained))
+        self.writer.patch_stage(IDS[2], {'status': 'succeeded'})
+        self.assertEqual(self.post.call_args.kwargs['json']['p_status'], 'succeeded')
+        self.assertTrue(self.writer.stopped)
+
+    def test_duplicate_immutable_handoff_raises_actual_file_exists_without_replacement(self):
+        path = self.writer.workspace(self.directory / 'work', IDS[1])
+        first = {'phase': 'premature-initial-handoff'}
+        self.writer.publish_state(path, first)
+        retained = (path / 'predecessor_state.json').read_bytes()
+        self.post.reset_mock()
+        with self.assertRaises(FileExistsError):
+            self.writer.publish_state(path, {'phase': 'completed-handoff'})
+        self.assertEqual((path / 'predecessor_state.json').read_bytes(), retained)
+        self.assertTrue(self.writer.stopped)
+        self.post.assert_not_called()
+
+    def test_working_state_rejects_foreign_directory_before_transport(self):
+        path = self.writer.workspace(self.directory / 'work', IDS[1])
+        with self.assertRaisesRegex(ValueError, 'owned attempt directory'):
+            self.writer.materialize_working_state(self.directory, {'foreign': True})
+        self.assertFalse((path / 'state.json').exists())
+        self.assertFalse((self.directory / 'state.json').exists())
+        self.assertTrue(self.writer.stopped)
+        self.post.assert_not_called()
 
 
 if __name__ == '__main__':

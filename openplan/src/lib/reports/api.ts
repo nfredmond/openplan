@@ -27,6 +27,7 @@ export type ReportAccessRow = {
   latest_artifact_url: string | null;
   latest_artifact_kind: string | null;
   metadata_json: Record<string, unknown> | null;
+  updated_at: string;
 };
 
 export type ReportMembershipRow = {
@@ -36,7 +37,7 @@ export type ReportMembershipRow = {
 
 /** The columns every report-access caller needs. Derived, never retyped. */
 export const REPORT_ACCESS_COLUMNS =
-  "id, workspace_id, project_id, land_use_plan_id, title, status, report_type, generated_at, latest_artifact_url, latest_artifact_kind, metadata_json";
+  "id, workspace_id, project_id, land_use_plan_id, title, status, report_type, generated_at, latest_artifact_url, latest_artifact_kind, metadata_json, updated_at";
 
 type QueryBuilder = {
   eq: (column: string, value: string) => QueryBuilder;
@@ -48,6 +49,7 @@ type QueryClientLike = {
 };
 
 export type ReportRegistryRow = {
+  metadata_json?: Record<string, unknown> | null;
   id: string;
   workspace_id: string;
   project_id: string | null;
@@ -81,7 +83,7 @@ export type ReportRegistryRow = {
 };
 
 const REPORT_REGISTRY_COLUMNS =
-  "id, workspace_id, project_id, rtp_cycle_id, title, report_type, status, summary, generated_at, latest_artifact_kind, created_at, updated_at, projects(id, name), rtp_cycles(id, title, updated_at)";
+  "id, workspace_id, project_id, rtp_cycle_id, title, report_type, status, summary, generated_at, latest_artifact_kind, metadata_json, created_at, updated_at, projects(id, name), rtp_cycles(id, title, updated_at)";
 
 const REPORT_REGISTRY_COLUMNS_WITH_CAMPAIGN = `${REPORT_REGISTRY_COLUMNS}, engagement_campaign_id, engagement_campaigns(id, title), land_use_plan_id, land_use_plans(id, title)`;
 

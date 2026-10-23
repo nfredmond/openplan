@@ -271,7 +271,13 @@ def report_unconfirmed_state(error: BaseException, worker_label: str, log: Calla
     identity = getattr(error, "openplan_stage", None)
     where = (f"run={identity['run_id']} stage={identity['stage_id']} ({identity['stage_name']})"
              if isinstance(identity, dict) else "stage identity unavailable")
-    log(f"[{time.strftime('%X')}] UNCONFIRMED STATE WRITE in {worker_label}: {where}: {error}. "
+    from model_activitysim_handoff import ScreeningReadError
+    operation = "READ" if getattr(error, "state_operation", None) == "READ" else "WRITE"
+    cause = error
+    while cause is not None and not isinstance(cause, ScreeningReadError):
+        cause = cause.__cause__
+    detail = cause.diagnostic() if isinstance(cause, ScreeningReadError) else type(error).__name__
+    log(f"[{time.strftime('%X')}] UNCONFIRMED STATE {operation} in {worker_label}: {where}: {detail}. "
         "This worker stopped work on that stage and left its saved status as it is. If the stage "
         f"is still running with no worker holding it, it is marked interrupted after "
         f"{LEASE_LAPSE_SECONDS // 60} minutes; an owner or administrator can review execution recovery.")

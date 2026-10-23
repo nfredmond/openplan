@@ -1,3 +1,5 @@
+import type { ReportDriftSummary } from "./source-review-posture";
+import { formatDriftLabelList } from "./source-review-posture";
 import type { DatasetDependentOutputContext } from "@/lib/data-sources/dataset-dependent-output-context";
 import {
   buildProjectFundingProfileScan,
@@ -241,7 +243,10 @@ export function buildReportGenerationReadiness(input: {
   hasGeneratedArtifact: boolean;
   sourceContext: Record<string, unknown> | null;
   driftedSourceCount: number;
+  unassessedSourceCount?: number;
+  sourceReviewSummary?: ReportDriftSummary;
   comparisonAggregate?: ReportComparisonSnapshotAggregate | null;
+  guidedComparison?: { selected: boolean; problem: string | null };
   fundingSnapshot?: ReportFundingSnapshot | null;
   datasetOutputContexts?: DatasetDependentOutputContext[];
   /**
@@ -269,7 +274,14 @@ export function buildReportGenerationReadiness(input: {
         })
       : null;
   const dataLineageSummary = summarizeDataLineage(input.datasetOutputContexts ?? []);
-  const sourceContextCheck: ReportGenerationReadinessCheck = !hasSourceContext(input.sourceContext)
+  const driftedSourceCount = input.sourceReviewSummary?.changedCount ?? input.driftedSourceCount;
+  const unassessedSourceCount = input.sourceReviewSummary?.unassessedLabels?.length ?? input.unassessedSourceCount;
+  const reviewLabels = input.sourceReviewSummary?.reviewLabels ?? [];
+  const sourceContextCheck: ReportGenerationReadinessCheck = input.hasGeneratedArtifact && unassessedSourceCount && !hasSourceContext(input.sourceContext)
+    ? { id: "source_context", label: "Packet source context", status: "unknown",
+        statusLabel: "Source evidence unassessed", detail: "Retained source context is unavailable or historically untracked. Missing evidence does not establish zero, a source change or unchanged inputs.",
+        nextAction: "Review the unavailable inputs and retained evidence before release use." }
+    : !hasSourceContext(input.sourceContext)
     ? {
         id: "source_context",
         label: "Packet source context",
@@ -282,18 +294,30 @@ export function buildReportGenerationReadiness(input: {
           : "No generated artifact exists yet, so the packet has not captured report origin, linked evidence, funding, or lineage snapshots.",
         nextAction: "Generate a packet after reviewing funding, comparison, and dataset lineage posture.",
       }
-    : input.driftedSourceCount > 0
+    : driftedSourceCount > 0
       ? {
           id: "source_context",
           label: "Packet source context",
           status: "attention",
-          statusLabel: `${input.driftedSourceCount} source change${input.driftedSourceCount === 1 ? "" : "s"}`,
+          statusLabel: `${driftedSourceCount} source change${driftedSourceCount === 1 ? "" : "s"}`,
           detail:
             "The latest artifact has compact source context, but live source state has changed since generation.",
           nextAction:
             "Review changed source areas and regenerate before using the packet outside supervised draft review.",
         }
-      : {
+      : reviewLabels.length ? {
+          id: "source_context", label: "Packet source context", status: "attention",
+          statusLabel: "Generation writeback needs review",
+          detail: `${formatDriftLabelList(reviewLabels)}. This does not establish that a source changed.`,
+          nextAction: "Review the report revision and generation completion before using the retained packet.",
+        } : unassessedSourceCount ? {
+          id: "source_context", label: "Packet source context", status: "unknown",
+          statusLabel: input.sourceReviewSummary ? "Source evidence unassessed" : "Historical source baseline unassessed",
+          detail: input.sourceReviewSummary?.unassessedLabels?.length
+            ? `${formatDriftLabelList(input.sourceReviewSummary.unassessedLabels)}. Missing evidence does not establish a source change or unchanged evidence.`
+            : "Some historical source totals were not recorded. Missing fields do not establish a source change or unchanged evidence.",
+          nextAction: "Review the retained source records and the unassessed baseline before release use.",
+        } : {
           id: "source_context",
           label: "Packet source context",
           status: "ready",
@@ -306,7 +330,16 @@ export function buildReportGenerationReadiness(input: {
 
   const checks = [
     sourceContextCheck,
-    comparisonContextCheck(input.comparisonAggregate),
+    input.guidedComparison?.problem ? {
+      id: "comparison_context" as const, label: "Selected guided comparison", status: "blocked" as const,
+      statusLabel: "Saved comparison binding is invalid", detail: input.guidedComparison.problem,
+      nextAction: "Review and save the exact comparison again, or clear the selection. Historical artifacts remain available.",
+    } : input.guidedComparison?.selected ? {
+      id: "comparison_context" as const, label: "Selected guided comparison", status: "unknown" as const,
+      statusLabel: "Saved binding checked; live evidence unassessed",
+      detail: "The saved snapshot binds four separate worker outputs. This page does not recheck live artifact bytes or custody. Analysis Studio attachments are not required.",
+      nextAction: "Review the retained assumptions and scientific caveats. Save and generation verify the exact files and custody before accepting the comparison.",
+    } : comparisonContextCheck(input.comparisonAggregate),
     fundingCheck(fundingProfileScan, fundingSnapshotIncomplete),
     dataLineageCheck(dataLineageSummary, input.refreshLogNote ?? null),
   ];
@@ -316,6 +349,9 @@ export function buildReportGenerationReadiness(input: {
   const hasBlocked = checks.some((check) => check.status === "blocked");
   const hasAttention = checks.some((check) => check.status === "attention");
   const hasNotStarted = checks.some((check) => check.status === "not_started");
+  // Optional unknown checks keep their existing behavior on unselected reports.
+  const hasUnassessedGuidedComparison = Boolean(input.guidedComparison?.selected && !input.guidedComparison.problem);
+  const hasUnassessedSources = Boolean(unassessedSourceCount);
   const allReadyOrUnknown = checks.every(
     (check) => check.status === "ready" || check.status === "unknown"
   );
@@ -325,9 +361,14 @@ export function buildReportGenerationReadiness(input: {
       ? "attention"
       : hasNotStarted
         ? "not_started"
-        : allReadyOrUnknown
-          ? "ready"
-          : "unknown";
+        : hasUnassessedGuidedComparison || hasUnassessedSources
+          ? "unknown"
+          : allReadyOrUnknown
+            ? "ready"
+            : "unknown";
+
+  const attentionCount = checks.filter((check) => check.status === "attention" || check.status === "blocked" ||
+    ((hasUnassessedGuidedComparison && check.id === "comparison_context" || hasUnassessedSources && check.id === "source_context") && check.status === "unknown")).length;
 
   return {
     status,
@@ -337,8 +378,10 @@ export function buildReportGenerationReadiness(input: {
         ? "Generation readiness needs review"
         : hasNotStarted
           ? "Generation readiness needs first packet"
-          : "Generation readiness reviewed",
-    detail: `${checks.filter((check) => check.status === "ready").length}/${checks.length} checks ready; ${checks.filter((check) => check.status === "attention" || check.status === "blocked").length} need operator attention before release use.`,
+          : hasUnassessedGuidedComparison || hasUnassessedSources
+            ? "Generation readiness unassessed"
+            : "Generation readiness reviewed",
+    detail: `${checks.filter((check) => check.status === "ready").length}/${checks.length} checks ready; ${attentionCount} need operator attention before release use.${hasUnassessedGuidedComparison ? " Selected comparison live artifact bytes and custody remain unassessed." : ""}`,
     nextAction:
       firstAction?.nextAction ??
       "Review source context, funding, and dataset lineage before generating or releasing this packet.",

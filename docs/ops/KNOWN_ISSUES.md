@@ -590,3 +590,57 @@ The [context CLI release](../reviews/2026-09-30-synthesis-generation/CONTEXT_CLI
 A native custom-format dump of the synthetic recovery acceptance database fails during default `pg_restore`: `model_runs_project_workspace_match` checks for a project before that project's table data has loaded. The failed single-transaction restore rolls back. Explicitly loading the projects data entry first permits this fixture to restore with its constraint intact, and original-column comparisons cover 339 tables and 966 rows. This is an acceptance setup workaround, not a general recovery repair. M3 must cover these cross-table checks in the maintained restore procedure. See [integration evidence](../reviews/2026-10-09-recovery-integration/VERIFICATION.md).
 
 The [project-scope migration candidate](../reviews/2026-10-09-run-project-restore/VERIFICATION.md) replaces this four-constraint family with validated foreign keys. Its native nonempty archive now restores with default ordering and retains all compared records. It remains pending integration and CI; other cross-table CHECK families and whole-installation recovery are not closed by this result.
+
+## Reports jurisdiction freshness contradiction, October 22, 2026
+
+On identified v0.70 candidate `12bc5957`, the Reports catalog recommends
+refresh for a retained synthetic packet's jurisdiction inputs, while detail
+Controls says “Evidence chain current” and “Current / ready.” Controls counts
+other drift rows but omits the separately assessed jurisdiction state. The
+same incomplete count reaches generation source-context guidance; that
+builder's displayed result was not observed in the hosted journey.
+
+The relevant pages and helpers match published v0.69 source. This establishes
+a preexisting source omission, not an earlier hosted reproduction. Reports
+readiness remains unaccepted. Review the jurisdiction inputs and packet
+freshness warning before external handoff; do not rely on the Controls badge.
+The observed synthetic packet makes no model, jurisdiction, adoption or
+funding claim. No consequential artifact reuse is accepted.
+
+The existing Reports/A3 lane owns the correction under the sole roadmap.
+It must preserve changed, unavailable and historically untracked evidence as
+distinct states and carry one truthful result through catalog, Controls and
+generation guidance. The October 22 hosted run remains partial and its 390px
+Reports journey and downloads remain unperformed. Dated source and evidence
+review: `v070-hosted-finding-admission-20261022-09`, with original observation
+in `v070-staged-hosted-verification-20261022-08`, under local OpenPlan state.
+This limitation does not establish consistent Reports readiness or full v1.
+
+
+October 22 source-repair follow-up: the existing Reports/A3 candidate at base
+`a8d35bbc` now carries explicit jurisdiction assessment through catalog,
+Controls, packet freshness and generation source-context guidance. Confirmed
+change stays distinct from unavailable input and historical untracked evidence.
+Known incomplete writeback and source-read failures prevent whole-source
+currency claims. The final six-file ordinary cohort passes 219 cases with zero
+skips; scoped lint passes and targeted faults fail before exact restoration.
+This uncommitted source repair does not close Reports acceptance. The original
+R8 retained packet and partial hosted outcome remain unchanged. Root still owns
+the corrected identified-build desktop and 390px journey and artifact review.
+No fresh compiler, build, native, browser, hosted or scientific evidence follows
+from this repair. Private packet: `pr355-jurisdiction-readiness-repair-20261022-21`.
+
+
+October 22 R23 source continuation addresses the three accepted R22 seams:
+ordinary scenario read failures no longer disappear from the shared unknown
+assessment; catalog preserves known source/writeback refresh alongside unknown
+jurisdiction limits; and gate/crash read failures alone remain unassessed through
+packet and grant guidance. A retained failed crash read is unassessed rather
+than changed. Positive current, exact completed writeback and known-change
+refresh behavior remain covered. The final six-file ordinary run passes 246
+cases with zero failures/skips, with targeted faults and exact restoration.
+This source-only follow-up does not close Reports acceptance or change the
+published v0.70 limitation. R8, R21 and R22 evidence remains retained at its
+original scope. Compiler/build and browser evidence remain unexecuted here.
+Root still owns the later identified-build journey and acceptance disposition.
+Private packet: `pr355-readiness-failure-mixed-state-repair-20261022-23`.

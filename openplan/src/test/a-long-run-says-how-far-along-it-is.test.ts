@@ -73,12 +73,12 @@ describe("how far along a long run is", () => {
   it("does not describe cancelled stages as completed computation", () => {
     const cancelled = summarizeRunProgress(SIX_STAGES.map((s) => ({ ...s, status: "cancelled" })));
     expect(cancelled).toMatchObject({ completed: 0, total: 6, percent: 0, isFinished: true,
-      label: "0 of 6 stages finished; 6 cancelled." });
+      label: "0 of 6 stages completed; 6 cancelled." });
     const partial = summarizeRunProgress([
       stage({ status: "succeeded" }), stage({ status: "cancelled" }), stage({ status: "queued" }),
     ]);
     expect(partial).toMatchObject({ completed: 1, total: 3, percent: 33, isFinished: false,
-      label: "1 of 3 stages finished; 1 cancelled." });
+      label: "1 of 3 stages completed; 1 cancelled." });
   });
 
   it("names the stage a failed run stopped at", () => {
@@ -92,12 +92,42 @@ describe("how far along a long run is", () => {
     expect(progress.label).toContain("1 of 3");
   });
 
-  it("counts a skipped stage as done rather than stalling at 99%", () => {
-    const withSkip = [
-      stage({ status: "succeeded", sort_order: 1 }),
-      stage({ status: "skipped", sort_order: 2 }),
-    ];
-    expect(summarizeRunProgress(withSkip).percent).toBe(100);
+  it.each([
+    { statuses: ["succeeded", "skipped"], completed: 1, percent: 50,
+      label: "1 of 2 stages completed; 1 skipped." },
+    { statuses: ["skipped", "SKIPPED"], completed: 0, percent: 0,
+      label: "0 of 2 stages completed; 2 skipped." },
+    { statuses: ["failed", "skipped", "skipped", "skipped", "skipped", "skipped"], completed: 0, percent: 0,
+      label: "Stopped at AequilibraE Setup. 0 of 6 stages completed; 1 failed; 5 skipped." },
+    { statuses: ["succeeded", "COMPLETED", "failed", "FAILED", "skipped", "cancelled"], completed: 2, percent: 33,
+      label: "Stopped at Stage. 2 of 6 stages completed; 2 failed; 1 skipped; 1 cancelled." },
+  ])("separates terminal outcomes from completed work: $statuses", ({ statuses, completed, percent, label }) => {
+    const progress = summarizeRunProgress(statuses.map((status, index) => stage({
+      status, stage_name: index === 0 ? "AequilibraE Setup" : "Stage", sort_order: index + 1,
+    })));
+    expect(progress).toMatchObject({ completed, total: statuses.length, percent, isFinished: true, label });
+  });
+
+  it("retains successful status aliases and case compatibility at 100 percent", () => {
+    const progress = summarizeRunProgress(["succeeded", "completed", "SUCCEEDED", "COMPLETED"].map((status) => stage({ status })));
+    expect(progress).toMatchObject({ completed: 4, total: 4, percent: 100, isFinished: true,
+      label: "All 4 stages finished." });
+  });
+
+  it("reports skipped stages while a later stage runs", () => {
+    const progress = summarizeRunProgress([
+      stage({ status: "skipped", sort_order: 1 }),
+      stage({ status: "running", stage_name: "Assignment", sort_order: 2 }),
+    ]);
+    expect(progress).toMatchObject({ completed: 0, percent: 0, isFinished: false,
+      runningStageName: "Assignment", runningStagePosition: 2,
+      label: "Stage 2 of 2: Assignment. 0 of 2 stages completed; 1 skipped." });
+  });
+
+  it.each(["queued", "pending", "interrupted", "unknown", null, undefined])("does not treat %s as terminal or successful", (status) => {
+    const progress = summarizeRunProgress([stage({ status: "completed" }), stage({ status })]);
+    expect(progress).toMatchObject({ completed: 1, percent: 50, isFinished: false,
+      label: "1 of 2 stages completed; the next has not started." });
   });
 
   it("does not pretend to know progress before any stage is reported", () => {
