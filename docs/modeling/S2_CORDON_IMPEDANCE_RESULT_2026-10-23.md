@@ -650,3 +650,115 @@ The earlier negative evidence remains negative evidence with its measurement
 limit attached. Full app QA, the full worker matrix, build, browser, database,
 Docker and hosted checks remain unexecuted. No held-out or consumed partition,
 production system, managed service or secret is accessed.
+
+## Round 4 addendum: runtime audit complete; successor preparation stops
+
+**No second-successor scientific execution starts.** The runtime audit finds no
+held-fixed input identified with the measured susceptible runtime. Preparation
+then stops on an owner-authored verification command error. The driver invokes
+`scripts/modeling/tests/test_screening_assignment_settings.py`, which does not
+exist. Python exits 2 before that suite starts. The task says to stop on another
+tooling failure, so this round makes no correction or retry and runs no further
+successor test or mutation campaign. This is a preparation failure, not a model
+rejection. No new advance/retire decision or county score exists.
+
+### Runtime audit and dependencies
+
+The [audit](RETAINED_RUNTIME_AUDIT_2026-10-23.md) inventories 898 file records:
+**16 affected, nine unaffected for this defect, and 873 with unrecorded or
+unresolved runtime attribution/susceptibility**. These are file counts, not
+independent experiments. Locks, reports and results can describe one execution.
+The inventory covers tracked modeling records and compressed assessments,
+model-related review records, and five original development run summaries.
+`scripts/research` has source modules but no retained output files of its own.
+Exact fields, hashes and classification reasons appear in the linked inventory.
+
+The affected scientific figures are round 2's five-county and road-class raw
+APE, signed/absolute residuals, daily PCE/VMT and volume-based coverage and
+retire comparison. Round 1 uses the same susceptible runtime but stops before
+assignment. Fourteen August 28 comparison bases record Python 3.14.4 with
+NumPy 2.5.1. Their exact extraction-runtime attribution and susceptibility remain
+unverified; this audit does not label that different pair corrupt or safe.
+The historical 62.80%, 43.29% and rejected 46.25% calibration selection metrics
+remain runtime-unrecorded. No historical calibration figure supplies a cordon
+input, baseline score or advancement threshold.
+
+All five original `u2-<county>-base` summaries record Python 3.11.15, NumPy
+2.0.2, AequilibraE 1.6.2 and pandas 3.0.3. All 30 held-fixed input hashes match
+the registry. This same-run provenance excludes the identified Python 3.14
+runtime defect; it does not independently attest each preprocessing stage or
+clear historical pandas/graph, day/year, matching or observation-uncertainty
+limitations. The input-runtime stop condition is not triggered. The later
+verification-command failure independently stops preparation.
+
+### Environment and partial proof
+
+A new isolated environment lives at
+`/home/nathaniel/.local/state/openplan/s2-cordon-py311-20261023/venv/`.
+It uses CPython 3.11.15 without system-site packages. All nine numerical package
+versions match round 1: AequilibraE 1.6.2, NumPy 2.0.2, pandas 2.3.3,
+SciPy 1.17.1, Shapely 2.2.0, OpenMatrix 0.3.5.0, tables 3.11.1,
+GeoPandas 1.2.0 and pyproj 3.7.2. The
+[runtime manifest](../../data/modeling/s2-cordon-impedance-py311-2026-10-23/runtime-manifest.json)
+records the interpreter hash, exact versions, all 48 installed distribution
+wheel hashes and installed-file hashes excluding bytecode. It also hashes
+both repository requirement files. No package or interpreter in the old
+scientific environments changes.
+
+The new `evaluate_py311.py` preserves the successor's scientific implementation.
+Its source differences are a new study identifier and a runtime refusal before
+numerical imports. New synthetic fixtures exercise that evaluator and the real
+sealed protocol. These are preparatory sources, not a registered scientific lock.
+
+Under `MemoryMax=6G` and `MemorySwapMax=0`, the checks complete as follows:
+
+| Check | Outcome |
+|---|---|
+| Pinned dependency preflight on new Python 3.11 | Pass |
+| Actual old Python 3.14 preflight | Expected refusal before numerical imports |
+| Runtime-admission suite | 4 passed |
+| Measurement and synthetic-lock suite | 5 passed, including the unmodified 40,000-link result adapter returning 360 PCE |
+| New synthetic successor suite | 3 passed; five invented-network assignments complete, including repeat |
+| Local launcher suite | 17 passed |
+| Worker assignment-settings suite | 11 passed |
+| Incorrect county test path | Exit 2; suite never starts; stop |
+| Remaining regression checks | Not run |
+| Runtime and new successor mutation campaigns | Not run; zero new mutation results |
+
+The total is **40 tests passed, zero test failures or skips, and one verification
+command error**. Five planned checks remain unexecuted: county assignment
+settings, the existing successor suite, study-unit suite, graph probe and
+package-pin suite. The prior round's 59 passes and eight mutation failures are
+historical evidence and are not counted again here. The new guard has no
+completed mutation proof in this round. Its prepared controller remains unrun.
+The literal failed driver, outputs, hashes and
+[disposition](../../data/modeling/s2-cordon-impedance-py311-2026-10-23/disposition.json)
+remain versioned. The observed scope is `run-p1037863-i59683146.scope`.
+
+### Custody and handback
+
+The requested fetch succeeds; branch checkout refuses because the round 1
+worktree still holds the branch. This round uses a clean detached checkout of
+`277d0db681784cf79379dcec54d101a87b1213cd` at
+`/home/nathaniel/.t3/worktrees/openplan/t3-b1b612ea`. It pushes only to the
+existing draft PR branch. Earlier worktrees and frozen record bytes remain
+unchanged. This addendum appends to the complete earlier result text. Read-only integrity
+accounting confirms 190/190 round 1 closure files, 201/201 round 2 closure files,
+the exact 42,672-byte earlier report prefix, and unchanged hashes for the other
+897 audited records. `git diff --check` passes. These checks do not resume the
+stopped validation sequence.
+
+No second-successor preregistration or execution lock is committed. No receipt
+or scientific result is created. All 11 planned real assignments, county and
+road-class metrics, uncertainty-aware scores, repeat determinism and progression
+decision remain unexecuted. The audit and preparation sources are reviewable,
+but the tooling stop requires lead disposition before a continuation. The
+existing county regression filename is
+`scripts/modeling/tests/test_assignment_convergence_settings.py`; this round
+does not run it after discovering the mistake.
+
+No frozen or consumed scientific result is edited, rerun or regraded. No new
+holdout source is opened. No build, browser, full app QA, full worker matrix,
+Docker, hosted system, production service or secret is accessed. The audit
+does not establish an unaffected hosted history, scientific validity or completed
+S2. Keep PR #375 draft and keep the candidate off by default.
