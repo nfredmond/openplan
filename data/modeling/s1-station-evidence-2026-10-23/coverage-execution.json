@@ -1,0 +1,29 @@
+{
+  "command": [
+    "systemd-run",
+    "--user",
+    "--scope",
+    "-p",
+    "MemoryMax=6G",
+    "-p",
+    "MemorySwapMax=0",
+    "/home/nathaniel/.local/bin/python3.11",
+    "-B",
+    "scripts/modeling/audit_station_evidence.py",
+    "--config",
+    "scripts/modeling/development/s2_station_evidence.v1.json",
+    "--input-registry",
+    "/home/nathaniel/.local/state/openplan/s1-station-evidence-20261023/s2-inputs.json",
+    "--source-directory",
+    "/home/nathaniel/.local/state/openplan/s1-station-evidence-20261023/objects",
+    "--bundle",
+    "/home/nathaniel/.local/state/openplan/s1-station-evidence-20261023/source-bundle-v2.json",
+    "--bundle-sha256",
+    "1d0b3d16bb2541b76fb0ac1e3ebe8a30bc5220106efec8b64b85b6aaffd0696d",
+    "--output",
+    "data/modeling/s1-station-evidence-2026-10-23/coverage.json"
+  ],
+  "exit_code": 0,
+  "stdout": "{\"matched\": 337, \"available\": 0}\n",
+  "stderr": "Running as unit: run-p1988935-i60566591.scope; invocation ID: ffcfc95d246f4b58b683e45d179e0eab\n"
+}
