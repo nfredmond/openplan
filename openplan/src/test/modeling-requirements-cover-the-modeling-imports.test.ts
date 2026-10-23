@@ -59,6 +59,14 @@ const SPECIALIZED_REQUIREMENTS_BY_SCRIPT = new Map([
     path.join(MODELING_DIR, "mandatory_tour_frequency_acceptance.py"),
     ACTIVITYSIM_EXEC_REQUIREMENTS,
   ],
+  [
+    path.join(MODELING_DIR, "activitysim_walk_transfer.py"),
+    ACTIVITYSIM_EXEC_REQUIREMENTS,
+  ],
+  [
+    path.join(MODELING_DIR, "prepare_activitysim_walk_transfer.py"),
+    ACTIVITYSIM_EXEC_REQUIREMENTS,
+  ],
 ]);
 
 /**
