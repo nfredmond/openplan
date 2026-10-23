@@ -5,6 +5,7 @@ const authGetUserMock = vi.fn();
 const fromMock = vi.fn();
 const retentionCountsMock = vi.fn();
 const projectUpdateMock = vi.fn();
+const projectWriteSelectMock = vi.fn();
 const loadProjectAccessMock = vi.fn();
 
 const mockAudit = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
@@ -56,7 +57,9 @@ function withCounts(counts: Record<string, number>, options: { failing?: string[
           projectUpdateMock(updates);
           return ({
           eq: () => ({
-            select: () => ({
+            select: (columns: string) => {
+              projectWriteSelectMock(columns);
+              return ({
               single: async () => ({
                 data: {
                   id: PROJECT_ID,
@@ -66,10 +69,12 @@ function withCounts(counts: Record<string, number>, options: { failing?: string[
                   plan_type: "corridor_plan",
                   delivery_phase: "scoping",
                   updated_at: "2026-07-28T00:00:00Z",
+                  ...updates,
                 },
                 error: null,
               }),
-            }),
+              });
+            },
           }),
           });
         },
@@ -102,6 +107,22 @@ describe("project record route", () => {
   });
 
   describe("PATCH", () => {
+    it.each([
+      ["999999999999999.99", 200, "999999999999999.99"],
+      ["1200000.25", 200, "1200000.25"], ["1000000000000000.01", 400, null],
+      ["1.0000000000000001", 400, null], ["1e3", 400, null], ["-0", 400, null],
+    ] as const)("validates raw numeric JSON amount %s before rounding", async (token, status, expected) => {
+      const request = new NextRequest(`http://localhost/api/projects/${PROJECT_ID}`, {
+        method: "PATCH", headers: { "content-type": "application/json" },
+        body: `{"estimatedCost":{"amount":${token},"currency":"USD","basisYear":2026}}`,
+      });
+      const response = await patchProject(request, params);
+      expect(response.status).toBe(status);
+      if (status === 200) {
+        expect(projectUpdateMock).toHaveBeenCalledWith(expect.objectContaining({ estimated_cost_amount: expected, estimated_cost_basis_year: 2026 }));
+      } else expect(projectUpdateMock).not.toHaveBeenCalled();
+    });
+
     it("renames a project", async () => {
       const response = await patchProject(patchRequest({ name: "Renamed" }), params);
       expect(response.status).toBe(200);
@@ -118,7 +139,7 @@ describe("project record route", () => {
       expect(response.status).toBe(200);
       expect(projectUpdateMock).toHaveBeenCalledWith(
         expect.objectContaining({
-          estimated_cost_amount: 1_200_000,
+          estimated_cost_amount: "1200000.00",
           estimated_cost_currency: "CAD",
           estimated_cost_basis_year: 2026,
           estimated_cost_recorded_by: USER_ID,
@@ -127,14 +148,52 @@ describe("project record route", () => {
       expect(projectUpdateMock.mock.calls.at(-1)?.[0]).not.toHaveProperty("budget_amount");
     });
 
+    it.each(["999999999999999.99", "0.01", 1234.56, 1_000_000_000_000_000])("retains exact decimal request and response cents for %s", async amount => {
+      const response = await patchProject(patchRequest({ estimatedCost: { amount, currency: "JPY" } }), params);
+      expect(response.status).toBe(200);
+      const expected = typeof amount === "string" ? amount : amount === 1234.56 ? "1234.56" : "1000000000000000.00";
+      expect(projectUpdateMock).toHaveBeenCalledWith(expect.objectContaining({
+        estimated_cost_amount: expected, estimated_cost_basis_year: null,
+      }));
+      expect(projectWriteSelectMock).toHaveBeenCalledWith(expect.stringContaining("estimated_cost_amount::text"));
+      expect((await response.json()).project.estimated_cost_amount).toBe(expected);
+    });
+
+    it.each(["", " ", "1e3", "12junk", "1,000", "$10", "1 0", "1.001", "-1", "0", 0, -0, 1.001, "1000000000000000.01", null])("refuses invalid estimate %s before any write", async amount => {
+      const response = await patchProject(patchRequest({ estimatedCost: { amount, currency: "USD" } }), params);
+      expect(response.status).toBe(400);
+      expect(projectUpdateMock).not.toHaveBeenCalled();
+    });
+
+    it("clears all estimate fields together", async () => {
+      const response = await patchProject(patchRequest({ estimatedCost: null }), params);
+      expect(response.status).toBe(200);
+      expect(projectUpdateMock).toHaveBeenCalledWith({
+        estimated_cost_amount: null, estimated_cost_currency: null, estimated_cost_basis_year: null,
+        estimated_cost_source_document_id: null, estimated_cost_recorded_by: null, estimated_cost_recorded_at: null,
+      });
+    });
+
+    it.each(["viewer", "foreign"])("refuses %s estimate changes through existing access", async role => {
+      loadProjectAccessMock.mockResolvedValue({
+        project: role === "foreign" ? null : { id: PROJECT_ID, workspace_id: WORKSPACE_ID },
+        membership: role === "foreign" ? null : { workspace_id: WORKSPACE_ID, role }, allowed: false, error: null,
+      });
+      const response = await patchProject(patchRequest({ estimatedCost: { amount: "999999999999999.99", currency: "USD" } }), params);
+      expect(response.status).toBe(role === "foreign" ? 404 : 403);
+      expect(projectUpdateMock).not.toHaveBeenCalled();
+    });
+
     it("refuses a cost source that is not attached to this project", async () => {
+      const sourceFilters: Array<[string, unknown]> = [];
+      const sourceSelect = vi.fn();
       fromMock.mockImplementation((table: string) => {
         if (table === "kb_documents") {
           const chain = {
-            eq: () => chain,
+            eq: (column: string, value: unknown) => { sourceFilters.push([column, value]); return chain; },
             single: async () => ({ data: null, error: { details: "The result contains 0 rows", code: "PGRST116", message: "no rows" } }),
           };
-          return { select: () => chain };
+          return { select: (columns: string) => { sourceSelect(columns); return chain; } };
         }
         if (table === "projects") throw new Error("the project must not be updated");
         throw new Error(`unexpected table ${table}`);
@@ -151,6 +210,11 @@ describe("project record route", () => {
         params
       );
       expect(response.status).toBe(400);
+      expect(sourceSelect).toHaveBeenCalledWith("id");
+      expect(sourceFilters).toEqual([
+        ["id", "44444444-4444-4444-8444-444444444444"],
+        ["workspace_id", WORKSPACE_ID], ["project_id", PROJECT_ID],
+      ]);
       await expect(response.json()).resolves.toMatchObject({
         error: expect.stringContaining("attached to this project"),
       });

@@ -504,12 +504,14 @@ const EXPECTED = {
   // ten policy-bearing tables (assistant_action_approvals gains its first). Sixteen additions are dynamic (7 + 9).
   // R36's dated 429-to-old-430 catalogue records exactly these 22 additions.
   // These updated equalities parse current source. They are not a new install.
-  policies: 786,
-  permissive: 535,
+  // 20261023190100 adds four public immutable comparison tables, each with
+  // one permissive member SELECT policy. No client write policy is added.
+  policies: 790,
+  permissive: 539,
   restrictive: 251,
   permissiveWrites: 290,
   expanded: 302,
-  tablesWithPolicies: 242,
+  tablesWithPolicies: 246,
   // 20261014000013 adds three generation custody tables with RLS and no client policies.
   // Installed isolated catalog confirms all three; no application view or policy is added.
   // Migration 20 adds the private public-translation mapping table, RLS and no policies.
@@ -578,13 +580,15 @@ const EXPECTED = {
   // 20261022010001 retains three private population receipt/revocation tables.
   // Combined with the nine chat custody tables, source adds twelve RLS tables.
   // Equalities retain both additions; installed parity remains separate.
-  relations: 339,
-  tables: 325,
+  // The same comparison migration adds four public RLS tables and no view.
+  // Its transaction-entry table lives in a private schema outside this scan.
+  relations: 343,
+  tables: 329,
   // 20261019000002 adds eight manual-source fields to existing rtp_extraction_runs.
   // It adds no relation, view, RLS table or policy. The manual migration leaves relation counts unchanged.
   // The complete run fieldset below checks the additive columns at source tier.
   views: 14,
-  rlsEnabledTables: 325,
+  rlsEnabledTables: 329,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

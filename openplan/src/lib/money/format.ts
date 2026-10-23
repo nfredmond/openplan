@@ -61,8 +61,10 @@ export const DEFAULT_MONEY_CURRENCY = "USD";
  * - `auto` — whole when the figure is a whole number of dollars, to the cent
  *   otherwise. For entered ledger lines in plan documents, where "$1,200,000"
  *   is the spelling a reader expects but "$0.30" must not be written "$0".
+ * - `hundredths` explicitly shows two decimal places for a record whose
+ *   storage contract uses cents, independently of the currency's minor unit.
  */
-export type MoneyPrecision = "whole" | "cents" | "auto";
+export type MoneyPrecision = "whole" | "cents" | "auto" | "hundredths";
 
 export type FormatMoneyOptions = {
   precision: MoneyPrecision;
@@ -88,7 +90,7 @@ const formatterCache = new Map<string, Intl.NumberFormat>();
  */
 function formatter(
   currency: string,
-  mode: "whole" | "exact",
+  mode: "whole" | "exact" | "hundredths",
   currencyDisplay: "symbol" | "code"
 ): Intl.NumberFormat | null {
   const key = `${currency}|${mode}|${currencyDisplay}`;
@@ -99,7 +101,8 @@ function formatter(
       style: "currency",
       currency,
       currencyDisplay,
-      ...(mode === "whole" ? { minimumFractionDigits: 0, maximumFractionDigits: 0 } : {}),
+      ...(mode === "whole" ? { minimumFractionDigits: 0, maximumFractionDigits: 0 }
+        : mode === "hundredths" ? { minimumFractionDigits: 2, maximumFractionDigits: 2 } : {}),
     });
   } catch {
     // An unknown ISO code. See `formatMoney`.
@@ -143,7 +146,9 @@ export function formatMoney(
 
   const currency = options.currency?.trim() ? options.currency.trim().toUpperCase() : DEFAULT_MONEY_CURRENCY;
 
-  const mode: "whole" | "exact" =
+  // Project estimate storage declares hundredths independently of a currency's
+  // minor unit. This explicit mode preserves those digits for JPY and KWD too.
+  const mode: "whole" | "exact" | "hundredths" = options.precision === "hundredths" ? "hundredths" :
     options.precision === "whole" || (options.precision === "auto" && decimalUnitsAtScale(amount, 0, false) !== null)
       ? "whole"
       : "exact";

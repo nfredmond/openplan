@@ -36,7 +36,7 @@ it("carries minimized same-revision canonical material through real generated fi
     const query = {
       select(columns: string) { calls.push({ table, columns }); return query; },
       eq() { return query; }, in() { return query; }, order() { return query; }, range() { return query; },
-      async maybeSingle() { return { data: sourceProject, error: null }; },
+      async maybeSingle() { return { data: { ...sourceProject, estimated_cost_amount_exact: null }, error: null }; },
       then(resolve: (value: unknown) => unknown) { return Promise.resolve(resolve({ data: [], error: null })); },
     }; return query;
   } };
@@ -49,7 +49,7 @@ it("carries minimized same-revision canonical material through real generated fi
   const standalone = buildProjectGeoPackage({ project, corridors: [], generatedAt: new Date() });
   const legacy = buildProjectGeoPackage({ project: { ...project, jurisdiction_context: null }, corridors: [] });
   const evidence = JSON.parse(buildJurisdictionReadinessEvidenceFile(project, registry).bytes.toString());
-  expect(calls.find(call => call.table === "projects"), "Adapter reads full trusted jurisdiction projection").toEqual({ table: "projects", columns: "*" });
+  expect(calls.find(call => call.table === "projects"), "Adapter reads full trusted jurisdiction and exact estimate projection").toEqual({ table: "projects", columns: "*, estimated_cost_amount_exact:estimated_cost_amount::text" });
   expect(JSON.stringify(bundle.projectRecord), "Generated project record minimizes actor").not.toContain(actor);
   expect(bundle.projectRecord.metadata_json, "Nested metadata retains time and source without actor keys").toEqual({ citation: "Source record", recordedAt: declaration.recordedAt });
   expect(bundle.projectRecord.jurisdiction_context, "Generated project record uses export context schema").toEqual(expected.context);

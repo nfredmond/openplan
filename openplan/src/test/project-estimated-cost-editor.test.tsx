@@ -74,7 +74,7 @@ describe("ProjectEstimatedCostEditor", () => {
     const request = fetchMock.mock.calls[0][1] as RequestInit;
     expect(JSON.parse(String(request.body))).toEqual({
       estimatedCost: {
-        amount: 1_200_000,
+        amount: "1200000.00",
         currency: "CAD",
         basisYear: 2026,
         sourceDocumentId: "22222222-2222-4222-8222-222222222222",
@@ -116,7 +116,7 @@ describe("ProjectEstimatedCostEditor", () => {
     await screen.findByText(/stored and indexed/i);
     expect(screen.getByRole("cell", { name: "Example Corridor Complete Street" })).toBeInTheDocument();
     fireEvent.click(screen.getAllByRole("button", { name: /Use this candidate/i })[0]);
-    expect(screen.getByLabelText("Amount")).toHaveValue("4200000");
+    expect(screen.getByLabelText("Amount")).toHaveValue("4200000.00");
     expect(screen.getByLabelText("Currency")).toHaveValue("USD");
     fireEvent.click(screen.getByRole("button", { name: /Apply selected project/i }));
 
@@ -129,7 +129,7 @@ describe("ProjectEstimatedCostEditor", () => {
       name: "Example Corridor Complete Street",
       summary: "Sidewalks, lighting and crossings",
       estimatedCost: {
-        amount: 4_200_000,
+        amount: "4200000.00",
         currency: "USD",
         basisYear: null,
         sourceDocumentId: documentId,
@@ -208,7 +208,63 @@ describe("ProjectEstimatedCostEditor", () => {
     fireEvent.click(screen.getByRole("button", { name: "Save estimated cost" }));
     await waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
     expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body))).toEqual({ estimatedCost: {
-      amount: 4_200_000, currency: "USD", basisYear: null, sourceDocumentId: savedSource.id,
+      amount: "4200000.00", currency: "USD", basisYear: null, sourceDocumentId: savedSource.id,
     } });
+  });
+
+  it("displays and submits unusual large exact cents with an unknown year", async () => {
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => new Response("{}", { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    render(<ProjectEstimatedCostEditor project={{ ...savedProject, estimated_cost_amount: "999999999999999.99" }} canWrite documents={[]} estimateSource={{ status: "unlinked", entry: null }} />);
+    expect(screen.getByText(/999,999,999,999,999\.99/)).toBeInTheDocument();
+    expect(screen.getByText(/Price year not entered/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Save estimated cost" }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
+    expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body)).estimatedCost).toMatchObject({ amount: "999999999999999.99", basisYear: null });
+  });
+
+  it.each(["", " ", "12junk", "1e3", "$25", "1,000", "1 000", "0", "-1", "1.001", "1000000000000000.01"])("refuses manual input %s without sending a request", value => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    render(<ProjectEstimatedCostEditor project={savedProject} canWrite documents={[]} estimateSource={{ status: "unlinked", entry: null }} />);
+    fireEvent.change(screen.getByLabelText("Amount"), { target: { value } });
+    fireEvent.submit(screen.getByRole("button", { name: "Save estimated cost" }).closest("form")!);
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(screen.getByRole("status")).toHaveTextContent(/decimal|fractional cents|greater than/);
+  });
+
+  it.each(["", "0", "1e3", "12junk", "$12", "1,000", "1 000", "1.001", "1000000000000000.01", "999999999999999.99"])("reviews CSV amount %s without coercion or source-file edits", async value => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, _init?: RequestInit) => String(input).startsWith("/api/knowledge-base/documents?")
+      ? new Response(JSON.stringify({ document: { id: savedSource.id, title: "estimate.csv" } }), { status: 201 })
+      : new Response("{}", { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    render(<ProjectEstimatedCostEditor project={savedProject} canWrite documents={[]} estimateSource={{ status: "unlinked", entry: null }} />);
+    const csv = `name,cost_usd\nCandidate,"${value}"`;
+    const file = new File([csv], "estimate.csv", { type: "text/csv" });
+    Object.defineProperty(file, "text", { value: async () => csv });
+    fireEvent.change(screen.getByLabelText(/Project candidates CSV/), { target: { files: [file] } });
+    await screen.findByText(/stored and indexed/);
+    expect(fetchMock.mock.calls[0][1]?.body).toBe(file);
+    fireEvent.click(screen.getByRole("button", { name: "Use this candidate" }));
+    if (value === "999999999999999.99") {
+      expect(screen.getByLabelText("Amount")).toHaveValue(value);
+      fireEvent.click(screen.getByRole("button", { name: "Apply selected project" }));
+      await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+      expect(JSON.parse(String(fetchMock.mock.calls[1][1]?.body)).estimatedCost).toMatchObject({ amount: value, basisYear: null, sourceDocumentId: savedSource.id });
+    } else {
+      expect(screen.getByRole("status")).toHaveTextContent(/whole cents/);
+      expect(screen.queryByRole("button", { name: "Apply selected project" })).not.toBeInTheDocument();
+      expect(fetchMock).toHaveBeenCalledOnce();
+    }
+  });
+
+  it("sends a coherent null clear independently of an invalid draft", async () => {
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => new Response("{}", { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    render(<ProjectEstimatedCostEditor project={savedProject} canWrite documents={[]} estimateSource={{ status: "unlinked", entry: null }} />);
+    fireEvent.change(screen.getByLabelText("Amount"), { target: { value: "junk" } });
+    fireEvent.click(screen.getByRole("button", { name: "Clear estimate" }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledOnce());
+    expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body))).toEqual({ estimatedCost: null });
   });
 });

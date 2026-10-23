@@ -26,3 +26,5 @@ the identified browser build. This establishes local source access and downloade
 bytes, not a current estimating basis, complete Safety journey, hosted acceptance
 or v1 completion. Private receipts remain under
 v1-grant-combined-browser-20261018/preview03/.
+
+October 19 main integration retains both changelog entries and all 27 incoming RTP files exactly. Money calculation source remains unchanged. The ordinary integration cohort passes 247 tests in 14 files; direction passes and the finite outer exits 0 with source exact and helpers removed. Separately, GitHub live RLS job 117978832840 succeeds at exact prior candidate 493835543 and runs all 23 project-portfolio-import native tests, including the added cent-precision and legacy sub-cent cases. The native suite source is unchanged by this merge. Those are CI database results, not a new local, hosted or identified-browser run.

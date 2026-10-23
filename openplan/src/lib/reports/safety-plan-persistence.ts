@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { readSafetyPlanSnapshot, type SafetyPlanSnapshot } from "./safety-plan-snapshot";
+import { sameSafetyRevision } from "./safety-revision";
+export { sameSafetyRevision } from "./safety-revision";
 
 export const SAFETY_PLAN_PERSISTENCE_VERSION = "openplan.safety-plan-persistence.v1";
 export const SAFETY_PLAN_PERSISTENCE_SELECT = "artifact_id, workspace_id, project_id, report_id, schema_version, snapshot_hash, source_project_updated_at, persisted_project_updated_at, source_report_updated_at, report_updated_at";
@@ -11,19 +13,6 @@ export const safetyPlanPersistenceSchema = z.object({
   source_report_updated_at: revision, report_updated_at: revision,
 }).strict();
 export type SafetyPlanPersistence = z.infer<typeof safetyPlanPersistenceSchema>;
-
-/** Compare PostgreSQL revision instants without discarding its microsecond floor. */
-export function sameSafetyRevision(left: unknown, right: unknown): boolean {
-  function key(value: unknown): string | null {
-    if (typeof value !== "string") return null;
-    const match = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})(?:\.(\d{1,6}))?(Z|[+-]\d{2}:\d{2})$/.exec(value);
-    if (!match) return null;
-    const seconds = Date.parse(`${match[1]}${match[3]}`);
-    return Number.isFinite(seconds) ? `${seconds}:${(match[2] ?? "").padEnd(6, "0")}` : null;
-  }
-  const first = key(left);
-  return first !== null && first === key(right);
-}
 
 export type SafetyArtifactInsert = {
   id: string; report_id: string; artifact_kind: "html" | "pdf"; storage_path: string | null;

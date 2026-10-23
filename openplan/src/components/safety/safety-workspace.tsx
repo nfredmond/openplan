@@ -310,7 +310,7 @@ type SafetyWorkspaceProps = {
   /** Recent acquisitions, newest first, with their project links. */
   ingestHistory?: SafetyIngestHistoryEntry[];
   /** Existing reports for the active project that can receive this pull. */
-  projectReports?: Array<{ id: string; title: string; safetyActionPlan?: HighInjuryNetworkReportTarget["safetyActionPlan"] }>;
+  projectReports?: Array<{ id: string; title: string; supportsSafetyComparison?: boolean; safetyActionPlan?: HighInjuryNetworkReportTarget["safetyActionPlan"] }>;
   /**
    * The map backgrounds this deployment offers, resolved on the server by
    * `resolvePublicBasemapConfig` — the same registry and the same operator
@@ -1602,6 +1602,7 @@ export function SafetyWorkspace({
                   ? projectReports.map((report) => ({
                       id: report.id,
                       title: report.title,
+                      supportsSafetyComparison: report.supportsSafetyComparison,
                       safetyActionPlan: report.safetyActionPlan ?? null,
                     }))
                   : []}

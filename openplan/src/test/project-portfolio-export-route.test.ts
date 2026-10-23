@@ -22,7 +22,7 @@ import { GET } from "@/app/api/projects/export/workbook/route";
 
 const USER_ID = "11111111-1111-4111-8111-111111111111";
 const WORKSPACE_ID = "22222222-2222-4222-8222-222222222222";
-const COLUMNS = "id, name, summary, status, plan_type, delivery_phase, estimated_cost_amount, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, estimated_cost_recorded_at, created_at, updated_at, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_set_at";
+const COLUMNS = "id, name, summary, status, plan_type, delivery_phase, estimated_cost_amount::text, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, estimated_cost_recorded_at, created_at, updated_at, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_set_at";
 type Row = Record<string, unknown>;
 type ReadResult = { data: Row[] | null; error: { code?: string; message: string } | null };
 type Query = {
@@ -55,7 +55,11 @@ function fakeClient(result: ReadResult) {
           const [from, to] = query.range;
           const count = Math.min(to - from + 1, query.limit, 1_000);
           return { data: rows.slice(from, from + count).map((row) => Object.fromEntries(
-            query.columns.split(",").map((column) => column.trim()).map((column) => [column, row[column]])
+            query.columns.split(",").map((column) => column.trim()).map((selected) => {
+              const column = selected.split("::")[0];
+              return [column, column === "estimated_cost_amount" && row[column] != null
+                ? selected.endsWith("::text") ? String(row[column]) : Number(row[column]) : row[column]];
+            })
           )), error: null };
         };
         const chain = {
@@ -113,7 +117,7 @@ describe("GET /api/projects/export/workbook", () => {
       workspaceName: "OpenPlan QA",
       generatedAt: expect.any(Date),
       projects: [first, second, older].map((row) => Object.fromEntries(
-        COLUMNS.split(", ").map((column) => [column, (row as Row)[column]])
+        COLUMNS.split(", ").map((selected) => selected.split("::")[0]).map((column) => [column, (row as Row)[column]])
       )),
     }));
   });
@@ -154,7 +158,7 @@ describe("GET /api/projects/export/workbook", () => {
     const real = await vi.importActual<typeof import("@/lib/projects/portfolio-export")>("@/lib/projects/portfolio-export");
     buildPortfolioRoundTripWorkbookMock.mockImplementation(real.buildPortfolioRoundTripWorkbook);
     const fake = fakeClient({
-      data: [{ id: "project-1", workspace_id: WORKSPACE_ID, name: "Synthetic cost regression", estimated_cost_amount: "100",
+      data: [{ id: "project-1", workspace_id: WORKSPACE_ID, name: "Synthetic cost regression", estimated_cost_amount: "999999999999999.99",
         estimated_cost_currency: "USD", estimated_cost_basis_year: null,
         status: "draft", plan_type: "capital_program", delivery_phase: "programming" }],
       error: null,
@@ -171,7 +175,7 @@ describe("GET /api/projects/export/workbook", () => {
         defaults: { planType: "capital_program", status: "draft", deliveryPhase: "programming",
           cost: { currency: "USD", scale: "ones", priceYear: 2026 } } }],
     });
-    expect(review.rows[0], "legacy round trip must preserve an unknown price year").toMatchObject({ estimatedCost: { amount: "100", currency: "USD", priceYear: null },
+    expect(review.rows[0], "legacy round trip must preserve exact cents and an unknown price year").toMatchObject({ estimatedCost: { amount: "999999999999999.99", currency: "USD", priceYear: null },
       canCreate: true, warnings: [{ code: "unknown_price_year" }], errors: [] });
   });
 
