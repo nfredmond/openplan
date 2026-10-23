@@ -8,6 +8,8 @@ import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { loadReportAccess as sharedLoadReportAccess } from "@/lib/reports/api";
 import { REPORT_SUMMARY_MAX_LENGTH, REPORT_TITLE_MAX_LENGTH } from "@/lib/reports/text-limits";
+import { guidedComparisonRequestSchema, verifyGuidedComparisonReport } from "@/lib/reports/guided-comparison-server";
+import { writeGuidedComparisonSelection, type GuidedComparisonSelectionV1 } from "@/lib/reports/guided-comparison";
 import {
   loadReportDualDemandAgreements,
   readAgreementCorridorSelections,
@@ -44,6 +46,7 @@ const patchReportSchema = z
     // Typed evidence citations (report_runs.model_run_id / county_run_id);
     // each replaces only its own kind.
     modelRunIds: z.array(z.string().uuid()).max(20).optional(),
+    guidedComparisonSelectionV1: guidedComparisonRequestSchema,
     agreementCorridorSelections: z
       .array(
         z.object({
@@ -336,6 +339,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       {
         report: access.report,
         agreementCorridorSelections: readAgreementCorridorSelections(access.report.metadata_json),
+        guidedComparisonSelectionV1: access.report.metadata_json?.guidedComparisonSelectionV1 ?? null,
         aerialOrthoSelections: readReportAerialOrthoSelections(access.report.metadata_json),
         safetyIngestSelections: readReportSafetyIngestSelections(access.report.metadata_json),
         project,
@@ -596,6 +600,19 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       }
     }
 
+    let guidedSelection: GuidedComparisonSelectionV1 | null | undefined;
+    if (parsed.data.guidedComparisonSelectionV1 !== undefined) {
+      guidedSelection = null;
+      if (parsed.data.guidedComparisonSelectionV1) {
+        if (!access.report.project_id) return NextResponse.json({ error: "Guided comparisons require a project analysis summary." }, { status: 400 });
+        try {
+          guidedSelection = await verifyGuidedComparisonReport({ client: access.supabase, workspaceId: access.report.workspace_id,
+            projectId: access.report.project_id, reportType: access.report.report_type ?? "", snapshotId: parsed.data.guidedComparisonSelectionV1.snapshotId });
+        } catch (error) {
+          return NextResponse.json({ error: error instanceof Error ? error.message : "Guided comparison could not be verified." }, { status: 409 });
+        }
+      }
+    }
     const reportUpdate: Record<string, unknown> = {};
     if (parsed.data.title !== undefined) {
       reportUpdate.title = parsed.data.title;
@@ -619,6 +636,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       reportUpdate.status = parsed.data.status;
     }
     let nextReportMetadata: unknown = access.report.metadata_json;
+    if (guidedSelection !== undefined) nextReportMetadata = writeGuidedComparisonSelection(nextReportMetadata, guidedSelection);
     if (parsed.data.agreementCorridorSelections || parsed.data.modelRunIds) {
       nextReportMetadata = writeAgreementCorridorSelections(
         nextReportMetadata,
@@ -637,7 +655,15 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (nextReportMetadata !== access.report.metadata_json) reportUpdate.metadata_json = nextReportMetadata;
 
     if (Object.keys(reportUpdate).length > 0) {
-      const { error: updateError } = await access.supabase.from("reports").update(reportUpdate).eq("id", access.report.id);
+      const writesMetadata = Object.hasOwn(reportUpdate, "metadata_json");
+      if (writesMetadata && (typeof access.report.updated_at !== "string" || !access.report.updated_at)) {
+        return NextResponse.json({ error: "The report revision is unavailable. Reopen the report before saving evidence." }, { status: 409 });
+      }
+      const update = access.supabase.from("reports").update(reportUpdate).eq("id", access.report.id);
+      // The Reports trigger advances every revision, including metadata-only writes.
+      // Keep the database timestamp text: converting through Date loses microseconds.
+      const updateResult = !writesMetadata ? await update : await update.eq("updated_at", access.report.updated_at).select("id").maybeSingle();
+      const updateError = updateResult.error;
 
       if (updateError) {
         audit.error("report_update_failed", {
@@ -646,6 +672,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
           code: updateError.code ?? null,
         });
         return NextResponse.json({ error: "Failed to update report" }, { status: 500 });
+      }
+      if (writesMetadata && !("data" in updateResult && updateResult.data)) {
+        return NextResponse.json({ error: "The report changed while its evidence was being saved. Reopen and review the current selections." }, { status: 409 });
       }
     }
 
@@ -803,6 +832,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       {
         success: true,
         reportId: access.report.id,
+        guidedComparisonSelectionV1: guidedSelection === undefined ? access.report.metadata_json?.guidedComparisonSelectionV1 ?? null : guidedSelection,
         agreementCorridorSelections: finalAgreementSelections,
         aerialOrthoSelections: finalAerialOrthoSelections,
         safetyIngestSelections: finalSafetyIngestSelections,

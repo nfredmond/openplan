@@ -1,7 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
+vi.mock("server-only", () => ({}));
+
 const createClientMock = vi.fn();
+const verifyGuidedReportMock = vi.fn();
+vi.mock("@/lib/reports/guided-comparison-server", async (importOriginal) => ({
+  ...await importOriginal<typeof import("@/lib/reports/guided-comparison-server")>(),
+  verifyGuidedComparisonReport: (...args: unknown[]) => verifyGuidedReportMock(...args),
+}));
 const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
 
@@ -147,6 +154,11 @@ import { GET as getReportDetail, PATCH as patchReportDetail } from "@/app/api/re
 describe("/api/reports/[reportId]", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    verifyGuidedReportMock.mockReset();
+    const updated = { data: { id: "11111111-1111-4111-8111-111111111111" }, error: null };
+    const metadataQuery = { select: vi.fn(() => ({ maybeSingle: async () => updated })) };
+    reportUpdateEqMock.mockReset().mockReturnValue({ eq: vi.fn(() => metadataQuery), is: vi.fn(() => metadataQuery),
+      then: (resolve: (value: typeof updated) => unknown) => Promise.resolve(updated).then(resolve) });
 
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
     authGetUserMock.mockResolvedValue({
@@ -165,6 +177,7 @@ describe("/api/reports/[reportId]", () => {
         title: "Project Status Packet",
         status: "draft",
         report_type: "project_status",
+        updated_at: "2026-10-19T07:00:00.123456+00:00",
         metadata_json: {
           agreementCorridorSelections: [{
             modelRunId: "88888888-8888-4888-8888-888888888888",
@@ -360,6 +373,101 @@ describe("/api/reports/[reportId]", () => {
       { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) },
     );
   }
+
+  it("saves, reopens, keeps on omission, and explicitly clears the sealed selection", async () => {
+    const previous = { unrelated: "retained", aerialOrthoSelections: [] };
+    const row = { id: "11111111-1111-4111-8111-111111111111", workspace_id: "33333333-3333-4333-8333-333333333333",
+      project_id: "44444444-4444-4444-8444-444444444444", report_type: "analysis_summary", metadata_json: previous, updated_at: "2026-10-19T07:00:00.123456+00:00" };
+    reportMaybeSingleMock.mockResolvedValue({ data: row, error: null });
+    const selection = { version: 1, snapshotId: "99999999-9999-4999-8999-999999999999", bindingSha256: "a".repeat(64), payload: { source: "server" } };
+    verifyGuidedReportMock.mockResolvedValue(selection);
+    const compareMetadata = vi.fn(() => ({ select: vi.fn(() => ({ maybeSingle: vi.fn(async () => ({ data: { id: row.id }, error: null })) })) }));
+    reportUpdateEqMock.mockImplementation(() => ({ eq: compareMetadata }));
+    const saved = await patchWith({ guidedComparisonSelectionV1: { snapshotId: selection.snapshotId } });
+    expect(saved.status).toBe(200);
+    expect(await saved.json()).toMatchObject({ guidedComparisonSelectionV1: selection });
+    expect(reportUpdateMock).toHaveBeenLastCalledWith({ metadata_json: { ...previous, guidedComparisonSelectionV1: selection } });
+    expect(compareMetadata).toHaveBeenCalledWith("updated_at", row.updated_at);
+    expect(reportSelectMock).toHaveBeenCalledWith(expect.stringContaining("metadata_json, updated_at"));
+    expect(reportUpdateEqMock).toHaveBeenCalledWith("id", row.id);
+    expect(reportRunsDeleteMock).not.toHaveBeenCalled();
+    expect(reportRunsInsertMock).not.toHaveBeenCalled();
+    row.metadata_json = { ...previous, guidedComparisonSelectionV1: selection } as typeof previous;
+    const reopened = await getReportDetail(new NextRequest("http://localhost/api/reports/1"), { params: Promise.resolve({ reportId: row.id }) });
+    expect(await reopened.json()).toMatchObject({ guidedComparisonSelectionV1: selection });
+    reportUpdateEqMock.mockResolvedValue({ error: null });
+    await patchWith({ title: "Ordinary metadata edit" });
+    expect(reportUpdateMock).toHaveBeenLastCalledWith({ title: "Ordinary metadata edit" });
+    reportUpdateEqMock.mockImplementation(() => ({ eq: compareMetadata }));
+    const cleared = await patchWith({ guidedComparisonSelectionV1: null });
+    expect(cleared.status).toBe(200);
+    expect(reportUpdateMock).toHaveBeenLastCalledWith({ metadata_json: { ...previous, guidedComparisonSelectionV1: null } });
+  });
+
+  it("keeps full exact-evidence verification on save and refuses reported byte drift before writing", async () => {
+    const row = { id: "11111111-1111-4111-8111-111111111111", workspace_id: "33333333-3333-4333-8333-333333333333",
+      project_id: "44444444-4444-4444-8444-444444444444", report_type: "analysis_summary", metadata_json: {}, updated_at: "2026-10-20T07:00:00.123456+00:00" };
+    const snapshotId = "99999999-9999-4999-8999-999999999999";
+    reportMaybeSingleMock.mockResolvedValue({ data: row, error: null });
+    verifyGuidedReportMock.mockRejectedValue(new Error("retained artifact bytes differ from the selected size or SHA-256"));
+    const response = await patchWith({ guidedComparisonSelectionV1: { snapshotId } });
+    expect(response.status).toBe(409);
+    expect(await response.json()).toMatchObject({ error: expect.stringContaining("retained artifact bytes differ") });
+    expect(verifyGuidedReportMock).toHaveBeenCalledOnce();
+    expect(verifyGuidedReportMock).toHaveBeenCalledWith(expect.objectContaining({ workspaceId: row.workspace_id,
+      projectId: row.project_id, reportType: row.report_type, snapshotId }));
+    expect(reportUpdateMock).not.toHaveBeenCalled();
+    expect(reportRunsDeleteMock).not.toHaveBeenCalled();
+    expect(reportRunsInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("refuses a concurrent selection save rather than overwriting newer metadata", async () => {
+    const compareMetadata = vi.fn(() => ({ select: vi.fn(() => ({ maybeSingle: vi.fn(async () => ({ data: null, error: null })) })) }));
+    reportUpdateEqMock.mockImplementation(() => ({ eq: compareMetadata }));
+    const response = await patchWith({ guidedComparisonSelectionV1: null });
+    expect(response.status).toBe(409);
+    expect(reportRunsDeleteMock).not.toHaveBeenCalled();
+  });
+
+  it.each(["2026-10-19T07:00:00.123456+00:00", "2026-10-19T07:00:00.123457+00:00"])(
+    "uses the exact server revision text, including microseconds: %s", async (revision) => {
+      const row = { id: "11111111-1111-4111-8111-111111111111", workspace_id: "33333333-3333-4333-8333-333333333333",
+        project_id: "44444444-4444-4444-8444-444444444444", report_type: "analysis_summary", metadata_json: { unrelated: "keep" }, updated_at: revision };
+      reportMaybeSingleMock.mockResolvedValue({ data: row, error: null });
+      const returning = vi.fn(() => ({ maybeSingle: async () => ({ data: { id: row.id }, error: null }) }));
+      const compareRevision = vi.fn(() => ({ select: returning }));
+      reportUpdateEqMock.mockImplementation(() => ({ eq: compareRevision }));
+      const response = await patchWith({ guidedComparisonSelectionV1: null, updated_at: "2099-01-01T00:00:00Z" });
+      expect(response.status).toBe(200);
+      expect(compareRevision.mock.calls).toEqual([["updated_at", revision]]);
+      expect(returning).toHaveBeenCalledWith("id");
+      expect(reportUpdateMock).toHaveBeenCalledWith({ metadata_json: { unrelated: "keep", guidedComparisonSelectionV1: null } });
+    });
+
+  it("refuses a newer revision that differs by one microsecond", async () => {
+    const readRevision = "2026-10-19T07:00:00.123456+00:00";
+    const currentRevision = "2026-10-19T07:00:00.123457+00:00";
+    reportMaybeSingleMock.mockResolvedValue({ data: { id: "11111111-1111-4111-8111-111111111111", workspace_id: "33333333-3333-4333-8333-333333333333",
+      project_id: "44444444-4444-4444-8444-444444444444", report_type: "analysis_summary", metadata_json: {}, updated_at: readRevision }, error: null });
+    let matchedRevision: string | null = null;
+    const returning = { maybeSingle: async () => ({ data: matchedRevision === null || matchedRevision === currentRevision ? { id: "11111111-1111-4111-8111-111111111111" } : null, error: null }) };
+    const select = vi.fn(() => returning);
+    const query = { eq: vi.fn((_column: string, value: string) => { matchedRevision = value; return { select }; }), select };
+    reportUpdateEqMock.mockImplementation(() => query);
+    const response = await patchWith({ guidedComparisonSelectionV1: null });
+    expect(response.status).toBe(409);
+    expect(query.eq).toHaveBeenCalledWith("updated_at", readRevision);
+    expect(query.select).toHaveBeenCalledWith("id");
+    expect(reportRunsDeleteMock).not.toHaveBeenCalled();
+  });
+
+  it("refuses evidence writes when the server revision is absent", async () => {
+    reportMaybeSingleMock.mockResolvedValue({ data: { id: "11111111-1111-4111-8111-111111111111", workspace_id: "33333333-3333-4333-8333-333333333333",
+      project_id: "44444444-4444-4444-8444-444444444444", report_type: "analysis_summary", metadata_json: {} }, error: null });
+    const response = await patchWith({ guidedComparisonSelectionV1: null });
+    expect(response.status).toBe(409);
+    expect(reportUpdateMock).not.toHaveBeenCalled();
+  });
 
   it("PATCH saves a safety action plan against the acquisition it selects", async () => {
     safetyIngestInMock.mockResolvedValueOnce({ data: [{ id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" }], error: null });

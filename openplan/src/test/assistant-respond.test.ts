@@ -594,7 +594,7 @@ describe("assistant response builders", () => {
           aerialReadyPackages: 0,
         },
         grantModelingSummary: {
-          breakdown: { decisionReady: 1, refreshRecommended: 0, thin: 0, noVisibleSupport: 0 },
+          breakdown: { decisionReady: 1, refreshRecommended: 0, unassessed: 0, thin: 0, noVisibleSupport: 0 },
           breakdownSummary: "1 opportunity-linked project: 1 appears decision-ready, 0 refresh recommended, 0 appears thin, 0 without visible support.",
           operatorDetail: "Within grant decision work, opportunity-linked projects with modeling support that appears decision-ready rise ahead.",
           leadDecisionDetail: "ATP Cycle 8 for Modeled Project is rising because modeling posture appears decision-ready. Recommended next move: Advance to pursue now.",

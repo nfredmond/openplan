@@ -51,7 +51,7 @@ services:
     name: openplan-modeling-worker
     runtime: docker
     dockerfilePath: ./workers/aequilibrae_worker/Dockerfile
-    dockerContext: ./workers/aequilibrae_worker
+    dockerContext: .
     plan: free
     # /healthz is the worker's own health path (TRIGGER_HEALTH_PATH in main.py).
     # Render polls it to decide whether a deploy succeeded, so a worker that

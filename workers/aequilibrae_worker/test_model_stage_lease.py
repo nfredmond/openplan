@@ -248,7 +248,8 @@ class UnconfirmedWriteTest(unittest.TestCase):
         text = out.getvalue()
         self.assertIn("UNCONFIRMED STATE WRITE", text)
         self.assertIn(f"run={RUN} stage={STAGE_ID} (Network Assignment)", text)
-        self.assertIn("HTTP 504", text)
+        self.assertIn("WorkerStateWriteUnconfirmed", text)
+        self.assertNotIn("HTTP 504", text)
         self.assertNotIn("Poll loop error", text)
 
 

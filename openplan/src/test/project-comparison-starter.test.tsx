@@ -138,6 +138,40 @@ describe("project comparison guidance", () => {
     );
   });
 
+  it.each(["needs_shared_population_rerun", "population_basis_invalid", "population_basis_mismatch"])(
+    "keeps %s repair explicit and reviews the selected rerun without launching it", async (state) => {
+      const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({
+        state, scenarioSetId: "scenario-1", networkBasis: "worker_osm_snapshot",
+        repairReason: "The retained population differs from this older build output.",
+        populationSummary: { sourceRunId: "baseline-source", households: 23, persons: 41,
+          universe: "household_residents", manifestSha256: "a".repeat(64) },
+        nextRun: { method: "aequilibrae", scenario: "build", modelId: "model-aeq", scenarioEntryId: "entry-build" },
+      }) });
+      vi.stubGlobal("fetch", fetchMock);
+      render(<ProjectComparisonStarter projectId="11111111-1111-4111-8111-111111111111" projectName="Main Street" facts={EMPTY} />);
+      fireEvent.click(screen.getByRole("button", { name: "Begin guided comparison" }));
+      expect(await screen.findByRole("status")).toHaveTextContent("retained population differs");
+      expect(screen.getByTestId("comparison-population-summary")).toHaveTextContent("23 households and 41 household residents");
+      expect(screen.getByTestId("comparison-population-summary")).toHaveTextContent("Group quarters remain excluded and unassessed");
+      expect(navigation.push).not.toHaveBeenCalled();
+      fireEvent.click(screen.getByRole("button", { name: "Review AequilibraE build run" }));
+      expect(navigation.push).toHaveBeenCalledWith("/models/model-aeq?projectId=11111111-1111-4111-8111-111111111111&scenarioEntryId=entry-build#run-model");
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it("keeps an unrepairable population response on the current page", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({
+      state: "population_basis_invalid", scenarioSetId: "scenario-1", networkBasis: "worker_osm_snapshot",
+      repairReason: "The source record cannot be read.", nextRun: null,
+    }) }));
+    render(<ProjectComparisonStarter projectId="11111111-1111-4111-8111-111111111111" projectName="Main Street" facts={EMPTY} />);
+    fireEvent.click(screen.getByRole("button", { name: "Begin guided comparison" }));
+    expect(await screen.findByRole("status")).toHaveTextContent("source record cannot be read");
+    expect(navigation.push).not.toHaveBeenCalled();
+    expect(screen.queryByRole("button", { name: /^Review .* run$/ })).not.toBeInTheDocument();
+  });
+
   it("requires a sourced, non-zero build change before routing to a build run", async () => {
     const fetchMock = vi.fn()
       .mockResolvedValueOnce({

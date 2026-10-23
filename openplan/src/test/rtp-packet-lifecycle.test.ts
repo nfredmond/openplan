@@ -1,4 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+// Use the actual request contract while keeping this RTP fixture out of the
+// unrelated guided artifact reader. Unexpected guided verification must fail.
+vi.mock("@/lib/reports/guided-comparison-server", async () => ({
+  ...await import("@/lib/reports/guided-comparison-request"),
+  verifyGuidedComparisonReport: vi.fn(() => { throw new Error("Unexpected guided comparison verification"); }),
+}));
 import { NextRequest } from "next/server";
 import { pagingFake } from "./helpers/paging-fake";
 

@@ -1,4 +1,10 @@
 import { buildSafetySeedPreview } from "@/lib/grants/ss4a-safety-seed";
+import { guidedReportSelectionFixture } from "@/test/fixtures/guided-report-evidence";
+const verifyGuidedReportMock = vi.hoisted(() => vi.fn());
+vi.mock("@/lib/reports/guided-comparison-server", async (importOriginal) => ({
+  ...await importOriginal<typeof import("@/lib/reports/guided-comparison-server")>(),
+  verifyGuidedComparisonReport: (...args: unknown[]) => verifyGuidedReportMock(...args),
+}));
 import { SAFETY_PLAN_PERSISTENCE_VERSION, type SafetyPlanPersistence } from "@/lib/reports/safety-plan-persistence";
 import { safetySeedFixture } from "./fixtures/grants/safety-seed";
 import { readSafetyPlanSnapshot } from "@/lib/reports/safety-plan-snapshot";
@@ -341,6 +347,9 @@ type ArtifactInsertPayload = {
   metadata_json?: { htmlContent?: string } & Record<string, unknown>;
 } & Record<string, unknown>;
 const artifactsInsertMock = vi.fn((_payload: ArtifactInsertPayload) => ({ select: artifactsInsertSelectMock }));
+const serviceArtifactsSingleMock = vi.fn();
+const serviceArtifactsInsertSelectMock = vi.fn(() => ({ single: serviceArtifactsSingleMock }));
+const serviceArtifactsInsertMock = vi.fn((_payload: ArtifactInsertPayload) => ({ select: serviceArtifactsInsertSelectMock }));
 
 // The signed-in member's own Storage client. Migration 20261017000013 removed
 // member INSERT on report-artifacts, so by default it refuses the way row
@@ -710,6 +719,7 @@ function reportNamesCountyRun(overrides: Record<string, unknown> = {}) {
 describe("POST /api/reports/[reportId]/generate", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    verifyGuidedReportMock.mockReset();
     safetyRoadReadMock.mockReset().mockResolvedValue({ data: [], error: null });
     safetyRoadWriteMock.mockReset().mockResolvedValue({ error: null });
     tigerRoadsMock.mockReset().mockResolvedValue({ roads: [], coverageLimit: "No source road fixture", sourceVintage: null });
@@ -1052,6 +1062,12 @@ describe("POST /api/reports/[reportId]/generate", () => {
       error: null,
     });
 
+    serviceArtifactsSingleMock.mockReset().mockResolvedValue({
+      data: { id: "artifact-1", report_id: "11111111-1111-4111-8111-111111111111",
+        artifact_kind: "html", generated_at: "2026-03-14T02:00:00.000Z", metadata_json: {} },
+      error: null,
+    });
+
     memberStorageUploadMock.mockResolvedValue({ error: { message: "new row violates row-level security policy" } });
     checkWorkspaceStorageRoomMock.mockReset();
     serviceStorageUploadMock.mockResolvedValue({ error: null });
@@ -1071,7 +1087,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
     });
     createServiceRoleClientMock.mockReturnValue({
       from: vi.fn((table: string) => {
-        if (table === "report_artifacts") return { insert: artifactsInsertMock };
+        if (table === "report_artifacts") return { insert: serviceArtifactsInsertMock };
         if (table === "safety_road_context_features") return { upsert: safetyRoadWriteMock };
         if (table === "assistant_action_executions") {
           return {
@@ -1084,11 +1100,153 @@ describe("POST /api/reports/[reportId]/generate", () => {
     });
   });
 
+  it.each(["html", "pdf"] as const)("persists the verified comparison through the service insert and member writeback (%s)", async (format) => {
+    const selection = guidedReportSelectionFixture();
+    reportNamesCountyRun({ report_type: "analysis_summary", modeling_county_run_id: null, metadata_json: { guidedComparisonSelectionV1: selection } });
+    reportRunsOrderMock.mockResolvedValueOnce({ data: [], error: null });
+    modelRunsInMock.mockResolvedValueOnce({ data: selection.payload.sources.map((source) => ({ id: source.runId, run_title: `${source.method} ${source.role}`,
+      engine_key: source.method === "aequilibrae" ? "aequilibrae" : "behavioral_demand", status: "succeeded", result_summary_json: {} })), error: null });
+    verifyGuidedReportMock.mockResolvedValue(selection);
+    const response = await postGenerate(new NextRequest("http://localhost/api/reports/1/generate", { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ format }) }), { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) });
+    expect(response.status).toBe(200);
+    expect(verifyGuidedReportMock).toHaveBeenCalledTimes(2);
+    expect(verifyGuidedReportMock).toHaveBeenCalledWith(expect.objectContaining({ saved: selection, snapshotId: selection.snapshotId,
+      workspaceId: "33333333-3333-4333-8333-333333333333", projectId: "44444444-4444-4444-8444-444444444444" }));
+    expect(serviceArtifactsInsertMock, "Verified selected insertion uses the service role").toHaveBeenCalledOnce();
+    expect(artifactsInsertMock, "Member client does not insert selected artifacts").not.toHaveBeenCalled();
+    expect(serviceArtifactsInsertSelectMock).toHaveBeenCalledWith("id, report_id, artifact_kind, generated_at, metadata_json");
+    expect(reportUpdateMock, "Report writeback remains member-scoped").toHaveBeenCalledOnce();
+    expect(artifactWritebackUpdateMock, "Receipt writeback remains member-scoped").toHaveBeenCalledOnce();
+    const inserted = serviceArtifactsInsertMock.mock.calls[0][0];
+    expect(inserted.artifact_kind).toBe(format);
+    expect(inserted.metadata_json).toMatchObject({ guidedComparisonSelectionV1: selection,
+      sourceContext: { citedModelRunCount: 4, scenarioSetLinkCount: 1, guidedComparisonSelectionV1: selection } });
+    expect(inserted.metadata_json!.htmlContent).toContain("450,909.6");
+    expect(inserted.metadata_json!.htmlContent).toContain("398,090.6");
+    expect(inserted.metadata_json!.htmlContent).not.toContain("No KPI summary");
+  });
+
+  it("refuses a failed selected service insert before member writeback", async () => {
+    const selection = guidedReportSelectionFixture();
+    reportNamesCountyRun({ report_type: "analysis_summary", modeling_county_run_id: null,
+      metadata_json: { guidedComparisonSelectionV1: selection } });
+    reportRunsOrderMock.mockResolvedValueOnce({ data: [], error: null });
+    modelRunsInMock.mockResolvedValueOnce({ data: selection.payload.sources.map((source) => ({ id: source.runId,
+      run_title: `${source.method} ${source.role}`, engine_key: source.method === "aequilibrae" ? "aequilibrae" : "behavioral_demand",
+      status: "succeeded", result_summary_json: {} })), error: null });
+    verifyGuidedReportMock.mockResolvedValue(selection);
+    serviceArtifactsSingleMock.mockResolvedValueOnce({ data: null, error: { code: "42501", message: "insert refused" } });
+    const response = await postGenerate(new NextRequest("http://localhost/api/reports/1/generate", { method: "POST",
+      headers: { "content-type": "application/json" }, body: JSON.stringify({ format: "html" }) }),
+      { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) });
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({ error: "Failed to persist report artifact" });
+    expect(serviceArtifactsInsertMock).toHaveBeenCalledOnce();
+    expect(artifactsInsertMock).not.toHaveBeenCalled();
+    expect(reportUpdateMock).not.toHaveBeenCalled();
+    expect(artifactWritebackUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it.each(["selected", "malformed", "unselected"] as const)("retains readable metadata in the oldest report projection: %s", async (kind) => {
+    const selection = guidedReportSelectionFixture();
+    reportMaybeSingleMock.mockResolvedValueOnce({ data: null, error: { message: 'column reports.modeling_county_run_id does not exist', code: "42703" } });
+    reportMaybeSingleMock.mockResolvedValueOnce({ data: null, error: { message: 'column reports.modeling_county_run_id does not exist', code: "42703" } });
+    reportNamesCountyRun({ report_type: "analysis_summary", modeling_county_run_id: null,
+      metadata_json: kind === "unselected" ? { unrelated: "retained" } : { guidedComparisonSelectionV1: kind === "malformed" ? { ...selection, version: 2 } : selection } });
+    if (kind !== "malformed") reportRunsOrderMock.mockResolvedValueOnce({ data: [], error: null });
+    if (kind === "selected") {
+      verifyGuidedReportMock.mockResolvedValue(selection);
+      modelRunsInMock.mockResolvedValueOnce({ data: selection.payload.sources.map((source) => ({ id: source.runId,
+        run_title: `${source.method} ${source.role}`, engine_key: source.method === "aequilibrae" ? "aequilibrae" : "behavioral_demand",
+        status: "succeeded", result_summary_json: {} })), error: null });
+    }
+    const response = await postGenerate(new NextRequest("http://localhost/api/reports/1/generate", { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ format: "html" }) }), { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) });
+    expect(reportSelectMock).toHaveBeenCalledTimes(3);
+    for (const [columns] of reportSelectMock.mock.calls) expect(columns.split(",").map((column) => column.trim())).toContain("metadata_json");
+    expect(reportEqMock.mock.calls).toEqual(Array.from({ length: 3 }, () => ["id", "11111111-1111-4111-8111-111111111111"]));
+    expect(response.status).toBe(kind === "malformed" ? 409 : 200);
+    if (kind === "malformed") {
+      expect(await response.json()).toMatchObject({ error: expect.stringContaining("unsupported version") });
+      expect(serviceStorageUploadMock).not.toHaveBeenCalled();
+      expect(artifactsInsertMock).not.toHaveBeenCalled();
+      expect(serviceArtifactsInsertMock).not.toHaveBeenCalled();
+      expect(verifyGuidedReportMock).not.toHaveBeenCalled();
+    } else {
+      const expectedInsert = kind === "selected" ? serviceArtifactsInsertMock : artifactsInsertMock;
+      const otherInsert = kind === "selected" ? artifactsInsertMock : serviceArtifactsInsertMock;
+      expect(expectedInsert).toHaveBeenCalledOnce();
+      expect(otherInsert).not.toHaveBeenCalled();
+      const inserted = expectedInsert.mock.calls[0][0];
+      if (kind === "selected") {
+        expect(verifyGuidedReportMock).toHaveBeenCalledTimes(2);
+        expect(verifyGuidedReportMock).toHaveBeenCalledWith(expect.objectContaining({ saved: selection, snapshotId: selection.snapshotId }));
+        expect(inserted.metadata_json).toMatchObject({ guidedComparisonSelectionV1: selection, sourceContext: { guidedComparisonSelectionV1: selection } });
+        expect(inserted.metadata_json!.htmlContent).toContain("450,909.6");
+      } else {
+        expect(verifyGuidedReportMock).not.toHaveBeenCalled();
+        expect(inserted.metadata_json).not.toHaveProperty("guidedComparisonSelectionV1");
+        expect(inserted.metadata_json!.sourceContext).toMatchObject({ guidedComparisonSelectionV1: null });
+      }
+    }
+  });
+
+  it("refuses generation when even the oldest projection cannot read metadata", async () => {
+    reportMaybeSingleMock.mockResolvedValueOnce({ data: null, error: { message: 'column reports.modeling_county_run_id does not exist', code: "42703" } });
+    reportMaybeSingleMock.mockResolvedValueOnce({ data: null, error: { message: 'column reports.modeling_county_run_id does not exist', code: "42703" } });
+    reportMaybeSingleMock.mockResolvedValueOnce({ data: null, error: { message: 'column reports.metadata_json does not exist', code: "42703" } });
+    const response = await postGenerate(new NextRequest("http://localhost/api/reports/1/generate", { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ format: "html" }) }), { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) });
+    expect(response.status).toBe(500);
+    expect(reportSelectMock).toHaveBeenCalledTimes(3);
+    expect(reportSelectMock.mock.calls[2][0].split(",").map((column) => column.trim())).toContain("metadata_json");
+    expect(verifyGuidedReportMock).not.toHaveBeenCalled();
+    expect(serviceStorageUploadMock).not.toHaveBeenCalled();
+    expect(artifactsInsertMock).not.toHaveBeenCalled();
+    expect(serviceArtifactsInsertMock).not.toHaveBeenCalled();
+  });
+
+  it.each(["unknown version", "unverifiable evidence"])("refuses %s before storing a new artifact", async (reason) => {
+    const selection = guidedReportSelectionFixture();
+    reportNamesCountyRun({ report_type: "analysis_summary", metadata_json: { guidedComparisonSelectionV1: reason === "unknown version" ? { ...selection, version: 2 } : selection } });
+    verifyGuidedReportMock.mockRejectedValue(new Error("Selected artifact hash changed"));
+    const response = await postGenerate(new NextRequest("http://localhost/api/reports/1/generate", { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ format: "html" }) }), { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) });
+    expect(response.status).toBe(409);
+    expect(serviceStorageUploadMock).not.toHaveBeenCalled();
+    expect(artifactsInsertMock).not.toHaveBeenCalled();
+    expect(serviceArtifactsInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("refuses evidence that changes after assembly and before storage", async () => {
+    const selection = guidedReportSelectionFixture();
+    reportNamesCountyRun({ report_type: "analysis_summary", modeling_county_run_id: null, metadata_json: { guidedComparisonSelectionV1: selection } });
+    reportRunsOrderMock.mockResolvedValueOnce({ data: [], error: null });
+    modelRunsInMock.mockResolvedValueOnce({ data: selection.payload.sources.map((source) => ({ id: source.runId, run_title: source.method,
+      engine_key: source.method === "aequilibrae" ? "aequilibrae" : "behavioral_demand", status: "succeeded", result_summary_json: {} })), error: null });
+    verifyGuidedReportMock.mockResolvedValueOnce(selection).mockRejectedValueOnce(new Error("retained artifact bytes differ before storage"));
+    const response = await postGenerate(new NextRequest("http://localhost/api/reports/1/generate", { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ format: "html" }) }), { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) });
+    expect(response.status).toBe(409);
+    expect(verifyGuidedReportMock).toHaveBeenCalledTimes(2);
+    for (const [input] of verifyGuidedReportMock.mock.calls) expect(input).toMatchObject({
+      saved: selection, snapshotId: selection.snapshotId, reportType: "analysis_summary",
+      workspaceId: "33333333-3333-4333-8333-333333333333", projectId: "44444444-4444-4444-8444-444444444444",
+    });
+    expect(await response.json()).toMatchObject({ error: expect.stringContaining("retained artifact bytes differ") });
+    expect(serviceStorageUploadMock).not.toHaveBeenCalled();
+    expect(artifactsInsertMock).not.toHaveBeenCalled();
+    expect(serviceArtifactsInsertMock).not.toHaveBeenCalled();
+  });
+
   it("reads the report revision and joins completed writeback to the generated artifact", async () => {
     const response = await postGenerate(new NextRequest("http://localhost/api/reports/1/generate", {
       method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ format: "html" }),
     }), { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) });
     expect(response.status).toBe(200);
+    expect(artifactsInsertMock, "Unselected ordinary reports retain member insertion").toHaveBeenCalledOnce();
+    expect(serviceArtifactsInsertMock, "Unselected ordinary reports do not gain service insertion").not.toHaveBeenCalled();
     expect(reportSelectMock.mock.calls[0][0].split(", ")).toContain("updated_at");
     expect(reportUpdateEqMock).toHaveBeenCalledWith("updated_at", "2026-03-14T00:00:00.000Z");
     expect(reportWritebackSelectMock).toHaveBeenCalledWith("updated_at");
@@ -1449,6 +1607,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
       rows.project.name = "Genuine later source edit";
       expect(() => buildSafetySeedPreview(rows)).toThrow(/custody.*stale/);
       expect(artifactsInsertMock).not.toHaveBeenCalled(); expect(artifactWritebackUpdateMock).not.toHaveBeenCalled();
+      expect(serviceArtifactsInsertMock, "Safety insertion stays inside its persistence RPC").not.toHaveBeenCalled();
       expect(safetyIngestSelectMock).toHaveBeenCalledWith(expect.stringContaining("published_through_provenance"));
     } finally { builder.mockRestore(); }
   });

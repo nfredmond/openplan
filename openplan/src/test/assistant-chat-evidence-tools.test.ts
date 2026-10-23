@@ -981,3 +981,78 @@ describe("get_engagement_responses", () => {
     vi.unstubAllGlobals();
   });
 });
+
+it.each([false, true])("selects current successful attempt KPIs before the disclosed cap, retained-prefix=%s", async manyRetained => {
+ const data: Record<string, Array<Record<string, unknown>>> = modelRunFixture();
+ data.model_runs[0].attempt_managed = true;
+ const attempt = "99999999-9999-4999-8999-999999999999";
+ data.model_run_stages = [{ id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", run_id: RUN_ID, stage_name: "Artifact Extraction", status: "succeeded", attempt_managed: true, active_attempt_id: attempt }];
+ const current = { ...data.model_run_kpis[0], id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", attempt_id: attempt, value: 20 };
+ data.model_run_kpis = [...Array.from({ length: manyRetained ? ASSISTANT_CHAT_TOOL_KPI_LIMIT + 1 : 1 }, (_, n) => ({ ...current, id: `retained-${n}`, attempt_id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc", value: 900 })), current];
+ const supabase = createFilteringSupabaseMock(data), { tools } = buildTools(supabase);
+ const result = await toolExecute(tools, "get_model_run_results")({ modelRunId: RUN_ID }, CALL_OPTIONS);
+ expect(result.status).toBe("ok"); expect(result.kpis).toEqual([expect.objectContaining({ name: "daily_vmt", value: 20 })]);
+ const kpiRead = supabase.queries.find(query => query.table === "model_run_kpis")!;
+ expect(kpiRead.filters).toContainEqual(["in:attempt_id", [attempt]]); expect(kpiRead.limit).toBe(ASSISTANT_CHAT_TOOL_KPI_LIMIT);
+ expect(kpiRead.columns).toBe("id, run_id, attempt_id, kpi_name, kpi_label, kpi_category, value, unit, geometry_ref, breakdown_json");
+ expect(supabase.queries.filter(query => query.table === "model_run_stages")).toHaveLength(4);
+ expect(supabase.mutations).toEqual([]);
+});
+it.each(["stage", "parent", "unavailable", "wrong_producer"])("refuses changed or incompatible current result custody: %s", async vector => {
+ const data: Record<string, Array<Record<string, unknown>>> = modelRunFixture(); data.model_runs[0].attempt_managed = true;
+ const attempt = "99999999-9999-4999-8999-999999999999";
+ data.model_run_stages = [{ id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", run_id: RUN_ID, stage_name: vector === "wrong_producer" ? "AequilibraE Setup" : "Artifact Extraction", status: "succeeded", attempt_managed: true, active_attempt_id: attempt }];
+ data.model_run_kpis = [{ ...data.model_run_kpis[0], id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", attempt_id: attempt, value: 20 }];
+ const supabase = createFilteringSupabaseMock(data), original = supabase.client.from;
+ supabase.client.from = table => {
+  if (table === "model_run_kpis") {
+    if (vector === "stage") data.model_run_stages[0].active_attempt_id = null;
+    if (vector === "parent") data.model_runs[0].status = "failed";
+    if (vector === "unavailable") data.model_run_stages.length = 0;
+  }
+  return original(table);
+ };
+ const { tools } = buildTools(supabase);
+ const result = await toolExecute(tools, "get_model_run_results")({ modelRunId: RUN_ID }, CALL_OPTIONS);
+ expect(result.status).toBe("refused"); expect(result.kpis).toBeUndefined();
+});
+
+it("does not call a failed parent's retained values current", async () => {
+ const data: Record<string, Array<Record<string, unknown>>> = modelRunFixture();
+ data.model_runs[0].attempt_managed = true; data.model_runs[0].status = "failed";
+ data.model_run_stages = [{ id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", run_id: RUN_ID, stage_name: "Artifact Extraction", status: "failed", attempt_managed: true, active_attempt_id: null }];
+ const supabase = createFilteringSupabaseMock(data), { tools } = buildTools(supabase);
+ const result = await toolExecute(tools, "get_model_run_results")({ modelRunId: RUN_ID }, CALL_OPTIONS);
+ expect(result.status).toBe("ok"); expect(result.kpis).toEqual([]); expect(result.note).toContain("No current completed KPIs");
+});
+
+const namedProducerPolicy = [
+  ["total_trips", "Artifact Extraction"], ["daily_vmt", "Artifact Extraction"],
+  ["resident_vmt_per_capita", "Artifact Extraction"], ["vmt_per_capita", "Artifact Extraction"],
+  ["co2e_metric_tons_year", "Artifact Extraction"], ["co2e_kg_per_capita_day", "Artifact Extraction"],
+  ["activitysim_trips", "ActivitySim Bundle & Preflight"], ["activitysim_runtime_mode", "ActivitySim Bundle & Preflight"],
+  ["activitysim_daily_vmt", "ActivitySim Network Assignment"],
+] as const;
+
+it.each(namedProducerPolicy)("returns %s from its correct successful producer %s", async (name, stageName) => {
+ const data: Record<string, Array<Record<string, unknown>>> = modelRunFixture(); data.model_runs[0].attempt_managed = true;
+ const attempt = "99999999-9999-4999-8999-999999999999";
+ data.model_run_stages = [{ id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", run_id: RUN_ID, stage_name: stageName, status: "succeeded", attempt_managed: true, active_attempt_id: attempt }];
+ data.model_run_kpis = [{ ...data.model_run_kpis[0], id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", kpi_name: name, attempt_id: attempt, value: 20 }];
+ const supabase = createFilteringSupabaseMock(data), { tools } = buildTools(supabase);
+ const result = await toolExecute(tools, "get_model_run_results")({ modelRunId: RUN_ID }, CALL_OPTIONS);
+ expect(result.status).toBe("ok"); expect(result.kpis).toEqual([expect.objectContaining({ name, value: 20 })]);
+ expect(supabase.queries.find(query => query.table === "model_run_kpis")?.filters).toContainEqual(["in:attempt_id", [attempt]]);
+ expect(supabase.mutations).toEqual([]);
+});
+
+it.each(namedProducerPolicy)("refuses %s from the wrong producer instead of expected %s", async (name) => {
+ const data: Record<string, Array<Record<string, unknown>>> = modelRunFixture(); data.model_runs[0].attempt_managed = true;
+ const attempt = "99999999-9999-4999-8999-999999999999";
+ data.model_run_stages = [{ id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", run_id: RUN_ID, stage_name: "AequilibraE Setup", status: "succeeded", attempt_managed: true, active_attempt_id: attempt }];
+ data.model_run_kpis = [{ ...data.model_run_kpis[0], id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", kpi_name: name, attempt_id: attempt, value: 900 }];
+ const supabase = createFilteringSupabaseMock(data), { tools } = buildTools(supabase);
+ const result = await toolExecute(tools, "get_model_run_results")({ modelRunId: RUN_ID }, CALL_OPTIONS);
+ expect(result.status).toBe("refused"); expect(result.reason).toContain("expected successful producer stage"); expect(result.kpis).toBeUndefined();
+ expect(supabase.mutations).toEqual([]);
+});

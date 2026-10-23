@@ -34,7 +34,6 @@ import { ReportNavigationPreview } from "./report-navigation-preview";
 import { ReportPacketReview } from "./report-packet-review";
 import { ReportProvenanceAudit } from "./report-provenance-audit";
 import type {
-  DriftItem,
   EngagementCampaignLinkRow,
   LinkedRunRow,
   ReportArtifact,
@@ -74,6 +73,7 @@ const REPORT_HEADER_ANCHORS = [
 ] as const;
 
 type ReportStandardDetailProps = {
+  guidedComparison?: ComponentProps<typeof ReportDetailControls>["guidedComparison"];
   /**
    * The page's query string. The active tab is read out of it here rather than
    * passed separately, so there is exactly one place that decides which tab a
@@ -104,8 +104,7 @@ type ReportStandardDetailProps = {
   initialSafetyIngestId?: string | null;
   latestArtifact: ReportArtifact | null;
   fundingSnapshot: ReportFundingSnapshot | null;
-  driftItems: DriftItem[];
-  driftedItems: DriftItem[];
+  sourceReviewSummary: ComponentProps<typeof ReportDetailControls>["driftSummary"];
   evidenceSummaryDigest: ReportEvidenceChainDigest | null;
   fundingSummaryDigest: ReportFundingDigest | null;
   engagementCampaign: EngagementCampaignLinkRow | null;
@@ -123,6 +122,7 @@ type ReportStandardDetailProps = {
 };
 
 export function ReportStandardDetail({
+  guidedComparison,
   searchParams,
   unreadableByTab,
   report,
@@ -140,8 +140,7 @@ export function ReportStandardDetail({
   initialSafetyIngestId = null,
   latestArtifact,
   fundingSnapshot,
-  driftItems,
-  driftedItems,
+  sourceReviewSummary,
   evidenceSummaryDigest,
   fundingSummaryDigest,
   engagementCampaign,
@@ -275,15 +274,12 @@ export function ReportStandardDetail({
             status: report.status,
             hasGeneratedArtifact: Boolean(report.latest_artifact_kind),
           }}
-          driftSummary={{
-            changedCount: driftedItems.length,
-            totalCount: driftItems.length,
-            labels: driftedItems.map((item) => item.label),
-          }}
+          driftSummary={sourceReviewSummary}
           evidenceSummary={evidenceSummaryDigest}
           fundingSummary={fundingSummaryDigest}
           modelRunOptions={citeableModelRuns}
           citedModelRunIds={citedModelRunIds}
+          guidedComparison={guidedComparison}
           agreementEvidence={agreementEvidence}
           agreementCorridorSelections={agreementCorridorSelections}
           aerialOrthoCatalog={aerialOrthoCatalog}

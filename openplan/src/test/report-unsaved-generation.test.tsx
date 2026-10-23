@@ -29,6 +29,25 @@ beforeEach(() => { invokeGenerate = undefined; fetchMock.mockReset().mockImpleme
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
 describe("Report draft custody", () => {
+  it("requires saving an explicit comparison before its actual generate handler can run", async () => {
+    const snapshotId = "77777777-7777-4777-8777-777777777777";
+    fetchMock.mockImplementation(async (_url, init) => init?.method === "PATCH"
+      ? new Response(JSON.stringify({ guidedComparisonSelectionV1: { version: 1, snapshotId } }), { status: 200 })
+      : new Response(JSON.stringify({ options: [{ id: snapshotId, projectId: "project", label: "Exact comparison" }] }), { status: 200 }));
+    render(<ReportDetailControls report={report} guidedComparison={{ projectId: "project", snapshotId: null, bindingSha256: null, problem: null, includedRunIds: [] }} />);
+    await screen.findByRole("option", { name: /Exact comparison/ });
+    expect(screen.getByLabelText("Saved baseline and build comparison")).toHaveValue("");
+    fireEvent.change(screen.getByLabelText("Saved baseline and build comparison"), { target: { value: snapshotId } });
+    expect(generate()).toBeDisabled();
+    await act(async () => { await invokeGenerate!(); });
+    expect(fetchMock.mock.calls.some((call) => String(call[0]).endsWith("/generate"))).toBe(false);
+    fireEvent.click(save());
+    await waitFor(() => expect(generate()).toBeEnabled());
+    const savedCall = fetchMock.mock.calls.find((call) => call[1]?.method === "PATCH")!;
+    expect(JSON.parse(String(savedCall[1]?.body))).toMatchObject({ guidedComparisonSelectionV1: { snapshotId } });
+    expect(JSON.parse(String(savedCall[1]?.body)).guidedComparisonSelectionV1.payload).toBeUndefined();
+  });
+
   it.each([
     ["Title", "New title"], ["Summary", "New summary"], ["Status", "archived"],
   ])("requires saving a changed %s on its own", async (label, value) => {

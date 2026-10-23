@@ -253,7 +253,7 @@ describe("GET authenticated demand agreement artifact", () => {
       custodyMetadata().network_state_digest,
     );
     expect(artifactSelectMock).toHaveBeenCalledWith(
-      "id, artifact_type, file_url, content_hash, file_size_bytes, metadata_json, stage_id",
+      "id, run_id, attempt_id, artifact_type, file_url, content_hash, file_size_bytes, metadata_json, stage_id",
     );
     expect(runEqMock).toHaveBeenCalledWith("id", MODEL_RUN_ID);
     expect(runEqMock).toHaveBeenCalledWith("model_id", MODEL_ID);

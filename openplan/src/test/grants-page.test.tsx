@@ -1,3 +1,4 @@
+import * as grantModeling from "@/lib/grants/modeling-evidence";
 import { render, screen } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -838,4 +839,24 @@ describe("GrantsPage", () => {
 
     expect(screen.getAllByText(/this is the lead step/)).toHaveLength(1);
   });
+it("keeps a prepared unassessed grant packet visible in triage and monitor advice", async () => {
+  const original = grantModeling.buildProjectGrantModelingEvidenceByProjectId;
+  const spy = vi.spyOn(grantModeling, "buildProjectGrantModelingEvidenceByProjectId").mockImplementation((...args) => {
+    const result = original(...args);
+    for (const evidence of result.values()) evidence.leadComparisonReport.packetFreshness = {
+      label: "Comparison evidence unassessed", tone: "warning", detail: "Live comparison evidence remains unassessed.",
+    };
+    return result;
+  });
+  try {
+    await renderPage({ tab: "gaps" });
+    expect(screen.getByText("Modeling evidence unassessed: 3")).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: "Review unassessed supporting evidence" })[0]).toHaveAttribute("href", "/reports/report-1#packet-release-review");
+    expect(screen.getAllByText(/Live comparison evidence remains unassessed/).length).toBeGreaterThan(0);
+    expect(fundingOpportunityDecisionControlsMock).toHaveBeenCalledWith(expect.objectContaining({
+      opportunityId: "opp-1", modelingSupport: expect.objectContaining({ recommendedDecisionState: "monitor", recommendedNextActionTitle: "Review unassessed supporting evidence" }),
+    }));
+  } finally { spy.mockRestore(); }
+});
+
 });
