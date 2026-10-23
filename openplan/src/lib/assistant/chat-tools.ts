@@ -61,6 +61,12 @@ import {
   getCachedGrantsGovResult,
   setCachedGrantsGovResult,
 } from "@/lib/grants/grants-gov-cache";
+import { randomUUID } from "node:crypto";
+import { canonicalizeActionPayload } from "@/lib/runtime/action-metadata";
+import { executableProjectSubmittalAction } from "./project-submittal-receipt";
+import { hashAssistantActionPayload } from "./action-approval-server";
+import { CHAT_PROJECTION, chatToolInputs, chatDraftSchema, type AssistantChatAcceptedGrantV1, type ChatToolName } from "./provider-chat-task";
+import { prepareChatProjection, plainChatScope, type ChatSession } from "./provider-chat-projection";
 
 /**
  * Read-only chat tools for the Planner Agent streaming endpoint.
@@ -368,6 +374,13 @@ function proposalSchemaBranchForKind(kind: string): ProposalSchemaBranch | null 
   return null;
 }
 
+/** Shared proposal validation, without a budget increment or a domain write. */
+export function parseAssistantProposalAction(kind: string, input: Record<string, unknown>) {
+  const branch = proposalSchemaBranchForKind(kind);
+  if (!branch) throw new Error("assistant_proposal_kind_unsupported");
+  return branch.safeParse({ ...normalizeProposalInput(input), kind });
+}
+
 /** The model-facing input schema: the branch minus kind and post-action chaining fields. */
 function proposalInputSchema(branch: ProposalSchemaBranch): ProposalSchemaBranch {
   const mask: Record<string, true> = {};
@@ -405,7 +418,7 @@ function buildAssistantProposalTools(params: BuildAssistantChatToolsParams): Rec
             return refusal("No workspace is attached to this chat surface, so no action can be proposed.");
           }
 
-          const parsed = branch.safeParse({ ...normalizeProposalInput(input), kind });
+          const parsed = parseAssistantProposalAction(kind, input);
           if (!parsed.success) {
             return {
               status: "invalid_payload",
@@ -460,6 +473,52 @@ function buildAssistantProposalTools(params: BuildAssistantChatToolsParams): Rec
   }
 
   return tools;
+}
+
+const chatReservations = new WeakMap<object, boolean>();
+export type ChatToolReservation = Readonly<{ handle: string; callId: string; stepId: string; toolCallId: string;
+  name: ChatToolName; input: unknown; usedCalls: number }>;
+
+/** The broker constructs this only from its authenticated durable claim RPC. */
+export function retainChatToolReservation(raw: unknown): ChatToolReservation {
+  const parsed = z.object({ handle: z.string().uuid(), callId: z.string().uuid(), stepId: z.string().uuid(), toolCallId: z.string(),
+    name: z.enum(["list_projects", "get_surface_context", "propose_create_project_record"]), input: z.unknown(), usedCalls: z.number().int().min(1).max(12),
+    released: z.literal(true), cached: z.literal(false) }).strict().parse(raw);
+  const reservation = Object.freeze(parsed); chatReservations.set(reservation, true); return reservation;
+}
+
+/** Slot 12 executes when hydrated usage is 12. Admission already counted this
+ * call. This core consumes the server handle once and never charges it again. */
+export async function invokeReservedChatTool(args: { session: ChatSession; userId: string; grant: AssistantChatAcceptedGrantV1; reservation: ChatToolReservation }) {
+  const { reservation: r, grant, session } = args;
+  const available = chatReservations.get(r) === true;
+  if (available) chatReservations.set(r, false);
+  if (!available || !grant.catalog.tools.includes(r.name)) throw new Error("chat_tool_reservation_invalid");
+  const input = chatToolInputs[r.name].parse(r.input);
+  const scope = plainChatScope(grant.scope);
+  if (r.name === "list_projects") {
+    const envelopes = await prepareChatProjection(session, args.userId, scope, grant.turnId, r.stepId, "index");
+    const content = JSON.parse(envelopes[0].canonicalProjectedContent) as { returnedCount: number; possiblyTruncated: boolean };
+    return { result: { envelope: envelopes[0], returnedCount: content.returnedCount, possiblyTruncated: content.possiblyTruncated }, envelopes };
+  }
+  if (r.name === "get_surface_context") {
+    const read = chatToolInputs.get_surface_context.parse(input);
+    const envelopes = await prepareChatProjection(session, args.userId, scope, grant.turnId, r.stepId, "project", read.id);
+    return { result: { envelope: envelopes[0] }, envelopes };
+  }
+  const draft = chatDraftSchema.parse(input);
+  if (!scope.selectedProjectIds.includes(draft.projectId)) throw new Error("chat_project_not_selected");
+  const reference = await session.from("projects").select(CHAT_PROJECTION.reference).eq("id", draft.projectId).eq("workspace_id", grant.owner.workspaceId).maybeSingle();
+  if (reference.error || !reference.data || reference.data.id !== draft.projectId || reference.data.workspace_id !== grant.owner.workspaceId) throw new Error("chat_proposal_reference_unavailable");
+  const parsed = parseAssistantProposalAction("create_project_record", { projectId: draft.projectId, title: draft.title, submittalType: draft.submittalType,
+    recordType: "submittal", status: "draft", ...(draft.notes ? { notes: draft.notes } : {}) });
+  if (!parsed.success) throw new Error("chat_proposal_invalid");
+  const concrete = assistantApprovalActionSchema.safeParse(parsed.data);
+  if (!concrete.success || concrete.data.kind !== "create_project_record") throw new Error("chat_proposal_invalid");
+  const action = executableProjectSubmittalAction(concrete.data);
+  return { result: { intentId: randomUUID(), executableHash: hashAssistantActionPayload(action), status: "proposed",
+    displayConsequence: "Create one draft project submittal after separate human approval. No approval or project record exists yet." },
+    envelopes: [], executableCanonical: canonicalizeActionPayload(action) };
 }
 
 /**

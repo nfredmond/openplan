@@ -1,8 +1,13 @@
+import { readFileSync } from "node:fs";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import postcss from "postcss";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { CartographicRail } from "@/components/cartographic/cartographic-rail";
 import { ThemeControls } from "@/components/theme-controls";
 import { ThemeProvider } from "@/components/theme-provider";
+
+vi.mock("next/navigation", () => ({ usePathname: () => "/dashboard" }));
 
 /**
  * Appearance is TWO independent choices, and the bug to prevent is coupling.
@@ -97,6 +102,40 @@ describe("ThemeControls", () => {
     const dark = await screen.findByTestId("theme-mode-dark");
     expect(dark).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByTestId("theme-mode-light")).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("keeps the default menu right-aligned and anchors the More drawer menu left", async () => {
+    const placementSelector = ".op-cart-navsheet__appearance .theme-appearance-menu";
+    const view = renderControls();
+    fireEvent.click(await screen.findByTestId("theme-palette-trigger"));
+    const defaultMenu = screen.getByRole("dialog", { name: "Appearance" });
+    expect(defaultMenu).toHaveClass("theme-appearance-menu", "right-0");
+    expect(defaultMenu.matches(placementSelector)).toBe(false);
+    view.unmount();
+
+    render(
+      <ThemeProvider defaultTheme="dark">
+        <CartographicRail groups={[{
+          title: "Workspace",
+          items: [{ href: "/dashboard", label: "Overview", icon: "overview" }],
+        }]} />
+      </ThemeProvider>
+    );
+    fireEvent.click(screen.getByRole("button", { name: "More" }));
+    expect(screen.getByRole("dialog", { name: "All sections" })).toBeInTheDocument();
+    fireEvent.click(await screen.findByTestId("theme-palette-trigger"));
+    const drawerMenu = screen.getByRole("dialog", { name: "Appearance" });
+    expect(drawerMenu.matches(placementSelector)).toBe(true);
+
+    // jsdom has no layout. Check the actual consumer and scoped declarations;
+    // viewport fit, the CSS cascade and native dialog behavior need a browser.
+    const alignment: Record<string, string> = {};
+    const sheet = postcss.parse(readFileSync("src/app/cartographic.css", "utf8"));
+    sheet.walkRules(placementSelector, (rule) => {
+      if (rule.parent?.type !== "root") return;
+      rule.walkDecls((decl) => { alignment[decl.prop] = decl.value; });
+    });
+    expect(alignment).toEqual({ left: "0", right: "auto" });
   });
 
   it("applies and persists the mode", async () => {
