@@ -1347,8 +1347,7 @@ export default async function ProjectDetailPage({
       </PageTabPanel>
 
       <PageTabPanel tabKey="delivery" active={activeTab === "delivery"}>
-          <ProjectRecordComposer projectId={project.id} workspaceId={project.workspace_id}
-            recordTypes={deliverableReadState === "readable" ? ["milestone", "submittal", "deliverable"] : ["milestone", "submittal"]} />
+          <ProjectRecordComposer projectId={project.id} workspaceId={project.workspace_id} recordTypes={deliverableReadState === "readable" ? ["milestone", "submittal", "deliverable"] : ["milestone", "submittal"]} />
 
           <ProjectDeliveryBoard
             project={project}
