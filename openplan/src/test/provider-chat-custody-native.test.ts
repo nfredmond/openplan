@@ -506,4 +506,35 @@ live("chat custody native fixtures", () => {
  }, grant, broker.intentId);
   expect(output).toContain("CHAT_DIRECT_RLS_ASSERTIONS_REACHED:60:4");
  });
+ it("refuses a repeat of an unapproved proposal and clones only after the original approval", async () => {
+  const grant = chatFixture(), draft = { projectId: id.project, title: "Synthetic draft", submittalType: "other", notes: "" };
+  const broker = await reservedDraft(grant, draft, "proposal_1");
+  const output = exercise((rpc, intent) => {
+  const stepId = randomUUID(), finalStep = randomUUID(), approvalId = randomUUID(), early = randomUUID(), later = randomUUID();
+  const actionCanonical = broker.executableCanonical, hash = broker.executableHash;
+  return `SELECT ${dispatch(1, stepId)}; SELECT ${terminal(rpc, stepId, [{ name: "propose_create_project_record", input: draft, id: "proposal_1" }])};
+   DO $$ DECLARE c jsonb; BEGIN
+    c:=((public.assistant_chat_session('claim_tool','${id.turn}',jsonb_build_object('callId',(${rpc("read")}->'calls'->0->>'id')))->>'canonicalResult')::json);
+    PERFORM ((public.assistant_chat_session('finish_tool','${id.turn}',jsonb_build_object('callId',c->>'callId','handle',c->>'handle','result',${literal(canonicalChat(broker.result))}::jsonb,
+     'envelopes','[]'::jsonb,'executableCanonical',${literal(actionCanonical)}))->>'canonicalResult')::json);
+   END $$;
+   SELECT ${dispatch(2, finalStep)}; SELECT ${terminal(rpc, finalStep, [])};
+   DO $$ DECLARE bound jsonb; g text; cloned jsonb; BEGIN
+    BEGIN PERFORM ${intent("repeat", { repeatRequestId: early, acknowledgePossibleDuplicate: true })}; RAISE EXCEPTION 'Unapproved proposal repeated';
+    EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+    g:=${rpc("read")}->>'digest';
+    bound:=jsonb_build_object('approvalRequestId','${id.request}','expectedGrantDigest',g,'expectedExecutableHash','${hash}','executableCanonical',${literal(actionCanonical)},'approvalId','${approvalId}',
+     'expiresAt',to_char((clock_timestamp()+interval '4 minutes') AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.MS"Z"'),'executionContext',jsonb_build_object('version',1,'action',${literal(actionCanonical)}::jsonb,'project',jsonb_build_object('id','${id.project}','workspaceId','${id.workspace}','name','Synthetic selected project')));
+    PERFORM ((public.assistant_chat_intent('issue','${broker.intentId}',bound)->>'canonicalResult')::json);
+    cloned:=${intent("repeat", { repeatRequestId: later, acknowledgePossibleDuplicate: true })};
+    IF cloned->>'intentId' IS NULL OR ${intent("repeat", { repeatRequestId: later, acknowledgePossibleDuplicate: true })}->>'intentId' IS DISTINCT FROM cloned->>'intentId' THEN RAISE EXCEPTION 'Approved repeat missing or replayed'; END IF;
+   END $$;
+   RESET ROLE; DO $$ BEGIN
+    IF (SELECT count(*) FROM public.assistant_chat_proposal_intents WHERE repeat_request_id='${early}')<>0 THEN RAISE EXCEPTION 'Refused repeat left a card'; END IF;
+    IF (SELECT count(*) FROM public.assistant_chat_proposal_intents WHERE repeat_of_intent_id='${broker.intentId}' AND repeat_request_id='${later}' AND original_approval_id IS NULL)<>1 THEN RAISE EXCEPTION 'Approved repeat not retained once'; END IF;
+   END $$;
+   SELECT 'CHAT_REPEAT_ASSERTIONS_REACHED';`;
+ }, grant, broker.intentId);
+  expect(output).toContain("CHAT_REPEAT_ASSERTIONS_REACHED");
+ });
 });
