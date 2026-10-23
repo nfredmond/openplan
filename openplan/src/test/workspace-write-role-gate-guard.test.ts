@@ -146,6 +146,7 @@ const UNGATED_BY_DESIGN: Record<string, string> = {
   "assistant/chat/route.ts": "reads context and answers; performs no workspace write",
   "assistant/providers/connections/route.ts": "personal scoped connection state only; current project membership checked in SQL; no business effect",
   "assistant/providers/turns/route.ts": "personal retained answers and draft proposals only; current project membership checked in SQL; effects require the existing separately authorized action route",
+  "assistant/providers/chat/route.ts": "cookie-session disclosure consent and personal chat custody only; current source access is rechecked before release; proposals require separate human approval and the original role-gated business route",
   "assistant/providers/native/route.ts": "project-scoped bearer capability with current membership checks; retains private answers, never executes business actions",
   "map-packages/connector/route.ts": "project-scoped connector bearer, no session; every SQL function re-checks that the requester still holds owner, admin or member, and the only writes are the package's own state and files",
 
@@ -184,6 +185,18 @@ function mutatingWorkspaceRoutes(): RouteFile[] {
 }
 
 describe("every mutating workspace route authorizes by ROLE, not by row visibility", () => {
+  it("limits the saved-chat exception to its four personal disclosure and custody commands", () => {
+    const route = mutatingWorkspaceRoutes().find(candidate => candidate.id === "assistant/providers/chat/route.ts");
+    expect(route).toBeDefined();
+    const executable = route!.source.replace(/\/\/[^\n]*|\/\*[\s\S]*?\*\//g, "");
+    const command = executable.match(/const command = z\.discriminatedUnion\("operation", \[([\s\S]*?)\n\]\);/);
+    expect(command).not.toBeNull();
+    expect([...command![1].matchAll(/operation:\s*z\.literal\("([^"]+)"\)/g)].map(match => match[1]))
+      .toEqual(["prepare", "accept", "drive", "cancel"]);
+    expect(Object.keys(UNGATED_BY_DESIGN).filter(id => id.startsWith("assistant/providers/chat/")))
+      .toEqual(["assistant/providers/chat/route.ts"]);
+  });
+
   it("calls the GTFS human gate in write mode and returns refusal before command dispatch", () => {
     const routes = mutatingWorkspaceRoutes();
     for (const [id, command] of [

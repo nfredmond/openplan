@@ -21,18 +21,179 @@ stable enough to promise smooth upgrades indefinitely.
 ## Unreleased
 
 **Exact project estimates:** decimal entry, reviewed imports, report output and
-exports preserve exact hundredths. Missing price years remain unknown. Project estimates remain separate from management budgets,
-funding awards and benefit-cost calculations. Apply
-`20261019080000_project_estimate_exact_cents.sql` before deploying this correction.
-It validates future amounts as positive values of at most 1,000,000,000,000,000
-with at most two decimal places. It does not rewrite retained estimates or
-recover precision lost in older source values.
+exports preserve exact hundredths. Missing price years remain unknown. Project
+estimates remain separate from management budgets, funding awards and
+benefit-cost calculations. Apply
+`20261023190000_project_estimate_exact_cents.sql` before deploying this
+correction. It validates future amounts as positive values of at most
+1,000,000,000,000,000 with at most two decimal places. It does not rewrite
+retained estimates or recover precision lost in older source values. The
+migration first carried an earlier October 19 version; it moved after the v0.72.0
+release mark because released installations would skip an earlier version.
 
-**Source-page plan proposals:** Document review can stage quoted records from a
-retained page without an AI account. Pending proposals have their own pages,
-separate from reading history. Manual chapter copies retain source authorship;
-review and saving remain explicit. Apply
-`20261019000002_rtp_manual_source_page_proposals.sql` before deploying this capability.
+## 0.72.0 (2026-10-22)
+
+**Development candidate, source and metadata preparation.** Publication remains
+pending exact-head checks. This entry packages the saved API workflow on joined
+source `2ab80e0db6dcdc4928d25d6857db0d718c17b26a`; the last shipped release
+remains v0.71.0 until the candidate passes its remaining release gates.
+
+**Saved API drafts, human approval and original receipts.** A planner explicitly
+selects a saved API connection and model, previews shared context and selected
+projects, and accepts the canonical disclosure before a turn starts. Retained
+turns expose progress and paginated history. A proposal opens its full executable
+payload for separate human approval. Cancel and renewal retain the same intent
+and payload hash. Approval uses the original action registry; Delivery shows the
+original draft, and reopening recovers its original receipt without another
+provider call or business write. Drafts remain unsubmitted.
+
+**Upgrade before dependent deployment.** This tree contains exactly 430 source
+migration files. The single addition since v0.71.0 is
+`20261021215752_assistant_chat_turns.sql`. Compare installed history and apply
+that pending additive migration before deploying dependent code. Never replay
+installed history. A separately retained Award migration record on the managed
+installation is not another source migration file. The chat migration seeds no
+admission, and profile admission remains CLOSED by default. The exact temporary
+admission used for the local synthetic journey is disabled.
+
+**Bounded evidence.** The retained native record at `de1dc322` passes 35 catalogue
+criteria, 24 native cases and nine signed local HTTP cases, with zero skips in
+the two complete test files. Each filtered census/registry run separately passes
+one case with 21 selector skips. A harmless installed comment survives; three
+intended installed faults fail, and exact function state restores. Earlier
+control-setup failures retain zero credit and remain unchanged.
+
+The joined source passes 577 ordinary tests in 31 files with zero skips. One
+0.71.0 production build, `5EgS0og6ORwp178xwJWAF`, passes webpack and configured
+TypeScript at `2ab80e0d`. Its synthetic SDK-wire journey at 1440px and 390px
+covers consent, cancellation, renewal, one approval per width, two original
+drafts total, original receipts, Delivery and subject recovery through GETs.
+Desktop reconnect reads 131 retained events in pages of 100 and 31. This is
+local synthetic evidence, with no real provider, paid call or installed backend.
+
+**Observed limits and pending gates.** The journey records 208 application API
+responses with no HTTP 400-plus responses, but two reconcile responses have 200
+headers and unread bodies after the 5000ms observation deadline, followed by
+POST aborts. Their completion and abort causes remain unproved. The record
+retains 159 aborted RSC GETs, two aborted POSTs, ten report-only CSP information
+messages, two advisories and zero page errors. All 4,187 original build entries
+and static bytes remain exact; 47 normal server/route-cache entries are added,
+so whole-tree equality is false. This is not a clean-network claim.
+
+The identified 0.72.0 build `btMlKhEDdbURkhJpreR7S` at `b2964165` passes
+webpack and configured TypeScript. A final read-only view at 1440px and 390px
+reaches the saved connection, readable light/dark Planner Agent entry and both
+original Delivery drafts. Admission stays disabled and retained chat bodies
+remain withheld. All original artifact entries and static bytes remain exact;
+47 runtime cache entries are added. That pass retains 49 aborted RSC GETs and
+report-only CSP information, with zero captured page errors or API errors.
+It does not repeat or extend the synthetic approval outcome above.
+
+At this recorded checkpoint, exact-head integration, current-main and hosted
+acceptance remain pending. Intent-read audit pairing, audit-failure
+atomicity, revocation races, deliberate after-effect reply loss and independent
+restore remain unproved. All 19 contexts, general provider and installed-backend
+acceptance, full A0, complete M2c and separate nationwide AequilibraE and
+ActivitySim validation remain open. The existing Reports jurisdiction-readiness
+P2 remains PARTIAL. No capability grade or historical failure changes.
+
+**Security dependency update.** This release also carries #368, merged to main
+before it:
+
+- Next.js moves from 16.3.8 to 16.4.2, the first release outside every range in
+  advisories published on October 22, 2026:
+  - GHSA-2464-fhr4-w9xw: remote code execution through image optimization on
+    glibc Linux, by way of `sharp`.
+  - GHSA-673q-mjm6-r5xr: remote code execution in `use cache` functions that
+    return typed arrays.
+  - GHSA-p3m5-59mp-jv5r: CPU exhaustion through crafted Server Action requests.
+
+  OpenPlan defines no `use cache` functions. The lockfile already resolved
+  `sharp` to 0.35.5, the fixed version. The Server Action finding applies.
+  **Self-hosted installations should upgrade.**
+- The `ip-address` override moves from 10.7.2 to 10.7.4 for
+  GHSA-rxp7-6hxx-x8q5. That advisory is a slow parse of long IPv6 zone
+  identifiers, reached through `express-rate-limit` in the shadcn tooling
+  dependency.
+- `eslint-config-next` stays at 16.3.8. Its 16.4 line enables stricter React
+  hook lint rules, which report 219 errors in existing code. That is a separate
+  change.
+
+## 0.71.0 (2026-10-22)
+
+**Signal palette and independent corners.** Appearance adds Signal beside the
+five existing palettes. Rounded and Square remain separate from palette and
+light/dark mode. Defaults remain Cartographic, Rounded and device mode.
+Preferences persist across reloads and propagate between tabs. Square applies
+to the shared application surfaces while selected status symbols stay round.
+The Planner Agent launcher uses matching theme text, icon and background colors.
+
+**No new migrations since v0.70.0.** The tree retains all 429 migration files,
+with the same high-water version `20261019000002`. An installation already at
+v0.70.0 needs no schema addition for this increment. Older installations still
+compare their applied history and follow the earlier upgrade instructions.
+The dependency graph remains unchanged from the joined appearance candidate.
+
+**Verification and limits.** A fresh identified 0.71.0 candidate build passes
+webpack and configured TypeScript. Ordinary front-door and cookie sign-in reach
+Appearance at 1440x900 and 390x844. Keyboard selection, focus return, independent
+palette/mode/corner choices, settled Square and Rounded radii, and the mobile
+More menu work. Inspected Signal launcher text/icon contrast is 17.94:1 at rest
+and hover. Forty distinct served static responses match build bytes. The run
+retains 44 aborted requests and one report-only CSP warning; observed console,
+page and body-reader errors are zero. No clean-system claim follows.
+
+Earlier identified R7 observations separately cover reload, cross-tab propagation
+and device mode, with their original controller failure and successful remaining
+mobile continuation preserved. The current bounded journey does not replay that
+whole matrix. The existing appearance record identifies both builds and their
+limits. A fresh exact-lock npm installation and the maintained dependency audit pass,
+with zero reported advisories at the recorded checkpoint. Final-main and hosted
+delivery retain their separate release gates.
+
+First paint, browser storage-disabled use, mobile keyboard, map/chart geometry,
+universal control coverage and other-palette dark contrast remain unassessed.
+The known Reports jurisdiction-readiness contradiction from v0.70 remains open
+in this appearance increment. Complete M2c, all other roadmap requirements and
+separate nationwide AequilibraE and ActivitySim validation remain open.
+
+## 0.70.0 (2026-10-21)
+
+**Manual source-page plan proposals.** Document review stages quoted records
+from a retained page without an AI account. Pending proposals have separate
+pagination from reading history. Manual chapter copies retain source authorship;
+review and saving remain explicit.
+
+**Exact crash-year selection and map focus.** High-injury network reads apply
+each requested year, intersected with any range bounds, and refuse invalid or
+disjoint inputs. Sparse-year disclosures list the selected years. Selecting a
+ranked road reveals and focuses the existing map. The bounded desktop and 390px
+map-focus checks retain their identified builds and earlier failed attempts.
+Sparse-year browser selection remains unassessed.
+
+**Dependency corrections.** The installed lockfile updates follow-redirects to
+1.16.1, Hono to 4.13.11 and Vite to 7.3.7. Vitest and its matching packages use
+4.1.12; Chai uses 6.3.0 and tinyrainbow uses 3.2.0. The maintained dependency
+audit reports zero vulnerabilities at the final local QA checkpoint.
+
+**Upgrade before dependent code.** This tree has 429 migration files. The single
+addition since v0.69.0 is
+`20261019000002_rtp_manual_source_page_proposals.sql`. Compare installed history
+and apply the pending additive migration before deploying this capability. Do
+not replay an already applied version or rewrite migration history. Keep the
+previous compatible build and follow the self-hosting and recovery guidance.
+
+**Verification and limits.** The release record identifies the tested source,
+ordinary QA/build, shuffled order, applicable isolated RLS and worker checks,
+affected local views and representative upgrade evidence. The GitHub release
+records the final commit and publication. Hosted acceptance requires its own
+identified deployment and schema record. Local synthetic source-page workflows
+do not prove complete predecessor coverage, scanned OCR, source authority,
+adoption or legal applicability. Requested crash years do not establish
+complete observations, zero crashes in unavailable years, a valid annual
+denominator, treatment effects or scientific validity. Full RTP, Safety,
+nationwide AequilibraE and ActivitySim validation, and all remaining v1
+requirements stay open.
 
 ## 0.69.0 (2026-10-19)
 

@@ -39,6 +39,8 @@ export type HighInjuryNetworkScope = {
   ingestId: string;
   bbox: { minLon: number; minLat: number; maxLon: number; maxLat: number };
   severities: readonly CrashSeverity[];
+  /** Exact requested-year membership, when supplied; not observation coverage. */
+  years?: readonly number[];
   yearFrom?: number;
   yearTo?: number;
 };
@@ -58,6 +60,18 @@ function readRow(row: unknown): HighInjuryNetworkCrash | null {
   return { id: record.id, longitude, latitude, severity: record.severity };
 }
 
+/** Validate the requested set and intersect it with optional map bounds. */
+function selectedYears(years: readonly number[], yearFrom?: number, yearTo?: number): number[] | null {
+  const validYear = (year: number) => Number.isInteger(year) && year >= 1900 && year <= 2100;
+  if (!Array.isArray(years) || years.length === 0 || !years.every(validYear)) return null;
+  if (yearFrom !== undefined && !validYear(yearFrom)) return null;
+  if (yearTo !== undefined && !validYear(yearTo)) return null;
+  const selected = [...new Set(years)].filter((year) =>
+    (yearFrom === undefined || year >= yearFrom) && (yearTo === undefined || year <= yearTo)
+  ).sort((a, b) => a - b);
+  return selected.length > 0 ? selected : null;
+}
+
 /**
  * Read every severe crash in scope, page by page under the row cap, and check
  * the pages add up to the database's exact count. A short read is a failure,
@@ -68,6 +82,10 @@ export async function loadHighInjuryNetworkCrashes(
   scope: HighInjuryNetworkScope,
   maxCrashes: number = HIGH_INJURY_NETWORK_MAX_CRASHES,
 ): Promise<HighInjuryNetworkCrashRead> {
+  // Omitted years preserve the low-level loader's existing range-only callers.
+  // An explicit missing/invalid set must never become an unfiltered read.
+  const years = scope.years === undefined ? undefined : selectedYears(scope.years, scope.yearFrom, scope.yearTo);
+  if (years === null) return { status: "failed" };
   const page = (from: number) => {
     let query = supabase
       .from("safety_crashes")
@@ -79,6 +97,7 @@ export async function loadHighInjuryNetworkCrashes(
       .gte("latitude", scope.bbox.minLat)
       .lte("latitude", scope.bbox.maxLat)
       .in("severity", [...scope.severities]);
+    if (years !== undefined) query = query.in("collision_year", years);
     if (scope.yearFrom !== undefined) query = query.gte("collision_year", scope.yearFrom);
     if (scope.yearTo !== undefined) query = query.lte("collision_year", scope.yearTo);
     return query.order("id", { ascending: true }).range(from, from + PAGE_SIZE - 1);
@@ -129,6 +148,7 @@ export async function buildHighInjuryNetworkForIngest(
     ingestId: string;
     severityCompleteness: string | null | undefined;
     bbox: HighInjuryNetworkScope["bbox"];
+    /** Requested years to filter exactly, not complete observation duration. */
     years: readonly number[];
     yearFrom?: number;
     yearTo?: number;
@@ -138,12 +158,15 @@ export async function buildHighInjuryNetworkForIngest(
   const basis = highInjuryNetworkBasis(input.severityCompleteness);
   if (!basis) return { status: "unavailable", reason: "severity_coverage_unknown", basis: null };
   if (input.roads === null) return { status: "unavailable", reason: "road_read_failed", basis };
+  const years = selectedYears(input.years, input.yearFrom, input.yearTo);
+  if (years === null) return { status: "unavailable", reason: "year_scope_unavailable", basis };
 
   const read = await loadHighInjuryNetworkCrashes(supabase, {
     workspaceId: input.workspaceId,
     ingestId: input.ingestId,
     bbox: input.bbox,
     severities: highInjuryNetworkSeverities(basis),
+    years,
     yearFrom: input.yearFrom,
     yearTo: input.yearTo,
   });
@@ -155,6 +178,6 @@ export async function buildHighInjuryNetworkForIngest(
     crashesConsidered: read.count,
     basis,
     roads: input.roads,
-    years: input.years,
+    years,
   });
 }

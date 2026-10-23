@@ -41,6 +41,12 @@ import {
   SAFETY_UNCLASSIFIED_SEVERITY_CAVEAT,
 } from "@/lib/safety/caveats";
 import type { SafetyIngestSummary } from "@/lib/safety/client-types";
+import type { FitInstruction } from "@/lib/cartographic/geometry-bbox";
+import {
+  HIGH_INJURY_NETWORK_PARAMETERS,
+  type HighInjuryNetwork,
+  type HighInjuryNetworkSegment,
+} from "@/lib/safety/high-injury-network";
 
 // The map is Mapbox-backed and jsdom runs no WebGL; the crash map's own
 // behaviour is under test in `safety-map-first-crash-map.test.tsx`.
@@ -53,11 +59,13 @@ vi.mock("@/components/safety/safety-crash-map", () => ({
   SafetyCrashMap: ({
     styleUrl,
     onSelect,
+    focus,
   }: {
     styleUrl: string;
     onSelect?: (id: string | null) => void;
+    focus?: FitInstruction | null;
   }) => (
-    <div data-testid="safety-crash-map" data-style-url={styleUrl}>
+    <div data-testid="safety-crash-map" data-style-url={styleUrl} data-focus={JSON.stringify(focus ?? null)}>
       {/* Stands in for clicking a dot. The real map calls exactly this. */}
       <button onClick={() => onSelect?.("crash-7")}>click-a-collision</button>
     </div>
@@ -211,6 +219,107 @@ describe("the map-first shell", () => {
       expect(key.textContent).toContain("Property damage only");
       expect(key.textContent).toContain("Not classified");
     }
+  });
+});
+
+describe("a ranked road's map destination", () => {
+  async function renderRoad(geometry: HighInjuryNetworkSegment["geometry"] = {
+    type: "LineString",
+    coordinates: [[-83.1, 39.9], [-83, 40]],
+  }) {
+    const network: HighInjuryNetwork = {
+      status: "computed",
+      basis: "fatal_only",
+      method: "road_segments",
+      years: [2022, 2023],
+      segments: [{
+        id: "road:example:0",
+        rank: 1,
+        tied: false,
+        label: "Example Road",
+        geometry,
+        lengthMiles: 0.5,
+        crashCount: 1,
+        fatalCrashCount: 1,
+        seriousInjuryCrashCount: null,
+        crashesPerMile: 2,
+        roadSource: "Retained test roads",
+      }],
+      crashesConsidered: 1,
+      crashesPlaced: 1,
+      segmentsWithCrashes: 1,
+      roadMilesReviewed: 1,
+      listedMiles: 0.5,
+      listedCrashes: 1,
+      roadSources: ["Retained test roads"],
+      parameters: HIGH_INJURY_NETWORK_PARAMETERS,
+    };
+    vi.mocked(global.fetch).mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        type: "FeatureCollection",
+        features: [],
+        returnedCount: 0,
+        matchedCount: 1,
+        undrawableCount: 0,
+        highInjuryNetwork: network,
+      }),
+    } as Response);
+    renderWorkspace({ latestIngest: ingest(), studyArea: {
+      corridorText: JSON.stringify({
+        type: "Polygon",
+        coordinates: [[[-83.2, 39.8], [-82.8, 39.8], [-82.8, 40.1], [-83.2, 40.1], [-83.2, 39.8]]],
+      }),
+      place: null,
+      label: "Saved road study area",
+      origin: "project",
+      originLabel: "Saved project",
+    } });
+    const road = await screen.findByRole("button", { name: "Show Example Road on map" });
+    const stage = screen.getByRole("region", { name: "Safety map" });
+    // jsdom has no scrollIntoView or physical layout. Observe the request on
+    // its actual target, without replacing the panel or workspace handler.
+    const scroll = vi.fn();
+    Object.defineProperty(stage, "scrollIntoView", { configurable: true, value: scroll });
+    const focus = vi.spyOn(stage, "focus");
+    return { road, stage, scroll, focus };
+  }
+
+  it("keeps the camera request and reveals and focuses the map on each road activation", async () => {
+    const { road, stage, scroll, focus } = await renderRoad();
+    const map = screen.getByTestId("safety-crash-map");
+    expect(map).toHaveAttribute("data-focus", "null");
+    expect(stage).toHaveAttribute("tabindex", "-1");
+    expect(scroll).not.toHaveBeenCalled();
+    expect(focus).not.toHaveBeenCalled();
+
+    for (const activation of [1, 2]) {
+      road.focus();
+      fireEvent.click(road);
+      // Independent expected instruction at the real workspace-to-map seam.
+      // The map double does not establish camera movement or visible pixels.
+      expect(map).toHaveAttribute("data-focus", JSON.stringify({
+        kind: "bbox", bbox: [[-83.1, 39.9], [-83, 40]],
+      }));
+      expect(scroll).toHaveBeenCalledTimes(activation);
+      expect(scroll).toHaveBeenLastCalledWith({ block: "nearest", inline: "nearest" });
+      expect(focus).toHaveBeenCalledTimes(activation);
+      expect(focus).toHaveBeenLastCalledWith({ preventScroll: true });
+      expect(stage).toHaveFocus();
+      expect(stage).toContainElement(map);
+      expect(screen.getByTestId("safety-map-first-shell")).toContainElement(stage);
+      expect(screen.getByRole("button", { name: /map background/i })).toBeInTheDocument();
+    }
+  });
+
+  it("leaves viewport, focus and camera alone when the road geometry cannot be framed", async () => {
+    const { road, scroll, focus } = await renderRoad({ type: "LineString", coordinates: [] });
+    road.focus();
+    fireEvent.click(road);
+    expect(screen.getByTestId("safety-crash-map")).toHaveAttribute("data-focus", "null");
+    expect(scroll).not.toHaveBeenCalled();
+    expect(focus).not.toHaveBeenCalled();
+    expect(road).toHaveFocus();
   });
 });
 

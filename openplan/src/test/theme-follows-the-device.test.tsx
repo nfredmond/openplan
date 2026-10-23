@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 
 import { ThemeControls } from "@/components/theme-controls";
 import { ThemeProvider } from "@/components/theme-provider";
+import { APPEARANCE_SCRIPT } from "@/lib/theme/appearance";
 
 /*
   THE DEFAULT FOLLOWS THE DEVICE (decision D3, October 1, 2026; built October
@@ -85,7 +86,8 @@ describe("theme follows the device", () => {
     const layout = readFileSync("src/app/layout.tsx", "utf8");
     const htmlClass = layout.match(/<html[\s\S]*?className=\{`([^`]*)`\}/)?.[1] ?? "";
     expect(htmlClass).not.toMatch(/\bdark\b/);
-    expect(layout).toContain('matchMedia("(prefers-color-scheme: dark)")');
+    expect(layout).toContain("__html: APPEARANCE_SCRIPT");
+    expect(APPEARANCE_SCRIPT).toContain('matchMedia("(prefers-color-scheme: dark)")');
     expect(layout).toContain('<ThemeProvider defaultTheme="system">');
   });
 });
