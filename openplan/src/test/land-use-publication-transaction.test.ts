@@ -166,7 +166,7 @@ describe("publication SQL intent, without database execution", () => {
 
 describe("additive publication decision boundary SQL source", () => {
   const sql = readFileSync(process.env.OPENPLAN_PUBLICATION_BOUNDARY_SQL_FIXTURE ??
-    join(process.cwd(), "supabase/migrations/20261020235917_land_use_publication_decision_boundary.sql"), "utf8");
+    join(process.cwd(), "supabase/migrations/20261023190300_land_use_publication_decision_boundary.sql"), "utf8");
   const [publisher, reader] = sql.split("CREATE FUNCTION public.land_use_plan_publication_source_v1");
   it("excludes every concurrent decision write before choosing a native singleton", () => {
     const lock = publisher.indexOf("LOCK TABLE public.land_use_plan_decisions IN SHARE MODE NOWAIT;");
@@ -229,7 +229,7 @@ describe("publication peer migration probe wrapper source", () => {
   });
   it("retains the rollback-only candidate migration in the single-session fixture", () => {
     expect(single).toContain('const publicationMigration = process.env.OPENPLAN_PUBLICATION_BOUNDARY_MIGRATION_PROBE === "1"');
-    expect(single).toContain('readFileSync("supabase/migrations/20261020235917_land_use_publication_decision_boundary.sql", "utf8")');
+    expect(single).toContain('readFileSync("supabase/migrations/20261023190300_land_use_publication_decision_boundary.sql", "utf8")');
     expect(single).toContain("${publicationMigration}");
     expect(single).toContain("ROLLBACK;");
   });

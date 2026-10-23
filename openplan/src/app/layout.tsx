@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { ThemeProvider } from "@/components/theme-provider";
-import { DEFAULT_PALETTE, PALETTES } from "@/lib/theme/palettes";
+import { DEFAULT_PALETTE } from "@/lib/theme/palettes";
 import { OPENPLAN_OG_IMAGE_PATH, OPENPLAN_SITE_NAME, resolveSiteOrigin } from "@/lib/public-page-metadata";
+import { APPEARANCE_SCRIPT, DEFAULT_CORNERS } from "@/lib/theme/appearance";
 import "./globals.css";
 
 // Body and interface text (decision D7, October 1, 2026). Space Grotesk stays
@@ -22,13 +23,6 @@ const spaceGrotesk = localFont({
   display: "swap",
   variable: "--font-display",
 });
-
-/**
- * The valid palette ids, inlined into the pre-paint script. Derived from the
- * registry rather than restated, so a palette added to `PALETTES` cannot be
- * silently rejected by the script that runs before React exists.
- */
-const PALETTE_IDS = PALETTES.map((palette) => palette.id);
 
 const jetBrainsMono = localFont({
   src: "./fonts/jetbrainsmono/JetBrainsMono[wght].ttf",
@@ -99,6 +93,7 @@ export default function RootLayout({
       lang="en"
       className={`${publicSans.variable} ${spaceGrotesk.variable} ${jetBrainsMono.variable}`}
       data-palette={DEFAULT_PALETTE}
+      data-corners={DEFAULT_CORNERS}
       data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
@@ -121,9 +116,7 @@ export default function RootLayout({
         */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var d=document.documentElement;var t=localStorage.getItem("theme");if(t!=="light"&&t!=="dark"){t=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}d.classList.remove("light","dark");d.classList.add(t);d.style.colorScheme=t;var p=localStorage.getItem("theme-palette");if(p&&${JSON.stringify(
-              PALETTE_IDS
-            )}.indexOf(p)>-1){d.setAttribute("data-palette",p);}}catch(e){}})();`,
+            __html: APPEARANCE_SCRIPT,
           }}
         />
       </head>

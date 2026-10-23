@@ -32,7 +32,7 @@ it.skipIf(!LIVE_RLS).each(["plan-first", "release-first"] as const)("preserves r
   const container = resolveLocalDbContainer();
   requireContractVerificationStack(container);
   const migration = process.env.OPENPLAN_REVIEW_RELEASE_CASCADE_MIGRATION_PROBE === "1"
-    ? readFileSync("supabase/migrations/20261021182747_land_use_review_release_cascade_guards.sql", "utf8") : "";
+    ? readFileSync("supabase/migrations/20261023190400_land_use_review_release_cascade_guards.sql", "utf8") : "";
   const fixture = readFileSync("src/test/fixtures/land-use-plans/review-release-cascade.sql", "utf8");
   const result = spawnSync("docker", ["exec", "-i", container, "psql", "-U", "postgres", "-d", "postgres", "-qAt", "-v", "ON_ERROR_STOP=1"], {
     input: `BEGIN; SET LOCAL statement_timeout='15s'; SET LOCAL lock_timeout='3s';

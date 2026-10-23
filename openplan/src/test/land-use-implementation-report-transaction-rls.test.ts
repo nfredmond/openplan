@@ -12,7 +12,7 @@ it.skipIf(!LIVE_RLS)("creates implementation and adopted publication packets wit
     ? readFileSync("supabase/migrations/20261016000012_land_use_plan_implementation_report_commands.sql", "utf8") : "";
   const fixture = readFileSync("src/test/fixtures/land-use-plans/implementation-report.sql", "utf8");
   const publicationMigration = process.env.OPENPLAN_PUBLICATION_BOUNDARY_MIGRATION_PROBE === "1"
-    ? readFileSync("supabase/migrations/20261020235917_land_use_publication_decision_boundary.sql", "utf8") : "";
+    ? readFileSync("supabase/migrations/20261023190300_land_use_publication_decision_boundary.sql", "utf8") : "";
   const result = spawnSync("docker", ["exec", "-i", container, "psql", "-U", "postgres", "-d", "postgres", "-qAt", "-v", "ON_ERROR_STOP=1"], {
     input: `BEGIN; SET LOCAL statement_timeout='15s'; ${migration}\n${publicationMigration}\n${fixture}\nROLLBACK;`, encoding: "utf8", timeout: 25_000,
   });

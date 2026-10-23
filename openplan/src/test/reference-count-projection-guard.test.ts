@@ -6,6 +6,7 @@ import { collectSupabaseSelectSites, type SupabaseSelectSite } from "./supabase-
 import { loadSchemaInventory } from "./migrations/schema-inventory";
 import { MODEL_LINK_TARGETS } from "@/lib/models/link-targets";
 import { PROJECT_JURISDICTION_COLUMNS } from "@/lib/projects/project-jurisdiction";
+import { CHAT_PROJECTION } from "@/lib/assistant/provider-chat-task";
 
 /**
  * REGRESSION GUARD — a query may not name a column the table might not have.
@@ -128,6 +129,45 @@ function checkableSites(): SupabaseSelectSite[] {
 }
 
 describe("reference count projections", () => {
+  it("checks every saved-chat frozen projection at its actual table and expression", () => {
+    const sites = selectSites.filter(site => site.file === "src/lib/assistant/provider-chat-projection.ts");
+    expect(sites.map(({ table, projectionExpression, projection }) => ({ table, projectionExpression, projection }))).toEqual([
+      { table: "workspace_members", projectionExpression: "CHAT_PROJECTION.membership", projection: CHAT_PROJECTION.membership },
+      { table: "workspaces", projectionExpression: "CHAT_PROJECTION.workspace", projection: CHAT_PROJECTION.workspace },
+      { table: "projects", projectionExpression: "CHAT_PROJECTION.project", projection: CHAT_PROJECTION.project },
+      { table: "projects", projectionExpression: "CHAT_PROJECTION.index", projection: CHAT_PROJECTION.index },
+    ]);
+    for (const site of sites) {
+      expect(site.projection).not.toBeNull();
+      expect(projectionColumns(site.projection!).filter(column => !schema.hasColumn(site.table!, column))).toEqual([]);
+    }
+  });
+
+  it("resolves imported frozen literal properties but keeps mutable and computed properties unknown", () => {
+    const directory = mkdtempSync(path.join(tmpdir(), "openplan-frozen-projection-"));
+    const file = path.join(directory, "reader.ts");
+    try {
+      writeFileSync(path.join(directory, "columns.ts"), `
+        export const FROZEN = Object.freeze({ project: "id, workspace_id", computed: makeColumns() });
+        export const MUTABLE = { project: "id" };
+        export const SPREAD = Object.freeze({ project: "id", ...other });
+        export const GETTER = Object.freeze({ get project() { return "id"; } });
+      `);
+      writeFileSync(file, `
+        import { FROZEN, MUTABLE, SPREAD, GETTER } from "./columns";
+        db.from("projects").select(FROZEN.project);
+        db.from("projects").select(FROZEN.computed);
+        db.from("projects").select(FROZEN.missing);
+        db.from("projects").select(MUTABLE.project);
+        db.from("projects").select(SPREAD.project);
+        db.from("projects").select(GETTER.project);
+      `);
+      expect(collectSupabaseSelectSites({ files: [file] }).map(site => site.projection)).toEqual(["id, workspace_id", null, null, null, null, null]);
+      writeFileSync(file, `import { FROZEN } from "./columns"; function read(FROZEN) { db.from("projects").select(FROZEN.project); }`);
+      expect(collectSupabaseSelectSites({ files: [file] }).map(site => site.projection)).toEqual([null]);
+    } finally { rmSync(directory, { recursive: true, force: true }); }
+  });
+
   it("resolves the Safety seed's complete acquisition projection against the schema", () => {
     const sites = selectSites.filter((site) =>
       site.file === "src/app/api/funding-opportunities/[opportunityId]/application/safety-seed/route.ts" &&

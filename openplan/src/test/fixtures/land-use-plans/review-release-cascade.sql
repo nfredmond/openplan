@@ -1,27 +1,24 @@
 -- Run inside the wrapper's rollback transaction on an isolated verification stack.
--- Recreate equivalent FKs in both orders, without changing their definitions.
+-- A workspace delete fires its referencing cascade triggers in trigger-name order,
+-- and about 200 foreign keys reference workspaces. Recreating a few constraints
+-- does not fix that order: names embed OIDs, which differ between a fresh
+-- migration chain and a restored archive. Rename only the chosen cascade trigger
+-- so it sorts before every other one, then prove it fires first.
 DO $order$
+DECLARE chosen text; trigger_name text; first_name text;
 BEGIN
-  IF current_setting('openplan.test_review_release_cascade_order') = 'release-first' THEN
-    ALTER TABLE public.land_use_plans
-      DROP CONSTRAINT land_use_plans_workspace_id_fkey,
-      ADD CONSTRAINT land_use_plans_workspace_id_fkey FOREIGN KEY (workspace_id)
-        REFERENCES public.workspaces(id) ON DELETE CASCADE;
-    ALTER TABLE public.land_use_plan_versions
-      DROP CONSTRAINT land_use_plan_versions_workspace_id_fkey,
-      ADD CONSTRAINT land_use_plan_versions_workspace_id_fkey FOREIGN KEY (workspace_id)
-        REFERENCES public.workspaces(id) ON DELETE CASCADE;
-    ALTER TABLE public.land_use_plan_versions
-      DROP CONSTRAINT land_use_plan_versions_plan_id_workspace_id_fkey,
-      ADD CONSTRAINT land_use_plan_versions_plan_id_workspace_id_fkey FOREIGN KEY (plan_id, workspace_id)
-        REFERENCES public.land_use_plans(id, workspace_id) ON DELETE CASCADE;
-  ELSIF current_setting('openplan.test_review_release_cascade_order') = 'plan-first' THEN
-    ALTER TABLE public.land_use_plan_review_releases
-      DROP CONSTRAINT land_use_plan_review_releases_workspace_id_fkey,
-      ADD CONSTRAINT land_use_plan_review_releases_workspace_id_fkey FOREIGN KEY (workspace_id)
-        REFERENCES public.workspaces(id) ON DELETE CASCADE;
-  ELSE
-    RAISE EXCEPTION 'Unknown review-release cascade order';
+  chosen := CASE current_setting('openplan.test_review_release_cascade_order')
+    WHEN 'plan-first' THEN 'land_use_plans_workspace_id_fkey'
+    WHEN 'release-first' THEN 'land_use_plan_review_releases_workspace_id_fkey' END;
+  IF chosen IS NULL THEN RAISE EXCEPTION 'Unknown review-release cascade order'; END IF;
+  SELECT t.tgname INTO STRICT trigger_name FROM pg_trigger t JOIN pg_constraint c ON c.oid=t.tgconstraint
+    WHERE t.tgrelid='public.workspaces'::regclass AND c.conname=chosen AND t.tgfoid='"RI_FKey_cascade_del"'::regproc;
+  EXECUTE format('ALTER TRIGGER %I ON public.workspaces RENAME TO %I', trigger_name, 'RI_ConstraintTrigger_a_0_fixture_first');
+  SELECT t.tgname INTO first_name FROM pg_trigger t
+    WHERE t.tgrelid='public.workspaces'::regclass AND NOT t.tgenabled='D' AND (t.tgtype & 8)=8 AND (t.tgtype & 2)=0
+    ORDER BY t.tgname LIMIT 1;
+  IF first_name IS DISTINCT FROM 'RI_ConstraintTrigger_a_0_fixture_first' THEN
+    RAISE EXCEPTION 'Chosen cascade trigger does not fire first: %', first_name;
   END IF;
 END $order$;
 
