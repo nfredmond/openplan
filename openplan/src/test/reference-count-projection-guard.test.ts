@@ -92,6 +92,7 @@ const DYNAMIC_TABLE_PROJECTIONS: Record<string, { tables: string[]; reason: stri
 
 /**
  * Column names a projection asks for, ignoring what this guard cannot check.
+ * Casts retain the underlying column; aliases only rename the output.
  *
  * Skipped on purpose: embedded resources (`stages:model_run_stages(id)`), which
  * name columns of a DIFFERENT table; JSON path operators; and `*`.
@@ -117,6 +118,7 @@ export function projectionColumns(projection: string): string[] {
     .map((part) => part.trim())
     .filter(Boolean)
     .filter((part) => !part.includes("(") && part !== "*")
+    .map((part) => part.split("::")[0])
     .map((part) => part.split(":").pop() ?? part)
     .map((part) => part.replace(/!.*$/, "").replace(/->.*$/, "").trim())
     .filter((part) => /^[A-Za-z_][A-Za-z0-9_]*$/.test(part));
@@ -129,6 +131,25 @@ function checkableSites(): SupabaseSelectSite[] {
 }
 
 describe("reference count projections", () => {
+  it.each([
+    "estimated_cost_amount::text",
+    "estimated_cost_amount_exact:estimated_cost_amount::text",
+  ])("checks the underlying column of %s", (projection) => {
+    const columns = projectionColumns(projection);
+    expect(columns).toEqual(["estimated_cost_amount"]);
+    expect(columns.filter((column) => !schema.hasColumn("projects", column))).toEqual([]);
+  });
+
+  it.each([
+    "estimated_cost_amunt::text",
+    "estimated_cost_amount_exact:estimated_cost_amunt::text",
+  ])("exposes a nonexistent underlying column in %s", (projection) => {
+    const missing = projectionColumns(projection)
+      .filter((column) => !schema.hasColumn("projects", column))
+      .map((column) => `projects.${column} does not exist`);
+    expect(missing).toEqual(["projects.estimated_cost_amunt does not exist"]);
+  });
+
   it("checks every saved-chat frozen projection at its actual table and expression", () => {
     const sites = selectSites.filter(site => site.file === "src/lib/assistant/provider-chat-projection.ts");
     expect(sites.map(({ table, projectionExpression, projection }) => ({ table, projectionExpression, projection }))).toEqual([
@@ -417,6 +438,7 @@ describe("reference count projections", () => {
     expect(projectionColumns("id, stages:model_run_stages(id, status)")).toEqual(["id"]);
     expect(projectionColumns("id, engagement_campaigns!inner(id)")).toEqual(["id"]);
     expect(projectionColumns("alias:real_column")).toEqual(["real_column"]);
+    expect(projectionColumns("id, total:estimated_cost_amount.sum()")).toEqual(["id"]);
 
     // The two defects this guard exists for, as direct schema questions.
     expect(schema.hasColumn("data_dataset_project_links", "id")).toBe(false);

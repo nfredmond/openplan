@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { LIVE_RLS, getLocalSupabaseEnv, liveClient } from "./local-supabase-env";
+import { executeSql, resolveLocalDbContainer } from "./helpers/live-catalog";
 
 const liveDescribe = LIVE_RLS ? describe : describe.skip;
 
@@ -236,6 +237,164 @@ liveDescribe("reviewed portfolio import live authorization and transaction", () 
       }
     }
   }, 60_000);
+
+  function nativeEstimateRow(amount: string | number) {
+    return {
+      id: randomUUID(), workspace_id: fixture.workspaceA, created_by: fixture.ownerA,
+      name: "Synthetic native project estimate", estimated_cost_amount: amount,
+      estimated_cost_currency: "USD", estimated_cost_basis_year: null,
+      estimated_cost_source_document_id: fixture.sourceA,
+      estimated_cost_recorded_by: fixture.ownerA,
+      estimated_cost_recorded_at: new Date().toISOString(),
+    };
+  }
+
+  it("round trips large exact estimate text through owner writes and actual PostgREST casts", async () => {
+    const row = nativeEstimateRow("999999999999999.99");
+    const created = await owner.from("projects").insert(row)
+      .select("id,estimated_cost_amount::text,estimated_cost_basis_year").single();
+    expect(created.error).toBeNull();
+    expect(created.data).toEqual({ id: row.id, estimated_cost_amount: "999999999999999.99", estimated_cost_basis_year: null });
+    for (const amount of ["0.01", "1000000000000000", 100.01]) {
+      const updated = await owner.from("projects").update({ estimated_cost_amount: amount })
+        .eq("id", row.id).eq("workspace_id", fixture.workspaceA)
+        .select("id,estimated_cost_amount::text").single();
+      expect(updated.error, String(amount)).toBeNull();
+      expect(updated.data).toEqual({ id: row.id, estimated_cost_amount: String(amount) });
+    }
+    const aliased = await service.from("projects")
+      .select("id,estimated_cost_amount_exact:estimated_cost_amount::text")
+      .eq("id", row.id).single();
+    expect(aliased.error).toBeNull();
+    expect(aliased.data).toEqual({ id: row.id, estimated_cost_amount_exact: "100.01" });
+  });
+
+  it.each(["0.001", "0", "-0.01", "1000000000000000.01", "NaN", "Infinity", "-Infinity"])(
+    "refuses invalid future estimate %s on insert and update without changing the saved amount",
+    async (amount) => {
+      const row = nativeEstimateRow("100.01");
+      const created = await owner.from("projects").insert(row).select("id").single();
+      expect(created.error).toBeNull();
+      expect(created.data?.id).toBe(row.id);
+      const invalidInsert = await service.from("projects").insert(nativeEstimateRow(amount));
+      const invalidUpdate = await owner.from("projects").update({ estimated_cost_amount: amount })
+        .eq("id", row.id).eq("workspace_id", fixture.workspaceA);
+      for (const result of [invalidInsert, invalidUpdate]) {
+        expect(result.error?.code).toBe("23514");
+        expect(result.error?.message).toBe("Project estimate must be positive, at most 1000000000000000, and contain whole cents");
+      }
+      const saved = await service.from("projects").select("estimated_cost_amount::text")
+        .eq("id", row.id).single();
+      expect(saved.error).toBeNull();
+      expect(saved.data?.estimated_cost_amount).toBe("100.01");
+    },
+  );
+
+  it("keeps exact estimate writes scoped and clears the six provenance fields together", async () => {
+    const row = nativeEstimateRow("999999999999999.99");
+    const created = await owner.from("projects").insert(row).select("id").single();
+    expect(created.error).toBeNull();
+    expect(created.data?.id).toBe(row.id);
+    for (const denied of [viewer, outsider]) {
+      const result = await denied.from("projects").update({ estimated_cost_amount: "1.01" })
+        .eq("id", row.id).eq("workspace_id", fixture.workspaceA).select("id");
+      if (result.error) expect(result.error.code).toBe("42501");
+      else expect(result.data).toEqual([]);
+    }
+    const unchanged = await service.from("projects").select("estimated_cost_amount::text")
+      .eq("id", row.id).single();
+    expect(unchanged.error).toBeNull();
+    expect(unchanged.data?.estimated_cost_amount).toBe("999999999999999.99");
+    const cleared = {
+      estimated_cost_amount: null, estimated_cost_currency: null, estimated_cost_basis_year: null,
+      estimated_cost_source_document_id: null, estimated_cost_recorded_by: null, estimated_cost_recorded_at: null,
+    };
+    const result = await owner.from("projects").update(cleared).eq("id", row.id)
+      .eq("workspace_id", fixture.workspaceA)
+      .select("estimated_cost_amount::text,estimated_cost_currency,estimated_cost_basis_year,estimated_cost_source_document_id,estimated_cost_recorded_by,estimated_cost_recorded_at").single();
+    expect(result.error).toBeNull();
+    expect(result.data).toEqual(cleared);
+  });
+
+  it.each([1, 2])("retains large decimal text and an unknown price year through the v%s import", async (version) => {
+    const hash = randomUUID().replace(/-/g, "").repeat(2);
+    const source = await insertCsvSource(service, fixture.workspaceA, hash);
+    const fingerprint = randomUUID().replace(/-/g, "").repeat(2);
+    const name = `Exact cent import ${randomUUID()}`;
+    const row = {
+      ...(version === 1 ? reviewedRow({ fingerprint, name })
+        : workbookRow({ worksheetIndex: 0, fingerprint, name, sourceId: "EXACT-CENT" })),
+      estimatedCost: { amount: "999999999999999.99", currency: "USD", priceYear: null },
+    };
+    const committed = version === 1
+      ? await service.rpc("commit_project_portfolio_import", rpcArgs(fixture, source, hash, [row]))
+      : await service.rpc("commit_project_portfolio_import_v2", workbookRpcArgs(fixture, source, hash, [row]));
+    expect(committed.error).toBeNull();
+    expect(committed.data).toMatchObject({ created: 1 });
+    const projectIds = (committed.data as { projectIds: string[] }).projectIds;
+    expect(projectIds).toHaveLength(1);
+    const saved = await service.from("projects")
+      .select("estimated_cost_amount::text,estimated_cost_basis_year,estimated_cost_source_document_id")
+      .eq("id", projectIds[0]).eq("workspace_id", fixture.workspaceA).single();
+    expect(saved.error).toBeNull();
+    expect(saved.data).toEqual({ estimated_cost_amount: "999999999999999.99", estimated_cost_basis_year: null, estimated_cost_source_document_id: source });
+  });
+
+  it.each([1, 2])("rolls back the v%s import when a later estimate violates the native cent guard", async (version) => {
+    const hash = randomUUID().replace(/-/g, "").repeat(2);
+    const source = await insertCsvSource(service, fixture.workspaceA, hash);
+    const prefix = `Cent rollback ${randomUUID()}`;
+    const rows = ["100.01", "0.001"].map((amount, index) => {
+      const fingerprint = randomUUID().replace(/-/g, "").repeat(2);
+      return {
+        ...(version === 1 ? reviewedRow({ fingerprint, name: `${prefix} ${index}` })
+          : workbookRow({ worksheetIndex: 0, rowNumber: index + 2, fingerprint, name: `${prefix} ${index}`, sourceId: `CENT-${index}` })),
+        sourceId: `CENT-${index}`, rowNumber: index + 2,
+        estimatedCost: { amount, currency: "USD", priceYear: null },
+      };
+    });
+    const committed = version === 1
+      ? await service.rpc("commit_project_portfolio_import", rpcArgs(fixture, source, hash, rows))
+      : await service.rpc("commit_project_portfolio_import_v2", workbookRpcArgs(fixture, source, hash, rows));
+    expect(committed.error?.code).toBe("23514");
+    expect(committed.error?.message).toBe("Project estimate must be positive, at most 1000000000000000, and contain whole cents");
+    const projects = await service.from("projects").select("id").eq("workspace_id", fixture.workspaceA)
+      .in("name", [`${prefix} 0`, `${prefix} 1`]);
+    const batches = await service.from("project_portfolio_import_batches").select("id")
+      .eq("workspace_id", fixture.workspaceA).eq("source_document_id", source);
+    const imported = await service.from("project_portfolio_import_rows").select("id")
+      .eq("workspace_id", fixture.workspaceA).eq("source_sha256", hash);
+    for (const result of [projects, batches, imported]) {
+      expect(result.error).toBeNull();
+      expect(result.data).toEqual([]);
+    }
+  });
+
+  // A temporary relation tests the installed function's legacy-row branch.
+  // It does not seed, rewrite or claim provenance for any historical project.
+  it("retains an unchanged legacy sub-cent amount while refusing a changed one", () => {
+    executeSql(resolveLocalDbContainer(), `
+      BEGIN;
+      CREATE TEMP TABLE estimate_legacy_fixture(id integer PRIMARY KEY, estimated_cost_amount numeric, label text);
+      INSERT INTO estimate_legacy_fixture VALUES(1, 1.001, 'before trigger');
+      CREATE TRIGGER exact_cents BEFORE INSERT OR UPDATE OF estimated_cost_amount
+        ON estimate_legacy_fixture FOR EACH ROW EXECUTE FUNCTION public.check_project_estimate_exact_cents();
+      UPDATE estimate_legacy_fixture SET label='unrelated edit' WHERE id=1;
+      UPDATE estimate_legacy_fixture SET estimated_cost_amount=estimated_cost_amount WHERE id=1;
+      DO $test$ BEGIN
+        IF (SELECT estimated_cost_amount::text FROM estimate_legacy_fixture WHERE id=1) IS DISTINCT FROM '1.001' THEN
+          RAISE EXCEPTION 'Legacy estimate changed';
+        END IF;
+        BEGIN
+          UPDATE estimate_legacy_fixture SET estimated_cost_amount=1.002 WHERE id=1;
+          RAISE EXCEPTION 'Changed legacy sub-cent estimate was accepted';
+        EXCEPTION WHEN check_violation THEN
+          IF SQLERRM <> 'Project estimate must be positive, at most 1000000000000000, and contain whole cents' THEN RAISE; END IF;
+        END;
+      END $test$;
+      ROLLBACK;
+    `);
+  });
 
   it("restricts direct writes and function execution to the service role", async () => {
     const direct = await owner.from("project_portfolio_import_batches").insert({

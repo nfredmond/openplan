@@ -258,7 +258,7 @@ export async function loadProjectEvidenceGeneratedFiles(
   const [projectRead, corridorRead, datasetRead, modelRead, countyRunRead, crashIngestRead, campaignRead] = await Promise.all([
     client
       .from("projects")
-      .select("*")
+      .select("*, estimated_cost_amount_exact:estimated_cost_amount::text")
       .eq("id", project.id)
       .eq("workspace_id", project.workspace_id)
       .maybeSingle(),
@@ -402,7 +402,13 @@ export async function loadProjectEvidenceGeneratedFiles(
   // Keep the trusted row intact for strict parsing; external context is a different schema.
   const trustedProject = projectRead.data as ProjectJurisdictionRow & { id: string };
   const externalReadiness = buildProjectJurisdictionReadinessExportPayload(trustedProject, jurisdictionReadinessRegistrySha256());
-  const projectRecord = { ...(withoutPersonalIdentifiers(projectRead.data) as Record<string, unknown>), jurisdiction_context: externalReadiness.context };
+  // The full-row JSON numeric is already parsed by the SDK. Replace it with
+  // the separately cast value before creating either export or revision hash.
+  const { estimated_cost_amount_exact: exactEstimate, ...projectFields } = projectRead.data as Record<string, unknown>;
+  if (exactEstimate !== null && typeof exactEstimate !== "string") {
+    throw new ProjectEvidenceBundleError("missing_evidence", "Exact project estimate could not be read.");
+  }
+  const projectRecord = { ...(withoutPersonalIdentifiers(projectFields) as Record<string, unknown>), estimated_cost_amount: exactEstimate, jurisdiction_context: externalReadiness.context };
   const gpkg = buildProjectGeoPackage({
     project: trustedProject as ProjectGeoPackageProject,
     corridors: (corridorRead.data ?? []) as ProjectCorridorRow[],
