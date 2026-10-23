@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useId, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { ModalDialog } from "@/components/ui/modal-dialog";
 import { ArrowUpRight, Bot, ChevronDown, ChevronRight, Eye, EyeOff, Loader2, Pin, Send, Sparkles, User, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -37,12 +37,15 @@ import { getActionMetadata, resolveQuickLinkApproval } from "@/lib/runtime/actio
 import { renderChapterMarkdownToHtml } from "@/lib/markdown/render";
 import type { AssistantActionApprovalEvidence } from "@/lib/runtime/action-registry";
 import {
+  ChatReviewCancelled,
   consumeAssistantChatStream,
   describeAssistantChatToolActivity,
 } from "@/lib/assistant/chat-stream";
 import type { AssistantChatProposal } from "@/lib/assistant/chat-tools";
 import type { AnalysisCostThresholdWarning } from "@/lib/ai/cost-threshold";
 import { ProjectProviderPanel, type ProviderProposalReview } from "./project-provider-panel";
+import { ProviderChatPanel } from "./provider-chat-panel";
+import type { ChatApprovalBinding, ChatIntentReview } from "@/lib/assistant/provider-chat-intents";
 
 type AppCopilotProps = {
   workspaceId: string | null;
@@ -307,7 +310,8 @@ async function requestActionExecutionFingerprint(args: {
   workspaceId: string | null;
   action: AssistantQuickLinkExecuteAction;
   requireApproval?: boolean;
-}): Promise<AssistantActionApprovalEvidence> {
+  chatBinding?: ChatApprovalBinding;
+}): Promise<AssistantActionApprovalEvidence & { replayed?: boolean }> {
   const response = await fetch("/api/assistant/actions/approvals", {
     method: "POST",
     headers: { "content-type": "application/json", accept: "application/json" },
@@ -315,10 +319,11 @@ async function requestActionExecutionFingerprint(args: {
       workspaceId: args.workspaceId,
       action: args.action,
       requireApproval: Boolean(args.requireApproval),
+      ...(args.chatBinding ? { chatBinding: args.chatBinding } : {}),
     }),
   });
   const payload = (await response.json().catch(() => null)) as
-    | { approvalId?: string | null; inputHash?: string; error?: string }
+    | { approvalId?: string | null; inputHash?: string; error?: string; replayed?: boolean }
     | null;
   if (!response.ok || !payload?.inputHash) {
     throw new Error(payload?.error ?? "Failed to prepare Planner Agent approval evidence");
@@ -327,6 +332,7 @@ async function requestActionExecutionFingerprint(args: {
     approvalId: payload.approvalId ?? null,
     inputHash: payload.inputHash,
     executionSource: "planner_agent_quick_link",
+    ...(payload.replayed !== undefined ? { replayed: payload.replayed } : {}),
   };
 }
 
@@ -561,7 +567,7 @@ function ApprovalPayloadDisclosure({ action }: { action: AssistantQuickLinkExecu
       <p className="border-b border-border px-3 py-2 text-label font-semibold text-muted-foreground">
         Exactly what you are approving
       </p>
-      <dl className="max-h-56 space-y-2.5 overflow-y-auto px-3 py-2.5">
+      <dl tabIndex={0} aria-label="Full action payload" className="max-h-56 space-y-2.5 overflow-y-auto px-3 py-2.5">
         {fields.map(([key, value]) => (
           <div key={key}>
             <dt className="text-label font-semibold text-muted-foreground">{key}</dt>
@@ -1451,6 +1457,8 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
   const drawerTitleId = useId();
+  const approvalTitleId = useId();
+  const approvalCancelRef = useRef<HTMLButtonElement | null>(null);
   const [basePreview, setBasePreview] = useState<AssistantPreview | null>(null);
   const [liveConsoleState, setLiveConsoleState] = useState<AssistantLocalConsoleState | null>(null);
   const [operationStatus, setOperationStatus] = useState<OperationInvocationState | null>(null);
@@ -1566,7 +1574,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
 
   function cancelPendingApproval() {
     setPendingApproval((current) => {
-      current?.reject(new Error("Planner Agent action approval was cancelled."));
+      current?.reject(new ChatReviewCancelled());
       return null;
     });
   }
@@ -1583,9 +1591,11 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
 
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
+        // Consume native Escape before clearing the approval that blocks closing.
+        event.preventDefault();
         event.stopPropagation();
         setPendingApproval((current) => {
-          current?.reject(new Error("Planner Agent action approval was cancelled."));
+          current?.reject(new ChatReviewCancelled());
           return null;
         });
       }
@@ -1600,7 +1610,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
   useEffect(() => {
     if (open) return;
     setPendingApproval((current) => {
-      current?.reject(new Error("Planner Agent action approval was cancelled."));
+      current?.reject(new ChatReviewCancelled());
       return null;
     });
   }, [open]);
@@ -1609,11 +1619,12 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
     workspaceId: string | null;
     action: AssistantQuickLinkExecuteAction;
     label: string;
-  }): Promise<AssistantActionApprovalEvidence> {
+    chatBinding?: ChatApprovalBinding;
+  }): Promise<AssistantActionApprovalEvidence & { replayed?: boolean }> {
     await new Promise<void>((resolve, reject) => {
       setPendingApproval({ label: args.label, action: args.action, resolve, reject });
     });
-    return requestActionExecutionFingerprint({ workspaceId: args.workspaceId, action: args.action, requireApproval: true });
+    return requestActionExecutionFingerprint({ workspaceId: args.workspaceId, action: args.action, requireApproval: true, chatBinding: args.chatBinding });
   }
 
   async function requestDeterministicResponse(args: {
@@ -2129,6 +2140,30 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
 
   const summaryLabel = preview?.title ?? workspaceName;
 
+  async function reviewRetainedChatIntent(review: ChatIntentReview) {
+    const approvalEvidence = await requestActionApproval({ workspaceId: review.workspaceId, action: review.action,
+      label: "Create one draft project submittal", chatBinding: { intentId: review.intentId, approvalRequestId: crypto.randomUUID(),
+        expectedExecutableHash: review.executableHash, expectedGrantDigest: review.grantDigest } });
+    // A replayed issuance is recovery-only, including a lost original reply.
+    if (approvalEvidence.replayed || !approvalEvidence.approvalId) return;
+    const claimResponse = await fetch("/api/assistant/providers/chat/intents", { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ operation: "claim_execution", intentId: review.intentId, originalApprovalId: approvalEvidence.approvalId, expectedExecutableHash: review.executableHash }) });
+    const claim = await claimResponse.json() as { dispatch?: boolean; error?: string };
+    if (!claimResponse.ok) throw new Error(claim.error ?? "Check the retained original approval before continuing.");
+    if (!claim.dispatch) return;
+    try {
+      await dispatchRegistryAction(review.action, { onCompleted: () => {}, refreshAssistantPreview: async () => {
+        const refreshed = await refreshAssistantPreview(); return { quickLinks: refreshed.quickLinks };
+      } }, { approvalEvidence });
+    } finally {
+      // Registry void success and follow-up failures both require the original
+      // receipt. This request never retries the domain effect or mints consent.
+      const response = await fetch("/api/assistant/providers/chat/intents", { method: "POST", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ operation: "reconcile", intentId: review.intentId }) });
+      if (!response.ok) throw new Error("The original submittal result is uncertain. Open approved-submittal recovery.");
+    }
+  }
+
   function reviewProviderProposal(review: ProviderProposalReview) {
     const entryId = `provider-${review.id}`;
     setMessages(current => current.some(entry => entry.id === entryId) ? current : [...current, {
@@ -2209,6 +2244,10 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
             <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 grid-rows-[minmax(0,1fr)_auto]">
               <div role="region" aria-label="Planner Agent conversation" tabIndex={0} className="min-h-0 min-w-0 overflow-y-auto px-5 py-4 sm:px-6">
                 <div className="space-y-4 pb-2">
+                  {(target.kind === "workspace" || target.kind === "project" && target.id) && (target.workspaceId ?? workspaceId) ? (
+                    <ProviderChatPanel key={`chat:${target.workspaceId ?? workspaceId}:${target.kind}:${target.id ?? "workspace"}`} workspaceId={(target.workspaceId ?? workspaceId)!}
+                      projectId={target.kind === "project" ? target.id ?? null : null} onReview={reviewRetainedChatIntent} />
+                  ) : null}
                   {target.kind === "project" && target.id && (target.workspaceId ?? workspaceId) ? (
                     <ProjectProviderPanel key={`${target.workspaceId ?? workspaceId}:${target.id}`} workspaceId={(target.workspaceId ?? workspaceId)!} projectId={target.id} busy={responding} onReview={reviewProviderProposal} />
                   ) : null}
@@ -2676,43 +2715,47 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
             </div>
 
             {pendingApproval ? (
-              <div
-                className="absolute inset-0 z-30 flex items-end justify-center bg-slate-950/62 p-5 backdrop-blur-[2px]"
-                role="dialog"
-                aria-modal="true"
-                aria-label="Approve Planner Agent action"
+              <ModalDialog
+                titleId={approvalTitleId}
+                onRequestClose={cancelPendingApproval}
+                initialFocusRef={approvalCancelRef}
+                className="fixed inset-y-0 left-auto right-0 m-0 h-dvh max-h-none w-full max-w-[560px] rounded-none border-0 bg-transparent backdrop:bg-slate-950/62 backdrop:backdrop-blur-[2px]"
               >
-                <div className="w-full max-w-[480px] rounded-[0.75rem] border border-[color:color-mix(in_srgb,var(--status-warn)_35%,transparent)] bg-background px-5 py-4">
-                  <p className="text-label font-semibold text-[color:var(--status-warn)]">Approval required</p>
-                  <h3 className="mt-2 text-base font-semibold text-foreground">{pendingApproval.label}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-foreground">
-                    {getActionMetadata(pendingApproval.action.kind).description}
-                  </p>
-                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                    Approving records audit evidence ({getActionMetadata(pendingApproval.action.kind).auditEvent}) and then makes a real change in OpenPlan. Press Esc or choose Cancel to stop.
-                  </p>
-                  <ApprovalPayloadDisclosure action={pendingApproval.action} />
-                  <div className="mt-4 flex items-center justify-end gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="border-border bg-foreground/[0.04] text-foreground hover:bg-foreground/[0.04] hover:text-foreground"
-                      onClick={cancelPendingApproval}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      type="button"
-                      size="sm"
-                      className="bg-[color:var(--status-warn)] text-background hover:opacity-90"
-                      onClick={approvePendingApproval}
-                    >
-                      Approve action
-                    </Button>
+                <div className="flex h-full items-end justify-center p-5">
+                  <p id={approvalTitleId} className="sr-only">Approve Planner Agent action</p>
+                  <div className="w-full max-w-[480px] rounded-[0.75rem] border border-[color:color-mix(in_srgb,var(--status-warn)_35%,transparent)] bg-background px-5 py-4">
+                    <p className="text-label font-semibold text-[color:var(--status-warn)]">Approval required</p>
+                    <h3 className="mt-2 text-base font-semibold text-foreground">{pendingApproval.label}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-foreground">
+                      {getActionMetadata(pendingApproval.action.kind).description}
+                    </p>
+                    <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+                      Approving records audit evidence ({getActionMetadata(pendingApproval.action.kind).auditEvent}) and then makes a real change in OpenPlan. Press Esc or choose Cancel to stop.
+                    </p>
+                    <ApprovalPayloadDisclosure action={pendingApproval.action} />
+                    <div className="mt-4 flex items-center justify-end gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="border-border bg-foreground/[0.04] text-foreground hover:bg-foreground/[0.04] hover:text-foreground"
+                        ref={approvalCancelRef}
+                        onClick={cancelPendingApproval}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="bg-[color:var(--status-warn)] text-background hover:opacity-90"
+                        onClick={approvePendingApproval}
+                      >
+                        Approve action
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </ModalDialog>
             ) : null}
           </aside>
         </ModalDialog>

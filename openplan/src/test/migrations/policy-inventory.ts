@@ -198,18 +198,32 @@ function covers(statement: PolicyStatement, command: PolicyCommand): boolean {
   return statement.command === command || statement.command === "ALL";
 }
 
-export function loadPolicyInventory(options: { dir?: string } = {}): PolicyInventory {
+export function loadPolicyInventory(options: { dir?: string; beforeFile?: string } = {}): PolicyInventory {
   const dir = options.dir ?? MIGRATIONS_DIR;
   const events: RawStatement[] = [];
 
-  migrationFiles(dir).forEach((file, fileIndex) => {
+  migrationFiles(dir).filter(file => !options.beforeFile || file < options.beforeFile).forEach((file, fileIndex) => {
     const sql = blankComments(readMigration(file, dir));
     const skipRanges = stringLiteralRanges(sql);
 
     events.push(...parseCreates(file, sql, fileIndex, "literal", skipRanges, 0, 0, 0));
     events.push(...parseDrops(sql, fileIndex, skipRanges, 0, 0, 0));
 
-    for (const expanded of expandDynamicPolicyStatements(file, sql)) {
+    for (const expanded of expandDynamicPolicyStatements(file, sql, (offset, preceding) => {
+      const prior = [...events];
+      for (const row of preceding) {
+        prior.push(...parseCreates(file, row.sql, fileIndex, "expanded", [], row.blockOffset, row.row, row.site));
+        prior.push(...parseDrops(row.sql, fileIndex, [], row.blockOffset, row.row, row.site));
+      }
+      const current = new Map<string, PolicyStatement>();
+      const order = (event: RawStatement) => event.type === "create" ? event.statement.order : event.order;
+      for (const event of prior.filter(event => order(event)[0] < fileIndex || order(event)[1] < offset)
+        .sort((a, b) => { const x = order(a), y = order(b); return x[0] - y[0] || x[1] - y[1] || x[2] - y[2] || x[3] - y[3]; })) {
+        if (event.type === "create") current.set(`${event.statement.table}.${event.statement.policy}`, event.statement);
+        else current.delete(`${event.table}.${event.policy}`);
+      }
+      return [...current.values()];
+    })) {
       // The rendered statement is its own little document; nothing inside it is
       // skipped, and its offset is the DO block's so it interleaves correctly
       // with literal statements elsewhere in the same file.

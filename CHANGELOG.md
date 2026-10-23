@@ -20,7 +20,76 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-### Security
+No changes recorded after the prepared v0.72.0 candidate.
+
+## 0.72.0 (2026-10-22)
+
+**Development candidate, source and metadata preparation.** Publication remains
+pending exact-head checks. This entry packages the saved API workflow on joined
+source `2ab80e0db6dcdc4928d25d6857db0d718c17b26a`; the last shipped release
+remains v0.71.0 until the candidate passes its remaining release gates.
+
+**Saved API drafts, human approval and original receipts.** A planner explicitly
+selects a saved API connection and model, previews shared context and selected
+projects, and accepts the canonical disclosure before a turn starts. Retained
+turns expose progress and paginated history. A proposal opens its full executable
+payload for separate human approval. Cancel and renewal retain the same intent
+and payload hash. Approval uses the original action registry; Delivery shows the
+original draft, and reopening recovers its original receipt without another
+provider call or business write. Drafts remain unsubmitted.
+
+**Upgrade before dependent deployment.** This tree contains exactly 430 source
+migration files. The single addition since v0.71.0 is
+`20261021215752_assistant_chat_turns.sql`. Compare installed history and apply
+that pending additive migration before deploying dependent code. Never replay
+installed history. A separately retained Award migration record on the managed
+installation is not another source migration file. The chat migration seeds no
+admission, and profile admission remains CLOSED by default. The exact temporary
+admission used for the local synthetic journey is disabled.
+
+**Bounded evidence.** The retained native record at `de1dc322` passes 35 catalogue
+criteria, 24 native cases and nine signed local HTTP cases, with zero skips in
+the two complete test files. Each filtered census/registry run separately passes
+one case with 21 selector skips. A harmless installed comment survives; three
+intended installed faults fail, and exact function state restores. Earlier
+control-setup failures retain zero credit and remain unchanged.
+
+The joined source passes 577 ordinary tests in 31 files with zero skips. One
+0.71.0 production build, `5EgS0og6ORwp178xwJWAF`, passes webpack and configured
+TypeScript at `2ab80e0d`. Its synthetic SDK-wire journey at 1440px and 390px
+covers consent, cancellation, renewal, one approval per width, two original
+drafts total, original receipts, Delivery and subject recovery through GETs.
+Desktop reconnect reads 131 retained events in pages of 100 and 31. This is
+local synthetic evidence, with no real provider, paid call or installed backend.
+
+**Observed limits and pending gates.** The journey records 208 application API
+responses with no HTTP 400-plus responses, but two reconcile responses have 200
+headers and unread bodies after the 5000ms observation deadline, followed by
+POST aborts. Their completion and abort causes remain unproved. The record
+retains 159 aborted RSC GETs, two aborted POSTs, ten report-only CSP information
+messages, two advisories and zero page errors. All 4,187 original build entries
+and static bytes remain exact; 47 normal server/route-cache entries are added,
+so whole-tree equality is false. This is not a clean-network claim.
+
+The identified 0.72.0 build `btMlKhEDdbURkhJpreR7S` at `b2964165` passes
+webpack and configured TypeScript. A final read-only view at 1440px and 390px
+reaches the saved connection, readable light/dark Planner Agent entry and both
+original Delivery drafts. Admission stays disabled and retained chat bodies
+remain withheld. All original artifact entries and static bytes remain exact;
+47 runtime cache entries are added. That pass retains 49 aborted RSC GETs and
+report-only CSP information, with zero captured page errors or API errors.
+It does not repeat or extend the synthetic approval outcome above.
+
+At this recorded checkpoint, exact-head integration, current-main and hosted
+acceptance remain pending. Intent-read audit pairing, audit-failure
+atomicity, revocation races, deliberate after-effect reply loss and independent
+restore remain unproved. All 19 contexts, general provider and installed-backend
+acceptance, full A0, complete M2c and separate nationwide AequilibraE and
+ActivitySim validation remain open. The existing Reports jurisdiction-readiness
+P2 remains PARTIAL. No capability grade or historical failure changes.
+
+**Security dependency update.** This release also carries #368, merged to main
+before it:
 
 - Next.js moves from 16.3.8 to 16.4.2, the first release outside every range in
   advisories published on October 22, 2026:
