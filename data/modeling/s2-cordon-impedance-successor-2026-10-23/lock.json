@@ -1,0 +1,909 @@
+{
+  "schema_version": "openplan.sealed-study.lock.v1",
+  "study_id": "s2-cordon-impedance-development-successor-20261023",
+  "status": "frozen_unopened",
+  "working_directory": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60",
+  "scratch_directory": "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution",
+  "lease_path": "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution.lease",
+  "receipt_path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/data/modeling/s2-cordon-impedance-successor-2026-10-23/receipt.json",
+  "candidate_result_path": "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/candidate.json",
+  "aggregate_result_path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/data/modeling/s2-cordon-impedance-successor-2026-10-23/result.json",
+  "candidate_result_schema_version": "openplan.s2-cordon-development-result.v1",
+  "evaluator": {
+    "command": [
+      "/usr/bin/env",
+      "-i",
+      "PATH=/usr/bin:/bin",
+      "HOME=/home/nathaniel",
+      "AEQ_CORES=1",
+      "OMP_NUM_THREADS=1",
+      "OPENBLAS_NUM_THREADS=1",
+      "PYTHONDONTWRITEBYTECODE=1",
+      "PYTHONPYCACHEPREFIX=/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/unused-bytecode",
+      "/home/nathaniel/.local/state/openplan/s2-cordon-20261023/venv/bin/python3",
+      "-B",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/s2_cordon/evaluate_successor.py",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/data/modeling/s2-cordon-impedance-successor-2026-10-23/inputs.json",
+      "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution",
+      "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/candidate.json"
+    ],
+    "files": [
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/data/modeling/s2-cordon-impedance-2026-10-23/disposition.json",
+        "sha256": "c159e37453e02514490c982ad7ff90bd9e023fb65d1ecc2f71ea411c14ede78c"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/data/modeling/s2-cordon-impedance-2026-10-23/inputs.json",
+        "sha256": "bd3206424aef21d657c6e37dcb41dda31038a6e8a79df2995cc573455d3d204c"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/data/modeling/s2-cordon-impedance-2026-10-23/lock.json",
+        "sha256": "37846a58bbfdf5f6621de38225ddb6557b2f172b4e0440cee20382ca253f3b9f"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/data/modeling/s2-cordon-impedance-2026-10-23/receipt.json",
+        "sha256": "6357c2a24859545b0d8e82ad7a9113b056ecc17f4e12679d2f6a7c7fed86a887"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/data/modeling/s2-cordon-impedance-2026-10-23/result.json",
+        "sha256": "cf8c8c294d4f41cbcdb315f01d6cd58eed120d2f6f5914b9043295fb534ea8fc"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/data/modeling/s2-cordon-impedance-successor-2026-10-23/inputs.json",
+        "sha256": "4ef89be45354b64af1d7f0988ff43c282dedd29ffd1041f61757e35fd4abf8d9"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/data/modeling/s2-cordon-impedance-successor-2026-10-23/mutation-controls.json",
+        "sha256": "add5255ee237333491400becd02bd1ff35437bddf211a8b0949e90f2d0331c25"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/data/modeling/s2-cordon-impedance-successor-2026-10-23/preparation-proof.json",
+        "sha256": "51a08c8c51ea443cbf5b6f1180c23f40ff3ef79b186820894da2a304bb559fa8"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/docs/modeling/S2_CORDON_IMPEDANCE_PREREGISTRATION_2026-10-23.md",
+        "sha256": "9ea352c5d511fa7d250ea8a1a025b164b4632f9b811acd0594bf23bb81a3deb3"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/docs/modeling/S2_CORDON_IMPEDANCE_SUCCESSOR_PREREGISTRATION_2026-10-23.md",
+        "sha256": "e44689900b798b2f0849e870e3f40530c02c2816c32c7cef8752c4b372823184"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/activitysim_accepted_components.py",
+        "sha256": "e87422583794bf56a895f5301e35d6dfc3b0dcb41258b76622af937e88519698"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/activitysim_auto_ownership_estimation.py",
+        "sha256": "459f0b510b0cf645a697dfa6658ce3126258b7ef76fe657a9dbd3877b1700bc1"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/activitysim_auto_ownership_fit.py",
+        "sha256": "696067fc3bfb73d63a44465375aa62913496b400f9ca3d53e124dd6b8f978580"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/activitysim_demand_package.py",
+        "sha256": "0953c70a7654535a36e735befebc2f45d77d152cd3664e042cbb7e2c3701a78a"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/activitysim_mtc_inputs.py",
+        "sha256": "5e9af6b973dc79efee7be1626016c501429f01e7c44dee9c38f7042f3bc37b1e"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/agreement_accuracy_study.py",
+        "sha256": "88b1957485776357ca9c23affa40d4e99cc91806af74c8f27ba8d861f124bff2"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/agreement_study_registry.py",
+        "sha256": "ca2a3c9bb4635ff46b0089fe96d3908dc8a7ea6f264c3cdd75c636f9f9df0b4e"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/auto_counts.py",
+        "sha256": "b2a67809adc915b70ed72cc82a4bfe3bb3a6be57f05fe53adfd9e116baee2f1e"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/auto_ownership_fresh_holdout_registry.py",
+        "sha256": "306d1bbb1de048a4e380f7e7202f1038859fd89d12c2bb4135bf58dadb4ef754"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/bootstrap_county_validation_onramp.py",
+        "sha256": "9d831e1fa2c3358a40b7cb25d3a45f598466d0220d872a03954bd79782776b75"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/build_activitysim_input_bundle.py",
+        "sha256": "7f90c9e0df35902702b2cf7c2949b3e5e3558ea59368d57ba3860e0d973f54d8"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/build_behavioral_demand_evidence_packet.py",
+        "sha256": "a98e6bd9b771d2861a90a6258762bbcf3f01ec174fb16dabd15620093069397e"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/build_demand_package.py",
+        "sha256": "bffd686401651ad1391b007466e33a6137f26168e4f76d86c2983e8f2b0d1eb1"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/build_expanded_aadt_counts.py",
+        "sha256": "b38244604a23403a02490aa1d0fcaac843e3ffb2b3af33bd7669cdd3d4ec5a4a"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/calibrate_to_counts.py",
+        "sha256": "9e5bc14bceeb7b1d462058c4a8be31d2cae8ee6c7b9f34d58b99ef02da2139d4"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/census_pums.py",
+        "sha256": "ef8234a8db8102f015271be5d3bb211b30d7f914afd1d5e14413fdf438204cd2"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/check_county_onramp_manifest.py",
+        "sha256": "070646ee69fd00901b3d0c6073d9529ff6306dbaf8c6a63cce16ccfe494d989b"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/check_hpms_live_contract.py",
+        "sha256": "8cdde660baa5f0d89557897276b198ea4c0a088d6ba4a106885ca670c3d717f3"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/check_screening_runtime_smoke.py",
+        "sha256": "9da74bde7d34f02b9cb389a913e381e3d1b2fcbca8f8c787af35a044f74a1db4"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/common_population.py",
+        "sha256": "51c0263b9ee0640294c9b5089d6e4bb422d908bd2254da514537a8c2674b752f"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/compare_activitysim_auto_ownership.py",
+        "sha256": "223a7d4005fe90d1090a226c39e41663be3523e16b45e319516a3df31055791e"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/compare_behavioral_demand_outputs.py",
+        "sha256": "80f84d1ce81632440fc82acf7331095cf60ec030e8fd0cbe468d2400482b72bc"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/corridor_agreement.py",
+        "sha256": "f1835d015de96001b0982ff3072c61899d898ee15fce48e026c7b6794d6f9254"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/count_sources.py",
+        "sha256": "158eba5e4b9adb826fea070375bffb182d9d4d011a4b1097c8d076e71833b811"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/demand_conservation.py",
+        "sha256": "22f43c0d6f5b049f2c439a78ecc53033bff49d8d44918756408d0815b82b22d8"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/demand_package.py",
+        "sha256": "e74344029a87f0c0a71777fd2f455ca120313fab9b88105ec02b23dd5f1fbcd1"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/development_validation_sources.py",
+        "sha256": "9bc36c840dd6af7c542167ad12232855e7b0e43bfff4cebdc395bc4ee2a9dd7b"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/evaluate_auto_ownership_fresh_holdout.py",
+        "sha256": "0c8df023d7ef4b219b1210d78a5b77910e1b658df111b4a0fbb97ce9ff626333"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/evaluate_gateway_volume_study.py",
+        "sha256": "9f0382e8a20dfc1787d528ea18ef0f12570005cd4d6da41b63579a84bd47e144"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/external_demand_share.py",
+        "sha256": "4dc0f4203ea0ad4aa9012b1517f2d8b150daadf18f45a0b84fd9f9806a44c272"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/extract_activitysim_behavioral_kpis.py",
+        "sha256": "ff267c324862e64cd8a92a8bc0ee4c0ea59127d1a5b3c78c7e88db6fdce9636a"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/faf5_routing.py",
+        "sha256": "d09574a7ae19a59edf9de7ee0baa571e57d102f07f77007b59c3ba9c404f3c14"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/fit_mandatory_tour_frequency_candidate.py",
+        "sha256": "43c44bc516cfb8269b2e5964b9c428bf5892c5c6cc2f187aeaf3e7e3f482f11f"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/gamma_fit_analysis.py",
+        "sha256": "81e8847f96fc9c26ba4c00cf63491022ecfbff81695cff3c59c2f211a0e17b8c"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/gateway_counts.py",
+        "sha256": "a989c14d659145df998e28bedca2562765750acc7c3a716d096cd62f9b49cc90"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/gateway_volume_study_registry.py",
+        "sha256": "4c902403533b036d59ea89a184d795cecdf12c5a661e09de25f5d3c2c58ebe3a"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/generate_validation_scaffold.py",
+        "sha256": "f8b7047a0291aa555c430c45cc15d392269c5f3239326c4ef16de2e1eaf13694"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/hpms_count_source.py",
+        "sha256": "7e1eb10a78d4a8fe14f6a8494d8403b1591146bb41be48a629034f66a00b0ab0"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/hydrate_assignment_geometry.py",
+        "sha256": "a7bc64c21e73fce3314393fdc35ff9ee642bacd81fffb8eff3b325c007744340"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/ingest_activitysim_runtime_outputs.py",
+        "sha256": "a750148903204f3b3dcb8f1b4c8cb8fb96294be5f0ab2ab540c128fdd78d5c3e"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/mandatory_tour_frequency_2017_successor.py",
+        "sha256": "be319ab981fc9742a6ba4c31c565a2019625af8f9311e377607fe373f5aa7998"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/mandatory_tour_frequency_acceptance.py",
+        "sha256": "1bf7f18e4dfca03d7b0b95b50889fd39c9ba9e9f685e448d1563463956a65e08"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/mandatory_tour_frequency_acceptance_protocol.py",
+        "sha256": "dbd13f8e7e1bc05a86d3b0f9575cf7202e3363a13f40b48831b5dea76d51179f"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/mandatory_tour_frequency_candidate_registry.py",
+        "sha256": "a21e40210634531aa9d827f2e5d250f26cb282c167be726a1716c4ebade030fe"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/mandatory_tour_frequency_outcomes.py",
+        "sha256": "4a039e0560315dec1d79029992a86cff755976c8d49331d7bd848672fcbd574b"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/mandatory_tour_frequency_registry.py",
+        "sha256": "9af1d18b51ea2c59d548e41151982fd02d961fe4da6c76345f6c8d992dd74caa"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/model_validation_structural_diagnosis.py",
+        "sha256": "8f4899377a1ca494d07716cc503d4a6301f0c2425e72d729db6effb1210731eb"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/package_activitysim_coefficients.py",
+        "sha256": "08ff1d47ab7dd9e1e8a3082525008b1bdb6b5dd71ae6d628379cf125f591b61f"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/population_source_registry.py",
+        "sha256": "c6d76d9fbf0fe1a973d8b4091ee9868056c06c74c910593fb7fcea614dd53720"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/population_synthesis.py",
+        "sha256": "c6a16de8255d2158dfdd0bdf2107f21c6457dcdb7c8d2efd951889c4b4294589"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/prepare_auto_ownership_fresh_holdout.py",
+        "sha256": "1eb2f9ffac7502d48edb6e900b4e84c9037568f284ecec685e84b7919d05f477"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/prepare_development_validation_instruments.py",
+        "sha256": "c08a5b60c7bb0b9d34e47f22eaac27dc0bd4ba190101ba546972d5620efbaa22"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/prepare_mandatory_tour_development_source.py",
+        "sha256": "7c8e9a068a51d44396a5331063a7569af69a818ded8efce5b04cc7493e24e963"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/prepare_structural_demand_registry.py",
+        "sha256": "dad4fa54d27e1c832320e11db3349308fb36db94bf7188783278a4b367b8c357"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/prepare_validation_instrument_study.py",
+        "sha256": "afcafc88530d148d80ee3817f6fd1558d4fc7e15debd791741649861923cd9b3"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/prove_comparable_instrument_guards.py",
+        "sha256": "bc61b5409c4c2c86601f2e741070e8a20138c18ab81b1744a529fa9427271de7"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/prove_distributed_work_loading_guards.py",
+        "sha256": "83d515fd8574dd5d5d39b5596f290db5d0e997d5b6c2899623299c067de4d44f"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/prove_structural_demand_guards.py",
+        "sha256": "bd3fc0bbc4fb2df53e4e2cf86c17fef2dccf492cabb5e1fd6cd6937e7f3eb878"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/prove_structural_diagnosis_guards.py",
+        "sha256": "c7f36b42a2133db44d6b9af7efc1ef4dae498cbbc2770db2b16787f9022e4820"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/routed_taf_through_trips.py",
+        "sha256": "a85c4ca0c3b76bad903298ea2407ad8c0029f65bb851afd1da4b3eabb7276636"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/run_agreement_study.py",
+        "sha256": "702f35bf37843229a92ba774f526e87263725739aed577b1e04b47a07ae60657"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/run_auto_ownership_transfer_study.py",
+        "sha256": "658a504090b6719be3db878d2783827080350ac7a3efdb108e1892125d6c02fd"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/run_behavioral_demand_prototype.py",
+        "sha256": "6857667c6b14de236cbc378cac3fbeb28099670b4f859f83403fc359f00b0c99"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/run_comparable_observation_study.py",
+        "sha256": "1b6d45bbe5e041ad3c9dbf6c43872afb686bcc4db757ba745b9dea878836226b"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/run_development_validation_study.py",
+        "sha256": "5ab0dc5a43a017bbf8665a6346b447373f917c751efb0bb1caf13056232cd274"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/run_distributed_work_loading_study.py",
+        "sha256": "608c631c249cbeb0f3a712c3ef2537eca0b6bd6fa1bb0df6ec85a34e46e4510a"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/run_gateway_volume_study.py",
+        "sha256": "3135cdbbb3a1ca6042093a5e703e2ed984c7999ba38558f146e2230ffb16284a"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/run_screening_model.py",
+        "sha256": "a611ec9655b1916562d01e066dd8ab37af6e091cbc198c0a6287ee92700f5101"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/run_structural_demand_diagnosis.py",
+        "sha256": "959e0db0629307e54c2a30b0e2c2b782a5f2d41cdf957e8c8ea2b67cfe578614"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/run_validation_structural_diagnosis.py",
+        "sha256": "9730d5e298a28d6228866623fadb1047dc661c6cae35d52615c695da5c15588e"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/s2_cordon/evaluate.py",
+        "sha256": "1f178c751d27b53c6f7caad127d5a5786e5b503c14c8b048a77e7d3c1790d003"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/s2_cordon/evaluate_successor.py",
+        "sha256": "0e5ae3248f81f3b4be7b2d79c3f76de95d42650611bf11fbfe532c7c34573445"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/s2_cordon/prove_successor.py",
+        "sha256": "8dee7ecb48d2ab24dff2d7801efdb8cbd94f2679f96f88fec829acdfc09c387c"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/s2_cordon/test_successor.py",
+        "sha256": "9dcdacd600d40884fcbbed9aafcc92327a3afd15ac08e61d5648870eb0bc027b"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/screening_boundary.py",
+        "sha256": "07c169615bb63a48f3f650a479d3b04af2b12991069cb6855845a7074cf57120"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/screening_bundle.py",
+        "sha256": "c68fbed44735450e6e30edc5f5211c3a3b0ab1c2ce078b0c708367dc114aa8bf"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/screening_metrics.py",
+        "sha256": "0ba6a36bb7aa323408e8957bb14bad15b1dd120b484e8734ba3b4136a3fb7bff"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/screening_runtime.py",
+        "sha256": "fb24619ef460dac246bfc7a2739b7d975fbe9b21722078aa75517c1b6e3f82ac"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/synthetic_population.py",
+        "sha256": "6e8b57fcad1d8e1efbc6882e76190c0bc45659b7e8fbc140fd2cf774bd3f0877"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/through_trips_taf.py",
+        "sha256": "a20cdc9a88190a40a30de29ec000029b90f83dbd9b0fa7fd1e300f483715b141"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/tmas_count_source.py",
+        "sha256": "a98d94609b3d91f284a5f0cc7c8eeb4f7ee45cb863082ba4eac085cb08f97218"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/us_census_divisions.py",
+        "sha256": "22e205e63f1deb69cc3fb6d63003a0d5645469649a8de97cf7e6d10314279081"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/us_lodes8_work_loading_adapter.py",
+        "sha256": "e3d5871e095048b065d7b7885472f83fcf74578407baf6522c1009f469829af0"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/us_nhts_diaries.py",
+        "sha256": "64ff0a975c7123df637108d5c5ac3045c3280ed0f5380e8790a235fb29816092"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/us_nhts_survey.py",
+        "sha256": "406dda991526f3dc2ff6390f3cf19b32c9d7ad315b427a4e96f464dedebaf424"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/us_observed_traffic_adapter_v2.py",
+        "sha256": "9654a77c24f55e53bf3a1bdd70e85a1b54902d2f7bca9771ac18b00e64c1e9de"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/validate_screening_observed_counts.py",
+        "sha256": "750d6c54690d1f60f38f73ceb1d26bd4220729ed73aed5c39d425caf5031714b"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/validation_instrument.py",
+        "sha256": "78a67a02125db21eb35d4cdf6fdf4dbd44e15296d5b6d536f8c7377aa51f2aec"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/validation_instrument_v2.py",
+        "sha256": "efcc1b5b7caea645ed5db4af83d6cded1464a1962bdd1abbefa31dbb6e0a848f"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/verify_comparable_observation_study.py",
+        "sha256": "f355a08be847870cf0be9ad0e39bb8fcd6395b01b0f220b20863847454a58424"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/verify_distributed_work_loading_study.py",
+        "sha256": "bc37e044eb2a31ca4d8e2160212724e43e0059b6874d88a8bc4e3791dc44268f"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/vmt_sources.py",
+        "sha256": "fcf73316b3dd33ffacad9374d5f226bc5b935e366e652276cb686feabbac8c64"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/research/sealed_study.py",
+        "sha256": "3194d188d27b791ba1e9160ab619329ee95a561dca46b20358eb396534e63ca7"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/research/streaming_zip_csv.py",
+        "sha256": "62c263ba00e10e6a015a173490a9a76885bfef4277f5fd9b7f7fd1bf6b4ba728"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/assignment_progress.py",
+        "sha256": "467a9cb727465aa9e7a22038ffa8c0f4547ec0158bb257ae0dc589894c5dc958"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/assignment_settings.py",
+        "sha256": "c97c2a9efc22fbeb70ef3016f0526a1ca9ecfa24436b6c5bd13badec21ddb4b8"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/build_block_group_package.py",
+        "sha256": "94b81fcf3b63bbe47e86364c7dc2bc83bae2f439f8e24dd7790d920f74e62c9a"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/calibration.py",
+        "sha256": "c62581932cb78d8ab29f9d137421a0b1f53ff9d0964389a39cc1df2ef56129db"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/centroid_geometry.py",
+        "sha256": "e0693e3128a8961aa6b6aa85210c82edd041d26d2ed362a2ecd6063bbb9132ea"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/check_local_dependencies.py",
+        "sha256": "c1cd1240cf030e51688b15c8d0c4d5eae08e20feb62974335b633eaf48b08cba"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/convergence.py",
+        "sha256": "3a79eb6a831e2263e99a21002f1c4853985a5506a5eb51a4b555b40b06b3bddf"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/count_validation.py",
+        "sha256": "738516da8ad20c03e236a7e7b8fe579aea1fc14bf0348e47f121019d98be0605"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/data_pipeline.py",
+        "sha256": "1c225fd031ce38fddb0828a208b2b581470f551ad30d040443b1ad16a34fe0eb"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/distributed_work_loading.py",
+        "sha256": "af153fca213c868115eea93bf78918735378bc050331949a80b3e3e63f97aaa5"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/emissions.py",
+        "sha256": "8c7f8c4c206ca4f566e624c0634fa0e7464028399c52a68563f44adacdb3fb3d"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/equity.py",
+        "sha256": "59a873bd7e937b8bef6f4616ff6512268a1ac5658fe48d833b91ee2ca80f6362"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/external_distribution.py",
+        "sha256": "67d44a5866a99aa5966a3e9a8e4af541938f7ece432aad9b13578a64a8714710"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/gateways.py",
+        "sha256": "6463795f6cb3ad3feaf2cb7276f3906e65fa73fbaa9fb4d8ea881a7f57b30d7a"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/gtfs_skim.py",
+        "sha256": "0115fe21ff63455560626d7d0e177c69cff533be87fe76b8a03bc99be9129000"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/link_vmt.py",
+        "sha256": "898e195e1f29b42f92f53cd32ee24bd57ee23b269078afe4691f798a366f90e0"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/lodes.py",
+        "sha256": "45917c8ff841ecca199a39e92105fc97751ef061cefa106f5a6559baf9bd77f7"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/main.py",
+        "sha256": "d8ce8ad3ce1bbd5deccdc31032db58437add2053d5fe7536c7d2b6cf98a75339"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/mode_choice.py",
+        "sha256": "ccba7eff15fcb8f0348ca098a7f62037e8ea5557495ed6862f3c584b63b1db73"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_activitysim_handoff.py",
+        "sha256": "804a531b724aefe19083add21ca49d919c39a91e2d6cbbb503a74573db7a1a2c"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_agreement_computation.py",
+        "sha256": "78c7fec931a54e44ee47cd8d239fd19517a14b6e8b5deea4dddafa95de29fe73"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_assessment_command.py",
+        "sha256": "71dc55668768277f9dcea978fcf586c5c5471f813eed5808bbb35805cea0b464"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_assessment_values.py",
+        "sha256": "c2aa8673eeb2bc15ac9b29ef310337c102541799d11b4e045034cc7b5deeb6a0"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_assignment_compact_graph.py",
+        "sha256": "7f276d11e7324c627378744a3602dba97af1e3b6284295080f539b1a5fc0c531"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_assignment_graph_adapter.py",
+        "sha256": "c5c9893cd933e19e2a0c95c66fb12039360cff9ee42d5c4964f2015fdae83e3e"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_assignment_input_publication.py",
+        "sha256": "3fee7e7597d5eef1dbc7d095913211f5010db3c9414bee3a77dc19aeca13ad99"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_assignment_input_snapshot.py",
+        "sha256": "8c91219b979b86ce7f3007a1e261df58f27f66ef3c3283b1b19b286d0211eb1d"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_assignment_live_profile.py",
+        "sha256": "ebcea985f900f2ec021b14c16b1afa99ff1629c3646c1aa9106d6a8f2e7d4699"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_assignment_network_graph.py",
+        "sha256": "8541f91774058935641185ef12c577c66ca898ac8c7f8acea83485025552c0bf"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_assignment_network_source.py",
+        "sha256": "11429fcdcbc39c86fa4e4506f3edfbd120aeee6f9ed4dc0d4f0e79ded6ecafaa"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_assignment_preparation_link.py",
+        "sha256": "54a9a1780e68c4fee1fd455c3e960e62b6cf0b37a37cb93baffe6b32fbc3eee3"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_attempt_invocation.py",
+        "sha256": "6e629d38c1ac7907e5b47300d8d227d6b57edce435534ba420724db160ccd0cb"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_attempt_workspace.py",
+        "sha256": "8d1f755ac6f6a7be25930c6d3dcf3d06b0297896e6a709d4f84800e7e98e6f97"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_attempt_writer.py",
+        "sha256": "4aed950549133734ffd24340f7cd0d0ce959649c35c7e615d331e6ef47588f06"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_command_client.py",
+        "sha256": "63f9031a1562ebc4d8d14f7b05a7f72d42f72aa0738618748972ee20c815b83a"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_command_journal.py",
+        "sha256": "24949541db14eccf76eb82e551b0feb285c1479deb916860cab26254c640cad5"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_command_recovery.py",
+        "sha256": "03be64ff1b1fa2d29efee48edd559e6f84e93ece8b5894756c71a4666cc9487b"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_common_population_handoff.py",
+        "sha256": "164c63826b8ff67b36035e4fb8cf57c33644e939359a2df962798fd093889c6a"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_common_population_package.py",
+        "sha256": "165de71f3918fa22c91e4ecc06f7dac26d9524f1a420a14a68b016831ca7aac5"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_common_population_setup_recovery.py",
+        "sha256": "10caa574176adab11a557a31eb540dc0b8bf433e6ef59f1d8c21c7896e6bd8a5"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_count_inputs.py",
+        "sha256": "5b0b5b2af6b09907a8d43ad1e9d9ca0f9e9807ecbf82b55ccc9b977fd894e594"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_credibility.py",
+        "sha256": "eadd20cc326be06e2b56d6f0dc8c18ecf6b56dd2c87f5d73192000925e696a3f"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_engine_binding.py",
+        "sha256": "9d52976d12bcbc65ede273278bd001dc7ea4f4f0b3e091b1632fb22ea9294901"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_engine_bootstrap.py",
+        "sha256": "dd4c0d77d30d2519d88e962483d3a884f734ff19f2e18265ef047f3c6e28ae3a"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_engine_channel.py",
+        "sha256": "9eced6696938e6ad4783d7e6fbfdc4d7b6c63abb3796944dd9dd18c723c9267f"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_engine_owner_guard.py",
+        "sha256": "6a4abf9cddf42ec1d05c1d2c52e09baa813e389a3c97ea6a0ced697776ffc105"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_engine_process.py",
+        "sha256": "1c57e57d1b4aba289d85e46186c3f3251a4b5b0db66cd9fbad775e77392daa23"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_engine_recovery.py",
+        "sha256": "21c9dbd76321ecc19ea4fc0a5adb065decb0fe527d907d485ae90835c6d12328"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_engine_scope.py",
+        "sha256": "faeda72e06e00f80c961fc93c5caad26e4874b214f1326a835365bc41d5d2599"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_engine_supervision.py",
+        "sha256": "ecc1fab72bc799b21a5091f7c3aa00fe80a33e532e2375b57abea2bef9865cd6"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_fresh_osm_modes.py",
+        "sha256": "f9c3992ae85db0878357c75136bc11b856d531ff175632664a9e1b4da903bd3a"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_geometry_inputs.py",
+        "sha256": "13790ab924a1878c0f75976282ca4ecdc49d514eaf15086a14a57e4a1b8330dd"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_handoff_files.py",
+        "sha256": "76e51c8b88571dcfe42d6fe6ea9f6e2fa10ce7ca3e632451ebba9a72b4059421"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_hosted_artifacts.py",
+        "sha256": "dbed5e8a533aa775e4a9d56db5b2f485b9ae767597db288185de907e0a56082d"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_legacy_artifact_command.py",
+        "sha256": "ec057046ea3066fc72c9567d0e5d3e188e6d3d059afaa33b98acb31e141f5fef"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_legacy_kpi_command.py",
+        "sha256": "9a7e4bf7cf4398592c715d98917ab3f9e69a3279707cd0ec0dce83661157bcaf"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_legacy_output_delivery.py",
+        "sha256": "f873392c11780cecfc721f5ddeb67bdfbb36bea621f801fc815186e651c05b05"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_owner_guard_recovery.py",
+        "sha256": "304785df7a27863928b517bb499c7cd115415c29ee5ea570e8d0e844c9dffbd6"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_package_inputs.py",
+        "sha256": "1b0119bb66415a05f8a845088d75c7db20b4ee71aaa48298bb9f8f8a628e2ae6"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_population_replacement.py",
+        "sha256": "207f12456cb3845df40c3f4c7958e524b87a4cef81a15bc8797c545db671ccf6"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_predecessor_inputs.py",
+        "sha256": "8ff02d1a42df1d9869a6ad7c9288ea7d28feaf00a398ac6511d5ee1fde7775e8"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_project_inputs.py",
+        "sha256": "a98fe84a9a59b52b009eb5a1c3e91607e45ad2cf937edf8481156cc705765b07"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_publication_values.py",
+        "sha256": "2ab320d218ac38fcbd0f724b23b36862a06dcd6fbb1adbb5c15b472d551a0239"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_receipt_values.py",
+        "sha256": "22ff1176c3ec778c98387a091945485a83481f40818da487d9956ee7e7e92842"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_record_files.py",
+        "sha256": "fe94c78d565cd0db63ca37843e120acd03edf995b3d326e5b630a68e3676d6ef"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_recovery_decision_command.py",
+        "sha256": "b8f09b6162b49dadd9bee171018ecf7ace8e4e717fb435a7bb22ee243c9c117e"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_run_state.py",
+        "sha256": "0da94442e2877016fbb6c619e9d85b6396bbacbc3832ef5e8e0b5fb0f7ed15aa"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_skip_command.py",
+        "sha256": "a81b2f41e585ce944521cb8ea4edfdb2b7dd6ae99616253e0de651f306122dbf"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_source_publication_recovery.py",
+        "sha256": "f87f0038a3bc732391c2d585484f3380f5b696133312f57337e778ef0629bb88"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_stage_computation.py",
+        "sha256": "fc091f40d8db12298fed0a9a7a80838042fca6694ecf581cab77fdd66122c369"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_stage_lease.py",
+        "sha256": "59f3c90ae45add069cfa258ddd61239445f70dae2555fcb4bc4bdcfe36e12efe"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_stage_preparation.py",
+        "sha256": "d171b5ae354985f1461497754c8c96a1450f06b1840c05ae2461c4d6c667fef7"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_storage_readback.py",
+        "sha256": "632297c402aa05cdd3867f3337b73f058cbc606ee31f2cd4986836d86abb8494"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_storage_resumable.py",
+        "sha256": "1b1e44ccf65602a67790fea2aeaf983aa6303c15a15384e679ffd5d860bfd988"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_structural_input_audit.py",
+        "sha256": "52d3939123ede5842b418e0fd2d1a27f6bc6bcdd09857547d8b2f2f03ea82872"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_transit_execution.py",
+        "sha256": "32c876e43befd4f43da6f26f6dd3197919c49f4f79778c5f7ab5bafc12022f7e"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_transit_inputs.py",
+        "sha256": "6f18a5c498d1fb3cbf793fdde617821ce817f537ae54b044d01eff0986f921ed"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_transit_skim.py",
+        "sha256": "43ffa657c4f668529f1a7e51c56492b10189b60a3b3a3f41d70c3f9c3a6d56c0"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_validation_core.py",
+        "sha256": "49668bcedab7ec6b9b9ce076648ab2013f563e85970acf6a6a300614c36ae5cb"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_validation_core_v5.py",
+        "sha256": "74b84e1281f5ca21bbd2c09a664a038444424f3743829c03e3a8435255aaa379"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_validation_preparation.py",
+        "sha256": "2e585c50371f2aefd7b6c764b8f41fef059073c737c4ae41ae14f363b598848e"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_validation_receipts.py",
+        "sha256": "d9db3c35ace9cb9a0243dbbff1c0ee431b33e6b74c19b5065745d4aa9218d5e5"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_validation_source_catalog.py",
+        "sha256": "6ed3455d8ee074d001d08e87974aaaceae8b500ee9b4db855e7bcbb6f39b66ee"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_validation_source_files.py",
+        "sha256": "09f42c9bf809e38f4a65a68ae81919a37f7d1aa33e7fe751bd4f3d3e6b0f3a60"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_validation_source_publication.py",
+        "sha256": "ba83af73aa5b49771c82d6d734aebbc4914931b0a2a905ca724f64e4cce78d21"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_validation_structural_diagnosis_v3.py",
+        "sha256": "581bcf32f2c7b2ab46a9ec908e1ddcd07ca25c38ff40d7d8a840cfb6d00bf99d"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/model_zone_geometry.py",
+        "sha256": "cae100a2a59cab936e2ebb96e5a8483129d333f88e9b856093c3312818ed71a3"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/network_ids.py",
+        "sha256": "f17d584fb9c3352a9d0bc8a7375f4d0f6d34eabb01516c094594c3ed315eaa2d"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/network_settings.py",
+        "sha256": "397d5ff52ca6158b4a23acf6c29a1b109861e89a24c510b8486f7baf6eb23458"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/refresh_gtfs.py",
+        "sha256": "c732eae2865275dc39165fa5373e75c67dc909282a0d48157227c8f3f579b7f2"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/resident_vmt.py",
+        "sha256": "f97b4b1ac90c2ad3c7f14428013860f452a9600280a87ab8bccf11781cdbd415"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/scenario_adjustment.py",
+        "sha256": "5dd0f563f1d15687c93eca706fc70c443221e63fa1815fa3081d1e9ebd983cda"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/select_link.py",
+        "sha256": "860b5e9dc6d04f852b9287c87df5b6671e7571553ac0af58f2153919cc061675"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/time_of_day.py",
+        "sha256": "c7c32f91df1669afc63488afcd113c7d7bf7a214e36f736c921a7938fae4eebc"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/worker_heartbeat.py",
+        "sha256": "6cf37e6aaa625186a000a94088c054a8c238f24549a9bc593b3768f1d4311803"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/workers/aequilibrae_worker/worker_import_for_tests.py",
+        "sha256": "4a240982e046ac1c9529bf2296fb34f9d9e8f6a1e91b415a3a60caa8e1a55042"
+      }
+    ],
+    "closure_sha256": "ac15e71381e90cc0925ea56259b92daa5dd44e47a743f554d197ed5471564eee"
+  },
+  "validator": {
+    "command": [
+      "/usr/bin/env",
+      "-i",
+      "PATH=/usr/bin:/bin",
+      "HOME=/home/nathaniel",
+      "AEQ_CORES=1",
+      "OMP_NUM_THREADS=1",
+      "OPENBLAS_NUM_THREADS=1",
+      "PYTHONDONTWRITEBYTECODE=1",
+      "PYTHONPYCACHEPREFIX=/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/unused-bytecode",
+      "/home/nathaniel/.local/state/openplan/s2-cordon-20261023/venv/bin/python3",
+      "-B",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/s2_cordon/validate.py",
+      "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/candidate.json"
+    ],
+    "files": [
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-cc6b7a60/scripts/modeling/s2_cordon/validate.py",
+        "sha256": "e945bdc8faf5f7039beeb19ecb7e63da6a338278d2f64d74a1e21c23f7259d29"
+      }
+    ],
+    "closure_sha256": "37dc42e81bc115e8e2eb2ac7881e9d8e97ad87bd7ab212976be1d15021ea8102"
+  },
+  "sources": [
+    {
+      "name": "original-development-inputs",
+      "path": "/home/nathaniel/.local/state/openplan/s2-cordon-20261023/development-inputs.zip",
+      "sha256": "3fcf016c4ba7604fff07851a274e7af225c6cfc3a879c81002ee1ff580afba95",
+      "selected_members": [
+        "06047/package/zone_attributes.csv",
+        "06047/package/od_trip_matrix.csv",
+        "06047/work/network_setup_summary.json",
+        "06047/run_output/travel_time_skims.omx",
+        "06047/work/aeq_project/project_database.sqlite",
+        "06047/counts/published_counts.csv",
+        "06069/package/zone_attributes.csv",
+        "06069/package/od_trip_matrix.csv",
+        "06069/work/network_setup_summary.json",
+        "06069/run_output/travel_time_skims.omx",
+        "06069/work/aeq_project/project_database.sqlite",
+        "06069/counts/published_counts.csv",
+        "06107/package/zone_attributes.csv",
+        "06107/package/od_trip_matrix.csv",
+        "06107/work/network_setup_summary.json",
+        "06107/run_output/travel_time_skims.omx",
+        "06107/work/aeq_project/project_database.sqlite",
+        "06107/counts/published_counts.csv",
+        "08014/package/zone_attributes.csv",
+        "08014/package/od_trip_matrix.csv",
+        "08014/work/network_setup_summary.json",
+        "08014/run_output/travel_time_skims.omx",
+        "08014/work/aeq_project/project_database.sqlite",
+        "08014/counts/published_counts.csv",
+        "08101/package/zone_attributes.csv",
+        "08101/package/od_trip_matrix.csv",
+        "08101/work/network_setup_summary.json",
+        "08101/run_output/travel_time_skims.omx",
+        "08101/work/aeq_project/project_database.sqlite",
+        "08101/counts/published_counts.csv"
+      ]
+    }
+  ],
+  "output_policy": {
+    "maximum_bytes": 10485760,
+    "prohibited_fields": [
+      "station_id",
+      "raw_records",
+      "loaded_station_ids"
+    ],
+    "prohibited_array_fields": [
+      "replicates",
+      "household_ids"
+    ]
+  }
+}
