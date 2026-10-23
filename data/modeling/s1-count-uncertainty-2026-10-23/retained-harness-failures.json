@@ -1,0 +1,15 @@
+{
+  "failures": [
+    {
+      "name": "mutations.log",
+      "sha256": "30636dc7ecfa7c7c3f509973009a006549868c54ae479238af7ce379cfbabccd",
+      "text": "Running as unit: run-p1530398-i60123767.scope; invocation ID: 63bbd5f799f445feaac5d37c14ef40ce\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-087d8816/scripts/modeling/prove_count_observation_uncertainty.py\", line 106, in <module>\n    main(Path(sys.argv[1]))\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-087d8816/scripts/modeling/prove_count_observation_uncertainty.py\", line 49, in main\n    run('harmless_comment_all_interval_tests', MODULE, 'SCHEMA = ', '# Harmless custody comment.\\nSCHEMA = ', survives=True)\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-087d8816/scripts/modeling/prove_count_observation_uncertainty.py\", line 29, in run\n    raise ValueError(f'{label}: mutation anchor count {text.count(old)}')\nValueError: harmless_comment_all_interval_tests: mutation anchor count 2\n"
+    },
+    {
+      "name": "mutations-round2.log",
+      "sha256": "3f06de8f2366d69add658a552da43b3d5d4e3c99f53735e4eee6b60a78ca4eaf",
+      "text": "Running as unit: run-p1537945-i60112819.scope; invocation ID: 31d51c637acc48caaa2fa2a118f996aa\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-087d8816/scripts/modeling/tests/test_count_interval_coverage.py\", line 15, in <module>\n    import audit_count_interval_coverage as coverage\n  File \"/tmp/s1-mutation-ydnnyvze/audit_count_interval_coverage.py\", line 24, in <module>\n    from validation_instrument import observation_from_compatibility_row\nModuleNotFoundError: No module named 'validation_instrument'\n\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-087d8816/scripts/modeling/prove_count_observation_uncertainty.py\", line 102, in <module>\n    main(Path(sys.argv[1]))\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-087d8816/scripts/modeling/prove_count_observation_uncertainty.py\", line 50, in main\n    run('harmless_comment_all_coverage_tests', AUDIT, 'ROOT = ', '# Harmless audit comment.\\nROOT = ', test=AUDIT_TEST, survives=True)\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-087d8816/scripts/modeling/prove_count_observation_uncertainty.py\", line 47, in run\n    raise AssertionError(f'Unexpected mutation outcome: {label}')\nAssertionError: Unexpected mutation outcome: harmless_comment_all_coverage_tests\n"
+    }
+  ],
+  "mutation_credit": 0
+}

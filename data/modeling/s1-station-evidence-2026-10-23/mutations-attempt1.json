@@ -1,0 +1,65 @@
+{
+  "blind_categories": [
+    "publisher truth",
+    "empirical interval coverage",
+    "historical process transfer",
+    "live service completeness",
+    "scientific acceptance"
+  ],
+  "complete": false,
+  "controls": [
+    {
+      "exit_code": 0,
+      "expected": "survive",
+      "name": "baseline",
+      "output": "....................................\n----------------------------------------------------------------------\nRan 36 tests in 0.010s\n\nOK\n",
+      "selector": null,
+      "valid": true
+    },
+    {
+      "exit_code": 0,
+      "expected": "survive",
+      "name": "harmless_station_evidence",
+      "output": "....................................\n----------------------------------------------------------------------\nRan 36 tests in 0.010s\n\nOK\n",
+      "selector": null,
+      "valid": true
+    },
+    {
+      "exit_code": 0,
+      "expected": "survive",
+      "name": "harmless_audit_station_evidence",
+      "output": "....................................\n----------------------------------------------------------------------\nRan 36 tests in 0.010s\n\nOK\n",
+      "selector": null,
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "custody",
+      "output": "F\n======================================================================\nFAIL: test_fetch_and_verify (test_station_evidence.CustodyTests.test_fetch_and_verify)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-_fpyy1iv/scripts/modeling/tests/test_station_evidence.py\", line 86, in test_fetch_and_verify\n    with self.assertRaisesRegex(ValueError,'custody'): s.read_source(Path(td),receipt)\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n",
+      "selector": "test_station_evidence.CustodyTests.test_fetch_and_verify",
+      "valid": true
+    },
+    {
+      "exit_code": 1,
+      "expected": "assertion_failure",
+      "name": "access",
+      "output": "E\n======================================================================\nERROR: test_registration_refused_before_network (test_station_evidence.CustodyTests.test_registration_refused_before_network)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/station-proof-_fpyy1iv/scripts/modeling/tests/test_station_evidence.py\", line 90, in test_registration_refused_before_network\n    s.fetch_public('https://example.invalid/',Path('.'),access='registration_required',opener=lambda *a: self.fail('network called'))\n  File \"/tmp/station-proof-_fpyy1iv/scripts/modeling/station_evidence.py\", line 30, in fetch_public\n    with opener(url, timeout=60) as response:\n         ^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: CustodyTests.test_registration_refused_before_network.<locals>.<lambda>() got an unexpected keyword argument 'timeout'\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (errors=1)\n",
+      "selector": "test_station_evidence.CustodyTests.test_registration_refused_before_network",
+      "valid": false
+    }
+  ],
+  "failure": "control did not meet expected assertion outcome: access",
+  "interpreter": "3.11.15 (main, Jun 11 2026, 04:03:40) [Clang 22.1.3 ]",
+  "originals_unchanged": true,
+  "schema": "openplan.station-evidence-mutation-proof.v1",
+  "skips": 0,
+  "source_pins": {
+    "scripts/modeling/audit_station_evidence.py": "e78be95fe1a0199fb4e9b4a4e05a8af37f0f417361e0080d0dabf4da9db234d6",
+    "scripts/modeling/station_evidence.py": "60ec537d7a37d80b64a290778771c70f0dee3f5953fdff6e6987389dfa8f7063",
+    "scripts/modeling/tests/test_station_evidence.py": "fbe31c25abdf48c89534293b7bb2cc0e6e451772b4900741f5446909a6097bc1",
+    "scripts/modeling/tests/test_station_evidence_audit.py": "0d46783a42062c91c47a9b58dd4def2b1d7cdfb1c4804558e45e70a7fac1967c",
+    "scripts/modeling/validation_instrument.py": "78a67a02125db21eb35d4cdf6fdf4dbd44e15296d5b6d536f8c7377aa51f2aec",
+    "workers/aequilibrae_worker/count_observation_uncertainty.py": "c59c4e0795933891ce9f83ba748b99589c09ec3800039f32de574327a16da66f"
+  }
+}
