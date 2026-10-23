@@ -29,7 +29,7 @@
  * the menu and changes nothing.
  */
 
-export type PaletteId = "cartographic" | "slate" | "harbor" | "meadow" | "plum";
+export type PaletteId = "cartographic" | "slate" | "harbor" | "meadow" | "plum" | "signal";
 
 export type PaletteSwatch = {
   /** Page background. */
@@ -102,6 +102,15 @@ export const PALETTES: readonly PaletteDefinition[] = [
     swatch: {
       light: { bg: "#f6f3f7", panel: "#ffffff", accent: "#7e22ce", accent2: "#a21caf" },
       dark: { bg: "#15111a", panel: "#201a26", accent: "#d8b4fe", accent2: "#f0abfc" },
+    },
+  },
+  {
+    id: "signal",
+    label: "Signal",
+    description: "Yellow, light and dark gray, and black.",
+    swatch: {
+      light: { bg: "#ededed", panel: "#ededed", accent: "#ffdf00", accent2: "#000000" },
+      dark: { bg: "#000000", panel: "#303030", accent: "#ffdf00", accent2: "#ededed" },
     },
   },
 ] as const;

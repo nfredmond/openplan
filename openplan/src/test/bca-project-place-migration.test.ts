@@ -3,7 +3,7 @@ import { expect, it } from "vitest";
 import { placeKindSchema } from "@/lib/api/place-geographies";
 
 const original = readFileSync("supabase/migrations/20261016000001_bca_workbench_versions.sql", "utf8");
-const migration = readFileSync("supabase/migrations/20261019000003_bca_project_place_snapshot.sql", "utf8");
+const migration = readFileSync("supabase/migrations/20261023190200_bca_project_place_snapshot.sql", "utf8");
 const statements = migration.replace(/--[^\n]*/g, "");
 
 // SQL-source assertions only. Catalogue expression identity, NULL rejection,

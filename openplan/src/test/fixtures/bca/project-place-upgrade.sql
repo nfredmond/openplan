@@ -34,7 +34,7 @@ END;
 $before$;
 COMMIT;
 
-\ir ../../../../supabase/migrations/20261019000003_bca_project_place_snapshot.sql
+\ir ../../../../supabase/migrations/20261023190200_bca_project_place_snapshot.sql
 
 BEGIN;
 DO $after$
