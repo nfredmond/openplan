@@ -43,9 +43,10 @@ $$;
 
 CREATE FUNCTION public.bca_snapshot_text_valid(value text, max_units integer, canonical boolean DEFAULT false, min_units integer DEFAULT 1)
 RETURNS boolean LANGUAGE sql IMMUTABLE STRICT SET search_path = '' AS $$
-  -- Zod string lengths count UTF-16 units, including two per astral character.
+  -- Zod 4.6 and PostgreSQL char_length both count code points, as does the
+  -- projects table's own jurisdiction label check.
   SELECT public.bca_snapshot_trim(value) <> ''
-    AND char_length(value) + char_length(regexp_replace(value, U&'[^\+010000-\+10FFFF]', '', 'g')) BETWEEN min_units AND max_units
+    AND char_length(value) BETWEEN min_units AND max_units
     AND (NOT canonical OR value = public.bca_snapshot_trim(value));
 $$;
 

@@ -59,7 +59,9 @@ it("uses shared project context validation and refuses normalization while prese
   expect(migration).toContain(`resolved[1] = ANY(${adapterKinds})`);
   expect(migration).toContain(`project.place_kind <> ALL(${adapterKinds})`);
   expect(migration).not.toMatch(/project\.place_source\s+(?:NOT\s+IN|<>\s+ALL)/);
-  expect(migration).toContain("char_length(value) + char_length(regexp_replace(value");
+  // Code points, as Zod 4.6 and the projects table count them; no UTF-16 surrogate surcharge.
+  expect(migration).toContain("AND char_length(value) BETWEEN min_units AND max_units");
+  expect(migration).not.toContain("010000-");
 });
 it("checks actual locked source UUID and both UTC timestamp domains before accepting equality", () => {
   const guard = statements.slice(statements.indexOf("CREATE FUNCTION public.guard_project_bca_place_insert()"));

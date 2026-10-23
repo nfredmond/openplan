@@ -271,15 +271,12 @@ BEGIN
    PERFORM pg_temp.bca_fixture_refuse(project_id,owner_id,bad,'23514','reader-would-trim');
    RESET ROLE;
  END LOOP;
- UPDATE public.projects SET jurisdiction_context=jsonb_set(context,'{entries,0,label}',to_jsonb(repeat(chr(128512),100))) WHERE id=project_id;
+ -- A label at the projects table's 200 code point limit, all astral, still
+ -- snapshots: the BCA check counts code points exactly as that table does.
+ UPDATE public.projects SET jurisdiction_context=jsonb_set(context,'{entries,0,label}',to_jsonb(repeat(chr(128512),200))) WHERE id=project_id;
  bad := pg_temp.bca_fixture_document(project_id);
  SET LOCAL ROLE authenticated;
  PERFORM pg_temp.bca_fixture_insert(project_id,owner_id,bad);
- RESET ROLE;
- UPDATE public.projects SET jurisdiction_context=jsonb_set(context,'{entries,0,label}',to_jsonb(repeat(chr(128512),101))) WHERE id=project_id;
- bad := pg_temp.bca_fixture_document(project_id);
- SET LOCAL ROLE authenticated;
- PERFORM pg_temp.bca_fixture_refuse(project_id,owner_id,bad,'23514','utf16-context-label-limit');
  RESET ROLE;
  UPDATE public.projects SET jurisdiction_context=jsonb_set(context,'{entries}',jsonb_build_array(
    jsonb_build_object('label','Synthetic invalid resolved body','kind','tigerweb:unsupported','countryCode',NULL,

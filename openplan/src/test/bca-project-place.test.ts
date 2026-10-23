@@ -148,10 +148,12 @@ describe("BCA project-place reader and document boundary", () => {
       expect(raw.entries[0].label).toBe(`${padding}Synthetic body${padding}`);
     }
     expect(readBcaProjectPlace(bcaProjectId, { ...bcaProjectRow(), jurisdiction_context: context }).status).toBe("available");
-    for (const count of [100, 101]) {
+    // Labels count code points (Zod 4.6, PostgreSQL char_length), so astral
+    // characters count once: 200 is the limit, as in the projects table.
+    for (const count of [200, 201]) {
       const raw = { ...context, entries: [{ ...context.entries[0], label: "😀".repeat(count) }] };
       expect(readBcaProjectPlace(bcaProjectId, { ...bcaProjectRow(), jurisdiction_context: raw }).status)
-        .toBe(count === 100 ? "available" : "invalid");
+        .toBe(count === 200 ? "available" : "invalid");
     }
   });
   it("requires an exact project identity and complete snapshot in both retained and draft schemas", () => {
