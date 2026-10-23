@@ -1,0 +1,51 @@
+[
+  {
+    "file": "catalog.json",
+    "url": "https://www.arcgis.com/sharing/rest/content/items/15cdcdd4d7684ac0a091cd4ca65fe838?f=pjson",
+    "accessed_at": "2026-10-23T22:25:15.092672+00:00",
+    "bytes": 4375,
+    "sha256": "a1f558c22f17d8519981d2b7241abebe3ce94675e704b312bbba8327c54fe4c2"
+  },
+  {
+    "file": "schema-0.json",
+    "url": "https://arcgis.metc.state.mn.us/data1/rest/services/society/TBI_2019/FeatureServer/0?f=pjson",
+    "accessed_at": "2026-10-23T22:25:16.139118+00:00",
+    "bytes": 21724,
+    "sha256": "458401d60df0b7e501064b62dfa01f35cc719526fc6d681474dd190d868bd105"
+  },
+  {
+    "file": "schema-1.json",
+    "url": "https://arcgis.metc.state.mn.us/data1/rest/services/society/TBI_2019/FeatureServer/1?f=pjson",
+    "accessed_at": "2026-10-23T22:25:17.842942+00:00",
+    "bytes": 35880,
+    "sha256": "f3100aa000f03ba52e76870f7b3b723595ffe169413726d97d048a199388a7e1"
+  },
+  {
+    "file": "schema-2.json",
+    "url": "https://arcgis.metc.state.mn.us/data1/rest/services/society/TBI_2019/FeatureServer/2?f=pjson",
+    "accessed_at": "2026-10-23T22:25:19.415743+00:00",
+    "bytes": 35237,
+    "sha256": "3d2486b06e0d9005d78696d8c74df33c5e4142d5819140466810d06c64c012a2"
+  },
+  {
+    "file": "schema-4.json",
+    "url": "https://arcgis.metc.state.mn.us/data1/rest/services/society/TBI_2019/FeatureServer/4?f=pjson",
+    "accessed_at": "2026-10-23T22:25:21.215842+00:00",
+    "bytes": 68169,
+    "sha256": "7f5dd2511b85713995b55cb88ffe401ad4be3fab715592bbcccd81745d8ed9a9"
+  },
+  {
+    "file": "schema-9.json",
+    "url": "https://arcgis.metc.state.mn.us/data1/rest/services/society/TBI_2019/FeatureServer/9?f=pjson",
+    "accessed_at": "2026-10-23T22:25:21.811905+00:00",
+    "bytes": 81,
+    "sha256": "f35102f9f586975ebf5da09380b183482b14fbae6a56c0619cfda4f8641e0db1"
+  },
+  {
+    "file": "schema-10.json",
+    "url": "https://arcgis.metc.state.mn.us/data1/rest/services/society/TBI_2019/FeatureServer/10?f=pjson",
+    "accessed_at": "2026-10-23T22:25:22.582821+00:00",
+    "bytes": 81,
+    "sha256": "f35102f9f586975ebf5da09380b183482b14fbae6a56c0619cfda4f8641e0db1"
+  }
+]

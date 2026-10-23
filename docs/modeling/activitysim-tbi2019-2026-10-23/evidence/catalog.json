@@ -1,0 +1,71 @@
+{
+  "id": "15cdcdd4d7684ac0a091cd4ca65fe838",
+  "owner": "commons_etl_user",
+  "ownerId": "04da8a54ca124ec4921a45160b97cd8d",
+  "orgId": "9OIuDHbyhmH91RfZ",
+  "created": 1778859473000,
+  "modified": 1790703832000,
+  "guid": null,
+  "name": "",
+  "title": "Travel Behavior Inventory (TBI) 2019 Household Survey",
+  "type": "Feature Service",
+  "typeKeywords": [
+    "ArcGIS",
+    "Map Service",
+    "Feature Access",
+    "Feature Service",
+    "ArcGIS Server",
+    "Metadata",
+    "Service",
+    "Data"
+  ],
+  "description": "<p style='margin:0in;'>____________________________________________________________<\/p><p style='margin:0in;'><b><i><font size='3'>NOTE - although it's recommended to use the feature layer web service, the file geodatabase is available for download.<\/font><\/i><\/b><\/p><p style='margin:0in;'><b><i><br /><\/i><\/b><\/p>\n<p><a href='https://gisdata.metc.state.mn.us/gisdata/Society/tbi_home_interview2019.zip' style='background-color:#003865; border-radius:4px; color:#fff; padding:10px;' target='_blank' rel='nofollow ugc noopener noreferrer'><strong>Download FGDB<\/strong><\/a><\/p><p>____________________________________________________________<\/p><p><b><font size='4'>More Details<\/font><\/b><\/p><p>From 1949 to 2010, the study was conducted every ten years. In 2018, the Metropolitan Council (Met Council) transitioned to a recurrent, every-other-year study program. The recurrent program collected data for approximately 12 months of data collection every other year. This recurrent study introduced efficiencies and operational improvements enabling the Metropolitan Council to collect more current, detailed data for use in their travel models. <\/p><p>This dataset is comprised of the 2019 wave of the survey with the first date of data collection being 2018-10-05 and last date being 2019-09-29. There were 7,516 household collected consisting of 15,434 people. <\/p><p>Please refer to documentation for information about sample plan, survey instruments, field implementation, data expansion, summary of results, and data analysis guide: <a href='https://metropolitan-council.github.io/TBI_Household_Synthesis_Report' target='_blank' rel='nofollow ugc noopener noreferrer'>https://metropolitan-council.github.io/TBI_Household_Synthesis_Report<\/a><\/p><p>Key objectives of the Travel Behavior Inventory include the following: <\/p><p>* Collecting core information on household demographics, typical travel behavior, and regional transportation patterns to support the Met Council\u2019s transportation modeling and planning needs. <\/p><p>* Capturing information about new transportation modes and behaviors to keep pace with rapid changes in the transportation industry. <\/p><p>* Employing a thorough, multi-pronged approach to reach a representative sample of the population in the final dataset. <\/p><p>* Leveraging new technologies and methods to reach a more complete, detailed, high-quality dataset.<\/p>",
+  "tags": [
+    "Society",
+    "Metropolitan Planning Organization",
+    "Twin Cities"
+  ],
+  "snippet": "This Metropolitan Council dataset is based on the 2019 Travel Behavior Inventory study of household demographics, daily travel activities, and typical transportation patterns throughout the greater Twin Cities region.",
+  "thumbnail": "thumbnail/thumbnail.png",
+  "documentation": null,
+  "extent": [
+    [
+      1,
+      1
+    ],
+    [
+      1,
+      1
+    ]
+  ],
+  "categories": ["/Categories/Society"],
+  "spatialReference": "WGS_1984_Web_Mercator_Auxiliary_Sphere",
+  "accessInformation": "",
+  "classification": null,
+  "licenseInfo": "None. This dataset is public domain under the Minnesota Government Data Practices Act (Minnesota Statutes Chapter 13).",
+  "culture": "en-us",
+  "properties": null,
+  "advancedSettings": null,
+  "url": "https://arcgis.metc.state.mn.us/data1/rest/services/society/TBI_2019/FeatureServer",
+  "proxyFilter": null,
+  "access": "public",
+  "size": 82,
+  "subInfo": 0,
+  "appCategories": [],
+  "industries": [],
+  "languages": [],
+  "largeThumbnail": "",
+  "banner": "",
+  "screenshots": [],
+  "listed": false,
+  "commentsEnabled": true,
+  "numComments": 0,
+  "numRatings": 0,
+  "avgRating": 0,
+  "numViews": 4755,
+  "scoreCompleteness": 100,
+  "groupDesignations": null,
+  "apiToken1ExpirationDate": -1,
+  "apiToken2ExpirationDate": -1,
+  "lastViewed": 1792771200000
+}
