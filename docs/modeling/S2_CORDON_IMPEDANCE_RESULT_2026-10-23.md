@@ -762,3 +762,111 @@ holdout source is opened. No build, browser, full app QA, full worker matrix,
 Docker, hosted system, production service or secret is accessed. The audit
 does not establish an unaffected hosted history, scientific validity or completed
 S2. Keep PR #375 draft and keep the candidate off by default.
+
+## Round 5 addendum: corrected driver and Python 3.11 preparation
+
+The lead authorizes a second successor after reviewing the round 4 command
+error. The requested fetch succeeds. Checkout exits 128 because
+`t3-6facce23` still holds `work/s2-aeq-structural-experiment`. As in the earlier
+rounds, this thread uses its clean isolated checkout, detached at
+`b801d736321e8170a1e607c7a0544a39e18817d3`, in
+`/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa`. The old worktree remains
+unchanged. The lead's `assignment_runtime.py` import projection stays intact.
+This checkout conflict occurs before scientific preparation and is not an
+execution failure. No driver or study retries follow a failed verification.
+
+### Every verification entry point exists before execution
+
+The [precheck](../../data/modeling/s2-cordon-py311-round5-2026-10-23/driver-precheck.json)
+lists 488 source/test files with existence results and hashes. All exist.
+It includes the corrected driver, both mutation controllers and their source
+projections. The table lists every direct verification entry point; each path
+is relative to the repository root unless absolute. Fixture-generated files
+are created by their tests, not expected to exist before the tests start.
+The preserved round 4 driver and its failed output remain unchanged.
+
+| File or command checked before use | Existence result |
+|---|---|
+| `/home/nathaniel/.local/bin/python3.11` | File exists; executable resolves to CPython 3.11.15 |
+| `scripts/modeling/requirements.txt` | File exists; hash recorded |
+| `workers/aequilibrae_worker/requirements.txt` | File exists; hash recorded |
+| `data/modeling/s2-cordon-impedance-py311-2026-10-23/requirements-exact.txt` | File exists; hash recorded |
+| `/home/nathaniel/.local/state/openplan/s2-cordon-py311-round5-20261023/venv/bin/python3` | File exists before driver |
+| `/home/nathaniel/.local/state/openplan/s2-cordon-20261023/venv/bin/python3` | File exists; unchanged Python 3.14 refusal probe |
+| `data/modeling/s2-cordon-py311-round5-2026-10-23/verification-driver.py` | File exists; corrected county reference |
+| `workers/aequilibrae_worker/check_local_dependencies.py` | File exists |
+| `workers/aequilibrae_worker/test_assignment_runtime.py` | File exists |
+| `scripts/modeling/s2_cordon/test_measurement_contract.py` | File exists |
+| `scripts/modeling/s2_cordon/test_py311_successor.py` | File exists |
+| `workers/aequilibrae_worker/test_local_launchers.py` | File exists |
+| `workers/aequilibrae_worker/test_assignment_settings.py` | File exists |
+| `scripts/modeling/tests/test_assignment_convergence_settings.py` | File exists; replaces the nonexistent filename |
+| `scripts/modeling/s2_cordon/test_successor.py` | File exists |
+| `scripts/modeling/s2_cordon/test_study.py` | File exists |
+| `workers/hosted-models/verify_graph_compatibility.py` | File exists |
+| `workers/aequilibrae_worker/test_dependency_pins.py` | File exists |
+| `scripts/modeling/tests/test_fresh_osm_mode_import_paths.py` | File exists; lead's projection retained |
+| `scripts/modeling/s2_cordon/prove_py311_successor.py` | File exists; all named test methods exist |
+| `scripts/modeling/s2_cordon/prove_measurement.py` | File exists; all named test methods exist |
+| `scripts/modeling/s2_cordon/evaluate_py311.py` | File exists |
+| `scripts/modeling/s2_cordon/validate.py` | File exists |
+| `scripts/research/sealed_study.py` | File exists |
+| `systemd-run`, `bash`, `env` | Resolve to `/usr/bin/systemd-run`, `/usr/bin/bash`, `/usr/bin/env` |
+
+### Environment and preparation proof
+
+The new venv uses CPython 3.11.15, AequilibraE 1.6.2, NumPy 2.0.2,
+pandas 2.3.3, SciPy 1.17.1, Shapely 2.2.0, OpenMatrix 0.3.5.0,
+tables 3.11.1, GeoPandas 1.2.0 and pyproj 3.7.2. Both repository requirement
+files and the retained exact-version list supply installation constraints.
+No installed library is patched. The
+[runtime manifest](../../data/modeling/s2-cordon-py311-round5-2026-10-23/runtime-manifest.json)
+records all 48 distribution archive hashes and installed-file hashes, excluding
+bytecode. Interpreter SHA-256:
+`9e7f0dd93c77a32d07aa66631b48116101db6266701b292ebdc56a30d6cc7924`.
+Manifest SHA-256:
+`8151954eb80f4a804d35fe2560212ded91816f209d2b206878f6e68aa5083fdf`.
+
+All numerical installation, verification and mutation processes run under
+`systemd-run --user --scope -p MemoryMax=6G -p MemorySwapMax=0`.
+The verification scope is `run-p1157999-i59810031.scope`. The successor mutation
+scope is `run-p1166116-i59758951.scope`; runtime mutation scope is
+`run-p1173566-i59759345.scope`. The
+[corrected driver and outputs](../../data/modeling/s2-cordon-py311-round5-2026-10-23/checks.json)
+retain exact commands, exits and output hashes.
+
+| Current check | Result |
+|---|---|
+| Python 3.11 dependency preflight | Pass |
+| Actual Python 3.14 dependency preflight | Expected refusal before numerical imports |
+| Runtime admission | 4 passed |
+| Measurement contract | 5 passed; 40,000-link adapter returns 360 PCE |
+| Python 3.11 synthetic successor | 3 passed; full preparation and five invented assignments |
+| Local launchers | 17 passed |
+| Worker assignment settings | 11 passed |
+| County assignment settings | 9 passed |
+| Existing synthetic successor | 2 passed; full preparation and five invented assignments |
+| Study unit suite | 11 passed |
+| Dependency pins | 7 passed |
+| Fresh-OSM import projections | 1 passed, covering CLI and three image layouts |
+| Native graph probe | Pass: two compressed links and route distance 2.0 |
+
+Total: **70 tests passed, zero failed, zero skipped**, plus the graph probe and
+two expected preflight outcomes. The
+[runtime controls](../../data/modeling/s2-cordon-py311-round5-2026-10-23/runtime-mutation-controls.json)
+complete all 16 expected invocations: one harmless mutation survives three
+suites, eight injected faults fail their intended assertions, the actual
+Python 3.14 defect reproduces, and the explicit-division diagnostic passes.
+The restored suites pass 26 tests. The
+[successor controls](../../data/modeling/s2-cordon-py311-round5-2026-10-23/successor-mutation-controls.json)
+record one harmless survivor, four intended assertion failures and four restored
+test passes. Both controllers confirm exact source restoration, with zero skips.
+Mutation checks do not prove native solver correctness, county behavior,
+scientific accuracy, hosted history or machine-crash recovery. Passing suites
+are not counted again as additional distinct tests.
+
+The second-successor [preregistration](S2_CORDON_IMPEDANCE_PY311_PREREGISTRATION_2026-10-23.md)
+keeps the round 1 scientific sections byte-identical. The new lock must be
+committed before scientific execution. At this preparation checkpoint no real
+county assignment, receipt or result exists. Historical closures match
+190/190 and 201/201 files, and the prior 49,421 report bytes remain intact.
