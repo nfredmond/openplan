@@ -1,8 +1,20 @@
 import { buildProjectJurisdictionReadinessExportPayload } from "@/lib/jurisdiction-readiness/payload";
 import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
 import { PROJECT_JURISDICTION_COLUMNS } from "@/lib/projects/project-jurisdiction";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { guidedReportSelectionFixture, reportId } from "@/test/fixtures/guided-report-evidence";
+import { guidedReportDigest } from "@/lib/reports/guided-comparison-binding";
+vi.mock("server-only", () => ({}));
+const guidedPageMocks = vi.hoisted(() => ({ verify: vi.fn(), bytes: vi.fn(), controls: vi.fn(), realControls: false }));
+vi.mock("@/lib/reports/guided-comparison-server", async (importOriginal) => ({
+  ...await importOriginal<typeof import("@/lib/reports/guided-comparison-server")>(),
+  verifyGuidedComparisonReport: guidedPageMocks.verify,
+}));
+vi.mock("@/lib/models/artifact-source", async (importOriginal) => ({
+  ...await importOriginal<typeof import("@/lib/models/artifact-source")>(),
+  loadArtifactBytes: guidedPageMocks.bytes,
+}));
 
 const createClientMock = vi.fn();
 const notFoundMock = vi.fn(() => {
@@ -292,9 +304,13 @@ vi.mock("@/lib/operations/workspace-summary", async () => {
   };
 });
 
-vi.mock("@/components/reports/report-detail-controls", () => ({
-  ReportDetailControls: () => <div data-testid="report-detail-controls" />,
-}));
+vi.mock("@/components/reports/report-detail-controls", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/components/reports/report-detail-controls")>();
+  return { ReportDetailControls: (props: import("react").ComponentProps<typeof actual.ReportDetailControls>) => {
+    guidedPageMocks.controls(props);
+    return guidedPageMocks.realControls ? <actual.ReportDetailControls {...props} /> : <div data-testid="report-detail-controls" />;
+  } };
+});
 
 import ReportDetailPage from "@/app/(app)/reports/[reportId]/page";
 
@@ -316,6 +332,99 @@ async function renderReport(tab: ReportTabKey) {
       searchParams: Promise.resolve({ tab }),
     })
   );
+}
+
+/** Rebind only synthetic report scope; no live files or custody are consulted. */
+function selectGuidedPageFixture(fault?: string, sourceContext: Record<string, unknown> = {}) {
+  const saved = guidedReportSelectionFixture();
+  saved.payload.workspaceId = "workspace-1";
+  saved.payload.projectId = "project-1";
+  if (fault === "workspace") saved.payload.workspaceId = "foreign-workspace";
+  if (fault === "project") saved.payload.projectId = "foreign-project";
+  if (fault === "snapshot") saved.payload.snapshot.id = reportId(999);
+  saved.bindingSha256 = guidedReportDigest(saved.payload);
+  if (fault === "digest") saved.bindingSha256 = "f".repeat(64);
+  if (fault === "version") Object.assign(saved, { version: 2 });
+  reportMaybeSingleMock.mockResolvedValueOnce({ data: { id: "report-1", workspace_id: "workspace-1", project_id: "project-1",
+    report_type: "analysis_summary", title: "Saved guided comparison", status: "generated", summary: null,
+    rtp_cycle_id: null, engagement_campaign_id: null, generated_at: "2026-03-28T18:00:00Z",
+    latest_artifact_kind: "html", latest_artifact_url: null, created_at: "2026-03-28T17:00:00Z", updated_at: "2026-03-28T18:05:00Z",
+    metadata_json: { guidedComparisonSelectionV1: saved } }, error: null });
+  const frozen = structuredClone(saved);
+  if (fault === "stale artifact") frozen.bindingSha256 = "e".repeat(64);
+  artifactsOrderMock.mockResolvedValueOnce({ data: [{ id: "artifact-1", artifact_kind: "html", storage_path: null,
+    generated_at: "2026-03-28T18:00:00Z", metadata_json: { guidedComparisonSelectionV1: frozen,
+      sourceContext: { jurisdictionReadiness: buildProjectJurisdictionReadinessExportPayload({ id: "project-1", jurisdiction_context: null }, jurisdictionReadinessRegistrySha256()), ...sourceContext, guidedComparisonSelectionV1: frozen } } }], error: null });
+  return saved;
+}
+
+/** Retain the same selected member while varying availability of the live spine. */
+function selectRetainedScenarioFixture(summary: "legacy" | "explicit") {
+  const setAt = "2026-03-28T17:35:00.000Z";
+  const snapshotAt = "2026-03-28T17:42:00.000Z";
+  selectGuidedPageFixture(undefined, {
+    evidenceChainSummary: { linkedRunCount: 4 },
+    scenarioSetLinks: [{ scenarioSetId: "scenario-set-1", scenarioSetTitle: "Retained comparison",
+      matchedEntries: [], comparisonSummary: { label: "Retained comparison", readyAlternatives: 0, baselineEntryPresent: true },
+      scenarioSetUpdatedAt: setAt,
+      comparisonSnapshots: [{ comparisonSnapshotId: "comparison-1", updatedAt: snapshotAt }],
+      ...(summary === "legacy" ? {} : { sharedSpine: {
+        schemaPending: false, assumptionSetCount: 0, dataPackageCount: 0, indicatorSnapshotCount: 0, comparisonSnapshotCount: 1,
+        latestAssumptionSetUpdatedAt: null, latestDataPackageUpdatedAt: null, latestIndicatorSnapshotAt: null,
+        latestComparisonSnapshotUpdatedAt: snapshotAt,
+      } }) }],
+  });
+  scenarioSetsInMock.mockResolvedValue({ data: [{ id: "scenario-set-1", updated_at: setAt }], error: null });
+  scenarioComparisonSnapshotsInMock.mockResolvedValue({ data: [{ id: "comparison-1", scenario_set_id: "scenario-set-1",
+    updated_at: snapshotAt }], error: null });
+}
+
+/** Isolate the named source seams without a selected guided comparison or unrelated drift. */
+function selectReadinessSeamFixture(state: string) {
+  const at = "2026-10-18T00:00:00Z";
+  const sourceAt = "2026-10-17T00:00:00.000Z";
+  const project = { id: "project-1", workspace_id: "workspace-1", name: "Synthetic source review", jurisdiction_context: null, updated_at: sourceAt };
+  const jurisdiction = buildProjectJurisdictionReadinessExportPayload(project, jurisdictionReadinessRegistrySha256());
+  const updatedAt = state === "complete-writeback" ? "2026-10-18T01:00:00Z" : at;
+  projectMaybeSingleMock.mockResolvedValueOnce({ data: project, error: null });
+  reportMaybeSingleMock.mockResolvedValueOnce({ data: { id: "report-1", workspace_id: "workspace-1", project_id: "project-1",
+    title: "Synthetic source review packet", report_type: "project_status", status: "generated", summary: null,
+    engagement_campaign_id: null, rtp_cycle_id: null, metadata_json: {}, latest_artifact_kind: "html", generated_at: at,
+    updated_at: updatedAt, created_at: at }, error: null });
+  artifactsOrderMock.mockResolvedValueOnce({ data: [{ id: "artifact-1", artifact_kind: "html", generated_at: at,
+    metadata_json: { ...(state.includes("writeback") ? { generationWriteback: { schema: "openplan.report-generation-writeback.v1", reportUpdatedAt: state === "complete-writeback" ? updatedAt : sourceAt } } : {}),
+      sourceContext: { evidenceChainSummary: { linkedRunCount: 1 },
+        ...(state.includes("untracked") ? {} : { jurisdictionReadiness: state.includes("unavailable") ? { ...jurisdiction, payloadSha256: "f".repeat(64) } : jurisdiction }),
+        ...(state === "retained-crash-failed" ? { safetyEvidenceReadStatus: "failed" } : {}),
+        ...(state === "gate-failed" ? { stageGateSnapshot: { templateId: "ca_stage_gates_v0_1", templateVersion: "0.1.0", passCount: 0, holdCount: 0, notStartedCount: 9, blockedGate: null, nextGate: null } } : {}),
+        scenarioSetLinks: [{ scenarioSetId: "scenario-set-1", scenarioSetTitle: "Synthetic retained comparison", matchedEntries: [],
+          comparisonSummary: { label: "Synthetic retained comparison", totalAlternatives: 0, readyAlternatives: 0, blockedAlternatives: 0, baselineEntryPresent: true, baselineRunPresent: true },
+          scenarioSetUpdatedAt: sourceAt, comparisonSnapshots: [{ comparisonSnapshotId: "comparison-1", status: "ready", indicatorDeltaCount: 3, updatedAt: sourceAt }],
+          sharedSpine: { schemaPending: false, assumptionSetCount: 0, dataPackageCount: 0, indicatorSnapshotCount: 0, comparisonSnapshotCount: 1,
+            latestAssumptionSetUpdatedAt: null, latestDataPackageUpdatedAt: null, latestIndicatorSnapshotAt: null, latestComparisonSnapshotUpdatedAt: sourceAt } }],
+      } } }], error: null });
+  scenarioSetsInMock.mockResolvedValue({ data: [{ id: "scenario-set-1", updated_at: sourceAt }], error: null });
+  scenarioComparisonSnapshotsInMock.mockResolvedValue({ data: [{ id: "comparison-1", scenario_set_id: "scenario-set-1", updated_at: sourceAt }], error: null });
+  if (state === "live-crash-failed") safetyIngestLimitMock.mockResolvedValueOnce({ data: null, error: { message: "Synthetic crash query denied" } });
+  if (state === "gate-failed") stageGateLimitMock.mockResolvedValueOnce({ data: null, error: { message: "Synthetic gate query denied" } });
+  if (state.includes("new-safety")) safetyIngestLimitMock.mockResolvedValueOnce({ data: [{ id: "new-safety", created_at: "2026-10-19T00:00:00Z" }], error: null });
+}
+
+const pendingScenarioReads = (["legacy", "explicit"] as const).flatMap((summary) => [
+  { query: "assumptions", read: scenarioAssumptionSetsInMock },
+  { query: "packages", read: scenarioDataPackagesInMock },
+  { query: "indicators", read: scenarioIndicatorSnapshotsInMock },
+  { query: "comparisons", read: scenarioComparisonSnapshotsInMock },
+].map((query) => ({ summary, ...query })));
+
+function expectNoGuidedWorkerReads() {
+  expect(guidedPageMocks.verify).not.toHaveBeenCalled();
+  expect(guidedPageMocks.bytes).not.toHaveBeenCalled();
+  for (const table of ["model_run_artifacts", "model_run_kpis", "model_run_stages", "model_attempt_instrument_custody"]) {
+    expect(fromMock).not.toHaveBeenCalledWith(table);
+  }
+  expect(reportSelectMock).toHaveBeenCalledWith(expect.stringContaining("metadata_json"));
+  expect(reportEqMock).toHaveBeenCalledWith("id", "report-1");
 }
 
 function expectLinkByHref(name: RegExp, href: string) {
@@ -355,6 +464,9 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     // the NEXT test's first read instead. Proven by the pair of tests at the
     // end of this file.
     vi.resetAllMocks();
+    guidedPageMocks.realControls = false;
+    guidedPageMocks.verify.mockRejectedValue(new Error("Full guided verification must not run on ordinary page load"));
+    guidedPageMocks.bytes.mockRejectedValue(new Error("Worker artifact downloads must not run on ordinary page load"));
 
     authGetUserMock.mockResolvedValue({
       data: {
@@ -423,6 +535,7 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
 
     projectMaybeSingleMock.mockResolvedValue({
       data: {
+        jurisdiction_context: null,
         id: "project-1",
         workspace_id: "workspace-1",
         name: "Downtown Mobility Plan",
@@ -919,6 +1032,324 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
    * where to look. Keep new assertions in the group they belong to rather than
    * appending them to whichever test is nearest.
    */
+  it.each(["packet", "evidence", "history"] as const)("loads a saved guided comparison on %s without full verification or worker bytes", async (tab) => {
+    const saved = selectGuidedPageFixture();
+    await renderReport(tab);
+    expectNoGuidedWorkerReads();
+    expect(guidedPageMocks.controls).toHaveBeenCalledWith(expect.objectContaining({
+      guidedComparison: expect.objectContaining({ snapshotId: saved.snapshotId, bindingSha256: saved.bindingSha256,
+        problem: null, liveEvidenceStatus: "unassessed" }),
+    }));
+    expect(screen.queryByText(/Exact four-output selection verified/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/KPI receipts, assumptions, population and artifact bytes match/)).not.toBeInTheDocument();
+    if (tab === "packet") expect(screen.getByText("Saved binding checked; live evidence unassessed")).toBeInTheDocument();
+    if (tab === "history") expect(screen.getByText(/Live files and their source history are unassessed on this page/)).toBeInTheDocument();
+  });
+
+  it.each(["legacy", "explicit zero", "explicit unchanged", "set timestamp", "snapshot timestamp", "snapshot removed", "assumption timestamp", "assumption count", "package count", "indicator count", "comparison removed"])(
+    "compares a retained scenario baseline truthfully: %s", async (basis) => {
+      const setAt = "2026-03-28T17:35:00.000Z";
+      const snapshotAt = "2026-03-28T17:42:00.000Z";
+      const sharedSpine = {
+        schemaPending: false, assumptionSetCount: basis === "assumption timestamp" ? 1 : 0, dataPackageCount: 0, indicatorSnapshotCount: 0,
+        comparisonSnapshotCount: basis === "explicit zero" ? 0 : basis === "comparison removed" ? 2 : 1,
+        latestAssumptionSetUpdatedAt: basis === "assumption timestamp" ? "2026-03-28T17:39:00.000Z" : null, latestDataPackageUpdatedAt: null, latestIndicatorSnapshotAt: null,
+        latestComparisonSnapshotUpdatedAt: snapshotAt,
+      };
+      const legacy = basis === "legacy" || basis.startsWith("snapshot") || basis === "set timestamp";
+      selectGuidedPageFixture(undefined, {
+        evidenceChainSummary: { linkedRunCount: 4 },
+        scenarioSetLinks: [{ scenarioSetId: "scenario-set-1", scenarioSetTitle: "Retained comparison",
+          matchedEntries: [], comparisonSummary: { label: "Retained comparison", readyAlternatives: 0, baselineEntryPresent: true },
+          scenarioSetUpdatedAt: setAt,
+          comparisonSnapshots: [{ comparisonSnapshotId: "comparison-1", updatedAt: snapshotAt }],
+          ...(legacy ? {} : { sharedSpine }) }],
+      });
+      scenarioSetsInMock.mockResolvedValue({ data: [{ id: "scenario-set-1",
+        updated_at: basis === "set timestamp" ? "2026-03-28T17:36:00.000Z" : setAt }], error: null });
+      scenarioComparisonSnapshotsInMock.mockResolvedValue({ data: basis === "snapshot removed" ? [] : [{
+        id: "comparison-1", scenario_set_id: "scenario-set-1",
+        updated_at: basis === "snapshot timestamp" ? "2026-03-28T17:43:00.000Z" : snapshotAt }], error: null });
+      if (basis === "assumption timestamp") scenarioAssumptionSetsInMock.mockResolvedValue({
+        data: [{ scenario_set_id: "scenario-set-1", updated_at: "2026-03-28T17:40:00.000Z" }], error: null });
+      if (basis === "assumption count") scenarioAssumptionSetsInMock.mockResolvedValue({ data: [{ scenario_set_id: "scenario-set-1", updated_at: null }], error: null });
+      if (basis === "package count") scenarioDataPackagesInMock.mockResolvedValue({ data: [{ scenario_set_id: "scenario-set-1", updated_at: null }], error: null });
+      if (basis === "indicator count") scenarioIndicatorSnapshotsInMock.mockResolvedValue({ data: [{ scenario_set_id: "scenario-set-1", snapshot_at: null }], error: null });
+      await renderReport("history");
+      expect(scenarioComparisonSnapshotsSelectMock).toHaveBeenCalledWith("id, scenario_set_id, updated_at");
+      expectNoGuidedWorkerReads();
+      const row = within(document.getElementById("drift-since-generation")!).getByText("Scenario basis").parentElement!.parentElement!;
+      if (basis === "legacy") {
+        expect(row).toHaveTextContent("unassessed");
+        expect(row).toHaveTextContent("missing fields do not establish zero or a source change");
+        expect(row).not.toHaveTextContent("comparisons 0 -> 1");
+        expect(row).not.toHaveTextContent("unchanged");
+        expect(screen.queryByText(/Changed sources:.*Scenario basis/)).not.toBeInTheDocument();
+        expect(guidedPageMocks.controls).toHaveBeenCalledWith(expect.objectContaining({
+          driftSummary: expect.objectContaining({ changedCount: 0, unassessedLabels: ["Scenario basis"] }),
+          guidedComparison: expect.objectContaining({ liveEvidenceStatus: "unassessed", problem: null }),
+        }));
+      } else if (basis === "explicit unchanged") {
+        expect(row).toHaveTextContent("unchanged");
+        expect(row).not.toHaveTextContent("unassessed");
+        expect(screen.queryByText(/Changed sources:.*Scenario basis/)).not.toBeInTheDocument();
+      } else {
+        expect(row).toHaveTextContent("updated");
+        expect(guidedPageMocks.controls).toHaveBeenCalledWith(expect.objectContaining({
+          driftSummary: expect.objectContaining({ changedCount: 1, labels: ["Scenario basis"] }),
+        }));
+        if (basis === "explicit zero") expect(row).toHaveTextContent("comparisons 0 -> 1");
+      }
+    }
+  );
+
+  it.each(pendingScenarioReads)("keeps pending $query live reads unassessed with a $summary summary", async ({ summary, query, read }) => {
+    for (const tab of ["history", "packet"] as const) {
+      selectRetainedScenarioFixture(summary);
+      read.mockResolvedValue({ data: null, error: { message: `Could not find the table scenario_${query} in the schema cache` } });
+      await renderReport(tab);
+      expectNoGuidedWorkerReads();
+      expect(scenarioSetsSelectMock).toHaveBeenCalledWith("id, updated_at");
+      expect(scenarioSetsInMock).toHaveBeenCalledWith("id", ["scenario-set-1"]);
+      expect(scenarioComparisonSnapshotsSelectMock).toHaveBeenCalledWith("id, scenario_set_id, updated_at");
+      for (const scopedRead of [scenarioAssumptionSetsInMock, scenarioDataPackagesInMock, scenarioIndicatorSnapshotsInMock, scenarioComparisonSnapshotsInMock]) {
+        expect(scopedRead).toHaveBeenCalledWith("scenario_set_id", ["scenario-set-1"]);
+      }
+      expect(guidedPageMocks.controls).toHaveBeenLastCalledWith(expect.objectContaining({
+        driftSummary: expect.objectContaining({ changedCount: 0, labels: [], unassessedLabels: ["Scenario basis"] }),
+        guidedComparison: expect.objectContaining({ liveEvidenceStatus: "unassessed", problem: null }),
+      }));
+      expect(screen.queryByText(/Changed sources:/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Review changed source areas and regenerate/)).not.toBeInTheDocument();
+      if (tab === "history") {
+        const row = within(document.getElementById("drift-since-generation")!).getByText("Scenario basis").parentElement!.parentElement!;
+        expect(row).toHaveTextContent("unassessed");
+        expect(row).not.toHaveTextContent(/updated|unchanged|snapshot changed/);
+        expect(row).toHaveTextContent("Live shared-spine queries are pending");
+        expect(row).toHaveTextContent("Live counts, shared-spine timing and retained snapshot presence remain unassessed");
+        if (summary === "explicit") expect(row).not.toHaveTextContent("Historical shared-spine totals are not recorded");
+        else expect(row).toHaveTextContent("Historical shared-spine totals are not recorded");
+      } else {
+        const freshness = screen.getByText("How current the generated file is").parentElement!;
+        expect(freshness).toHaveTextContent("Comparison evidence unassessed");
+        expect(freshness).not.toHaveTextContent("Refresh recommended");
+        expect(screen.getByText("Live scenario evidence unassessed")).toBeInTheDocument();
+        expect(screen.getByText(/Live shared-spine queries are pending/)).toBeInTheDocument();
+        expect(screen.queryByText("Historical source baseline unassessed")).not.toBeInTheDocument();
+        expect(screen.queryByText(/Some historical source totals were not recorded/)).not.toBeInTheDocument();
+      }
+      cleanup();
+    }
+  });
+
+  it.each(pendingScenarioReads)("keeps a known set timestamp change during pending $query reads with a $summary summary", async ({ summary, query, read }) => {
+    for (const tab of ["history", "packet"] as const) {
+      selectRetainedScenarioFixture(summary);
+      read.mockResolvedValue({ data: null, error: { message: `relation scenario_${query} does not exist` } });
+      scenarioSetsInMock.mockResolvedValue({ data: [{ id: "scenario-set-1", updated_at: "2026-03-28T17:36:00.000Z" }], error: null });
+      await renderReport(tab);
+      expect(guidedPageMocks.controls).toHaveBeenLastCalledWith(expect.objectContaining({
+        driftSummary: expect.objectContaining({ changedCount: 1, labels: ["Scenario basis"] }),
+      }));
+      if (tab === "history") {
+        const row = within(document.getElementById("drift-since-generation")!).getByText("Scenario basis").parentElement!.parentElement!;
+        expect(row).toHaveTextContent("updated");
+        expect(row).toHaveTextContent("Live shared-spine queries are pending");
+      } else {
+        expect(screen.getByText("How current the generated file is").parentElement!).toHaveTextContent("Refresh recommended");
+        expect(screen.getByText("1 source change")).toBeInTheDocument();
+        expect(screen.getByText(/Review changed source areas and regenerate/)).toBeInTheDocument();
+      }
+      cleanup();
+    }
+  });
+
+  it.each(["legacy", "explicit"] as const)("requires a successful set read to claim changed timing during pending spine reads: %s", async (summary) => {
+    selectRetainedScenarioFixture(summary);
+    scenarioAssumptionSetsInMock.mockResolvedValue({ data: null, error: { message: "schema cache unavailable" } });
+    scenarioSetsInMock.mockResolvedValue({ data: [{ id: "scenario-set-1", updated_at: "2026-03-28T17:36:00.000Z" }],
+      error: { message: "scenario set read failed" } });
+    await renderReport("history");
+    expect(guidedPageMocks.controls).toHaveBeenCalledWith(expect.objectContaining({
+      driftSummary: expect.objectContaining({ changedCount: 0, labels: [], unassessedLabels: ["Scenario basis"] }),
+    }));
+    expect(screen.queryByText("Refresh recommended")).not.toBeInTheDocument();
+  });
+
+  it.each((["legacy", "explicit"] as const).flatMap((summary) => ["removed", "moved"].map((change) => ({ summary, change }))))(
+    "detects a $change retained snapshot after the pending read clears with a $summary summary", async ({ summary, change }) => {
+      selectRetainedScenarioFixture(summary);
+      scenarioAssumptionSetsInMock.mockResolvedValue({ data: null, error: { message: "schema cache unavailable" } });
+      await renderReport("history");
+      expect(guidedPageMocks.controls).toHaveBeenLastCalledWith(expect.objectContaining({
+        driftSummary: expect.objectContaining({ changedCount: 0, unassessedLabels: ["Scenario basis"] }),
+      }));
+      cleanup();
+      selectRetainedScenarioFixture(summary);
+      scenarioAssumptionSetsInMock.mockResolvedValue({ data: [], error: null });
+      // Preserve the explicit census and latest time so membership is the only changed fact.
+      scenarioComparisonSnapshotsInMock.mockResolvedValue({ data: [{
+        id: "replacement-comparison", scenario_set_id: "scenario-set-1",
+        updated_at: "2026-03-28T17:42:00.000Z",
+      }, ...(change === "moved" ? [{ id: "comparison-1", scenario_set_id: "different-set",
+        updated_at: "2026-03-28T17:42:00.000Z" }] : [])], error: null });
+      await renderReport("history");
+      expect(scenarioComparisonSnapshotsInMock).toHaveBeenLastCalledWith("scenario_set_id", ["scenario-set-1"]);
+      const row = within(document.getElementById("drift-since-generation")!).getByText("Scenario basis").parentElement!.parentElement!;
+      expect(row).toHaveTextContent("updated");
+      expect(row).not.toHaveTextContent("Live shared-spine queries are pending");
+      expect(guidedPageMocks.controls).toHaveBeenLastCalledWith(expect.objectContaining({
+        driftSummary: expect.objectContaining({ changedCount: 1, labels: ["Scenario basis"] }),
+      }));
+    }
+  );
+
+  it.each(["version", "digest", "workspace", "project", "snapshot"])("blocks the stored %s binding without downloading or repairing evidence", async (fault) => {
+    selectGuidedPageFixture(fault);
+    await renderReport("packet");
+    expect(screen.getByText("Saved comparison binding is invalid")).toBeInTheDocument();
+    expect(screen.queryByText("Saved binding checked; live evidence unassessed")).not.toBeInTheDocument();
+    expectNoGuidedWorkerReads();
+  });
+
+  it("reports a changed stored artifact binding without asserting a fresh byte audit", async () => {
+    selectGuidedPageFixture("stale artifact");
+    await renderReport("history");
+    expect(screen.getByText(/The saved report selection differs from the retained artifact/)).toBeInTheDocument();
+    expectNoGuidedWorkerReads();
+  });
+
+  it.each((["current", "changed", "unavailable", "untracked", "legacy", "writeback", "unreadable", "live-unavailable"] as const).flatMap((state) =>
+    (["packet", "history"] as const).map((tab) => ({ state, tab }))))(
+    "carries jurisdiction assessment into real Controls and $tab: $state", async ({ state, tab }) => {
+      guidedPageMocks.realControls = true;
+      const at = "2026-10-18T00:00:00Z";
+      const project = { id: "project-1", workspace_id: "workspace-1", name: "Synthetic jurisdiction project",
+        jurisdiction_context: null, place_country_code: "US", updated_at: at };
+      const snapshot = buildProjectJurisdictionReadinessExportPayload(project, jurisdictionReadinessRegistrySha256());
+      const retained = state === "unavailable" ? { ...snapshot, payloadSha256: "f".repeat(64) }
+        : state === "legacy" ? { ...snapshot, schema: "historical.v3" } : snapshot;
+      projectMaybeSingleMock.mockResolvedValueOnce({ data: state === "changed" ? { ...project, place_country_code: "CA" } : project, error: null });
+      reportMaybeSingleMock.mockResolvedValueOnce({ data: { id: "report-1", workspace_id: "workspace-1", project_id: "project-1",
+        title: "Synthetic jurisdiction packet", report_type: "project_status", status: "generated", summary: null,
+        latest_artifact_kind: "html", generated_at: at, updated_at: at, created_at: at }, error: null });
+      artifactsOrderMock.mockResolvedValueOnce(state === "unreadable" ? { data: null, error: { message: "Artifact read unavailable" } }
+        : { data: [{ id: "artifact-1", artifact_kind: "html", generated_at: at,
+          metadata_json: { ...(state === "writeback" ? { generationWriteback: { schema: "openplan.report-generation-writeback.v1", reportUpdatedAt: "2026-10-17T00:00:00Z" } } : {}),
+            sourceContext: { evidenceChainSummary: { linkedRunCount: 1 },
+              ...(state === "untracked" ? {} : { jurisdictionReadiness: retained }) } } }], error: null });
+      if (state === "live-unavailable") fundingAwardsOrderMock.mockResolvedValueOnce({ data: null, error: { message: "Funding read unavailable" } });
+      await renderReport(tab);
+      expect(projectSelectMock).toHaveBeenCalledWith(expect.stringContaining(PROJECT_JURISDICTION_COLUMNS));
+      expect(artifactsSelectMock).toHaveBeenCalledWith(expect.stringContaining("metadata_json"));
+      const controls = document.getElementById("report-controls")!;
+      if (state === "current") {
+        expect(within(controls).getByText("Current / ready")).toBeInTheDocument();
+        if (tab === "packet") expect(screen.getByText("Context captured")).toBeInTheDocument();
+      } else {
+        expect(within(controls).queryByText("Current / ready")).not.toBeInTheDocument();
+        expect(screen.queryByText("Evidence chain current")).not.toBeInTheDocument();
+        if (state === "changed") {
+          expect(within(controls).getByText("Changed sources: Jurisdiction inputs.")).toBeInTheDocument();
+          if (tab === "packet") {
+            expect(screen.getByText("1 source change")).toBeInTheDocument();
+            expect(screen.getAllByText(/Project jurisdiction context or registry inputs changed/).length).toBeGreaterThan(0);
+          }
+        } else {
+          expect(within(controls).queryByText(/Changed sources:/)).not.toBeInTheDocument();
+          if (state === "writeback") expect(within(controls).getByText("Packet completion needs review")).toBeInTheDocument();
+          else if (state !== "unreadable") {
+            expect(within(controls).getByText("Source evidence unassessed")).toBeInTheDocument();
+            expect(within(controls).getByText(state === "unavailable" ? /Jurisdiction inputs unavailable/ : state === "live-unavailable" ? /Live funding evidence unavailable/ : /Jurisdiction baseline historically untracked/)).toBeInTheDocument();
+            expect(within(controls).queryByText(/regenerate/i)).not.toBeInTheDocument();
+          }
+          if (tab === "packet") expect(screen.queryByText("Context captured")).not.toBeInTheDocument();
+        }
+      }
+      expectNoGuidedWorkerReads();
+    });
+
+  it.each([
+    { query: "sets", read: scenarioSetsInMock, select: scenarioSetsSelectMock, columns: "id, updated_at" },
+    { query: "assumptions", read: scenarioAssumptionSetsInMock, select: scenarioAssumptionSetsSelectMock, columns: "scenario_set_id, updated_at" },
+    { query: "packages", read: scenarioDataPackagesInMock, select: scenarioDataPackagesSelectMock, columns: "scenario_set_id, updated_at" },
+    { query: "indicators", read: scenarioIndicatorSnapshotsInMock, select: scenarioIndicatorSnapshotsSelectMock, columns: "scenario_set_id, snapshot_at" },
+    { query: "comparisons", read: scenarioComparisonSnapshotsInMock, select: scenarioComparisonSnapshotsSelectMock, columns: "id, scenario_set_id, updated_at" },
+  ])("keeps ordinary failed scenario $query unknown in real Controls, Packet and grant advice", async ({ read, select, columns }) => {
+    selectReadinessSeamFixture("current");
+    guidedPageMocks.realControls = true;
+    read.mockResolvedValue({ data: null, error: { message: "Synthetic ordinary scenario query denied" } });
+    await renderReport("packet");
+    expect(select).toHaveBeenCalledWith(columns);
+    expect(projectSelectMock).toHaveBeenCalledWith(expect.stringContaining(PROJECT_JURISDICTION_COLUMNS));
+    expect(artifactsSelectMock).toHaveBeenCalledWith(expect.stringContaining("metadata_json"));
+    const controls = document.getElementById("report-controls")!;
+    expect(within(controls).getByText("Source evidence unassessed")).toBeInTheDocument();
+    expect(within(controls).getByText(/Live scenario evidence unavailable/)).toBeInTheDocument();
+    expect(within(controls).queryByText(/Current \/ ready|Changed sources:/)).not.toBeInTheDocument();
+    expect(screen.getByText("How current the generated file is").parentElement!).toHaveTextContent("Source evidence unassessed");
+    expect(screen.queryByText("Context captured")).not.toBeInTheDocument();
+    expect(screen.getByText("Analysis behind a grant case").parentElement!).toHaveTextContent("Modeling evidence unassessed");
+    expect(screen.getByText("Review unassessed supporting evidence")).toBeInTheDocument();
+    expect(screen.queryByText("Refresh supporting packet before final pursue language")).not.toBeInTheDocument();
+    expect(screen.queryByText("Refresh recommended")).not.toBeInTheDocument();
+    expectNoGuidedWorkerReads();
+  });
+
+  it.each(["current", "live-crash-failed", "retained-crash-failed", "gate-failed", "jur-unavailable-new-safety", "jur-untracked-new-safety", "jur-unavailable-writeback", "jur-untracked-writeback", "complete-writeback"])(
+    "keeps the detail mixed/failure assessment consistent: %s", async (state) => {
+      selectReadinessSeamFixture(state);
+      guidedPageMocks.realControls = true;
+      await renderReport("packet");
+      expect(projectSelectMock).toHaveBeenCalledWith(expect.stringContaining(PROJECT_JURISDICTION_COLUMNS));
+      expect(artifactsSelectMock).toHaveBeenCalledWith(expect.stringContaining("metadata_json"));
+      expect(safetyIngestSelectMock).toHaveBeenCalledWith("id, created_at");
+      expect(safetyIngestEqProjectMock).toHaveBeenCalledWith("project_id", "project-1");
+      const controls = document.getElementById("report-controls")!;
+      const packet = screen.getByText("How current the generated file is").parentElement!;
+      const grants = screen.getByText("Analysis behind a grant case").parentElement!;
+      if (state === "current" || state === "complete-writeback") {
+        expect(within(controls).getByText("Current / ready")).toBeInTheDocument();
+        expect(packet).toHaveTextContent("Packet current");
+        expect(screen.getByText("Context captured")).toBeInTheDocument();
+      } else if (state.includes("new-safety") || state.includes("writeback")) {
+        expect(within(controls).queryByText("Current / ready")).not.toBeInTheDocument();
+        expect(packet).toHaveTextContent("Refresh recommended");
+        expect(packet).toHaveTextContent(state.includes("unavailable") ? "Jurisdiction inputs unavailable" : "Jurisdiction baseline historically untracked");
+        expect(grants).toHaveTextContent("Refresh recommended");
+        expect(screen.getByText("Refresh supporting packet before final pursue language")).toBeInTheDocument();
+        if (state.includes("new-safety")) {
+          expect(within(controls).getByText("Changed sources: Crash evidence.")).toBeInTheDocument();
+          expect(screen.getByText("1 source change")).toBeInTheDocument();
+        } else expect(within(controls).getByText("Packet completion needs review")).toBeInTheDocument();
+      } else {
+        expect(within(controls).getByText("Source evidence unassessed")).toBeInTheDocument();
+        expect(within(controls).queryByText(/Changed sources:/)).not.toBeInTheDocument();
+        expect(packet).toHaveTextContent("Source evidence unassessed");
+        expect(packet).not.toHaveTextContent(/Refresh recommended|regenerat/i);
+        expect(screen.queryByText("Context captured")).not.toBeInTheDocument();
+        expect(grants).toHaveTextContent("Modeling evidence unassessed");
+        expect(grants).not.toHaveTextContent(/should be refreshed|Appears decision-ready/);
+        expect(screen.getByText("Review unassessed supporting evidence")).toBeInTheDocument();
+        expect(screen.queryByText("Refresh supporting packet before final pursue language")).not.toBeInTheDocument();
+        if (state === "gate-failed") {
+          expect(stageGateSelectMock).toHaveBeenCalledWith(expect.stringContaining("project_id"));
+          expect(stageGateEqProjectMock).toHaveBeenCalledWith("project_id", "project-1");
+        }
+      }
+      expectNoGuidedWorkerReads();
+    });
+
+  it("keeps the retained failed crash-read History row unassessed", async () => {
+    selectReadinessSeamFixture("retained-crash-failed");
+    guidedPageMocks.realControls = true;
+    await renderReport("history");
+    const row = screen.getByText("Crash evidence read").parentElement!;
+    expect(row).toHaveTextContent("unassessed");
+    expect(row).not.toHaveTextContent("updated");
+    expect(row).not.toHaveTextContent(/regenerat/i);
+  });
+
   it("flags a retained jurisdiction snapshot after the live context changes", async () => {
     const oldProject = { id: "project-1", jurisdiction_context: null, place_country_code: "US" };
     const snapshot = buildProjectJurisdictionReadinessExportPayload(oldProject, jurisdictionReadinessRegistrySha256());
@@ -1049,13 +1480,15 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
     await renderReport("history");
 
     expect(screen.getByText("Crash evidence read")).toBeInTheDocument();
-    expect(screen.getByText(/not current or ready until regeneration completes/i)).toBeInTheDocument();
+    expect(screen.getByText(/a failed read does not establish a source change or unchanged inputs/i)).toBeInTheDocument();
+    expect(screen.getByText("Crash evidence read").parentElement!).toHaveTextContent("unassessed");
 
     cleanup();
     stageFailedCrashReadArtifact();
     await renderReport("packet");
 
-    expect(screen.getAllByText(/Refresh recommended/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Source evidence unassessed").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Refresh recommended")).not.toBeInTheDocument();
   });
 
   it("shows the project records and scenario basis the packet was built from", async () => {
@@ -1721,4 +2154,28 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
       expect(screen.queryByText(/The report record could not be read/i)).not.toBeInTheDocument();
     });
   });
+it.each(["legacy", "explicit"] as const)("renders unassessed grant support for a retained %s comparison with no known drift", async (summary) => {
+  selectRetainedScenarioFixture(summary);
+  await renderReport("packet");
+  expectNoGuidedWorkerReads();
+  expect(guidedPageMocks.controls).toHaveBeenLastCalledWith(expect.objectContaining({ driftSummary: expect.objectContaining({ changedCount: 0, labels: [] }) }));
+  const analysis = screen.getByText("Analysis behind a grant case").parentElement!;
+  expect(analysis).toHaveTextContent("Modeling evidence unassessed");
+  expect(analysis).not.toHaveTextContent(/Refresh recommended|should be refreshed|Appears thin|Appears decision-ready|No visible support/);
+  expect(screen.getByText("Review unassessed supporting evidence")).toBeInTheDocument();
+  expect(screen.getByText("Suggested decision: Monitor")).toBeInTheDocument();
+  expect(screen.queryByText("Refresh supporting packet before final pursue language")).not.toBeInTheDocument();
+  expect(screen.queryByText(/Changed sources:/)).not.toBeInTheDocument();
+  expect(screen.getByText("How current the generated file is").parentElement!).toHaveTextContent("Comparison evidence unassessed");
+});
+
+it("renders grant refresh advice for a known retained source change even with unassessed comparison evidence", async () => {
+  selectRetainedScenarioFixture("legacy");
+  scenarioSetsInMock.mockResolvedValue({ data: [{ id: "scenario-set-1", updated_at: "2026-03-28T17:36:00.000Z" }], error: null });
+  await renderReport("packet");
+  expect(screen.getByText("Analysis behind a grant case").parentElement!).toHaveTextContent("Refresh recommended");
+  expect(screen.getByText("Refresh supporting packet before final pursue language")).toBeInTheDocument();
+  expect(screen.getByText("Suggested decision: Monitor")).toBeInTheDocument();
+});
+
 });

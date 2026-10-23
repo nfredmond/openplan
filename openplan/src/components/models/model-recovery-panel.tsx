@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { recoveryInspectionSchema } from "@/lib/models/recovery-decision";
+import { recoveryInspectionSchema, replacementReceipt, replacementRpcArguments } from "@/lib/models/recovery-decision";
 import { readRecoveryArchives, reviewRecoveryCopy, restoreRecoveryCopy, recoveryDecisionKey, readRecoveryDecisions, retainRecoveryDecision, sendRecoveryDecision, recoveryEndpoint, recoveryHeaders, type RecoveryScope, type SavedRecoveryDecision } from "@/lib/models/pending-recovery-decision";
 import type { z } from "zod";
 
@@ -22,6 +22,7 @@ export function ModelRecoveryPanel({ userId, workspaceId, modelId, runId, permis
   const importId = useId();
   const fieldId = useId(), busyRef = useRef(false);
   const [busy, setBusy] = useState(false), [reason, setReason] = useState(""), [acknowledged, setAcknowledged] = useState(false);
+  const [retryAcknowledged, setRetryAcknowledged] = useState(false);
   const [loadedInspection, setInspection] = useState<z.infer<typeof recoveryInspectionSchema> | null>(null);
   const [inspectedScope, setInspectedScope] = useState<string | null>(null);
   const inspection = inspectedScope === scopeIdentity ? loadedInspection : null;
@@ -62,7 +63,7 @@ export function ModelRecoveryPanel({ userId, workspaceId, modelId, runId, permis
   }
 
   async function inspect() {
-    if (busyRef.current) return; busyRef.current = true; setBusy(true); setMessage(null); setInspection(null); setAcknowledged(false);
+    if (busyRef.current) return; busyRef.current = true; setBusy(true); setMessage(null); setInspection(null); setAcknowledged(false); setRetryAcknowledged(false);
     try {
       const response = await fetch(recoveryEndpoint(scope), { credentials: "same-origin", cache: "no-store", headers: recoveryHeaders(scope), signal: AbortSignal.timeout(30000) });
       const parsed = recoveryInspectionSchema.safeParse(await response.json());
@@ -72,23 +73,34 @@ export function ModelRecoveryPanel({ userId, workspaceId, modelId, runId, permis
     finally { busyRef.current = false; setBusy(false); }
   }
 
-  async function send(record?: SavedRecoveryDecision) {
+  async function send(record?: SavedRecoveryDecision, replacement = false, retry = false) {
     if (busyRef.current) return; busyRef.current = true; setBusy(true); setMessage(null);
     try {
       let retained = record;
       if (record && (record.scope.userId !== userId || record.scope.workspaceId !== workspaceId || record.scope.modelId !== modelId || record.scope.runId !== runId)) throw new Error("The account or run changed. Reopen its saved decision.");
       if (!retained) {
-        if (!inspection || !active || !acknowledged || !reason.trim() || pending || blocked) throw new Error("Review the current state and consequence before saving a decision.");
+        if (!inspection || (!active && !replacement && !retry) || (retry ? !retryAcknowledged : !acknowledged) || !reason.trim() || pending || blocked) throw new Error("Review the current state and consequence before saving a decision.");
+        const candidate = inspection.replacement;
+        if (retry && inspection.retry?.state !== 'available') throw new Error('A reconciled managed run is required for retry.');
+        if (replacement && candidate?.state !== 'available') throw new Error('A registered population checkpoint is required.');
         retained = retainRecoveryDecision(localStorage, { version: 1, scope, phase: "pending", receipt: null,
-          decision: { requestId: crypto.randomUUID(), decision: "abandon_execution", expectedState: inspection.expected_state, reason,
-            evidence: { source: "operator_recovery_review", process_termination: "unconfirmed", acknowledged_unconfirmed_termination: true } } });
+          decision: retry ? { requestId: crypto.randomUUID(), decision: 'retry_execution', expectedState: inspection.expected_state, reason }
+            : replacement && candidate?.state === 'available'
+            ? { requestId: crypto.randomUUID(), decision: 'create_population_replacement', expectedState: inspection.expected_state,
+                reason, checkpointId: candidate.checkpointId, checkpointSha256: candidate.checkpointSha256, acknowledgedNewRun: true }
+            : { requestId: crypto.randomUUID(), decision: "abandon_execution", expectedState: inspection.expected_state, reason,
+                evidence: { source: "operator_recovery_review", process_termination: "unconfirmed", acknowledged_unconfirmed_termination: true } } });
         refresh();
       }
       const result = await sendRecoveryDecision(localStorage, retained);
-      setMessage(result.phase === "confirmed" ? "Execution authority was abandoned. Process termination remains unconfirmed; no restart was authorized."
+      setMessage(result.phase === "confirmed" ? result.decision.decision === 'retry_execution'
+        ? 'A fresh attempt is queued on this run. Original outputs and scientific records remain retained. Worker completion is unconfirmed.'
+        : result.decision.decision === 'create_population_replacement'
+        ? 'Replacement creation is confirmed. Its own worker status reports progress. The old run is unchanged.'
+        : "Execution authority was abandoned. Process termination remains unconfirmed; no restart was authorized."
         : result.phase === "conflict" ? "The reviewed state changed or this request was refused. The original decision is kept below. Review current state before another decision."
         : "The decision is unconfirmed. Its exact request is saved below. Retry that request to recover its receipt.");
-      if (result.phase === "confirmed") { setInspection(null); setAcknowledged(false); onConfirmed?.(); }
+      if (result.phase === "confirmed") { setInspection(null); setAcknowledged(false); setRetryAcknowledged(false); onConfirmed?.(); }
     } catch (error) { setMessage(error instanceof Error ? error.message : "The request could not be confirmed. Its saved copy was kept."); }
     finally { refresh(); busyRef.current = false; setBusy(false); }
   }
@@ -112,6 +124,20 @@ export function ModelRecoveryPanel({ userId, workspaceId, modelId, runId, permis
           <label className="flex items-start gap-2"><input type="checkbox" className="mt-1" checked={acknowledged} onChange={(event) => setAcknowledged(event.target.checked)} disabled={busy || pending} /><span>I understand that this revokes write authority without confirming process termination or restarting the model.</span></label>
           <Button type="button" variant="destructive" className={recoveryControlClassName} disabled={blocked || pending || !acknowledged || !reason.trim()} onClick={() => void send()}>Save abandonment decision</Button>
         </> : <p>This run is already terminal. This recovery command cannot abandon it again.</p>}
+        {inspection.retry?.state === 'unavailable' ? <p role="status">{inspection.retry.reason}</p> : null}
+        {inspection.retry?.state === 'available' ? <section aria-label="Fresh attempt on this run" className="space-y-3">
+          <p>Start a fresh attempt on this same run with its recorded inputs. Original outputs, receipts and scientific records stay retained. New results require their own completed attempts. This does not confirm that an old process stopped or validate model accuracy.</p>
+          <label className="block" htmlFor={`${fieldId}-retry`}>Reason for a fresh attempt<Textarea id={`${fieldId}-retry`} maxLength={2000} value={reason} onChange={event => setReason(event.target.value)} disabled={busy || pending} /></label>
+          <label className="flex items-start gap-2"><input type="checkbox" checked={retryAcknowledged} onChange={event => setRetryAcknowledged(event.target.checked)} disabled={busy || pending} /><span>I authorize a fresh attempt with unchanged inputs and retained original results.</span></label>
+          <Button type="button" className={recoveryControlClassName} disabled={blocked || pending || !retryAcknowledged || !reason.trim()} onClick={() => void send(undefined, false, true)}>Start fresh attempt on this run</Button>
+        </section> : null}
+        {inspection.replacement?.state === 'unavailable' ? <p role="status">{inspection.replacement.reason}</p> : null}
+        {inspection.replacement?.state === 'available' ? <section aria-label="Replacement using saved population" className="space-y-3">
+          <p>Create a new run using the exact saved population. It performs fresh network work and publishes new output files. The failed run and its records stay unchanged. This does not validate model accuracy.</p>
+          <label className="block" htmlFor={`${fieldId}-replacement`}>Reason for replacement<Textarea id={`${fieldId}-replacement`} maxLength={2000} value={reason} onChange={(event) => setReason(event.target.value)} disabled={busy || pending} /></label>
+          <label className="flex items-start gap-2"><input type="checkbox" checked={acknowledged} onChange={(event) => setAcknowledged(event.target.checked)} disabled={busy || pending} /><span>I authorize a new run with this saved population and fresh network work.</span></label>
+          <Button type="button" className={recoveryControlClassName} disabled={blocked || pending || !acknowledged || !reason.trim()} onClick={() => void send(undefined, true)}>Create replacement using saved population</Button>
+        </section> : null}
       </section> : null}
       <section className="space-y-2 border-t border-border pt-3" aria-label="Restore recovery files">
         <label htmlFor={importId} className="block font-medium">Restore a downloaded recovery copy</label>
@@ -128,7 +154,12 @@ export function ModelRecoveryPanel({ userId, workspaceId, modelId, runId, permis
       {saved.records.map((record) => <section key={record.decision.requestId} className="space-y-2 border-t border-border pt-3" aria-label="Saved recovery decision">
         <p className="font-medium">{record.phase === "confirmed" ? "Decision receipt retained" : record.phase === "conflict" ? "Decision requires a new review" : "Decision awaiting confirmation"}</p>
         <p className="whitespace-pre-wrap">{record.decision.reason}</p>
-        {record.phase === "confirmed" ? <p>Write authority was abandoned. Process termination remains unconfirmed.</p> : null}
+        {record.phase === "confirmed" && record.decision.decision === 'abandon_execution' ? <p>Write authority was abandoned. Process termination remains unconfirmed.</p> : null}
+        {record.phase === 'confirmed' && record.decision.decision === 'retry_execution' ? <p>A fresh attempt was queued on this run. Original outputs and receipts remain retained. This receipt does not confirm worker completion or scientific validity.</p> : null}
+        {record.phase === 'confirmed' && record.decision.decision === 'create_population_replacement' ? (() => {
+          const receipt = replacementReceipt(record.receipt, replacementRpcArguments(record.decision, workspaceId, runId, userId));
+          return receipt ? <p>New run: <a className="underline" href={`/models/${modelId}#model-run-${receipt.replacement_run_id}`}>{receipt.replacement_run_id}</a>. The original failed run is preserved.</p> : null;
+        })() : null}
         <div className="flex flex-wrap gap-2">
           {record.phase === "pending" ? <Button type="button" className={recoveryControlClassName} size="sm" variant="outline" disabled={blocked} onClick={() => void send(record)}>Retry saved decision</Button> : null}
           <Button type="button" className={recoveryControlClassName} size="sm" variant="outline" onClick={() => download(`model-recovery-${record.decision.requestId}.json`, JSON.stringify(record, null, 2) + "\n")}>Download decision{record.phase === "confirmed" ? " and receipt" : " copy"}</Button>

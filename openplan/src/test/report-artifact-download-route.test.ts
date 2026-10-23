@@ -122,6 +122,15 @@ describe("GET /api/reports/[reportId]/artifacts/[artifactId]/download", () => {
     );
   });
 
+  it("keeps an authorized historical PDF downloadable when the current comparison cannot be verified", async () => {
+    reportRow = { ...reportRow, project_id: "66666666-6666-4666-8666-666666666666", report_type: "analysis_summary",
+      metadata_json: { guidedComparisonSelectionV1: { version: 999, snapshotId: "missing-current-source" } } };
+    const response = await downloadArtifact(request(), ctx());
+    expect(response.status).toBe(307);
+    expect(createSignedUrlMock).toHaveBeenCalledWith(`${WORKSPACE_ID}/${REPORT_ID}/${ARTIFACT_ID}.pdf`, 900, expect.any(Object));
+    expect(fromMock.mock.calls.every(([table]) => ["reports", "workspace_members", "report_artifacts"].includes(table))).toBe(true);
+  });
+
   it("returns 401 when unauthenticated", async () => {
     authGetUserMock.mockResolvedValue({ data: { user: null } });
     expect((await downloadArtifact(request(), ctx())).status).toBe(401);
@@ -227,6 +236,15 @@ describe("GET /api/reports/[reportId]/artifacts/[artifactId]/download", () => {
       expect(response.headers.get("content-disposition")).toContain("attachment");
       expect(response.headers.get("x-content-type-options")).toBe("nosniff");
       expect(response.headers.get("content-security-policy")).toBe("sandbox");
+      expect(createSignedUrlMock).not.toHaveBeenCalled();
+    });
+
+    it("returns the exact retained HTML despite an invalid current comparison selection", async () => {
+      reportRow = { ...reportRow, metadata_json: { guidedComparisonSelectionV1: { version: 999 } } };
+      artifactRow = { ...artifactRow, metadata_json: { htmlContent: "<h1>Retained original</h1><p>Exact 450,909.6; prototype only.</p>" } };
+      const response = await downloadArtifact(request(), ctx());
+      expect(response.status).toBe(200);
+      expect(await response.text()).toBe("<h1>Retained original</h1><p>Exact 450,909.6; prototype only.</p>");
       expect(createSignedUrlMock).not.toHaveBeenCalled();
     });
 

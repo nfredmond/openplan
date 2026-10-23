@@ -20,7 +20,67 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-No changes recorded after v0.72.0.
+This tree contains 437 source migrations, seven more than v0.72.0. Self-hosted
+installations apply the seven Models and Reports migrations below, in version
+order, before deploying this code. The managed database received all seven on
+October 23, 2026, in one transaction after a fresh capture and a rollback-only
+dry run; its history now holds 438 rows, including the separate Award record.
+The catalogue after installation equals the catalogue before plus exactly the
+change measured in the dry run.
+
+**Managed comparison readiness source candidate:** apply
+`20261022070000_managed_comparison_readiness.sql` after the managed retry
+migration. Ready snapshots can use current attempt-bound instruments while
+retaining owner review and existing scope checks. Installation and native
+authority checks remain pending; scientific acceptance is unchanged.
+
+**Managed model recovery source candidate:** the proposed
+`20261022050000_model_output_preserving_relaunch.sql` precedes its matching
+recovery controls. It prepares an owner/admin decision to queue a fresh attempt
+on the same failed or cancelled managed run with unchanged recorded inputs.
+Original outputs, receipts and attempt-bound scientific records stay retained.
+Unbound scientific records and registered population replacements retain their
+reconciliation holds. Current-reader and worker admission joins are prepared in
+source. General prepared scientific retry remains unfinished. A queued receipt
+is not completed recovery; native installation, full worker execution and visible
+acceptance remain unproved.
+
+**Selected model comparisons in Reports.** Reports can retain an explicitly
+selected comparison with separate method values, source identities and caveats.
+Apply `20261022010002_guided_comparison_report_evidence.sql` before deploying
+this path. New selected artifacts retain their identity, rendered body, selection
+and writeback receipt. Ordinary writes cannot replace or delete that history,
+including through report, project or workspace cascades. Legacy unselected
+artifacts keep their existing behavior. These safeguards do not validate model
+accuracy or establish project benefits.
+
+**Guided comparison admission:** apply
+`20261022010003_model_common_population_admission.sql` after the two population
+migrations below and before deploying the route correction. Guided links and
+ready snapshots require current fixed-population custody even when their claim
+is missing or unchanged. Model intent and scope changes serialize with admission
+and refuse changes affecting ready or evidence-bound snapshots. Admissions also
+touch the scenario-set modification timestamp. This source correction awaits
+native migration and concurrency verification; scientific claim limits stay unchanged.
+
+**Population source profiles:** the source-only adapter correction adds
+`20261022010004_model_common_population_profiles.sql` after the admission migration.
+The catalog keeps the exact 2022 and 2023 retained profiles; new guided launches
+use the selected adapter's admitted 2023 descriptor. Missing technical capabilities
+remain unassessed. Native installation, worker images and scientific acceptance
+remain unverified by this source correction.
+
+**Common population comparisons and replacement runs:** guided comparisons retain
+the same realized population across the separate AequilibraE and ActivitySim
+tracks. An explicit replacement run can reuse a prospectively retained population
+checkpoint while preserving the original failed run. Apply
+`20261022010000_model_common_population_comparisons.sql` and
+`20261022010001_model_population_replacement.sql` before deploying these paths.
+Managed replacement and hosted snapshot transport remain unsupported. These
+changes do not establish model accuracy or nationwide validation.
+
+The model-run progress fix keeps elapsed time advancing during five-second
+status refreshes that return fresh stage records.
 
 ## 0.72.0 (2026-10-22)
 

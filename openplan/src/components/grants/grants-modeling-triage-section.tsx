@@ -30,6 +30,7 @@ export function GrantsModelingTriageSection({
   missingModelingProject: GrantsModelingTriageProject | null;
   leadModelingCommand: WorkspaceCommandQueueItem | null;
 }) {
+  const unassessedProjects = opportunityLinkedModelingProjects.filter((item) => item.modelingReadiness?.key === "unassessed");
   return (
     <article className="module-section-surface">
       <div className="module-section-header">
@@ -165,6 +166,22 @@ export function GrantsModelingTriageSection({
           )}
         </div>
       </div>
+
+      {unassessedProjects.length > 0 ? (
+        <div className="module-subpanel mt-3">
+          <StatusBadge tone="warning">Modeling evidence unassessed: {unassessedProjects.length}</StatusBadge>
+          <p className="mt-2 text-sm text-muted-foreground">Keep monitoring and review the unassessed evidence before changing a grant decision.</p>
+          {unassessedProjects.map((item) => (
+            <div key={item.project.id} className="mt-3 text-sm">
+              <p className="font-semibold text-foreground">{item.project.name}</p>
+              <p className="text-muted-foreground">{item.modelingReadiness?.detail}</p>
+              <Link href={item.modelingEvidence!.leadComparisonReport.href} className="mt-2 inline-flex font-semibold">
+                Review unassessed supporting evidence
+              </Link>
+            </div>
+          ))}
+        </div>
+      ) : null}
 
       {leadModelingCommand ? (
         <Link href={leadModelingCommand.href} className="module-subpanel mt-3 block transition-colors hover:border-primary/35">

@@ -76,3 +76,27 @@ it.each([false, true])("reviews and restores a downloaded receipt without sendin
  expect(screen.queryByText("Decision receipt retained")).not.toBeInTheDocument();
  expect(readRecoveryDecisions(localStorage, scope).records[0]).toMatchObject({ phase: "pending", receipt: null, decision });
 });
+
+it("retains and replays the same-run retry decision after losing its reply", async () => {
+ const terminal = { ...inspection, expected_state: { ...state, status: "failed", stages: state.stages.map(stage => ({ ...stage, status: "failed" })) }, retry: { state: "available" } };
+ const bodies: Array<Record<string, unknown>> = [];
+ vi.stubGlobal("fetch", vi.fn(async (_url, options) => {
+  if (options?.method !== "POST") return Response.json(terminal);
+  const body = JSON.parse(options.body); bodies.push(body);
+  expect(readRecoveryDecisions(localStorage, scope).records[0].decision).toEqual(body);
+  if (bodies.length === 1) throw new Error("Lost committed reply");
+  return Response.json({ schema: "openplan.model-output-retry.v1", request_id: body.requestId,
+   request_payload: { workspace_id: workspaceId, run_id: runId, actor_id: userId, expected_state: body.expectedState, reason: body.reason, decision: "retry_execution" },
+   outcome: "fresh_attempt_queued", run_id: runId, run_status: "queued", outputs_preserved: true, scientific_claim_changed: false, process_termination_verified: false, model_resumed: false });
+ }));
+ render(<ModelRecoveryPanel {...scope} permission="allowed" />); open(); fireEvent.click(screen.getByText("Review current execution state"));
+ fireEvent.change(await screen.findByLabelText("Reason for a fresh attempt"), { target: { value: "Retain original failed outputs" } });
+ expect(screen.getByText("Start fresh attempt on this run")).toBeDisabled();
+ fireEvent.click(screen.getByRole("checkbox")); fireEvent.click(screen.getByText("Start fresh attempt on this run"));
+ await screen.findByText(/The decision is unconfirmed/);
+ cleanup(); render(<ModelRecoveryPanel {...scope} permission="allowed" />); open();
+ fireEvent.click(await screen.findByText("Retry saved decision")); await screen.findByText("Decision receipt retained");
+ expect(bodies).toHaveLength(2); expect(bodies[1]).toEqual(bodies[0]);
+ expect(bodies[0]).toMatchObject({ decision: "retry_execution", expectedState: terminal.expected_state });
+ expect(screen.getByText(/A fresh attempt was queued on this run/)).toBeInTheDocument();
+});

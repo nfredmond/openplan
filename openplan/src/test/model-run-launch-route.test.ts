@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
+// This route runs on the server; Vitest supplies the server-only marker boundary.
+vi.mock("server-only", () => ({}));
+
 /**
  * THE READ THAT DECIDES WHETHER TO CREATE OR RESET THIS RUN'S STAGES.
  *

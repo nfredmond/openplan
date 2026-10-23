@@ -43,6 +43,7 @@ import {
 import { resolveModelingWorkerDeclaration } from "@/lib/config/deployment-health-facts";
 import { loadModelingWorkerHealth } from "@/lib/models/worker-health-server";
 import { evaluateWorkerHealthLaunchGate } from "@/lib/models/worker-health";
+import { dispatchPopulationReplacement } from '@/lib/models/population-replacement-server';
 import {
   prepareTransitFeedHandoff,
   transitFeedIdFromSnapshot,
@@ -289,6 +290,15 @@ export async function POST(request: NextRequest, context: RouteContext) {
         },
         { status: custody === "unavailable" ? 503 : 409 }
       );
+    }
+
+    if ((modelRun.input_snapshot_json as Record<string, unknown> | null)?.populationReplacement) {
+      const { data, error } = await createServiceRoleClient().rpc('inspect_model_population_redispatch', {
+        p_workspace_id: workspaceId, p_run_id: modelRun.id, p_actor_id: user.id,
+      });
+      if (error || data !== true) return NextResponse.json({ error: 'Only an intact queued replacement can be redispatched. No inputs changed.' }, { status: 409 });
+      const dispatch = await dispatchPopulationReplacement(crypto.randomUUID(), modelRun.id, modelRun.engine_key);
+      return NextResponse.json({ modelRunId: modelRun.id, status: modelRun.status, dispatch, inputsChanged: false });
     }
 
     const nowIso = new Date().toISOString();

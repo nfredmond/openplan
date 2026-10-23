@@ -10,8 +10,8 @@
 # in whether Fly may stop the machine, and getting that wrong in this direction
 # gives you a worker that is asleep whenever a run is queued.
 #
-# Deploy: fly launch --copy-config --yes
-# Then set secrets: fly secrets set SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=...
+# From the repository root: fly launch --config workers/aequilibrae_worker/fly.toml --copy-config --yes
+# Then set secrets: fly secrets set --config workers/aequilibrae_worker/fly.toml SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=...
 # Full instructions for both modes: DEPLOY.md
 
 app = "openplan-aeq-worker"
@@ -23,7 +23,7 @@ app = "openplan-aeq-worker"
 # `fly regions set <region>`.
 
 [build]
-  dockerfile = "Dockerfile"
+  dockerfile = "workers/aequilibrae_worker/Dockerfile"
 
 [env]
   # Polling is also the default in code; stated here so the deployed

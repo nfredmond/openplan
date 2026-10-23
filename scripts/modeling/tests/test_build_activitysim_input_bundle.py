@@ -443,6 +443,52 @@ class BuildMtcConfigPackageTests(unittest.TestCase):
         network_los_text = (output_dir / "configs" / "network_los.yaml").read_text()
         self.assertIn("taz_skims: skims/mtc_skims.omx", network_los_text)
 
+    def test_mtc_retains_raw_realization_and_uses_its_profile_and_school_inputs(self) -> None:
+        from unittest import mock
+
+        import census_pums as cp
+        import common_population as common
+        import synthetic_population as sp
+        from build_activitysim_input_bundle import load_zone_attributes
+
+        profile = common.census_source_profile("https://api.census.gov/data/2023/acs/acs5", "https://api.census.gov/data/2023/acs/acs5/pums")
+        self.fitted["provenance"].update(endpoint=profile["pums_endpoint"], acs_summary_endpoint=profile["acs_summary_endpoint"],
+            acs_sample_years=[2019, 2023], income_dollar_year=2023, puma_fields={"2020": "PUMA"})
+        geoids = ["06057000100", "06057000200"]
+        self.fitted["source_controls"] = {"raw_by_geoid": {geoid: {"B01003_001E": "100"} for geoid in geoids}}
+        self.fitted["zone_fits"] = []
+        self.fitted["school_inputs"] = {
+            "raw_by_geoid": {geoid: {"B14001_007E": "2", "B14001_008E": "3", "B14001_009E": "4"} for geoid in geoids},
+            "enrollment": {geoid: {"high_school": 2.0, "college": 7.0} for geoid in geoids},
+            "missing_cells_by_geoid": {geoid: [] for geoid in geoids},
+            "basis": "ACS B14001 enrolled residents; not school seats or measured full-time college enrollment",
+        }
+        zone_path = self.screening_run_dir / "package" / "zone_attributes.csv"
+        retained_dir = self.root / "common"
+        descriptor = common.retain_population(retained_dir, load_zone_attributes(zone_path), self.fitted,
+            source_manifest_path=self.screening_run_dir / "bundle_manifest.json", zone_attributes_path=zone_path, source_profile=profile)
+        output = self.root / "retained-mtc"
+        with mock.patch.object(sp, "synthesize_study_area", side_effect=AssertionError("unexpected second fit")) as fit, \
+                mock.patch.object(cp, "fetch_acs_school_enrollment", side_effect=AssertionError("unexpected school refetch")) as school, \
+                mock.patch.object(cp, "ACS_5_URL", "https://api.census.gov/data/2022/acs/acs5"), \
+                mock.patch.object(cp, "PUMS_URL", "https://api.census.gov/data/2022/acs/acs5/pums"):
+            summary = build_activitysim_input_bundle(screening_run_dir=str(self.screening_run_dir), output_dir=str(output),
+                population_source="census", config_package="mtc", stock_configs_dir=str(self.stock_root),
+                retained_population={"directory": str(retained_dir), "manifest": descriptor})
+        fit.assert_not_called()
+        school.assert_not_called()
+        self.assertEqual((summary["households"], summary["persons"]), (2, 3))
+        with (output / "households.csv").open(newline="") as handle:
+            transformed = list(csv.DictReader(handle))
+        self.assertEqual(int(transformed[0]["income"]), round(90000 * 172.2 / 304.702))
+        self.assertEqual((output / "metadata" / "common_population" / "households.csv").read_bytes(), (retained_dir / "households.csv").read_bytes())
+        self.assertNotEqual((output / "households.csv").read_bytes(), (retained_dir / "households.csv").read_bytes())
+        manifest = json.loads((output / "manifest.json").read_text())
+        self.assertEqual(manifest["mtc_inputs"]["households"]["income_source_dollar_year"], 2023)
+        self.assertEqual(manifest["synthetic_population"]["common_population"]["manifest"], descriptor)
+        self.assertEqual(manifest["land_use"]["total_population"], 3)
+        self.assertIn("not school seats", (retained_dir / "diagnostics.json").read_text())
+
     def test_mtc_with_a_scaffold_population_is_refused(self) -> None:
         with self.assertRaises(RuntimeError) as ctx:
             build_activitysim_input_bundle(

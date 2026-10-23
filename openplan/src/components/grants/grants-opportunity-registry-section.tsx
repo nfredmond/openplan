@@ -141,7 +141,7 @@ export function GrantsOpportunityRegistrySection({
 
       {showModelingCaveat ? (
         <p className="mt-3 text-sm text-muted-foreground">
-          Within the same grant timing and decision status, opportunities with modeling support that appears decision-ready rise ahead of refresh-recommended, thin, or unsupported work. Treat that as planning support only, not proof of award likelihood or a replacement for funding-source review.
+          Within the same grant timing and decision status, opportunities with modeling support that appears decision-ready rise ahead of refresh-recommended, thin, or unsupported work. Unassessed evidence stays in review ahead of thin support. Treat that as planning support only, not proof of award likelihood or a replacement for funding-source review.
         </p>
       ) : null}
 

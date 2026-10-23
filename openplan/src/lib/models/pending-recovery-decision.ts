@@ -1,11 +1,11 @@
 import { z } from "zod";
 import { canonicalizeActionPayload } from "@/lib/runtime/action-metadata";
-import { recoveryDecisionSchema, recoveryIdentitySchema, recoveryRpcArguments, matchesRecoveryReceipt } from "./recovery-decision";
+import { savedRecoveryDecisionSchema, recoveryIdentitySchema, matchesSavedRecoveryReceipt } from "./recovery-decision";
 
 export const recoveryScopeSchema = z.object({ userId: recoveryIdentitySchema, workspaceId: recoveryIdentitySchema, modelId: recoveryIdentitySchema, runId: recoveryIdentitySchema }).strict();
 export type RecoveryScope = z.infer<typeof recoveryScopeSchema>;
 export type RecoveryStorage = Pick<Storage, "getItem" | "setItem" | "key" | "length">;
-const recordSchema = z.object({ version: z.literal(1), scope: recoveryScopeSchema, decision: recoveryDecisionSchema,
+const recordSchema = z.object({ version: z.literal(1), scope: recoveryScopeSchema, decision: savedRecoveryDecisionSchema,
   phase: z.enum(["pending", "conflict", "confirmed"]), receipt: z.unknown(),
 }).strict();
 export type SavedRecoveryDecision = z.infer<typeof recordSchema>;
@@ -19,7 +19,7 @@ function checked(value: unknown, scope: RecoveryScope): SavedRecoveryDecision {
   const parsed = recordSchema.parse(value), state = parsed.decision.expectedState;
   if (!same(parsed.scope, scope) || state.workspace_id !== scope.workspaceId || state.model_id !== scope.modelId || state.run_id !== scope.runId) throw new Error("Saved decision belongs to another account or run");
   if (parsed.phase === "confirmed") {
-    if (!matchesRecoveryReceipt(parsed.receipt, recoveryRpcArguments(parsed.decision, scope.workspaceId, scope.runId, scope.userId))) throw new Error("Saved receipt differs from the decision");
+    if (!matchesSavedRecoveryReceipt(parsed.receipt, parsed.decision, scope.workspaceId, scope.runId, scope.userId)) throw new Error("Saved receipt differs from the decision");
   } else if (parsed.receipt !== null) throw new Error("Unconfirmed decision has an unexpected receipt");
   return parsed;
 }
@@ -61,7 +61,7 @@ export async function sendRecoveryDecision(storage: RecoveryStorage, saved: Save
     const response = await transport(recoveryEndpoint(retained.scope), { method: "POST", credentials: "same-origin", cache: "no-store",
       headers: { "Content-Type": "application/json", ...recoveryHeaders(retained.scope) }, body: JSON.stringify(retained.decision), signal: AbortSignal.timeout(30000) });
     const receipt: unknown = await response.json();
-    if (response.ok && matchesRecoveryReceipt(receipt, recoveryRpcArguments(retained.decision, retained.scope.workspaceId, retained.scope.runId, retained.scope.userId))) {
+    if (response.ok && matchesSavedRecoveryReceipt(receipt, retained.decision, retained.scope.workspaceId, retained.scope.runId, retained.scope.userId)) {
       return retainRecoveryDecision(storage, { ...retained, phase: "confirmed", receipt }, true);
     }
     if (response.status === 409) return retainRecoveryDecision(storage, { ...retained, phase: "conflict" }, true);
