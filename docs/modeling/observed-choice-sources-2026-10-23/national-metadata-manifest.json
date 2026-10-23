@@ -1,0 +1,37 @@
+[
+  {
+    "name": "nhts2017-codebook.pdf",
+    "url": "https://nhts.ornl.gov/media/2017/doc/codebook_v1.2.pdf",
+    "bytes": 597292,
+    "sha256": "75bed4eca1d09419f273e53923007fa274de055d218ae5db117cb9899072908a",
+    "accessed": "2026-10-23"
+  },
+  {
+    "name": "nhts2022-codebook.pdf",
+    "url": "https://nhts.ornl.gov/media/2022/doc/codebook.pdf",
+    "bytes": 453941,
+    "sha256": "6ddd68673a115c2ad7da58990c532e0d80752a9141f3372db663637003bcfc62",
+    "accessed": "2026-10-23"
+  },
+  {
+    "name": "nhts2022-guide.pdf",
+    "url": "https://nhts.ornl.gov/media/2022/doc/2022%20NextGen%20NHTS%20User%27s%20Guide%20V201_PubUse.pdf",
+    "bytes": 5666526,
+    "sha256": "bc0e7dc4546db3ff6a465fca928c29f4ecb7fbfe23d44ee7e57add4602d3ba0c",
+    "accessed": "2026-10-23"
+  },
+  {
+    "name": "lodes84.pdf",
+    "url": "https://lehd.ces.census.gov/data/lodes/LODES8/LODESTechDoc8.4.pdf",
+    "bytes": 602016,
+    "sha256": "1189b8aa4cefd6cdf53c3b85e27366054af0cd5418056b04ff70d210b87eddee",
+    "accessed": "2026-10-23"
+  },
+  {
+    "name": "ctpp-methodology.pdf",
+    "url": "https://ctppdata.transportation.org/CTPP_Methodology_Report.pdf",
+    "bytes": 1106999,
+    "sha256": "155dae90fa5742b573975b3e0642685b05a7dcc99bc3a10435707f431bd4bf4b",
+    "accessed": "2026-10-23"
+  }
+]
