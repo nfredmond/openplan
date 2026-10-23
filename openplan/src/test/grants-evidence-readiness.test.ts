@@ -214,3 +214,13 @@ describe("buildGrantEvidenceReadinessCues", () => {
     expect(missingEngagementCue?.detail).toContain("RAISE, SS4A, and ATIIP");
   });
 });
+
+it.each(["Comparison evidence unassessed", "Source evidence unassessed"])("keeps %s in evidence review without inventing thin support", (label) => {
+  const evidence = buildEvidence();
+  evidence.leadComparisonReport.packetFreshness = { label, tone: "warning", detail: "The retained evidence remains unassessed." };
+  const cue = buildGrantEvidenceReadinessCues(baseOpportunity, evidence).find((item) => item.key === "modeling-boundary")!;
+  expect(cue).toMatchObject({ label: "Modeling evidence unassessed", tone: "warning" });
+  expect(cue.detail).toContain(GRANT_MODELING_PLANNING_CAVEAT);
+  expect(cue.nextAction).toBe("Keep monitoring and review the unassessed supporting evidence before final pursue language or grant narrative reuse.");
+  expect(cue.nextAction).not.toMatch(/Refresh|Add or strengthen/);
+});

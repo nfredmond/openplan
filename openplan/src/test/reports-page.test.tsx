@@ -1,3 +1,6 @@
+vi.mock("server-only", () => ({}));
+import { guidedReportSelectionFixture } from "@/test/fixtures/guided-report-evidence";
+import { guidedReportDigest } from "@/lib/reports/guided-comparison-binding";
 import { buildProjectJurisdictionReadinessExportPayload } from "@/lib/jurisdiction-readiness/payload";
 import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
 import { PROJECT_JURISDICTION_COLUMNS } from "@/lib/projects/project-jurisdiction";
@@ -123,6 +126,57 @@ describe("ReportsPage", () => {
     else expect(card).toBeNull();
   });
 
+  it.each(["retained", "changed selection", "invalid digest", "known source change", "first packet", "cleared selection"])(
+    "keeps selected catalog evidence truthful: %s", async (basis) => {
+      const saved = guidedReportSelectionFixture();
+      saved.payload.workspaceId = "workspace-1";
+      saved.payload.projectId = "project-1";
+      saved.bindingSha256 = guidedReportDigest(saved.payload);
+      const retained = structuredClone(saved);
+      if (basis === "changed selection") {
+        saved.payload.scenarioSet.title = "Changed retained selection";
+        saved.bindingSha256 = guidedReportDigest(saved.payload);
+      }
+      if (basis === "invalid digest") saved.bindingSha256 = "f".repeat(64);
+      reportsOrderMock.mockResolvedValueOnce({ data: [{ id: "report-1", workspace_id: "workspace-1", project_id: "project-1",
+        rtp_cycle_id: null, title: "Selected retained packet", report_type: "analysis_summary", status: "generated",
+        generated_at: basis === "first packet" ? null : "2026-03-28T20:00:00.000Z",
+        latest_artifact_kind: basis === "first packet" ? null : "html", created_at: "2026-03-28T18:00:00.000Z",
+        updated_at: basis === "known source change" ? "2026-03-29T20:00:00.000Z" : "2026-03-28T20:00:00.000Z",
+        metadata_json: { guidedComparisonSelectionV1: basis === "cleared selection" ? null : saved },
+        projects: { id: "project-1", name: "Synthetic project" }, rtp_cycles: null }], error: null });
+      reportArtifactsOrderMock.mockResolvedValueOnce({ data: basis === "first packet" ? [] : [{ report_id: "report-1",
+        generated_at: "2026-03-28T20:00:00.000Z", metadata_json: { guidedComparisonSelectionV1: retained,
+          sourceContext: { evidenceChainSummary: { linkedRunCount: 4 }, scenarioSetLinks: [{
+            comparisonSnapshots: [{ status: "ready", indicatorDeltaCount: 3 }],
+          }] } } }], error: null });
+      await renderPage();
+      expect(reportsSelectMock).toHaveBeenCalledWith(expect.stringContaining("metadata_json"));
+      expect(reportArtifactsSelectMock).toHaveBeenCalledWith("report_id, generated_at, metadata_json");
+      expect(fromMock.mock.calls.every(([table]) => !["model_run_artifacts", "model_run_kpis", "model_run_stages"].includes(table))).toBe(true);
+      expect(screen.queryByText("Current / ready")).not.toBeInTheDocument();
+      expect(screen.queryByText("Evidence chain current")).not.toBeInTheDocument();
+      if (basis === "retained") {
+        expect(screen.getByText("Selected comparison live evidence is unassessed")).toBeInTheDocument();
+        expect(screen.getAllByText("Comparison evidence unassessed").length).toBeGreaterThan(0);
+        expect(screen.getByText(/Next action: open this report and review the unassessed comparison evidence/)).toBeInTheDocument();
+        expect(screen.queryByText("Release review ready")).not.toBeInTheDocument();
+        expect(screen.queryByText(/Changed sources:/)).not.toBeInTheDocument();
+        expect(screen.queryByText("Refresh recommended")).not.toBeInTheDocument();
+        expect(screen.getByText(/Grant release review: Modeling evidence unassessed/)).toBeInTheDocument();
+        expect(screen.queryByText(/Grant release review: Appears decision-ready/)).not.toBeInTheDocument();
+      } else if (basis === "invalid digest") {
+        expect(screen.getByText("Saved comparison binding is invalid")).toBeInTheDocument();
+      } else if (basis === "first packet") {
+        expect(screen.getByText("No generated packet yet")).toBeInTheDocument();
+      } else {
+        expect(screen.getByText("Changed source context")).toBeInTheDocument();
+        expect(screen.getByText(/Grant release review: Refresh recommended/)).toBeInTheDocument();
+        expect(screen.getByText(basis === "known source change" ? /Changed sources: Report metadata/ : /Changed sources: Selected guided comparison/)).toBeInTheDocument();
+      }
+    }
+  );
+
   beforeEach(() => {
     vi.clearAllMocks();
     reportCreatorMock.mockReset();
@@ -173,6 +227,7 @@ describe("ReportsPage", () => {
     projectsOrderMock.mockResolvedValue({
       data: [
         {
+          jurisdiction_context: null,
           id: "project-1",
           workspace_id: "workspace-1",
           name: "Downtown Mobility Plan",
@@ -308,6 +363,90 @@ describe("ReportsPage", () => {
     });
   });
 
+  it.each(["current", "changed", "unavailable", "untracked", "legacy", "writeback"] as const)(
+    "carries jurisdiction assessment into the catalog: %s", async (state) => {
+      const at = "2026-10-18T00:00:00Z";
+      const project = { id: "project-1", name: "Synthetic jurisdiction project", jurisdiction_context: null, place_country_code: "US" };
+      const snapshot = buildProjectJurisdictionReadinessExportPayload(project, jurisdictionReadinessRegistrySha256());
+      projectsOrderMock.mockResolvedValueOnce({ data: [state === "changed" ? { ...project, place_country_code: "CA" } : project], error: null });
+      reportsOrderMock.mockResolvedValueOnce({ data: [{ id: "report-1", workspace_id: "workspace-1", project_id: "project-1",
+        title: "Synthetic jurisdiction packet", report_type: "project_status", status: "generated", summary: null,
+        latest_artifact_kind: "html", generated_at: at, updated_at: at, created_at: at, projects: project, rtp_cycles: null }], error: null });
+      reportArtifactsOrderMock.mockResolvedValueOnce({ data: [{ report_id: "report-1", generated_at: at, metadata_json: {
+        ...(state === "writeback" ? { generationWriteback: { schema: "openplan.report-generation-writeback.v1", reportUpdatedAt: "2026-10-17T00:00:00Z" } } : {}),
+        sourceContext: { evidenceChainSummary: { linkedRunCount: 1 }, ...(state === "untracked" ? {} : {
+          jurisdictionReadiness: state === "unavailable" ? { ...snapshot, payloadSha256: "f".repeat(64) }
+            : state === "legacy" ? { ...snapshot, schema: "historical.v3" } : snapshot }) } } }], error: null });
+      await renderPage();
+      expect(projectsSelectMock).toHaveBeenCalledWith(expect.stringContaining(PROJECT_JURISDICTION_COLUMNS));
+      expect(reportArtifactsSelectMock).toHaveBeenCalledWith("report_id, generated_at, metadata_json");
+      if (state === "current") expect(screen.getByText("Current / ready")).toBeInTheDocument();
+      else {
+        expect(screen.queryByText("Current / ready")).not.toBeInTheDocument();
+        expect(screen.queryByText("Evidence chain current")).not.toBeInTheDocument();
+        if (state === "changed") {
+          expect(screen.getByText("Changed sources: Jurisdiction inputs.")).toBeInTheDocument();
+          expect(screen.getAllByText("Refresh recommended").length).toBeGreaterThan(0);
+          expect(screen.getAllByText(/Project jurisdiction context or registry inputs changed/).length).toBeGreaterThan(0);
+          expect(screen.getByText(/Next action: open this report and regenerate the packet/)).toBeInTheDocument();
+        }
+        else {
+          expect(screen.queryByText(/Changed sources:/)).not.toBeInTheDocument();
+          if (state === "writeback") expect(screen.getByText("Packet completion needs review")).toBeInTheDocument();
+          else {
+            expect(screen.getAllByText("Source evidence unassessed").length).toBeGreaterThan(0);
+            expect(screen.getByText(/Next action: open this report and review the unassessed source evidence/)).toBeInTheDocument();
+            expect(screen.queryByText("Release review ready")).not.toBeInTheDocument();
+            expect(screen.queryByText(/Next action:.*regenerate/)).not.toBeInTheDocument();
+          }
+        }
+      }
+    });
+
+  it.each(["current", "live-crash-failed", "retained-crash-failed", "jur-unavailable-new-safety", "jur-untracked-new-safety", "jur-unavailable-writeback", "jur-untracked-writeback", "complete-writeback"])(
+    "keeps catalog packet and grant guidance consistent for mixed/failure state: %s", async (state) => {
+      const at = "2026-10-18T00:00:00Z";
+      const project = { id: "project-1", name: "Synthetic source review", jurisdiction_context: null };
+      const jurisdiction = buildProjectJurisdictionReadinessExportPayload(project, jurisdictionReadinessRegistrySha256());
+      const updatedAt = state === "complete-writeback" ? "2026-10-18T01:00:00Z" : at;
+      projectsOrderMock.mockResolvedValueOnce({ data: [project], error: null });
+      reportsOrderMock.mockResolvedValueOnce({ data: [{ id: "report-1", workspace_id: "workspace-1", project_id: "project-1",
+        title: "Synthetic source review packet", report_type: "project_status", status: "generated", summary: null,
+        rtp_cycle_id: null, latest_artifact_kind: "html", generated_at: at, updated_at: updatedAt, created_at: at, projects: project }], error: null });
+      reportArtifactsOrderMock.mockResolvedValueOnce({ data: [{ report_id: "report-1", generated_at: at, metadata_json: {
+        ...(state.includes("writeback") ? { generationWriteback: { schema: "openplan.report-generation-writeback.v1", reportUpdatedAt: state === "complete-writeback" ? updatedAt : "2026-10-17T00:00:00Z" } } : {}),
+        sourceContext: { evidenceChainSummary: { linkedRunCount: 1 },
+          ...(state.includes("untracked") ? {} : { jurisdictionReadiness: state.includes("unavailable") ? { ...jurisdiction, payloadSha256: "f".repeat(64) } : jurisdiction }),
+          ...(state === "retained-crash-failed" ? { safetyEvidenceReadStatus: "failed" } : {}),
+          scenarioSetLinks: [{ comparisonSnapshots: [{ status: "ready", indicatorDeltaCount: 3 }] }],
+        } } }], error: null });
+      if (state === "live-crash-failed") safetyIngestOrderMock.mockResolvedValueOnce({ data: null, error: { message: "Synthetic crash query denied" } });
+      if (state.includes("new-safety")) safetyIngestOrderMock.mockResolvedValueOnce({ data: [{ project_id: "project-1", created_at: "2026-10-19T00:00:00Z" }], error: null });
+      await renderPage();
+      expect(projectsSelectMock).toHaveBeenCalledWith(expect.stringContaining(PROJECT_JURISDICTION_COLUMNS));
+      expect(reportArtifactsSelectMock).toHaveBeenCalledWith("report_id, generated_at, metadata_json");
+      expect(safetyIngestSelectMock).toHaveBeenCalledWith("project_id, created_at");
+      if (state === "current" || state === "complete-writeback") {
+        expect(screen.getByText("Current / ready")).toBeInTheDocument();
+        expect(screen.getByText(/Grant release review: Appears decision-ready/)).toBeInTheDocument();
+      } else if (state.includes("new-safety") || state.includes("writeback")) {
+        expect(screen.getAllByText("Refresh recommended").length).toBeGreaterThan(0);
+        expect(screen.getByText(/Grant release review: Refresh recommended/)).toBeInTheDocument();
+        expect(screen.getByText(/Next action: open this report and regenerate the packet/)).toBeInTheDocument();
+        expect(screen.getAllByText(state.includes("unavailable") ? /jurisdiction assessment could not be checked/ : /historical packet did not track/).length).toBeGreaterThan(0);
+        expect(screen.getByRole("link", { name: /^Needs refresh\s*1$/ })).toBeInTheDocument();
+        if (state.includes("new-safety")) expect(screen.getByText("Changed sources: Crash evidence.")).toBeInTheDocument();
+        else expect(screen.getByText("Packet completion needs review")).toBeInTheDocument();
+      } else {
+        expect(screen.getAllByText("Source evidence unassessed").length).toBeGreaterThan(0);
+        expect(screen.getByText(/Grant release review: Modeling evidence unassessed/)).toBeInTheDocument();
+        expect(screen.getByText(/Next action: open this report and review the unassessed source evidence/)).toBeInTheDocument();
+        expect(screen.queryByText(/Changed sources:|should be refreshed/)).not.toBeInTheDocument();
+        expect(screen.queryByText("Current / ready")).not.toBeInTheDocument();
+        expect(screen.queryByText("Refresh recommended")).not.toBeInTheDocument();
+      }
+    });
+
   it("flags a retained jurisdiction snapshot after the live context changes", async () => {
     const oldProject = { id: "project-1", jurisdiction_context: null, place_country_code: "US" };
     const snapshot = buildProjectJurisdictionReadinessExportPayload(oldProject, jurisdictionReadinessRegistrySha256());
@@ -393,6 +532,7 @@ describe("ReportsPage", () => {
         generated_at: "2026-03-28T20:00:00.000Z",
         metadata_json: {
           sourceContext: {
+            jurisdictionReadiness: buildProjectJurisdictionReadinessExportPayload({ id: "project-1", jurisdiction_context: null }, jurisdictionReadinessRegistrySha256()),
             projectUpdatedAt: "2026-03-28T19:00:00.000Z",
             safetyEvidenceReadStatus: "failed",
           },
@@ -403,8 +543,10 @@ describe("ReportsPage", () => {
 
     await renderPage();
 
-    expect(screen.getAllByText("Refresh recommended").length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Crash evidence read/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Source evidence unassessed").length).toBeGreaterThan(0);
+    expect(screen.queryByText("Refresh recommended")).not.toBeInTheDocument();
+    expect(screen.getAllByText(/recorded a failed project crash-evidence read/).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/Changed sources:/)).not.toBeInTheDocument();
     expect(screen.queryByText("Current / ready")).not.toBeInTheDocument();
   });
 
@@ -625,6 +767,7 @@ describe("ReportsPage", () => {
           generated_at: "2026-03-28T20:00:00.000Z",
           metadata_json: {
             sourceContext: {
+              jurisdictionReadiness: buildProjectJurisdictionReadinessExportPayload({ id: "project-1", jurisdiction_context: null }, jurisdictionReadinessRegistrySha256()),
               evidenceChainSummary: {
                 linkedRunCount: 1,
                 scenarioSetLinkCount: 0,

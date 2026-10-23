@@ -1,0 +1,61 @@
+{
+  "schema": "openplan.population-source-profiles.v1",
+  "scope": "Technical input compatibility only. Existing US producer, selected-zone GEOID and ActivitySim income/configuration limits still apply. No scientific acceptance or additional country/vintage coverage.",
+  "profiles": [
+    {
+      "id": "us_census_acs5_pums_2022",
+      "descriptor": {
+        "id": "us_census_acs5",
+        "vintage": "2022",
+        "retrievalUrl": "https://api.census.gov/data/2022/acs/acs5"
+      },
+      "profile": {
+        "adapter": "us_census_acs5_pums",
+        "acs_summary_endpoint": "https://api.census.gov/data/2022/acs/acs5",
+        "pums_endpoint": "https://api.census.gov/data/2022/acs/acs5/pums",
+        "sample_years": [
+          2018,
+          2022
+        ],
+        "income_dollar_year": 2022,
+        "puma_fields": {
+          "2020": "PUMA20",
+          "2010": "PUMA10"
+        }
+      },
+      "capabilities": {
+        "new_guided_launch": "unsupported",
+        "retained_validation": "supported",
+        "aequilibrae_production": "supported",
+        "activitysim_consumption": "supported"
+      }
+    },
+    {
+      "id": "us_census_acs5_pums_2023",
+      "descriptor": {
+        "id": "us_census_acs5",
+        "vintage": "2023",
+        "retrievalUrl": "https://api.census.gov/data/2023/acs/acs5"
+      },
+      "profile": {
+        "adapter": "us_census_acs5_pums",
+        "acs_summary_endpoint": "https://api.census.gov/data/2023/acs/acs5",
+        "pums_endpoint": "https://api.census.gov/data/2023/acs/acs5/pums",
+        "sample_years": [
+          2019,
+          2023
+        ],
+        "income_dollar_year": 2023,
+        "puma_fields": {
+          "2020": "PUMA"
+        }
+      },
+      "capabilities": {
+        "new_guided_launch": "supported",
+        "retained_validation": "supported",
+        "aequilibrae_production": "supported",
+        "activitysim_consumption": "supported"
+      }
+    }
+  ]
+}

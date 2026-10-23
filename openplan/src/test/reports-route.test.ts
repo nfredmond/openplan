@@ -1,7 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
+vi.mock("server-only", () => ({}));
+
 const createClientMock = vi.fn();
+const verifyGuidedReportMock = vi.fn();
+vi.mock("@/lib/reports/guided-comparison-server", async (importOriginal) => ({
+  ...await importOriginal<typeof import("@/lib/reports/guided-comparison-server")>(),
+  verifyGuidedComparisonReport: (...args: unknown[]) => verifyGuidedReportMock(...args),
+}));
 const createServiceRoleClientMock = vi.fn();
 const createApiAuditLoggerMock = vi.fn();
 const authGetUserMock = vi.fn();
@@ -137,6 +144,7 @@ function jsonRequest(payload: unknown) {
 describe("/api/reports", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    verifyGuidedReportMock.mockReset();
     executionInsertMock.mockReset().mockResolvedValue({ error: null });
     rtpCycleMaybeSingleMock.mockResolvedValue({ data: {
       id: "77777777-7777-4777-8777-777777777777", workspace_id: "44444444-4444-4444-8444-444444444444",
@@ -236,6 +244,58 @@ describe("/api/reports", () => {
         throw new Error(`Unexpected service table: ${table}`);
       }),
     });
+  });
+
+  it("creates an explicit server-sealed comparison without writing four duplicate citation rows", async () => {
+    const selection = { version: 1, snapshotId: "99999999-9999-4999-8999-999999999999", bindingSha256: "a".repeat(64), payload: { source: "server evidence" } };
+    verifyGuidedReportMock.mockResolvedValue(selection);
+    const response = await postReports(jsonRequest({ projectId: "33333333-3333-4333-8333-333333333333", reportType: "analysis_summary",
+      guidedComparisonSelectionV1: { snapshotId: selection.snapshotId } }));
+    expect(response.status).toBe(201);
+    expect(verifyGuidedReportMock).toHaveBeenCalledWith(expect.objectContaining({
+      workspaceId: "44444444-4444-4444-8444-444444444444", projectId: "33333333-3333-4333-8333-333333333333", reportType: "analysis_summary", snapshotId: selection.snapshotId,
+    }));
+    expect(reportsInsertMock).toHaveBeenCalledWith(expect.objectContaining({ metadata_json: { guidedComparisonSelectionV1: selection } }));
+    expect(reportRunsInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("refuses the pending-schema fallback when it would drop the sealed selected packet", async () => {
+    const selection = { version: 1, snapshotId: "99999999-9999-4999-8999-999999999999", bindingSha256: "a".repeat(64), payload: { source: "server" } };
+    verifyGuidedReportMock.mockResolvedValue(selection);
+    reportsSingleMock.mockResolvedValueOnce({ data: null, error: { message: 'column "engagement_campaign_id" of relation "reports" does not exist' } });
+    const response = await postReports(jsonRequest({ projectId: "33333333-3333-4333-8333-333333333333", reportType: "analysis_summary",
+      guidedComparisonSelectionV1: { snapshotId: selection.snapshotId } }));
+    expect(response.status).toBe(503);
+    expect(await response.json()).toMatchObject({ error: expect.stringContaining("drops its sealed selection") });
+    expect(reportsInsertMock).toHaveBeenCalledTimes(1);
+    expect(reportsInsertMock).toHaveBeenCalledWith(expect.objectContaining({ metadata_json: { guidedComparisonSelectionV1: selection } }));
+    expect(reportSectionsInsertMock).not.toHaveBeenCalled();
+    expect(reportRunsInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("keeps the established project pending-schema fallback without a selection", async () => {
+    reportsSingleMock.mockResolvedValueOnce({ data: null, error: { message: 'column "engagement_campaign_id" of relation "reports" does not exist' } });
+    const response = await postReports(jsonRequest({ projectId: "33333333-3333-4333-8333-333333333333", reportType: "analysis_summary" }));
+    expect(response.status).toBe(201);
+    expect(reportsInsertMock).toHaveBeenCalledTimes(2);
+    expect((reportsInsertMock.mock.calls as unknown as Array<[Record<string, unknown>]>)[1][0]).not.toHaveProperty("metadata_json");
+    expect(verifyGuidedReportMock).not.toHaveBeenCalled();
+  });
+
+  it("refuses client-computed comparison payloads and unknown versions before writing", async () => {
+    const response = await postReports(jsonRequest({ projectId: "33333333-3333-4333-8333-333333333333", reportType: "analysis_summary",
+      guidedComparisonSelectionV1: { snapshotId: "99999999-9999-4999-8999-999999999999", version: 2, payload: { value: 999 } } }));
+    expect(response.status).toBe(400);
+    expect(reportsInsertMock).not.toHaveBeenCalled();
+    expect(verifyGuidedReportMock).not.toHaveBeenCalled();
+  });
+
+  it("does not save an unverifiable selected comparison", async () => {
+    verifyGuidedReportMock.mockRejectedValue(new Error("Selected artifact hash changed"));
+    const response = await postReports(jsonRequest({ projectId: "33333333-3333-4333-8333-333333333333", reportType: "analysis_summary",
+      guidedComparisonSelectionV1: { snapshotId: "99999999-9999-4999-8999-999999999999" } }));
+    expect(response.status).toBe(409);
+    expect(reportsInsertMock).not.toHaveBeenCalled();
   });
 
   it("rejects invalid optional RTP approval before creating a report or its sections", async () => {

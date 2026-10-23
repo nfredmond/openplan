@@ -1,3 +1,4 @@
+import { modelOutputRetryRpcArguments, modelOutputRetryReceipt, type ModelOutputRetryDecision } from "@/lib/models/recovery-decision";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireProviderBrowserOrigin } from "@/lib/assistant/provider-server";
@@ -6,6 +7,8 @@ import { loadModelAccess } from "@/lib/models/api";
 import { isWorkerExecutedRunMode } from "@/lib/models/run-modes";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { replacementRpcArguments, replacementReceipt, type PopulationReplacementDecision } from '@/lib/models/recovery-decision';
+import { replacementPreflight, dispatchPopulationReplacement } from '@/lib/models/population-replacement-server';
 import { recoveryIdentitySchema, recoveryRequestSchema, recoveryInspectionSchema, recoveryRpcArguments, matchesRecoveryReceipt, historicalDecisionRpcArguments, matchesHistoricalDecisionReceipt, type HistoricalRunDecision } from "@/lib/models/recovery-decision";
 
 const paramsSchema = z.object({ modelId: recoveryIdentitySchema, modelRunId: recoveryIdentitySchema });
@@ -36,7 +39,7 @@ async function authorize(request: NextRequest, context: Context) {
     return { response: response("Model run not found", 404) };
   }
   if (!isWorkerExecutedRunMode(run.engine_key)) return { response: response("This recovery command only applies to worker executions", 409) };
-  return { runId: run.id as string, modelId: params.data.modelId, workspaceId: access.model.workspace_id, actorId: user.id };
+  return { runId: run.id as string, modelId: params.data.modelId, workspaceId: access.model.workspace_id, actorId: user.id, engineKey: run.engine_key as string };
 }
 
 export async function GET(request: NextRequest, context: Context) {
@@ -51,6 +54,19 @@ export async function GET(request: NextRequest, context: Context) {
     if (error || !parsed.success || parsed.data.expected_state.workspace_id !== access.workspaceId
         || parsed.data.expected_state.run_id !== access.runId || parsed.data.expected_state.model_id !== access.modelId) {
       return response("Recovery inspection is unavailable", 503);
+    }
+    if (['failed', 'cancelled'].includes(parsed.data.expected_state.status)) {
+      const retry = await createServiceRoleClient().rpc('inspect_model_output_retry', {
+        p_workspace_id: access.workspaceId, p_run_id: access.runId, p_actor_id: access.actorId,
+      });
+      const inspected = await createServiceRoleClient().rpc('inspect_model_population_replacement', {
+        p_workspace_id: access.workspaceId, p_run_id: access.runId, p_actor_id: access.actorId,
+      });
+      const candidate = recoveryInspectionSchema.safeParse({ ...parsed.data, retry: retry.error
+        ? { state: 'unavailable', reason: 'Output-preserving retry is unavailable on this installation.' } : retry.data, replacement: inspected.error
+        ? { state: 'unavailable', reason: 'Population checkpoint registration is unavailable on this installation.' } : inspected.data });
+      if (!candidate.success) return response('Population recovery inspection is unavailable', 503);
+      return NextResponse.json(candidate.data, { headers: { 'Cache-Control': 'no-store' } });
     }
     return NextResponse.json(parsed.data, { headers: { "Cache-Control": "no-store" } });
   } catch {
@@ -80,6 +96,8 @@ export async function POST(request: NextRequest, context: Context) {
     const decision = parsed.data;
     if (decision.expectedState.workspace_id !== access.workspaceId || decision.expectedState.run_id !== access.runId
         || decision.expectedState.model_id !== access.modelId) return response("Recovery observation belongs to another model run", 409);
+    if (decision.decision === 'retry_execution') return await retryExecution(decision, access, audit);
+    if (decision.decision === 'create_population_replacement') return await createReplacement(decision, access);
     if (decision.decision !== "abandon_execution") return await decideHistoricalRun(decision, access, audit);
     const args = recoveryRpcArguments(decision, access.workspaceId, access.runId, access.actorId);
     const { data, error } = await createServiceRoleClient().rpc("abandon_model_run_execution", args);
@@ -102,6 +120,31 @@ export async function POST(request: NextRequest, context: Context) {
 
 type Authorized = { runId: string; modelId: string; workspaceId: string; actorId: string };
 
+async function createReplacement(decision: PopulationReplacementDecision, access: Authorized & { engineKey: string }) {
+  const args = replacementRpcArguments(decision, access.workspaceId, access.runId, access.actorId);
+  // Receipt lookup precedes current capacity gates: a lost create reply must remain recoverable.
+  const service = createServiceRoleClient();
+  const saved = await service.rpc('read_model_population_replacement_receipt', {
+    p_request_id: decision.requestId, p_workspace_id: access.workspaceId, p_run_id: access.runId, p_actor_id: access.actorId,
+  });
+  if (saved.error) return response('Replacement receipt lookup is unavailable. Retry the saved request.', 503);
+  let receipt = saved.data === null ? null : replacementReceipt(saved.data, args);
+  if (saved.data !== null && !receipt) return response('This request identity has a different payload', 409);
+  if (!receipt) {
+    const blocked = await replacementPreflight(access.engineKey, access.workspaceId);
+    if (blocked) return response(blocked.message, blocked.status);
+    const result = await service.rpc('create_model_population_replacement', args);
+    if (result.error?.code === '0A000') return response('Managed population replacement is unsupported on this installation. It remains a full-v1 obligation.', 501);
+    if (result.error?.code === '42501') return response('Source access changed. Review workspace access.', 403);
+    if (result.error?.code === '40001' || result.error?.code === '23514' || result.error?.code === '23505') return response('Source state or checkpoint changed. Review recovery again.', 409);
+    receipt = replacementReceipt(result.data, args);
+    if (result.error || !receipt) return response('Replacement creation is unconfirmed. Retry the saved request.', 503);
+  }
+  // Dispatch uncertainty cannot hide a confirmed creation receipt or mint another run.
+  try { await dispatchPopulationReplacement(decision.requestId, receipt.replacement_run_id, receipt.engine_key); } catch { /* Polling remains the ordinary execution path. */ }
+  return NextResponse.json(receipt, { headers: { 'Cache-Control': 'no-store' } });
+}
+
 /** Records keep or close for a historical run. The run, its stages and outputs stay as saved. */
 async function decideHistoricalRun(decision: HistoricalRunDecision, access: Authorized, audit: ReturnType<typeof createApiAuditLogger>) {
   const args = historicalDecisionRpcArguments(decision, access.workspaceId, access.runId, access.actorId);
@@ -117,4 +160,18 @@ async function decideHistoricalRun(decision: HistoricalRunDecision, access: Auth
   }
   audit.info("historical_run_decision_receipt", { requestId: decision.requestId, runId: access.runId, workspaceId: access.workspaceId, actorId: access.actorId, outcome: args.p_outcome });
   return NextResponse.json(data, { headers: { "Cache-Control": "no-store" } });
+}
+
+/** Owner/admin recovery retains the exact browser decision and native receipt.
+ * Polling workers claim fresh attempts; replaying this decision never computes.
+ */
+async function retryExecution(decision: ModelOutputRetryDecision, access: Authorized, audit: ReturnType<typeof createApiAuditLogger>) {
+  const args = modelOutputRetryRpcArguments(decision, access.workspaceId, access.runId, access.actorId);
+  const { data, error } = await createServiceRoleClient().rpc("relaunch_model_run_attempts", args);
+  if (error?.code === "42501") return response("Recovery authority changed. Review workspace access.", 403);
+  if (error && ["PT409", "40001", "23505", "55000"].includes(error.code ?? "")) return response("This retry was refused. Review the retained execution and scientific records before another decision.", 409);
+  const receipt = modelOutputRetryReceipt(data, args);
+  if (error || !receipt) return response("Retry is unconfirmed. Retry the exact saved decision to recover its receipt.", 503);
+  audit.info("model_output_retry_receipt", { requestId: decision.requestId, workspaceId: access.workspaceId, runId: access.runId, actorId: access.actorId });
+  return NextResponse.json(receipt, { headers: { "Cache-Control": "no-store" } });
 }

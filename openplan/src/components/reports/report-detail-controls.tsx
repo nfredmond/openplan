@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { GuidedComparisonPicker } from "@/components/reports/guided-comparison-picker";
+import type { GuidedComparisonSelectionV1 } from "@/lib/reports/guided-comparison";
 import { useRouter } from "next/navigation";
 import { AlertTriangle, Check, FileCog, Loader2, Save, WandSparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -37,6 +39,7 @@ export type ReportSafetyIngestOption = {
 };
 
 type ReportDraft = {
+  guidedSnapshotId: string | null;
   title: string;
   summary: string;
   status: string;
@@ -71,7 +74,7 @@ function sourceReviewPostureClassName(state: ReportSourceReviewPosture["state"])
   if (state === "ready") {
     return "border-emerald-300/70 bg-emerald-50 text-emerald-950 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-100";
   }
-  if (state === "needs-review") {
+  if (state === "needs-review" || state === "unassessed") {
     return "border-amber-300/70 bg-amber-50 text-amber-950 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-100";
   }
   return "border-slate-300/80 bg-slate-50 text-slate-950 dark:border-slate-800 dark:bg-slate-950/30 dark:text-slate-100";
@@ -93,6 +96,7 @@ export function ReportDetailControls({
   safetyIngestOptions = [],
   safetyIngestSelections = [],
   initialSafetyIngestId = null,
+  guidedComparison,
 }: {
   report: {
     id: string;
@@ -106,6 +110,7 @@ export function ReportDetailControls({
     changedCount: number;
     totalCount: number;
     labels: string[];
+    unassessedLabels?: string[];
   };
   evidenceSummary?: {
     headline: string;
@@ -132,8 +137,11 @@ export function ReportDetailControls({
   safetyIngestOptions?: ReportSafetyIngestOption[];
   safetyIngestSelections?: ReportSafetyIngestSelection[];
   initialSafetyIngestId?: string | null;
+  guidedComparison?: { projectId: string; snapshotId: string | null; bindingSha256: string | null; problem: string | null; includedRunIds: string[]; liveEvidenceStatus?: "unassessed" };
 }) {
   const router = useRouter();
+  const [guidedSnapshotId, setGuidedSnapshotId] = useState(guidedComparison?.snapshotId ?? null);
+  const [resealGuided, setResealGuided] = useState(false);
   const [title, setTitle] = useState(report.title);
   const [summary, setSummary] = useState(report.summary ?? "");
   const [status, setStatus] = useState(report.status);
@@ -152,6 +160,7 @@ export function ReportDetailControls({
   // A carried selection is a draft, not saved evidence. Only a successful save
   // advances this baseline; later edits stay pending even if a save is in flight.
   const [savedDraft, setSavedDraft] = useState<ReportDraft>(() => ({
+    guidedSnapshotId: guidedComparison?.snapshotId ?? null,
     title: report.title.trim(),
     summary: (report.summary ?? "").trim(),
     status: report.status,
@@ -161,6 +170,7 @@ export function ReportDetailControls({
     safetyIngestId: safetyIngestSelections[0]?.ingestId ?? null,
   }));
   const draft = {
+    guidedSnapshotId,
     title: title.trim(),
     summary: summary.trim(),
     status,
@@ -171,6 +181,8 @@ export function ReportDetailControls({
     safetyIngestId: selectedSafetyIngestId,
   };
   const hasUnsavedChanges = draft.title !== savedDraft.title
+    || draft.guidedSnapshotId !== savedDraft.guidedSnapshotId
+    || resealGuided
     || draft.summary !== savedDraft.summary
     || draft.status !== savedDraft.status
     || !sameIdSet(draft.modelRunIds, savedDraft.modelRunIds)
@@ -192,6 +204,7 @@ export function ReportDetailControls({
     hasGeneratedArtifact: report.hasGeneratedArtifact,
     evidenceSummary,
     driftSummary,
+    guidedComparison,
   });
 
   async function handleSave(event: React.FormEvent<HTMLFormElement>) {
@@ -228,6 +241,8 @@ export function ReportDetailControls({
           title: draft.title,
           summary: draft.summary || null,
           status,
+          ...(resealGuided || draft.guidedSnapshotId !== savedDraft.guidedSnapshotId
+            ? { guidedComparisonSelectionV1: draft.guidedSnapshotId ? { snapshotId: draft.guidedSnapshotId } : null } : {}),
           ...(modelRunSelectionChanged ? { modelRunIds: selectedModelRunIds } : {}),
           ...(agreementSelectionChanged || modelRunSelectionChanged
             ? { agreementCorridorSelections: finalAgreementSelections }
@@ -241,12 +256,14 @@ export function ReportDetailControls({
         }),
       });
 
-      const payload = (await response.json()) as { error?: string };
+      const payload = (await response.json()) as { error?: string; guidedComparisonSelectionV1?: GuidedComparisonSelectionV1 | null };
       if (!response.ok) {
         throw new Error(payload.error || "Failed to update report");
       }
 
-      setSavedDraft(draft);
+      setSavedDraft({ ...draft, guidedSnapshotId: payload.guidedComparisonSelectionV1 === undefined
+        ? draft.guidedSnapshotId : payload.guidedComparisonSelectionV1?.snapshotId ?? null });
+      setResealGuided(false);
       router.refresh();
     } catch (submitError) {
       setError(
@@ -319,6 +336,14 @@ export function ReportDetailControls({
       {metadataOnly ? <p className="mt-3 text-sm text-muted-foreground">Changes here update the title, summary and filing status. Saved file contents stay unchanged.</p> : null}
       <form className="mt-5 space-y-4" onSubmit={handleSave}>
         <fieldset disabled={isGenerating} className="space-y-4">
+        {!metadataOnly && guidedComparison ? <div className="space-y-2">
+          <GuidedComparisonPicker projectId={guidedComparison.projectId} value={guidedSnapshotId} onChange={setGuidedSnapshotId} />
+          {guidedComparison.bindingSha256 ? <p className="break-all text-sm">Saved comparison binding SHA-256: {guidedComparison.bindingSha256}</p> : null}
+          {guidedComparison.includedRunIds.length ? <p className="break-all text-sm">Included by the saved comparison: {guidedComparison.includedRunIds.join(", ")}. These citations follow the snapshot selection.</p> : null}
+          {guidedComparison.problem ? <p role="alert">{guidedComparison.problem} Historical files retain their original bytes. Clear or review and save the selection before generating again.</p> : null}
+          {guidedComparison.problem && guidedSnapshotId ? <Button type="button" variant="outline" onClick={() => setResealGuided(true)}>Review and save this exact snapshot again</Button> : null}
+          {guidedComparison.problem ? <Button type="button" variant="outline" onClick={() => { setGuidedSnapshotId(null); setResealGuided(true); }}>Clear saved comparison selection</Button> : null}
+        </div> : null}
         {/* Title */}
         <div className="space-y-1.5">
           <label

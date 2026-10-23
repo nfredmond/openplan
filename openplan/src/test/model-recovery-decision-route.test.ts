@@ -1,3 +1,4 @@
+vi.mock('server-only', () => ({}));
 import { beforeEach, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 const mocks = vi.hoisted(() => ({ auth: vi.fn(), access: vi.fn(), rpc: vi.fn(), query: vi.fn(), service: vi.fn() }));
@@ -71,3 +72,44 @@ it("returns forbidden when database authority changed", async () => { mocks.rpc.
 it.each(["run_record_changed", "continuation_authorized", "model_resumed", "outcome", "actor_id"])("keeps a historical receipt with changed %s unconfirmed", async (key) => { mocks.rpc.mockResolvedValue({ data: { ...historicalReceipt(), [key]: key === "outcome" ? "closed_for_fresh_run" : key === "actor_id" ? workspace : true }, error: null }); const result = await POST(request(historicalDecision()), context()); expect(result.status).toBe(503); expect((await result.json()).outcome).toBe("recovery_unconfirmed"); });
 it("keeps a lost historical reply unconfirmed and repeats the exact request", async () => { mocks.rpc.mockRejectedValueOnce(new Error("private transport detail")).mockResolvedValueOnce({ data: historicalReceipt(), error: null }); const first = await POST(request(historicalDecision()), context()); expect(first.status).toBe(503); expect(await first.text()).not.toContain("private transport detail"); expect((await POST(request(historicalDecision()), context())).status).toBe(200); expect(mocks.rpc.mock.calls[0]).toEqual(mocks.rpc.mock.calls[1]); });
 it("refuses a historical decision for an in-process engine", async () => { runRow = { ...runRow, engine_key: "deterministic_corridor_v1" }; expect((await POST(request(historicalDecision()), context())).status).toBe(409); expect(mocks.rpc).not.toHaveBeenCalled(); });
+
+const retryDecision = () => ({ requestId, decision: "retry_execution", reason: "Retry with retained original outputs", expectedState: { ...structuredClone(state), status: "failed", stages: state.stages.map(s => ({ ...s, status: "failed", active_attempt_id: null })) } });
+const retryReceipt = () => ({ schema: "openplan.model-output-retry.v1", request_id: requestId,
+ request_payload: { workspace_id: workspace, run_id: run, actor_id: actor, expected_state: retryDecision().expectedState, reason: retryDecision().reason, decision: "retry_execution" },
+ outcome: "fresh_attempt_queued", run_id: run, run_status: "queued", outputs_preserved: true, scientific_claim_changed: false, process_termination_verified: false, model_resumed: false });
+it("queues a same-run fresh attempt through the scoped command without any direct output write", async () => {
+ mocks.rpc.mockResolvedValue({ data: retryReceipt(), error: null });
+ const result = await POST(request(retryDecision()), context());
+ expect(result.status).toBe(200); expect(await result.json()).toEqual(retryReceipt());
+ expect(mocks.rpc).toHaveBeenCalledExactlyOnceWith("relaunch_model_run_attempts", { p_request_id: requestId, p_workspace_id: workspace, p_run_id: run, p_actor_id: actor, p_expected_state: retryDecision().expectedState, p_reason: retryDecision().reason });
+ expect(queries.filter(([key]) => key === "table")).toEqual([["table", "model_runs"]]);
+});
+it.each(["PT409", "40001", "23505", "55000"])("retains a native %s refusal without falling back to reset", async code => {
+ mocks.rpc.mockResolvedValue({ data: null, error: { code, message: "private native refusal" } });
+ const result = await POST(request(retryDecision()), context());
+ expect(result.status).toBe(409); expect(await result.json()).toEqual({ error: "This retry was refused. Review the retained execution and scientific records before another decision." });
+ expect(mocks.rpc).toHaveBeenCalledExactlyOnceWith("relaunch_model_run_attempts", { p_request_id: requestId, p_workspace_id: workspace, p_run_id: run, p_actor_id: actor, p_expected_state: retryDecision().expectedState, p_reason: retryDecision().reason });
+});
+it.each([{ run_id: workspace }, { outputs_preserved: false }, { scientific_claim_changed: true }, { model_resumed: true }])("keeps a mismatched retry receipt unconfirmed: %j", async changed => {
+ mocks.rpc.mockResolvedValue({ data: { ...retryReceipt(), ...changed }, error: null });
+ expect((await POST(request(retryDecision()), context())).status).toBe(503);
+});
+it("keeps the original agent-recovery refusal for output-preserving retry", async () => {
+ expect((await POST(request(retryDecision(), { "x-openplan-assistant-execution-source": "planner_agent_quick_link" }), context())).status).toBe(403);
+ expect(mocks.rpc).not.toHaveBeenCalled();
+});
+
+it("keeps PT409 refused even when a stale reply carries a successful receipt", async () => {
+ mocks.rpc.mockResolvedValue({ data: retryReceipt(), error: { code: "PT409", message: "Model recovery state changed" } });
+ const result = await POST(request(retryDecision()), context());
+ expect(result.status).toBe(409);
+ expect(await result.json()).toEqual({ error: "This retry was refused. Review the retained execution and scientific records before another decision." });
+ expect(mocks.rpc).toHaveBeenCalledTimes(1);
+});
+it.each(["XX000", "08006"])("keeps an unknown retry failure %s unconfirmed", async code => {
+ mocks.rpc.mockResolvedValue({ data: retryReceipt(), error: { code, message: "private native failure" } });
+ const result = await POST(request(retryDecision()), context());
+ expect(result.status).toBe(503);
+ expect(await result.json()).toEqual({ error: "Retry is unconfirmed. Retry the exact saved decision to recover its receipt." });
+ expect(mocks.rpc).toHaveBeenCalledTimes(1);
+});

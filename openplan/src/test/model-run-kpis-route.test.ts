@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 const createClientMock = vi.fn();
+const outputRpcMock = vi.fn();
+const runSelectColumns: string[] = [];
 const createApiAuditLoggerMock = vi.fn();
 const loadModelAccessMock = vi.fn();
 const authGetUserMock = vi.fn();
@@ -22,25 +24,22 @@ const mockAudit = {
 const fromMock = vi.fn((table: string) => {
   if (table === "model_runs") {
     return {
-      select: vi.fn(() => ({
+      select: vi.fn((columns: string) => { runSelectColumns.push(columns); return {
         eq: vi.fn(() => ({
           eq: vi.fn(() => ({
             maybeSingle: runMaybeSingleMock,
           })),
         })),
-      })),
+      }; }),
     };
   }
   if (table === "model_run_kpis") {
     return {
       insert: modelRunKpisInsertMock,
-      select: vi.fn(() => ({
-        eq: vi.fn(() => ({
-          order: vi.fn(() => ({
-            order: modelRunKpisOrderSecondMock,
-          })),
-        })),
-      })),
+      select: vi.fn(() => {
+        const query = { in: vi.fn(() => query), order: vi.fn(() => ({ order: modelRunKpisOrderSecondMock })) };
+        return { eq: vi.fn(() => query) };
+      }),
     };
   }
 
@@ -49,6 +48,7 @@ const fromMock = vi.fn((table: string) => {
 
 vi.mock("@/lib/supabase/server", () => ({
   createClient: (...args: unknown[]) => createClientMock(...args),
+  createServiceRoleClient: () => ({ rpc: outputRpcMock }),
 }));
 
 vi.mock("@/lib/observability/audit", () => ({
@@ -292,4 +292,29 @@ describe("/api/models/[modelId]/runs/[modelRunId]/kpis", () => {
       expect.objectContaining({ modelRunId: MODEL_RUN_ID, attemptedCount: 1 })
     );
   });
+});
+
+
+it("serves only the native current-completed same-run KPI after output-preserving retry", async () => {
+ const current = { id: "88888888-8888-4888-8888-888888888888", run_id: MODEL_RUN_ID, attempt_id: "77777777-7777-4777-8777-777777777777", kpi_name: "daily_vmt", kpi_category: "assignment", value: 20, unit: "vehicle-miles/day" };
+ const retained = { ...current, id: "99999999-9999-4999-8999-999999999999", attempt_id: "66666666-6666-4666-8666-666666666666", value: 900 };
+ // This case uses the actual route and shared native-projection parser.
+ createApiAuditLoggerMock.mockReturnValue(mockAudit);
+ authGetUserMock.mockResolvedValue({ data: { user: { id: "44444444-4444-4444-8444-444444444444" } } });
+ loadModelAccessMock.mockResolvedValue({ model: { id: MODEL_ID, workspace_id: WORKSPACE_ID }, membership: { workspace_id: WORKSPACE_ID, role: "owner" }, allowed: true, error: null });
+ createClientMock.mockResolvedValue({ auth: { getUser: authGetUserMock }, from: fromMock });
+ runMaybeSingleMock.mockResolvedValue({ data: { id: MODEL_RUN_ID, model_id: MODEL_ID, engine_key: "aequilibrae", status: "succeeded", attempt_managed: true }, error: null });
+ modelRunKpisOrderSecondMock.mockResolvedValue({ data: [retained, current], error: null });
+ outputRpcMock.mockResolvedValue({ data: { run_id: MODEL_RUN_ID, run_status: "succeeded", outputs: [
+  { kind: "kpi", ownership_state: "retained_inactive", record: retained }, { kind: "kpi", ownership_state: "current_completed", record: current },
+ ] }, error: null });
+ const result = await getModelRunKpis(getRequest(), { params: Promise.resolve({ modelId: MODEL_ID, modelRunId: MODEL_RUN_ID }) });
+ if (!result) throw new Error("The model KPI route returned no response");
+ expect(result.status).toBe(200); expect(await result.json()).toMatchObject({ kpi_count: 1, kpis: [current] });
+ expect(runSelectColumns).toContain("id, model_id, engine_key, status, attempt_managed");
+ expect(outputRpcMock).toHaveBeenCalledWith("read_model_attempt_outputs", { p_run_id: MODEL_RUN_ID, p_workspace_id: WORKSPACE_ID });
+ outputRpcMock.mockResolvedValue({ data: null, error: { message: "unavailable" } });
+ const unavailableResult = await getModelRunKpis(getRequest(), { params: Promise.resolve({ modelId: MODEL_ID, modelRunId: MODEL_RUN_ID }) });
+ if (!unavailableResult) throw new Error("The unavailable-custody model KPI route returned no response");
+ expect(unavailableResult.status).toBe(503);
 });

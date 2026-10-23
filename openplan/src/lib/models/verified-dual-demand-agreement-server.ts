@@ -1,3 +1,4 @@
+import { readModelAttemptOutputs, currentCompletedModelOutputs, filterCompletedAttemptRows } from "./attempt-output-read";
 import { createHash } from "node:crypto";
 import {
   jsonValuesEqual,
@@ -23,6 +24,7 @@ type QueryResult = { data: unknown; error: QueryError };
 type QueryBuilder = PromiseLike<QueryResult> & {
   eq: (column: string, value: unknown) => QueryBuilder;
   order: (column: string, options?: { ascending?: boolean }) => QueryBuilder;
+  in: (column: string, values: string[]) => QueryBuilder;
   limit: (count: number) => QueryBuilder;
   maybeSingle: () => PromiseLike<QueryResult>;
 };
@@ -256,7 +258,7 @@ export async function loadRegisteredDualDemandAgreement(
   const client = supabase as SupabaseLike;
   let runQuery = client
     .from("model_runs")
-    .select("id, status, workspace_id, project_id, model_id")
+    .select("id, status, workspace_id, project_id, model_id, attempt_managed")
     .eq("id", scope.modelRunId);
   if (scope.expectedModelId) runQuery = runQuery.eq("model_id", scope.expectedModelId);
   if (scope.expectedWorkspaceId) runQuery = runQuery.eq("workspace_id", scope.expectedWorkspaceId);
@@ -271,11 +273,16 @@ export async function loadRegisteredDualDemandAgreement(
     return { status: "invalid", reason: "The model run did not succeed." };
   }
 
-  const artifactResult = await client
+  const custody = run?.attempt_managed === true && typeof run.workspace_id === "string"
+    ? await readModelAttemptOutputs(run.workspace_id, scope.modelRunId) : null;
+  if (custody && !custody.available) return { status: "unreadable", reason: "Current agreement attempt custody could not be verified." };
+  let artifactQuery = client
     .from("model_run_artifacts")
-    .select("id, artifact_type, file_url, content_hash, file_size_bytes, metadata_json, stage_id")
+    .select("id, run_id, attempt_id, artifact_type, file_url, content_hash, file_size_bytes, metadata_json, stage_id")
     .eq("run_id", scope.modelRunId)
-    .eq("artifact_type", scope.artifactType)
+    .eq("artifact_type", scope.artifactType);
+  if (custody?.available) artifactQuery = artifactQuery.in("id", currentCompletedModelOutputs(custody, "artifact").map(row => row.id));
+  const artifactResult = await artifactQuery
     .order("created_at", { ascending: false })
     .limit(1);
   if (artifactResult.error) {
@@ -284,7 +291,8 @@ export async function loadRegisteredDualDemandAgreement(
       reason: `The agreement artifact registry could not be read: ${artifactResult.error.message}`,
     };
   }
-  const artifactRows = Array.isArray(artifactResult.data) ? artifactResult.data : [];
+  const storedArtifacts = Array.isArray(artifactResult.data) ? artifactResult.data : [];
+  const artifactRows = custody?.available ? filterCompletedAttemptRows(custody, "artifact", storedArtifacts) : storedArtifacts;
   if (artifactRows.length === 0) {
     return { status: "absent", reason: "This run has no registered dual-model agreement artifact." };
   }

@@ -17,8 +17,11 @@ import {
   usesGuidedWorkerNetwork,
 } from "@/lib/models/project-comparison";
 import {
+  GUIDED_FIXED_POPULATION_POLICY,
   collectGuidedRunEvidence,
+  readGuidedStageCustody,
   guidedEvidenceSharesExactNetwork,
+  guidedPopulationComparison,
   snapshotHasExactGuidedEvidence,
   type GuidedRunJob,
   type GuidedRunRow,
@@ -119,7 +122,7 @@ export async function loadAnalysisSequenceFacts(
   if (failed(versionsResult)) unreadable.push("network");
 
   const runsResult = modelIds.length
-    ? await supabase.from("model_runs").select("id, model_id, scenario_entry_id, engine_key, status, assumption_snapshot_json, created_at").in("model_id", modelIds).order("created_at", { ascending: false }).order("id", { ascending: false })
+    ? await supabase.from("model_runs").select("id, model_id, scenario_entry_id, engine_key, status, attempt_managed, assumption_snapshot_json, input_snapshot_json, created_at").in("model_id", modelIds).order("created_at", { ascending: false }).order("id", { ascending: false })
     : { data: [] as Array<{ id: string; model_id: string; scenario_entry_id: string | null; status: string }>, error: null };
   const entriesResult = scenarioSetIds.length
     ? await supabase.from("scenario_entries").select("id, scenario_set_id, entry_type, assumptions_json").in("scenario_set_id", scenarioSetIds)
@@ -127,7 +130,7 @@ export async function loadAnalysisSequenceFacts(
   const comparisonPacketsResult = scenarioSetIds.length
     ? await supabase
         .from("scenario_comparison_snapshots")
-        .select("id, scenario_set_id, status")
+        .select("id, scenario_set_id, status, metadata_json")
         .in("scenario_set_id", scenarioSetIds)
     : { data: [] as Array<{ id: string; status: string }>, error: null };
   // With no models there is nothing to have run, and the empty array is the
@@ -184,7 +187,7 @@ export async function loadAnalysisSequenceFacts(
   const runIds = runRows.map((run) => run.id);
   const artifactsResult = runIds.length
     ? await supabase.from("model_run_artifacts")
-        .select("id, run_id, stage_id, artifact_type, file_url, file_size_bytes, content_hash, metadata_json, created_at")
+        .select("id, run_id, stage_id, attempt_id, artifact_type, file_url, file_size_bytes, content_hash, metadata_json, created_at")
         .in("run_id", runIds)
         .in("artifact_type", ["link_volumes", "activitysim_link_volumes"])
         .order("created_at", { ascending: false })
@@ -193,16 +196,26 @@ export async function loadAnalysisSequenceFacts(
   if (failed(artifactsResult)) unreadable.push("run", "activitysim_run");
   const stagesResult = runIds.length
     ? await supabase.from("model_run_stages")
-        .select("id, run_id, stage_name, status")
+        .select("id, run_id, stage_name, status, attempt_managed, active_attempt_id")
         .in("run_id", runIds)
         .in("stage_name", ["Artifact Extraction", "ActivitySim Network Assignment"])
     : { data: [], error: null };
   if (failed(stagesResult)) unreadable.push("run", "activitysim_run");
+  const eligibleStageArtifacts = await readGuidedStageCustody({ workspaceId, runs: runRows,
+    artifacts: (artifactsResult.data ?? []) as ModelRunArtifactRow[], stages: (stagesResult.data ?? []) as ModelRunStageRow[],
+    readStageCustody: async (scopeWorkspace, runId, stageId, artifactId) => {
+      const { createServiceRoleClient } = await import("@/lib/supabase/server");
+      return createServiceRoleClient().rpc("read_common_population_stage_custody", {
+        p_workspace: scopeWorkspace, p_run: runId, p_stage: stageId, p_artifact: artifactId,
+      });
+    },
+  });
   const guidedEvidence = collectGuidedRunEvidence(
     guidedJobs,
     runRows,
     (artifactsResult.data ?? []) as ModelRunArtifactRow[],
     (stagesResult.data ?? []) as ModelRunStageRow[],
+    eligibleStageArtifacts,
   );
   const aequilibraeRunCount = guidedProjectComparison
     ? guidedEvidence.filter((item) => item.method === "aequilibrae").length
@@ -237,6 +250,10 @@ export async function loadAnalysisSequenceFacts(
     const setModelIds = new Set(modelRows.filter((model) => model.scenario_set_id === scenarioSet.id).map((model) => model.id));
     const setEvidence = guidedEvidence.filter((item) => setModelIds.has(item.modelId));
     if (!guidedEvidenceSharesExactNetwork(setEvidence)) return false;
+    const population = guidedPopulationComparison(setEvidence, setEvidence);
+    // Individual outputs and decisions remain historical facts. A checked
+    // guided comparison also requires the supported, ready population basis.
+    if (population.state !== "ready") return false;
     return setEvidence.every((item) => exactTrackDecisions.some((decision) => decision.model_run_id === item.runId));
   }).length;
 
@@ -244,6 +261,7 @@ export async function loadAnalysisSequenceFacts(
     id: string;
     scenario_set_id: string;
     status: string;
+    metadata_json?: Record<string, unknown> | null;
   }>).filter((snapshot) => snapshot.status === "ready");
   const snapshotLinksResult = readySnapshots.length
     ? await supabase.from("scenario_comparison_model_run_links")
@@ -252,21 +270,34 @@ export async function loadAnalysisSequenceFacts(
     : { data: [], error: null };
   if (failed(snapshotLinksResult)) unreadable.push("packet");
   const snapshotLinks = (snapshotLinksResult.data ?? []) as ScenarioComparisonModelRunLinkRow[];
-  const comparisonPacketCount = guidedProjectComparison
-    ? readySnapshots.filter((snapshot) => {
-        const setJobs = guidedJobs.filter((job) => {
-          const model = modelRows.find((row) => row.id === job.modelId);
-          return model?.scenario_set_id === snapshot.scenario_set_id;
-        });
-        const setEvidence = collectGuidedRunEvidence(
-          setJobs,
-          runRows,
-          (artifactsResult.data ?? []) as ModelRunArtifactRow[],
-          (stagesResult.data ?? []) as ModelRunStageRow[],
-        );
-        return snapshotHasExactGuidedEvidence(snapshot.id, snapshotLinks, setEvidence);
-      }).length
-    : readySnapshots.length;
+  const comparisonPacketCount = readySnapshots.filter((snapshot) => {
+    // A failed classification read cannot establish that a snapshot is generic.
+    if (failed(snapshotLinksResult) || failed(modelsResult)) return false;
+    const claim = snapshot.metadata_json?.commonPopulation;
+    const claimRecord = claim && typeof claim === "object" && !Array.isArray(claim)
+      ? claim as Record<string, unknown> : null;
+    // Saved links declare guided history even when current models are gone or
+    // damaged. Inspect every link, before any validity check. Current intent is
+    // scoped to this set; either fixed claim marker opts this snapshot in too.
+    const requiresGuidedRead = snapshotLinks.some((link) => link.comparison_snapshot_id === snapshot.id) ||
+      modelRows.some((model) => model.scenario_set_id === snapshot.scenario_set_id &&
+        hasGuidedProjectComparisonIntent(model.config_json)) ||
+      claimRecord?.schema === "openplan.common-population-comparison.v1" ||
+      claimRecord?.comparisonPolicy === GUIDED_FIXED_POPULATION_POLICY;
+    if (!requiresGuidedRead) return true;
+    const setJobs = guidedJobs.filter((job) => {
+      const model = modelRows.find((row) => row.id === job.modelId);
+      return model?.scenario_set_id === snapshot.scenario_set_id;
+    });
+    const setEvidence = collectGuidedRunEvidence(
+      setJobs,
+      runRows,
+      (artifactsResult.data ?? []) as ModelRunArtifactRow[],
+      (stagesResult.data ?? []) as ModelRunStageRow[],
+      eligibleStageArtifacts,
+    );
+    return snapshotHasExactGuidedEvidence(snapshot.id, snapshotLinks, setEvidence, snapshot.metadata_json);
+  }).length;
   const savedComparisonPacketCount = readySnapshots.length;
 
   return {

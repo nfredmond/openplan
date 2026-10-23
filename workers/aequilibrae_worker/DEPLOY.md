@@ -36,6 +36,14 @@ the CPython 3.11 Linux x86_64 wheel of AequilibraE 1.6.2. Other wheels or platfo
 refuse that build check. This is a compatibility boundary, not scientific
 validation. A fresh image build and runtime journey remain separate checks.
 
+Build this image from the repository root. It retains the worker under
+`/app/workers/aequilibrae_worker` and shared population sources under
+`/app/scripts/modeling`. Both assignment image recipes import the actual
+population library and synthesis sources during the build. This import check
+does not execute a model or establish scientific validity. The standalone
+worker still supports polling and push operation independently of the shared
+model host.
+
 ## Required Environment Variables
 
 Both values come from **your own** Supabase project — the same one the OpenPlan app points at.
@@ -81,18 +89,17 @@ curl -L https://fly.io/install.sh | sh
 # 2. Login
 fly auth login
 
-# 3. Deploy from the worker directory. `fly launch` asks for a region — pick the
+# 3. Deploy from the repository root. `fly launch` asks for a region, pick the
 #    one nearest you and your Supabase project; this repo ships no default,
 #    because there is no such thing as a default place.
-cd workers/aequilibrae_worker
-fly launch --copy-config --yes
+fly launch --config workers/aequilibrae_worker/fly.toml --copy-config --yes
 
 # 4. Set secrets
-fly secrets set SUPABASE_URL="https://<your-project-ref>.supabase.co"
-fly secrets set SUPABASE_SERVICE_ROLE_KEY="<your-key-from-.env.local>"
+fly secrets set --config workers/aequilibrae_worker/fly.toml SUPABASE_URL="https://<your-project-ref>.supabase.co"
+fly secrets set --config workers/aequilibrae_worker/fly.toml SUPABASE_SERVICE_ROLE_KEY="<your-key-from-.env.local>"
 
 # 5. Verify
-fly logs
+fly logs --config workers/aequilibrae_worker/fly.toml
 ```
 
 Then tell the app a poller exists: `OPENPLAN_MODELING_WORKER=deployed`. A poller exposes nothing to
@@ -101,13 +108,13 @@ probe, so that declaration is the only way the app can be honest at the launch b
 ## Option B: Fly.io — push pool (scales to zero)
 
 ```bash
-cd workers/aequilibrae_worker
+# Run from the repository root.
 
 # 1. A separate Fly app, from the push config.
-fly launch --config fly.push.toml --copy-config --yes
+fly launch --config workers/aequilibrae_worker/fly.push.toml --copy-config --yes
 
 # 2. Secrets, including the shared secret the app will present.
-fly secrets set --config fly.push.toml \
+fly secrets set --config workers/aequilibrae_worker/fly.push.toml \
   SUPABASE_URL="https://<your-project-ref>.supabase.co" \
   SUPABASE_SERVICE_ROLE_KEY="<your-key>" \
   OPENPLAN_MODELING_WORKER_TOKEN="$(openssl rand -hex 32)"
@@ -158,8 +165,9 @@ npm install -g @railway/cli
 # 2. Login
 railway login
 
-# 3. Deploy
-cd workers/aequilibrae_worker
+# 3. Deploy from the repository root. In the service settings, keep Root
+#    Directory empty and set Config File Path to
+#    workers/aequilibrae_worker/railway.json. Upload the repository root.
 railway init
 railway up
 
@@ -177,8 +185,8 @@ railway variables set OPENPLAN_MODELING_WORKER_TOKEN="<the same secret the app h
 ## Option D: Any Docker Host
 
 ```bash
-# Build
-docker build -t openplan-aeq-worker .
+# Build from the repository root, including the shared modeling sources.
+docker build -f workers/aequilibrae_worker/Dockerfile -t openplan-aeq-worker .
 
 # Polling (default)
 docker run -d --restart=always \

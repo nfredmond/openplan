@@ -3,10 +3,10 @@
 
 =========================================================== WHY THIS EXISTS
 
-The comparison Nathaniel asked for holds the network and the assignment constant
-and varies only the demand model. That only works if both demand models hand the
-assignment the *same kind of thing*: a zone table and a square matrix of daily
-vehicle trips, in the format `demand_package.py` already defines.
+The comparison uses explicit retained inputs and assignment settings. Both demand
+models hand the assignment a zone table and a square matrix of daily vehicle
+trips, in the format `demand_package.py` already defines. Matching this format
+alone does not establish comparable populations or isolate scientific causes.
 
 Lane A's gravity model produces that directly. ActivitySim produces something
 richer and differently shaped — one row per person-trip, with a purpose, a mode
@@ -41,6 +41,7 @@ from __future__ import annotations
 import csv
 import json
 import math
+import sys
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Sequence
 
@@ -260,6 +261,7 @@ PACKAGE_ZONE_COLUMNS = (
     "total_jobs",
     "zone_kind",
 )
+POPULATION_ZONE_COLUMNS = ("worker_residents", "source_est_population", "source_households", "source_worker_residents", "population_universe")
 
 
 def write_demand_package(
@@ -273,11 +275,14 @@ def write_demand_package(
     matrix_path = output_dir / "od_trip_matrix.csv"
     manifest_path = output_dir / "manifest.json"
 
+    columns = list(PACKAGE_ZONE_COLUMNS)
+    if manifest.get("common_population") is not None:
+        columns += list(POPULATION_ZONE_COLUMNS)
     with zone_path.open("w", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(PACKAGE_ZONE_COLUMNS))
+        writer = csv.DictWriter(handle, fieldnames=columns)
         writer.writeheader()
         for row in zone_rows:
-            writer.writerow({column: row.get(column, "") for column in PACKAGE_ZONE_COLUMNS})
+            writer.writerow({column: row.get(column, "") for column in columns})
 
     zone_ids = [int(float(row["zone_id"])) for row in zone_rows]
     with matrix_path.open("w", newline="") as handle:
@@ -300,9 +305,51 @@ def build_activitysim_demand_package(
     zone_rows: Sequence[Mapping[str, Any]],
     output_dir: Path,
     source: Mapping[str, Any] | None = None,
+    retained_population: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """The whole reduction, in the order it has to happen."""
     zones = internal_zone_rows(zone_rows)
+    population_record = None
+    population = None
+    if retained_population is not None:
+        # Reuse the existing worker package identity grammar. This optional
+        # source path is also available to direct modeling-script callers.
+        worker_dir = str(Path(__file__).resolve().parents[2] / "workers" / "aequilibrae_worker")
+        if worker_dir not in sys.path:
+            sys.path.insert(0, worker_dir)
+        import common_population as common
+        from model_common_population_package import identity
+
+        fields = {"directory", "manifest", "population_basis", "population_basis_payload_json", "population_basis_digest", "custody", "origin"}
+        if not isinstance(retained_population, Mapping) or set(retained_population) != fields:
+            raise ActivitySimDemandError("Demand population requires the complete retained package identity")
+        population = common.read_common_population(Path(retained_population["directory"]),
+            expected_manifest=retained_population["manifest"], zone_rows=zones)
+        actual = identity(population)
+        if (retained_population['custody'] not in ('managed_attempt', 'legacy_stage_snapshot')
+                or population['source_manifest'].get('custody') != retained_population['custody']):
+            raise ActivitySimDemandError('Demand population custody differs from retained source')
+        if any(json.dumps(retained_population[key], sort_keys=True, allow_nan=False) != json.dumps(value, sort_keys=True, allow_nan=False)
+               for key, value in actual.items()):
+            raise ActivitySimDemandError("Demand population metadata differs from retained realized records")
+        totals = common.aequilibrae_zone_totals(population)
+        transformed = []
+        for row in zones:
+            updated = dict(row)
+            for field in ("est_population", "households", "worker_residents"):
+                # A setup may already carry source_* values. Preserve those
+                # published inputs instead of replacing them with realized counts.
+                if "source_" + field not in updated and field in updated:
+                    updated["source_" + field] = updated[field]
+                updated[field] = totals[int(row["zone_id"])][field]
+            updated["population_universe"] = common.UNIVERSE
+            transformed.append(updated)
+        zones = transformed
+        population_record = {"directory": "common_population", "manifest": population["manifest"],
+                             **actual, "custody": retained_population["custody"], "origin": retained_population["origin"]}
+        common._reject_credentials(population_record)
+        if output_dir.exists() or output_dir.is_symlink():
+            raise ActivitySimDemandError("Retained demand package requires a new output directory")
     zone_ids = [int(float(row["zone_id"])) for row in zones]
     trip_rows = read_trip_rows(trips_csv)
     matrix, accounting = vehicle_trip_matrix(trip_rows, zone_ids)
@@ -321,17 +368,21 @@ def build_activitysim_demand_package(
         "conversion": accounting,
         "source": dict(source or {}),
         "method_note": (
-            "Daily vehicle trips reduced from an ActivitySim person-trip list. Assigning this with "
-            "the same network and the same assignment settings the trip-based lane used makes any "
-            "difference in link volumes attributable to the demand model and nothing else."
+            "Daily vehicle trips reduced from an ActivitySim person-trip list using the recorded occupancy assumptions. "
+            "Population, geography, network, assignment settings and observation basis require separate identity checks. "
+            "Shared inputs establish comparison eligibility, not scientific accuracy or attribution of every difference."
         ),
     }
+    if population_record is not None:
+        manifest["common_population"] = population_record
+        common.copy_retained_population(population, output_dir / "common_population")
     files = write_demand_package(output_dir, zones, matrix, manifest)
     return {
         "output_dir": str(output_dir),
         "files": files,
         "zones": len(zones),
         "conversion": accounting,
+        **({"common_population": population_record} if population_record is not None else {}),
     }
 
 

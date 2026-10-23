@@ -298,6 +298,27 @@ export function asZoneAttributeUploader(client: SupabaseClient | unknown): ZoneA
 }
 
 /**
+ * Remove a supplied zone-attribute table when the launch is refused before its
+ * run row exists. Nothing else references the object, so leaving it would
+ * strand a private Storage file per refused attempt. Best effort: it never
+ * throws, and it reports a failed removal so the caller can audit it.
+ */
+export async function discardWorkerZoneAttributes(
+  stamp: ZoneAttributeStamp | null,
+  modelRunId: string,
+  remover?: { storage: { from: (bucket: string) => { remove: (paths: string[]) => PromiseLike<{ error: { message: string } | null }> } } },
+): Promise<{ removed: boolean; error: string | null }> {
+  if (stamp?.status !== "supplied") return { removed: false, error: null };
+  try {
+    const client = remover ?? (createServiceRoleClient() as unknown as NonNullable<typeof remover>);
+    const { error } = await client.storage.from(ZONE_ATTRIBUTE_BUCKET).remove([zoneAttributeObjectPath(modelRunId)]);
+    return error ? { removed: false, error: error.message } : { removed: true, error: null };
+  } catch (error) {
+    return { removed: false, error: error instanceof Error ? error.message : String(error) };
+  }
+}
+
+/**
  * Read a run's study-area demographics with the WORKSPACE's Census key and hand
  * the resulting table to the worker through private Storage.
  *

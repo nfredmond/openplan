@@ -231,6 +231,25 @@ describe("the progress bar on a long run", () => {
     expect(detail).toContain("0.000500");
   });
 
+  it("shows failed and skipped counts with zero completed progress in the card and accessible bar", () => {
+    const run = runningRun("");
+    run.status = "failed";
+    run.stages = [
+      stage({ id: "setup", stage_name: "AequilibraE Setup", status: "failed", sort_order: 1 }),
+      ...Array.from({ length: 5 }, (_, index) => stage({
+        id: `skipped-${index}`, stage_name: `Later stage ${index + 1}`, status: "skipped", sort_order: index + 2,
+      })),
+    ];
+    renderRun(run);
+    expect(screen.getByTestId("run-progress")).toHaveTextContent(
+      "Stopped at AequilibraE Setup. 0 of 6 stages completed; 1 failed; 5 skipped."
+    );
+    expect(screen.getByTestId("run-progress-percent")).toHaveTextContent("0%");
+    const bar = screen.getByRole("progressbar", { name: "Model run progress by stage" });
+    expect(bar).toHaveAttribute("aria-valuenow", "0");
+    expect(bar.firstElementChild).toHaveStyle({ width: "0%" });
+  });
+
   it("never puts a time estimate on the bar", () => {
     // Stage durations differ by an order of magnitude and an equilibrium
     // assignment's length is unknowable until it converges.

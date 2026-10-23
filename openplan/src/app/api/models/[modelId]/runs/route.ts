@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-keys";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadModelAccess } from "@/lib/models/api";
 import {
@@ -47,7 +47,7 @@ import {
   markScenarioLinkedReportsBasisStale,
   type ScenarioReportWritebackSupabaseLike,
 } from "@/lib/reports/scenario-writeback";
-import { prepareWorkerZoneAttributes } from "@/lib/models/zone-attribute-payload";
+import { discardWorkerZoneAttributes, prepareWorkerZoneAttributes } from "@/lib/models/zone-attribute-payload";
 import {
   prepareTransitFeedHandoff,
   transitFeedNotSelectedStamp,
@@ -68,6 +68,25 @@ import { loadModelingWorkerHealth } from "@/lib/models/worker-health-server";
 import { evaluateWorkerHealthLaunchGate } from "@/lib/models/worker-health";
 import { parseGuidedBuildAssumption } from "@/lib/models/project-comparison";
 import { buildObservedCountGeographySnapshot } from "@/lib/models/observed-count-geography";
+import {
+  prepareCommonPopulationLaunch,
+  type CommonPopulationLaunchClient,
+} from "@/lib/models/common-population-launch";
+
+type PopulationReadResult = { data: unknown; error: { message: string } | null };
+type PopulationReadRpc = {
+  rpc(name: "read_common_population_stage_custody", args: {
+    p_workspace: string; p_run: string; p_stage: string; p_artifact: string;
+  }): PromiseLike<PopulationReadResult>;
+  rpc(name: "read_model_attempt_outputs", args: {
+    p_run_id: string; p_workspace_id: string;
+  }): PromiseLike<PopulationReadResult>;
+};
+
+/** Keep SDK schema inference outside the authority reader's validated JSON boundary. */
+function populationReadRpc(): PopulationReadRpc {
+  return createServiceRoleClient() as unknown as PopulationReadRpc;
+}
 
 const paramsSchema = z.object({
   modelId: z.string().uuid(),
@@ -540,6 +559,39 @@ export async function POST(request: NextRequest, context: RouteContext) {
             })
           : null;
 
+      const commonPopulation = await prepareCommonPopulationLaunch({
+        client: supabase as unknown as CommonPopulationLaunchClient,
+        readStageCustody: (workspaceId, runId, stageId, artifactId) => populationReadRpc().rpc("read_common_population_stage_custody", {
+          p_workspace: workspaceId, p_run: runId, p_stage: stageId, p_artifact: artifactId,
+        }),
+        readOutputs: (runId, workspaceId) => populationReadRpc().rpc("read_model_attempt_outputs", {
+          p_run_id: runId,
+          p_workspace_id: workspaceId,
+        }),
+        model: access.model,
+        scenarioEntry,
+        engineKey: launchPayload.engineKey,
+        corridorGeojson: launchPayload.corridorGeojson,
+        zoneGeography: workerZoneGeography,
+        zoneAttributes: workerZoneAttributes,
+      });
+      // A refusal from here until the run row exists must not strand the
+      // zone-attribute table uploaded above.
+      const discardUploadedInputs = async () => {
+        const discarded = await discardWorkerZoneAttributes(workerZoneAttributes, modelRunId);
+        if (discarded.error) {
+          audit.warn("zone_attribute_discard_failed", { modelId: access.model.id, modelRunId, reason: discarded.error });
+        }
+      };
+
+      if (commonPopulation.state === "repair") {
+        await discardUploadedInputs();
+        return NextResponse.json(
+          { error: commonPopulation.error, repairState: commonPopulation.repairState },
+          { status: commonPopulation.status },
+        );
+      }
+
       if (workerZoneAttributes && workerZoneAttributes.status !== "supplied") {
         // Not a launch failure — the worker can still try its own env key — but
         // it is the leading cause of a dead worker run, so it is audited at
@@ -650,6 +702,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         // for why it is not inlined here). Stamped even when unavailable, so
         // the worker can name the real reason instead of guessing at one.
         ...(workerZoneAttributes ? { zoneAttributes: workerZoneAttributes } : {}),
+        ...(commonPopulation.state === "ready" ? { commonPopulation: commonPopulation.request } : {}),
         // The feed-version selection, or the recorded absence of one. Stamped
         // only for the engines that reach a transit skim; see above.
         ...(transitFeed ? { transitFeed } : {}),
@@ -712,6 +765,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
             message: queueDepth.message,
             code: queueDepth.code,
           });
+          await discardUploadedInputs();
           return NextResponse.json(
             { error: "Failed to validate the deployment's worker queue limit" },
             { status: 500 }
@@ -725,6 +779,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
             inFlight: queueDepth.inFlight,
             limit: queueDepth.limit,
           });
+          await discardUploadedInputs();
           return NextResponse.json({ error: queueDepth.message }, { status: 429 });
         }
       }
@@ -755,6 +810,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     
       if (createModelRunError) {
+        await discardUploadedInputs();
         if (looksLikePendingSchema(createModelRunError.message)) {
           return NextResponse.json(
             { error: "model_runs migration is not applied yet. Apply the latest database migration first." },

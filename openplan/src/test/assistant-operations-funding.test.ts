@@ -876,7 +876,7 @@ describe("assistant funding operations", () => {
           projectFundingGapProjects: 0,
         },
         grantModelingSummary: {
-          breakdown: { decisionReady: 1, refreshRecommended: 0, thin: 0, noVisibleSupport: 1 },
+          breakdown: { decisionReady: 1, refreshRecommended: 0, unassessed: 0, thin: 0, noVisibleSupport: 1 },
           breakdownSummary: "2 opportunity-linked projects: 1 appears decision-ready, 0 refresh recommended, 0 appears thin, 1 without visible support.",
           operatorDetail: "Within grant decision work, opportunity-linked projects with modeling support that appears decision-ready rise ahead.",
           leadDecisionDetail: "ATP Cycle 8 for Modeled Project is rising because modeling posture appears decision-ready. Recommended next move: Advance to pursue now.",
@@ -932,7 +932,7 @@ describe("assistant funding operations", () => {
           projectFundingGapProjects: 0,
         },
         grantModelingSummary: {
-          breakdown: { decisionReady: 0, refreshRecommended: 0, thin: 1, noVisibleSupport: 0 },
+          breakdown: { decisionReady: 0, refreshRecommended: 0, unassessed: 0, thin: 1, noVisibleSupport: 0 },
           breakdownSummary: "1 opportunity-linked project: 0 appears decision-ready, 0 refresh recommended, 1 appears thin, 0 without visible support.",
           operatorDetail: "Within grant decision work, projects with thin modeling support are still visible in the queue.",
           leadDecisionDetail: "SB1 Local Partnership for Thin Project is still visible in the decision queue while modeling posture reads appears thin.",
