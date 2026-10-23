@@ -4,6 +4,7 @@ import { parse as parseCsv } from "csv-parse/browser/esm/sync";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { DocumentLibraryEntry, LinkedDocumentLibraryEntry } from "@/lib/document-library/types";
+import { formatProjectEstimate, projectEstimateDecimal } from "@/lib/projects/estimated-cost";
 
 type ProjectCostRecord = {
   id: string;
@@ -23,20 +24,6 @@ type ProjectEstimatedCostEditorProps = {
 
 type CsvPreview = { columns: string[]; rows: string[][]; truncated: boolean };
 type CsvSelection = { name: string; summary: string };
-
-function displayCost(amount: number | string, currency: string): string {
-  const numeric = typeof amount === "number" ? amount : Number.parseFloat(amount);
-  if (!Number.isFinite(numeric)) return `${currency} ${amount}`;
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
-      maximumFractionDigits: 0,
-    }).format(numeric);
-  } catch {
-    return `${currency} ${numeric.toLocaleString("en-US")}`;
-  }
-}
 
 function suggestedColumn(columns: string[], patterns: RegExp[]): string {
   const index = columns.findIndex((column) => patterns.some((pattern) => pattern.test(column.trim())));
@@ -172,11 +159,16 @@ export function ProjectEstimatedCostEditor({
   function selectCandidate(row: string[]) {
     if (nameColumn === "" || costColumn === "") return;
     const name = row[Number(nameColumn)]?.trim() ?? "";
-    const parsedAmount = Number.parseFloat((row[Number(costColumn)] ?? "").replace(/[$,\s]/g, ""));
+    let parsedAmount: string;
+    try { parsedAmount = projectEstimateDecimal(row[Number(costColumn)] ?? ""); }
+    catch {
+      setMessage("Enter a positive decimal cost with whole cents, without currency marks, grouping or exponent notation.");
+      return;
+    }
     const selectedCurrency = currencyColumn
       ? (row[Number(currencyColumn)] ?? "").trim().toUpperCase()
       : currency.trim().toUpperCase();
-    if (!name || !Number.isFinite(parsedAmount) || parsedAmount <= 0 || !/^[A-Z]{3}$/.test(selectedCurrency)) {
+    if (!name || !/^[A-Z]{3}$/.test(selectedCurrency)) {
       setMessage("Choose name and cost columns, and enter a three-letter currency code before using this row.");
       return;
     }
@@ -185,6 +177,19 @@ export function ProjectEstimatedCostEditor({
     setCurrency(selectedCurrency);
     setSelectedCsv({ name, summary });
     setMessage(`${name} selected. Save below to apply it to this project.`);
+  }
+
+  function submitEstimate() {
+    try {
+      const exactAmount = projectEstimateDecimal(amount);
+      const year = priceYear.trim();
+      if (year && (!/^\d{4}$/.test(year) || Number(year) < 1800 || Number(year) > 3000)) {
+        throw new Error("Enter one whole price year from 1800 through 3000, or leave it unknown.");
+      }
+      void save({ amount: exactAmount, currency: currency.trim().toUpperCase(), basisYear: year ? Number(year) : null, sourceDocumentId: sourceDocumentId || null });
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not read the estimate.");
+    }
   }
 
   const currentSource = estimateSource.entry;
@@ -211,7 +216,7 @@ export function ProjectEstimatedCostEditor({
 
       {project.estimated_cost_amount !== null && project.estimated_cost_currency ? (
         <div className="mt-4 rounded-lg border bg-background/70 p-3 text-sm">
-          <p className="font-semibold">{displayCost(project.estimated_cost_amount, project.estimated_cost_currency)}</p>
+          <p className="font-semibold">{formatProjectEstimate(project.estimated_cost_amount, project.estimated_cost_currency)}</p>
           <p className="text-muted-foreground">
             {project.estimated_cost_basis_year ? `Price year ${project.estimated_cost_basis_year}. ` : "Price year not entered. "}
             {currentSource
@@ -274,7 +279,7 @@ export function ProjectEstimatedCostEditor({
             ) : null}
           </section>
 
-          <form className="mt-4 grid min-w-0 gap-3 md:grid-cols-4" onSubmit={(event) => { event.preventDefault(); void save({ amount: Number.parseFloat(amount), currency: currency.trim().toUpperCase(), basisYear: priceYear ? Number.parseInt(priceYear, 10) : null, sourceDocumentId: sourceDocumentId || null }); }}>
+          <form className="mt-4 grid min-w-0 gap-3 md:grid-cols-4" onSubmit={(event) => { event.preventDefault(); submitEstimate(); }}>
             <label className="grid gap-1 text-sm">Amount<input className="rounded-md border bg-background px-3 py-2" inputMode="decimal" required min="0.01" step="0.01" value={amount} onChange={(event) => setAmount(event.target.value)} /></label>
             <label className="grid gap-1 text-sm">Currency<input className="rounded-md border bg-background px-3 py-2" required minLength={3} maxLength={3} placeholder="USD" value={currency} onChange={(event) => setCurrency(event.target.value.toUpperCase())} /></label>
             <label className="grid gap-1 text-sm">Price year (optional)<input className="rounded-md border bg-background px-3 py-2" type="number" min={1800} max={3000} value={priceYear} onChange={(event) => setPriceYear(event.target.value)} /></label>

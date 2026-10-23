@@ -17,6 +17,33 @@ function bytes(value: string): Uint8Array {
 }
 
 describe("reviewPortfolioImport", () => {
+  it.each([
+    ["999999999999999.99", true], ["0.01", true], ["1.2300", true],
+    ["", false], ["0", false], ["1e3", false], ["12junk", false],
+    ["1,000", false], ["$25", false], ["1.001", false], ["1000000000000000.01", false],
+  ] as const)("validates the complete scaled CSV estimate %s", (value, valid) => {
+    const review = reviewPortfolioImport({
+      bytes: bytes(`Name,Cost\nCandidate,"${value}"`), mapping: { name: 0, estimatedCost: 1 },
+      defaults: { ...defaults, cost: { currency: "USD", scale: "ones", priceYear: null } },
+    });
+    expect(review.rows[0].errors.length === 0).toBe(valid);
+    if (valid) {
+      expect(review.rows[0].estimatedCost?.priceYear).toBeNull();
+      expect(review.rows[0].estimatedCost?.amount).toBe(value === "1.2300" ? "1.23" : value);
+    } else {
+      expect(review.rows[0].estimatedCost).toBeNull();
+      expect(review.rows[0].errors.map(issue => issue.code)).toContain("invalid_cost");
+    }
+  });
+
+  it("checks fractional cents after scaling without rounding", () => {
+    const review = reviewPortfolioImport({ bytes: bytes("Name,Cost\nExact,0.00001\nSubcent,0.000001"),
+      mapping: { name: 0, estimatedCost: 1 },
+      defaults: { ...defaults, cost: { currency: "USD", scale: "thousands", priceYear: null } },
+    });
+    expect(review.rows[0].estimatedCost?.amount).toBe("0.01");
+    expect(review.rows[1].estimatedCost).toBeNull();
+  });
   it("parses quoted Unicode cells and keeps unmapped fields out of project rows", () => {
     const review = reviewPortfolioImport({
       bytes: bytes(

@@ -1,7 +1,9 @@
 import { safetyPlanPersistenceSchema, sameSafetyRevision, type SafetyPlanPersistence } from "@/lib/reports/safety-plan-persistence";
 import { identifySeededCatalogKey } from "./atp-packet";
 import { GRANT_PROGRAM_CATALOG } from "./program-catalog";
-import { readSafetyPlanSnapshot, safetySeedHash, type SafetyPlanSnapshot } from "@/lib/reports/safety-plan-snapshot";
+import { safetySeedHash, type SafetyPlanSnapshot } from "@/lib/reports/safety-plan-snapshot";
+import { readSafetyArtifactSnapshot } from "@/lib/reports/safety-comparison-snapshot";
+import { SAFETY_V2_NOFO_REFUSAL } from "@/lib/safety/candidate-comparison";
 import { readReportSafetyActionPlan } from "@/lib/reports/safety-action-plan";
 import { readReportSafetyIngestSelections } from "@/lib/reports/safety-evidence-selection";
 import { SAFETY_SEED_CAVEAT, type SafetySeedProvenance } from "./safety-seed-origin";
@@ -31,8 +33,10 @@ export function validateSafetySeedSource(rows: SeedSourceRows): SafetyPlanSnapsh
   if (o.pursuit_kind !== "grant" || identifySeededCatalogKey(sections) !== "ss4a") throw new SafetySeedRefusal("Seed from Safety plan requires an unambiguous catalog SS4A grant application.");
   if (SS4A_SECTION_KEYS.some((key) => sections.filter((s) => s.source === "catalog" && s.section_key === key).length !== 1)) throw new SafetySeedRefusal("All six catalog SS4A sections are required. Custom sections cannot substitute.");
   if (!o.project_id || p.id !== o.project_id || p.workspace_id !== o.workspace_id || r.workspace_id !== o.workspace_id || r.project_id !== p.id || a.report_id !== r.id || acquisition.project_id !== p.id || acquisition.status !== "ready" || sections.some((s) => s.workspace_id !== o.workspace_id || s.opportunity_id !== o.id)) throw new SafetySeedRefusal("Safety source must belong to this workspace and this application's exact project, with a ready acquisition.");
-  const snapshot = readSafetyPlanSnapshot(a.metadata_json.safetyPlanSnapshotV1);
-  if (!snapshot) throw new SafetySeedRefusal("This artifact has no valid versioned Safety snapshot. Regenerate the Safety report, then select the new artifact. HTML cannot be used.");
+  const recognized = readSafetyArtifactSnapshot(a.metadata_json);
+  if (recognized.kind === "v2") throw new SafetySeedRefusal(SAFETY_V2_NOFO_REFUSAL);
+  if (recognized.kind !== "v1") throw new SafetySeedRefusal("This artifact has no unambiguous supported Safety snapshot. Regenerate the Safety report, then select the new artifact. HTML cannot be used.");
+  const snapshot = recognized.snapshot;
   const parsedPersistence = safetyPlanPersistenceSchema.safeParse(rows.persistence);
   const persistence = parsedPersistence.success ? parsedPersistence.data : null;
   if (!persistence || persistence.artifact_id !== a.id || persistence.report_id !== r.id || persistence.project_id !== p.id || persistence.workspace_id !== o.workspace_id || persistence.snapshot_hash !== snapshot.hash || !sameSafetyRevision(persistence.source_project_updated_at, snapshot.projectUpdatedAt) || !sameSafetyRevision(persistence.source_report_updated_at, snapshot.reportUpdatedAt) || !sameSafetyRevision(persistence.persisted_project_updated_at, p.updated_at)) {

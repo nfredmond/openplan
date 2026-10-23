@@ -1,6 +1,5 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
-import { SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION } from "@/lib/safety/crash-evidence";
 import type { SafetyActionPlanSectionDraft } from "./safety-action-plan";
 
 export const SAFETY_PLAN_SNAPSHOT_VERSION = "openplan.safety-plan-snapshot.v1";
@@ -31,7 +30,9 @@ export const safetyPlanDraftSchema = z.object({
   draftNotice: text,
 }).strict();
 
-const acquisitionKeys = SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION.split(", ");
+// Frozen v1 projection. New acquisition fields must never invalidate retained bytes.
+export const SAFETY_SNAPSHOT_V1_ACQUISITION_PROJECTION = "id, project_id, min_lon, min_lat, max_lon, max_lat, status, source_id, source_label, attribution, severity_completeness, crash_count, geocoded_count, stored_count, truncated, years_requested, created_at, dimension_coverage, party_completeness, party_count, involvement_basis, published_through, published_through_provenance";
+const acquisitionKeys = SAFETY_SNAPSHOT_V1_ACQUISITION_PROJECTION.split(", ");
 const acquisition = z.record(z.string(), z.unknown()).refine((row) =>
   acquisitionKeys.every((key) => Object.hasOwn(row, key)) && Object.keys(row).length === acquisitionKeys.length &&
   typeof row.id === "string" && typeof row.project_id === "string" && row.status === "ready" &&

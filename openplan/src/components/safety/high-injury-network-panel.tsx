@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import {
   describeHighInjuryNetworkCoverage,
   describeHighInjuryNetworkMethod,
@@ -24,6 +25,8 @@ import type {
 export type HighInjuryNetworkReportTarget = {
   id: string;
   title: string;
+  /** Only standard project-status reports support the input comparison. */
+  supportsSafetyComparison?: boolean;
   /** The plan already saved in this report, if any. */
   safetyActionPlan: ReportSafetyActionPlan | null;
 };
@@ -88,6 +91,8 @@ export function HighInjuryNetworkPanel({
 
   const segments = useMemo(() => (network?.status === "computed" ? network.segments : []), [network]);
   const attachedCount = Object.values(selections).filter((ids) => ids.length > 0).length;
+  const comparisonReport = reports.find((report) => report.id === reportId && report.supportsSafetyComparison)
+    ?? reports.find((report) => report.supportsSafetyComparison);
 
   if (network === undefined) return null;
   if (network === null) return null;
@@ -150,6 +155,9 @@ export function HighInjuryNetworkPanel({
         </label>
       </div>
       <p className="text-xs font-medium" data-testid="safety-hin-measure">{measure}</p>
+      {comparisonReport && ingestId ? <Link className="text-xs underline" href={`/reports/${comparisonReport.id}?safetyComparison=1&safetyIngestId=${encodeURIComponent(ingestId)}`}>
+        Review No Build, alternatives and applicability in this report
+      </Link> : <Link className="text-xs underline" href="/reports">Choose or create a project-status report for Safety comparison</Link>}
 
       {segments.length === 0 ? (
         <p className="text-xs text-muted-foreground" data-testid="safety-hin-empty">
