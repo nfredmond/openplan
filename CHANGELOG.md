@@ -144,6 +144,28 @@ acceptance, full A0, complete M2c and separate nationwide AequilibraE and
 ActivitySim validation remain open. The existing Reports jurisdiction-readiness
 P2 remains PARTIAL. No capability grade or historical failure changes.
 
+**Security dependency update.** This release also carries #368, merged to main
+before it:
+
+- Next.js moves from 16.3.8 to 16.4.2, the first release outside every range in
+  advisories published on October 22, 2026:
+  - GHSA-2464-fhr4-w9xw: remote code execution through image optimization on
+    glibc Linux, by way of `sharp`.
+  - GHSA-673q-mjm6-r5xr: remote code execution in `use cache` functions that
+    return typed arrays.
+  - GHSA-p3m5-59mp-jv5r: CPU exhaustion through crafted Server Action requests.
+
+  OpenPlan defines no `use cache` functions. The lockfile already resolved
+  `sharp` to 0.35.5, the fixed version. The Server Action finding applies.
+  **Self-hosted installations should upgrade.**
+- The `ip-address` override moves from 10.7.2 to 10.7.4 for
+  GHSA-rxp7-6hxx-x8q5. That advisory is a slow parse of long IPv6 zone
+  identifiers, reached through `express-rate-limit` in the shadcn tooling
+  dependency.
+- `eslint-config-next` stays at 16.3.8. Its 16.4 line enables stricter React
+  hook lint rules, which report 219 errors in existing code. That is a separate
+  change.
+
 ## 0.71.0 (2026-10-22)
 
 **Signal palette and independent corners.** Appearance adds Signal beside the

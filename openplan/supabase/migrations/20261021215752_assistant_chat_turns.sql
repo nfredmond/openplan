@@ -953,7 +953,9 @@ BEGIN
  END IF;
  IF p_operation='repeat' THEN
   IF p_payload->>'acknowledgePossibleDuplicate' IS DISTINCT FROM 'true' THEN RAISE EXCEPTION 'Explicit repeat confirmation required' USING ERRCODE='22023'; END IF;
-  SELECT * INTO a FROM public.assistant_action_approvals WHERE id=i.original_approval_id;
+  -- Repeat recovers from an original approval; it never mints a card for an unapproved proposal.
+  SELECT * INTO a FROM public.assistant_action_approvals WHERE id=i.original_approval_id AND user_id=actor AND workspace_id=i.workspace_id AND input_hash=i.executable_hash AND action_kind='create_project_record';
+  IF i.original_approval_id IS NULL OR NOT FOUND THEN RAISE EXCEPTION 'Original approval required' USING ERRCODE='42501'; END IF;
   SELECT id INTO original FROM public.assistant_chat_proposal_intents WHERE owner_user_id=actor AND repeat_request_id=(p_payload->>'repeatRequestId')::uuid;
   IF FOUND THEN
    IF NOT EXISTS(SELECT 1 FROM public.assistant_chat_proposal_intents WHERE id=original AND repeat_of_intent_id=i.id) THEN RAISE EXCEPTION 'Repeat request changed' USING ERRCODE='PT409'; END IF;
