@@ -82,14 +82,6 @@ changes do not establish model accuracy or nationwide validation.
 The model-run progress fix keeps elapsed time advancing during five-second
 status refreshes that return fresh stage records.
 
-<<<<<<< HEAD
-**BCA project place:** Apply
-`20261023190200_bca_project_place_snapshot.sql` before deploying the BCA update.
-The migration accepts new analysis versions with a retained project place and
-checks that place against the current project when saving. Existing saved
-analyses remain unchanged. It first carried an earlier October 19 version and
-moved after the v0.72.0 release mark.
-=======
 **Safety input and applicability review:** project-status reports can retain one
 influence area, No Build and treatment alternatives, stored crash membership,
 sourced facts, missing inputs and exact historical estimate references. Save an
@@ -112,7 +104,13 @@ correction. It validates future amounts as positive values of at most
 retained estimates or recover precision lost in older source values. The
 migration first carried an earlier October 19 version; it moved after the v0.72.0
 release mark because released installations would skip an earlier version.
->>>>>>> origin/main
+
+**BCA project place:** Apply
+`20261023190200_bca_project_place_snapshot.sql` before deploying the BCA update.
+The migration accepts new analysis versions with a retained project place and
+checks that place against the current project when saving. Existing saved
+analyses remain unchanged. It first carried an earlier October 19 version and
+moved after the v0.72.0 release mark.
 
 ## 0.72.0 (2026-10-22)
 
