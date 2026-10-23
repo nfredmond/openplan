@@ -104,6 +104,10 @@ def synthetic_lock(root, registry):
                 's2_cordon/evaluate.py', 's2_cordon/evaluate_successor.py').replace(
                 str(evaluate.ROOT / 'data/modeling/s2-cordon-impedance-2026-10-23/inputs.json'), str(registry_path))
         lock[kind]['command'] = [remap(value) for value in lock[kind]['command']]
+        # A synthetic fixture uses its test runtime. The historical study's
+        # absolute interpreter belongs only to its unchanged frozen lock.
+        python_index = lock[kind]['command'].index('-B') - 1
+        lock[kind]['command'][python_index] = sys.executable
         lock[kind]['files'] = [{'path': remap(row['path']), 'sha256': evaluate.digest(remap(row['path']))}
                               for row in lock[kind]['files']]
         lock[kind]['closure_sha256'] = sealed_study.canonical_sha256(lock[kind]['files'])

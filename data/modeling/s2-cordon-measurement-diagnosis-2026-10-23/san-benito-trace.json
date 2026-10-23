@@ -1,0 +1,1098 @@
+{
+  "arms": {
+    "baseline": {
+      "assignment_demand_record": {
+        "peak_hour_factor": 0.1,
+        "period": "representative peak hour",
+        "period_total_trips": 26893.703,
+        "total_trips": 268937.03
+      },
+      "demand": {
+        "assigned_core": "demand",
+        "container": "AEM (retained filename ends .omx)",
+        "cores": [
+          "demand"
+        ],
+        "implied_daily_total": 268937.02999999997,
+        "period_total": 26893.703,
+        "shape": [
+          20,
+          20
+        ]
+      },
+      "distributions": {
+        "PCE_tot": {
+          "count": 34040,
+          "maximum": 85.30110438104927,
+          "median_positive": 3.7663621203384823,
+          "p95_positive": 26.036391321283354,
+          "sum": 12846.512510973802,
+          "zero": 32176
+        },
+        "demand_tot": {
+          "count": 34040,
+          "maximum": 6065.110945722261,
+          "median_positive": 340.0533812665845,
+          "p95_positive": 2822.535209655057,
+          "sum": 1526451.3068526739,
+          "zero": 32176
+        }
+      },
+      "example_link_14233": {
+        "Congested_Time_AB": 0.1068184654721345,
+        "Congested_Time_BA": 0.1161641405905318,
+        "Congested_Time_Max": 0.1161641405905318,
+        "Delay_factor_AB": 1.0399160820809308,
+        "Delay_factor_BA": 1.1308995820831864,
+        "Delay_factor_Max": 1.1308995820831864,
+        "PCE_AB": 7.182310263761542,
+        "PCE_BA": 9.665220141022518,
+        "PCE_tot": 16.84753040478406,
+        "Preload_AB": 0.0,
+        "Preload_BA": 0.0,
+        "Preload_tot": 0.0,
+        "VOC_AB": 0.7182310263761542,
+        "VOC_BA": 0.9665220141022518,
+        "VOC_max": 0.9665220141022518,
+        "demand_ab": 2585.631694954155,
+        "demand_ba": 3479.4792507681063,
+        "demand_tot": 6065.110945722261
+      },
+      "matched": 18,
+      "matched_primary_link_zero_class_flow": 2,
+      "matched_zero_corridor_volume": 3,
+      "network_daily_vmt_recorded": 2569.4,
+      "paired_corridor_stations": 3,
+      "pce_minus_class_daily_flow_max_abs": 60634.261926817824,
+      "pce_minus_voc_div_peak_max_abs": {
+        "AB": 3.552713678800501e-15,
+        "BA": 7.105427357601002e-15
+      },
+      "station_rows": [
+        {
+          "carriageways_summed": 2,
+          "link_id": 6382,
+          "modeled_daily_pce": 5.9,
+          "observed_volume": 58000,
+          "primary_link_period_class_flow": 1125.7188675185178,
+          "primary_link_retained_pce": 2.814297168796294,
+          "station_id": "CT_RTE101_PM0_028"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 17946,
+          "modeled_daily_pce": 5.7,
+          "observed_volume": 28500,
+          "primary_link_period_class_flow": 2069.5317873240665,
+          "primary_link_retained_pce": 5.7486994092335175,
+          "station_id": "CT_RTE101_PM0_312"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 20863,
+          "modeled_daily_pce": 5.0,
+          "observed_volume": 33500,
+          "primary_link_period_class_flow": 1799.8406868433913,
+          "primary_link_retained_pce": 4.999557463453865,
+          "station_id": "CT_RTE101_PM0_312"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 16905,
+          "modeled_daily_pce": 0.0,
+          "observed_volume": 33500,
+          "primary_link_period_class_flow": 0.0,
+          "primary_link_retained_pce": 0.0,
+          "station_id": "CT_RTE101_PM3_049"
+        },
+        {
+          "carriageways_summed": 2,
+          "link_id": 17601,
+          "modeled_daily_pce": 4.7,
+          "observed_volume": 24100,
+          "primary_link_period_class_flow": 1865.6173621896871,
+          "primary_link_retained_pce": 4.664043405474218,
+          "station_id": "CT_RTE101_PM3_173"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 14430,
+          "modeled_daily_pce": 2.4,
+          "observed_volume": 59000,
+          "primary_link_period_class_flow": 966.8076443946848,
+          "primary_link_retained_pce": 2.417019110986712,
+          "station_id": "CT_RTE101_PM6_485"
+        },
+        {
+          "carriageways_summed": 2,
+          "link_id": 15559,
+          "modeled_daily_pce": 5.9,
+          "observed_volume": 59000,
+          "primary_link_period_class_flow": 1215.825072826393,
+          "primary_link_retained_pce": 3.039562682065982,
+          "station_id": "CT_RTE101_PM7_550"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 20543,
+          "modeled_daily_pce": 0.0,
+          "observed_volume": 28000,
+          "primary_link_period_class_flow": 0.7815502981794804,
+          "primary_link_retained_pce": 0.0086838922019942,
+          "station_id": "CT_RTE156_PM3_022"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 20832,
+          "modeled_daily_pce": 14.0,
+          "observed_volume": 28500,
+          "primary_link_period_class_flow": 1391.8098543317087,
+          "primary_link_retained_pce": 13.98633781114884,
+          "station_id": "CT_RTE156_PM7_246"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 25301,
+          "modeled_daily_pce": 0.2,
+          "observed_volume": 14000,
+          "primary_link_period_class_flow": 18.79592822340805,
+          "primary_link_retained_pce": 0.2088436469267562,
+          "station_id": "CT_RTE156_PM13_215"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 20820,
+          "modeled_daily_pce": 7.3,
+          "observed_volume": 15000,
+          "primary_link_period_class_flow": 1315.2014575240069,
+          "primary_link_retained_pce": 7.306674764022261,
+          "station_id": "CT_RTE156_PM16_536"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 29856,
+          "modeled_daily_pce": 10.9,
+          "observed_volume": 15500,
+          "primary_link_period_class_flow": 1954.8687745238108,
+          "primary_link_retained_pce": 10.860382080687838,
+          "station_id": "CT_RTE156_PM18_430"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 30533,
+          "modeled_daily_pce": 10.0,
+          "observed_volume": 500,
+          "primary_link_period_class_flow": 1199.998,
+          "primary_link_retained_pce": 9.999983333333333,
+          "station_id": "CT_RTE25_PM7_300"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 30540,
+          "modeled_daily_pce": 0.0,
+          "observed_volume": 100,
+          "primary_link_period_class_flow": 0.0,
+          "primary_link_retained_pce": 0.0,
+          "station_id": "CT_RTE25_PM11_750"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 17296,
+          "modeled_daily_pce": 18.5,
+          "observed_volume": 1300,
+          "primary_link_period_class_flow": 2224.310212675932,
+          "primary_link_retained_pce": 18.5359184389661,
+          "station_id": "CT_RTE25_PM39_533"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 17789,
+          "modeled_daily_pce": 25.5,
+          "observed_volume": 7500,
+          "primary_link_period_class_flow": 3062.042417075494,
+          "primary_link_retained_pce": 25.517020142295785,
+          "station_id": "CT_RTE25_PM49_014"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 15784,
+          "modeled_daily_pce": 29.2,
+          "observed_volume": 17000,
+          "primary_link_period_class_flow": 3508.460769873602,
+          "primary_link_retained_pce": 29.237173082280016,
+          "station_id": "CT_RTE25_PM52_194"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 17832,
+          "modeled_daily_pce": 23.5,
+          "observed_volume": 25000,
+          "primary_link_period_class_flow": 2822.535209655057,
+          "primary_link_retained_pce": 23.52112674712547,
+          "station_id": "CT_RTE25_PM55_134"
+        }
+      ],
+      "unmatched_or_excluded": 9
+    },
+    "candidate": {
+      "assignment_demand_record": {
+        "peak_hour_factor": 0.1,
+        "period": "representative peak hour",
+        "period_total_trips": 26893.703,
+        "total_trips": 268937.03
+      },
+      "demand": {
+        "assigned_core": "demand",
+        "container": "AEM (retained filename ends .omx)",
+        "cores": [
+          "demand"
+        ],
+        "implied_daily_total": 268937.02999999997,
+        "period_total": 26893.702999999998,
+        "shape": [
+          20,
+          20
+        ]
+      },
+      "distributions": {
+        "PCE_tot": {
+          "count": 34040,
+          "maximum": 82.25247886481529,
+          "median_positive": 3.735,
+          "p95_positive": 25.083769138655985,
+          "sum": 12159.510756128766,
+          "zero": 32189
+        },
+        "demand_tot": {
+          "count": 34040,
+          "maximum": 5764.228826342511,
+          "median_positive": 339.44574379810604,
+          "p95_positive": 2777.006368509717,
+          "sum": 1447146.4341486471,
+          "zero": 32189
+        }
+      },
+      "example_link_14233": {
+        "Congested_Time_AB": 0.1060425218730998,
+        "Congested_Time_BA": 0.1137392373398747,
+        "Congested_Time_Max": 0.1137392373398747,
+        "Delay_factor_AB": 1.032361992777575,
+        "Delay_factor_BA": 1.1072922790134152,
+        "Delay_factor_Max": 1.1072922790134152,
+        "PCE_AB": 6.815316034360268,
+        "PCE_BA": 9.196430705480036,
+        "PCE_tot": 16.011746739840305,
+        "Preload_AB": 0.0,
+        "Preload_BA": 0.0,
+        "Preload_tot": 0.0,
+        "VOC_AB": 0.6815316034360268,
+        "VOC_BA": 0.9196430705480038,
+        "VOC_max": 0.9196430705480038,
+        "demand_ab": 2453.5137723696967,
+        "demand_ba": 3310.7150539728136,
+        "demand_tot": 5764.228826342511
+      },
+      "matched": 18,
+      "matched_primary_link_zero_class_flow": 2,
+      "matched_zero_corridor_volume": 3,
+      "network_daily_vmt_recorded": 2317.2,
+      "paired_corridor_stations": 3,
+      "pce_minus_class_daily_flow_max_abs": 57626.27651668527,
+      "pce_minus_voc_div_peak_max_abs": {
+        "AB": 7.105427357601002e-15,
+        "BA": 5.329070518200751e-15
+      },
+      "station_rows": [
+        {
+          "carriageways_summed": 2,
+          "link_id": 6382,
+          "modeled_daily_pce": 5.3,
+          "observed_volume": 58000,
+          "primary_link_period_class_flow": 1027.552119952999,
+          "primary_link_retained_pce": 2.568880299882497,
+          "station_id": "CT_RTE101_PM0_028"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 17946,
+          "modeled_daily_pce": 5.7,
+          "observed_volume": 28500,
+          "primary_link_period_class_flow": 2043.1854411777492,
+          "primary_link_retained_pce": 5.675515114382637,
+          "station_id": "CT_RTE101_PM0_312"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 20863,
+          "modeled_daily_pce": 5.0,
+          "observed_volume": 33500,
+          "primary_link_period_class_flow": 1799.8729686071042,
+          "primary_link_retained_pce": 4.999647135019734,
+          "station_id": "CT_RTE101_PM0_312"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 16905,
+          "modeled_daily_pce": 0.0,
+          "observed_volume": 33500,
+          "primary_link_period_class_flow": 0.0,
+          "primary_link_retained_pce": 0.0,
+          "station_id": "CT_RTE101_PM3_049"
+        },
+        {
+          "carriageways_summed": 2,
+          "link_id": 17601,
+          "modeled_daily_pce": 4.8,
+          "observed_volume": 24100,
+          "primary_link_period_class_flow": 1908.286545982587,
+          "primary_link_retained_pce": 4.770716364956467,
+          "station_id": "CT_RTE101_PM3_173"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 14430,
+          "modeled_daily_pce": 2.5,
+          "observed_volume": 59000,
+          "primary_link_period_class_flow": 1009.1542286978548,
+          "primary_link_retained_pce": 2.522885571744637,
+          "station_id": "CT_RTE101_PM6_485"
+        },
+        {
+          "carriageways_summed": 2,
+          "link_id": 15559,
+          "modeled_daily_pce": 5.3,
+          "observed_volume": 59000,
+          "primary_link_period_class_flow": 1097.5448560776276,
+          "primary_link_retained_pce": 2.743862140194069,
+          "station_id": "CT_RTE101_PM7_550"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 20543,
+          "modeled_daily_pce": 0.0,
+          "observed_volume": 28000,
+          "primary_link_period_class_flow": 0.867665311374097,
+          "primary_link_retained_pce": 0.0096407256819344,
+          "station_id": "CT_RTE156_PM3_022"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 20832,
+          "modeled_daily_pce": 13.2,
+          "observed_volume": 28500,
+          "primary_link_period_class_flow": 1345.6112638571062,
+          "primary_link_retained_pce": 13.2268791406797,
+          "station_id": "CT_RTE156_PM7_246"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 25301,
+          "modeled_daily_pce": 0.2,
+          "observed_volume": 14000,
+          "primary_link_period_class_flow": 17.77040581640259,
+          "primary_link_retained_pce": 0.1974489535155843,
+          "station_id": "CT_RTE156_PM13_215"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 20820,
+          "modeled_daily_pce": 7.4,
+          "observed_volume": 15000,
+          "primary_link_period_class_flow": 1329.3825081625907,
+          "primary_link_retained_pce": 7.38545837868106,
+          "station_id": "CT_RTE156_PM16_536"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 29856,
+          "modeled_daily_pce": 10.7,
+          "observed_volume": 15500,
+          "primary_link_period_class_flow": 1924.276284100377,
+          "primary_link_retained_pce": 10.690423800557651,
+          "station_id": "CT_RTE156_PM18_430"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 30533,
+          "modeled_daily_pce": 10.0,
+          "observed_volume": 500,
+          "primary_link_period_class_flow": 1199.9981201046226,
+          "primary_link_retained_pce": 9.99998433420519,
+          "station_id": "CT_RTE25_PM7_300"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 30540,
+          "modeled_daily_pce": 0.0,
+          "observed_volume": 100,
+          "primary_link_period_class_flow": 0.0,
+          "primary_link_retained_pce": 0.0,
+          "station_id": "CT_RTE25_PM11_750"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 17296,
+          "modeled_daily_pce": 13.2,
+          "observed_volume": 1300,
+          "primary_link_period_class_flow": 1588.7731303249914,
+          "primary_link_retained_pce": 13.239776086041594,
+          "station_id": "CT_RTE25_PM39_533"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 17789,
+          "modeled_daily_pce": 22.2,
+          "observed_volume": 7500,
+          "primary_link_period_class_flow": 2658.4000710591467,
+          "primary_link_retained_pce": 22.15333392549289,
+          "station_id": "CT_RTE25_PM49_014"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 15784,
+          "modeled_daily_pce": 29.2,
+          "observed_volume": 17000,
+          "primary_link_period_class_flow": 3498.599646478784,
+          "primary_link_retained_pce": 29.154997053989863,
+          "station_id": "CT_RTE25_PM52_194"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 17832,
+          "modeled_daily_pce": 23.4,
+          "observed_volume": 25000,
+          "primary_link_period_class_flow": 2812.847746724932,
+          "primary_link_retained_pce": 23.44039788937443,
+          "station_id": "CT_RTE25_PM55_134"
+        }
+      ],
+      "unmatched_or_excluded": 9
+    },
+    "repeat": {
+      "assignment_demand_record": {
+        "peak_hour_factor": 0.1,
+        "period": "representative peak hour",
+        "period_total_trips": 26893.703,
+        "total_trips": 268937.03
+      },
+      "demand": {
+        "assigned_core": "demand",
+        "container": "AEM (retained filename ends .omx)",
+        "cores": [
+          "demand"
+        ],
+        "implied_daily_total": 268937.02999999997,
+        "period_total": 26893.702999999998,
+        "shape": [
+          20,
+          20
+        ]
+      },
+      "distributions": {
+        "PCE_tot": {
+          "count": 34040,
+          "maximum": 82.25247886481529,
+          "median_positive": 3.735,
+          "p95_positive": 25.083769138655985,
+          "sum": 12159.510756128766,
+          "zero": 32189
+        },
+        "demand_tot": {
+          "count": 34040,
+          "maximum": 5764.228826342511,
+          "median_positive": 339.44574379810604,
+          "p95_positive": 2777.006368509717,
+          "sum": 1447146.4341486471,
+          "zero": 32189
+        }
+      },
+      "example_link_14233": {
+        "Congested_Time_AB": 0.1060425218730998,
+        "Congested_Time_BA": 0.1137392373398747,
+        "Congested_Time_Max": 0.1137392373398747,
+        "Delay_factor_AB": 1.032361992777575,
+        "Delay_factor_BA": 1.1072922790134152,
+        "Delay_factor_Max": 1.1072922790134152,
+        "PCE_AB": 6.815316034360268,
+        "PCE_BA": 9.196430705480036,
+        "PCE_tot": 16.011746739840305,
+        "Preload_AB": 0.0,
+        "Preload_BA": 0.0,
+        "Preload_tot": 0.0,
+        "VOC_AB": 0.6815316034360268,
+        "VOC_BA": 0.9196430705480038,
+        "VOC_max": 0.9196430705480038,
+        "demand_ab": 2453.5137723696967,
+        "demand_ba": 3310.7150539728136,
+        "demand_tot": 5764.228826342511
+      },
+      "matched": 18,
+      "matched_primary_link_zero_class_flow": 2,
+      "matched_zero_corridor_volume": 3,
+      "network_daily_vmt_recorded": 2317.2,
+      "paired_corridor_stations": 3,
+      "pce_minus_class_daily_flow_max_abs": 57626.27651668527,
+      "pce_minus_voc_div_peak_max_abs": {
+        "AB": 7.105427357601002e-15,
+        "BA": 5.329070518200751e-15
+      },
+      "station_rows": [
+        {
+          "carriageways_summed": 2,
+          "link_id": 6382,
+          "modeled_daily_pce": 5.3,
+          "observed_volume": 58000,
+          "primary_link_period_class_flow": 1027.552119952999,
+          "primary_link_retained_pce": 2.568880299882497,
+          "station_id": "CT_RTE101_PM0_028"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 17946,
+          "modeled_daily_pce": 5.7,
+          "observed_volume": 28500,
+          "primary_link_period_class_flow": 2043.1854411777492,
+          "primary_link_retained_pce": 5.675515114382637,
+          "station_id": "CT_RTE101_PM0_312"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 20863,
+          "modeled_daily_pce": 5.0,
+          "observed_volume": 33500,
+          "primary_link_period_class_flow": 1799.8729686071042,
+          "primary_link_retained_pce": 4.999647135019734,
+          "station_id": "CT_RTE101_PM0_312"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 16905,
+          "modeled_daily_pce": 0.0,
+          "observed_volume": 33500,
+          "primary_link_period_class_flow": 0.0,
+          "primary_link_retained_pce": 0.0,
+          "station_id": "CT_RTE101_PM3_049"
+        },
+        {
+          "carriageways_summed": 2,
+          "link_id": 17601,
+          "modeled_daily_pce": 4.8,
+          "observed_volume": 24100,
+          "primary_link_period_class_flow": 1908.286545982587,
+          "primary_link_retained_pce": 4.770716364956467,
+          "station_id": "CT_RTE101_PM3_173"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 14430,
+          "modeled_daily_pce": 2.5,
+          "observed_volume": 59000,
+          "primary_link_period_class_flow": 1009.1542286978548,
+          "primary_link_retained_pce": 2.522885571744637,
+          "station_id": "CT_RTE101_PM6_485"
+        },
+        {
+          "carriageways_summed": 2,
+          "link_id": 15559,
+          "modeled_daily_pce": 5.3,
+          "observed_volume": 59000,
+          "primary_link_period_class_flow": 1097.5448560776276,
+          "primary_link_retained_pce": 2.743862140194069,
+          "station_id": "CT_RTE101_PM7_550"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 20543,
+          "modeled_daily_pce": 0.0,
+          "observed_volume": 28000,
+          "primary_link_period_class_flow": 0.867665311374097,
+          "primary_link_retained_pce": 0.0096407256819344,
+          "station_id": "CT_RTE156_PM3_022"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 20832,
+          "modeled_daily_pce": 13.2,
+          "observed_volume": 28500,
+          "primary_link_period_class_flow": 1345.6112638571062,
+          "primary_link_retained_pce": 13.2268791406797,
+          "station_id": "CT_RTE156_PM7_246"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 25301,
+          "modeled_daily_pce": 0.2,
+          "observed_volume": 14000,
+          "primary_link_period_class_flow": 17.77040581640259,
+          "primary_link_retained_pce": 0.1974489535155843,
+          "station_id": "CT_RTE156_PM13_215"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 20820,
+          "modeled_daily_pce": 7.4,
+          "observed_volume": 15000,
+          "primary_link_period_class_flow": 1329.3825081625907,
+          "primary_link_retained_pce": 7.38545837868106,
+          "station_id": "CT_RTE156_PM16_536"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 29856,
+          "modeled_daily_pce": 10.7,
+          "observed_volume": 15500,
+          "primary_link_period_class_flow": 1924.276284100377,
+          "primary_link_retained_pce": 10.690423800557651,
+          "station_id": "CT_RTE156_PM18_430"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 30533,
+          "modeled_daily_pce": 10.0,
+          "observed_volume": 500,
+          "primary_link_period_class_flow": 1199.9981201046226,
+          "primary_link_retained_pce": 9.99998433420519,
+          "station_id": "CT_RTE25_PM7_300"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 30540,
+          "modeled_daily_pce": 0.0,
+          "observed_volume": 100,
+          "primary_link_period_class_flow": 0.0,
+          "primary_link_retained_pce": 0.0,
+          "station_id": "CT_RTE25_PM11_750"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 17296,
+          "modeled_daily_pce": 13.2,
+          "observed_volume": 1300,
+          "primary_link_period_class_flow": 1588.7731303249914,
+          "primary_link_retained_pce": 13.239776086041594,
+          "station_id": "CT_RTE25_PM39_533"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 17789,
+          "modeled_daily_pce": 22.2,
+          "observed_volume": 7500,
+          "primary_link_period_class_flow": 2658.4000710591467,
+          "primary_link_retained_pce": 22.15333392549289,
+          "station_id": "CT_RTE25_PM49_014"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 15784,
+          "modeled_daily_pce": 29.2,
+          "observed_volume": 17000,
+          "primary_link_period_class_flow": 3498.599646478784,
+          "primary_link_retained_pce": 29.154997053989863,
+          "station_id": "CT_RTE25_PM52_194"
+        },
+        {
+          "carriageways_summed": 1,
+          "link_id": 17832,
+          "modeled_daily_pce": 23.4,
+          "observed_volume": 25000,
+          "primary_link_period_class_flow": 2812.847746724932,
+          "primary_link_retained_pce": 23.44039788937443,
+          "station_id": "CT_RTE25_PM55_134"
+        }
+      ],
+      "unmatched_or_excluded": 9
+    }
+  },
+  "baseline_csv_core": "not OMX; labeled OD CSV",
+  "baseline_csv_daily_trips": 268937.03,
+  "baseline_csv_units": "daily vehicle trips",
+  "centroid_map": {
+    "1": 211340,
+    "10": 211349,
+    "11": 211350,
+    "12": 211351,
+    "13": 211352,
+    "14": 211353,
+    "15": 211354,
+    "16": 211355,
+    "17": 211356,
+    "18": 211357,
+    "19": 211358,
+    "2": 211341,
+    "20": 211359,
+    "3": 211342,
+    "4": 211343,
+    "5": 211344,
+    "6": 211345,
+    "7": 211346,
+    "8": 211347,
+    "9": 211348
+  },
+  "county": "06069",
+  "earlier": {
+    "comparison_limit": "Historical matching and runtime differ; no old outcome regraded or used as acceptance.",
+    "demand_layers": {
+      "demand_source": "gravity_v1",
+      "external_gateways": [
+        {
+          "boundary_lat": 36.917391,
+          "boundary_lon": -121.548092,
+          "daily_in": 20000.0,
+          "daily_out": 20000.0,
+          "label": "motorway-south-valley-freeway",
+          "link_id": 6382,
+          "link_type": "motorway",
+          "name": "South Valley Freeway",
+          "zone_id": 13
+        },
+        {
+          "boundary_lat": 36.857049,
+          "boundary_lon": -121.630121,
+          "daily_in": 18000.0,
+          "daily_out": 18000.0,
+          "label": "trunk-el-camino-real",
+          "link_id": 20863,
+          "link_type": "trunk",
+          "name": "El Camino Real",
+          "zone_id": 14
+        },
+        {
+          "boundary_lat": 36.988771,
+          "boundary_lon": -121.452156,
+          "daily_in": 9000.0,
+          "daily_out": 9000.0,
+          "label": "trunk-pacheco-pass-highway",
+          "link_id": 6806,
+          "link_type": "trunk",
+          "name": "Pacheco Pass Highway",
+          "zone_id": 15
+        },
+        {
+          "boundary_lat": 36.960639,
+          "boundary_lon": -121.383556,
+          "daily_in": 9000.0,
+          "daily_out": 9000.0,
+          "label": "trunk-pacheco-pass-highway",
+          "link_id": 29855,
+          "link_type": "trunk",
+          "name": "Pacheco Pass Highway",
+          "zone_id": 16
+        },
+        {
+          "boundary_lat": 36.90048,
+          "boundary_lon": -121.597427,
+          "daily_in": 9000.0,
+          "daily_out": 9000.0,
+          "label": "trunk-riverside-road",
+          "link_id": 17420,
+          "link_type": "trunk",
+          "name": "Riverside Road",
+          "zone_id": 17
+        },
+        {
+          "boundary_lat": 36.948021,
+          "boundary_lon": -121.512071,
+          "daily_in": 6000.0,
+          "daily_out": 6000.0,
+          "label": "primary-bolsa-road",
+          "link_id": 13812,
+          "link_type": "primary",
+          "name": "Bolsa Road",
+          "zone_id": 18
+        },
+        {
+          "boundary_lat": 36.301157,
+          "boundary_lon": -120.929306,
+          "daily_in": 6000.0,
+          "daily_out": 6000.0,
+          "label": "primary-airline-highway",
+          "link_id": 30540,
+          "link_type": "primary",
+          "name": "Airline Highway",
+          "zone_id": 19
+        },
+        {
+          "boundary_lat": 36.480129,
+          "boundary_lon": -121.228297,
+          "daily_in": 3000.0,
+          "daily_out": 3000.0,
+          "label": "secondary-state-route-146",
+          "link_id": 2827,
+          "link_type": "secondary",
+          "name": "State Route 146",
+          "zone_id": 20
+        }
+      ],
+      "external_trips": 153700.0,
+      "files": {
+        "od_trip_matrix": "package/od_trip_matrix.csv"
+      },
+      "hbo_trips": 63254.25,
+      "hbw_trips": 22265.67,
+      "nhb_trips": 29717.08,
+      "supplied_trips": 0.0,
+      "total_trips": 268937.0,
+      "trip_rates": {
+        "external_demand_scalar": 1.0,
+        "gravity_gamma_hbo": 1.5,
+        "gravity_gamma_nhb": 1.2,
+        "hbo_prod_per_person": 2.2,
+        "hbo_scalar": 1.0,
+        "hbw_gamma": 1.8,
+        "hbw_scalar": 1.0,
+        "mode_split_applied": {
+          "auto_share_of_person_trips": 0.7651,
+          "distance_basis": "routed network distance from the skim, converted from metres to miles",
+          "median_trip_miles": 13.9,
+          "source": "workers/aequilibrae_worker/mode_choice.py, the worker lane's own model",
+          "transit": "not modelled \u2014 no transit skim was supplied, so no transit share is claimed"
+        },
+        "nhb_prod_per_person": 0.9,
+        "nhb_scalar": 1.0,
+        "overall_demand_scalar": 1.0,
+        "vehicle_occupancy_applied": {
+          "hbo": 1.72,
+          "hbw": 1.08,
+          "nhb": 1.52
+        }
+      }
+    },
+    "distributions": {
+      "PCE_tot": {
+        "count": 34040,
+        "maximum": 61780.67905892056,
+        "median_positive": 3482.4520918375574,
+        "p95_positive": 27960.301388887256,
+        "sum": 15473865.302119741,
+        "zero": 32176
+      },
+      "demand_tot": {
+        "count": 34040,
+        "maximum": 6178.067905892056,
+        "median_positive": 348.2452091837558,
+        "p95_positive": 2796.0301388887256,
+        "sum": 1547386.5302119744,
+        "zero": 32176
+      }
+    },
+    "path": "/home/nathaniel/code/openplan/data/screening-runs/u2-06069-base",
+    "pce_minus_class_daily_flow_max_abs": 7.275957614183426e-12,
+    "raw_median_ape_recorded": 91.1,
+    "same_retained_inputs_now": {
+      "counts/published_counts.csv": true,
+      "package/od_trip_matrix.csv": true,
+      "package/zone_attributes.csv": true,
+      "run_output/travel_time_skims.omx": true,
+      "work/aeq_project/project_database.sqlite": true,
+      "work/network_setup_summary.json": true
+    },
+    "stations_matched_recorded": 14,
+    "versions_recorded": {
+      "aequilibrae": "1.6.2",
+      "numpy": "2.0.2",
+      "pandas": "3.0.3",
+      "python": "3.11.15"
+    }
+  },
+  "input_audit": {
+    "assignment_output_opened": false,
+    "baseline_matrix_sha256": "fcdf476b7b66e9c747fe65c468b19a28dff27922b8523df3b14fea993f779ef5",
+    "candidate_matrix_sha256": "d118f29ac0f37b2b3b79d2e7c27f274f68adbd1f96f6363ea1cea314260276ca",
+    "external_distribution": {
+      "algorithm": "baseline_seed_divided_by_max_minutes_1_then_ipf_v1",
+      "algorithm_sha256": "67d44a5866a99aa5966a3e9a8e4af541938f7ece432aad9b13578a64a8714710",
+      "changed_cells": 192,
+      "defaults_changed": false,
+      "evidence_tier": "development_only",
+      "external_mask_sha256": "390612e612764a04c620ef813253fa3bdd87c8beef6b79a09eae629bc6e2ca3f",
+      "input_sha256": "0c4e8186f87190a23a69b15ea63525c23048865858ac955a6406c4288227ba28",
+      "input_trips": 153700.0,
+      "iterations": [
+        7,
+        7
+      ],
+      "max_column_error": 3.637978807091713e-12,
+      "max_row_error": 0.001700648182122677,
+      "output_sha256": "716540e4b4bcbccd78cf6eededbf017bc996bb3164167bca2157805fed04e7da",
+      "output_trips": 153700.0,
+      "positive_cells_after": 194,
+      "positive_cells_before": 194,
+      "setting": "cordon_impedance_v1",
+      "settings": {
+        "inverse_time_exponent": 1,
+        "marginal_relative_tolerance": 1e-07,
+        "max_iterations": 10000,
+        "time_floor_minutes": 1.0
+      },
+      "source": {
+        "behavior_estimation": "none",
+        "kind": "retained_network_freeflow_skim",
+        "skim_sha256": "999a3f60656a271e31b793c6a6bbe224b5fad1ea49a03d9603abbbe5416d8ed4",
+        "units": "minutes"
+      },
+      "unreachable_cross_cells": 0,
+      "unreachable_cross_trips_retained": 0.0
+    },
+    "external_unreachable_trips": 0.0,
+    "geography": "06069",
+    "match_ids_sha256": "47d7a393415abd1fe24b5b3f7c44d4d98c9fa4261e756a36bee01d0e3bb9bcb7",
+    "method": "aequilibrae",
+    "model_day": "unknown",
+    "model_year": "unknown",
+    "network_downloaded_at": "2026-08-17T06:01:48.126295+00:00",
+    "network_source": "OpenStreetMap",
+    "ordered_centroid_nodes": [
+      211340,
+      211341,
+      211342,
+      211343,
+      211344,
+      211345,
+      211346,
+      211347,
+      211348,
+      211349,
+      211350,
+      211351,
+      211352,
+      211353,
+      211354,
+      211355,
+      211356,
+      211357,
+      211358,
+      211359
+    ],
+    "ordered_zone_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20
+    ],
+    "source_network_sha256": "c694293621f577429295ef1d433ca81f478de1fe0233ccde3eca3272b340be01",
+    "split": "evaluation",
+    "station_count": 27,
+    "uncertainty": "unavailable: no documented intervals or comparable model day/year"
+  },
+  "observations": {
+    "agency": {
+      "Caltrans": 27
+    },
+    "count_type": {
+      "AADT": 27
+    },
+    "direction": {
+      "two_way": 27
+    },
+    "stations": 27,
+    "year": {
+      "2023": 27
+    }
+  },
+  "read_file_sha256": {
+    "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/06069-pre-output-audit.json": "9d30859a6081c49726bf08b81eb8e6b28f993ea6a3da46559da9eac8d25484e3",
+    "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/06069/baseline/assignment.json": "a7ac8941dec15bce6b76e75ad39f363301b0d1df174905d53ddbf7e167733be1",
+    "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/06069/baseline/demand.omx": "d6ea690e46556d2c2db54296e1fa912074388ff45d58189063c6f9dea9f2e880",
+    "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/06069/baseline/diagnostic.json": "6a3d16398d71c2bcb354cc2f005b6fa3386af0a701b091ec02ea29d0678c2c99",
+    "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/06069/baseline/link_volumes.csv": "21972ecc37a3b2d85b8e78c179cfcb64151af65ba0c51045d3dab56ad49a7427",
+    "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/06069/candidate/assignment.json": "2bef0b0713a7e4a98726bdfcf61a31d4e568b420c6f1cb4cd151ae6dd0cfc15f",
+    "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/06069/candidate/demand.omx": "8e408ac01b5ded78bbfce44d7af0f34ce89831545dc3ff180333585b1569f902",
+    "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/06069/candidate/diagnostic.json": "bd8c3088098037fc665a1784910e55b9ed4d1c58c864d9901cf0a6166cc43c3d",
+    "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/06069/candidate/link_volumes.csv": "23ee7843bd6f6c420587c3e5e1b018eaa3093b1d7a6ac1d4db079e9bd880f7b6",
+    "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/06069/repeat/assignment.json": "c1e8d9bd160ecd01054e111f0a29c84312246c3b099e4f8ed4504f9b887460ee",
+    "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/06069/repeat/demand.omx": "8e408ac01b5ded78bbfce44d7af0f34ce89831545dc3ff180333585b1569f902",
+    "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/06069/repeat/diagnostic.json": "bd8c3088098037fc665a1784910e55b9ed4d1c58c864d9901cf0a6166cc43c3d",
+    "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/06069/repeat/link_volumes.csv": "23ee7843bd6f6c420587c3e5e1b018eaa3093b1d7a6ac1d4db079e9bd880f7b6",
+    "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/inputs/06069/counts/published_counts.csv": "9ac6aca40f4eb3a2ef678023a34124800773df215b9cc73370d919649eef4fe4",
+    "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/inputs/06069/package/od_trip_matrix.csv": "8563093eecf9ddd38c09187b9072d798ec78dab0f6d6395146531a17355442df",
+    "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/inputs/06069/package/zone_attributes.csv": "5e4c11f81ec56975b10e5601ea2ca5ed50bddc45fd2c8a637f5ccb33c92d1937",
+    "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/inputs/06069/run_output/travel_time_skims.omx": "bc2614e096f13b300d5f0beaa81386faccd2cefb375901b3557e0a98df2b9b2f",
+    "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/inputs/06069/work/aeq_project/project_database.sqlite": "c694293621f577429295ef1d433ca81f478de1fe0233ccde3eca3272b340be01",
+    "/home/nathaniel/.local/state/openplan/s2-cordon-successor-20261023/execution/inputs/06069/work/network_setup_summary.json": "a8b8f3cf479948d9b8cf2b9523167596ca1d085c05a0165d10a50b2dd3bfbbe9",
+    "/home/nathaniel/code/openplan/data/screening-runs/u2-06069-base/counts/published_counts.csv": "9ac6aca40f4eb3a2ef678023a34124800773df215b9cc73370d919649eef4fe4",
+    "/home/nathaniel/code/openplan/data/screening-runs/u2-06069-base/package/demand_layers.json": "1edf22992ca8a5cda069ffe6a7a829b00f4ff157af58c3d9611c6a206e421527",
+    "/home/nathaniel/code/openplan/data/screening-runs/u2-06069-base/package/od_trip_matrix.csv": "8563093eecf9ddd38c09187b9072d798ec78dab0f6d6395146531a17355442df",
+    "/home/nathaniel/code/openplan/data/screening-runs/u2-06069-base/package/zone_attributes.csv": "5e4c11f81ec56975b10e5601ea2ca5ed50bddc45fd2c8a637f5ccb33c92d1937",
+    "/home/nathaniel/code/openplan/data/screening-runs/u2-06069-base/run_output/link_volumes.csv": "414f57a4af40abe5928a29011b887ec47dec3d336396f508df3906f5239255f8",
+    "/home/nathaniel/code/openplan/data/screening-runs/u2-06069-base/run_output/travel_time_skims.omx": "bc2614e096f13b300d5f0beaa81386faccd2cefb375901b3557e0a98df2b9b2f",
+    "/home/nathaniel/code/openplan/data/screening-runs/u2-06069-base/run_summary.json": "346b543181b28344fe43167b3dc01c1701518c593cbf93b438f3783a2955369b",
+    "/home/nathaniel/code/openplan/data/screening-runs/u2-06069-base/validation/validation_summary.json": "c8240f3b9b507194ee5a66e47a88c3ab991864e4bed0bf9b502f49bfba9db040",
+    "/home/nathaniel/code/openplan/data/screening-runs/u2-06069-base/work/aeq_project/project_database.sqlite": "c694293621f577429295ef1d433ca81f478de1fe0233ccde3eca3272b340be01",
+    "/home/nathaniel/code/openplan/data/screening-runs/u2-06069-base/work/network_setup_summary.json": "a8b8f3cf479948d9b8cf2b9523167596ca1d085c05a0165d10a50b2dd3bfbbe9"
+  },
+  "scope": "read-only diagnosis; no assignment, no regrading, no experiment",
+  "skim": {
+    "cores": [
+      "distance",
+      "travel_time"
+    ],
+    "demand_core": false,
+    "index": [
+      211340,
+      211341,
+      211342,
+      211343,
+      211344,
+      211345,
+      211346,
+      211347,
+      211348,
+      211349,
+      211350,
+      211351,
+      211352,
+      211353,
+      211354,
+      211355,
+      211356,
+      211357,
+      211358,
+      211359
+    ],
+    "positive_cells": 380,
+    "read_core": "travel_time",
+    "shape": [
+      20,
+      20
+    ],
+    "units": "minutes"
+  },
+  "zone_order": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20
+  ]
+}

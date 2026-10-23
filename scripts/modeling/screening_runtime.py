@@ -175,6 +175,7 @@ if str(_WORKER_DIR) not in sys.path:
 
 from gateway_counts import attach_passthrough_ceilings  # noqa: E402
 from assignment_settings import build_traffic_assignment  # noqa: E402
+from assignment_runtime import require_assignment_python  # noqa: E402
 from gateways import (  # noqa: E402
     GATEWAY_PASSTHROUGH_SHARE,
     build_external_gateway_matrix as worker_build_external_gateway_matrix,
@@ -3104,6 +3105,7 @@ def run_assignment(
     class_factors: dict[str, float] | None = None,
     write_outputs: bool = True,
 ) -> dict[str, Any]:
+    require_assignment_python()
     from aequilibrae.matrix import AequilibraeMatrix
     from aequilibrae.paths import Graph, TrafficAssignment, TrafficClass
 

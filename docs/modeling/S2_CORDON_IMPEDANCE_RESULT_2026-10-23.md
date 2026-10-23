@@ -425,3 +425,228 @@ system, Docker stack, held-out partition or consumed holdout partition changes.
 
 Keep PR #375 as a draft. The lead owns selection of any next development
 experiment. This round does not authorize another execution or default change.
+
+## Round 3 addendum: the successor volume measurement is invalid
+
+**The successor's scientific result is invalid for measurement reasons.**
+The retained `PCE_*` columns contain volume/capacity ratios expanded by the
+peak-hour factor, not daily passenger-car-equivalent volumes. This defect
+invalidates the volume-based comparison and its interpretation as evidence
+against the candidate. The recorded numbers, convergence records, exact repeat,
+aggregate `rejected` result and registered `retire` decision above remain
+unchanged. Retirement still prevents advancement. This annotation does not
+replace the decision with an advance, repair old outputs or claim accuracy.
+
+Round 3 makes no scientific assignment and opens no additional partition.
+Any further experiment requires a **new preregistration approved by the lead**.
+Use a supported, identified interpreter and prove measurement before opening
+that experiment. Do not rerun either existing lock.
+
+### San Benito trace locates the measurement failure
+
+The read-only [trace](../../data/modeling/s2-cordon-measurement-diagnosis-2026-10-23/san-benito-trace.json)
+records file hashes, matrix totals, source units, loaded-link distributions and
+all 18 matched station identities. It reads the retained successor directory
+and the original `u2-06069-base` development run. It runs no assignment or
+replacement county score.
+
+1. **Input demand is daily vehicle trips.** The 20-by-20 OD CSV totals
+   268,937.03 trips. It is a labeled CSV, not an OMX demand core. Earlier demand
+   metadata records mode choice and occupancy conversion, 115,237 internal
+   trips and 153,700 external trips. Its rounded total is 268,937.0. All six
+   retained source files match the corresponding original development inputs
+   by SHA-256, including the network, OD, zones, skim and published counts.
+2. **The public OMX read selects travel time.** The skim contains `distance`
+   and `travel_time`; the evaluator selects `travel_time`, in minutes. It has
+   380 positive off-diagonal cells. The evaluator maps its centroid-node index
+   to the recorded zone ordering. The OMX correction does not read or scale
+   demand.
+3. **Assignment input retains the trips.** Baseline, candidate and repeat
+   each record 268,937.03 daily trips and 26,893.703 representative-peak-hour
+   trips. Each retained demand file has one core named `demand`. Its measured
+   sum agrees with the period record to floating-point precision. These files
+   have native AEM bytes despite their `.omx` suffix. The diagnostic loads a
+   disposable `.aem` copy because the native loader opens files in write mode.
+   It leaves the retained files unchanged. The live assignment receives the
+   matrix object directly, so this filename mismatch does not cause the
+   observed volume error.
+4. **The class-flow output remains substantial.** Baseline has 1,864 positive
+   links among 34,040 links. Its `demand_tot` median on positive links is
+   340.053 representative-hour trips, its 95th percentile is 2,822.535, and
+   its maximum is 6,065.111. Candidate has 1,851 positive links, median
+   339.446, 95th percentile 2,777.006 and maximum 5,764.229. Repeat equals
+   candidate. These are class-flow diagnostics, not repaired scientific scores.
+5. **The PCE output loses its unit.** Baseline `PCE_tot` has positive-link
+   median 3.766, 95th percentile 26.036 and maximum 85.301. Candidate has
+   median 3.735, 95th percentile 25.084 and maximum 82.252. For example,
+   baseline link 14233 carries 6,065.110946 period trips in `demand_tot`, but
+   `PCE_tot` is 16.847530 instead of the corresponding daily class-flow value
+   of 60,651.109457. Its two PCE directions equal `VOC_AB / 0.10` and
+   `VOC_BA / 0.10`. The maximum directional identity error across San Benito
+   baseline is 7.11e-15. The same dimensionally wrong relationship appears in
+   every one of the 11 retained assignments, including the repeat.
+6. **Unloaded matching does not explain the county-wide scale.** Of 27
+   published observations, 18 survive matching and duplicate/exclusion rules;
+   nine remain unmatched or excluded. Two matched primary links have exactly
+   zero class flow in both arms. Three station diagnostics round to zero:
+   links 16905 and 30540 are unloaded, while link 20543 has 0.781550 period
+   trips but its erroneous PCE value of 0.008684 rounds to 0.0. Three stations
+   sum paired carriageways. The study uses input-only spatial matching and
+   retains all zero comparisons. No matching rule changes in this round.
+7. **Observation comparability remains unresolved.** All 27 San Benito input
+   counts are Caltrans 2023 two-way AADT, in vehicles per average day. The
+   model expands a representative peak hour to a modeled day; its particular
+   day definition and base year remain unknown. The inputs do not supply
+   documented uncertainty intervals. The unavailability of uncertainty-aware
+   scores for all 337 matched stations is a separate evidence limitation,
+   not a consequence of choosing the wrong demand core.
+
+The original San Benito output provides a useful unit check. It records
+Python 3.11.15, NumPy 2.0.2, AequilibraE 1.6.2 and pandas 3.0.3. Its PCE daily
+flow agrees with `demand_tot / 0.10` within 7.28e-12, with positive-link median
+3,482.452 and maximum 61,780.679. Its retained validation summary records
+91.1 percent median APE across 14 matches, not 43 to 63 percent. That older
+run uses different matching, pandas and a 0.01 convergence target. It cannot
+supply a like-for-like candidate score. The historical 43.29 percent selection
+metric belongs to the one-county calibration study described in the August 25
+uncertainty review; no selection-holdout artifact is opened here.
+
+The first demonstrated loss of measurement units occurs in the engine's
+result extraction, after class assignment and before daily expansion, VMT,
+station scoring or rounding. The older and successor solvers do not have
+identical settings, so this diagnosis does not claim every upstream numerical
+value should match.
+
+### The interpreter and NumPy interaction causes the defect
+
+The sealed interpreter path reports **CPython 3.14.4 with NumPy 2.0.2**.
+AequilibraE 1.6.2 calculates `voc = tot_flow / self.capacity[idx]` inside
+`TrafficAssignment.results()`, then uses `tot_flow` again for the PCE columns.
+On a sufficiently large synthetic array in that runtime, division overwrites
+`tot_flow` with the capacity ratio. The synthetic fixture supplies 180 flow
+units per direction and capacity 600. Six links return the correct total of
+360; 40,000 links return 0.6. This reproduces the county output signature
+without a network assignment or any scientific source.
+
+A diagnostic control replaces that one expression in an in-memory function
+copy with `np.divide(..., out=np.empty_like(tot_flow))`. The same large fixture
+then returns 360 even under Python 3.14. No installed library file is edited.
+This isolates the destructive division. It does not establish that other
+operations in an unsupported numerical runtime are safe.
+
+NumPy documents [broken temporary-elision heuristics on Python 3.14](https://github.com/numpy/numpy/issues/28681)
+and the [subsequent reference-count correction](https://github.com/numpy/numpy/pull/29649).
+The [NumPy 2.0 release notes](https://numpy.org/doc/2.0/release/2.0.0-notes.html)
+limit supported Python versions to 3.9 through 3.12. A successful package
+import, converged assignment and deterministic repeat do not establish
+compatibility on Python 3.14.
+
+A separate CPython 3.11.15 environment with the same AequilibraE 1.6.2,
+NumPy 2.0.2, pandas 2.3.3 and SciPy 1.17.1 passes the unmodified small and
+large result-adapter assertions. Both environments have byte-identical
+`traffic_assignment.py`, SHA-256
+`1ee79fed2add1d5a78862f30bbef04a1ff8e17efd06135b77c0d4a43f92de666`.
+The [runtime/output record](../../data/modeling/s2-cordon-measurement-diagnosis-2026-10-23/runtime-and-output-signature.json)
+binds both interpreter identities and all 11 retained output signatures.
+
+### Fix and production exposure
+
+The fix uses the reviewed CPython 3.11 runtime and refuses another interpreter.
+`assignment_runtime.py` provides the shared check. County `run_assignment`
+refuses before creating a demand output. The worker assignment factory refuses
+before constructing an engine. Local dependency preflight refuses before
+numerical imports or worker entry. Current synthetic study fixtures use their
+test interpreter rather than inheriting the old scientific lock's absolute
+interpreter. Future study preparation must first run
+`workers/aequilibrae_worker/check_local_dependencies.py` in its selected
+Python 3.11 environment, then run the measurement contract test.
+
+No dependency version, demand default, peak factor, acceptance threshold or
+matching policy changes. The code does not substitute another result column,
+fit a scalar, patch the installed engine, or repair retained outputs.
+CPython 3.12 and alternative interpreters also require separate review before
+this pinned stack admits them. This is an explicit admission restriction,
+not evidence that every other interpreter has the measured Python 3.14 bug.
+
+Production source uses the same susceptible `results()` API. The worker call
+exists since `352f68561` (March 19, 2026); the county call exists since
+`cfa56ac41` (March 24, 2026). Those dates identify code exposure, not the first
+corrupt run. Local package preflight added in `b1fc79843` (October 18) checks
+package versions but omitted the interpreter. This round closes that gap.
+
+The current hosted, county and standalone assignment Dockerfiles specify
+Python 3.11. The standalone worker changed from Python 3.12 to 3.11 in
+`e2d0de92e` on October 18. The retained original San Benito Python 3.11 run
+does not show this unit defect. **No past hosted production run is confirmed
+affected.** The current worker graph adapter also pins reviewed CPython 3.11 native
+engine bytes before graph construction. The county study path does not use
+that adapter. Production deployment histories and output inventories are not
+inspected, as the task forbids hosted access. Earlier local runs under the
+incompatible interpreter remain unassessed. Do not infer a first affected
+production date from the source history. This round changes production source
+admission, but deploys nothing.
+
+### Proof, retained failures and limits
+
+The requested branch checkout again refuses because `t3-6facce23` holds the
+branch. Round 3 uses a clean detached checkout of
+`504364117817e1a65c04fa6ca2a0dfd55042d840` in
+`/home/nathaniel/.t3/worktrees/openplan/t3-25ef0c0d`, then pushes to the same
+PR branch. Neither predecessor checkout changes.
+
+All final checks run in the separate Python 3.11 environment under
+`MemoryMax=6G` and `MemorySwapMax=0`. The two explicit defect probes use the
+unchanged sealed Python 3.14 environment. Evidence lives in
+[`s2-cordon-measurement-diagnosis-2026-10-23`](../../data/modeling/s2-cordon-measurement-diagnosis-2026-10-23/).
+
+- Final focused suites pass **59 tests, zero failures, zero skips**: four
+  runtime-admission tests, five measurement/synthetic-lock tests, 17 launcher
+  tests, 11 worker assignment-setting tests, nine county assignment-setting
+  tests, two complete synthetic successor tests and 11 study-unit tests.
+  The synthetic successor uses invented inputs and five native assignments.
+  No real-county assignment occurs in this round.
+- The original-code reproducer fails as intended: large-array PCE is 0.6
+  rather than 360. The explicit-division diagnostic passes on that same bad
+  runtime. Both remain separately identified from the passing fixed-runtime
+  contract. The pre-fix worker/preflight tests also fail their two intended
+  refusal assertions before the fix.
+- Final mutation proof records **eight intended assertion failures**, one
+  harmless source mutation surviving three suites, and all 26 tests in those
+  three restored suites passing. Sixteen recorded control invocations match
+  their expected outcomes. Exact restoration passes; no skips occur. Faults
+  remove interpreter admission or its worker/county/launcher calls, admit an
+  unreviewed interpreter, remove the development-source refusal, restore the
+  old synthetic interpreter, or substitute capacity-ratio-sized solver flow.
+- The initial mutation campaign stops on a fixture import error, not a valid
+  fault detection: spoofing Python 3.14 before importing SciPy requests the
+  unavailable `annotationlib`. The retained failure record shows exact source
+  restoration. A second fixture-scoping attempt runs the development-source
+  check on the bad interpreter and receives the earlier interpreter refusal;
+  it is also retained. The final campaign selects only the two numerical
+  diagnosis probes for Python 3.14 and separates native checks from the
+  lightweight worker test suite.
+- The first regression sequence passes the 11 worker and nine county tests,
+  then records one pass and one failure in the synthetic successor suite.
+  Its copied lock still selects Python 3.14, which the new guard refuses.
+  The synthetic-lock correction and mutation test precede the final passing
+  sequence. The old failure is retained; no scientific lock changes.
+- An initial native inspection probe tries to replace `results` on an engine
+  instance; AequilibraE refuses that property assignment before execution.
+  A subsequent class-level inspection runs on invented four-zone inputs only.
+  Preliminary tiny fixtures correctly return flow and therefore do not expose
+  the size-dependent defect. Neither is treated as county acceptance.
+- Both frozen closures still match: **190/190 predecessor and 201/201
+  successor files**. All prior result-document text remains an exact prefix;
+  both record directories have no changes. Read-file hashes confirm retained
+  demand, count, network, skim and output bytes remain unchanged.
+
+The checks prove the runtime refusal, result-extraction defect and synthetic
+fixed-runtime behavior. They do not prove that the old solver state, candidate
+matrix, convergence statistic or all other numerical operations escaped the
+unsupported-runtime defect. They do not establish a repaired county APE,
+scientific accuracy, complete worker-stage delivery, an unaffected production
+history, observation uncertainty, untouched acceptance or completed S2.
+The earlier negative evidence remains negative evidence with its measurement
+limit attached. Full app QA, the full worker matrix, build, browser, database,
+Docker and hosted checks remain unexecuted. No held-out or consumed partition,
+production system, managed service or secret is accessed.
