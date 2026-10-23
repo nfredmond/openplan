@@ -1,0 +1,6 @@
+Running as unit: run-p1594751-i60208890.scope; invocation ID: ca6e795b4ba049cda5fdec58cce33b85
+{
+  "status": "los_only_fare_unavailable",
+  "active_trips": 8782,
+  "drive_transit": "unavailable: no supplied drive connectors"
+}

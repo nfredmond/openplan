@@ -598,8 +598,9 @@ def expand_skims(
     centroid_map: Mapping[Any, Any],
     stock_configs_dir: Path,
     stock_skims_omx: Path,
+    transit_config: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Write the full stock skim inventory with real auto values and zero transit.
+    """Write stock skims with real auto values and optional scheduled GTFS transit.
 
     The output mirrors the installed stock example's matrix names exactly
     (positional zero-based zone indexing, no OMX mapping — like stock), so a
@@ -690,6 +691,17 @@ def expand_skims(
             "masking those pairs."
         )
 
+    transit_raw, transit_record = {}, None
+    if transit_config is not None:
+        from activitysim_transit_skims import build_transit_skims
+
+        constants = stock_configs_dir / "constants.yaml"
+        if not constants.exists() or not re.search(
+            r"(?m)^TRANSIT_SCALE_FACTOR: *100(?:\.0)? *(?:#.*)?$", constants.read_text()
+        ):
+            raise MtcInputError("GTFS transit requires the stock TRANSIT_SCALE_FACTOR of 100")
+        transit_raw, transit_record = build_transit_skims(zones, transit_config)
+
     zeros = np.zeros((n, n))
     counts = {"time": 0, "distance": 0, "zero": 0}
     output_omx.parent.mkdir(parents=True, exist_ok=True)
@@ -697,7 +709,13 @@ def expand_skims(
         for name in inventory:
             kind = classify_skim_name(name)
             counts[kind] += 1
-            if kind == "time":
+            if transit_record is not None and name.startswith(("WLK_", "DRV_")):
+                from activitysim_transit_skims import mtc_matrix
+
+                counts[kind] -= 1
+                counts["transit"] = counts.get("transit", 0) + 1
+                out[name] = mtc_matrix(name, transit_raw, (n, n))
+            elif kind == "time":
                 out[name] = time_minutes
             elif kind == "distance":
                 out[name] = dist_miles
@@ -707,7 +725,7 @@ def expand_skims(
         # positional and the zero-based recode of land_use.zone_id is the
         # authority on which row is which zone.
 
-    return {
+    result = {
         "matrices_written": len(inventory),
         "zones": n,
         "matrix_counts": counts,
@@ -724,6 +742,16 @@ def expand_skims(
         "source_omx": str(source_omx),
         "stock_skims_omx": str(stock_skims_omx),
     }
+    if transit_record is not None:
+        result["transit"] = transit_record
+        result["transit_and_tolls"] = "opt-in GTFS transit; availability and missingness in transit record; tolls remain zero"
+        # Raw masks and NaNs preserve unavailable versus measured zero outside
+        # the stock model's required zero-TOTIVT availability encoding.
+        raw_path = output_omx.with_name("transit_skims.npz")
+        np.savez_compressed(raw_path, **transit_raw)
+        result["transit"]["raw_artifact"] = raw_path.name
+        result["transit"]["raw_artifact_sha256"] = hashlib.sha256(raw_path.read_bytes()).hexdigest()
+    return result
 
 
 # --------------------------------------------------------------------------

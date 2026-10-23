@@ -99,6 +99,7 @@ Use the [current modeling status](modeling/STATUS_AND_VALIDATION.md) before inte
 - [TBI 2019 development admission result](modeling/activitysim-tbi2019-2026-10-23/RESULT.md):
   frozen household split, public-source custody, synthetic instrument checks and
   historical-input blockers. Both arms remain inconclusive; survey outcomes stay unopened.
+- [Opt-in ActivitySim GTFS transit skims](modeling/activitysim-transit-2026-10-23/README.md): scheduled skim definitions, source custody, synthetic controls, and dated regional plausibility.
 - [Model observation/validation research](modeling/VALIDATION_OBSERVATION_UNCERTAINTY_RESEARCH_2026-08-25.md),
   [frozen nationwide protocol](modeling/NATIONWIDE_VALIDATION_PREREGISTRATION_V1.json)
   and [engine landscape](modeling/OPEN_SOURCE_MODEL_LANDSCAPE.md).
