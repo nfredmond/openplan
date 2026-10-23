@@ -80,7 +80,7 @@
     "next": "16.4.2",
     "next-themes": "^0.4.6",
     "pmtiles": "^4.5.0",
-    "puppeteer-core": "^25.6.0",
+    "puppeteer-core": "^25.16.0",
     "radix-ui": "^1.4.3",
     "react": "19.2.3",
     "react-dom": "19.2.3",
@@ -91,7 +91,7 @@
     "unpdf": "^1.6.2",
     "xlsx": "file:vendor/sheetjs/xlsx-0.20.3.tgz",
     "yauzl": "3.4.0",
-    "zod": "^4.3.6"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -109,7 +109,7 @@
     "jsdom": "^28.1.0",
     "knip": "^6.29.0",
     "postcss": "8.5.23",
-    "shadcn": "^3.8.5",
+    "shadcn": "^4.22.1",
     "smol-toml": "1.9.0",
     "supabase": "^2.76.11",
     "tailwindcss": "^4",
