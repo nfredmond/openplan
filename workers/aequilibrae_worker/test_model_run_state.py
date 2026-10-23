@@ -74,18 +74,45 @@ state.publish(root,{'new':True})
                 self.assertEqual(run.returncode, 19, run.stderr)
                 self.assertEqual(json.loads(self.path.read_text()), expected)
 
-    def test_all_three_actual_stage_calls_publish_complete_records(self):
+    def test_all_actual_stage_calls_publish_complete_records(self):
         tree = ast.parse(Path(main.__file__).read_text())
+        parents = {child: parent for parent in ast.walk(tree) for child in ast.iter_child_nodes(parent)}
         calls = [node for node in ast.walk(tree) if isinstance(node, ast.Expr)
                  and isinstance(node.value, ast.Call) and getattr(node.value.func, 'id', None) == 'write_run_state']
-        self.assertEqual(len(calls), 3)
+        stages = {}
         for node in calls:
+            ancestors = []
+            parent = parents.get(node)
+            while parent is not None:
+                ancestors.append(parent)
+                parent = parents.get(parent)
+            self.assertEqual(next(parent.name for parent in ancestors if isinstance(parent, ast.FunctionDef)),
+                             '_claim_and_run_stage')
+            stage = next((parent.test.comparators[0].value for parent in ancestors
+                          if isinstance(parent, ast.If) and isinstance(parent.test, ast.Compare)
+                          and isinstance(parent.test.left, ast.Name) and parent.test.left.id == 'stage_name'
+                          and len(parent.test.ops) == 1 and isinstance(parent.test.ops[0], ast.Eq)
+                          and len(parent.test.comparators) == 1
+                          and isinstance(parent.test.comparators[0], ast.Constant)), None)
+            self.assertNotIn(stage, stages, f'Duplicate state publication in {stage}')
+            stages[stage] = node
+            if stage == 'Artifact Extraction':
+                managed_guard = ast.dump(ast.parse('admitted is not None', mode='eval').body)
+                self.assertTrue(any(isinstance(parent, ast.If) and ast.dump(parent.test) == managed_guard
+                                    for parent in ancestors),
+                                'Artifact Extraction publication must stay managed-only')
+        self.assertCountEqual(stages, ['AequilibraE Setup', 'Network Assignment',
+                                      'Artifact Extraction', 'ActivitySim Network Assignment'],
+                              'Exact run-state stage publication census differs')
+        for stage, node in stages.items():
             scope = dict(vars(main), work_dir=str(self.root), result={'engine': 'synthetic'},
-                package_meta={'source': 'synthetic'}, state={'setup': {}, 'assignment': {'value': 8}})
+                package_meta={'source': 'synthetic'}, state={'setup': {'engine': 'setup'},
+                'package': {'source': 'retained'}, 'assignment': {'value': 8},
+                'activitysim_assignment': {'value': 11}})
             code = compile(ast.Module(body=[node], type_ignores=[]), main.__file__, 'exec')
             exec(code, scope)
-            expected = {'setup': scope['result'], 'package': scope['package_meta']} if isinstance(node.value.args[1], ast.Dict) else scope['state']
-            self.assertEqual(json.loads(self.path.read_text()), expected)
+            expected = {'setup': scope['result'], 'package': scope['package_meta']} if stage == 'AequilibraE Setup' else scope['state']
+            self.assertEqual(json.loads(self.path.read_text()), expected, f'Complete retained state differs for {stage}')
             with patch.object(subject.os, 'replace', side_effect=OSError('interrupted')):
                 with self.assertRaises(main.WorkerStateWriteUnconfirmed): exec(code, scope)
             self.assertEqual(json.loads(self.path.read_text()), expected)

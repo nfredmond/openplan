@@ -119,7 +119,7 @@ def _adapter_after_sources(path: str, copy: str, command: str) -> None:
 
 
 def test_standalone_image_checks_the_adapter_after_copying_sources():
-    _adapter_after_sources(ASSIGNMENT_DOCKERFILE, 'COPY *.py .',
+    _adapter_after_sources(ASSIGNMENT_DOCKERFILE, 'COPY workers/aequilibrae_worker/*.py .',
         'RUN python -c "from model_assignment_graph_adapter import supported_engine; supported_engine()"')
 
 

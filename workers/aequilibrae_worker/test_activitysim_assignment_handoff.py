@@ -20,6 +20,31 @@ from worker_import_for_tests import import_worker_main
 main = import_worker_main()
 
 
+def ordinary_stage_http_reads(run_id: str, stage_id: str):
+    """Serve the actual scoped run read separately from stage completion reads."""
+    projection = (
+        "id,workspace_id,model_id,project_id,scenario_set_id,scenario_entry_id,status,"
+        "attempt_managed,corridor_geojson,query_text,engine_key,run_title,"
+        "input_snapshot_json,assumption_snapshot_json"
+    )
+
+    def get(url, **_kwargs):
+        response = mock.Mock(status_code=200)
+        if url.startswith(f"{main.SUPABASE_URL}/rest/v1/model_runs?"):
+            assert url == f"{main.SUPABASE_URL}/rest/v1/model_runs?id=eq.{run_id}&select={projection}"
+            # Ordinary assignment fixtures have no population replacement request.
+            response.json.return_value = [{"id": run_id, "input_snapshot_json": {}}]
+        else:
+            assert url in (
+                f"{main.SUPABASE_URL}/rest/v1/model_run_stages?run_id=eq.{run_id}&status=neq.succeeded",
+                f"{main.SUPABASE_URL}/rest/v1/model_run_stages?id=eq.{stage_id}&select=log_tail",
+            )
+            response.json.return_value = []
+        return response
+
+    return get
+
+
 def convergence(gap: float, *, profile: dict | None = None) -> dict:
     applied = profile or main.resolve_assignment_profile({})
     return main.assignment_convergence_record(gap, 2500, applied)
@@ -637,8 +662,6 @@ def test_assignment_handoff_refuses_an_unverified_first_network_digest():
             )
         )
         failures = []
-        completion = mock.Mock(status_code=200)
-        completion.json.return_value = []
         with (
             mock.patch.object(main, "RUN_WORK_ROOT", str(work_root)),
             mock.patch.object(main, "sb_claim_stage", return_value=True),
@@ -650,7 +673,7 @@ def test_assignment_handoff_refuses_an_unverified_first_network_digest():
             mock.patch.object(main, "sb_patch_run"),
             mock.patch.object(main, "activitysim_assignment_package", return_value="/package"),
             mock.patch.object(main, "stage_assignment") as assignment,
-            mock.patch.object(main.requests, "get", return_value=completion),
+            mock.patch.object(main.requests, "get", side_effect=ordinary_stage_http_reads(run_id, "stage-5-bad-first-digest")),
         ):
             assert main.process_stage(
                 {
@@ -902,8 +925,6 @@ def test_uncalibrated_agreement_refuses_a_missing_or_different_baseline_digest()
                 )
             )
             failures = []
-            completion = mock.Mock(status_code=200)
-            completion.json.return_value = []
             with (
                 mock.patch.object(main, "RUN_WORK_ROOT", str(work_root)),
                 mock.patch.object(main, "sb_claim_stage", return_value=True),
@@ -919,7 +940,7 @@ def test_uncalibrated_agreement_refuses_a_missing_or_different_baseline_digest()
                     return_value=[{"artifact_type": "activitysim_link_volumes"}],
                 ),
                 mock.patch.object(main, "verified_latest_local_artifact") as verified,
-                mock.patch.object(main.requests, "get", return_value=completion),
+                mock.patch.object(main.requests, "get", side_effect=ordinary_stage_http_reads(run_id, f"stage-6-baseline-{label}")),
             ):
                 assert main.process_stage(
                     {
@@ -964,8 +985,6 @@ def test_agreement_refuses_mismatched_calibrated_network_settings():
             )
         )
         failure_patches = []
-        completion = mock.Mock(status_code=200)
-        completion.json.return_value = []
         with (
             mock.patch.object(main, "RUN_WORK_ROOT", str(work_root)),
             mock.patch.object(main, "sb_claim_stage", return_value=True),
@@ -977,7 +996,7 @@ def test_agreement_refuses_mismatched_calibrated_network_settings():
                 return_value=[{"artifact_type": "activitysim_link_volumes"}],
             ),
             mock.patch.object(main, "verified_latest_local_artifact") as verified,
-            mock.patch.object(main.requests, "get", return_value=completion),
+            mock.patch.object(main.requests, "get", side_effect=ordinary_stage_http_reads(run_id, "stage-6")),
         ):
             assert main.process_stage(
                 {
@@ -1026,8 +1045,6 @@ def test_uncalibrated_agreement_refuses_missing_or_mismatched_assignment_profile
                 )
             )
             failure_patches = []
-            completion = mock.Mock(status_code=200)
-            completion.json.return_value = []
             with (
                 mock.patch.object(main, "RUN_WORK_ROOT", str(work_root)),
                 mock.patch.object(main, "sb_claim_stage", return_value=True),
@@ -1043,7 +1060,7 @@ def test_uncalibrated_agreement_refuses_missing_or_mismatched_assignment_profile
                     return_value=[{"artifact_type": "activitysim_link_volumes"}],
                 ),
                 mock.patch.object(main, "verified_latest_local_artifact") as verified,
-                mock.patch.object(main.requests, "get", return_value=completion),
+                mock.patch.object(main.requests, "get", side_effect=ordinary_stage_http_reads(run_id, f"stage-6-{label}")),
             ):
                 assert main.process_stage(
                     {

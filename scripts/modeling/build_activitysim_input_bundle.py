@@ -714,7 +714,8 @@ def build_manifest_payload(
 
 
 def build_population(
-    zone_rows: list[dict[str, Any]], population_source: str
+    zone_rows: list[dict[str, Any]], population_source: str,
+    retained_population: dict[str, Any] | None = None,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, Any], dict[str, Any], list[str]]:
     """Produce the households and persons, and say plainly which kind they are.
 
@@ -726,6 +727,26 @@ def build_population(
     """
     if population_source not in ("auto", "census", "scaffold"):
         raise RuntimeError(f"Unknown population source '{population_source}'.")
+
+    if retained_population is not None:
+        if population_source == "scaffold":
+            raise RuntimeError("A retained common population cannot be consumed as a scaffold.")
+        loaded = retained_population
+        diagnostics = loaded["diagnostics"]
+        counts = loaded["realized_zone_counts"]
+        summary = {"households": sum(row["households"] for row in counts),
+                   "persons": sum(row["persons"] for row in counts),
+                   "workers": sum(row["workers"] for row in counts)}
+        block = {"status": "retained_household_resident_realization", "method": diagnostics["method"],
+                 "calibration_status": "retained_fit_diagnostics_not_independently_validated",
+                 **summary, "seed_provenance": diagnostics["provenance"],
+                 "fit_quality": diagnostics["fit_quality"], "fit_grading": diagnostics["fit_grading_note"],
+                 "controls_not_fitted": diagnostics["dropped_controls"],
+                 "common_population": {"manifest": loaded["manifest"], "basis": loaded["basis"],
+                                       "relative_directory": "metadata/common_population"}}
+        return (loaded["households"], loaded["persons"], summary, block,
+                census_population_caveats(diagnostics) + loaded["basis"]["caveats"]
+                + diagnostics["source_controls"].get("inherited_approximations", []))
 
     census_api_key = (os.getenv("CENSUS_API_KEY") or "").strip()
     fallback_reason: str | None = None
@@ -806,6 +827,8 @@ def build_mtc_package(
     caveats: list[str],
     stock_configs_dir: str | None,
     accepted_components_registry: str | None,
+    source_profile: dict[str, Any] | None = None,
+    school_enrollment: dict[str, dict[str, float]] | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any], dict[str, Any], list[str]]:
     """Everything the MTC config package adds to a bundle, in one place.
 
@@ -818,7 +841,10 @@ def build_mtc_package(
     from activitysim_accepted_components import DEFAULT_REGISTRY, install_accepted_components
     import census_pums as cp
 
-    mtc.check_income_vintage(cp.ACS_5_URL)
+    profile_args = {} if source_profile is None else {
+        "acs5_url": source_profile["acs_summary_endpoint"], "pums_url": source_profile["pums_endpoint"]}
+    mtc.check_income_vintage(cp.ACS_5_URL if source_profile is None else source_profile["acs_summary_endpoint"],
+                             None if source_profile is None else source_profile["pums_endpoint"])
     stock = mtc.resolve_stock_prototype_mtc(stock_configs_dir)
     specs_sha256 = mtc.stock_configs_digest(stock["configs_dir"])
     centroid_map = mtc.read_centroid_map(source_run_dir / "work" / "network_setup_summary.json")
@@ -832,14 +858,13 @@ def build_mtc_package(
         stock_skims_omx=stock["stock_skims_omx"],
     )
 
-    mtc_household_rows, household_accounting = mtc.mtc_households(household_rows)
+    mtc_household_rows, household_accounting = mtc.mtc_households(household_rows, **profile_args)
     mtc_person_rows, person_accounting = mtc.mtc_persons(person_rows)
 
     internal = mtc.internal_zones_in_order(raw_zones)
     census_api_key = (os.getenv("CENSUS_API_KEY") or "").strip()
-    enrollment = cp.fetch_acs_school_enrollment(
-        [str(zone.get("GEOID") or "").strip() for zone in internal], census_api_key
-    )
+    enrollment = school_enrollment if school_enrollment is not None else cp.fetch_acs_school_enrollment(
+        [str(zone.get("GEOID") or "").strip() for zone in internal], census_api_key, **profile_args)
     # Land use totals come from the FITTED rows (they carry home_zone_id and
     # age); the converted MTC rows have already traded those for the MTC
     # vocabulary.
@@ -884,7 +909,7 @@ def build_mtc_package(
             "accepted_components": accepted_components,
         },
     }
-    stock_caveats = mtc.mtc_config_caveats()
+    stock_caveats = mtc.mtc_config_caveats(**profile_args)
     behavior_caveat = (
         "Auto ownership uses the nationally estimated component accepted by the recorded fresh "
         "holdout study. Every other behavioral component still uses ActivitySim's stock "
@@ -910,6 +935,7 @@ def build_activitysim_input_bundle(
     config_package: str = "starter",
     stock_configs_dir: str | None = None,
     accepted_components_registry: str | None = None,
+    retained_population: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     if config_package not in ("starter", "mtc"):
         raise RuntimeError(f"Unknown config package '{config_package}'.")
@@ -931,6 +957,26 @@ def build_activitysim_input_bundle(
     source_skim = require_source_file(source_run_dir / DEFAULT_SKIM_RELATIVE_PATH, "screening skim OMX")
     source_manifest = read_json(source_manifest_path)
 
+    # Validate the retained bytes before creating or replacing bundle output.
+    # The original source-zone CSV can precede the AequilibraE count transform;
+    # exact zone-map equality, not transformed CSV byte equality, joins them.
+    raw_zones = load_zone_attributes(source_zone_attributes)
+    loaded_population = None
+    retained_enrollment = None
+    if retained_population is not None:
+        from common_population import read_common_population
+
+        if set(retained_population) != {"directory", "manifest"}:
+            raise RuntimeError("Retained population requires an exact directory and expected manifest descriptor.")
+        loaded_population = read_common_population(
+            Path(retained_population["directory"]), expected_manifest=retained_population["manifest"],
+            zone_rows=raw_zones,
+        )
+        if config_package == "mtc":
+            from common_population import retained_school_enrollment
+
+            retained_enrollment = retained_school_enrollment(loaded_population)
+
     output_path = Path(output_dir).expanduser().resolve()
     if output_path.exists():
         if not force:
@@ -941,12 +987,19 @@ def build_activitysim_input_bundle(
     ensure_dir(output_path / "metadata")
     ensure_dir(output_path / "skims")
 
-    zones = load_zone_attributes(source_zone_attributes)
-    raw_zones = list(zones)
-    zones, adjustments = coerce_zone_totals(zones)
+    zones, adjustments = coerce_zone_totals(list(raw_zones))
     household_rows, person_rows, population_summary, population_block, caveats = build_population(
-        raw_zones, population_source
+        raw_zones, population_source, loaded_population
     )
+    if loaded_population is not None:
+        from common_population import aequilibrae_zone_totals, copy_retained_population
+
+        copy_retained_population(loaded_population, output_path / "metadata" / "common_population")
+        counts = aequilibrae_zone_totals(loaded_population)
+        for zone in zones:
+            actual = counts[int(zone["zone_id"])]
+            zone.update(proto_households=actual["households"], proto_population=actual["est_population"],
+                        proto_workers=actual["worker_residents"])
 
     mtc_blocks: dict[str, Any] | None = None
     if config_package == "mtc":
@@ -960,6 +1013,8 @@ def build_activitysim_input_bundle(
             caveats=caveats,
             stock_configs_dir=stock_configs_dir,
             accepted_components_registry=accepted_components_registry,
+            source_profile=None if loaded_population is None else loaded_population["basis"]["source_profile"],
+            school_enrollment=retained_enrollment,
         )
     else:
         land_use_rows = build_land_use_rows(zones)
@@ -994,6 +1049,8 @@ def build_activitysim_input_bundle(
         caveats=caveats,
     )
     manifest["config_package"] = config_descriptor
+    if loaded_population is not None:
+        manifest["files"]["common_population_manifest"] = "metadata/common_population/common_population.json"
     if mtc_blocks:
         manifest["files"].update(mtc_blocks["files"])
         # No constants.yaml in the MTC overlay — it would shadow the stock one.
@@ -1018,6 +1075,7 @@ def build_activitysim_input_bundle(
             "status": population_block["status"],
             "method": population_block["method"],
             "fallback_reason": population_block.get("fallback_reason"),
+            **({"common_population": population_block["common_population"]} if loaded_population is not None else {}),
         },
         "config_package": {
             "name": config_package,

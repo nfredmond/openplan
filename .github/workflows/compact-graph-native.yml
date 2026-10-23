@@ -68,7 +68,7 @@ jobs:
         include:
           - image: standalone
             dockerfile: workers/aequilibrae_worker/Dockerfile
-            context: workers/aequilibrae_worker
+            context: .
           - image: shared-models
             dockerfile: workers/hosted-models/Dockerfile
             context: .

@@ -12,7 +12,7 @@ import {
 
 function buildEvidence(args: {
   title: string;
-  freshnessLabel?: "Packet current" | "Refresh recommended" | "No packet";
+  freshnessLabel?: "Packet current" | "Refresh recommended" | "No packet" | "Comparison evidence unassessed" | "Source evidence unassessed";
   readyComparisons?: number;
   indicatorDeltas?: number;
   comparisonBackedCount?: number;
@@ -477,5 +477,41 @@ describe("buildGrantDecisionModelingSupport", () => {
       "No visible modeling-backed packet is linked yet"
     );
     expect(support.recommendedNextActionSummary).toContain(GRANT_MODELING_PLANNING_CAVEAT);
+  });
+});
+
+// Unknown evidence remains a visible retained packet, without an invented change.
+describe("unassessed grant modeling evidence", () => {
+  it.each(["Comparison evidence unassessed", "Source evidence unassessed"] as const)("reviews %s without refresh or pursue advice", (label) => {
+    const evidence = buildEvidence({ title: "Retained packet", freshnessLabel: label });
+    evidence.leadComparisonReport.packetFreshness.detail = "Retained evidence has not been assessed.";
+    const readiness = describeProjectGrantModelingReadiness(evidence);
+    expect(readiness).toMatchObject({ key: "unassessed", label: "Modeling evidence unassessed", tone: "warning" });
+    expect(readiness?.detail).toContain("Retained evidence has not been assessed.");
+    const support = buildGrantDecisionModelingSupport(evidence);
+    expect(support.title).toBe("Retained packet");
+    expect(support.recommendedDecisionState).toBe("monitor");
+    expect(support.recommendedNextActionTitle).toBe("Review unassessed supporting evidence");
+    for (const text of [support.summary, support.readinessNoteSuggestion, support.decisionRationaleSuggestion, support.recommendedNextActionSummary]) {
+      expect(text).toMatch(/unassessed/i);
+      expect(text).toContain(GRANT_MODELING_PLANNING_CAVEAT);
+      expect(text).not.toMatch(/refresh|stale|appears thin|no visible|decision-ready|advance.*pursue/i);
+    }
+  });
+
+  it("places unknown queue evidence between stale and thin without changing known priorities", () => {
+    const ready = buildEvidence({ title: "Ready" });
+    const stale = buildEvidence({ title: "Stale", freshnessLabel: "Refresh recommended" });
+    const unknown = buildEvidence({ title: "Unknown", freshnessLabel: "Source evidence unassessed" });
+    const thin = buildEvidence({ title: "Thin", indicatorDeltas: 0 });
+    expect(resolveProjectGrantModelingQueuePosture(unknown)).toBe("unassessed");
+    expect([ready, stale, thin, null].map(getProjectGrantModelingQueuePriority)).toEqual([0, 1, 2, 3]);
+    expect([thin, unknown, null, ready, stale].sort(compareProjectGrantModelingEvidenceForQueue)).toEqual([ready, stale, unknown, thin, null]);
+  });
+
+  it.each(["Refresh recommended", "No packet"] as const)("preserves refresh advice for known %s", (freshnessLabel) => {
+    const evidence = buildEvidence({ title: "Known packet posture", freshnessLabel });
+    expect(describeProjectGrantModelingReadiness(evidence)?.key).toBe("stale");
+    expect(buildGrantDecisionModelingSupport(evidence)).toMatchObject({ recommendedDecisionState: "monitor", recommendedNextActionTitle: "Refresh supporting packet before final pursue language" });
   });
 });

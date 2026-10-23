@@ -13,10 +13,12 @@ import { withPlanningContext } from "@/lib/projects/planning-context";
 
 type StartResponse = {
   error?: string;
-  state?: "needs_build_assumption" | "needs_activitysim_runtime" | "needs_activitysim_output" | "needs_shared_network_rerun" | "ready_for_run" | "ready_for_validation";
+  state?: "needs_build_assumption" | "needs_activitysim_runtime" | "needs_activitysim_output" | "needs_shared_network_rerun" | "needs_shared_population_rerun" | "population_basis_invalid" | "population_basis_mismatch" | "ready_for_run" | "ready_for_validation";
   scenarioSetId?: string;
   networkBasis?: string;
   buildAssumptionRequired?: boolean;
+  repairReason?: string;
+  populationSummary?: { sourceRunId: string; households: number; persons: number; universe: "household_residents"; manifestSha256: string } | null;
   nextRun?: {
     method: "aequilibrae" | "activitysim";
     scenario: "baseline" | "build";
@@ -39,15 +41,26 @@ export function ProjectComparisonStarter({
   const [error, setError] = useState<string | null>(null);
   const [runtimeNotice, setRuntimeNotice] = useState<string | null>(null);
   const [canRetryActivitySim, setCanRetryActivitySim] = useState(false);
+  const [populationNextRun, setPopulationNextRun] = useState<NonNullable<StartResponse["nextRun"]> | null>(null);
+  const [populationSummary, setPopulationSummary] = useState<StartResponse["populationSummary"]>(null);
   const [needsBuildAssumption, setNeedsBuildAssumption] = useState(false);
   const [autoTripChangePct, setAutoTripChangePct] = useState("");
   const [assumptionBasis, setAssumptionBasis] = useState("");
   const summary = summarizeProjectComparison(facts);
 
+  function reviewRun(nextRun: NonNullable<StartResponse["nextRun"]>) {
+    const href = new URL(withPlanningContext(`/models/${nextRun.modelId}`, projectId), window.location.origin);
+    href.searchParams.set("scenarioEntryId", nextRun.scenarioEntryId);
+    router.push(`${href.pathname}${href.search}#run-model`);
+    router.refresh();
+  }
+
   async function startComparison(saveBuildAssumption = false, retryActivitySim = false) {
     setError(null);
     setRuntimeNotice(null);
     setCanRetryActivitySim(false);
+    setPopulationNextRun(null);
+    setPopulationSummary(null);
     setIsStarting(true);
     try {
       const parsedChange = Number(autoTripChangePct);
@@ -81,6 +94,13 @@ export function ProjectComparisonStarter({
         return;
       }
 
+      if (["needs_shared_population_rerun", "population_basis_invalid", "population_basis_mismatch"].includes(payload.state ?? "")) {
+        setRuntimeNotice(payload.repairReason ?? "These outputs do not establish one shared household population. Keep the earlier results and review the next run on the retained population basis.");
+        setPopulationNextRun(payload.nextRun ?? null);
+        setPopulationSummary(payload.populationSummary ?? null);
+        return;
+      }
+
       if (payload.state === "needs_activitysim_runtime") {
         setRuntimeNotice(
           "ActivitySim preflight succeeded, but it produced no assigned link volumes. Configure an ActivitySim execution runtime, then run this scenario again. Preflight alone does not complete the ActivitySim step.",
@@ -104,9 +124,8 @@ export function ProjectComparisonStarter({
       }
 
       if (payload.nextRun) {
-        const href = new URL(withPlanningContext(`/models/${payload.nextRun.modelId}`, projectId), window.location.origin);
-        href.searchParams.set("scenarioEntryId", payload.nextRun.scenarioEntryId);
-        router.push(`${href.pathname}${href.search}#run-model`);
+        reviewRun(payload.nextRun);
+        return;
       } else {
         router.push(withPlanningContext(`/scenarios/${payload.scenarioSetId}`, projectId));
       }
@@ -141,6 +160,8 @@ export function ProjectComparisonStarter({
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
             Before either build run, you must enter one reviewable change in assigned daily auto trips and say what supports it.
             OpenPlan does not derive a benefit from the project description. This is a screening estimate, not a forecast.
+            The first baseline retains one household population for all four jobs. Group quarters are excluded and unassessed;
+            sharing inputs does not establish model accuracy.
           </p>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">
             Time to allow: roughly 10–40 minutes for all four jobs in a small area. Large areas, a busy queue, source downloads,
@@ -219,6 +240,17 @@ export function ProjectComparisonStarter({
       </div>
       {error ? <p className="mt-3 text-sm text-red-700 dark:text-red-300" role="alert">{error}</p> : null}
       {runtimeNotice ? <p className="mt-3 text-sm text-amber-800 dark:text-amber-200" role="status">{runtimeNotice}</p> : null}
+      {populationSummary ? (
+        <p className="mt-2 text-sm text-muted-foreground" data-testid="comparison-population-summary">
+          Retained population: {populationSummary.households.toLocaleString("en-US")} households and {populationSummary.persons.toLocaleString("en-US")} household residents.
+          Source run {populationSummary.sourceRunId}. Group quarters remain excluded and unassessed.
+        </p>
+      ) : null}
+      {populationNextRun ? (
+        <Button type="button" variant="outline" className="mt-3" onClick={() => reviewRun(populationNextRun)}>
+          Review {populationNextRun.method === "aequilibrae" ? "AequilibraE" : "ActivitySim"} {populationNextRun.scenario} run
+        </Button>
+      ) : null}
       {canRetryActivitySim ? (
         <Button
           type="button"

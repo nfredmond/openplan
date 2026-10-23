@@ -13,6 +13,8 @@ import {
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { REPORT_SUMMARY_MAX_LENGTH, REPORT_TITLE_MAX_LENGTH } from "@/lib/reports/text-limits";
+import { guidedComparisonRequestSchema, verifyGuidedComparisonReport } from "@/lib/reports/guided-comparison-server";
+import { writeGuidedComparisonSelection, type GuidedComparisonSelectionV1 } from "@/lib/reports/guided-comparison";
 
 const reportsFilterSchema = z.object({
   projectId: z.string().uuid().optional(),
@@ -34,6 +36,7 @@ const createReportSchema = z
     // Typed evidence citations: worker model runs and county validation runs
     // a packet cites directly (report_runs.model_run_id / county_run_id).
     modelRunIds: z.array(z.string().uuid()).max(20).optional(),
+    guidedComparisonSelectionV1: guidedComparisonRequestSchema,
     countyRunIds: z.array(z.string().uuid()).max(20).optional(),
     sections: z
       .array(
@@ -337,6 +340,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Workspace access denied" }, { status: 403 });
     }
 
+    let guidedSelection: GuidedComparisonSelectionV1 | null = null;
+    if (parsed.data.guidedComparisonSelectionV1) {
+      if (target.kind !== "project") return NextResponse.json({ error: "Guided comparisons require a project analysis summary." }, { status: 400 });
+      try {
+        guidedSelection = await verifyGuidedComparisonReport({ client: supabase, workspaceId: target.workspaceId,
+          projectId: target.id, reportType: parsed.data.reportType, snapshotId: parsed.data.guidedComparisonSelectionV1.snapshotId });
+      } catch (error) {
+        return NextResponse.json({ error: error instanceof Error ? error.message : "Guided comparison could not be verified." }, { status: 409 });
+      }
+    }
+
     if (target.kind === "project" && runIds.length > 0) {
       const { data: runRows, error: runError } = await supabase
         .from("runs")
@@ -467,7 +481,7 @@ export async function POST(request: NextRequest) {
                 detail: "Created RTP packet record.",
               },
             }
-          : {},
+          : guidedSelection ? writeGuidedComparisonSelection({}, guidedSelection) : {},
     };
 
     let reportInsertResult = await supabase
@@ -477,6 +491,12 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (reportInsertResult.error && looksLikePendingSchema(reportInsertResult.error.message)) {
+      if (guidedSelection) {
+        return NextResponse.json({
+          error: "The selected comparison needs the complete Reports schema. Creation cannot use a fallback that drops its sealed selection.",
+          details: reportInsertResult.error.message,
+        }, { status: 503 });
+      }
       if (target.kind === "engagement_campaign") {
         // A campaign target cannot fall back to the legacy insert: without the
         // engagement_campaign_id column the row would have no target at all,

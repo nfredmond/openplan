@@ -57,7 +57,7 @@ def project(app: Path, image: str) -> None:
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(ROOT / source, target)
         return
-    context = ROOT / WORKER if image == 'standalone' else ROOT
+    context = ROOT
     directory = {'standalone': WORKER, 'county': PurePosixPath('workers/county_onramp_worker'),
                  'shared': PurePosixPath('workers/hosted-models')}[image]
     dockerfile = ROOT / directory / 'Dockerfile'
@@ -131,12 +131,9 @@ def isolate_heavy_imports() -> None:
 def probe(app: Path, image: str) -> None:
     """Let the CLI/runtime arrange paths, then probe worker script semantics."""
     isolate_heavy_imports()
-    if image == 'standalone':
-        worker = app
-    else:
-        worker = app / WORKER
+    worker = app / WORKER
     expected = worker / 'model_fresh_osm_modes.py'
-    if image in ('cli', 'county', 'shared'):
+    if image in ('cli', 'county', 'standalone', 'shared'):
         cli = app / SCRIPTS / 'run_screening_model.py'
         runtime_path = app / SCRIPTS / 'screening_runtime.py'
 

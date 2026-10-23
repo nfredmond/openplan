@@ -183,7 +183,8 @@ def supplied_measure_table(
         "source_label": source.get("label"),
         "vintage": source.get("vintage"),
         "key_origin": source.get("key_origin"),
-        "geography_index_truncated": source.get("geography_index_truncated"),
+        **({"geography_index_truncated": source["geography_index_truncated"]}
+           if "geography_index_truncated" in source else {}),
     }
 
 
@@ -820,7 +821,7 @@ def build_daily_od_matrix(
     # Guarantee each origin has at least some internal demand if rounding erased everything.
     row_sums = matrix.sum(axis=1)
     for i in range(n):
-        if row_sums[i] <= 0:
+        if row_sums[i] <= 0 and productions[i] > 0:
             matrix[i, i] = max(1, int(round(productions[i])))
 
     od = pd.DataFrame(matrix, index=zone_ids, columns=[str(z) for z in zone_ids])
@@ -832,6 +833,8 @@ def _demographics_source_label(note: dict[str, Any]) -> str:
     """One-line manifest label naming the source that actually supplied the zone
     population/household marginals — the app's table (with its own vintage) or
     this worker's own ACS fetch (with the URL it was pointed at)."""
+    if note.get("status") == "retained_common_population":
+        return "Retained ACS/PUMS household-resident realization; group quarters excluded and unassessed"
     if note.get("status") == "supplied":
         label = note.get("source_label") or note.get("source_id") or "app-supplied demographics"
         origin = note.get("key_origin")
@@ -876,6 +879,7 @@ def generate_package(
     corridor_geojson: dict[str, Any] | None = None,
     zone_geography: str = "tract",
     zone_attributes: dict[str, Any] | None = None,
+    population_input: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Generate zone_attributes.csv + od_trip_matrix.csv in output_dir.
 
@@ -905,45 +909,56 @@ def generate_package(
         # run never looks like it used the workspace's data when it did not.
         print(f"  Demographics: {demographics_note['reason']}")
 
-    print(f"  Resolving census tracts for study area bbox {bbox}...")
-    tracts = fetch_tracts_for_study_area(
-        bbox=bbox,
-        corridor_geojson=corridor_geojson,
-        supplied_demographics=supplied_demographics,
-        demographics_note=demographics_note,
-    )
-
-    # Real LODES employment (WAC total jobs) per state, aggregated to tracts,
-    # with the population-proxy synthesis kept as an explicit fallback.
-    state_fips = {str(g)[:2] for g in tracts["geoid"].astype(str) if len(str(g)) >= 2}
-    try:
-        jobs_by_geoid, lodes_used, lodes_failed = fetch_lodes_jobs_by_tract(
-            state_fips, LODES_YEAR, LODES_CACHE_DIR
-        )
-    except Exception as exc:  # never let LODES stop a run
-        print(f"  LODES fetch error ({exc}); falling back to synthetic jobs.")
-        jobs_by_geoid, lodes_used, lodes_failed = {}, [], sorted(state_fips)
-
-    zones = enrich_zone_attributes(tracts, jobs_by_geoid)
-    lodes_tract_count = int((zones["jobs_source"] == "lodes_wac").sum())
-    synth_tract_count = int((zones["jobs_source"] == "synthetic_pop_proxy").sum())
-    if lodes_tract_count:
-        print(
-            f"  Jobs: {lodes_tract_count} tracts from LODES8 WAC {LODES_YEAR} "
-            f"(states {','.join(lodes_used) or '—'}), {synth_tract_count} from synthetic fallback."
-        )
+    if population_input is not None and population_input.get("mode") == "reuse":
+        from model_common_population_package import retained_zone_frame
+        zones = retained_zone_frame(population_input)
+        use_block_groups = all(len(str(g)) == 12 for g in zones["GEOID"])
+        if ("block_group" if use_block_groups else "tract") != normalize_zone_geography(zone_geography):
+            raise DataPipelineError("Retained population zone geography differs from the requested study")
+        state_fips = {str(g)[:2] for g in zones["GEOID"]}
+        lodes_tract_count = int((zones["jobs_source"] == "lodes_wac").sum())
+        synth_tract_count = int((zones["jobs_source"] == "synthetic_pop_proxy").sum())
+        lodes_used, lodes_failed = [], []
     else:
-        print(f"  Jobs: synthetic population proxy for all {synth_tract_count} tracts (LODES unavailable).")
+        print(f"  Resolving census tracts for study area bbox {bbox}...")
+        tracts = fetch_tracts_for_study_area(
+            bbox=bbox,
+            corridor_geojson=corridor_geojson,
+            supplied_demographics=supplied_demographics,
+            demographics_note=demographics_note,
+        )
 
-    # Optional finer sub-tract TAZs: disaggregate tract zones to block groups.
-    use_block_groups = normalize_zone_geography(zone_geography) == "block_group"
-    if use_block_groups:
+        # Real LODES employment (WAC total jobs) per state, aggregated to tracts,
+        # with the population-proxy synthesis kept as an explicit fallback.
+        state_fips = {str(g)[:2] for g in tracts["geoid"].astype(str) if len(str(g)) >= 2}
         try:
-            zones = _refine_zones_to_block_groups(zones, bbox, corridor_geojson, state_fips)
-            print(f"  Zones refined to {len(zones)} block groups (from {len(tracts)} tracts).")
-        except DataPipelineError as exc:
-            print(f"  Block-group refinement failed ({exc}); keeping {len(tracts)} tract zones.")
-            use_block_groups = False
+            jobs_by_geoid, lodes_used, lodes_failed = fetch_lodes_jobs_by_tract(
+                state_fips, LODES_YEAR, LODES_CACHE_DIR
+            )
+        except Exception as exc:  # never let LODES stop a run
+            print(f"  LODES fetch error ({exc}); falling back to synthetic jobs.")
+            jobs_by_geoid, lodes_used, lodes_failed = {}, [], sorted(state_fips)
+
+        zones = enrich_zone_attributes(tracts, jobs_by_geoid)
+        lodes_tract_count = int((zones["jobs_source"] == "lodes_wac").sum())
+        synth_tract_count = int((zones["jobs_source"] == "synthetic_pop_proxy").sum())
+        if lodes_tract_count:
+            print(
+                f"  Jobs: {lodes_tract_count} tracts from LODES8 WAC {LODES_YEAR} "
+                f"(states {','.join(lodes_used) or '—'}), {synth_tract_count} from synthetic fallback."
+            )
+        else:
+            print(f"  Jobs: synthetic population proxy for all {synth_tract_count} tracts (LODES unavailable).")
+
+        # Optional finer sub-tract TAZs: disaggregate tract zones to block groups.
+        use_block_groups = normalize_zone_geography(zone_geography) == "block_group"
+        if use_block_groups:
+            try:
+                zones = _refine_zones_to_block_groups(zones, bbox, corridor_geojson, state_fips)
+                print(f"  Zones refined to {len(zones)} block groups (from {len(tracts)} tracts).")
+            except DataPipelineError as exc:
+                print(f"  Block-group refinement failed ({exc}); keeping {len(tracts)} tract zones.")
+                use_block_groups = False
 
     # Real LODES OD (home→work commute flows), aggregated to study-area GEOID
     # pairs at the zone geography (LODES OD is block-keyed, so tract AND
@@ -961,6 +976,35 @@ def generate_package(
     except Exception as exc:  # never let LODES stop a run
         print(f"  LODES OD fetch error ({exc}); using pure gravity distribution.")
         od_by_pair, od_states_used, od_states_failed = {}, [], sorted(state_fips)
+
+    common_population = None
+    if population_input is not None:
+        from model_common_population_package import (
+            apply_realized_counts, identity, prepare_generated_population, prepare_reused_population,
+        )
+        if population_input.get("mode") == "generate":
+            if normalize_zone_geography(zone_geography) != ("block_group" if use_block_groups else "tract"):
+                raise DataPipelineError("Common population cannot silently change the requested zone geography")
+            population = prepare_generated_population(zones, output_dir, population_input, coverage_note=demographics_note)
+        elif population_input.get("mode") == "reuse":
+            population = prepare_reused_population(output_dir, population_input)
+        else:
+            raise DataPipelineError("Unknown common population mode")
+        zones = apply_realized_counts(zones, population)
+        common_population = {
+            "directory": "common_population", "manifest": population["manifest"],
+            "custody": population_input["custody"],
+            **identity(population), "origin": population_input.get("source"),
+        }
+        from model_common_population_package import validate_selection_coverage
+        original_coverage = validate_selection_coverage(population["source_manifest"].get("selection_coverage"))
+        demographics_note = {
+            **original_coverage,
+            "status": "retained_common_population", "universe": population["basis"]["universe"],
+            "source_profile": population["basis"]["source_profile"],
+            "published_demographics": original_coverage,
+            "reason": "Demand uses the actual retained household residents; published all-person cells remain separate source records.",
+        }
 
     od_meta: dict[str, Any] = {}
     od = build_daily_od_matrix(zones, od_by_pair=od_by_pair, od_meta=od_meta)
@@ -1012,6 +1056,7 @@ def generate_package(
         # the reason when the app could not supply them. Read by main.py so the
         # run's evidence carries it.
         "demographics_provenance": demographics_note,
+        "common_population": common_population,
         "jobs_provenance": {
             "primary": "lehd_lodes8_wac_s000_jt00",
             "year": str(LODES_YEAR),

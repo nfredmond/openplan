@@ -276,6 +276,7 @@ def run_behavioral_demand_prototype(
     population_source: str = "auto",
     config_package: str = "starter",
     stock_configs_dir: str | None = None,
+    retained_population: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     screening_path = Path(screening_run_dir).expanduser().resolve()
     if not screening_path.exists():
@@ -327,6 +328,7 @@ def run_behavioral_demand_prototype(
             population_source=population_source,
             config_package=config_package,
             stock_configs_dir=stock_configs_dir,
+            **({"retained_population": retained_population} if retained_population is not None else {}),
         )
         bundle_manifest = read_json(Path(bundle_summary["manifest_path"]))
         record_step_finish(

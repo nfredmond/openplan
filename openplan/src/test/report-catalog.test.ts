@@ -1,3 +1,5 @@
+import { buildReportRegistryDriftSummary } from "@/lib/reports/report-registry-freshness";
+import { describeReportSourceReviewPosture } from "@/lib/reports/source-review-posture";
 import { describe, expect, it } from "vitest";
 import {
   describeFundingSnapshot,
@@ -34,6 +36,44 @@ it("retains the recorded modeling-only evidence and its claim limit", () => {
 });
 
 describe("getReportPacketFreshness", () => {
+  it.each((["unavailable", "untracked"] as const).flatMap((jurisdictionState) =>
+    ["newer source", "incomplete writeback"].map((basis) => ({ jurisdictionState, basis }))))(
+    "retains known refresh and the unknown jurisdiction limit: $jurisdictionState / $basis", ({ jurisdictionState, basis }) => {
+      const result = getReportPacketFreshness({ latestArtifactKind: "html", generatedAt: "2026-10-18T00:00:00Z", jurisdictionState,
+        updatedAt: basis === "newer source" ? "2026-10-19T00:00:00Z" : "2026-10-18T00:00:00Z",
+        generationWritebackCurrent: basis === "incomplete writeback" ? false : undefined });
+      expect(result.label).toBe("Refresh recommended");
+      expect(result.detail).toContain(basis === "newer source" ? "tracked source records changed" : "does not match a completed generation writeback");
+      expect(result.detail).toContain(jurisdictionState === "unavailable" ? "jurisdiction assessment could not be checked" : "historical packet did not track");
+    });
+
+  it("does not count a completed generation writeback as changed report metadata", () => {
+    const summary = buildReportRegistryDriftSummary({ packetFreshnessLabel: "Packet current", generatedAt: "2026-10-18T00:00:00Z",
+      reportUpdatedAt: "2026-10-18T01:00:00Z", rtpCycleUpdatedAt: null, jurisdictionState: "current", generationWritebackCurrent: true });
+    expect(summary.changedCount).toBe(0);
+    expect(summary.labels).toEqual([]);
+    expect(describeReportSourceReviewPosture({ hasGeneratedArtifact: true,
+      evidenceSummary: { headline: "Linked evidence", detail: "Synthetic", hasEvidence: true }, driftSummary: summary }).state).toBe("ready");
+  });
+
+  it.each(["current", "changed", "unavailable", "untracked"] as const)("uses explicit registry evidence rather than a refresh label: %s", (jurisdictionState) => {
+    const summary = buildReportRegistryDriftSummary({ packetFreshnessLabel: "Refresh recommended", generatedAt: "2026-10-18T00:00:00Z",
+      reportUpdatedAt: "2026-10-18T00:00:00Z", rtpCycleUpdatedAt: null, jurisdictionState });
+    expect(summary.changedCount).toBe(jurisdictionState === "changed" ? 1 : 0);
+    expect(summary.labels).toEqual(jurisdictionState === "changed" ? ["Jurisdiction inputs"] : []);
+    expect(summary.jurisdictionState).toBe(jurisdictionState);
+    expect(describeReportSourceReviewPosture({ hasGeneratedArtifact: true,
+      evidenceSummary: { headline: "Linked evidence", detail: "Synthetic", hasEvidence: true }, driftSummary: summary }).state)
+      .toBe(jurisdictionState === "current" || jurisdictionState === "changed" ? "needs-review" : "unassessed");
+  });
+
+  it.each(["unavailable", "untracked"] as const)("does not turn %s jurisdiction evidence into current or automatic regeneration", (jurisdictionState) => {
+    const result = getReportPacketFreshness({ latestArtifactKind: "html", generatedAt: "2026-10-18T00:00:00Z", updatedAt: "2026-10-18T00:00:00Z", jurisdictionState });
+    expect(result.label).toBe("Source evidence unassessed");
+    expect(result.tone).toBe("warning");
+    expect(result.detail).not.toMatch(/regenerate/i);
+  });
+
   it("returns no-packet when no artifact exists", () => {
     expect(
       getReportPacketFreshness({

@@ -58,6 +58,11 @@ function hasCountyRunBehavioralFilter(chain: string): boolean {
   );
 }
 
+/** Match only the paged, four-measure read used by the report verifier. */
+function isGuidedReportKpiRead(chain: string): boolean {
+  return /^\.from\("model_run_kpis"\)\s*\.select\(GUIDED_REPORT_KPI_COLUMNS\)\s*\.in\("run_id", runIds\)\s*\.in\("kpi_name", \["total_trips", "daily_vmt", "activitysim_trips", "activitysim_daily_vmt"\]\)\s*\.order\("id"\)\s*\.range\(from, to\)(?!\s*\.)/.test(chain);
+}
+
 function classifyCall(call: KpiCall): string | null {
   const chain = normalizedChain(call.chain);
 
@@ -91,6 +96,12 @@ function classifyCall(call: KpiCall): string | null {
     // same-unit measures it renders. The paired decision read keeps each
     // method's evidence state beside those values.
     return "guided-comparison-evidence-read-by-run-ids";
+  }
+
+  if (call.filePath === "src/lib/reports/guided-comparison-server.ts" && isGuidedReportKpiRead(chain)) {
+    // Report creation and generation recheck these exact run-bound measures;
+    // managed attempts and legacy receipts are verified by the owning loader.
+    return "guided-report-evidence-read-by-run-ids";
   }
 
   if (
@@ -159,6 +170,28 @@ function classifyCall(call: KpiCall): string | null {
 }
 
 describe("model_run_kpis reader inventory", () => {
+  it("classifies the exact report read and refuses widened or unscoped queries", () => {
+    const filePath = "src/lib/reports/guided-comparison-server.ts";
+    const chain = '.from("model_run_kpis").select(GUIDED_REPORT_KPI_COLUMNS).in("run_id", runIds) ' +
+      '.in("kpi_name", ["total_trips", "daily_vmt", "activitysim_trips", "activitysim_daily_vmt"]).order("id").range(from, to)';
+    expect(classifyCall({ filePath, chain })).toBe("guided-report-evidence-read-by-run-ids");
+    expect(classifyCall({ filePath, chain: chain.replace(" ", "\n  ") })).toBe("guided-report-evidence-read-by-run-ids");
+    for (const gap of ["\n      ", "\t"]) {
+      const spacedChain = chain.replace(/\)\s*\./g, `)${gap}.`);
+      expect(classifyCall({ filePath, chain: spacedChain })).toBe("guided-report-evidence-read-by-run-ids");
+    }
+    for (const broken of [
+      chain.replace('"model_run_kpis"', '"model_run_kpis "'),
+      chain.replace("runIds", "allRunIds"),
+      chain.replace('"daily_vmt"', '"daily vmt"'),
+      chain.replace('.in("run_id", runIds)', ""),
+      chain.replace('.select(GUIDED_REPORT_KPI_COLUMNS)', '.select("*")'),
+      chain.replace('"activitysim_daily_vmt"', '"activitysim_daily_vmt", "private_household_value"'),
+      chain.replace('.range(from, to)', ""),
+      chain + '.update({ value: 0 })',
+      chain.replace('.select(GUIDED_REPORT_KPI_COLUMNS)', '.delete()'),
+    ]) expect(classifyCall({ filePath, chain: broken })).toBeNull();
+  });
   it("keeps every direct app caller explicitly classified", () => {
     const calls = collectModelRunKpiCalls();
     const classifications = calls.map((call) => ({
@@ -238,6 +271,10 @@ describe("model_run_kpis reader inventory", () => {
       expect.objectContaining({
         filePath: "src/lib/models/guided-comparison-evidence-server.ts",
         classification: "guided-comparison-evidence-read-by-run-ids",
+      }),
+      expect.objectContaining({
+        filePath: "src/lib/reports/guided-comparison-server.ts",
+        classification: "guided-report-evidence-read-by-run-ids",
       }),
     ]);
   });

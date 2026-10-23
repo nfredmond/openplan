@@ -2,7 +2,7 @@
   "$schema": "https://railway.app/railway.schema.json",
   "build": {
     "builder": "DOCKERFILE",
-    "dockerfilePath": "Dockerfile"
+    "dockerfilePath": "workers/aequilibrae_worker/Dockerfile"
   },
   "deploy": {
     "startCommand": "python main.py",

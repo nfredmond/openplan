@@ -90,6 +90,7 @@ function summary(overrides: Partial<WorkspaceOperationsSummary> = {}): Workspace
         refreshRecommended: 1,
         thin: 1,
         noVisibleSupport: 0,
+        unassessed: 0,
       },
       breakdownSummary:
         "3 opportunity-linked projects: 1 appears decision-ready, 1 refresh recommended, 1 appears thin, 0 without visible support.",

@@ -1,3 +1,4 @@
+import { readModelAttemptOutputs, currentCompletedModelOutputs, filterCompletedAttemptRows } from "@/lib/models/attempt-output-read";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
@@ -327,9 +328,18 @@ export async function GET(request: NextRequest, context: RouteContext) {
     );
   }
 
-  const artifactRows = (artifactsResult.data ?? []) as Array<Record<string, unknown>>;
+  let artifactRows = (artifactsResult.data ?? []) as Array<Record<string, unknown>>;
   const stageRows = (stagesResult.data ?? []) as Array<Record<string, unknown>>;
-  const kpiRows = (kpisResult.data ?? []) as Array<Record<string, unknown>>;
+  let kpiRows = (kpisResult.data ?? []) as Array<Record<string, unknown>>;
+  if (run.attempt_managed === true) {
+    const custody = await readModelAttemptOutputs(access.model.workspace_id, run.id);
+    if (!custody.available) return NextResponse.json({ error: "Current evidence custody could not be verified" }, { status: 503 });
+    artifactRows = filterCompletedAttemptRows(custody, "artifact", artifactRows);
+    kpiRows = filterCompletedAttemptRows(custody, "kpi", kpiRows);
+    if (artifactRows.length !== currentCompletedModelOutputs(custody, "artifact").length || kpiRows.length !== currentCompletedModelOutputs(custody, "kpi").length) {
+      return NextResponse.json({ error: "Current evidence records are incomplete" }, { status: 503 });
+    }
+  }
   const evidenceArtifact = artifactRows.find(
     (artifact) =>
       artifact.artifact_type === "evidence_packet" &&

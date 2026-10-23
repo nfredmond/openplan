@@ -1,3 +1,4 @@
+vi.mock('server-only', () => ({}));
 /**
  * Relaunching a run rebuilds the inputs it will be run with.
  *
