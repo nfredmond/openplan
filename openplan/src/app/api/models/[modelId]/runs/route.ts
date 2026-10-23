@@ -47,7 +47,7 @@ import {
   markScenarioLinkedReportsBasisStale,
   type ScenarioReportWritebackSupabaseLike,
 } from "@/lib/reports/scenario-writeback";
-import { prepareWorkerZoneAttributes } from "@/lib/models/zone-attribute-payload";
+import { discardWorkerZoneAttributes, prepareWorkerZoneAttributes } from "@/lib/models/zone-attribute-payload";
 import {
   prepareTransitFeedHandoff,
   transitFeedNotSelectedStamp,
@@ -575,7 +575,17 @@ export async function POST(request: NextRequest, context: RouteContext) {
         zoneGeography: workerZoneGeography,
         zoneAttributes: workerZoneAttributes,
       });
+      // A refusal from here until the run row exists must not strand the
+      // zone-attribute table uploaded above.
+      const discardUploadedInputs = async () => {
+        const discarded = await discardWorkerZoneAttributes(workerZoneAttributes, modelRunId);
+        if (discarded.error) {
+          audit.warn("zone_attribute_discard_failed", { modelId: access.model.id, modelRunId, reason: discarded.error });
+        }
+      };
+
       if (commonPopulation.state === "repair") {
+        await discardUploadedInputs();
         return NextResponse.json(
           { error: commonPopulation.error, repairState: commonPopulation.repairState },
           { status: commonPopulation.status },
@@ -755,6 +765,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
             message: queueDepth.message,
             code: queueDepth.code,
           });
+          await discardUploadedInputs();
           return NextResponse.json(
             { error: "Failed to validate the deployment's worker queue limit" },
             { status: 500 }
@@ -768,6 +779,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
             inFlight: queueDepth.inFlight,
             limit: queueDepth.limit,
           });
+          await discardUploadedInputs();
           return NextResponse.json({ error: queueDepth.message }, { status: 429 });
         }
       }
@@ -798,6 +810,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     
       if (createModelRunError) {
+        await discardUploadedInputs();
         if (looksLikePendingSchema(createModelRunError.message)) {
           return NextResponse.json(
             { error: "model_runs migration is not applied yet. Apply the latest database migration first." },

@@ -141,10 +141,16 @@ describe("common-population request at the real model run creation route", () =>
 
   it("names a missing or unsuccessful baseline repair before inserting or dispatching jobs", async () => {
     selectedEntry = build; sourceStatus = "running";
+    const remove = vi.fn(async () => ({ error: null }));
+    const bucket = vi.fn(() => ({ remove }));
+    mocks.createServiceRoleClient.mockReturnValue({ storage: { from: bucket } });
     const response = await POST(request(), context);
     expect(response.status).toBe(409);
     expect(await response.json()).toMatchObject({ repairState: "common_population_baseline_required" });
     expect(inserts).toEqual([]); expect(mocks.dispatch).not.toHaveBeenCalled(); expect(mocks.outputs).not.toHaveBeenCalled();
+    // The supplied zone-attribute table has no run row to reference it, so the refusal removes it.
+    expect(bucket).toHaveBeenCalledExactlyOnceWith("run-artifacts");
+    expect(remove).toHaveBeenCalledExactlyOnceWith([expect.stringMatching(/^model-runs\/[0-9a-f-]{36}\/zone-attributes\.json$/)]);
   });
 
   it("refuses unavailable source demographics before creating a baseline job", async () => {
@@ -153,6 +159,8 @@ describe("common-population request at the real model run creation route", () =>
     expect(response.status).toBe(409);
     expect(await response.json()).toMatchObject({ repairState: "common_population_source_unavailable" });
     expect(inserts).toEqual([]); expect(mocks.dispatch).not.toHaveBeenCalled();
+    // Nothing was uploaded, so nothing is removed.
+    expect(mocks.createServiceRoleClient).not.toHaveBeenCalled();
   });
 
   it("keeps standalone snapshots free of a population comparison claim", async () => {
