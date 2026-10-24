@@ -31,6 +31,16 @@ class MemoryParity(unittest.TestCase):
         for field in ['households','persons','diagnostics','realized_zone_counts','basis']:
             self.assertEqual(a[field],b[field],field)
 
+    def test_conversion_reader_omits_only_fit_arrays(self):
+        self.f.result['zone_fits'] = [{'weights': [0.0, 2.3, 4.0]}]
+        descriptor = self.f.retain()
+        full = self.f.read(descriptor)
+        slim = common.read_common_population(self.f.directory, expected_manifest=descriptor,
+                                              zone_rows=self.f.zones, include_zone_fits=False)
+        expected = copy.deepcopy(full)
+        expected['diagnostics'].pop('zone_fits')
+        self.assertEqual(slim, expected)
+
     def test_descriptor_streams_same_hash_and_length_without_whole_file_read(self):
         path = self.f.root / 'large-diagnostic.json'
         path.write_bytes(b'abcdefg' * 500000)

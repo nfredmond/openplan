@@ -21,7 +21,7 @@ source and native evidence.
 | Seven-county zone system | Present. 704 ordered TIGER2019 Census tracts, original Census internal points and 2019 place polygons. The order remains unchanged. |
 | Survey-period population profile | Present. ACS 2015–2019 summary and PUMS products, 2010 PUMAs, 2019-dollar incomes. Public bulk files replace credential-requiring API transport. |
 | Population controls and microdata | Present. Published totals are 3,065,147 people and 1,187,423 households. Four tracts have unavailable median household income; those raw cells remain `.`. Every selected tract and all 32 selected PUMAs, including three Wisconsin PUMAs. 83,700 household and 181,876 person source records precede seed eligibility. |
-| Full realized population and fit diagnostics | First fit completes, but retention is killed at the 6 GiB cap. Counts: 1,219,702 households and 3,150,169 persons. No complete package from that attempt. The retry retains the same fit and an 823 MiB recovery checkpoint, then is killed while hashing retained files. [PENDING checkpoint recovery with streaming file descriptors.] |
+| Full realized population and fit diagnostics | Present after two retained OOM failures and checkpoint recovery. 1,219,702 households, 3,150,169 persons and 1,496,481 workers. Manifest SHA-256 `27d545f12659345c1f8f3f296cca67010e15bf0f4067c1ab7589defca526bd99`. 677 of 704 fits do not converge; 30 exceed at least one published margin. These are input limitations, not admitted population accuracy. |
 | Highway network | Present. October 8, 2019 OSM database snapshot through the existing AequilibraE path. 231,080 pre-centroid nodes, 311,276 links, 704 internal zones and eight external gateways. No demand assignment. |
 | Highway skims | Present. Travel time and distance, all 494,912 off-diagonal internal pairs reachable, no missing graph centroids. CPython 3.11.15, AequilibraE 1.6.2, NumPy 2.0.2. |
 | Observed period road conditions | Unavailable. The inherited adapter repeats free-flow road impedance across periods. OSM snapshot age does not establish measured congestion or road-opening truth. |
@@ -65,7 +65,7 @@ arms, against AequilibraE outputs or against TBI observations is authorized.]
 
 1. Complete the population, package and both modeled-only runs, retaining every
    failure and exact archive, implementation, configuration and output hashes.
-   Grade population fit and every inherited input approximation independently
+   Resolve the 677 nonconverged fits and 30 zones outside published margins without relaxing gates. Grade population fit and every inherited input approximation independently
    of model results. Runtime completion does not waive any admission below.
 2. Resolve or explicitly redesign and preregister the unavailable travel
    conditions. Establish complete transit fare applicability and cost-year

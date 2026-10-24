@@ -4,7 +4,7 @@ test_descriptor_streams_same_hash_and_length_without_whole_file_read (test_commo
 FAIL: test_descriptor_streams_same_hash_and_length_without_whole_file_read (test_common_population_memory.MemoryParity.test_descriptor_streams_same_hash_and_length_without_whole_file_read)
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/scripts/modeling/tests/test_common_population_memory.py", line 39, in test_descriptor_streams_same_hash_and_length_without_whole_file_read
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/scripts/modeling/tests/test_common_population_memory.py", line 49, in test_descriptor_streams_same_hash_and_length_without_whole_file_read
     actual = common.file_descriptor(path, relative_path='diagnostics.json')
              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   File "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/scripts/modeling/common_population.py", line 150, in file_descriptor

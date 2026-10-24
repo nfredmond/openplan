@@ -33,15 +33,16 @@ Traceback (most recent call last):
 AssertionError: CommonPopulationError not raised
 
 ----------------------------------------------------------------------
-Ran 24 tests in 0.055s
+Ran 24 tests in 0.058s
 
 FAILED (failures=1)
 
+test_conversion_reader_omits_only_fit_arrays (test_common_population_memory.MemoryParity.test_conversion_reader_omits_only_fit_arrays) ... ok
 test_descriptor_streams_same_hash_and_length_without_whole_file_read (test_common_population_memory.MemoryParity.test_descriptor_streams_same_hash_and_length_without_whole_file_read) ... ok
 test_nonfinite_diagnostic_refuses_before_creating_directory (test_common_population_memory.MemoryParity.test_nonfinite_diagnostic_refuses_before_creating_directory) ... ok
 test_retained_bytes_and_loaded_rows_match_original (test_common_population_memory.MemoryParity.test_retained_bytes_and_loaded_rows_match_original) ... ok
 
 ----------------------------------------------------------------------
-Ran 3 tests in 0.025s
+Ran 4 tests in 0.034s
 
 OK

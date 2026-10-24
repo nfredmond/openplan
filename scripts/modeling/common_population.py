@@ -348,7 +348,7 @@ def retain_population(directory: Path, zone_rows: Sequence[Mapping[str, Any]], r
         return file_descriptor(directory / MANIFEST_NAME)
 
 
-def read_common_population(directory: Path, *, expected_manifest: Mapping[str, Any], zone_rows: Sequence[Mapping[str, Any]], expected_source_manifest: Mapping[str, Any] | None = None, expected_zone_attributes: Mapping[str, Any] | None = None) -> dict[str, Any]:
+def read_common_population(directory: Path, *, expected_manifest: Mapping[str, Any], zone_rows: Sequence[Mapping[str, Any]], expected_source_manifest: Mapping[str, Any] | None = None, expected_zone_attributes: Mapping[str, Any] | None = None, include_zone_fits: bool = True) -> dict[str, Any]:
     """Verify expected manifest bytes and every file before consuming rows.
 
     Source descriptors, when supplied, refer to original retained input bytes,
@@ -364,7 +364,11 @@ def read_common_population(directory: Path, *, expected_manifest: Mapping[str, A
     files = basis.get("files")
     if not isinstance(files, dict) or set(files) != set(ROLES):
         raise CommonPopulationError("Retained population requires exactly its declared file roles.")
-    payloads = {role: _checked_bytes(directory, files[role], path) for role, path in ROLES.items()}
+    payloads = {role: _checked_bytes(directory, files[role], path)
+                for role, path in ROLES.items() if role != "diagnostics"}
+    diagnostic_descriptor = _descriptor(files["diagnostics"], ROLES["diagnostics"])
+    diagnostic_path = directory / ROLES["diagnostics"]
+    _require_regular(diagnostic_path)
     for expected, role in ((expected_source_manifest, "source_manifest"), (expected_zone_attributes, "source_zone_attributes")):
         if expected is not None:
             _descriptor(dict(expected), ROLES[role])
@@ -377,7 +381,13 @@ def read_common_population(directory: Path, *, expected_manifest: Mapping[str, A
         raise CommonPopulationError("Selected-zone map identity differs from retained realization.")
     if selected_zone_map(list(csv.DictReader(io.StringIO(payloads["source_zone_attributes"].decode("utf-8"))))) != zones:
         raise CommonPopulationError("Retained source CSV map differs from selected zones.")
-    diagnostics = _json(payloads.pop("diagnostics"))
+    from streamed_json_object import read_object
+    try:
+        diagnostics = read_object(diagnostic_path, decode=_json, validate=_reject_credentials,
+                                  discard_arrays=frozenset() if include_zone_fits else frozenset({"zone_fits"}),
+                                  expected_file=diagnostic_descriptor)
+    except (ValueError, UnicodeDecodeError) as exc:
+        raise CommonPopulationError(str(exc)) from exc
     _reject_credentials(diagnostics)
     source_manifest = _json(payloads["source_manifest"])
     _reject_credentials(source_manifest)

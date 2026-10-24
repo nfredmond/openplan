@@ -166,3 +166,36 @@ skips, and 34 TypeScript tests passed. Six mutation campaigns contain 77 control
 seven harmless survivors and 70 targeted assertion failures. Import errors and
 incidental mutation errors remain outside those passing counts. The bounded
 fixture establishes descriptor semantics, not full-size runtime completion.
+
+## Completed retention and bounded diagnostic reading
+
+Checkpoint recovery with streaming file descriptors completes in 1 minute
+32.08 seconds, exit 0, peak RSS 5,129,168 KiB. The common manifest SHA-256 is
+`27d545f12659345c1f8f3f296cca67010e15bf0f4067c1ab7589defca526bd99`.
+The retained fit reports 677 nonconverged zones and 30 zones outside at least
+one published Census margin, among 704 fitted zones. Those limitations remain
+visible; this work changes neither fitting targets nor tolerances.
+
+The next bundle attempt reaches the 6 GiB cap while loading diagnostics and
+records `oom-kill` before creating a bundle. Its input directory, controller
+receipt and initial log remain retained. The reader now streams a top-level
+JSON object and can discard only the unused `zone_fits` array in the bundle
+conversion path. It parses and validates every discarded element, including
+duplicate keys, nonfinite values and credential refusals. It hashes the exact
+bytes it consumes and checks the expected length and digest before returning.
+The default reader still returns full diagnostics. The retained file stays
+unchanged and is copied into the full parent bundle.
+
+Thirty-nine common-population/package tests, 11 streaming-reader tests and five
+bundle tests pass. One initial regression fails because the new identity error
+message differs; the established message is restored, and the original failure
+log remains. Nine streaming mutation controls include one harmless survivor
+and eight intended failures. An additional common-reader mutation proves that
+the conversion path omits only the designated array. Earlier memory and file
+descriptor controls pass again after the change. Full-size bundle completion
+remains a native result, separate from these checks.
+
+Cumulative scoped results total 177 Python tests passed, four stock-path skips,
+and 34 TypeScript tests passed. Seven mutation campaigns contain 87 controls:
+eight harmless survivors and 79 targeted assertion failures. The parser checks
+are blind to scientific truth and historical service coverage.

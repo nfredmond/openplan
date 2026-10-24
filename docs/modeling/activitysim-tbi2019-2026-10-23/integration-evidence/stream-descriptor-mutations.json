@@ -4,27 +4,27 @@
     "expected": "survive",
     "exit_code": 0,
     "expected_observed": true,
-    "restored_sha256": "5cfd684c88c4c3f24c72a1928639c4a08bf36e6071feb38bc78d3c1dc4ea1e52"
+    "restored_sha256": "af1c2de9fe20e8816cb0e1ba33cbcbfc9186189a35a2fbd7b7f0dc2226c098a5"
   },
   {
     "name": "whole-file",
     "expected": "assertion failure",
     "exit_code": 1,
     "expected_observed": true,
-    "restored_sha256": "5cfd684c88c4c3f24c72a1928639c4a08bf36e6071feb38bc78d3c1dc4ea1e52"
+    "restored_sha256": "af1c2de9fe20e8816cb0e1ba33cbcbfc9186189a35a2fbd7b7f0dc2226c098a5"
   },
   {
     "name": "digest",
     "expected": "assertion failure",
     "exit_code": 1,
     "expected_observed": true,
-    "restored_sha256": "5cfd684c88c4c3f24c72a1928639c4a08bf36e6071feb38bc78d3c1dc4ea1e52"
+    "restored_sha256": "af1c2de9fe20e8816cb0e1ba33cbcbfc9186189a35a2fbd7b7f0dc2226c098a5"
   },
   {
     "name": "length",
     "expected": "assertion failure",
     "exit_code": 1,
     "expected_observed": true,
-    "restored_sha256": "5cfd684c88c4c3f24c72a1928639c4a08bf36e6071feb38bc78d3c1dc4ea1e52"
+    "restored_sha256": "af1c2de9fe20e8816cb0e1ba33cbcbfc9186189a35a2fbd7b7f0dc2226c098a5"
   }
 ]

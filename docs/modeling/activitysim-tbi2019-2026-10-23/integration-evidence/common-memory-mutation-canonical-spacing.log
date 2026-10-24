@@ -24,10 +24,11 @@ test_wrong_selected_zone_or_extra_missing_zone_refuses (test_common_population.C
 test_zone_duplicate_unsafe_and_unknown_geographies_refuse (test_common_population.CommonPopulationTests.test_zone_duplicate_unsafe_and_unknown_geographies_refuse) ... ok
 
 ----------------------------------------------------------------------
-Ran 24 tests in 0.056s
+Ran 24 tests in 0.062s
 
 OK
 
+test_conversion_reader_omits_only_fit_arrays (test_common_population_memory.MemoryParity.test_conversion_reader_omits_only_fit_arrays) ... ok
 test_descriptor_streams_same_hash_and_length_without_whole_file_read (test_common_population_memory.MemoryParity.test_descriptor_streams_same_hash_and_length_without_whole_file_read) ... ok
 test_nonfinite_diagnostic_refuses_before_creating_directory (test_common_population_memory.MemoryParity.test_nonfinite_diagnostic_refuses_before_creating_directory) ... ok
 test_retained_bytes_and_loaded_rows_match_original (test_common_population_memory.MemoryParity.test_retained_bytes_and_loaded_rows_match_original) ... FAIL
@@ -45,6 +46,6 @@ AssertionError: {'pat[36 chars]6': '6f94df5c815feeee90f0db8c288bf1a8f6cd76e09[35
 +  'sha256': '5676bf85c101b7ad5322e3bde283b9b376fc336ad2e2f7c685a0bc92ecfca282'}
 
 ----------------------------------------------------------------------
-Ran 3 tests in 0.025s
+Ran 4 tests in 0.032s
 
 FAILED (failures=1)

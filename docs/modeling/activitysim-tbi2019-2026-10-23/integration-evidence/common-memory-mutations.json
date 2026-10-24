@@ -7,7 +7,7 @@
       0
     ],
     "expected_observed": true,
-    "restored_sha256": "5cfd684c88c4c3f24c72a1928639c4a08bf36e6071feb38bc78d3c1dc4ea1e52"
+    "restored_sha256": "af1c2de9fe20e8816cb0e1ba33cbcbfc9186189a35a2fbd7b7f0dc2226c098a5"
   },
   {
     "name": "household-count",
@@ -17,7 +17,7 @@
       0
     ],
     "expected_observed": true,
-    "restored_sha256": "5cfd684c88c4c3f24c72a1928639c4a08bf36e6071feb38bc78d3c1dc4ea1e52"
+    "restored_sha256": "af1c2de9fe20e8816cb0e1ba33cbcbfc9186189a35a2fbd7b7f0dc2226c098a5"
   },
   {
     "name": "worker-count",
@@ -27,7 +27,7 @@
       0
     ],
     "expected_observed": true,
-    "restored_sha256": "5cfd684c88c4c3f24c72a1928639c4a08bf36e6071feb38bc78d3c1dc4ea1e52"
+    "restored_sha256": "af1c2de9fe20e8816cb0e1ba33cbcbfc9186189a35a2fbd7b7f0dc2226c098a5"
   },
   {
     "name": "person-numbers",
@@ -37,7 +37,7 @@
       0
     ],
     "expected_observed": true,
-    "restored_sha256": "5cfd684c88c4c3f24c72a1928639c4a08bf36e6071feb38bc78d3c1dc4ea1e52"
+    "restored_sha256": "af1c2de9fe20e8816cb0e1ba33cbcbfc9186189a35a2fbd7b7f0dc2226c098a5"
   },
   {
     "name": "row-width",
@@ -47,7 +47,7 @@
       0
     ],
     "expected_observed": true,
-    "restored_sha256": "5cfd684c88c4c3f24c72a1928639c4a08bf36e6071feb38bc78d3c1dc4ea1e52"
+    "restored_sha256": "af1c2de9fe20e8816cb0e1ba33cbcbfc9186189a35a2fbd7b7f0dc2226c098a5"
   },
   {
     "name": "canonical-spacing",
@@ -57,7 +57,7 @@
       1
     ],
     "expected_observed": true,
-    "restored_sha256": "5cfd684c88c4c3f24c72a1928639c4a08bf36e6071feb38bc78d3c1dc4ea1e52"
+    "restored_sha256": "af1c2de9fe20e8816cb0e1ba33cbcbfc9186189a35a2fbd7b7f0dc2226c098a5"
   },
   {
     "name": "nonfinite",
@@ -67,6 +67,16 @@
       1
     ],
     "expected_observed": true,
-    "restored_sha256": "5cfd684c88c4c3f24c72a1928639c4a08bf36e6071feb38bc78d3c1dc4ea1e52"
+    "restored_sha256": "af1c2de9fe20e8816cb0e1ba33cbcbfc9186189a35a2fbd7b7f0dc2226c098a5"
+  },
+  {
+    "name": "reader-fit-arrays",
+    "expected": "assertion failure",
+    "exit_codes": [
+      0,
+      1
+    ],
+    "expected_observed": true,
+    "restored_sha256": "af1c2de9fe20e8816cb0e1ba33cbcbfc9186189a35a2fbd7b7f0dc2226c098a5"
   }
 ]

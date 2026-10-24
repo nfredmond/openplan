@@ -988,7 +988,7 @@ def build_activitysim_input_bundle(
             raise RuntimeError("Retained population requires an exact directory and expected manifest descriptor.")
         loaded_population = read_common_population(
             Path(retained_population["directory"]), expected_manifest=retained_population["manifest"],
-            zone_rows=raw_zones,
+            zone_rows=raw_zones, include_zone_fits=False,
         )
         if config_package == "mtc":
             from common_population import retained_school_enrollment

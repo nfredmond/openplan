@@ -1,0 +1,59 @@
+test_all_discarded_elements_validated_separately (test_streamed_json_object.StreamedJsonTests.test_all_discarded_elements_validated_separately) ... FAIL
+test_array_streaming_retains_other_values_and_unicode (test_streamed_json_object.StreamedJsonTests.test_array_streaming_retains_other_values_and_unicode) ... FAIL
+test_credentials_inside_discarded_array_refused (test_streamed_json_object.StreamedJsonTests.test_credentials_inside_discarded_array_refused) ... ok
+test_duplicate_inside_discarded_array_refused (test_streamed_json_object.StreamedJsonTests.test_duplicate_inside_discarded_array_refused) ... ok
+test_duplicate_root_refused (test_streamed_json_object.StreamedJsonTests.test_duplicate_root_refused) ... ok
+test_empty_object_and_arrays (test_streamed_json_object.StreamedJsonTests.test_empty_object_and_arrays) ... FAIL
+test_exact_stream_hash_and_byte_length (test_streamed_json_object.StreamedJsonTests.test_exact_stream_hash_and_byte_length) ... FAIL
+test_malformed_delimiters_and_values_refused (test_streamed_json_object.StreamedJsonTests.test_malformed_delimiters_and_values_refused) ... ok
+test_nonfinite_inside_discarded_array_refused (test_streamed_json_object.StreamedJsonTests.test_nonfinite_inside_discarded_array_refused) ... ok
+test_root_credential_key_refused (test_streamed_json_object.StreamedJsonTests.test_root_credential_key_refused) ... ok
+test_trailing_content_refused (test_streamed_json_object.StreamedJsonTests.test_trailing_content_refused) ... ok
+
+======================================================================
+FAIL: test_all_discarded_elements_validated_separately (test_streamed_json_object.StreamedJsonTests.test_all_discarded_elements_validated_separately)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/scripts/modeling/tests/test_streamed_json_object.py", line 70, in test_all_discarded_elements_validated_separately
+    self.assertEqual(result,{'keep':2})
+AssertionError: {'zone_fits': [{'weights': [0, 1, 2, 3, 4, [878 chars]': 2} != {'keep': 2}
+Diff is 1299 characters long. Set self.maxDiff to None to see it.
+
+======================================================================
+FAIL: test_array_streaming_retains_other_values_and_unicode (test_streamed_json_object.StreamedJsonTests.test_array_streaming_retains_other_values_and_unicode)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/scripts/modeling/tests/test_streamed_json_object.py", line 19, in test_array_streaming_retains_other_values_and_unicode
+    self.assertEqual(self.read(text), {'keep':{'a':[1,2]},'n':123456})
+AssertionError: {'zone_fits': [{'weights': [12, 1.2e-25], '[62 chars]3456} != {'keep': {'a': [1, 2]}, 'n': 123456}
+- {'keep': {'a': [1, 2]},
++ {'keep': {'a': [1, 2]}, 'n': 123456}
+?                        +++++++++++++
+
+-  'n': 123456,
+-  'zone_fits': [{'label': 'é"', 'weights': [12, 1.2e-25]}, None, True, []]}
+
+======================================================================
+FAIL: test_empty_object_and_arrays (test_streamed_json_object.StreamedJsonTests.test_empty_object_and_arrays)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/scripts/modeling/tests/test_streamed_json_object.py", line 24, in test_empty_object_and_arrays
+    self.assertEqual(self.read('{"zone_fits":[],"keep":[]}'),{'keep':[]})
+AssertionError: {'zone_fits': [], 'keep': []} != {'keep': []}
+- {'keep': [], 'zone_fits': []}
++ {'keep': []}
+
+======================================================================
+FAIL: test_exact_stream_hash_and_byte_length (test_streamed_json_object.StreamedJsonTests.test_exact_stream_hash_and_byte_length)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/scripts/modeling/tests/test_streamed_json_object.py", line 57, in test_exact_stream_hash_and_byte_length
+    self.assertEqual(self.read(text,expected=d),{'a':1})
+AssertionError: {'zone_fits': ['é'], 'a': 1} != {'a': 1}
+- {'a': 1, 'zone_fits': ['é']}
++ {'a': 1}
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.005s
+
+FAILED (failures=4)
