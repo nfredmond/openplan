@@ -33,6 +33,12 @@ development-only `fast-uri` to 3.1.9, for advisories published the same day,
 including GHSA-w74x-v6f9-j3xg, GHSA-xhq7-xmqj-769h and GHSA-wjr9-j795-jxcr.
 `npm audit` reports no advisories afterward.
 
+**Vercel builds skip Next's duplicate type check.** Next's type check needs
+more than 5 GB of heap on its own, and on October 23, 2026 it pushed Vercel's
+standard 8 GB builder out of memory. Builds with `VERCEL=1` now skip it. Every
+other build keeps it, including the CI QA gate's `npm run build`, which
+Vercel waits for before promoting. Self-hosted builds are unchanged.
+
 This tree contains 439 source migrations, nine more than v0.72.0. Self-hosted
 installations apply the seven Models and Reports migrations, the estimate
 migration and the Safety migration below, in version order, before deploying
