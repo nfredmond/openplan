@@ -23,6 +23,28 @@ function countFiles(root: string, suffix: string): number {
 }
 
 describe("the recurring product-direction review", () => {
+  it("accepts a changed-path listing larger than the default subprocess buffer", () => {
+    const directory = mkdtempSync(resolve(tmpdir(), "openplan-review-large-diff-"));
+    const preload = resolve(directory, "large-diff.cjs");
+    writeFileSync(preload, `const child = require('node:child_process');
+      const execute = child.execFileSync;
+      child.execFileSync = function(command, args, options) {
+        if (command === 'git' && args[0] === 'diff' && args[1] === '--name-only') {
+          return execute(process.execPath, ['-e',
+            'process.stdout.write("docs/modeling/retained-evidence.json\\\\n".repeat(60000))'], options);
+        }
+        return execute(command, args, options);
+      }; require('node:module').syncBuiltinESMExports();`);
+    try {
+      const output = execFileSync(process.execPath, ["--require", preload, SCRIPT, "--check"], {
+        cwd: APP_ROOT, encoding: "utf8", stdio: "pipe",
+      });
+      expect(output).toContain("Product direction records checked");
+    } finally {
+      rmSync(directory, { recursive: true });
+    }
+  });
+
   it("checks that the review and matrix preserve the v1 scope", () => {
     expect(run("--check")).toMatch(
       /Product direction records checked; review deadline \d{4}-\d{2}-\d{2}/,

@@ -1,8 +1,0 @@
-test_order_identity_and_exactly_one_call (test_activitysim_allocator_reclaim.ReclaimTests.test_order_identity_and_exactly_one_call) ... ok
-test_original_exception_is_preserved (test_activitysim_allocator_reclaim.ReclaimTests.test_original_exception_is_preserved) ... ok
-test_reclaim_failure_prevents_unadmitted_execution (test_activitysim_allocator_reclaim.ReclaimTests.test_reclaim_failure_prevents_unadmitted_execution) ... ok
-
-----------------------------------------------------------------------
-Ran 3 tests in 0.000s
-
-OK

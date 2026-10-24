@@ -1,8 +1,0 @@
-test_pinned_call (runner_tests.PinTests.test_pinned_call) ... ok
-test_source_refusal (runner_tests.PinTests.test_source_refusal) ... ok
-test_version_refusal (runner_tests.PinTests.test_version_refusal) ... ok
-
-----------------------------------------------------------------------
-Ran 3 tests in 0.039s
-
-OK

@@ -1,8 +1,0 @@
-test_2010_boundary_and_2019_microdata_predicate (test_population_2019.Population2019.test_2010_boundary_and_2019_microdata_predicate) ... ok
-test_2019_income_and_provenance_without_default_change (test_population_2019.Population2019.test_2019_income_and_provenance_without_default_change) ... ok
-test_exact_profile_and_capabilities (test_population_2019.Population2019.test_exact_profile_and_capabilities) ... ok
-
-----------------------------------------------------------------------
-Ran 3 tests in 0.002s
-
-OK

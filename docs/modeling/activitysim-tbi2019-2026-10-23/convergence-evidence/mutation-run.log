@@ -1,6 +1,0 @@
-Running as unit: run-p203084-i62971455.scope; invocation ID: 3f1d5166af284d37a730be850ff1cb31
-Traceback (most recent call last):
-  File "/home/nathaniel/.t3/worktrees/openplan/t3-8dddce31/docs/modeling/activitysim-tbi2019-2026-10-23/convergence-evidence/mutate-entropy.py", line 34, in <module>
-    if not accepted:raise RuntimeError('Control did not reach expected assertion: '+name)
-                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-RuntimeError: Control did not reach expected assertion: harmless

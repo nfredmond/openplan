@@ -1,9 +1,0 @@
-
- RUN  v4.1.12 /home/nathaniel/.t3/worktrees/openplan/t3-11910f11/openplan
-
-
- Test Files  1 passed (1)
-      Tests  34 passed (34)
-   Start at  16:33:45
-   Duration  865ms (transform 128ms, setup 79ms, import 175ms, tests 20ms, environment 484ms)
-
