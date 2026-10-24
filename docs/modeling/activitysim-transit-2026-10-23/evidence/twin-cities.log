@@ -1,0 +1,29 @@
+Running as unit: run-p1793678-i60421250.scope; invocation ID: 73dae8db569c457fbc330665f9aef95e
+{
+  "status": "los_only_fare_unavailable",
+  "active_trips": 8782,
+  "drive_transit": "unavailable: no supplied drive connectors"
+}
+	Command being timed: "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/bin/python -u -B scripts/modeling/activitysim_transit_skims.py --config docs/modeling/activitysim-transit-2026-10-23/config.json --zones docs/modeling/activitysim-transit-2026-10-23/zones.csv --output data/_screening_cache/activitysim-transit-2019/result-final"
+	User time (seconds): 627.21
+	System time (seconds): 3.35
+	Percent of CPU this job got: 100%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 10:29.85
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 3362608
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 200
+	Minor (reclaiming a frame) page faults: 1031148
+	Voluntary context switches: 780
+	Involuntary context switches: 270781
+	Swaps: 0
+	File system inputs: 91080
+	File system outputs: 42504
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

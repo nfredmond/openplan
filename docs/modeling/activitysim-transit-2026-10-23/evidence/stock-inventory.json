@@ -1,0 +1,24 @@
+{
+  "activitysim_version": "1.5.1",
+  "stock_configs_sha256": "50b6c571f9f7378f5db12e96994d5c72a4ed3efa266d208e7d3075c820d92cb4",
+  "stock_skim_inventory_count": 826,
+  "written_matrix_counts": {
+    "time": 30,
+    "distance": 33,
+    "zero": 45,
+    "transit": 718
+  },
+  "required_spec_names": 155,
+  "artifact_sha256": "1da0b6587f48fe38763acb1742ac8c2b88fdb3b36081352b3abc06fe2dc427df",
+  "expected_0_to_2": {
+    "TOTIVT": 2500,
+    "IWAIT": 500,
+    "XWAIT": 500,
+    "WAIT": 1000,
+    "BOARDS": 2,
+    "FAR": 250,
+    "WAUX": 0
+  },
+  "all_matrices_finite": true,
+  "activitysim_executions": 0
+}

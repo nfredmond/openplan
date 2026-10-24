@@ -92,6 +92,7 @@ Use the [current modeling status](modeling/STATUS_AND_VALIDATION.md) before inte
 - [Human observation protocol](product/PLANNER_OBSERVATION_PROTOCOL.md): actual planner/recipient and public-participant research, separate from simulated users.
 - [First-week harness](../qa-harness/FIRST-WEEK-HARNESS.md): agent discovery,
   outcome verification, evidence capture and limits.
+- [Opt-in ActivitySim GTFS transit skims](modeling/activitysim-transit-2026-10-23/README.md): scheduled skim definitions, source custody, synthetic controls, and dated regional plausibility.
 - [Model observation/validation research](modeling/VALIDATION_OBSERVATION_UNCERTAINTY_RESEARCH_2026-08-25.md),
   [frozen nationwide protocol](modeling/NATIONWIDE_VALIDATION_PREREGISTRATION_V1.json)
   and [engine landscape](modeling/OPEN_SOURCE_MODEL_LANDSCAPE.md).
