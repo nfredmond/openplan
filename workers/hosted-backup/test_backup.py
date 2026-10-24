@@ -18,9 +18,14 @@ import urllib.parse
 
 import backup
 
+# Synthetic keys only. LEGACY_JWT decodes to {"alg":"HS256"} / {"role":"service_role"}
+# with a made-up signature; SECRET_KEY only borrows the documented prefix.
+LEGACY_JWT = "eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIn0.c3ludGhldGljLXNpZ25hdHVyZQ"
+SECRET_KEY = "sb_secret_synthetic-unit-test-only_0000"
+
 BASE_ENV = {
     "SUPABASE_URL": "https://example.supabase.co/",
-    "SUPABASE_SERVICE_ROLE_KEY": "synthetic-service-role",
+    "SUPABASE_SERVICE_ROLE_KEY": LEGACY_JWT,
     "BACKUP_BUCKET": "synthetic-bucket",
     "BACKUP_GPG_FINGERPRINT": "abc",
     "BACKUP_GPG_PUBLIC_KEY": "synthetic",
@@ -82,13 +87,19 @@ class FakeResponse(io.BytesIO):
 class FakeStorage:
     """Two buckets, a nested folder and more than one list page."""
 
-    def __init__(self):
+    def __init__(self, key=LEGACY_JWT):
+        self.key = key
         self.files = {("maps", f"p/{i:04d}.zip"): f"zip-{i}".encode() for i in range(1001)}
         self.files[("maps", "p/sub/readme.md")] = b"nested"
         self.files[("reports", "r.pdf")] = b"%PDF"
 
     def __call__(self, request, timeout):
-        assert request.headers["Authorization"] == "Bearer synthetic-service-role"
+        # urllib stores header names capitalized: "apikey" arrives as "Apikey".
+        expected = {"Apikey": self.key}
+        if self.key == LEGACY_JWT:
+            expected["Authorization"] = "Bearer " + LEGACY_JWT
+        sent = {name: value for name, value in request.headers.items() if name in ("Apikey", "Authorization")}
+        assert sent == expected, sorted(sent)
         path = urllib.parse.unquote(request.full_url.split("/storage/v1", 1)[1])
         if path == "/bucket":
             return FakeResponse(json.dumps([{"id": "maps"}, {"id": "reports"}]).encode())
@@ -124,6 +135,19 @@ class StorageCopyTest(unittest.TestCase):
                 data = fake.files[(item["bucket"], item["path"])]
                 self.assertEqual(item["sha256"], hashlib.sha256(data).hexdigest())
                 self.assertEqual((root / item["bucket"] / item["path"]).read_bytes(), data)
+
+    def test_secret_key_reaches_storage_only_on_apikey(self):
+        fake = FakeStorage(SECRET_KEY)
+        client = backup.StorageClient(backup.Settings.from_env({**BASE_ENV, "SUPABASE_SERVICE_ROLE_KEY": SECRET_KEY}),
+                                      opener=fake)
+        with tempfile.TemporaryDirectory() as raw:
+            result = backup.copy_storage(client, pathlib.Path(raw))
+        self.assertEqual(len(result["objects"]), len(fake.files))
+
+    def test_legacy_jwt_headers_keep_their_original_order(self):
+        self.assertEqual(list(backup.service_key_headers(LEGACY_JWT).items()),
+                         [("Authorization", "Bearer " + LEGACY_JWT), ("apikey", LEGACY_JWT)])
+        self.assertEqual(backup.service_key_headers(SECRET_KEY), {"apikey": SECRET_KEY})
 
     def test_refuses_an_object_path_that_escapes_the_capture(self):
         for bad in ("../etc/passwd", "a//b", "/abs", "a/./b", ""):

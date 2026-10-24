@@ -71,6 +71,19 @@ status_value() {
     | head -1
 }
 
+# Fill the named array with curl header arguments for a service key. A Supabase
+# secret key (sb_secret_...) is not a JWT and goes only on apikey; a legacy
+# service_role JWT keeps its Bearer header, in the original order.
+service_key_curl_headers() {
+  local -n headers_out=$1
+  local key=$2
+  headers_out=()
+  if [[ "$key" =~ ^eyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$ ]]; then
+    headers_out+=(-H "Authorization: Bearer $key")
+  fi
+  headers_out+=(-H "apikey: $key")
+}
+
 db_container() {
   local project=$1
   docker ps --filter "label=com.supabase.cli.project=$project" --format '{{.Names}}' \
@@ -102,6 +115,7 @@ SOURCE_DB=$(db_container "$SOURCE_PROJECT")
 SOURCE_API=$(status_value "$SOURCE_ROOT" API_URL)
 SOURCE_SERVICE_KEY=$(status_value "$SOURCE_ROOT" SERVICE_ROLE_KEY)
 test -n "$SOURCE_DB" && test -n "$SOURCE_API" && test -n "$SOURCE_SERVICE_KEY"
+service_key_curl_headers SOURCE_KEY_HEADERS "$SOURCE_SERVICE_KEY"
 
 OBJECT_PATH="00000000-0000-4000-8000-00000000000a/00000000-0000-4000-8000-00000000000d/recovery-evidence.txt"
 OBJECT_FILE="$BACKUP_ROOT/storage/kb-documents/recovery-evidence.txt"
@@ -113,7 +127,7 @@ RESTORE_EMAIL="recovery-$SOURCE_PROJECT@openplan.test"
 RESTORE_PASSWORD=$(python3 -c 'import secrets; print(secrets.token_urlsafe(24))')
 printf '{"email":"%s","password":"%s","email_confirm":true}' "$RESTORE_EMAIL" "$RESTORE_PASSWORD" \
   | curl --fail --silent --show-error -X POST "$SOURCE_API/auth/v1/admin/users" \
-    -H "Authorization: Bearer $SOURCE_SERVICE_KEY" -H "apikey: $SOURCE_SERVICE_KEY" \
+    "${SOURCE_KEY_HEADERS[@]}" \
     -H 'Content-Type: application/json' --data-binary @- > "$BACKUP_ROOT/auth-fixture.json"
 OWNER_ID=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["id"])' "$BACKUP_ROOT/auth-fixture.json")
 printf '{"email":"%s","password":"%s","ownerId":"%s"}\n' "$RESTORE_EMAIL" "$RESTORE_PASSWORD" "$OWNER_ID" > "$BACKUP_ROOT/browser-login.json"
@@ -190,8 +204,7 @@ SQL
 
 curl --fail --silent --show-error \
   -X POST "$SOURCE_API/storage/v1/object/kb-documents/$OBJECT_PATH" \
-  -H "Authorization: Bearer $SOURCE_SERVICE_KEY" \
-  -H "apikey: $SOURCE_SERVICE_KEY" \
+  "${SOURCE_KEY_HEADERS[@]}" \
   -H "Content-Type: text/plain" \
   --data-binary "@$OBJECT_FILE" >/dev/null
 
@@ -233,8 +246,7 @@ printf '{"bucket":"kb-documents","path":"%s","sha256":"%s","bytes":%s}\n' \
 
 curl --fail --silent --show-error \
   "$SOURCE_API/storage/v1/object/authenticated/kb-documents/$OBJECT_PATH" \
-  -H "Authorization: Bearer $SOURCE_SERVICE_KEY" \
-  -H "apikey: $SOURCE_SERVICE_KEY" \
+  "${SOURCE_KEY_HEADERS[@]}" \
   -o "$BACKUP_ROOT/source-download.txt"
 test "$(sha256sum "$BACKUP_ROOT/source-download.txt" | cut -d' ' -f1)" = "$OBJECT_HASH"
 
@@ -247,6 +259,7 @@ TARGET_DB=$(db_container "$TARGET_PROJECT")
 TARGET_API=$(status_value "$TARGET_ROOT" API_URL)
 TARGET_SERVICE_KEY=$(status_value "$TARGET_ROOT" SERVICE_ROLE_KEY)
 test -n "$TARGET_DB" && test -n "$TARGET_API" && test -n "$TARGET_SERVICE_KEY"
+service_key_curl_headers TARGET_KEY_HEADERS "$TARGET_SERVICE_KEY"
 
 if $FULL_ARCHIVE; then
   python3 "$APP_ROOT/scripts/ops/full_restore.py" "$SOURCE_PROJECT" "$TARGET_PROJECT" "$BACKUP_ROOT/full"
@@ -266,8 +279,7 @@ else
 } | docker exec -i "$TARGET_DB" psql -U postgres -d postgres -v ON_ERROR_STOP=1 >/dev/null
 curl --fail --silent --show-error \
   -X POST "$TARGET_API/storage/v1/object/kb-documents/$OBJECT_PATH" \
-  -H "Authorization: Bearer $TARGET_SERVICE_KEY" \
-  -H "apikey: $TARGET_SERVICE_KEY" \
+  "${TARGET_KEY_HEADERS[@]}" \
   -H "Content-Type: text/plain" \
   --data-binary "@$OBJECT_FILE" >/dev/null
 fi
@@ -291,8 +303,7 @@ if $FULL_ARCHIVE; then
 fi
 curl --fail --silent --show-error --retry 8 --retry-connrefused --retry-delay 1 \
   "$TARGET_API/storage/v1/object/authenticated/kb-documents/$OBJECT_PATH" \
-  -H "Authorization: Bearer $TARGET_SERVICE_KEY" \
-  -H "apikey: $TARGET_SERVICE_KEY" \
+  "${TARGET_KEY_HEADERS[@]}" \
   -o "$BACKUP_ROOT/target-download.txt"
 test "$(sha256sum "$BACKUP_ROOT/target-download.txt" | cut -d' ' -f1)" = "$OBJECT_HASH"
 

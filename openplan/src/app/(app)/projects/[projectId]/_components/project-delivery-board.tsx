@@ -86,6 +86,7 @@ type ProjectDeliveryBoardProps = {
    * deliverables panel — not as a chip on every row.
    */
   deliverableAssigneeColumnPending?: boolean;
+  deliverableReadState?: "readable" | "pending" | "unreadable";
   /**
    * Whether this member may change records at all. Required, not optional: an
    * optional write flag defaulting to true is how a read-only viewer gets a
@@ -118,6 +119,7 @@ export function ProjectDeliveryBoard({
   budgetSummaryByDeliverableId,
   assigneeRoster,
   deliverableAssigneeColumnPending = false,
+  deliverableReadState = "readable",
   canWrite,
 }: ProjectDeliveryBoardProps) {
   return (
@@ -600,7 +602,15 @@ export function ProjectDeliveryBoard({
             database who is assigned.
           </SetupPendingNotice>
         ) : null}
-        {!deliverables || deliverables.length === 0 ? (
+        {deliverableReadState === "pending" ? (
+          <SetupPendingNotice className="mt-5" consequence="Deliverables are unavailable. This does not establish that none exist.">
+            Apply the pending project input migration before reading or adding deliverables here.
+          </SetupPendingNotice>
+        ) : deliverableReadState === "unreadable" ? (
+          <p className="module-empty-state mt-5 text-sm" role="alert">
+            Deliverables could not be read. Reload the page to try again.
+          </p>
+        ) : !deliverables || deliverables.length === 0 ? (
           <div className="module-empty-state mt-5 text-sm">
             No deliverables yet. <a href="#deliverable-add" className="underline underline-offset-2">Add a deliverable</a>.
           </div>
