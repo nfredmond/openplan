@@ -1,10 +1,11 @@
+import { countyRunCustodyError } from "@/lib/models/county-run-custody";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { createClient } from "@/lib/supabase/server";
 import { presentCountyRunDetail } from "@/lib/api/county-onramp-presenters";
-import { refreshCountyRunModelingEvidence } from "@/lib/models/evidence-backbone";
+import { loadCountyRunModelingEvidence } from "@/lib/models/evidence-backbone";
 import { buildCountyRunProvenanceDocument } from "@/lib/models/county-run-provenance";
 
 /**
@@ -32,9 +33,7 @@ const paramsSchema = z.object({
 });
 
 const COUNTY_RUN_COLUMNS =
-  "id, workspace_id, geography_type, geography_id, geography_label, run_name, stage, status_label, " +
-  "enqueue_status, last_enqueued_at, worker_job_id, worker_payload_json, worker_url, " +
-  "worker_dispatch_error, requested_runtime_json, manifest_json, validation_summary_json";
+  "id, workspace_id, geography_type, geography_id, geography_label, run_name, stage, status_label, enqueue_status, last_enqueued_at, worker_job_id, worker_payload_json, worker_url, worker_dispatch_error, requested_runtime_json, manifest_json, validation_summary_json";
 
 type RouteContext = {
   params: Promise<{ countyRunId: string }>;
@@ -76,6 +75,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
     if (!countyRun) {
       return NextResponse.json({ error: "County run not found" }, { status: 404 });
     }
+    const custodyError = countyRunCustodyError(countyRun);
+    if (custodyError) return NextResponse.json({ error: custodyError }, { status: 409 });
 
     // Reuses the detail presenter rather than reshaping the row here: the
     // document must describe the same run the page describes, and a second
@@ -86,22 +87,20 @@ export async function GET(request: NextRequest, context: RouteContext) {
       artifacts: [],
     });
 
-    // Best-effort: the structured evidence is a nicety and its absence is
-    // reported inside the document ("no data sources were recorded") rather
-    // than failing the export. A planner who cannot download the record learns
-    // nothing; one who downloads a record that says what is missing learns the
-    // most important thing about the run.
-    const modelingEvidence = detail.manifest
-      ? await refreshCountyRunModelingEvidence({
-          supabase: supabase as unknown as Parameters<typeof refreshCountyRunModelingEvidence>[0]["supabase"],
-          workspaceId: (countyRun as unknown as { workspace_id: string }).workspace_id,
-          countyRunId: parsedParams.data.countyRunId,
-          manifest: detail.manifest,
-          geographyLabel: detail.geographyLabel,
-        })
-          .then((result) => result?.bundle ?? null)
-          .catch(() => null)
-      : null;
+    // Use the same retained evidence as the detail page and assistant. A GET
+    // must not rebuild or replace claim rows while a planner downloads them.
+    const evidenceResult = await loadCountyRunModelingEvidence({
+      supabase,
+      countyRunId: parsedParams.data.countyRunId,
+      track: "assignment",
+    });
+    if (evidenceResult.error) {
+      audit.warn("county_run_modeling_evidence_lookup_failed", {
+        countyRunId: parsedParams.data.countyRunId,
+        code: evidenceResult.error.code ?? null,
+      });
+      return NextResponse.json({ error: "Modeling evidence could not be read. Retry before downloading this record." }, { status: 503 });
+    }
 
     const document = buildCountyRunProvenanceDocument({
       runName: detail.runName,
@@ -111,7 +110,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       statusLabel: detail.statusLabel ?? null,
       manifest: detail.manifest ?? null,
       validationSummary: (detail.validationSummary as Record<string, unknown> | null) ?? null,
-      modelingEvidence: modelingEvidence ?? detail.modelingEvidence ?? null,
+      modelingEvidence: evidenceResult.evidence,
       generatedAt: new Date().toISOString(),
     });
 

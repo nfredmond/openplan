@@ -140,7 +140,7 @@ record. "PR" means a pull request open on October 12. KI-001 means
 | M15a | Hosted production recipe | In progress, mostly done | [Oct 11](ops/HOSTED_LIVE_2026-10-11.md) | Health checks (A1, PR 254) |
 | M15b | Remote demonstration and trials | In progress, partial | [Oct 11](ops/HOSTED_LIVE_2026-10-11.md) | Invite teams after Stage A |
 | M15c | Customer-owned installation | Later | Audit | Not started |
-| S1 | Comparable model custody | In progress, partial | [Oct 8](reviews/2026-10-08-model-custody-metadata/DISPLAY_VERIFICATION.md) | Tier county runs by rules-v4 (KI-001, PR 244) |
+| S1 | Comparable model custody | In progress, partial | [Oct 8](reviews/2026-10-08-model-custody-metadata/DISPLAY_VERIFICATION.md); [Oct 23 county appendix correction](reviews/2026-10-23-s1-county-tier-custody/STATUS.md) | Review and verify the remaining KI-001 appendix correction after merged PR 244. Complete native custody ingestion and exact UI/report/assistant observation accounting. |
 | S2 | Model structure experiments | Later, partial | Audit | Experiments after S1 |
 | S2a | TimesFM forecasting research | Later | [Sep 5](reviews/2026-09-04-pre-handoff/TIMESFM_TECHNICAL_RESEARCH.md) | Confirm license permits research |
 | S3 | Untouched nationwide validation | Later | Audit | Successor preregistration |
