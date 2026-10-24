@@ -58,7 +58,9 @@ describe("Land Use Plans route boundaries", () => {
     expect(publicSurface).not.toContain("confidential_notes");
     expect(publicSurface).not.toContain("contains_sensitive_locations");
     expect(publicLoader).toContain("published_report_id");
-    expect(publicLoader).toContain('.eq("state", "adopted")');
+    expect(publicLoader).toContain('service.rpc("land_use_plan_publication_source_v1", { p_plan_id: planId })');
+    const publicationSql = readFileSync(path.resolve(__dirname, "../../supabase/migrations/20261023190300_land_use_publication_decision_boundary.sql"), "utf8");
+    expect(publicationSql).toContain("WHERE p.id=p_plan_id AND v.state='adopted' AND v.published_report_id IS NOT NULL");
     const publicPage = readFileSync(path.resolve(__dirname, "../app/(published)/published-plans/[planId]/page.tsx"), "utf8");
     expect(publicPage).toContain("loadPublishedLandUsePlanPacket");
     expect(publicPage).toContain("applicableRequirementKeys");

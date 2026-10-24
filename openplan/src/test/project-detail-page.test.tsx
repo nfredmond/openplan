@@ -182,7 +182,7 @@ const clientInvoicesSelectMock = vi.fn(() => ({ eq: clientInvoicesEqMock }));
 
 // RPC transport fixture preserves independently failed source lanes. SQL/RLS
 // and projections are checked separately, never inferred from these fake rows.
-const budgetRpcMock = vi.fn(async (_name: string, args: { p_project_id: string }) => {
+const budgetRpcMock = vi.fn<(_name: string, args: { p_project_id: string }) => Promise<BudgetAnswer>>(async (_name, args) => {
   const deliverables = await deliverablesLimitMock() as BudgetAnswer;
   if (Array.isArray(deliverables.data)) {
     deliverables.data = deliverables.data.map((row: Record<string, unknown>) => ({ assignee_user_id: null, ...row }));
@@ -541,7 +541,10 @@ vi.mock("@/components/workspaces/workspace-membership-required", () => ({
 }));
 
 vi.mock("@/components/projects/project-record-composer", () => ({
-  ProjectRecordComposer: () => <div data-testid="project-record-composer" />,
+  // Observe the actual page's offered types without duplicating composer buttons.
+  ProjectRecordComposer: ({ recordTypes }: { recordTypes?: readonly string[] }) => (
+    <div data-testid="project-record-composer" data-record-types={recordTypes?.join(",")} />
+  ),
 }));
 
 vi.mock("@/components/projects/project-rtp-linker", () => ({
@@ -1036,6 +1039,61 @@ describe("ProjectDetailPage", () => {
     });
   });
 
+
+  describe("deliverable availability across the real page composition", () => {
+    it.each([
+      ["pending snapshot", { data: null, error: { code: "PGRST202", message: "Could not find the function public.project_budget_inputs_v1(p_project_id) in the schema cache" } }, "pending"],
+      ["denied snapshot", { data: null, error: { code: "42501", message: "permission denied for function public.project_budget_inputs_v1" } }, "unreadable"],
+      ["malformed snapshot", { data: {}, error: null }, "unreadable"],
+      ["pending deliverable source", { data: projectBudgetSnapshotFixture({ project_deliverables: { data: null,
+        error: { code: "42P01", message: 'relation "public.project_deliverables" does not exist' } } }), error: null }, "pending"],
+      ["denied deliverable source", { data: projectBudgetSnapshotFixture({ project_deliverables: { data: null,
+        error: { code: "42501", message: "permission denied for table project_deliverables" } } }), error: null }, "unreadable"],
+    ] as const)("withholds false counts and empty actions for %s", async (_label, answer, state) => {
+      budgetRpcMock.mockResolvedValueOnce(answer);
+      await renderPage("overview");
+      const card = screen.getByText("Deliverables", { selector: ".module-summary-label" }).closest(".module-summary-card") as HTMLElement;
+      expect(within(card).getByText("Unavailable")).toBeInTheDocument();
+      expect(within(card).queryByText("0")).toBeNull();
+      expect(within(card).getByText(state === "pending" ? /setup is pending/ : /source could not be read/)).toBeInTheDocument();
+
+      budgetRpcMock.mockResolvedValueOnce(answer);
+      await rerenderOnTab("delivery");
+      expect(screen.getByTestId("project-record-composer")).toHaveAttribute("data-record-types", "milestone,submittal");
+      const board = document.getElementById("project-deliverables") as HTMLElement;
+      expect(within(board).queryByText(/No deliverables yet/)).toBeNull();
+      expect(within(board).queryByRole("link", { name: "Add a deliverable" })).toBeNull();
+      expect(within(board).queryByLabelText("Percent complete")).toBeNull();
+      expect(within(board).queryByLabelText("Budget (not to exceed)")).toBeNull();
+      expect(within(board).getByText(state === "pending" ? /Apply the pending project input migration/ : /Deliverables could not be read/)).toBeInTheDocument();
+
+      budgetRpcMock.mockResolvedValueOnce(answer);
+      await rerenderOnTab("record");
+      expect(screen.getByText(/This feed may be incomplete/)).toBeInTheDocument();
+      expect(screen.queryByText("No project activity yet.")).toBeNull();
+
+      budgetRpcMock.mockResolvedValueOnce(answer);
+      await rerenderOnTab("funding");
+      const budget = document.getElementById("project-budget-pace") as HTMLElement;
+      expect(within(budget).queryByText(/No deliverables recorded yet/)).toBeNull();
+      expect(within(budget).queryByRole("combobox")).toBeNull();
+      expect(within(budget).queryByText("$0")).toBeNull();
+      expect(budgetRpcMock).toHaveBeenCalledWith("project_budget_inputs_v1", { p_project_id: "project-1" });
+      expect(deliverablesSelectMock).not.toHaveBeenCalled();
+    });
+
+    it("preserves a genuinely empty deliverable count and Add workflow", async () => {
+      await renderPage("overview");
+      const card = screen.getByText("Deliverables", { selector: ".module-summary-label" }).closest(".module-summary-card") as HTMLElement;
+      expect(within(card).getByText("0")).toBeInTheDocument();
+      await rerenderOnTab("delivery");
+      expect(screen.getByTestId("project-record-composer")).toHaveAttribute("data-record-types", "milestone,submittal,deliverable");
+      const board = document.getElementById("project-deliverables") as HTMLElement;
+      expect(within(board).getByText(/No deliverables yet/)).toBeInTheDocument();
+      expect(within(board).getByRole("link", { name: "Add a deliverable" })).toHaveAttribute("href", "#deliverable-add");
+      expect(screen.queryByText(/Deliverables could not be read/)).toBeNull();
+    });
+  });
 
   it("threads the saved estimate source through the page and real documents loader", async () => {
     const sourceId = "22222222-2222-4222-8222-222222222222";
@@ -2385,6 +2443,7 @@ describe("ProjectDetailPage", () => {
       }], error: null });
       spendEntriesLimitMock.mockResolvedValue(answer);
       await renderPage("delivery");
+      expect(screen.getByTestId("project-record-composer")).toHaveAttribute("data-record-types", "milestone,submittal,deliverable");
       const board = document.getElementById("project-deliverables") as HTMLElement;
       expect(within(board).getByText("Budgeted deliverable")).toBeInTheDocument();
       expect(within(board).getByLabelText("Budget (not to exceed)")).toHaveValue(1000);
@@ -2404,6 +2463,7 @@ describe("ProjectDetailPage", () => {
       }], error: null });
       projectBudgetMaybeSingleMock.mockResolvedValue(answer);
       await renderPage("delivery");
+      expect(screen.getByTestId("project-record-composer")).toHaveAttribute("data-record-types", "milestone,submittal,deliverable");
       const board = document.getElementById("project-deliverables") as HTMLElement;
       expect(within(board).getByText("Retained delivery work")).toBeInTheDocument();
       expect(within(board).getByLabelText("Budget (not to exceed)")).toHaveValue(1250.25);

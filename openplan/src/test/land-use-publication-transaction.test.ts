@@ -163,3 +163,74 @@ describe("publication SQL intent, without database execution", () => {
     expect(sql).not.toMatch(/(?:UPDATE|DELETE FROM) public\.land_use_plan_decisions/);
   });
 });
+
+describe("additive publication decision boundary SQL source", () => {
+  const sql = readFileSync(process.env.OPENPLAN_PUBLICATION_BOUNDARY_SQL_FIXTURE ??
+    join(process.cwd(), "supabase/migrations/20261023190300_land_use_publication_decision_boundary.sql"), "utf8");
+  const [publisher, reader] = sql.split("CREATE FUNCTION public.land_use_plan_publication_source_v1");
+  it("excludes every concurrent decision write before choosing a native singleton", () => {
+    const lock = publisher.indexOf("LOCK TABLE public.land_use_plan_decisions IN SHARE MODE NOWAIT;");
+    const count = publisher.indexOf("IF (SELECT count(*) FROM public.land_use_plan_decisions WHERE version_id=adopted.id)<>1 THEN");
+    expect(lock).toBeGreaterThan(0);
+    expect(publisher).toContain("IF current_setting('transaction_isolation')<>'read committed' THEN");
+    expect(count).toBeGreaterThan(lock);
+    expect(count).toBeLessThan(publisher.indexOf("SELECT * INTO decision"));
+    expect(count).toBeLessThan(publisher.indexOf("already_published:="));
+    expect(publisher).toContain("SELECT * INTO decision FROM public.land_use_plan_decisions WHERE version_id=adopted.id;");
+    expect(publisher).not.toContain("ORDER BY decided_on");
+    for (const guard of ["decision.workspace_id IS DISTINCT FROM p_workspace_id", "decision.plan_id IS DISTINCT FROM p_plan_id",
+      "decision.version_content_hash IS DISTINCT FROM p_version_content_hash", "decision.decision_kind NOT IN ('adoption','amendment')"]) expect(publisher).toContain(guard);
+  });
+  it("preserves actor, hash, artifact, manifest and exact replay refusals", () => {
+    for (const guard of ["role IN ('owner','admin','member') FOR SHARE NOWAIT", "extensions.digest(p_snapshot_text,'sha256')",
+      "artifact_count<>1", "artifact.metadata_json->>'kind'='land_use_plan_implementation_report'",
+      "AND adoption_manifest_hash=decision.adoption_manifest_hash)<>1", "jsonb_typeof(manifest_decision) IS DISTINCT FROM 'object'",
+      "The retained adoption decision is unreadable or inconsistent", "artifact.metadata_json->'adoptionManifest' IS DISTINCT FROM decision.adoption_manifest",
+      "AND published_report_id IS NULL", "IF changed<>1 THEN RAISE EXCEPTION", "EXCEPTION WHEN lock_not_available THEN"])
+      expect(publisher).toContain(guard);
+    expect(publisher).toContain("CREATE OR REPLACE FUNCTION public.publish_land_use_plan_version");
+    expect(sql).not.toMatch(/(?:UPDATE|DELETE FROM) public\.land_use_plan_decisions/);
+  });
+  it("reads current identity and all decision kinds with retained evidence in one stable statement", () => {
+    expect(reader).toContain("RETURNS jsonb LANGUAGE sql STABLE SECURITY INVOKER");
+    expect(reader).toContain("WHERE p.id=p_plan_id AND v.state='adopted' AND v.published_report_id IS NOT NULL");
+    expect(reader).toContain("JOIN public.land_use_plan_versions v ON v.id=p.current_adopted_version_id");
+    expect(reader).toContain("LEFT JOIN public.reports r ON r.id=v.published_report_id");
+    expect(reader).toContain("FROM public.land_use_plan_decisions WHERE version_id=v.id LIMIT 2");
+    expect(reader).toContain("FROM public.report_artifacts WHERE report_id=r.id LIMIT 2");
+    expect(reader).toContain("SELECT id,workspace_id,plan_id,version_id,version_content_hash,decision_kind,decision_body,");
+    expect(reader).toContain("instrument_type,instrument_identifier,vote,decided_on,effective_on,review_release_id,");
+    expect(reader).toContain("adoption_manifest,adoption_manifest_hash,");
+    expect(reader).toContain("SELECT id,report_id,artifact_kind,metadata_json");
+    expect(reader).toContain("encode(extensions.digest(convert_to(adoption_manifest::text,'UTF8'),'sha256'),'hex')=adoption_manifest_hash AS manifest_hash_verified");
+    expect(reader).not.toMatch(/ORDER BY|decision_kind IN|decision_kind=/);
+    expect(reader).toContain("REVOKE ALL ON FUNCTION public.land_use_plan_publication_source_v1(uuid) FROM PUBLIC,anon,authenticated,service_role;");
+    expect(reader).toContain("GRANT EXECUTE ON FUNCTION public.land_use_plan_publication_source_v1(uuid) TO service_role;");
+  });
+});
+
+describe("publication peer migration probe wrapper source", () => {
+  const wrapper = readFileSync(join(process.cwd(), "src/test/land-use-implementation-report-transaction-rls.test.ts"), "utf8");
+  const peerStart = wrapper.indexOf('it.skipIf(!LIVE_RLS)("serializes report edits and publication decisions in both native session orders"');
+  const single = wrapper.slice(0, peerStart);
+  const peer = wrapper.slice(peerStart);
+  it("refuses the unsupported peer probe before resolving a stack or preparing seed fixtures", () => {
+    expect(peerStart).toBeGreaterThan(0);
+    const refusal = 'if (process.env.OPENPLAN_PUBLICATION_BOUNDARY_MIGRATION_PROBE === "1") {\n' +
+      '    throw new Error("Publication peer fixtures require the candidate committed on the isolated stack in both sessions; use the rollback migration probe only with the single-session fixture.");\n  }';
+    const guard = peer.indexOf(refusal);
+    expect(guard).toBeGreaterThan(0);
+    for (const preparation of ["resolveLocalDbContainer()", "requireContractVerificationStack(container)", "randomUUID()",
+      "readFileSync(", "const run =", "result = run(", "cleanup = run("]) {
+      expect(peer.indexOf(preparation), preparation).toBeGreaterThan(guard);
+    }
+    expect(peer).not.toContain("${publicationMigration}");
+    expect(peer).not.toContain("const publicationMigration");
+  });
+  it("retains the rollback-only candidate migration in the single-session fixture", () => {
+    expect(single).toContain('const publicationMigration = process.env.OPENPLAN_PUBLICATION_BOUNDARY_MIGRATION_PROBE === "1"');
+    expect(single).toContain('readFileSync("supabase/migrations/20261023190300_land_use_publication_decision_boundary.sql", "utf8")');
+    expect(single).toContain("${publicationMigration}");
+    expect(single).toContain("ROLLBACK;");
+  });
+});
