@@ -1,0 +1,65 @@
+[
+  {
+    "name": "comment",
+    "expected": "survive",
+    "exit_code": 0,
+    "expected_observed": true,
+    "restored_sha256": "5f0bcc06493797f2c3fdc25bc5d2d72b8a4979086bad4f81a55e73571361ca42"
+  },
+  {
+    "name": "unknown-zone",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "5f0bcc06493797f2c3fdc25bc5d2d72b8a4979086bad4f81a55e73571361ca42"
+  },
+  {
+    "name": "all-zones",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "5f0bcc06493797f2c3fdc25bc5d2d72b8a4979086bad4f81a55e73571361ca42"
+  },
+  {
+    "name": "source",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "5f0bcc06493797f2c3fdc25bc5d2d72b8a4979086bad4f81a55e73571361ca42"
+  },
+  {
+    "name": "conservation",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "5f0bcc06493797f2c3fdc25bc5d2d72b8a4979086bad4f81a55e73571361ca42"
+  },
+  {
+    "name": "matrix-order",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "5f0bcc06493797f2c3fdc25bc5d2d72b8a4979086bad4f81a55e73571361ca42"
+  },
+  {
+    "name": "household-exclusion",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "5f0bcc06493797f2c3fdc25bc5d2d72b8a4979086bad4f81a55e73571361ca42"
+  },
+  {
+    "name": "person-exclusion",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "5f0bcc06493797f2c3fdc25bc5d2d72b8a4979086bad4f81a55e73571361ca42"
+  },
+  {
+    "name": "duplicate-zone",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "5f0bcc06493797f2c3fdc25bc5d2d72b8a4979086bad4f81a55e73571361ca42"
+  }
+]

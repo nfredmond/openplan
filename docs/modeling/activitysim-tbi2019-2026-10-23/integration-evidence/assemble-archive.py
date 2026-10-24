@@ -31,12 +31,16 @@ After extraction, the runnable data directory is `inputs/bundle`. Layer
 `inputs/runtime-configs`, `inputs/bundle/configs`, then `stock_configs` with
 ActivitySim 1.5.1 under CPython 3.11. For the candidate, prepend
 `inputs/verified-candidate-overlay`. Use a new output directory. Retain all
-households. Run through `systemd-run --user --scope -p MemoryMax=6G
+retained households. Run through `systemd-run --user --scope -p MemoryMax=6G
 -p MemorySwapMax=0`. The archived run recipe documents the original command
 and configuration order. Installed dependencies are pinned in the environment
 inventories; this archive is not a hermetic interpreter installation.
 
-`inputs/common_population` retains the full realized population and diagnostics.
+`inputs/common_population` and `inputs/bundle-all704` retain all 704 source zones.
+`inputs/bundle` excludes the 66 identified MVTA-area zones, their resident
+households and their destinations. Its manifest records exact exclusions and
+ordered matrix positions. This does not resolve MVTA dependence outside those
+cities. The common population retains the full realized population and diagnostics.
 The owned pickle checkpoint supports local interruption recovery only. The CSV
 and canonical JSON common-population package is the portable population record.
 The input inventory hashes every included file. The archive's external custody

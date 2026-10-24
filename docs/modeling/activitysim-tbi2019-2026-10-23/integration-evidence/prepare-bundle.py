@@ -26,11 +26,23 @@ expected=common.file_descriptor(pop/common.MANIFEST_NAME)
 # capped process. Copy only after complete request and artifact verification.
 original_expansion=mtc.expand_skims
 mtc.expand_skims=lambda **kwargs:copy_expansion(ROOT/'expanded-skims',**kwargs)
-result=builder.build_activitysim_input_bundle(screening_run_dir=str(source),output_dir=str(ROOT/'bundle'),
+result=builder.build_activitysim_input_bundle(screening_run_dir=str(source),output_dir=str(ROOT/'bundle-all704'),
  population_source='census',config_package='mtc',retained_population={'directory':str(pop),'manifest':expected},
  stock_configs_dir='/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/examples/prototype_mtc/configs',
  transit_config=json.loads((EVIDENCE/'transit-config.json').read_text()))
 mtc.expand_skims=original_expansion
+(EVIDENCE/'bundle-all704-result.json').write_text(json.dumps(result,indent=2)+'\n')
+print(json.dumps(result),flush=True)
+# Free the full builder result before streaming the geographic derivative.
+import gc
+from activitysim_geographic_subset import subset_bundle
+del result;gc.collect()
+coverage=json.loads((EVIDENCE/'coverage.json').read_text())
+result=subset_bundle(ROOT/'bundle-all704',ROOT/'bundle',
+ [row['zone_id'] for row in coverage['zone_exclusions']],
+ reason='mvta_member_city_overlap_service_missing',
+ source={'coverage_sha256':hashlib.sha256((EVIDENCE/'coverage.json').read_bytes()).hexdigest(),
+         'record':str(EVIDENCE/'coverage.json')})
 (EVIDENCE/'bundle-result.json').write_text(json.dumps(result,indent=2)+'\n')
 print(json.dumps(result),flush=True)
 # Complete the input archive before the controller starts either modeled arm.

@@ -9,6 +9,8 @@ preparation run completes.
 The [decision addendum](INTEGRATION_PREREGISTRATION_ADDENDUM.md) records the
 lead's four decisions before outcome access. The [source record](INTEGRATION_SOURCES.md)
 contains fare quotations, effective dates, source links and coverage limits.
+The [geographic exclusion addendum](INTEGRATION_GEOGRAPHIC_EXCLUSION_ADDENDUM.md)
+separates the full 704-zone source archive from the shared 638-zone model domain.
 The [verification record](INTEGRATION_VERIFICATION.md) separates synthetic,
 source and native evidence.
 
@@ -27,7 +29,7 @@ source and native evidence.
 | MTC matrix package | Present. 826 matrices: 718 transit, 30 time, 33 distance and 45 inherited zero fields. The raw transit NPZ hash matches the independent standalone preparation exactly. |
 | Transit schedules | Present for the retained Metro Transit feed, October 8 service: 8,782 active trips, five configured departures. This is one departure per period, not a period average. |
 | Transit fares | Partially present. Published 2017 rates remain documented for 2019. Explicit single-boarding pricing covers 79 named express routes and three tram routes. 106 route fares, transfers, concessions, Northstar products and cost-base-year alignment remain unsupported. Unknown fares remain NaN with mode-choice usability false. |
-| MVTA | Unavailable. No freely retrievable 2019 feed acquired in the bounded search. Member-city overlap masks 66 tracts as transit endpoints. This does not establish complete MVTA-dependent trip exclusion. |
+| MVTA | Unavailable. No freely retrievable 2019 feed acquired in the bounded search. Member-city overlap excludes 66 tracts, their resident households and their destinations from both model arms; the full source archive preserves them. This does not establish complete MVTA-dependent trip exclusion. |
 | Drive-to-transit | Unavailable, explicitly excluded. Published 2019 inventory retained, but no verified entrance-to-road-node-to-stop crosswalk. Zero supplied connectors. |
 | Employment | Present. LODES7 2019 WAC, 18,378 selected blocks and 1,813,674 jobs across all 704 tracts. Existing MTC sector pooling remains disclosed. |
 | School destinations | Qualified proxy. ACS enrollment by residence, not observed school capacities or school attendance locations. |
@@ -46,7 +48,7 @@ hash remains `d00206802218a92d31dceea4c108c74cab540dadd8c90d9d1f21e8b11b99c392`.
 |---|---|
 | Development household outside the frozen region | 978 of 6,019 development households. |
 | Missing development home county | 0 of 6,019 development households. |
-| MVTA member-city overlap | 66 of 704 zones; 638 remain outside this mask. The mask retains all original zone IDs and makes affected transit endpoint values unavailable. |
+| MVTA member-city overlap | 66 of 704 zones; 638 remain outside this mask. The runtime derivative removes these zones, resident households and destinations, and slices every matrix by the retained positions. Actual synthetic counts await bundle completion. Original source IDs and the full parent remain preserved. |
 | No centroid walk access to supplied service after the mask | 245 of 704 zones, including the 66 MVTA-mask zones and 179 other zones; 459 have walk access. This is not a household exclusion count. |
 | Missing route-fare classification | 106 of 188 feed routes. Routes and origin-destination pairs are different denominators. |
 | AM generic transit path with unknown fare | 128,881 of 129,728 reachable directed pairs. These are path records, not trips, people or choices. |

@@ -116,3 +116,18 @@ Five tests pass from the CI working directory, and a targeted mutation restores
 the dependency and fails the new directory-independence assertion. The initial
 four-test error log remains retained. This raises the scoped Python total to
 149 passed tests, with four stock-path skips; TypeScript remains 34 passed.
+
+## Geographic exclusion derivative
+
+Eleven new tests pass from both the repository root and CI test directory. They
+cover whole-household removal, person conservation, ordered destination and skim
+slicing, unchanged parent files, copied settings, hashed outputs and invalid-input
+refusals. Nine mutation controls comprise one harmless survivor and eight intended
+assertion failures. Exact helper bytes are restored after every control. The
+blind category is historical service coverage and scientific eligibility:
+synthetic fixtures cannot establish either.
+
+The cumulative scoped count is 160 Python tests passed, four explicit stock-path
+skips, and 34 TypeScript tests passed. Five mutation campaigns contain 65 controls:
+six harmless survivors and 59 targeted assertion failures. Earlier incidental
+error controls remain retained and do not enter those counts.

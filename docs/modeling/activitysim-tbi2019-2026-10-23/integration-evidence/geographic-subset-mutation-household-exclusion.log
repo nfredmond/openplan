@@ -1,0 +1,30 @@
+test_all_zones_refused (test_activitysim_geographic_subset.GeographicSubsetTests.test_all_zones_refused) ... ok
+test_duplicate_person_refused (test_activitysim_geographic_subset.GeographicSubsetTests.test_duplicate_person_refused) ... ok
+test_duplicate_zone_refused (test_activitysim_geographic_subset.GeographicSubsetTests.test_duplicate_zone_refused) ... ok
+test_existing_destination_refused (test_activitysim_geographic_subset.GeographicSubsetTests.test_existing_destination_refused) ... ok
+test_household_size_refused (test_activitysim_geographic_subset.GeographicSubsetTests.test_household_size_refused) ... ok
+test_matrix_shape_refused (test_activitysim_geographic_subset.GeographicSubsetTests.test_matrix_shape_refused) ... ok
+test_source_required (test_activitysim_geographic_subset.GeographicSubsetTests.test_source_required) ... ok
+test_subset_preserves_order_whole_households_and_parent (test_activitysim_geographic_subset.GeographicSubsetTests.test_subset_preserves_order_whole_households_and_parent) ... FAIL
+test_unknown_home_refused (test_activitysim_geographic_subset.GeographicSubsetTests.test_unknown_home_refused) ... ok
+test_unknown_person_household_refused (test_activitysim_geographic_subset.GeographicSubsetTests.test_unknown_person_household_refused) ... ok
+test_unknown_zone_refused (test_activitysim_geographic_subset.GeographicSubsetTests.test_unknown_zone_refused) ... ok
+
+======================================================================
+FAIL: test_subset_preserves_order_whole_households_and_parent (test_activitysim_geographic_subset.GeographicSubsetTests.test_subset_preserves_order_whole_households_and_parent)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/scripts/modeling/tests/test_activitysim_geographic_subset.py", line 43, in test_subset_preserves_order_whole_households_and_parent
+    self.assertEqual(result['households'], {'parent': 3, 'retained': 2, 'excluded': 1})
+AssertionError: {'parent': 3, 'retained': 3, 'excluded': 0} != {'parent': 3, 'retained': 2, 'excluded': 1}
+- {'excluded': 0, 'parent': 3, 'retained': 3}
+?              ^                           ^
+
++ {'excluded': 1, 'parent': 3, 'retained': 2}
+?              ^                           ^
+
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.029s
+
+FAILED (failures=1)
