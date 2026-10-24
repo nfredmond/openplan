@@ -92,6 +92,9 @@ Use the [current modeling status](modeling/STATUS_AND_VALIDATION.md) before inte
 - [Human observation protocol](product/PLANNER_OBSERVATION_PROTOCOL.md): actual planner/recipient and public-participant research, separate from simulated users.
 - [First-week harness](../qa-harness/FIRST-WEEK-HARNESS.md): agent discovery,
   outcome verification, evidence capture and limits.
+- [Authoritative count-station sources, access terms and S2 metadata coverage](modeling/S1_COUNT_STATION_EVIDENCE_2026-10-23.md).
+- [Count observation interval implementation and retained-input coverage](modeling/S1_COUNT_OBSERVATION_UNCERTAINTY_2026-10-23.md)
+  and [primary-source error models](modeling/COUNT_OBSERVATION_ERROR_MODELS_2026-10-23.md).
 - [Model observation/validation research](modeling/VALIDATION_OBSERVATION_UNCERTAINTY_RESEARCH_2026-08-25.md),
   [frozen nationwide protocol](modeling/NATIONWIDE_VALIDATION_PREREGISTRATION_V1.json)
   and [engine landscape](modeling/OPEN_SOURCE_MODEL_LANDSCAPE.md).
