@@ -1,0 +1,255 @@
+{
+  "controls": [
+    {
+      "name": "sealed_runtime_reproduces_wrong_volume",
+      "command": [
+        "/home/nathaniel/.local/state/openplan/s2-cordon-20261023/venv/bin/python3",
+        "-B",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/scripts/modeling/s2_cordon/test_measurement_contract.py",
+        "-v",
+        "MeasurementContractTests.test_small_and_large_results_preserve_pce_flow"
+      ],
+      "exit_code": 1,
+      "expected_assertion": "PCE flow must remain 360, not the 0.6 capacity ratio",
+      "matched_expectation": true,
+      "output": "test_small_and_large_results_preserve_pce_flow (__main__.MeasurementContractTests.test_small_and_large_results_preserve_pce_flow) ... \n  test_small_and_large_results_preserve_pce_flow (__main__.MeasurementContractTests.test_small_and_large_results_preserve_pce_flow) (links=40000) ... FAIL\n\n======================================================================\nFAIL: test_small_and_large_results_preserve_pce_flow (__main__.MeasurementContractTests.test_small_and_large_results_preserve_pce_flow) (links=40000)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/scripts/modeling/s2_cordon/test_measurement_contract.py\", line 91, in test_small_and_large_results_preserve_pce_flow\n    self.assertEqual(float(frame.PCE_tot.min()), 360.,\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n                     'PCE flow must remain 360, not the 0.6 capacity ratio')\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 0.6 != 360.0 : PCE flow must remain 360, not the 0.6 capacity ratio\n\n----------------------------------------------------------------------\nRan 1 test in 0.075s\n\nFAILED (failures=1)\n",
+      "output_sha256": "79014b8281000d3f6246af0e81bc7ab5e29c9e9828558b44ec40e373f3cf9d00"
+    },
+    {
+      "name": "explicit_division_diagnosis_on_sealed_runtime",
+      "command": [
+        "/home/nathaniel/.local/state/openplan/s2-cordon-20261023/venv/bin/python3",
+        "-B",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/scripts/modeling/s2_cordon/test_measurement_contract.py",
+        "-v",
+        "MeasurementContractTests.test_explicit_division_preserves_the_same_flow"
+      ],
+      "exit_code": 0,
+      "expected_assertion": null,
+      "matched_expectation": true,
+      "output": "test_explicit_division_preserves_the_same_flow (__main__.MeasurementContractTests.test_explicit_division_preserves_the_same_flow) ... ok\n\n----------------------------------------------------------------------\nRan 1 test in 0.133s\n\nOK\n",
+      "output_sha256": "307066b9ec47e64fe184d0c1584b78d1bd2c473c8c40061f5f1ba316b45a6002"
+    },
+    {
+      "name": "harmless_runtime_comment_survives",
+      "command": [
+        "/home/nathaniel/.local/state/openplan/s2-cordon-py311-round5-20261023/venv/bin/python3",
+        "-B",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/workers/aequilibrae_worker/test_assignment_runtime.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "expected_assertion": null,
+      "matched_expectation": true,
+      "output": "test_builder_refuses_python314_before_engine_construction (__main__.RuntimeAdmissionTests.test_builder_refuses_python314_before_engine_construction) ... ok\ntest_preflight_refuses_python314_before_numerical_import (__main__.RuntimeAdmissionTests.test_preflight_refuses_python314_before_numerical_import) ... ok\ntest_supported_preflight_still_checks_packages_and_imports (__main__.RuntimeAdmissionTests.test_supported_preflight_still_checks_packages_and_imports) ... ok\ntest_unreviewed_interpreters_are_refused (__main__.RuntimeAdmissionTests.test_unreviewed_interpreters_are_refused) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.003s\n\nOK\n",
+      "output_sha256": "b269195a8e898f646921467bdf01586bdfb1f7e8aaa32cd853834a1819a0f994"
+    },
+    {
+      "name": "harmless_native_contract_survives",
+      "command": [
+        "/home/nathaniel/.local/state/openplan/s2-cordon-py311-round5-20261023/venv/bin/python3",
+        "-B",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/scripts/modeling/s2_cordon/test_measurement_contract.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "expected_assertion": null,
+      "matched_expectation": true,
+      "output": "test_county_assignment_refuses_before_writing_demand (__main__.MeasurementContractTests.test_county_assignment_refuses_before_writing_demand) ... ok\ntest_explicit_division_preserves_the_same_flow (__main__.MeasurementContractTests.test_explicit_division_preserves_the_same_flow) ... ok\ntest_small_and_large_results_preserve_pce_flow (__main__.MeasurementContractTests.test_small_and_large_results_preserve_pce_flow) ... ok\ntest_synthetic_lock_uses_test_interpreter (__main__.MeasurementContractTests.test_synthetic_lock_uses_test_interpreter) ... ok\ntest_trace_refuses_a_non_development_county_before_reading (__main__.MeasurementContractTests.test_trace_refuses_a_non_development_county_before_reading) ... ok\n\n----------------------------------------------------------------------\nRan 5 tests in 0.215s\n\nOK\n",
+      "output_sha256": "55a8d64093287227b356012363d8ddda2f596baf79e6829c1b768bfb9e2034ef"
+    },
+    {
+      "name": "harmless_launcher_fixture_survives",
+      "command": [
+        "/home/nathaniel/.local/state/openplan/s2-cordon-py311-round5-20261023/venv/bin/python3",
+        "-B",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/workers/aequilibrae_worker/test_local_launchers.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "expected_assertion": null,
+      "matched_expectation": true,
+      "output": "test_activitysim_exec_binding_and_calibrate_option_unchanged (__main__.LauncherTests.test_activitysim_exec_binding_and_calibrate_option_unchanged) ... ok\ntest_activitysim_missing_or_unusable_exec_uses_python3_fallback (__main__.LauncherTests.test_activitysim_missing_or_unusable_exec_uses_python3_fallback) ... ok\ntest_activitysim_preflight_fallback_preserves_cli_configuration (__main__.LauncherTests.test_activitysim_preflight_fallback_preserves_cli_configuration) ... ok\ntest_activitysim_preflight_uses_external_when_local_and_system_helpers_unavailable (__main__.LauncherTests.test_activitysim_preflight_uses_external_when_local_and_system_helpers_unavailable) ... ok\ntest_compatible_automatic_selection (__main__.LauncherTests.test_compatible_automatic_selection) ... ok\ntest_explicit_external_path_with_spaces (__main__.LauncherTests.test_explicit_external_path_with_spaces) ... ok\ntest_explicit_invalid_selection_never_falls_back (__main__.LauncherTests.test_explicit_invalid_selection_never_falls_back) ... ok\ntest_help_and_unknown_argument_do_not_enter_workers (__main__.LauncherTests.test_help_and_unknown_argument_do_not_enter_workers) ... ok\ntest_import_failure_refused_even_with_compatible_versions (__main__.LauncherTests.test_import_failure_refused_even_with_compatible_versions) ... ok\ntest_missing_packaging_refused_before_worker_entry (__main__.LauncherTests.test_missing_packaging_refused_before_worker_entry) ... ok\ntest_requirements_file_controls_acceptance (__main__.LauncherTests.test_requirements_file_controls_acceptance) ... ok\ntest_unsupported_automatic_candidate_is_disclosed_and_skipped (__main__.LauncherTests.test_unsupported_automatic_candidate_is_disclosed_and_skipped) ... ok\ntest_unsupported_versions_refused_before_any_worker_entry (__main__.LauncherTests.test_unsupported_versions_refused_before_any_worker_entry) ... ok\ntest_actual_requirements_and_comments (__main__.RequirementsTests.test_actual_requirements_and_comments) ... ok\ntest_ambiguous_or_unreadable_requirements_refused (__main__.RequirementsTests.test_ambiguous_or_unreadable_requirements_refused) ... ok\ntest_missing_and_unknown_versions_refused (__main__.RequirementsTests.test_missing_and_unknown_versions_refused) ... ok\ntest_pep440_specifiers (__main__.RequirementsTests.test_pep440_specifiers) ... ok\n\n----------------------------------------------------------------------\nRan 17 tests in 2.774s\n\nOK\n",
+      "output_sha256": "50d75be07937a959352089f1b4faab7a5709789013e280c487f37db36873a3d3"
+    },
+    {
+      "name": "remove_interpreter_admission",
+      "command": [
+        "/home/nathaniel/.local/state/openplan/s2-cordon-py311-round5-20261023/venv/bin/python3",
+        "-B",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/workers/aequilibrae_worker/test_assignment_runtime.py",
+        "-v",
+        "RuntimeAdmissionTests.test_builder_refuses_python314_before_engine_construction"
+      ],
+      "exit_code": 1,
+      "expected_assertion": "Engine factory must not run",
+      "matched_expectation": true,
+      "output": "test_builder_refuses_python314_before_engine_construction (__main__.RuntimeAdmissionTests.test_builder_refuses_python314_before_engine_construction) ... FAIL\n\n======================================================================\nFAIL: test_builder_refuses_python314_before_engine_construction (__main__.RuntimeAdmissionTests.test_builder_refuses_python314_before_engine_construction)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/workers/aequilibrae_worker/test_assignment_runtime.py\", line 29, in test_builder_refuses_python314_before_engine_construction\n    assignment_settings.build_traffic_assignment(factory, [], profile=profile)\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/workers/aequilibrae_worker/assignment_settings.py\", line 319, in build_traffic_assignment\n    assignment = traffic_assignment_factory()\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/unittest/mock.py\", line 1124, in __call__\n    return self._mock_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/unittest/mock.py\", line 1128, in _mock_call\n    return self._execute_mock_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/unittest/mock.py\", line 1183, in _execute_mock_call\n    raise effect\nAssertionError: Engine factory must not run\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n",
+      "output_sha256": "314e0a31b7c979d574a3aa42d4fafb7ec651e6be8643284b027a41937c476432"
+    },
+    {
+      "name": "remove_worker_factory_admission",
+      "command": [
+        "/home/nathaniel/.local/state/openplan/s2-cordon-py311-round5-20261023/venv/bin/python3",
+        "-B",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/workers/aequilibrae_worker/test_assignment_runtime.py",
+        "-v",
+        "RuntimeAdmissionTests.test_builder_refuses_python314_before_engine_construction"
+      ],
+      "exit_code": 1,
+      "expected_assertion": "Engine factory must not run",
+      "matched_expectation": true,
+      "output": "test_builder_refuses_python314_before_engine_construction (__main__.RuntimeAdmissionTests.test_builder_refuses_python314_before_engine_construction) ... FAIL\n\n======================================================================\nFAIL: test_builder_refuses_python314_before_engine_construction (__main__.RuntimeAdmissionTests.test_builder_refuses_python314_before_engine_construction)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/workers/aequilibrae_worker/test_assignment_runtime.py\", line 29, in test_builder_refuses_python314_before_engine_construction\n    assignment_settings.build_traffic_assignment(factory, [], profile=profile)\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/workers/aequilibrae_worker/assignment_settings.py\", line 318, in build_traffic_assignment\n    assignment = traffic_assignment_factory()\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/unittest/mock.py\", line 1124, in __call__\n    return self._mock_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/unittest/mock.py\", line 1128, in _mock_call\n    return self._execute_mock_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/unittest/mock.py\", line 1183, in _execute_mock_call\n    raise effect\nAssertionError: Engine factory must not run\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n",
+      "output_sha256": "3d3697b8febfd111896f25203a8c7faf855d4ac96f97bf9abb584eca0d313cd3"
+    },
+    {
+      "name": "remove_launcher_admission",
+      "command": [
+        "/home/nathaniel/.local/state/openplan/s2-cordon-py311-round5-20261023/venv/bin/python3",
+        "-B",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/workers/aequilibrae_worker/test_assignment_runtime.py",
+        "-v",
+        "RuntimeAdmissionTests.test_preflight_refuses_python314_before_numerical_import"
+      ],
+      "exit_code": 1,
+      "expected_assertion": "Unsupported interpreter must fail preflight",
+      "matched_expectation": true,
+      "output": "AequilibraE numerical requirements and imports passed: /home/nathaniel/.local/state/openplan/s2-cordon-py311-round5-20261023/venv/bin/python3\ntest_preflight_refuses_python314_before_numerical_import (__main__.RuntimeAdmissionTests.test_preflight_refuses_python314_before_numerical_import) ... FAIL\n\n======================================================================\nFAIL: test_preflight_refuses_python314_before_numerical_import (__main__.RuntimeAdmissionTests.test_preflight_refuses_python314_before_numerical_import)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/workers/aequilibrae_worker/test_assignment_runtime.py\", line 39, in test_preflight_refuses_python314_before_numerical_import\n    self.assertEqual(result, 1, 'Unsupported interpreter must fail preflight')\nAssertionError: 0 != 1 : Unsupported interpreter must fail preflight\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n",
+      "output_sha256": "0d5e57a48bc2ed76feaaea814be684326679f8a0d82d3fac337f970c66ce2f00"
+    },
+    {
+      "name": "remove_county_admission",
+      "command": [
+        "/home/nathaniel/.local/state/openplan/s2-cordon-py311-round5-20261023/venv/bin/python3",
+        "-B",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/scripts/modeling/s2_cordon/test_measurement_contract.py",
+        "-v",
+        "MeasurementContractTests.test_county_assignment_refuses_before_writing_demand"
+      ],
+      "exit_code": 1,
+      "expected_assertion": "Demand output must not be created",
+      "matched_expectation": true,
+      "output": "test_county_assignment_refuses_before_writing_demand (__main__.MeasurementContractTests.test_county_assignment_refuses_before_writing_demand) ... FAIL\n\n======================================================================\nFAIL: test_county_assignment_refuses_before_writing_demand (__main__.MeasurementContractTests.test_county_assignment_refuses_before_writing_demand)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/scripts/modeling/s2_cordon/test_measurement_contract.py\", line 63, in test_county_assignment_refuses_before_writing_demand\n    screening_runtime.run_assignment(None, {}, None, None, {})\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/scripts/modeling/screening_runtime.py\", line 3111, in run_assignment\n    ensure_dir(run_output_dir)\n  File \"/home/nathaniel/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/unittest/mock.py\", line 1124, in __call__\n    return self._mock_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/unittest/mock.py\", line 1128, in _mock_call\n    return self._execute_mock_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/unittest/mock.py\", line 1183, in _execute_mock_call\n    raise effect\nAssertionError: Demand output must not be created\n\n----------------------------------------------------------------------\nRan 1 test in 0.025s\n\nFAILED (failures=1)\n",
+      "output_sha256": "cff00c308e686c3fd24743d045fd50685b93eaed426b065f60756dd359a31236"
+    },
+    {
+      "name": "admit_other_interpreters",
+      "command": [
+        "/home/nathaniel/.local/state/openplan/s2-cordon-py311-round5-20261023/venv/bin/python3",
+        "-B",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/workers/aequilibrae_worker/test_assignment_runtime.py",
+        "-v",
+        "RuntimeAdmissionTests.test_unreviewed_interpreters_are_refused"
+      ],
+      "exit_code": 1,
+      "expected_assertion": "ValueError not raised",
+      "matched_expectation": true,
+      "output": "test_unreviewed_interpreters_are_refused (__main__.RuntimeAdmissionTests.test_unreviewed_interpreters_are_refused) ... \n  test_unreviewed_interpreters_are_refused (__main__.RuntimeAdmissionTests.test_unreviewed_interpreters_are_refused) (version=(3, 11, 0), implementation='PyPy') ... FAIL\n\n======================================================================\nFAIL: test_unreviewed_interpreters_are_refused (__main__.RuntimeAdmissionTests.test_unreviewed_interpreters_are_refused) (version=(3, 11, 0), implementation='PyPy')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/workers/aequilibrae_worker/test_assignment_runtime.py\", line 18, in test_unreviewed_interpreters_are_refused\n    with self.subTest(version=version, implementation=implementation), \\\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n",
+      "output_sha256": "2b80fe3d9c5f967ad69d93f770c68c1d12beb0f49b2ba5a94f7c37e55ea7c446"
+    },
+    {
+      "name": "remove_development_scope_refusal",
+      "command": [
+        "/home/nathaniel/.local/state/openplan/s2-cordon-py311-round5-20261023/venv/bin/python3",
+        "-B",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/scripts/modeling/s2_cordon/test_measurement_contract.py",
+        "-v",
+        "MeasurementContractTests.test_trace_refuses_a_non_development_county_before_reading"
+      ],
+      "exit_code": 1,
+      "expected_assertion": "Unapproved source must not be read",
+      "matched_expectation": true,
+      "output": "test_trace_refuses_a_non_development_county_before_reading (__main__.MeasurementContractTests.test_trace_refuses_a_non_development_county_before_reading) ... FAIL\n\n======================================================================\nFAIL: test_trace_refuses_a_non_development_county_before_reading (__main__.MeasurementContractTests.test_trace_refuses_a_non_development_county_before_reading)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/scripts/modeling/s2_cordon/test_measurement_contract.py\", line 71, in test_trace_refuses_a_non_development_county_before_reading\n    trace.trace(Path('/unused'), Path('/unused'), 'not-development', Path('/unused'))\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/scripts/modeling/s2_cordon/trace_retained_measurement.py\", line 42, in trace\n    od = pd.read_csv(retained(inputs / 'package/od_trip_matrix.csv'), index_col=0)\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/unittest/mock.py\", line 1124, in __call__\n    return self._mock_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/unittest/mock.py\", line 1128, in _mock_call\n    return self._execute_mock_call(*args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/unittest/mock.py\", line 1183, in _execute_mock_call\n    raise effect\nAssertionError: Unapproved source must not be read\n\n----------------------------------------------------------------------\nRan 1 test in 0.003s\n\nFAILED (failures=1)\n",
+      "output_sha256": "8b23bbc01e7d1e1804758c3459a12d8f56eebc36fcfb7ce13fded70f708d3844"
+    },
+    {
+      "name": "restore_frozen_interpreter_in_synthetic_fixture",
+      "command": [
+        "/home/nathaniel/.local/state/openplan/s2-cordon-py311-round5-20261023/venv/bin/python3",
+        "-B",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/scripts/modeling/s2_cordon/test_measurement_contract.py",
+        "-v",
+        "MeasurementContractTests.test_synthetic_lock_uses_test_interpreter"
+      ],
+      "exit_code": 1,
+      "expected_assertion": "Synthetic lock must use the test interpreter",
+      "matched_expectation": true,
+      "output": "test_synthetic_lock_uses_test_interpreter (__main__.MeasurementContractTests.test_synthetic_lock_uses_test_interpreter) ... FAIL\n\n======================================================================\nFAIL: test_synthetic_lock_uses_test_interpreter (__main__.MeasurementContractTests.test_synthetic_lock_uses_test_interpreter)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/scripts/modeling/s2_cordon/test_measurement_contract.py\", line 50, in test_synthetic_lock_uses_test_interpreter\n    self.assertEqual(command[command.index('-B') - 1], sys.executable,\nAssertionError: '/hom[20 chars]tate/openplan/s2-cordon-20261023/venv/bin/python3' != '/hom[20 chars]tate/openplan/s2-cordon-py311-round5-20261023/venv/bin/python3'\n- /home/nathaniel/.local/state/openplan/s2-cordon-20261023/venv/bin/python3\n+ /home/nathaniel/.local/state/openplan/s2-cordon-py311-round5-20261023/venv/bin/python3\n?                                                 +++++++++++++\n : Synthetic lock must use the test interpreter\n\n----------------------------------------------------------------------\nRan 1 test in 0.098s\n\nFAILED (failures=1)\n",
+      "output_sha256": "5c06b425fd45fee2e8df59996c1caa14a9db02433855e63c019fa7e8a91dea33"
+    },
+    {
+      "name": "wrong_solver_flow_fails_contract",
+      "command": [
+        "/home/nathaniel/.local/state/openplan/s2-cordon-py311-round5-20261023/venv/bin/python3",
+        "-B",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/scripts/modeling/s2_cordon/test_measurement_contract.py",
+        "-v",
+        "MeasurementContractTests.test_explicit_division_preserves_the_same_flow"
+      ],
+      "exit_code": 1,
+      "expected_assertion": "Explicit division must preserve flow",
+      "matched_expectation": true,
+      "output": "test_explicit_division_preserves_the_same_flow (__main__.MeasurementContractTests.test_explicit_division_preserves_the_same_flow) ... FAIL\n\n======================================================================\nFAIL: test_explicit_division_preserves_the_same_flow (__main__.MeasurementContractTests.test_explicit_division_preserves_the_same_flow)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/scripts/modeling/s2_cordon/test_measurement_contract.py\", line 84, in test_explicit_division_preserves_the_same_flow\n    self.assertEqual(float(frame.PCE_tot.min()), 360., 'Explicit division must preserve flow')\nAssertionError: 0.6 != 360.0 : Explicit division must preserve flow\n\n----------------------------------------------------------------------\nRan 1 test in 0.072s\n\nFAILED (failures=1)\n",
+      "output_sha256": "fce4d975bae9b1dd10db4c247e439c41121c455aec4bc9975005bbff0a7a3d3a"
+    },
+    {
+      "name": "restored_runtime_suite",
+      "command": [
+        "/home/nathaniel/.local/state/openplan/s2-cordon-py311-round5-20261023/venv/bin/python3",
+        "-B",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/workers/aequilibrae_worker/test_assignment_runtime.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "expected_assertion": null,
+      "matched_expectation": true,
+      "output": "test_builder_refuses_python314_before_engine_construction (__main__.RuntimeAdmissionTests.test_builder_refuses_python314_before_engine_construction) ... ok\ntest_preflight_refuses_python314_before_numerical_import (__main__.RuntimeAdmissionTests.test_preflight_refuses_python314_before_numerical_import) ... ok\ntest_supported_preflight_still_checks_packages_and_imports (__main__.RuntimeAdmissionTests.test_supported_preflight_still_checks_packages_and_imports) ... ok\ntest_unreviewed_interpreters_are_refused (__main__.RuntimeAdmissionTests.test_unreviewed_interpreters_are_refused) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.002s\n\nOK\n",
+      "output_sha256": "a0cd6f8fee1787fe8acbacf59337818cb85870ff7009abb29d5459d9e66fa705"
+    },
+    {
+      "name": "restored_native_suite",
+      "command": [
+        "/home/nathaniel/.local/state/openplan/s2-cordon-py311-round5-20261023/venv/bin/python3",
+        "-B",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/scripts/modeling/s2_cordon/test_measurement_contract.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "expected_assertion": null,
+      "matched_expectation": true,
+      "output": "test_county_assignment_refuses_before_writing_demand (__main__.MeasurementContractTests.test_county_assignment_refuses_before_writing_demand) ... ok\ntest_explicit_division_preserves_the_same_flow (__main__.MeasurementContractTests.test_explicit_division_preserves_the_same_flow) ... ok\ntest_small_and_large_results_preserve_pce_flow (__main__.MeasurementContractTests.test_small_and_large_results_preserve_pce_flow) ... ok\ntest_synthetic_lock_uses_test_interpreter (__main__.MeasurementContractTests.test_synthetic_lock_uses_test_interpreter) ... ok\ntest_trace_refuses_a_non_development_county_before_reading (__main__.MeasurementContractTests.test_trace_refuses_a_non_development_county_before_reading) ... ok\n\n----------------------------------------------------------------------\nRan 5 tests in 0.236s\n\nOK\n",
+      "output_sha256": "1a52f36001809c851eb4db7b35521d3e77e1dc7af38d3f07938775b3e18a0d5d"
+    },
+    {
+      "name": "restored_launcher_suite",
+      "command": [
+        "/home/nathaniel/.local/state/openplan/s2-cordon-py311-round5-20261023/venv/bin/python3",
+        "-B",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-ea6314aa/workers/aequilibrae_worker/test_local_launchers.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "expected_assertion": null,
+      "matched_expectation": true,
+      "output": "test_activitysim_exec_binding_and_calibrate_option_unchanged (__main__.LauncherTests.test_activitysim_exec_binding_and_calibrate_option_unchanged) ... ok\ntest_activitysim_missing_or_unusable_exec_uses_python3_fallback (__main__.LauncherTests.test_activitysim_missing_or_unusable_exec_uses_python3_fallback) ... ok\ntest_activitysim_preflight_fallback_preserves_cli_configuration (__main__.LauncherTests.test_activitysim_preflight_fallback_preserves_cli_configuration) ... ok\ntest_activitysim_preflight_uses_external_when_local_and_system_helpers_unavailable (__main__.LauncherTests.test_activitysim_preflight_uses_external_when_local_and_system_helpers_unavailable) ... ok\ntest_compatible_automatic_selection (__main__.LauncherTests.test_compatible_automatic_selection) ... ok\ntest_explicit_external_path_with_spaces (__main__.LauncherTests.test_explicit_external_path_with_spaces) ... ok\ntest_explicit_invalid_selection_never_falls_back (__main__.LauncherTests.test_explicit_invalid_selection_never_falls_back) ... ok\ntest_help_and_unknown_argument_do_not_enter_workers (__main__.LauncherTests.test_help_and_unknown_argument_do_not_enter_workers) ... ok\ntest_import_failure_refused_even_with_compatible_versions (__main__.LauncherTests.test_import_failure_refused_even_with_compatible_versions) ... ok\ntest_missing_packaging_refused_before_worker_entry (__main__.LauncherTests.test_missing_packaging_refused_before_worker_entry) ... ok\ntest_requirements_file_controls_acceptance (__main__.LauncherTests.test_requirements_file_controls_acceptance) ... ok\ntest_unsupported_automatic_candidate_is_disclosed_and_skipped (__main__.LauncherTests.test_unsupported_automatic_candidate_is_disclosed_and_skipped) ... ok\ntest_unsupported_versions_refused_before_any_worker_entry (__main__.LauncherTests.test_unsupported_versions_refused_before_any_worker_entry) ... ok\ntest_actual_requirements_and_comments (__main__.RequirementsTests.test_actual_requirements_and_comments) ... ok\ntest_ambiguous_or_unreadable_requirements_refused (__main__.RequirementsTests.test_ambiguous_or_unreadable_requirements_refused) ... ok\ntest_missing_and_unknown_versions_refused (__main__.RequirementsTests.test_missing_and_unknown_versions_refused) ... ok\ntest_pep440_specifiers (__main__.RequirementsTests.test_pep440_specifiers) ... ok\n\n----------------------------------------------------------------------\nRan 17 tests in 2.712s\n\nOK\n",
+      "output_sha256": "3af3ef3f1939cdf49d5df2e61d26403571f2e30d9e77823a6df0d20244ca6c05"
+    }
+  ],
+  "skips": 0,
+  "restored_exactly": true,
+  "restored_source_sha256": {
+    "workers/aequilibrae_worker/assignment_runtime.py": "4fd82e83b0ac108df83c404bbe048074a94e1843c8c3a37b78c7e2a54a8045fc",
+    "workers/aequilibrae_worker/assignment_settings.py": "1e88e0417a2949958e0b24a345e1ed38e6e208aed225d503acfcb790db71e75e",
+    "workers/aequilibrae_worker/check_local_dependencies.py": "9715717df2a132821d2e195475c63b80348a5d036a9307893b5d32c1410d453a",
+    "scripts/modeling/screening_runtime.py": "98540aae86c5a53168440b6051585201843cf32289b569652e76dc2fd6fedb19",
+    "scripts/modeling/s2_cordon/test_measurement_contract.py": "7040bfcf47b24e2977afe6887b9c082ae04547c2fc6c54acd2f4badcffb046de",
+    "scripts/modeling/s2_cordon/trace_retained_measurement.py": "c5c58097e202c13a45f4b1821141758d5f3aa4b51edcda37da4151cc1d11b4b8",
+    "scripts/modeling/s2_cordon/test_successor.py": "b68536a564d23943c50e796ec30b605e4d568f91f17ea22bcb8515a3a2850df4"
+  },
+  "blind_categories": [
+    "native solver correctness",
+    "county reassignment",
+    "scientific accuracy",
+    "production deployment/runtime history"
+  ]
+}

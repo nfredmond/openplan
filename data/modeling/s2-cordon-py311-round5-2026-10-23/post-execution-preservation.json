@@ -1,0 +1,28 @@
+{
+  "closures": [
+    {
+      "study": "s2-cordon-impedance-development-20261023",
+      "files": 190,
+      "mismatches": []
+    },
+    {
+      "study": "s2-cordon-impedance-development-successor-20261023",
+      "files": 201,
+      "mismatches": []
+    },
+    {
+      "study": "s2-cordon-impedance-development-py311-20261023",
+      "files": 215,
+      "mismatches": []
+    }
+  ],
+  "runtime_installed_files_checked": 8353,
+  "runtime_mismatches": [],
+  "interpreter_hash_matches": true,
+  "prior_result_prefix_bytes": 49421,
+  "prior_result_prefix_unchanged": true,
+  "scientific_preregistration_sections_identical": true,
+  "all_30_input_records_unchanged": true,
+  "archive_hash_matches": true,
+  "no_existing_source_change": true
+}

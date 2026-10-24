@@ -1,0 +1,25 @@
+{
+  "decision": "inconclusive",
+  "execution": {
+    "evaluator": {
+      "exit_status": 1,
+      "peak_rss_bytes": 506171392,
+      "signal": null,
+      "stderr": {
+        "bytes": 707,
+        "sha256": "980d17c82fc544d9b4b5a41dd6882c09c9a40310019dfc11af4901bf3d9790ef"
+      },
+      "stdout": {
+        "bytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "receipt_sha256": "6357c2a24859545b0d8e82ad7a9113b056ecc17f4e12679d2f6a7c7fed86a887"
+  },
+  "inconclusive_error_kind": "EvaluatorProcessFailed",
+  "inconclusive_reason": "The frozen evaluator exited unsuccessfully after receipt creation.",
+  "recorded_at": "2026-10-23T21:31:41.232093+00:00",
+  "schema_version": "openplan.sealed-study.aggregate-result.v1",
+  "status": "evaluated_once_inconclusive",
+  "study_id": "s2-cordon-impedance-development-20261023"
+}
