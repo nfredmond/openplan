@@ -193,8 +193,35 @@ jobs:
       - name: Install (HEAD)
         run: npm ci
 
+      # A plain `migration up` refuses any file that sorts below the base's
+      # applied maximum. Such a file is admitted only when
+      # supabase/inserted-below-shipped-mark.json names it for this exact base
+      # tag (the hosted installation applied it under that version). Any other
+      # file below the mark still fails this job.
       - name: Apply HEAD's migrations onto the populated previous-release schema
-        run: npm exec -- supabase migration up
+        env:
+          BASE_TAG: ${{ steps.prev.outputs.tag }}
+        run: |
+          CONTAINER=$(docker ps --format '{{.Names}}' | grep '^supabase_db_' | head -1)
+          APPLIED=$(docker exec "$CONTAINER" psql -U postgres -d postgres -tAc \
+            "SELECT version FROM supabase_migrations.schema_migrations ORDER BY version")
+          LAST=$(printf '%s\n' "$APPLIED" | tail -1)
+          test -n "$LAST" || { echo "::error::The previous release recorded no migrations"; exit 1; }
+          BELOW=()
+          for f in supabase/migrations/*.sql; do
+            name=$(basename "$f"); v=${name:0:14}
+            if [[ "$v" < "$LAST" ]] && ! printf '%s\n' "$APPLIED" | grep -qx "$v"; then BELOW+=("$name"); fi
+          done
+          if [ ${#BELOW[@]} -eq 0 ]; then
+            npm exec -- supabase migration up
+            exit 0
+          fi
+          for name in "${BELOW[@]}"; do
+            node -e 'const [f,t]=process.argv.slice(1);const l=require("./supabase/inserted-below-shipped-mark.json");process.exit(l.some(e=>e.file===f&&e.belowTags.includes(t))?0:1)' "$name" "${BASE_TAG#v}" \
+              || { echo "::error::$name sorts below ${BASE_TAG}'s applied mark ($LAST) and is not listed for that tag in supabase/inserted-below-shipped-mark.json"; exit 1; }
+            echo "Admitted below the ${BASE_TAG} mark: $name"
+          done
+          npm exec -- supabase migration up --include-all
 
       - name: Assert the seeded rows survived
         run: |
