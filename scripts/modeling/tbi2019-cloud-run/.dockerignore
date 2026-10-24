@@ -1,0 +1,13 @@
+*
+!Dockerfile
+!requirements-model.lock
+!requirements-transport.lock
+!runner.py
+!monitor.py
+!verify_archive.py
+!admission.json
+!full-inventory.json
+!proof-inventory.json
+!configs/
+!configs/**
+!chunk_cache.csv

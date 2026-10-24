@@ -1,0 +1,1230 @@
+{
+  "status": "container_choice_parity_passed_full_cloud_unrun",
+  "image_id": "sha256:0f33512327834b68a6532dd6fb3ca24730294d0478237cd207566c038201bb40",
+  "registry_digest": null,
+  "image_architecture": "amd64",
+  "parent_head": "6c4cf58de9e2befd6ef9100e7ab054c1e7deac67",
+  "private_evidence_root": "/home/nathaniel/.local/state/openplan/astra-tbi-cloud-20261024",
+  "proof": {
+    "sha256": "7a9f6582c200b1c131ee53177ddbc759c981b0ec2fec31e27d99c3b6bff48aeb",
+    "bytes": 178766588,
+    "inventory_sha256": "0574f50cfd2be27c3887b510ac682118fd0e646bd9bfa705a9175617008ad631",
+    "counts": {
+      "households": 2000,
+      "persons": 4971
+    },
+    "tool_sha256": "a85505a96ee0f3832fa7bb37fef8af9f5caead22277db64bcdfb37bbb87acd96",
+    "no_outcomes": true
+  },
+  "comparison": {
+    "current": {
+      "status": "passed_choice_parity",
+      "dtypes_identical": true,
+      "tables": [
+        {
+          "table": "final_land_use.csv",
+          "rows": 634,
+          "columns": [
+            "DISTRICT",
+            "SD",
+            "county_id",
+            "TOTHH",
+            "TOTPOP",
+            "TOTACRE",
+            "RESACRE",
+            "CIACRE",
+            "TOTEMP",
+            "AGE0519",
+            "RETEMPN",
+            "FPSEMPN",
+            "HEREMPN",
+            "OTHEMPN",
+            "AGREMPN",
+            "MWTEMPN",
+            "PRKCST",
+            "OPRKCST",
+            "area_type",
+            "HSENROLL",
+            "COLLFTE",
+            "COLLPTE",
+            "TOPOLOGY",
+            "TERMINAL",
+            "household_density",
+            "employment_density",
+            "density_index",
+            "is_cbd",
+            "zone_id"
+          ],
+          "reference_sha256": "a74feed4d6ceeab4c953c5ed3b48cafc0805b24c80f825d196f361ac092ccb94",
+          "candidate_sha256": "a74feed4d6ceeab4c953c5ed3b48cafc0805b24c80f825d196f361ac092ccb94",
+          "tolerated_auxiliary_differences": []
+        },
+        {
+          "table": "final_accessibility.csv",
+          "rows": 634,
+          "columns": [
+            "auPkRetail",
+            "auPkTotal",
+            "auOpRetail",
+            "auOpTotal",
+            "trPkRetail",
+            "trPkTotal",
+            "trOpRetail",
+            "trOpTotal",
+            "nmRetail",
+            "nmTotal",
+            "zone_id"
+          ],
+          "reference_sha256": "68a89df0318674b3610ea77e4dcf681b4fcf339d6e17de89cb3b125478d56139",
+          "candidate_sha256": "68a89df0318674b3610ea77e4dcf681b4fcf339d6e17de89cb3b125478d56139",
+          "tolerated_auxiliary_differences": []
+        },
+        {
+          "table": "final_households.csv",
+          "rows": 2000,
+          "columns": [
+            "income",
+            "hhsize",
+            "HHT",
+            "auto_ownership",
+            "num_workers",
+            "sample_rate",
+            "income_in_thousands",
+            "income_segment",
+            "median_value_of_time",
+            "hh_value_of_time",
+            "num_non_workers",
+            "num_drivers",
+            "num_adults",
+            "num_children",
+            "num_young_children",
+            "num_children_5_to_15",
+            "num_children_16_to_17",
+            "num_college_age",
+            "num_young_adults",
+            "non_family",
+            "family",
+            "home_is_urban",
+            "home_is_rural",
+            "hh_work_auto_savings_ratio",
+            "num_under16_not_at_school",
+            "num_travel_active",
+            "num_travel_active_adults",
+            "num_travel_active_preschoolers",
+            "num_travel_active_children",
+            "num_travel_active_non_preschoolers",
+            "participates_in_jtf_model",
+            "joint_tour_frequency",
+            "num_hh_joint_tours",
+            "household_id",
+            "home_zone_id"
+          ],
+          "reference_sha256": "131ac76a809b184dc697dabf8196f2fb20fe878a3eb440ea3d7cb04618a70889",
+          "candidate_sha256": "f1830141d31d7f267d36bc965349728e70d66d9526e952ae2a3b2bc711f5096b",
+          "tolerated_auxiliary_differences": []
+        },
+        {
+          "table": "final_persons.csv",
+          "rows": 4971,
+          "columns": [
+            "household_id",
+            "age",
+            "PNUM",
+            "sex",
+            "pemploy",
+            "pstudent",
+            "ptype",
+            "age_16_to_19",
+            "age_16_p",
+            "adult",
+            "male",
+            "female",
+            "has_non_worker",
+            "has_retiree",
+            "has_preschool_kid",
+            "has_driving_kid",
+            "has_school_kid",
+            "has_full_time",
+            "has_part_time",
+            "has_university",
+            "student_is_employed",
+            "nonstudent_to_school",
+            "is_student",
+            "is_gradeschool",
+            "is_highschool",
+            "is_university",
+            "school_segment",
+            "is_worker",
+            "value_of_time",
+            "school_location_logsum",
+            "distance_to_school",
+            "roundtrip_auto_time_to_school",
+            "workplace_location_logsum",
+            "distance_to_work",
+            "workplace_in_cbd",
+            "work_zone_area_type",
+            "roundtrip_auto_time_to_work",
+            "work_auto_savings",
+            "work_auto_savings_ratio",
+            "free_parking_at_work",
+            "cdap_activity",
+            "travel_active",
+            "under16_not_at_school",
+            "has_preschool_kid_at_home",
+            "has_school_kid_at_home",
+            "mandatory_tour_frequency",
+            "work_and_school_and_worker",
+            "work_and_school_and_student",
+            "num_mand",
+            "num_work_tours",
+            "num_joint_tours",
+            "non_mandatory_tour_frequency",
+            "num_non_mand",
+            "num_escort_tours",
+            "num_eatout_tours",
+            "num_shop_tours",
+            "num_maint_tours",
+            "num_discr_tours",
+            "num_social_tours",
+            "num_non_escort_tours",
+            "person_id",
+            "home_zone_id",
+            "school_zone_id",
+            "workplace_zone_id"
+          ],
+          "reference_sha256": "2407a2082b1bf6f0ac999c0e852021ef9091339a1e4460cd598affcad116bdea",
+          "candidate_sha256": "346fb5f208d80fc3a76d348a7661dddb9dfb98a58e02eb136ab4b544f77ea42d",
+          "tolerated_auxiliary_differences": []
+        },
+        {
+          "table": "final_tours.csv",
+          "rows": 6763,
+          "columns": [
+            "person_id",
+            "tour_type",
+            "tour_type_count",
+            "tour_type_num",
+            "tour_num",
+            "tour_count",
+            "tour_category",
+            "number_of_participants",
+            "household_id",
+            "tdd",
+            "start",
+            "end",
+            "duration",
+            "composition",
+            "destination_logsum",
+            "tour_mode",
+            "mode_choice_logsum",
+            "atwork_subtour_frequency",
+            "parent_tour_id",
+            "stop_frequency",
+            "primary_purpose",
+            "tour_id",
+            "origin",
+            "destination"
+          ],
+          "reference_sha256": "53945d2c8990b5e2c7a7539c0f541387b8904c5a53a2c59451c6478fa235b111",
+          "candidate_sha256": "7646d44952ecc53862fff72eee8ba5b4ea03d611c02f12114a2bf8d400eedc22",
+          "tolerated_auxiliary_differences": [
+            {
+              "table": "final_tours.csv",
+              "id": "118630948",
+              "column": "mode_choice_logsum",
+              "reference": "0.5025382481544909",
+              "candidate": "0.5025382481544911",
+              "absolute_difference": 2.220446049250313e-16,
+              "tolerance": 5.025382481544911e-13,
+              "ulp_distance": 2.0
+            },
+            {
+              "table": "final_tours.csv",
+              "id": "119205787",
+              "column": "mode_choice_logsum",
+              "reference": "0.6034053884393223",
+              "candidate": "0.6034053884393225",
+              "absolute_difference": 1.1102230246251565e-16,
+              "tolerance": 6.034053884393225e-13,
+              "ulp_distance": 1.0
+            },
+            {
+              "table": "final_tours.csv",
+              "id": "119341311",
+              "column": "mode_choice_logsum",
+              "reference": "-0.4632975893614433",
+              "candidate": "-0.4632975893614431",
+              "absolute_difference": 1.6653345369377348e-16,
+              "tolerance": 4.632975893614432e-13,
+              "ulp_distance": 3.0
+            }
+          ]
+        },
+        {
+          "table": "final_trips.csv",
+          "rows": 17377,
+          "columns": [
+            "person_id",
+            "household_id",
+            "primary_purpose",
+            "trip_num",
+            "outbound",
+            "trip_count",
+            "tour_id",
+            "purpose",
+            "destination_logsum",
+            "depart",
+            "trip_mode",
+            "mode_choice_logsum",
+            "trip_id",
+            "origin",
+            "destination"
+          ],
+          "reference_sha256": "34b027140241f78c5fa467ce4656d0bb3ce5740bc4037bd1ea013f667b396c4c",
+          "candidate_sha256": "118d21292c9fd9e244a293bc2498618d3d1fd5a74c75a135f6cbf8dd46fbbd8e",
+          "tolerated_auxiliary_differences": [
+            {
+              "table": "final_trips.csv",
+              "id": "42672878",
+              "column": "destination_logsum",
+              "reference": "10.561189505765524",
+              "candidate": "10.561189505765523",
+              "absolute_difference": 1.7763568394002505e-15,
+              "tolerance": 1.0561189505765523e-11,
+              "ulp_distance": 1.0
+            },
+            {
+              "table": "final_trips.csv",
+              "id": "576278866",
+              "column": "destination_logsum",
+              "reference": "1.760076682156945",
+              "candidate": "1.7600766821569451",
+              "absolute_difference": 2.220446049250313e-16,
+              "tolerance": 1.7600766821569452e-12,
+              "ulp_distance": 1.0
+            },
+            {
+              "table": "final_trips.csv",
+              "id": "953782221",
+              "column": "mode_choice_logsum",
+              "reference": "-2.0050712464132023",
+              "candidate": "-2.005071246413203",
+              "absolute_difference": 4.440892098500626e-16,
+              "tolerance": 2.0050712464132027e-12,
+              "ulp_distance": 1.0
+            }
+          ]
+        },
+        {
+          "table": "final_joint_tour_participants.csv",
+          "rows": 274,
+          "columns": [
+            "tour_id",
+            "household_id",
+            "person_id",
+            "participant_num",
+            "participant_id"
+          ],
+          "reference_sha256": "b052168102ddedb8779ad109f9486f0a8d7874a427481b29b63aaaadb750f451",
+          "candidate_sha256": "f0250a45f96ae34e5755b56f8dc2b0dfe1ac4b95164d2a855e303f9d3bdb6887",
+          "tolerated_auxiliary_differences": []
+        }
+      ]
+    },
+    "semcog": {
+      "status": "passed_choice_parity",
+      "dtypes_identical": true,
+      "tables": [
+        {
+          "table": "final_land_use.csv",
+          "rows": 634,
+          "columns": [
+            "DISTRICT",
+            "SD",
+            "county_id",
+            "TOTHH",
+            "TOTPOP",
+            "TOTACRE",
+            "RESACRE",
+            "CIACRE",
+            "TOTEMP",
+            "AGE0519",
+            "RETEMPN",
+            "FPSEMPN",
+            "HEREMPN",
+            "OTHEMPN",
+            "AGREMPN",
+            "MWTEMPN",
+            "PRKCST",
+            "OPRKCST",
+            "area_type",
+            "HSENROLL",
+            "COLLFTE",
+            "COLLPTE",
+            "TOPOLOGY",
+            "TERMINAL",
+            "household_density",
+            "employment_density",
+            "density_index",
+            "is_cbd",
+            "zone_id"
+          ],
+          "reference_sha256": "a74feed4d6ceeab4c953c5ed3b48cafc0805b24c80f825d196f361ac092ccb94",
+          "candidate_sha256": "a74feed4d6ceeab4c953c5ed3b48cafc0805b24c80f825d196f361ac092ccb94",
+          "tolerated_auxiliary_differences": []
+        },
+        {
+          "table": "final_accessibility.csv",
+          "rows": 634,
+          "columns": [
+            "auPkRetail",
+            "auPkTotal",
+            "auOpRetail",
+            "auOpTotal",
+            "trPkRetail",
+            "trPkTotal",
+            "trOpRetail",
+            "trOpTotal",
+            "nmRetail",
+            "nmTotal",
+            "zone_id"
+          ],
+          "reference_sha256": "68a89df0318674b3610ea77e4dcf681b4fcf339d6e17de89cb3b125478d56139",
+          "candidate_sha256": "68a89df0318674b3610ea77e4dcf681b4fcf339d6e17de89cb3b125478d56139",
+          "tolerated_auxiliary_differences": []
+        },
+        {
+          "table": "final_households.csv",
+          "rows": 2000,
+          "columns": [
+            "income",
+            "hhsize",
+            "HHT",
+            "auto_ownership",
+            "num_workers",
+            "sample_rate",
+            "income_in_thousands",
+            "income_segment",
+            "median_value_of_time",
+            "hh_value_of_time",
+            "num_non_workers",
+            "num_drivers",
+            "num_adults",
+            "num_children",
+            "num_young_children",
+            "num_children_5_to_15",
+            "num_children_16_to_17",
+            "num_college_age",
+            "num_young_adults",
+            "non_family",
+            "family",
+            "home_is_urban",
+            "home_is_rural",
+            "hh_work_auto_savings_ratio",
+            "num_under16_not_at_school",
+            "num_travel_active",
+            "num_travel_active_adults",
+            "num_travel_active_preschoolers",
+            "num_travel_active_children",
+            "num_travel_active_non_preschoolers",
+            "participates_in_jtf_model",
+            "joint_tour_frequency",
+            "num_hh_joint_tours",
+            "household_id",
+            "home_zone_id"
+          ],
+          "reference_sha256": "0cc29c16cdf49ee3450a752c688dab0317ab80e7304fa0324df0f5296b164cdd",
+          "candidate_sha256": "6e4b1512b5631c94baef8e16fc845a3f6f4a98ba241b2dd36b4a6b448326fe1a",
+          "tolerated_auxiliary_differences": []
+        },
+        {
+          "table": "final_persons.csv",
+          "rows": 4971,
+          "columns": [
+            "household_id",
+            "age",
+            "PNUM",
+            "sex",
+            "pemploy",
+            "pstudent",
+            "ptype",
+            "age_16_to_19",
+            "age_16_p",
+            "adult",
+            "male",
+            "female",
+            "has_non_worker",
+            "has_retiree",
+            "has_preschool_kid",
+            "has_driving_kid",
+            "has_school_kid",
+            "has_full_time",
+            "has_part_time",
+            "has_university",
+            "student_is_employed",
+            "nonstudent_to_school",
+            "is_student",
+            "is_gradeschool",
+            "is_highschool",
+            "is_university",
+            "school_segment",
+            "is_worker",
+            "value_of_time",
+            "school_location_logsum",
+            "distance_to_school",
+            "roundtrip_auto_time_to_school",
+            "workplace_location_logsum",
+            "distance_to_work",
+            "workplace_in_cbd",
+            "work_zone_area_type",
+            "roundtrip_auto_time_to_work",
+            "work_auto_savings",
+            "work_auto_savings_ratio",
+            "free_parking_at_work",
+            "cdap_activity",
+            "travel_active",
+            "under16_not_at_school",
+            "has_preschool_kid_at_home",
+            "has_school_kid_at_home",
+            "mandatory_tour_frequency",
+            "work_and_school_and_worker",
+            "work_and_school_and_student",
+            "num_mand",
+            "num_work_tours",
+            "num_joint_tours",
+            "non_mandatory_tour_frequency",
+            "num_non_mand",
+            "num_escort_tours",
+            "num_eatout_tours",
+            "num_shop_tours",
+            "num_maint_tours",
+            "num_discr_tours",
+            "num_social_tours",
+            "num_non_escort_tours",
+            "person_id",
+            "home_zone_id",
+            "school_zone_id",
+            "workplace_zone_id"
+          ],
+          "reference_sha256": "b1ff86868766429409bdb6055658593b66d37624a6709a3b981fe2db6b029e4d",
+          "candidate_sha256": "c3c1aa835bfcbf8855197fd0cfdfebfa32b8ba6762091ca0cd9db16a6def05ca",
+          "tolerated_auxiliary_differences": []
+        },
+        {
+          "table": "final_tours.csv",
+          "rows": 6764,
+          "columns": [
+            "person_id",
+            "tour_type",
+            "tour_type_count",
+            "tour_type_num",
+            "tour_num",
+            "tour_count",
+            "tour_category",
+            "number_of_participants",
+            "household_id",
+            "tdd",
+            "start",
+            "end",
+            "duration",
+            "composition",
+            "destination_logsum",
+            "tour_mode",
+            "mode_choice_logsum",
+            "atwork_subtour_frequency",
+            "parent_tour_id",
+            "stop_frequency",
+            "primary_purpose",
+            "tour_id",
+            "origin",
+            "destination"
+          ],
+          "reference_sha256": "29d1ac31ca9093883f3de7ab911b0dcd554d887191830b03551216d038675406",
+          "candidate_sha256": "207b8be8fefa8982ac8b816aecaf6ad1747a6652957e42b3f817fa14e9c173b6",
+          "tolerated_auxiliary_differences": [
+            {
+              "table": "final_tours.csv",
+              "id": "119205787",
+              "column": "mode_choice_logsum",
+              "reference": "0.5444677373473825",
+              "candidate": "0.5444677373473826",
+              "absolute_difference": 1.1102230246251565e-16,
+              "tolerance": 5.444677373473827e-13,
+              "ulp_distance": 1.0
+            },
+            {
+              "table": "final_tours.csv",
+              "id": "119222777",
+              "column": "mode_choice_logsum",
+              "reference": "-1.7058264189084924",
+              "candidate": "-1.705826418908492",
+              "absolute_difference": 4.440892098500626e-16,
+              "tolerance": 1.7058264189084923e-12,
+              "ulp_distance": 2.0
+            }
+          ]
+        },
+        {
+          "table": "final_trips.csv",
+          "rows": 17464,
+          "columns": [
+            "person_id",
+            "household_id",
+            "primary_purpose",
+            "trip_num",
+            "outbound",
+            "trip_count",
+            "tour_id",
+            "purpose",
+            "destination_logsum",
+            "depart",
+            "trip_mode",
+            "mode_choice_logsum",
+            "trip_id",
+            "origin",
+            "destination"
+          ],
+          "reference_sha256": "89a449357fdeb269686e046c548dcb8aa83f05abc84092d842326d898dc08d84",
+          "candidate_sha256": "782e4872bdbdf2a05ca93c17899a909dee96ef6080b91ca0f2642ea87cde4826",
+          "tolerated_auxiliary_differences": [
+            {
+              "table": "final_trips.csv",
+              "id": "42672878",
+              "column": "destination_logsum",
+              "reference": "10.561189505765524",
+              "candidate": "10.561189505765523",
+              "absolute_difference": 1.7763568394002505e-15,
+              "tolerance": 1.0561189505765523e-11,
+              "ulp_distance": 1.0
+            },
+            {
+              "table": "final_trips.csv",
+              "id": "588318111",
+              "column": "destination_logsum",
+              "reference": "6.747630270805894",
+              "candidate": "6.747630270805895",
+              "absolute_difference": 8.881784197001252e-16,
+              "tolerance": 6.747630270805895e-12,
+              "ulp_distance": 1.0
+            },
+            {
+              "table": "final_trips.csv",
+              "id": "929324687",
+              "column": "destination_logsum",
+              "reference": "8.84696821445333",
+              "candidate": "8.846968214453332",
+              "absolute_difference": 1.7763568394002505e-15,
+              "tolerance": 8.846968214453332e-12,
+              "ulp_distance": 1.0
+            }
+          ]
+        },
+        {
+          "table": "final_joint_tour_participants.csv",
+          "rows": 274,
+          "columns": [
+            "tour_id",
+            "household_id",
+            "person_id",
+            "participant_num",
+            "participant_id"
+          ],
+          "reference_sha256": "b052168102ddedb8779ad109f9486f0a8d7874a427481b29b63aaaadb750f451",
+          "candidate_sha256": "f0250a45f96ae34e5755b56f8dc2b0dfe1ac4b95164d2a855e303f9d3bdb6887",
+          "tolerated_auxiliary_differences": []
+        }
+      ]
+    },
+    "controls": {
+      "wrong_archive_hash": "refused_before_model",
+      "corrupt_member": "refused_before_model"
+    }
+  },
+  "stages": {
+    "current-prefix": {
+      "health": {
+        "exit_code": 0,
+        "elapsed_seconds": 147.08852992998436,
+        "last_step": "coalesce pipeline /work/parity-e43ece2c82d34dec858892e970a8944f/results/current/mp_households_3-pipeline",
+        "cgroup": {
+          "memory.current": "1845452800",
+          "memory.peak": "3053223936",
+          "memory.max": "9663676416",
+          "memory.swap.current": "0",
+          "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+        },
+        "monitor_errors": []
+      },
+      "processes": {
+        "1": {
+          "name": "unlabelled",
+          "rss_peak_bytes": 53170176,
+          "observed_vmhwm_bytes": 56733696,
+          "steps": {
+            "startup": 53170176
+          }
+        },
+        "20": {
+          "name": "MainProcess",
+          "rss_peak_bytes": 377647104,
+          "observed_vmhwm_bytes": 377647104,
+          "steps": {
+            "startup": 346640384,
+            "#run_model running sub_process mp_setup_skims": 377622528,
+            "#run_model running sub_process mp_households_apportion": 377647104,
+            "#run_model running sub_process mp_households_coalesce": 377597952
+          }
+        },
+        "24": {
+          "name": "mp_setup_skims",
+          "rss_peak_bytes": 0,
+          "observed_vmhwm_bytes": 0,
+          "steps": {
+            "startup": 0
+          }
+        },
+        "25": {
+          "name": "mp_initialize",
+          "rss_peak_bytes": 1578745856,
+          "observed_vmhwm_bytes": 1693675520,
+          "steps": {
+            "initialize_landuse": 1578745856,
+            "initialize_households": 368312320,
+            "compute_accessibility": 0
+          }
+        },
+        "31": {
+          "name": "mp_households_apportion",
+          "rss_peak_bytes": 0,
+          "observed_vmhwm_bytes": 0,
+          "steps": {
+            "startup": 0
+          }
+        },
+        "34": {
+          "name": "mp_households_0",
+          "rss_peak_bytes": 451325952,
+          "observed_vmhwm_bytes": 461848576,
+          "steps": {
+            "school_location": 380084224,
+            "workplace_location": 374530048,
+            "free_parking": 369176576,
+            "cdap_simulate": 373194752,
+            "mandatory_tour_scheduling": 442986496,
+            "joint_tour_composition": 428244992,
+            "joint_tour_destination": 428392448,
+            "joint_tour_scheduling": 428408832,
+            "segment": 430604288,
+            "non_mandatory_tour_destination": 434712576,
+            "non_mandatory_tour_scheduling": 439963648,
+            "tour_mode_choice": 436183040,
+            "atwork_subtour_destination": 437166080,
+            "atwork_subtour_scheduling": 431472640,
+            "atwork_subtour_mode_choice": 431771648,
+            "stop_frequency": 432615424,
+            "trip_destination": 451325952,
+            "trip_purpose_and_destination": 0
+          }
+        },
+        "37": {
+          "name": "mp_households_1",
+          "rss_peak_bytes": 443383808,
+          "observed_vmhwm_bytes": 459059200,
+          "steps": {
+            "school_location": 378478592,
+            "workplace_location": 382033920,
+            "free_parking": 369008640,
+            "cdap_simulate": 369938432,
+            "mandatory_tour_scheduling": 442249216,
+            "joint_tours_participation": 427913216,
+            "joint_tour_destination": 428064768,
+            "joint_tour_scheduling": 428081152,
+            "segment": 430297088,
+            "non_mandatory_tour_destination": 435781632,
+            "non_mandatory_tour_scheduling": 442028032,
+            "tour_mode_choice": 432955392,
+            "atwork_subtour_destination": 436563968,
+            "atwork_subtour_scheduling": 431071232,
+            "atwork_subtour_mode_choice": 431378432,
+            "stop_frequency": 432254976,
+            "trip_destination": 443383808,
+            "trip_purpose_and_destination": 0
+          }
+        },
+        "40": {
+          "name": "mp_households_2",
+          "rss_peak_bytes": 448827392,
+          "observed_vmhwm_bytes": 462462976,
+          "steps": {
+            "school_location": 378241024,
+            "workplace_location": 382525440,
+            "free_parking": 369307648,
+            "cdap_simulate": 369885184,
+            "mandatory_tour_scheduling": 442327040,
+            "joint_tour_composition": 428081152,
+            "joint_tour_destination": 428228608,
+            "joint_tour_scheduling": 429608960,
+            "segment": 430567424,
+            "non_mandatory_tour_destination": 437280768,
+            "non_mandatory_tour_scheduling": 442474496,
+            "tour_mode_choice": 433172480,
+            "atwork_subtour_destination": 431472640,
+            "atwork_subtour_scheduling": 431493120,
+            "atwork_subtour_mode_choice": 431792128,
+            "stop_frequency": 432701440,
+            "trip_destination": 448827392,
+            "trip_purpose_and_destination": 0
+          }
+        },
+        "43": {
+          "name": "mp_households_3",
+          "rss_peak_bytes": 447111168,
+          "observed_vmhwm_bytes": 462114816,
+          "steps": {
+            "school_location": 379027456,
+            "workplace_location": 382668800,
+            "free_parking": 369078272,
+            "cdap_simulate": 370388992,
+            "mandatory_tour_scheduling": 443314176,
+            "joint_tours_participation": 428249088,
+            "joint_tour_destination": 428396544,
+            "joint_tour_scheduling": 428412928,
+            "segment": 430055424,
+            "non_mandatory_tour_destination": 436150272,
+            "non_mandatory_tour_scheduling": 442560512,
+            "tour_mode_choice": 433131520,
+            "atwork_subtour_destination": 431374336,
+            "atwork_subtour_scheduling": 431394816,
+            "atwork_subtour_mode_choice": 431652864,
+            "stop_frequency": 432877568,
+            "trip_destination": 447111168,
+            "trip_purpose_and_destination": 0
+          }
+        },
+        "1186": {
+          "name": "mp_households_coalesce",
+          "rss_peak_bytes": 0,
+          "observed_vmhwm_bytes": 0,
+          "steps": {
+            "coalesce pipeline /work/parity-e43ece2c82d34dec858892e970a8944f/results/current/mp_households_3-pipeline": 0
+          }
+        }
+      },
+      "sampled_aggregate_by_step": {
+        "startup": 3007311872,
+        "#run_model running sub_process mp_setup_skims": 2256281600,
+        "initialize_landuse": 2137018368,
+        "initialize_households": 2256281600,
+        "compute_accessibility": 2056818688,
+        "#run_model running sub_process mp_households_apportion": 3007311872,
+        "school_location": 2751590400,
+        "workplace_location": 2750164992,
+        "free_parking": 2702946304,
+        "cdap_simulate": 2710310912,
+        "mandatory_tour_scheduling": 3001597952,
+        "joint_tour_composition": 2944995328,
+        "joint_tours_participation": 2944995328,
+        "joint_tour_destination": 2945503232,
+        "joint_tour_scheduling": 2951712768,
+        "segment": 2958438400,
+        "non_mandatory_tour_destination": 2992500736,
+        "non_mandatory_tour_scheduling": 2992500736,
+        "tour_mode_choice": 2970836992,
+        "atwork_subtour_destination": 2974355456,
+        "atwork_subtour_scheduling": 2974355456,
+        "atwork_subtour_mode_choice": 2969440256,
+        "stop_frequency": 2972807168,
+        "trip_destination": 3007311872,
+        "trip_purpose_and_destination": 2767998976,
+        "#run_model running sub_process mp_households_coalesce": 2074370048,
+        "coalesce pipeline /work/parity-e43ece2c82d34dec858892e970a8944f/results/current/mp_households_3-pipeline": 2074370048
+      }
+    },
+    "current-suffix": {
+      "health": {
+        "exit_code": 0,
+        "elapsed_seconds": 12.039075324020814,
+        "last_step": "#run_model running step write_tables",
+        "cgroup": {
+          "memory.current": "1845342208",
+          "memory.peak": "3053223936",
+          "memory.max": "9663676416",
+          "memory.swap.current": "0",
+          "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+        },
+        "monitor_errors": []
+      },
+      "processes": {
+        "1": {
+          "name": "unlabelled",
+          "rss_peak_bytes": 53170176,
+          "observed_vmhwm_bytes": 56733696,
+          "steps": {
+            "startup": 53170176
+          }
+        },
+        "1193": {
+          "name": "MainProcess",
+          "rss_peak_bytes": 482312192,
+          "observed_vmhwm_bytes": 486965248,
+          "steps": {
+            "startup": 360517632,
+            "trip_scheduling": 454356992,
+            "trip_mode_choice": 482312192,
+            "write_tables": 0
+          }
+        }
+      },
+      "sampled_aggregate_by_step": {
+        "startup": 2126188544,
+        "trip_scheduling": 2101653504,
+        "trip_mode_choice": 2126188544,
+        "write_tables": 2056556544
+      }
+    },
+    "semcog-prefix": {
+      "health": {
+        "exit_code": 0,
+        "elapsed_seconds": 149.42711941996822,
+        "last_step": "coalesce pipeline /work/parity-e43ece2c82d34dec858892e970a8944f/results/semcog/mp_households_3-pipeline",
+        "cgroup": {
+          "memory.current": "2796449792",
+          "memory.peak": "4157341696",
+          "memory.max": "9663676416",
+          "memory.swap.current": "0",
+          "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+        },
+        "monitor_errors": []
+      },
+      "processes": {
+        "1": {
+          "name": "unlabelled",
+          "rss_peak_bytes": 53174272,
+          "observed_vmhwm_bytes": 56733696,
+          "steps": {
+            "startup": 53174272
+          }
+        },
+        "1199": {
+          "name": "MainProcess",
+          "rss_peak_bytes": 387280896,
+          "observed_vmhwm_bytes": 387280896,
+          "steps": {
+            "startup": 348454912,
+            "#run_model running sub_process mp_setup_skims": 383598592,
+            "#run_model running sub_process mp_households_apportion": 386805760,
+            "#run_model running sub_process mp_households_coalesce": 387280896
+          }
+        },
+        "1203": {
+          "name": "mp_setup_skims",
+          "rss_peak_bytes": 0,
+          "observed_vmhwm_bytes": 0,
+          "steps": {
+            "startup": 0
+          }
+        },
+        "1204": {
+          "name": "mp_initialize",
+          "rss_peak_bytes": 1609392128,
+          "observed_vmhwm_bytes": 1702039552,
+          "steps": {
+            "initialize_landuse": 1609392128,
+            "initialize_households": 383369216
+          }
+        },
+        "1211": {
+          "name": "mp_households_apportion",
+          "rss_peak_bytes": 0,
+          "observed_vmhwm_bytes": 0,
+          "steps": {
+            "startup": 0
+          }
+        },
+        "1214": {
+          "name": "mp_households_0",
+          "rss_peak_bytes": 459001856,
+          "observed_vmhwm_bytes": 469983232,
+          "steps": {
+            "school_location": 374300672,
+            "workplace_location": 385552384,
+            "free_parking": 376246272,
+            "cdap_simulate": 380833792,
+            "mandatory_tour_frequency": 381038592,
+            "mandatory_tour_scheduling": 447365120,
+            "joint_tour_frequency": 435769344,
+            "joint_tour_destination": 435920896,
+            "joint_tour_scheduling": 435937280,
+            "segment": 442933248,
+            "non_mandatory_tour_destination": 440008704,
+            "non_mandatory_tour_scheduling": 449658880,
+            "tour_mode_choice": 440262656,
+            "atwork_subtour_frequency": 438943744,
+            "atwork_subtour_destination": 445927424,
+            "atwork_subtour_scheduling": 438685696,
+            "atwork_subtour_mode_choice": 438681600,
+            "stop_frequency": 439971840,
+            "trip_destination": 459001856
+          }
+        },
+        "1217": {
+          "name": "mp_households_1",
+          "rss_peak_bytes": 460931072,
+          "observed_vmhwm_bytes": 465874944,
+          "steps": {
+            "school_location": 377630720,
+            "workplace_location": 383881216,
+            "free_parking": 375922688,
+            "cdap_simulate": 376852480,
+            "mandatory_tour_scheduling": 448319488,
+            "joint_tour_frequency": 435843072,
+            "joint_tour_destination": 435621888,
+            "joint_tour_scheduling": 435638272,
+            "segment": 442585088,
+            "non_mandatory_tour_destination": 440569856,
+            "non_mandatory_tour_scheduling": 440123392,
+            "tour_mode_choice": 440254464,
+            "atwork_subtour_frequency": 438714368,
+            "atwork_subtour_destination": 444092416,
+            "atwork_subtour_scheduling": 438591488,
+            "atwork_subtour_mode_choice": 438587392,
+            "stop_frequency": 439791616,
+            "trip_destination": 460931072
+          }
+        },
+        "1218": {
+          "name": "mp_households_2",
+          "rss_peak_bytes": 457584640,
+          "observed_vmhwm_bytes": 468975616,
+          "steps": {
+            "school_location": 377081856,
+            "workplace_location": 382832640,
+            "free_parking": 376639488,
+            "cdap_simulate": 377622528,
+            "mandatory_tour_scheduling": 447016960,
+            "joint_tour_frequency": 435843072,
+            "joint_tours_participation": 435769344,
+            "joint_tour_destination": 435965952,
+            "joint_tour_scheduling": 437264384,
+            "segment": 439443456,
+            "non_mandatory_tour_destination": 443121664,
+            "non_mandatory_tour_scheduling": 440012800,
+            "tour_mode_choice": 444600320,
+            "atwork_subtour_destination": 441593856,
+            "atwork_subtour_scheduling": 439009280,
+            "stop_frequency": 440332288,
+            "trip_destination": 457584640,
+            "trip_purpose_and_destination": 0
+          }
+        },
+        "1223": {
+          "name": "mp_households_3",
+          "rss_peak_bytes": 457416704,
+          "observed_vmhwm_bytes": 469086208,
+          "steps": {
+            "school_location": 378032128,
+            "workplace_location": 384860160,
+            "free_parking": 376242176,
+            "cdap_simulate": 377417728,
+            "mandatory_tour_scheduling": 449134592,
+            "joint_tour_frequency": 436289536,
+            "joint_tour_destination": 436064256,
+            "joint_tour_scheduling": 436080640,
+            "segment": 443084800,
+            "non_mandatory_tour_destination": 440950784,
+            "non_mandatory_tour_scheduling": 450793472,
+            "tour_mode_choice": 440365056,
+            "atwork_subtour_frequency": 439070720,
+            "atwork_subtour_destination": 441974784,
+            "atwork_subtour_scheduling": 438800384,
+            "stop_frequency": 440197120,
+            "trip_destination": 457416704
+          }
+        },
+        "2372": {
+          "name": "mp_households_coalesce",
+          "rss_peak_bytes": 282173440,
+          "observed_vmhwm_bytes": 282173440,
+          "steps": {
+            "coalesce pipeline /work/parity-e43ece2c82d34dec858892e970a8944f/results/semcog/mp_households_1-pipeline": 282173440
+          }
+        }
+      },
+      "sampled_aggregate_by_step": {
+        "startup": 4140376064,
+        "#run_model running sub_process mp_setup_skims": 3427192832,
+        "initialize_landuse": 3318206464,
+        "initialize_households": 3427192832,
+        "#run_model running sub_process mp_households_apportion": 4140376064,
+        "school_location": 3862654976,
+        "workplace_location": 3887235072,
+        "free_parking": 3852103680,
+        "cdap_simulate": 3863007232,
+        "mandatory_tour_frequency": 3866189824,
+        "mandatory_tour_scheduling": 4140376064,
+        "joint_tour_frequency": 4088283136,
+        "joint_tour_destination": 4091744256,
+        "joint_tours_participation": 4089798656,
+        "joint_tour_scheduling": 4112363520,
+        "segment": 4112363520,
+        "non_mandatory_tour_destination": 4116799488,
+        "non_mandatory_tour_scheduling": 4133240832,
+        "tour_mode_choice": 4117393408,
+        "atwork_subtour_frequency": 4117581824,
+        "atwork_subtour_destination": 4123025408,
+        "atwork_subtour_scheduling": 4123025408,
+        "atwork_subtour_mode_choice": 4113928192,
+        "stop_frequency": 4119207936,
+        "trip_destination": 4138078208,
+        "trip_purpose_and_destination": 3272966144,
+        "#run_model running sub_process mp_households_coalesce": 3081740288,
+        "coalesce pipeline /work/parity-e43ece2c82d34dec858892e970a8944f/results/semcog/mp_households_1-pipeline": 3081740288
+      }
+    },
+    "semcog-suffix": {
+      "health": {
+        "exit_code": 0,
+        "elapsed_seconds": 12.265886833018158,
+        "last_step": "#run_model running step write_tables",
+        "cgroup": {
+          "memory.current": "2889428992",
+          "memory.peak": "4157341696",
+          "memory.max": "9663676416",
+          "memory.swap.current": "0",
+          "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+        },
+        "monitor_errors": []
+      },
+      "processes": {
+        "1": {
+          "name": "unlabelled",
+          "rss_peak_bytes": 53116928,
+          "observed_vmhwm_bytes": 56733696,
+          "steps": {
+            "startup": 53116928
+          }
+        },
+        "2379": {
+          "name": "MainProcess",
+          "rss_peak_bytes": 507994112,
+          "observed_vmhwm_bytes": 525168640,
+          "steps": {
+            "startup": 336941056,
+            "trip_scheduling": 472756224,
+            "trip_mode_choice": 507994112,
+            "write_tables": 487997440
+          }
+        }
+      },
+      "sampled_aggregate_by_step": {
+        "startup": 3202215936,
+        "trip_scheduling": 3167203328,
+        "trip_mode_choice": 3202215936,
+        "write_tables": 3186003968
+      }
+    }
+  },
+  "s3_verification": [
+    {
+      "attempt": "bad-member-a50f441a0df84794b22829bc876ccb1b",
+      "status": "failed",
+      "step": "archive_verification",
+      "error": "member hash mismatch: inputs/bundle/households.csv",
+      "files_verified": 1
+    },
+    {
+      "attempt": "parity-e43ece2c82d34dec858892e970a8944f",
+      "status": "completed",
+      "step": "complete",
+      "error": null,
+      "files_verified": 605
+    },
+    {
+      "attempt": "wrong-hash-5a96d01f4c654827876a121e793fa280",
+      "status": "failed",
+      "step": "archive_verification",
+      "error": "archive hash or byte length mismatch",
+      "files_verified": 1
+    }
+  ],
+  "docker": [
+    {
+      "label": "seed",
+      "container": "astra-tbi-cloud-6a48484ff70c-seed",
+      "exit_code": 0,
+      "image_id": "sha256:0f33512327834b68a6532dd6fb3ca24730294d0478237cd207566c038201bb40",
+      "memory": 9663676416,
+      "memory_swap": 9663676416,
+      "oom_killed": false
+    },
+    {
+      "label": "wrong-hash",
+      "container": "astra-tbi-cloud-6a48484ff70c-wrong-hash",
+      "exit_code": 1,
+      "image_id": "sha256:0f33512327834b68a6532dd6fb3ca24730294d0478237cd207566c038201bb40",
+      "memory": 9663676416,
+      "memory_swap": 9663676416,
+      "oom_killed": false
+    },
+    {
+      "label": "bad-member",
+      "container": "astra-tbi-cloud-6a48484ff70c-bad-member",
+      "exit_code": 1,
+      "image_id": "sha256:0f33512327834b68a6532dd6fb3ca24730294d0478237cd207566c038201bb40",
+      "memory": 9663676416,
+      "memory_swap": 9663676416,
+      "oom_killed": false
+    },
+    {
+      "label": "parity",
+      "container": "astra-tbi-cloud-6a48484ff70c-parity",
+      "exit_code": 0,
+      "image_id": "sha256:0f33512327834b68a6532dd6fb3ca24730294d0478237cd207566c038201bb40",
+      "memory": 9663676416,
+      "memory_swap": 9663676416,
+      "oom_killed": false
+    },
+    {
+      "label": "collect",
+      "container": "astra-tbi-cloud-6a48484ff70c-collect",
+      "exit_code": 0,
+      "image_id": "sha256:0f33512327834b68a6532dd6fb3ca24730294d0478237cd207566c038201bb40",
+      "memory": 9663676416,
+      "memory_swap": 9663676416,
+      "oom_killed": false
+    }
+  ],
+  "cleanup": {
+    "containers": [
+      "astra-tbi-cloud-6a48484ff70c-s3",
+      "astra-tbi-cloud-6a48484ff70c-seed",
+      "astra-tbi-cloud-6a48484ff70c-wrong-hash",
+      "astra-tbi-cloud-6a48484ff70c-bad-member",
+      "astra-tbi-cloud-6a48484ff70c-parity",
+      "astra-tbi-cloud-6a48484ff70c-collect"
+    ],
+    "network": "astra-tbi-cloud-6a48484ff70c-net",
+    "env_file_removed": true
+  },
+  "tests": {
+    "passed": 31,
+    "failed": 0,
+    "skipped": 0,
+    "package": 17,
+    "retained_comparators": 14
+  },
+  "mutation_controls": {
+    "accepted": 15,
+    "harmless": 3,
+    "intended_failures": 12
+  },
+  "outcomes_accessed": false,
+  "full_model_runs": 0,
+  "limits": [
+    "subset parity is not scientific accuracy",
+    "no full-scale suffix or coalescence memory proof",
+    "one-second process samples miss transient peaks",
+    "local S3 emulator is not cloud-provider acceptance",
+    "SIGKILL/host loss can prevent terminal upload"
+  ]
+}

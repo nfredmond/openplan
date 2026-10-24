@@ -1,0 +1,65 @@
+{
+  "parent_sha256": "0465298da115a6de40d23c26d7c21de273be2d48266f76f80813780a7c45d6c2",
+  "selection": "lowest SHA256(tbi2019-chunk-parity-2000-v1:household_id)",
+  "counts": {
+    "households": 2000,
+    "persons": 4971
+  },
+  "files": [
+    {
+      "archive_path": "inputs/bundle/configs/README.md",
+      "bytes": 1181,
+      "sha256": "9884039ae07c949102d41cf3b35dec95e5d507218f498242d57aad3e8d9c7a84"
+    },
+    {
+      "archive_path": "inputs/bundle/configs/auto_ownership.csv",
+      "bytes": 1507,
+      "sha256": "9af0c2d4930c482b7beee620ad71aa28f132025d64687ac4b2459caeb93ff4c1"
+    },
+    {
+      "archive_path": "inputs/bundle/configs/auto_ownership.yaml",
+      "bytes": 87,
+      "sha256": "3d004b283f619d449bf0c4ea5111009ec3b6efbd558a8100be9c73db16377332"
+    },
+    {
+      "archive_path": "inputs/bundle/configs/auto_ownership_coefficients.csv",
+      "bytes": 1821,
+      "sha256": "9596d29ebdef16a1de701b90bf0287ef97e016206819dba915382a79711a2862"
+    },
+    {
+      "archive_path": "inputs/bundle/configs/network_los.yaml",
+      "bytes": 426,
+      "sha256": "92166e41776645d0500415040fb6d6277bf5b24c935a6f0faf4a7a19b2743971"
+    },
+    {
+      "archive_path": "inputs/bundle/configs/openplan_config_package.json",
+      "bytes": 2468,
+      "sha256": "4e675280c63aa42c545ba6e976b6d84933418945014c21c453142a0b9d328432"
+    },
+    {
+      "archive_path": "inputs/bundle/configs/settings.yaml",
+      "bytes": 2997,
+      "sha256": "8a19dab8f44c8efc90f61c47fb988c62b0093c8fe4490d6b763a86330d6be1db"
+    },
+    {
+      "archive_path": "inputs/bundle/households.csv",
+      "bytes": 52031,
+      "sha256": "f1205ffdd559219840a79069577adb4e4521794b84362b582ccae352fae17937"
+    },
+    {
+      "archive_path": "inputs/bundle/land_use.csv",
+      "bytes": 75054,
+      "sha256": "d3923c95594ddaaddbbd5305d506471b85ad73970cca2cf798600290cbfd6b70"
+    },
+    {
+      "archive_path": "inputs/bundle/persons.csv",
+      "bytes": 141985,
+      "sha256": "31bfa830651903ba58592add1d39f63a855626580926dc58f5b87678437d8611"
+    },
+    {
+      "archive_path": "inputs/bundle/skims/mtc_skims.omx",
+      "bytes": 192557039,
+      "sha256": "2e4b373c4c28e57b2900cf6bf95d1e753fa43c6f33794422f311ebb24ea1cf6e"
+    }
+  ]
+}

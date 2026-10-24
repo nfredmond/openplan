@@ -1333,3 +1333,127 @@ hashes. CPython remains 3.11.15, ActivitySim 1.5.1, NumPy 1.25.2 and pandas 2.3.
 mutation controls, retained instrument errors and blind categories. No outcome
 field, Docker container, hosted system, managed database, secret, engine source,
 coefficient, default or consumed holdout changes. The PR remains draft.
+
+## Cloud run package
+
+October 24, 2026 UTC. **The container passes the adopted choice-level criterion
+for both 2,000-household arms. Full cloud execution remains unrun.** The lead
+owns machine provisioning, full archive upload and both full-population runs.
+No hosted service or survey outcome is accessed in this packaging work.
+
+The [self-contained package](../../../scripts/modeling/tbi2019-cloud-run/README.md)
+contains a pinned CPython 3.11.15 image, ActivitySim 1.5.1, all 76 exact local
+model dependency versions with wheel hashes, a separate pinned Boto3 environment,
+the retained four-process overlays and trained chunk cache. No engine source,
+coefficient, float dtype, scientific gate or application default changes. The
+image contains code, configurations and inventories, never an input archive or
+credentials. Its local image ID is
+`sha256:0f33512327834b68a6532dd6fb3ca24730294d0478237cd207566c038201bb40`.
+No registry image is published.
+
+The admitted full archive is the corrected 2,783,118,248-byte archive,
+SHA-256 `0465298da115a6de40d23c26d7c21de273be2d48266f76f80813780a7c45d6c2`.
+It contains the corrected 1,060,601-household, 2,617,177-person, 634-zone runtime.
+The older `81fe67cc…` archive and its 1,100,948-household runtime remain historical.
+The runner verifies the outer archive, all 593 inventoried files and the embedded
+inventory before starting a model. It refuses any mismatch and never executes
+archived scripts. It applies the retained unused `source_geoid` removal after
+verification. Current runs first; SEMCOG runs only after current completes.
+
+The prefix preserves four household processes, 268,435,456-byte production
+chunk targets, seed zero, the frozen cache and both downcast settings false.
+Its settings hash is
+`3c114013f2ea817022cb94c95c0db90e9d9c07f543e0032e3e237ad9fa3eca24`.
+The suffix restores the coalesced `mp_households` checkpoint and runs the legacy
+scheduling suffix unsliced and unchunked. Its settings hash is
+`d7ff8be05e77edcca374445632d49821c839315431cf7e6d8b2e0095dbceafe7`.
+[Admission pins](../../../scripts/modeling/tbi2019-cloud-run/admission.json)
+record all overlays, source files, dependencies, inventory and cache hashes.
+
+### Capacity estimate and limits
+
+[Sizing](../../../scripts/modeling/tbi2019-cloud-run/SIZING.md) recommends
+**128 GB RAM and four household processes**. For a 64 GB machine, retain four
+processes but treat completion as lower confidence. Four processes preserve the
+proven parity configuration. More workers add overhead and lack this proof.
+
+The shared skim payload is `826 * 634 * 634 * 4 = 1,328,062,624` bytes.
+A planning prefix allowance of `4 * 8 GiB + 1.237 GiB skims + 2 GiB parent`
+is 35.237 GiB, leaving 24.37 GiB on a 64 GB decimal machine or 83.97 GiB on
+128 GB. The 8 GiB worker allowance is an assumption above censored full-worker
+measurements, not an upper bound. Coalescence has a separate, unvalidated
+16 GiB reservation. The unchunked suffix remains the larger uncertainty:
+startup-subtracted subset mode-choice RSS gives 106,725.4 bytes per household;
+straight scaling gives 113.49 GB before operating allowance. It mixes fixed
+and variable memory and must not be treated as a measured full-run requirement.
+
+The retained full-school worker slope is at least about 16,196.9 bytes per
+additional household, rather than the disproved earlier 8,526.8-byte proxy.
+School/workplace preprocessing dominates measured failures. Full coalescence,
+post-workplace steps and suffix peaks remain unavailable. Reserve 12–48 hours
+per arm, 24–96 hours for both, with low confidence. Straight subset scaling
+suggests about 22–23 hours per arm; hardware, fixed costs and full-scale chunks
+can move that substantially. The package preserves full population and gates
+regardless of elapsed time.
+
+### Local Docker and object-store proof
+
+The proof derives the same 2,000 complete households and 4,971 persons from the
+verified parent archive using the retained household-ID hash rule. It keeps all
+634 destinations. The 178,766,588-byte proof archive hashes as
+`7a9f6582c200b1c131ee53177ddbc759c981b0ec2fec31e27d99c3b6bff48aeb`.
+It contains no survey outcomes or reference model outputs.
+
+| Arm | Prefix / suffix elapsed seconds | Tours / trips | Seven-table result |
+|---|---:|---:|---|
+| Current | 147.089 / 12.039 | 6,763 / 17,377 | Exact choices, identities, row counts and dtypes; six tolerated logsum cells |
+| SEMCOG | 149.427 / 12.266 | 6,764 / 17,464 | Exact choices, identities, row counts and dtypes; five tolerated logsum cells |
+
+Both comparisons use their own retained unchunked references, with all reference
+hashes rechecked. Every differing auxiliary cell satisfies the existing
+`max(4 ULP, 1e-12 relative)` criterion. No comparison between coefficient arms,
+against AequilibraE or against observations occurs. The model container has a
+9 GiB memory limit and equal memory-swap setting. Its observed cumulative kernel
+peak through the model stages is 4,157,341,696 bytes, with zero swap and zero
+OOM events. Stage-specific sampled values remain separate from that lifetime
+peak. The owned local Moto S3 emulator has a separate 6 GiB/zero-swap cap.
+
+Both a wrong archive hash and a corrupted household member refuse before any
+model step, exit nonzero and publish failed terminal receipts. The corrupted
+member control admits only its deliberately changed outer hash through a
+mounted test admission; it leaves the embedded inventory intact. The production
+entrypoint offers no hash override. The valid attempt uploads all 605 result
+files, logs, telemetry, checkpoints and configurations. Retrieval verifies every
+file's byte length and SHA-256, the manifest hash and the terminal receipt.
+All owned proof containers and networks are removed, and test credentials are
+deleted. Raw evidence remains private under
+`/home/nathaniel/.local/state/openplan/astra-tbi-cloud-20261024/`.
+
+[Local proof](../../../scripts/modeling/tbi2019-cloud-run/LOCAL_PROOF.json),
+[private custody](../../../scripts/modeling/tbi2019-cloud-run/PRIVATE_CUSTODY.json)
+and [verification](../../../scripts/modeling/tbi2019-cloud-run/VERIFICATION.md)
+retain measurements, all output hashes, failed setup/transport attempts and blind
+categories. Final source checks pass 31 tests with zero skips. Fifteen accepted
+mutation controls contain three harmless survivors and 12 intended assertion
+failures. The earlier transport failure and unavailable first-attempt numerical
+outputs do not count as a successful proof.
+
+### Handoff and unproved boundaries
+
+The entrypoint uses environment variables only. Each invocation creates a new
+UUID results prefix, writes a conditional claim, then uploads artifacts and a
+SHA-256 manifest. Its terminal status is the last upload. It exits nonzero on
+caught execution, verification or upload failure. There is no automatic resume
+or overwrite of earlier attempts. Stock checkpoints remain available for a
+separately reviewed recovery. A host loss, SIGKILL or unavailable bucket can
+prevent a terminal upload; absence means incomplete, never completed. The
+96 percent memory headroom guard can include reclaimable cache, so its refusal
+does not prove that anonymous model allocations cannot fit the machine.
+
+The read-only main-merge preview reports a `CHANGELOG.md` conflict against
+`origin/main` at `2cb3ca929aa2e4ad9b972de3bdcfba61e8fd5f78`. No merge is applied
+because that file is outside this implementation's ownership. The lead owns
+that join. PR #384 remains draft. Cloud endpoint behavior, full-population
+completion, full-scale memory fit and all scientific opening requirements remain
+unproved. The original split, 117 frozen records and consumed holdouts remain
+unchanged. No outcome access follows from this container proof.
