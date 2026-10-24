@@ -108,6 +108,14 @@ export type ProjectBudgetReadFailure = {
   code?: string;
 };
 
+export type ProjectDeliverableReadState = "readable" | "pending" | "unreadable";
+
+/** A missing snapshot withholds deliverables without claiming their table is missing. */
+export function projectDeliverableReadState(inputs: ProjectBudgetInputs): ProjectDeliverableReadState {
+  if (inputs.unreadable.deliverables) return "unreadable";
+  return inputs.pending.snapshot || inputs.pending.deliverables ? "pending" : "readable";
+}
+
 /** Admit the source NUMERIC(14,2) domain, not arbitrary parseFloat input.
  * This per-row boundary does not prove aggregate cent precision in budget.ts.
  */

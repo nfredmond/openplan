@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { loadProjectBudgetInputs } from "@/lib/projects/budget-queries";
+import { loadProjectBudgetInputs, projectDeliverableReadState } from "@/lib/projects/budget-queries";
 import { buildProjectBudgetSnapshot } from "@/lib/projects/budget";
 import { budgetDeliverable, budgetSpend, projectBudgetSnapshotFixture } from "./helpers/project-budget-snapshot";
 
@@ -60,6 +60,8 @@ describe("exact missing public snapshot function", () => {
   ])("marks only proven missing snapshot RPC pending (%#)", async (code, message) => {
     const inputs = await loadProjectBudgetInputs({ rpc: async () => ({ data: null, error: { code, message } }) }, "project-1");
     expect(inputs.pending.snapshot).toBe(true);
+    expect(projectDeliverableReadState(inputs)).toBe("pending");
+    expect(inputs.pending.deliverables).toBe(false);
     expect(inputs.unreadable.deliverables).toBe(false);
     expect(inputs.readFailures).toEqual([]);
   });
@@ -81,6 +83,7 @@ describe("exact missing public snapshot function", () => {
     const inputs = await loadProjectBudgetInputs({ rpc: async () => ({ data: null, error: { code, message } }) }, "project-1");
     expect(inputs.pending.snapshot).toBe(false);
     expect(inputs.unreadable.deliverables).toBe(true);
+    expect(projectDeliverableReadState(inputs)).toBe("unreadable");
     expect(inputs.readFailures[0].message).toBe(message || "no message reported");
   });
 
@@ -108,6 +111,33 @@ describe("exact missing public snapshot function", () => {
     expect(inputs.unreadable.deliverables).toBe(false);
     expect(inputs.pending.deliverableAssigneeColumn).toBe(false);
     expect(inputs.readFailures).toEqual([]);
+  });
+});
+
+describe("deliverable availability from complete project inputs", () => {
+  it.each([{ rows: [] }, { rows: [budgetDeliverable("d")] }])("keeps genuinely complete deliverables readable (%#)", async ({ rows }) => {
+    const inputs = await loadProjectBudgetInputs({ rpc: async () => ({ error: null,
+      data: projectBudgetSnapshotFixture({ project_deliverables: { data: rows, error: null } }),
+    }) }, "project-1");
+    expect(projectDeliverableReadState(inputs)).toBe("readable");
+    expect(inputs.deliverables).toEqual(rows);
+  });
+  it.each([null, {}, { version: 1, project_id: "other-project" }])("withholds malformed transports (%#)", async data => {
+    const inputs = await loadProjectBudgetInputs({ rpc: async () => ({ data, error: null }) }, "project-1");
+    expect(projectDeliverableReadState(inputs)).toBe("unreadable");
+    expect(inputs.deliverables).toEqual([]);
+  });
+  it("withholds a rejected transport", async () => {
+    const inputs = await loadProjectBudgetInputs({ rpc: async () => { throw new Error("Synthetic transport rejected"); } }, "project-1");
+    expect(projectDeliverableReadState(inputs)).toBe("unreadable");
+  });
+  it("keeps a missing deliverable relation pending without a financial fallback", async () => {
+    const inputs = await loadProjectBudgetInputs({ rpc: async () => ({ error: null,
+      data: projectBudgetSnapshotFixture({ project_deliverables: { data: null,
+        error: { code: "42P01", message: 'relation "public.project_deliverables" does not exist' } } }),
+    }) }, "project-1");
+    expect(projectDeliverableReadState(inputs)).toBe("pending");
+    expect(inputs.pending.snapshot).toBe(false);
   });
 });
 

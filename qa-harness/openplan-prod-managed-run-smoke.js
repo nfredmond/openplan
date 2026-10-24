@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { serviceKeyHeaders } = require('./supabase-service-headers');
 const { chromium } = require('playwright');
 const { buildBrowserContextOptions, getOpenplanBaseUrl, getOutputDir, loadEnv, repoRoot } = require('./harness-env');
 
@@ -54,8 +55,7 @@ async function main() {
   const createUserResult = await jsonFetch(`${supabaseUrl}/auth/v1/admin/users`, {
     method: 'POST',
     headers: {
-      apikey: serviceRoleKey,
-      Authorization: `Bearer ${serviceRoleKey}`,
+      ...serviceKeyHeaders(serviceRoleKey),
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -228,10 +228,7 @@ async function main() {
     let modelRunRow = null;
     for (let attempt = 0; attempt < 20; attempt += 1) {
       const result = await jsonFetch(`${supabaseUrl}/rest/v1/model_runs?select=id,status,source_analysis_run_id,scenario_entry_id,result_summary_json,error_message&id=eq.${summary.modelRunId}`, {
-        headers: {
-          apikey: serviceRoleKey,
-          Authorization: `Bearer ${serviceRoleKey}`,
-        },
+        headers: serviceKeyHeaders(serviceRoleKey),
       });
       const rows = Array.isArray(result.data) ? result.data : [];
       modelRunRow = rows[0] ?? null;
@@ -247,10 +244,7 @@ async function main() {
     }
 
     const scenarioEntryVerify = await jsonFetch(`${supabaseUrl}/rest/v1/scenario_entries?select=id,attached_run_id,status&id=eq.${summary.alternativeEntryId}`, {
-      headers: {
-        apikey: serviceRoleKey,
-        Authorization: `Bearer ${serviceRoleKey}`,
-      },
+      headers: serviceKeyHeaders(serviceRoleKey),
     });
     const alternativeRow = Array.isArray(scenarioEntryVerify.data) ? scenarioEntryVerify.data[0] : null;
     if (!alternativeRow || alternativeRow.attached_run_id !== summary.sourceAnalysisRunId) {
@@ -258,10 +252,7 @@ async function main() {
     }
 
     const attachedRunVerify = await jsonFetch(`${supabaseUrl}/rest/v1/runs?select=id,title&id=eq.${summary.sourceAnalysisRunId}`, {
-      headers: {
-        apikey: serviceRoleKey,
-        Authorization: `Bearer ${serviceRoleKey}`,
-      },
+      headers: serviceKeyHeaders(serviceRoleKey),
     });
     const attachedRunRow = Array.isArray(attachedRunVerify.data) ? attachedRunVerify.data[0] : null;
     summary.attachedRunTitle = attachedRunRow?.title ?? null;

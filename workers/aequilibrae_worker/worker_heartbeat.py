@@ -5,11 +5,20 @@ import os
 import socket
 import threading
 import time
+import sys
 import uuid
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
 import requests
+
+# Both modeling workers ship this file; the shared header helper lives beside
+# the AequilibraE worker, which the ActivitySim images also carry.
+_SHARED_WORKER_DIR = str(Path(__file__).resolve().parent.parent / "aequilibrae_worker")
+if _SHARED_WORKER_DIR not in sys.path:
+    sys.path.append(_SHARED_WORKER_DIR)
+from supabase_service_headers import service_key_headers  # noqa: E402
 
 HEARTBEAT_INTERVAL_SECONDS = 30
 
@@ -102,8 +111,7 @@ class WorkerHeartbeat:
     ) -> None:
         self._url = f"{supabase_url}/rest/v1/modeling_worker_heartbeats?on_conflict=worker_kind,instance_id"
         self._headers = {
-            "apikey": service_key,
-            "Authorization": f"Bearer {service_key}",
+            **service_key_headers(service_key),
             "Content-Type": "application/json",
             "Prefer": "resolution=merge-duplicates,return=minimal",
         }

@@ -39,10 +39,10 @@ standard 8 GB builder out of memory. Builds with `VERCEL=1` now skip it. Every
 other build keeps it, including the CI QA gate's `npm run build`, which
 Vercel waits for before promoting. Self-hosted builds are unchanged.
 
-This tree contains 439 source migrations, nine more than v0.72.0. Self-hosted
-installations apply the seven Models and Reports migrations, the estimate
-migration and the Safety migration below, in version order, before deploying
-this code. The managed database received all seven on
+This tree contains 442 source migrations, twelve more than v0.72.0. Self-hosted
+installations apply the seven Models and Reports migrations, the estimate,
+Safety, BCA and two land-use migrations below, in version order, before
+deploying this code. The managed database received all seven on
 October 23, 2026, in one transaction after a fresh capture and a rollback-only
 dry run; its history now holds 438 rows, including the separate Award record.
 The catalogue after installation equals the catalogue before plus exactly the
@@ -124,6 +124,33 @@ correction. It validates future amounts as positive values of at most
 retained estimates or recover precision lost in older source values. The
 migration first carried an earlier October 19 version; it moved after the v0.72.0
 release mark because released installations would skip an earlier version.
+
+**BCA project place:** Apply
+`20261023190200_bca_project_place_snapshot.sql` before deploying the BCA update.
+The migration accepts new analysis versions with a retained project place and
+checks that place against the current project when saving. Existing saved
+analyses remain unchanged. It first carried an earlier October 19 version and
+moved after the v0.72.0 release mark.
+
+**PR332 review follow-up:** Project deliverable counts, delivery and activity
+views distinguish pending or failed inputs from an empty project. Current
+land-use publication refuses competing decisions, including a later repeal,
+and checks the decision against the retained packet in one read snapshot.
+Historical report decisions remain dated history. Operators must apply additive
+`20261023190300_land_use_publication_decision_boundary.sql` after
+`20261017030608_land_use_plan_publication_transaction.sql` and before deploying
+the dependent public reader. This source patch does not establish migration,
+concurrency, RLS or browser acceptance.
+
+**Land-use review release cascades:** Apply additive
+`20261023190400_land_use_review_release_cascade_guards.sql` to correct workspace
+deletion when restored foreign keys reach review releases before their plan.
+The guard continues to refuse direct release deletion while its owning plan
+and workspace exist. Insert, frozen identity, close and withdrawal rules remain
+unchanged. Both migrations first carried October 20 and 21 versions and moved
+after the v0.72.0 release mark. The cascade fixture now fixes trigger order
+explicitly, because foreign-key trigger names embed OIDs that differ between a
+fresh migration chain and a restored archive.
 
 ## 0.72.0 (2026-10-22)
 
