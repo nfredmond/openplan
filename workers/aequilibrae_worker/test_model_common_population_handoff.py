@@ -155,7 +155,9 @@ class PopulationHandoffTests(unittest.TestCase):
         self.calls.append((url, copy.deepcopy(kwargs)))
         self.assertTrue(url.startswith(self.writer.base_url + '/rest/v1/'))
         self.assertFalse(kwargs['allow_redirects'])
-        self.assertEqual(kwargs['headers'], {'apikey': 'fixture-only', 'Authorization': 'Bearer fixture-only'})
+        # 'fixture-only' is not a JWT, so it rides on apikey alone; the legacy
+        # Bearer shape is pinned in test_supabase_service_headers.py.
+        self.assertEqual(kwargs['headers'], {'apikey': 'fixture-only'})
         table = url.rsplit('/', 1)[-1]
         self.assertNotEqual(table, 'model_stage_attempts')
         rows = [row for row in self.tables[table] if all(key == 'select' or row.get(key) == value[3:]

@@ -14,6 +14,7 @@ import uuid
 
 import model_command_client as client
 import model_command_journal as journal
+from supabase_service_headers import service_key_headers
 
 T = TypeVar('T')
 
@@ -133,7 +134,7 @@ def dispatch_queued_stage(directory: Path, stage: dict, *, base_url: str,
     for field in ('id', 'run_id'):
         client._uuid(stage[field])
     response = get(base_url.rstrip('/') + '/rest/v1/model_run_stages',
-        headers={'apikey': service_key, 'Authorization': 'Bearer ' + service_key},
+        headers=service_key_headers(service_key),
         params={'id': 'eq.' + stage['id'], 'run_id': 'eq.' + stage['run_id'],
                 'select': 'id,run_id,stage_name,status,updated_at,attempt_managed,active_attempt_id,model_runs!inner(id,workspace_id,status,attempt_managed)'},
         timeout=(5, 30), allow_redirects=False)
