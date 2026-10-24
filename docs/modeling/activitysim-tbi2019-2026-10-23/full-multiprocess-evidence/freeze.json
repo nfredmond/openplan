@@ -1,0 +1,59 @@
+{
+  "recorded_unix": 1792828825.542372,
+  "base_head": "ee8f3f4e462b0ccc3daf41c4ca6b59b3d22d79eb",
+  "criterion": "Round 3 choice-level criterion; exact choices, identities, counts and dtypes; logsums/utilities within max(4 ULP, 1e-12 relative).",
+  "references": {
+    "current": {
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/data/_screening_cache/tbi2019-chunk-cause/r2-2000-current-reference",
+      "hashes": {
+        "final_land_use.csv": "a74feed4d6ceeab4c953c5ed3b48cafc0805b24c80f825d196f361ac092ccb94",
+        "final_trips.csv": "34b027140241f78c5fa467ce4656d0bb3ce5740bc4037bd1ea013f667b396c4c",
+        "final_households.csv": "131ac76a809b184dc697dabf8196f2fb20fe878a3eb440ea3d7cb04618a70889",
+        "final_persons.csv": "2407a2082b1bf6f0ac999c0e852021ef9091339a1e4460cd598affcad116bdea",
+        "final_tours.csv": "53945d2c8990b5e2c7a7539c0f541387b8904c5a53a2c59451c6478fa235b111",
+        "final_accessibility.csv": "68a89df0318674b3610ea77e4dcf681b4fcf339d6e17de89cb3b125478d56139",
+        "final_joint_tour_participants.csv": "b052168102ddedb8779ad109f9486f0a8d7874a427481b29b63aaaadb750f451"
+      }
+    },
+    "semcog": {
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/data/_screening_cache/tbi2019-chunk-cause/r3-2000-semcog-reference",
+      "hashes": {
+        "final_land_use.csv": "a74feed4d6ceeab4c953c5ed3b48cafc0805b24c80f825d196f361ac092ccb94",
+        "final_trips.csv": "89a449357fdeb269686e046c548dcb8aa83f05abc84092d842326d898dc08d84",
+        "final_households.csv": "0cc29c16cdf49ee3450a752c688dab0317ab80e7304fa0324df0f5296b164cdd",
+        "final_persons.csv": "b1ff86868766429409bdb6055658593b66d37624a6709a3b981fe2db6b029e4d",
+        "final_tours.csv": "29d1ac31ca9093883f3de7ab911b0dcd554d887191830b03551216d038675406",
+        "final_accessibility.csv": "68a89df0318674b3610ea77e4dcf681b4fcf339d6e17de89cb3b125478d56139",
+        "final_joint_tour_participants.csv": "b052168102ddedb8779ad109f9486f0a8d7874a427481b29b63aaaadb750f451"
+      }
+    }
+  },
+  "num_processes": 4,
+  "memory_max_bytes": 17179869184,
+  "swap_max_bytes": 0,
+  "python": "3.11.15 (main, Jun 11 2026, 04:03:40) [Clang 22.1.3 ]",
+  "python_realpath": "/home/nathaniel/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/bin/python3.11",
+  "activitysim": "1.5.1",
+  "cache_sha256": "3258b6ecd69d9a9e73e4d0b411a65a6e63308e7fe797d0f65dcc6634a29d7761",
+  "source_sha256": "a5d62b1622f022edba3d245bedc47b5ac6b4814fbc718054b2f2556b35d6019c",
+  "monitor_sha256": "fb351f5d7cc2e3e715fcd79a8f33fb5343967e0f66db7a31b22e9312cfd4991f",
+  "config_hashes": {
+    "config-semcog-prefix/logging.yaml": "cc6d9189f40c98fa31f5b65441601d8ca4b68606e426356417c43dbd26caa0b9",
+    "config-semcog-prefix/network_los.yaml": "28462bf20dfe305f422e2ea586f253a0f98a9ef423fae9ee555505c9405eefd9",
+    "config-semcog-prefix/settings.yaml": "3c114013f2ea817022cb94c95c0db90e9d9c07f543e0032e3e237ad9fa3eca24",
+    "config-semcog-prefix/tour_mode_choice_coefficients.csv": "537e54811e4b6ca9fec0662085777e9679a634bd312bb7c64df6e58ff60c7490",
+    "config-semcog-prefix/coefficient-set.json": "a1c850754c2f22b7f765b9429b4f9bf50137f2833a896c66f7740a3cf173e728",
+    "config-current-prefix/logging.yaml": "cc6d9189f40c98fa31f5b65441601d8ca4b68606e426356417c43dbd26caa0b9",
+    "config-current-prefix/network_los.yaml": "28462bf20dfe305f422e2ea586f253a0f98a9ef423fae9ee555505c9405eefd9",
+    "config-current-prefix/settings.yaml": "3c114013f2ea817022cb94c95c0db90e9d9c07f543e0032e3e237ad9fa3eca24",
+    "config-semcog-suffix/logging.yaml": "cc6d9189f40c98fa31f5b65441601d8ca4b68606e426356417c43dbd26caa0b9",
+    "config-semcog-suffix/network_los.yaml": "28462bf20dfe305f422e2ea586f253a0f98a9ef423fae9ee555505c9405eefd9",
+    "config-semcog-suffix/settings.yaml": "d7ff8be05e77edcca374445632d49821c839315431cf7e6d8b2e0095dbceafe7",
+    "config-semcog-suffix/tour_mode_choice_coefficients.csv": "537e54811e4b6ca9fec0662085777e9679a634bd312bb7c64df6e58ff60c7490",
+    "config-semcog-suffix/coefficient-set.json": "a1c850754c2f22b7f765b9429b4f9bf50137f2833a896c66f7740a3cf173e728",
+    "config-current-suffix/logging.yaml": "cc6d9189f40c98fa31f5b65441601d8ca4b68606e426356417c43dbd26caa0b9",
+    "config-current-suffix/network_los.yaml": "28462bf20dfe305f422e2ea586f253a0f98a9ef423fae9ee555505c9405eefd9",
+    "config-current-suffix/settings.yaml": "d7ff8be05e77edcca374445632d49821c839315431cf7e6d8b2e0095dbceafe7"
+  },
+  "outcomes_accessed": false
+}

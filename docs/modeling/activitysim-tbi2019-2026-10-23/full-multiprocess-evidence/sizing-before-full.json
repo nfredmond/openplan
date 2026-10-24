@@ -1,0 +1,15 @@
+{
+  "process_count": 4,
+  "households_per_worker_max": 265151,
+  "subset_worker_observed_vmhwm_bytes": 480808960,
+  "school_20000_boundary_rss_bytes": 647081984,
+  "growth_proxy_bytes_per_household": 8526.821743589744,
+  "worker_projection_bytes": 2737440861.262769,
+  "workers_projection_bytes": 10949763445.051077,
+  "shared_skim_bytes": 1328062624,
+  "parent_reserve_bytes": 400000000,
+  "coalesce_reserve_bytes": 3221225472,
+  "total_projection_bytes": 15899051541.051077,
+  "cap_bytes": 17179869184,
+  "limits": "School-stage linear proxy, not measured full-worker growth or a bound on workplace, coalescence or suffix. Reserve is assumed. Coalescence runs after workers. Kernel cap governs; stop on cap failure."
+}

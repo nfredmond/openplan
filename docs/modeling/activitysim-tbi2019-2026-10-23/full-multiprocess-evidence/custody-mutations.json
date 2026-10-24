@@ -1,0 +1,35 @@
+{
+  "source_unchanged": true,
+  "controls": [
+    {
+      "name": "harmless",
+      "survivor": true,
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skips": 0,
+      "accepted": true,
+      "detail": "....\n----------------------------------------------------------------------\nRan 4 tests in 0.004s\n\nOK\n"
+    },
+    {
+      "name": "frozen_engine_refusal",
+      "survivor": false,
+      "tests": 4,
+      "failures": 2,
+      "errors": 0,
+      "skips": 0,
+      "accepted": true,
+      "detail": ".FF.\n======================================================================\nFAIL: test_engine (custody_tests.Custody.test_engine)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-a2c74985/docs/modeling/activitysim-tbi2019-2026-10-23/full-multiprocess-evidence/test-finalize.py\", line 36, in test_engine\n    with self.assertRaises(AssertionError): self.execute('engine')\nAssertionError: AssertionError not raised\n\n======================================================================\nFAIL: test_frozen (custody_tests.Custody.test_frozen)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-a2c74985/docs/modeling/activitysim-tbi2019-2026-10-23/full-multiprocess-evidence/test-finalize.py\", line 38, in test_frozen\n    with self.assertRaises(AssertionError): self.execute('frozen')\nAssertionError: AssertionError not raised\n\n----------------------------------------------------------------------\nRan 4 tests in 0.004s\n\nFAILED (failures=2)\n"
+    },
+    {
+      "name": "output_refusal",
+      "survivor": false,
+      "tests": 4,
+      "failures": 1,
+      "errors": 0,
+      "skips": 0,
+      "accepted": true,
+      "detail": "F...\n======================================================================\nFAIL: test_artifact (custody_tests.Custody.test_artifact)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-a2c74985/docs/modeling/activitysim-tbi2019-2026-10-23/full-multiprocess-evidence/test-finalize.py\", line 40, in test_artifact\n    with self.assertRaises(AssertionError): self.execute('artifact')\nAssertionError: AssertionError not raised\n\n----------------------------------------------------------------------\nRan 4 tests in 0.003s\n\nFAILED (failures=1)\n"
+    }
+  ]
+}

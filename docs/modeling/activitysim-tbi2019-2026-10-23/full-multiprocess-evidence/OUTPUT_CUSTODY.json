@@ -1,0 +1,11 @@
+{
+  "root": "/home/nathaniel/.local/state/openplan/tbi2019-full-multiprocess-20261024",
+  "manifest_path": "/home/nathaniel/.local/state/openplan/tbi2019-full-multiprocess-20261024/OUTPUT_MANIFEST.json",
+  "manifest_sha256": "aedf2fdea951ae431e0614e65cb1f83755b46b4ca7b94437880f714b6b615cf3",
+  "files": 400,
+  "bytes": 2855177618,
+  "all_entries_reverified": true,
+  "mismatches": [],
+  "outputs_in_git": false,
+  "outcomes_accessed": false
+}

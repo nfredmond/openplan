@@ -1,0 +1,105 @@
+{
+  "source_unchanged": true,
+  "controls": [
+    {
+      "name": "harmless_comment",
+      "survivor": true,
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skips": 0,
+      "accepted": true,
+      "detail": "...........\n----------------------------------------------------------------------\nRan 11 tests in 0.074s\n\nOK\n"
+    },
+    {
+      "name": "dtype_guard",
+      "survivor": false,
+      "tests": 11,
+      "failures": 1,
+      "errors": 0,
+      "skips": 0,
+      "accepted": true,
+      "detail": "..F........\n======================================================================\nFAIL: test_dtype_refusal (continuation_tests.Continuation.test_dtype_refusal)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-a2c74985/docs/modeling/activitysim-tbi2019-2026-10-23/full-multiprocess-evidence/test-run.py\", line 39, in test_dtype_refusal\n    with patch.object(m,'R',root),self.assertRaisesRegex(RuntimeError,'dtype mismatch'):\nAssertionError: RuntimeError not raised\n\n----------------------------------------------------------------------\nRan 11 tests in 0.070s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "reference_guard",
+      "survivor": false,
+      "tests": 11,
+      "failures": 1,
+      "errors": 0,
+      "skips": 0,
+      "accepted": true,
+      "detail": ".........F.\n======================================================================\nFAIL: test_reference_refusal (continuation_tests.Continuation.test_reference_refusal)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-a2c74985/docs/modeling/activitysim-tbi2019-2026-10-23/full-multiprocess-evidence/test-run.py\", line 54, in test_reference_refusal\n    m.compare('current',out)\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-a2c74985/docs/modeling/activitysim-tbi2019-2026-10-23/full-multiprocess-evidence/run.py\", line 34, in compare\n    tables = compare_choices(reference['path'], output)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-a2c74985/scripts/modeling/activitysim_choice_parity.py\", line 35, in compare_choices\n    raise ParityFailure([{'table': name, 'error': 'Ambiguous row identity'}])\nactivitysim_choice_parity.ParityFailure: [{'table': 'final_trips.csv', 'error': 'Ambiguous row identity'}]\n\n----------------------------------------------------------------------\nRan 11 tests in 0.082s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "choice_comparison",
+      "survivor": false,
+      "tests": 11,
+      "failures": 3,
+      "errors": 0,
+      "skips": 0,
+      "accepted": true,
+      "detail": "FF..F......\n======================================================================\nFAIL: test_allowed_logsum_survives (continuation_tests.Continuation.test_allowed_logsum_survives)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-a2c74985/docs/modeling/activitysim-tbi2019-2026-10-23/full-multiprocess-evidence/test-run.py\", line 33, in test_allowed_logsum_survives\n    self.assertEqual(len(m.compare('current',out)),7)\nAssertionError: 0 != 7\n\n======================================================================\nFAIL: test_changed_choice_refusal (continuation_tests.Continuation.test_changed_choice_refusal)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-a2c74985/docs/modeling/activitysim-tbi2019-2026-10-23/full-multiprocess-evidence/test-run.py\", line 46, in test_changed_choice_refusal\n    with patch.object(m,'R',root),self.assertRaises(AssertionError):\nAssertionError: AssertionError not raised\n\n======================================================================\nFAIL: test_exact_survives (continuation_tests.Continuation.test_exact_survives)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-a2c74985/docs/modeling/activitysim-tbi2019-2026-10-23/full-multiprocess-evidence/test-run.py\", line 26, in test_exact_survives\n    self.assertEqual(len(m.compare('current',out)),7)\nAssertionError: 0 != 7\n\n----------------------------------------------------------------------\nRan 11 tests in 0.031s\n\nFAILED (failures=3)\n"
+    },
+    {
+      "name": "full_admission",
+      "survivor": false,
+      "tests": 11,
+      "failures": 1,
+      "errors": 0,
+      "skips": 0,
+      "accepted": true,
+      "detail": ".....F.....\n======================================================================\nFAIL: test_full_refuses_missing_parity (continuation_tests.Continuation.test_full_refuses_missing_parity)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-a2c74985/docs/modeling/activitysim-tbi2019-2026-10-23/full-multiprocess-evidence/test-run.py\", line 59, in test_full_refuses_missing_parity\n    with patch.object(m,'R',root),patch.object(m.prior,'verify'),patch.object(m,'execute_arm',return_value={}),self.assertRaisesRegex(RuntimeError,'Both parity'):\nAssertionError: RuntimeError not raised\n\n----------------------------------------------------------------------\nRan 11 tests in 0.075s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "stop_sequence",
+      "survivor": false,
+      "tests": 11,
+      "failures": 1,
+      "errors": 0,
+      "skips": 0,
+      "accepted": true,
+      "detail": "......F....\n======================================================================\nFAIL: test_full_stops_after_failure (continuation_tests.Continuation.test_full_stops_after_failure)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-a2c74985/docs/modeling/activitysim-tbi2019-2026-10-23/full-multiprocess-evidence/test-run.py\", line 66, in test_full_stops_after_failure\n    with self.assertRaisesRegex(RuntimeError,'synthetic cap'):\nAssertionError: RuntimeError not raised\n\n----------------------------------------------------------------------\nRan 11 tests in 0.071s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "engine_custody",
+      "survivor": false,
+      "tests": 11,
+      "failures": 1,
+      "errors": 0,
+      "skips": 0,
+      "accepted": true,
+      "detail": "...F.......\n======================================================================\nFAIL: test_engine_refusal (continuation_tests.Continuation.test_engine_refusal)\n----------------------------------------------------------------------\nRuntimeError: Reference custody mismatch\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-a2c74985/docs/modeling/activitysim-tbi2019-2026-10-23/full-multiprocess-evidence/test-run.py\", line 75, in test_engine_refusal\n    with self.assertRaisesRegex(RuntimeError,'Installed engine changed'):\nAssertionError: \"Installed engine changed\" does not match \"Reference custody mismatch\"\n\n----------------------------------------------------------------------\nRan 11 tests in 0.076s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "cache_guard",
+      "survivor": false,
+      "tests": 11,
+      "failures": 1,
+      "errors": 0,
+      "skips": 0,
+      "accepted": true,
+      "detail": "..........F\n======================================================================\nFAIL: test_stage_failure_and_cache_refusal (continuation_tests.Continuation.test_stage_failure_and_cache_refusal)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-a2c74985/docs/modeling/activitysim-tbi2019-2026-10-23/full-multiprocess-evidence/test-run.py\", line 84, in test_stage_failure_and_cache_refusal\n    with self.assertRaisesRegex(RuntimeError,'synthetic stage' if failure else 'Production cache'):\nAssertionError: RuntimeError not raised\n\n----------------------------------------------------------------------\nRan 11 tests in 0.080s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "parity_stop",
+      "survivor": false,
+      "tests": 11,
+      "failures": 1,
+      "errors": 0,
+      "skips": 0,
+      "accepted": true,
+      "detail": "........F..\n======================================================================\nFAIL: test_parity_failure_recorded (continuation_tests.Continuation.test_parity_failure_recorded)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-a2c74985/docs/modeling/activitysim-tbi2019-2026-10-23/full-multiprocess-evidence/test-run.py\", line 92, in test_parity_failure_recorded\n    with self.assertRaisesRegex(AssertionError,'choice differs'):\nAssertionError: AssertionError not raised\n\n----------------------------------------------------------------------\nRan 11 tests in 0.073s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "stage_label",
+      "survivor": false,
+      "tests": 11,
+      "failures": 1,
+      "errors": 0,
+      "skips": 0,
+      "accepted": true,
+      "detail": ".......F...\n======================================================================\nFAIL: test_monitor_boundaries (continuation_tests.Continuation.test_monitor_boundaries)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-a2c74985/docs/modeling/activitysim-tbi2019-2026-10-23/full-multiprocess-evidence/test-run.py\", line 104, in test_monitor_boundaries\n    self.assertEqual(namespace['stages'].get('123'),message)\nAssertionError: None != '#run_model running step workplace_location'\n\n----------------------------------------------------------------------\nRan 11 tests in 0.072s\n\nFAILED (failures=1)\n"
+    }
+  ]
+}

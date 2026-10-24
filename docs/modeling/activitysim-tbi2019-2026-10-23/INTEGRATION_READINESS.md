@@ -1194,3 +1194,142 @@ The PR remains draft.
    opening receipt. Previous synthetic receipts and consumed locks do not apply.
 6. Only a later authorized opening may access approved development outcomes.
    Keep held-out outcomes closed and AequilibraE separate from ActivitySim.
+
+## October 24, 2026 UTC: lead determination and full multiprocessing admission
+
+**The retained four-process current-arm result passes the adopted choice-level
+parity criterion.** The lead confirms that the round 3 criterion, recorded in
+[the pre-check declaration](#october-24-2026-utc-choice-level-parity-criterion-frozen-before-this-check)
+and retained in `chunk-cause-evidence/criterion.json`, governs this continuation.
+Every chosen alternative, identity, row count and dtype must match in all seven
+final tables. Only logsums and utilities allow an absolute difference of
+`max(4 * max(ulp(a), ulp(b)), 1e-12 * max(abs(a), abs(b)))`.
+The round 8 exact-value check was additional evidence, not a replacement gate.
+This determination supersedes the preceding interpretation of that check;
+its exact differences and stopped attempts remain unchanged.
+
+The [six retained cells](multiprocess-evidence/all-table-differences.json) are
+tour mode logsums for IDs 118630948, 119205787 and 119341311 (2, 1 and 3 ULP),
+trip destination logsums for IDs 42672878 and 576278866 (1 ULP each), and trip
+mode logsum for ID 953782221 (1 ULP). Each satisfies the adopted tolerance.
+Every other value matches. The result retains 6,763 tours and 17,377 trips.
+This determination precedes new engine execution and grants no outcome access.
+
+The continuation retains four household processes, a 256 MiB chunk target per
+process and the coalesced, unchunked scheduling suffix. SEMCOG must first pass
+its own 2,000-household comparison under the same criterion. Both full arms then
+run sequentially, current first, with all 1,060,601 households and 2,617,177
+persons under a 16 GiB all-descendant scope and zero swap. Any parity failure
+or resource-cap failure stops subsequent model execution.
+
+The sizing estimate uses the largest retained 500-household worker observation
+(480,808,960 bytes) and the prior allocator diagnostic's 20,000-household school
+boundary (647,081,984 bytes). Their difference divided by 19,500 households is
+8,526.82 bytes per additional household. At 265,151 households per worker,
+`4 * (480,808,960 + 264,651 * 8,526.82)` gives 10,949,763,445 bytes.
+Adding 1,328,062,624 bytes for skims, a 400,000,000-byte parent reserve and an
+assumed 3 GiB coalescence reserve gives 15,899,051,541 bytes, below the
+17,179,869,184-byte cap. Coalescence follows the workers, so this arithmetic
+includes its reserve conservatively alongside worker demand.
+
+This is a school-stage growth proxy across two different measurement boundaries,
+not a measured full-worker scaling law or a guaranteed upper bound. Workplace
+preparation and the full unchunked suffix remain unmeasured. More workers add
+fixed overhead without reducing the linear aggregate term. The bounded full run
+must test this estimate; the kernel cap and stop instruction remain controlling.
+[Sizing inputs and limits](full-multiprocess-evidence/sizing-before-full.json)
+preserve these assumptions before full execution.
+
+### SEMCOG parity before full execution
+
+The four-process SEMCOG prefix and coalesced suffix complete in 144.756 and
+11.200 seconds. Their kernel peaks are 2,616,107,008 and 422,854,656 bytes;
+both record zero swap and zero OOM events. All seven tables pass the adopted
+criterion, including exact dtypes, choices, identities and counts. The result
+contains 6,764 tours, 17,464 trips and 274 joint participants. Five logsum cells
+differ by one or two ULP: tour IDs 119205787 and 119222777; trip IDs 42672878,
+588318111 and 929324687. [The complete comparison](full-multiprocess-evidence/semcog-comparison.json)
+retains every tolerance calculation and all reference/candidate output hashes.
+No process-count change or current-arm replay is needed.
+
+### Full current arm exceeds the cap; subsequent execution stops
+
+**The four-process full current arm fails at 16 GiB.** The scope lasts 287.863
+seconds before the kernel OOM kill. All four workers reach
+`school_location.i1.logsums.gradeschool`, with 2,682,297; 2,683,253; 2,679,605;
+and 2,672,449 sampled destination rows, respectively. No worker logs an inner
+grade-school logsum chunk before the stop. These are intermediate model rows,
+not completed tours or survey records. No Python allocation trace identifies
+the exact failing expression in this run.
+
+The external observer retains a 17,179,869,184-byte kernel peak, four OOM events,
+one OOM kill, 5,419 memory-limit events and zero swap. The systemd journal
+independently reports `oom-kill`, 16G peak and 287.789 seconds of scope wall time.
+The outer controller exits -15. Its in-scope terminal health receipt is absent;
+the missing process-terminal measurements remain unavailable.
+
+| Full-population execution | Result | Elapsed seconds | Kernel peak bytes | Final tours / trips / MODELED shares |
+|---|---|---:|---:|---|
+| Current prefix, four household workers | OOM during grade-school logsum preparation | 287.863 | 17,179,869,184 | Unavailable / unavailable / null |
+| Current unchunked suffix | Not run after prefix failure | Unavailable | Unavailable | Unavailable |
+| SEMCOG full arm | Not run after current-arm failure | Unavailable | Unavailable | Unavailable |
+
+| Current-prefix stage group | One-second sampled aggregate cgroup peak bytes |
+|---|---:|
+| Land-use initialization | 1,908,965,376 |
+| Household initialization | 5,956,947,968 |
+| Household apportionment | 3,180,142,592 |
+| School location | 17,179,607,040 |
+| Accessibility | No stage sample captured; not zero |
+| Coalescence and suffix | Not reached |
+
+The sampled worker RSS peaks are 4,634,378,240; 4,628,975,616; 4,248,813,568;
+and 4,009,656,320 bytes for workers zero through three. Their observed VmHWM
+values are 4,634,378,240; 4,763,111,424; 4,248,813,568; and 4,009,656,320 bytes.
+The parent observed VmHWM is 1,010,847,744 bytes; initialization reaches
+4,888,387,584; apportionment reaches 1,572,073,472. These are sampled process
+observations, not guaranteed terminal maxima. RSS overlaps shared pages and
+must not be summed as cgroup allocation. Stage peaks include all concurrent
+scope processes while a sampled child carries that stage label.
+
+The measured failure disproves the 15,899,051,541-byte sizing forecast. The
+school-stage boundary proxy understates full preparation demand. Neither
+increasing worker count nor extrapolating the censored peak establishes a safe
+successor. No further model execution, retry or process-count change follows.
+[Run health](full-multiprocess-evidence/run-health.json) retains commands,
+configuration hashes, terminal counters, stage groups and each process.
+
+No full-arm final CSV exists. Full-output hash maps remain empty; completed
+tour/trip counts, MODELED shares and preregistered strata remain unavailable.
+The modeled-health report does not run. The two subset comparison receipts
+retain all 14 candidate output hashes, including the reused current outputs.
+[Private output custody](full-multiprocess-evidence/OUTPUT_CUSTODY.json) inventories
+new logs, telemetry, checkpoints, configs and SEMCOG subset outputs outside Git
+at `/home/nathaniel/.local/state/openplan/tbi2019-full-multiprocess-20261024/`.
+Partial full checkpoints do not become completed travel outputs.
+
+### Remaining frozen-opening steps after the multiprocessing stop
+
+1. The lead admits a successor resource/execution design using this measured
+   aggregate failure. Complete both full retained-population arms and their
+   coalesced suffixes, preserving choice parity, exclusions, output custody,
+   modeled-only health and supported strata. Both full arms remain incomplete.
+2. Grade population and historical travel inputs independently. Preserve the
+   four source-conflict exclusions and unchanged gates. Resolve or preregister
+   fare/cost-year, MVTA dependence, drive access, period speeds, walk/bicycle,
+   parking and toll limitations.
+3. Freeze observed/model eligibility, homogeneous trip families, diary/location
+   continuity, university, joint/at-work and quality rules, domains and exclusions.
+4. Freeze separate day-weight-per-tour and trip-weighted estimators, publisher
+   joins, clusters, strata, variance, singleton treatment and simultaneous bounds.
+5. Verify the original split, held-out boundary and complete custody, then obtain
+   a new lead-owned exclusive opening receipt. Historical receipts do not apply.
+6. Only a later authorized opening may access approved development outcomes.
+   Held-out outcomes stay closed. Keep AequilibraE and ActivitySim separate.
+
+All 117 original frozen records and 27 pinned installed files retain their
+hashes. CPython remains 3.11.15, ActivitySim 1.5.1, NumPy 1.25.2 and pandas 2.3.3.
+[Verification](full-multiprocess-evidence/VERIFICATION.md) records source checks,
+mutation controls, retained instrument errors and blind categories. No outcome
+field, Docker container, hosted system, managed database, secret, engine source,
+coefficient, default or consumed holdout changes. The PR remains draft.

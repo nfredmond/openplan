@@ -1,0 +1,450 @@
+{
+  "outcomes_accessed": false,
+  "status": {
+    "parity": {
+      "current": "passed_choice_parity_retained",
+      "semcog": "passed_choice_parity"
+    },
+    "full": {
+      "current": {
+        "status": "failed",
+        "final_hashes": {}
+      },
+      "semcog": {
+        "status": "not_run",
+        "final_hashes": {}
+      }
+    },
+    "outcomes_accessed": false,
+    "error": "Stage failed; no further execution: fullmp4-full-current-prefix"
+  },
+  "runs": [
+    {
+      "name": "fullmp4-full-current-prefix",
+      "command": [
+        "systemd-run",
+        "--user",
+        "--scope",
+        "--unit=tbi16-fullmp4-full-current-prefix",
+        "-p",
+        "MemoryMax=16G",
+        "-p",
+        "MemorySwapMax=0",
+        "env",
+        "OPENBLAS_NUM_THREADS=1",
+        "OMP_NUM_THREADS=1",
+        "MALLOC_MMAP_THRESHOLD_=131072",
+        "MALLOC_TRIM_THRESHOLD_=0",
+        "MALLOC_ARENA_MAX=2",
+        "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/bin/python",
+        "-B",
+        "/home/nathaniel/.local/state/openplan/tbi2019-full-multiprocess-20261024/monitor.py",
+        "/home/nathaniel/.local/state/openplan/tbi2019-full-multiprocess-20261024/fullmp4-full-current-prefix",
+        "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/bin/python",
+        "-B",
+        "-m",
+        "activitysim",
+        "run",
+        "-c",
+        "/home/nathaniel/.local/state/openplan/tbi2019-full-multiprocess-20261024/config-current-prefix",
+        "-c",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/bundle/configs",
+        "-c",
+        "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/examples/prototype_mtc/configs",
+        "-d",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-fb678273/data/_screening_cache/tbi2019-prechunk/inputs-full",
+        "-o",
+        "/home/nathaniel/.local/state/openplan/tbi2019-full-multiprocess-20261024/full-current"
+      ],
+      "config_hashes": {
+        "logging.yaml": "cc6d9189f40c98fa31f5b65441601d8ca4b68606e426356417c43dbd26caa0b9",
+        "network_los.yaml": "28462bf20dfe305f422e2ea586f253a0f98a9ef423fae9ee555505c9405eefd9",
+        "settings.yaml": "3c114013f2ea817022cb94c95c0db90e9d9c07f543e0032e3e237ad9fa3eca24"
+      },
+      "outcomes_accessed": false,
+      "exit_code": -15,
+      "elapsed_seconds": 287.8626082239789,
+      "scope_health": null,
+      "external_terminal": {
+        "event": "cgroup_removed",
+        "elapsed_since_attachment": 287.70132533001015,
+        "last_counters": {
+          "memory.peak": "17179869184",
+          "memory.events": "low 0\nhigh 0\nmax 5419\noom 4\noom_kill 1\noom_group_kill 0\nsock_throttled 0",
+          "memory.swap.peak": "0"
+        }
+      },
+      "processes": {
+        "1951242": {
+          "name": "unlabelled",
+          "rss_peak_bytes": 17002496,
+          "observed_vmhwm_bytes": 17002496,
+          "stages": {
+            "startup": 17002496
+          }
+        },
+        "1951245": {
+          "name": "MainProcess",
+          "rss_peak_bytes": 836415488,
+          "observed_vmhwm_bytes": 1010847744,
+          "stages": {
+            "startup": 836415488,
+            "other_model_steps": 488067072,
+            "apportion": 487297024
+          }
+        },
+        "1951946": {
+          "name": "mp_initialize",
+          "rss_peak_bytes": 4384022528,
+          "observed_vmhwm_bytes": 4888387584,
+          "stages": {
+            "land_use_initialization": 1669296128,
+            "household_initialization": 4384022528
+          }
+        },
+        "1955236": {
+          "name": "mp_households_apportion",
+          "rss_peak_bytes": 1523355648,
+          "observed_vmhwm_bytes": 1572073472,
+          "stages": {
+            "apportion": 1523355648
+          }
+        },
+        "1955468": {
+          "name": "mp_households_0",
+          "rss_peak_bytes": 4634378240,
+          "observed_vmhwm_bytes": 4634378240,
+          "stages": {
+            "school_location": 4634378240
+          }
+        },
+        "1955471": {
+          "name": "mp_households_1",
+          "rss_peak_bytes": 4628975616,
+          "observed_vmhwm_bytes": 4763111424,
+          "stages": {
+            "startup": 471179264,
+            "school_location": 4628975616
+          }
+        },
+        "1955474": {
+          "name": "mp_households_2",
+          "rss_peak_bytes": 4248813568,
+          "observed_vmhwm_bytes": 4248813568,
+          "stages": {
+            "startup": 428404736,
+            "school_location": 4248813568
+          }
+        },
+        "1955477": {
+          "name": "mp_households_3",
+          "rss_peak_bytes": 4009656320,
+          "observed_vmhwm_bytes": 4009656320,
+          "stages": {
+            "startup": 329150464,
+            "school_location": 4009656320
+          }
+        }
+      },
+      "stage_group_sampled_cgroup_peaks_bytes": {
+        "land_use_initialization": 1908965376,
+        "household_initialization": 5956947968,
+        "apportion": 3180142592,
+        "startup": 2679402496,
+        "school_location": 17179607040
+      },
+      "last_engine_lines": [
+        "[04:15.95] 1955477 mp_households_3 DEBUG: ChunkLedger.close hwm_rss 1366474752 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init",
+        "[04:15.95] 1955477 mp_households_3 DEBUG: ChunkLedger.close hwm_uss 1130348544 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init",
+        "[04:15.96] 1955477 mp_households_3 WARNING: Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -808_906_752 min_chunk_size: 13_421_772 base_chunk_size: 268_435_456",
+        "[04:15.96] 1955477 mp_households_3 DEBUG: school_location.i1.sample.gradeschool.interaction_sample waiting for mem_monitor thread to terminate",
+        "[04:15.96] 1955477 mp_households_3 DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.gradeschool.interaction_sample",
+        "[04:15.96] 1955477 mp_households_3 DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.gradeschool.interaction_sample.init",
+        "[04:15.96] 1955477 mp_households_3 DEBUG: ChunkLedger.close hwm_rss 1313558528 school_location.i1.sample.gradeschool.interaction_sample.init",
+        "[04:15.96] 1955477 mp_households_3 DEBUG: ChunkLedger.close hwm_uss 1077342208 school_location.i1.sample.gradeschool.interaction_sample.init",
+        "[04:16.43] 1955471 mp_households_1 INFO: Running school_location.i1.logsums.gradeschool with 2683253 rows",
+        "[04:16.59] 1955468 mp_households_0 INFO: Running school_location.i1.logsums.gradeschool with 2682297 rows",
+        "[04:17.07] 1955474 mp_households_2 INFO: Running school_location.i1.logsums.gradeschool with 2679605 rows",
+        "[04:17.15] 1955477 mp_households_3 INFO: Running school_location.i1.logsums.gradeschool with 2672449 rows"
+      ]
+    },
+    {
+      "name": "fullmp4-parity-semcog-prefix",
+      "command": [
+        "systemd-run",
+        "--user",
+        "--scope",
+        "--unit=tbi16-fullmp4-parity-semcog-prefix",
+        "-p",
+        "MemoryMax=16G",
+        "-p",
+        "MemorySwapMax=0",
+        "env",
+        "OPENBLAS_NUM_THREADS=1",
+        "OMP_NUM_THREADS=1",
+        "MALLOC_MMAP_THRESHOLD_=131072",
+        "MALLOC_TRIM_THRESHOLD_=0",
+        "MALLOC_ARENA_MAX=2",
+        "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/bin/python",
+        "-B",
+        "/home/nathaniel/.local/state/openplan/tbi2019-full-multiprocess-20261024/monitor.py",
+        "/home/nathaniel/.local/state/openplan/tbi2019-full-multiprocess-20261024/fullmp4-parity-semcog-prefix",
+        "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/bin/python",
+        "-B",
+        "-m",
+        "activitysim",
+        "run",
+        "-c",
+        "/home/nathaniel/.local/state/openplan/tbi2019-full-multiprocess-20261024/config-semcog-prefix",
+        "-c",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/bundle/configs",
+        "-c",
+        "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/examples/prototype_mtc/configs",
+        "-d",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-fb678273/data/_screening_cache/tbi2019-prechunk/inputs-2000",
+        "-o",
+        "/home/nathaniel/.local/state/openplan/tbi2019-full-multiprocess-20261024/parity-semcog"
+      ],
+      "config_hashes": {
+        "logging.yaml": "cc6d9189f40c98fa31f5b65441601d8ca4b68606e426356417c43dbd26caa0b9",
+        "network_los.yaml": "28462bf20dfe305f422e2ea586f253a0f98a9ef423fae9ee555505c9405eefd9",
+        "settings.yaml": "3c114013f2ea817022cb94c95c0db90e9d9c07f543e0032e3e237ad9fa3eca24",
+        "tour_mode_choice_coefficients.csv": "537e54811e4b6ca9fec0662085777e9679a634bd312bb7c64df6e58ff60c7490",
+        "coefficient-set.json": "a1c850754c2f22b7f765b9429b4f9bf50137f2833a896c66f7740a3cf173e728"
+      },
+      "outcomes_accessed": false,
+      "exit_code": 0,
+      "elapsed_seconds": 144.75597617798485,
+      "scope_health": {
+        "exit_code": 0,
+        "elapsed_seconds": 144.66892141703283,
+        "scope": {
+          "memory.peak": "2616107008",
+          "memory.max": "17179869184",
+          "memory.swap.max": "0",
+          "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+        }
+      },
+      "external_terminal": {
+        "event": "cgroup_removed",
+        "elapsed_since_attachment": 144.60833850101335,
+        "last_counters": {
+          "memory.peak": "2616107008",
+          "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+          "memory.swap.peak": "0"
+        }
+      },
+      "processes": {
+        "1934846": {
+          "name": "unlabelled",
+          "rss_peak_bytes": 16666624,
+          "observed_vmhwm_bytes": 16666624,
+          "stages": {
+            "startup": 16666624
+          }
+        },
+        "1934849": {
+          "name": "MainProcess",
+          "rss_peak_bytes": 382545920,
+          "observed_vmhwm_bytes": 382545920,
+          "stages": {
+            "startup": 379084800,
+            "other_model_steps": 382545920,
+            "apportion": 382455808,
+            "coalesce": 375783424
+          }
+        },
+        "1935117": {
+          "name": "mp_initialize",
+          "rss_peak_bytes": 1665220608,
+          "observed_vmhwm_bytes": 1686056960,
+          "stages": {
+            "land_use_initialization": 1665220608,
+            "accessibility": 452296704
+          }
+        },
+        "1935981": {
+          "name": "mp_households_0",
+          "rss_peak_bytes": 464687104,
+          "observed_vmhwm_bytes": 476594176,
+          "stages": {
+            "school_location": 374300672,
+            "workplace_location": 386179072,
+            "other_model_steps": 464687104
+          }
+        },
+        "1935997": {
+          "name": "mp_households_1",
+          "rss_peak_bytes": 451981312,
+          "observed_vmhwm_bytes": 471506944,
+          "stages": {
+            "school_location": 386351104,
+            "workplace_location": 387670016,
+            "other_model_steps": 451981312
+          }
+        },
+        "1936012": {
+          "name": "mp_households_2",
+          "rss_peak_bytes": 463659008,
+          "observed_vmhwm_bytes": 475172864,
+          "stages": {
+            "school_location": 382099456,
+            "workplace_location": 389939200,
+            "other_model_steps": 463659008
+          }
+        },
+        "1936015": {
+          "name": "mp_households_3",
+          "rss_peak_bytes": 461533184,
+          "observed_vmhwm_bytes": 476012544,
+          "stages": {
+            "school_location": 382562304,
+            "workplace_location": 385961984,
+            "other_model_steps": 461533184
+          }
+        }
+      },
+      "stage_group_sampled_cgroup_peaks_bytes": {
+        "land_use_initialization": 1812500480,
+        "accessibility": 1860497408,
+        "school_location": 2288680960,
+        "workplace_location": 2297704448,
+        "other_model_steps": 2592067584
+      },
+      "last_engine_lines": [
+        "[02:23.39] 1947130 mp_households_coalesce INFO: adding mirrored table school_modeled_size (634, 3)",
+        "[02:23.39] 1947130 mp_households_coalesce INFO: adding mirrored table workplace_modeled_size (634, 4)",
+        "[02:23.39] 1947130 mp_households_coalesce INFO: adding omnibus table households (2000, 34)",
+        "[02:23.39] 1947130 mp_households_coalesce INFO: adding omnibus table persons (4971, 63)",
+        "[02:23.39] 1947130 mp_households_coalesce INFO: adding omnibus table person_windows (4971, 21)",
+        "[02:23.40] 1947130 mp_households_coalesce INFO: adding omnibus table tours (6764, 23)",
+        "[02:23.40] 1947130 mp_households_coalesce INFO: adding omnibus table joint_tour_participants (274, 4)",
+        "[02:23.40] 1947130 mp_households_coalesce INFO: adding omnibus table trips (17464, 11)",
+        "[02:24.23] 1934849 MainProcess INFO: Time to execute #run_model sub_process mp_households_coalesce : 1.006 seconds (0.0 minutes)",
+        "[02:24.26] 1934849 MainProcess INFO: MainProcess high water mark rss: 2_172_243_968 (2.2 GB) timestamp: 24/10/2026 01:03:11 label:run_sub_simulations.idle",
+        "[02:24.26] 1934849 MainProcess INFO: MainProcess high water mark uss: 326_336_512 (326.3 MB) timestamp: 24/10/2026 01:01:02 label:allocate_shared_shadow_pricing_buffers_choice.completed",
+        "[02:24.29] 1934849 MainProcess INFO: Time to execute all models : 142.81 seconds (2.4 minutes)"
+      ]
+    },
+    {
+      "name": "fullmp4-parity-semcog-suffix",
+      "command": [
+        "systemd-run",
+        "--user",
+        "--scope",
+        "--unit=tbi16-fullmp4-parity-semcog-suffix",
+        "-p",
+        "MemoryMax=16G",
+        "-p",
+        "MemorySwapMax=0",
+        "env",
+        "OPENBLAS_NUM_THREADS=1",
+        "OMP_NUM_THREADS=1",
+        "MALLOC_MMAP_THRESHOLD_=131072",
+        "MALLOC_TRIM_THRESHOLD_=0",
+        "MALLOC_ARENA_MAX=2",
+        "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/bin/python",
+        "-B",
+        "/home/nathaniel/.local/state/openplan/tbi2019-full-multiprocess-20261024/monitor.py",
+        "/home/nathaniel/.local/state/openplan/tbi2019-full-multiprocess-20261024/fullmp4-parity-semcog-suffix",
+        "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/bin/python",
+        "-B",
+        "-m",
+        "activitysim",
+        "run",
+        "-c",
+        "/home/nathaniel/.local/state/openplan/tbi2019-full-multiprocess-20261024/config-semcog-suffix",
+        "-c",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/bundle/configs",
+        "-c",
+        "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/examples/prototype_mtc/configs",
+        "-d",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-fb678273/data/_screening_cache/tbi2019-prechunk/inputs-2000",
+        "-o",
+        "/home/nathaniel/.local/state/openplan/tbi2019-full-multiprocess-20261024/parity-semcog"
+      ],
+      "config_hashes": {
+        "logging.yaml": "cc6d9189f40c98fa31f5b65441601d8ca4b68606e426356417c43dbd26caa0b9",
+        "network_los.yaml": "28462bf20dfe305f422e2ea586f253a0f98a9ef423fae9ee555505c9405eefd9",
+        "settings.yaml": "d7ff8be05e77edcca374445632d49821c839315431cf7e6d8b2e0095dbceafe7",
+        "tour_mode_choice_coefficients.csv": "537e54811e4b6ca9fec0662085777e9679a634bd312bb7c64df6e58ff60c7490",
+        "coefficient-set.json": "a1c850754c2f22b7f765b9429b4f9bf50137f2833a896c66f7740a3cf173e728"
+      },
+      "outcomes_accessed": false,
+      "exit_code": 0,
+      "elapsed_seconds": 11.199675915995613,
+      "scope_health": {
+        "exit_code": 0,
+        "elapsed_seconds": 11.041113144019619,
+        "scope": {
+          "memory.peak": "422854656",
+          "memory.max": "17179869184",
+          "memory.swap.max": "0",
+          "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+        }
+      },
+      "external_terminal": {
+        "event": "cgroup_removed",
+        "elapsed_since_attachment": 11.027968373033218,
+        "last_counters": {
+          "memory.peak": "422854656",
+          "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+          "memory.swap.peak": "0"
+        }
+      },
+      "processes": {
+        "1947282": {
+          "name": "unlabelled",
+          "rss_peak_bytes": 16633856,
+          "observed_vmhwm_bytes": 16633856,
+          "stages": {
+            "startup": 16633856
+          }
+        },
+        "1947285": {
+          "name": "MainProcess",
+          "rss_peak_bytes": 517013504,
+          "observed_vmhwm_bytes": 524234752,
+          "stages": {
+            "startup": 263147520,
+            "trip_scheduling": 467169280,
+            "trip_mode_choice": 517013504,
+            "other_model_steps": 488042496
+          }
+        }
+      },
+      "stage_group_sampled_cgroup_peaks_bytes": {},
+      "last_engine_lines": [
+        "[00:09.58] 1947285 MainProcess DEBUG: Running chunkless with 245 choosers",
+        "[00:09.80] 1947285 MainProcess INFO: trip_mode_choice tour_type 'work' (6224 trips)",
+        "[00:09.90] 1947285 MainProcess DEBUG: Running chunkless with 6224 choosers",
+        "[00:10.27] 1947285 MainProcess NOTIFY:  time to execute run.trip_mode_choice : 3.531 seconds",
+        "[00:10.36] 1947285 MainProcess INFO: #run_model running step write_data_dictionary",
+        "[00:10.41] 1947285 MainProcess NOTIFY:  time to execute run.write_data_dictionary : 0.078 seconds",
+        "[00:10.48] 1947285 MainProcess INFO: #run_model running step write_tables",
+        "[00:10.59] 1947285 MainProcess NOTIFY:  time to execute run.write_tables : 0.127 seconds",
+        "[00:10.66] 1947285 MainProcess INFO: Time to execute run_model (4 models) : 8.785 seconds (0.1 minutes)",
+        "[00:10.66] 1947285 MainProcess INFO: MainProcess high water mark rss: 501_547_008 (501.5 MB) timestamp: 24/10/2026 01:03:35 label:pipeline.run_model write_tables finished",
+        "[00:10.66] 1947285 MainProcess INFO: MainProcess high water mark uss: 434_642_944 (434.6 MB) timestamp: 24/10/2026 01:03:35 label:pipeline.run_model write_tables finished",
+        "[00:10.66] 1947285 MainProcess INFO: Time to execute all models : 8.899 seconds (0.1 minutes)"
+      ]
+    }
+  ],
+  "measurement_limits": "One-second RSS/stage samples are lower bounds. Observed VmHWM can miss terminal peaks. RSS overlaps shared pages. Each stage cgroup peak is aggregate while at least one process has that label, not isolated stage allocation. Kernel lifetime peak is separate; external last counters may precede removal.",
+  "full_outputs": {
+    "current": {
+      "hashes": {},
+      "tours": null,
+      "trips": null,
+      "mode_shares_MODELED": null,
+      "strata_MODELED": null
+    },
+    "semcog": {
+      "hashes": {},
+      "tours": null,
+      "trips": null,
+      "mode_shares_MODELED": null,
+      "strata_MODELED": null
+    }
+  }
+}
