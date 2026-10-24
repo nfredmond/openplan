@@ -1,3 +1,4 @@
+import { chatText } from "@/lib/assistant/chat-text-length";
 import { createHash } from "node:crypto";
 import { z } from "zod";
 
@@ -18,9 +19,9 @@ export const chatScopeSchema = z.object({
   }
 });
 export type ChatScope = z.infer<typeof chatScopeSchema>;
-export const chatDraftSchema = z.object({ projectId: uuid, title: z.string().trim().min(1).max(160),
+export const chatDraftSchema = z.object({ projectId: uuid, title: chatText(1, 160, { trim: true }),
   submittalType: z.enum(["authorization_packet", "invoice_backup", "environmental_package", "hearing_record", "ps_e", "reimbursement", "progress_report", "other"]),
-  notes: z.string().trim().max(4000) }).strict();
+  notes: chatText(0, 4000, { trim: true }) }).strict();
 export const chatToolInputs = {
   list_projects: z.object({}).strict(),
   get_surface_context: z.object({ kind: z.literal("project"), id: uuid }).strict(),
@@ -135,7 +136,7 @@ export const chatGrantSchema = z.object({ domain: z.literal("OpenPlan.AssistantC
   scope: z.object({ target: z.object({ kind: z.enum(["workspace", "project"]), id: uuid.nullable(), workspaceId: uuid }).strict(),
     selectedProjectIds: z.array(uuid).max(25), includeWorkspaceIndex: z.boolean(), dataClasses: z.array(chatDataClassSchema),
     resourceRules: z.literal("explicit_project_ids;index_does_not_expand_scope"), projectionDefinitions: z.string(), historyPolicy: z.literal("none") }).strict(),
-  packet: z.object({ version: z.literal(1), question: z.string().min(1).max(2000), history: z.tuple([]), capturedAt: instant, initialEnvelopes: z.array(chatEnvelopeSchema).min(1) }).strict(),
+  packet: z.object({ version: z.literal(1), question: chatText(1, 2000), history: z.tuple([]), capturedAt: instant, initialEnvelopes: z.array(chatEnvelopeSchema).min(1) }).strict(),
   selection: chatSelectionSchema, preparedAt: instant, acceptBefore: instant, expiresAt: instant }).strict();
 export type AssistantChatAcceptedGrantV1 = z.infer<typeof chatGrantSchema>;
 export type ChatState = "prepared" | "accepted" | "running" | "succeeded" | "unsupported" | "unavailable" | "failed" | "unassessed" | "interrupted" | "uncertain" | "cancelled" | "access_lost";
