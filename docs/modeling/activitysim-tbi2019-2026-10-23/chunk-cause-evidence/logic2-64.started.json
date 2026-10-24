@@ -1,0 +1,41 @@
+{
+  "name": "logic2-64",
+  "command": [
+    "systemd-run",
+    "--user",
+    "--scope",
+    "--unit=tbi-hybrid-logic2-64",
+    "-p",
+    "MemoryMax=9G",
+    "-p",
+    "MemorySwapMax=0",
+    "env",
+    "OPENBLAS_NUM_THREADS=1",
+    "OMP_NUM_THREADS=1",
+    "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/bin/python",
+    "-B",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/docs/modeling/activitysim-tbi2019-2026-10-23/convergence-evidence/scope-runner.py",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/docs/modeling/activitysim-tbi2019-2026-10-23/chunk-cause-evidence/logic2-64.health.json",
+    "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/bin/python",
+    "-B",
+    "-m",
+    "activitysim",
+    "run",
+    "-c",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/data/_screening_cache/tbi2019-chunk-cause/config-logic2-64",
+    "-c",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/bundle/configs",
+    "-c",
+    "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/examples/prototype_mtc/configs",
+    "-d",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/parity-inputs",
+    "-o",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/data/_screening_cache/tbi2019-chunk-cause/logic2-64"
+  ],
+  "config_files": {
+    "trip_scheduling.yaml": "cd244bac958c80e027a4cadcbdd3516f2069ec80401884d9becaf2f419a007bd",
+    "logging.yaml": "768c127f265f728df27e97db1667c42ae1723b44ae647e571d61be7a68d6aa70",
+    "network_los.yaml": "28462bf20dfe305f422e2ea586f253a0f98a9ef423fae9ee555505c9405eefd9",
+    "settings.yaml": "83a8f38c758fe3a1935a63b48fdf03ed5fa5f093a44b4ff60284c0d099746105"
+  }
+}

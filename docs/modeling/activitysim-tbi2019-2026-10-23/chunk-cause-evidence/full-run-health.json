@@ -1,0 +1,62 @@
+{
+  "claim": "Full-population runtime health only; no final model outputs available",
+  "households": 1060601,
+  "persons": 2617177,
+  "zones": 634,
+  "execution": "Sequential engine processes; production 5500000000-byte prefix target, 9 GiB hard scope cap, zero swap",
+  "arms": [
+    {
+      "arm": "current",
+      "completion": "failed",
+      "failure_stage": "production prefix: school_location.i1.logsums.gradeschool",
+      "prefix": {
+        "elapsed_seconds_outer_runner": 475.67304586601676,
+        "process_exit_code": -15,
+        "systemd_result": "oom-kill",
+        "systemd_reported_peak": "9G",
+        "scope_limit_bytes": 9663676416,
+        "scope_swap_max_bytes": 0,
+        "terminal_wrapper_receipt_available": false,
+        "journal": "full-current-prefix.systemd.log"
+      },
+      "unchunked_suffix": {
+        "status": "not_run",
+        "elapsed_seconds": null,
+        "peak_bytes": null
+      },
+      "tour_count": null,
+      "trip_count": null,
+      "mode_shares_MODELED": null,
+      "preregistered_strata_MODELED": null,
+      "final_table_hashes": {},
+      "outcomes_accessed": false
+    },
+    {
+      "arm": "semcog",
+      "completion": "failed",
+      "failure_stage": "production prefix: school_location.i1.logsums.gradeschool",
+      "prefix": {
+        "elapsed_seconds_outer_runner": 485.40644151199376,
+        "process_exit_code": -15,
+        "systemd_result": "oom-kill",
+        "systemd_reported_peak": "9G",
+        "scope_limit_bytes": 9663676416,
+        "scope_swap_max_bytes": 0,
+        "terminal_wrapper_receipt_available": false,
+        "journal": "full-semcog-prefix.systemd.log"
+      },
+      "unchunked_suffix": {
+        "status": "not_run",
+        "elapsed_seconds": null,
+        "peak_bytes": null
+      },
+      "tour_count": null,
+      "trip_count": null,
+      "mode_shares_MODELED": null,
+      "preregistered_strata_MODELED": null,
+      "final_table_hashes": {},
+      "outcomes_accessed": false
+    }
+  ],
+  "conclusion": "No full-population completion demonstrated within 9 GiB. Subset parity passes for the tested hybrid path. This failure does not prove that every possible unmodified-engine execution path is impossible."
+}

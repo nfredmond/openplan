@@ -1,0 +1,28 @@
+{
+  "exit_code": 0,
+  "elapsed_seconds": 49.56922919000499,
+  "command": [
+    "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/bin/python",
+    "-B",
+    "-m",
+    "activitysim",
+    "run",
+    "-c",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/data/_screening_cache/tbi2019-chunk-cause/config-64-current-reference",
+    "-c",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/bundle/configs",
+    "-c",
+    "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/examples/prototype_mtc/configs",
+    "-d",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/parity-inputs",
+    "-o",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/data/_screening_cache/tbi2019-chunk-cause/64-current-reference"
+  ],
+  "peak_child_rss_kib": 1759112,
+  "scope": {
+    "memory.peak": "1807773696",
+    "memory.max": "9663676416",
+    "memory.swap.max": "0",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+  }
+}

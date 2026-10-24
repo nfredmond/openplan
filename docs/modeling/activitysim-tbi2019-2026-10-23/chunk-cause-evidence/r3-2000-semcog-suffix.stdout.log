@@ -1,0 +1,606 @@
+Running as unit: tbi-hybrid-r3-2000-semcog-suffix.scope; invocation ID: 3541b2c4c9fc430b94895627a68487e1
+
+   ___      __  _      _ __       _____
+  / _ |____/ /_(_)  __(_) /___ __/ __(_)_ _
+ / __ / __/ __/ / |/ / / __/ // /\ \/ /  ' \   1.5.1
+/_/ |_\__/\__/_/|___/_/\__/\_, /___/_/_/_/_/
+                          /___/
+
+INFO:activitysim:Configured logging using basicConfig
+[00:01.76] INFO: Read logging configuration from: /home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/data/_screening_cache/tbi2019-chunk-cause/config-r3-2000-semcog-suffix/logging.yaml
+[00:01.77] INFO: ActivitySim Version: 1.5.1
+[00:01.77] INFO: SETTING configs_dir: (PosixPath('/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/data/_screening_cache/tbi2019-chunk-cause/config-r3-2000-semcog-suffix'), PosixPath('/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/bundle/configs'), PosixPath('/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/examples/prototype_mtc/configs'))
+[00:01.77] INFO: SETTING settings_file_name: settings.yaml
+[00:01.77] INFO: SETTING data_dir: (PosixPath('/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/inputs-2000'),)
+[00:01.77] INFO: SETTING output_dir: /home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/data/_screening_cache/tbi2019-chunk-cause/r3-2000-semcog-hybrid
+[00:01.77] INFO: SETTING households_sample_size: 0
+[00:01.77] INFO: SETTING chunk_size: 0
+[00:01.77] INFO: SETTING chunk_method: hybrid_uss
+[00:01.77] INFO: SETTING chunk_training_mode: disabled
+[00:01.77] INFO: SETTING multiprocess: False
+[00:01.77] INFO: SETTING num_processes: None
+[00:01.77] INFO: SETTING resume_after: trip_purpose_and_destination
+[00:01.77] INFO: SETTING trace_hh_id: None
+[00:01.77] INFO: SETTING memory_profile: False
+[00:01.77] INFO: SETTING instrument: False
+[00:01.77] INFO: SETTING sharrow: False
+[00:01.77] INFO: ENV MKL_NUM_THREADS: 1
+[00:01.77] INFO: ENV OMP_NUM_THREADS: 1
+[00:01.77] INFO: ENV OPENBLAS_NUM_THREADS: 1
+[00:01.77] INFO: ENV NUMBA_NUM_THREADS: 1
+[00:01.77] INFO: Settings checker will check core settings files. See settings_checker.log for details.
+[00:01.81] WARNING: mandatory_tour_scheduling: Field SPEC is None in TourSchedulingSettings. Ensure that a filepath is defined YAML settings if required
+[00:01.81] WARNING: mandatory_tour_scheduling: Field COEFFICIENTS is None in TourSchedulingSettings. Ensure that a filepath is defined YAML settings if required
+[00:01.86] WARNING: non_mandatory_tour_frequency: Field COEFFICIENTS is None in NonMandatoryTourFrequencySettings. Ensure that a filepath is defined YAML settings if required
+[00:01.97] WARNING: stop_frequency: Field SPEC is None in StopFrequencySettings. Ensure that a filepath is defined YAML settings if required
+[00:01.97] WARNING: stop_frequency: Field COEFFICIENTS is None in StopFrequencySettings. Ensure that a filepath is defined YAML settings if required
+[00:02.06] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/pydantic/_internal/_decorators_v1.py:148: FutureWarning: Use of the field `DESTINATION_SAMPLE_SPEC` in the trip_destination configuration file is deprecated, use just `SAMPLE_SPEC` instead (currently both are given).
+  return validator(values)
+
+[00:02.06] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/pydantic/_internal/_decorators_v1.py:148: FutureWarning: Use of the field `DESTINATION_SPEC` in the trip_destination configuration file is deprecated, use just `SPEC` instead (currently both are given).
+  return validator(values)
+
+[00:02.06] INFO: Cannot pre-check settings for model component trip_scheduling: mapping to a Pydantic data model is undefined in the checker.
+[00:02.10] INFO: Cannot pre-check settings for model component write_tables: mapping to a Pydantic data model is undefined in the checker.
+[00:02.10] INFO: Setting Checker Complete. No runtime errors were raised. Check fsettings_checker.log for warnings. These *may* prevent model from successfully running.
+[00:02.10] INFO: run single process simulation
+[00:02.10] INFO: load_checkpoint trip_purpose_and_destination from /home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/data/_screening_cache/tbi2019-chunk-cause/r3-2000-semcog-hybrid/pipeline.parquetpipeline
+[00:02.10] INFO: load_checkpoint trip_purpose_and_destination timestamp 2026-10-23 20:55:47.753177
+[00:02.10] INFO: load_checkpoint table land_use (634, 29)
+[00:02.10] INFO: load_checkpoint table accessibility (634, 10)
+[00:02.11] INFO: load_checkpoint table households (2000, 34)
+[00:02.11] INFO: load_checkpoint table persons (4971, 63)
+[00:02.11] INFO: load_checkpoint table school_destination_size (634, 3)
+[00:02.11] INFO: load_checkpoint table workplace_destination_size (634, 4)
+[00:02.11] INFO: load_checkpoint table person_windows (4971, 21)
+[00:02.12] INFO: load_checkpoint table school_modeled_size (634, 3)
+[00:02.12] INFO: load_checkpoint table workplace_modeled_size (634, 4)
+[00:02.12] INFO: load_checkpoint table tours (6764, 23)
+[00:02.12] INFO: load_checkpoint table joint_tour_participants (274, 4)
+[00:02.13] INFO: load_checkpoint table trips (17464, 11)
+[00:02.13] INFO: Time to execute checkpoint.restore : 0.034 seconds (0.0 minutes)
+[00:02.13] INFO: resume_after trip_purpose_and_destination
+[00:02.17] INFO: preload_injectables
+[00:02.17] INFO: Time to execute preload_injectables : 0.037 seconds (0.0 minutes)
+[00:02.24] INFO: #run_model running step trip_scheduling
+[00:02.25] DEBUG: Running chunkless with 17464 choosers
+[00:02.25] INFO: trip_scheduling.i1 scheduling 17464 trips within chunk 0
+[00:02.25] INFO: Network_LOS using skim_dict_factory: MemMapSkimFactory
+[00:02.43] INFO: get_skim_data taz JitMemMapSkimData shape (826, 634, 634)
+[00:02.43] INFO: SkimDict init taz
+[00:02.43] INFO: SkimDict.build_3d_skim_block_offset_table registered 167 3d keys
+[00:03.09] INFO: trip_scheduling.i1 301 failed
+[00:03.09] INFO: trip_scheduling.i2 scheduling 926 trips within chunk 0
+[00:03.13] INFO: trip_scheduling.i2 525 failed
+[00:03.13] INFO: trip_scheduling.i3 scheduling 810 trips within chunk 0
+[00:03.17] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:03.17] INFO: trip_scheduling.i3 514 failed
+[00:03.17] INFO: trip_scheduling.i4 scheduling 767 trips within chunk 0
+[00:03.21] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:03.21] INFO: trip_scheduling.i4 505 failed
+[00:03.21] INFO: trip_scheduling.i5 scheduling 742 trips within chunk 0
+[00:03.24] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:03.25] INFO: trip_scheduling.i5 501 failed
+[00:03.25] INFO: trip_scheduling.i6 scheduling 729 trips within chunk 0
+[00:03.28] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:03.28] INFO: trip_scheduling.i6 502 failed
+[00:03.28] INFO: trip_scheduling.i7 scheduling 725 trips within chunk 0
+[00:03.32] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:03.32] INFO: trip_scheduling.i7 499 failed
+[00:03.32] INFO: trip_scheduling.i8 scheduling 721 trips within chunk 0
+[00:03.36] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:03.36] INFO: trip_scheduling.i8 499 failed
+[00:03.36] INFO: trip_scheduling.i9 scheduling 721 trips within chunk 0
+[00:03.39] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:03.39] INFO: trip_scheduling.i9 499 failed
+[00:03.40] INFO: trip_scheduling.i10 scheduling 721 trips within chunk 0
+[00:03.43] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:03.43] INFO: trip_scheduling.i10 500 failed
+[00:03.43] INFO: trip_scheduling.i11 scheduling 721 trips within chunk 0
+[00:03.47] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:03.47] INFO: trip_scheduling.i11 499 failed
+[00:03.47] INFO: trip_scheduling.i12 scheduling 721 trips within chunk 0
+[00:03.51] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:03.51] INFO: trip_scheduling.i12 499 failed
+[00:03.51] INFO: trip_scheduling.i13 scheduling 721 trips within chunk 0
+[00:03.54] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:03.54] INFO: trip_scheduling.i13 500 failed
+[00:03.55] INFO: trip_scheduling.i14 scheduling 721 trips within chunk 0
+[00:03.58] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:03.58] INFO: trip_scheduling.i14 499 failed
+[00:03.58] INFO: trip_scheduling.i15 scheduling 718 trips within chunk 0
+[00:03.62] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:03.62] INFO: trip_scheduling.i15 498 failed
+[00:03.62] INFO: trip_scheduling.i16 scheduling 715 trips within chunk 0
+[00:03.66] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:03.66] INFO: trip_scheduling.i16 498 failed
+[00:03.66] INFO: trip_scheduling.i17 scheduling 715 trips within chunk 0
+[00:03.69] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:03.69] INFO: trip_scheduling.i17 497 failed
+[00:03.69] INFO: trip_scheduling.i18 scheduling 715 trips within chunk 0
+[00:03.73] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:03.73] INFO: trip_scheduling.i18 498 failed
+[00:03.73] INFO: trip_scheduling.i19 scheduling 715 trips within chunk 0
+[00:03.77] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:03.77] INFO: trip_scheduling.i19 495 failed
+[00:03.77] INFO: trip_scheduling.i20 scheduling 715 trips within chunk 0
+[00:03.80] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:03.81] INFO: trip_scheduling.i20 498 failed
+[00:03.81] INFO: trip_scheduling.i21 scheduling 715 trips within chunk 0
+[00:03.84] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:03.84] INFO: trip_scheduling.i21 496 failed
+[00:03.84] INFO: trip_scheduling.i22 scheduling 712 trips within chunk 0
+[00:03.88] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:03.88] INFO: trip_scheduling.i22 496 failed
+[00:03.89] INFO: trip_scheduling.i23 scheduling 709 trips within chunk 0
+[00:03.93] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:03.93] INFO: trip_scheduling.i23 495 failed
+[00:03.93] INFO: trip_scheduling.i24 scheduling 709 trips within chunk 0
+[00:03.97] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:03.97] INFO: trip_scheduling.i24 495 failed
+[00:03.97] INFO: trip_scheduling.i25 scheduling 709 trips within chunk 0
+[00:04.01] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:04.01] INFO: trip_scheduling.i25 494 failed
+[00:04.01] INFO: trip_scheduling.i26 scheduling 709 trips within chunk 0
+[00:04.05] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:04.05] INFO: trip_scheduling.i26 495 failed
+[00:04.05] INFO: trip_scheduling.i27 scheduling 709 trips within chunk 0
+[00:04.09] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:04.09] INFO: trip_scheduling.i27 495 failed
+[00:04.09] INFO: trip_scheduling.i28 scheduling 709 trips within chunk 0
+[00:04.13] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:04.13] INFO: trip_scheduling.i28 495 failed
+[00:04.13] INFO: trip_scheduling.i29 scheduling 709 trips within chunk 0
+[00:04.17] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:04.17] INFO: trip_scheduling.i29 497 failed
+[00:04.17] INFO: trip_scheduling.i30 scheduling 709 trips within chunk 0
+[00:04.21] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:04.21] INFO: trip_scheduling.i30 496 failed
+[00:04.21] INFO: trip_scheduling.i31 scheduling 709 trips within chunk 0
+[00:04.24] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:04.24] INFO: trip_scheduling.i31 496 failed
+[00:04.25] INFO: trip_scheduling.i32 scheduling 709 trips within chunk 0
+[00:04.29] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:04.29] INFO: trip_scheduling.i32 497 failed
+[00:04.29] INFO: trip_scheduling.i33 scheduling 709 trips within chunk 0
+[00:04.33] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:04.33] INFO: trip_scheduling.i33 496 failed
+[00:04.33] INFO: trip_scheduling.i34 scheduling 709 trips within chunk 0
+[00:04.37] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:04.37] INFO: trip_scheduling.i34 496 failed
+[00:04.37] INFO: trip_scheduling.i35 scheduling 709 trips within chunk 0
+[00:04.41] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:04.41] INFO: trip_scheduling.i35 496 failed
+[00:04.41] INFO: trip_scheduling.i36 scheduling 709 trips within chunk 0
+[00:04.44] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:04.44] INFO: trip_scheduling.i36 495 failed
+[00:04.45] INFO: trip_scheduling.i37 scheduling 709 trips within chunk 0
+[00:04.48] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:04.48] INFO: trip_scheduling.i37 496 failed
+[00:04.48] INFO: trip_scheduling.i38 scheduling 709 trips within chunk 0
+[00:04.52] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:04.52] INFO: trip_scheduling.i38 493 failed
+[00:04.52] INFO: trip_scheduling.i39 scheduling 709 trips within chunk 0
+[00:04.56] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:04.56] INFO: trip_scheduling.i39 495 failed
+[00:04.56] INFO: trip_scheduling.i40 scheduling 709 trips within chunk 0
+[00:04.60] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:04.60] INFO: trip_scheduling.i40 495 failed
+[00:04.60] INFO: trip_scheduling.i41 scheduling 709 trips within chunk 0
+[00:04.64] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:04.64] INFO: trip_scheduling.i41 496 failed
+[00:04.64] INFO: trip_scheduling.i42 scheduling 709 trips within chunk 0
+[00:04.68] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:04.68] INFO: trip_scheduling.i42 496 failed
+[00:04.68] INFO: trip_scheduling.i43 scheduling 709 trips within chunk 0
+[00:04.71] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:04.71] INFO: trip_scheduling.i43 495 failed
+[00:04.72] INFO: trip_scheduling.i44 scheduling 709 trips within chunk 0
+[00:04.75] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:04.75] INFO: trip_scheduling.i44 496 failed
+[00:04.75] INFO: trip_scheduling.i45 scheduling 709 trips within chunk 0
+[00:04.79] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:04.79] INFO: trip_scheduling.i45 495 failed
+[00:04.79] INFO: trip_scheduling.i46 scheduling 709 trips within chunk 0
+[00:04.83] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:04.83] INFO: trip_scheduling.i46 496 failed
+[00:04.83] INFO: trip_scheduling.i47 scheduling 709 trips within chunk 0
+[00:04.86] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:04.86] INFO: trip_scheduling.i47 495 failed
+[00:04.86] INFO: trip_scheduling.i48 scheduling 709 trips within chunk 0
+[00:04.90] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:04.90] INFO: trip_scheduling.i48 496 failed
+[00:04.90] INFO: trip_scheduling.i49 scheduling 709 trips within chunk 0
+[00:04.94] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:04.94] INFO: trip_scheduling.i49 496 failed
+[00:04.94] INFO: trip_scheduling.i50 scheduling 709 trips within chunk 0
+[00:04.98] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:04.98] INFO: trip_scheduling.i50 495 failed
+[00:04.98] INFO: trip_scheduling.i51 scheduling 709 trips within chunk 0
+[00:05.02] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:05.02] INFO: trip_scheduling.i51 496 failed
+[00:05.02] INFO: trip_scheduling.i52 scheduling 709 trips within chunk 0
+[00:05.06] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:05.06] INFO: trip_scheduling.i52 493 failed
+[00:05.06] INFO: trip_scheduling.i53 scheduling 709 trips within chunk 0
+[00:05.10] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:05.10] INFO: trip_scheduling.i53 494 failed
+[00:05.10] INFO: trip_scheduling.i54 scheduling 709 trips within chunk 0
+[00:05.14] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:05.14] INFO: trip_scheduling.i54 495 failed
+[00:05.14] INFO: trip_scheduling.i55 scheduling 709 trips within chunk 0
+[00:05.17] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:05.17] INFO: trip_scheduling.i55 495 failed
+[00:05.17] INFO: trip_scheduling.i56 scheduling 709 trips within chunk 0
+[00:05.21] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:05.21] INFO: trip_scheduling.i56 496 failed
+[00:05.21] INFO: trip_scheduling.i57 scheduling 709 trips within chunk 0
+[00:05.25] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:05.25] INFO: trip_scheduling.i57 496 failed
+[00:05.25] INFO: trip_scheduling.i58 scheduling 709 trips within chunk 0
+[00:05.29] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:05.29] INFO: trip_scheduling.i58 497 failed
+[00:05.29] INFO: trip_scheduling.i59 scheduling 709 trips within chunk 0
+[00:05.32] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:05.32] INFO: trip_scheduling.i59 496 failed
+[00:05.33] INFO: trip_scheduling.i60 scheduling 709 trips within chunk 0
+[00:05.36] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:05.36] INFO: trip_scheduling.i60 496 failed
+[00:05.36] INFO: trip_scheduling.i61 scheduling 709 trips within chunk 0
+[00:05.40] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:05.40] INFO: trip_scheduling.i61 494 failed
+[00:05.40] INFO: trip_scheduling.i62 scheduling 705 trips within chunk 0
+[00:05.44] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:05.44] INFO: trip_scheduling.i62 494 failed
+[00:05.44] INFO: trip_scheduling.i63 scheduling 705 trips within chunk 0
+[00:05.48] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:05.48] INFO: trip_scheduling.i63 494 failed
+[00:05.48] INFO: trip_scheduling.i64 scheduling 705 trips within chunk 0
+[00:05.51] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:05.51] INFO: trip_scheduling.i64 494 failed
+[00:05.51] INFO: trip_scheduling.i65 scheduling 705 trips within chunk 0
+[00:05.55] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:05.55] INFO: trip_scheduling.i65 494 failed
+[00:05.55] INFO: trip_scheduling.i66 scheduling 705 trips within chunk 0
+[00:05.59] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:05.59] INFO: trip_scheduling.i66 494 failed
+[00:05.59] INFO: trip_scheduling.i67 scheduling 705 trips within chunk 0
+[00:05.63] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:05.63] INFO: trip_scheduling.i67 494 failed
+[00:05.63] INFO: trip_scheduling.i68 scheduling 705 trips within chunk 0
+[00:05.68] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:05.68] INFO: trip_scheduling.i68 493 failed
+[00:05.68] INFO: trip_scheduling.i69 scheduling 705 trips within chunk 0
+[00:05.72] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:05.72] INFO: trip_scheduling.i69 495 failed
+[00:05.72] INFO: trip_scheduling.i70 scheduling 705 trips within chunk 0
+[00:05.76] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:05.76] INFO: trip_scheduling.i70 494 failed
+[00:05.76] INFO: trip_scheduling.i71 scheduling 705 trips within chunk 0
+[00:05.80] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:05.80] INFO: trip_scheduling.i71 494 failed
+[00:05.80] INFO: trip_scheduling.i72 scheduling 705 trips within chunk 0
+[00:05.84] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:05.84] INFO: trip_scheduling.i72 494 failed
+[00:05.84] INFO: trip_scheduling.i73 scheduling 705 trips within chunk 0
+[00:05.87] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:05.87] INFO: trip_scheduling.i73 495 failed
+[00:05.87] INFO: trip_scheduling.i74 scheduling 705 trips within chunk 0
+[00:05.91] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:05.91] INFO: trip_scheduling.i74 495 failed
+[00:05.91] INFO: trip_scheduling.i75 scheduling 705 trips within chunk 0
+[00:05.95] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:05.95] INFO: trip_scheduling.i75 494 failed
+[00:05.95] INFO: trip_scheduling.i76 scheduling 705 trips within chunk 0
+[00:05.98] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:05.99] INFO: trip_scheduling.i76 495 failed
+[00:05.99] INFO: trip_scheduling.i77 scheduling 705 trips within chunk 0
+[00:06.02] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:06.02] INFO: trip_scheduling.i77 494 failed
+[00:06.02] INFO: trip_scheduling.i78 scheduling 705 trips within chunk 0
+[00:06.06] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:06.06] INFO: trip_scheduling.i78 495 failed
+[00:06.07] INFO: trip_scheduling.i79 scheduling 705 trips within chunk 0
+[00:06.11] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:06.11] INFO: trip_scheduling.i79 494 failed
+[00:06.11] INFO: trip_scheduling.i80 scheduling 705 trips within chunk 0
+[00:06.14] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:06.14] INFO: trip_scheduling.i80 494 failed
+[00:06.15] INFO: trip_scheduling.i81 scheduling 705 trips within chunk 0
+[00:06.18] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:06.18] INFO: trip_scheduling.i81 495 failed
+[00:06.18] INFO: trip_scheduling.i82 scheduling 705 trips within chunk 0
+[00:06.22] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:06.22] INFO: trip_scheduling.i82 494 failed
+[00:06.22] INFO: trip_scheduling.i83 scheduling 705 trips within chunk 0
+[00:06.26] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:06.26] INFO: trip_scheduling.i83 495 failed
+[00:06.26] INFO: trip_scheduling.i84 scheduling 705 trips within chunk 0
+[00:06.30] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:06.30] INFO: trip_scheduling.i84 494 failed
+[00:06.30] INFO: trip_scheduling.i85 scheduling 705 trips within chunk 0
+[00:06.33] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:06.33] INFO: trip_scheduling.i85 494 failed
+[00:06.34] INFO: trip_scheduling.i86 scheduling 705 trips within chunk 0
+[00:06.37] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:06.37] INFO: trip_scheduling.i86 494 failed
+[00:06.38] INFO: trip_scheduling.i87 scheduling 705 trips within chunk 0
+[00:06.43] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:06.43] INFO: trip_scheduling.i87 495 failed
+[00:06.43] INFO: trip_scheduling.i88 scheduling 705 trips within chunk 0
+[00:06.48] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:06.48] INFO: trip_scheduling.i88 494 failed
+[00:06.48] INFO: trip_scheduling.i89 scheduling 705 trips within chunk 0
+[00:06.52] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:06.52] INFO: trip_scheduling.i89 494 failed
+[00:06.52] INFO: trip_scheduling.i90 scheduling 705 trips within chunk 0
+[00:06.55] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:06.55] INFO: trip_scheduling.i90 493 failed
+[00:06.56] INFO: trip_scheduling.i91 scheduling 705 trips within chunk 0
+[00:06.59] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:06.59] INFO: trip_scheduling.i91 495 failed
+[00:06.59] INFO: trip_scheduling.i92 scheduling 705 trips within chunk 0
+[00:06.63] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:06.63] INFO: trip_scheduling.i92 494 failed
+[00:06.63] INFO: trip_scheduling.i93 scheduling 705 trips within chunk 0
+[00:06.67] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:06.67] INFO: trip_scheduling.i93 494 failed
+[00:06.67] INFO: trip_scheduling.i94 scheduling 705 trips within chunk 0
+[00:06.71] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:06.71] INFO: trip_scheduling.i94 494 failed
+[00:06.71] INFO: trip_scheduling.i95 scheduling 705 trips within chunk 0
+[00:06.75] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:06.75] INFO: trip_scheduling.i95 495 failed
+[00:06.75] INFO: trip_scheduling.i96 scheduling 705 trips within chunk 0
+[00:06.78] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:06.79] INFO: trip_scheduling.i96 494 failed
+[00:06.79] INFO: trip_scheduling.i97 scheduling 705 trips within chunk 0
+[00:06.82] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:06.82] INFO: trip_scheduling.i97 493 failed
+[00:06.82] INFO: trip_scheduling.i98 scheduling 705 trips within chunk 0
+[00:06.87] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:06.87] INFO: trip_scheduling.i98 494 failed
+[00:06.87] INFO: trip_scheduling.i99 scheduling 705 trips within chunk 0
+[00:06.91] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:06.91] INFO: trip_scheduling.i99 494 failed
+[00:06.91] INFO: trip_scheduling.i100 scheduling 705 trips within chunk 0
+[00:06.92] INFO: dumping trip_scheduling.i100.outbound.num_2.failed_choosers
+[00:06.92] WARNING: trip_scheduling.i100.outbound.num_2 coercing 2 depart choices to most initial
+[00:06.93] INFO: dumping trip_scheduling.i100.outbound.num_3.failed_choosers
+[00:06.93] WARNING: trip_scheduling.i100.outbound.num_3 coercing 8 depart choices to most initial
+[00:06.93] INFO: dumping trip_scheduling.i100.outbound.num_4.failed_choosers
+[00:06.93] WARNING: trip_scheduling.i100.outbound.num_4 coercing 5 depart choices to most initial
+[00:06.94] INFO: dumping trip_scheduling.i100.inbound.num_1.failed_choosers
+[00:06.95] WARNING: trip_scheduling.i100.inbound.num_1 coercing 188 depart choices to most initial
+[00:06.95] INFO: dumping trip_scheduling.i100.inbound.num_2.failed_choosers
+[00:06.96] WARNING: trip_scheduling.i100.inbound.num_2 coercing 188 depart choices to most initial
+[00:06.96] INFO: dumping trip_scheduling.i100.inbound.num_3.failed_choosers
+[00:06.96] WARNING: trip_scheduling.i100.inbound.num_3 coercing 104 depart choices to most initial
+[00:06.96] INFO: trip_scheduling.i100 0 failed
+[00:06.97] NOTIFY:  time to execute run.trip_scheduling : 4.762 seconds
+[00:07.14] INFO: #run_model running step trip_mode_choice
+[00:07.15] INFO: Running trip_mode_choice with 17464 trips
+[00:07.17] INFO: trip_mode_choice tour_type 'atwork' (1492 trips)
+[00:07.26] DEBUG: Running chunkless with 1492 choosers
+[00:07.50] INFO: trip_mode_choice tour_type 'eatout' (637 trips)
+[00:07.58] DEBUG: Running chunkless with 637 choosers
+[00:07.80] INFO: trip_mode_choice tour_type 'escort' (1360 trips)
+[00:07.88] DEBUG: Running chunkless with 1360 choosers
+[00:08.13] INFO: trip_mode_choice tour_type 'othdiscr' (1554 trips)
+[00:08.22] DEBUG: Running chunkless with 1554 choosers
+[00:08.47] INFO: trip_mode_choice tour_type 'othmaint' (1056 trips)
+[00:08.55] DEBUG: Running chunkless with 1056 choosers
+[00:08.78] INFO: trip_mode_choice tour_type 'school' (2456 trips)
+[00:08.87] DEBUG: Running chunkless with 2456 choosers
+[00:09.13] INFO: trip_mode_choice tour_type 'shopping' (1983 trips)
+[00:09.32] DEBUG: Running chunkless with 1983 choosers
+[00:09.58] INFO: trip_mode_choice tour_type 'social' (457 trips)
+[00:09.65] DEBUG: Running chunkless with 457 choosers
+[00:09.91] INFO: trip_mode_choice tour_type 'univ' (245 trips)
+[00:09.98] DEBUG: Running chunkless with 245 choosers
+[00:10.22] INFO: trip_mode_choice tour_type 'work' (6224 trips)
+[00:10.33] DEBUG: Running chunkless with 6224 choosers
+[00:10.72] NOTIFY:  time to execute run.trip_mode_choice : 3.622 seconds
+[00:10.89] INFO: #run_model running step write_data_dictionary
+[00:11.03] NOTIFY:  time to execute run.write_data_dictionary : 0.191 seconds
+[00:11.18] INFO: #run_model running step write_tables
+[00:11.31] NOTIFY:  time to execute run.write_tables : 0.168 seconds
+[00:11.45] INFO: Time to execute run_model (4 models) : 9.251 seconds (0.2 minutes)
+[00:11.45] INFO: MainProcess high water mark rss: 506_986_496 (507.0 MB) timestamp: 23/10/2026 20:55:59 label:pipeline.run_model write_tables finished
+[00:11.45] INFO: MainProcess high water mark uss: 449_712_128 (449.7 MB) timestamp: 23/10/2026 20:55:59 label:pipeline.run after write_tables
+[00:11.45] INFO: Time to execute all models : 9.688 seconds (0.2 minutes)
+{"exit_code": 0, "elapsed_seconds": 11.922563425003318, "command": ["/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/bin/python", "-B", "-m", "activitysim", "run", "-c", "/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/data/_screening_cache/tbi2019-chunk-cause/config-r3-2000-semcog-suffix", "-c", "/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/bundle/configs", "-c", "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/examples/prototype_mtc/configs", "-d", "/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/inputs-2000", "-o", "/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/data/_screening_cache/tbi2019-chunk-cause/r3-2000-semcog-hybrid"], "peak_child_rss_kib": 509060, "scope": {"memory.peak": "416735232", "memory.max": "9663676416", "memory.swap.max": "0", "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"}}

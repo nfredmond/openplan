@@ -1,0 +1,17 @@
+..F.....
+======================================================================
+FAIL: test_complete_proof_checks_all_four (__main__.FullTests.test_complete_proof_checks_all_four)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/docs/modeling/activitysim-tbi2019-2026-10-23/chunk-cause-evidence/test-full.py", line 29, in test_complete_proof_checks_all_four
+    def test_complete_proof_checks_all_four(self):self.admission()
+                                                  ^^^^^^^^^^^^^^^^
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/docs/modeling/activitysim-tbi2019-2026-10-23/chunk-cause-evidence/test-full.py", line 25, in admission
+    self.assertEqual(full.admit_full(),cache);self.assertEqual(compare.call_count,4)
+                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 4
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.006s
+
+FAILED (failures=1)

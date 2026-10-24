@@ -410,3 +410,169 @@ do not establish engine parity or scientific acceptance. See the
 6. Only a later lead-authorized opening may request approved fields for frozen
    in-scope development IDs. Evaluate each ActivitySim arm independently against
    its preregistered gates. Keep AequilibraE separate and held-out outcomes closed.
+
+## October 24, 2026 UTC: retry-cohort cause and hybrid choice parity
+
+The successor investigation explains the departure discrepancy and passes the
+adopted choice criterion on both frozen subsets and both coefficient arms. It
+preserves the preceding failure record. No TBI outcome field is read, and no
+ActivitySim source file changes. The installed engine is ActivitySim 1.5.1 under
+CPython 3.11.15, NumPy 1.25.2 and pandas 2.3.3.
+
+### Why chunking changes departure choices
+
+The cause is the membership of failed-leg retry cohorts. ActivitySim retries
+within each tour chunk, retaining a failed leg while dropping its successful
+opposite-direction leg. If any other outbound leg remains in that retry chunk,
+legacy logic version 1 replaces the inbound-only leg's initialized earliest
+departure with a missing outbound maximum. The resulting probabilities force
+failure and consume another random draw. A smaller chunk can lose its final
+outbound leg earlier, allowing the same inbound leg to succeed on an earlier
+draw. Seeds still depend on row identity; row order does not change these seeds.
+
+The installed [retry loop, lines 565–629](https://github.com/ActivitySim/activitysim/blob/v1.5.1/activitysim/abm/models/trip_scheduling.py#L565-L629),
+[chunk-wide outbound condition, lines 377–406](https://github.com/ActivitySim/activitysim/blob/v1.5.1/activitysim/abm/models/trip_scheduling.py#L377-L406)
+and [earliest-bound assignment, lines 158–191](https://github.com/ActivitySim/activitysim/blob/v1.5.1/activitysim/abm/models/trip_scheduling.py#L158-L191)
+identify the mechanism. [Source custody](chunk-cause-evidence/source-custody.json)
+verifies installed bytes against the upstream v1.5.1 tag.
+
+For household 1128682, person 2789209 and tour 114357608, unchunked retries two
+and three have missing earliest bounds and forced failures. Retry four succeeds
+with departures 16 and 18. The chunked replay has finite bounds on retry two
+and selects 18 and 19. Both paths use the same first and second random draws.
+The [native trace and source explanation](chunk-cause-evidence/ROOT_CAUSE.md)
+retain seeds, offsets and probabilities. Adaptive diagnostic chunk boundaries
+differ from the historical run and also expose departures 568664413 and
+568664414. The replay does not claim identical historical chunk boundaries.
+
+Documented `logic_version: 2` completes the setting probe but changes four
+departures from the legacy unchunked reference. It is not adopted. The selected
+path keeps legacy logic and coefficients: production chunking through
+`trip_purpose_and_destination`, a stock checkpoint, then `resume_after` that
+checkpoint with chunking disabled for `trip_scheduling` and every later step.
+
+### Frozen-subset proof
+
+The [criterion](chunk-cause-evidence/criterion.json) and
+[run admission](chunk-cause-evidence/hybrid-before-run.json) precede the proof:
+all seven final tables have identical row identities, counts and non-auxiliary
+fields. Finite logsums and utilities may differ only within
+`max(4 * max(ulp(a), ulp(b)), 1e-12 * max(abs(a), abs(b)))`.
+Missing and nonfinite mismatches fail. Each coefficient arm compares with its
+own fully unchunked reference.
+
+| Frozen households / persons | Coefficients | Choice/count parity | Tours / trips | Tolerated auxiliary differences |
+|---|---|---|---:|---|
+| 64 / 166 | Current | Pass | 244 / 628 | None; every exported value exact |
+| 64 / 166 | SEMCOG walk | Pass | 244 / 633 | None; every exported value exact |
+| 2,000 / 4,971 | Current | Pass | 6,763 / 17,377 | Two one-ULP destination logsums |
+| 2,000 / 4,971 | SEMCOG walk | Pass | 6,764 / 17,464 | None; every exported value exact |
+
+The two tolerated cells are `final_trips.destination_logsum`, trip IDs
+333400393 and 462309713. Their absolute differences are
+1.7763568394002505e-15 and 8.881784197001252e-16. No departure differs.
+All comparisons retain the full 634-zone destination domain. Joint-participant
+counts are four for each 64-household arm and 274 for each 2,000-household arm.
+[Hybrid summary](chunk-cause-evidence/hybrid-summary.json) and individual
+comparison receipts retain the full census and file hashes.
+
+The production prefix uses a 64 MiB target and stock 0.05 minimum chunk ratio
+for the proof, with actual chooser splitting. Its frozen sizing cache comes
+from a separate 2,000-household training prefix and hashes as
+`365ccfdc636f0662108ea8b930407c0163c501afe5057fc641984fad5b6a16eb`.
+The disabled suffix uses chunk size zero. Stock checkpoints remain enabled.
+
+| Hybrid proof | Prefix elapsed seconds / peak bytes | Unchunked suffix elapsed seconds / peak bytes |
+|---|---:|---:|
+| 64 current | 92.980 / 1,806,684,160 | 7.268 / 329,330,688 |
+| 64 SEMCOG | 91.736 / 1,798,529,024 | 7.405 / 349,499,392 |
+| 2,000 current | 273.638 / 1,897,353,216 | 12.136 / 413,745,152 |
+| 2,000 SEMCOG | 273.276 / 1,920,765,952 | 11.923 / 416,735,232 |
+
+These are child-scope elapsed times and cgroup peaks, not forecasts for the full
+population. All completed proof scopes retain the 9 GiB cap, zero swap and no
+OOM events. [Subset health](chunk-cause-evidence/subset-run-health.json) also
+retains fully unchunked reference health and earlier preparation attempts.
+The reduced-checkpoint probe error, no-split stop and incomplete-cache stop
+remain explicit in the root-cause record. None counts as a parity success.
+
+### Full-population resource result
+
+Both full arms run sequentially with all 1,060,601 households, 2,617,177 persons
+and 634 zones. The prefix uses the declared 5,500,000,000-byte production chunk
+target and the proven cache. Each process runs under
+`systemd-run --user --scope -p MemoryMax=9G -p MemorySwapMax=0`.
+No Docker stack is stopped. Full-input hashes and all four retained subset
+comparisons pass immediately before execution.
+
+Both arms exceed the 9 GiB cap during
+`school_location.i1.logsums.gradeschool`, after constructing 10,717,604 sampled
+location rows. These are intermediate model rows, not completed tours or
+observations. The checkpoint before trip scheduling is not reached.
+
+| Full arm | Prefix result | Outer elapsed seconds | Systemd prefix peak | Unchunked suffix | Final tours / trips / MODELED shares |
+|---|---|---:|---|---|---|
+| Current coefficients | OOM kill | 475.673 | 9 GiB | Not run | Unavailable / unavailable / null |
+| SEMCOG walk candidate | OOM kill | 485.406 | 9 GiB | Not run | Unavailable / unavailable / null |
+
+Systemd confirms `oom-kill` for both units. The wrappers terminate before writing
+terminal health receipts, so the retained systemd journals supply the failure
+cause and reported peak. The controllers record exit code -15 and the outer
+elapsed times above. Systemd's separate wall times are 476.343 and 486.055
+seconds. No terminal memory-event census or process-RSS peak is invented.
+The suffix has no full-population elapsed or peak measurement.
+[Full health](chunk-cause-evidence/full-run-health.json),
+[current journal](chunk-cause-evidence/full-current-prefix.systemd.log) and
+[SEMCOG journal](chunk-cause-evidence/full-semcog-prefix.systemd.log) retain the
+failure evidence. Final-file hash maps are empty because no final tables exist.
+
+**The hybrid path passes choice parity on both frozen subsets and both arms,
+but no full-population completion is demonstrated within 9 GiB.** This result
+does not prove that every possible unmodified-engine execution path is
+impossible. Neither a full unchunked reference nor full-scale suffix memory is
+established. The modeled-health report does not run, so supported strata and
+mode shares remain unavailable rather than zero. No observation comparison,
+coefficient fitting or comparison against AequilibraE occurs.
+
+### Verification, custody and remaining opening steps
+
+The [verification packet](chunk-cause-evidence/VERIFICATION.md) records 28 passing
+scoped Python tests with zero skips. Seventeen accepted mutation controls
+comprise three harmless survivors and fourteen intended assertion failures,
+with exact source restoration. One initial full-input mutation reaches an
+incidental missing fixture file; it remains retained and excluded from that
+count. Correcting the fixture yields the intended failure without changing the
+guard. These source controls do not prove engine parity or scientific accuracy.
+
+All five inspected installed engine files retain their initial source hashes.
+All 117 original frozen records and the public archive retain their recorded
+hashes. The split and consumed holdouts remain unchanged. New configuration
+snapshots, source, comparisons, logs and receipts live in
+`chunk-cause-evidence/`; raw synthetic inputs, checkpoints and outputs stay in
+ignored scratch. No hosted system, managed database, engine source or
+application code changes. The PR remains a draft.
+
+The frozen opening still requires the following work:
+
+1. Resolve the full-population memory boundary without relaxing choice parity,
+   reducing the population, patching ActivitySim or opening outcomes. A successor
+   execution change needs its own declared settings, subset proof and full-arm
+   resource evidence. Complete both arms and retain final hashes and modeled-only
+   health before treating runtime preparation as complete.
+2. Grade population and travel-input admission independently. Preserve the four
+   source-conflict zones and existing gates. Resolve or preregister fare and
+   cost-year applicability, MVTA service dependence, drive access, period speeds,
+   walk/bicycle assumptions, parking and toll limitations.
+3. Freeze observed/model eligibility correspondence, homogeneous linked-trip
+   families, diary and location continuity, university evidence, joint and
+   at-work handling, quality rules, domains and exclusion denominators.
+4. Freeze the derived day-weight-per-tour primary estimator separately from the
+   trip-weighted sensitivity, including the day universe, publisher joins,
+   household clusters, strata, Taylor-linearized ratio variance, singleton
+   treatment and simultaneous bounds. Unsupported uncertainty stays unavailable.
+5. The lead verifies the original split and held-out boundary, reviews input and
+   implementation closure, and issues a new exclusive opening receipt. Prior
+   synthetic receipts and consumed locks do not authorize an opening.
+6. Only a later authorized opening may request approved development-outcome
+   fields. Evaluate each ActivitySim arm independently against its preregistered
+   gates. Keep AequilibraE separate and held-out outcomes closed.

@@ -1,0 +1,16 @@
+F...
+======================================================================
+FAIL: test_all_four_comparisons_required (__main__.ControllerTests.test_all_four_comparisons_required)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/docs/modeling/activitysim-tbi2019-2026-10-23/chunk-cause-evidence/test-controller.py", line 59, in test_all_four_comparisons_required
+    def test_all_four_comparisons_required(self): self.execute()
+                                                  ^^^^^^^^^^^^^^
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/docs/modeling/activitysim-tbi2019-2026-10-23/chunk-cause-evidence/test-controller.py", line 53, in execute
+    self.assertEqual(len(calls), 12)
+AssertionError: 6 != 12
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.008s
+
+FAILED (failures=1)

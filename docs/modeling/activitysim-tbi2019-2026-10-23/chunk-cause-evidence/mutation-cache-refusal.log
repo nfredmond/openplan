@@ -1,0 +1,17 @@
+{"run": "fixture", "exit_code": 99}
+.F....
+======================================================================
+FAIL: test_cache_refusal_precedes_suffix (__main__.ControllerTests.test_cache_refusal_precedes_suffix)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/docs/modeling/activitysim-tbi2019-2026-10-23/chunk-cause-evidence/test-controller.py", line 94, in test_cache_refusal_precedes_suffix
+    def test_cache_refusal_precedes_suffix(self): self.execute('cache')
+                                                  ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/docs/modeling/activitysim-tbi2019-2026-10-23/chunk-cause-evidence/test-controller.py", line 47, in execute
+    with self.assertRaisesRegex(RuntimeError, 'Frozen input hash mismatch' if broken == 'input' else 'Production cache coverage missing'):
+AssertionError: RuntimeError not raised
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.013s
+
+FAILED (failures=1)

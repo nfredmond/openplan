@@ -1,0 +1,520 @@
+Running as unit: tbi-hybrid-full-current-prefix.scope; invocation ID: a4a43f660ee4401f8b330dd3b9f2e9b1
+
+   ___      __  _      _ __       _____
+  / _ |____/ /_(_)  __(_) /___ __/ __(_)_ _
+ / __ / __/ __/ / |/ / / __/ // /\ \/ /  ' \   1.5.1
+/_/ |_\__/\__/_/|___/_/\__/\_, /___/_/_/_/_/
+                          /___/
+
+INFO:activitysim:Configured logging using basicConfig
+[00:01.70] INFO: Read logging configuration from: /home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/data/_screening_cache/tbi2019-chunk-cause/config-full-current-prefix/logging.yaml
+[00:01.70] INFO: ActivitySim Version: 1.5.1
+[00:01.70] INFO: SETTING configs_dir: (PosixPath('/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/data/_screening_cache/tbi2019-chunk-cause/config-full-current-prefix'), PosixPath('/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/bundle/configs'), PosixPath('/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/examples/prototype_mtc/configs'))
+[00:01.70] INFO: SETTING settings_file_name: settings.yaml
+[00:01.70] INFO: SETTING data_dir: (PosixPath('/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/bundle'),)
+[00:01.70] INFO: SETTING output_dir: /home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/data/_screening_cache/tbi2019-chunk-cause/full-current
+[00:01.70] INFO: SETTING households_sample_size: 0
+[00:01.70] INFO: SETTING chunk_size: 5500000000
+[00:01.70] INFO: SETTING chunk_method: hybrid_uss
+[00:01.70] INFO: SETTING chunk_training_mode: production
+[00:01.70] INFO: SETTING multiprocess: False
+[00:01.70] INFO: SETTING num_processes: None
+[00:01.70] INFO: SETTING resume_after: None
+[00:01.70] INFO: SETTING trace_hh_id: None
+[00:01.70] INFO: SETTING memory_profile: False
+[00:01.70] INFO: SETTING instrument: False
+[00:01.70] INFO: SETTING sharrow: False
+[00:01.70] INFO: ENV MKL_NUM_THREADS: 1
+[00:01.70] INFO: ENV OMP_NUM_THREADS: 1
+[00:01.70] INFO: ENV OPENBLAS_NUM_THREADS: 1
+[00:01.70] INFO: ENV NUMBA_NUM_THREADS: 1
+[00:01.70] INFO: Settings checker will check core settings files. See settings_checker.log for details.
+[00:01.75] WARNING: mandatory_tour_scheduling: Field SPEC is None in TourSchedulingSettings. Ensure that a filepath is defined YAML settings if required
+[00:01.75] WARNING: mandatory_tour_scheduling: Field COEFFICIENTS is None in TourSchedulingSettings. Ensure that a filepath is defined YAML settings if required
+[00:01.80] WARNING: non_mandatory_tour_frequency: Field COEFFICIENTS is None in NonMandatoryTourFrequencySettings. Ensure that a filepath is defined YAML settings if required
+[00:01.93] WARNING: stop_frequency: Field SPEC is None in StopFrequencySettings. Ensure that a filepath is defined YAML settings if required
+[00:01.93] WARNING: stop_frequency: Field COEFFICIENTS is None in StopFrequencySettings. Ensure that a filepath is defined YAML settings if required
+[00:02.03] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/pydantic/_internal/_decorators_v1.py:148: FutureWarning: Use of the field `DESTINATION_SAMPLE_SPEC` in the trip_destination configuration file is deprecated, use just `SAMPLE_SPEC` instead (currently both are given).
+  return validator(values)
+
+[00:02.03] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/pydantic/_internal/_decorators_v1.py:148: FutureWarning: Use of the field `DESTINATION_SPEC` in the trip_destination configuration file is deprecated, use just `SPEC` instead (currently both are given).
+  return validator(values)
+
+[00:02.04] INFO: Setting Checker Complete. No runtime errors were raised. Check fsettings_checker.log for warnings. These *may* prevent model from successfully running.
+[00:02.04] INFO: run single process simulation
+[00:02.08] INFO: preload_injectables
+[00:02.08] INFO: Time to execute preload_injectables : 0.038 seconds (0.0 minutes)
+[00:02.15] INFO: #run_model running step initialize_landuse
+[00:02.25] DEBUG: ChunkHistorian load_cached_history chunk_cache_path /home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/data/_screening_cache/tbi2019-chunk-cause/full-current/cache/chunk_cache.csv
+[00:02.25] DEBUG: ChunkHistorian load_cached_history reading cached chunk history from chunk_cache.csv
+[00:02.25] DEBUG: initialize_landuse.chunk_log.initial_rows_per_chunk - rows_per_chunk: 0 headroom: 0.0 initial_row_size: 0 
+[AnnotateTableSettings(source_file_paths=None, tablename='land_use', annotate=PreprocessorSettings(SPEC='annotate_landuse', DF='land_use', TABLES=None), column_map=None)]
+[00:02.25] INFO: Reading CSV file /home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/bundle/land_use.csv
+[00:02.25] INFO: recoding column zone_id: zero-based
+[00:02.26] INFO: loaded land_use (634, 25)
+[00:02.26] INFO: initialize_landuse.annotate_tables - annotating land_use SPEC annotate_landuse
+[00:02.26] INFO: Network_LOS using skim_dict_factory: MemMapSkimFactory
+[00:02.43] INFO: writing skim cache taz (826, 634, 634) to /home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/data/_screening_cache/tbi2019-chunk-cause/full-current/cache/cached_taz.mmap
+[00:02.43] INFO: _read_skims_from_omx /home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/bundle/skims/mtc_skims.omx
+[00:11.55] INFO: _read_skims_from_omx loaded 826 skims from /home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/bundle/skims/mtc_skims.omx
+[00:11.56] INFO: get_skim_data taz JitMemMapSkimData shape (826, 634, 634)
+[00:11.56] INFO: SkimDict init taz
+[00:11.56] INFO: SkimDict.build_3d_skim_block_offset_table registered 167 3d keys
+[00:11.56] DEBUG: initialize_landuse.chunk_log waiting for mem_monitor thread to terminate
+[00:11.56] DEBUG: ChunkLedger.close trace_label: initialize_landuse.chunk_log
+[00:11.56] DEBUG: ChunkLedger.close hwm_bytes: 0 initialize_landuse.chunk_log.init
+[00:11.56] DEBUG: ChunkLedger.close hwm_rss 350212096 initialize_landuse.chunk_log.init
+[00:11.56] DEBUG: ChunkLedger.close hwm_uss 293351424 initialize_landuse.chunk_log.init
+[00:11.56] NOTIFY:  time to execute run.initialize_landuse : 9.446 seconds
+[00:11.71] INFO: #run_model running step initialize_households
+[00:11.83] DEBUG: initialize_households.chunk_log.initial_rows_per_chunk - rows_per_chunk: 0 headroom: 0.0 initial_row_size: 0 
+[00:11.83] INFO: Reading CSV file /home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/bundle/households.csv
+[00:12.12] INFO: recoding column home_zone_id: land_use.zone_id
+[00:12.36] INFO: full household list contains 1060601 households
+[00:12.36] INFO: loaded households (1060601, 7)
+[00:12.61] INFO: Reading CSV file /home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/bundle/persons.csv
+[00:13.93] INFO: loaded persons (2617177, 7)
+[AnnotateTableSettings(source_file_paths=None, tablename='persons', annotate=PreprocessorSettings(SPEC='annotate_persons', DF='persons', TABLES=['households']), column_map=None), AnnotateTableSettings(source_file_paths=None, tablename='households', annotate=PreprocessorSettings(SPEC='annotate_households', DF='households', TABLES=['persons', 'land_use']), column_map=None), AnnotateTableSettings(source_file_paths=None, tablename='persons', annotate=PreprocessorSettings(SPEC='annotate_persons_after_hh', DF='persons', TABLES=['households']), column_map=None)]
+[00:14.67] INFO: initialize_households.annotate_tables - annotating persons SPEC annotate_persons
+[00:15.83] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:239: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt0 = pipeline(counts > 0)
+
+[00:16.16] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:240: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt1 = pipeline(counts > 1)
+
+[00:16.46] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:239: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt0 = pipeline(counts > 0)
+
+[00:16.81] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:240: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt1 = pipeline(counts > 1)
+
+[00:17.09] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:239: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt0 = pipeline(counts > 0)
+
+[00:17.34] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:240: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt1 = pipeline(counts > 1)
+
+[00:17.65] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:239: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt0 = pipeline(counts > 0)
+
+[00:17.90] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:240: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt1 = pipeline(counts > 1)
+
+[00:18.19] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:239: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt0 = pipeline(counts > 0)
+
+[00:18.44] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:240: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt1 = pipeline(counts > 1)
+
+[00:18.84] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:239: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt0 = pipeline(counts > 0)
+
+[00:19.12] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:240: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt1 = pipeline(counts > 1)
+
+[00:19.41] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:239: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt0 = pipeline(counts > 0)
+
+[00:19.66] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:240: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt1 = pipeline(counts > 1)
+
+[00:19.93] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:239: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt0 = pipeline(counts > 0)
+
+[00:20.17] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:240: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt1 = pipeline(counts > 1)
+
+[00:20.81] INFO: initialize_households.annotate_tables - annotating households SPEC annotate_households
+[00:26.56] INFO: initialize_households.annotate_tables - annotating persons SPEC annotate_persons_after_hh
+[00:39.37] DEBUG: initialize_households.chunk_log waiting for mem_monitor thread to terminate
+[00:39.37] DEBUG: ChunkLedger.close trace_label: initialize_households.chunk_log
+[00:39.37] DEBUG: ChunkLedger.close hwm_bytes: 0 initialize_households.chunk_log.init
+[00:39.37] DEBUG: ChunkLedger.close hwm_rss 486903808 initialize_households.chunk_log.init
+[00:39.37] DEBUG: ChunkLedger.close hwm_uss 429678592 initialize_households.chunk_log.init
+[00:39.37] NOTIFY:  time to execute run.initialize_households : 27.705 seconds
+[00:41.18] INFO: #run_model running step compute_accessibility
+[00:41.18] INFO: Running compute_accessibility with 634 orig zones 634 dest zones
+[00:41.18] DEBUG: compute_accessibility Running adaptive_chunked_choosers with 634 choosers
+[00:41.29] DEBUG: compute_accessibility.ChunkSizer - cached history cum_rows: 634 cum_overhead: {'rss': 32595968, 'uss': 32595968, 'bytes': 64721252} 
+[00:41.29] DEBUG: compute_accessibility.initial_rows_per_chunk - initial_row_size: 102084
+[00:41.29] DEBUG: compute_accessibility.initial_rows_per_chunk - rows_per_chunk: 634 headroom: 3127293696 initial_row_size: 102084 
+[00:41.29] DEBUG: Running chunk 1 of 1 with 634 of 634 choosers
+[00:41.29] INFO: Running compute_accessibility with 634 orig zones 634 dest zones
+[00:41.29] INFO: compute_accessibility: assign.assign_variables
+[00:41.39] WARNING: numpy: Warning: underflow encountered in exp expression: _decay = _rt_available * exp(_nmDist * dispersion_parameter_walk)
+[00:41.39] INFO: compute_accessibility: have results
+[00:41.39] INFO: compute_accessibility: aggregating column auPkRetail
+[00:41.66] INFO: compute_accessibility: aggregating column auPkTotal
+[00:41.66] INFO: compute_accessibility: aggregating column auOpRetail
+[00:41.66] INFO: compute_accessibility: aggregating column auOpTotal
+[00:41.66] INFO: compute_accessibility: aggregating column trPkRetail
+[00:41.66] INFO: compute_accessibility: aggregating column trPkTotal
+[00:41.66] INFO: compute_accessibility: aggregating column trOpRetail
+[00:41.66] INFO: compute_accessibility: aggregating column trOpTotal
+[00:41.66] INFO: compute_accessibility: aggregating column nmRetail
+[00:41.66] INFO: compute_accessibility: aggregating column nmTotal
+[00:41.66] INFO: compute_accessibility: completed aggregating
+[00:41.66] INFO: compute_accessibility: completed aggregating info df
+[00:41.66] DEBUG: compute_accessibility waiting for mem_monitor thread to terminate
+[00:41.66] DEBUG: ChunkLedger.close trace_label: compute_accessibility
+[00:41.66] DEBUG: ChunkLedger.close hwm_bytes: 0 compute_accessibility.init
+[00:41.66] DEBUG: ChunkLedger.close hwm_rss 2429898752 compute_accessibility.init
+[00:41.66] DEBUG: ChunkLedger.close hwm_uss 2372706304 compute_accessibility.init
+[00:41.66] INFO: compute_accessibility computed accessibilities (634, 10)
+[00:41.74] NOTIFY:  time to execute run.compute_accessibility : 0.649 seconds
+[00:41.91] INFO: #run_model running step school_location
+[00:54.81] INFO: Running school_location.i1.sample.university with 103452 persons
+[00:54.82] DEBUG: school_location.i1.sample.university.interaction_sample Running adaptive_chunked_choosers with 103452 choosers
+[00:54.96] DEBUG: school_location.i1.sample.university.interaction_sample.ChunkSizer - cached history cum_rows: 1421 cum_overhead: {'rss': 52776960, 'uss': 52776960, 'bytes': 68132784} 
+[00:54.96] DEBUG: school_location.i1.sample.university.interaction_sample.initial_rows_per_chunk - initial_row_size: 47948
+[00:54.96] DEBUG: school_location.i1.sample.university.interaction_sample.initial_rows_per_chunk - rows_per_chunk: 41317 headroom: 1981105920 initial_row_size: 47948 
+[00:54.96] DEBUG: Running chunk 1 of 3 with 41317 of 103452 choosers
+[01:00.33] DEBUG: school_location.i1.sample.university.interaction_sample.eval_interaction_utils.chunk_log.initial_rows_per_chunk - rows_per_chunk: 0 headroom: 699627264 initial_row_size: 0 
+[01:10.98] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.university.interaction_sample.eval_interaction_utils.chunk_log
+[01:10.98] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.university.interaction_sample.eval_interaction_utils.chunk_log.init
+[01:10.98] DEBUG: ChunkLedger.close hwm_rss 4857491456 school_location.i1.sample.university.interaction_sample.eval_interaction_utils.chunk_log.init
+[01:10.98] DEBUG: ChunkLedger.close hwm_uss 4800372736 school_location.i1.sample.university.interaction_sample.eval_interaction_utils.chunk_log.init
+[01:13.08] DEBUG: school_location.i1.sample.university.interaction_sample waiting for mem_monitor thread to terminate
+[01:13.08] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.university.interaction_sample
+[01:13.08] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.university.interaction_sample.init
+[01:13.08] DEBUG: ChunkLedger.close hwm_rss 3576078336 school_location.i1.sample.university.interaction_sample.init
+[01:13.08] DEBUG: ChunkLedger.close hwm_uss 3518894080 school_location.i1.sample.university.interaction_sample.init
+[01:13.08] DEBUG: Running chunk 2 of 3 with 41317 of 103452 choosers
+[01:18.01] DEBUG: school_location.i1.sample.university.interaction_sample.eval_interaction_utils.chunk_log.initial_rows_per_chunk - rows_per_chunk: 0 headroom: 792418048 initial_row_size: 0 
+[01:28.54] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.university.interaction_sample.eval_interaction_utils.chunk_log
+[01:28.54] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.university.interaction_sample.eval_interaction_utils.chunk_log.init
+[01:28.54] DEBUG: ChunkLedger.close hwm_rss 4731015168 school_location.i1.sample.university.interaction_sample.eval_interaction_utils.chunk_log.init
+[01:28.54] DEBUG: ChunkLedger.close hwm_uss 4707581952 school_location.i1.sample.university.interaction_sample.eval_interaction_utils.chunk_log.init
+[01:29.24] DEBUG: school_location.i1.sample.university.interaction_sample waiting for mem_monitor thread to terminate
+[01:29.24] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.university.interaction_sample
+[01:29.24] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.university.interaction_sample.init
+[01:29.24] DEBUG: ChunkLedger.close hwm_rss 3576078336 school_location.i1.sample.university.interaction_sample.init
+[01:29.24] DEBUG: ChunkLedger.close hwm_uss 3518894080 school_location.i1.sample.university.interaction_sample.init
+[01:29.24] DEBUG: Running chunk 3 of 3 with 20818 of 103452 choosers
+[01:32.31] DEBUG: school_location.i1.sample.university.interaction_sample.eval_interaction_utils.chunk_log.initial_rows_per_chunk - rows_per_chunk: 0 headroom: 1412052736 initial_row_size: 0 
+[01:35.41] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.university.interaction_sample.eval_interaction_utils.chunk_log
+[01:35.41] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.university.interaction_sample.eval_interaction_utils.chunk_log.init
+[01:35.41] DEBUG: ChunkLedger.close hwm_rss 4111372288 school_location.i1.sample.university.interaction_sample.eval_interaction_utils.chunk_log.init
+[01:35.41] DEBUG: ChunkLedger.close hwm_uss 4087947264 school_location.i1.sample.university.interaction_sample.eval_interaction_utils.chunk_log.init
+[01:35.69] DEBUG: school_location.i1.sample.university.interaction_sample waiting for mem_monitor thread to terminate
+[01:35.69] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.university.interaction_sample
+[01:35.69] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.university.interaction_sample.init
+[01:35.69] DEBUG: ChunkLedger.close hwm_rss 3576078336 school_location.i1.sample.university.interaction_sample.init
+[01:35.69] DEBUG: ChunkLedger.close hwm_uss 3518894080 school_location.i1.sample.university.interaction_sample.init
+[01:35.81] INFO: Running school_location.i1.logsums.university with 489211 rows
+[01:38.19] DEBUG: school_location.i1.logsums.university.compute_logsums Running adaptive_chunked_choosers with 489211 choosers
+[01:38.33] DEBUG: school_location.i1.logsums.university.compute_logsums.ChunkSizer - cached history cum_rows: 26964 cum_overhead: {'rss': 51859456, 'uss': 51859456, 'bytes': 69674976} 
+[01:38.33] DEBUG: school_location.i1.logsums.university.compute_logsums.initial_rows_per_chunk - initial_row_size: 2584
+[01:38.33] DEBUG: school_location.i1.logsums.university.compute_logsums.initial_rows_per_chunk - rows_per_chunk: 489211 headroom: 1669895936 initial_row_size: 2584 
+[01:38.33] DEBUG: Running chunk 1 of 1 with 489211 of 489211 choosers
+[01:48.14] DEBUG: school_location.i1.logsums.university.compute_logsums waiting for mem_monitor thread to terminate
+[01:48.14] DEBUG: ChunkLedger.close trace_label: school_location.i1.logsums.university.compute_logsums
+[01:48.14] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.logsums.university.compute_logsums.init
+[01:48.14] DEBUG: ChunkLedger.close hwm_rss 3853529088 school_location.i1.logsums.university.compute_logsums.init
+[01:48.14] DEBUG: ChunkLedger.close hwm_uss 3830104064 school_location.i1.logsums.university.compute_logsums.init
+[01:48.18] INFO: Running school_location.i1.simulate.university with 103452 persons
+[01:48.19] DEBUG: school_location.i1.simulate.university.interaction_sample_simulate Running adaptive_chunked_choosers_and_alts with 103452 choosers and 489211 alternatives
+[01:48.33] DEBUG: school_location.i1.simulate.university.interaction_sample_simulate.ChunkSizer - cached history cum_rows: 1421 cum_overhead: {'rss': 610304, 'uss': 610304, 'bytes': 2372832} 
+[01:48.33] DEBUG: school_location.i1.simulate.university.interaction_sample_simulate.initial_rows_per_chunk - initial_row_size: 1670
+[01:48.33] DEBUG: school_location.i1.simulate.university.interaction_sample_simulate.initial_rows_per_chunk - rows_per_chunk: 103452 headroom: 2055984896 initial_row_size: 1670 
+[01:48.33] DEBUG: Running chunk 1 of 1 with 103452 of 103452 choosers
+[01:48.52] DEBUG: school_location.i1.simulate.university.interaction_sample_simulate.eval_interaction_utils.chunk_log.initial_rows_per_chunk - rows_per_chunk: 0 headroom: 2012931840 initial_row_size: 0 
+[01:48.56] DEBUG: ChunkLedger.close trace_label: school_location.i1.simulate.university.interaction_sample_simulate.eval_interaction_utils.chunk_log
+[01:48.56] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.simulate.university.interaction_sample_simulate.eval_interaction_utils.chunk_log.init
+[01:48.56] DEBUG: ChunkLedger.close hwm_rss 3510493184 school_location.i1.simulate.university.interaction_sample_simulate.eval_interaction_utils.chunk_log.init
+[01:48.56] DEBUG: ChunkLedger.close hwm_uss 3487068160 school_location.i1.simulate.university.interaction_sample_simulate.eval_interaction_utils.chunk_log.init
+[01:49.63] DEBUG: school_location.i1.simulate.university.interaction_sample_simulate waiting for mem_monitor thread to terminate
+[01:49.63] DEBUG: ChunkLedger.close trace_label: school_location.i1.simulate.university.interaction_sample_simulate
+[01:49.63] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.simulate.university.interaction_sample_simulate.init
+[01:49.63] DEBUG: ChunkLedger.close hwm_rss 3467440128 school_location.i1.simulate.university.interaction_sample_simulate.init
+[01:49.63] DEBUG: ChunkLedger.close hwm_uss 3444015104 school_location.i1.simulate.university.interaction_sample_simulate.init
+[01:49.71] INFO: Running school_location.i1.sample.highschool with 105030 persons
+[01:49.71] DEBUG: school_location.i1.sample.highschool.interaction_sample Running adaptive_chunked_choosers with 105030 choosers
+[01:49.89] DEBUG: school_location.i1.sample.highschool.interaction_sample.ChunkSizer - cached history cum_rows: 1421 cum_overhead: {'rss': 52776960, 'uss': 52776960, 'bytes': 68132784} 
+[01:49.89] DEBUG: school_location.i1.sample.highschool.interaction_sample.initial_rows_per_chunk - initial_row_size: 47948
+[01:49.89] DEBUG: school_location.i1.sample.highschool.interaction_sample.initial_rows_per_chunk - rows_per_chunk: 39700 headroom: 1903576832 initial_row_size: 47948 
+[01:49.89] DEBUG: Running chunk 1 of 3 with 39700 of 105030 choosers
+[01:55.88] DEBUG: school_location.i1.sample.highschool.interaction_sample.eval_interaction_utils.chunk_log.initial_rows_per_chunk - rows_per_chunk: 0 headroom: 697333504 initial_row_size: 0 
+[02:02.76] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.highschool.interaction_sample.eval_interaction_utils.chunk_log
+[02:02.76] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.highschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[02:02.76] DEBUG: ChunkLedger.close hwm_rss 4826091520 school_location.i1.sample.highschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[02:02.76] DEBUG: ChunkLedger.close hwm_uss 4802666496 school_location.i1.sample.highschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[02:03.46] DEBUG: school_location.i1.sample.highschool.interaction_sample waiting for mem_monitor thread to terminate
+[02:03.46] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.highschool.interaction_sample
+[02:03.46] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.highschool.interaction_sample.init
+[02:03.46] DEBUG: ChunkLedger.close hwm_rss 3619848192 school_location.i1.sample.highschool.interaction_sample.init
+[02:03.46] DEBUG: ChunkLedger.close hwm_uss 3596423168 school_location.i1.sample.highschool.interaction_sample.init
+[02:03.46] DEBUG: Running chunk 2 of 3 with 39700 of 105030 choosers
+[02:08.30] DEBUG: school_location.i1.sample.highschool.interaction_sample.eval_interaction_utils.chunk_log.initial_rows_per_chunk - rows_per_chunk: 0 headroom: 654022400 initial_row_size: 0 
+[02:14.99] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.highschool.interaction_sample.eval_interaction_utils.chunk_log
+[02:14.99] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.highschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[02:14.99] DEBUG: ChunkLedger.close hwm_rss 4869402624 school_location.i1.sample.highschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[02:14.99] DEBUG: ChunkLedger.close hwm_uss 4845977600 school_location.i1.sample.highschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[02:15.55] DEBUG: school_location.i1.sample.highschool.interaction_sample waiting for mem_monitor thread to terminate
+[02:15.55] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.highschool.interaction_sample
+[02:15.55] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.highschool.interaction_sample.init
+[02:15.55] DEBUG: ChunkLedger.close hwm_rss 3619848192 school_location.i1.sample.highschool.interaction_sample.init
+[02:15.55] DEBUG: ChunkLedger.close hwm_uss 3596423168 school_location.i1.sample.highschool.interaction_sample.init
+[02:15.55] DEBUG: Running chunk 3 of 3 with 25630 of 105030 choosers
+[02:18.51] DEBUG: school_location.i1.sample.highschool.interaction_sample.eval_interaction_utils.chunk_log.initial_rows_per_chunk - rows_per_chunk: 0 headroom: 1102718720 initial_row_size: 0 
+[02:22.37] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.highschool.interaction_sample.eval_interaction_utils.chunk_log
+[02:22.37] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.highschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[02:22.37] DEBUG: ChunkLedger.close hwm_rss 4420706304 school_location.i1.sample.highschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[02:22.37] DEBUG: ChunkLedger.close hwm_uss 4397281280 school_location.i1.sample.highschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[02:22.74] DEBUG: school_location.i1.sample.highschool.interaction_sample waiting for mem_monitor thread to terminate
+[02:22.74] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.highschool.interaction_sample
+[02:22.74] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.highschool.interaction_sample.init
+[02:22.74] DEBUG: ChunkLedger.close hwm_rss 3619848192 school_location.i1.sample.highschool.interaction_sample.init
+[02:22.74] DEBUG: ChunkLedger.close hwm_uss 3596423168 school_location.i1.sample.highschool.interaction_sample.init
+[02:23.19] INFO: Running school_location.i1.logsums.highschool with 1998859 rows
+[02:37.59] DEBUG: school_location.i1.logsums.highschool.compute_logsums Running adaptive_chunked_choosers with 1998859 choosers
+[02:37.75] DEBUG: school_location.i1.logsums.highschool.compute_logsums.ChunkSizer - cached history cum_rows: 26964 cum_overhead: {'rss': 51859456, 'uss': 51859456, 'bytes': 69674976} 
+[02:37.75] DEBUG: school_location.i1.logsums.highschool.compute_logsums.initial_rows_per_chunk - initial_row_size: 2584
+[02:37.75] DEBUG: school_location.i1.logsums.highschool.compute_logsums.initial_rows_per_chunk - rows_per_chunk: 200067 headroom: 516974336 initial_row_size: 2584 
+[02:37.75] DEBUG: Running chunk 1 of 10 with 200067 of 1998859 choosers
+[02:40.88] DEBUG: school_location.i1.logsums.highschool.compute_logsums waiting for mem_monitor thread to terminate
+[02:40.88] DEBUG: ChunkLedger.close trace_label: school_location.i1.logsums.highschool.compute_logsums
+[02:40.88] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.logsums.highschool.compute_logsums.init
+[02:40.88] DEBUG: ChunkLedger.close hwm_rss 5006450688 school_location.i1.logsums.highschool.compute_logsums.init
+[02:40.88] DEBUG: ChunkLedger.close hwm_uss 4983025664 school_location.i1.logsums.highschool.compute_logsums.init
+[02:40.88] DEBUG: Running chunk 2 of 10 with 200067 of 1998859 choosers
+[02:44.02] DEBUG: school_location.i1.logsums.highschool.compute_logsums waiting for mem_monitor thread to terminate
+[02:44.02] DEBUG: ChunkLedger.close trace_label: school_location.i1.logsums.highschool.compute_logsums
+[02:44.02] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.logsums.highschool.compute_logsums.init
+[02:44.02] DEBUG: ChunkLedger.close hwm_rss 5006450688 school_location.i1.logsums.highschool.compute_logsums.init
+[02:44.02] DEBUG: ChunkLedger.close hwm_uss 4983025664 school_location.i1.logsums.highschool.compute_logsums.init
+[02:44.02] DEBUG: Running chunk 3 of 10 with 200067 of 1998859 choosers
+[02:47.18] DEBUG: school_location.i1.logsums.highschool.compute_logsums waiting for mem_monitor thread to terminate
+[02:47.18] DEBUG: ChunkLedger.close trace_label: school_location.i1.logsums.highschool.compute_logsums
+[02:47.18] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.logsums.highschool.compute_logsums.init
+[02:47.18] DEBUG: ChunkLedger.close hwm_rss 5006450688 school_location.i1.logsums.highschool.compute_logsums.init
+[02:47.18] DEBUG: ChunkLedger.close hwm_uss 4983025664 school_location.i1.logsums.highschool.compute_logsums.init
+[02:47.18] DEBUG: Running chunk 4 of 10 with 200067 of 1998859 choosers
+[02:50.30] DEBUG: school_location.i1.logsums.highschool.compute_logsums waiting for mem_monitor thread to terminate
+[02:50.30] DEBUG: ChunkLedger.close trace_label: school_location.i1.logsums.highschool.compute_logsums
+[02:50.30] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.logsums.highschool.compute_logsums.init
+[02:50.30] DEBUG: ChunkLedger.close hwm_rss 5006450688 school_location.i1.logsums.highschool.compute_logsums.init
+[02:50.30] DEBUG: ChunkLedger.close hwm_uss 4983025664 school_location.i1.logsums.highschool.compute_logsums.init
+[02:50.30] DEBUG: Running chunk 5 of 10 with 200067 of 1998859 choosers
+[02:53.47] DEBUG: school_location.i1.logsums.highschool.compute_logsums waiting for mem_monitor thread to terminate
+[02:53.47] DEBUG: ChunkLedger.close trace_label: school_location.i1.logsums.highschool.compute_logsums
+[02:53.47] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.logsums.highschool.compute_logsums.init
+[02:53.47] DEBUG: ChunkLedger.close hwm_rss 5006450688 school_location.i1.logsums.highschool.compute_logsums.init
+[02:53.47] DEBUG: ChunkLedger.close hwm_uss 4983025664 school_location.i1.logsums.highschool.compute_logsums.init
+[02:53.47] DEBUG: Running chunk 6 of 10 with 200067 of 1998859 choosers
+[02:56.65] DEBUG: school_location.i1.logsums.highschool.compute_logsums waiting for mem_monitor thread to terminate
+[02:56.65] DEBUG: ChunkLedger.close trace_label: school_location.i1.logsums.highschool.compute_logsums
+[02:56.65] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.logsums.highschool.compute_logsums.init
+[02:56.65] DEBUG: ChunkLedger.close hwm_rss 5006450688 school_location.i1.logsums.highschool.compute_logsums.init
+[02:56.65] DEBUG: ChunkLedger.close hwm_uss 4983025664 school_location.i1.logsums.highschool.compute_logsums.init
+[02:56.65] DEBUG: Running chunk 7 of 10 with 200067 of 1998859 choosers
+[02:59.77] DEBUG: school_location.i1.logsums.highschool.compute_logsums waiting for mem_monitor thread to terminate
+[02:59.77] DEBUG: ChunkLedger.close trace_label: school_location.i1.logsums.highschool.compute_logsums
+[02:59.77] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.logsums.highschool.compute_logsums.init
+[02:59.77] DEBUG: ChunkLedger.close hwm_rss 5006450688 school_location.i1.logsums.highschool.compute_logsums.init
+[02:59.77] DEBUG: ChunkLedger.close hwm_uss 4983025664 school_location.i1.logsums.highschool.compute_logsums.init
+[02:59.77] DEBUG: Running chunk 8 of 10 with 200067 of 1998859 choosers
+[03:02.91] DEBUG: school_location.i1.logsums.highschool.compute_logsums waiting for mem_monitor thread to terminate
+[03:02.91] DEBUG: ChunkLedger.close trace_label: school_location.i1.logsums.highschool.compute_logsums
+[03:02.91] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.logsums.highschool.compute_logsums.init
+[03:02.91] DEBUG: ChunkLedger.close hwm_rss 5006450688 school_location.i1.logsums.highschool.compute_logsums.init
+[03:02.91] DEBUG: ChunkLedger.close hwm_uss 4983025664 school_location.i1.logsums.highschool.compute_logsums.init
+[03:02.91] DEBUG: Running chunk 9 of 10 with 200067 of 1998859 choosers
+[03:06.10] DEBUG: school_location.i1.logsums.highschool.compute_logsums waiting for mem_monitor thread to terminate
+[03:06.10] DEBUG: ChunkLedger.close trace_label: school_location.i1.logsums.highschool.compute_logsums
+[03:06.10] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.logsums.highschool.compute_logsums.init
+[03:06.10] DEBUG: ChunkLedger.close hwm_rss 5006450688 school_location.i1.logsums.highschool.compute_logsums.init
+[03:06.10] DEBUG: ChunkLedger.close hwm_uss 4983025664 school_location.i1.logsums.highschool.compute_logsums.init
+[03:06.10] DEBUG: Running chunk 10 of 10 with 198256 of 1998859 choosers
+[03:09.21] DEBUG: school_location.i1.logsums.highschool.compute_logsums waiting for mem_monitor thread to terminate
+[03:09.21] DEBUG: ChunkLedger.close trace_label: school_location.i1.logsums.highschool.compute_logsums
+[03:09.21] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.logsums.highschool.compute_logsums.init
+[03:09.21] DEBUG: ChunkLedger.close hwm_rss 5006450688 school_location.i1.logsums.highschool.compute_logsums.init
+[03:09.21] DEBUG: ChunkLedger.close hwm_uss 4983025664 school_location.i1.logsums.highschool.compute_logsums.init
+[03:09.32] INFO: Running school_location.i1.simulate.highschool with 105030 persons
+[03:09.33] DEBUG: school_location.i1.simulate.highschool.interaction_sample_simulate Running adaptive_chunked_choosers_and_alts with 105030 choosers and 1998859 alternatives
+[03:09.49] DEBUG: school_location.i1.simulate.highschool.interaction_sample_simulate.ChunkSizer - cached history cum_rows: 1421 cum_overhead: {'rss': 610304, 'uss': 610304, 'bytes': 2372832} 
+[03:09.49] DEBUG: school_location.i1.simulate.highschool.interaction_sample_simulate.initial_rows_per_chunk - initial_row_size: 1670
+[03:09.49] DEBUG: school_location.i1.simulate.highschool.interaction_sample_simulate.initial_rows_per_chunk - rows_per_chunk: 105030 headroom: 1225516800 initial_row_size: 1670 
+[03:09.50] DEBUG: Running chunk 1 of 1 with 105030 of 105030 choosers
+[03:09.72] DEBUG: school_location.i1.simulate.highschool.interaction_sample_simulate.eval_interaction_utils.chunk_log.initial_rows_per_chunk - rows_per_chunk: 0 headroom: 1225512704 initial_row_size: 0 
+[03:09.88] DEBUG: ChunkLedger.close trace_label: school_location.i1.simulate.highschool.interaction_sample_simulate.eval_interaction_utils.chunk_log
+[03:09.88] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.simulate.highschool.interaction_sample_simulate.eval_interaction_utils.chunk_log.init
+[03:09.88] DEBUG: ChunkLedger.close hwm_rss 4297912320 school_location.i1.simulate.highschool.interaction_sample_simulate.eval_interaction_utils.chunk_log.init
+[03:09.88] DEBUG: ChunkLedger.close hwm_uss 4274487296 school_location.i1.simulate.highschool.interaction_sample_simulate.eval_interaction_utils.chunk_log.init
+[03:10.37] DEBUG: school_location.i1.simulate.highschool.interaction_sample_simulate waiting for mem_monitor thread to terminate
+[03:10.37] DEBUG: ChunkLedger.close trace_label: school_location.i1.simulate.highschool.interaction_sample_simulate
+[03:10.37] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.simulate.highschool.interaction_sample_simulate.init
+[03:10.37] DEBUG: ChunkLedger.close hwm_rss 4297908224 school_location.i1.simulate.highschool.interaction_sample_simulate.init
+[03:10.37] DEBUG: ChunkLedger.close hwm_uss 4274483200 school_location.i1.simulate.highschool.interaction_sample_simulate.init
+[03:10.88] INFO: Running school_location.i1.sample.gradeschool with 504736 persons
+[03:10.88] DEBUG: school_location.i1.sample.gradeschool.interaction_sample Running adaptive_chunked_choosers with 504736 choosers
+[03:11.03] DEBUG: school_location.i1.sample.gradeschool.interaction_sample.ChunkSizer - cached history cum_rows: 1421 cum_overhead: {'rss': 52776960, 'uss': 52776960, 'bytes': 68132784} 
+[03:11.03] DEBUG: school_location.i1.sample.gradeschool.interaction_sample.initial_rows_per_chunk - initial_row_size: 47948
+[03:11.03] DEBUG: school_location.i1.sample.gradeschool.interaction_sample.initial_rows_per_chunk - rows_per_chunk: 34752 headroom: 1666328320 initial_row_size: 47948 
+[03:11.03] DEBUG: Running chunk 1 of 15 with 34752 of 504736 choosers
+[03:15.75] DEBUG: school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.initial_rows_per_chunk - rows_per_chunk: 0 headroom: 615413504 initial_row_size: 0 
+[03:24.05] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log
+[03:24.05] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[03:24.05] DEBUG: ChunkLedger.close hwm_rss 4908011520 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[03:24.05] DEBUG: ChunkLedger.close hwm_uss 4884586496 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[03:24.65] DEBUG: school_location.i1.sample.gradeschool.interaction_sample waiting for mem_monitor thread to terminate
+[03:24.65] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.gradeschool.interaction_sample
+[03:24.65] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.gradeschool.interaction_sample.init
+[03:24.65] DEBUG: ChunkLedger.close hwm_rss 3857096704 school_location.i1.sample.gradeschool.interaction_sample.init
+[03:24.65] DEBUG: ChunkLedger.close hwm_uss 3833671680 school_location.i1.sample.gradeschool.interaction_sample.init
+[03:24.65] DEBUG: Running chunk 2 of 15 with 34752 of 504736 choosers
+[03:28.69] DEBUG: school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.initial_rows_per_chunk - rows_per_chunk: 0 headroom: 652310272 initial_row_size: 0 
+[03:37.31] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log
+[03:37.31] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[03:37.31] DEBUG: ChunkLedger.close hwm_rss 4871114752 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[03:37.31] DEBUG: ChunkLedger.close hwm_uss 4847689728 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[03:37.98] DEBUG: school_location.i1.sample.gradeschool.interaction_sample waiting for mem_monitor thread to terminate
+[03:37.98] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.gradeschool.interaction_sample
+[03:37.98] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.gradeschool.interaction_sample.init
+[03:37.98] DEBUG: ChunkLedger.close hwm_rss 3857096704 school_location.i1.sample.gradeschool.interaction_sample.init
+[03:37.98] DEBUG: ChunkLedger.close hwm_uss 3833671680 school_location.i1.sample.gradeschool.interaction_sample.init
+[03:37.98] DEBUG: Running chunk 3 of 15 with 34752 of 504736 choosers
+[03:42.25] DEBUG: school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.initial_rows_per_chunk - rows_per_chunk: 0 headroom: 630413056 initial_row_size: 0 
+[03:50.93] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log
+[03:50.93] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[03:50.93] DEBUG: ChunkLedger.close hwm_rss 4893011968 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[03:50.93] DEBUG: ChunkLedger.close hwm_uss 4869586944 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[03:51.53] DEBUG: school_location.i1.sample.gradeschool.interaction_sample waiting for mem_monitor thread to terminate
+[03:51.53] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.gradeschool.interaction_sample
+[03:51.53] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.gradeschool.interaction_sample.init
+[03:51.53] DEBUG: ChunkLedger.close hwm_rss 3857096704 school_location.i1.sample.gradeschool.interaction_sample.init
+[03:51.53] DEBUG: ChunkLedger.close hwm_uss 3833671680 school_location.i1.sample.gradeschool.interaction_sample.init
+[03:51.53] DEBUG: Running chunk 4 of 15 with 34752 of 504736 choosers
+[03:55.84] DEBUG: school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.initial_rows_per_chunk - rows_per_chunk: 0 headroom: 616376064 initial_row_size: 0 
+[04:04.69] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log
+[04:04.69] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[04:04.69] DEBUG: ChunkLedger.close hwm_rss 4907048960 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[04:04.69] DEBUG: ChunkLedger.close hwm_uss 4883623936 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[04:05.38] DEBUG: school_location.i1.sample.gradeschool.interaction_sample waiting for mem_monitor thread to terminate
+[04:05.38] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.gradeschool.interaction_sample
+[04:05.38] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.gradeschool.interaction_sample.init
+[04:05.38] DEBUG: ChunkLedger.close hwm_rss 3857096704 school_location.i1.sample.gradeschool.interaction_sample.init
+[04:05.38] DEBUG: ChunkLedger.close hwm_uss 3833671680 school_location.i1.sample.gradeschool.interaction_sample.init
+[04:05.38] DEBUG: Running chunk 5 of 15 with 34752 of 504736 choosers
+[04:09.61] DEBUG: school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.initial_rows_per_chunk - rows_per_chunk: 0 headroom: 638269184 initial_row_size: 0 
+[04:18.83] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log
+[04:18.83] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[04:18.83] DEBUG: ChunkLedger.close hwm_rss 4885155840 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[04:18.83] DEBUG: ChunkLedger.close hwm_uss 4861730816 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[04:19.55] DEBUG: school_location.i1.sample.gradeschool.interaction_sample waiting for mem_monitor thread to terminate
+[04:19.55] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.gradeschool.interaction_sample
+[04:19.55] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.gradeschool.interaction_sample.init
+[04:19.55] DEBUG: ChunkLedger.close hwm_rss 3857096704 school_location.i1.sample.gradeschool.interaction_sample.init
+[04:19.55] DEBUG: ChunkLedger.close hwm_uss 3833671680 school_location.i1.sample.gradeschool.interaction_sample.init
+[04:19.55] DEBUG: Running chunk 6 of 15 with 34752 of 504736 choosers
+[04:23.84] DEBUG: school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.initial_rows_per_chunk - rows_per_chunk: 0 headroom: 631772928 initial_row_size: 0 
+[04:33.45] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log
+[04:33.45] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[04:33.45] DEBUG: ChunkLedger.close hwm_rss 4891652096 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[04:33.45] DEBUG: ChunkLedger.close hwm_uss 4868227072 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[04:34.20] DEBUG: school_location.i1.sample.gradeschool.interaction_sample waiting for mem_monitor thread to terminate
+[04:34.20] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.gradeschool.interaction_sample
+[04:34.20] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.gradeschool.interaction_sample.init
+[04:34.20] DEBUG: ChunkLedger.close hwm_rss 3857096704 school_location.i1.sample.gradeschool.interaction_sample.init
+[04:34.20] DEBUG: ChunkLedger.close hwm_uss 3833671680 school_location.i1.sample.gradeschool.interaction_sample.init
+[04:34.20] DEBUG: Running chunk 7 of 15 with 34752 of 504736 choosers
+[04:38.66] DEBUG: school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.initial_rows_per_chunk - rows_per_chunk: 0 headroom: 612284160 initial_row_size: 0 
+[04:49.65] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log
+[04:49.65] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[04:49.65] DEBUG: ChunkLedger.close hwm_rss 4911144960 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[04:49.65] DEBUG: ChunkLedger.close hwm_uss 4887715840 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[04:50.34] DEBUG: school_location.i1.sample.gradeschool.interaction_sample waiting for mem_monitor thread to terminate
+[04:50.34] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.gradeschool.interaction_sample
+[04:50.34] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.gradeschool.interaction_sample.init
+[04:50.34] DEBUG: ChunkLedger.close hwm_rss 3857096704 school_location.i1.sample.gradeschool.interaction_sample.init
+[04:50.34] DEBUG: ChunkLedger.close hwm_uss 3833671680 school_location.i1.sample.gradeschool.interaction_sample.init
+[04:50.34] DEBUG: Running chunk 8 of 15 with 34752 of 504736 choosers
+[04:54.56] DEBUG: school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.initial_rows_per_chunk - rows_per_chunk: 0 headroom: 608249600 initial_row_size: 0 
+[05:05.28] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log
+[05:05.28] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[05:05.28] DEBUG: ChunkLedger.close hwm_rss 4915130368 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[05:05.28] DEBUG: ChunkLedger.close hwm_uss 4891750400 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[05:06.16] DEBUG: school_location.i1.sample.gradeschool.interaction_sample waiting for mem_monitor thread to terminate
+[05:06.16] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.gradeschool.interaction_sample
+[05:06.16] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.gradeschool.interaction_sample.init
+[05:06.16] DEBUG: ChunkLedger.close hwm_rss 3857096704 school_location.i1.sample.gradeschool.interaction_sample.init
+[05:06.16] DEBUG: ChunkLedger.close hwm_uss 3833671680 school_location.i1.sample.gradeschool.interaction_sample.init
+[05:06.16] DEBUG: Running chunk 9 of 15 with 34752 of 504736 choosers
+[05:10.75] DEBUG: school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.initial_rows_per_chunk - rows_per_chunk: 0 headroom: 642754304 initial_row_size: 0 
+[05:21.31] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log
+[05:21.31] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[05:21.31] DEBUG: ChunkLedger.close hwm_rss 4880621568 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[05:21.31] DEBUG: ChunkLedger.close hwm_uss 4857245696 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[05:22.09] DEBUG: school_location.i1.sample.gradeschool.interaction_sample waiting for mem_monitor thread to terminate
+[05:22.09] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.gradeschool.interaction_sample
+[05:22.09] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.gradeschool.interaction_sample.init
+[05:22.09] DEBUG: ChunkLedger.close hwm_rss 3857096704 school_location.i1.sample.gradeschool.interaction_sample.init
+[05:22.09] DEBUG: ChunkLedger.close hwm_uss 3833671680 school_location.i1.sample.gradeschool.interaction_sample.init
+[05:22.10] DEBUG: Running chunk 10 of 15 with 34752 of 504736 choosers
+[05:26.87] DEBUG: school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.initial_rows_per_chunk - rows_per_chunk: 0 headroom: 628320000 initial_row_size: 0 
+[05:37.99] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log
+[05:37.99] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[05:37.99] DEBUG: ChunkLedger.close hwm_rss 4895055872 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[05:37.99] DEBUG: ChunkLedger.close hwm_uss 4871680000 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[05:38.69] DEBUG: school_location.i1.sample.gradeschool.interaction_sample waiting for mem_monitor thread to terminate
+[05:38.69] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.gradeschool.interaction_sample
+[05:38.69] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.gradeschool.interaction_sample.init
+[05:38.69] DEBUG: ChunkLedger.close hwm_rss 3857096704 school_location.i1.sample.gradeschool.interaction_sample.init
+[05:38.69] DEBUG: ChunkLedger.close hwm_uss 3833671680 school_location.i1.sample.gradeschool.interaction_sample.init
+[05:38.69] DEBUG: Running chunk 11 of 15 with 34752 of 504736 choosers
+[05:43.17] DEBUG: school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.initial_rows_per_chunk - rows_per_chunk: 0 headroom: 602527488 initial_row_size: 0 
+[05:53.19] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log
+[05:53.19] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[05:53.19] DEBUG: ChunkLedger.close hwm_rss 4920852480 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[05:53.19] DEBUG: ChunkLedger.close hwm_uss 4897472512 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[05:53.86] DEBUG: school_location.i1.sample.gradeschool.interaction_sample waiting for mem_monitor thread to terminate
+[05:53.86] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.gradeschool.interaction_sample
+[05:53.86] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.gradeschool.interaction_sample.init
+[05:53.86] DEBUG: ChunkLedger.close hwm_rss 3857096704 school_location.i1.sample.gradeschool.interaction_sample.init
+[05:53.86] DEBUG: ChunkLedger.close hwm_uss 3833671680 school_location.i1.sample.gradeschool.interaction_sample.init
+[05:53.86] DEBUG: Running chunk 12 of 15 with 34752 of 504736 choosers
+[05:58.54] DEBUG: school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.initial_rows_per_chunk - rows_per_chunk: 0 headroom: 588297984 initial_row_size: 0 
+[06:09.55] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log
+[06:09.55] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[06:09.55] DEBUG: ChunkLedger.close hwm_rss 4935077888 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[06:09.55] DEBUG: ChunkLedger.close hwm_uss 4911702016 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[06:10.26] DEBUG: school_location.i1.sample.gradeschool.interaction_sample waiting for mem_monitor thread to terminate
+[06:10.26] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.gradeschool.interaction_sample
+[06:10.26] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.gradeschool.interaction_sample.init
+[06:10.26] DEBUG: ChunkLedger.close hwm_rss 3857096704 school_location.i1.sample.gradeschool.interaction_sample.init
+[06:10.26] DEBUG: ChunkLedger.close hwm_uss 3833671680 school_location.i1.sample.gradeschool.interaction_sample.init
+[06:10.26] DEBUG: Running chunk 13 of 15 with 34752 of 504736 choosers
+[06:14.81] DEBUG: school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.initial_rows_per_chunk - rows_per_chunk: 0 headroom: 573781760 initial_row_size: 0 
+[06:25.20] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log
+[06:25.20] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[06:25.20] DEBUG: ChunkLedger.close hwm_rss 4949594112 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[06:25.20] DEBUG: ChunkLedger.close hwm_uss 4926218240 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[06:25.94] DEBUG: school_location.i1.sample.gradeschool.interaction_sample waiting for mem_monitor thread to terminate
+[06:25.94] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.gradeschool.interaction_sample
+[06:25.94] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.gradeschool.interaction_sample.init
+[06:25.94] DEBUG: ChunkLedger.close hwm_rss 3857096704 school_location.i1.sample.gradeschool.interaction_sample.init
+[06:25.94] DEBUG: ChunkLedger.close hwm_uss 3833671680 school_location.i1.sample.gradeschool.interaction_sample.init
+[06:25.95] DEBUG: Running chunk 14 of 15 with 34752 of 504736 choosers
+[06:30.54] DEBUG: school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.initial_rows_per_chunk - rows_per_chunk: 0 headroom: 548820736 initial_row_size: 0 
+[06:41.33] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log
+[06:41.33] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[06:41.33] DEBUG: ChunkLedger.close hwm_rss 4974555136 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[06:41.33] DEBUG: ChunkLedger.close hwm_uss 4951179264 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[06:42.07] DEBUG: school_location.i1.sample.gradeschool.interaction_sample waiting for mem_monitor thread to terminate
+[06:42.07] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.gradeschool.interaction_sample
+[06:42.07] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.gradeschool.interaction_sample.init
+[06:42.07] DEBUG: ChunkLedger.close hwm_rss 3857096704 school_location.i1.sample.gradeschool.interaction_sample.init
+[06:42.07] DEBUG: ChunkLedger.close hwm_uss 3833671680 school_location.i1.sample.gradeschool.interaction_sample.init
+[06:42.07] DEBUG: Running chunk 15 of 15 with 18208 of 504736 choosers
+[06:45.17] DEBUG: school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.initial_rows_per_chunk - rows_per_chunk: 0 headroom: 1009116928 initial_row_size: 0 
+[06:50.42] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log
+[06:50.42] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[06:50.42] DEBUG: ChunkLedger.close hwm_rss 4514258944 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[06:50.42] DEBUG: ChunkLedger.close hwm_uss 4490883072 school_location.i1.sample.gradeschool.interaction_sample.eval_interaction_utils.chunk_log.init
+[06:50.78] DEBUG: school_location.i1.sample.gradeschool.interaction_sample waiting for mem_monitor thread to terminate
+[06:50.78] DEBUG: ChunkLedger.close trace_label: school_location.i1.sample.gradeschool.interaction_sample
+[06:50.78] DEBUG: ChunkLedger.close hwm_bytes: 0 school_location.i1.sample.gradeschool.interaction_sample.init
+[06:50.78] DEBUG: ChunkLedger.close hwm_rss 3857096704 school_location.i1.sample.gradeschool.interaction_sample.init
+[06:50.78] DEBUG: ChunkLedger.close hwm_uss 3833671680 school_location.i1.sample.gradeschool.interaction_sample.init
+[06:56.42] INFO: Running school_location.i1.logsums.gradeschool with 10717604 rows

@@ -1,0 +1,81 @@
+{
+  "name": "r2-64-semcog-reference",
+  "command": [
+    "systemd-run",
+    "--user",
+    "--scope",
+    "--unit=tbi-hybrid-r2-64-semcog-reference",
+    "-p",
+    "MemoryMax=9G",
+    "-p",
+    "MemorySwapMax=0",
+    "env",
+    "OPENBLAS_NUM_THREADS=1",
+    "OMP_NUM_THREADS=1",
+    "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/bin/python",
+    "-B",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/docs/modeling/activitysim-tbi2019-2026-10-23/convergence-evidence/scope-runner.py",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/docs/modeling/activitysim-tbi2019-2026-10-23/chunk-cause-evidence/r2-64-semcog-reference.health.json",
+    "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/bin/python",
+    "-B",
+    "-m",
+    "activitysim",
+    "run",
+    "-c",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/data/_screening_cache/tbi2019-chunk-cause/config-r2-64-semcog-reference",
+    "-c",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/bundle/configs",
+    "-c",
+    "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/examples/prototype_mtc/configs",
+    "-d",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/parity-inputs",
+    "-o",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/data/_screening_cache/tbi2019-chunk-cause/r2-64-semcog-reference"
+  ],
+  "config_files": {
+    "logging.yaml": "768c127f265f728df27e97db1667c42ae1723b44ae647e571d61be7a68d6aa70",
+    "network_los.yaml": "28462bf20dfe305f422e2ea586f253a0f98a9ef423fae9ee555505c9405eefd9",
+    "settings.yaml": "dafffc2bd8e6b6d1f5621b119e628d9cdf1c5b8563275c8905e8ee47005e85cc",
+    "tour_mode_choice_coefficients.csv": "537e54811e4b6ca9fec0662085777e9679a634bd312bb7c64df6e58ff60c7490",
+    "coefficient-set.json": "a1c850754c2f22b7f765b9429b4f9bf50137f2833a896c66f7740a3cf173e728"
+  },
+  "exit_code": 0,
+  "elapsed_seconds": 49.314163389994064,
+  "health": {
+    "exit_code": 0,
+    "elapsed_seconds": 49.27200918699964,
+    "command": [
+      "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/bin/python",
+      "-B",
+      "-m",
+      "activitysim",
+      "run",
+      "-c",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/data/_screening_cache/tbi2019-chunk-cause/config-r2-64-semcog-reference",
+      "-c",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/bundle/configs",
+      "-c",
+      "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/examples/prototype_mtc/configs",
+      "-d",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/parity-inputs",
+      "-o",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/data/_screening_cache/tbi2019-chunk-cause/r2-64-semcog-reference"
+    ],
+    "peak_child_rss_kib": 1761344,
+    "scope": {
+      "memory.peak": "1801641984",
+      "memory.max": "9663676416",
+      "memory.swap.max": "0",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+    }
+  },
+  "final_files": {
+    "final_land_use.csv": "a74feed4d6ceeab4c953c5ed3b48cafc0805b24c80f825d196f361ac092ccb94",
+    "final_trips.csv": "b1301c7e1a3eb1cd6d31763beb806b7876d55598160f07f4c3757f1597806f78",
+    "final_households.csv": "ddd757aec1e926f8fbdcdb57d68b0cbd082f666a0c7df1d7df243e0ef750a488",
+    "final_persons.csv": "e6aaa276b7490b032f5e334bc8cdc0e7335993378d4cd51e4e7664ec65119b51",
+    "final_tours.csv": "8da1eae9c43d2dee4ee22d92193e0a1b7618e37db5333391745583f84ae887ef",
+    "final_accessibility.csv": "68a89df0318674b3610ea77e4dcf681b4fcf339d6e17de89cb3b125478d56139",
+    "final_joint_tour_participants.csv": "d632b4c07234c7c4e574929e07e393eb0baafae212a7cf9473d9608f301a95a5"
+  }
+}

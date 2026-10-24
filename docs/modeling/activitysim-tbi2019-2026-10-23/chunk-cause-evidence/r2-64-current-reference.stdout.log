@@ -1,0 +1,690 @@
+Running as unit: tbi-hybrid-r2-64-current-reference.scope; invocation ID: 516b91ec21864eaaa89a54754b48cec5
+
+   ___      __  _      _ __       _____
+  / _ |____/ /_(_)  __(_) /___ __/ __(_)_ _
+ / __ / __/ __/ / |/ / / __/ // /\ \/ /  ' \   1.5.1
+/_/ |_\__/\__/_/|___/_/\__/\_, /___/_/_/_/_/
+                          /___/
+
+INFO:activitysim:Configured logging using basicConfig
+[00:01.75] INFO: Read logging configuration from: /home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/data/_screening_cache/tbi2019-chunk-cause/config-r2-64-current-reference/logging.yaml
+[00:01.75] INFO: ActivitySim Version: 1.5.1
+[00:01.75] INFO: SETTING configs_dir: (PosixPath('/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/data/_screening_cache/tbi2019-chunk-cause/config-r2-64-current-reference'), PosixPath('/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/bundle/configs'), PosixPath('/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/examples/prototype_mtc/configs'))
+[00:01.75] INFO: SETTING settings_file_name: settings.yaml
+[00:01.75] INFO: SETTING data_dir: (PosixPath('/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/parity-inputs'),)
+[00:01.75] INFO: SETTING output_dir: /home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/data/_screening_cache/tbi2019-chunk-cause/r2-64-current-reference
+[00:01.75] INFO: SETTING households_sample_size: 0
+[00:01.75] INFO: SETTING chunk_size: 0
+[00:01.75] INFO: SETTING chunk_method: hybrid_uss
+[00:01.75] INFO: SETTING chunk_training_mode: disabled
+[00:01.75] INFO: SETTING multiprocess: False
+[00:01.75] INFO: SETTING num_processes: None
+[00:01.75] INFO: SETTING resume_after: None
+[00:01.75] INFO: SETTING trace_hh_id: None
+[00:01.75] INFO: SETTING memory_profile: False
+[00:01.75] INFO: SETTING instrument: False
+[00:01.75] INFO: SETTING sharrow: False
+[00:01.75] INFO: ENV MKL_NUM_THREADS: 1
+[00:01.75] INFO: ENV OMP_NUM_THREADS: 1
+[00:01.75] INFO: ENV OPENBLAS_NUM_THREADS: 1
+[00:01.75] INFO: ENV NUMBA_NUM_THREADS: 1
+[00:01.75] INFO: Settings checker will check core settings files. See settings_checker.log for details.
+[00:01.80] WARNING: mandatory_tour_scheduling: Field SPEC is None in TourSchedulingSettings. Ensure that a filepath is defined YAML settings if required
+[00:01.80] WARNING: mandatory_tour_scheduling: Field COEFFICIENTS is None in TourSchedulingSettings. Ensure that a filepath is defined YAML settings if required
+[00:01.85] WARNING: non_mandatory_tour_frequency: Field COEFFICIENTS is None in NonMandatoryTourFrequencySettings. Ensure that a filepath is defined YAML settings if required
+[00:01.97] WARNING: stop_frequency: Field SPEC is None in StopFrequencySettings. Ensure that a filepath is defined YAML settings if required
+[00:01.97] WARNING: stop_frequency: Field COEFFICIENTS is None in StopFrequencySettings. Ensure that a filepath is defined YAML settings if required
+[00:02.06] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/pydantic/_internal/_decorators_v1.py:148: FutureWarning: Use of the field `DESTINATION_SAMPLE_SPEC` in the trip_destination configuration file is deprecated, use just `SAMPLE_SPEC` instead (currently both are given).
+  return validator(values)
+
+[00:02.06] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/pydantic/_internal/_decorators_v1.py:148: FutureWarning: Use of the field `DESTINATION_SPEC` in the trip_destination configuration file is deprecated, use just `SPEC` instead (currently both are given).
+  return validator(values)
+
+[00:02.06] INFO: Cannot pre-check settings for model component trip_scheduling: mapping to a Pydantic data model is undefined in the checker.
+[00:02.10] INFO: Cannot pre-check settings for model component write_tables: mapping to a Pydantic data model is undefined in the checker.
+[00:02.10] INFO: Setting Checker Complete. No runtime errors were raised. Check fsettings_checker.log for warnings. These *may* prevent model from successfully running.
+[00:02.10] INFO: run single process simulation
+[00:02.14] INFO: preload_injectables
+[00:02.14] INFO: Time to execute preload_injectables : 0.036 seconds (0.0 minutes)
+[00:02.20] INFO: #run_model running step initialize_landuse
+[AnnotateTableSettings(source_file_paths=None, tablename='land_use', annotate=PreprocessorSettings(SPEC='annotate_landuse', DF='land_use', TABLES=None), column_map=None)]
+[00:02.20] INFO: Reading CSV file /home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/parity-inputs/land_use.csv
+[00:02.20] INFO: recoding column zone_id: zero-based
+[00:02.21] INFO: loaded land_use (634, 25)
+[00:02.21] INFO: initialize_landuse.annotate_tables - annotating land_use SPEC annotate_landuse
+[00:02.21] INFO: Network_LOS using skim_dict_factory: MemMapSkimFactory
+[00:02.39] INFO: writing skim cache taz (826, 634, 634) to /home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/data/_screening_cache/tbi2019-chunk-cause/r2-64-current-reference/cache/cached_taz.mmap
+[00:02.39] INFO: _read_skims_from_omx /home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/parity-inputs/skims/mtc_skims.omx
+[00:11.45] INFO: _read_skims_from_omx loaded 826 skims from /home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/parity-inputs/skims/mtc_skims.omx
+[00:11.48] INFO: get_skim_data taz JitMemMapSkimData shape (826, 634, 634)
+[00:11.48] INFO: SkimDict init taz
+[00:11.48] INFO: SkimDict.build_3d_skim_block_offset_table registered 167 3d keys
+[00:11.48] NOTIFY:  time to execute run.initialize_landuse : 9.316 seconds
+[00:11.61] INFO: #run_model running step initialize_households
+[00:11.61] INFO: Reading CSV file /home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/parity-inputs/households.csv
+[00:11.61] INFO: recoding column home_zone_id: land_use.zone_id
+[00:11.61] INFO: full household list contains 64 households
+[00:11.61] INFO: loaded households (64, 7)
+[00:11.62] INFO: Reading CSV file /home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/parity-inputs/persons.csv
+[00:11.62] INFO: loaded persons (166, 7)
+[AnnotateTableSettings(source_file_paths=None, tablename='persons', annotate=PreprocessorSettings(SPEC='annotate_persons', DF='persons', TABLES=['households']), column_map=None), AnnotateTableSettings(source_file_paths=None, tablename='households', annotate=PreprocessorSettings(SPEC='annotate_households', DF='households', TABLES=['persons', 'land_use']), column_map=None), AnnotateTableSettings(source_file_paths=None, tablename='persons', annotate=PreprocessorSettings(SPEC='annotate_persons_after_hh', DF='persons', TABLES=['households']), column_map=None)]
+[00:11.62] INFO: initialize_households.annotate_tables - annotating persons SPEC annotate_persons
+[00:11.63] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:239: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt0 = pipeline(counts > 0)
+
+[00:11.63] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:240: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt1 = pipeline(counts > 1)
+
+[00:11.63] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:239: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt0 = pipeline(counts > 0)
+
+[00:11.63] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:240: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt1 = pipeline(counts > 1)
+
+[00:11.63] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:239: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt0 = pipeline(counts > 0)
+
+[00:11.63] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:240: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt1 = pipeline(counts > 1)
+
+[00:11.63] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:239: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt0 = pipeline(counts > 0)
+
+[00:11.63] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:240: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt1 = pipeline(counts > 1)
+
+[00:11.64] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:239: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt0 = pipeline(counts > 0)
+
+[00:11.64] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:240: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt1 = pipeline(counts > 1)
+
+[00:11.64] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:239: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt0 = pipeline(counts > 0)
+
+[00:11.64] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:240: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt1 = pipeline(counts > 1)
+
+[00:11.64] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:239: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt0 = pipeline(counts > 0)
+
+[00:11.64] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:240: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt1 = pipeline(counts > 1)
+
+[00:11.64] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:239: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt0 = pipeline(counts > 0)
+
+[00:11.64] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:240: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt1 = pipeline(counts > 1)
+
+[00:11.65] INFO: initialize_households.annotate_tables - annotating households SPEC annotate_households
+[00:11.68] INFO: initialize_households.annotate_tables - annotating persons SPEC annotate_persons_after_hh
+[00:11.70] NOTIFY:  time to execute run.initialize_households : 0.127 seconds
+[00:11.82] INFO: #run_model running step compute_accessibility
+[00:11.82] INFO: Running compute_accessibility with 634 orig zones 634 dest zones
+[00:11.82] DEBUG: Running chunkless with 634 choosers
+[00:11.82] INFO: Running compute_accessibility with 634 orig zones 634 dest zones
+[00:11.83] INFO: compute_accessibility: assign.assign_variables
+[00:11.92] WARNING: numpy: Warning: underflow encountered in exp expression: _decay = _rt_available * exp(_nmDist * dispersion_parameter_walk)
+[00:11.97] INFO: compute_accessibility: have results
+[00:11.97] INFO: compute_accessibility: aggregating column auPkRetail
+[00:12.38] INFO: compute_accessibility: aggregating column auPkTotal
+[00:12.38] INFO: compute_accessibility: aggregating column auOpRetail
+[00:12.38] INFO: compute_accessibility: aggregating column auOpTotal
+[00:12.38] INFO: compute_accessibility: aggregating column trPkRetail
+[00:12.38] INFO: compute_accessibility: aggregating column trPkTotal
+[00:12.38] INFO: compute_accessibility: aggregating column trOpRetail
+[00:12.38] INFO: compute_accessibility: aggregating column trOpTotal
+[00:12.38] INFO: compute_accessibility: aggregating column nmRetail
+[00:12.38] INFO: compute_accessibility: aggregating column nmTotal
+[00:12.38] INFO: compute_accessibility: completed aggregating
+[00:12.39] INFO: compute_accessibility: completed aggregating info df
+[00:12.39] INFO: compute_accessibility computed accessibilities (634, 10)
+[00:12.39] NOTIFY:  time to execute run.compute_accessibility : 0.602 seconds
+[00:12.50] INFO: #run_model running step school_location
+[00:12.51] INFO: Running school_location.i1.sample.university with 3 persons
+[00:12.52] DEBUG: Running chunkless with 3 choosers
+[00:13.71] INFO: Running school_location.i1.logsums.university with 7 rows
+[00:13.80] DEBUG: Running chunkless with 7 choosers
+[00:14.11] INFO: Running school_location.i1.simulate.university with 3 persons
+[00:14.12] DEBUG: Running chunkless with 3 choosers
+[00:14.57] INFO: Running school_location.i1.sample.highschool with 6 persons
+[00:14.57] DEBUG: Running chunkless with 6 choosers
+[00:14.59] INFO: Running school_location.i1.logsums.highschool with 112 rows
+[00:14.68] DEBUG: Running chunkless with 112 choosers
+[00:14.89] INFO: Running school_location.i1.simulate.highschool with 6 persons
+[00:14.90] DEBUG: Running chunkless with 6 choosers
+[00:14.91] INFO: Running school_location.i1.sample.gradeschool with 47 persons
+[00:14.91] DEBUG: Running chunkless with 47 choosers
+[00:14.93] INFO: Running school_location.i1.logsums.gradeschool with 1062 rows
+[00:15.02] DEBUG: Running chunkless with 1062 choosers
+[00:15.27] INFO: Running school_location.i1.simulate.gradeschool with 47 persons
+[00:15.28] DEBUG: Running chunkless with 47 choosers
+[00:15.29] INFO: write_trace_files iteration 1
+[00:15.30] NOTIFY:  time to execute run.school_location : 2.837 seconds
+[00:15.42] INFO: #run_model running step workplace_location
+[00:15.43] INFO: Running workplace_location.i1.sample.work_low with 13 persons
+[00:15.43] DEBUG: Running chunkless with 13 choosers
+[00:15.45] INFO: Running workplace_location.i1.logsums.work_low with 328 rows
+[00:15.54] DEBUG: Running chunkless with 328 choosers
+[00:15.76] INFO: Running workplace_location.i1.simulate.work_low with 13 persons
+[00:15.76] DEBUG: Running chunkless with 13 choosers
+[00:15.77] INFO: Running workplace_location.i1.sample.work_med with 17 persons
+[00:15.77] DEBUG: Running chunkless with 17 choosers
+[00:15.79] INFO: Running workplace_location.i1.logsums.work_med with 405 rows
+[00:15.87] DEBUG: Running chunkless with 405 choosers
+[00:16.08] INFO: Running workplace_location.i1.simulate.work_med with 17 persons
+[00:16.09] DEBUG: Running chunkless with 17 choosers
+[00:16.10] INFO: Running workplace_location.i1.sample.work_high with 26 persons
+[00:16.10] DEBUG: Running chunkless with 26 choosers
+[00:16.12] INFO: Running workplace_location.i1.logsums.work_high with 689 rows
+[00:16.20] DEBUG: Running chunkless with 689 choosers
+[00:16.42] INFO: Running workplace_location.i1.simulate.work_high with 26 persons
+[00:16.42] DEBUG: Running chunkless with 26 choosers
+[00:16.43] INFO: Running workplace_location.i1.sample.work_veryhigh with 25 persons
+[00:16.44] DEBUG: Running chunkless with 25 choosers
+[00:16.45] INFO: Running workplace_location.i1.logsums.work_veryhigh with 659 rows
+[00:16.54] DEBUG: Running chunkless with 659 choosers
+[00:16.76] INFO: Running workplace_location.i1.simulate.work_veryhigh with 25 persons
+[00:16.77] DEBUG: Running chunkless with 25 choosers
+[00:16.78] INFO: write_trace_files iteration 1
+[00:16.80] NOTIFY:  time to execute run.workplace_location : 1.416 seconds
+[00:16.92] INFO: #run_model running step auto_ownership_simulate
+[00:16.93] INFO: Running auto_ownership_simulate with 64 households
+[00:16.93] DEBUG: Running chunkless with 64 choosers
+[00:16.94] NOTIFY:  time to execute run.auto_ownership_simulate : 0.055 seconds
+[00:17.06] INFO: #run_model running step free_parking
+[00:17.06] INFO: Running free_parking with 81 persons
+[00:17.08] DEBUG: Running chunkless with 81 choosers
+[00:17.08] NOTIFY:  time to execute run.free_parking : 0.062 seconds
+[00:17.21] INFO: #run_model running step cdap_simulate
+[00:17.22] INFO: Pre-building cdap specs
+[00:17.28] INFO: Time to execute build_cdap_spec hh_size 2 : 0.054 seconds (0.0 minutes)
+[00:17.43] INFO: Time to execute build_cdap_spec hh_size 3 : 0.15 seconds (0.0 minutes)
+[00:17.78] INFO: Time to execute build_cdap_spec hh_size 4 : 0.349 seconds (0.0 minutes)
+[00:18.62] INFO: Time to execute build_cdap_spec hh_size 5 : 0.837 seconds (0.0 minutes)
+[00:18.66] INFO: Running cdap_simulate with 166 persons
+[00:18.66] DEBUG: Running chunkless with 166 choosers
+[00:19.33] INFO: cdap crosstabs:
+cdap_activity    M   N   H  All
+ptype                          
+1               58   5   2   65
+2                9   3   1   13
+3                1   2   0    3
+4                0  13   4   17
+5                0  11   4   15
+6                5   1   0    6
+7               19   4   0   23
+8               20   4   0   24
+All            112  43  11  166
+[00:19.33] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:239: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt0 = pipeline(counts > 0)
+
+[00:19.33] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:240: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt1 = pipeline(counts > 1)
+
+[00:19.33] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:239: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt0 = pipeline(counts > 0)
+
+[00:19.33] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:240: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  gt1 = pipeline(counts > 1)
+
+[00:19.35] NOTIFY:  time to execute run.cdap_simulate : 2.18 seconds
+[00:19.48] INFO: #run_model running step mandatory_tour_frequency
+[00:19.49] INFO: Running mandatory_tour_frequency with 112 persons
+[00:19.49] DEBUG: Running chunkless with 112 choosers
+[00:19.57] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/util/canonical_ids.py:407: FutureWarning: Downcasting behavior in `replace` is deprecated and will be removed in a future version. To retain the old behavior, explicitly call `result.infer_objects(copy=False)`. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  tours.tour_id = tours.tour_id.replace(
+
+[00:19.59] NOTIFY:  time to execute run.mandatory_tour_frequency : 0.147 seconds
+[00:19.71] INFO: #run_model running step mandatory_tour_scheduling
+[00:19.72] DEBUG: @workflow.cached_object timetable
+[00:20.07] DEBUG: Running chunkless with 68 choosers
+[00:20.34] INFO: tdd_alt_segments specified for representative logsums
+[00:20.45] DEBUG: Running chunkless with 1020 choosers
+[00:20.70] DEBUG: Running chunkless with 68 choosers
+[00:23.04] DEBUG: Running chunkless with 43 choosers
+[00:23.04] INFO: tdd_alt_segments specified for representative logsums
+[00:23.15] DEBUG: Running chunkless with 645 choosers
+[00:23.40] DEBUG: Running chunkless with 43 choosers
+[00:23.44] DEBUG: Running chunkless with 1 choosers
+[00:23.44] INFO: tdd_alt_segments specified for representative logsums
+[00:23.54] DEBUG: Running chunkless with 15 choosers
+[00:23.75] DEBUG: Running chunkless with 1 choosers
+[00:23.78] DEBUG: Running chunkless with 4 choosers
+[00:23.79] INFO: tdd_alt_segments specified for representative logsums
+[00:24.03] DEBUG: Running chunkless with 28 choosers
+[00:24.23] DEBUG: Running chunkless with 4 choosers
+[00:24.28] DEBUG: Running chunkless with 1 choosers
+[00:24.28] INFO: tdd_alt_segments specified for representative logsums
+[00:24.38] DEBUG: Running chunkless with 6 choosers
+[00:24.58] DEBUG: Running chunkless with 1 choosers
+[00:24.61] INFO: skipping empty segment univ
+[00:24.62] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/timetable.py:252: FutureWarning: The default of observed=False is deprecated and will be changed to True in a future version of pandas. Pass observed=False to retain current behavior or observed=True to adopt the future default and silence this warning.
+  for keys, nth_tours in tours.groupby(["tour_type", "tour_type_num"], sort=True):
+
+[00:24.63] NOTIFY:  time to execute run.mandatory_tour_scheduling : 4.954 seconds
+[00:24.77] INFO: #run_model running step joint_tour_frequency
+[00:24.78] INFO: Running joint_tour_frequency with 40 multi-person households
+[00:24.87] DEBUG: Running chunkless with 40 choosers
+[00:24.92] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/util/canonical_ids.py:407: FutureWarning: Downcasting behavior in `replace` is deprecated and will be removed in a future version. To retain the old behavior, explicitly call `result.infer_objects(copy=False)`. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  tours.tour_id = tours.tour_id.replace(
+
+[00:24.93] NOTIFY:  time to execute run.joint_tour_frequency : 0.203 seconds
+[00:25.05] INFO: #run_model running step joint_tour_composition
+[00:25.05] INFO: Running joint_tour_composition with 2 joint tours
+[00:25.10] DEBUG: Running chunkless with 2 choosers
+[00:25.11] NOTIFY:  time to execute run.joint_tour_composition : 0.096 seconds
+[00:25.25] INFO: #run_model running step joint_tour_participation
+[00:25.26] INFO: Running joint_tours_participation with 6 potential participants (candidates)
+[00:25.29] DEBUG: Running chunkless with 6 choosers
+[00:25.33] INFO: joint_tour_participation.eval_mnl.participants_chooser 2 joint tours to satisfy.
+[00:25.33] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/joint_tour_participation.py:117: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  satisfaction = satisfaction.reindex(tour_ids).fillna(False).astype(bool)
+
+[00:25.34] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/joint_tour_participation.py:123: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  satisfaction = satisfaction.reindex(tour_ids).fillna(False).astype(bool)
+
+[00:25.35] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/joint_tour_participation.py:123: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  satisfaction = satisfaction.reindex(tour_ids).fillna(False).astype(bool)
+
+[00:25.35] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/joint_tour_participation.py:123: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  satisfaction = satisfaction.reindex(tour_ids).fillna(False).astype(bool)
+
+[00:25.35] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/joint_tour_participation.py:123: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  satisfaction = satisfaction.reindex(tour_ids).fillna(False).astype(bool)
+
+[00:25.36] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/joint_tour_participation.py:123: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  satisfaction = satisfaction.reindex(tour_ids).fillna(False).astype(bool)
+
+[00:25.36] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/joint_tour_participation.py:123: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  satisfaction = satisfaction.reindex(tour_ids).fillna(False).astype(bool)
+
+[00:25.36] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/joint_tour_participation.py:123: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  satisfaction = satisfaction.reindex(tour_ids).fillna(False).astype(bool)
+
+[00:25.36] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/joint_tour_participation.py:123: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  satisfaction = satisfaction.reindex(tour_ids).fillna(False).astype(bool)
+
+[00:25.37] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/joint_tour_participation.py:123: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  satisfaction = satisfaction.reindex(tour_ids).fillna(False).astype(bool)
+
+[00:25.38] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/joint_tour_participation.py:123: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  satisfaction = satisfaction.reindex(tour_ids).fillna(False).astype(bool)
+
+[00:25.38] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/joint_tour_participation.py:123: FutureWarning: Downcasting object dtype arrays on .fillna, .ffill, .bfill is deprecated and will change in a future version. Call result.infer_objects(copy=False) instead. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  satisfaction = satisfaction.reindex(tour_ids).fillna(False).astype(bool)
+
+[00:25.39] INFO: joint_tour_participation.eval_mnl.participants_chooser 22 iterations to satisfy all joint tours.
+[00:25.40] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/util.py:363: FutureWarning: Setting an item of incompatible dtype is deprecated and will raise in a future error of pandas. Value '[1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+ 1 1 1 1 1 1 2 2]' has dtype incompatible with int8, please explicitly cast to a compatible dtype first.
+  df.update(df2)
+
+[00:25.41] NOTIFY:  time to execute run.joint_tour_participation : 0.204 seconds
+[00:25.54] INFO: #run_model running step joint_tour_destination
+[00:25.54] INFO: joint_tour_destination skipping segment shopping: no choosers
+[00:25.54] INFO: joint_tour_destination skipping segment othmaint: no choosers
+[00:25.55] INFO: joint_tour_destination skipping segment othdiscr: no choosers
+[00:25.55] DEBUG: Running chunkless with 1 choosers
+[00:25.66] DEBUG: Running chunkless with 23 choosers
+[00:25.86] DEBUG: Running chunkless with 1 choosers
+[00:25.87] DEBUG: Running chunkless with 1 choosers
+[00:25.97] DEBUG: Running chunkless with 24 choosers
+[00:26.17] DEBUG: Running chunkless with 1 choosers
+[00:26.18] INFO: joint_tour_destination skipping segment escort: no choosers
+[00:26.19] NOTIFY:  time to execute run.joint_tour_destination : 0.692 seconds
+[00:26.31] INFO: #run_model running step joint_tour_scheduling
+[00:26.31] INFO: Running joint_tour_scheduling with 2 joint tours
+[00:26.33] DEBUG: Running chunkless with 2 choosers
+[00:26.49] DEBUG: Running chunkless with 2 choosers
+[00:26.88] NOTIFY:  time to execute run.joint_tour_scheduling : 0.609 seconds
+[00:27.00] INFO: #run_model running step non_mandatory_tour_frequency
+[00:27.01] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/non_mandatory_tour_frequency.py:219: RuntimeWarning: The 'tot_tours' column in non_mandatory_tour_frequency_alternatives.csv does not match the sum of the other columns.
+  warnings.warn(
+
+[00:27.01] INFO: Running non_mandatory_tour_frequency with 155 persons
+[00:27.03] INFO: Running segment 'PTYPE_FULL' of size 63
+[00:27.03] DEBUG: Running chunkless with 63 choosers
+[00:27.11] INFO: Running segment 'PTYPE_PART' of size 12
+[00:27.12] DEBUG: Running chunkless with 12 choosers
+[00:27.18] INFO: Running segment 'PTYPE_UNIVERSITY' of size 3
+[00:27.19] DEBUG: Running chunkless with 3 choosers
+[00:27.27] INFO: Running segment 'PTYPE_NONWORK' of size 13
+[00:27.27] DEBUG: Running chunkless with 13 choosers
+[00:27.37] INFO: Running segment 'PTYPE_RETIRED' of size 11
+[00:27.38] DEBUG: Running chunkless with 11 choosers
+[00:27.44] INFO: Running segment 'PTYPE_DRIVING' of size 6
+[00:27.44] DEBUG: Running chunkless with 6 choosers
+[00:27.50] INFO: Running segment 'PTYPE_SCHOOL' of size 23
+[00:27.50] DEBUG: Running chunkless with 23 choosers
+[00:27.56] INFO: Running segment 'PTYPE_PRESCHOOL' of size 24
+[00:27.56] DEBUG: Running chunkless with 24 choosers
+[00:27.75] INFO: extend_tour_counts increased tour count by 7 from 92 to 99
+[00:27.77] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/util/canonical_ids.py:407: FutureWarning: Downcasting behavior in `replace` is deprecated and will be removed in a future version. To retain the old behavior, explicitly call `result.infer_objects(copy=False)`. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  tours.tour_id = tours.tour_id.replace(
+
+[00:27.78] NOTIFY:  time to execute run.non_mandatory_tour_frequency : 0.818 seconds
+[00:27.92] INFO: #run_model running step non_mandatory_tour_destination
+[00:27.93] DEBUG: Running chunkless with 31 choosers
+[00:28.03] DEBUG: Running chunkless with 614 choosers
+[00:28.26] DEBUG: Running chunkless with 31 choosers
+[00:28.28] DEBUG: Running chunkless with 6 choosers
+[00:28.38] DEBUG: Running chunkless with 150 choosers
+[00:28.59] DEBUG: Running chunkless with 6 choosers
+[00:28.60] DEBUG: Running chunkless with 13 choosers
+[00:28.70] DEBUG: Running chunkless with 345 choosers
+[00:28.93] DEBUG: Running chunkless with 13 choosers
+[00:28.94] DEBUG: Running chunkless with 10 choosers
+[00:29.04] DEBUG: Running chunkless with 248 choosers
+[00:29.26] DEBUG: Running chunkless with 10 choosers
+[00:29.28] DEBUG: Running chunkless with 6 choosers
+[00:29.38] DEBUG: Running chunkless with 148 choosers
+[00:29.60] DEBUG: Running chunkless with 6 choosers
+[00:29.61] DEBUG: Running chunkless with 33 choosers
+[00:29.72] DEBUG: Running chunkless with 580 choosers
+[00:29.94] DEBUG: Running chunkless with 33 choosers
+[00:29.95] NOTIFY:  time to execute run.non_mandatory_tour_destination : 2.079 seconds
+[00:30.07] INFO: #run_model running step non_mandatory_tour_scheduling
+[00:30.09] DEBUG: Running chunkless with 71 choosers
+[00:30.09] DEBUG: Running chunkless with 71 choosers
+[00:30.14] DEBUG: Running chunkless with 17 choosers
+[00:30.14] DEBUG: Running chunkless with 17 choosers
+[00:30.18] DEBUG: Running chunkless with 8 choosers
+[00:30.18] DEBUG: Running chunkless with 8 choosers
+[00:30.22] DEBUG: Running chunkless with 3 choosers
+[00:30.22] DEBUG: Running chunkless with 3 choosers
+[00:30.26] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/timetable.py:252: FutureWarning: The default of observed=False is deprecated and will be changed to True in a future version of pandas. Pass observed=False to retain current behavior or observed=True to adopt the future default and silence this warning.
+  for keys, nth_tours in tours.groupby(["tour_type", "tour_type_num"], sort=True):
+
+[00:30.27] NOTIFY:  time to execute run.non_mandatory_tour_scheduling : 0.23 seconds
+[00:30.39] INFO: #run_model running step tour_mode_choice_simulate
+[00:30.40] INFO: Running tour_mode_choice with 218 tours
+[00:30.40] INFO: tour_mode_choice_simulate tour_type 'eatout' (11 tours)
+[00:30.49] DEBUG: Running chunkless with 11 choosers
+[00:30.71] INFO: tour_mode_choice_simulate tour_type 'escort' (33 tours)
+[00:30.80] DEBUG: Running chunkless with 33 choosers
+[00:31.02] INFO: tour_mode_choice_simulate tour_type 'othdiscr' (13 tours)
+[00:31.11] DEBUG: Running chunkless with 13 choosers
+[00:31.33] INFO: tour_mode_choice_simulate tour_type 'othmaint' (6 tours)
+[00:31.42] DEBUG: Running chunkless with 6 choosers
+[00:31.64] INFO: tour_mode_choice_simulate tour_type 'school' (44 tours)
+[00:31.74] DEBUG: Running chunkless with 44 choosers
+[00:31.97] INFO: tour_mode_choice_simulate tour_type 'shopping' (31 tours)
+[00:32.20] DEBUG: Running chunkless with 31 choosers
+[00:32.43] INFO: tour_mode_choice_simulate tour_type 'social' (7 tours)
+[00:32.52] DEBUG: Running chunkless with 7 choosers
+[00:32.73] INFO: tour_mode_choice_simulate tour_type 'univ' (1 tours)
+[00:32.81] DEBUG: Running chunkless with 1 choosers
+[00:33.04] INFO: tour_mode_choice_simulate tour_type 'work' (72 tours)
+[00:33.13] DEBUG: Running chunkless with 72 choosers
+[00:33.36] NOTIFY:  time to execute run.tour_mode_choice_simulate : 3.009 seconds
+[00:33.50] INFO: #run_model running step atwork_subtour_frequency
+[00:33.50] INFO: Running atwork_subtour_frequency with 72 work tours
+[00:33.51] DEBUG: Running chunkless with 72 choosers
+[00:33.54] ERROR: parent_tour_num.dtype: int8
+[00:33.54] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/util/canonical_ids.py:407: FutureWarning: Downcasting behavior in `replace` is deprecated and will be removed in a future version. To retain the old behavior, explicitly call `result.infer_objects(copy=False)`. To opt-in to the future behavior, set `pd.set_option('future.no_silent_downcasting', True)`
+  tours.tour_id = tours.tour_id.replace(
+
+[00:33.55] NOTIFY:  time to execute run.atwork_subtour_frequency : 0.088 seconds
+[00:33.68] INFO: #run_model running step atwork_subtour_destination
+[00:33.69] DEBUG: Running chunkless with 26 choosers
+[00:33.79] DEBUG: Running chunkless with 502 choosers
+[00:34.02] DEBUG: Running chunkless with 26 choosers
+[00:34.03] NOTIFY:  time to execute run.atwork_subtour_destination : 0.402 seconds
+[00:34.16] INFO: #run_model running step atwork_subtour_scheduling
+[00:34.17] INFO: Running atwork_subtour_scheduling with 26 tours
+[00:34.23] DEBUG: Running chunkless with 25 choosers
+[00:34.23] DEBUG: Running chunkless with 25 choosers
+[00:34.26] DEBUG: Running chunkless with 1 choosers
+[00:34.27] DEBUG: Running chunkless with 1 choosers
+[00:34.30] NOTIFY:  time to execute run.atwork_subtour_scheduling : 0.184 seconds
+[00:34.43] INFO: #run_model running step atwork_subtour_mode_choice
+[00:34.44] INFO: Running atwork_subtour_mode_choice with 26 subtours
+[00:34.53] DEBUG: Running chunkless with 26 choosers
+[00:34.76] NOTIFY:  time to execute run.atwork_subtour_mode_choice : 0.368 seconds
+[00:34.90] INFO: #run_model running step stop_frequency
+[00:34.96] INFO: stop_frequency running segment work with 72 chooser rows
+[00:34.97] DEBUG: Running chunkless with 72 choosers
+[00:34.99] INFO: stop_frequency running segment school with 44 chooser rows
+[00:35.00] DEBUG: Running chunkless with 44 choosers
+[00:35.01] INFO: stop_frequency running segment univ with 1 chooser rows
+[00:35.01] DEBUG: Running chunkless with 1 choosers
+[00:35.02] INFO: stop_frequency running segment social with 7 chooser rows
+[00:35.03] DEBUG: Running chunkless with 7 choosers
+[00:35.04] INFO: stop_frequency running segment shopping with 31 chooser rows
+[00:35.05] DEBUG: Running chunkless with 31 choosers
+[00:35.06] INFO: stop_frequency running segment eatout with 11 chooser rows
+[00:35.07] DEBUG: Running chunkless with 11 choosers
+[00:35.08] INFO: stop_frequency running segment escort with 33 chooser rows
+[00:35.09] DEBUG: Running chunkless with 33 choosers
+[00:35.10] INFO: stop_frequency running segment othmaint with 6 chooser rows
+[00:35.11] DEBUG: Running chunkless with 6 choosers
+[00:35.13] INFO: stop_frequency running segment othdiscr with 13 chooser rows
+[00:35.13] DEBUG: Running chunkless with 13 choosers
+[00:35.15] INFO: stop_frequency running segment atwork with 26 chooser rows
+[00:35.15] DEBUG: Running chunkless with 26 choosers
+[00:35.17] NOTIFY:  time to execute run.stop_frequency : 0.319 seconds
+[00:35.32] INFO: #run_model running step trip_purpose
+primary_purpose
+work        72
+school      44
+escort      33
+shopping    31
+atwork      26
+othdiscr    13
+eatout      11
+social       7
+othmaint     6
+univ         1
+business     0
+eat          0
+home         0
+maint        0
+Name: count, dtype: int64
+[00:35.32] INFO: assign purpose to 244 last outbound trips
+primary_purpose
+work        72
+school      44
+escort      33
+shopping    31
+atwork      26
+othdiscr    13
+eatout      11
+social       7
+othmaint     6
+univ         1
+business     0
+eat          0
+home         0
+maint        0
+Name: count, dtype: int64
+home        218
+work         26
+atwork        0
+business      0
+eat           0
+eatout        0
+escort        0
+maint         0
+othdiscr      0
+othmaint      0
+school        0
+shopping      0
+social        0
+univ          0
+Name: count, dtype: int64
+[00:35.32] INFO: assign purpose to 244 last inbound trips
+[00:35.32] INFO: assign purpose to 140 intermediate trips
+[00:35.33] DEBUG: Running chunkless with 140 choosers
+escort      33
+shopping    29
+othmaint    26
+eatout      18
+othdiscr    12
+social      11
+work        11
+atwork       0
+business     0
+eat          0
+home         0
+maint        0
+school       0
+univ         0
+Name: count, dtype: int64
+[00:35.34] NOTIFY:  time to execute run.trip_purpose : 0.074 seconds
+[00:35.46] INFO: #run_model running step trip_destination
+[00:35.47] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/pydantic/_internal/_decorators_v1.py:148: FutureWarning: Use of the field `DESTINATION_SAMPLE_SPEC` in the trip_destination configuration file is deprecated, use just `SAMPLE_SPEC` instead (currently both are given).
+  return validator(values)
+
+[00:35.47] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/pydantic/_internal/_decorators_v1.py:148: FutureWarning: Use of the field `DESTINATION_SPEC` in the trip_destination configuration file is deprecated, use just `SPEC` instead (currently both are given).
+  return validator(values)
+
+[00:35.49] INFO: choose_trip_destination trip_destination.trip_num_1.atwork with 2 trips
+[00:35.50] DEBUG: Running chunkless with 2 choosers
+[00:35.60] DEBUG: Running chunkless with 18 choosers
+[00:35.83] DEBUG: Running chunkless with 18 choosers
+[00:36.01] DEBUG: Running chunkless with 2 choosers
+[00:36.02] INFO: choose_trip_destination trip_destination.trip_num_1.eatout with 1 trips
+[00:36.02] DEBUG: Running chunkless with 1 choosers
+[00:36.12] DEBUG: Running chunkless with 4 choosers
+[00:36.34] DEBUG: Running chunkless with 4 choosers
+[00:36.52] DEBUG: Running chunkless with 1 choosers
+[00:36.53] INFO: choose_trip_destination trip_destination.trip_num_1.escort with 9 trips
+[00:36.54] DEBUG: Running chunkless with 9 choosers
+[00:36.63] DEBUG: Running chunkless with 170 choosers
+[00:36.87] DEBUG: Running chunkless with 170 choosers
+[00:37.06] DEBUG: Running chunkless with 9 choosers
+[00:37.07] INFO: choose_trip_destination trip_destination.trip_num_1.othdiscr with 8 trips
+[00:37.08] DEBUG: Running chunkless with 8 choosers
+[00:37.17] DEBUG: Running chunkless with 160 choosers
+[00:37.41] DEBUG: Running chunkless with 160 choosers
+[00:37.62] DEBUG: Running chunkless with 8 choosers
+[00:37.63] INFO: choose_trip_destination trip_destination.trip_num_1.othmaint with 3 trips
+[00:37.63] DEBUG: Running chunkless with 3 choosers
+[00:37.73] DEBUG: Running chunkless with 70 choosers
+[00:37.97] DEBUG: Running chunkless with 70 choosers
+[00:38.16] DEBUG: Running chunkless with 3 choosers
+[00:38.17] INFO: choose_trip_destination trip_destination.trip_num_1.school with 21 trips
+[00:38.17] DEBUG: Running chunkless with 21 choosers
+[00:38.28] DEBUG: Running chunkless with 465 choosers
+[00:38.53] DEBUG: Running chunkless with 465 choosers
+[00:38.74] DEBUG: Running chunkless with 21 choosers
+[00:38.75] INFO: choose_trip_destination trip_destination.trip_num_1.shopping with 20 trips
+[00:38.75] DEBUG: Running chunkless with 20 choosers
+[00:38.85] DEBUG: Running chunkless with 391 choosers
+[00:39.10] DEBUG: Running chunkless with 391 choosers
+[00:39.32] DEBUG: Running chunkless with 20 choosers
+[00:39.33] INFO: choose_trip_destination trip_destination.trip_num_1.social with 3 trips
+[00:39.33] DEBUG: Running chunkless with 3 choosers
+[00:39.42] DEBUG: Running chunkless with 69 choosers
+[00:39.67] DEBUG: Running chunkless with 69 choosers
+[00:39.86] DEBUG: Running chunkless with 3 choosers
+[00:39.87] INFO: choose_trip_destination trip_destination.trip_num_1.work with 38 trips
+[00:39.87] DEBUG: Running chunkless with 38 choosers
+[00:39.98] DEBUG: Running chunkless with 870 choosers
+[00:40.23] DEBUG: Running chunkless with 870 choosers
+[00:40.44] DEBUG: Running chunkless with 38 choosers
+[00:40.46] INFO: choose_trip_destination trip_destination.trip_num_2.atwork with 1 trips
+[00:40.47] DEBUG: Running chunkless with 1 choosers
+[00:40.56] DEBUG: Running chunkless with 2 choosers
+[00:40.78] DEBUG: Running chunkless with 2 choosers
+[00:40.95] DEBUG: Running chunkless with 1 choosers
+[00:40.96] INFO: choose_trip_destination trip_destination.trip_num_2.escort with 3 trips
+[00:40.96] DEBUG: Running chunkless with 3 choosers
+[00:41.06] DEBUG: Running chunkless with 63 choosers
+[00:41.28] DEBUG: Running chunkless with 63 choosers
+[00:41.46] DEBUG: Running chunkless with 3 choosers
+[00:41.47] INFO: choose_trip_destination trip_destination.trip_num_2.othdiscr with 1 trips
+[00:41.48] DEBUG: Running chunkless with 1 choosers
+[00:41.57] DEBUG: Running chunkless with 21 choosers
+[00:41.81] DEBUG: Running chunkless with 21 choosers
+[00:42.00] DEBUG: Running chunkless with 1 choosers
+[00:42.01] INFO: choose_trip_destination trip_destination.trip_num_2.school with 4 trips
+[00:42.02] DEBUG: Running chunkless with 4 choosers
+[00:42.23] DEBUG: Running chunkless with 84 choosers
+[00:42.48] DEBUG: Running chunkless with 84 choosers
+[00:42.67] DEBUG: Running chunkless with 4 choosers
+[00:42.68] INFO: choose_trip_destination trip_destination.trip_num_2.shopping with 6 trips
+[00:42.69] DEBUG: Running chunkless with 6 choosers
+[00:42.78] DEBUG: Running chunkless with 98 choosers
+[00:43.02] DEBUG: Running chunkless with 98 choosers
+[00:43.21] DEBUG: Running chunkless with 6 choosers
+[00:43.22] INFO: choose_trip_destination trip_destination.trip_num_2.work with 14 trips
+[00:43.23] DEBUG: Running chunkless with 14 choosers
+[00:43.32] DEBUG: Running chunkless with 339 choosers
+[00:43.57] DEBUG: Running chunkless with 339 choosers
+[00:43.78] DEBUG: Running chunkless with 14 choosers
+[00:43.81] INFO: choose_trip_destination trip_destination.trip_num_3.escort with 2 trips
+[00:43.81] DEBUG: Running chunkless with 2 choosers
+[00:43.90] DEBUG: Running chunkless with 49 choosers
+[00:44.14] DEBUG: Running chunkless with 49 choosers
+[00:44.32] DEBUG: Running chunkless with 2 choosers
+[00:44.33] INFO: choose_trip_destination trip_destination.trip_num_3.shopping with 1 trips
+[00:44.34] DEBUG: Running chunkless with 1 choosers
+[00:44.43] DEBUG: Running chunkless with 25 choosers
+[00:44.65] DEBUG: Running chunkless with 25 choosers
+[00:44.84] DEBUG: Running chunkless with 1 choosers
+[00:44.85] INFO: choose_trip_destination trip_destination.trip_num_3.work with 3 trips
+[00:44.86] DEBUG: Running chunkless with 3 choosers
+[00:44.96] DEBUG: Running chunkless with 65 choosers
+[00:45.19] DEBUG: Running chunkless with 65 choosers
+[00:45.39] DEBUG: Running chunkless with 3 choosers
+[00:45.41] NOTIFY:  time to execute run.trip_destination : 9.984 seconds
+[00:45.54] INFO: #run_model running step trip_purpose_and_destination
+[00:45.54] INFO: trip_purpose_and_destination - no failed trips from prior model run.
+[00:45.54] NOTIFY:  time to execute run.trip_purpose_and_destination : 0.045 seconds
+[00:45.67] INFO: #run_model running step trip_scheduling
+[00:45.68] DEBUG: Running chunkless with 628 choosers
+[00:45.68] INFO: trip_scheduling.i1 scheduling 628 trips within chunk 0
+[00:45.71] INFO: trip_scheduling.i1 7 failed
+[00:45.72] INFO: trip_scheduling.i2 scheduling 21 trips within chunk 0
+[00:45.74] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:45.74] INFO: trip_scheduling.i2 12 failed
+[00:45.74] INFO: trip_scheduling.i3 scheduling 21 trips within chunk 0
+[00:45.77] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py:360: FutureWarning: The behavior of array concatenation with empty entries is deprecated. In a future version, this will no longer exclude empty items when determining the result dtype. To retain the old behavior, exclude the empty entries before the concat operation.
+  choices = pd.concat(result_list)
+
+[00:45.77] INFO: trip_scheduling.i3 10 failed
+[00:45.77] INFO: trip_scheduling.i4 scheduling 15 trips within chunk 0
+[00:45.78] INFO: trip_scheduling.i4 3 failed
+[00:45.78] INFO: trip_scheduling.i5 scheduling 9 trips within chunk 0
+[00:45.79] INFO: trip_scheduling.i5 2 failed
+[00:45.79] INFO: trip_scheduling.i6 scheduling 6 trips within chunk 0
+[00:45.81] INFO: trip_scheduling.i6 0 failed
+[00:45.81] NOTIFY:  time to execute run.trip_scheduling : 0.18 seconds
+[00:45.93] INFO: #run_model running step trip_mode_choice
+[00:45.94] INFO: Running trip_mode_choice with 628 trips
+[00:45.94] INFO: trip_mode_choice tour_type 'atwork' (55 trips)
+[00:46.01] DEBUG: Running chunkless with 55 choosers
+[00:46.20] INFO: trip_mode_choice tour_type 'eatout' (23 trips)
+[00:46.26] DEBUG: Running chunkless with 23 choosers
+[00:46.46] INFO: trip_mode_choice tour_type 'escort' (80 trips)
+[00:46.52] DEBUG: Running chunkless with 80 choosers
+[00:46.72] INFO: trip_mode_choice tour_type 'othdiscr' (35 trips)
+[00:46.80] DEBUG: Running chunkless with 35 choosers
+[00:46.99] INFO: trip_mode_choice tour_type 'othmaint' (15 trips)
+[00:47.06] DEBUG: Running chunkless with 15 choosers
+[00:47.25] INFO: trip_mode_choice tour_type 'school' (113 trips)
+[00:47.32] DEBUG: Running chunkless with 113 choosers
+[00:47.54] INFO: trip_mode_choice tour_type 'shopping' (89 trips)
+[00:47.61] DEBUG: Running chunkless with 89 choosers
+[00:47.81] INFO: trip_mode_choice tour_type 'social' (17 trips)
+[00:47.88] DEBUG: Running chunkless with 17 choosers
+[00:48.07] INFO: trip_mode_choice tour_type 'univ' (2 trips)
+[00:48.14] DEBUG: Running chunkless with 2 choosers
+[00:48.33] INFO: trip_mode_choice tour_type 'work' (199 trips)
+[00:48.40] DEBUG: Running chunkless with 199 choosers
+[00:48.62] NOTIFY:  time to execute run.trip_mode_choice : 2.733 seconds
+[00:48.75] INFO: #run_model running step write_data_dictionary
+[00:48.84] NOTIFY:  time to execute run.write_data_dictionary : 0.13 seconds
+[00:48.97] INFO: #run_model running step write_tables
+[00:48.99] NOTIFY:  time to execute run.write_tables : 0.061 seconds
+[00:49.11] INFO: Time to execute run_model (31 models) : 46.94 seconds (0.8 minutes)
+[00:49.11] INFO: MainProcess high water mark rss: 558_379_008 (558.4 MB) timestamp: 23/10/2026 20:17:40 label:pipeline.run_model write_tables finished
+[00:49.11] INFO: MainProcess high water mark uss: 503_250_944 (503.3 MB) timestamp: 23/10/2026 20:17:40 label:pipeline.run_model write_tables finished
+[00:49.11] INFO: Time to execute all models : 47.357 seconds (0.8 minutes)
+{"exit_code": 0, "elapsed_seconds": 49.7037953120016, "command": ["/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/bin/python", "-B", "-m", "activitysim", "run", "-c", "/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/data/_screening_cache/tbi2019-chunk-cause/config-r2-64-current-reference", "-c", "/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/bundle/configs", "-c", "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/examples/prototype_mtc/configs", "-d", "/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/parity-inputs", "-o", "/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/data/_screening_cache/tbi2019-chunk-cause/r2-64-current-reference"], "peak_child_rss_kib": 1757992, "scope": {"memory.peak": "1812410368", "memory.max": "9663676416", "memory.swap.max": "0", "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"}}

@@ -1,0 +1,92 @@
+{
+  "disabled": [
+    {
+      "trace_label": "trip_scheduling.i1",
+      "row_count": 628,
+      "any_outbound": true,
+      "choices": {
+        "914860870": 18,
+        "914860871": 19
+      },
+      "earliest": {
+        "914860869": 9.0,
+        "914860870": 9.0,
+        "914860871": 9.0
+      }
+    },
+    {
+      "trace_label": "trip_scheduling.i2",
+      "row_count": 21,
+      "any_outbound": true,
+      "choices": {
+        "914860871": 19
+      },
+      "earliest": {
+        "914860869": null,
+        "914860870": null,
+        "914860871": null
+      }
+    },
+    {
+      "trace_label": "trip_scheduling.i3",
+      "row_count": 21,
+      "any_outbound": true,
+      "choices": {
+        "914860871": 19
+      },
+      "earliest": {
+        "914860869": null,
+        "914860870": null,
+        "914860871": null
+      }
+    },
+    {
+      "trace_label": "trip_scheduling.i4",
+      "row_count": 15,
+      "any_outbound": false,
+      "choices": {
+        "914860869": 16,
+        "914860870": 18,
+        "914860871": 19
+      },
+      "earliest": {
+        "914860869": 14.0,
+        "914860870": 14.0,
+        "914860871": 14.0
+      }
+    }
+  ],
+  "training": [
+    {
+      "trace_label": "trip_scheduling.i1",
+      "row_count": 5,
+      "any_outbound": true,
+      "choices": {
+        "914860870": 18,
+        "914860871": 19
+      },
+      "earliest": {
+        "914860869": 9.0,
+        "914860870": 9.0,
+        "914860871": 9.0
+      }
+    },
+    {
+      "trace_label": "trip_scheduling.i2",
+      "row_count": 3,
+      "any_outbound": false,
+      "choices": {
+        "914860869": 18,
+        "914860870": 19,
+        "914860871": 19
+      },
+      "earliest": {
+        "914860869": 14.0,
+        "914860870": 14.0,
+        "914860871": 14.0
+      }
+    }
+  ],
+  "first_iteration_probability_rows_equal": true,
+  "logging_decimal_places": 10
+}

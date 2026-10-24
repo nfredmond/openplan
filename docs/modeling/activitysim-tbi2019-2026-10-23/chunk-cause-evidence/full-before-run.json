@@ -1,0 +1,18 @@
+{
+  "households": 1060601,
+  "persons": 2617177,
+  "zones": 634,
+  "arms": [
+    "current",
+    "semcog"
+  ],
+  "prefix_chunk_size": 5500000000,
+  "min_available_chunk_ratio": 0.05,
+  "prefix_mode": "production",
+  "suffix_mode": "disabled",
+  "suffix_chunk_size": 0,
+  "boundary": "trip_purpose_and_destination",
+  "cache_sha256": "365ccfdc636f0662108ea8b930407c0163c501afe5057fc641984fad5b6a16eb",
+  "outcomes_accessed": false,
+  "comparison_boundary": "Each arm independently reports modeled run health. No observations or cross-arm accuracy comparison."
+}

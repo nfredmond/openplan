@@ -1,0 +1,14 @@
+{"run": "fixture", "exit_code": 99}
+...F..
+======================================================================
+FAIL: test_engine_error_remains_failure (__main__.ControllerTests.test_engine_error_remains_failure)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/docs/modeling/activitysim-tbi2019-2026-10-23/chunk-cause-evidence/test-controller.py", line 89, in test_engine_error_remains_failure
+    with self.assertRaisesRegex(RuntimeError, 'Engine failure in fixture'):
+AssertionError: RuntimeError not raised
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.011s
+
+FAILED (failures=1)

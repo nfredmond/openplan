@@ -1,0 +1,25 @@
+...F....
+======================================================================
+FAIL: test_full_input_hash_refuses (__main__.FullTests.test_full_input_hash_refuses)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/docs/modeling/activitysim-tbi2019-2026-10-23/chunk-cause-evidence/test-full.py", line 37, in test_full_input_hash_refuses
+    with self.assertRaisesRegex(RuntimeError,'Frozen input hash mismatch'):full.main()
+                                                                           ^^^^^^^^^^^
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/docs/modeling/activitysim-tbi2019-2026-10-23/chunk-cause-evidence/run-full.py", line 37, in main
+    models = m.yaml.safe_load((m.INPUT / 'bundle/configs/settings.yaml').read_text())['models']
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nathaniel/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/unittest/mock.py", line 1124, in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nathaniel/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/unittest/mock.py", line 1128, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nathaniel/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/unittest/mock.py", line 1183, in _execute_mock_call
+    raise effect
+AssertionError: continued after changed input
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.006s
+
+FAILED (failures=1)

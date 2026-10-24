@@ -1,0 +1,286 @@
+[
+  {
+    "name": "r2-2000-current-prefix",
+    "completed": false,
+    "elapsed_seconds": null,
+    "peak_scope_bytes": null,
+    "peak_process_rss_kib": null,
+    "scope_limit_bytes": null,
+    "scope_swap_max_bytes": null,
+    "memory_events": null,
+    "final_table_rows": null,
+    "outcomes_accessed": false
+  },
+  {
+    "name": "r2-2000-current-reference",
+    "completed": true,
+    "elapsed_seconds": 74.02002392202849,
+    "peak_scope_bytes": "2025746432",
+    "peak_process_rss_kib": 1649596,
+    "scope_limit_bytes": "9663676416",
+    "scope_swap_max_bytes": "0",
+    "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "final_table_rows": {
+      "final_land_use.csv": 634,
+      "final_trips.csv": 17377,
+      "final_households.csv": 2000,
+      "final_persons.csv": 4971,
+      "final_tours.csv": 6763,
+      "final_accessibility.csv": 634,
+      "final_joint_tour_participants.csv": 274
+    },
+    "outcomes_accessed": false
+  },
+  {
+    "name": "r2-64-current-prefix",
+    "completed": true,
+    "elapsed_seconds": 95.01666699000634,
+    "peak_scope_bytes": "1800441856",
+    "peak_process_rss_kib": 1756000,
+    "scope_limit_bytes": "9663676416",
+    "scope_swap_max_bytes": "0",
+    "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "final_table_rows": null,
+    "outcomes_accessed": false
+  },
+  {
+    "name": "r2-64-current-reference",
+    "completed": true,
+    "elapsed_seconds": 49.7037953120016,
+    "peak_scope_bytes": "1812410368",
+    "peak_process_rss_kib": 1757992,
+    "scope_limit_bytes": "9663676416",
+    "scope_swap_max_bytes": "0",
+    "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "final_table_rows": {
+      "final_land_use.csv": 634,
+      "final_trips.csv": 628,
+      "final_households.csv": 64,
+      "final_persons.csv": 166,
+      "final_tours.csv": 244,
+      "final_accessibility.csv": 634,
+      "final_joint_tour_participants.csv": 4
+    },
+    "outcomes_accessed": false
+  },
+  {
+    "name": "r2-64-current-suffix",
+    "completed": true,
+    "elapsed_seconds": 7.322523598006228,
+    "peak_scope_bytes": "332447744",
+    "peak_process_rss_kib": 438908,
+    "scope_limit_bytes": "9663676416",
+    "scope_swap_max_bytes": "0",
+    "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "final_table_rows": {
+      "final_land_use.csv": 634,
+      "final_trips.csv": 628,
+      "final_households.csv": 64,
+      "final_persons.csv": 166,
+      "final_tours.csv": 244,
+      "final_accessibility.csv": 634,
+      "final_joint_tour_participants.csv": 4
+    },
+    "outcomes_accessed": false
+  },
+  {
+    "name": "r2-64-semcog-prefix",
+    "completed": true,
+    "elapsed_seconds": 95.49635056999978,
+    "peak_scope_bytes": "1849520128",
+    "peak_process_rss_kib": 1741108,
+    "scope_limit_bytes": "9663676416",
+    "scope_swap_max_bytes": "0",
+    "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "final_table_rows": null,
+    "outcomes_accessed": false
+  },
+  {
+    "name": "r2-64-semcog-reference",
+    "completed": true,
+    "elapsed_seconds": 49.27200918699964,
+    "peak_scope_bytes": "1801641984",
+    "peak_process_rss_kib": 1761344,
+    "scope_limit_bytes": "9663676416",
+    "scope_swap_max_bytes": "0",
+    "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "final_table_rows": {
+      "final_land_use.csv": 634,
+      "final_trips.csv": 633,
+      "final_households.csv": 64,
+      "final_persons.csv": 166,
+      "final_tours.csv": 244,
+      "final_accessibility.csv": 634,
+      "final_joint_tour_participants.csv": 4
+    },
+    "outcomes_accessed": false
+  },
+  {
+    "name": "r2-64-semcog-suffix",
+    "completed": true,
+    "elapsed_seconds": 6.907478324981639,
+    "peak_scope_bytes": "269979648",
+    "peak_process_rss_kib": 435140,
+    "scope_limit_bytes": "9663676416",
+    "scope_swap_max_bytes": "0",
+    "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "final_table_rows": {
+      "final_land_use.csv": 634,
+      "final_trips.csv": 633,
+      "final_households.csv": 64,
+      "final_persons.csv": 166,
+      "final_tours.csv": 244,
+      "final_accessibility.csv": 634,
+      "final_joint_tour_participants.csv": 4
+    },
+    "outcomes_accessed": false
+  },
+  {
+    "name": "r3-2000-current-prefix",
+    "completed": true,
+    "elapsed_seconds": 273.638451034989,
+    "peak_scope_bytes": "1897353216",
+    "peak_process_rss_kib": 1761492,
+    "scope_limit_bytes": "9663676416",
+    "scope_swap_max_bytes": "0",
+    "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "final_table_rows": null,
+    "outcomes_accessed": false
+  },
+  {
+    "name": "r3-2000-current-suffix",
+    "completed": true,
+    "elapsed_seconds": 12.136079458985478,
+    "peak_scope_bytes": "413745152",
+    "peak_process_rss_kib": 505724,
+    "scope_limit_bytes": "9663676416",
+    "scope_swap_max_bytes": "0",
+    "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "final_table_rows": {
+      "final_land_use.csv": 634,
+      "final_trips.csv": 17377,
+      "final_households.csv": 2000,
+      "final_persons.csv": 4971,
+      "final_tours.csv": 6763,
+      "final_accessibility.csv": 634,
+      "final_joint_tour_participants.csv": 274
+    },
+    "outcomes_accessed": false
+  },
+  {
+    "name": "r3-2000-semcog-prefix",
+    "completed": true,
+    "elapsed_seconds": 273.2756198459829,
+    "peak_scope_bytes": "1920765952",
+    "peak_process_rss_kib": 1760384,
+    "scope_limit_bytes": "9663676416",
+    "scope_swap_max_bytes": "0",
+    "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "final_table_rows": null,
+    "outcomes_accessed": false
+  },
+  {
+    "name": "r3-2000-semcog-reference",
+    "completed": true,
+    "elapsed_seconds": 75.15351232598186,
+    "peak_scope_bytes": "1969500160",
+    "peak_process_rss_kib": 1755772,
+    "scope_limit_bytes": "9663676416",
+    "scope_swap_max_bytes": "0",
+    "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "final_table_rows": {
+      "final_land_use.csv": 634,
+      "final_trips.csv": 17464,
+      "final_households.csv": 2000,
+      "final_persons.csv": 4971,
+      "final_tours.csv": 6764,
+      "final_accessibility.csv": 634,
+      "final_joint_tour_participants.csv": 274
+    },
+    "outcomes_accessed": false
+  },
+  {
+    "name": "r3-2000-semcog-suffix",
+    "completed": true,
+    "elapsed_seconds": 11.922563425003318,
+    "peak_scope_bytes": "416735232",
+    "peak_process_rss_kib": 509060,
+    "scope_limit_bytes": "9663676416",
+    "scope_swap_max_bytes": "0",
+    "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "final_table_rows": {
+      "final_land_use.csv": 634,
+      "final_trips.csv": 17464,
+      "final_households.csv": 2000,
+      "final_persons.csv": 4971,
+      "final_tours.csv": 6764,
+      "final_accessibility.csv": 634,
+      "final_joint_tour_participants.csv": 274
+    },
+    "outcomes_accessed": false
+  },
+  {
+    "name": "r3-64-current-prefix",
+    "completed": true,
+    "elapsed_seconds": 92.98004366498208,
+    "peak_scope_bytes": "1806684160",
+    "peak_process_rss_kib": 1756712,
+    "scope_limit_bytes": "9663676416",
+    "scope_swap_max_bytes": "0",
+    "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "final_table_rows": null,
+    "outcomes_accessed": false
+  },
+  {
+    "name": "r3-64-current-suffix",
+    "completed": true,
+    "elapsed_seconds": 7.267605792003451,
+    "peak_scope_bytes": "329330688",
+    "peak_process_rss_kib": 440420,
+    "scope_limit_bytes": "9663676416",
+    "scope_swap_max_bytes": "0",
+    "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "final_table_rows": {
+      "final_land_use.csv": 634,
+      "final_trips.csv": 628,
+      "final_households.csv": 64,
+      "final_persons.csv": 166,
+      "final_tours.csv": 244,
+      "final_accessibility.csv": 634,
+      "final_joint_tour_participants.csv": 4
+    },
+    "outcomes_accessed": false
+  },
+  {
+    "name": "r3-64-semcog-prefix",
+    "completed": true,
+    "elapsed_seconds": 91.73583514100756,
+    "peak_scope_bytes": "1798529024",
+    "peak_process_rss_kib": 1760800,
+    "scope_limit_bytes": "9663676416",
+    "scope_swap_max_bytes": "0",
+    "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "final_table_rows": null,
+    "outcomes_accessed": false
+  },
+  {
+    "name": "r3-64-semcog-suffix",
+    "completed": true,
+    "elapsed_seconds": 7.405328275024658,
+    "peak_scope_bytes": "349499392",
+    "peak_process_rss_kib": 441636,
+    "scope_limit_bytes": "9663676416",
+    "scope_swap_max_bytes": "0",
+    "memory_events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "final_table_rows": {
+      "final_land_use.csv": 634,
+      "final_trips.csv": 633,
+      "final_households.csv": 64,
+      "final_persons.csv": 166,
+      "final_tours.csv": 244,
+      "final_accessibility.csv": 634,
+      "final_joint_tour_participants.csv": 4
+    },
+    "outcomes_accessed": false
+  }
+]
