@@ -1,0 +1,79 @@
+{
+  "controls": [
+    {
+      "name": "full-comment",
+      "file": "run-full.py",
+      "harmless": true,
+      "exit_code": 0,
+      "accepted": true
+    },
+    {
+      "name": "full-status",
+      "file": "run-full.py",
+      "harmless": false,
+      "exit_code": 1,
+      "accepted": true
+    },
+    {
+      "name": "full-cache",
+      "file": "run-full.py",
+      "harmless": false,
+      "exit_code": 1,
+      "accepted": true
+    },
+    {
+      "name": "full-choice",
+      "file": "run-full.py",
+      "harmless": false,
+      "exit_code": 1,
+      "accepted": true
+    },
+    {
+      "name": "full-input",
+      "file": "run-full.py",
+      "harmless": false,
+      "exit_code": 1,
+      "accepted": true
+    },
+    {
+      "name": "full-census",
+      "file": "run-full.py",
+      "harmless": false,
+      "exit_code": 1,
+      "accepted": true
+    },
+    {
+      "name": "health-comment",
+      "file": "modeled-health.py",
+      "harmless": true,
+      "exit_code": 0,
+      "accepted": true
+    },
+    {
+      "name": "health-denominator",
+      "file": "modeled-health.py",
+      "harmless": false,
+      "exit_code": 1,
+      "accepted": true
+    },
+    {
+      "name": "health-period",
+      "file": "modeled-health.py",
+      "harmless": false,
+      "exit_code": 1,
+      "accepted": true
+    },
+    {
+      "name": "health-home-county",
+      "file": "modeled-health.py",
+      "harmless": false,
+      "exit_code": 1,
+      "accepted": true
+    }
+  ],
+  "source_sha256": {
+    "run-full.py": "9f9cd6289d5d88459f00b262c67608890d4dfe68be1b5f46bea072650bd37742",
+    "modeled-health.py": "6e8b9d6e109668dda44521b122efed90a9838e023f79ed730a3a61175546d1f7"
+  },
+  "restored_exactly": true
+}

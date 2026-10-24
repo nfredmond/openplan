@@ -1,0 +1,76 @@
+{
+  "status": "failed_exact_parity",
+  "arm": "current",
+  "mode": "training",
+  "full_runs_authorized_by_parity": false,
+  "models_replayed": false,
+  "comparator_sha256": "bd38b016bebf650662d572315ce9effa12afa043832c4505a737c716d4dc8d15",
+  "prior_instrument_failure_sha256": "13ef62e224408d7dc6296706eeae8b679ea06f7df9066b819027a4291a07f773",
+  "actual_chunking": {
+    "chunk_log_records": 414,
+    "largest_chunk_ordinal": 21
+  },
+  "final_files": {
+    "disabled": {
+      "final_land_use.csv": {
+        "sha256": "a74feed4d6ceeab4c953c5ed3b48cafc0805b24c80f825d196f361ac092ccb94",
+        "bytes": 98859
+      },
+      "final_trips.csv": {
+        "sha256": "bbc3cdeaa6642e696bff344162e9ee6ede08df409b93bb3b0e842312c43feddb",
+        "bytes": 68808
+      },
+      "final_households.csv": {
+        "sha256": "85bf209013f8fc331ec1aa20f316572cf729cbc55d89e3d03daec6836c861d4e",
+        "bytes": 9210
+      },
+      "final_persons.csv": {
+        "sha256": "f7196c08e76cc70f9ed59b3baea3badaddcd7c23e62a5073bdf19d97efdc9b89",
+        "bytes": 51070
+      },
+      "final_tours.csv": {
+        "sha256": "c6bf0a48627618ab688941c7ffcbe6ebbeda6246a106879397157faf5597dd26",
+        "bytes": 36513
+      },
+      "final_accessibility.csv": {
+        "sha256": "68a89df0318674b3610ea77e4dcf681b4fcf339d6e17de89cb3b125478d56139",
+        "bytes": 101276
+      },
+      "final_joint_tour_participants.csv": {
+        "sha256": "d632b4c07234c7c4e574929e07e393eb0baafae212a7cf9473d9608f301a95a5",
+        "bytes": 220
+      }
+    },
+    "training": {
+      "final_land_use.csv": {
+        "sha256": "a74feed4d6ceeab4c953c5ed3b48cafc0805b24c80f825d196f361ac092ccb94",
+        "bytes": 98859
+      },
+      "final_trips.csv": {
+        "sha256": "1bea2aec0d1578c823ff90d2ffb6e80eee45d2bb12daf08b6d6e8cf578280ebe",
+        "bytes": 68809
+      },
+      "final_households.csv": {
+        "sha256": "85bf209013f8fc331ec1aa20f316572cf729cbc55d89e3d03daec6836c861d4e",
+        "bytes": 9210
+      },
+      "final_persons.csv": {
+        "sha256": "f7196c08e76cc70f9ed59b3baea3badaddcd7c23e62a5073bdf19d97efdc9b89",
+        "bytes": 51070
+      },
+      "final_tours.csv": {
+        "sha256": "c6bf0a48627618ab688941c7ffcbe6ebbeda6246a106879397157faf5597dd26",
+        "bytes": 36513
+      },
+      "final_accessibility.csv": {
+        "sha256": "68a89df0318674b3610ea77e4dcf681b4fcf339d6e17de89cb3b125478d56139",
+        "bytes": 101276
+      },
+      "final_joint_tour_participants.csv": {
+        "sha256": "d632b4c07234c7c4e574929e07e393eb0baafae212a7cf9473d9608f301a95a5",
+        "bytes": 220
+      }
+    }
+  },
+  "error": "Exact final-table parity failed: final_trips.csv\nDataFrame.iloc[:, 8] (column name=\"destination_logsum\") are different\n\nDataFrame.iloc[:, 8] (column name=\"destination_logsum\") values are different (0.31847 %)\n[index]: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, ...]\n[left]:  [nan, nan, nan, nan, nan, nan, nan, 7.236385795238496, nan, nan, -0.04111463470075254, 1.5387358811899654, nan, nan, 12.398883975929609, 11.568718504604343, nan, nan, 1.9707283862708855, nan, 12.350759240095687, 15.485415495122435, 15.840172878805848, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, 11.950560672325942, nan, nan, nan, nan, nan, 10.341958374608915, nan, nan, 9.22006821369241, nan, nan, nan, nan, 10.669859549737293, nan, nan, nan, nan, nan, nan, nan, nan, nan, 2.388749270307461, nan, nan, nan, nan, nan, 15.16508307838671, nan, nan, nan, nan, nan, 9.511779823670965, nan, nan, nan, nan, nan, nan, 10.161989494767468, nan, nan, 7.140733182434206, 7.822179971079002, nan, nan, nan, nan, nan, nan, nan, nan, 2.317798976899184, nan, 2.3064801348842474, nan, nan, nan, nan, ...]\n[right]: [nan, nan, nan, nan, nan, nan, nan, 7.236385795238496, nan, nan, -0.04111463470075254, 1.5387358811899652, nan, nan, 12.398883975929609, 11.568718504604343, nan, nan, 1.9707283862708855, nan, 12.350759240095687, 15.485415495122435, 15.840172878805848, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, nan, 11.950560672325942, nan, nan, nan, nan, nan, 10.341958374608915, nan, nan, 9.22006821369241, nan, nan, nan, nan, 10.669859549737293, nan, nan, nan, nan, nan, nan, nan, nan, nan, 2.388749270307461, nan, nan, nan, nan, nan, 15.16508307838671, nan, nan, nan, nan, nan, 9.511779823670965, nan, nan, nan, nan, nan, nan, 10.161989494767468, nan, nan, 7.140733182434206, 7.822179971079002, nan, nan, nan, nan, nan, nan, nan, nan, 2.317798976899184, nan, 2.3064801348842474, nan, nan, nan, nan, ...]"
+}

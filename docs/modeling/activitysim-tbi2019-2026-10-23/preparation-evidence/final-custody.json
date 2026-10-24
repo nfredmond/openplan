@@ -1,0 +1,21 @@
+{
+  "base": "ccfd7f77ac0b2dba94de322b46547ac1ad07a546",
+  "source_sha256": {
+    "scripts/modeling/population_source_profiles.v1.json": "c54111b7438bce87c2c260af68b7eef55a41c24ed8856747b6fb3f0c917ddac5",
+    "scripts/modeling/activitysim_mtc_inputs.py": "be08d16b619759492821e0eb73403251f75d6c4c550d2562197352f9faab9376",
+    "scripts/modeling/tbi2019_tours.py": "0bece9a6f5e703caad4be42706688dad2b70a172d83c8a40a418d1e0fde1b681",
+    "scripts/modeling/tbi2019_crosswalk.v1.json": "a3d79234117e7335a4cf3fd0f082df6bb6b9534d982f3ccaa78b367cabe83ab6",
+    "openplan/supabase/migrations/20261023224145_population_profile_2019.sql": "980cf2b07ab7d61a67e24a70b5274e5ea18d59b0a6b497f682b1459e4b07646f"
+  },
+  "historical_study_files_unchanged": [
+    "PREREGISTRATION.md",
+    "PREREGISTRATION.sha256",
+    "SPLIT.json",
+    "SPLIT.sha256",
+    "RESULT.md",
+    "SOURCE.md",
+    "VERIFICATION.md"
+  ],
+  "prior_profiles_unchanged": true,
+  "mutation_sources_match_restored_hashes": true
+}

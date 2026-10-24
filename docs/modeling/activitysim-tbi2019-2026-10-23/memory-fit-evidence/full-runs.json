@@ -1,0 +1,26 @@
+[
+  {
+    "arm": "current",
+    "completion": "failed",
+    "output": "/home/nathaniel/.t3/worktrees/openplan/t3-7ed7ca64/data/_screening_cache/tbi2019-memory-fit/full-current",
+    "tour_count": null,
+    "trip_count": null,
+    "mode_shares_MODELED": null,
+    "final_files": {},
+    "outcomes_accessed": false,
+    "stopped_stage": "prefix",
+    "error": "Stage failed: full-current-prefix"
+  },
+  {
+    "arm": "semcog",
+    "completion": "failed",
+    "output": "/home/nathaniel/.t3/worktrees/openplan/t3-7ed7ca64/data/_screening_cache/tbi2019-memory-fit/full-semcog",
+    "tour_count": null,
+    "trip_count": null,
+    "mode_shares_MODELED": null,
+    "final_files": {},
+    "outcomes_accessed": false,
+    "stopped_stage": "prefix",
+    "error": "Stage failed: full-semcog-prefix"
+  }
+]

@@ -1,0 +1,16 @@
+{
+  "archive_path": "/home/nathaniel/.t3/worktrees/openplan/t3-8dddce31/data/_screening_cache/tbi2019-convergence/tbi2019-inputs.population-corrected.tar.gz",
+  "sha256": "0465298da115a6de40d23c26d7c21de273be2d48266f76f80813780a7c45d6c2",
+  "bytes": 2783118248,
+  "files": 593,
+  "inventory_sha256": "8d1f58dd71c129c0bd90e912d9952d86aeb6f8958c9cbd91d73d2cfa6756e92f",
+  "parent_archive_sha256": "81fe67cc0ad74454dfd5a94c21d2497e6236c4958e7581e1f6babaff5d1fafd7",
+  "parent_members_verified": 516,
+  "retired_old_checkpoint_members": [
+    "inputs/population-fit.checkpoint.json",
+    "inputs/population-fit.checkpoint.pkl"
+  ],
+  "claim": "public inputs only; parity pending; no frozen opening",
+  "outcomes_included": false,
+  "modeled_outputs_included": false
+}

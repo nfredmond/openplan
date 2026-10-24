@@ -1,0 +1,19 @@
+{
+  "status": "passed",
+  "cache_sha256": "3258b6ecd69d9a9e73e4d0b411a65a6e63308e7fe797d0f65dcc6634a29d7761",
+  "input_hashes": {
+    "inputs-2000/households.csv": "f1205ffdd559219840a79069577adb4e4521794b84362b582ccae352fae17937",
+    "inputs-2000/persons.csv": "31bfa830651903ba58592add1d39f63a855626580926dc58f5b87678437d8611",
+    "inputs-2000/land_use.csv": "1273cb4ef2e2e4eb38160ebc1f7f6503949537261929a4cb768e82a5bbba95c3",
+    "inputs-20000/households.csv": "3e8114ac13b6bba8c30d7a134f945ae1aaa7931c0a8cca4b1a8d4aa0f60a2621",
+    "inputs-20000/persons.csv": "52e6e4605ea286c2c1b8cca78d723958c641fe38cc2b4e05b7df12bbb4512be1",
+    "inputs-20000/land_use.csv": "1273cb4ef2e2e4eb38160ebc1f7f6503949537261929a4cb768e82a5bbba95c3",
+    "inputs-full/households.csv": "8a766adcff95079eb984d5f56f72fbff2f6353ae419568c4f124dc843864bed9",
+    "inputs-full/persons.csv": "d7f038bf22ee3350b0ea47d36a2ec88f59dbfc1c56db357746e16e8c0ea87f6c",
+    "inputs-full/land_use.csv": "1273cb4ef2e2e4eb38160ebc1f7f6503949537261929a4cb768e82a5bbba95c3"
+  },
+  "households": 1060601,
+  "persons": 2617177,
+  "zones": 634,
+  "outcomes_accessed": false
+}

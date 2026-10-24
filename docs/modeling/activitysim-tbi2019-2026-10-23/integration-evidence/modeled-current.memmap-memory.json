@@ -1,0 +1,11 @@
+{
+  "arm": "current",
+  "completion": "failed",
+  "reason": "run controller did not retain a terminal model receipt",
+  "exit_code": -15,
+  "scope_properties": "Result=oom-kill\nMemoryPeak=6442450944\nMemoryMax=6442450944\nMemorySwapMax=0\n",
+  "tour_count": null,
+  "mode_counts_MODELED": null,
+  "mode_shares_MODELED": null,
+  "outcomes_accessed": false
+}

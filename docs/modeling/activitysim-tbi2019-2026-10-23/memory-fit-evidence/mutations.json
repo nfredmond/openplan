@@ -1,0 +1,49 @@
+{
+  "controls": [
+    {
+      "name": "harmless-comment",
+      "expected": "survive",
+      "exit_code": 0,
+      "accepted": true
+    },
+    {
+      "name": "cache-coverage",
+      "expected": "assertion_failure",
+      "exit_code": 1,
+      "accepted": true
+    },
+    {
+      "name": "input-custody",
+      "expected": "assertion_failure",
+      "exit_code": 1,
+      "accepted": true
+    },
+    {
+      "name": "final-file-custody",
+      "expected": "assertion_failure",
+      "exit_code": 1,
+      "accepted": true
+    },
+    {
+      "name": "cache-custody",
+      "expected": "assertion_failure",
+      "exit_code": 1,
+      "accepted": true
+    },
+    {
+      "name": "proof-status",
+      "expected": "assertion_failure",
+      "exit_code": 1,
+      "accepted": true
+    },
+    {
+      "name": "choice-parity",
+      "expected": "assertion_failure",
+      "exit_code": 1,
+      "accepted": true
+    }
+  ],
+  "source_restored": true,
+  "source_sha256": "d85464c6e8bb3c124e615dde1c494b78d7cbf66762f5ff86f478c17fe30a78d0",
+  "blind_category": "Synthetic admission fixtures do not establish engine choices, full memory fit, or scientific accuracy."
+}

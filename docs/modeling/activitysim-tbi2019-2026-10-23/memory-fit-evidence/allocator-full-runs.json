@@ -1,0 +1,26 @@
+[
+  {
+    "arm": "current",
+    "completion": "failed",
+    "output": "/home/nathaniel/.t3/worktrees/openplan/t3-7ed7ca64/data/_screening_cache/tbi2019-memory-fit/alloc-full-current",
+    "tour_count": null,
+    "trip_count": null,
+    "mode_shares_MODELED": null,
+    "final_files": {},
+    "outcomes_accessed": false,
+    "stopped_stage": "prefix",
+    "error": "Stage failed: alloc-full-current-prefix"
+  },
+  {
+    "arm": "semcog",
+    "completion": "failed",
+    "output": "/home/nathaniel/.t3/worktrees/openplan/t3-7ed7ca64/data/_screening_cache/tbi2019-memory-fit/alloc-full-semcog",
+    "tour_count": null,
+    "trip_count": null,
+    "mode_shares_MODELED": null,
+    "final_files": {},
+    "outcomes_accessed": false,
+    "stopped_stage": "prefix",
+    "error": "Stage failed: alloc-full-semcog-prefix"
+  }
+]

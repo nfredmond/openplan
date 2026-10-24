@@ -1,0 +1,15 @@
+{
+  "status": "stopped_owned_scope_after_cache_coverage_failure",
+  "scope": "tbi-hybrid-r2-2000-current-prefix.scope",
+  "missing_cache_warnings": [
+    "[03:14.27] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/chunk.py:892: UserWarning: ActivitySim is running with a chunk_training_mode of 'production' but initial_row_size is zero in mandatory_tour_scheduling.vectorize_tour_scheduling.tour_2.univ",
+    "[03:29.28] WARNING: /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/chunk.py:892: UserWarning: ActivitySim is running with a chunk_training_mode of 'production' but initial_row_size is zero in joint_tour_scheduling.vectorize_joint_tour_scheduling.tour_2"
+  ],
+  "exit_code": -15,
+  "terminal_memory_receipt": "unavailable after operator stop; do not infer a measured peak",
+  "choice_comparison": "not_run",
+  "suffix": "not_run",
+  "full_arms": "not_run",
+  "next_action": "Train native prefix cache on the frozen 2000-household input, then repeat all four hybrid comparisons with that frozen cache. No source patch or guard relaxation.",
+  "outcomes_accessed": false
+}

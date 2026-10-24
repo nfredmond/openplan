@@ -1,0 +1,31 @@
+{
+  "status": "completed",
+  "files": {
+    "network.json": {
+      "sha256": "2c795992c6e3d4fc021c8f5749bc775be5f43ec643773113ff87e5da6fefba53",
+      "bytes": 966709
+    },
+    "work/network_setup_summary.json": {
+      "sha256": "031f70d27af7940755273ec602c2950e8f56be2b6c310aed1075322711cf9be9",
+      "bytes": 966537
+    },
+    "run_output/travel_time_skims.omx": {
+      "sha256": "4751bb6cd1d2b5dc72d6cfde792e3d633c324a601a8f356391e328e5f03067aa",
+      "bytes": 6714987
+    }
+  },
+  "properties": {
+    "network_source": "OpenStreetMap",
+    "network_downloaded_at": "2026-10-23T23:25:48.924479+00:00",
+    "zones_connected": 712,
+    "nodes_before_centroids": 231080,
+    "links_before_centroids": 311276,
+    "largest_component_pct": 98.83,
+    "project_dir": "data/_screening_cache/tbi2019-integration/highway-get/work/aeq_project",
+    "node_id_strategy": "preserve_osm_ids",
+    "internal_zone_count": 704,
+    "external_zone_count": 8,
+    "historical_osm_timestamp": "2019-10-08T12:00:00Z",
+    "historical_limit": "OSM database state, not independently verified road opening dates or measured period speeds"
+  }
+}

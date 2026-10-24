@@ -11,6 +11,8 @@ import io
 import json
 import math
 import re
+import shutil
+import tempfile
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -26,6 +28,7 @@ ROLES = {"households": "households.csv", "persons": "persons.csv", "selected_zon
 BASIS_FIELDS = frozenset({"schema", "source_profile", "universe", "exclusions", "selected_zone_map", "files", "realized_zone_counts", "published_all_person_totals", "custody", "caveats"})
 CAVEAT = "One retained household-resident realization; group quarters are excluded and unassessed. Shared inputs do not establish full population coverage, scientific accuracy or local behavioral calibration."
 SYNTHESIS_METHOD = "acs_pums_seed_iterative_proportional_updating"
+SYNTHESIS_METHODS = frozenset({SYNTHESIS_METHOD, "acs_pums_seed_entropy_balancing"})
 
 
 class CommonPopulationError(ValueError):
@@ -131,16 +134,27 @@ def selected_zone_map(zone_rows: Sequence[Mapping[str, Any]]) -> list[dict[str, 
     return sorted(zones, key=lambda row: row["zone_id"])
 
 
-def _regular_bytes(path: Path) -> bytes:
+def _require_regular(path: Path) -> None:
     absolute = path.absolute()
     if any(part.is_symlink() for part in (absolute, *absolute.parents)) or not path.is_file():
         raise CommonPopulationError(f"Expected a regular file without symlink components: {path.name}")
+    return None
+
+
+def _regular_bytes(path: Path) -> bytes:
+    _require_regular(path)
     return path.read_bytes()
 
 
 def file_descriptor(path: Path, *, relative_path: str | None = None) -> dict[str, Any]:
-    data = _regular_bytes(path)
-    return {"path": relative_path or path.name, "sha256": hashlib.sha256(data).hexdigest(), "bytes": len(data)}
+    _require_regular(path)
+    digest = hashlib.sha256()
+    size = 0
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+            size += len(block)
+    return {"path": relative_path or path.name, "sha256": digest.hexdigest(), "bytes": size}
 
 
 def _descriptor(value: Any, path: str) -> dict[str, Any]:
@@ -168,17 +182,26 @@ def _rows(data: bytes, required: frozenset[str]) -> list[dict[str, Any]]:
         fields = reader.fieldnames or []
         if len(set(fields)) != len(fields) or set(fields) != required:
             raise CommonPopulationError("Unknown retained roster row schema.")
-        rows = list(reader)
-        if any(None in row or any(value is None for value in row.values()) for row in rows):
-            raise CommonPopulationError("Retained CSV row length differs from its declared schema.")
+        rows = []
+        # Reuse identical low-cardinality source strings without changing values.
+        shared = {key: {} for key in ("source_geoid", "seed_household_id", "synthesis_method", "esr", "schg", "wkhp")}
+        for row in reader:
+            if None in row or any(value is None for value in row.values()):
+                raise CommonPopulationError("Retained CSV row length differs from its declared schema.")
+            for key, pool in shared.items():
+                if key in row:
+                    row[key] = pool.setdefault(row[key], row[key])
+            rows.append(row)
         return rows
     except UnicodeDecodeError as exc:
         raise CommonPopulationError("Retained roster must be UTF-8 CSV.") from exc
 
 
-def realized_zone_counts(households: Sequence[Mapping[str, Any]], persons: Sequence[Mapping[str, Any]], zones: Sequence[Mapping[str, Any]]) -> list[dict[str, int]]:
+def realized_zone_counts(households: Sequence[Mapping[str, Any]], persons: Sequence[Mapping[str, Any]], zones: Sequence[Mapping[str, Any]], *, synthesis_method: str = SYNTHESIS_METHOD) -> list[dict[str, int]]:
     """Check every roster join before deriving engine-compatible actual totals."""
     import census_pums as cp
+    if synthesis_method not in SYNTHESIS_METHODS:
+        raise CommonPopulationError("Unknown retained population synthesis method.")
 
     zone_index = {z["zone_id"]: z for z in zones}
     counts = {zone_id: {"zone_id": zone_id, "households": 0, "persons": 0, "workers": 0} for zone_id in zone_index}
@@ -202,7 +225,7 @@ def realized_zone_counts(households: Sequence[Mapping[str, Any]], persons: Seque
             raise CommonPopulationError("Duplicate household or impossible declared worker count.")
         if (not isinstance(row["seed_household_id"], str) or not row["seed_household_id"]
                 or any(ord(char) < 32 for char in row["seed_household_id"])
-                or row["synthesis_method"] != SYNTHESIS_METHOD):
+                or row["synthesis_method"] != synthesis_method):
             raise CommonPopulationError("Household source identity/method is missing.")
         by_household[row["household_id"]] = row
         counts[row["home_zone_id"]]["households"] += 1
@@ -224,13 +247,13 @@ def realized_zone_counts(households: Sequence[Mapping[str, Any]], persons: Seque
         if household is None or any(row[key] != household[key] for key in ("home_zone_id", "source_geoid", "seed_household_id", "synthesis_method")):
             raise CommonPopulationError("Person does not join its exact household/zone/source.")
         person_ids.add(row["person_id"])
-        members[row["household_id"]].append(row)
+        members[row["household_id"]].append((row["person_num"], row["is_worker"]))
         counts[row["home_zone_id"]]["persons"] += 1
         counts[row["home_zone_id"]]["workers"] += row["is_worker"]
     for key, household in by_household.items():
         people = members[key]
-        if (len(people) != household["persons"] or sum(p["is_worker"] for p in people) != household["workers"]
-                or sorted(p["person_num"] for p in people) != list(range(1, len(people) + 1))):
+        if (len(people) != household["persons"] or sum(p[1] for p in people) != household["workers"]
+                or sorted(p[0] for p in people) != list(range(1, len(people) + 1))):
             raise CommonPopulationError("Declared household roster/count differs from actual persons.")
     return [counts[key] for key in sorted(counts)]
 
@@ -280,48 +303,55 @@ def retain_population(directory: Path, zone_rows: Sequence[Mapping[str, Any]], r
     profile = validate_source_profile(source_profile)
     zones = selected_zone_map(zone_rows)
     _profile_matches_provenance(profile, result["provenance"])
-    counts = realized_zone_counts(result["households"], result["persons"], zones)
+    counts = realized_zone_counts(result["households"], result["persons"], zones, synthesis_method=result["method"])
     source_controls = result.get("source_controls")
     if not isinstance(source_controls, dict) or set(source_controls.get("raw_by_geoid", {})) != {z["GEOID"] for z in zones if z["population_role"] == UNIVERSE}:
         raise CommonPopulationError("Actual raw source controls must cover every selected internal zone.")
     diagnostics = {key: result[key] for key in ("provenance", "source_controls", "fit_quality", "fit_grading_note", "dropped_controls", "zone_fits", "method")}
     diagnostics["school_inputs"] = result.get("school_inputs")
-    if diagnostics["method"] != SYNTHESIS_METHOD:
+    if diagnostics["method"] not in SYNTHESIS_METHODS:
         raise CommonPopulationError("Unknown retained population synthesis method.")
     _reject_credentials(diagnostics)
-    diagnostics_data = _canonical(diagnostics)
-    source_manifest_data = _regular_bytes(Path(source_manifest_path))
-    _reject_credentials(_json(source_manifest_data))
-    source_zones_data = _regular_bytes(Path(zone_attributes_path))
-    # Bind the retained CSV map too, not merely the caller's in-memory map.
-    if selected_zone_map(list(csv.DictReader(io.StringIO(source_zones_data.decode("utf-8"))))) != zones:
-        raise CommonPopulationError("Source zone CSV differs from selected-zone map.")
-    if directory.exists() or directory.is_symlink():
-        raise CommonPopulationError("Common population directory must be new; replacement is not supported.")
-    if any(part.is_symlink() for part in (directory.absolute().parent, *directory.absolute().parents)):
-        raise CommonPopulationError("Population directory cannot use symlink components.")
-    directory.mkdir(parents=True)
-    for role, rows, fields in (("households", result["households"], HOUSEHOLD_FIELDS), ("persons", result["persons"], PERSON_FIELDS)):
-        # Preserve realized row order and values; only a new CSV's columns use
-        # an explicit stable schema. Existing bytes are never normalized.
-        with (directory / ROLES[role]).open("x", newline="", encoding="utf-8") as handle:
-            writer = csv.DictWriter(handle, fieldnames=sorted(fields))
-            writer.writeheader()
-            writer.writerows(rows)
-    (directory / ROLES["selected_zones"]).write_bytes(_canonical(zones))
-    (directory / ROLES["diagnostics"]).write_bytes(diagnostics_data)
-    (directory / ROLES["source_manifest"]).write_bytes(source_manifest_data)
-    (directory / ROLES["source_zone_attributes"]).write_bytes(source_zones_data)
-    files = {role: file_descriptor(directory / path) for role, path in ROLES.items()}
-    basis = {"schema": SCHEMA, "source_profile": profile, "universe": UNIVERSE, "exclusions": EXCLUSIONS,
-             "selected_zone_map": files["selected_zones"], "files": files, "realized_zone_counts": counts,
-             "published_all_person_totals": {geoid: cells.get("B01003_001E") for geoid, cells in source_controls["raw_by_geoid"].items()},
-             "custody": "supplied_artifacts_not_producer_authenticated", "caveats": [CAVEAT]}
-    (directory / MANIFEST_NAME).write_bytes(_canonical(basis))
-    return file_descriptor(directory / MANIFEST_NAME)
+    # Validate and spool the same canonical bytes before materialization. Full
+    # fit-weight diagnostics can exceed a gigabyte; do not duplicate that string.
+    with tempfile.TemporaryFile(mode="w+", encoding="utf-8", newline="") as diagnostics_file:
+        json.dump(diagnostics, diagnostics_file, sort_keys=True, separators=(",", ":"),
+                  ensure_ascii=True, allow_nan=False)
+        diagnostics_file.write("\n")
+        source_manifest_data = _regular_bytes(Path(source_manifest_path))
+        _reject_credentials(_json(source_manifest_data))
+        source_zones_data = _regular_bytes(Path(zone_attributes_path))
+        # Bind the retained CSV map too, not merely the caller's in-memory map.
+        if selected_zone_map(list(csv.DictReader(io.StringIO(source_zones_data.decode("utf-8"))))) != zones:
+            raise CommonPopulationError("Source zone CSV differs from selected-zone map.")
+        if directory.exists() or directory.is_symlink():
+            raise CommonPopulationError("Common population directory must be new; replacement is not supported.")
+        if any(part.is_symlink() for part in (directory.absolute().parent, *directory.absolute().parents)):
+            raise CommonPopulationError("Population directory cannot use symlink components.")
+        directory.mkdir(parents=True)
+        for role, rows, fields in (("households", result["households"], HOUSEHOLD_FIELDS), ("persons", result["persons"], PERSON_FIELDS)):
+            # Preserve realized row order and values; only a new CSV's columns use
+            # an explicit stable schema. Existing bytes are never normalized.
+            with (directory / ROLES[role]).open("x", newline="", encoding="utf-8") as handle:
+                writer = csv.DictWriter(handle, fieldnames=sorted(fields))
+                writer.writeheader()
+                writer.writerows(rows)
+        (directory / ROLES["selected_zones"]).write_bytes(_canonical(zones))
+        diagnostics_file.seek(0)
+        with (directory / ROLES["diagnostics"]).open("w", encoding="utf-8", newline="") as handle:
+            shutil.copyfileobj(diagnostics_file, handle)
+        (directory / ROLES["source_manifest"]).write_bytes(source_manifest_data)
+        (directory / ROLES["source_zone_attributes"]).write_bytes(source_zones_data)
+        files = {role: file_descriptor(directory / path) for role, path in ROLES.items()}
+        basis = {"schema": SCHEMA, "source_profile": profile, "universe": UNIVERSE, "exclusions": EXCLUSIONS,
+                 "selected_zone_map": files["selected_zones"], "files": files, "realized_zone_counts": counts,
+                 "published_all_person_totals": {geoid: cells.get("B01003_001E") for geoid, cells in source_controls["raw_by_geoid"].items()},
+                 "custody": "supplied_artifacts_not_producer_authenticated", "caveats": [CAVEAT]}
+        (directory / MANIFEST_NAME).write_bytes(_canonical(basis))
+        return file_descriptor(directory / MANIFEST_NAME)
 
 
-def read_common_population(directory: Path, *, expected_manifest: Mapping[str, Any], zone_rows: Sequence[Mapping[str, Any]], expected_source_manifest: Mapping[str, Any] | None = None, expected_zone_attributes: Mapping[str, Any] | None = None) -> dict[str, Any]:
+def read_common_population(directory: Path, *, expected_manifest: Mapping[str, Any], zone_rows: Sequence[Mapping[str, Any]], expected_source_manifest: Mapping[str, Any] | None = None, expected_zone_attributes: Mapping[str, Any] | None = None, include_zone_fits: bool = True) -> dict[str, Any]:
     """Verify expected manifest bytes and every file before consuming rows.
 
     Source descriptors, when supplied, refer to original retained input bytes,
@@ -337,7 +367,11 @@ def read_common_population(directory: Path, *, expected_manifest: Mapping[str, A
     files = basis.get("files")
     if not isinstance(files, dict) or set(files) != set(ROLES):
         raise CommonPopulationError("Retained population requires exactly its declared file roles.")
-    payloads = {role: _checked_bytes(directory, files[role], path) for role, path in ROLES.items()}
+    payloads = {role: _checked_bytes(directory, files[role], path)
+                for role, path in ROLES.items() if role != "diagnostics"}
+    diagnostic_descriptor = _descriptor(files["diagnostics"], ROLES["diagnostics"])
+    diagnostic_path = directory / ROLES["diagnostics"]
+    _require_regular(diagnostic_path)
     for expected, role in ((expected_source_manifest, "source_manifest"), (expected_zone_attributes, "source_zone_attributes")):
         if expected is not None:
             _descriptor(dict(expected), ROLES[role])
@@ -350,11 +384,17 @@ def read_common_population(directory: Path, *, expected_manifest: Mapping[str, A
         raise CommonPopulationError("Selected-zone map identity differs from retained realization.")
     if selected_zone_map(list(csv.DictReader(io.StringIO(payloads["source_zone_attributes"].decode("utf-8"))))) != zones:
         raise CommonPopulationError("Retained source CSV map differs from selected zones.")
-    diagnostics = _json(payloads["diagnostics"])
+    from streamed_json_object import read_object
+    try:
+        diagnostics = read_object(diagnostic_path, decode=_json, validate=_reject_credentials,
+                                  discard_arrays=frozenset() if include_zone_fits else frozenset({"zone_fits"}),
+                                  expected_file=diagnostic_descriptor)
+    except (ValueError, UnicodeDecodeError) as exc:
+        raise CommonPopulationError(str(exc)) from exc
     _reject_credentials(diagnostics)
     source_manifest = _json(payloads["source_manifest"])
     _reject_credentials(source_manifest)
-    if diagnostics["method"] != SYNTHESIS_METHOD:
+    if diagnostics["method"] not in SYNTHESIS_METHODS:
         raise CommonPopulationError("Unknown retained population synthesis method.")
     _profile_matches_provenance(profile, diagnostics["provenance"])
     raw_controls = diagnostics["source_controls"]["raw_by_geoid"]
@@ -362,9 +402,9 @@ def read_common_population(directory: Path, *, expected_manifest: Mapping[str, A
         raise CommonPopulationError("Raw controls do not cover the selected zones.")
     if basis.get("published_all_person_totals") != {g: cells.get("B01003_001E") for g, cells in raw_controls.items()}:
         raise CommonPopulationError("Published all-person metadata differs from raw controls.")
-    households = _rows(payloads["households"], HOUSEHOLD_FIELDS)
-    persons = _rows(payloads["persons"], PERSON_FIELDS)
-    counts = realized_zone_counts(households, persons, zones)
+    households = _rows(payloads.pop("households"), HOUSEHOLD_FIELDS)
+    persons = _rows(payloads.pop("persons"), PERSON_FIELDS)
+    counts = realized_zone_counts(households, persons, zones, synthesis_method=diagnostics["method"])
     declared_counts = basis.get("realized_zone_counts")
     if not isinstance(declared_counts, list):
         raise CommonPopulationError("Realized zone counts must be a list.")

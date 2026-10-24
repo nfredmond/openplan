@@ -59,6 +59,14 @@ const SPECIALIZED_REQUIREMENTS_BY_SCRIPT = new Map([
     path.join(MODELING_DIR, "mandatory_tour_frequency_acceptance.py"),
     ACTIVITYSIM_EXEC_REQUIREMENTS,
   ],
+  [
+    path.join(MODELING_DIR, "activitysim_walk_transfer.py"),
+    ACTIVITYSIM_EXEC_REQUIREMENTS,
+  ],
+  [
+    path.join(MODELING_DIR, "prepare_activitysim_walk_transfer.py"),
+    ACTIVITYSIM_EXEC_REQUIREMENTS,
+  ],
 ]);
 
 /**
@@ -81,12 +89,12 @@ const LOCAL_MODULE_DIRS = [
  * reviewer question — "is this really stdlib?" — which is the point.
  */
 const PYTHON_STDLIB = new Set([
-  "__future__", "argparse", "collections", "concurrent", "contextlib", "copy", "csv",
+  "__future__", "argparse", "bisect", "codecs", "collections", "concurrent", "contextlib", "copy", "csv",
   "dataclasses", "datetime", "decimal", "functools", "gzip", "hashlib", "importlib", "io",
   "inspect", "itertools", "json", "logging", "math", "os", "pathlib", "platform", "random", "re",
   "shlex", "shutil", "sqlite3", "statistics", "string", "subprocess", "sys",
   "tempfile", "textwrap", "time", "traceback", "types", "typing", "unittest",
-  "urllib", "uuid", "warnings", "zipfile",
+  "urllib", "uuid", "warnings", "zipfile", "zoneinfo",
 ]);
 
 /**
@@ -177,6 +185,13 @@ function declaredDistributions(requirements: string, visited = new Set<string>()
   return declared;
 }
 
+/**
+ * Import names that differ from their PyPI distribution names. Each entry is
+ * checked against the requirements file like any other module, so the alias
+ * still fails when the distribution is missing.
+ */
+const IMPORT_DISTRIBUTION_ALIASES = new Map([["yaml", "pyyaml"]]);
+
 describe("the modeling requirements cover what the modeling code imports", () => {
   it("lists every third-party module scripts/modeling imports", () => {
     const local = localModuleNames();
@@ -196,7 +211,8 @@ describe("the modeling requirements cover what the modeling code imports", () =>
         const absoluteFile = path.join(REPO_ROOT, relativeFile);
         const requirements =
           SPECIALIZED_REQUIREMENTS_BY_SCRIPT.get(absoluteFile) ?? COUNTY_REQUIREMENTS;
-        if (declarationsFor(requirements).has(module.toLowerCase())) continue;
+        const distribution = IMPORT_DISTRIBUTION_ALIASES.get(module) ?? module.toLowerCase();
+        if (declarationsFor(requirements).has(distribution)) continue;
         missing.push(
           `${module} (imported by ${relativeFile}) is not in ${path.relative(REPO_ROOT, requirements)} — ` +
             `add it there, map the script to its real runtime, or add it to PYTHON_STDLIB if it is standard library`

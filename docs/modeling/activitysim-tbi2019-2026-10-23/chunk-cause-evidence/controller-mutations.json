@@ -1,0 +1,48 @@
+{
+  "controls": [
+    {
+      "name": "harmless-comment",
+      "harmless": true,
+      "exit_code": 0,
+      "accepted": true
+    },
+    {
+      "name": "input-refusal",
+      "harmless": false,
+      "exit_code": 1,
+      "accepted": true
+    },
+    {
+      "name": "cache-refusal",
+      "harmless": false,
+      "exit_code": 1,
+      "accepted": true
+    },
+    {
+      "name": "choice-stop",
+      "harmless": false,
+      "exit_code": 1,
+      "accepted": true
+    },
+    {
+      "name": "engine-refusal",
+      "harmless": false,
+      "exit_code": 1,
+      "accepted": true
+    },
+    {
+      "name": "reference-custody",
+      "harmless": false,
+      "exit_code": 1,
+      "accepted": true
+    },
+    {
+      "name": "complete-census",
+      "harmless": false,
+      "exit_code": 1,
+      "accepted": true
+    }
+  ],
+  "source_sha256": "d20b814d8041b3763a40a4b15e4bf849c2938ce41ef870acd6a26e908ce68da8",
+  "restored_exactly": true
+}

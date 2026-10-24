@@ -1,0 +1,383 @@
+{
+  "logs": [
+    {
+      "raw_name": "alloc-2000-current-prefix.engine.log",
+      "raw_bytes": 942531,
+      "raw_sha256": "c3d13509cb29b3ba39496b01169e14b81731dc04e6d4c882da4670eb737e2b8b",
+      "compressed_name": "alloc-2000-current-prefix.engine.log.gz",
+      "compressed_bytes": 48730,
+      "compressed_sha256": "2b6f1218f4b00a018c594c14ee0dc032780f73e13d94f4cc5da0b01688de358f",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "alloc-2000-current-prefix.memory.jsonl",
+      "raw_bytes": 281990,
+      "raw_sha256": "e5652cdea4b9277384e03cd2fff272634814ab72934f7650d774074c57ecf719",
+      "compressed_name": "alloc-2000-current-prefix.memory.jsonl.gz",
+      "compressed_bytes": 16561,
+      "compressed_sha256": "5c08d8d3bef5dfd3d568dd4636600e63cead04036e4102f7bb901cc8dfdfd0c1",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "alloc-2000-current-suffix.engine.log",
+      "raw_bytes": 66156,
+      "raw_sha256": "38dcee5c4373f040cb0e12949c45cf4d139728d0c1d5505fa0970acc9c6f7a03",
+      "compressed_name": "alloc-2000-current-suffix.engine.log.gz",
+      "compressed_bytes": 4362,
+      "compressed_sha256": "484b216035921cd4445af0365402887e03a3bcf9937786dd30f0ab4bcdd6b16d",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "alloc-2000-current-suffix.memory.jsonl",
+      "raw_bytes": 19587,
+      "raw_sha256": "34afd66b2ef8869ed0dea67e2f1ab8188753cbb5e7dca185335b297a03462831",
+      "compressed_name": "alloc-2000-current-suffix.memory.jsonl.gz",
+      "compressed_bytes": 2120,
+      "compressed_sha256": "a66af4bc1fd711e43e2dd4ba6f10326919b3f6bb25dbebad99e710e09766b6fd",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "alloc-2000-semcog-prefix.engine.log",
+      "raw_bytes": 942535,
+      "raw_sha256": "242599f56bf63c4f52edec1751718378cd8db972add35272e8ff5d9070e40fba",
+      "compressed_name": "alloc-2000-semcog-prefix.engine.log.gz",
+      "compressed_bytes": 48609,
+      "compressed_sha256": "8bf0898b661755e0caf64e678c5452b37c7e003e06a0298ef4abea06e1262137",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "alloc-2000-semcog-prefix.memory.jsonl",
+      "raw_bytes": 279969,
+      "raw_sha256": "92ed64ce7df84e7ff521ec23002ac9916a52ca3fcab7b09c7f752c69a8bb397d",
+      "compressed_name": "alloc-2000-semcog-prefix.memory.jsonl.gz",
+      "compressed_bytes": 15970,
+      "compressed_sha256": "46a0d0d05cf2c35e31fbc670dce49cf81e7db20da21a032f1f2b7e4eb6f0872d",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "alloc-2000-semcog-suffix.engine.log",
+      "raw_bytes": 66153,
+      "raw_sha256": "ec3865cd28bec569cc5832daa7e8ed0e1e10f94f0d227704a5555579b0062ea5",
+      "compressed_name": "alloc-2000-semcog-suffix.engine.log.gz",
+      "compressed_bytes": 4347,
+      "compressed_sha256": "c1f9bee359e05a22c6d649bc0f42dddc5213a75d945bbc289f9321bd620aa3b0",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "alloc-2000-semcog-suffix.memory.jsonl",
+      "raw_bytes": 19422,
+      "raw_sha256": "d284a90373a975aa5761b00299ebe491c0dc30c6831c25ae99e5417d5845db54",
+      "compressed_name": "alloc-2000-semcog-suffix.memory.jsonl.gz",
+      "compressed_bytes": 2030,
+      "compressed_sha256": "ba0ccd5e0d49b5ffe5beb6b5a15d4a8b52dc5d51ce19f68e8f16cf2467194f85",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "alloc-full-current-prefix.engine.log",
+      "raw_bytes": 5509784,
+      "raw_sha256": "e0c24ccee9c1f74b2d5238e996217e0a64eb429a45a8499000193cce11cfbb29",
+      "compressed_name": "alloc-full-current-prefix.engine.log.gz",
+      "compressed_bytes": 189859,
+      "compressed_sha256": "39435a9954ee628f79399060585e558c7c147bb20929afa8958ff5828d856bb6",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "alloc-full-current-prefix.memory.jsonl",
+      "raw_bytes": 1500091,
+      "raw_sha256": "faa7f8c9e59bcbda587c0eea616202ac0712d41bf371a6b4afebef2e87aa72eb",
+      "compressed_name": "alloc-full-current-prefix.memory.jsonl.gz",
+      "compressed_bytes": 76361,
+      "compressed_sha256": "95ab7d5507250bf4c893cc1a05e1c03de872066ea570cd93431866c789d4dd70",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "alloc-full-semcog-prefix.engine.log",
+      "raw_bytes": 5509780,
+      "raw_sha256": "bedb3482ed4ec3cf07321e167fff5ad1ee1a19312aba59a9c820b9357cefcf57",
+      "compressed_name": "alloc-full-semcog-prefix.engine.log.gz",
+      "compressed_bytes": 188816,
+      "compressed_sha256": "ef777df6d62cf6b7070a3870d4a12fa65a931b5bac15abe221a5272486ba0c31",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "alloc-full-semcog-prefix.memory.jsonl",
+      "raw_bytes": 1451080,
+      "raw_sha256": "d668b0f3cd4575e9022678faac54c114e792e50eb12ff7c724d292a21df59e2a",
+      "compressed_name": "alloc-full-semcog-prefix.memory.jsonl.gz",
+      "compressed_bytes": 74301,
+      "compressed_sha256": "051e9369f1ca5c4c21b2c02b6cd56146a3101a6c87e850cae47f8b98c8806c06",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "allocator-full.controller.log",
+      "raw_bytes": 832,
+      "raw_sha256": "39398a2fef3bdb67a2d3609d44137cbdfd3c56586f9db810a3de7cb5c5ed7307",
+      "compressed_name": "allocator-full.controller.log.gz",
+      "compressed_bytes": 296,
+      "compressed_sha256": "881eb87d78392e6b897c7eb814c464b72c031cb22c172cdbd808d1887cda790b",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "fit-2000-current-prefix.engine.log",
+      "raw_bytes": 942540,
+      "raw_sha256": "42cabfd64f35ac2bc69a421a14725accf0dda598397ebcdcd41c3dc91ee8b5bb",
+      "compressed_name": "fit-2000-current-prefix.engine.log.gz",
+      "compressed_bytes": 48646,
+      "compressed_sha256": "1530ba4a23e116ac14efb5304c1e7a4becfd70f71780bd54a8ef4d02ff17900c",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "fit-2000-current-prefix.memory.jsonl",
+      "raw_bytes": 277954,
+      "raw_sha256": "72458ea28126189a03da0a8393d2345e2425928a942d407bd793a42ac06020d7",
+      "compressed_name": "fit-2000-current-prefix.memory.jsonl.gz",
+      "compressed_bytes": 16332,
+      "compressed_sha256": "6ee67cbfca01daa6378126142975eea7d6ef8ad0f7d7b9db566497328597b6b2",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "fit-2000-current-suffix.engine.log",
+      "raw_bytes": 66156,
+      "raw_sha256": "2caac8d4ff4f04b87f83ce8fb8dd014854f1e7b0d24457a780c6e074bad52778",
+      "compressed_name": "fit-2000-current-suffix.engine.log.gz",
+      "compressed_bytes": 4358,
+      "compressed_sha256": "8babe87562f43a5809b2c0818e4340697b4adc739a332c457405e853499e1d5f",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "fit-2000-current-suffix.memory.jsonl",
+      "raw_bytes": 19583,
+      "raw_sha256": "55afcf052ecda8bf3cd80076d4eea5a58908716fe98bf9e7dd7ed38991d8e5c1",
+      "compressed_name": "fit-2000-current-suffix.memory.jsonl.gz",
+      "compressed_bytes": 2092,
+      "compressed_sha256": "b736368365c691d67b5bd6ffdefd34ab2df993a53139b556e81f09088fac5580",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "fit-2000-semcog-prefix.engine.log",
+      "raw_bytes": 942548,
+      "raw_sha256": "1a4d93efb7082316c089b74787e7993f3e33036aa879de26ae870b1f66728322",
+      "compressed_name": "fit-2000-semcog-prefix.engine.log.gz",
+      "compressed_bytes": 48645,
+      "compressed_sha256": "5fd43cda42fa36da04f469f8149f04c939cc7bc378055d3fdd1cfc497aba9dd0",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "fit-2000-semcog-prefix.memory.jsonl",
+      "raw_bytes": 280299,
+      "raw_sha256": "b8ba84d517fa4098c955a4c148ad0358c7be79f440dca7cfed91445157fe4f99",
+      "compressed_name": "fit-2000-semcog-prefix.memory.jsonl.gz",
+      "compressed_bytes": 16877,
+      "compressed_sha256": "35b6f62ce8a30ded36f2bdb30da609262a947a3716b2e7699e8fea7abbbe3cee",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "fit-2000-semcog-suffix.engine.log",
+      "raw_bytes": 66144,
+      "raw_sha256": "e8caf47364303b944870534a89f73b44f48d1f6c0deac6ff0f86840d92b27bf5",
+      "compressed_name": "fit-2000-semcog-suffix.engine.log.gz",
+      "compressed_bytes": 4384,
+      "compressed_sha256": "cab22e89df06c95291c109bf4b11d41abee1a4a3f5414c7e1a7ed6c7064d37e9",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "fit-2000-semcog-suffix.memory.jsonl",
+      "raw_bytes": 21310,
+      "raw_sha256": "c5cc52be30daf87b32c0efe35d9f2472a7ead97e1888f5a810d2d769d0c0e0ac",
+      "compressed_name": "fit-2000-semcog-suffix.memory.jsonl.gz",
+      "compressed_bytes": 2333,
+      "compressed_sha256": "c695c16a6f96d3771ab39430f48bf0c8ff90c685b236b843baf2625a70a03f44",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "full-current-prefix.engine.log",
+      "raw_bytes": 5509754,
+      "raw_sha256": "8b6c58a9cd1f4c69b13b69ac82eec0ffe058ee5094037929ba8ac818533af613",
+      "compressed_name": "full-current-prefix.engine.log.gz",
+      "compressed_bytes": 166926,
+      "compressed_sha256": "49cfb1f2135254f7f9d4134bccd5b37fb1471c34cd72bfc310ebe4e9f81d7798",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "full-current-prefix.memory.jsonl",
+      "raw_bytes": 1366642,
+      "raw_sha256": "8762cdbee01c62f2e5827095401163110e9acb93bb5fa5aec6cb8e525bdd3cd8",
+      "compressed_name": "full-current-prefix.memory.jsonl.gz",
+      "compressed_bytes": 56658,
+      "compressed_sha256": "fadfeafaa0a993a5f134130cc743d28ad60ff11dffc98678360d617e39ee4921",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "full-semcog-prefix.engine.log",
+      "raw_bytes": 5509750,
+      "raw_sha256": "efb2a71095282a6368c1fd67f1d14c0b6436a696f996bf6b005ef6654330b646",
+      "compressed_name": "full-semcog-prefix.engine.log.gz",
+      "compressed_bytes": 168983,
+      "compressed_sha256": "19282da2ea220aedba55cfeb2a951e937e94002e4f3b7f0e40a8b2cf4b3f2427",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "full-semcog-prefix.memory.jsonl",
+      "raw_bytes": 1322327,
+      "raw_sha256": "f57053e36cbb17f687d3693cd9f4b1e54dadb42575d8a39b68e878809e73933b",
+      "compressed_name": "full-semcog-prefix.memory.jsonl.gz",
+      "compressed_bytes": 55211,
+      "compressed_sha256": "035947f8c7db547c87ba11290708a9e9e04f414ac80c9211caeca8527afe9475",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "full.controller.log",
+      "raw_bytes": 796,
+      "raw_sha256": "d39600e90a53055572c6037abba886c1dc5ed46cef12503c81cbc68f777e9888",
+      "compressed_name": "full.controller.log.gz",
+      "compressed_bytes": 294,
+      "compressed_sha256": "69c517d6214007a6e5bb2cdd23e114176345faaae778ebd109521ae1c7f9734d",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "one-gib-no-split.controller.log",
+      "raw_bytes": 740,
+      "raw_sha256": "17448b492bbfe6c5fb2fedbbb8b996ea3d0c2b01925c1378a6c04294c1f5ca35",
+      "compressed_name": "one-gib-no-split.controller.log.gz",
+      "compressed_bytes": 334,
+      "compressed_sha256": "bd58e9f35c777adb15f22ee9aea5b55a9119dbf99b63286d60f52fd6a729ef94",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "parity-2000-current-prefix.engine.log",
+      "raw_bytes": 565884,
+      "raw_sha256": "31d989d34a7510a00fea084fca057381c09f2b53129887476a2c11d49a9dc11b",
+      "compressed_name": "parity-2000-current-prefix.engine.log.gz",
+      "compressed_bytes": 36400,
+      "compressed_sha256": "90eaf20ed5d4789244839d728e6af93c14acd87e642dff19949ccef1f8031abd",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "parity-2000-current-prefix.memory.jsonl",
+      "raw_bytes": 230320,
+      "raw_sha256": "9c861a1e5de566ca895512170cb308c588f85d8b42bef7b9129819828b95cd93",
+      "compressed_name": "parity-2000-current-prefix.memory.jsonl.gz",
+      "compressed_bytes": 14392,
+      "compressed_sha256": "9a744c1e92bacb7b4462761d3d43c1b7156ef35be340e6c08758b54cb1cc6e56",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "profile-20000-allocator.engine.log",
+      "raw_bytes": 177242,
+      "raw_sha256": "fe58810a349e227b56659d9502db9b304e75bb7013a552700523a3395db2111e",
+      "compressed_name": "profile-20000-allocator.engine.log.gz",
+      "compressed_bytes": 10111,
+      "compressed_sha256": "c050b067eb1351a71333977afebce0d38497b63ef6f9659df37b3bec3705d070",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "profile-20000-allocator.memory.jsonl",
+      "raw_bytes": 140683,
+      "raw_sha256": "a13d207550658e4b236d810a640bbf43e63fbe5d2ec759460e8e3cfa0fc4865e",
+      "compressed_name": "profile-20000-allocator.memory.jsonl.gz",
+      "compressed_bytes": 8795,
+      "compressed_sha256": "73b93f5ccdc633a8fc16e5b3d1f268e36f5b7a5c12ac781684d35f5d7baa389e",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "profile-20000-reduced.engine.log",
+      "raw_bytes": 177201,
+      "raw_sha256": "e335a7758c500d65cb3cedc4558061988e0136cdfe6c7ab1ce8ce26146ff4bb9",
+      "compressed_name": "profile-20000-reduced.engine.log.gz",
+      "compressed_bytes": 10025,
+      "compressed_sha256": "b291b1b97cf947c007b00512225930dd0bf5d150c5cd4daa4ac92738d7f24422",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "profile-20000-reduced.memory.jsonl",
+      "raw_bytes": 144055,
+      "raw_sha256": "6789d6d2a590fc224a2ae803b73bc5277a0b99d8ba1bb6bca280c2b70a59b55d",
+      "compressed_name": "profile-20000-reduced.memory.jsonl.gz",
+      "compressed_bytes": 8285,
+      "compressed_sha256": "5a7731cddcb3ee738d3857328db900e99dafc9a53917755284aad2a573f2c409",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "profile-20000.engine.log",
+      "raw_bytes": 33853,
+      "raw_sha256": "f154f2297f3bafb8f643a766b328bfaf4145b41f3cab2a96ffbe0e87a468cd48",
+      "compressed_name": "profile-20000.engine.log.gz",
+      "compressed_bytes": 4288,
+      "compressed_sha256": "bc014d3f84327a8ebe56d1c7236fe719360e5957547cb5ae47866b041ee03bd4",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "profile-20000.memory.jsonl",
+      "raw_bytes": 65013,
+      "raw_sha256": "eaeb34f07849169f5af280c179d03eb7d0b9a8a44601bb68c2d65451d5e526c4",
+      "compressed_name": "profile-20000.memory.jsonl.gz",
+      "compressed_bytes": 5757,
+      "compressed_sha256": "3c3774c50a98f0e54982bd857913cf8399c9d98274dd1085eb4d93951c877b42",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "profile-allocator.controller.log",
+      "raw_bytes": 52,
+      "raw_sha256": "16d0f7bbc1065a3ce2c18bc44a810bc47870a5bb1cfc56858c664d429cd25d5d",
+      "compressed_name": "profile-allocator.controller.log.gz",
+      "compressed_bytes": 68,
+      "compressed_sha256": "8703b578d1d5b2632e680e26a385bc6813d776c1c80bea23b918e678a0bf4287",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "profile-reduced.controller.log",
+      "raw_bytes": 50,
+      "raw_sha256": "766769fecbdc5234675c22663070e32a9b18aec2bcf9c7777c34345b8fcdfe96",
+      "compressed_name": "profile-reduced.controller.log.gz",
+      "compressed_bytes": 66,
+      "compressed_sha256": "bdaa992e614621ef836ee21c1ed19be8c37bf38ca6f09e8aec6f044f1fbbcccb",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "prove-allocator.controller.log",
+      "raw_bytes": 214,
+      "raw_sha256": "66da9b741fc3be55565fe79138f12c5dbd071f4db4e380e3bcd5804347b29509",
+      "compressed_name": "prove-allocator.controller.log.gz",
+      "compressed_bytes": 93,
+      "compressed_sha256": "58093e0d478f3addec2a4808b7b69e153df67e2c132643fb7b8d9edf4d4889c1",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "prove-fit.controller.log",
+      "raw_bytes": 206,
+      "raw_sha256": "4595d46460ce08e8e7cdea6517b36ee3f576b45f41005127650aff2097a464d2",
+      "compressed_name": "prove-fit.controller.log.gz",
+      "compressed_bytes": 91,
+      "compressed_sha256": "fb7f4f26942000c47a0fbd3d1d100364996e780f54e8a120ab1379a876223ce6",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "train-and-prove.controller.log",
+      "raw_bytes": 740,
+      "raw_sha256": "17448b492bbfe6c5fb2fedbbb8b996ea3d0c2b01925c1378a6c04294c1f5ca35",
+      "compressed_name": "train-and-prove.controller.log.gz",
+      "compressed_bytes": 334,
+      "compressed_sha256": "bd58e9f35c777adb15f22ee9aea5b55a9119dbf99b63286d60f52fd6a729ef94",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "training-2000.engine.log",
+      "raw_bytes": 2497544,
+      "raw_sha256": "c28d5342726b1e97d4e56b6625615d27920ec4aa48d0d8bee95b156037980bbb",
+      "compressed_name": "training-2000.engine.log.gz",
+      "compressed_bytes": 157896,
+      "compressed_sha256": "73f522c0dcac675abf7080279b9918c878f97b1a055e8299b5d0afd27a8cc052",
+      "inflates_byte_identically": true
+    },
+    {
+      "raw_name": "training-2000.memory.jsonl",
+      "raw_bytes": 1219549,
+      "raw_sha256": "79e2181eea1dfa9d45651feee54eea518db67a8454dc66c3a398dd8b824d3f73",
+      "compressed_name": "training-2000.memory.jsonl.gz",
+      "compressed_bytes": 54544,
+      "compressed_sha256": "71724e7dba265c421df7bb4541381f2398a57634ef86e9080f2e1db40612635d",
+      "inflates_byte_identically": true
+    }
+  ],
+  "all_byte_identical": true
+}

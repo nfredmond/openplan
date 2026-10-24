@@ -1,0 +1,44 @@
+[
+  {
+    "name": "comment",
+    "expected": "survive",
+    "exit_code": 0,
+    "expected_observed": true,
+    "restored_sha256": "ab7be79739dced6fc13a0dc8ccbb5682726f44c02b6c81e0bc2eede55cbca86d"
+  },
+  {
+    "name": "request",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "ab7be79739dced6fc13a0dc8ccbb5682726f44c02b6c81e0bc2eede55cbca86d"
+  },
+  {
+    "name": "inventory",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "ab7be79739dced6fc13a0dc8ccbb5682726f44c02b6c81e0bc2eede55cbca86d"
+  },
+  {
+    "name": "hash",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "ab7be79739dced6fc13a0dc8ccbb5682726f44c02b6c81e0bc2eede55cbca86d"
+  },
+  {
+    "name": "size",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "ab7be79739dced6fc13a0dc8ccbb5682726f44c02b6c81e0bc2eede55cbca86d"
+  },
+  {
+    "name": "destination",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "ab7be79739dced6fc13a0dc8ccbb5682726f44c02b6c81e0bc2eede55cbca86d"
+  }
+]

@@ -1,0 +1,36 @@
+{
+  "input_archive_sha256": "0465298da115a6de40d23c26d7c21de273be2d48266f76f80813780a7c45d6c2",
+  "files": {
+    "docs/modeling/activitysim-tbi2019-2026-10-23/convergence-evidence/resume-parity.py": {
+      "sha256": "b9515d377af8341ac8acdd5195e318b4eeb2ad86355206828d097078dff8ec8c",
+      "bytes": 3711
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/convergence-evidence/run-full-arms.py": {
+      "sha256": "055ecb31a77c637b3da078e3af4a4f8da278f8dab37807ea16aa386d481b2738",
+      "bytes": 3965
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/convergence-evidence/scope-runner.py": {
+      "sha256": "0f95f5e5f47f89ca1e38874fed2f402cb3a32231829053fd3f35e1261c3b05a2",
+      "bytes": 840
+    },
+    "scripts/modeling/activitysim_chunk_parity.py": {
+      "sha256": "61833227ca133ec26732209f8aa761519566184863c05ec9023d42c02c8e1a26",
+      "bytes": 2628
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/convergence-evidence/parity-input-freeze.json": {
+      "sha256": "7d9587a21307d9e287b905efb50188135a6f032d35335725deb284e9d98d22f4",
+      "bytes": 5021
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/convergence-evidence/parity-environment.json": {
+      "sha256": "c0c654c9af572cf3af39e7d188ff95e5e47c0f894af079f0c5ecdbcb2a1c743d",
+      "bytes": 37717
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/convergence-evidence/parity-baseline-recovery.json": {
+      "sha256": "f2faed92088dea2cf5020e902993e2fcd7a9d3e7372f289d03eefab878c352ef",
+      "bytes": 3536
+    }
+  },
+  "post_archive_change": "Move stdout capture outside ActivitySim output cleanup; recover completed reference without replay. No input/configuration/engine/coefficient change.",
+  "archived_runner_copies_match_inventory": true,
+  "original_controller_failure_log": "run-parity.log"
+}

@@ -1,0 +1,65 @@
+[
+  {
+    "name": "comment",
+    "expected": "survive",
+    "exit_code": 0,
+    "expected_observed": true,
+    "restored_sha256": "30f71a92dbc632beba124b61c6b7c9baf0d38d5e2fb7686b1c5cdd51baa3a9c0"
+  },
+  {
+    "name": "duplicate-root",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "30f71a92dbc632beba124b61c6b7c9baf0d38d5e2fb7686b1c5cdd51baa3a9c0"
+  },
+  {
+    "name": "semantic-decode",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "30f71a92dbc632beba124b61c6b7c9baf0d38d5e2fb7686b1c5cdd51baa3a9c0"
+  },
+  {
+    "name": "element-policy",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "30f71a92dbc632beba124b61c6b7c9baf0d38d5e2fb7686b1c5cdd51baa3a9c0"
+  },
+  {
+    "name": "root-policy",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "30f71a92dbc632beba124b61c6b7c9baf0d38d5e2fb7686b1c5cdd51baa3a9c0"
+  },
+  {
+    "name": "discard-array",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "30f71a92dbc632beba124b61c6b7c9baf0d38d5e2fb7686b1c5cdd51baa3a9c0"
+  },
+  {
+    "name": "trailing-content",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "30f71a92dbc632beba124b61c6b7c9baf0d38d5e2fb7686b1c5cdd51baa3a9c0"
+  },
+  {
+    "name": "hash",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "30f71a92dbc632beba124b61c6b7c9baf0d38d5e2fb7686b1c5cdd51baa3a9c0"
+  },
+  {
+    "name": "length",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "30f71a92dbc632beba124b61c6b7c9baf0d38d5e2fb7686b1c5cdd51baa3a9c0"
+  }
+]

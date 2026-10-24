@@ -1,0 +1,43 @@
+{
+  "python": "3.11.15",
+  "activitysim": "1.5.1",
+  "numpy": "1.25.2",
+  "pandas": "2.3.3",
+  "sources": {
+    "abm/models/trip_scheduling.py": {
+      "installed_path": "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/trip_scheduling.py",
+      "sha256": "7566b3a9469b9ba02f8b846292e73a615b54113399d7f8081ee6071cebc0a64d",
+      "upstream_url": "https://raw.githubusercontent.com/ActivitySim/activitysim/v1.5.1/activitysim/abm/models/trip_scheduling.py",
+      "upstream_sha256": "7566b3a9469b9ba02f8b846292e73a615b54113399d7f8081ee6071cebc0a64d",
+      "bytes_identical_to_v1_5_1": true
+    },
+    "abm/models/util/probabilistic_scheduling.py": {
+      "installed_path": "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/util/probabilistic_scheduling.py",
+      "sha256": "3c6cec9ced292bd29adeca2695db00d1914bd279e35130faffde5e1ed6f1641b",
+      "upstream_url": "https://raw.githubusercontent.com/ActivitySim/activitysim/v1.5.1/activitysim/abm/models/util/probabilistic_scheduling.py",
+      "upstream_sha256": "3c6cec9ced292bd29adeca2695db00d1914bd279e35130faffde5e1ed6f1641b",
+      "bytes_identical_to_v1_5_1": true
+    },
+    "abm/models/util/trip.py": {
+      "installed_path": "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/abm/models/util/trip.py",
+      "sha256": "b843671c7dd75ddc1e0d33c7193dc2a520e023ec00110c084a725ee89d845203",
+      "upstream_url": "https://raw.githubusercontent.com/ActivitySim/activitysim/v1.5.1/activitysim/abm/models/util/trip.py",
+      "upstream_sha256": "b843671c7dd75ddc1e0d33c7193dc2a520e023ec00110c084a725ee89d845203",
+      "bytes_identical_to_v1_5_1": true
+    },
+    "core/random.py": {
+      "installed_path": "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/random.py",
+      "sha256": "b46078a39ffec43fb0f24f497f65c00148900623926942d94d88d3c0a28a2bf7",
+      "upstream_url": "https://raw.githubusercontent.com/ActivitySim/activitysim/v1.5.1/activitysim/core/random.py",
+      "upstream_sha256": "b46078a39ffec43fb0f24f497f65c00148900623926942d94d88d3c0a28a2bf7",
+      "bytes_identical_to_v1_5_1": true
+    },
+    "core/chunk.py": {
+      "installed_path": "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/core/chunk.py",
+      "sha256": "05601f3058494345bcfdc9ce30337c4c629a4ac4750e4636d29084871a033f9c",
+      "upstream_url": "https://raw.githubusercontent.com/ActivitySim/activitysim/v1.5.1/activitysim/core/chunk.py",
+      "upstream_sha256": "05601f3058494345bcfdc9ce30337c4c629a4ac4750e4636d29084871a033f9c",
+      "bytes_identical_to_v1_5_1": true
+    }
+  }
+}

@@ -1,0 +1,121 @@
+[
+  {
+    "name": "comment",
+    "expected": "survive",
+    "exit_code": 0,
+    "expected_observed": true,
+    "restored_sha256": "dc85827ad8bcf48b1de039842be2885e3dec3349b9593814a5b46ebcc440f1d0"
+  },
+  {
+    "name": "unknown-zone",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "dc85827ad8bcf48b1de039842be2885e3dec3349b9593814a5b46ebcc440f1d0"
+  },
+  {
+    "name": "all-zones",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "dc85827ad8bcf48b1de039842be2885e3dec3349b9593814a5b46ebcc440f1d0"
+  },
+  {
+    "name": "source",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "dc85827ad8bcf48b1de039842be2885e3dec3349b9593814a5b46ebcc440f1d0"
+  },
+  {
+    "name": "conservation",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "dc85827ad8bcf48b1de039842be2885e3dec3349b9593814a5b46ebcc440f1d0"
+  },
+  {
+    "name": "matrix-order",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "dc85827ad8bcf48b1de039842be2885e3dec3349b9593814a5b46ebcc440f1d0"
+  },
+  {
+    "name": "household-exclusion",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "dc85827ad8bcf48b1de039842be2885e3dec3349b9593814a5b46ebcc440f1d0"
+  },
+  {
+    "name": "person-exclusion",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "dc85827ad8bcf48b1de039842be2885e3dec3349b9593814a5b46ebcc440f1d0"
+  },
+  {
+    "name": "duplicate-zone",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "dc85827ad8bcf48b1de039842be2885e3dec3349b9593814a5b46ebcc440f1d0"
+  },
+  {
+    "name": "home-zone",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "dc85827ad8bcf48b1de039842be2885e3dec3349b9593814a5b46ebcc440f1d0"
+  },
+  {
+    "name": "duplicate-household",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "dc85827ad8bcf48b1de039842be2885e3dec3349b9593814a5b46ebcc440f1d0"
+  },
+  {
+    "name": "duplicate-person",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "dc85827ad8bcf48b1de039842be2885e3dec3349b9593814a5b46ebcc440f1d0"
+  },
+  {
+    "name": "existing-destination",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "dc85827ad8bcf48b1de039842be2885e3dec3349b9593814a5b46ebcc440f1d0"
+  },
+  {
+    "name": "no-residents",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "dc85827ad8bcf48b1de039842be2885e3dec3349b9593814a5b46ebcc440f1d0"
+  },
+  {
+    "name": "mapped-parent",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "dc85827ad8bcf48b1de039842be2885e3dec3349b9593814a5b46ebcc440f1d0"
+  },
+  {
+    "name": "matrix-shape",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "dc85827ad8bcf48b1de039842be2885e3dec3349b9593814a5b46ebcc440f1d0"
+  },
+  {
+    "name": "sorted-recode",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "dc85827ad8bcf48b1de039842be2885e3dec3349b9593814a5b46ebcc440f1d0"
+  }
+]

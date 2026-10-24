@@ -1,0 +1,62 @@
+[
+  {
+    "name": "pums-household",
+    "url": "https://www2.census.gov/programs-surveys/acs/data/pums/2019/5-Year/csv_hmn.zip",
+    "resolved_url": "https://www2.census.gov/programs-surveys/acs/data/pums/2019/5-Year/csv_hmn.zip",
+    "http_status": 200,
+    "bytes": 16572586,
+    "sha256": "2613572a32f5d3d741645a90eb1e4acf1c8db426cb17cd71aff3484e06f1aead",
+    "path": "data/_screening_cache/tbi2019-integration/pums-household.response",
+    "retrieved_at": "2026-10-23T23:14:05.705909+00:00"
+  },
+  {
+    "name": "pums-person",
+    "url": "https://www2.census.gov/programs-surveys/acs/data/pums/2019/5-Year/csv_pmn.zip",
+    "resolved_url": "https://www2.census.gov/programs-surveys/acs/data/pums/2019/5-Year/csv_pmn.zip",
+    "http_status": 200,
+    "bytes": 38083222,
+    "sha256": "dd99de9733b0f47c1927801a9b2912330e3fe231c1ef8cc24635e0470609f5eb",
+    "path": "data/_screening_cache/tbi2019-integration/pums-person.response",
+    "retrieved_at": "2026-10-23T23:14:17.540417+00:00"
+  },
+  {
+    "name": "acs-lookup",
+    "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2019/documentation/user_tools/ACS_5yr_Seq_Table_Number_Lookup.txt",
+    "resolved_url": "https://www2.census.gov/programs-surveys/acs/summary_file/2019/documentation/user_tools/ACS_5yr_Seq_Table_Number_Lookup.txt",
+    "http_status": 200,
+    "bytes": 1621211,
+    "sha256": "19687946ed8c7bf8405d613b746de8c9da2ff1909a3b8a730a19d241d1b3ff2b",
+    "path": "data/_screening_cache/tbi2019-integration/acs-lookup.response",
+    "retrieved_at": "2026-10-23T23:13:56.052676+00:00"
+  },
+  {
+    "name": "acs-geography",
+    "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2019/data/5_year_seq_by_state/Minnesota/Tracts_Block_Groups_Only/g20195mn.csv",
+    "resolved_url": "https://www2.census.gov/programs-surveys/acs/summary_file/2019/data/5_year_seq_by_state/Minnesota/Tracts_Block_Groups_Only/g20195mn.csv",
+    "http_status": 200,
+    "bytes": 2296888,
+    "sha256": "f613c10580074c86013f8206e1de282a994153f0fce1144c4a64cdc30f9e877e",
+    "path": "data/_screening_cache/tbi2019-integration/acs-geography.response",
+    "retrieved_at": "2026-10-23T23:13:58.533886+00:00"
+  },
+  {
+    "name": "fare-history-2019",
+    "url": "https://www.leg.mn.gov/docs/2020/mandated/201248.pdf",
+    "resolved_url": "https://www.leg.mn.gov/docs/2020/mandated/201248.pdf",
+    "http_status": 200,
+    "bytes": 3069310,
+    "sha256": "cd82ddf917e61e0b30dccf3f57425b4afbab6b1e40f00877ad14577dcfa34d24",
+    "path": "data/_screening_cache/tbi2019-integration/fare-history-2019.response",
+    "retrieved_at": "2026-10-23T23:14:10.424848+00:00"
+  },
+  {
+    "name": "mvta-cafr2020",
+    "url": "https://www.mvta.com/wp-content/uploads/2025/03/2020.pdf",
+    "resolved_url": "https://www.mvta.com/wp-content/uploads/2025/03/2020.pdf",
+    "http_status": 200,
+    "bytes": 1575153,
+    "sha256": "b6ab4902c9ff3a2f4fd86dc49afff8a29a7ba5bafa7affa8b2c92ac247a77678",
+    "path": "data/_screening_cache/tbi2019-integration/mvta-cafr2020.response",
+    "retrieved_at": "2026-10-23T23:14:07.247380+00:00"
+  }
+]

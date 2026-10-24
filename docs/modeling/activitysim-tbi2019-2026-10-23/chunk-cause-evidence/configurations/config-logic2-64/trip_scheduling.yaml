@@ -1,0 +1,6 @@
+PROBS_SPEC: trip_scheduling_probs.csv
+COEFFICIENTS: trip_scheduling_coefficients.csv
+DEPART_ALT_BASE: 5
+MAX_ITERATIONS: 100
+FAILFIX: choose_most_initial
+logic_version: 2

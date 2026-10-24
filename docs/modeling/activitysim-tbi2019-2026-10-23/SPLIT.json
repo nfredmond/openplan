@@ -1,0 +1,29 @@
+{
+  "schema": "openplan.tbi2019.household-split.v1",
+  "source": "Metropolitan Council TBI 2019 public FeatureServer",
+  "source_household_table": "https://arcgis.metc.state.mn.us/data1/rest/services/society/TBI_2019/FeatureServer/1/query",
+  "roster_fields": ["hh_id", "home_county", "survey_year"],
+  "seed": "openplan-tbi2019-development-20261023-v1",
+  "unit": "household including all persons and diary days",
+  "stratification": "home_county, exact publisher label; null or empty becomes __missing__",
+  "rank": "ascending SHA256 of UTF-8 seed + newline + canonical decimal hh_id; break hash ties by integer hh_id",
+  "held_out_count_per_stratum": "floor(n / 5)",
+  "held_out_assignment": "first floor(n / 5) ranked households",
+  "development_assignment": "all remaining ranked households",
+  "study_counties": {
+    "Anoka County, MN": "27003",
+    "Carver County, MN": "27019",
+    "Dakota County, MN": "27037",
+    "Hennepin County, MN": "27053",
+    "Ramsey County, MN": "27123",
+    "Scott County, MN": "27139",
+    "Washington County, MN": "27163"
+  },
+  "other_counties": "assign partitions but exclude from this seven-county study before outcomes",
+  "household_weight_filter": "none during splitting; preserve unweighted respondents in the roster",
+  "outcome_access": "none before full preregistration, synthetic preparation proof and model-input admission; query development household IDs server-side only",
+  "held_out_outcomes": "never request, download, parse or summarize in this task",
+  "inference": "development-only regional evidence; household holdout is not independent geographic transfer",
+  "panel_policy": "one wave only; never join other waves; retain all repeat days with their household",
+  "revision_policy": "immutable after this commit; preserve excluded and missing-geography counts"
+}

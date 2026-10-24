@@ -1,0 +1,52 @@
+[
+  {
+    "name": "acs-keyless-probe",
+    "url": "https://api.census.gov/data/2019/acs/acs5?get=NAME,B01003_001E&for=tract:*&in=state:27%20county:053",
+    "resolved_url": "https://api.census.gov/data/missing_key.html",
+    "http_status": 200,
+    "bytes": 8531,
+    "sha256": "c2f4687e09b80676de7f68dec92ebea395209616dbc6f895520e547c5f68c0f5",
+    "path": "data/_screening_cache/tbi2019-integration/acs-keyless-probe.response",
+    "retrieved_at": "2026-10-23T23:12:37.314686+00:00"
+  },
+  {
+    "name": "fare-policy",
+    "url": "https://metrocouncil.org/News-Events/Transportation/Newsletters/Council-votes-to-increase-regional-transit-fares,.aspx",
+    "resolved_url": "https://metrocouncil.org/News-Events/Transportation/Newsletters/Council-votes-to-increase-regional-transit-fares,.aspx",
+    "http_status": 200,
+    "bytes": 76512,
+    "sha256": "eeb2edaaa3d1e257b5148993280f950372002805ca574c2d5685edb3dc45864e",
+    "path": "data/_screening_cache/tbi2019-integration/fare-policy.response",
+    "retrieved_at": "2026-10-23T23:12:37.943776+00:00"
+  },
+  {
+    "name": "mobility-mvta",
+    "url": "https://mobilitydatabase.org/feeds/gtfs/mdb-206",
+    "resolved_url": "https://mobilitydatabase.org/feeds/gtfs/mdb-206",
+    "http_status": 200,
+    "bytes": 447261,
+    "sha256": "50eefe0801440df3a5f06c029e679d3b242b22431d17d4aaa7cb130ae79f0743",
+    "path": "data/_screening_cache/tbi2019-integration/mobility-mvta.response",
+    "retrieved_at": "2026-10-23T23:12:38.459511+00:00"
+  },
+  {
+    "name": "transitfeeds-mvta",
+    "url": "https://transitfeeds.com/p/minnesota-valley-transit-authority",
+    "resolved_url": "https://transitfeeds.com/p/minnesota-valley-transit-authority",
+    "http_status": 403,
+    "bytes": 5611,
+    "sha256": "fe551c6747be6bde078c4671706f3586be4141f83b3d065a63ee8a39796c8596",
+    "path": "data/_screening_cache/tbi2019-integration/transitfeeds-mvta.response",
+    "retrieved_at": "2026-10-23T23:12:38.634602+00:00"
+  },
+  {
+    "name": "mvta-developer",
+    "url": "https://www.mvta.com/gtfs/",
+    "resolved_url": "https://www.mvta.com/gtfs/",
+    "http_status": 403,
+    "bytes": 1084,
+    "sha256": "4b8aacf558cc32ff0e6190d2770542c9744e88c9cb3c48e94902ad49bc93c7a1",
+    "path": "data/_screening_cache/tbi2019-integration/mvta-developer.response",
+    "retrieved_at": "2026-10-23T23:12:39.272639+00:00"
+  }
+]

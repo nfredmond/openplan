@@ -1,0 +1,28 @@
+{
+  "criterion": {
+    "criterion": "All seven final tables, row identities, row counts and all non-auxiliary fields exact. Finite logsum/utility differences <= max(4*max(ulp(a),ulp(b)),1e-12*max(abs(a),abs(b))). Missing and nonfinite mismatches fail.",
+    "seed": 0,
+    "outcomes_accessed": false,
+    "diagnostic_replays": "64-household existing checkpoints only; no installed source patch",
+    "input_freeze": "../choice-parity-evidence/input-freeze.json"
+  },
+  "boundary": "trip_purpose_and_destination",
+  "sizes": [
+    64,
+    2000
+  ],
+  "arms": [
+    "current",
+    "semcog"
+  ],
+  "prefix_mode": "production",
+  "prefix_chunk_size": 67108864,
+  "min_available_chunk_ratio": 0.05,
+  "suffix_mode": "disabled",
+  "suffix_chunk_size": 0,
+  "cache_sha256": "365ccfdc636f0662108ea8b930407c0163c501afe5057fc641984fad5b6a16eb",
+  "cache_origin": "/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/data/_screening_cache/tbi2019-chunk-cause/training-2000-prefix/cache/chunk_cache.csv",
+  "cache_reuse": "Both coefficients use the unchanged sizing cache; all model settings and coefficient values remain arm-specific.",
+  "full_settings": "Prefix production chunk_size 5500000000, inherited min_available_chunk_ratio 0.05; suffix disabled. Not admitted until all four comparisons pass.",
+  "outcomes_accessed": false
+}

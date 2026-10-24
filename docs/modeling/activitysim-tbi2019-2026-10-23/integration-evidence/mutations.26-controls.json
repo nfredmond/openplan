@@ -1,0 +1,184 @@
+[
+  {
+    "name": "bulk-comment",
+    "expected": "survive",
+    "exit_code": 0,
+    "expected_observed": true,
+    "restored_sha256": "2fa8e7fc2473c6557ae7ab7a59fc59d5c914af6b390122e5c88dbaa87c522be3"
+  },
+  {
+    "name": "bulk-position",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "2fa8e7fc2473c6557ae7ab7a59fc59d5c914af6b390122e5c88dbaa87c522be3"
+  },
+  {
+    "name": "bulk-duplicate-household",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "2fa8e7fc2473c6557ae7ab7a59fc59d5c914af6b390122e5c88dbaa87c522be3"
+  },
+  {
+    "name": "bulk-duplicate-person",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "2fa8e7fc2473c6557ae7ab7a59fc59d5c914af6b390122e5c88dbaa87c522be3"
+  },
+  {
+    "name": "bulk-puma-coverage",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "2fa8e7fc2473c6557ae7ab7a59fc59d5c914af6b390122e5c88dbaa87c522be3"
+  },
+  {
+    "name": "bulk-person-count",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "2fa8e7fc2473c6557ae7ab7a59fc59d5c914af6b390122e5c88dbaa87c522be3"
+  },
+  {
+    "name": "bulk-group-quarters",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "2fa8e7fc2473c6557ae7ab7a59fc59d5c914af6b390122e5c88dbaa87c522be3"
+  },
+  {
+    "name": "bulk-vintage",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "2fa8e7fc2473c6557ae7ab7a59fc59d5c914af6b390122e5c88dbaa87c522be3"
+  },
+  {
+    "name": "bulk-geography-duplicate",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "2fa8e7fc2473c6557ae7ab7a59fc59d5c914af6b390122e5c88dbaa87c522be3"
+  },
+  {
+    "name": "bulk-geography-coverage",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "2fa8e7fc2473c6557ae7ab7a59fc59d5c914af6b390122e5c88dbaa87c522be3"
+  },
+  {
+    "name": "bulk-sequence-identity",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "2fa8e7fc2473c6557ae7ab7a59fc59d5c914af6b390122e5c88dbaa87c522be3"
+  },
+  {
+    "name": "bulk-sequence-duplicate",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "2fa8e7fc2473c6557ae7ab7a59fc59d5c914af6b390122e5c88dbaa87c522be3"
+  },
+  {
+    "name": "bulk-missing-definition",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "2fa8e7fc2473c6557ae7ab7a59fc59d5c914af6b390122e5c88dbaa87c522be3"
+  },
+  {
+    "name": "transit-comment",
+    "expected": "survive",
+    "exit_code": 0,
+    "expected_observed": true,
+    "restored_sha256": "382d484369f64d960906102a79b88172c4c0083fdfa23a8aef8af8e5c4fbca63"
+  },
+  {
+    "name": "fare-single-boarding",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "382d484369f64d960906102a79b88172c4c0083fdfa23a8aef8af8e5c4fbca63"
+  },
+  {
+    "name": "fare-unknown-route",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "382d484369f64d960906102a79b88172c4c0083fdfa23a8aef8af8e5c4fbca63"
+  },
+  {
+    "name": "fare-overlap",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "382d484369f64d960906102a79b88172c4c0083fdfa23a8aef8af8e5c4fbca63"
+  },
+  {
+    "name": "fare-boundary",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "382d484369f64d960906102a79b88172c4c0083fdfa23a8aef8af8e5c4fbca63"
+  },
+  {
+    "name": "fare-amount",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "382d484369f64d960906102a79b88172c4c0083fdfa23a8aef8af8e5c4fbca63"
+  },
+  {
+    "name": "fare-source",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "382d484369f64d960906102a79b88172c4c0083fdfa23a8aef8af8e5c4fbca63"
+  },
+  {
+    "name": "fare-date",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "382d484369f64d960906102a79b88172c4c0083fdfa23a8aef8af8e5c4fbca63"
+  },
+  {
+    "name": "fare-validity",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "382d484369f64d960906102a79b88172c4c0083fdfa23a8aef8af8e5c4fbca63"
+  },
+  {
+    "name": "fare-custody",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "382d484369f64d960906102a79b88172c4c0083fdfa23a8aef8af8e5c4fbca63"
+  },
+  {
+    "name": "coverage-source",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "382d484369f64d960906102a79b88172c4c0083fdfa23a8aef8af8e5c4fbca63"
+  },
+  {
+    "name": "coverage-membership",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "382d484369f64d960906102a79b88172c4c0083fdfa23a8aef8af8e5c4fbca63"
+  },
+  {
+    "name": "coverage-mask",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "382d484369f64d960906102a79b88172c4c0083fdfa23a8aef8af8e5c4fbca63"
+  }
+]

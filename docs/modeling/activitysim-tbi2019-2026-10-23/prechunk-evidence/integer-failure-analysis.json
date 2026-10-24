@@ -1,0 +1,224 @@
+{
+  "status": "rejected_exact_parity",
+  "tables": [
+    {
+      "table": "final_land_use.csv",
+      "reference_rows": 634,
+      "candidate_rows": 634,
+      "reference_sha256": "a74feed4d6ceeab4c953c5ed3b48cafc0805b24c80f825d196f361ac092ccb94",
+      "candidate_sha256": "a74feed4d6ceeab4c953c5ed3b48cafc0805b24c80f825d196f361ac092ccb94",
+      "same_ids": true,
+      "same_columns": true,
+      "different_columns": {}
+    },
+    {
+      "table": "final_accessibility.csv",
+      "reference_rows": 634,
+      "candidate_rows": 634,
+      "reference_sha256": "68a89df0318674b3610ea77e4dcf681b4fcf339d6e17de89cb3b125478d56139",
+      "candidate_sha256": "636cbb126e874ecb874503a3a645d8532ef7accc59c0bf399fc99dc5cf4aaf74",
+      "same_ids": true,
+      "same_columns": true,
+      "different_columns": {
+        "auPkRetail": {
+          "differing_cells": 634,
+          "first_id": "0",
+          "first_reference": "6.371178972559677",
+          "first_candidate": "6.371179"
+        },
+        "auOpRetail": {
+          "differing_cells": 634,
+          "first_id": "0",
+          "first_reference": "6.371178972559677",
+          "first_candidate": "6.371179"
+        },
+        "trPkRetail": {
+          "differing_cells": 388,
+          "first_id": "32",
+          "first_reference": "0.011900805092879184",
+          "first_candidate": "0.011900805"
+        },
+        "trOpRetail": {
+          "differing_cells": 375,
+          "first_id": "32",
+          "first_reference": "0.01676902281920554",
+          "first_candidate": "0.016769024"
+        },
+        "nmRetail": {
+          "differing_cells": 599,
+          "first_id": "0",
+          "first_reference": "2.8168427592489906",
+          "first_candidate": "2.8168428"
+        }
+      }
+    },
+    {
+      "table": "final_households.csv",
+      "reference_rows": 2000,
+      "candidate_rows": 2000,
+      "reference_sha256": "131ac76a809b184dc697dabf8196f2fb20fe878a3eb440ea3d7cb04618a70889",
+      "candidate_sha256": "131ac76a809b184dc697dabf8196f2fb20fe878a3eb440ea3d7cb04618a70889",
+      "same_ids": true,
+      "same_columns": true,
+      "different_columns": {}
+    },
+    {
+      "table": "final_persons.csv",
+      "reference_rows": 4971,
+      "candidate_rows": 4971,
+      "reference_sha256": "2407a2082b1bf6f0ac999c0e852021ef9091339a1e4460cd598affcad116bdea",
+      "candidate_sha256": "2407a2082b1bf6f0ac999c0e852021ef9091339a1e4460cd598affcad116bdea",
+      "same_ids": true,
+      "same_columns": true,
+      "different_columns": {}
+    },
+    {
+      "table": "final_tours.csv",
+      "reference_rows": 6763,
+      "candidate_rows": 6763,
+      "reference_sha256": "53945d2c8990b5e2c7a7539c0f541387b8904c5a53a2c59451c6478fa235b111",
+      "candidate_sha256": "53945d2c8990b5e2c7a7539c0f541387b8904c5a53a2c59451c6478fa235b111",
+      "same_ids": true,
+      "same_columns": true,
+      "different_columns": {}
+    },
+    {
+      "table": "final_trips.csv",
+      "reference_rows": 17377,
+      "candidate_rows": 17377,
+      "reference_sha256": "34b027140241f78c5fa467ce4656d0bb3ce5740bc4037bd1ea013f667b396c4c",
+      "candidate_sha256": "34b027140241f78c5fa467ce4656d0bb3ce5740bc4037bd1ea013f667b396c4c",
+      "same_ids": true,
+      "same_columns": true,
+      "different_columns": {}
+    },
+    {
+      "table": "final_joint_tour_participants.csv",
+      "reference_rows": 274,
+      "candidate_rows": 274,
+      "reference_sha256": "b052168102ddedb8779ad109f9486f0a8d7874a427481b29b63aaaadb750f451",
+      "candidate_sha256": "b052168102ddedb8779ad109f9486f0a8d7874a427481b29b63aaaadb750f451",
+      "same_ids": true,
+      "same_columns": true,
+      "different_columns": {}
+    }
+  ],
+  "checkpoint_dtypes": {
+    "land_use": {
+      "reference": {
+        "sha256": "9d323d327a7ccb76bb7245115e8ca742f7524f98a0d4fec04897b8b0ff202ceb",
+        "dtypes": {
+          "DISTRICT": "int64",
+          "SD": "int64",
+          "county_id": "int64",
+          "TOTHH": "int64",
+          "TOTPOP": "int64",
+          "TOTACRE": "float64",
+          "RESACRE": "float64",
+          "CIACRE": "float64",
+          "TOTEMP": "int64",
+          "AGE0519": "int64",
+          "RETEMPN": "int64",
+          "FPSEMPN": "int64",
+          "HEREMPN": "int64",
+          "OTHEMPN": "int64",
+          "AGREMPN": "int64",
+          "MWTEMPN": "int64",
+          "PRKCST": "float64",
+          "OPRKCST": "float64",
+          "area_type": "int64",
+          "HSENROLL": "float64",
+          "COLLFTE": "float64",
+          "COLLPTE": "float64",
+          "TOPOLOGY": "int64",
+          "TERMINAL": "float64",
+          "_original_zone_id": "int64",
+          "household_density": "float64",
+          "employment_density": "float64",
+          "density_index": "float64",
+          "is_cbd": "bool"
+        }
+      },
+      "candidate": {
+        "sha256": "48af9b80d0e87cb3625a1d8437a6d231332039a6a8c9338949a81c348ca7a390",
+        "dtypes": {
+          "DISTRICT": "int8",
+          "SD": "int8",
+          "county_id": "int8",
+          "TOTHH": "int16",
+          "TOTPOP": "int16",
+          "TOTACRE": "float64",
+          "RESACRE": "float64",
+          "CIACRE": "float64",
+          "TOTEMP": "int32",
+          "AGE0519": "int16",
+          "RETEMPN": "int16",
+          "FPSEMPN": "int8",
+          "HEREMPN": "int32",
+          "OTHEMPN": "int16",
+          "AGREMPN": "int8",
+          "MWTEMPN": "int8",
+          "PRKCST": "float64",
+          "OPRKCST": "float64",
+          "area_type": "int8",
+          "HSENROLL": "float64",
+          "COLLFTE": "float64",
+          "COLLPTE": "float64",
+          "TOPOLOGY": "int8",
+          "TERMINAL": "float64",
+          "_original_zone_id": "int16",
+          "household_density": "float64",
+          "employment_density": "float64",
+          "density_index": "float64",
+          "is_cbd": "bool"
+        }
+      }
+    },
+    "accessibility": {
+      "reference": {
+        "sha256": "5433af32fb942a0ba5bac39a07173472908d4dd16073d8cafa542db98c25229f",
+        "dtypes": {
+          "auPkRetail": "float64",
+          "auPkTotal": "float64",
+          "auOpRetail": "float64",
+          "auOpTotal": "float64",
+          "trPkRetail": "float64",
+          "trPkTotal": "float64",
+          "trOpRetail": "float64",
+          "trOpTotal": "float64",
+          "nmRetail": "float64",
+          "nmTotal": "float64"
+        }
+      },
+      "candidate": {
+        "sha256": "558735d43fd19c87bcef89c7d448362398997260d6945383034f495083ae86d6",
+        "dtypes": {
+          "auPkRetail": "float32",
+          "auPkTotal": "float64",
+          "auOpRetail": "float32",
+          "auOpTotal": "float64",
+          "trPkRetail": "float32",
+          "trPkTotal": "float64",
+          "trOpRetail": "float32",
+          "trOpTotal": "float64",
+          "nmRetail": "float32",
+          "nmTotal": "float64"
+        }
+      }
+    }
+  },
+  "synthetic_promotion_example": {
+    "int64": {
+      "dtype": "float64",
+      "value": 1524.0740854293108
+    },
+    "int16": {
+      "dtype": "float32",
+      "value": 1524.0740966796875
+    }
+  },
+  "semcog_probe": "not_run_after_current_exact_failure",
+  "full_integer_arms": "not_admitted",
+  "outcomes_accessed": false,
+  "interpretation": "Narrowing integers can change mixed arithmetic promotion with float32 skims even when downcast_float is false. The checkpoint float dtypes and exported differences are observed; the small multiplication is a mechanism example, not an engine rerun."
+}

@@ -1,0 +1,341 @@
+[
+  {
+    "control": "harmless",
+    "expected_pass": true,
+    "exit": 0,
+    "accepted": true,
+    "source_sha256": "387b9b27346bba11f45c107756456517db6449aee7b6a106c236376006497db6",
+    "mutated_sha256": "0df66a523fa46481a5aee2e15f2ec70b395c1dd340557f730c34dd05ec130ad7",
+    "assertion_failures": []
+  },
+  {
+    "control": "wrong-count-exponent",
+    "expected_pass": false,
+    "exit": 1,
+    "accepted": true,
+    "source_sha256": "387b9b27346bba11f45c107756456517db6449aee7b6a106c236376006497db6",
+    "mutated_sha256": "fe6dbd80188783f3714baab15757fece93904249f418acf0de77209296a5c8cb",
+    "assertion_failures": [
+      "test_mixed_counts_converge_without_changing_targets (test_population_entropy.EntropyTests.test_mixed_counts_converge_without_changing_targets)"
+    ]
+  },
+  {
+    "control": "zero-reentry",
+    "expected_pass": false,
+    "exit": 1,
+    "accepted": true,
+    "source_sha256": "387b9b27346bba11f45c107756456517db6449aee7b6a106c236376006497db6",
+    "mutated_sha256": "bf52a13cd33a3ead53fcfca1535fbb4330cfbfac1d999cb67e59aba876b2a85c",
+    "assertion_failures": [
+      "test_iteration_limit_and_zero_population (test_population_entropy.EntropyTests.test_iteration_limit_and_zero_population)",
+      "test_zero_cannot_reenter_and_unreachable_target_fails (test_population_entropy.EntropyTests.test_zero_cannot_reenter_and_unreachable_target_fails)"
+    ]
+  },
+  {
+    "control": "loose-convergence",
+    "expected_pass": false,
+    "exit": 1,
+    "accepted": true,
+    "source_sha256": "387b9b27346bba11f45c107756456517db6449aee7b6a106c236376006497db6",
+    "mutated_sha256": "d88e50bac7733d8f51b56b386d13871073d213da00d8d18e7b553424721d41d5",
+    "assertion_failures": [
+      "test_inconsistent_totals_stay_failed_with_margins (test_population_entropy.EntropyTests.test_inconsistent_totals_stay_failed_with_margins)",
+      "test_iteration_limit_and_zero_population (test_population_entropy.EntropyTests.test_iteration_limit_and_zero_population)",
+      "test_zero_cannot_reenter_and_unreachable_target_fails (test_population_entropy.EntropyTests.test_zero_cannot_reenter_and_unreachable_target_fails)"
+    ]
+  },
+  {
+    "control": "invalid-target",
+    "expected_pass": false,
+    "exit": 1,
+    "accepted": true,
+    "source_sha256": "387b9b27346bba11f45c107756456517db6449aee7b6a106c236376006497db6",
+    "mutated_sha256": "aafb9c84d0b02aaa85831c59f3387d502208b828ec41576e9455f44a0d86af42",
+    "assertion_failures": [
+      "test_nonfinite_or_negative_target_refuses (test_population_entropy.EntropyTests.test_nonfinite_or_negative_target_refuses)"
+    ]
+  },
+  {
+    "control": "seed-identity",
+    "expected_pass": false,
+    "exit": 1,
+    "accepted": true,
+    "source_sha256": "387b9b27346bba11f45c107756456517db6449aee7b6a106c236376006497db6",
+    "mutated_sha256": "0a0f38133d4259edc7a775c089755f10d294394c057f5b27aa2be4399a30afd8",
+    "assertion_failures": [
+      "test_seed_identity_refuses (test_population_entropy.EntropyTests.test_seed_identity_refuses)"
+    ]
+  },
+  {
+    "control": "seed-weight",
+    "expected_pass": false,
+    "exit": 1,
+    "accepted": true,
+    "source_sha256": "387b9b27346bba11f45c107756456517db6449aee7b6a106c236376006497db6",
+    "mutated_sha256": "a7a1a104172d2690d15a611de2df5cb0dca2daa83d2e6fb3b6375efded751bc4",
+    "assertion_failures": [
+      "test_invalid_seed_and_contributions_refuse (test_population_entropy.EntropyTests.test_invalid_seed_and_contributions_refuse)"
+    ]
+  },
+  {
+    "control": "contribution-fraction",
+    "expected_pass": false,
+    "exit": 1,
+    "accepted": true,
+    "source_sha256": "387b9b27346bba11f45c107756456517db6449aee7b6a106c236376006497db6",
+    "mutated_sha256": "f39eee673b2e34ad5bf6bb7a1ab293ad53e22c13e1506f402d0ac85b2ecbe799",
+    "assertion_failures": [
+      "test_invalid_seed_and_contributions_refuse (test_population_entropy.EntropyTests.test_invalid_seed_and_contributions_refuse)"
+    ]
+  },
+  {
+    "control": "invalid-settings",
+    "expected_pass": false,
+    "exit": 1,
+    "accepted": true,
+    "source_sha256": "387b9b27346bba11f45c107756456517db6449aee7b6a106c236376006497db6",
+    "mutated_sha256": "e495f7ff268b387546cd3d9c8bde6f5b08968c78a232fbdb089236a412558a9c",
+    "assertion_failures": [
+      "test_iteration_limit_and_zero_population (test_population_entropy.EntropyTests.test_iteration_limit_and_zero_population)"
+    ]
+  },
+  {
+    "control": "roster-method",
+    "expected_pass": false,
+    "exit": 1,
+    "accepted": true,
+    "source_sha256": "f2a8efac4844e6a35c589b2ee3fe80eef722935191e64d93bb363eb3501a032d",
+    "mutated_sha256": "35d59f5d43da45847476529adc072667b0220e3aaaa596368bb198a07a1f8a07",
+    "assertion_failures": [
+      "test_entropy_roundtrip_and_mislabeled_rows (test_population_entropy_retention.EntropyRetentionTests.test_entropy_roundtrip_and_mislabeled_rows)"
+    ]
+  },
+  {
+    "control": "wrong-method-label",
+    "expected_pass": false,
+    "exit": 1,
+    "accepted": true,
+    "source_sha256": "07cbc76ecada11cb7c1d06ebb820452bda517350acaf272b17fb8a4cde5012f4",
+    "mutated_sha256": "e6b8f8872c478f5b02d9cebfd99c57f8990bbfd5571d30751b5765ddc43cd046",
+    "assertion_failures": [
+      "test_explicit_method_routes_fitting_and_roster_labels (test_population_entropy_retention.EntropyOrchestrationTests.test_explicit_method_routes_fitting_and_roster_labels)"
+    ]
+  },
+  {
+    "control": "iteration-forwarding",
+    "expected_pass": false,
+    "exit": 1,
+    "accepted": true,
+    "source_sha256": "07cbc76ecada11cb7c1d06ebb820452bda517350acaf272b17fb8a4cde5012f4",
+    "mutated_sha256": "ca0f085858c699e716f8342cca2ed10549de39e583c13af8423c5e4cd5cd9f89",
+    "assertion_failures": [
+      "test_explicit_method_routes_fitting_and_roster_labels (test_population_entropy_retention.EntropyOrchestrationTests.test_explicit_method_routes_fitting_and_roster_labels)"
+    ]
+  },
+  {
+    "control": "unknown-method",
+    "expected_pass": false,
+    "exit": 1,
+    "accepted": true,
+    "source_sha256": "07cbc76ecada11cb7c1d06ebb820452bda517350acaf272b17fb8a4cde5012f4",
+    "mutated_sha256": "8d05497003b0730aa98da452ff10f89c600dbcd3f75ac67b8584b1a6cfd956a8",
+    "assertion_failures": [
+      "test_explicit_method_routes_fitting_and_roster_labels (test_population_entropy_retention.EntropyOrchestrationTests.test_explicit_method_routes_fitting_and_roster_labels)"
+    ]
+  },
+  {
+    "control": "failed-fit-leaks",
+    "expected_pass": false,
+    "exit": 1,
+    "accepted": true,
+    "source_sha256": "07cbc76ecada11cb7c1d06ebb820452bda517350acaf272b17fb8a4cde5012f4",
+    "mutated_sha256": "8b11a1a1625a4a6a3ce43aaa3be7a7f3080c491e8062c62a3220815c20b5181c",
+    "assertion_failures": [
+      "test_failed_fit_exclusion_preserves_diagnostics (test_population_entropy_retention.EntropyOrchestrationTests.test_failed_fit_exclusion_preserves_diagnostics)"
+    ]
+  },
+  {
+    "control": "parity-harmless",
+    "expected_pass": true,
+    "exit": 0,
+    "accepted": true,
+    "source_sha256": "bd38b016bebf650662d572315ce9effa12afa043832c4505a737c716d4dc8d15",
+    "mutated_sha256": "a87ab972ea1e1499051a0ded9923dab4950acce175b6e4f6edf4a1a8bb48aaab",
+    "assertion_failures": []
+  },
+  {
+    "control": "parity-tolerance",
+    "expected_pass": false,
+    "exit": 1,
+    "accepted": true,
+    "source_sha256": "bd38b016bebf650662d572315ce9effa12afa043832c4505a737c716d4dc8d15",
+    "mutated_sha256": "ac829d2a0142ad0cf6cc8e400298c996a777267b646fcced89867ef5e976c660",
+    "assertion_failures": [
+      "test_one_ulp_is_a_failure (test_activitysim_chunk_parity.ChunkParityTests.test_one_ulp_is_a_failure)"
+    ]
+  },
+  {
+    "control": "parity-census",
+    "expected_pass": false,
+    "exit": 1,
+    "accepted": true,
+    "source_sha256": "bd38b016bebf650662d572315ce9effa12afa043832c4505a737c716d4dc8d15",
+    "mutated_sha256": "5efe2379357bc16b1d05a693f45bc017b25799318d2334bea814756dbc76ba7a",
+    "assertion_failures": [
+      "test_missing_or_extra_table_refuses (test_activitysim_chunk_parity.ChunkParityTests.test_missing_or_extra_table_refuses)"
+    ]
+  },
+  {
+    "control": "integer-harmless",
+    "expected_pass": true,
+    "exit": 0,
+    "accepted": true,
+    "source_sha256": "b4a68ad784a237652395ed8bc7fe253dfa5d2ac5fad9cf45211150a7670b7fb6",
+    "mutated_sha256": "a1fe0720cd3d163e2280d960672996428138d6e178a25104f01e29c47bdb55fb",
+    "assertion_failures": []
+  },
+  {
+    "control": "integer-missing-margin",
+    "expected_pass": false,
+    "exit": 1,
+    "accepted": true,
+    "source_sha256": "b4a68ad784a237652395ed8bc7fe253dfa5d2ac5fad9cf45211150a7670b7fb6",
+    "mutated_sha256": "0891c03bd0b85181036fa27a83d98651984ffe7cddd669347ff1c8612f723c12",
+    "assertion_failures": [
+      "test_unavailable_and_invalid_margins_refuse (test_population_integerization.IntegerizationTests.test_unavailable_and_invalid_margins_refuse)"
+    ]
+  },
+  {
+    "control": "integer-invalid-margin",
+    "expected_pass": false,
+    "exit": 1,
+    "accepted": true,
+    "source_sha256": "b4a68ad784a237652395ed8bc7fe253dfa5d2ac5fad9cf45211150a7670b7fb6",
+    "mutated_sha256": "3e0fb405158a9d50946b29ef891f4059b81d7f50ef589fb59134c39abcf16fd5",
+    "assertion_failures": [
+      "test_unavailable_and_invalid_margins_refuse (test_population_integerization.IntegerizationTests.test_unavailable_and_invalid_margins_refuse)"
+    ]
+  },
+  {
+    "control": "integer-no-household",
+    "expected_pass": false,
+    "exit": 1,
+    "accepted": true,
+    "source_sha256": "b4a68ad784a237652395ed8bc7fe253dfa5d2ac5fad9cf45211150a7670b7fb6",
+    "mutated_sha256": "14a400c09a912ab204001bd2cc1a6f236fe1dc7beee372019fae7b257a9e2ae4",
+    "assertion_failures": [
+      "test_invalid_household_total_refuses (test_population_integerization.IntegerizationTests.test_invalid_household_total_refuses)"
+    ]
+  },
+  {
+    "control": "integer-total",
+    "expected_pass": false,
+    "exit": 1,
+    "accepted": true,
+    "source_sha256": "b4a68ad784a237652395ed8bc7fe253dfa5d2ac5fad9cf45211150a7670b7fb6",
+    "mutated_sha256": "80f634cb5ad35bf57906873cc99c64c1bc1cadb60061a07a762d05d462aab201",
+    "assertion_failures": [
+      "test_invalid_household_total_refuses (test_population_integerization.IntegerizationTests.test_invalid_household_total_refuses)"
+    ]
+  },
+  {
+    "control": "integer-solver-failure",
+    "expected_pass": false,
+    "exit": 1,
+    "accepted": true,
+    "source_sha256": "b4a68ad784a237652395ed8bc7fe253dfa5d2ac5fad9cf45211150a7670b7fb6",
+    "mutated_sha256": "71865b1b038e3bcfc706a1504aeb91c2a58059b22343766110b631c0e392ee01",
+    "assertion_failures": [
+      "test_inconsistent_problem_remains_failed (test_population_integerization.IntegerizationTests.test_inconsistent_problem_remains_failed)"
+    ]
+  },
+  {
+    "control": "integer-bounds",
+    "expected_pass": false,
+    "exit": 1,
+    "accepted": true,
+    "source_sha256": "b4a68ad784a237652395ed8bc7fe253dfa5d2ac5fad9cf45211150a7670b7fb6",
+    "mutated_sha256": "bf19eb6ba3c8bcd1f492b7f3dfadfcf5701c6c8e7e6f434163cb67ba4f5b051b",
+    "assertion_failures": [
+      "test_false_solver_success_does_not_waive_bounds (test_population_integerization.IntegerizationTests.test_false_solver_success_does_not_waive_bounds)"
+    ]
+  },
+  {
+    "control": "integer-allocation",
+    "expected_pass": false,
+    "exit": 1,
+    "accepted": true,
+    "source_sha256": "b4a68ad784a237652395ed8bc7fe253dfa5d2ac5fad9cf45211150a7670b7fb6",
+    "mutated_sha256": "0706dd5ee7c1753bc5d73d49ff75bedf549e0929493c8a8b3854fac85fd52b44",
+    "assertion_failures": [
+      "test_pattern_allocation_must_match_solution (test_population_integerization.IntegerizationTests.test_pattern_allocation_must_match_solution)"
+    ]
+  },
+  {
+    "control": "integer-option",
+    "expected_pass": false,
+    "exit": 1,
+    "accepted": true,
+    "source_sha256": "07cbc76ecada11cb7c1d06ebb820452bda517350acaf272b17fb8a4cde5012f4",
+    "mutated_sha256": "30fe6da5587d675f5ea2793badd5fa71350a67aedd173c5d2f0666e4681d4668",
+    "assertion_failures": [
+      "test_controlled_integerization_is_explicit_and_preserves_counts (test_population_entropy_retention.EntropyOrchestrationTests.test_controlled_integerization_is_explicit_and_preserves_counts)"
+    ]
+  },
+  {
+    "control": "parity-identity",
+    "expected_pass": false,
+    "exit": 1,
+    "accepted": true,
+    "source_sha256": "bd38b016bebf650662d572315ce9effa12afa043832c4505a737c716d4dc8d15",
+    "mutated_sha256": "fa80639a47f7928da66ac336c3c4ad95c1eabfcebc5e615a8f057d4d4a366784",
+    "assertion_failures": [
+      "test_row_order_survives_but_duplicate_identity_refuses (test_activitysim_chunk_parity.ChunkParityTests.test_row_order_survives_but_duplicate_identity_refuses)"
+    ]
+  },
+  {
+    "control": "chunk-no-split",
+    "expected_pass": false,
+    "exit": 1,
+    "accepted": true,
+    "source_sha256": "bd38b016bebf650662d572315ce9effa12afa043832c4505a737c716d4dc8d15",
+    "mutated_sha256": "6716f4cf0855af5f4e88d9f6f1ce75315698163c8b2922950c2825583e420369",
+    "assertion_failures": [
+      "test_actual_chunk_splitting_and_no_fallback (test_activitysim_chunk_parity.ChunkParityTests.test_actual_chunk_splitting_and_no_fallback)"
+    ]
+  },
+  {
+    "control": "chunk-fallback",
+    "expected_pass": false,
+    "exit": 1,
+    "accepted": true,
+    "source_sha256": "bd38b016bebf650662d572315ce9effa12afa043832c4505a737c716d4dc8d15",
+    "mutated_sha256": "802dd34be6573aa55b732f0264e00604bf381c34296afbd5165b5c313ac7617e",
+    "assertion_failures": [
+      "test_actual_chunk_splitting_and_no_fallback (test_activitysim_chunk_parity.ChunkParityTests.test_actual_chunk_splitting_and_no_fallback)"
+    ]
+  },
+  {
+    "control": "contribution-finite-nonnegative",
+    "expected_pass": false,
+    "exit": 1,
+    "accepted": true,
+    "source_sha256": "387b9b27346bba11f45c107756456517db6449aee7b6a106c236376006497db6",
+    "mutated_sha256": "5cee8142c0ea1e56ff7392bd4eaaca44220f46f0b57c6a73a32d4751a3ca490a",
+    "assertion_failures": [
+      "test_invalid_seed_and_contributions_refuse (test_population_entropy.EntropyTests.test_invalid_seed_and_contributions_refuse)"
+    ]
+  },
+  {
+    "control": "parity-export-key",
+    "expected_pass": false,
+    "exit": 1,
+    "accepted": true,
+    "source_sha256": "bd38b016bebf650662d572315ce9effa12afa043832c4505a737c716d4dc8d15",
+    "mutated_sha256": "88b08146538d8780d2400fec02319ea49f6a02d2b879ac98e2898c351d98970d",
+    "assertion_failures": [
+      "test_changed_column_and_row_refuse (test_activitysim_chunk_parity.ChunkParityTests.test_changed_column_and_row_refuse)",
+      "test_row_order_survives_but_duplicate_identity_refuses (test_activitysim_chunk_parity.ChunkParityTests.test_row_order_survives_but_duplicate_identity_refuses)"
+    ]
+  }
+]

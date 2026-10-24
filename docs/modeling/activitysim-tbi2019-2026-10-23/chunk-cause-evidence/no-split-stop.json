@@ -1,0 +1,7 @@
+{
+  "status": "stopped_before_suffix",
+  "reason": "No actual chooser split appears in the chunk log",
+  "run": "64-current-prefix",
+  "parity": "not_assessed",
+  "successor": "r2 uses stock min_available_chunk_ratio 0.05, same 64 MiB chunk target and cache; guard unchanged"
+}

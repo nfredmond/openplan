@@ -1,0 +1,30 @@
+{
+  "claim": "MODELED ONLY; exact parity failed; no tolerance applied",
+  "differences": [
+    {
+      "trip_id": "39740078",
+      "column": "destination_logsum",
+      "unchunked_decimal": "1.5387358811899654",
+      "training_decimal": "1.5387358811899652",
+      "unchunked_float_hex": "0x1.89ea983ee4844p+0",
+      "training_float_hex": "0x1.89ea983ee4843p+0",
+      "absolute_difference": 2.220446049250313e-16,
+      "ulp_distance_same_sign": 1
+    },
+    {
+      "trip_id": "123196726",
+      "column": "destination_logsum",
+      "unchunked_decimal": "3.922305563209965",
+      "training_decimal": "3.9223055632099646",
+      "unchunked_float_hex": "0x1.f60e1bd373ecbp+1",
+      "training_float_hex": "0x1.f60e1bd373ecap+1",
+      "absolute_difference": 4.440892098500626e-16,
+      "ulp_distance_same_sign": 1
+    }
+  ],
+  "trip_rows": 628,
+  "comparison_stopped_at_first_failing_column": true,
+  "remaining_trip_columns_unassessed": true,
+  "full_runs_started": false,
+  "source_parity_result_sha256": "037707618e9ffc67984a1816097f0a6a122ccf36ffda47aca586e9f2b0a363cb"
+}

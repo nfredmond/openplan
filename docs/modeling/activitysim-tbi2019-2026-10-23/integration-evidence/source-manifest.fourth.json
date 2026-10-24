@@ -1,0 +1,122 @@
+[
+  {
+    "name": "acs-sequence-0001",
+    "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2019/data/5_year_seq_by_state/Minnesota/Tracts_Block_Groups_Only/20195mn0001000.zip",
+    "resolved_url": "https://www2.census.gov/programs-surveys/acs/summary_file/2019/data/5_year_seq_by_state/Minnesota/Tracts_Block_Groups_Only/20195mn0001000.zip",
+    "http_status": 200,
+    "bytes": 916995,
+    "sha256": "efc99ac09c52e527c146ee624dafcc514a74e191a9e57baa49c9cb6cdfa964f4",
+    "path": "data/_screening_cache/tbi2019-integration/acs-sequence-0001.response",
+    "retrieved_at": "2026-10-23T23:16:25.664725+00:00"
+  },
+  {
+    "name": "acs-sequence-0002",
+    "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2019/data/5_year_seq_by_state/Minnesota/Tracts_Block_Groups_Only/20195mn0002000.zip",
+    "resolved_url": "https://www2.census.gov/programs-surveys/acs/summary_file/2019/data/5_year_seq_by_state/Minnesota/Tracts_Block_Groups_Only/20195mn0002000.zip",
+    "http_status": 200,
+    "bytes": 623849,
+    "sha256": "9c9c6922ad18e303e79df00299cd60a3f1b377aa61a27a0e874e9b1be0a2055f",
+    "path": "data/_screening_cache/tbi2019-integration/acs-sequence-0002.response",
+    "retrieved_at": "2026-10-23T23:16:25.493181+00:00"
+  },
+  {
+    "name": "acs-sequence-0027",
+    "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2019/data/5_year_seq_by_state/Minnesota/Tracts_Block_Groups_Only/20195mn0027000.zip",
+    "resolved_url": "https://www2.census.gov/programs-surveys/acs/summary_file/2019/data/5_year_seq_by_state/Minnesota/Tracts_Block_Groups_Only/20195mn0027000.zip",
+    "http_status": 200,
+    "bytes": 1092779,
+    "sha256": "2797092ec1704c36fa2b050e5537edd8f168411c1df982f9d0367f94a56c35d7",
+    "path": "data/_screening_cache/tbi2019-integration/acs-sequence-0027.response",
+    "retrieved_at": "2026-10-23T23:16:25.894192+00:00"
+  },
+  {
+    "name": "acs-sequence-0033",
+    "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2019/data/5_year_seq_by_state/Minnesota/Tracts_Block_Groups_Only/20195mn0033000.zip",
+    "resolved_url": "https://www2.census.gov/programs-surveys/acs/summary_file/2019/data/5_year_seq_by_state/Minnesota/Tracts_Block_Groups_Only/20195mn0033000.zip",
+    "http_status": 200,
+    "bytes": 1357427,
+    "sha256": "6c6084b868f4268ff9e2bf7ef02d8bd3dc5c928e79c6fc4a2bf133f117ac9824",
+    "path": "data/_screening_cache/tbi2019-integration/acs-sequence-0033.response",
+    "retrieved_at": "2026-10-23T23:16:30.257294+00:00"
+  },
+  {
+    "name": "acs-sequence-0035",
+    "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2019/data/5_year_seq_by_state/Minnesota/Tracts_Block_Groups_Only/20195mn0035000.zip",
+    "resolved_url": "https://www2.census.gov/programs-surveys/acs/summary_file/2019/data/5_year_seq_by_state/Minnesota/Tracts_Block_Groups_Only/20195mn0035000.zip",
+    "http_status": 200,
+    "bytes": 1453478,
+    "sha256": "a472699b7b401634cb85531dde1f910a5df17da322b5bba8ad908b76de91090a",
+    "path": "data/_screening_cache/tbi2019-integration/acs-sequence-0035.response",
+    "retrieved_at": "2026-10-23T23:16:28.195955+00:00"
+  },
+  {
+    "name": "acs-sequence-0036",
+    "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2019/data/5_year_seq_by_state/Minnesota/Tracts_Block_Groups_Only/20195mn0036000.zip",
+    "resolved_url": "https://www2.census.gov/programs-surveys/acs/summary_file/2019/data/5_year_seq_by_state/Minnesota/Tracts_Block_Groups_Only/20195mn0036000.zip",
+    "http_status": 200,
+    "bytes": 1494517,
+    "sha256": "9ca2faaa3798086a22cd8a00c7b5a1a2c53910a917e1c78ec04a38952833f754",
+    "path": "data/_screening_cache/tbi2019-integration/acs-sequence-0036.response",
+    "retrieved_at": "2026-10-23T23:16:30.097828+00:00"
+  },
+  {
+    "name": "acs-sequence-0040",
+    "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2019/data/5_year_seq_by_state/Minnesota/Tracts_Block_Groups_Only/20195mn0040000.zip",
+    "resolved_url": "https://www2.census.gov/programs-surveys/acs/summary_file/2019/data/5_year_seq_by_state/Minnesota/Tracts_Block_Groups_Only/20195mn0040000.zip",
+    "http_status": 200,
+    "bytes": 1466095,
+    "sha256": "b6d663c49ee425410be29129addfa368deebae123fe3c60e00362505dcc1cf0e",
+    "path": "data/_screening_cache/tbi2019-integration/acs-sequence-0040.response",
+    "retrieved_at": "2026-10-23T23:16:30.800908+00:00"
+  },
+  {
+    "name": "acs-sequence-0058",
+    "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2019/data/5_year_seq_by_state/Minnesota/Tracts_Block_Groups_Only/20195mn0058000.zip",
+    "resolved_url": "https://www2.census.gov/programs-surveys/acs/summary_file/2019/data/5_year_seq_by_state/Minnesota/Tracts_Block_Groups_Only/20195mn0058000.zip",
+    "http_status": 200,
+    "bytes": 794538,
+    "sha256": "f660161fe9bfce51244e451bd76869b9c3a8288ccde447e0eb4cbe92bae742d5",
+    "path": "data/_screening_cache/tbi2019-integration/acs-sequence-0058.response",
+    "retrieved_at": "2026-10-23T23:16:30.774068+00:00"
+  },
+  {
+    "name": "acs-sequence-0078",
+    "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2019/data/5_year_seq_by_state/Minnesota/Tracts_Block_Groups_Only/20195mn0078000.zip",
+    "resolved_url": "https://www2.census.gov/programs-surveys/acs/summary_file/2019/data/5_year_seq_by_state/Minnesota/Tracts_Block_Groups_Only/20195mn0078000.zip",
+    "http_status": 200,
+    "bytes": 1225169,
+    "sha256": "fb5c92fb4fb5b7e53f185aa578f9b65ab37d405de794ddfee303d3613192dfc0",
+    "path": "data/_screening_cache/tbi2019-integration/acs-sequence-0078.response",
+    "retrieved_at": "2026-10-23T23:16:33.827802+00:00"
+  },
+  {
+    "name": "acs-sequence-0113",
+    "url": "https://www2.census.gov/programs-surveys/acs/summary_file/2019/data/5_year_seq_by_state/Minnesota/Tracts_Block_Groups_Only/20195mn0113000.zip",
+    "resolved_url": "https://www2.census.gov/programs-surveys/acs/summary_file/2019/data/5_year_seq_by_state/Minnesota/Tracts_Block_Groups_Only/20195mn0113000.zip",
+    "http_status": 200,
+    "bytes": 2313142,
+    "sha256": "8604980b4c8612f050684a88756addbd3a170e0f5b7f57c96fc10afdce7577f8",
+    "path": "data/_screening_cache/tbi2019-integration/acs-sequence-0113.response",
+    "retrieved_at": "2026-10-23T23:16:34.262281+00:00"
+  },
+  {
+    "name": "tracts-2019",
+    "url": "https://www2.census.gov/geo/tiger/TIGER2019/TRACT/tl_2019_27_tract.zip",
+    "resolved_url": "https://www2.census.gov/geo/tiger/TIGER2019/TRACT/tl_2019_27_tract.zip",
+    "http_status": 200,
+    "bytes": 6723816,
+    "sha256": "ca3de81e85558678ed3fd16b86cfd8fd40aae7fc6fd9c10b0a67bc9c3010ffc4",
+    "path": "data/_screening_cache/tbi2019-integration/tracts-2019.response",
+    "retrieved_at": "2026-10-23T23:16:33.642769+00:00"
+  },
+  {
+    "name": "places-2019",
+    "url": "https://www2.census.gov/geo/tiger/TIGER2019/PLACE/tl_2019_27_place.zip",
+    "resolved_url": "https://www2.census.gov/geo/tiger/TIGER2019/PLACE/tl_2019_27_place.zip",
+    "http_status": 200,
+    "bytes": 2296851,
+    "sha256": "b08272b7f1506744e6cda98c9bd7f1b391a1fb8387912786bb0c9445109baa25",
+    "path": "data/_screening_cache/tbi2019-integration/places-2019.response",
+    "retrieved_at": "2026-10-23T23:16:36.065275+00:00"
+  }
+]

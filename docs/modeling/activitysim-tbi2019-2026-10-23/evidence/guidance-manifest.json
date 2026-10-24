@@ -1,0 +1,16 @@
+[
+  {
+    "file": "weighting.html",
+    "url": "https://metropolitan-council.github.io/TBI_Household_Synthesis_Report/06_expansion_and_weighting/ch_6_expansion_and_weighting.html",
+    "bytes": 48990,
+    "sha256": "15410edc8f7389c23c1d6fffb7c101bdef675eba83a4abe57bfc9c810cf1d3d6",
+    "accessed_at": "2026-10-23T22:32:33.935825+00:00"
+  },
+  {
+    "file": "users-guide.html",
+    "url": "https://metropolitan-council.github.io/TBI_Household_Synthesis_Report/appendices/data_users_guide_R.html",
+    "bytes": 659914,
+    "sha256": "09301b0f55b1f1bafc1c77e4072e130191e07ddf8c11faa8290c2616dd7336b6",
+    "accessed_at": "2026-10-23T22:32:34.351824+00:00"
+  }
+]

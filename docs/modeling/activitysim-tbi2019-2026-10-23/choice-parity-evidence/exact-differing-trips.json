@@ -1,0 +1,74 @@
+{
+  "disabled": [
+    {
+      "person_id": "2789209",
+      "household_id": "1128682",
+      "primary_purpose": "work",
+      "trip_num": "1",
+      "outbound": "false",
+      "trip_count": "3",
+      "tour_id": "114357608",
+      "purpose": "othmaint",
+      "destination_logsum": "6.042582870862925",
+      "depart": "16",
+      "trip_mode": "DRIVEALONEFREE",
+      "mode_choice_logsum": "-2.0538618969812816",
+      "trip_id": "914860869",
+      "origin": "400",
+      "destination": "530"
+    },
+    {
+      "person_id": "2789209",
+      "household_id": "1128682",
+      "primary_purpose": "work",
+      "trip_num": "2",
+      "outbound": "false",
+      "trip_count": "3",
+      "tour_id": "114357608",
+      "purpose": "eatout",
+      "destination_logsum": "10.561438511309555",
+      "depart": "18",
+      "trip_mode": "DRIVEALONEFREE",
+      "mode_choice_logsum": "-0.4986740589469034",
+      "trip_id": "914860870",
+      "origin": "530",
+      "destination": "626"
+    }
+  ],
+  "training": [
+    {
+      "person_id": "2789209",
+      "household_id": "1128682",
+      "primary_purpose": "work",
+      "trip_num": "1",
+      "outbound": "false",
+      "trip_count": "3",
+      "tour_id": "114357608",
+      "purpose": "othmaint",
+      "destination_logsum": "6.042582870862925",
+      "depart": "18",
+      "trip_mode": "DRIVEALONEFREE",
+      "mode_choice_logsum": "-2.0538618969812816",
+      "trip_id": "914860869",
+      "origin": "400",
+      "destination": "530"
+    },
+    {
+      "person_id": "2789209",
+      "household_id": "1128682",
+      "primary_purpose": "work",
+      "trip_num": "2",
+      "outbound": "false",
+      "trip_count": "3",
+      "tour_id": "114357608",
+      "purpose": "eatout",
+      "destination_logsum": "10.561438511309555",
+      "depart": "19",
+      "trip_mode": "DRIVEALONEFREE",
+      "mode_choice_logsum": "-0.4986740589469034",
+      "trip_id": "914860870",
+      "origin": "530",
+      "destination": "626"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "households": 2000,
+  "persons": 4971,
+  "prefix_chunk_size": 1073741824,
+  "prefix_mode": "production",
+  "min_available_chunk_ratio": 0.05,
+  "suffix_chunk_size": 0,
+  "training_chunk_size": 536870912,
+  "training_min_available_chunk_ratio": 1.0,
+  "criterion": {
+    "criterion": "All seven final tables, row identities, row counts and all non-auxiliary fields exact. Finite logsum/utility differences <= max(4*max(ulp(a),ulp(b)),1e-12*max(abs(a),abs(b))). Missing and nonfinite mismatches fail.",
+    "seed": 0,
+    "outcomes_accessed": false,
+    "diagnostic_replays": "64-household existing checkpoints only; no installed source patch",
+    "input_freeze": "../choice-parity-evidence/input-freeze.json"
+  },
+  "outcomes_accessed": false
+}

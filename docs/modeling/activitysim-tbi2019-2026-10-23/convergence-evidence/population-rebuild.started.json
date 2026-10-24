@@ -1,0 +1,68 @@
+{
+  "binding": {
+    "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/data/_screening_cache/tbi2019-integration/acs-controls.json": {
+      "sha256": "53664d61c8fc820e252324b635cfefe7fb5cf45e3b8001ecd260fdebab5b2661",
+      "bytes": 3385177
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/data/_screening_cache/tbi2019-integration/pums-household.response": {
+      "sha256": "2613572a32f5d3d741645a90eb1e4acf1c8db426cb17cd71aff3484e06f1aead",
+      "bytes": 16572586
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/data/_screening_cache/tbi2019-integration/pums-person.response": {
+      "sha256": "dd99de9733b0f47c1927801a9b2912330e3fe231c1ef8cc24635e0470609f5eb",
+      "bytes": 38083222
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/data/_screening_cache/tbi2019-integration/pums-h-wi.response": {
+      "sha256": "4ab80b6d824e81e56159e13e8975d9311218d5381582f3631714cacd78710b9f",
+      "bytes": 18184855
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/data/_screening_cache/tbi2019-integration/pums-p-wi.response": {
+      "sha256": "51e54070dbce4536a1512645fb4f1ee806cad7b17ddeeb3a9effaf4d6899e646",
+      "bytes": 40498098
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/data/_screening_cache/tbi2019-integration/population-source-manifest.json": {
+      "sha256": "258ec170aa8a702a3dfaf27c3e4734b360f044632e00741fe58dc5820414eef0",
+      "bytes": 16736
+    },
+    "docs/modeling/activitysim-transit-2026-10-23/zones.csv": {
+      "sha256": "1d61426e09fa2fb09e8d55b7efc8799a2eda4c0098bc4cf8e56b7a321962ccf9",
+      "bytes": 27893
+    },
+    "scripts/modeling/population_entropy.py": {
+      "sha256": "387b9b27346bba11f45c107756456517db6449aee7b6a106c236376006497db6",
+      "bytes": 6134
+    },
+    "scripts/modeling/population_synthesis.py": {
+      "sha256": "d14965e5605d22d7eb4a1394c73018a393512817850c821fdb3370b6224ce4bb",
+      "bytes": 26017
+    },
+    "scripts/modeling/synthetic_population.py": {
+      "sha256": "07cbc76ecada11cb7c1d06ebb820452bda517350acaf272b17fb8a4cde5012f4",
+      "bytes": 16573
+    },
+    "scripts/modeling/common_population.py": {
+      "sha256": "f2a8efac4844e6a35c589b2ee3fe80eef722935191e64d93bb363eb3501a032d",
+      "bytes": 27551
+    },
+    "scripts/modeling/census_pums.py": {
+      "sha256": "ef8234a8db8102f015271be5d3bb211b30d7f914afd1d5e14413fdf438204cd2",
+      "bytes": 37750
+    },
+    "scripts/modeling/census_bulk_inputs.py": {
+      "sha256": "2fa8e7fc2473c6557ae7ab7a59fc59d5c914af6b390122e5c88dbaa87c522be3",
+      "bytes": 7813
+    },
+    "scripts/modeling/population_integerization.py": {
+      "sha256": "b4a68ad784a237652395ed8bc7fe253dfa5d2ac5fad9cf45211150a7670b7fb6",
+      "bytes": 3551
+    }
+  },
+  "settings": {
+    "fitting_method": "entropy",
+    "fitting_max_iterations": 2000,
+    "exclude_failed_fits": true,
+    "integerization_method": "controlled"
+  },
+  "python": "3.11.15",
+  "fractional_fit_diagnostics_sha256": "30afc2ea151d800885278edbcfd71dd128f8514620c7fbe64d71bdb87e4d5be7"
+}

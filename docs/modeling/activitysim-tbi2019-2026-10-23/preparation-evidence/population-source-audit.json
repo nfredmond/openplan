@@ -1,0 +1,500 @@
+{
+  "acs_required_variable_count": 187,
+  "acs_required_variables": {
+    "B01001_003E": "Estimate!!Total:!!Male:!!Under 5 years",
+    "B01001_003M": "Margin of Error!!Total:!!Male:!!Under 5 years",
+    "B01001_004E": "Estimate!!Total:!!Male:!!5 to 9 years",
+    "B01001_004M": "Margin of Error!!Total:!!Male:!!5 to 9 years",
+    "B01001_005E": "Estimate!!Total:!!Male:!!10 to 14 years",
+    "B01001_005M": "Margin of Error!!Total:!!Male:!!10 to 14 years",
+    "B01001_006E": "Estimate!!Total:!!Male:!!15 to 17 years",
+    "B01001_006M": "Margin of Error!!Total:!!Male:!!15 to 17 years",
+    "B01001_007E": "Estimate!!Total:!!Male:!!18 and 19 years",
+    "B01001_007M": "Margin of Error!!Total:!!Male:!!18 and 19 years",
+    "B01001_008E": "Estimate!!Total:!!Male:!!20 years",
+    "B01001_008M": "Margin of Error!!Total:!!Male:!!20 years",
+    "B01001_009E": "Estimate!!Total:!!Male:!!21 years",
+    "B01001_009M": "Margin of Error!!Total:!!Male:!!21 years",
+    "B01001_010E": "Estimate!!Total:!!Male:!!22 to 24 years",
+    "B01001_010M": "Margin of Error!!Total:!!Male:!!22 to 24 years",
+    "B01001_011E": "Estimate!!Total:!!Male:!!25 to 29 years",
+    "B01001_011M": "Margin of Error!!Total:!!Male:!!25 to 29 years",
+    "B01001_012E": "Estimate!!Total:!!Male:!!30 to 34 years",
+    "B01001_012M": "Margin of Error!!Total:!!Male:!!30 to 34 years",
+    "B01001_013E": "Estimate!!Total:!!Male:!!35 to 39 years",
+    "B01001_013M": "Margin of Error!!Total:!!Male:!!35 to 39 years",
+    "B01001_014E": "Estimate!!Total:!!Male:!!40 to 44 years",
+    "B01001_014M": "Margin of Error!!Total:!!Male:!!40 to 44 years",
+    "B01001_015E": "Estimate!!Total:!!Male:!!45 to 49 years",
+    "B01001_015M": "Margin of Error!!Total:!!Male:!!45 to 49 years",
+    "B01001_016E": "Estimate!!Total:!!Male:!!50 to 54 years",
+    "B01001_016M": "Margin of Error!!Total:!!Male:!!50 to 54 years",
+    "B01001_017E": "Estimate!!Total:!!Male:!!55 to 59 years",
+    "B01001_017M": "Margin of Error!!Total:!!Male:!!55 to 59 years",
+    "B01001_018E": "Estimate!!Total:!!Male:!!60 and 61 years",
+    "B01001_018M": "Margin of Error!!Total:!!Male:!!60 and 61 years",
+    "B01001_019E": "Estimate!!Total:!!Male:!!62 to 64 years",
+    "B01001_019M": "Margin of Error!!Total:!!Male:!!62 to 64 years",
+    "B01001_020E": "Estimate!!Total:!!Male:!!65 and 66 years",
+    "B01001_020M": "Margin of Error!!Total:!!Male:!!65 and 66 years",
+    "B01001_021E": "Estimate!!Total:!!Male:!!67 to 69 years",
+    "B01001_021M": "Margin of Error!!Total:!!Male:!!67 to 69 years",
+    "B01001_022E": "Estimate!!Total:!!Male:!!70 to 74 years",
+    "B01001_022M": "Margin of Error!!Total:!!Male:!!70 to 74 years",
+    "B01001_023E": "Estimate!!Total:!!Male:!!75 to 79 years",
+    "B01001_023M": "Margin of Error!!Total:!!Male:!!75 to 79 years",
+    "B01001_024E": "Estimate!!Total:!!Male:!!80 to 84 years",
+    "B01001_024M": "Margin of Error!!Total:!!Male:!!80 to 84 years",
+    "B01001_025E": "Estimate!!Total:!!Male:!!85 years and over",
+    "B01001_025M": "Margin of Error!!Total:!!Male:!!85 years and over",
+    "B01001_027E": "Estimate!!Total:!!Female:!!Under 5 years",
+    "B01001_027M": "Margin of Error!!Total:!!Female:!!Under 5 years",
+    "B01001_028E": "Estimate!!Total:!!Female:!!5 to 9 years",
+    "B01001_028M": "Margin of Error!!Total:!!Female:!!5 to 9 years",
+    "B01001_029E": "Estimate!!Total:!!Female:!!10 to 14 years",
+    "B01001_029M": "Margin of Error!!Total:!!Female:!!10 to 14 years",
+    "B01001_030E": "Estimate!!Total:!!Female:!!15 to 17 years",
+    "B01001_030M": "Margin of Error!!Total:!!Female:!!15 to 17 years",
+    "B01001_031E": "Estimate!!Total:!!Female:!!18 and 19 years",
+    "B01001_031M": "Margin of Error!!Total:!!Female:!!18 and 19 years",
+    "B01001_032E": "Estimate!!Total:!!Female:!!20 years",
+    "B01001_032M": "Margin of Error!!Total:!!Female:!!20 years",
+    "B01001_033E": "Estimate!!Total:!!Female:!!21 years",
+    "B01001_033M": "Margin of Error!!Total:!!Female:!!21 years",
+    "B01001_034E": "Estimate!!Total:!!Female:!!22 to 24 years",
+    "B01001_034M": "Margin of Error!!Total:!!Female:!!22 to 24 years",
+    "B01001_035E": "Estimate!!Total:!!Female:!!25 to 29 years",
+    "B01001_035M": "Margin of Error!!Total:!!Female:!!25 to 29 years",
+    "B01001_036E": "Estimate!!Total:!!Female:!!30 to 34 years",
+    "B01001_036M": "Margin of Error!!Total:!!Female:!!30 to 34 years",
+    "B01001_037E": "Estimate!!Total:!!Female:!!35 to 39 years",
+    "B01001_037M": "Margin of Error!!Total:!!Female:!!35 to 39 years",
+    "B01001_038E": "Estimate!!Total:!!Female:!!40 to 44 years",
+    "B01001_038M": "Margin of Error!!Total:!!Female:!!40 to 44 years",
+    "B01001_039E": "Estimate!!Total:!!Female:!!45 to 49 years",
+    "B01001_039M": "Margin of Error!!Total:!!Female:!!45 to 49 years",
+    "B01001_040E": "Estimate!!Total:!!Female:!!50 to 54 years",
+    "B01001_040M": "Margin of Error!!Total:!!Female:!!50 to 54 years",
+    "B01001_041E": "Estimate!!Total:!!Female:!!55 to 59 years",
+    "B01001_041M": "Margin of Error!!Total:!!Female:!!55 to 59 years",
+    "B01001_042E": "Estimate!!Total:!!Female:!!60 and 61 years",
+    "B01001_042M": "Margin of Error!!Total:!!Female:!!60 and 61 years",
+    "B01001_043E": "Estimate!!Total:!!Female:!!62 to 64 years",
+    "B01001_043M": "Margin of Error!!Total:!!Female:!!62 to 64 years",
+    "B01001_044E": "Estimate!!Total:!!Female:!!65 and 66 years",
+    "B01001_044M": "Margin of Error!!Total:!!Female:!!65 and 66 years",
+    "B01001_045E": "Estimate!!Total:!!Female:!!67 to 69 years",
+    "B01001_045M": "Margin of Error!!Total:!!Female:!!67 to 69 years",
+    "B01001_046E": "Estimate!!Total:!!Female:!!70 to 74 years",
+    "B01001_046M": "Margin of Error!!Total:!!Female:!!70 to 74 years",
+    "B01001_047E": "Estimate!!Total:!!Female:!!75 to 79 years",
+    "B01001_047M": "Margin of Error!!Total:!!Female:!!75 to 79 years",
+    "B01001_048E": "Estimate!!Total:!!Female:!!80 to 84 years",
+    "B01001_048M": "Margin of Error!!Total:!!Female:!!80 to 84 years",
+    "B01001_049E": "Estimate!!Total:!!Female:!!85 years and over",
+    "B01001_049M": "Margin of Error!!Total:!!Female:!!85 years and over",
+    "B01003_001E": "Estimate!!Total",
+    "B08202_002E": "Estimate!!Total:!!No workers",
+    "B08202_002M": "Margin of Error!!Total:!!No workers",
+    "B08202_003E": "Estimate!!Total:!!1 worker",
+    "B08202_003M": "Margin of Error!!Total:!!1 worker",
+    "B08202_004E": "Estimate!!Total:!!2 workers",
+    "B08202_004M": "Margin of Error!!Total:!!2 workers",
+    "B08202_005E": "Estimate!!Total:!!3 or more workers",
+    "B08202_005M": "Margin of Error!!Total:!!3 or more workers",
+    "B09019_002E": "Estimate!!Total:!!In households:",
+    "B11016_003E": "Estimate!!Total:!!Family households:!!2-person household",
+    "B11016_003M": "Margin of Error!!Total:!!Family households:!!2-person household",
+    "B11016_004E": "Estimate!!Total:!!Family households:!!3-person household",
+    "B11016_004M": "Margin of Error!!Total:!!Family households:!!3-person household",
+    "B11016_005E": "Estimate!!Total:!!Family households:!!4-person household",
+    "B11016_005M": "Margin of Error!!Total:!!Family households:!!4-person household",
+    "B11016_006E": "Estimate!!Total:!!Family households:!!5-person household",
+    "B11016_006M": "Margin of Error!!Total:!!Family households:!!5-person household",
+    "B11016_007E": "Estimate!!Total:!!Family households:!!6-person household",
+    "B11016_007M": "Margin of Error!!Total:!!Family households:!!6-person household",
+    "B11016_008E": "Estimate!!Total:!!Family households:!!7-or-more person household",
+    "B11016_008M": "Margin of Error!!Total:!!Family households:!!7-or-more person household",
+    "B11016_010E": "Estimate!!Total:!!Nonfamily households:!!1-person household",
+    "B11016_010M": "Margin of Error!!Total:!!Nonfamily households:!!1-person household",
+    "B11016_011E": "Estimate!!Total:!!Nonfamily households:!!2-person household",
+    "B11016_011M": "Margin of Error!!Total:!!Nonfamily households:!!2-person household",
+    "B11016_012E": "Estimate!!Total:!!Nonfamily households:!!3-person household",
+    "B11016_012M": "Margin of Error!!Total:!!Nonfamily households:!!3-person household",
+    "B11016_013E": "Estimate!!Total:!!Nonfamily households:!!4-person household",
+    "B11016_013M": "Margin of Error!!Total:!!Nonfamily households:!!4-person household",
+    "B11016_014E": "Estimate!!Total:!!Nonfamily households:!!5-person household",
+    "B11016_014M": "Margin of Error!!Total:!!Nonfamily households:!!5-person household",
+    "B11016_015E": "Estimate!!Total:!!Nonfamily households:!!6-person household",
+    "B11016_015M": "Margin of Error!!Total:!!Nonfamily households:!!6-person household",
+    "B11016_016E": "Estimate!!Total:!!Nonfamily households:!!7-or-more person household",
+    "B11016_016M": "Margin of Error!!Total:!!Nonfamily households:!!7-or-more person household",
+    "B14001_007E": "Estimate!!Total:!!Enrolled in school:!!Enrolled in grade 9 to grade 12",
+    "B14001_008E": "Estimate!!Total:!!Enrolled in school:!!Enrolled in college, undergraduate years",
+    "B14001_009E": "Estimate!!Total:!!Enrolled in school:!!Graduate or professional school",
+    "B19001_002E": "Estimate!!Total:!!Less than $10,000",
+    "B19001_002M": "Margin of Error!!Total:!!Less than $10,000",
+    "B19001_003E": "Estimate!!Total:!!$10,000 to $14,999",
+    "B19001_003M": "Margin of Error!!Total:!!$10,000 to $14,999",
+    "B19001_004E": "Estimate!!Total:!!$15,000 to $19,999",
+    "B19001_004M": "Margin of Error!!Total:!!$15,000 to $19,999",
+    "B19001_005E": "Estimate!!Total:!!$20,000 to $24,999",
+    "B19001_005M": "Margin of Error!!Total:!!$20,000 to $24,999",
+    "B19001_006E": "Estimate!!Total:!!$25,000 to $29,999",
+    "B19001_006M": "Margin of Error!!Total:!!$25,000 to $29,999",
+    "B19001_007E": "Estimate!!Total:!!$30,000 to $34,999",
+    "B19001_007M": "Margin of Error!!Total:!!$30,000 to $34,999",
+    "B19001_008E": "Estimate!!Total:!!$35,000 to $39,999",
+    "B19001_008M": "Margin of Error!!Total:!!$35,000 to $39,999",
+    "B19001_009E": "Estimate!!Total:!!$40,000 to $44,999",
+    "B19001_009M": "Margin of Error!!Total:!!$40,000 to $44,999",
+    "B19001_010E": "Estimate!!Total:!!$45,000 to $49,999",
+    "B19001_010M": "Margin of Error!!Total:!!$45,000 to $49,999",
+    "B19001_011E": "Estimate!!Total:!!$50,000 to $59,999",
+    "B19001_011M": "Margin of Error!!Total:!!$50,000 to $59,999",
+    "B19001_012E": "Estimate!!Total:!!$60,000 to $74,999",
+    "B19001_012M": "Margin of Error!!Total:!!$60,000 to $74,999",
+    "B19001_013E": "Estimate!!Total:!!$75,000 to $99,999",
+    "B19001_013M": "Margin of Error!!Total:!!$75,000 to $99,999",
+    "B19001_014E": "Estimate!!Total:!!$100,000 to $124,999",
+    "B19001_014M": "Margin of Error!!Total:!!$100,000 to $124,999",
+    "B19001_015E": "Estimate!!Total:!!$125,000 to $149,999",
+    "B19001_015M": "Margin of Error!!Total:!!$125,000 to $149,999",
+    "B19001_016E": "Estimate!!Total:!!$150,000 to $199,999",
+    "B19001_016M": "Margin of Error!!Total:!!$150,000 to $199,999",
+    "B19001_017E": "Estimate!!Total:!!$200,000 or more",
+    "B19001_017M": "Margin of Error!!Total:!!$200,000 or more",
+    "B25044_003E": "Estimate!!Total:!!Owner occupied:!!No vehicle available",
+    "B25044_003M": "Margin of Error!!Total:!!Owner occupied:!!No vehicle available",
+    "B25044_004E": "Estimate!!Total:!!Owner occupied:!!1 vehicle available",
+    "B25044_004M": "Margin of Error!!Total:!!Owner occupied:!!1 vehicle available",
+    "B25044_005E": "Estimate!!Total:!!Owner occupied:!!2 vehicles available",
+    "B25044_005M": "Margin of Error!!Total:!!Owner occupied:!!2 vehicles available",
+    "B25044_006E": "Estimate!!Total:!!Owner occupied:!!3 vehicles available",
+    "B25044_006M": "Margin of Error!!Total:!!Owner occupied:!!3 vehicles available",
+    "B25044_007E": "Estimate!!Total:!!Owner occupied:!!4 vehicles available",
+    "B25044_007M": "Margin of Error!!Total:!!Owner occupied:!!4 vehicles available",
+    "B25044_008E": "Estimate!!Total:!!Owner occupied:!!5 or more vehicles available",
+    "B25044_008M": "Margin of Error!!Total:!!Owner occupied:!!5 or more vehicles available",
+    "B25044_010E": "Estimate!!Total:!!Renter occupied:!!No vehicle available",
+    "B25044_010M": "Margin of Error!!Total:!!Renter occupied:!!No vehicle available",
+    "B25044_011E": "Estimate!!Total:!!Renter occupied:!!1 vehicle available",
+    "B25044_011M": "Margin of Error!!Total:!!Renter occupied:!!1 vehicle available",
+    "B25044_012E": "Estimate!!Total:!!Renter occupied:!!2 vehicles available",
+    "B25044_012M": "Margin of Error!!Total:!!Renter occupied:!!2 vehicles available",
+    "B25044_013E": "Estimate!!Total:!!Renter occupied:!!3 vehicles available",
+    "B25044_013M": "Margin of Error!!Total:!!Renter occupied:!!3 vehicles available",
+    "B25044_014E": "Estimate!!Total:!!Renter occupied:!!4 vehicles available",
+    "B25044_014M": "Margin of Error!!Total:!!Renter occupied:!!4 vehicles available",
+    "B25044_015E": "Estimate!!Total:!!Renter occupied:!!5 or more vehicles available",
+    "B25044_015M": "Margin of Error!!Total:!!Renter occupied:!!5 or more vehicles available"
+  },
+  "acs_variables_sha256": "824bb0c3f1b9ab2d4e7323a5fb184b8a4d15de1b7068e08bef01c6599c8bc574",
+  "group_metadata_sha256": {
+    "B01001": "e72144e30bf0814d36d1e844dca4b5cff9dd9d3cf1d5e439ed146755c25eb077",
+    "B08202": "37b824bf9aa227e1ea22226ea7277552d216846f219d317cf88fe655012fa6fc",
+    "B11016": "5bd2dad39bfb4717fda66509f7f6bb5542902dc89b731419716771b6a6237001",
+    "B19001": "ced7c50ef9f88fe5eb6e1caabbec67741e7017947e8a5767b0eba3bf66d452a5",
+    "B25044": "5a5e4068833c850879e49e65727a0ff28871c56d4510819145765388069fdfad"
+  },
+  "income_source_dollar_year": 2019,
+  "live_population_fit": "not executed; no secret or microdata requested",
+  "mtc_income_deflator": 0.6735587134324504,
+  "mtc_income_dollar_year": 2000,
+  "puma_fields": {
+    "2010": "PUMA"
+  },
+  "pums_required_variables": {
+    "ADJINC": {
+      "group": "N/A",
+      "label": "Adjustment factor for income and earnings dollar amounts (6 implied decimal places)",
+      "limit": 0,
+      "predicateType": "int",
+      "suggested-weight": "PWGTP",
+      "values": {
+        "item": {
+          "1010145": "2019 factor (1.010145 * 1.00000000)",
+          "1031452": "2018 factor (1.013097 * 1.01811790)",
+          "1054606": "2017 factor (1.011189 * 1.04293629)",
+          "1073449": "2016 factor (1.007588 * 1.06536503)",
+          "1080470": "2015 factor (1.001264 * 1.07910576)"
+        }
+      }
+    },
+    "AGEP": {
+      "group": "N/A",
+      "label": "Age",
+      "limit": 0,
+      "predicateType": "int",
+      "suggested-weight": "PWGTP",
+      "values": {
+        "item": {
+          "0": "Under 1 year"
+        },
+        "range": [
+          {
+            "description": "1 to 99 years (Top-coded)",
+            "max": "99",
+            "min": "1"
+          }
+        ]
+      }
+    },
+    "ESR": {
+      "group": "N/A",
+      "label": "Employment status recode",
+      "limit": 0,
+      "predicateType": "int",
+      "suggested-weight": "PWGTP",
+      "values": {
+        "item": {
+          "0": "N/A (less than 16 years old)",
+          "1": "Civilian employed, at work",
+          "2": "Civilian employed, with a job but not at work",
+          "3": "Unemployed",
+          "4": "Armed Forces, At Work",
+          "5": "Armed Forces, With a Job But Not At Work",
+          "6": "Not in Labor Force"
+        }
+      }
+    },
+    "HHT": {
+      "group": "N/A",
+      "label": "Household/family type",
+      "limit": 0,
+      "predicateType": "int",
+      "suggested-weight": "WGTP",
+      "values": {
+        "item": {
+          "0": "N/A (GQ/vacant)",
+          "1": "Married couple household",
+          "2": "Other family household: Male householder, no spouse present",
+          "3": "Other family household: Female householder, no spouse present",
+          "4": "Nonfamily household: Male householder: Living alone",
+          "5": "Nonfamily household: Male householder: Not living alone",
+          "6": "Nonfamily household: Female householder: Living alone",
+          "7": "Nonfamily household: Female householder: Not living alone"
+        }
+      }
+    },
+    "HINCP": {
+      "group": "N/A",
+      "label": "Household income (past 12 months, use ADJINC to adjust HINCP to constant dollars)",
+      "limit": 0,
+      "predicateType": "int",
+      "suggested-weight": "WGTP",
+      "values": {
+        "item": {
+          "-59999": "Loss of $59,999 or more",
+          "-60000": "N/A (GQ/vacant)",
+          "0": "No household income"
+        },
+        "range": [
+          {
+            "description": "Loss of $1 to $59,998",
+            "max": "-1",
+            "min": "-59998"
+          },
+          {
+            "description": "Total household income in dollars (Components are rounded)",
+            "max": "99999999",
+            "min": "1"
+          }
+        ]
+      }
+    },
+    "NP": {
+      "group": "N/A",
+      "label": "Number of persons associated with this housing record",
+      "limit": 0,
+      "predicateType": "int",
+      "suggested-weight": "WGTP",
+      "values": {
+        "item": {
+          "0": "Vacant unit",
+          "1": "One person record (one person in household or any person in group quarters)"
+        },
+        "range": [
+          {
+            "description": "Number of person records (number of persons in household)",
+            "max": "20",
+            "min": "2"
+          }
+        ]
+      }
+    },
+    "PUMA": {
+      "group": "N/A",
+      "label": "Public use microdata area code (PUMA) based on 2010 Census definition",
+      "limit": 0,
+      "values": {
+        "range": [
+          {
+            "description": "Public use microdata area codes",
+            "max": "70301",
+            "min": "100"
+          }
+        ]
+      }
+    },
+    "PWGTP": {
+      "group": "N/A",
+      "is-weight": true,
+      "label": "Person weight",
+      "limit": 0,
+      "predicateType": "int",
+      "values": {
+        "range": [
+          {
+            "description": "Integer weight of person",
+            "max": "9999",
+            "min": "1"
+          }
+        ]
+      }
+    },
+    "SCHG": {
+      "group": "N/A",
+      "label": "Grade level attending",
+      "limit": 0,
+      "predicateType": "int",
+      "suggested-weight": "PWGTP",
+      "values": {
+        "item": {
+          "0": "N/A (not attending school)",
+          "01": "Nursery school/preschool",
+          "02": "Kindergarten",
+          "03": "Grade 1",
+          "04": "Grade 2",
+          "05": "Grade 3",
+          "06": "Grade 4",
+          "07": "Grade 5",
+          "08": "Grade 6",
+          "09": "Grade 7",
+          "10": "Grade 8",
+          "11": "Grade 9",
+          "12": "Grade 10",
+          "13": "Grade 11",
+          "14": "Grade 12",
+          "15": "College undergraduate years (freshman to senior)",
+          "16": "Graduate or professional school beyond a bachelor's degree"
+        }
+      }
+    },
+    "SERIALNO": {
+      "group": "N/A",
+      "label": "Housing unit/GQ person serial number",
+      "limit": 0,
+      "predicateType": "string",
+      "suggested-weight": "WGTP"
+    },
+    "SEX": {
+      "group": "N/A",
+      "label": "Sex",
+      "limit": 0,
+      "predicateType": "int",
+      "suggested-weight": "PWGTP",
+      "values": {
+        "item": {
+          "1": "Male",
+          "2": "Female"
+        }
+      }
+    },
+    "SPORDER": {
+      "group": "N/A",
+      "label": "Person number",
+      "limit": 0,
+      "predicateType": "int",
+      "suggested-weight": "PWGTP",
+      "values": {
+        "range": [
+          {
+            "description": "Person number",
+            "max": "20",
+            "min": "1"
+          }
+        ]
+      }
+    },
+    "TEN": {
+      "group": "N/A",
+      "label": "Tenure",
+      "limit": 0,
+      "predicateType": "int",
+      "suggested-weight": "WGTP",
+      "values": {
+        "item": {
+          "0": "N/A (GQ/vacant)",
+          "1": "Owned with mortgage or loan (include home equity loans)",
+          "2": "Owned Free And Clear",
+          "3": "Rented",
+          "4": "Occupied without payment of rent"
+        }
+      }
+    },
+    "VEH": {
+      "group": "N/A",
+      "label": "Vehicles (1 ton or less) available",
+      "limit": 0,
+      "predicateType": "int",
+      "suggested-weight": "WGTP",
+      "values": {
+        "item": {
+          "-1": "N/A (GQ/vacant)",
+          "0": "No vehicles",
+          "1": "1 vehicle",
+          "2": "2 vehicles",
+          "3": "3 vehicles",
+          "4": "4 Vehicles",
+          "5": "5 Vehicles",
+          "6": "6 or more vehicles"
+        }
+      }
+    },
+    "WGTP": {
+      "group": "N/A",
+      "is-weight": true,
+      "label": "Housing Unit Weight",
+      "limit": 0,
+      "predicateType": "int",
+      "values": {
+        "item": {
+          "0": "Group Quarter placeholder record"
+        },
+        "range": [
+          {
+            "description": "Integer weight of housing unit",
+            "max": "9999",
+            "min": "1"
+          }
+        ]
+      }
+    },
+    "WKHP": {
+      "group": "N/A",
+      "label": "Usual hours worked per week past 12 months",
+      "limit": 0,
+      "predicateType": "int",
+      "suggested-weight": "PWGTP",
+      "values": {
+        "item": {
+          "0": "N/A (less than 16 years old/did not work during the past 12 months)",
+          "99": "99 Or More Usual Hours"
+        },
+        "range": [
+          {
+            "description": "1 to 98 usual hours",
+            "max": "98",
+            "min": "1"
+          }
+        ]
+      }
+    }
+  },
+  "pums_variables_sha256": "61fdc741b8b745be1086f0ad98df794ba0d23ac4f58d411568aba47863e9dce2",
+  "sample_years": [
+    2015,
+    2019
+  ]
+}

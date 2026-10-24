@@ -1,0 +1,11 @@
+[
+  {
+    "name": "fare-hours2023",
+    "url": "https://metrocouncil.org/Council-Meetings/Committees/Transportation-Committee/2023/July-10,-2023/0710_2023_150-attachment.aspx",
+    "http_status": 200,
+    "bytes": 1429235,
+    "sha256": "304ddbb0d504231d5a4fbf4cf3463ca7e491317a032822878c3d6f8cbb1ff581",
+    "path": "data/_screening_cache/tbi2019-integration/fare-hours2023.response",
+    "retrieved_at": "2026-10-23T23:22:53.024325+00:00"
+  }
+]

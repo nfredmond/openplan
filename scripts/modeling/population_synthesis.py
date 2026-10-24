@@ -467,13 +467,15 @@ def synthesize_zone(
     margins: Mapping[str, Mapping[str, float]] | None = None,
     tolerance: float = DEFAULT_TOLERANCE,
     max_iterations: int = DEFAULT_MAX_ITERATIONS,
+    fitter=fit_zone_weights,
+    integerizer=None,
 ) -> tuple[list[dict[str, Any]], ZoneFit]:
     """Fit, integerize and expand one zone in a single call.
 
     Returns the synthesised household rows AND the fit, together, so a caller
     cannot take the population without also being handed what is wrong with it.
     """
-    fit = fit_zone_weights(
+    fit = fitter(
         households,
         controls,
         targets,
@@ -483,7 +485,9 @@ def synthesize_zone(
         tolerance=tolerance,
         max_iterations=max_iterations,
     )
-    counts = integerize_weights(fit.weights)
+    counts = (integerizer(fit.weights, targets=targets, margins=margins)
+              if integerizer is not None and fit.converged and not fit.unmet_controls and not fit.outside_margin
+              else integerize_weights(fit.weights))
     rows = expand_population(households, counts, zone_id, first_household_id=first_household_id)
     return rows, fit
 

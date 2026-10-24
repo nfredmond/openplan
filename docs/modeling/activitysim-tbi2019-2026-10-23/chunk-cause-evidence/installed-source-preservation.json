@@ -1,0 +1,11 @@
+{
+  "method": "SHA-256 recheck of installed files against initial source custody",
+  "all_unchanged": true,
+  "files": {
+    "abm/models/trip_scheduling.py": true,
+    "abm/models/util/probabilistic_scheduling.py": true,
+    "abm/models/util/trip.py": true,
+    "core/random.py": true,
+    "core/chunk.py": true
+  }
+}

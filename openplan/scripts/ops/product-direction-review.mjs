@@ -43,6 +43,7 @@ const CONTRACT_MARKER = "openplan-v1-product-contract";
 const MATRIX_MARKER = "openplan-planning-capability-matrix";
 const ROADMAP_MARKER = "openplan-active-roadmap";
 const MAX_REVIEW_DAYS = 31;
+const GIT_MAX_BUFFER = 64 * 1024 * 1024;
 
 const REQUIRED_PERSPECTIVES = [
   "transportation-and-travel-model-science",
@@ -572,6 +573,7 @@ function runCheck() {
   const changedSinceReview = execFileSync("git", ["diff", "--name-only", reviewedCommit, "--"], {
     cwd: REPO_ROOT,
     encoding: "utf8",
+    maxBuffer: GIT_MAX_BUFFER,
   })
     .trim()
     .split("\n")
@@ -626,7 +628,7 @@ function countFiles(root, predicate) {
 }
 
 function git(...args) {
-  return execFileSync("git", args, { cwd: REPO_ROOT, encoding: "utf8" }).trim();
+  return execFileSync("git", args, { cwd: REPO_ROOT, encoding: "utf8", maxBuffer: GIT_MAX_BUFFER }).trim();
 }
 
 function runPacket() {

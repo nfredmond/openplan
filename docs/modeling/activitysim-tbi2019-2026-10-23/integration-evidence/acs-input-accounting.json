@@ -1,0 +1,21 @@
+{
+  "zones": 704,
+  "published_population": 3065147,
+  "published_households": 1187423,
+  "published_employed_residents": 1679756,
+  "negative_or_missing_control_cells": {
+    "27123040802": {
+      "B19013_001E": "."
+    },
+    "27123980000": {
+      "B19013_001E": "."
+    },
+    "27163070801": {
+      "B19013_001E": "."
+    },
+    "27163070802": {
+      "B19013_001E": "."
+    }
+  },
+  "initial_audit_error": "ValueError: could not convert string to float: '.'; direct float check replaced with the existing missing-value decoder; source bytes and fitter unchanged"
+}

@@ -1,0 +1,32 @@
+[
+  {
+    "name": "transitland-history",
+    "url": "https://www.transit.land/data/feeds/f-9zvw-mvta~metro",
+    "resolved_url": "https://www.transit.land/data/feeds/f-9zvw-mvta~metro",
+    "http_status": 200,
+    "sha256": "85f89ff5926832871f323a35b93fca9319143cd3da7c9c46e43feaab6d470f66",
+    "bytes": 212225,
+    "path": "data/_screening_cache/tbi2019-integration/transitland-history.response",
+    "retrieved_at": "2026-10-24T00:01:23.241785+00:00"
+  },
+  {
+    "name": "parkride-legacy-metadata",
+    "url": "https://resources.gisdata.mn.gov/pub/gdrs/data/pub/us_mn_state_metc/trans_park_and_ride_lots/metadata/metadata.html",
+    "resolved_url": "https://resources.gisdata.mn.gov/pub/gdrs/data/pub/us_mn_state_metc/trans_park_and_ride_lots/metadata/metadata.html",
+    "http_status": 404,
+    "sha256": "80c3fe2ae1062abf56456f52518bd670f9ec3917b7f85e152b347ac6b6faf880",
+    "bytes": 196,
+    "path": "data/_screening_cache/tbi2019-integration/parkride-legacy-metadata.response",
+    "retrieved_at": "2026-10-24T00:01:22.551859+00:00"
+  },
+  {
+    "name": "transitland-v1-2019",
+    "url": "https://transit.land/api/v1/feed_versions?feed_onestop_id=f-9zvw-mvta~metro&calendar_start_date=2019-09-03&per_page=100",
+    "resolved_url": "https://transit.land/api/v1/feed_versions?feed_onestop_id=f-9zvw-mvta~metro&calendar_start_date=2019-09-03&per_page=100",
+    "http_status": 404,
+    "sha256": "caf9952622f27e024e5a32a75188938512070ab42d0a45a184566b2613ddd8b0",
+    "bytes": 105,
+    "path": "data/_screening_cache/tbi2019-integration/transitland-v1-2019.response",
+    "retrieved_at": "2026-10-24T00:01:22.275916+00:00"
+  }
+]

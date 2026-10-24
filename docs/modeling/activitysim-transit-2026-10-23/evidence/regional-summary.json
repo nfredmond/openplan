@@ -1,0 +1,33 @@
+{
+  "zones": 704,
+  "zones_with_walk_access": 459,
+  "walk_access_percent": 65.19886363636364,
+  "all_directed_interzonal_pairs": 494912,
+  "period_coverage": {
+    "EA": {
+      "origins_with_reachable_destination": 447,
+      "destinations_reached": 427
+    },
+    "AM": {
+      "origins_with_reachable_destination": 393,
+      "destinations_reached": 387
+    },
+    "MD": {
+      "origins_with_reachable_destination": 382,
+      "destinations_reached": 386
+    },
+    "PM": {
+      "origins_with_reachable_destination": 434,
+      "destinations_reached": 455
+    },
+    "EV": {
+      "origins_with_reachable_destination": 342,
+      "destinations_reached": 345
+    }
+  },
+  "repeat_artifact_bytes_identical": true,
+  "artifact_sha256": "00a2224d8254d6cbd5a701b22387fbcc604ba60c84c0d8478c5807ee06ae66cd",
+  "artifact_bytes": 21726395,
+  "retained_local_artifact": "/home/nathaniel/.t3/worktrees/openplan/t3-aeef9b6c/data/_screening_cache/activitysim-transit-2019/result-final/transit_skims.npz",
+  "implementation_sha256": "db2e85963579cac7c78148561393b9c5870ed905c0cf3e53214236f5468df3a6"
+}

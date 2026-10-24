@@ -6,6 +6,7 @@ import { populationSourceRegistry, POPULATION_PROFILE_PURPOSES, type PopulationS
 
 const name = "20261022010004_model_common_population_profiles.sql";
 const current = readFileSync(`supabase/migrations/${name}`, "utf8");
+const profile2019 = readFileSync("supabase/migrations/20261023224145_population_profile_2019.sql", "utf8");
 const admission = readFileSync("supabase/migrations/20261022010003_model_common_population_admission.sql", "utf8");
 const ordinarySource = readFileSync("supabase/migrations/20261022010000_model_common_population_comparisons.sql", "utf8");
 const replacement = readFileSync("supabase/migrations/20261022010001_model_population_replacement.sql", "utf8");
@@ -63,12 +64,24 @@ describe("latest population profile DDL source and frozen projection", () => {
     expect(Buffer.byteLength(tail)).toBe(22893);
     expect(createHash("sha256").update(tail).digest("hex")).toBe("9d7b3efc19a3ae5afcfcb4e069718e109fa3b08dcaf620336ec5efabba5a9f6b");
   });
+  it("adds only catalog membership in a forward migration and preserves the private helper", () => {
+    const helperStart = "CREATE FUNCTION public.model_common_population_profile_allowed(";
+    const helperEnd = "REVOKE ALL ON FUNCTION public.model_common_population_profile_allowed(pg_catalog.jsonb,pg_catalog.text) FROM PUBLIC, anon, authenticated, service_role;";
+    const normalize = (source: string) => source.replace("CREATE OR REPLACE FUNCTION", "CREATE FUNCTION")
+      .replace(/\$population_catalog\$[\s\S]*?\$population_catalog\$/g, "$population_catalog$CATALOG$population_catalog$");
+    const before = bounded(current, helperStart, helperEnd);
+    const after = bounded(profile2019, helperStart.replace("CREATE FUNCTION", "CREATE OR REPLACE FUNCTION"), helperEnd);
+    expect(normalize(after)).toBe(normalize(before));
+    expect(profile2019).not.toMatch(/\bGRANT\b|CREATE TABLE|CREATE POLICY|CREATE TRIGGER|ALTER TABLE|SECURITY DEFINER/i);
+    expect((profile2019.match(/CREATE OR REPLACE FUNCTION/g) ?? []).length).toBe(1);
+    expect(createHash("sha256").update(current).digest("hex")).toBe("0718e14ae0bc69bf753e63aca57435db8f9318ac114ab6b6877ea34805be91f1");
+  });
   it("pins catalog/TS/SQL membership independently for all technical purposes", () => {
     const projection = catalog.profiles.map((entry) => ({ profile: entry.profile,
       purposes: POPULATION_PROFILE_PURPOSES.filter((purpose) => entry.capabilities?.[purpose] === "supported") }));
     const frozen = sortedCompactJson(projection);
-    expect(current).toContain(`$population_catalog$${frozen}$population_catalog$::pg_catalog.jsonb`);
-    expect(current).toContain(`Frozen catalog projection SHA-256 (compact sorted JSON, no newline): ${createHash("sha256").update(frozen).digest("hex")}`);
+    expect(profile2019).toContain(`$population_catalog$${frozen}$population_catalog$::pg_catalog.jsonb`);
+    expect(profile2019).toContain(`Frozen catalog projection SHA-256 (compact sorted JSON, no newline): ${createHash("sha256").update(frozen).digest("hex")}`);
     for (const entry of catalog.profiles) for (const purpose of POPULATION_PROFILE_PURPOSES) {
       expect(populationSourceRegistry.profileAllowed(entry.profile, purpose)).toBe(entry.capabilities?.[purpose] === "supported");
     }

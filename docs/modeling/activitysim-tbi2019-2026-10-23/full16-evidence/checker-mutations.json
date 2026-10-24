@@ -1,0 +1,9 @@
+{
+  "controls": [
+    {"name": "harmless-comment", "exit_code": 0, "expected_pass": true},
+    {"name": "default-buffer", "exit_code": 1, "expected_error": "ENOBUFS"}
+  ],
+  "exact_restoration": true,
+  "raw_log_root": "/home/nathaniel/.local/state/openplan/tbi2019-evidence-archive-20261024",
+  "unselected_tests_per_control": 7
+}

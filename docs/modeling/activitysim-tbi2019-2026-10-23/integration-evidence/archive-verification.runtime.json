@@ -1,0 +1,28 @@
+{
+  "archive_sha256": "81fe67cc0ad74454dfd5a94c21d2497e6236c4958e7581e1f6babaff5d1fafd7",
+  "inventory_sha256": "3bb259ae901f888b77a270141fe226ea95e559eff19e3a7beff00d9a3eb1416b",
+  "files_checked_including_embedded_inventory": 516,
+  "all_member_bytes_match": true,
+  "harmless_controls": 1,
+  "targeted_failures": [
+    {
+      "fault": "missing-member",
+      "expected_failure": true
+    },
+    {
+      "fault": "wrong-hash",
+      "expected_failure": true
+    },
+    {
+      "fault": "wrong-length",
+      "expected_failure": true
+    },
+    {
+      "fault": "embedded-inventory",
+      "expected_failure": true
+    }
+  ],
+  "source_inventory_unchanged": true,
+  "control_boundary": "Wrong received member metadata after byte hashing; native controls do not authenticate producers",
+  "modeled_or_survey_outputs_read": false
+}

@@ -1,0 +1,43 @@
+{
+  "command": [
+    "systemd-run",
+    "--user",
+    "--scope",
+    "--unit=tbi-memory-alloc-2000-current-prefix",
+    "-p",
+    "MemoryMax=9G",
+    "-p",
+    "MemorySwapMax=0",
+    "env",
+    "OPENBLAS_NUM_THREADS=1",
+    "OMP_NUM_THREADS=1",
+    "MALLOC_MMAP_THRESHOLD_=131072",
+    "MALLOC_TRIM_THRESHOLD_=0",
+    "MALLOC_ARENA_MAX=2",
+    "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/bin/python",
+    "-B",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-7ed7ca64/docs/modeling/activitysim-tbi2019-2026-10-23/memory-fit-evidence/monitor.py",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-7ed7ca64/docs/modeling/activitysim-tbi2019-2026-10-23/memory-fit-evidence/alloc-2000-current-prefix",
+    "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/bin/python",
+    "-B",
+    "-m",
+    "activitysim",
+    "run",
+    "-c",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-7ed7ca64/data/_screening_cache/tbi2019-memory-fit/config-alloc-2000-current-prefix",
+    "-c",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/bundle/configs",
+    "-c",
+    "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/examples/prototype_mtc/configs",
+    "-d",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/inputs-2000",
+    "-o",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-7ed7ca64/data/_screening_cache/tbi2019-memory-fit/alloc-2000-current"
+  ],
+  "config_files": {
+    "logging.yaml": "768c127f265f728df27e97db1667c42ae1723b44ae647e571d61be7a68d6aa70",
+    "network_los.yaml": "28462bf20dfe305f422e2ea586f253a0f98a9ef423fae9ee555505c9405eefd9",
+    "settings.yaml": "d5cd897e940975dddcaa6f11ed9ece0d90bf44d72f3ee3899c6e204d2953276c"
+  },
+  "outcomes_accessed": false
+}

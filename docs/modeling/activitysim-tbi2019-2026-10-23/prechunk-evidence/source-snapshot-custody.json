@@ -1,0 +1,114 @@
+[
+  {
+    "source": "installed-source/abm/models/location_choice.py",
+    "sha256": "39a8624e73cad1a3b38acfc769fbbb330aa792b115ec16b047c04631fd9e82c5",
+    "compressed": "installed-source/abm/models/location_choice.py.gz",
+    "compressed_sha256": "5d9abe10fd958c5506053cd29e639fdb7a69156c4de0b90e9a8269f753729637",
+    "byte_identical": true
+  },
+  {
+    "source": "installed-source/abm/models/util/logsums.py",
+    "sha256": "4c42188a1ae4392f3a514570906f5390939bbba4e15cfc94bace031067822c8c",
+    "compressed": "installed-source/abm/models/util/logsums.py.gz",
+    "compressed_sha256": "b8d03788c7bd4868d71c60f45be7292d27ec66c539345e0e6ddc4650591cbd2f",
+    "byte_identical": true
+  },
+  {
+    "source": "installed-source/abm/tables/households.py",
+    "sha256": "438611757b550384e4d60bb46d060575a36c13a9c27e3d3e039c1ba531e680c7",
+    "compressed": "installed-source/abm/tables/households.py.gz",
+    "compressed_sha256": "a0fec53af0a8ea4528e77d9d7dd855f04fd853d8616ad8789239b3a0c4547481",
+    "byte_identical": true
+  },
+  {
+    "source": "installed-source/abm/tables/persons.py",
+    "sha256": "92043e96ef280fc6effd1035b9aad610ce504c47c99ee58671fee2449984c9b0",
+    "compressed": "installed-source/abm/tables/persons.py.gz",
+    "compressed_sha256": "6b3f9878828952047b352b251dbf717dd9c1ad82f4d62c5d8230253796587580",
+    "byte_identical": true
+  },
+  {
+    "source": "installed-source/abm/tables/shadow_pricing.py",
+    "sha256": "a032be5ac027f06a2981b2bea3e0f075922fe8659dddb31b8e0862aea485ae77",
+    "compressed": "installed-source/abm/tables/shadow_pricing.py.gz",
+    "compressed_sha256": "040983f381980a1459a6f00d58bd7dd00cf58bbd0702dc829756cc3cf93c69cb",
+    "byte_identical": true
+  },
+  {
+    "source": "installed-source/core/input.py",
+    "sha256": "c87066d5b22aa861a3b15b6aa27681406c5ccda2f3a771526ad86348bc7c8707",
+    "compressed": "installed-source/core/input.py.gz",
+    "compressed_sha256": "227c453dd837f470aa2a79379cf7f45f6e4fb0cdb8289c6e7a6de0f4bc7fad60",
+    "byte_identical": true
+  },
+  {
+    "source": "installed-source/core/expressions.py",
+    "sha256": "fc572f167821a9957696e8f6646e654d3bca31ea2f31a3306f5315a7821c9f39",
+    "compressed": "installed-source/core/expressions.py.gz",
+    "compressed_sha256": "fe224c87c48612d73a8f83be39f763fc4c103abffea3d4b76071b1378fcda32d",
+    "byte_identical": true
+  },
+  {
+    "source": "installed-source/core/util.py",
+    "sha256": "ce60d64fa483f40ce3d8994f772120dc39f6eca9dc4be7c91ac04b5ca222b83f",
+    "compressed": "installed-source/core/util.py.gz",
+    "compressed_sha256": "01d993c61ca66cac99a7ee1477d125777bd44fed423736706faf465cc10091b7",
+    "byte_identical": true
+  },
+  {
+    "source": "installed-source/core/assign.py",
+    "sha256": "a635d6540f98e043b01cad454b20872a5e3770f90f95cf5e6bc0d00ecbf8125e",
+    "compressed": "installed-source/core/assign.py.gz",
+    "compressed_sha256": "bf1537e3b325cf246e111c4f5f791c46b1cdeafa28ac29b808e9f004a141fa75",
+    "byte_identical": true
+  },
+  {
+    "source": "installed-source/core/random.py",
+    "sha256": "b46078a39ffec43fb0f24f497f65c00148900623926942d94d88d3c0a28a2bf7",
+    "compressed": "installed-source/core/random.py.gz",
+    "compressed_sha256": "26570be94942c1549310696e969da60dcf1df50aae480d7daec5309dd1380a26",
+    "byte_identical": true
+  },
+  {
+    "source": "installed-source/core/configuration/top.py",
+    "sha256": "1d959ff80a1a606b5d7cde3febfe7136fdaa0d68dc57f520d58e72caaff7127d",
+    "compressed": "installed-source/core/configuration/top.py.gz",
+    "compressed_sha256": "68b65fac3d0d04c44a487b36640291518d649460264d33d1ceb5a822e102d277",
+    "byte_identical": true
+  },
+  {
+    "source": "installed-source/core/configuration/logit.py",
+    "sha256": "90775b2cacedbc8c2e72b0a03bbd72fdda10136ccb06b6272a88600ab4dc68b1",
+    "compressed": "installed-source/core/configuration/logit.py.gz",
+    "compressed_sha256": "9a6f1037be91eca3b25b8fa3159503a86d377b791dbc6d4b8ccfc452eee51640",
+    "byte_identical": true
+  },
+  {
+    "source": "additional-source/activitysim/abm/models/accessibility.py",
+    "sha256": "128dd04e10c3c3c4eda6240f55a0b029bfd465965f7830644c5d0b61e4c9d9f8",
+    "compressed": "additional-source/activitysim/abm/models/accessibility.py.gz",
+    "compressed_sha256": "73500e0fa881b3ea770d39db570690940faa14a9d964364f350a0714977fb85d",
+    "byte_identical": true
+  },
+  {
+    "source": "additional-source/activitysim/abm/tables/accessibility.py",
+    "sha256": "9593ae2504ead621b9152c66e7c08f7c6758b5708eb670ad9a2cf3437f192aae",
+    "compressed": "additional-source/activitysim/abm/tables/accessibility.py.gz",
+    "compressed_sha256": "0372566b6e4a407baa554233ee2e78c686a8526195f3f7440773c2c3c23c30e6",
+    "byte_identical": true
+  },
+  {
+    "source": "additional-source/activitysim/abm/tables/size_terms.py",
+    "sha256": "e10a7029769006dfd1f71d1d2ef7064fed4f5df22b0032bfadaba4a766de8798",
+    "compressed": "additional-source/activitysim/abm/tables/size_terms.py.gz",
+    "compressed_sha256": "d46ef8bcb7661340bca939589d1652142f0c20fb05d8571d627d91da258e2fef",
+    "byte_identical": true
+  },
+  {
+    "source": "additional-source/pandas/core/internals/managers.py",
+    "sha256": "79dc96a251c4a774f3b751f208b6dfaf54fdbc2b45e797b5f560fe5a3b8db0dc",
+    "compressed": "additional-source/pandas/core/internals/managers.py.gz",
+    "compressed_sha256": "8b91658fad0d1c946f848a19a2e4057659d83f89f4e00d961faf8c30229362d0",
+    "byte_identical": true
+  }
+]

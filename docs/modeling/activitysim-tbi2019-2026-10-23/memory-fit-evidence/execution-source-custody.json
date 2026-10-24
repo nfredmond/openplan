@@ -1,0 +1,21 @@
+{
+  "base_commit": "8fc4ae9ecca6de041190560ed5b10e6ad1166802",
+  "scripts": {
+    "admission.py": "7e721a925242d382ce3eece588e77f1b960bb38e29141b1db5c64f08b227270a",
+    "execute.py": "5a2148a94b205995e7d049ebbedb7eb909954e98853542100616b38414011320",
+    "monitor.initial.py": "e1c9f43c16cf3737ea30835974b10acb92c1ff72913a0811068ba1cb55f8cec4",
+    "monitor.py": "cc2d08ad492574585a2928fcd9cbebb171b3385adc591224ad7cafbe56f2df8a",
+    "mutate-admission.py": "2d9893b46d707f8c280dd1b7626948a736400779add0688b918df3e97eca7132",
+    "prepare.py": "f8c77afb8bb8f1b710ef41eba9cfb53f90e6d4e5660f8602ba8d6dfef534150c",
+    "profile-engine.initial.py": "19ef76249d5f465cc37b082c78b29a8213fdde5be003cc9ca77ab4aac2787276",
+    "profile-engine.py": "3c1864268b19916605595684c38cd05a73bcd652b4c3d9160249d99e7d1c9b53",
+    "profile-reduced.py": "3762a3a1c9635d1d5d25a381b06b5a620ad99f2f91e084d152cf49ba69a5f7dd",
+    "run-full.py": "654734905a04d39caf67972d17d72e6a77b170ba29549b2df7f77b2d61af90cb",
+    "summarize-memory.py": "a13d1852f868f0f76ac49a5155f93e952321ece651aec9c67da341dee0e0fe6b",
+    "summarize-stages.py": "476e465a1945f178827c62ad02d168afebc21e66c38016bf236cef30957f5771",
+    "test-admission.py": "e63d667a4c0738b0bfbaa24f379991383a51805da833e10bc9b7c7273dda7362",
+    "train-and-prove.executed.py": "cf2132d117141866de22a011a9a8e9db0ee11874bdcd5a3c793fe79a753b8e22",
+    "train-and-prove.py": "9b47a06db84803a457e6ce057da28a4f4b5029b193e447f8507989b6493e418a"
+  },
+  "notes": "Training executes the retained train-and-prove.executed.py equivalent loaded before the guard extraction. Diagnostic and training monitors use monitor.initial.py; later scopes use monitor.py. No model settings changed during training."
+}

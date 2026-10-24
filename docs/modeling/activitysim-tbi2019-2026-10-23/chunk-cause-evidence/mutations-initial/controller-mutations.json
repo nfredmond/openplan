@@ -1,0 +1,36 @@
+{
+  "controls": [
+    {
+      "name": "harmless-comment",
+      "harmless": true,
+      "exit_code": 0,
+      "accepted": true
+    },
+    {
+      "name": "input-refusal",
+      "harmless": false,
+      "exit_code": 1,
+      "accepted": true
+    },
+    {
+      "name": "cache-refusal",
+      "harmless": false,
+      "exit_code": 1,
+      "accepted": true
+    },
+    {
+      "name": "choice-stop",
+      "harmless": false,
+      "exit_code": 1,
+      "accepted": true
+    },
+    {
+      "name": "complete-census",
+      "harmless": false,
+      "exit_code": 1,
+      "accepted": true
+    }
+  ],
+  "source_sha256": "05ebcef1649bab22f1e13ff6f4f4931eb07d8f3d01f014a9f2f8695d2c776c76",
+  "restored_exactly": true
+}

@@ -1,0 +1,43 @@
+{
+  "name": "full-current-prefix",
+  "command": [
+    "systemd-run",
+    "--user",
+    "--scope",
+    "--unit=tbi-hybrid-full-current-prefix",
+    "-p",
+    "MemoryMax=9G",
+    "-p",
+    "MemorySwapMax=0",
+    "env",
+    "OPENBLAS_NUM_THREADS=1",
+    "OMP_NUM_THREADS=1",
+    "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/bin/python",
+    "-B",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/docs/modeling/activitysim-tbi2019-2026-10-23/convergence-evidence/scope-runner.py",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/docs/modeling/activitysim-tbi2019-2026-10-23/chunk-cause-evidence/full-current-prefix.health.json",
+    "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/bin/python",
+    "-B",
+    "-m",
+    "activitysim",
+    "run",
+    "-c",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/data/_screening_cache/tbi2019-chunk-cause/config-full-current-prefix",
+    "-c",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/bundle/configs",
+    "-c",
+    "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/examples/prototype_mtc/configs",
+    "-d",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/bundle",
+    "-o",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-85dfd8b2/data/_screening_cache/tbi2019-chunk-cause/full-current"
+  ],
+  "config_files": {
+    "logging.yaml": "768c127f265f728df27e97db1667c42ae1723b44ae647e571d61be7a68d6aa70",
+    "network_los.yaml": "28462bf20dfe305f422e2ea586f253a0f98a9ef423fae9ee555505c9405eefd9",
+    "settings.yaml": "363a27f832f6997caea1b1de25982c25ac5e1503c15d8fea46f4e681e6fd8045"
+  },
+  "exit_code": -15,
+  "elapsed_seconds": 475.67304586601676,
+  "final_files": {}
+}

@@ -1,0 +1,44 @@
+[
+  {
+    "name": "comment",
+    "expected": "survive",
+    "exit_code": 0,
+    "expected_observed": true,
+    "restored_sha256": "a93f36b924537e02666a796e8523e2acb19429d93dacd7c8bd812e0f06ebf9bf"
+  },
+  {
+    "name": "row-bound",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "a93f36b924537e02666a796e8523e2acb19429d93dacd7c8bd812e0f06ebf9bf"
+  },
+  {
+    "name": "group-contiguity",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "a93f36b924537e02666a796e8523e2acb19429d93dacd7c8bd812e0f06ebf9bf"
+  },
+  {
+    "name": "split-person",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "a93f36b924537e02666a796e8523e2acb19429d93dacd7c8bd812e0f06ebf9bf"
+  },
+  {
+    "name": "result-order",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "a93f36b924537e02666a796e8523e2acb19429d93dacd7c8bd812e0f06ebf9bf"
+  },
+  {
+    "name": "positional-values",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "a93f36b924537e02666a796e8523e2acb19429d93dacd7c8bd812e0f06ebf9bf"
+  }
+]

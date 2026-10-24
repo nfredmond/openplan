@@ -1,0 +1,14 @@
+{
+  "households": 20000,
+  "persons": 49094,
+  "selection": "lowest SHA256(tbi2019-memory-20000-v1:household_id)",
+  "cache_sha256": "365ccfdc636f0662108ea8b930407c0163c501afe5057fc641984fad5b6a16eb",
+  "chunk_size": 5500000000,
+  "purpose": "Memory diagnosis only, not a full arm",
+  "input_hashes": {
+    "land_use.csv": "d3923c95594ddaaddbbd5305d506471b85ad73970cca2cf798600290cbfd6b70",
+    "households.csv": "3e8114ac13b6bba8c30d7a134f945ae1aaa7931c0a8cca4b1a8d4aa0f60a2621",
+    "persons.csv": "52e6e4605ea286c2c1b8cca78d723958c641fe38cc2b4e05b7df12bbb4512be1"
+  },
+  "outcomes_accessed": false
+}

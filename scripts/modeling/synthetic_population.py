@@ -150,6 +150,10 @@ def synthesize_study_area(
     source_profile: Mapping[str, Any] | None = None,
     include_school_enrollment: bool = False,
     fetch_acs_school_enrollment: Callable[..., Any] = cp.fetch_acs_school_enrollment,
+    fitting_method: str = "ipu",
+    fitting_max_iterations: int = 200,
+    exclude_failed_fits: bool = False,
+    integerization_method: str = "largest_remainder",
 ) -> dict[str, Any]:
     """Fit and expand a population for every internal zone in a study area."""
     # Standalone callers retain their configured defaults. Retained-study
@@ -183,12 +187,29 @@ def synthesize_study_area(
         )
     people_by_seed = cp.group_persons_by_serial(person_rows)
     matrix = build_seed_matrix(seed, controls)
+    from population_synthesis import fit_zone_weights
+    fitter = fit_zone_weights
+    method = SYNTHESIS_METHOD
+    if fitting_method == "entropy":
+        from population_entropy import EntropyFitter
+        fitter = EntropyFitter(seed, controls, matrix)
+        method = "acs_pums_seed_entropy_balancing"
+    elif fitting_method != "ipu":
+        raise SyntheticPopulationError(f"Unknown population fitting method: {fitting_method}")
+    integerizer = None
+    if integerization_method == "controlled" and fitting_method == "entropy":
+        from population_integerization import controlled_counts
+        integerizer = lambda weights, **kwargs: controlled_counts(
+            fitter.patterns, fitter.inverse, weights, controls, **kwargs)
+    elif integerization_method != "largest_remainder":
+        raise SyntheticPopulationError(f"Unsupported integerization method: {integerization_method}")
 
     households: list[dict[str, Any]] = []
     persons: list[dict[str, Any]] = []
     fits: list[ZoneFit] = []
     realized_household_counts: dict[int, int] = {}
     realized_control_differences: dict[int, dict[str, Any]] = {}
+    fit_exclusions: list[dict[str, Any]] = []
     next_household_id = 1
     next_person_id = 1
 
@@ -204,8 +225,16 @@ def synthesize_study_area(
             first_household_id=next_household_id,
             seed_matrix=matrix,
             margins=cp.zone_margins_from_acs(acs_row, controls),
+            fitter=fitter,
+            max_iterations=fitting_max_iterations,
+            integerizer=integerizer,
         )
         fits.append(fit)
+        if exclude_failed_fits and (not fit.converged or fit.unmet_controls or fit.outside_margin):
+            fit_exclusions.append({"zone_id": zone["zone_id"], "GEOID": geoid,
+                                   "reason": "population_fit_failed",
+                                   "excluded_realized_households": len(rows)})
+            rows = []
         realized_household_counts[zone["zone_id"]] = len(rows)
         replicates = Counter(row["seed_household_id"] for row in rows)
         differences: dict[str, Any] = {}
@@ -238,7 +267,7 @@ def synthesize_study_area(
                 "hht": _hht_of(people),
                 "seed_household_id": row["seed_household_id"],
                 "source_geoid": geoid,
-                "synthesis_method": SYNTHESIS_METHOD,
+                "synthesis_method": method,
             }
             households.append(household)
             person_rows_out = _person_rows_for(household, people, next_person_id)
@@ -262,6 +291,7 @@ def synthesize_study_area(
         # Raw source cells remain distinct from targets and realized counts.
         # Missing/suppressed values stay visible despite inherited fitter rules.
         "source_controls": {
+            "fit_exclusions": fit_exclusions,
             "raw_by_geoid": zone_controls,
             "definitions": [asdict(control) for control in controls],
             "targets_by_geoid": {z["GEOID"]: cp.zone_targets_from_acs(zone_controls[z["GEOID"]], controls) for z in zones},
@@ -290,7 +320,7 @@ def synthesize_study_area(
              "integerization_household_difference": realized_household_counts[fit.zone_id] - sum(fit.weights)}
             for fit in fits
         ],
-        "method": SYNTHESIS_METHOD,
+        "method": method,
         "school_inputs": school_inputs,
     }
 

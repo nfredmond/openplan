@@ -117,6 +117,7 @@ def parse_args() -> argparse.Namespace:
             "default and every referenced decision and coefficient file is hash-verified."
         ),
     )
+    parser.add_argument("--transit-config", help="Opt-in GTFS skim JSON configuration; MTC only")
     return parser.parse_args()
 
 
@@ -829,6 +830,7 @@ def build_mtc_package(
     accepted_components_registry: str | None,
     source_profile: dict[str, Any] | None = None,
     school_enrollment: dict[str, dict[str, float]] | None = None,
+    transit_config: dict[str, Any] | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any], dict[str, Any], list[str]]:
     """Everything the MTC config package adds to a bundle, in one place.
 
@@ -856,6 +858,7 @@ def build_mtc_package(
         centroid_map=centroid_map,
         stock_configs_dir=stock["configs_dir"],
         stock_skims_omx=stock["stock_skims_omx"],
+        **({"transit_config": transit_config} if transit_config is not None else {}),
     )
 
     mtc_household_rows, household_accounting = mtc.mtc_households(household_rows, **profile_args)
@@ -910,6 +913,18 @@ def build_mtc_package(
         },
     }
     stock_caveats = mtc.mtc_config_caveats(**profile_args)
+    if transit_config is not None:
+        transit = skim_accounting["transit"]
+        stock_caveats[2] = (
+            f"Opt-in GTFS transit status: {transit['status']}. "
+            "Unknown fares and unavailable paths disable mode-choice alternatives. "
+            "Time-of-day skims represent the configured departures, not period averages. "
+            "See the transit custody and limitations in mtc_inputs.skim_expansion.transit."
+        )
+        mtc_blocks["files"]["transit_raw_skims"] = "skims/transit_skims.npz"
+        write_json(output_path / "metadata" / "transit.json", transit)
+        mtc_blocks["files"]["transit_custody"] = "metadata/transit.json"
+
     behavior_caveat = (
         "Auto ownership uses the nationally estimated component accepted by the recorded fresh "
         "holdout study. Every other behavioral component still uses ActivitySim's stock "
@@ -936,7 +951,10 @@ def build_activitysim_input_bundle(
     stock_configs_dir: str | None = None,
     accepted_components_registry: str | None = None,
     retained_population: dict[str, Any] | None = None,
+    transit_config: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    if transit_config is not None and config_package != "mtc":
+        raise RuntimeError("Transit skims require the MTC config package")
     if config_package not in ("starter", "mtc"):
         raise RuntimeError(f"Unknown config package '{config_package}'.")
     if config_package == "mtc" and population_source != "census":
@@ -970,12 +988,15 @@ def build_activitysim_input_bundle(
             raise RuntimeError("Retained population requires an exact directory and expected manifest descriptor.")
         loaded_population = read_common_population(
             Path(retained_population["directory"]), expected_manifest=retained_population["manifest"],
-            zone_rows=raw_zones,
+            zone_rows=raw_zones, include_zone_fits=False,
         )
         if config_package == "mtc":
             from common_population import retained_school_enrollment
 
             retained_enrollment = retained_school_enrollment(loaded_population)
+        # The reader verified all raw diagnostic bytes. Keep their full retained
+        # file, copied below, but release weights unused by engine conversion.
+        loaded_population["diagnostics"].pop("zone_fits", None)
 
     output_path = Path(output_dir).expanduser().resolve()
     if output_path.exists():
@@ -1015,6 +1036,7 @@ def build_activitysim_input_bundle(
             accepted_components_registry=accepted_components_registry,
             source_profile=None if loaded_population is None else loaded_population["basis"]["source_profile"],
             school_enrollment=retained_enrollment,
+            **({"transit_config": transit_config} if transit_config is not None else {}),
         )
     else:
         land_use_rows = build_land_use_rows(zones)
@@ -1098,6 +1120,7 @@ def main() -> int:
         config_package=args.config_package,
         stock_configs_dir=args.stock_configs_dir,
         accepted_components_registry=args.accepted_components_registry,
+        transit_config=read_json(Path(args.transit_config)) if args.transit_config else None,
     )
     print(json.dumps(summary, indent=2))
     return 0

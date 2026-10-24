@@ -1,0 +1,179 @@
+{
+  "tours": [
+    {
+      "household": 100,
+      "person": 1000,
+      "day": 10000,
+      "trip_ids": [
+        1001,
+        1002,
+        1003,
+        1004
+      ],
+      "primary_destination": "work",
+      "purpose": "work",
+      "family": "walk",
+      "weight": 50.0,
+      "category": "home_based",
+      "parent_trip_ids": null
+    }
+  ],
+  "atwork_subtours": [
+    {
+      "household": 100,
+      "person": 1000,
+      "day": 10000,
+      "trip_ids": [
+        1002,
+        1003
+      ],
+      "primary_destination": "cafe",
+      "purpose": "eating_out",
+      "family": "walk",
+      "weight": 50.0,
+      "category": "atwork",
+      "parent_trip_ids": [
+        1001,
+        1002,
+        1003,
+        1004
+      ]
+    }
+  ],
+  "joint_travel_tours": [
+    {
+      "household": 24,
+      "person": 240,
+      "day": 2400,
+      "trip_ids": [
+        241,
+        242
+      ],
+      "primary_destination": "shop",
+      "purpose": "shopping",
+      "family": "walk",
+      "weight": 50.0,
+      "category": "joint_travel",
+      "parent_trip_ids": null
+    }
+  ],
+  "excluded_constructed_tours_by_reason": {
+    "joint": 1,
+    "mixed_family": 1
+  },
+  "input_trips": 60,
+  "retained_trips": 4,
+  "dropped_trips_by_reason": {
+    "unmatched_day": 2,
+    "duplicate_trip": 2,
+    "incomplete_diary": 2,
+    "diary_completeness_unverified": 2,
+    "missing_household_weight": 2,
+    "missing_person_weight": 2,
+    "missing_day_weight": 2,
+    "missing_time": 2,
+    "overnight": 2,
+    "invalid_time_order": 2,
+    "ambiguous_continuity": 2,
+    "out_of_region": 2,
+    "geography_unverified": 2,
+    "unknown_purpose": 2,
+    "unsupported_purpose": 2,
+    "university_unverified": 2,
+    "unknown_mode": 2,
+    "unsupported_mode": 2,
+    "auto_evidence_missing": 2,
+    "transit_access_unverified": 2,
+    "quality_unverified": 2,
+    "trace_quality": 2,
+    "derived_child": 2,
+    "proxy": 2,
+    "joint_unverified": 2,
+    "joint": 2,
+    "incomplete_chain": 2,
+    "mixed_family": 2
+  },
+  "excluded_days_by_reason": {
+    "unmatched_day": 1,
+    "duplicate_trip": 1,
+    "incomplete_diary": 1,
+    "diary_completeness_unverified": 1,
+    "missing_household_weight": 1,
+    "missing_person_weight": 1,
+    "missing_day_weight": 1,
+    "missing_time": 1,
+    "overnight": 1,
+    "invalid_time_order": 1,
+    "ambiguous_continuity": 1,
+    "out_of_region": 1,
+    "geography_unverified": 1,
+    "unknown_purpose": 1,
+    "unsupported_purpose": 1,
+    "university_unverified": 1,
+    "unknown_mode": 1,
+    "unsupported_mode": 1,
+    "auto_evidence_missing": 1,
+    "transit_access_unverified": 1,
+    "quality_unverified": 1,
+    "trace_quality": 1,
+    "derived_child": 1,
+    "proxy": 1,
+    "joint_unverified": 1,
+    "joint": 0,
+    "incomplete_chain": 1,
+    "mixed_family": 0
+  },
+  "diagnostic_trip_flags": {
+    "unmatched_day": 0,
+    "duplicate_trip": 0,
+    "incomplete_diary": 0,
+    "diary_completeness_unverified": 0,
+    "missing_household_weight": 0,
+    "missing_person_weight": 0,
+    "missing_day_weight": 0,
+    "missing_time": 0,
+    "overnight": 0,
+    "invalid_time_order": 0,
+    "ambiguous_continuity": 1,
+    "out_of_region": 1,
+    "geography_unverified": 1,
+    "unknown_purpose": 1,
+    "unsupported_purpose": 1,
+    "university_unverified": 1,
+    "unknown_mode": 1,
+    "unsupported_mode": 1,
+    "auto_evidence_missing": 1,
+    "transit_access_unverified": 1,
+    "quality_unverified": 1,
+    "trace_quality": 1,
+    "derived_child": 1,
+    "proxy": 0,
+    "joint_unverified": 1,
+    "joint": 1,
+    "incomplete_chain": 0,
+    "mixed_family": 0
+  },
+  "raw_modes": {
+    "Walk, jog, or roll using a wheelchair": 55,
+    "unmapped": 1,
+    "School bus": 1,
+    "Household vehicle 1": 2,
+    "Local bus": 1
+  },
+  "mapped_family_trips": {
+    "walk": 4
+  },
+  "raw_destination_purposes": {
+    "Grocery shopping": 25,
+    "Went home": 29,
+    "unmapped": 1,
+    "Other reason": 1,
+    "College/university": 1,
+    "Primary workplace": 2,
+    "Dine out/get coffee or take-out": 1
+  },
+  "zero_trip_days": 1,
+  "weight_basis": "derived_person_day_tour_count",
+  "scientific_admission": "unassessed",
+  "scope": "Entirely synthetic; not a respondent distribution, model run, or comparison"
+}

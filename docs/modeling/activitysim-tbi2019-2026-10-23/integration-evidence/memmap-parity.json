@@ -1,0 +1,18 @@
+{
+  "source_omx_sha256": "7246a79c19fcbc018188ddf00ed257ff7d1bbccb10322e6429fc3c8584646379",
+  "activitysim_version": "1.5.1",
+  "matrices": 826,
+  "shape": [
+    826,
+    638,
+    638
+  ],
+  "dtype": "float32 unchanged from default factory",
+  "values_checked_per_traversal": 336218344,
+  "parity": "all values exactly equal",
+  "harmless_controls": 1,
+  "intended_failures": 1,
+  "cache_restored_sha256": "116b92c004ab6d3c82129610937bca6f20807f5d516477a20a56f2f119ddc46f",
+  "blind_category": "factory value parity only; no behavior, RNG or scientific validity claim",
+  "scope": "full real input matrices; no survey outcomes"
+}

@@ -1,0 +1,302 @@
+# Integration verification and evidence limits
+
+October 23, 2026. This record covers input preparation. It does not open the
+TBI outcomes, execute the frozen study or establish behavioral accuracy.
+The integration merges #379 and #382. The merge resolves only the competing
+`docs/README.md` entries by keeping both. The preservation inventory records
+117 unchanged files from the two dated study directories.
+
+## Synthetic and source checks
+
+The new bulk-Census, fare/coverage, WAC, retained-skim and memory-parity suites run 28 tests.
+The existing transit suite runs 24; the 2019-profile and tour-fixture suites
+run 11. The MTC adapter runs 50 tests with four explicit skips, leaving 46
+passed tests. Its skipped stock checks expect an environment inside this
+checkout; the actual native interpreter lives in the main checkout. Those
+skips concern stock person coding, skim inventory, overlay columns and config
+resolution. The TypeScript population registry runs 34 tests with Vitest
+`--pool=forks --maxWorkers=2`. None reads TBI outcome records. The memory repair also passes 24 common-population,
+11 common-package and five bundle tests. Two parity tests compare every retained
+file byte and loaded record against the committed pre-repair implementation,
+and preserve nonfinite-value refusal before directory creation.
+
+Before the geographic derivative, four mutation campaigns contain 56 controls: five harmless changes
+survive and 51 targeted wrong behaviors reach assertion failures. Each campaign
+restores the exact source hash. The ledgers and individual logs reside in
+`integration-evidence/`. These controls cover decoding, membership, uniqueness,
+coverage, source binding, fare periods, missingness, employment conservation and
+retained-file copying. They do not test source truth, historical service
+completeness, road safety, pedestrian barriers or behavioral validity.
+
+## Retained failures and corrections
+
+- The bare CPython 3.11 interpreter lacks `requests`. Acquisition uses the
+  existing CPython 3.11 ActivitySim environment instead.
+- The Census lookup is CP1252, not UTF-8. The decoder now uses its actual
+  encoding. The real sequence files retain estimates and margins.
+- A `.response` ZIP path was not accepted by GeoPandas's ZIP URI handler.
+  Passing the retained ZIP bytes reads the published geometry successfully.
+- The first population attempt supplied Minnesota only, while the existing
+  resolver selects three Wisconsin PUMAs too. The owned incomplete attempt
+  was stopped. The corrected attempt supplies both states and a PUMA-coverage
+  guard. No population from the incomplete attempt is admitted.
+- Historical Overpass POST attempts returned HTTP 406 and HTTP 504. Their
+  responses and logs remain retained. The same dated query succeeds through
+  GET and produces the road skims. No current-road fallback is substituted.
+- Vitest initially had no local dependencies. `npm exec` selected an external
+  Vitest and failed startup before any tests. `npm ci --ignore-scripts` installed
+  this checkout's lockfile, then the scoped suite passed. Installation reports
+  one high-severity advisory; this lane does not change dependencies or run an
+  automatic audit fix.
+- An indexed 2019 State Fair schedule and an indexed 2020 Title VI document
+  return HTTP 404 at their original URLs. They are not claimed as retained
+  fare evidence. The retained Council fare resolution, history and analysis
+  provide the fare-policy evidence.
+- Initial mutation controls that produced incidental errors were not accepted
+  as successful controls. The retained final campaigns require assertion
+  failures. Initial logs and ledgers remain separate.
+- An input-summary audit initially tried to parse the published `.` missing
+  marker as a float. The corrected audit uses the existing missing-value
+  decoder. Four median-income cells stay unavailable; no source or fitting
+  rule changes.
+- A full staged whitespace check reports trailing spaces in captured command
+  logs. The source and authored-document check passes. Raw log bytes remain
+  intact; the full check is not reported as clean.
+
+## Native preparation boundary
+
+Population synthesis, highway construction, transit routing, skim expansion
+and model execution each use the requested 6 GiB memory limit and zero swap.
+A scope snapshot confirms `MemoryMax=6442450944` and `MemorySwapMax=0` for the
+initial native jobs. Time logs record each process's completion and peak RSS.
+AequilibraE supplies road impedance only. No demand assignment, validation
+comparison or engine averaging runs.
+
+The MTC skim expansion runs in a separate process to avoid holding its arrays
+beside the full population. The bundle recipe calls the existing builder with
+a process-local copy adapter for that stage. The adapter verifies the complete
+input request, source and implementation hashes, stock digest, both output
+hashes and sizes, and new destination paths. It copies the exact native-expanded
+OMX and NPZ. This is supplied-artifact custody, not producer authentication.
+The installed packages and normal builder defaults remain unchanged.
+
+The full model recipes use identical runtime memory settings in both arms:
+adaptive chunking, a 4.5-billion-byte target, 100 initial chooser rows, one
+process and all retained households in the 638-zone derivative. These settings are explicit study runtime settings,
+not a household sample or a coefficient change. The named candidate reproduces
+all 27 frozen substitutions and the original candidate hash. No outcome
+opening is implied by preparing those recipes. The readiness report records
+whether each native stage actually completes.
+
+## Full-population retention failure and repair
+
+The first complete fit reports 1,219,702 households, 3,150,169 persons and
+1,496,481 workers, with households in 700 of 704 zones. These are synthetic
+input counts, not modeled travel outcomes. Its next retention stage exceeds
+6 GiB and the scope records `Result=oom-kill`, memory peak 6,442,450,944 bytes
+and elapsed time 31 minutes 12.790 seconds. No complete retained population
+package survives that attempt. The initial controller records both model arms
+as not started. Those records remain separately retained.
+
+The repair retains compact person-number/worker pairs during roster checks,
+streams canonical diagnostic JSON through a temporary file, shares equal source
+strings while parsing and releases consumed byte buffers. The builder releases
+in-memory fit-weight arrays after validation and preserves their full retained
+file. Small-fixture output bytes and loaded records match the original writer
+and reader. Six targeted mutation controls preserve household count, worker
+count, person-number, row-width, canonical-byte and nonfinite-value protection;
+one harmless change passes. No fitting target, population, source, tolerance or
+scientific gate changes. The retry uses the same sources and fitter and retains
+a hash-bound owned fit checkpoint before writing the common package. Native
+completion remains a separate result.
+
+A CI-directory check exposed a launch-directory dependency in the new retained
+skim helper. Implementation paths now anchor to the module's repository root.
+Five tests pass from the CI working directory, and a targeted mutation restores
+the dependency and fails the new directory-independence assertion. The initial
+four-test error log remains retained. This raises the scoped Python total to
+149 passed tests, with four stock-path skips; TypeScript remains 34 passed.
+
+## Geographic exclusion derivative
+
+Fifteen new tests pass from both the repository root and CI test directory. They
+cover whole-household removal, person conservation, ordered destination and skim
+slicing, unchanged parent files, copied settings, hashed outputs and invalid-input
+refusals. Seventeen mutation controls comprise one harmless survivor and 16 intended
+assertion failures. Exact helper bytes are restored after every control. The
+blind category is historical service coverage and scientific eligibility:
+synthetic fixtures cannot establish either.
+
+The cumulative scoped count is 164 Python tests passed, four explicit stock-path
+skips, and 34 TypeScript tests passed. Five mutation campaigns contain 73 controls:
+six harmless survivors and 67 targeted assertion failures. Earlier incidental
+error controls remain retained and do not enter those counts.
+
+The geographic derivative follows ActivitySim 1.5.1 sorted-ID zero-based recoding.
+A nonmonotonic parent-order fixture proves that land-use and both matrix axes
+use the same sorted retained IDs; reverting that ordering fails the assertion.
+The real 704-zone parent already uses sorted IDs. Its 826 matrices are float64.
+
+## Retained-file hashing failure and repair
+
+The first memory-repaired retry completes the same full fit and saves the owned
+823 MiB checkpoint, SHA-256
+`ddc4ef28f3419356745069a08c636e830f2df3b733f189804558616baa8e2c13`.
+It writes household, person and diagnostic files, then exceeds 6 GiB before the
+common manifest exists. The scope records `oom-kill` and 31 minutes 22.925 seconds.
+The failed directory remains `common_population.failed-retention-1`. Neither
+model starts. The controller and both not-started receipts remain retained.
+
+The file-descriptor helper previously read each whole file. The diagnostic file
+is about 1,003 MiB. The additive repair preserves the same regular-file and
+symlink checks and computes the same SHA-256 and byte length in 1 MiB blocks.
+The retry reuses only the owned, hash-verified checkpoint; it does not refit or
+change any population value. Native completion remains separately assessed.
+
+Twenty-seven common-population and memory tests pass in the ActivitySim
+environment. Its attempted package-suite import fails because Shapely is absent.
+The retained log includes that error. All 11 package tests then pass in the
+existing AequilibraE environment. Four additional mutation controls include one
+harmless survivor and three intended failures for whole-file reading, hash
+content and length. The earlier seven memory controls pass again after this
+repair. Exact source bytes are restored before the native retry.
+
+Cumulative scoped results now total 165 Python tests passed, four stock-path
+skips, and 34 TypeScript tests passed. Six mutation campaigns contain 77 controls:
+seven harmless survivors and 70 targeted assertion failures. Import errors and
+incidental mutation errors remain outside those passing counts. The bounded
+fixture establishes descriptor semantics, not full-size runtime completion.
+
+## Completed retention and bounded diagnostic reading
+
+Checkpoint recovery with streaming file descriptors completes in 1 minute
+32.08 seconds, exit 0, peak RSS 5,129,168 KiB. The common manifest SHA-256 is
+`27d545f12659345c1f8f3f296cca67010e15bf0f4067c1ab7589defca526bd99`.
+The retained fit reports 677 nonconverged zones and 30 zones outside at least
+one published Census margin, among 704 fitted zones. Those limitations remain
+visible; this work changes neither fitting targets nor tolerances.
+
+The next bundle attempt reaches the 6 GiB cap while loading diagnostics and
+records `oom-kill` before creating a bundle. Its input directory, controller
+receipt and initial log remain retained. The reader now streams a top-level
+JSON object and can discard only the unused `zone_fits` array in the bundle
+conversion path. It parses and validates every discarded element, including
+duplicate keys, nonfinite values and credential refusals. It hashes the exact
+bytes it consumes and checks the expected length and digest before returning.
+The default reader still returns full diagnostics. The retained file stays
+unchanged and is copied into the full parent bundle.
+
+Thirty-nine common-population/package tests, 11 streaming-reader tests and five
+bundle tests pass. One initial regression fails because the new identity error
+message differs; the established message is restored, and the original failure
+log remains. Nine streaming mutation controls include one harmless survivor
+and eight intended failures. An additional common-reader mutation proves that
+the conversion path omits only the designated array. Earlier memory and file
+descriptor controls pass again after the change. Full-size bundle completion
+remains a native result, separate from these checks.
+
+Cumulative scoped results total 177 Python tests passed, four stock-path skips,
+and 34 TypeScript tests passed. Seven mutation campaigns contain 87 controls:
+eight harmless survivors and 79 targeted assertion failures. The parser checks
+are blind to scientific truth and historical service coverage.
+
+## Full bundle, archive and initial modeled attempts
+
+The streaming-reader bundle attempt completes under the 6 GiB, zero-swap cap.
+It preserves the full 704-zone parent and derives the 638-zone runtime package
+with 1,100,948 households and 2,814,596 persons. It removes 118,754 households and
+335,573 persons for the identified MVTA member-city overlap. The derivative
+contains all 826 matrices with the matching retained zone order.
+
+The initial input archive completes with 492 inventoried files and SHA-256
+`bd0c35dec94b135f8d16bf001e49a35d70e6ab0ebc7a410051e93d4a71b15935`.
+Both initial model arms start, then receive OOM kills at the 6 GiB cap during
+household/person initialization. Neither produces completed tours or mode shares.
+The initial output directories and logs remain preserved.
+
+The installed ActivitySim file-backed skim factory matches the default factory
+on all 336,218,344 values in the real 826-matrix, 638-zone input. Both use the
+existing float32 runtime representation. A reverse traversal survives; a
+deliberate cache-value corruption fails and exact cache hash restoration passes.
+This native check adds one harmless and one intended-failure control, bringing
+the total to 89 controls: nine harmless survivors and 80 intended failures.
+Python test counts remain 177 passed plus four stock-path skips; TypeScript
+remains 34 passed. Factory-value parity does not establish behavioral validity.
+Both modeled retries use the same explicit `MemMapSkimFactory` overlay.
+
+## Archive verification and further memory attempts
+
+All 493 initial archive members, including the embedded inventory, match their
+declared hashes and byte lengths. Reordering the inventory survives. Four
+controls change received member metadata after hashing and fail for a missing
+member, wrong hash, wrong length or changed embedded inventory. These controls
+do not corrupt physical tar bytes or authenticate producers. The inventory
+remains unchanged. This brings the accepted control count to 94, comprising
+10 harmless survivors and 84 intended failures.
+
+Both memory-mapped model attempts exceed the 6 GiB cap during high-school
+location logsums after passing initialization and university location choice.
+The failed outputs and receipts remain under `.memmap-memory` names.
+
+A proposed grouped-logsum wrapper passes six unit tests and six controls
+(one harmless survivor, five intended failures). Its native exact-parity check
+fails on one work logsum by one floating-point unit. This candidate remains
+unadmitted and unused by both modeled arms. Two earlier fixture-setup errors
+also remain retained. Passing synthetic controls do not overrule that failure.
+
+A separate allocator wrapper passes three tests and five controls, including
+one harmless survivor and four intended assertion failures. It preserves
+argument and result identity, call order, one original invocation, and original
+exceptions. The native attempt uses this wrapper to collect Python garbage and
+release unused glibc heap before calling the unchanged installed engine function.
+The cumulative source-suite count is 186 Python tests passed, four stock-path
+skips, and 34 TypeScript tests passed. Accepted source/native control campaigns
+now total 105: 12 harmless survivors and 93 intended failures. These counts
+include the unadmitted batching candidate's synthetic controls, not a passing
+native parity result for that candidate. Allocator run completion remains a
+separate native result.
+
+The runner adds three pin tests and three temporary-copy controls: one harmless
+comment survives, and removing either the installed-version or source-hash pin
+fails the intended refusal assertion. Active recipe bytes remain unchanged.
+Cumulative totals are 189 Python tests passed, four stock-path skips, and
+34 TypeScript tests passed; 108 controls comprise 13 harmless survivors and
+95 intended failures. Repeated campaigns do not increase these counts.
+
+The allocator wrapper also passes six native exact comparisons across both
+coefficient arms and high-school, university and work logsum contexts. Each
+uses six synthetic people and seven destination alternatives with the real
+retained LOS. All returned frame values and the next three per-person random
+draws match the original installed function exactly. This fixture completes
+in 51.32 seconds, exit 0, peak RSS 1,774,476 KiB. The fixture's 100 MB adaptive
+chunk target emits memory-headroom warnings; the process stays within its
+6 GiB cap. This does not establish full-population completion or accuracy.
+
+Both final full-population allocator attempts fail at high-school location
+logsums. Current runs 254.732 seconds; SEMCOG runs 257.823 seconds. Each scope
+records `Result=oom-kill`, `MemoryPeak=6442450944`, `MemoryMax=6442450944` and
+`MemorySwapMax=0`. The controller receives exit -15 after the scope kill.
+Final health receipts join those scope results to the original started receipts,
+coefficient/configuration hashes and retained stdout hashes. Completed-tour
+counts and MODELED mode shares remain null. No lower sample, higher cap,
+changed coefficients or relaxed numerical threshold substitutes for completion.
+
+## Final runtime archive custody
+
+The runtime archive retains 515 inventoried files and 2,898,724,157 bytes,
+SHA-256 `81fe67cc0ad74454dfd5a94c21d2497e6236c4958e7581e1f6babaff5d1fafd7`.
+Its inventory SHA-256 is
+`3bb259ae901f888b77a270141fe226ea95e559eff19e3a7beff00d9a3eb1416b`.
+All 516 members, including the embedded inventory, match their declared byte
+lengths and hashes. Verification completes in 21.26 seconds, exit 0, peak RSS
+24,724 KiB, under the same 6 GiB/zero-swap scope. Repeated archive controls pass
+and do not increase the cumulative mutation count. The initial archive remains
+unchanged. Both archives omit TBI outcomes and modeled travel outputs.
+
+The runtime inventory binds the source and documentation bytes present during
+assembly at repository HEAD `2d15de7dca9a76e9a6ca818ec064df14d0d976b0`.
+Final custody and verification reports are external to the archive to avoid
+a self-referential hash. All 117 frozen files and 15 implementation closure
+pins pass the final byte check. Source/authored Markdown/JSON whitespace checks
+pass; captured raw logs retain their original whitespace. CI and independent
+review remain for the parent thread. This draft is not merged.

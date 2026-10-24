@@ -1,0 +1,9 @@
+{
+  "arm": "current",
+  "completion": "not_started",
+  "reason": "blocked_before_bundle",
+  "tour_count": null,
+  "mode_counts_MODELED": null,
+  "mode_shares_MODELED": null,
+  "outcomes_accessed": false
+}

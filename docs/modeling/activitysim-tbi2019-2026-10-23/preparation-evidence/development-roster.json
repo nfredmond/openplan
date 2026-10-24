@@ -1,0 +1,37 @@
+{
+  "assignment_sha256": "d00206802218a92d31dceea4c108c74cab540dadd8c90d9d1f21e8b11b99c392",
+  "county_counts": {
+    "Anoka County, MN": 423,
+    "Carver County, MN": 114,
+    "Chisago County, MN": 76,
+    "Dakota County, MN": 578,
+    "Goodhue County, MN": 68,
+    "Hennepin County, MN": 2331,
+    "Isanti County, MN": 61,
+    "Le Sueur County, MN": 38,
+    "McLeod County, MN": 61,
+    "Pierce County, WI": 56,
+    "Polk County, WI": 71,
+    "Ramsey County, MN": 1100,
+    "Rice County, MN": 89,
+    "Scott County, MN": 152,
+    "Sherburne County, MN": 123,
+    "Sibley County, MN": 2,
+    "St Croix County, WI": 152,
+    "Washington County, MN": 343,
+    "Wright County, MN": 181
+  },
+  "development_households": 6019,
+  "excluded_development_households_by_reason": {
+    "missing_county": 0,
+    "outside_frozen_study_region": 978
+  },
+  "held_out_outcome_rows_read": 0,
+  "held_out_outcome_rows_requested": 0,
+  "real_trip_and_tour_exclusion_counts": null,
+  "respondent_outcome_rows_read": 0,
+  "respondent_outcome_rows_requested": 0,
+  "scope": "Original frozen roster fields only; no weights, trips, times, purposes or modes",
+  "study_region_households": 5041,
+  "unavailability_reason": "Frozen admission protocol does not permit outcome fields in this preparation lane"
+}

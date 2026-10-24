@@ -1,0 +1,13 @@
+{
+  "input_freeze": "../choice-parity-evidence/input-freeze.json",
+  "households": 2000,
+  "persons": 4971,
+  "last_model": "trip_purpose_and_destination",
+  "chunk_size": 536870912,
+  "min_available_chunk_ratio": 1.0,
+  "mode": "training",
+  "scope_max_bytes": 9663676416,
+  "scope_swap_max_bytes": 0,
+  "outcomes_accessed": false,
+  "claim": "Cache preparation only. No trip scheduling, final comparison or full-run admission."
+}

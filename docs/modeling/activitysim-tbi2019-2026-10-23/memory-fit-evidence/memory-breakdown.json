@@ -1,0 +1,332 @@
+{
+  "outcomes_accessed": false,
+  "scope_health": {
+    "exit_code": 0,
+    "elapsed_seconds": 40.08833978898474,
+    "peak_child_rss_kib": 1758056,
+    "scope": {
+      "memory.peak": "2910703616",
+      "memory.max": "9663676416",
+      "memory.swap.max": "0",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+    }
+  },
+  "skim_storage": {
+    "matrices": 826,
+    "dtype": "float32",
+    "shape": [
+      826,
+      634,
+      634
+    ],
+    "file_backed_bytes": 1328062624,
+    "factory": "MemMapSkimFactory / JitMemMapSkimData",
+    "loading": "All 826 matrices copied into file cache; each lookup maps and closes on demand. No persistent 826-matrix heap array.",
+    "filter_support": "v1.5.1 SkimInfo filters unconfigured period labels only; all five configured periods remain required. No configured-variable matrix selector found. No skim setting or bytes changed."
+  },
+  "sampled_peak": {
+    "elapsed_seconds": 32.01492887097993,
+    "cgroup_current": 2778886144,
+    "anon": 1015513088,
+    "file": 1717989376,
+    "kernel": 42668032,
+    "stage": "[00:31.40] DEBUG: Running chunk 1 of 1 with 9613 of 9613 choosers"
+  },
+  "grade_school": [
+    {
+      "elapsed_seconds": 33.05330974998651,
+      "function": "run_location_logsums",
+      "event": "call",
+      "label": "school_location.i1.logsums.gradeschool",
+      "rss_bytes": 588824576,
+      "local_tables": {
+        "persons_merged_df": {
+          "rows": 9613,
+          "bytes_deep": 4864178
+        },
+        "location_sample_df": {
+          "rows": 205048,
+          "bytes_deep": 4100960
+        }
+      },
+      "pipeline_tables": {
+        "land_use": {
+          "rows": 634,
+          "bytes_deep": 164274
+        },
+        "accessibility": {
+          "rows": 634,
+          "bytes_deep": 55792
+        },
+        "households": {
+          "rows": 20000,
+          "bytes_deep": 2848424
+        },
+        "persons": {
+          "rows": 49094,
+          "bytes_deep": 6015302
+        },
+        "size_terms": {
+          "rows": 22,
+          "bytes_deep": 5337
+        },
+        "school_destination_size": {
+          "rows": 634,
+          "bytes_deep": 36840
+        },
+        "workplace_destination_size": {
+          "rows": 634,
+          "bytes_deep": 41912
+        },
+        "tdd_alts": {
+          "rows": 190,
+          "bytes_deep": 702
+        },
+        "person_windows": {
+          "rows": 49094,
+          "bytes_deep": 2480534
+        },
+        "persons_merged": {
+          "rows": 49094,
+          "bytes_deep": 25898372
+        }
+      }
+    },
+    {
+      "elapsed_seconds": 33.11715030099731,
+      "function": "compute_location_choice_logsums",
+      "event": "call",
+      "label": "school_location.i1.logsums.gradeschool",
+      "rss_bytes": 588824576,
+      "local_tables": {
+        "choosers": {
+          "rows": 205048,
+          "bytes_deep": 15993744
+        }
+      }
+    },
+    {
+      "elapsed_seconds": 34.26842926599784,
+      "function": "_simple_simulate_logsums",
+      "event": "call",
+      "label": "school_location.i1.logsums.gradeschool.compute_logsums",
+      "rss_bytes": 771190784,
+      "local_tables": {
+        "choosers": {
+          "rows": 205048,
+          "bytes_deep": 82020134
+        },
+        "spec": {
+          "rows": 301,
+          "bytes_deep": 115107
+        }
+      }
+    },
+    {
+      "elapsed_seconds": 38.702337946975604,
+      "function": "_simple_simulate_logsums",
+      "event": "return",
+      "label": "school_location.i1.logsums.gradeschool.compute_logsums",
+      "rss_bytes": 777465856,
+      "local_tables": {
+        "choosers": {
+          "rows": 205048,
+          "bytes_deep": 36908640
+        },
+        "spec": {
+          "rows": 301,
+          "bytes_deep": 115107
+        },
+        "logsums": {
+          "rows": 205048,
+          "bytes_deep": 3280768
+        }
+      }
+    },
+    {
+      "elapsed_seconds": 38.705565938988,
+      "function": "compute_location_choice_logsums",
+      "event": "return",
+      "label": "school_location.i1.logsums.gradeschool.compute_logsums",
+      "rss_bytes": 777461760,
+      "local_tables": {
+        "choosers": {
+          "rows": 205048,
+          "bytes_deep": 90474318
+        },
+        "logsum_spec": {
+          "rows": 301,
+          "bytes_deep": 115107
+        },
+        "logsums": {
+          "rows": 205048,
+          "bytes_deep": 3280768
+        }
+      }
+    },
+    {
+      "elapsed_seconds": 38.70748830700177,
+      "function": "run_location_logsums",
+      "event": "return",
+      "label": "school_location.i1.logsums.gradeschool",
+      "rss_bytes": 777461760,
+      "local_tables": {
+        "persons_merged_df": {
+          "rows": 9613,
+          "bytes_deep": 634458
+        },
+        "location_sample_df": {
+          "rows": 205048,
+          "bytes_deep": 14195528
+        },
+        "choosers": {
+          "rows": 205048,
+          "bytes_deep": 90474318
+        },
+        "logsums": {
+          "rows": 205048,
+          "bytes_deep": 3280768
+        }
+      }
+    }
+  ],
+  "limits": "One-second cgroup samples miss shorter peaks; memory.peak and ru_maxrss retain lifetime maxima. Table deep bytes may count shared objects more than once; do not sum with process or cgroup memory. Call/return RSS is not per-chunk peak.",
+  "reduced_target_diagnostic": {
+    "chunk_size": 268435456,
+    "scope_health": {
+      "exit_code": 0,
+      "elapsed_seconds": 82.39915885898517,
+      "peak_child_rss_kib": 1755168,
+      "scope": {
+        "memory.peak": "2140889088",
+        "memory.max": "9663676416",
+        "memory.swap.max": "0",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+      }
+    },
+    "grade_school_logsum_chunks": 40,
+    "max_grade_school_rows_per_chunk": 5194,
+    "functions": {
+      "eval_utilities": {
+        "max_boundary_rss_bytes": 736010240,
+        "max_local_table_bytes": {
+          "spec": 115107,
+          "choosers": 934920,
+          "spec_sh": 115107,
+          "utilities": 914144,
+          "expression_value": 46746
+        },
+        "max_array_bytes": {
+          "coefficients": 84
+        }
+      },
+      "eval_nl_logsums": {
+        "max_boundary_rss_bytes": 736010240,
+        "max_local_table_bytes": {
+          "choosers": 934920,
+          "spec": 115107,
+          "spec_sh": 115107,
+          "logsums": 83104
+        },
+        "max_array_bytes": {}
+      },
+      "_simple_simulate_logsums": {
+        "max_boundary_rss_bytes": 736010240,
+        "max_local_table_bytes": {
+          "choosers": 934920,
+          "spec": 115107,
+          "logsums": 83104
+        },
+        "max_array_bytes": {}
+      },
+      "compute_location_choice_logsums": {
+        "max_boundary_rss_bytes": 736006144,
+        "max_local_table_bytes": {
+          "choosers": 90474318,
+          "logsum_spec": 115107,
+          "logsums": 3280768
+        },
+        "max_array_bytes": {}
+      },
+      "run_location_logsums": {
+        "max_boundary_rss_bytes": 736006144,
+        "max_local_table_bytes": {
+          "persons_merged_df": 634458,
+          "location_sample_df": 14195528,
+          "choosers": 90474318,
+          "logsums": 3280768
+        },
+        "max_array_bytes": {}
+      }
+    }
+  },
+  "allocator_target_diagnostic": {
+    "chunk_size": 268435456,
+    "scope_health": {
+      "exit_code": 0,
+      "elapsed_seconds": 81.1414132299833,
+      "peak_child_rss_kib": 1765908,
+      "scope": {
+        "memory.peak": "2007269376",
+        "memory.max": "9663676416",
+        "memory.swap.max": "0",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+      }
+    },
+    "grade_school_logsum_chunks": 40,
+    "max_grade_school_rows_per_chunk": 5194,
+    "functions": {
+      "eval_utilities": {
+        "max_boundary_rss_bytes": 643801088,
+        "max_local_table_bytes": {
+          "spec": 115107,
+          "choosers": 934920,
+          "spec_sh": 115107,
+          "utilities": 914144,
+          "expression_value": 46746
+        },
+        "max_array_bytes": {
+          "coefficients": 84
+        }
+      },
+      "eval_nl_logsums": {
+        "max_boundary_rss_bytes": 643801088,
+        "max_local_table_bytes": {
+          "choosers": 934920,
+          "spec": 115107,
+          "spec_sh": 115107,
+          "logsums": 83104
+        },
+        "max_array_bytes": {}
+      },
+      "_simple_simulate_logsums": {
+        "max_boundary_rss_bytes": 643801088,
+        "max_local_table_bytes": {
+          "choosers": 934920,
+          "spec": 115107,
+          "logsums": 83104
+        },
+        "max_array_bytes": {}
+      },
+      "compute_location_choice_logsums": {
+        "max_boundary_rss_bytes": 645439488,
+        "max_local_table_bytes": {
+          "choosers": 90474318,
+          "logsum_spec": 115107,
+          "logsums": 3280768
+        },
+        "max_array_bytes": {}
+      },
+      "run_location_logsums": {
+        "max_boundary_rss_bytes": 647081984,
+        "max_local_table_bytes": {
+          "persons_merged_df": 634458,
+          "location_sample_df": 14195528,
+          "choosers": 90474318,
+          "logsums": 3280768
+        },
+        "max_array_bytes": {}
+      }
+    }
+  }
+}

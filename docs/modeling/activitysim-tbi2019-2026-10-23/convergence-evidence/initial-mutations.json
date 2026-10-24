@@ -1,0 +1,10 @@
+[
+  {
+    "control": "harmless",
+    "expected_pass": true,
+    "exit": 1,
+    "accepted": false,
+    "source_sha256": "387b9b27346bba11f45c107756456517db6449aee7b6a106c236376006497db6",
+    "mutated_sha256": "0df66a523fa46481a5aee2e15f2ec70b395c1dd340557f730c34dd05ec130ad7"
+  }
+]

@@ -1,0 +1,8 @@
+{
+  "status": "stopped_exact_parity_failure",
+  "model_execution_stopped": true,
+  "production_runs_started": false,
+  "semcog_parity_started": false,
+  "full_runs_started": false,
+  "outcomes_accessed": false
+}
