@@ -1,0 +1,11 @@
+Running as unit: run-p636199-i63451901.scope; invocation ID: b449f79c22ad4c7ba989db679f4ccb2f
+test_controlled_integerization_is_explicit_and_preserves_counts (__main__.EntropyOrchestrationTests.test_controlled_integerization_is_explicit_and_preserves_counts) ... ok
+test_explicit_method_routes_fitting_and_roster_labels (__main__.EntropyOrchestrationTests.test_explicit_method_routes_fitting_and_roster_labels) ... ok
+test_failed_fit_exclusion_preserves_diagnostics (__main__.EntropyOrchestrationTests.test_failed_fit_exclusion_preserves_diagnostics) ... ok
+test_entropy_roundtrip_and_mislabeled_rows (__main__.EntropyRetentionTests.test_entropy_roundtrip_and_mislabeled_rows) ... ok
+test_unknown_method_refuses_even_with_matching_roster (__main__.EntropyRetentionTests.test_unknown_method_refuses_even_with_matching_roster) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.119s
+
+OK

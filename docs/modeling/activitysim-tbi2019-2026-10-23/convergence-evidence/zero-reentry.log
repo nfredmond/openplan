@@ -1,0 +1,40 @@
+test_inconsistent_totals_stay_failed_with_margins (test_population_entropy.EntropyTests.test_inconsistent_totals_stay_failed_with_margins) ... ok
+test_invalid_seed_and_contributions_refuse (test_population_entropy.EntropyTests.test_invalid_seed_and_contributions_refuse) ... ok
+test_iteration_limit_and_zero_population (test_population_entropy.EntropyTests.test_iteration_limit_and_zero_population) ... FAIL
+test_mixed_counts_converge_without_changing_targets (test_population_entropy.EntropyTests.test_mixed_counts_converge_without_changing_targets) ... ok
+test_nonfinite_or_negative_target_refuses (test_population_entropy.EntropyTests.test_nonfinite_or_negative_target_refuses) ... ok
+test_seed_identity_refuses (test_population_entropy.EntropyTests.test_seed_identity_refuses) ... ok
+test_zero_cannot_reenter_and_unreachable_target_fails (test_population_entropy.EntropyTests.test_zero_cannot_reenter_and_unreachable_target_fails) ... FAIL
+test_controlled_integerization_is_explicit_and_preserves_counts (test_population_entropy_retention.EntropyOrchestrationTests.test_controlled_integerization_is_explicit_and_preserves_counts) ... ok
+test_explicit_method_routes_fitting_and_roster_labels (test_population_entropy_retention.EntropyOrchestrationTests.test_explicit_method_routes_fitting_and_roster_labels) ... ok
+test_failed_fit_exclusion_preserves_diagnostics (test_population_entropy_retention.EntropyOrchestrationTests.test_failed_fit_exclusion_preserves_diagnostics) ... ok
+test_entropy_roundtrip_and_mislabeled_rows (test_population_entropy_retention.EntropyRetentionTests.test_entropy_roundtrip_and_mislabeled_rows) ... ok
+test_unknown_method_refuses_even_with_matching_roster (test_population_entropy_retention.EntropyRetentionTests.test_unknown_method_refuses_even_with_matching_roster) ... ok
+
+======================================================================
+FAIL: test_iteration_limit_and_zero_population (test_population_entropy.EntropyTests.test_iteration_limit_and_zero_population)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/tmp_6v_rxod/modeling/tests/test_population_entropy.py", line 73, in test_iteration_limit_and_zero_population
+    self.assertTrue(fit.converged)
+AssertionError: False is not true
+
+======================================================================
+FAIL: test_zero_cannot_reenter_and_unreachable_target_fails (test_population_entropy.EntropyTests.test_zero_cannot_reenter_and_unreachable_target_fails)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/tmp_6v_rxod/modeling/tests/test_population_entropy.py", line 40, in test_zero_cannot_reenter_and_unreachable_target_fails
+    self.assertEqual(fit.weights[1:3], [0.0, 0.0])
+AssertionError: Lists differ: [18.934419571848736, 18.789274318612655] != [0.0, 0.0]
+
+First differing element 0:
+18.934419571848736
+0.0
+
+- [18.934419571848736, 18.789274318612655]
++ [0.0, 0.0]
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.132s
+
+FAILED (failures=2)

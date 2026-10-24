@@ -20,6 +20,13 @@ person-age category. Household contributions to that category differ. The loop
 can cycle despite feasible controls. The worst prior zone, 515, has a feasible
 nonnegative solution but a retained 0.377172 residual. An entropy-balancing probe
 reaches the unchanged 0.001 tolerance in 55 passes. No target is rescaled to fit.
+The prior worst residual belongs to household size four-plus in 646 failed
+zones, workers three-plus in 25, household size three in five and vehicles
+three-plus in one. The 30 prior fractional margin failures contain 106
+control-category violations, including child age in 28 zones. The
+[diagnosis summary](convergence-evidence/population-diagnosis-summary.json)
+lists every affected zone by control; the complete prior zone records retain
+all targets and residuals.
 
 The explicit `entropy` option minimizes relative entropy from the seed weights
 by coordinate updates. For contribution `a`, each update uses
@@ -64,7 +71,12 @@ The controlled rebuild reuses only the hash-verified fractional diagnostics of
 this owned entropy attempt. It verifies the retained manifest, diagnostic bytes,
 public source files, Census adapter, bulk adapter and entropy implementation.
 It changes integer realization, not fractional targets, weights or gates.
-The final result record reports its new realized counts and any margin failures.
+The corrected realization contains 1,177,701 households, 2,921,574 persons and
+1,586,722 workers in 696 populated zones, plus four zero-population zones.
+It has zero realized published-margin violations. The four failed fits remain
+in the 704-zone diagnostics and contribute no residents to the retained tables.
+The [population receipt](convergence-evidence/population-rebuild.json) binds
+these counts and the completed retention to exact input and implementation hashes.
 
 ## Four source inconsistencies remain excluded
 
@@ -111,7 +123,9 @@ First freeze a small deterministic subset of complete synthetic households from
 the corrected runtime bundle. Keep the full retained zone and skim domain.
 Run the same subset through unchunked, training and production configurations
 with the same seed, coefficients, input tables and model sequence. Require every
-final table to have identical values, with exact float comparison. Byte equality
+final table to have identical values, with exact float comparison after sorting by each table's unique exported row
+identity. A row permutation may preserve values; duplicate or missing identities
+refuse comparison. Byte equality
 is stronger and will be recorded when it holds. The seven compared model tables are accessibility, land use, households,
 persons, tours, trips and joint-tour participants. Operational checkpoint
 timestamps remain in pipeline metadata and are explicitly omitted from model
@@ -131,8 +145,15 @@ The subset uses the lowest 64 SHA-256 values of
 `tbi2019-chunk-parity-v1:household_id`, with every member of each selected
 household. It retains the full 634-zone runtime domain and all corresponding
 skims. Both coefficient arms use seed 0. Unchunked settings use `disabled` and
-chunk size 0; training and production use a 1,000,000,000-byte target and two
+chunk size 0; training and production use a 67,108,864-byte target and two
 initial chooser rows to exercise splitting. The declared full-run target is
 5,500,000,000 bytes with 100 initial rows, all retained households and one process.
 Each arm trains its own full-run cache before production. These are explicit
 runtime settings, not new engine or worker defaults.
+
+Before fixture freezing or any parity execution, source review reduces the
+parity target from the initially proposed 1 GB to 64 MiB to exercise production
+splitting on the small fixture. This is the engine's sizing target, not a total
+memory limit. Its minimum-headroom warnings are expected when the resident
+engine exceeds that target. The independent cgroup cap remains 9 GiB. No
+modeled result informs this pre-run setting change.

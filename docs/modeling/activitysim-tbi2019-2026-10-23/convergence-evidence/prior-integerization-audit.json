@@ -1,0 +1,11 @@
+{
+  "prior_realized_outside_margin_zones": 700,
+  "prior_realized_violations": 6462,
+  "by_control": {
+    "age": 1160,
+    "income": 1467,
+    "vehicles": 1303,
+    "workers": 1346,
+    "size": 1186
+  }
+}

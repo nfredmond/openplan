@@ -1,0 +1,75 @@
+{
+  "status": "pending",
+  "arm": "current",
+  "mode": "training",
+  "full_runs_authorized_by_parity": false,
+  "models_replayed": false,
+  "comparator_sha256": "bd38b016bebf650662d572315ce9effa12afa043832c4505a737c716d4dc8d15",
+  "prior_instrument_failure_sha256": "13ef62e224408d7dc6296706eeae8b679ea06f7df9066b819027a4291a07f773",
+  "actual_chunking": {
+    "chunk_log_records": 414,
+    "largest_chunk_ordinal": 21
+  },
+  "final_files": {
+    "disabled": {
+      "final_land_use.csv": {
+        "sha256": "a74feed4d6ceeab4c953c5ed3b48cafc0805b24c80f825d196f361ac092ccb94",
+        "bytes": 98859
+      },
+      "final_trips.csv": {
+        "sha256": "bbc3cdeaa6642e696bff344162e9ee6ede08df409b93bb3b0e842312c43feddb",
+        "bytes": 68808
+      },
+      "final_households.csv": {
+        "sha256": "85bf209013f8fc331ec1aa20f316572cf729cbc55d89e3d03daec6836c861d4e",
+        "bytes": 9210
+      },
+      "final_persons.csv": {
+        "sha256": "f7196c08e76cc70f9ed59b3baea3badaddcd7c23e62a5073bdf19d97efdc9b89",
+        "bytes": 51070
+      },
+      "final_tours.csv": {
+        "sha256": "c6bf0a48627618ab688941c7ffcbe6ebbeda6246a106879397157faf5597dd26",
+        "bytes": 36513
+      },
+      "final_accessibility.csv": {
+        "sha256": "68a89df0318674b3610ea77e4dcf681b4fcf339d6e17de89cb3b125478d56139",
+        "bytes": 101276
+      },
+      "final_joint_tour_participants.csv": {
+        "sha256": "d632b4c07234c7c4e574929e07e393eb0baafae212a7cf9473d9608f301a95a5",
+        "bytes": 220
+      }
+    },
+    "training": {
+      "final_land_use.csv": {
+        "sha256": "a74feed4d6ceeab4c953c5ed3b48cafc0805b24c80f825d196f361ac092ccb94",
+        "bytes": 98859
+      },
+      "final_trips.csv": {
+        "sha256": "1bea2aec0d1578c823ff90d2ffb6e80eee45d2bb12daf08b6d6e8cf578280ebe",
+        "bytes": 68809
+      },
+      "final_households.csv": {
+        "sha256": "85bf209013f8fc331ec1aa20f316572cf729cbc55d89e3d03daec6836c861d4e",
+        "bytes": 9210
+      },
+      "final_persons.csv": {
+        "sha256": "f7196c08e76cc70f9ed59b3baea3badaddcd7c23e62a5073bdf19d97efdc9b89",
+        "bytes": 51070
+      },
+      "final_tours.csv": {
+        "sha256": "c6bf0a48627618ab688941c7ffcbe6ebbeda6246a106879397157faf5597dd26",
+        "bytes": 36513
+      },
+      "final_accessibility.csv": {
+        "sha256": "68a89df0318674b3610ea77e4dcf681b4fcf339d6e17de89cb3b125478d56139",
+        "bytes": 101276
+      },
+      "final_joint_tour_participants.csv": {
+        "sha256": "d632b4c07234c7c4e574929e07e393eb0baafae212a7cf9473d9608f301a95a5",
+        "bytes": 220
+      }
+    }
+  }
+}

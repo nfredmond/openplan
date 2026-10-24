@@ -1,0 +1,22 @@
+[
+  {
+    "arm": "current",
+    "completion": "not_run_exact_parity_failed",
+    "elapsed_seconds": null,
+    "peak_memory_bytes": null,
+    "tour_count": null,
+    "mode_counts_MODELED": null,
+    "mode_shares_MODELED": null,
+    "reason": "Current training versus unchunked final_trips.destination_logsum differs by one ULP in two rows. Stop instruction prevents further model execution."
+  },
+  {
+    "arm": "semcog",
+    "completion": "not_run_exact_parity_failed",
+    "elapsed_seconds": null,
+    "peak_memory_bytes": null,
+    "tour_count": null,
+    "mode_counts_MODELED": null,
+    "mode_shares_MODELED": null,
+    "reason": "Current training versus unchunked final_trips.destination_logsum differs by one ULP in two rows. Stop instruction prevents further model execution."
+  }
+]

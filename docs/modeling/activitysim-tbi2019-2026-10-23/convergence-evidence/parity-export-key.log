@@ -1,0 +1,31 @@
+test_actual_chunk_splitting_and_no_fallback (test_activitysim_chunk_parity.ChunkParityTests.test_actual_chunk_splitting_and_no_fallback) ... ok
+test_changed_column_and_row_refuse (test_activitysim_chunk_parity.ChunkParityTests.test_changed_column_and_row_refuse) ... FAIL
+test_identical_and_harmless_line_endings (test_activitysim_chunk_parity.ChunkParityTests.test_identical_and_harmless_line_endings) ... ok
+test_missing_or_extra_table_refuses (test_activitysim_chunk_parity.ChunkParityTests.test_missing_or_extra_table_refuses) ... ok
+test_one_ulp_is_a_failure (test_activitysim_chunk_parity.ChunkParityTests.test_one_ulp_is_a_failure) ... ok
+test_row_order_survives_but_duplicate_identity_refuses (test_activitysim_chunk_parity.ChunkParityTests.test_row_order_survives_but_duplicate_identity_refuses) ... FAIL
+
+======================================================================
+FAIL: test_changed_column_and_row_refuse (test_activitysim_chunk_parity.ChunkParityTests.test_changed_column_and_row_refuse)
+----------------------------------------------------------------------
+AssertionError: Final table lacks an unambiguous row identity: final_tours.csv
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/tmp/tmpo4o2k1pv/modeling/tests/test_activitysim_chunk_parity.py", line 56, in test_changed_column_and_row_refuse
+    with self.assertRaisesRegex(AssertionError,'Exact final-table'):compare_tables(self.a,self.b)
+AssertionError: "Exact final-table" does not match "Final table lacks an unambiguous row identity: final_tours.csv"
+
+======================================================================
+FAIL: test_row_order_survives_but_duplicate_identity_refuses (test_activitysim_chunk_parity.ChunkParityTests.test_row_order_survives_but_duplicate_identity_refuses)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/tmpo4o2k1pv/modeling/tests/test_activitysim_chunk_parity.py", line 41, in test_row_order_survives_but_duplicate_identity_refuses
+    with self.assertRaisesRegex(AssertionError,'unambiguous row identity'):
+AssertionError: AssertionError not raised
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.051s
+
+FAILED (failures=2)

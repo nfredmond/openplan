@@ -1,0 +1,5 @@
+{"stage": "rebuild-bundle", "exit_code": 0}
+{"stage": "prepare-parity", "exit_code": 0}
+{"stage": "rebuild-archive", "exit_code": 0}
+{"stage": "verify-archive", "exit_code": 0}
+{"stage": "run-parity", "exit_code": 1}

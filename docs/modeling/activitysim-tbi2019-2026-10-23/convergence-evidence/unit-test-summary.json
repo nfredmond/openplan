@@ -1,0 +1,48 @@
+{
+  "suites": [
+    {
+      "log": "population-tests-controlled.log",
+      "tests": 59,
+      "seconds": 0.16,
+      "passed": true,
+      "skips": 0
+    },
+    {
+      "log": "orchestrator-tests.log",
+      "tests": 21,
+      "seconds": 0.066,
+      "passed": true,
+      "skips": 0
+    },
+    {
+      "log": "common-tests.log",
+      "tests": 24,
+      "seconds": 0.054,
+      "passed": true,
+      "skips": 0
+    },
+    {
+      "log": "common-memory-tests.log",
+      "tests": 4,
+      "seconds": 0.027,
+      "passed": true,
+      "skips": 0
+    },
+    {
+      "log": "image-packaging-tests.log",
+      "tests": 2,
+      "seconds": 0.269,
+      "passed": true,
+      "skips": 0
+    },
+    {
+      "log": "chunk-parity-tests.log",
+      "tests": 6,
+      "seconds": 0.059,
+      "passed": true,
+      "skips": 0
+    }
+  ],
+  "total": 116,
+  "claim": "source fixtures and retained-load parity; not native ActivitySim or scientific acceptance"
+}

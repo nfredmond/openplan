@@ -1,0 +1,7 @@
+{
+  "status": "failed_exact_parity",
+  "arm": "current",
+  "mode": "training",
+  "error": "Final table lacks an unambiguous row identity: final_households.csv",
+  "full_runs_authorized_by_parity": false
+}

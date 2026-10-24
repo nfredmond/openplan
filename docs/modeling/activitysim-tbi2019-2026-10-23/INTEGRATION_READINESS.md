@@ -116,3 +116,161 @@ end-to-end completion is not achieved under the admitted 6 GiB execution path.**
 No hosted system, database, production service or Docker stack is touched.
 The inherited SQL migration remains unapplied. No default coefficient changes,
 scalar fitting or scientific acceptance follow from this preparation.
+
+## October 24, 2026 UTC: population correction and built-in chunking preparation
+
+This addendum supersedes the population-fit status, runtime population and
+6 GiB execution limit above. Historical input archives and failed attempts remain
+unchanged. The lead authorizes 9 GiB, zero swap and one heavy job at a time.
+The frozen opening remains closed. No TBI outcomes are read.
+
+### Population admission
+
+The explicit entropy fitter resolves 673 of the 677 prior nonconverged fits.
+All 700 feasible fits pass the unchanged 0.001 tolerance and published margins;
+four of those zones have zero population. Twenty-five feasible fits need more
+than 200 passes, with a maximum of 827 under the explicit 2,000-pass limit.
+The former 30 fractional out-of-margin zones now number zero. No positive
+category lacks seed support. The regional 32-PUMA pool remains a disclosed
+representativeness limitation.
+
+Zones 439, 443, 444 and 494 remain failed and excluded. Their B11016 household-size
+cells imply different resident totals from B09019_002E. They contain 9,722
+published households and 14,201 published household residents. The
+[population addendum](POPULATION_CHUNKING_ADDENDUM.md) identifies every tract,
+source table, arithmetic conflict and retained control diagnosis. These failures
+do not become successful fits merely because their residuals lie within ACS
+margins.
+
+Whole-household integerization also needs correction. The original population
+has 6,462 realized-control margin violations across 700 populated zones; the
+first entropy realization has 7,632 across 696. Both remain retained. Controlled
+integerization now preserves exact household totals and every published margin
+bound, without sampling, a solver time limit or a positive optimality gap.
+The corrected parent has 1,177,701 households, 2,921,574 persons and 1,586,722
+workers, with zero realized-margin violations. The four failed fits contribute
+no retained residents. No default fitting or integerization method changes.
+
+The corrected population manifest SHA-256 is
+`141701c432075cc3afa17f54b8cc8f2721e4138ac6e2143c9c06c0385892106e`.
+Its native rebuild completes in 2,536.650 seconds at a 7,961,825,280-byte cgroup
+peak, with zero swap and no OOM events. The shared runtime derivative contains
+634 zones, 1,060,601 households and 2,617,177 persons. It removes the existing
+66-zone MVTA mask and the four failed population zones, including destinations.
+All 826 matrices use the same retained positions. This is the full retained
+runtime population, not a memory-driven sample.
+
+### Successor input archive and verification
+
+The successor archive contains 593 inventoried files and 2,783,118,248 bytes.
+SHA-256: `0465298da115a6de40d23c26d7c21de273be2d48266f76f80813780a7c45d6c2`.
+All 594 members, including the embedded inventory, pass byte-length and SHA-256
+verification. All 516 inherited parent members are verified before reconstruction.
+The old fitter's recovery checkpoint is retired from the successor, while its
+original archive remains retained. The new archive contains the corrected
+population, full and subset zone packages, fixed parity fixture, explicit runtime
+configurations and source custody. It contains no survey outcomes or modeled
+travel tables. See [archive custody](convergence-evidence/archive-custody.json)
+and [member verification](convergence-evidence/archive-verification.json).
+
+Source checks pass 116 tests with zero skips. Thirty-one source mutation controls
+contain three harmless survivors and 28 intended assertion failures. Archive
+verification adds one harmless ordering control and four intended metadata
+failures: 36 controls in total, four harmless and 32 targeted. The original 117
+frozen files remain byte-identical. The [verification record](convergence-evidence/VERIFICATION.md)
+separates these checks from native behavior and scientific admission.
+
+### Exact chunking parity fails; further model execution stops
+
+ActivitySim 1.5.1's [version-specific documentation](https://github.com/ActivitySim/activitysim/blob/v1.5.1/docs/users-guide/performance/chunking.md)
+governs the built-in training/production protocol. The frozen fixture contains
+64 whole households and 166 persons, selected by household-ID hash before any
+model run. Both executions retain the same 634-zone domain, seed, coefficients,
+model sequence and seven final model tables. Training uses a 64 MiB sizing
+target, two initial chooser rows and the independent 9 GiB scope cap. Its log
+records 414 chunk executions and a maximum chunk ordinal of 21.
+
+The initial controller loses stdout to ActivitySim's output cleanup after the
+unchunked engine run completes. Its engine log, scope receipt and final tables
+survive. Recovery reuses that completed reference without replay and places
+later stdout outside the engine output directory. A second instrument defect
+assumes that each CSV's first column is its row identity. The actual exports
+place named IDs elsewhere. The corrected comparator uses `zone_id`,
+`household_id`, `person_id`, `tour_id`, `trip_id` and `participant_id` as
+appropriate, requires uniqueness and retains exact comparison of every column.
+It compares the existing outputs without rerunning either model. Both instrument
+failures remain retained and do not count as numeric parity results.
+
+**The corrected exact comparison fails in `final_trips.csv`:**
+
+| Trip ID | Field | Unchunked | Training | Difference |
+|---|---|---:|---:|---:|
+| 39740078 | destination_logsum | 1.5387358811899654 | 1.5387358811899652 | 1 ULP |
+| 123196726 | destination_logsum | 3.922305563209965 | 3.9223055632099646 | 1 ULP |
+
+The first six final model tables pass exact value comparison. Two of 628 trip
+rows fail in the first differing trip column; subsequent trip columns remain
+unassessed after the failure. No rounding tolerance, omitted column or unchanged
+tour count rescues this gate. [Failure details](convergence-evidence/parity-failure-detail.json)
+retain decimal values, binary float encodings and final-file hashes through the
+linked comparison receipt.
+
+| Fixed-subset current-coefficient execution | Completion | Elapsed seconds | Cgroup peak bytes | MODELED tours |
+|---|---|---:|---:|---:|
+| Unchunked reference | Completed, stdout capture lost | 49.533, surviving child-scope boundary | 1,935,331,328 | 244 |
+| Built-in training | Completed, exact parity fails | 644.235 | 1,769,021,440 | 244 |
+
+Both scope receipts show zero swap and no OOM events. These are small-fixture
+runs, not full-arm completion. [Subset run health](convergence-evidence/parity-run-health.json)
+records MODELED mode counts and shares only. Production and SEMCOG parity runs
+remain unexecuted under the lead's stop-on-parity-failure instruction.
+
+| Full-population arm under the new 9 GiB path | Completion | Elapsed / peak | MODELED tours / shares |
+|---|---|---|---|
+| Current coefficients | Not run, exact parity gate failed | Unavailable | Unavailable, null |
+| SEMCOG walk candidate | Not run, exact parity gate failed | Unavailable | Unavailable, null |
+
+The [execution status](convergence-evidence/execution-status.json) and
+[full-arm record](convergence-evidence/full-runs.json) preserve these non-runs
+as non-runs. The new input archive remains unchanged after model preparation.
+It contains the earlier instrument recipes; [execution closure](convergence-evidence/execution-closure.json)
+and [comparison closure](convergence-evidence/comparison-closure.json) separately
+pin the post-archive capture and comparator corrections. Current repository
+recipes and these corrections govern any later reproduction; the archived
+instrument failures must not be treated as a clean executable recipe.
+
+### Remaining steps for the frozen opening
+
+1. The lead reviews this stopped result and determines how to resolve the
+   built-in chunking discrepancy. No further model run is authorized by this
+   failed proof. A later admitted path must pass exact final-table parity,
+   including production cache use and both coefficient configurations, before
+   completing both full retained-population arms under the 9 GiB/zero-swap cap.
+   Preserve this failure and every earlier attempt. Do not reduce population,
+   relax tolerances or remove logsum columns to pass.
+2. Independently grade the corrected population and the four source-conflict
+   exclusions. Freeze their correspondence to the analysis population and
+   survey eligibility before opening outcomes. Complete the unresolved travel
+   conditions or preregister a defensible redesign: 106 unknown route fares,
+   transfers and cost-year alignment, complete MVTA dependence, drive access,
+   period road speeds, independent walk/bicycle networks, parking and tolls.
+   The current geographic mask does not establish complete trip coverage.
+3. Freeze observed/model eligibility correspondence, homogeneous linked-trip
+   families, diary and location continuity, university evidence, joint and
+   at-work handling, quality rules, required domains and exclusion denominators.
+4. Freeze the primary derived day-weight-per-tour estimator separately from
+   the trip-weighted sensitivity, including day universe, publisher joins,
+   household clusters, strata and variance. Unsupported uncertainty remains
+   unavailable.
+5. The lead reviews the complete admission closure, verifies the original split
+   and held-out boundary, and issues a new exclusive opening receipt. Do not
+   reuse a consumed lock or historical synthetic receipt.
+6. Only a subsequent lead-authorized opening may request approved outcome
+   fields for frozen in-scope development IDs. Evaluate each ActivitySim arm
+   independently against its preregistered gates. Keep AequilibraE separate
+   and held-out outcomes closed.
+
+The SQL migration remains unapplied. No Docker stack, hosted system, production
+service, default coefficient or frozen study record changes. Population and
+archive preparation are complete at the stated boundary; full-arm completion
+and scientific admission remain unproved.

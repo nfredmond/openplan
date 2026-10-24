@@ -1,0 +1,8 @@
+Running as unit: run-p519322-i63317749.scope; invocation ID: e6dc1c7f986a400289595a23f814052e
+test_both_recipes_import_from_their_projected_image_without_checkout_fallback (test_population_image_packaging.PopulationImagePackagingTests.test_both_recipes_import_from_their_projected_image_without_checkout_fallback) ... ok
+test_declared_standalone_contexts_include_shared_sources (test_population_image_packaging.PopulationImagePackagingTests.test_declared_standalone_contexts_include_shared_sources) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.269s
+
+OK

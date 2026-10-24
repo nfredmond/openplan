@@ -1,0 +1,19 @@
+test_exact_total_and_bounds_with_whole_seed_records (test_population_integerization.IntegerizationTests.test_exact_total_and_bounds_with_whole_seed_records) ... ok
+test_false_solver_success_does_not_waive_bounds (test_population_integerization.IntegerizationTests.test_false_solver_success_does_not_waive_bounds) ... ok
+test_inconsistent_problem_remains_failed (test_population_integerization.IntegerizationTests.test_inconsistent_problem_remains_failed) ... FAIL
+test_invalid_household_total_refuses (test_population_integerization.IntegerizationTests.test_invalid_household_total_refuses) ... ok
+test_pattern_allocation_must_match_solution (test_population_integerization.IntegerizationTests.test_pattern_allocation_must_match_solution) ... ok
+test_unavailable_and_invalid_margins_refuse (test_population_integerization.IntegerizationTests.test_unavailable_and_invalid_margins_refuse) ... ok
+
+======================================================================
+FAIL: test_inconsistent_problem_remains_failed (test_population_integerization.IntegerizationTests.test_inconsistent_problem_remains_failed)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/tmpbdklvo0b/modeling/tests/test_population_integerization.py", line 44, in test_inconsistent_problem_remains_failed
+    with self.assertRaisesRegex(PopulationSynthesisError,'integerization failed'):
+AssertionError: PopulationSynthesisError not raised
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.114s
+
+FAILED (failures=1)

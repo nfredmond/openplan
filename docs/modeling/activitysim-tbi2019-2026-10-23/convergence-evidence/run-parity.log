@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-8dddce31/docs/modeling/activitysim-tbi2019-2026-10-23/convergence-evidence/run-parity.py", line 29, in <module>
+    record={'arm':arm,'mode':mode,'command':command,'exit_code':run.returncode,'elapsed_seconds':time.monotonic()-start,'stdout_sha256':digest(output/'stdout.log')}
+                                                                                                                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-8dddce31/scripts/modeling/activitysim_chunk_parity.py", line 20, in digest
+    with Path(path).open('rb') as f:
+         ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nathaniel/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/pathlib.py", line 1044, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/home/nathaniel/.t3/worktrees/openplan/t3-8dddce31/data/_screening_cache/tbi2019-convergence/parity-current-disabled/stdout.log'
