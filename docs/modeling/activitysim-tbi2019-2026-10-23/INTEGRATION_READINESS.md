@@ -785,7 +785,7 @@ These are the complete retained inputs, not a memory-driven sample.
 | Retained preprocessing result vectors | 10,717,604 by 46 | 3,065,234,744 payload |
 
 Deep table bytes overlap through shared indexes, buffers and Python objects.
-They are not additive physical-memory measurements. `persons.py:83-118` builds
+They are not additive physical-memory measurements. `persons.py:79-112` builds
 the merged person table. `location_choice.py:558-565` filters and joins the
 sampled locations. `logsums.py:247-267` runs full preprocessing before inner
 simulation. `assign.py:310-329` draws six full-length random columns and

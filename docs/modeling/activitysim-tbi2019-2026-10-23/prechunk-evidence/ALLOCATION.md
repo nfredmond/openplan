@@ -16,7 +16,7 @@ existing period labels. No dtype reduction enters this diagnostic.
 |---|---:|---:|---|---:|---|
 | Households | 20,000 | 24 | int64 9; float64 3; int8 8; bool 4 | 2,848,424 | `abm/tables/households.py:24-137`; household annotations |
 | Persons | 49,094 | 30 | int64 8; float64 1; int8 1; bool 20 | 6,015,302 | `abm/tables/persons.py:19-79`; person annotations |
-| Persons merged | 49,094 | 92 | int64 32; float64 26; int8 9; bool 25 | 25,898,372 | `abm/tables/persons.py:83-118` |
+| Persons merged | 49,094 | 92 | int64 32; float64 26; int8 9; bool 25 | 25,898,372 | `abm/tables/persons.py:79-112` |
 | Land use | 634 | 29 | int64 16; float64 12; bool 1 | 164,274 | `core/input.py:61-221`; land-use annotations |
 | Accessibility | 634 | 10 | float64 10 | 55,792 | `abm/models/accessibility.py:160-183` |
 | Size-term definitions | 22 | 12 | object 1; float64 11 | 5,337 | `abm/tables/shadow_pricing.py:1376` |
