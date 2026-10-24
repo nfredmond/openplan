@@ -576,3 +576,182 @@ The frozen opening still requires the following work:
 6. Only a later authorized opening may request approved development-outcome
    fields. Evaluate each ActivitySim arm independently against its preregistered
    gates. Keep AequilibraE separate and held-out outcomes closed.
+
+## October 24, 2026 UTC: smaller chunks and allocator settings retain a pre-chunk memory blocker
+
+**Neither full arm completes under 9 GiB.** This round measures memory on
+20,000 whole households, retrains the sizing cache on the frozen 2,000-household
+fixture, and proves a 256 MiB production target for both coefficient arms. A
+second proof admits process-local allocator settings. All four subsequent full
+prefix attempts exceed the cap during grade-school preparation, before the
+inner logsum chunker starts. No full-population suffix executes. No TBI outcome
+field is requested, read or compared.
+
+The full retained population remains 1,060,601 households and 2,617,177 persons
+across 634 zones. The diagnostic and parity subsets do not substitute for either
+full arm. All prior attempts, frozen records, coefficients and source exclusions
+remain unchanged. [Execution boundary](memory-fit-evidence/EXECUTION_BOUNDARY.md),
+[memory diagnosis](memory-fit-evidence/JOIN_BOUNDARY.md) and
+[full-run health](memory-fit-evidence/full-run-health.json) retain the limits.
+
+### Measured memory
+
+The diagnostic fixes 20,000 households and 49,094 persons by household-ID hash,
+independently of choices or survey outcomes, with all 634 destinations.
+[Input freeze](memory-fit-evidence/profile-before-run.json) retains membership
+selection and input hashes. The profiler reads allocation metadata without
+replacing ActivitySim functions or emitting person records.
+
+| Allocation at the grade-school diagnostic boundary | Measurement |
+|---|---:|
+| Skim package | 826 float32 matrices, each 634 by 634 |
+| File-backed skim cache | 1,328,062,624 bytes |
+| Pipeline DataFrames, deep accounting | 37,547,489 bytes |
+| Merged persons within that pipeline accounting | 25,898,372 bytes |
+| Sampled-location frame at helper entry | 205,048 rows; 4,100,960 deep bytes |
+| Joined chooser frame at logsum-helper entry | 15,993,744 deep bytes |
+| Prepared chooser frame at helper return | 90,474,318 deep bytes |
+| A full inner chunk at the 256 MiB target | 5,194 chooser rows; 934,920 chooser deep bytes; 914,144 utility deep bytes |
+
+Deep table accounting can count shared objects and indexes more than once. It
+is not an additional physical allocation to add to RSS or cgroup memory. The
+[breakdown](memory-fit-evidence/memory-breakdown.json) retains call/return RSS,
+working-table and array sizes, and one-second cgroup samples. Those samples can
+miss transient peaks; surviving terminal receipts retain scope lifetime peaks.
+
+`MemMapSkimFactory` uses `JitMemMapSkimData`: all 826 matrices enter the backing
+file, and each lookup maps and closes that file. The factory does not retain a
+permanent 826-matrix heap array. The inspected v1.5.1 path filters unconfigured
+period labels but exposes no configured-model-read matrix selector. This study
+uses all five periods. No matrix, dtype, precision or skim value changes.
+
+| 20,000-household diagnostic through school location | Elapsed seconds | Cgroup lifetime peak bytes |
+|---|---:|---:|
+| Prior 5,500,000,000-byte target | 40.088 | 2,910,703,616 |
+| 268,435,456-byte target | 82.399 | 2,140,889,088 |
+| Same smaller target with allocator settings | 81.141 | 2,007,269,376 |
+
+The smaller target produces 40 grade-school logsum chunks in the diagnostic.
+At full scale, failure still occurs before that inner chunker starts. The
+source performs a full sampled-location/person join and then full-table
+preprocessing before chunked logsum simulation. The retained logs do not
+separate the join from preprocessing: the helper's entry message uses DEBUG,
+which the model logger suppresses. The initial join-only inference and its
+correction remain in the [diagnosis](memory-fit-evidence/JOIN_BOUNDARY.md).
+There is no captured Python stack at the kernel OOM kill.
+
+### Settings and choice parity
+
+The prior cache already came from 2,000 households, rather than 64. This round
+still retrains it on the same frozen 2,000 households and 4,971 persons, through
+`trip_purpose_and_destination`, with a 536,870,912-byte target and minimum chunk
+ratio 1.0. Training completes in 768.046 seconds at a 1,946,472,448-byte cgroup
+peak. The fresh cache SHA-256 is
+`3258b6ecd69d9a9e73e4d0b411a65a6e63308e7fe797d0f65dcc6634a29d7761`.
+The [cache bytes](memory-fit-evidence/trained-chunk-cache.csv) remain retained.
+
+An initial 1 GiB current-arm prefix completes but exercises no chooser split.
+The unchanged splitting guard refuses admission, so that probe runs no suffix
+or full arm. Its configuration, logs and refusal remain retained. The successor
+production target is explicitly 268,435,456 bytes with minimum chunk ratio 0.05.
+Both full attempts and their matching proofs use that same target. The suffix
+uses `resume_after: trip_purpose_and_destination`, disabled chunking and chunk
+size zero, preserving legacy trip scheduling.
+
+The allocator successor additionally sets `MALLOC_MMAP_THRESHOLD_=131072`,
+`MALLOC_TRIM_THRESHOLD_=0` and `MALLOC_ARENA_MAX=2` in each owned process. These
+[documented GNU C Library settings](https://sourceware.org/glibc/manual/latest/html_node/Malloc-Tunable-Parameters.html)
+change allocation and release behavior. They change no host-wide default or
+ActivitySim source. The host reports glibc 2.43. Both successor proofs retain the
+same fresh cache, inputs, RNG seed, coefficients and model sequence.
+
+| 2,000-household proof | Comparison with its own fully unchunked reference | Tours / trips | Joint participants |
+|---|---|---:|---:|
+| Smaller target, current | Every exported value exact in all seven tables | 6,763 / 17,377 | 274 |
+| Smaller target, SEMCOG | Every exported value exact in all seven tables | 6,764 / 17,464 | 274 |
+| Allocator settings, current | Every exported value exact in all seven tables | 6,763 / 17,377 | 274 |
+| Allocator settings, SEMCOG | Every exported value exact in all seven tables | 6,764 / 17,464 | 274 |
+
+Each proof contains actual chooser splitting and an unchunked resumed suffix.
+The adopted maximum of four ULP or 1e-12 relative error remains available only
+for auxiliary logsums/utilities, but none of these four comparisons needs it.
+Every row identity, count, choice and auxiliary value matches exactly.
+[Parity summary](memory-fit-evidence/parity-summary.json) retains all reference
+and candidate final-file hashes. This is subset execution parity, not a
+full-population reference or scientific validation.
+
+### Full retained-population resource result
+
+Every prefix runs sequentially under
+`systemd-run --user --scope -p MemoryMax=9G -p MemorySwapMax=0`.
+All four reach 10,717,604 grade-school sampled-location rows. These intermediate
+rows are not completed tours, trips or observed records.
+
+| Full arm and execution setting | Prefix outer elapsed seconds | Systemd result / reported peak | Suffix | Final tours, trips and MODELED shares |
+|---|---:|---|---|---|
+| Current, 256 MiB target | 764.724 | OOM kill / 9 GiB | Not run | Unavailable |
+| SEMCOG, 256 MiB target | 748.851 | OOM kill / 9 GiB | Not run | Unavailable |
+| Current, same target plus allocator settings | 846.011 | OOM kill / 9 GiB | Not run | Unavailable |
+| SEMCOG, same target plus allocator settings | 816.280 | OOM kill / 9 GiB | Not run | Unavailable |
+
+Last retained samples contain 9,491,968,000 to 9,560,707,072 anonymous bytes,
+while file cache falls to 5,533,696 to 13,398,016 bytes. Scope swap use remains
+zero in every retained sample. Terminal monitor receipts are absent after the
+OOM kills; the journals establish the final `oom-kill` result and reported
+9 GiB peak. No missing terminal event census or suffix peak is invented.
+[Stage memory summary](memory-fit-evidence/stage-memory-summary.json) separates
+one-second sampled stage peaks from exact surviving scope lifetime peaks.
+
+No full-arm final CSV exists, so all full-arm final-output hash maps are empty.
+No modeled-share report runs. Overall or preregistered-stratum shares remain
+unavailable, not zero. The full-health packet retains hashes of partial pipeline
+checkpoints without presenting them as completed travel outputs. Removing skim
+file cache cannot explain the anonymous allocation at the observed failures.
+The tested smaller-target and allocator paths do not resolve this boundary.
+This does not prove that every unmodified-engine configuration is impossible.
+
+### Verification and frozen-opening steps
+
+Scoped verification passes 29 Python tests with zero skips: 14 parity tests,
+six inherited controller tests and nine admission/execution tests. Nine accepted
+mutation controls contain two harmless comment survivors and seven intended
+assertion failures, with exact source restoration. An earlier malformed
+failed-proof fixture produces an incidental KeyError; it remains retained and
+excluded from that count. Synthetic refusal tests do not prove engine parity,
+full-population memory fit or scientific accuracy. The 1 GiB no-split refusal
+also remains separate from a numerical parity result.
+
+All ten pinned installed engine files and all 117 original frozen study records
+retain their hashes. Runtime versions remain CPython 3.11.15, ActivitySim 1.5.1,
+NumPy 1.25.2 and pandas 2.3.3. Raw local logs remain in ignored scratch files;
+byte-identical gzip copies and custody hashes enter this packet. Configurations,
+commands, source snapshots, corrections, comparisons and failed attempts remain
+retained. The product-direction check passes with its dated review reminders.
+No Next.js build, Vitest run, Docker change, hosted operation, database operation,
+engine patch, coefficient change or default change occurs. The PR stays draft.
+
+The frozen opening still requires these steps:
+
+1. Resolve the measured full-table preparation memory boundary and complete both
+   full retained-population arms. Keep the 9 GiB cap, zero swap, full population,
+   adopted choice criterion and unchunked suffix unless the lead separately
+   authorizes a successor design. Retain final hashes, supported modeled strata
+   and stage resource receipts. Neither suffix memory nor full completion is
+   established by this round.
+2. Grade population and travel inputs independently. Preserve the four
+   source-conflict zones and unchanged population gates. Resolve or preregister
+   fare and cost-year applicability, MVTA service dependence, drive access,
+   period speeds, walk/bicycle assumptions, parking and toll limitations.
+3. Freeze observed/model eligibility correspondence, homogeneous linked-trip
+   families, diary and location continuity, university evidence, joint and
+   at-work handling, quality rules, required domains and exclusion denominators.
+4. Freeze the derived day-weight-per-tour primary estimator separately from the
+   trip-weighted sensitivity, including the day universe, publisher joins,
+   household clusters, strata, Taylor-linearized ratio variance, singleton
+   treatment and simultaneous bounds. Unsupported uncertainty stays unavailable.
+5. The lead verifies the original split and held-out boundary, reviews the exact
+   input and implementation closure, and issues a new exclusive opening receipt.
+   Prior synthetic receipts and consumed locks do not authorize that opening.
+6. Only a later authorized opening may request approved development-outcome
+   fields. Evaluate each ActivitySim arm independently against its preregistered
+   gates. Keep AequilibraE separate and held-out outcomes closed.

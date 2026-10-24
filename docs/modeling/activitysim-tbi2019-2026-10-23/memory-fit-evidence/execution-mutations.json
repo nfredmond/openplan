@@ -1,0 +1,19 @@
+{
+  "controls": [
+    {
+      "name": "execute-comment",
+      "expected": "survive",
+      "accepted": true,
+      "exit_code": 0
+    },
+    {
+      "name": "execute-exit",
+      "expected": "assertion_failure",
+      "accepted": true,
+      "exit_code": 1
+    }
+  ],
+  "source_restored": true,
+  "source_sha256": "63d0adb3a1e929f05740782f2f133d8600ce905048e29f48b31f39762ec77d10",
+  "blind_category": "Mocked child exits do not establish engine behavior or memory sufficiency."
+}

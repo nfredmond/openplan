@@ -1,0 +1,11 @@
+{
+  "exit_code": 0,
+  "elapsed_seconds": 160.46561307797674,
+  "peak_child_rss_kib": 1765448,
+  "scope": {
+    "memory.peak": "1768927232",
+    "memory.max": "9663676416",
+    "memory.swap.max": "0",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+  }
+}

@@ -1,0 +1,4 @@
+# Raw logs remain local; byte-identical gzip copies and custody hashes are tracked.
+*.engine.log
+*.memory.jsonl
+*.controller.log

@@ -1,0 +1,22 @@
+{
+  "python": "3.11.15 (main, Jun 11 2026, 04:03:40) [Clang 22.1.3 ]",
+  "executable": "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/bin/python",
+  "packages": {
+    "activitysim": "1.5.1",
+    "numpy": "1.25.2",
+    "pandas": "2.3.3"
+  },
+  "files": {
+    "abm/models/location_choice.py": "39a8624e73cad1a3b38acfc769fbbb330aa792b115ec16b047c04631fd9e82c5",
+    "abm/models/util/logsums.py": "4c42188a1ae4392f3a514570906f5390939bbba4e15cfc94bace031067822c8c",
+    "abm/models/trip_scheduling.py": "7566b3a9469b9ba02f8b846292e73a615b54113399d7f8081ee6071cebc0a64d",
+    "abm/models/util/probabilistic_scheduling.py": "3c6cec9ced292bd29adeca2695db00d1914bd279e35130faffde5e1ed6f1641b",
+    "abm/models/util/trip.py": "b843671c7dd75ddc1e0d33c7193dc2a520e023ec00110c084a725ee89d845203",
+    "core/random.py": "b46078a39ffec43fb0f24f497f65c00148900623926942d94d88d3c0a28a2bf7",
+    "core/chunk.py": "05601f3058494345bcfdc9ce30337c4c629a4ac4750e4636d29084871a033f9c",
+    "core/skim_dict_factory.py": "d7395e8e48a0ee5b34238b6b048a869fbba44e4eefe0b289210e452b403b9bc0",
+    "core/los.py": "cb623e39fbc4fee850756f45eef08a9a5f2178f677851bc0d7190290fd02ae54",
+    "core/simulate.py": "30ee80da9be8aac46e05f00a5e27514c58753a3eb973f61d0a20f49652ca7805"
+  },
+  "installed_root": "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim"
+}

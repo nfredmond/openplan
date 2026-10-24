@@ -1,0 +1,13 @@
+{
+  "households": 1060601,
+  "persons": 2617177,
+  "zones": 634,
+  "prefix_chunk_size": 268435456,
+  "prefix_mode": "production",
+  "min_available_chunk_ratio": 0.05,
+  "suffix_chunk_size": 0,
+  "suffix_mode": "disabled",
+  "cache_sha256": "3258b6ecd69d9a9e73e4d0b411a65a6e63308e7fe797d0f65dcc6634a29d7761",
+  "outcomes_accessed": false,
+  "scientific_acceptance": false
+}

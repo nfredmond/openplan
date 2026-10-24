@@ -1,0 +1,17 @@
+.....E.
+======================================================================
+ERROR: test_failed_proof_refused (__main__.AdmissionTests.test_failed_proof_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-7ed7ca64/docs/modeling/activitysim-tbi2019-2026-10-23/memory-fit-evidence/test-admission.py", line 59, in test_failed_proof_refused
+    with self.assertRaisesRegex(RuntimeError,'parity/cache'): a.admit_full()
+                                                              ^^^^^^^^^^^^^^
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-7ed7ca64/docs/modeling/activitysim-tbi2019-2026-10-23/memory-fit-evidence/admission.py", line 23, in admit_full
+    if False or m.digest(cache) != result['cache_sha256']:
+                                   ~~~~~~^^^^^^^^^^^^^^^^
+KeyError: 'cache_sha256'
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.012s
+
+FAILED (errors=1)
