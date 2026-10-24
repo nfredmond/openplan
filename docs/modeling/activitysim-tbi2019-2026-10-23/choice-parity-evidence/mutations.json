@@ -1,0 +1,58 @@
+[
+  {
+    "name": "harmless",
+    "harmless": true,
+    "exit_code": 0,
+    "accepted": true,
+    "restored": true
+  },
+  {
+    "name": "choice-tolerance",
+    "harmless": false,
+    "exit_code": 1,
+    "accepted": true,
+    "restored": true
+  },
+  {
+    "name": "wide-tolerance",
+    "harmless": false,
+    "exit_code": 1,
+    "accepted": true,
+    "restored": true
+  },
+  {
+    "name": "five-ulp",
+    "harmless": false,
+    "exit_code": 1,
+    "accepted": true,
+    "restored": true
+  },
+  {
+    "name": "missing-table",
+    "harmless": false,
+    "exit_code": 1,
+    "accepted": true,
+    "restored": true
+  },
+  {
+    "name": "row-identity",
+    "harmless": false,
+    "exit_code": 1,
+    "accepted": true,
+    "restored": true
+  },
+  {
+    "name": "schema",
+    "harmless": false,
+    "exit_code": 1,
+    "accepted": true,
+    "restored": true
+  },
+  {
+    "name": "nonfinite",
+    "harmless": false,
+    "exit_code": 1,
+    "accepted": true,
+    "restored": true
+  }
+]

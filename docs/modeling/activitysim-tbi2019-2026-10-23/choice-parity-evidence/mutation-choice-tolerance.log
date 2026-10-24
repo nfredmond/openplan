@@ -1,0 +1,21 @@
+test_choice_one_ulp_refuses (test_activitysim_choice_parity.ChoiceParityTests.test_choice_one_ulp_refuses) ... FAIL
+test_duplicate_and_changed_ids_refuse (test_activitysim_choice_parity.ChoiceParityTests.test_duplicate_and_changed_ids_refuse) ... ok
+test_excess_tolerance_and_nonfinite_refuse (test_activitysim_choice_parity.ChoiceParityTests.test_excess_tolerance_and_nonfinite_refuse) ... ok
+test_four_ulp_at_zero_survives_five_refuses (test_activitysim_choice_parity.ChoiceParityTests.test_four_ulp_at_zero_survives_five_refuses) ... ok
+test_harmless_order_and_auxiliary_roundoff (test_activitysim_choice_parity.ChoiceParityTests.test_harmless_order_and_auxiliary_roundoff) ... ok
+test_missing_column_refuses (test_activitysim_choice_parity.ChoiceParityTests.test_missing_column_refuses) ... ok
+test_missing_table_refuses (test_activitysim_choice_parity.ChoiceParityTests.test_missing_table_refuses) ... ok
+test_tolerated_logsum_does_not_hide_departure_choice (test_activitysim_choice_parity.ChoiceParityTests.test_tolerated_logsum_does_not_hide_departure_choice) ... ok
+
+======================================================================
+FAIL: test_choice_one_ulp_refuses (test_activitysim_choice_parity.ChoiceParityTests.test_choice_one_ulp_refuses)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/tmpyybdcnk5/tests/test_activitysim_choice_parity.py", line 31, in test_choice_one_ulp_refuses
+    with self.assertRaises(ParityFailure) as error:compare_choices(self.a,self.b)
+AssertionError: ParityFailure not raised
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.117s
+
+FAILED (failures=1)

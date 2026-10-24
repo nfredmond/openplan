@@ -1,0 +1,161 @@
+{
+  "claim": "retained-output parity failure; no engine run or outcome access",
+  "files": {
+    "scripts/modeling/activitysim_choice_parity.py": {
+      "sha256": "d2fd09854ced42342f701400233be475b7c4f0d8f363da1e775a45bc8222f129",
+      "bytes": 3345
+    },
+    "scripts/modeling/tests/test_activitysim_choice_parity.py": {
+      "sha256": "0b517da5f747a95e21b9b6d871671b3ec0e019108533a254dff131daba50d6d6",
+      "bytes": 3658
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/integration-evidence/activitysim-memory-runner.py": {
+      "sha256": "a22d785d208c537f181330792d003f8f831aa7faf7c5330862fb7a5a9883afff",
+      "bytes": 1386
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/INTEGRATION_READINESS.md": {
+      "sha256": "ea4c4954df98f4ad42a9e0058d404036ce9ca636f9364e6e3eead6df691d6080",
+      "bytes": 30457
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/VERIFICATION.md": {
+      "sha256": "ea10d007f846bf29639ebfbdc6ed2980a9bec13b7f00f4ed7399dd25e193b7bd",
+      "bytes": 5094
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/audit-existing.py": {
+      "sha256": "73b2b19903031e0d1fa1fd41ee259dc2b3ceadce0d1e4ce181b197e61b1f4745",
+      "bytes": 934
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/complete-comparison.json": {
+      "sha256": "a9edb9d00415865937646c59fb54c481e942280af113ea8aa59170e484ca18e6",
+      "bytes": 8041
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/control-catalog-pin-False.log": {
+      "sha256": "6be10ce068e11d99ef12a7858974477cd04eb307b5991c45b7fb74ab7ce3b229",
+      "bytes": 2737
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/control-catalog-pin-True.log": {
+      "sha256": "0d987aa106003ba993037570c262feac2c031548d4f9726faccea9c149081dcf",
+      "bytes": 510
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/control-import-guard-False.log": {
+      "sha256": "b4d4740a8c615b9b3d32ee17220e8122b05dfb7b09f23376ae731994c36a8c66",
+      "bytes": 1275
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/control-import-guard-True.log": {
+      "sha256": "bc7f75f546e21ded5ef0ac8ab99f5757bf9a1c073d0c4b6307bb56c669261b91",
+      "bytes": 244
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/control-psutil-dependency-False.log": {
+      "sha256": "72a2f9c6c97f780643037398966531cfdd6015cac657b3f4a7a85c6710d89f98",
+      "bytes": 4072
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/control-psutil-dependency-True.log": {
+      "sha256": "b4741328cdbb7fbb10e57d812e3e5de6f1d131a3d2cac4f5213107f21f731967",
+      "bytes": 484
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/controller.log": {
+      "sha256": "8083b138d6b811570fc25e935f81add53cc7eca66a854de569af205f5b323c54",
+      "bytes": 2540
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/exact-differing-trips.json": {
+      "sha256": "b6134d79c20e169ee2feddb6fdadedd9c48d9068c239236c849c260bffe10c49",
+      "bytes": 1969
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/frozen-record-preservation.json": {
+      "sha256": "527dcc707b044f46ea6a28a991f71a444e5a377e192d4a921971da2a11d1701b",
+      "bytes": 33253
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/full-runs.json": {
+      "sha256": "7febf508f131261df5bfd79e174c92746aa83a490929e97143e05645d1885de8",
+      "bytes": 714
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/import-guard-tests.log": {
+      "sha256": "401525fc6fe31312c92b48ba43c06461bd672ddab4c76f0561bb8862d1ecf1ae",
+      "bytes": 244
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/input-freeze.json": {
+      "sha256": "d56b27c9d456aa372f3149d3eecbea8edc3f7ec26414f5b0a105cba258195a27",
+      "bytes": 35397
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/lead-fix-controls.json": {
+      "sha256": "3cd9d6a12f4c8584ac345eb68f76e757e96eb658c331f1efda2747401f4f52ef",
+      "bytes": 984
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/memory-runner-no-site-tests.log": {
+      "sha256": "3baf97ec6f176999e8daf141708ee09e38d7789947e1e2dc578826af53be1ee2",
+      "bytes": 484
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/mutate.py": {
+      "sha256": "e041e1a686ee6660e20da1315effcebea02999987f1143cdc27420a85bb07e82",
+      "bytes": 2240
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/mutation-choice-tolerance.log": {
+      "sha256": "8b32cd94a403926626ca2d2f7a4cf5cf12739dd8c1634c5c7df48053db7a587c",
+      "bytes": 1710
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/mutation-five-ulp.log": {
+      "sha256": "d1953552e134eb692e2e3c3ec9cd0dd7edf593f8819571a62b35b24634a86708",
+      "bytes": 1749
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/mutation-harmless.log": {
+      "sha256": "3a0a79bea937f967b0fff28672c3b476c7b6cb92992f6a038a6a6ad1f5cf4517",
+      "bytes": 1170
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/mutation-missing-table.log": {
+      "sha256": "e601b41e9172e2321f86a74e36554e3ba9019eb727c0d6f799e2468f2c3aa07c",
+      "bytes": 1712
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/mutation-nonfinite.log": {
+      "sha256": "592c268f4a2b44ac1e67424cd3e6f8c3ddeb5010d271cfa5b6fe44d0c727f0f6",
+      "bytes": 3429
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/mutation-row-identity.log": {
+      "sha256": "6a8d485b326e6d1afd4bdf97887be54395a008e630dcb8e44b62922c6f22f4b6",
+      "bytes": 1731
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/mutation-schema.log": {
+      "sha256": "9bb3469a901d5ddadcbf70c37c7f9e9ee22e54bde2a7f4d5671112abbd17aa8b",
+      "bytes": 2245
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/mutation-wide-tolerance.log": {
+      "sha256": "239e7114e5b466a6e72f5b7e78f88273aa657e145c4a683d39385157c577307c",
+      "bytes": 1746
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/mutations.initial.json": {
+      "sha256": "bf2e198d1801b15661f43ed883a8196fc6800336cde5e0bac4c4a7640b9d7e3d",
+      "bytes": 617
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/mutations.json": {
+      "sha256": "f91739d937f989a69551c2684e30169bce4c4ee892af088d7c69d79c95eaeab8",
+      "bytes": 976
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/packaging-tests.log": {
+      "sha256": "301f96074312b3861d8c02eb16bb6321209c21ed20a78122590b493fc5e0bef6",
+      "bytes": 510
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/parity-result.json": {
+      "sha256": "d9a23376c9a6248b2aeae35536ca92fd8da0b99ded2c21a290f85980f66416af",
+      "bytes": 2759
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/parity-runs.json": {
+      "sha256": "acf0d877f9ac49128ba289eb44cea443f6efcb88686c9e43b261149b55f7d349",
+      "bytes": 2211
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/parity-tests.log": {
+      "sha256": "cdf011fb47226cb2e2bec48a0b36acdb4b60fbec3b1487c207ad64118cd82657",
+      "bytes": 1981
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/prepare.py": {
+      "sha256": "73b6e64f6b735f79f020c10c8f4287e51b498b58659b9b5e28aa67a859342a04",
+      "bytes": 2712
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/run-parity.py": {
+      "sha256": "34cdcd72045d6f5f722d0d1f5870738d570aa9af99d61628e7260110be8edb33",
+      "bytes": 4190
+    },
+    "docs/modeling/activitysim-tbi2019-2026-10-23/choice-parity-evidence/verify-lead-fixes.py": {
+      "sha256": "ee05ae60891024bf781fe34c69a96f1340dadb43c6a4ec7347d64505395d6f73",
+      "bytes": 2244
+    }
+  }
+}

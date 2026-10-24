@@ -1,7 +1,7 @@
 """Run the pinned engine with allocator reclamation before location logsums."""
 import ctypes,gc,hashlib,importlib.metadata,json,runpy,sys
 from pathlib import Path
-import psutil
+import os
 root=Path(__file__).resolve().parents[4]
 sys.path.insert(0,str(root/'scripts/modeling'))
 from activitysim_allocator_reclaim import reclaim_before
@@ -13,12 +13,14 @@ libc=ctypes.CDLL(None)
 trim=libc.malloc_trim
 trim.argtypes=[ctypes.c_size_t]
 trim.restype=ctypes.c_int
-process=psutil.Process()
+def current_rss():
+    # Linux scope runner: statm resident pages report current, not peak, RSS.
+    return int(Path("/proc/self/statm").read_text().split()[1])*os.sysconf("SC_PAGE_SIZE")
 def reclaim():
-    before=process.memory_info().rss
+    before=current_rss()
     collected=gc.collect()
     released=trim(0)
-    print(json.dumps({'allocator_reclamation':True,'rss_before':before,'rss_after':process.memory_info().rss,'gc_objects':collected,'malloc_trim_result':released}),flush=True)
+    print(json.dumps({'allocator_reclamation':True,'rss_before':before,'rss_after':current_rss(),'gc_objects':collected,'malloc_trim_result':released}),flush=True)
 location_choice.run_location_logsums=reclaim_before(location_choice.run_location_logsums,reclaim)
 sys.argv[0]='activitysim'
 runpy.run_module('activitysim',run_name='__main__')

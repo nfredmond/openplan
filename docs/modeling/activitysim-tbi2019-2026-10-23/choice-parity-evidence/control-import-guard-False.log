@@ -1,0 +1,35 @@
+
+ RUN  v4.1.11 /home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/openplan
+
+ ❯ src/test/modeling-requirements-cover-the-modeling-imports.test.ts (2 tests | 1 failed) 52ms
+     × lists every third-party module scripts/modeling imports 31ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  19:57:04
+   Duration  531ms (transform 33ms, setup 52ms, import 16ms, tests 52ms, environment 317ms)
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/modeling-requirements-cover-the-modeling-imports.test.ts > the modeling requirements cover what the modeling code imports > lists every third-party module scripts/modeling imports
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "codecs (imported by scripts/modeling/streamed_json_object.py) is not in scripts/modeling/requirements.txt — add it there, map the script to its real runtime, or add it to PYTHON_STDLIB if it is standard library",
++ ]
+
+ ❯ src/test/modeling-requirements-cover-the-modeling-imports.test.ts:223:21
+    221|     }
+    222|
+    223|     expect(missing).toEqual([]);
+       |                     ^
+    224|   });
+    225|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+

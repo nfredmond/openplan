@@ -1,0 +1,50 @@
+[
+  {
+    "name": "import-guard",
+    "harmless": true,
+    "exit_code": 0,
+    "accepted": true,
+    "expected_failure": null,
+    "restored": true
+  },
+  {
+    "name": "import-guard",
+    "harmless": false,
+    "exit_code": 1,
+    "accepted": true,
+    "expected_failure": "AssertionError",
+    "restored": true
+  },
+  {
+    "name": "catalog-pin",
+    "harmless": true,
+    "exit_code": 0,
+    "accepted": true,
+    "expected_failure": null,
+    "restored": true
+  },
+  {
+    "name": "catalog-pin",
+    "harmless": false,
+    "exit_code": 1,
+    "accepted": true,
+    "expected_failure": "FAIL:",
+    "restored": true
+  },
+  {
+    "name": "psutil-dependency",
+    "harmless": true,
+    "exit_code": 0,
+    "accepted": true,
+    "expected_failure": null,
+    "restored": true
+  },
+  {
+    "name": "psutil-dependency",
+    "harmless": false,
+    "exit_code": 1,
+    "accepted": true,
+    "expected_failure": "ModuleNotFoundError: No module named 'psutil'",
+    "restored": true
+  }
+]

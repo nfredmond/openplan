@@ -1,0 +1,9 @@
+
+ RUN  v4.1.11 /home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/openplan
+
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  19:57:03
+   Duration  590ms (transform 34ms, setup 54ms, import 18ms, tests 49ms, environment 322ms)
+

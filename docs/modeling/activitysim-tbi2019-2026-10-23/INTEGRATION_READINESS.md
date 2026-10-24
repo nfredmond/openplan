@@ -274,3 +274,139 @@ The SQL migration remains unapplied. No Docker stack, hosted system, production
 service, default coefficient or frozen study record changes. Population and
 archive preparation are complete at the stated boundary; full-arm completion
 and scientific admission remain unproved.
+
+
+## October 24, 2026 UTC: choice-level parity criterion, frozen before this check
+
+The lead replaces exact equality of intermediate floating-point logsums with
+choice-level parity for this round. The prior exact failure remains retained.
+Every final choice, row identity and row count must match exactly in all seven
+exported tables. This includes tour purpose, destination, mode, start/end period;
+trip destination, mode and departure; and every household/person choice column.
+All other fields remain exact except columns explicitly named as logsums or
+utilities. For finite values in those columns, the absolute difference must be
+at most `max(4 * max(ulp(a), ulp(b)), 1e-12 * max(abs(a), abs(b)))`.
+Matching missing values remain missing; unequal missing or infinite values fail.
+No rounding, choice omission or tolerance on choice fields is permitted.
+
+The check reuses the existing fixed 64-household current-coefficient reference
+and training outputs, with their retained hashes. It adds production-cache use
+and both coefficient configurations. The second subset contains 2,000 complete
+households selected by the lowest SHA-256 of
+`tbi2019-chunk-parity-2000-v1:` followed by household ID from the corrected runtime
+population. Membership is fixed before execution, independent of model and survey
+outcomes. Model RNG seed remains zero. Both subsets retain all 634 destination
+zones. Each arm compares unchunked, training and production outputs, with actual
+chooser splitting and no production fallback. Any choice difference stops all
+further model execution and retains exact differing records.
+
+Only successful parity on both subsets admits both full retained-population
+arms, sequentially under 9 GiB and zero swap. Full arms use production chunking
+with frozen training caches; no population sample substitutes for either arm.
+This criterion changes numerical execution admission, not scientific accuracy,
+observation tolerance, population gates or permission to open TBI outcomes.
+
+
+### Choice-level check stops on two departure choices
+
+The complete comparison of the existing 64-household current-coefficient outputs
+fails. It inspects all seven final tables and all columns, after verifying each
+output hash against the retained comparison receipt. The two one-ULP logsum
+differences satisfy the new tolerance. Two trip departure choices do not match:
+
+| Trip ID | Household ID | Person ID | Tour ID | Unchunked depart | Training depart |
+|---|---|---|---|---:|---:|
+| 914860869 | 1128682 | 2789209 | 114357608 | 16 | 18 |
+| 914860870 | 1128682 | 2789209 | 114357608 | 18 | 19 |
+
+Both trips are inbound work-tour legs with `DRIVEALONEFREE` mode. Their
+intermediate purposes are `othmaint` and `eatout`, respectively. These are
+synthetic model records, not TBI respondents. The [exact records](choice-parity-evidence/exact-differing-trips.json)
+and [complete comparison](choice-parity-evidence/complete-comparison.json)
+retain every differing cell. All other exported values match exactly except
+the two admitted logsum differences. Table counts match: 634 land-use zones,
+634 accessibility rows, 64 households, 166 persons, 244 tours, 628 trips and
+four joint-tour participants. The earlier comparator stopped at the first
+logsum column; its record explicitly left later trip columns unassessed.
+This check exposes those previously unassessed departure differences.
+
+No engine run occurs in this round. The lead's stop-on-choice-difference rule
+blocks production parity, SEMCOG parity, the larger subset and both full arms.
+The second fixture is frozen before the check: 2,000 households and 4,971 persons,
+RNG seed zero, full 634-zone destination domain. Its selection and hashes are
+in [input freeze](choice-parity-evidence/input-freeze.json). A prepared fixture is
+not a completed parity result.
+
+| Execution boundary | Status | Elapsed seconds | Peak bytes | Tours / trips |
+|---|---|---:|---:|---|
+| Existing 64-household unchunked reference | Reused, complete | 49.533 child-scope timing | 1,935,331,328 | 244 / 628 |
+| Existing 64-household training | Reused, complete; choice parity fails | 644.235 outer timing | 1,769,021,440 | 244 / 628 |
+| 2,000-household subset | Not run, stopped | Unavailable | Unavailable | Unavailable |
+| Full current-coefficient arm | Not run, stopped | Unavailable | Unavailable | Unavailable |
+| Full SEMCOG candidate arm | Not run, stopped | Unavailable | Unavailable | Unavailable |
+
+The prior subset scope receipts retain 9 GiB maximum, zero swap and no OOM events.
+The current round creates no new scope or modeled outputs. Full-arm MODELED mode
+shares and strata remain unavailable, not zero. [Full-arm status](choice-parity-evidence/full-runs.json)
+records both non-runs explicitly. No TBI outcome field is accessed or compared.
+
+### Hash custody and CI repair
+
+The public input archive is rehashed successfully as
+`0465298da115a6de40d23c26d7c21de273be2d48266f76f80813780a7c45d6c2`.
+The prior 594-member verification remains applicable to those unchanged bytes.
+The unchunked `final_trips.csv` hash is
+`bbc3cdeaa6642e696bff344162e9ee6ede08df409b93bb3b0e842312c43feddb`;
+the training trip hash is
+`1bea2aec0d1578c823ff90d2ffb6e80eee45d2bb12daf08b6d6e8cf578280ebe`.
+The complete comparison retains all 14 final-table hashes. Both tour tables hash
+as `c6bf0a48627618ab688941c7ffcbe6ebbeda6246a106879397157faf5597dd26`.
+There are no full-arm output hashes. All 117 original frozen files remain
+byte-identical, including the split and preregistration records.
+
+The memory runner now reads current resident memory from Linux `/proc/self/statm`
+using the standard library. It retains allocator reclamation, engine pins and
+current-RSS semantics without importing `psutil`. Its three tests pass under
+CPython 3.11 with `-S`; `find_spec("psutil")` returns `None` in that environment.
+The lead fixes are merged, including the migration changelog entry, `codecs`
+and `zoneinfo` import recognition, and 2019 catalog pinning. The merge retains
+`bisect` recognition and the existing security changelog entry.
+
+Source verification passes 21 tests with zero skips: eight new choice-comparator
+tests, six existing exact-comparator tests, three memory-runner tests, two
+population-packaging tests and two scoped import-guard tests. Four harmless
+mutation controls survive. Nine targeted controls fail through assertions and
+one restored `psutil` import fails with the expected missing-dependency error.
+All 14 accepted controls restore their source bytes. An initial comparator
+mutation produced an incidental file error and does not count as an accepted
+control. The first Vitest attempt lacked local dependencies; the subsequent
+scoped run uses the existing local dependency installation. These source checks
+do not establish engine parity or scientific acceptance. See the
+[verification record](choice-parity-evidence/VERIFICATION.md) for evidence limits.
+
+### Remaining steps for the frozen opening after this stop
+
+1. The lead resolves or separately authorizes investigation of the two departure
+   choices. Preserve this failure. A successor execution path must pass the
+   adopted choice-level criterion on both fixed subsets, both coefficients and
+   production-cache use. Then complete both full retained-population arms under
+   9 GiB and zero swap, sequentially, with full output hashes and modeled-only
+   health and supported strata. No additional execution follows from this stop.
+2. Grade population and travel-input admission independently. Preserve the four
+   failed source-conflict zones and unchanged population gates. Resolve or
+   preregister the existing fare, cost-year, service-dependence, drive-access,
+   period-speed, walk/bicycle, parking and toll limitations.
+3. Freeze observed/model eligibility correspondence, homogeneous linked-trip
+   family filtering, complete diary and location continuity, university evidence,
+   joint and at-work handling, quality rules, domains and exclusion denominators.
+4. Freeze the derived day-weight-per-tour primary estimator separately from the
+   trip-weighted sensitivity. Fix the day universe, publisher joins, household
+   clusters, county/sample-segment strata, Taylor-linearized ratio variance,
+   singleton-stratum treatment and simultaneous bounds. Unsupported uncertainty
+   remains unavailable.
+5. The lead verifies the original split and held-out boundary, reviews the exact
+   input and implementation closure, and issues a new exclusive opening receipt.
+   No consumed lock or historical synthetic receipt authorizes that opening.
+6. Only a later lead-authorized opening may request approved fields for frozen
+   in-scope development IDs. Evaluate each ActivitySim arm independently against
+   its preregistered gates. Keep AequilibraE separate and held-out outcomes closed.

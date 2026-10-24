@@ -1,0 +1,45 @@
+test_choice_one_ulp_refuses (test_activitysim_choice_parity.ChoiceParityTests.test_choice_one_ulp_refuses) ... FAIL
+test_duplicate_and_changed_ids_refuse (test_activitysim_choice_parity.ChoiceParityTests.test_duplicate_and_changed_ids_refuse) ... ok
+test_excess_tolerance_and_nonfinite_refuse (test_activitysim_choice_parity.ChoiceParityTests.test_excess_tolerance_and_nonfinite_refuse) ... FAIL
+test_four_ulp_at_zero_survives_five_refuses (test_activitysim_choice_parity.ChoiceParityTests.test_four_ulp_at_zero_survives_five_refuses) ... FAIL
+test_harmless_order_and_auxiliary_roundoff (test_activitysim_choice_parity.ChoiceParityTests.test_harmless_order_and_auxiliary_roundoff) ... ok
+test_missing_column_refuses (test_activitysim_choice_parity.ChoiceParityTests.test_missing_column_refuses) ... ok
+test_missing_table_refuses (test_activitysim_choice_parity.ChoiceParityTests.test_missing_table_refuses) ... ok
+test_tolerated_logsum_does_not_hide_departure_choice (test_activitysim_choice_parity.ChoiceParityTests.test_tolerated_logsum_does_not_hide_departure_choice) ... FAIL
+
+======================================================================
+FAIL: test_choice_one_ulp_refuses (test_activitysim_choice_parity.ChoiceParityTests.test_choice_one_ulp_refuses)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/tmp2z8apugo/tests/test_activitysim_choice_parity.py", line 31, in test_choice_one_ulp_refuses
+    with self.assertRaises(ParityFailure) as error:compare_choices(self.a,self.b)
+AssertionError: ParityFailure not raised
+
+======================================================================
+FAIL: test_excess_tolerance_and_nonfinite_refuse (test_activitysim_choice_parity.ChoiceParityTests.test_excess_tolerance_and_nonfinite_refuse)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/tmp2z8apugo/tests/test_activitysim_choice_parity.py", line 38, in test_excess_tolerance_and_nonfinite_refuse
+    with self.assertRaises(ParityFailure):compare_choices(self.a,self.b)
+AssertionError: ParityFailure not raised
+
+======================================================================
+FAIL: test_four_ulp_at_zero_survives_five_refuses (test_activitysim_choice_parity.ChoiceParityTests.test_four_ulp_at_zero_survives_five_refuses)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/tmp2z8apugo/tests/test_activitysim_choice_parity.py", line 44, in test_four_ulp_at_zero_survives_five_refuses
+    with self.assertRaises(ParityFailure):compare_choices(self.a,self.b)
+AssertionError: ParityFailure not raised
+
+======================================================================
+FAIL: test_tolerated_logsum_does_not_hide_departure_choice (test_activitysim_choice_parity.ChoiceParityTests.test_tolerated_logsum_does_not_hide_departure_choice)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/tmp2z8apugo/tests/test_activitysim_choice_parity.py", line 25, in test_tolerated_logsum_does_not_hide_departure_choice
+    with self.assertRaises(ParityFailure) as error:compare_choices(self.a,self.b)
+AssertionError: ParityFailure not raised
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.097s
+
+FAILED (failures=4)

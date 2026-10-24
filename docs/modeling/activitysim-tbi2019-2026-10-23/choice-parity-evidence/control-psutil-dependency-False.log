@@ -1,0 +1,59 @@
+test_pinned_call (test_activitysim_memory_runner.PinTests.test_pinned_call) ... ERROR
+test_source_refusal (test_activitysim_memory_runner.PinTests.test_source_refusal) ... ERROR
+test_version_refusal (test_activitysim_memory_runner.PinTests.test_version_refusal) ... ERROR
+
+======================================================================
+ERROR: test_pinned_call (test_activitysim_memory_runner.PinTests.test_pinned_call)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/scripts/modeling/tests/test_activitysim_memory_runner.py", line 25, in test_pinned_call
+    def test_pinned_call(self):self.execute('1.5.1',EXPECTED)
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/scripts/modeling/tests/test_activitysim_memory_runner.py", line 16, in execute
+    try:runpy.run_path(str(RUNNER),run_name='__main__')
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen runpy>", line 291, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/docs/modeling/activitysim-tbi2019-2026-10-23/integration-evidence/activitysim-memory-runner.py", line 1, in <module>
+    import psutil
+ModuleNotFoundError: No module named 'psutil'
+
+======================================================================
+ERROR: test_source_refusal (test_activitysim_memory_runner.PinTests.test_source_refusal)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/scripts/modeling/tests/test_activitysim_memory_runner.py", line 24, in test_source_refusal
+    with self.assertRaisesRegex(RuntimeError,'Unadmitted ActivitySim'):self.execute('1.5.1','0'*64)
+                                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/scripts/modeling/tests/test_activitysim_memory_runner.py", line 16, in execute
+    try:runpy.run_path(str(RUNNER),run_name='__main__')
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen runpy>", line 291, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/docs/modeling/activitysim-tbi2019-2026-10-23/integration-evidence/activitysim-memory-runner.py", line 1, in <module>
+    import psutil
+ModuleNotFoundError: No module named 'psutil'
+
+======================================================================
+ERROR: test_version_refusal (test_activitysim_memory_runner.PinTests.test_version_refusal)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/scripts/modeling/tests/test_activitysim_memory_runner.py", line 22, in test_version_refusal
+    with self.assertRaisesRegex(RuntimeError,'Unadmitted ActivitySim'):self.execute('1.5.2',EXPECTED)
+                                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/scripts/modeling/tests/test_activitysim_memory_runner.py", line 16, in execute
+    try:runpy.run_path(str(RUNNER),run_name='__main__')
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen runpy>", line 291, in run_path
+  File "<frozen runpy>", line 98, in _run_module_code
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/docs/modeling/activitysim-tbi2019-2026-10-23/integration-evidence/activitysim-memory-runner.py", line 1, in <module>
+    import psutil
+ModuleNotFoundError: No module named 'psutil'
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.022s
+
+FAILED (errors=3)

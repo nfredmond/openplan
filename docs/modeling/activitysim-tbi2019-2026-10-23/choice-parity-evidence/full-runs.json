@@ -1,0 +1,28 @@
+[
+  {
+    "arm": "current",
+    "completion": "not_run_choice_parity_failed",
+    "population_households": 1060601,
+    "population_persons": 2617177,
+    "elapsed_seconds": null,
+    "peak_memory_bytes": null,
+    "tour_count": null,
+    "trip_count": null,
+    "mode_shares_MODELED": null,
+    "strata_shares_MODELED": null,
+    "output_hashes": null
+  },
+  {
+    "arm": "semcog",
+    "completion": "not_run_choice_parity_failed",
+    "population_households": 1060601,
+    "population_persons": 2617177,
+    "elapsed_seconds": null,
+    "peak_memory_bytes": null,
+    "tour_count": null,
+    "trip_count": null,
+    "mode_shares_MODELED": null,
+    "strata_shares_MODELED": null,
+    "output_hashes": null
+  }
+]
