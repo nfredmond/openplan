@@ -529,15 +529,12 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
  * Deployments already on a listed release must apply it with
  * `supabase migration up --include-all`; the Unreleased section must say so.
  * Name exact tags. A future release row counts the file from its own tag tree.
+ * The upgrade-path workflow reads the same file, so CI passes --include-all only
+ * for these files and these tags.
  */
-const INSERTED_BELOW_SHIPPED_MARK: ReadonlyArray<{ file: string; belowTags: readonly string[] }> = [
-  {
-    // Applied on the hosted installation 2026-10-19 (history sha256 48d50ca1,
-    // equal to the file bytes); merged to main after 0.70.0 through 0.72.0.
-    file: "20261018000003_award_condition_handoff.sql",
-    belowTags: ["0.70.0", "0.71.0", "0.72.0"],
-  },
-];
+const INSERTED_BELOW_SHIPPED_MARK: ReadonlyArray<{ file: string; belowTags: readonly string[]; reason: string }> = JSON.parse(
+  readFileSync(path.join(process.cwd(), "supabase", "inserted-below-shipped-mark.json"), "utf8"),
+);
 
 function insertedBelow(tag: string): string[] {
   return INSERTED_BELOW_SHIPPED_MARK.filter((entry) => entry.belowTags.includes(tag)).map((entry) => entry.file);

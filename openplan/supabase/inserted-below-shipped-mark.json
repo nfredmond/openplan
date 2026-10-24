@@ -1,0 +1,7 @@
+[
+  {
+    "file": "20261018000003_award_condition_handoff.sql",
+    "belowTags": ["0.70.0", "0.71.0", "0.72.0"],
+    "reason": "Applied on the hosted installation 2026-10-19 under this version (history sha256 48d50ca1, equal to the file bytes); merged to main after 0.70.0 through 0.72.0."
+  }
+]

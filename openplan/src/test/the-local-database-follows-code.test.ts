@@ -24,4 +24,14 @@ describe("the database follows checked-out code", () => {
     expect(upgradeWorkflow).toContain('REQUESTED_BASE="${{ inputs.base_tag }}"');
     expect(upgradeWorkflow).not.toContain("describe --tags --abbrev=0");
   });
+
+  it("passes --include-all to the upgrade only for files listed below that base tag's mark", () => {
+    const step = upgradeWorkflow.slice(upgradeWorkflow.indexOf("- name: Apply HEAD's migrations"), upgradeWorkflow.indexOf("- name: Assert the seeded rows survived"));
+    expect(step).toContain('require("./supabase/inserted-below-shipped-mark.json")');
+    expect(step).toContain('e.belowTags.includes(t)');
+    expect(step).toContain('"${BASE_TAG#v}"');
+    expect(step.split("supabase migration up --include-all").length - 1).toBe(1);
+    expect(step.indexOf("supabase migration up --include-all")).toBeGreaterThan(step.lastIndexOf("exit 1; }"));
+    expect(step).toMatch(/if \[ \$\{#BELOW\[@\]\} -eq 0 \]; then\n\s+npm exec -- supabase migration up\n\s+exit 0/);
+  });
 });
