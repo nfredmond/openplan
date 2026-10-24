@@ -1,3 +1,4 @@
+import { exactCountResult } from "./helpers/exact-count-result";
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -40,7 +41,8 @@ const fundingAwardsEqMock = vi.fn(() => ({ order: fundingAwardsOrderMock }));
 const fundingAwardsSelectMock = vi.fn(() => ({ eq: fundingAwardsEqMock }));
 
 const invoicesLimitMock = vi.fn();
-const invoicesOrderMock = vi.fn(() => ({ limit: invoicesLimitMock }));
+// The production register awaits order directly; count this complete fixture there.
+const invoicesOrderMock = vi.fn(async () => exactCountResult(await invoicesLimitMock()));
 const invoicesEqMock = vi.fn(() => ({ order: invoicesOrderMock }));
 const invoicesSelectMock = vi.fn(() => ({ eq: invoicesEqMock }));
 
@@ -50,7 +52,11 @@ const milestonesSelectMock = vi.fn(() => ({ in: milestonesInMock }));
 const submittalsInMock = vi.fn(async () => ({ data: [], error: null }));
 const submittalsSelectMock = vi.fn(() => ({ in: submittalsInMock }));
 
+const fulfillmentInMock = vi.fn(async () => ({ data: [], count: 0, error: null }));
+const fulfillmentSelectMock = vi.fn(() => ({ in: fulfillmentInMock }));
+
 const fromMock = vi.fn((table: string) => {
+  if (table === "funding_award_handoff_fulfillment") return { select: fulfillmentSelectMock };
   if (table === "workspace_members") return { select: membersSelectMock };
   if (table === "workspaces") return { select: workspaceSelectMock };
   if (table === "projects") return { select: projectsSelectMock };

@@ -1,3 +1,4 @@
+import { comparableFundingDisclosure, type ComparableFunding } from "@/lib/grants/award-handoff";
 /**
  * The project lists — the part of an RTP a board actually turns to.
  *
@@ -56,6 +57,7 @@ export type RtpProgrammeListEntry = {
     narrative: string;
   };
   funding: {
+    comparableFunding?: ComparableFunding;
     pipelineLabel: string;
     pipelineStatus: FundingPipelineStatus;
     committedFundingAmount: number;
@@ -142,10 +144,12 @@ export function RtpProgrammeLists({
   entries,
   bands,
   readFailed,
+  fundingReadFailed = false,
 }: {
   entries: readonly RtpProgrammeListEntry[];
   bands: readonly RtpProgrammeListBand[];
   readFailed: boolean;
+  fundingReadFailed?: boolean;
 }) {
   const groups = buildGroups(entries, bands);
 
@@ -240,18 +244,23 @@ export function RtpProgrammeLists({
                             {priorityTierLabel(entry.priority.summary.tier)}
                           </StatusBadge>
                         ) : null}
-                        <StatusBadge tone={projectFundingStackTone(entry.funding.pipelineStatus)}>
-                          {entry.funding.pipelineLabel}
-                        </StatusBadge>
-                        {/*
-                          Labelled as the project's OWN funding, not as this
-                          plan's cost. They answer different questions and a
-                          reader who merges them will think the plan is funded.
-                        */}
-                        <span className="text-label text-muted-foreground">
-                          Project funding: {formatMoney(entry.funding.committedFundingAmount, { precision: "whole" })} committed ·{" "}
-                          {formatMoney(entry.funding.unfundedAfterLikelyAmount, { precision: "whole" })} still to raise
-                        </span>
+                        {fundingReadFailed ? (
+                          <span className="text-label text-muted-foreground">Project funding unavailable</span>
+                        ) : (
+                          <>
+                            <StatusBadge tone={projectFundingStackTone(entry.funding.pipelineStatus)}>
+                              {entry.funding.pipelineLabel}
+                            </StatusBadge>
+                            {/*
+                              Labelled as the project's OWN funding, not as this
+                              plan's cost. They answer different questions and a
+                              reader who merges them will think the plan is funded.
+                            */}
+                            <span className="text-label text-muted-foreground">
+                              {entry.funding.comparableFunding ? comparableFundingDisclosure(entry.funding.comparableFunding) : <>Project funding: {formatMoney(entry.funding.committedFundingAmount, { precision: "whole", absent:"Unassessed" })} committed ·{" "}{formatMoney(entry.funding.unfundedAfterLikelyAmount, { precision: "whole", absent:"Unassessed" })} still to raise</>}
+                            </span>
+                          </>
+                        )}
                       </div>
                     </li>
                   );

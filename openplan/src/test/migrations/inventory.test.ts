@@ -3,7 +3,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { blankComments, matchingParen, migrationFiles, readMigration, splitTopLevel, unquoteLiteral } from "./read-migrations";
-import { UnexpandableDynamicSqlError, expandDynamicPolicyStatements, stringLiteralRanges } from "./plpgsql-expansion";
+import { UnexpandableDynamicSqlError, expandDynamicPolicyStatements, expandDynamicRlsStatements, stringLiteralRanges } from "./plpgsql-expansion";
 import {
   classifyRoleAwareness,
   classifyWorkspaceScope,
@@ -498,6 +498,9 @@ const EXPECTED = {
   // permissive member SELECT policy and no client write policy. Source delta
   // is +2 policies, permissive policies and policy-bearing tables. This is a
   // source inventory expectation, not a fresh installed-catalog observation.
+  // 20261018000003 adds four immutable award custody tables, each with one
+  // static member SELECT policy. No client write policy is added: +4 policies,
+  // permissive policies and policy-bearing tables; expanded remains unchanged.
   // 20261021215752 adds nine forced-RLS public custody tables and no view.
   // Seven copied SELECT policies, five explicit authorizer policies and ten
   // custody/operator policies add 22 permissive policies, 12 write grants and
@@ -506,12 +509,13 @@ const EXPECTED = {
   // These updated equalities parse current source. They are not a new install.
   // 20261023190100 adds four public immutable comparison tables, each with
   // one permissive member SELECT policy. No client write policy is added.
-  policies: 790,
-  permissive: 539,
+  // Main's 790/539/290/302/246 plus the four award custody policies above.
+  policies: 794,
+  permissive: 543,
   restrictive: 251,
   permissiveWrites: 290,
   expanded: 302,
-  tablesWithPolicies: 246,
+  tablesWithPolicies: 250,
   // 20261014000013 adds three generation custody tables with RLS and no client policies.
   // Installed isolated catalog confirms all three; no application view or policy is added.
   // Migration 20 adds the private public-translation mapping table, RLS and no policies.
@@ -577,18 +581,24 @@ const EXPECTED = {
   // Deadline journal contributes one RLS table; Safety migration 000002 adds
   // funding_opportunity_safety_seeds and report_safety_snapshot_persistence.
   // Each is an ordinary RLS table; no view is added.
+  // 20261019000002 adds eight manual-source fields to existing rtp_extraction_runs.
+  // It adds no relation, view, RLS table or policy. The manual migration leaves relation counts unchanged.
+  // The complete run fieldset below checks the additive columns at source tier.
+  // 20261018000003 adds four tables whose literal FOREACH enables RLS, plus
+  // six security-invoker views: current links, active submittals/milestones,
+  // legacy award calendar, fulfillment, and distinct-award issuance. These
+  // source deltas are not a fresh installed-catalog observation.
   // 20261022010001 retains three private population receipt/revocation tables.
   // Combined with the nine chat custody tables, source adds twelve RLS tables.
   // Equalities retain both additions; installed parity remains separate.
   // The same comparison migration adds four public RLS tables and no view.
   // Its transaction-entry table lives in a private schema outside this scan.
-  relations: 343,
-  tables: 329,
-  // 20261019000002 adds eight manual-source fields to existing rtp_extraction_runs.
-  // It adds no relation, view, RLS table or policy. The manual migration leaves relation counts unchanged.
-  // The complete run fieldset below checks the additive columns at source tier.
-  views: 14,
-  rlsEnabledTables: 329,
+  // Main's 343 relations, 329 tables and 14 views, plus the award migration's
+  // four RLS tables and six views.
+  relations: 353,
+  tables: 333,
+  views: 20,
+  rlsEnabledTables: 333,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */
@@ -596,6 +606,13 @@ const DYNAMIC_POLICY_TABLES = [
   "scenario_assumption_sets",
   "scenario_data_packages",
   "scenario_indicator_snapshots",
+] as const;
+
+const AWARD_CUSTODY_TABLES = [
+  "funding_award_handoff_revisions",
+  "funding_award_handoff_sources",
+  "funding_award_handoff_occurrences",
+  "funding_award_closure_receipts",
 ] as const;
 
 const inventory = loadPolicyInventory();
@@ -613,6 +630,11 @@ describe("migration policy inventory", () => {
     );
     expect(all.filter((p) => p.origin === "expanded")).toHaveLength(EXPECTED.expanded);
     expect(inventory.tables()).toHaveLength(EXPECTED.tablesWithPolicies);
+    for (const table of AWARD_CUSTODY_TABLES) {
+      expect(inventory.forTable(table).map((policy) => [policy.policy, policy.command, policy.kind])).toEqual([
+        ["member_read", "SELECT", "PERMISSIVE"],
+      ]);
+    }
   });
 
   it("sees the policies that are built at runtime, not only the ones spelled out", () => {
@@ -709,6 +731,33 @@ describe("migration policy inventory", () => {
       "CREATE POLICY a_delete ON a FOR DELETE USING (true);",
       "CREATE POLICY b_delete ON b FOR DELETE USING (true);",
     ]);
+
+    // Do not infer identifiers from mixed arrays, injected names, narrowed
+    // catalogue queries, or multiple loops in one block.
+    for (const loop of [
+      "FOREACH t IN ARRAY ARRAY['alpha', variable] LOOP",
+      "FOREACH t IN ARRAY ARRAY['alpha; DROP TABLE beta'] LOOP",
+      "FOREACH t IN ARRAY ARRAY['alpha.beta'] LOOP",
+      "FOREACH t IN ARRAY ARRAY['alpha']::text[] LOOP",
+      "FOR t IN SELECT tablename FROM pg_tables WHERE schemaname='public' AND tablename='alpha' LOOP",
+    ]) {
+      expect(() => expandDynamicRlsStatements("fixture.sql", fixture(`${loop}\nEXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', t);\nEND LOOP;`))).toThrow(UnexpandableDynamicSqlError);
+    }
+    expect(() => expandDynamicRlsStatements("fixture.sql", fixture(
+      "FOREACH t IN ARRAY ARRAY['alpha'] LOOP EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', t); END LOOP;\n" +
+      "FOREACH t IN ARRAY ARRAY['beta'] LOOP EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', t); END LOOP;"
+    ))).toThrow(UnexpandableDynamicSqlError);
+    expect(() => expandDynamicPolicyStatements("fixture.sql", fixture(
+      "EXECUTE format('CREATE POLICY %I ON alpha FOR SELECT USING (true)', 'x; DROP TABLE alpha');"
+    ))).toThrow(UnexpandableDynamicSqlError);
+    // %s renders a loop value verbatim, so only an explicit ::regclass cell may
+    // carry a schema qualifier. A bare dotted literal stays unexpandable.
+    const qualified = (cell: string) => fixture(`FOREACH t IN ARRAY ARRAY[${cell}] LOOP EXECUTE format('ALTER TABLE %s ENABLE ROW LEVEL SECURITY', t); END LOOP;`);
+    expect(expandDynamicRlsStatements("fixture.sql", qualified("'public.alpha'::regclass")).map((row) => row.sql)).toEqual([
+      "ALTER TABLE public.alpha ENABLE ROW LEVEL SECURITY;",
+    ]);
+    expect(() => expandDynamicRlsStatements("fixture.sql", qualified("'public.alpha'"))).toThrow(UnexpandableDynamicSqlError);
+    expect(() => expandDynamicRlsStatements("fixture.sql", qualified("'public.alpha; DROP TABLE beta'::regclass"))).toThrow(UnexpandableDynamicSqlError);
     const copyBlock = blankComments(readMigration("20261021215752_assistant_chat_turns.sql")).match(/DO \$body\$[\s\S]*?END \$body\$;/)![0];
     const sourcePolicies = [
       { table: "projects", command: "SELECT", kind: "RESTRICTIVE", roles: ["authenticated"], body: "USING (workspace_id IN (SELECT workspace_id FROM public.workspace_members))" },
@@ -1005,6 +1054,25 @@ describe("migration schema inventory", () => {
     expect(schema.rlsEnabled("projects")).toBe(true);
     expect(schema.rlsEnabled("census_tracts_map")).toBe(false);
     expect(schema.rlsEnabled("no_such_table_exists")).toBe(false);
+
+    const dir = mkdtempSync(path.join(tmpdir(), "openplan-rls-inventory-"));
+    try {
+      writeFileSync(path.join(dir, "0001_tables.sql"), "CREATE TABLE public.alpha (id uuid); CREATE TABLE public.beta (id uuid); CREATE TABLE public.gamma (id uuid);\n");
+      writeFileSync(path.join(dir, "0002_enable.sql"), "DO $$ DECLARE t text; BEGIN FOREACH t IN ARRAY ARRAY['alpha','beta'] LOOP EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY',t); END LOOP; END $$;\n");
+      const enabled = loadSchemaInventory({ dir });
+      expect(enabled.tables().filter((table) => enabled.rlsEnabled(table))).toEqual(["alpha", "beta"]);
+      expect(enabled.rlsEnabled("gamma")).toBe(false);
+      writeFileSync(path.join(dir, "0003_order.sql"), "ALTER TABLE public.beta DISABLE ROW LEVEL SECURITY;\nDO $$ DECLARE t text; BEGIN FOREACH t IN ARRAY ARRAY['alpha','gamma'] LOOP EXECUTE format('ALTER TABLE public.%I DISABLE ROW LEVEL SECURITY',t); END LOOP; END $$;\nALTER TABLE public.alpha ENABLE ROW LEVEL SECURITY;\n");
+      const ordered = loadSchemaInventory({ dir });
+      expect(ordered.tables().filter((table) => ordered.rlsEnabled(table))).toEqual(["alpha"]);
+      writeFileSync(path.join(dir, "0004_broaden.sql"), "DO $$ DECLARE t text; BEGIN FOREACH t IN ARRAY ARRAY['alpha','gamma'] LOOP EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY',t); END LOOP; END $$;\n");
+      const broadened = loadSchemaInventory({ dir });
+      expect(broadened.tables().filter((table) => broadened.rlsEnabled(table))).toEqual(["alpha", "gamma"]);
+      writeFileSync(path.join(dir, "0005_unknown.sql"), "DO $$ BEGIN EXECUTE 'ALTER TABLE public.missing ENABLE ROW LEVEL SECURITY'; END $$;\n");
+      expect(() => loadSchemaInventory({ dir })).toThrow(/unknown relation or unsupported statement/);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   it("reports a view's columns as unknown rather than as a short list", () => {
@@ -1014,14 +1082,20 @@ describe("migration schema inventory", () => {
     // avoid. Callers must handle undefined; the nightly live drift test checks
     // views against information_schema.
     expect(schema.views()).toEqual([
+      "active_project_milestones",
+      "active_project_submittals",
       "census_tracts_computed",
       "census_tracts_map",
       "contract_active_tasks_my_work",
       "contract_delivery_my_work",
       "contract_participant_my_work",
       "contract_pending_my_work",
+      "current_award_handoff_records",
       "engagement_public_items",
+      "funding_award_handoff_fulfillment",
+      "funding_opportunity_issuance",
       "gtfs_stops_map",
+      "legacy_calendar_funding_awards",
       "lodes_by_tract",
       "project_bca_screenings_latest",
       "project_decision_package_my_work",
@@ -1124,6 +1198,23 @@ describe("client grants compose back to the audited posture", () => {
 
   it("holds no privilege a migration revoked, except where a by-name grant restored it", () => {
     const violations = inventory.violations();
+
+    // 000003 revokes every client privilege on each explicitly listed ledger,
+    // then restores exactly authenticated SELECT by the same finite list.
+    for (const table of AWARD_CUSTODY_TABLES) {
+      const denials = inventory.denials().filter((denial) => denial.table === table);
+      expect(denials).toHaveLength(21); // Three client roles, seven privileges.
+      for (const denial of denials) {
+        expect(denial.revokedBy.file).toBe("20261018000003_award_condition_handoff.sql");
+        expect(denial.violation).toBe(false);
+        if (denial.role === "authenticated" && denial.privilege === "SELECT") {
+          expect(denial.heldBy?.file).toBe("20261018000003_award_condition_handoff.sql");
+          expect(denial.heldBy?.reach).toBe("named");
+        } else {
+          expect(denial.heldBy).toBeNull();
+        }
+      }
+    }
 
     expect(
       violations.length === 0
@@ -1238,6 +1329,26 @@ describe("client grants compose back to the audited posture", () => {
     expect(named.violations().map((v) => `${v.table}/${v.role}/${v.privilege}`)).toContain(
       "widgets/authenticated/INSERT"
     );
+
+    const finiteGrant = (subjects: string) => "DO $$ DECLARE t text; BEGIN FOREACH t IN ARRAY ARRAY[" + subjects + "] LOOP EXECUTE format('GRANT SELECT ON public.%I TO anon',t); END LOOP; END $$;\n";
+    write("0005_finite.sql", finiteGrant("'widgets'"));
+    const finite = loadGrantInventory({ dir });
+    expect(finite.heldBy("widgets", "anon", "SELECT")?.reach).toBe("named");
+    expect(finite.heldBy("widgets", "anon", "SELECT")?.file).toBe("0005_finite.sql");
+    expect(finite.violations().map((v) => `${v.table}/${v.role}/${v.privilege}`)).not.toContain("widgets/anon/SELECT");
+    expect(finite.violations().map((v) => `${v.table}/${v.role}/${v.privilege}`)).toContain("gadgets/anon/SELECT");
+    expect(finite.violations().map((v) => `${v.table}/${v.role}/${v.privilege}`)).toContain("widgets/anon/INSERT");
+    write("0005_finite.sql", finiteGrant("'widgets','gadgets'"));
+    const broadened = loadGrantInventory({ dir });
+    expect(broadened.heldBy("gadgets", "anon", "SELECT")?.reach).toBe("named");
+    expect(broadened.violations().map((v) => `${v.table}/${v.role}/${v.privilege}`)).not.toContain("gadgets/anon/SELECT");
+    write("0006_blanket.sql", "GRANT SELECT ON ALL TABLES IN SCHEMA public TO authenticated;\n");
+    const stillBlanket = loadGrantInventory({ dir });
+    expect(stillBlanket.heldBy("gadgets", "authenticated", "SELECT")?.reach).toBe("blanket");
+    for (const subjects of ["'widgets',unresolved", "'widgets; DROP TABLE gadgets'", "'public.widgets'"]) {
+      write("0005_finite.sql", finiteGrant(subjects));
+      expect(() => loadGrantInventory({ dir })).toThrow(UnexpandableDynamicSqlError);
+    }
 
     rmSync(dir, { recursive: true, force: true });
   });

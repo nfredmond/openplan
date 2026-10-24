@@ -1,3 +1,4 @@
+import { exactCountResult } from "./helpers/exact-count-result";
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -169,13 +170,13 @@ const rtpFundingProfilesInMock = vi.fn();
 const rtpFundingProfilesSelectMock = vi.fn(() => ({ in: rtpFundingProfilesInMock }));
 
 const rtpFundingAwardsInMock = vi.fn();
-const rtpFundingAwardsSelectMock = vi.fn(() => ({ in: rtpFundingAwardsInMock }));
+const rtpFundingAwardsSelectMock = vi.fn(() => ({ in: (...args: unknown[]) => rtpFundingAwardsInMock(...args).then(exactCountResult) }));
 
 const rtpFundingOpportunitiesInMock = vi.fn();
-const rtpFundingOpportunitiesSelectMock = vi.fn(() => ({ in: rtpFundingOpportunitiesInMock }));
+const rtpFundingOpportunitiesSelectMock = vi.fn(() => ({ in: (...args: unknown[]) => rtpFundingOpportunitiesInMock(...args).then(exactCountResult) }));
 
 const rtpBillingInvoicesInMock = vi.fn();
-const rtpBillingInvoicesSelectMock = vi.fn(() => ({ in: rtpBillingInvoicesInMock }));
+const rtpBillingInvoicesSelectMock = vi.fn(() => ({ in: (...args: unknown[]) => rtpBillingInvoicesInMock(...args).then(exactCountResult) }));
 
 const fromMock = vi.fn((table: string) => {
   if (table === "reports") return { select: reportSelectMock };

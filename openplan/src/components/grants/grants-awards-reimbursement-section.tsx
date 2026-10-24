@@ -1,3 +1,5 @@
+import { comparableAwardFunding, comparableFundingText } from "@/lib/grants/award-handoff";
+import { AwardFundingFacts } from "@/components/grants/award-funding-facts";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { InvoiceTriageLinkCopy } from "@/components/invoicing/invoice-triage-link-copy";
@@ -136,8 +138,12 @@ export function GrantsAwardsReimbursementSection({
    */
   canCloseOutAwards: boolean;
 }) {
+  const awards = fundingProjectStacks.flatMap((stack)=>stack.awards);
+  const managed = awards.some((award)=>award.latest_handoff_revision_id || award.current_handoff_revision_id);
+  const comparable = managed ? comparableAwardFunding(awards) : null;
   return (
     <article id="grants-awards-reimbursement" className="module-section-surface">
+      <AwardFundingFacts awards={fundingProjectStacks.flatMap((s) => s.awards)} />
       <div className="module-section-header">
         <div className="module-section-heading">
           <h2 className="module-section-title">Workspace awards and reimbursement status</h2>
@@ -158,12 +164,12 @@ export function GrantsAwardsReimbursementSection({
         </div>
         <div className="module-summary-card">
           <p className="module-summary-label">Committed dollars</p>
-          <p className="module-summary-value text-base leading-tight">{formatCurrency(committedAwardAmount)}</p>
+          <p className="module-summary-value text-base leading-tight">{comparable ? comparableFundingText(comparable) : formatCurrency(committedAwardAmount)}</p>
           <p className="module-summary-detail">Awarded funding already committed to projects.</p>
         </div>
         <div className="module-summary-card">
           <p className="module-summary-label">Match tracked</p>
-          <p className="module-summary-value text-base leading-tight">{formatCurrency(trackedMatchAmount)}</p>
+          <p className="module-summary-value text-base leading-tight">{comparable ? comparableFundingText(comparable,'match') : formatCurrency(trackedMatchAmount)}</p>
           <p className="module-summary-detail">Local or partner match attached to committed awards.</p>
         </div>
         <div className="module-summary-card">
@@ -238,11 +244,7 @@ export function GrantsAwardsReimbursementSection({
                 defaultProjectId={reimbursementComposerStack.project.id}
                 defaultFundingAwardId={reimbursementComposerStack.nextObligationAward?.id ?? reimbursementComposerStack.awards[0]?.id ?? null}
                 defaultInvoiceNumber={`${reimbursementComposerStack.project.name.replace(/\s+/g, " ").trim().slice(0, 32)} reimbursement`}
-                defaultAmount={
-                  reimbursementComposerStack.summary.uninvoicedAwardAmount > 0
-                    ? String(reimbursementComposerStack.summary.uninvoicedAwardAmount)
-                    : undefined
-                }
+
                 titleLabel="Start the lead reimbursement record now"
                 description="Record the first invoice against this award right here in Grants, so reimbursement tracking starts immediately. Deeper invoice work can continue from the project's own page."
                 reimbursementProfile={reimbursementProfile}
@@ -296,9 +298,11 @@ export function GrantsAwardsReimbursementSection({
                       <p className="module-record-summary">{item.summary.reimbursementReason}</p>
                     </div>
 
+                    <AwardFundingFacts awards={item.awards}/>
                     <div className="module-record-meta">
-                      <span className="module-record-chip">Committed {formatCurrency(item.summary.committedFundingAmount)}</span>
-                      <span className="module-record-chip">Match {formatCurrency(item.summary.committedMatchAmount)}</span>
+                      {item.awards.map((award) => <Link key={award.id} className="module-record-chip underline" href={`/grants/award-conditions?awardId=${award.id}`}>Conditions: {award.title}</Link>)}
+                      <span className="module-record-chip">Recorded award ceilings {item.awards.some((a)=>a.latest_handoff_revision_id) ? comparableFundingText(comparableAwardFunding(item.awards)) : formatCurrency(item.summary.committedFundingAmount)}</span>
+                      <span className="module-record-chip">Match {item.awards.some((a)=>a.latest_handoff_revision_id) ? comparableFundingText(comparableAwardFunding(item.awards),'match') : formatCurrency(item.summary.committedMatchAmount)}</span>
                       <span className="module-record-chip">Requested {formatCurrency(item.summary.requestedReimbursementAmount)}</span>
                       <span className="module-record-chip">Paid {formatCurrency(item.summary.paidReimbursementAmount)}</span>
                       <span className="module-record-chip">Outstanding {formatCurrency(item.summary.outstandingReimbursementAmount)}</span>
@@ -334,6 +338,7 @@ export function GrantsAwardsReimbursementSection({
                       awards={item.awards.map((award) => ({
                         id: award.id,
                         title: award.title,
+                        currentRevisionId:award.current_handoff_revision_id,
                         spendingStatus: award.spending_status,
                         closureBasis: award.closure_basis,
                         closedAt: award.closed_at,

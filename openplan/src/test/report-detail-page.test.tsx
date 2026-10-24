@@ -1,3 +1,4 @@
+import { exactCountResult } from "./helpers/exact-count-result";
 import { buildProjectJurisdictionReadinessExportPayload } from "@/lib/jurisdiction-readiness/payload";
 import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
 import { PROJECT_JURISDICTION_COLUMNS } from "@/lib/projects/project-jurisdiction";
@@ -95,19 +96,19 @@ const scenarioComparisonSnapshotsSelectMock = vi.fn(() => ({ in: scenarioCompari
 
 const projectFundingProfileMaybeSingleMock = vi.fn();
 const projectFundingProfileEqMock = vi.fn(() => ({ maybeSingle: projectFundingProfileMaybeSingleMock }));
-const projectFundingProfileSelectMock = vi.fn(() => ({ eq: projectFundingProfileEqMock, in: vi.fn(async () => ({ data: [], error: null })) }));
+const projectFundingProfileSelectMock = vi.fn(() => ({ eq: projectFundingProfileEqMock, in: vi.fn(async () => ({ data: [], count: 0, error: null })) }));
 
 const fundingAwardsOrderMock = vi.fn();
-const fundingAwardsEqMock = vi.fn(() => ({ order: fundingAwardsOrderMock }));
-const fundingAwardsSelectMock = vi.fn(() => ({ eq: fundingAwardsEqMock, in: vi.fn(async () => ({ data: [], error: null })) }));
+const fundingAwardsEqMock = vi.fn(() => ({ order: (...args: unknown[]) => fundingAwardsOrderMock(...args).then(exactCountResult) }));
+const fundingAwardsSelectMock = vi.fn((_columns: string) => ({ eq: fundingAwardsEqMock, in: vi.fn(async () => ({ data: [], count: 0, error: null })) }));
 
 const fundingOpportunitiesOrderMock = vi.fn();
-const fundingOpportunitiesEqMock = vi.fn(() => ({ order: fundingOpportunitiesOrderMock }));
-const fundingOpportunitiesSelectMock = vi.fn(() => ({ eq: fundingOpportunitiesEqMock, in: vi.fn(async () => ({ data: [], error: null })) }));
+const fundingOpportunitiesEqMock = vi.fn(() => ({ order: (...args: unknown[]) => fundingOpportunitiesOrderMock(...args).then(exactCountResult) }));
+const fundingOpportunitiesSelectMock = vi.fn((_columns: string) => ({ eq: fundingOpportunitiesEqMock, in: vi.fn(async () => ({ data: [], count: 0, error: null })) }));
 
 const billingInvoicesOrderMock = vi.fn();
-const billingInvoicesEqMock = vi.fn(() => ({ order: billingInvoicesOrderMock }));
-const billingInvoicesSelectMock = vi.fn(() => ({ eq: billingInvoicesEqMock, in: vi.fn(async () => ({ data: [], error: null })) }));
+const billingInvoicesEqMock = vi.fn(() => ({ order: (...args: unknown[]) => billingInvoicesOrderMock(...args).then(exactCountResult) }));
+const billingInvoicesSelectMock = vi.fn((_columns: string) => ({ eq: billingInvoicesEqMock, in: vi.fn(async () => ({ data: [], count: 0, error: null })) }));
 
 const dataDatasetLinksOrderMock = vi.fn();
 const dataDatasetLinksEqMock = vi.fn(() => ({ order: dataDatasetLinksOrderMock }));
@@ -850,7 +851,11 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
       data: [
         {
           id: "award-1",
-          awarded_amount: 700000,
+          latest_handoff_revision_id: null,
+        current_handoff_revision_id: null,
+        currency_code: null,
+        has_source_backed_issuance: false,
+        awarded_amount: 700000,
           match_amount: 100000,
           risk_flag: null,
           obligation_due_at: "2026-06-30T00:00:00.000Z",
@@ -2154,6 +2159,14 @@ describe("ReportDetailPage", { timeout: 15_000 }, () => {
       expect(notFoundMock).not.toHaveBeenCalled();
       expect(screen.queryByText(/The report record could not be read/i)).not.toBeInTheDocument();
     });
+  });
+  it("refuses an incomplete successful funding read while retaining the version projections", async () => {
+    fundingAwardsOrderMock.mockResolvedValueOnce({ data: [], count: 1, error: null });
+    await expect(ReportDetailPage({ params: Promise.resolve({ reportId: "report-1" }), searchParams: Promise.resolve({}) })).rejects.toThrow("No partial financial snapshot is accepted");
+    for (const select of [fundingAwardsSelectMock, fundingOpportunitiesSelectMock, billingInvoicesSelectMock]) expect(select).toHaveBeenCalledWith(expect.any(String), { count: "exact" });
+    const columns = fundingAwardsSelectMock.mock.calls[0][0];
+    for (const field of ["currency_code", "current_handoff_revision_id", "latest_handoff_revision_id"]) expect(columns).toContain(field);
+    expect(billingInvoicesSelectMock.mock.calls[0][0]).toContain("handoff_applicable_revision_id");
   });
 it.each(["legacy", "explicit"] as const)("renders unassessed grant support for a retained %s comparison with no known drift", async (summary) => {
   selectRetainedScenarioFixture(summary);

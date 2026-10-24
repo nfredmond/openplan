@@ -1,3 +1,4 @@
+import { exactCountResult } from "./helpers/exact-count-result";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { BCA_NARRATIVE_CAVEAT } from "@/lib/bca/parameters";
@@ -164,6 +165,62 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft", () => {
 
   afterEach(() => {
     vi.unstubAllEnvs();
+  });
+
+  it.each([
+    ["funding_awards", "the project's funding awards"],
+    ["funding_opportunities", "the project's other funding opportunities"],
+    ["billing_invoice_records", "the project's grant invoices"],
+  ])("refuses a failed %s evidence read before narrative generation, metering or storage", async (failedTable, subject) => {
+    const projectId = "44444444-4444-4444-8444-444444444444";
+    loadFundingOpportunityAccessMock.mockResolvedValue({
+      opportunity: { ...baseOpportunity, project_id: projectId },
+      membership: { workspace_id: WORKSPACE_ID, role: "member" },
+      error: null,
+      allowed: true,
+    });
+    const evidenceTables = [
+      "funding_awards", "funding_opportunities", "billing_invoice_records", "reports",
+      "project_bca_screenings", "engagement_campaigns", "project_rtp_cycle_links",
+    ];
+    createClientMock.mockResolvedValue({
+      auth: { getUser: authGetUserMock },
+      rpc: vi.fn(async () => ({ data: [], error: null })),
+      from: vi.fn((table: string) => {
+        if (table === "funding_opportunity_narrative_drafts") return { insert: draftInsertMock };
+        let columns = "";
+        const answer = () => {
+          if (table === "funding_opportunities" && columns.includes("pursuit_kind")) {
+            return { data: { id: OPPORTUNITY_ID, pursuit_kind: "grant" }, error: null };
+          }
+          if (table === "projects") return { data: { id: projectId, name: "Main St Bridge" }, error: null };
+          if (table === "project_funding_profiles") return { data: null, error: null };
+          if (table === "workspaces") return { data: { time_zone: "UTC", home_country_code: null }, error: null };
+          if (!evidenceTables.includes(table)) throw new Error(`Unexpected table: ${table}`);
+          return table === failedTable
+            ? { data: null, error: { message: `could not read ${table}` } }
+            : { data: [], error: null, count: 0 };
+        };
+        const chain: Record<string, unknown> = {
+          select: (projection: string) => { columns = projection; return chain; },
+          maybeSingle: async () => answer(),
+          then: (resolve: (value: unknown) => unknown, reject?: (reason: unknown) => unknown) => Promise.resolve(answer()).then(resolve, reject),
+        };
+        for (const method of ["eq", "neq", "not", "in", "order", "limit"]) chain[method] = () => chain;
+        return chain;
+      }),
+    });
+
+    const response = await postNarrativeDraft(jsonRequest(), routeContext());
+    const body = await response.json();
+    expect(response.status).toBe(500);
+    expect(body.failedReads).toEqual([subject]);
+    expect(mockAudit.error).toHaveBeenCalledWith("narrative_evidence_read_failed", expect.objectContaining({
+      failedReads: [{ subject, message: `could not read ${failedTable}` }],
+    }));
+    expect(generateTextMock).not.toHaveBeenCalled();
+    expect(recordAiUsageEventMock).not.toHaveBeenCalled();
+    expect(draftInsertMock).not.toHaveBeenCalled();
   });
 
   it("returns 401 when the user is not authenticated", async () => {
@@ -467,7 +524,8 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft", () => {
 
     // Generic awaitable query chain: every builder method returns the chain,
     // awaiting it (or calling maybeSingle) yields the canned result.
-    function chainable(result: { data: unknown; error: null }) {
+    function chainable(fixture: { data: unknown; error: null }) {
+      const result = exactCountResult(fixture);
       const chain: Record<string, unknown> = {
         maybeSingle: vi.fn(async () => result),
         then: (resolve: (value: unknown) => unknown, reject?: (reason: unknown) => unknown) =>

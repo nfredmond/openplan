@@ -131,6 +131,7 @@ function modelSupportBasisLabel(value: "project" | "plan" | "both"): string {
 }
 
 type FundingOpportunityDetailRow = {
+  has_source_backed_issuance?:boolean;
   id: string;
   workspace_id: string;
   program_id: string | null;
@@ -296,7 +297,7 @@ export default async function ProgramDetailPage({
       supabase
         .from("funding_opportunities")
         .select(
-          "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, summary, created_at, updated_at, projects(id, name)"
+          "id, workspace_id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, summary, created_at, updated_at, projects(id, name), has_source_backed_issuance"
         )
         .eq("program_id", program.id)
         .order("updated_at", { ascending: false }),
@@ -667,7 +668,7 @@ export default async function ProgramDetailPage({
     project: Array.isArray(item.projects) ? (item.projects[0] ?? null) : item.projects ?? null,
   }));
   const likelyOpportunityAmount = fundingOpportunities.reduce((sum, opportunity) => {
-    if (opportunity.decision_state !== "pursue" || opportunity.opportunity_status === "awarded" || opportunity.opportunity_status === "archived") {
+    if (opportunity.has_source_backed_issuance || opportunity.decision_state !== "pursue" || opportunity.opportunity_status === "awarded" || opportunity.opportunity_status === "archived") {
       return sum;
     }
     return sum + Number(opportunity.expected_award_amount ?? 0);
@@ -960,6 +961,8 @@ export default async function ProgramDetailPage({
                           <div className="space-y-1.5">
                             <div className="flex flex-wrap items-start justify-between gap-3">
                               <h3 className="module-record-title text-[1.02rem]">{opportunity.title}</h3>
+                              <Link className="text-sm underline" href={`/grants/award-conditions?opportunityId=${opportunity.id}`}>Save award conditions</Link>
+                              {opportunity.has_source_backed_issuance?<p className="text-sm">Source-backed issuance is documented, independent of pursuit status.</p>:null}
                               <p className="module-record-stamp">Updated {formatProgramDateTime(opportunity.updated_at)}</p>
                             </div>
                             <p className="module-record-summary line-clamp-2">

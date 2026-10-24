@@ -1,3 +1,4 @@
+import { comparableFundingDisclosure } from "@/lib/grants/award-handoff";
 /**
  * RTP chapter narrative facts — the numbered fact list a chapter draft may
  * cite, assembled from the SAME deterministic summaries the RTP packet path
@@ -89,8 +90,8 @@ export type RtpChapterFactsInput = {
   kbClaims: string[];
 };
 
-function formatAmount(value: number): string {
-  return formatMoney(Number.isFinite(value) ? value : 0, { precision: "whole" });
+function formatAmount(value: number | null): string {
+  return formatMoney(value, { precision: "whole", absent:"Unassessed" });
 }
 
 function portfolioRoleBreakdown(linkedProjects: RtpChapterFactsInput["linkedProjects"]): string {
@@ -161,7 +162,7 @@ export function buildRtpChapterFacts(input: RtpChapterFactsInput): NarrativeFact
       ? `Linked-project funding posture: ${portfolioFunding.label} — ${portfolioFunding.reason}`
       : null,
     portfolioFunding && portfolioFunding.trackedProjectCount > 0
-      ? `Across ${portfolioFunding.trackedProjectCount} tracked project(s): ${formatAmount(portfolioFunding.committedFundingAmount)} committed, ${formatAmount(portfolioFunding.likelyFundingAmount)} pursued-likely, ${formatAmount(portfolioFunding.unfundedAfterLikelyAmount)} uncovered after likely dollars; ${portfolioFunding.fundedProjectCount} funded, ${portfolioFunding.gapProjectCount} with a funding gap.`
+      ? portfolioFunding.comparableFunding ? comparableFundingDisclosure(portfolioFunding.comparableFunding) : `Across ${portfolioFunding.trackedProjectCount} tracked project(s): ${formatAmount(portfolioFunding.committedFundingAmount)} committed, ${formatAmount(portfolioFunding.likelyFundingAmount)} pursued-likely, ${formatAmount(portfolioFunding.unfundedAfterLikelyAmount)} uncovered after likely dollars; ${portfolioFunding.fundedProjectCount} funded, ${portfolioFunding.gapProjectCount} with a funding gap.`
       : null,
     engagement && engagement.campaignCount > 0
       ? `${engagement.campaignCount} engagement campaign(s) are attached to this cycle (${engagement.cycleLevelCampaignCount} cycle-level, ${engagement.chapterLevelCampaignCount} chapter-level) with ${engagement.totalItems} submitted comment(s): ${engagement.approvedCount} approved, ${engagement.readyForHandoffCount} ready for handoff, ${engagement.pendingCount} pending moderation. ${ENGAGEMENT_NARRATIVE_CAVEAT}`

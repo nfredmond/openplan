@@ -2205,15 +2205,15 @@ async function loadProjectContext(
       .maybeSingle(),
     supabase
       .from("funding_opportunities")
-      .select("id, title, opportunity_status, decision_state, expected_award_amount, closes_at, decision_due_at, updated_at")
+      .select("id, title, opportunity_status, decision_state, expected_award_amount, closes_at, decision_due_at, updated_at, has_source_backed_issuance")
       .eq("project_id", project.id),
     supabase
       .from("funding_awards")
-      .select("id, funding_opportunity_id, awarded_amount, match_amount, risk_flag, obligation_due_at")
+      .select("id, funding_opportunity_id, awarded_amount, match_amount, risk_flag, obligation_due_at, latest_handoff_revision_id, current_handoff_revision_id, currency_code, has_source_backed_issuance")
       .eq("project_id", project.id),
     supabase
       .from("billing_invoice_records")
-      .select("id, funding_award_id, status, amount, retention_percent, retention_amount, due_date")
+      .select("id, funding_award_id, status, amount, retention_percent, retention_amount, due_date, award_handoff_revision_id, currency_code, handoff_applicable_revision_id")
       .eq("project_id", project.id),
     supabase.from("project_submittals").select("id").eq("project_id", project.id).eq("submittal_type", "reimbursement"),
     supabase
@@ -3166,16 +3166,16 @@ async function loadProgramContext(
       : Promise.resolve({ data: [], error: null }),
     supabase
       .from("funding_opportunities")
-      .select("id, title, opportunity_status, decision_state, expected_award_amount, closes_at, decision_due_at, updated_at")
+      .select("id, title, opportunity_status, decision_state, expected_award_amount, closes_at, decision_due_at, updated_at, has_source_backed_issuance")
       .eq("program_id", program.id),
     supabase
       .from("funding_awards")
-      .select("id, funding_opportunity_id, awarded_amount, match_amount, risk_flag, obligation_due_at")
+      .select("id, funding_opportunity_id, awarded_amount, match_amount, risk_flag, obligation_due_at, latest_handoff_revision_id, current_handoff_revision_id, currency_code, has_source_backed_issuance")
       .eq("program_id", program.id),
     program.project_id
       ? supabase
           .from("billing_invoice_records")
-          .select("id, funding_award_id, status, amount, retention_percent, retention_amount, due_date")
+          .select("id, funding_award_id, status, amount, retention_percent, retention_amount, due_date, award_handoff_revision_id, currency_code, handoff_applicable_revision_id")
           .eq("project_id", program.project_id)
       : Promise.resolve({ data: [], error: null }),
     program.project_id

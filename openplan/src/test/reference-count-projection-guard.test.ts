@@ -2,10 +2,12 @@ import { describe, expect, it } from "vitest";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import ts from "typescript";
 import { collectSupabaseSelectSites, type SupabaseSelectSite } from "./supabase-call-sites";
 import { loadSchemaInventory } from "./migrations/schema-inventory";
 import { MODEL_LINK_TARGETS } from "@/lib/models/link-targets";
 import { PROJECT_JURISDICTION_COLUMNS } from "@/lib/projects/project-jurisdiction";
+import { blankComments, splitTopLevel } from "./migrations/read-migrations";
 import { CHAT_PROJECTION } from "@/lib/assistant/provider-chat-task";
 
 /**
@@ -35,8 +37,9 @@ import { CHAT_PROJECTION } from "@/lib/assistant/provider-chat-task";
  * NOT ASSERTED: columns inside PostgREST embedded resources
  * (`stages:model_run_stages(id, status)`), and computed imported projections.
  * Direct named exports of string literals are checked. The skipped counts are
- * pinned so the skipped set cannot quietly grow into the whole codebase. Views
- * remain outside this inventory because
+ * pinned so the skipped set cannot quietly grow into the whole codebase. The
+ * two award handoff views have direct source/reader assertions below. Other views
+ * remain outside the column inventory because
  * `schema-inventory` does not parse view column lists, on purpose; the nightly
  * `migration-schema-drift` check covers them against information_schema.
  */
@@ -55,6 +58,10 @@ const selectSites = collectSupabaseSelectSites();
  * that fails when a candidate without one is added.
  */
 const DYNAMIC_TABLE_PROJECTIONS: Record<string, { tables: string[]; reason: string }> = {
+  "src/app/api/projects/[projectId]/records/[recordId]/route.ts": {
+    tables: ["project_milestones", "project_submittals"],
+    reason: "The origin read's table conditional has exactly these two literal branches, asserted below.",
+  },
   "src/lib/config/run-cap.ts": {
     tables: ["model_runs", "runs"],
     reason: "checkMonthlyRunCap(tableName) — the two run tables its six call sites pass.",
@@ -130,7 +137,116 @@ function checkableSites(): SupabaseSelectSite[] {
   );
 }
 
+function missingProjectionColumns(tables: readonly string[], projection: string): string[] {
+  return tables.flatMap((table) => projectionColumns(projection)
+    .filter((column) => !schema.hasColumn(table, column))
+    .map((column) => `${table}.${column}`));
+}
+
+function undefinedViewColumns(columns: readonly string[], projection: string): string[] {
+  return projectionColumns(projection).filter((column) => !columns.includes(column));
+}
+
 describe("reference count projections", () => {
+  it("pins the record origin reader to its exact two literal table branches", () => {
+    const file = "src/app/api/projects/[projectId]/records/[recordId]/route.ts";
+    const source = ts.createSourceFile(file, readFileSync(file, "utf8"), ts.ScriptTarget.Latest, true);
+    const declarations: ts.VariableDeclaration[] = [];
+    const visit = (node: ts.Node) => {
+      if (ts.isVariableDeclaration(node) && node.name.getText(source) === "table") declarations.push(node);
+      ts.forEachChild(node, visit);
+    };
+    visit(source);
+    expect(declarations).toHaveLength(1);
+    const declaration = declarations[0];
+    expect((declaration.parent as ts.VariableDeclarationList).flags & ts.NodeFlags.Const).toBeTruthy();
+    const initializer = declaration.initializer;
+    if (!initializer || !ts.isConditionalExpression(initializer)) throw new Error("Origin table must be a fixed conditional");
+    expect(initializer.condition.getText(source).replace(/\s+/g, "")).toBe('parsed.data.recordType==="milestone"');
+    if (!ts.isStringLiteral(initializer.whenTrue) || !ts.isStringLiteral(initializer.whenFalse)) throw new Error("Origin targets must be literals");
+    const tables = [initializer.whenTrue.text, initializer.whenFalse.text];
+    expect(tables).toEqual(["project_milestones", "project_submittals"]);
+    expect(DYNAMIC_TABLE_PROJECTIONS[file].tables).toEqual(tables);
+    let enclosing: ts.Node | undefined = declaration.parent;
+    while (enclosing && !ts.isIfStatement(enclosing)) enclosing = enclosing.parent;
+    if (!enclosing || !ts.isIfStatement(enclosing)) throw new Error("Origin read must retain its record-type guard");
+    expect(enclosing.expression.getText(source).replace(/\s+/g, "")).toBe('parsed.data.recordType==="milestone"||parsed.data.recordType==="submittal"');
+    const sites = selectSites.filter((site) => site.file === file && site.table === null);
+    expect(sites).toHaveLength(1);
+    expect(sites[0]).toMatchObject({ tableExpression: "table", projection: "id, project_id, funding_award_id, handoff_origin_revision_id" });
+    expect(missingProjectionColumns(tables, sites[0].projection as string)).toEqual([]);
+    expect(missingProjectionColumns(tables, "id, project_id, funding_award_id, handoff_origin_revision_idx")).toEqual([
+      "project_milestones.handoff_origin_revision_idx", "project_submittals.handoff_origin_revision_idx",
+    ]);
+  });
+
+  it("checks both handoff views' defined columns and every consuming projection", () => {
+    const sql = blankComments(readFileSync("supabase/migrations/20261018000003_award_condition_handoff.sql", "utf8"));
+    const normalize = (text: string) => text.replace(/\s+/g, " ").trim();
+    // This upstream view supplies o.* to fulfillment. Its source stays explicit.
+    expect(normalize(sql)).toContain(normalize(`CREATE VIEW public.current_award_handoff_records WITH(security_invoker=true) AS
+      SELECT o.*,r.terms FROM public.funding_award_handoff_occurrences o JOIN public.funding_awards a ON a.current_handoff_revision_id=o.revision_id JOIN public.funding_award_handoff_revisions r ON r.id=o.revision_id
+      WHERE o.requirement->>'disposition'<>'withdraw';`));
+    const contracts: Array<{
+      view: string; definition: string; columns: string[]; sources: Record<string, string>;
+      readers: Array<{ file: string; projection: string }>; wrongColumn: string;
+    }> = [
+      {
+        view: "funding_award_handoff_fulfillment",
+        definition: `SELECT o.id,o.award_id,o.revision_id,o.condition_key,o.occurrence_key,o.submittal_id,o.milestone_id,o.requirement,
+          s.status AS submittal_status,s.submitted_at,coalesce(s.notes,m.notes) AS fulfillment_evidence,m.status AS milestone_status,m.actual_date
+          FROM public.current_award_handoff_records o LEFT JOIN public.project_submittals s ON s.id=o.submittal_id LEFT JOIN public.project_milestones m ON m.id=o.milestone_id`,
+        columns: ["id", "award_id", "revision_id", "condition_key", "occurrence_key", "submittal_id", "milestone_id", "requirement", "submittal_status", "submitted_at", "fulfillment_evidence", "milestone_status", "actual_date"],
+        sources: { o: "funding_award_handoff_occurrences", s: "project_submittals", m: "project_milestones" },
+        wrongColumn: "fulfillment_evidence_typo",
+        readers: [
+          { file: "src/app/(app)/invoicing/_components/reimbursement-lane.tsx", projection: "award_id, revision_id, submittal_status, submitted_at, fulfillment_evidence, milestone_status, actual_date" },
+          { file: "src/app/api/funding-awards/[awardId]/handoff/route.ts", projection: "id, condition_key, occurrence_key, requirement, submittal_id, milestone_id, submittal_status, submitted_at, fulfillment_evidence, milestone_status, actual_date" },
+        ],
+      },
+      {
+        view: "funding_opportunity_issuance",
+        definition: `SELECT r.opportunity_id,r.workspace_id,count(DISTINCT r.award_id) AS source_backed_award_count,
+          array_agg(DISTINCT r.award_id) AS award_ids
+          FROM public.funding_award_handoff_revisions r WHERE r.terms->>'issued'='true' GROUP BY r.opportunity_id,r.workspace_id`,
+        columns: ["opportunity_id", "workspace_id", "source_backed_award_count", "award_ids"],
+        sources: { r: "funding_award_handoff_revisions" },
+        wrongColumn: "source_backed_revision_count",
+        readers: [
+          { file: "src/app/api/funding-awards/[awardId]/handoff/route.ts", projection: "opportunity_id, source_backed_award_count, award_ids" },
+        ],
+      },
+    ];
+    for (const contract of contracts) {
+      const definitions = [...sql.matchAll(new RegExp(`CREATE VIEW public\\.${contract.view} WITH\\(security_invoker=true\\) AS\\s*([\\s\\S]*?);`, "g"))];
+      expect(definitions, contract.view).toHaveLength(1);
+      const definition = definitions[0][1];
+      expect(normalize(definition)).toBe(normalize(contract.definition));
+      const selectList = definition.match(/^SELECT\s+([\s\S]*?)\s+FROM\s/i)?.[1];
+      if (!selectList) throw new Error(`Missing select list for ${contract.view}`);
+      const columns = splitTopLevel(selectList, ",").map((expression) => {
+        const column = expression.trim().match(/\s+AS\s+([a-z_]+)$/i)?.[1]
+          ?? expression.trim().match(/^[a-z]+\.([a-z_]+)$/i)?.[1];
+        if (!column) throw new Error(`Unexamined view expression: ${expression}`);
+        return column;
+      });
+      expect(columns).toEqual(contract.columns);
+      for (const [alias, table] of Object.entries(contract.sources)) {
+        for (const match of definition.matchAll(new RegExp(`\\b${alias}\\.([a-z_]+)`, "g"))) {
+          expect(schema.hasColumn(table, match[1]), `${table}.${match[1]}`).toBe(true);
+        }
+      }
+      const readers = selectSites.filter((site) => site.table === contract.view);
+      expect(readers.map(({ file, projection }) => ({ file, projection })).sort((a, b) => a.file.localeCompare(b.file))).toEqual(contract.readers);
+      for (const reader of readers) {
+        expect(reader.projection).not.toBeNull();
+        expect(projectionColumns(reader.projection as string).length).toBeGreaterThan(0);
+        expect(undefinedViewColumns(columns, reader.projection as string)).toEqual([]);
+      }
+      expect(undefinedViewColumns(columns, `${columns[0]}, ${contract.wrongColumn}`)).toEqual([contract.wrongColumn]);
+    }
+  });
+
   it.each([
     "estimated_cost_amount::text",
     "estimated_cost_amount_exact:estimated_cost_amount::text",
@@ -311,11 +427,7 @@ describe("reference count projections", () => {
       expect(projections.length, `${file} no longer has a dynamic-table select; remove its entry`).toBeGreaterThan(0);
 
       for (const projection of projections) {
-        for (const column of projectionColumns(projection)) {
-          for (const table of entry.tables) {
-            if (!schema.hasColumn(table, column)) broken.push(`${file}: ${table} has no ${column}`);
-          }
-        }
+        broken.push(...missingProjectionColumns(entry.tables, projection).map((missing) => `${file}: ${missing} does not exist`));
       }
     }
 
@@ -419,12 +531,16 @@ describe("reference count projections", () => {
     // unit tests and `decision-package-rls-live.test.ts`.
     // engagement_public_items projections are executed against the installed view
     // under service_role in engagement-public-copy-privacy-rls.test.ts.
+    // The two award handoff entries have complete definition, column and reader
+    // assertions above. Their addition does not grant a general view exemption.
     expect(
       [...new Set(selectSites.filter((site) => site.table && schema.isView(site.table)).map((site) => site.table))].sort()
     ).toEqual([
       "census_tracts_map",
       "contract_participant_my_work",
       "engagement_public_items",
+      "funding_award_handoff_fulfillment",
+      "funding_opportunity_issuance",
       "gtfs_stops_map",
       "project_bca_screenings_latest",
       "project_decision_package_my_work",

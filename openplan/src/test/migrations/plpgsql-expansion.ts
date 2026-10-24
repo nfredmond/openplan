@@ -60,6 +60,8 @@ export type ExpandedStatement = {
   /** A concrete, terminated statement, ready for the literal policy parser. */
   sql: string;
   line: number;
+  /** Literal FOREACH lists name their subjects; catalogue loops do not. */
+  reach: "named" | "blanket";
 };
 
 type Bindings = Record<string, string>;
@@ -171,9 +173,18 @@ function foreachBindings(body: string): Bindings[] | null {
     }
   }
   if (close === -1) return null;
+  if (!/^\s*LOOP\b/i.test(body.slice(close + 1))) return null;
 
   const variable = match[1];
-  const values = splitTopLevel(body.slice(open, close), ",").map((cell) => unquoteLiteral(cell.replace(/::regclass\s*$/i, "")));
+  // A bare literal must be one unquoted lower_snake identifier. Only an explicit
+  // ::regclass cast may carry a schema qualifier, because Postgres resolves it.
+  const values = splitTopLevel(body.slice(open, close), ",").map((cell) => {
+    const regclass = /::regclass\s*$/i.test(cell);
+    const value = unquoteLiteral(cell.replace(/::regclass\s*$/i, ""));
+    if (value === null) return null;
+    const shape = regclass ? /^(?:[a-z_][a-z0-9_]*\.)?[a-z_][a-z0-9_]*$/ : /^[a-z_][a-z0-9_]*$/;
+    return shape.test(value) ? value : null;
+  });
   if (!values.length || values.some((value) => value === null)) return null;
 
   return values.map((value) => ({ [variable]: value as string }));
@@ -293,7 +304,7 @@ function resolveArgument(expression: string, bindings: Bindings): string | null 
   return out;
 }
 
-/** Apply `%I` / `%s` / `%%` positionally, exactly as PL/pgSQL's `format()` does. */
+/** Render the unquoted identifier subset of `%I`, plus `%s` and `%%`. */
 function applyFormat(template: string, args: string[]): string | null {
   let out = "";
   let next = 0;
@@ -310,10 +321,10 @@ function applyFormat(template: string, args: string[]): string | null {
     if (specifier === "%") {
       out += "%";
     } else if (specifier === "I" || specifier === "s") {
-      // Every generated identifier in this repo is unquoted lower_snake, so an
-      // %I renders bare. A name needing quoting would change that, which is why
-      // the caller asserts the rendered statements parse.
+      // Generated identifiers use unquoted lower_snake. Refuse names needing
+      // quoting so punctuation cannot become SQL in the rendered statement.
       if (next >= args.length) return null;
+      if (specifier === "I" && !/^[a-z_][a-z0-9_]*$/.test(args[next])) return null;
       out += args[next];
       next += 1;
     } else {
@@ -377,10 +388,27 @@ function expandDynamicStatements(file: string, sql: string, options: ExpandOptio
     if (/\bFROM\s+pg_policy\b/i.test(block.body) && !options.catalog) throw unexpandable(0, "a policy catalogue query without prior policy DDL");
     const copied = /\bFROM\s+pg_policy\b/i.test(block.body) ? policyCopyBindings(block.body, options.catalog!(block.offset, statements)) : null;
     if (/\bFROM\s+pg_policy\b/i.test(block.body) && !copied) throw unexpandable(0, "an unsupported policy catalogue query");
-    const rows = copied ??
-      foreachBindings(block.body) ??
-      forPgTablesBindings(block.body, options.tables ?? []) ??
-      forRecordBindings(block.body) ??
+    // The closed policy-copy form above owns its nested loop. Any other block
+    // must have at most one loop, and that loop must be a supported form.
+    const literalRows = copied ? null : foreachBindings(block.body);
+    const catalogueRows = copied || !options.tables ? null : forPgTablesBindings(block.body, options.tables);
+    const recordRows = copied ? null : forRecordBindings(block.body);
+    if (!copied) {
+      let loopText = block.body;
+      for (const [from, to] of stringLiteralRanges(block.body).reverse()) {
+        loopText = loopText.slice(0, from) + " ".repeat(to - from) + loopText.slice(to);
+      }
+      const loops = [...loopText.matchAll(/\b(?:FOREACH|FOR)\s+[A-Za-z_]\w*\s+IN\b/gi)];
+      if (loops.length > 1 || (loops.length === 1 && !literalRows && !catalogueRows && !recordRows)) {
+        throw unexpandable(sites[0].offset, "a loop whose exact single iteration set is not supported");
+      }
+    }
+    const named = Boolean(copied || literalRows);
+    const rows =
+      copied ??
+      literalRows ??
+      catalogueRows ??
+      recordRows ??
       [{}];
 
     // Parse each EXECUTE once, into something that can be rendered per row.
@@ -441,6 +469,7 @@ function expandDynamicStatements(file: string, sql: string, options: ExpandOptio
           site: siteIndex,
           sql: `${site.render(binding)};`,
           line: lineAt(sql, block.offset + site.offset),
+          reach: named ? "named" : "blanket",
         });
       });
     });
@@ -480,7 +509,13 @@ export function expandDynamicGrantStatements(
   });
 }
 
-/** RLS state must include literal-array dynamic ALTERs, just like policies. */
+/**
+ * RLS ENABLE/DISABLE changes must reduce to exact relation identifiers, as
+ * grants do. FORCE ROW LEVEL SECURITY does not change the enabled state.
+ */
 export function expandDynamicRlsStatements(file: string, sql: string): ExpandedStatement[] {
-  return expandDynamicStatements(file, sql, { noun: "RLS statement", interesting: argument => /\bALTER\s+TABLE\b[\s\S]*\b(?:ENABLE|DISABLE)\s+ROW\s+LEVEL\s+SECURITY\b/i.test(argument) });
+  return expandDynamicStatements(file, sql, {
+    noun: "row-security change",
+    interesting: (argument) => /\bALTER\s+TABLE\b[\s\S]*\b(?:ENABLE|DISABLE)\s+ROW\s+LEVEL\s+SECURITY\b/i.test(argument),
+  });
 }

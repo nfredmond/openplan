@@ -193,8 +193,8 @@ describe("my work — the board", () => {
       empty: false,
       failures: {
         project_deliverables: "permission denied",
-        project_milestones: "permission denied",
-        project_submittals: "permission denied",
+        active_project_milestones: "permission denied",
+        active_project_submittals: "permission denied",
       },
     });
     const dated = blockNamed("Dated work");

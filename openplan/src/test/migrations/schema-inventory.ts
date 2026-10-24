@@ -1,4 +1,3 @@
-import { expandDynamicRlsStatements } from "./plpgsql-expansion";
 import {
   MIGRATIONS_DIR,
   blankComments,
@@ -7,6 +6,7 @@ import {
   readMigration,
   splitTopLevel,
 } from "./read-migrations";
+import { expandDynamicRlsStatements, isInsideRange, stringLiteralRanges, UnexpandableDynamicSqlError } from "./plpgsql-expansion";
 
 /**
  * What columns each relation has, which ones enable RLS, and which tables point
@@ -92,6 +92,8 @@ export function loadSchemaInventory(options: { dir?: string } = {}): SchemaInven
 
   for (const file of migrationFiles(dir)) {
     const sql = blankComments(readMigration(file, dir));
+    const literals = stringLiteralRanges(sql);
+    const rlsChanges: Array<{ at: number; row: number; site: number; table: string; enabled: boolean }> = [];
 
     // CREATE TABLE [IF NOT EXISTS] [public.]<name> ( … )
     for (const match of sql.matchAll(
@@ -127,20 +129,16 @@ export function loadSchemaInventory(options: { dir?: string } = {}): SchemaInven
     }
 
     // ALTER TABLE [IF EXISTS] [ONLY] [public.]<name> <clause>[, <clause>…];
-    const alters = [...sql.matchAll(
+    for (const match of sql.matchAll(
       /ALTER\s+TABLE\s+(?:IF\s+EXISTS\s+)?(?:ONLY\s+)?(?:public\.)?"?([A-Za-z0-9_]+)"?([^;]*);/gi
-    )].map(match => ({ at: match.index ?? 0, table: match[1], clauses: match[2] }));
-    for (const row of expandDynamicRlsStatements(file, sql)) {
-      const match = row.sql.match(/ALTER\s+TABLE\s+(?:public\.)?"?([A-Za-z0-9_]+)"?([^;]*);/i);
-      if (!match) throw new Error(`${file}: expanded RLS statement did not parse: ${row.sql}`);
-      alters.push({ at: row.blockOffset, table: match[1], clauses: match[2] });
-    }
-    for (const match of alters.sort((a, b) => a.at - b.at)) {
-      const table = bare(match.table);
-      const clauses = match.clauses;
+    )) {
+      if (isInsideRange(literals, match.index ?? 0)) continue;
+      const table = bare(match[1]);
+      const clauses = match[2];
 
-      if (/\bENABLE\s+ROW\s+LEVEL\s+SECURITY\b/i.test(clauses)) rlsTables.add(table);
-      if (/\bDISABLE\s+ROW\s+LEVEL\s+SECURITY\b/i.test(clauses)) rlsTables.delete(table);
+      for (const change of clauses.matchAll(/\b(ENABLE|DISABLE)\s+ROW\s+LEVEL\s+SECURITY\b/gi)) {
+        rlsChanges.push({ at: match.index ?? 0, row: 0, site: change.index ?? 0, table, enabled: change[1].toUpperCase() === "ENABLE" });
+      }
 
       const columns = tableColumns.get(table) ?? new Set<string>();
       for (const clause of splitTopLevel(clauses, ",")) {
@@ -157,6 +155,19 @@ export function loadSchemaInventory(options: { dir?: string } = {}): SchemaInven
       if (columns.size) tableColumns.set(table, columns);
 
       noteReferences(table, clauses);
+    }
+
+    for (const change of expandDynamicRlsStatements(file, sql)) {
+      const parsed = change.sql.match(/^ALTER\s+TABLE\s+(?:public\.)?([a-z_][a-z0-9_]*)\s+(ENABLE|DISABLE)\s+ROW\s+LEVEL\s+SECURITY;$/i);
+      if (!parsed || !tableColumns.has(bare(parsed[1]))) {
+        throw new UnexpandableDynamicSqlError(file, change.line, `an unknown relation or unsupported statement (${change.sql})`, "row-security change");
+      }
+      rlsChanges.push({ at: change.blockOffset, row: change.row, site: change.site, table: bare(parsed[1]), enabled: parsed[2].toUpperCase() === "ENABLE" });
+    }
+    // A later literal DISABLE must override an earlier dynamic ENABLE too.
+    for (const change of rlsChanges.sort((a, b) => a.at - b.at || a.row - b.row || a.site - b.site)) {
+      if (change.enabled) rlsTables.add(change.table);
+      else rlsTables.delete(change.table);
     }
   }
 

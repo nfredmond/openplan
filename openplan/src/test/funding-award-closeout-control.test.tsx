@@ -79,7 +79,7 @@ describe("FundingAwardCloseoutPanel", () => {
     const refusalText = normalizedTextOf(refusal);
 
     expect(refusalText).toContain(
-      "Paid invoices cover $400,000 of the $1,000,000 awarded (40%) — $600,000 is still short."
+      "Paid invoices cover $400,000.00 of the $1,000,000.00 awarded (40%) \u2014 $600,000.00 is still short."
     );
     expect(refusalText).toContain("2 paid invoices · $400,000");
     // The middle bucket holds internal-review, submitted and approved-for-payment
@@ -234,7 +234,7 @@ describe("FundingAwardCloseoutPanel", () => {
 
     const outcome = normalizedTextOf(await screen.findByRole("status"));
     expect(outcome).toContain("Closed out ATP Cycle 7 construction.");
-    expect(outcome).toContain("Marked fully spent against $1,000,000 paid on the $1,000,000 awarded.");
+    expect(outcome).toContain("Marked fully spent against $1,000,000.00 paid on the $1,000,000.00 awarded.");
     // The route logs and swallows a failed milestone insert or posture rebuild and
     // still answers 200, so the confirmation may not report them as done.
     expect(outcome).toContain("does not report on those two writes");
@@ -326,7 +326,7 @@ describe("FundingAwardCloseoutPanel", () => {
     fireEvent.click(screen.getByRole("button", { name: "Confirm close-out" }));
 
     const refusalText = normalizedTextOf(await screen.findByRole("alert"));
-    expect(refusalText).toContain("Paid invoices cover $100,000 of the $500,000 awarded (20%)");
+    expect(refusalText).toContain("Paid invoices cover $100,000.00 of the $500,000.00 awarded (20%)");
     expect(refusalText).toContain("refusal arrived without its invoice breakdown");
     expect(refusalText).not.toMatch(/0 paid invoice/);
   });
@@ -404,7 +404,7 @@ describe("FundingAwardCloseoutPanel", () => {
     // not being fully covered — which reads as a bug in the refusal.
     expect(refusalText).toContain("(99%)");
     expect(refusalText).not.toContain("(100%)");
-    expect(refusalText).toContain("$1,000 is still short");
+    expect(refusalText).toContain("$1,000.00 is still short");
   });
 
   /**

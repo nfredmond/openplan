@@ -1,3 +1,4 @@
+import { assertCompleteFundingRead } from "@/lib/grants/award-handoff";
 import { readEveryPage } from "@/lib/supabase/paged-read";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -367,15 +368,15 @@ export async function POST(request: NextRequest, context: RouteContext) {
                 .in("project_id", linkedProjectIds),
               supabase
                 .from("funding_awards")
-                .select("project_id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at")
+                .select("project_id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at, id, latest_handoff_revision_id, current_handoff_revision_id, currency_code, has_source_backed_issuance",{count:"exact"})
                 .in("project_id", linkedProjectIds),
               supabase
                 .from("funding_opportunities")
-                .select("project_id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at")
+                .select("project_id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at, has_source_backed_issuance",{count:"exact"})
                 .in("project_id", linkedProjectIds),
               supabase
                 .from("billing_invoice_records")
-                .select("project_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at")
+                .select("project_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at, funding_award_id, award_handoff_revision_id, currency_code, handoff_applicable_revision_id",{count:"exact"})
                 .in("project_id", linkedProjectIds),
             ])
           : [
@@ -392,6 +393,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         ["grant reimbursement invoices", invoicesResult],
       ]);
       if (fundingFailure) return fundingFailure;
+      if (linkedProjectIds.length) assertCompleteFundingRead(fundingAwardsResult, fundingOpportunitiesResult, invoicesResult);
 
       type ByProject<T> = Map<string, T[]>;
       const groupByProject = <T extends { project_id: string }>(rows: T[] | null | undefined): ByProject<T> => {

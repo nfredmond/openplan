@@ -1,3 +1,4 @@
+import { comparableFundingDisclosure } from "@/lib/grants/award-handoff";
 import type { AttemptInstrument } from "@/lib/models/attempt-instrument-read";
 import { formatProjectEstimate } from "@/lib/projects/estimated-cost";
 import type { GuidedComparisonSelectionV1 } from "@/lib/reports/guided-comparison";
@@ -353,8 +354,7 @@ function esc(value: string): string {
 }
 
 function formatCurrency(value: number | null | undefined): string {
-  const numeric = typeof value === "number" ? value : 0;
-  return formatMoney(Number.isFinite(numeric) ? numeric : 0, { precision: "whole" });
+  return formatMoney(value, { precision: "whole", absent:"Unassessed" });
 }
 
 function listMarkup(items: ProjectItem[], emptyMessage: string): string {
@@ -906,11 +906,12 @@ function fundingSnapshotMarkup(snapshot: ProjectFundingSnapshot | null): string 
     return "";
   }
 
+  if (snapshot.comparableFunding) return `<div class="warning-box"><strong>Funding posture at generation</strong><p>${esc(comparableFundingDisclosure(snapshot.comparableFunding))}</p><p>${esc(snapshot.reason)}</p></div>`;
   return `<div class="warning-box" style="margin-top: 18px;">
     <strong>Funding posture at generation</strong>
     <p>${esc(snapshot.label)} • ${esc(snapshot.pipelineLabel)} • ${esc(snapshot.reimbursementLabel)}</p>
-    <p>${snapshot.awardCount} award${snapshot.awardCount === 1 ? "" : "s"} • ${snapshot.pursuedOpportunityCount} pursued opportunit${snapshot.pursuedOpportunityCount === 1 ? "y" : "ies"} • ${esc(formatCurrency(snapshot.committedFundingAmount))} committed${snapshot.fundingNeedAmount > 0 ? ` • ${esc(formatCurrency(snapshot.fundingNeedAmount))} need` : ""}</p>
-    <p>${snapshot.unfundedAfterLikelyAmount > 0 ? `Uncovered after likely dollars: ${esc(formatCurrency(snapshot.unfundedAfterLikelyAmount))}` : snapshot.remainingFundingGap > 0 ? `Current committed gap: ${esc(formatCurrency(snapshot.remainingFundingGap))}` : "No remaining funding gap was recorded in this snapshot."}${snapshot.uninvoicedAwardAmount > 0 ? ` • Uninvoiced awards: ${esc(formatCurrency(snapshot.uninvoicedAwardAmount))}` : ""}</p>
+    <p>${snapshot.awardCount} award${snapshot.awardCount === 1 ? "" : "s"} • ${snapshot.pursuedOpportunityCount} pursued opportunit${snapshot.pursuedOpportunityCount === 1 ? "y" : "ies"} • ${esc(formatCurrency(snapshot.committedFundingAmount))} committed${snapshot.fundingNeedAmount !== null && snapshot.fundingNeedAmount > 0 ? ` • ${esc(formatCurrency(snapshot.fundingNeedAmount))} need` : ""}</p>
+    <p>${snapshot.unfundedAfterLikelyAmount !== null && snapshot.unfundedAfterLikelyAmount > 0 ? `Uncovered after likely dollars: ${esc(formatCurrency(snapshot.unfundedAfterLikelyAmount))}` : snapshot.remainingFundingGap !== null && snapshot.remainingFundingGap > 0 ? `Current committed gap: ${esc(formatCurrency(snapshot.remainingFundingGap))}` : "No remaining funding gap was recorded in this snapshot."}${snapshot.uninvoicedAwardAmount !== null && snapshot.uninvoicedAwardAmount > 0 ? ` • Uninvoiced awards: ${esc(formatCurrency(snapshot.uninvoicedAwardAmount))}` : ""}</p>
     ${snapshot.latestSourceUpdatedAt ? `<p>Funding source records current through ${esc(formatDateTime(snapshot.latestSourceUpdatedAt))}.</p>` : ""}
   </div>`;
 }

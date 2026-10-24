@@ -115,6 +115,7 @@ export type WorkspaceOperationsProgramRow = {
 };
 
 export type WorkspaceOperationsFundingOpportunityRow = {
+  has_source_backed_issuance?:boolean;
   id: string;
   title: string;
   opportunityStatus: string | null;
@@ -127,7 +128,7 @@ export type WorkspaceOperationsFundingOpportunityRow = {
   updatedAt: string | null;
 };
 
-export type WorkspaceOperationsFundingAwardRow = {
+export type WorkspaceOperationsFundingAwardRow = import("@/lib/grants/award-handoff").ComparableAward & {
   id: string;
   projectId: string;
   fundingOpportunityId: string | null;
@@ -136,7 +137,7 @@ export type WorkspaceOperationsFundingAwardRow = {
   updatedAt: string | null;
 };
 
-export type WorkspaceOperationsBillingInvoiceRow = {
+export type WorkspaceOperationsBillingInvoiceRow = import("@/lib/grants/award-handoff").ManagedInvoice & {
   id: string;
   projectId: string;
   fundingAwardId: string | null;
@@ -195,6 +196,7 @@ export type WorkspaceOperationsProgramSourceRow = {
 };
 
 export type WorkspaceOperationsFundingOpportunitySourceRow = {
+  has_source_backed_issuance?:boolean;
   id: string;
   title: string;
   opportunity_status: string | null;
@@ -207,7 +209,7 @@ export type WorkspaceOperationsFundingOpportunitySourceRow = {
   updated_at: string | null;
 };
 
-export type WorkspaceOperationsFundingAwardSourceRow = {
+export type WorkspaceOperationsFundingAwardSourceRow = import("@/lib/grants/award-handoff").ComparableAward & {
   id: string;
   project_id: string;
   funding_opportunity_id: string | null;
@@ -216,7 +218,7 @@ export type WorkspaceOperationsFundingAwardSourceRow = {
   updated_at: string | null;
 };
 
-export type WorkspaceOperationsBillingInvoiceSourceRow = {
+export type WorkspaceOperationsBillingInvoiceSourceRow = import("@/lib/grants/award-handoff").ManagedInvoice & {
   id: string;
   project_id: string;
   funding_award_id: string | null;
@@ -533,6 +535,7 @@ export function parseStoredRtpFundingReview(
     return null;
   }
 
+  if(snapshot.comparableFunding) return {label:"Recorded award ceilings; coverage unassessed",detail:"Retained version/currency funding snapshot is available. Target cost comparability and reimbursement coverage remain unassessed.",needsAttention:true};
   const gapProjectCount = asNumber(snapshot.gapProjectCount) ?? 0;
   const likelyCoveredProjectCount = asNumber(snapshot.likelyCoveredProjectCount) ?? 0;
   const outstandingReimbursementAmount = asNumber(snapshot.outstandingReimbursementAmount) ?? 0;
@@ -752,6 +755,7 @@ function mapWorkspaceOperationsFundingOpportunityRows(
   return rows.map((opportunity) => ({
     id: opportunity.id,
     title: opportunity.title,
+    has_source_backed_issuance:opportunity.has_source_backed_issuance,
     opportunityStatus: opportunity.opportunity_status,
     decisionState: opportunity.decision_state,
     expectedAwardAmount: opportunity.expected_award_amount,
@@ -767,6 +771,7 @@ function mapWorkspaceOperationsFundingAwardRows(
   rows: WorkspaceOperationsFundingAwardSourceRow[]
 ): WorkspaceOperationsFundingAwardRow[] {
   return rows.map((award) => ({
+    ...award,
     id: award.id,
     projectId: award.project_id,
     fundingOpportunityId: award.funding_opportunity_id,
@@ -780,6 +785,7 @@ function mapWorkspaceOperationsBillingInvoiceRows(
   rows: WorkspaceOperationsBillingInvoiceSourceRow[]
 ): WorkspaceOperationsBillingInvoiceRow[] {
   return rows.map((invoice) => ({
+    ...invoice,
     id: invoice.id,
     projectId: invoice.project_id,
     fundingAwardId: invoice.funding_award_id,
@@ -1024,19 +1030,19 @@ export async function loadWorkspaceOperationsSummaryForWorkspace(
       .limit(200),
     supabase
       .from("funding_opportunities")
-      .select("id, title, opportunity_status, decision_state, expected_award_amount, closes_at, decision_due_at, program_id, project_id, updated_at")
+      .select("id, title, has_source_backed_issuance, opportunity_status, decision_state, expected_award_amount, closes_at, decision_due_at, program_id, project_id, updated_at")
       .eq("workspace_id", workspaceId)
       .order("updated_at", { ascending: false })
       .limit(200),
     supabase
       .from("funding_awards")
-      .select("id, project_id, funding_opportunity_id, title, awarded_amount, updated_at")
+      .select("id, project_id, funding_opportunity_id, title, awarded_amount, match_amount, latest_handoff_revision_id, current_handoff_revision_id, currency_code, has_source_backed_issuance, updated_at")
       .eq("workspace_id", workspaceId)
       .order("updated_at", { ascending: false })
       .limit(200),
     supabase
       .from("billing_invoice_records")
-      .select("id, project_id, funding_award_id, status, amount, retention_percent, retention_amount, due_date")
+      .select("id, project_id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, award_handoff_revision_id, currency_code, handoff_applicable_revision_id, due_date")
       .eq("workspace_id", workspaceId)
       .order("due_date", { ascending: true })
       .limit(200),
@@ -1673,14 +1679,17 @@ export function buildWorkspaceOperationsSummary({
       const summary = buildProjectFundingStackSummary(
         profile,
         awards.map((award) => ({
+          ...award,
           awarded_amount: award.awardedAmount,
         })),
         opportunities.map((opportunity) => ({
+          has_source_backed_issuance:opportunity.has_source_backed_issuance,
           expected_award_amount: opportunity.expectedAwardAmount ?? null,
           decision_state: opportunity.decisionState ?? null,
           opportunity_status: opportunity.opportunityStatus ?? null,
         })),
         invoices.map((invoice) => ({
+          ...invoice,
           funding_award_id: invoice.fundingAwardId,
           status: invoice.status,
           amount: invoice.amount,
@@ -1708,9 +1717,11 @@ export function buildWorkspaceOperationsSummary({
       const summary = buildProjectFundingStackSummary(
         profile,
         awards.map((award) => ({
+          ...award,
           awarded_amount: award.awardedAmount,
         })),
         opportunities.map((opportunity) => ({
+          has_source_backed_issuance:opportunity.has_source_backed_issuance,
           expected_award_amount: opportunity.expectedAwardAmount ?? null,
           decision_state: opportunity.decisionState ?? null,
           opportunity_status: opportunity.opportunityStatus ?? null,
@@ -1738,6 +1749,7 @@ export function buildWorkspaceOperationsSummary({
       const summary = buildProjectFundingStackSummary(
         profile,
         awards.map((award) => ({
+          ...award,
           awarded_amount: award.awardedAmount,
         })),
         actionableOpportunities.map((opportunity) => ({
@@ -1846,9 +1858,11 @@ export function buildWorkspaceOperationsSummary({
       const summary = buildProjectFundingStackSummary(
         profile,
         awards.map((award) => ({
+          ...award,
           awarded_amount: award.awardedAmount,
         })),
         opportunities.map((opportunity) => ({
+          has_source_backed_issuance:opportunity.has_source_backed_issuance,
           expected_award_amount: opportunity.expectedAwardAmount ?? null,
           decision_state: opportunity.decisionState ?? null,
           opportunity_status: opportunity.opportunityStatus ?? null,
@@ -1857,7 +1871,7 @@ export function buildWorkspaceOperationsSummary({
       const awardedOpportunity = [...opportunities]
         .filter(
           (opportunity) =>
-            opportunity.opportunityStatus === "awarded" && !fundingAwardOpportunityIds.has(opportunity.id)
+            (opportunity.has_source_backed_issuance || opportunity.opportunityStatus === "awarded") && !fundingAwardOpportunityIds.has(opportunity.id)
         )
         .sort((left, right) => new Date(right.updatedAt ?? 0).getTime() - new Date(left.updatedAt ?? 0).getTime())[0] ?? null;
       if (!summary.hasTargetNeed || !awardedOpportunity) {
@@ -1892,14 +1906,17 @@ export function buildWorkspaceOperationsSummary({
       const summary = buildProjectFundingStackSummary(
         profile,
         awards.map((award) => ({
+          ...award,
           awarded_amount: award.awardedAmount,
         })),
         opportunities.map((opportunity) => ({
+          has_source_backed_issuance:opportunity.has_source_backed_issuance,
           expected_award_amount: opportunity.expectedAwardAmount ?? null,
           decision_state: opportunity.decisionState ?? null,
           opportunity_status: opportunity.opportunityStatus ?? null,
         })),
         invoices.map((invoice) => ({
+          ...invoice,
           funding_award_id: invoice.fundingAwardId,
           status: invoice.status,
           amount: invoice.amount,

@@ -569,7 +569,7 @@ export default async function ProjectDetailPage({
   // caltrans_posture stays selected as the legacy read fallback for rows that
   // predate the reimbursement-profile backfill (20260727000009).
   const projectInvoiceSelectLegacy =
-    "id, funding_award_id, invoice_number, consultant_name, billing_basis, status, invoice_date, due_date, amount, retention_percent, retention_amount, net_amount, supporting_docs_status, submitted_to, caltrans_posture, notes, created_at, funding_awards(id, title)";
+    "id, funding_award_id, invoice_number, consultant_name, billing_basis, status, invoice_date, due_date, amount, retention_percent, retention_amount, net_amount, award_handoff_revision_id, currency_code, handoff_applicable_revision_id, supporting_docs_status, submitted_to, caltrans_posture, notes, created_at, funding_awards(id, title)";
   const projectInvoiceSelect = projectInvoiceSelectLegacy.replace(
     "caltrans_posture,",
     "caltrans_posture, reimbursement_profile_id, reimbursement_posture, reimbursement_profile_selection,"
@@ -608,10 +608,9 @@ export default async function ProjectDetailPage({
   const selectAwardInvoices = async (columns: string, awardIds: string[]) =>
     (await supabase
       .from("billing_invoice_records")
-      .select(columns)
+      .select(columns,{count:"exact"})
       .in("funding_award_id", awardIds)
-      .order("created_at", { ascending: false })
-      .limit(1000)) as { data: unknown[] | null; error: { message?: string } | null };
+      .order("created_at", { ascending: false })) as { count:number|null; data: unknown[] | null; error: { message?: string } | null };
 
   const projectFundingProfileResult = await supabase
     .from("project_funding_profiles")
@@ -638,11 +637,11 @@ export default async function ProjectDetailPage({
   const fundingAwardsResult = await supabase
     .from("funding_awards")
     .select(
-      "id, project_id, program_id, funding_opportunity_id, title, awarded_amount, match_amount, match_posture, obligation_due_at, expenditure_deadline_at, spending_status, closure_basis, closed_at, closure_note, reopened_at, risk_flag, notes, updated_at, created_at, funding_opportunities(id, title), programs(id, title)"
+      "id, project_id, program_id, funding_opportunity_id, title, awarded_amount, match_amount, match_posture, obligation_due_at, expenditure_deadline_at, spending_status, closure_basis, closed_at, closure_note, reopened_at, risk_flag, notes, updated_at, created_at, funding_opportunities(id, title), programs(id, title), latest_handoff_revision_id, current_handoff_revision_id, currency_code, has_source_backed_issuance", {count:"exact"}
     )
     .eq("project_id", project.id)
-    .order("updated_at", { ascending: false })
-    .limit(8);
+    .order("updated_at", { ascending: false });
+  if(!fundingAwardsResult.error && fundingAwardsResult.count!==fundingAwardsResult.data?.length)return <p>Complete project funding details are unavailable. Totals remain unassessed.</p>;
   const fundingAwards = looksLikePendingSchema(fundingAwardsResult.error?.message)
     ? []
     : ((fundingAwardsResult.data ?? []) as FundingAwardRow[]).map((item) => ({
@@ -666,11 +665,11 @@ export default async function ProjectDetailPage({
   const fundingOpportunitiesResult = await supabase
     .from("funding_opportunities")
     .select(
-      "id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, fit_notes, readiness_notes, decision_rationale, decided_at, summary, updated_at, created_at, programs(id, title)"
+      "id, program_id, project_id, title, opportunity_status, decision_state, agency_name, owner_label, cadence_label, expected_award_amount, opens_at, closes_at, decision_due_at, fit_notes, readiness_notes, decision_rationale, decided_at, summary, updated_at, created_at, programs(id, title), has_source_backed_issuance", {count:"exact"}
     )
     .eq("project_id", project.id)
-    .order("updated_at", { ascending: false })
-    .limit(6);
+    .order("updated_at", { ascending: false });
+  if(!fundingOpportunitiesResult.error && fundingOpportunitiesResult.count!==fundingOpportunitiesResult.data?.length)return <p>Complete project funding details are unavailable. Totals remain unassessed.</p>;
   const fundingOpportunities = looksLikePendingSchema(fundingOpportunitiesResult.error?.message)
     ? []
     : ((fundingOpportunitiesResult.data ?? []) as FundingOpportunityRow[]).map((item) => ({
@@ -796,7 +795,7 @@ export default async function ProjectDetailPage({
   const skipFundingCount = fundingOpportunities.filter((item) => item.decision_state === "skip").length;
   const openFundingCount = fundingOpportunities.filter((item) => item.opportunity_status === "open").length;
   const pursuedFundingAmount = fundingOpportunities.reduce((sum, item) => {
-    if (item.decision_state !== "pursue" || item.opportunity_status === "awarded" || item.opportunity_status === "archived") {
+    if (item.has_source_backed_issuance || item.decision_state !== "pursue" || item.opportunity_status === "awarded" || item.opportunity_status === "archived") {
       return sum;
     }
     return sum + Number(item.expected_award_amount ?? 0);
@@ -809,10 +808,11 @@ export default async function ProjectDetailPage({
   const fundingAwardIds = fundingAwards.map((award) => award.id);
   let awardInvoicesResult = fundingAwardIds.length
     ? await selectAwardInvoices(projectInvoiceSelect, fundingAwardIds)
-    : { data: [], error: null };
+    : { data: [], error: null, count:0 };
   if (awardInvoicesResult.error && looksLikePendingSchema(awardInvoicesResult.error.message)) {
     awardInvoicesResult = await selectAwardInvoices(projectInvoiceSelectLegacy, fundingAwardIds);
   }
+  if(fundingAwards.some((a)=>a.latest_handoff_revision_id) && (awardInvoicesResult.error || awardInvoicesResult.count!==awardInvoicesResult.data?.length))return <p>Complete managed award invoice history is unavailable. Claim coverage remains unassessed.</p>;
   // On any residual error, fall back to the display-capped rows rather than
   // rendering an empty claim history for awards that have one.
   const awardInvoiceRows = awardInvoicesResult.error

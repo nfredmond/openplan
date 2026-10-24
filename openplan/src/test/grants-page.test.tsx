@@ -1,3 +1,4 @@
+import { exactCountResult } from "./helpers/exact-count-result";
 import * as grantModeling from "@/lib/grants/modeling-evidence";
 import { render, screen } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
@@ -13,7 +14,7 @@ const loadWorkspaceOperationsSummaryForWorkspaceMock = vi.fn();
 const fundingOpportunityDecisionControlsMock = vi.fn();
 
 const fundingOpportunitiesOrderMock = vi.fn();
-const fundingOpportunitiesEqMock = vi.fn(() => ({ order: fundingOpportunitiesOrderMock }));
+const fundingOpportunitiesEqMock = vi.fn(() => ({ order: (...args: unknown[]) => fundingOpportunitiesOrderMock(...args).then(exactCountResult) }));
 const fundingOpportunitiesSelectMock = vi.fn(() => ({ eq: fundingOpportunitiesEqMock }));
 
 const projectsOrderMock = vi.fn();
@@ -25,14 +26,14 @@ const programsEqMock = vi.fn(() => ({ order: programsOrderMock }));
 const programsSelectMock = vi.fn(() => ({ eq: programsEqMock }));
 
 const fundingAwardsOrderMock = vi.fn();
-const fundingAwardsEqMock = vi.fn(() => ({ order: fundingAwardsOrderMock }));
+const fundingAwardsEqMock = vi.fn(() => ({ order: (...args: unknown[]) => fundingAwardsOrderMock(...args).then(exactCountResult) }));
 // The column list is a recorded argument, not a detail: a Supabase select string
 // is never checked against the schema, so a column this page stops asking for
 // simply arrives as `undefined` with nothing failing anywhere.
 const fundingAwardsSelectMock = vi.fn((_columns: string) => ({ eq: fundingAwardsEqMock }));
 
 const invoiceRecordsOrderMock = vi.fn();
-const invoiceRecordsEqMock = vi.fn(() => ({ order: invoiceRecordsOrderMock }));
+const invoiceRecordsEqMock = vi.fn(() => ({ order: (...args: unknown[]) => invoiceRecordsOrderMock(...args).then(exactCountResult) }));
 const invoiceRecordsSelectMock = vi.fn(() => ({ eq: invoiceRecordsEqMock }));
 
 const projectFundingProfilesEqMock = vi.fn();
@@ -219,6 +220,10 @@ function seedClosedAward(closure: {
         project_id: "project-1",
         program_id: null,
         title: "Safety corridor construction award",
+        latest_handoff_revision_id: null,
+        current_handoff_revision_id: null,
+        currency_code: null,
+        has_source_backed_issuance: false,
         awarded_amount: 250000,
         match_amount: 0,
         obligation_due_at: null,
@@ -247,6 +252,10 @@ function seedComposerStackAward() {
         project_id: "project-1",
         program_id: null,
         title: "Safety corridor construction award",
+        latest_handoff_revision_id: null,
+        current_handoff_revision_id: null,
+        currency_code: null,
+        has_source_backed_issuance: false,
         awarded_amount: 250000,
         match_amount: 0,
         obligation_due_at: null,
@@ -838,6 +847,16 @@ describe("GrantsPage", () => {
     await renderPage();
 
     expect(screen.getAllByText(/this is the lead step/)).toHaveLength(1);
+  });
+  it("requests complete version-bound funding sources and refuses a truncated successful read", async () => {
+    fundingAwardsOrderMock.mockResolvedValueOnce({ data: [], count: 1, error: null });
+    await renderPage();
+    expect(screen.getByText("Complete grant funding details are unavailable. Totals remain unassessed.")).toBeInTheDocument();
+    for (const select of [fundingAwardsSelectMock, fundingOpportunitiesSelectMock, invoiceRecordsSelectMock]) {
+      expect(select).toHaveBeenCalledWith(expect.any(String), { count: "exact" });
+    }
+    const columns = fundingAwardsSelectMock.mock.calls[0][0];
+    for (const field of ["currency_code", "current_handoff_revision_id", "latest_handoff_revision_id", "has_source_backed_issuance"]) expect(columns).toContain(field);
   });
 it("keeps a prepared unassessed grant packet visible in triage and monitor advice", async () => {
   const original = grantModeling.buildProjectGrantModelingEvidenceByProjectId;

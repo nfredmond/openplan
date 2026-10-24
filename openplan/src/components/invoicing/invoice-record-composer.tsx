@@ -1,6 +1,7 @@
 "use client";
+import { awardTermsSchema, exactInvoiceAmounts } from "@/lib/grants/award-handoff";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileSpreadsheet, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,6 @@ import {
   useGuidedFlow,
   type GuidedFlowStep,
 } from "@/components/ui/guided-flow";
-import { computeNetInvoiceAmount, computeRetentionAmount } from "@/lib/invoicing/invoice-records";
 import type { ReimbursementProfileBinding } from "@/lib/invoicing/reimbursement-profile-binding";
 import { formatMoney } from "@/lib/money/format";
 
@@ -102,6 +102,36 @@ const SUPPORTING_DOCS_OPTIONS = [
   { value: "accepted", label: "Accepted" },
 ];
 
+type InvoiceAwardTerms = {
+  award:{id:string;workspace_id:string;project_id:string|null;current_handoff_revision_id:string|null;latest_handoff_revision_id:string|null;currency_code:string|null};
+  history:Array<{id:string;terms:unknown}>;
+};
+type TermsRead = {key:string;status:"ready";data:InvoiceAwardTerms}|{key:string;status:"error";message:string};
+function record(value:unknown):value is Record<string,unknown> {return typeof value==="object" && value!==null && !Array.isArray(value);}
+
+/** An incomplete or foreign response cannot become an unmanaged award. */
+function readInvoiceAwardTerms(value:unknown, workspaceId:string, selection:Pick<InvoiceValues,"projectId"|"fundingAwardId">):InvoiceAwardTerms {
+  if(!record(value) || !record(value.award) || !Array.isArray(value.history))throw new Error("Award terms response is unavailable.");
+  const award=value.award;
+  if(award.id!==selection.fundingAwardId || award.workspace_id!==workspaceId || !(award.project_id===null || typeof award.project_id==="string") || (award.project_id!==null && award.project_id!==selection.projectId))throw new Error("Award terms do not match the selected workspace and project.");
+  for(const key of ["current_handoff_revision_id","latest_handoff_revision_id","currency_code"])if(!(award[key]===null || typeof award[key]==="string"))throw new Error("Award terms identity is incomplete.");
+  if(!value.history.every((row)=>record(row) && typeof row.id==="string" && "terms" in row))throw new Error("Award history is incomplete.");
+  if(award.latest_handoff_revision_id!==null && !value.history.some((row)=>row.id===award.latest_handoff_revision_id))throw new Error("Latest retained terms are unavailable.");
+  if(award.latest_handoff_revision_id===null && (award.current_handoff_revision_id!==null || value.history.length>0))throw new Error("Award terms pointers are inconsistent.");
+  if(award.current_handoff_revision_id!==null){
+    const current=value.history.find((row)=>row.id===award.current_handoff_revision_id);
+    const terms=awardTermsSchema.safeParse(current?.terms);
+    if(!terms.success || !terms.data.effective || terms.data.currency.code!==award.currency_code)throw new Error("Current award version or currency is unavailable.");
+  }
+  return value as InvoiceAwardTerms;
+}
+
+/** Changed defaults and scope start a new form with no inherited review. */
+export function InvoiceRecordComposer(props:InvoiceRecordComposerProps) {
+  const scope=JSON.stringify([props.workspaceId,props.canWrite,props.defaultProjectId??"",props.defaultFundingAwardId??"",props.defaultInvoiceNumber??"",props.defaultAmount??"",props.reimbursementProfile?.defaultPostureId??"",props.projects.map((project)=>project.id),props.fundingAwards?.map((award)=>[award.id,award.projectId])??[]]);
+  return <InvoiceRecordComposerSession key={scope} {...props}/>;
+}
+
 /**
  * Logging a consulting invoice record, as a flow.
  *
@@ -128,7 +158,7 @@ const SUPPORTING_DOCS_OPTIONS = [
  * still NO `reimbursementProfileId` — the server re-resolves the profile and
  * records the true provenance. The error still prefers `details`.
  */
-export function InvoiceRecordComposer({
+function InvoiceRecordComposerSession({
   workspaceId,
   projects,
   fundingAwards = [],
@@ -142,7 +172,60 @@ export function InvoiceRecordComposer({
   reimbursementProfile = null,
 }: InvoiceRecordComposerProps) {
   const router = useRouter();
+  const [termsRead,setTermsRead] = useState<TermsRead|null>(null);
+  const [reviewedTermsKey,setReviewedTermsKey] = useState<string|null>(null);
+  const [selectionEpoch,setSelectionEpoch] = useState(0);
+  const active=useRef(false); const epoch=useRef(0);
+  useEffect(()=>{active.current=true;return()=>{active.current=false;};},[]);
+  const invalidateSelection=useCallback(()=>{epoch.current+=1;setSelectionEpoch(epoch.current);setReviewedTermsKey(null);},[]);
+  const selectionKey=useCallback((values:Pick<InvoiceValues,"projectId"|"fundingAwardId">)=>JSON.stringify([workspaceId,selectionEpoch,values.projectId,values.fundingAwardId]),[workspaceId,selectionEpoch]);
+  const termsFor=useCallback((values:InvoiceValues)=>termsRead?.key===selectionKey(values) && termsRead.status==="ready" ? termsRead.data : null,[termsRead,selectionKey]);
+  const reviewKeyFor=useCallback((values:InvoiceValues,data:InvoiceAwardTerms)=>JSON.stringify([selectionKey(values),data.award.current_handoff_revision_id,data.award.currency_code]),[selectionKey]);
+  const moneyFor=useCallback((value:number|string|null,values:InvoiceValues)=>{
+    if(!values.fundingAwardId)return formatMoney(value,{precision:"cents"});
+    const current=termsFor(values);
+    if(!current)return "Currency unassessed";
+    if(!current.award.latest_handoff_revision_id)return formatMoney(value,{precision:"cents"});
+    return current.award.currency_code ? formatMoney(value,{precision:"cents",currency:current.award.currency_code,currencyDisplay:"code"}) : "Currency unassessed";
+  },[termsFor]);
   const [message, setMessage] = useState<string | null>(null);
+
+  /** Keep the current version and its acknowledgement inside the active modal step. */
+  const renderAwardTermsReview = useCallback((values: InvoiceValues) => {
+    if (!values.fundingAwardId) return null;
+    const key = selectionKey(values);
+    if (termsRead?.key === key && termsRead.status === "error") {
+      return <p role="alert">{termsRead.message}</p>;
+    }
+    const current = termsFor(values);
+    if (!current) return <p role="status">Loading current award terms. Review is pending.</p>;
+    if (!current.award.latest_handoff_revision_id) {
+      return <p>No retained award conditions are recorded. Award applicability remains unassessed.</p>;
+    }
+    if (!current.award.current_handoff_revision_id) {
+      return <p role="alert">No effective award terms are available. Reimbursement cannot be saved against this managed award.</p>;
+    }
+    const currentReviewKey = reviewKeyFor(values, current);
+    return (
+      <details open>
+        <summary>Current award terms for reimbursement</summary>
+        <p className="text-sm break-words">
+          Current version: {current.award.current_handoff_revision_id}. Currency: {current.award.currency_code}.
+        </p>
+        <pre className="whitespace-pre-wrap break-words text-xs">
+          {JSON.stringify(current.history.find((revision) => revision.id === current.award.current_handoff_revision_id)?.terms, null, 2)}
+        </pre>
+        <label>
+          <input
+            type="checkbox"
+            checked={reviewedTermsKey === currentReviewKey}
+            onChange={(event) => setReviewedTermsKey(event.target.checked ? currentReviewKey : null)}
+          />{" "}
+          I reviewed this exact current terms version. The reimbursement profile is guidance, not established award applicability.
+        </label>
+      </details>
+    );
+  }, [selectionKey, termsRead, termsFor, reviewKeyFor, reviewedTermsKey]);
 
   const steps = useMemo<GuidedFlowStep<InvoiceValues>[]>(
     () => [
@@ -220,6 +303,7 @@ export function InvoiceRecordComposer({
                     // fact; doing it where the project changes is the only
                     // place the pair can go wrong, and it cannot flash an
                     // invalid pairing on the way.
+                    invalidateSelection();
                     const nextProjectId = event.target.value;
                     const stillValid = fundingAwards.some(
                       (award) =>
@@ -242,7 +326,7 @@ export function InvoiceRecordComposer({
               </GuidedFlowRow>
 
               <GuidedFlowRow flow={flow} name="fundingAwardId" label="Funding award">
-                <select className={selectClassName} {...flow.text("fundingAwardId")}>
+                <select className={selectClassName} {...flow.text("fundingAwardId")} onChange={(event)=>{invalidateSelection();flow.setValues({fundingAwardId:event.target.value});}}>
                   <option value="">No linked funding award</option>
                   {visibleFundingAwards.map((award) => (
                     <option key={award.id} value={award.id}>
@@ -251,6 +335,7 @@ export function InvoiceRecordComposer({
                   ))}
                 </select>
               </GuidedFlowRow>
+              {renderAwardTermsReview(flow.values)}
             </>
           );
         },
@@ -290,19 +375,16 @@ export function InvoiceRecordComposer({
           return null;
         },
         render: (flow) => {
-          const amountValue = Number.parseFloat(flow.values.amount || "0") || 0;
-          const retentionPercentValue =
-            Number.parseFloat(flow.values.retentionPercent || "0") || 0;
-          const retentionAmountPreview = computeRetentionAmount(amountValue, retentionPercentValue);
-          const netAmountPreview = computeNetInvoiceAmount(
-            amountValue,
-            retentionAmountPreview,
-            retentionPercentValue
-          );
+          const amountValue = flow.values.amount;
+          const retentionPercentValue = flow.values.retentionPercent || "0";
+          let retentionAmountPreview: number|string|null=null, netAmountPreview:number|string|null=null;
+          try { const amounts=exactInvoiceAmounts(amountValue,retentionPercentValue);retentionAmountPreview=amounts.retentionAmount;netAmountPreview=amounts.netAmount; } catch { /* Invalid input remains unassessed until corrected. */ }
+
           return (
             <>
+              {renderAwardTermsReview(flow.values)}
               <GuidedFlowRow flow={flow} name="amount" label="Gross amount">
-                <Input {...flow.text("amount")} type="number" min="0" step="0.01" placeholder="12500" />
+                <Input {...flow.text("amount")} type="text" inputMode="decimal" placeholder="Actual invoice amount" />
               </GuidedFlowRow>
 
               <GuidedFlowRow flow={flow} name="retentionPercent" label="Retention %">
@@ -329,13 +411,13 @@ export function InvoiceRecordComposer({
                   <div className="flex items-center justify-between gap-3 border-b border-border/50 pb-3">
                     <dt>Gross amount</dt>
                     <dd className="font-semibold text-foreground">
-                      {formatMoney(amountValue, { precision: "cents" })}
+                      {moneyFor(amountValue,flow.values)}
                     </dd>
                   </div>
                   <div className="flex items-center justify-between gap-3 border-b border-border/50 pb-3">
-                    <dt>Retention ({retentionPercentValue.toFixed(2)}%)</dt>
+                    <dt>Retention ({retentionPercentValue}%)</dt>
                     <dd className="font-semibold text-foreground">
-                      {formatMoney(retentionAmountPreview, { precision: "cents" })}
+                      {moneyFor(retentionAmountPreview,flow.values)}
                     </dd>
                   </div>
                   <div className="space-y-1 pt-1">
@@ -346,7 +428,7 @@ export function InvoiceRecordComposer({
                       className="text-2xl font-semibold tracking-tight text-foreground"
                       data-testid="invoice-net-request"
                     >
-                      {formatMoney(netAmountPreview, { precision: "cents" })}
+                      {moneyFor(netAmountPreview,flow.values)}
                     </dd>
                   </div>
                 </dl>
@@ -444,6 +526,7 @@ export function InvoiceRecordComposer({
         },
         render: (flow) => (
           <>
+            {renderAwardTermsReview(flow.values)}
             <GuidedFlowRow flow={flow} name="periodStart" label="Period start">
               <Input {...flow.text("periodStart")} type="date" />
             </GuidedFlowRow>
@@ -470,7 +553,7 @@ export function InvoiceRecordComposer({
         ),
       },
     ],
-    [fundingAwards, projects, reimbursementProfile]
+    [fundingAwards, projects, reimbursementProfile, invalidateSelection, moneyFor, renderAwardTermsReview]
   );
 
   const flow = useGuidedFlow<InvoiceValues>({
@@ -497,8 +580,28 @@ export function InvoiceRecordComposer({
     },
     steps,
     onSubmit: async (values) => {
-      const amountValue = Number.parseFloat(values.amount || "0") || 0;
-      const retentionPercentValue = Number.parseFloat(values.retentionPercent || "0") || 0;
+      const amountValue = values.amount;
+      const retentionPercentValue = values.retentionPercent || "0";
+      exactInvoiceAmounts(amountValue,retentionPercentValue);
+      if(!canWrite || !active.current)throw new Error("Invoice entry is unavailable.");
+      const requestEpoch=selectionEpoch;
+      let bound=values.fundingAwardId ? termsFor(values) : null;
+      if(values.fundingAwardId){
+        if(!bound)throw new Error("Load and review award terms before saving.");
+        if(bound.award.latest_handoff_revision_id && (!bound.award.current_handoff_revision_id || reviewedTermsKey!==reviewKeyFor(values,bound)))throw new Error("Review current effective award conditions before saving reimbursement.");
+        const response=await fetch(`/api/funding-awards/${values.fundingAwardId}/handoff`,{cache:"no-store"}); const data=await response.json();
+        if(!active.current || epoch.current!==requestEpoch)throw new Error("Invoice selection changed. No invoice was saved.");
+        let fresh:InvoiceAwardTerms;
+        try {
+          if(!response.ok)throw new Error(data.error??"Award terms unavailable");
+          fresh=readInvoiceAwardTerms(data,workspaceId,values);
+        } catch(error){setTermsRead({key:selectionKey(values),status:"error",message:String(error)});setReviewedTermsKey(null);throw error;}
+        if(fresh.award.current_handoff_revision_id!==bound.award.current_handoff_revision_id || fresh.award.currency_code!==bound.award.currency_code || Boolean(fresh.award.latest_handoff_revision_id)!==Boolean(bound.award.latest_handoff_revision_id)){
+          setTermsRead({key:selectionKey(values),status:"ready",data:fresh});setReviewedTermsKey(null);throw new Error("Award terms changed. Review the current version before saving.");
+        }
+        bound=fresh;
+      }
+      if(!active.current || epoch.current!==requestEpoch)throw new Error("Invoice selection changed. No invoice was saved.");
 
       const response = await fetch("/api/invoicing/invoices", {
         method: "POST",
@@ -515,6 +618,8 @@ export function InvoiceRecordComposer({
           periodEnd: values.periodEnd || undefined,
           invoiceDate: values.invoiceDate || undefined,
           dueDate: values.dueDate || undefined,
+          awardHandoffRevisionId:bound?.award.current_handoff_revision_id ?? undefined,
+          currencyCode:bound?.award.currency_code ?? undefined,
           amount: amountValue,
           retentionPercent: retentionPercentValue,
           supportingDocsStatus: values.supportingDocsStatus,
@@ -537,11 +642,26 @@ export function InvoiceRecordComposer({
         );
       }
 
+      if(!active.current)return;
       setMessage("Invoice record saved.");
       router.refresh();
     },
   });
 
+  const selectedAwardId=flow.values.fundingAwardId; const selectedProjectId=flow.values.projectId;
+  const requestKey=selectionKey(flow.values); const flowOpen=flow.isOpen;
+  useEffect(()=>{
+    if(!canWrite || !flowOpen || !selectedAwardId)return;
+    const controller=new AbortController(); const requestEpoch=selectionEpoch;
+    void fetch(`/api/funding-awards/${selectedAwardId}/handoff`,{cache:"no-store",signal:controller.signal}).then(async(response)=>{
+      const data=await response.json();
+      if(controller.signal.aborted || !active.current || epoch.current!==requestEpoch)return;
+      if(!response.ok)throw new Error(data.error??"Award terms unavailable");
+      const current=readInvoiceAwardTerms(data,workspaceId,{fundingAwardId:selectedAwardId,projectId:selectedProjectId});
+      setTermsRead({key:requestKey,status:"ready",data:current});
+    }).catch((error)=>{if(!controller.signal.aborted && active.current && epoch.current===requestEpoch)setTermsRead({key:requestKey,status:"error",message:String(error)});});
+    return ()=>controller.abort();
+  },[canWrite,flowOpen,selectedAwardId,selectedProjectId,selectionEpoch,workspaceId,requestKey]);
   if (!canWrite) {
     return (
       <article className="border border-border/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.74),rgba(246,248,244,0.96))] px-5 py-5 shadow-[0_18px_40px_rgba(15,23,42,0.04)] dark:bg-[linear-gradient(180deg,rgba(15,23,32,0.86),rgba(11,18,26,0.96))]">
@@ -579,6 +699,7 @@ export function InvoiceRecordComposer({
           type="button"
           onClick={() => {
             setMessage(null);
+            invalidateSelection();
             flow.open();
           }}
           data-testid="invoice-record-composer-open"

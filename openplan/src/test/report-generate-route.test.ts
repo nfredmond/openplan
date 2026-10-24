@@ -136,20 +136,49 @@ const fundingProfilesInMock = vi.fn();
 const fundingProfilesEqMock = vi.fn(() => ({ maybeSingle: fundingProfilesMaybeSingleMock }));
 const fundingProfilesSelectMock = vi.fn(() => ({ eq: fundingProfilesEqMock, in: fundingProfilesInMock }));
 
+type FundingReadResult = { data: unknown[] | null; error: unknown; count?: unknown };
+type FundingSelectOptions = { count?: string };
+
+/** Return counts only when requested; retain explicit incomplete/error fixtures. */
+async function countedFundingRead(read: Promise<FundingReadResult>, options?: FundingSelectOptions): Promise<FundingReadResult> {
+  const result = await read;
+  if (options?.count !== "exact") return { ...result, count: null };
+  if ("count" in result) return result;
+  return { ...result, count: !result.error && Array.isArray(result.data) ? result.data.length : null };
+}
+
 const fundingAwardsOrderMock = vi.fn();
 const fundingAwardsInMock = vi.fn();
-const fundingAwardsEqMock = vi.fn(() => ({ order: fundingAwardsOrderMock }));
-const fundingAwardsSelectMock = vi.fn(() => ({ eq: fundingAwardsEqMock, in: fundingAwardsInMock }));
+const fundingAwardsEqMock = vi.fn((..._args: unknown[]) => ({ order: fundingAwardsOrderMock }));
+const fundingAwardsSelectMock = vi.fn((_columns: string, options?: FundingSelectOptions) => ({
+  eq: (...args: unknown[]) => {
+    const query = fundingAwardsEqMock(...args);
+    return { order: (...orderArgs: unknown[]) => countedFundingRead(query.order(...orderArgs), options) };
+  },
+  in: (...args: unknown[]) => countedFundingRead(fundingAwardsInMock(...args), options),
+}));
 
 const fundingOpportunitiesOrderMock = vi.fn();
 const fundingOpportunitiesInMock = vi.fn();
-const fundingOpportunitiesEqMock = vi.fn(() => ({ order: fundingOpportunitiesOrderMock }));
-const fundingOpportunitiesSelectMock = vi.fn(() => ({ eq: fundingOpportunitiesEqMock, in: fundingOpportunitiesInMock }));
+const fundingOpportunitiesEqMock = vi.fn((..._args: unknown[]) => ({ order: fundingOpportunitiesOrderMock }));
+const fundingOpportunitiesSelectMock = vi.fn((_columns: string, options?: FundingSelectOptions) => ({
+  eq: (...args: unknown[]) => {
+    const query = fundingOpportunitiesEqMock(...args);
+    return { order: (...orderArgs: unknown[]) => countedFundingRead(query.order(...orderArgs), options) };
+  },
+  in: (...args: unknown[]) => countedFundingRead(fundingOpportunitiesInMock(...args), options),
+}));
 
 const billingInvoicesOrderMock = vi.fn();
 const billingInvoicesInMock = vi.fn();
-const billingInvoicesEqMock = vi.fn(() => ({ order: billingInvoicesOrderMock }));
-const billingInvoicesSelectMock = vi.fn(() => ({ eq: billingInvoicesEqMock, in: billingInvoicesInMock }));
+const billingInvoicesEqMock = vi.fn((..._args: unknown[]) => ({ order: billingInvoicesOrderMock }));
+const billingInvoicesSelectMock = vi.fn((_columns: string, options?: FundingSelectOptions) => ({
+  eq: (...args: unknown[]) => {
+    const query = billingInvoicesEqMock(...args);
+    return { order: (...orderArgs: unknown[]) => countedFundingRead(query.order(...orderArgs), options) };
+  },
+  in: (...args: unknown[]) => countedFundingRead(billingInvoicesInMock(...args), options),
+}));
 
 // Aerial provenance for the packet. Loaded through the aerial module's own
 // provider, so the packet's aerial claims trace to mission + evidence-package
@@ -1559,7 +1588,9 @@ describe("POST /api/reports/[reportId]/generate", () => {
         schema_version: SAFETY_PLAN_PERSISTENCE_VERSION, snapshot_hash: snapshot.hash,
         source_project_updated_at: snapshot.projectUpdatedAt, persisted_project_updated_at: projectUpdatedAt,
         source_report_updated_at: snapshot.reportUpdatedAt, report_updated_at: reportUpdatedAt };
-      persisted.push({ artifact: { ...args.p_artifact, metadata_json: { ...args.p_artifact.metadata_json,
+      // PostgREST persists JSON bytes, not JavaScript-only undefined properties.
+      const wireArtifact = JSON.parse(JSON.stringify(args.p_artifact)) as typeof args.p_artifact;
+      persisted.push({ artifact: { ...wireArtifact, metadata_json: { ...wireArtifact.metadata_json,
         generationWriteback: { schema: "openplan.report-generation-writeback.v1", reportUpdatedAt } } }, reportUpdatedAt, projectUpdatedAt, persistence });
       return { data: persistence, error: null };
     });
@@ -2446,6 +2477,22 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expect(response.status).toBe(200);
     const generatedArtifact = artifactsInsertMock.mock.calls.at(-1)?.[0];
     const sourceContext = generatedArtifact?.metadata_json?.sourceContext as Record<string, unknown>;
+
+    expect(fundingAwardsSelectMock).toHaveBeenCalledWith(
+      "id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at, latest_handoff_revision_id, current_handoff_revision_id, currency_code, has_source_backed_issuance",
+      { count: "exact" },
+    );
+    expect(fundingOpportunitiesSelectMock).toHaveBeenCalledWith(
+      "id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at, has_source_backed_issuance",
+      { count: "exact" },
+    );
+    expect(billingInvoicesSelectMock).toHaveBeenCalledWith(
+      "id, funding_award_id, status, amount, retention_percent, retention_amount, net_amount, due_date, invoice_date, created_at, award_handoff_revision_id, currency_code, handoff_applicable_revision_id",
+      { count: "exact" },
+    );
+    expect(fundingAwardsEqMock).toHaveBeenCalledWith("project_id", "44444444-4444-4444-8444-444444444444");
+    expect(fundingOpportunitiesEqMock).toHaveBeenCalledWith("project_id", "44444444-4444-4444-8444-444444444444");
+    expect(billingInvoicesEqMock).toHaveBeenCalledWith("project_id", "44444444-4444-4444-8444-444444444444");
 
     expect(sourceContext.projectFundingSnapshot).toMatchObject({
       fundingNeedAmount: 2_000_000,

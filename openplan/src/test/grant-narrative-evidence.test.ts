@@ -27,7 +27,7 @@ import {
  * loader named.
  */
 
-type ReadResult = { data: unknown; error: { message: string } | null };
+type ReadResult = { data: unknown; error: { message: string } | null; count?: number | null };
 
 const OPPORTUNITY_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const WORKSPACE_ID = "33333333-3333-4333-8333-333333333333";
@@ -107,19 +107,35 @@ const READS: ReadonlyArray<{
 ];
 
 function clientResolving(resolve: (table: string, columns: string) => ReadResult) {
+  const readCalls: Array<{ table: string; columns: string; count?: "exact"; filters: Array<[string, unknown]> }> = [];
   return {
+    readCalls,
     from(table: string) {
       let columns = "";
+      let exactCount = false;
+      const filters: Array<[string, unknown]> = [];
+      const answer = (): ReadResult => {
+        const result = resolve(table, columns);
+        return exactCount && Array.isArray(result.data) && !Object.hasOwn(result, "count")
+          ? { ...result, count: result.data.length }
+          : result;
+      };
       const chain: Record<string, unknown> = {
-        select: (cols: string) => {
+        select: (cols: string, options?: { count?: "exact" }) => {
           columns = cols;
+          exactCount = options?.count === "exact";
+          readCalls.push({ table, columns: cols, count: options?.count, filters });
           return chain;
         },
-        maybeSingle: () => Promise.resolve(resolve(table, columns)),
+        maybeSingle: () => Promise.resolve(answer()),
         then: (ok: (value: unknown) => unknown, err?: (reason: unknown) => unknown) =>
-          Promise.resolve(resolve(table, columns)).then(ok, err),
+          Promise.resolve(answer()).then(ok, err),
       };
-      for (const method of ["eq", "neq", "not", "in", "order", "limit"]) {
+      chain.eq = (column: string, value: unknown) => {
+        filters.push([column, value]);
+        return chain;
+      };
+      for (const method of ["neq", "not", "in", "order", "limit"]) {
         chain[method] = () => chain;
       }
       return chain;
@@ -170,6 +186,27 @@ function clientFailing(read: (typeof READS)[number], message: string) {
 }
 
 describe("assembleOpportunityEvidence — a failed read is reported, never answered as absence", () => {
+  it.each([
+    ["funding_awards", "id, awarded_amount, match_amount, risk_flag, obligation_due_at, updated_at, created_at, latest_handoff_revision_id, current_handoff_revision_id, currency_code, has_source_backed_issuance"],
+    ["funding_opportunities", "id, expected_award_amount, decision_state, opportunity_status, closes_at, updated_at, created_at, has_source_backed_issuance"],
+    ["billing_invoice_records", "id, funding_award_id, status, due_date, amount, retention_percent, retention_amount, net_amount, award_handoff_revision_id, currency_code, handoff_applicable_revision_id"],
+  ])("requests the complete project-scoped funding projection from %s", async (table, columns) => {
+    const client = clientResolving(succeeding);
+    await assembleOpportunityEvidence(client, opportunity());
+    expect(client.readCalls.filter((read) => read.table === table)).toEqual([
+      { table, columns, count: "exact", filters: [["project_id", PROJECT_ID]] },
+    ]);
+  });
+
+  it.each(["funding_awards", "funding_opportunities", "billing_invoice_records"].flatMap(
+    (table) => [null, 1].map((count) => ({ table, count }))
+  ))("refuses a missing or incomplete exact funding count for $table: $count", async ({ table: fundingTable, count }) => {
+    const client = clientResolving((table, columns) => table === fundingTable
+      ? { data: [], error: null, count }
+      : succeeding(table, columns));
+    await expect(assembleOpportunityEvidence(client, opportunity())).rejects.toThrow("Complete funding currency/version source sets are unavailable");
+  });
+
   it("reports no failures when every read succeeds and genuinely finds nothing", async () => {
     const bundle = await assembleOpportunityEvidence(clientResolving(succeeding), opportunity());
 
@@ -202,10 +239,8 @@ describe("assembleOpportunityEvidence — a failed read is reported, never answe
   it.each(READS.filter((read) => !read.proposalOnly).map((read) => [read.subject, read] as const))(
     "reports a failed read of %s",
     async (subject, read) => {
-      const bundle = await assembleOpportunityEvidence(
-        clientFailing(read, `could not read ${read.table}`),
-        opportunity()
-      );
+      const pending = assembleOpportunityEvidence(clientFailing(read, `could not read ${read.table}`), opportunity());
+      const bundle = await pending;
 
       expect(bundle.readFailures.map((failure) => failure.subject)).toEqual([subject]);
       expect(bundle.readFailures[0].message).toBe(`could not read ${read.table}`);

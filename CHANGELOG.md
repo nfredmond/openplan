@@ -20,6 +20,59 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Award-condition handoff:** the existing Grants workspace retains source-backed
+award terms, staff review and project handoff revisions. Managed invoices keep
+their original currency, exact amounts and reviewed term revision. Incomplete
+reads leave coverage unassessed. These records do not establish legal compliance
+or replace a responsible person's review. Apply
+`20261018000003_award_condition_handoff.sql`, then
+`20261024200000_award_handoff_terms_variable.sql` and
+`20261024200100_award_handoff_command_aliases.sql` before deploying this capability.
+The additive corrections separate PL/pgSQL variables from query aliases. Twelve
+isolated transaction and parent-DELETE contention cases pass. The visible workflow
+remains pending.
+
+**Managed award reopen correction:** apply
+`20261024200200_managed_award_reopen_status.sql` after the three award migrations
+above, and refresh the API schema cache before deploying the new caller. It
+retains the selected not-started, active or delayed destination in the award,
+receipt and response. Existing five-argument callers keep the active default.
+Earlier native cases do not cover this new overload. RTP pages retain loaded
+cycle data when funding reads fail. The cycle detail withholds dependent funding
+figures; the registry identifies partial totals. Successful incomplete funding
+reads still refuse.
+
+**Award history privileges:** apply
+`20261024200300_award_handoff_relation_privileges.sql` to remove residual
+service_role creation grants. It restores only SELECT/INSERT on
+`funding_award_handoff_revisions`, `funding_award_handoff_sources`,
+`funding_award_handoff_occurrences` and `funding_award_closure_receipts`, and only
+SELECT on `current_award_handoff_records`, `active_project_submittals`,
+`active_project_milestones`, `legacy_calendar_funding_awards`,
+`funding_award_handoff_fulfillment` and `funding_opportunity_issuance`.
+Authenticated SELECT and object definitions remain unchanged. Source review
+does not establish installed privileges.
+
+**Safety seed entry order:** apply
+`20261024200400_award_handoff_safety_seed_entry_lock.sql` after the award
+corrections. `20261023190100_safety_comparison_inputs.sql` replaced
+`apply_ss4a_safety_seed` after the award migration had added its entry lock, so
+installations that applied them in version order lost that first statement.
+This migration restores it without restating the function body. Installations
+that already carry the lock are unchanged.
+
+**Award migration versions.** The hosted installation already holds
+`20261018000003_award_condition_handoff.sql` under that version, byte for byte
+as it appears here, so the file keeps its version. It sorts below the 0.70.0,
+0.71.0 and 0.72.0 marks. A deployment already on one of those releases, or on
+a later main, must run `supabase migration up --include-all` once. Without the
+flag the CLI refuses the whole run and names this file; with it, the CLI applies
+this file and then the corrections. The four corrections moved from
+20261019 versions to 20261024200000 through 20261024200300, with unchanged
+bodies, so they sort after installed history. An installation that applied a
+pre-release copy of this branch under the old 20261019 versions must compare its
+migration history before running either command.
+
 **Security dependency update.** Zod moves from 4.4.3 to 4.6.7 for
 GHSA-mrhx-c7xc-m3w5, a memory-exhaustion advisory in validating oversized
 constrained collections; OpenPlan validates request bodies with Zod.

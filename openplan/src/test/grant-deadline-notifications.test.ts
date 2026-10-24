@@ -319,7 +319,7 @@ describe("rollout batch classification across existing award kinds", () => {
       title: "Same award", spending_status: "active", obligation_due_at: due, expenditure_deadline_at: due,
       awarded_amount: 100, match_amount: 0, match_posture: "not_required" };
     const db = new FakeWorkDb({ tables: {
-      funding_awards: [award], workspaces: [{ id: workspace, time_zone: "UTC", name: "Synthetic workspace" }],
+      legacy_calendar_funding_awards: [award], workspaces: [{ id: workspace, time_zone: "UTC", name: "Synthetic workspace" }],
       project_deliverables: [{ id: "deliverable", project_id: project, assignee_user_id: creator, title: "Unrelated deliverable",
         due_date: "2026-10-19", status: "in_progress", projects: { id: project, workspace_id: workspace, name: "Synthetic project" } }],
     }, ...options });
@@ -336,6 +336,10 @@ describe("rollout batch classification across existing award kinds", () => {
       kind: retainedKind, due_on: "2026-10-19", title: "Retained old title", body: "Retained old body", project_id: project };
     if (retainedKind) db.notifications.push({ ...retained });
     const result = await run();
+    expect(db.reads.filter((read) => read.table === "legacy_calendar_funding_awards").map((read) => read.select)).toEqual([
+      "id, workspace_id, project_id, title, obligation_due_at, spending_status, closure_basis, created_by",
+      "id, workspace_id, project_id, title, expenditure_deadline_at, spending_status, awarded_amount, match_amount, match_posture, created_by",
+    ]);
     expect(result.writeError).toBeNull();
     expect(result.notificationsCreated).toBe(retainedKind ? 1 : 2);
     expect(result.notificationsAlreadyPresent).toBe(retainedKind ? 1 : 0);
@@ -442,7 +446,7 @@ describe("rollout batch classification across existing award kinds", () => {
     const milestones = Array.from({ length: 400 }, (_, i) => ({ ...common, id: id(i + 601), title: `Milestone ${i}`, target_date: "2026-10-19" }));
     const submittal = { ...common, id: id(1001), title: "Only new submittal", status: "draft", due_date: "2026-10-19" };
     const db = new FakeWorkDb({ reminderStage, rpcMaxRows, tables: {
-      project_deliverables: deliverables, project_milestones: milestones, project_submittals: [submittal],
+      project_deliverables: deliverables, active_project_milestones: milestones, active_project_submittals: [submittal],
       workspaces: [{ id: workspace, time_zone: "UTC", name: "Cap fixture" }],
     } });
     db.notifications.push(...[...deliverables, ...milestones].map((row, i) => ({ workspace_id: workspace, recipient_user_id: creator,

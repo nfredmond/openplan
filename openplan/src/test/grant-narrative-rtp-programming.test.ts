@@ -22,7 +22,7 @@ import {
  * from "reads everything" would prove nothing.
  */
 
-type ReadResult = { data: unknown; error: { message: string } | null };
+type ReadResult = { data: unknown; error: { message: string } | null; count?: number | null };
 
 const OPPORTUNITY_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const WORKSPACE_ID = "33333333-3333-4333-8333-333333333333";
@@ -113,10 +113,18 @@ function clientResolving(resolve: Resolver) {
     inFiltersByTable,
     from(table: string) {
       let columns = "";
+      let exactCount = false;
+      const answer = (): ReadResult => {
+        const result = resolve(table, columns, inFilters);
+        return exactCount && Array.isArray(result.data) && !Object.hasOwn(result, "count")
+          ? { ...result, count: result.data.length }
+          : result;
+      };
       const inFilters: Record<string, unknown[]> = {};
       const chain: Record<string, unknown> = {
-        select: (cols: string) => {
+        select: (cols: string, options?: { count?: "exact" }) => {
           columns = cols;
+          exactCount = options?.count === "exact";
           return chain;
         },
         in: (column: string, values: unknown[]) => {
@@ -124,9 +132,9 @@ function clientResolving(resolve: Resolver) {
           inFiltersByTable[table] = inFilters;
           return chain;
         },
-        maybeSingle: () => Promise.resolve(resolve(table, columns, inFilters)),
+        maybeSingle: () => Promise.resolve(answer()),
         then: (ok: (value: unknown) => unknown, err?: (reason: unknown) => unknown) =>
-          Promise.resolve(resolve(table, columns, inFilters)).then(ok, err),
+          Promise.resolve(answer()).then(ok, err),
       };
       for (const method of ["eq", "neq", "not", "order", "limit"]) {
         chain[method] = () => chain;
