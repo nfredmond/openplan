@@ -750,6 +750,14 @@ describe("migration policy inventory", () => {
     expect(() => expandDynamicPolicyStatements("fixture.sql", fixture(
       "EXECUTE format('CREATE POLICY %I ON alpha FOR SELECT USING (true)', 'x; DROP TABLE alpha');"
     ))).toThrow(UnexpandableDynamicSqlError);
+    // %s renders a loop value verbatim, so only an explicit ::regclass cell may
+    // carry a schema qualifier. A bare dotted literal stays unexpandable.
+    const qualified = (cell: string) => fixture(`FOREACH t IN ARRAY ARRAY[${cell}] LOOP EXECUTE format('ALTER TABLE %s ENABLE ROW LEVEL SECURITY', t); END LOOP;`);
+    expect(expandDynamicRlsStatements("fixture.sql", qualified("'public.alpha'::regclass")).map((row) => row.sql)).toEqual([
+      "ALTER TABLE public.alpha ENABLE ROW LEVEL SECURITY;",
+    ]);
+    expect(() => expandDynamicRlsStatements("fixture.sql", qualified("'public.alpha'"))).toThrow(UnexpandableDynamicSqlError);
+    expect(() => expandDynamicRlsStatements("fixture.sql", qualified("'public.alpha; DROP TABLE beta'::regclass"))).toThrow(UnexpandableDynamicSqlError);
     const copyBlock = blankComments(readMigration("20261021215752_assistant_chat_turns.sql")).match(/DO \$body\$[\s\S]*?END \$body\$;/)![0];
     const sourcePolicies = [
       { table: "projects", command: "SELECT", kind: "RESTRICTIVE", roles: ["authenticated"], body: "USING (workspace_id IN (SELECT workspace_id FROM public.workspace_members))" },
