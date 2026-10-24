@@ -1,0 +1,8 @@
+{
+  "recorded_unix": 1792828005.2260516,
+  "source_sha256": "6539138e6ddd9f1002f851aec2d0f9b80769f2ebc4e981aaf487c3e1d1238ff8",
+  "criterion_sha256": "34920894dbec93f53343b7ff31884756f5718020a3d4e70a5492b752ce513b38",
+  "reason": "The first absent-checkpoint restore overwrote the coalesced inventory with init. The copied inventory therefore also lacked mp_households. Preserve both failures, repeat into a new directory, then validate inventory before restoring the correctly named checkpoint.",
+  "models_changed": false,
+  "outcomes_accessed": false
+}

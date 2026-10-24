@@ -1,0 +1,246 @@
+{
+  "runs": [
+    {
+      "name": "mp4-current-prefix",
+      "outer_elapsed_seconds": 141.24700859299628,
+      "exit_code": 0,
+      "elapsed_seconds": 141.08363314397866,
+      "scope": {
+        "memory.peak": "2868314112",
+        "memory.max": "17179869184",
+        "memory.swap.max": "0",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+      },
+      "processes": [
+        {
+          "pid": 1841181,
+          "name": "unlabelled",
+          "sampled_rss_peak_bytes": 16928768,
+          "observed_vmhwm_bytes": 16928768
+        },
+        {
+          "pid": 1841184,
+          "name": "MainProcess",
+          "sampled_rss_peak_bytes": 374845440,
+          "observed_vmhwm_bytes": 374845440
+        },
+        {
+          "pid": 1841470,
+          "name": "mp_initialize",
+          "sampled_rss_peak_bytes": 1600024576,
+          "observed_vmhwm_bytes": 1703022592
+        },
+        {
+          "pid": 1842527,
+          "name": "mp_households_0",
+          "sampled_rss_peak_bytes": 458395648,
+          "observed_vmhwm_bytes": 479535104
+        },
+        {
+          "pid": 1842531,
+          "name": "mp_households_1",
+          "sampled_rss_peak_bytes": 454455296,
+          "observed_vmhwm_bytes": 475951104
+        },
+        {
+          "pid": 1842534,
+          "name": "mp_households_2",
+          "sampled_rss_peak_bytes": 465293312,
+          "observed_vmhwm_bytes": 479887360
+        },
+        {
+          "pid": 1842548,
+          "name": "mp_households_3",
+          "sampled_rss_peak_bytes": 459157504,
+          "observed_vmhwm_bytes": 479674368
+        }
+      ],
+      "measurement_limits": "One-second per-PID observations can miss terminal peaks. VmHWM is the kernel lifetime high-water mark observed at sampling time. RSS includes shared pages; summed RSS is not cgroup memory. The monitor stage label recognizes some Running messages but misses #run_model boundaries, so no stage-group acceptance derives from it."
+    },
+    {
+      "name": "mp4-current-suffix-r2",
+      "outer_elapsed_seconds": 1.954169663018547,
+      "exit_code": 99,
+      "elapsed_seconds": 1.8769617570214905,
+      "scope": {
+        "memory.peak": "217133056",
+        "memory.max": "17179869184",
+        "memory.swap.max": "0",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+      },
+      "processes": [
+        {
+          "pid": 1859768,
+          "name": "unlabelled",
+          "sampled_rss_peak_bytes": 16797696,
+          "observed_vmhwm_bytes": 16797696
+        },
+        {
+          "pid": 1859777,
+          "name": "unlabelled",
+          "sampled_rss_peak_bytes": 293974016,
+          "observed_vmhwm_bytes": 293974016
+        }
+      ],
+      "measurement_limits": "One-second per-PID observations can miss terminal peaks. VmHWM is the kernel lifetime high-water mark observed at sampling time. RSS includes shared pages; summed RSS is not cgroup memory. The monitor stage label recognizes some Running messages but misses #run_model boundaries, so no stage-group acceptance derives from it."
+    },
+    {
+      "name": "mp4-current-suffix",
+      "outer_elapsed_seconds": 2.350683177995961,
+      "exit_code": 99,
+      "elapsed_seconds": 2.272636248031631,
+      "scope": {
+        "memory.peak": "218513408",
+        "memory.max": "17179869184",
+        "memory.swap.max": "0",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+      },
+      "processes": [
+        {
+          "pid": 1853797,
+          "name": "unlabelled",
+          "sampled_rss_peak_bytes": 16748544,
+          "observed_vmhwm_bytes": 16748544
+        },
+        {
+          "pid": 1853800,
+          "name": "MainProcess",
+          "sampled_rss_peak_bytes": 359018496,
+          "observed_vmhwm_bytes": 359018496
+        }
+      ],
+      "measurement_limits": "One-second per-PID observations can miss terminal peaks. VmHWM is the kernel lifetime high-water mark observed at sampling time. RSS includes shared pages; summed RSS is not cgroup memory. The monitor stage label recognizes some Running messages but misses #run_model boundaries, so no stage-group acceptance derives from it."
+    },
+    {
+      "name": "mp4-r3-current-prefix",
+      "outer_elapsed_seconds": 140.6568028779584,
+      "exit_code": 0,
+      "elapsed_seconds": 140.5727383949561,
+      "scope": {
+        "memory.peak": "2625507328",
+        "memory.max": "17179869184",
+        "memory.swap.max": "0",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+      },
+      "processes": [
+        {
+          "pid": 1864904,
+          "name": "unlabelled",
+          "sampled_rss_peak_bytes": 16601088,
+          "observed_vmhwm_bytes": 16601088
+        },
+        {
+          "pid": 1864914,
+          "name": "MainProcess",
+          "sampled_rss_peak_bytes": 382672896,
+          "observed_vmhwm_bytes": 382672896
+        },
+        {
+          "pid": 1865170,
+          "name": "mp_initialize",
+          "sampled_rss_peak_bytes": 1701949440,
+          "observed_vmhwm_bytes": 1701949440
+        },
+        {
+          "pid": 1865954,
+          "name": "mp_households_0",
+          "sampled_rss_peak_bytes": 466980864,
+          "observed_vmhwm_bytes": 480808960
+        },
+        {
+          "pid": 1865957,
+          "name": "mp_households_1",
+          "sampled_rss_peak_bytes": 467099648,
+          "observed_vmhwm_bytes": 476078080
+        },
+        {
+          "pid": 1865960,
+          "name": "mp_households_2",
+          "sampled_rss_peak_bytes": 467177472,
+          "observed_vmhwm_bytes": 478429184
+        },
+        {
+          "pid": 1865969,
+          "name": "mp_households_3",
+          "sampled_rss_peak_bytes": 468946944,
+          "observed_vmhwm_bytes": 480145408
+        }
+      ],
+      "measurement_limits": "One-second per-PID observations can miss terminal peaks. VmHWM is the kernel lifetime high-water mark observed at sampling time. RSS includes shared pages; summed RSS is not cgroup memory. The monitor stage label recognizes some Running messages but misses #run_model boundaries, so no stage-group acceptance derives from it."
+    },
+    {
+      "name": "mp4-r3-current-suffix",
+      "outer_elapsed_seconds": 10.778121316980105,
+      "exit_code": 0,
+      "elapsed_seconds": 10.650875668041408,
+      "scope": {
+        "memory.peak": "345870336",
+        "memory.max": "17179869184",
+        "memory.swap.max": "0",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+      },
+      "processes": [
+        {
+          "pid": 1877021,
+          "name": "unlabelled",
+          "sampled_rss_peak_bytes": 16867328,
+          "observed_vmhwm_bytes": 16867328
+        },
+        {
+          "pid": 1877024,
+          "name": "MainProcess",
+          "sampled_rss_peak_bytes": 506175488,
+          "observed_vmhwm_bytes": 524685312
+        }
+      ],
+      "measurement_limits": "One-second per-PID observations can miss terminal peaks. VmHWM is the kernel lifetime high-water mark observed at sampling time. RSS includes shared pages; summed RSS is not cgroup memory. The monitor stage label recognizes some Running messages but misses #run_model boundaries, so no stage-group acceptance derives from it."
+    }
+  ],
+  "parity": {
+    "current": "failed_exact_parity_six_logsum_cells",
+    "semcog": "not_run_after_current_failure"
+  },
+  "full": {
+    "current": {
+      "status": "not_run_after_parity_failure",
+      "households": 1060601,
+      "persons": 2617177,
+      "zones": 634,
+      "tours": null,
+      "trips": null,
+      "mode_shares_MODELED": null,
+      "strata_MODELED": null,
+      "final_hashes": {}
+    },
+    "semcog": {
+      "status": "not_run_after_parity_failure",
+      "households": 1060601,
+      "persons": 2617177,
+      "zones": 634,
+      "tours": null,
+      "trips": null,
+      "mode_shares_MODELED": null,
+      "strata_MODELED": null,
+      "final_hashes": {}
+    }
+  },
+  "subset_counts": {
+    "households": 2000,
+    "persons": 4971,
+    "zones": 634,
+    "tours": 6763,
+    "trips": 17377,
+    "joint_participants": 274
+  },
+  "completed_current_subset_hashes": {
+    "final_accessibility.csv": "68a89df0318674b3610ea77e4dcf681b4fcf339d6e17de89cb3b125478d56139",
+    "final_households.csv": "f1830141d31d7f267d36bc965349728e70d66d9526e952ae2a3b2bc711f5096b",
+    "final_joint_tour_participants.csv": "f0250a45f96ae34e5755b56f8dc2b0dfe1ac4b95164d2a855e303f9d3bdb6887",
+    "final_land_use.csv": "a74feed4d6ceeab4c953c5ed3b48cafc0805b24c80f825d196f361ac092ccb94",
+    "final_persons.csv": "346fb5f208d80fc3a76d348a7661dddb9dfb98a58e02eb136ab4b544f77ea42d",
+    "final_tours.csv": "7646d44952ecc53862fff72eee8ba5b4ea03d611c02f12114a2bf8d400eedc22",
+    "final_trips.csv": "118d21292c9fd9e244a293bc2498618d3d1fd5a74c75a135f6cbf8dd46fbbd8e"
+  },
+  "outcomes_accessed": false,
+  "no_further_engine_run_after_numeric_failure": true
+}

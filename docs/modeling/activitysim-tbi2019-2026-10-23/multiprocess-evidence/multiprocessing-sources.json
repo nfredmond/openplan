@@ -1,0 +1,26 @@
+[
+  {
+    "url": "https://raw.githubusercontent.com/ActivitySim/activitysim/v1.5.1/docs/users-guide/performance/multiprocessing.md",
+    "sha256": "9af52ab64b13f19585db3cf52afb79c8c1dd8ecbe82df9f11ac2ef5b8a7a58c6",
+    "bytes": 3101,
+    "accessed_utc": "2026-10-24",
+    "installed_sha256": "9af52ab64b13f19585db3cf52afb79c8c1dd8ecbe82df9f11ac2ef5b8a7a58c6",
+    "installed_exact": true
+  },
+  {
+    "url": "https://raw.githubusercontent.com/ActivitySim/activitysim/v1.5.1/activitysim/core/mp_tasks.py",
+    "sha256": "78c8b42ff37bdfe9d68cf1f4c8faf6461414e9f56c9b554a437e26304264f030",
+    "bytes": 84537,
+    "accessed_utc": "2026-10-24",
+    "installed_sha256": "78c8b42ff37bdfe9d68cf1f4c8faf6461414e9f56c9b554a437e26304264f030",
+    "installed_exact": true
+  },
+  {
+    "url": "https://raw.githubusercontent.com/ActivitySim/activitysim/v1.5.1/activitysim/examples/prototype_mtc/configs_mp/settings.yaml",
+    "sha256": "82a5275db5f584d8482230d3e94dad98fb47283747527ead679ac1ea71ef15db",
+    "bytes": 2355,
+    "accessed_utc": "2026-10-24",
+    "installed_sha256": "82a5275db5f584d8482230d3e94dad98fb47283747527ead679ac1ea71ef15db",
+    "installed_exact": true
+  }
+]

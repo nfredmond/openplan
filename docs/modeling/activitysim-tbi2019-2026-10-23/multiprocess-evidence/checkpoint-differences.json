@@ -1,0 +1,159 @@
+[
+  {
+    "table": "tours",
+    "step": "non_mandatory_tour_scheduling",
+    "rows": 6113,
+    "identical_index": true,
+    "identical_columns": true,
+    "different_cells": 0,
+    "different_records": 0,
+    "cells": []
+  },
+  {
+    "table": "tours",
+    "step": "tour_mode_choice_simulate",
+    "rows": 6113,
+    "identical_index": true,
+    "identical_columns": true,
+    "different_cells": 3,
+    "different_records": 3,
+    "cells": [
+      {
+        "id": 118630948,
+        "field": "mode_choice_logsum",
+        "reference": 0.5025382481544909,
+        "candidate": 0.5025382481544911,
+        "reference_hex": "0x1.014cb179a0166p-1",
+        "candidate_hex": "0x1.014cb179a0168p-1",
+        "absolute_difference": 2.220446049250313e-16,
+        "max_ulp_difference": 2.0
+      },
+      {
+        "id": 119205787,
+        "field": "mode_choice_logsum",
+        "reference": 0.6034053884393223,
+        "candidate": 0.6034053884393225,
+        "reference_hex": "0x1.34f18d1327753p-1",
+        "candidate_hex": "0x1.34f18d1327754p-1",
+        "absolute_difference": 1.1102230246251565e-16,
+        "max_ulp_difference": 1.0
+      },
+      {
+        "id": 119341311,
+        "field": "mode_choice_logsum",
+        "reference": -0.4632975893614433,
+        "candidate": -0.4632975893614431,
+        "reference_hex": "-0x1.da6aaeea7dfd4p-2",
+        "candidate_hex": "-0x1.da6aaeea7dfd1p-2",
+        "absolute_difference": 1.6653345369377348e-16,
+        "max_ulp_difference": 3.0
+      }
+    ]
+  },
+  {
+    "table": "trips",
+    "step": "trip_purpose",
+    "rows": 17377,
+    "identical_index": true,
+    "identical_columns": true,
+    "different_cells": 0,
+    "different_records": 0,
+    "cells": []
+  },
+  {
+    "table": "trips",
+    "step": "trip_destination",
+    "rows": 17377,
+    "identical_index": true,
+    "identical_columns": true,
+    "different_cells": 2,
+    "different_records": 2,
+    "cells": [
+      {
+        "id": 42672878,
+        "field": "destination_logsum",
+        "reference": 10.561189505765524,
+        "candidate": 10.561189505765523,
+        "reference_hex": "0x1.51f543b1c3e1fp+3",
+        "candidate_hex": "0x1.51f543b1c3e1ep+3",
+        "absolute_difference": 1.7763568394002505e-15,
+        "max_ulp_difference": 1.0
+      },
+      {
+        "id": 576278866,
+        "field": "destination_logsum",
+        "reference": 1.760076682156945,
+        "candidate": 1.7600766821569451,
+        "reference_hex": "0x1.c29462ac50f6cp+0",
+        "candidate_hex": "0x1.c29462ac50f6dp+0",
+        "absolute_difference": 2.220446049250313e-16,
+        "max_ulp_difference": 1.0
+      }
+    ]
+  },
+  {
+    "table": "trips",
+    "step": "trip_purpose_and_destination",
+    "rows": 17377,
+    "identical_index": true,
+    "identical_columns": true,
+    "different_cells": 2,
+    "different_records": 2,
+    "cells": [
+      {
+        "id": 42672878,
+        "field": "destination_logsum",
+        "reference": 10.561189505765524,
+        "candidate": 10.561189505765523,
+        "reference_hex": "0x1.51f543b1c3e1fp+3",
+        "candidate_hex": "0x1.51f543b1c3e1ep+3",
+        "absolute_difference": 1.7763568394002505e-15,
+        "max_ulp_difference": 1.0
+      },
+      {
+        "id": 576278866,
+        "field": "destination_logsum",
+        "reference": 1.760076682156945,
+        "candidate": 1.7600766821569451,
+        "reference_hex": "0x1.c29462ac50f6cp+0",
+        "candidate_hex": "0x1.c29462ac50f6dp+0",
+        "absolute_difference": 2.220446049250313e-16,
+        "max_ulp_difference": 1.0
+      }
+    ]
+  },
+  {
+    "table": "trips",
+    "step": "trip_scheduling",
+    "rows": 17377,
+    "same_row_order": false,
+    "trip_953782221_row_positions": [
+      17284,
+      8597
+    ],
+    "different_cells": 2,
+    "different_records": 2,
+    "cells": [
+      {
+        "id": 42672878,
+        "field": "destination_logsum",
+        "reference": 10.561189505765524,
+        "candidate": 10.561189505765523,
+        "reference_hex": "0x1.51f543b1c3e1fp+3",
+        "candidate_hex": "0x1.51f543b1c3e1ep+3",
+        "absolute_difference": 1.7763568394002505e-15,
+        "max_ulp_difference": 1.0
+      },
+      {
+        "id": 576278866,
+        "field": "destination_logsum",
+        "reference": 1.760076682156945,
+        "candidate": 1.7600766821569451,
+        "reference_hex": "0x1.c29462ac50f6cp+0",
+        "candidate_hex": "0x1.c29462ac50f6dp+0",
+        "absolute_difference": 2.220446049250313e-16,
+        "max_ulp_difference": 1.0
+      }
+    ]
+  }
+]

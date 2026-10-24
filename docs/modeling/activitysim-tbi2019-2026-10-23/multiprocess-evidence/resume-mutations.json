@@ -1,0 +1,59 @@
+{
+  "source_hashes": {
+    "resume.py": "45c4b577550a013b4ebba1c2278ac8368fd4ba99a4bdc7f7d07db6378f453461",
+    "replay.py": "6539138e6ddd9f1002f851aec2d0f9b80769f2ebc4e981aaf487c3e1d1238ff8"
+  },
+  "source_unchanged": true,
+  "controls": [
+    {
+      "name": "harmless_comment",
+      "survivor": true,
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skips": 0,
+      "accepted": true,
+      "detail": "......\n----------------------------------------------------------------------\nRan 6 tests in 0.086s\n\nOK\n"
+    },
+    {
+      "name": "disable_checkpoint_guard",
+      "survivor": false,
+      "tests": 6,
+      "failures": 1,
+      "errors": 0,
+      "skips": 0,
+      "accepted": true,
+      "detail": "..F...\n======================================================================\nFAIL: test_refuse_missing_checkpoint (recovery_tests.Recovery.test_refuse_missing_checkpoint)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-abed4eb8/docs/modeling/activitysim-tbi2019-2026-10-23/multiprocess-evidence/test-resume.py\", line 33, in test_refuse_missing_checkpoint\n    with self.assertRaisesRegex(RuntimeError,'Missing coalesced checkpoint'):\nAssertionError: RuntimeError not raised\n\n----------------------------------------------------------------------\nRan 6 tests in 0.082s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "swallow_parity_failure",
+      "survivor": false,
+      "tests": 6,
+      "failures": 1,
+      "errors": 0,
+      "skips": 0,
+      "accepted": true,
+      "detail": ".F....\n======================================================================\nFAIL: test_parity_failure_stops_replay (recovery_tests.Recovery.test_parity_failure_stops_replay)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-abed4eb8/docs/modeling/activitysim-tbi2019-2026-10-23/multiprocess-evidence/test-resume.py\", line 57, in test_parity_failure_stops_replay\n    with self.assertRaisesRegex(AssertionError,'synthetic parity failure'):\nAssertionError: AssertionError not raised\n\n----------------------------------------------------------------------\nRan 6 tests in 0.085s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "disable_suffix_guard",
+      "survivor": false,
+      "tests": 6,
+      "failures": 5,
+      "errors": 0,
+      "skips": 0,
+      "accepted": true,
+      "detail": "...FFFFF..\n======================================================================\nFAIL: test_refuse_wrong_suffix (recovery_tests.Recovery.test_refuse_wrong_suffix) (key='resume_after')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-abed4eb8/docs/modeling/activitysim-tbi2019-2026-10-23/multiprocess-evidence/test-resume.py\", line 24, in test_refuse_wrong_suffix\n    with self.assertRaisesRegex(RuntimeError,'Suffix must restore'):\nAssertionError: RuntimeError not raised\n\n======================================================================\nFAIL: test_refuse_wrong_suffix (recovery_tests.Recovery.test_refuse_wrong_suffix) (key='models')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-abed4eb8/docs/modeling/activitysim-tbi2019-2026-10-23/multiprocess-evidence/test-resume.py\", line 24, in test_refuse_wrong_suffix\n    with self.assertRaisesRegex(RuntimeError,'Suffix must restore'):\nAssertionError: RuntimeError not raised\n\n======================================================================\nFAIL: test_refuse_wrong_suffix (recovery_tests.Recovery.test_refuse_wrong_suffix) (key='multiprocess')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-abed4eb8/docs/modeling/activitysim-tbi2019-2026-10-23/multiprocess-evidence/test-resume.py\", line 24, in test_refuse_wrong_suffix\n    with self.assertRaisesRegex(RuntimeError,'Suffix must restore'):\nAssertionError: RuntimeError not raised\n\n======================================================================\nFAIL: test_refuse_wrong_suffix (recovery_tests.Recovery.test_refuse_wrong_suffix) (key='chunk_size')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-abed4eb8/docs/modeling/activitysim-tbi2019-2026-10-23/multiprocess-evidence/test-resume.py\", line 24, in test_refuse_wrong_suffix\n    with self.assertRaisesRegex(RuntimeError,'Suffix must restore'):\nAssertionError: RuntimeError not raised\n\n======================================================================\nFAIL: test_refuse_wrong_suffix (recovery_tests.Recovery.test_refuse_wrong_suffix) (key='chunk_training_mode')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-abed4eb8/docs/modeling/activitysim-tbi2019-2026-10-23/multiprocess-evidence/test-resume.py\", line 24, in test_refuse_wrong_suffix\n    with self.assertRaisesRegex(RuntimeError,'Suffix must restore'):\nAssertionError: RuntimeError not raised\n\n----------------------------------------------------------------------\nRan 6 tests in 0.083s\n\nFAILED (failures=5)\n"
+    },
+    {
+      "name": "disable_copy_custody",
+      "survivor": false,
+      "tests": 6,
+      "failures": 1,
+      "errors": 0,
+      "skips": 0,
+      "accepted": true,
+      "detail": "F.....\n======================================================================\nFAIL: test_copy_custody_refuses_changed_bytes (recovery_tests.Recovery.test_copy_custody_refuses_changed_bytes)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-abed4eb8/docs/modeling/activitysim-tbi2019-2026-10-23/multiprocess-evidence/test-resume.py\", line 48, in test_copy_custody_refuses_changed_bytes\n    with self.assertRaisesRegex(RuntimeError,'Copied checkpoint custody differs'):\nAssertionError: RuntimeError not raised\n\n----------------------------------------------------------------------\nRan 6 tests in 0.081s\n\nFAILED (failures=1)\n"
+    }
+  ]
+}

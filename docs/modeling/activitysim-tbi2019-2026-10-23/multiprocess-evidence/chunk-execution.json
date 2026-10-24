@@ -1,0 +1,32 @@
+{
+  "source_private_file": "/home/nathaniel/.local/state/openplan/tbi2019-multiprocess-20261024/mp4-r3-current-prefix.engine.log",
+  "processes": {
+    "mp_initialize": {
+      "pid": 1865170,
+      "chunk_records": 2,
+      "maximum_chunk": 2
+    },
+    "mp_households_0": {
+      "pid": 1865954,
+      "chunk_records": 240,
+      "maximum_chunk": 1
+    },
+    "mp_households_1": {
+      "pid": 1865957,
+      "chunk_records": 244,
+      "maximum_chunk": 1
+    },
+    "mp_households_2": {
+      "pid": 1865960,
+      "chunk_records": 246,
+      "maximum_chunk": 1
+    },
+    "mp_households_3": {
+      "pid": 1865969,
+      "chunk_records": 246,
+      "maximum_chunk": 1
+    }
+  },
+  "training_fallback": false,
+  "household_multichunk_execution_proved": false
+}

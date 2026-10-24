@@ -1013,3 +1013,184 @@ resource failure.
    fields for the frozen in-scope IDs. Evaluate each ActivitySim arm independently
    against its preregistered gates. Keep held-out outcomes closed and AequilibraE
    separate. No scientific acceptance or default change follows from this run.
+
+## October 24, 2026 UTC: four-process exact parity fails on six logsum cells
+
+**The current arm fails the requested exact seven-table gate. Execution stops
+before the SEMCOG subset and both full arms.** Six modeled logsum cells differ
+by one to three ULP. Every other exported value, row identity, row count and
+dtype matches the current arm's retained single-process unchunked reference.
+No logsum tolerance is adopted. The older choice-level admission does not
+override this round's stricter criterion. No survey outcome is accessed.
+
+### Configuration and custody
+
+The [criterion recorded before execution](multiprocess-evidence/criterion-before-run.json)
+fixes the same 2,000 households, 4,971 persons, 634 destinations and RNG seed
+zero. The original seven reference-file hashes pass revalidation. Runtime stays
+CPython 3.11.15, ActivitySim 1.5.1, NumPy 1.25.2 and pandas 2.3.3. The worker
+virtual environment resolves to the installed CPython 3.11 interpreter.
+
+The candidate sets `multiprocess: true`, `num_processes: 4` and `fail_fast: true`.
+Its `mp_initialize` group runs land-use initialization, household initialization
+and accessibility in one process. `mp_households` starts at `school_location`
+and slices `households`, then dependent `persons`, across four processes. It
+continues through `trip_purpose_and_destination`. Each group explicitly sets
+`chunk_size: 268435456`; the household group therefore keeps a 256 MiB target
+per process rather than dividing the global target by four. Production mode,
+the frozen cache, 0.05 minimum ratio, file-backed skims and allocator settings
+remain explicit. Both downcast settings remain false. Each scope applies
+`MemoryMax=16G` and `MemorySwapMax=0` to all descendants.
+
+The [v1.5.1 user guide](https://github.com/ActivitySim/activitysim/blob/v1.5.1/docs/users-guide/performance/multiprocessing.md)
+documents process counts and model groups. The
+[stock example](https://github.com/ActivitySim/activitysim/blob/v1.5.1/activitysim/examples/prototype_mtc/configs_mp/settings.yaml#L77-L94)
+provides the household/person slicing pattern. The
+[slicing implementation](https://github.com/ActivitySim/activitysim/blob/v1.5.1/activitysim/core/mp_tasks.py#L352-L513)
+derives dependent-table slices; the
+[chunk-size implementation](https://github.com/ActivitySim/activitysim/blob/v1.5.1/activitysim/core/mp_tasks.py#L1992-L2001)
+honors an explicit group target. Installed multiprocessing source and example
+bytes match the upstream tag. [Source custody](multiprocess-evidence/multiprocessing-sources.json)
+retains URLs, access date and hashes.
+
+The prefix uses the production cache without a training fallback. Accessibility
+runs two chunks. Each 500-household worker runs single chunks within its slice:
+240, 244, 246 and 246 logged chunk calls, with maximum chunk ordinal one in
+each worker. The inherited global split guard sees the accessibility split; it
+does not prove multi-chunk household execution. That household-chunk evidence
+remains unproved and cannot be inferred from the configured target.
+
+The suffix uses `multiprocess: false`, disabled chunking and chunk size zero.
+It restores `mp_households` and explicitly runs the unchanged model list from
+`trip_scheduling` onward. Trip scheduling is neither sliced nor chunked.
+The [coalescing implementation](https://github.com/ActivitySim/activitysim/blob/v1.5.1/activitysim/core/mp_tasks.py#L752-L870)
+concatenates dependent tables in process order. It preserves identity but
+changes row order from the single-process reference.
+
+### Setup failures remain separate from numeric parity
+
+The first prefix completes, but the inherited suffix requests the checkpoint
+`trip_purpose_and_destination`. Stock multiprocessing saves its final checkpoint
+under the group name `mp_households`. The absent-checkpoint restore leaves an
+`init`-only inventory, and scheduling fails with
+`context['trips'] doesn't exist`. A copied checkpoint therefore also lacks the
+expected inventory and produces the same setup failure. Neither attempt reaches
+a numerical comparison. Both logs, configurations and failed inventories remain
+retained.
+
+The corrected controller repeats the unchanged prefix into a new directory,
+checks that `mp_households` exists, then restores that checkpoint with the
+explicit suffix list. This prefix and suffix complete. The two failed suffixes
+remain setup failures, not successful parity checks. No engine source or
+checkpoint contents are patched. [Recovery freeze](multiprocess-evidence/resume-before-run.json)
+and [replay freeze](multiprocess-evidence/replay-before-run.json) precede those
+attempts and preserve the exact criterion.
+
+### Exact differing records and mechanism boundary
+
+These are synthetic model IDs, not respondent IDs.
+
+| Table and field | ID | Unchunked reference | Four-process candidate | ULP difference |
+|---|---:|---:|---:|---:|
+| Tours, mode_choice_logsum | 118630948 | 0.5025382481544909 | 0.5025382481544911 | 2 |
+| Tours, mode_choice_logsum | 119205787 | 0.6034053884393223 | 0.6034053884393225 | 1 |
+| Tours, mode_choice_logsum | 119341311 | -0.4632975893614433 | -0.4632975893614431 | 3 |
+| Trips, destination_logsum | 42672878 | 10.561189505765524 | 10.561189505765523 | 1 |
+| Trips, destination_logsum | 576278866 | 1.760076682156945 | 1.7600766821569451 | 1 |
+| Trips, mode_choice_logsum | 953782221 | -2.0050712464132023 | -2.005071246413203 | 1 |
+
+[Complete differences](multiprocess-evidence/all-table-differences.json) include
+hexadecimal float encodings and every differing cell across all seven tables.
+Counts remain 6,763 tours, 17,377 trips and 274 joint participants. The five
+other tables are exact. All destination, mode and departure choices are exact.
+These facts do not rescue the six failed cells.
+
+Read-only [checkpoint comparisons](multiprocess-evidence/checkpoint-differences.json)
+locate the first retained tour differences at `tour_mode_choice_simulate` and
+the first two trip differences at `trip_destination`. The preceding tour and
+trip checkpoints are exact. Trip scheduling adds no differences. Trip mode
+choice adds the sixth cell in the single-process suffix. For that trip, row
+position changes from 17,284 to 8,597 after coalescing.
+
+The observed execution mechanism changes chooser-array shapes during household
+slicing and row layout during coalescence. ActivitySim computes utilities using
+[NumPy dot products](https://github.com/ActivitySim/activitysim/blob/v1.5.1/activitysim/core/simulate.py#L722-L725)
+and logsums using
+[nested sums, logarithms and exponentials](https://github.com/ActivitySim/activitysim/blob/v1.5.1/activitysim/core/simulate.py#L1094-L1141).
+Shape/order-sensitive floating-point arithmetic is the supported explanation
+for these ULP differences. The retained checkpoints do not isolate the exact
+NumPy instruction that first rounds differently. No additional engine replay
+or tolerance change follows the numeric failure.
+
+### Resource result and sizing limit
+
+| Current 2,000-household execution | Outer elapsed seconds | Kernel cgroup peak bytes | Result |
+|---|---:|---:|---|
+| Initial four-process prefix | 141.247 | 2,868,314,112 | Completed |
+| Initial suffix | 2.351 | 218,513,408 | Missing checkpoint, exit 99 |
+| Copied-checkpoint suffix | 1.954 | 217,133,056 | Missing inventory, exit 99 |
+| Repeated four-process prefix | 140.657 | 2,625,507,328 | Completed |
+| Corrected unchunked suffix | 10.778 | 345,870,336 | Completed; exact comparison fails |
+
+Every scope records zero OOM events and a zero swap limit. The repeated prefix's
+four worker VmHWM observations are 480,808,960; 476,078,080; 478,429,184; and
+480,145,408 bytes. These are kernel process high-water marks observed at
+one-second sampling times, not guaranteed terminal maxima. Shared pages can
+appear in multiple RSS figures. The cgroup peak governs aggregate accounting.
+The monitor misses some `#run_model` stage labels, so this round makes no
+stage-group peak claim from those labels. Raw logs and samples remain retained.
+
+Sizing remains unadmitted for the full population. Four slices would contain
+at most 265,151 households each. Four times the largest observed subset-worker
+VmHWM is 1,923,235,840 bytes, before parent, cache and other scope accounting;
+the actual subset cgroup peak is larger. The earlier killed single-process
+full run reaches 17,179,869,184 bytes, a censored measurement. Dividing that
+figure by four gives 4 GiB per process, and multiplying four concurrent
+processes returns 16 GiB before additional process overhead. Slicing alone does
+not establish an aggregate saving. Neither these subset measurements nor the
+previous OOM yields a defensible full-run upper bound. The parity failure
+prevents a full-population sizing attempt at any process count.
+
+SEMCOG subset parity is **not run after the current-arm failure**. Both full
+arms are **not run**. Full-arm counts, MODELED shares, supported strata and
+final-output hashes remain unavailable. [Run health](multiprocess-evidence/run-health.json)
+retains all attempt receipts, per-process measurements and seven completed
+current-subset output hashes. Full-output hash maps remain empty. Outputs stay
+outside Git under `/home/nathaniel/.local/state/openplan/tbi2019-multiprocess-20261024/`.
+The [private-output custody record](multiprocess-evidence/OUTPUT_CUSTODY.json)
+pins its inventory.
+
+### Verification and remaining frozen-opening work
+
+Scoped verification passes 32 Python tests with zero skips: 14 inherited exact
+and choice comparator tests, 12 controller tests and six recovery tests.
+Fourteen accepted source mutation controls contain two harmless survivors and
+12 intended assertion failures. Mutation namespaces leave source bytes unchanged.
+One earlier cache-guard mutation reaches an incidental missing fixture file;
+that attempt remains retained and excluded. Completing its downstream fixture
+makes the disabled guard fail through the intended assertion. These tests do
+not establish engine parity, full-memory fit, stage-sampler correctness or
+scientific accuracy. [Verification](multiprocess-evidence/VERIFICATION.md) records
+commands and limits.
+
+All 117 original frozen records and 27 pinned installed engine/configuration/
+pandas files retain their hashes. The product-direction check passes with its
+existing dated reminders. No Next.js build, Vitest run, Docker change, hosted
+operation, database operation, coefficient change or default change occurs.
+The PR remains draft.
+
+1. The lead must authorize a successor exact execution design after reviewing
+   these six cells. Preserve this failed gate and complete exact parity for both
+   arms before any full attempt. Then establish aggregate memory fit and complete
+   both full retained-population arms with stage resources and modeled-only health.
+2. Grade population and historical inputs independently. Preserve the four
+   source-conflict exclusions and resolve or preregister fare/cost-year, MVTA,
+   drive-access, period-speed, walk/bicycle, parking and toll limitations.
+3. Freeze observed/model eligibility, homogeneous linked-trip families, diary
+   continuity, university, joint/at-work and quality rules, domains and exclusions.
+4. Freeze separate day-weight-per-tour and trip-weighted estimators, publisher
+   joins, clusters, strata, variance, singleton treatment and simultaneous bounds.
+5. Verify the split and complete custody, then obtain a new lead-owned exclusive
+   opening receipt. Previous synthetic receipts and consumed locks do not apply.
+6. Only a later authorized opening may access approved development outcomes.
+   Keep held-out outcomes closed and AequilibraE separate from ActivitySim.

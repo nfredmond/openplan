@@ -1,0 +1,96 @@
+{
+  "source_sha256": "b7b1bff8cdfb6060799ae97ea623bb6f6a97fd38fb3940bad3e76411899a488a",
+  "source_unchanged": true,
+  "controls": [
+    {
+      "name": "harmless_comment",
+      "expected_survivor": true,
+      "tests": 12,
+      "failures": 0,
+      "errors": 0,
+      "skips": 0,
+      "detail": "............\n----------------------------------------------------------------------\nRan 12 tests in 0.088s\n\nOK\n",
+      "accepted": true
+    },
+    {
+      "name": "disable_suffix_guard",
+      "expected_survivor": false,
+      "tests": 12,
+      "failures": 5,
+      "errors": 0,
+      "skips": 0,
+      "detail": "..........FFFFF\n======================================================================\nFAIL: test_refuse_scheduling_in_prefix (controller_tests.Admission.test_refuse_scheduling_in_prefix)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-abed4eb8/docs/modeling/activitysim-tbi2019-2026-10-23/multiprocess-evidence/test-run.py\", line 27, in test_refuse_scheduling_in_prefix\n    with self.assertRaisesRegex(RuntimeError,'Trip scheduling'):\nAssertionError: RuntimeError not raised\n\n======================================================================\nFAIL: test_refuse_sliced_or_chunked_suffix (controller_tests.Admission.test_refuse_sliced_or_chunked_suffix) (key='multiprocess')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-abed4eb8/docs/modeling/activitysim-tbi2019-2026-10-23/multiprocess-evidence/test-run.py\", line 22, in test_refuse_sliced_or_chunked_suffix\n    with self.assertRaisesRegex(RuntimeError,'Trip scheduling'):\nAssertionError: RuntimeError not raised\n\n======================================================================\nFAIL: test_refuse_sliced_or_chunked_suffix (controller_tests.Admission.test_refuse_sliced_or_chunked_suffix) (key='chunk_size')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-abed4eb8/docs/modeling/activitysim-tbi2019-2026-10-23/multiprocess-evidence/test-run.py\", line 22, in test_refuse_sliced_or_chunked_suffix\n    with self.assertRaisesRegex(RuntimeError,'Trip scheduling'):\nAssertionError: RuntimeError not raised\n\n======================================================================\nFAIL: test_refuse_sliced_or_chunked_suffix (controller_tests.Admission.test_refuse_sliced_or_chunked_suffix) (key='chunk_training_mode')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-abed4eb8/docs/modeling/activitysim-tbi2019-2026-10-23/multiprocess-evidence/test-run.py\", line 22, in test_refuse_sliced_or_chunked_suffix\n    with self.assertRaisesRegex(RuntimeError,'Trip scheduling'):\nAssertionError: RuntimeError not raised\n\n======================================================================\nFAIL: test_refuse_sliced_or_chunked_suffix (controller_tests.Admission.test_refuse_sliced_or_chunked_suffix) (key='resume_after')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-abed4eb8/docs/modeling/activitysim-tbi2019-2026-10-23/multiprocess-evidence/test-run.py\", line 22, in test_refuse_sliced_or_chunked_suffix\n    with self.assertRaisesRegex(RuntimeError,'Trip scheduling'):\nAssertionError: RuntimeError not raised\n\n----------------------------------------------------------------------\nRan 12 tests in 0.087s\n\nFAILED (failures=5)\n",
+      "accepted": true
+    },
+    {
+      "name": "disable_process_guard",
+      "expected_survivor": false,
+      "tests": 12,
+      "failures": 2,
+      "errors": 0,
+      "skips": 0,
+      "detail": "........FF..\n======================================================================\nFAIL: test_refuse_changed_process_count (controller_tests.Admission.test_refuse_changed_process_count)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-abed4eb8/docs/modeling/activitysim-tbi2019-2026-10-23/multiprocess-evidence/test-run.py\", line 32, in test_refuse_changed_process_count\n    with self.assertRaisesRegex(RuntimeError,'Household slicing'):\nAssertionError: RuntimeError not raised\n\n======================================================================\nFAIL: test_refuse_changed_slice (controller_tests.Admission.test_refuse_changed_slice)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-abed4eb8/docs/modeling/activitysim-tbi2019-2026-10-23/multiprocess-evidence/test-run.py\", line 37, in test_refuse_changed_slice\n    with self.assertRaisesRegex(RuntimeError,'Household slicing'):\nAssertionError: RuntimeError not raised\n\n----------------------------------------------------------------------\nRan 12 tests in 0.087s\n\nFAILED (failures=2)\n",
+      "accepted": true
+    },
+    {
+      "name": "disable_engine_custody",
+      "expected_survivor": false,
+      "tests": 12,
+      "failures": 1,
+      "errors": 0,
+      "skips": 0,
+      "detail": ".....F......\n======================================================================\nFAIL: test_prepare_refuses_changed_engine (controller_tests.Admission.test_prepare_refuses_changed_engine)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-abed4eb8/docs/modeling/activitysim-tbi2019-2026-10-23/multiprocess-evidence/test-run.py\", line 77, in test_prepare_refuses_changed_engine\n    with self.assertRaisesRegex(RuntimeError,'Installed source custody mismatch'):\nAssertionError: RuntimeError not raised\n\n----------------------------------------------------------------------\nRan 12 tests in 0.091s\n\nFAILED (failures=1)\n",
+      "accepted": true
+    },
+    {
+      "name": "disable_initial_reference_custody",
+      "expected_survivor": false,
+      "tests": 12,
+      "failures": 1,
+      "errors": 0,
+      "skips": 0,
+      "detail": "......F.....\n======================================================================\nFAIL: test_prepare_refuses_changed_reference (controller_tests.Admission.test_prepare_refuses_changed_reference)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-abed4eb8/docs/modeling/activitysim-tbi2019-2026-10-23/multiprocess-evidence/test-run.py\", line 87, in test_prepare_refuses_changed_reference\n    with self.assertRaisesRegex(RuntimeError,'Reference custody mismatch'):\nAssertionError: RuntimeError not raised\n\n----------------------------------------------------------------------\nRan 12 tests in 0.089s\n\nFAILED (failures=1)\n",
+      "accepted": true
+    },
+    {
+      "name": "disable_frozen_reference_custody",
+      "expected_survivor": false,
+      "tests": 12,
+      "failures": 1,
+      "errors": 0,
+      "skips": 0,
+      "detail": ".......F....\n======================================================================\nFAIL: test_reference_custody (controller_tests.Admission.test_reference_custody)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-abed4eb8/docs/modeling/activitysim-tbi2019-2026-10-23/multiprocess-evidence/test-run.py\", line 46, in test_reference_custody\n    m.compare('current',root)\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-abed4eb8/docs/modeling/activitysim-tbi2019-2026-10-23/multiprocess-evidence/run.py\", line 110, in compare\n    tables=compare_tables(reference['path'],out)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-abed4eb8/scripts/modeling/activitysim_chunk_parity.py\", line 37, in compare_tables\n    raise AssertionError('Final model table census differs from the declared seven tables')\nAssertionError: Final model table census differs from the declared seven tables\n\n----------------------------------------------------------------------\nRan 12 tests in 0.086s\n\nFAILED (failures=1)\n",
+      "accepted": true
+    },
+    {
+      "name": "swallow_exact_failure",
+      "expected_survivor": false,
+      "tests": 12,
+      "failures": 1,
+      "errors": 0,
+      "skips": 0,
+      "detail": "...F........\n======================================================================\nFAIL: test_exact_failure_retained (controller_tests.Admission.test_exact_failure_retained)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-abed4eb8/docs/modeling/activitysim-tbi2019-2026-10-23/multiprocess-evidence/test-run.py\", line 53, in test_exact_failure_retained\n    with self.assertRaisesRegex(AssertionError,'exact cell differs'):\nAssertionError: AssertionError not raised\n\n----------------------------------------------------------------------\nRan 12 tests in 0.086s\n\nFAILED (failures=1)\n",
+      "accepted": true
+    },
+    {
+      "name": "disable_cache_guard",
+      "expected_survivor": false,
+      "tests": 12,
+      "failures": 1,
+      "errors": 0,
+      "skips": 0,
+      "detail": "F...........\n======================================================================\nFAIL: test_cache_refusal_stops_suffix (controller_tests.Admission.test_cache_refusal_stops_suffix)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-abed4eb8/docs/modeling/activitysim-tbi2019-2026-10-23/multiprocess-evidence/test-run.py\", line 98, in test_cache_refusal_stops_suffix\n    with self.assertRaisesRegex(RuntimeError,'Production cache coverage missing'):\nAssertionError: RuntimeError not raised\n\n----------------------------------------------------------------------\nRan 12 tests in 0.088s\n\nFAILED (failures=1)\n",
+      "accepted": true
+    },
+    {
+      "name": "swallow_execution_failure",
+      "expected_survivor": false,
+      "tests": 12,
+      "failures": 3,
+      "errors": 0,
+      "skips": 0,
+      "detail": "F.F.F.......\n======================================================================\nFAIL: test_cache_refusal_stops_suffix (controller_tests.Admission.test_cache_refusal_stops_suffix)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-abed4eb8/docs/modeling/activitysim-tbi2019-2026-10-23/multiprocess-evidence/test-run.py\", line 98, in test_cache_refusal_stops_suffix\n    with self.assertRaisesRegex(RuntimeError,'Production cache coverage missing'):\nAssertionError: RuntimeError not raised\n\n======================================================================\nFAIL: test_engine_failure_stops_before_suffix_and_second_arm (controller_tests.Admission.test_engine_failure_stops_before_suffix_and_second_arm)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-abed4eb8/docs/modeling/activitysim-tbi2019-2026-10-23/multiprocess-evidence/test-run.py\", line 63, in test_engine_failure_stops_before_suffix_and_second_arm\n    with self.assertRaisesRegex(RuntimeError,'synthetic stage failure'):\nAssertionError: RuntimeError not raised\n\n======================================================================\nFAIL: test_parity_failure_stops_second_arm (controller_tests.Admission.test_parity_failure_stops_second_arm)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/home/nathaniel/.t3/worktrees/openplan/t3-abed4eb8/docs/modeling/activitysim-tbi2019-2026-10-23/multiprocess-evidence/test-run.py\", line 109, in test_parity_failure_stops_second_arm\n    with self.assertRaisesRegex(AssertionError,'exact departure differs'):\nAssertionError: AssertionError not raised\n\n----------------------------------------------------------------------\nRan 12 tests in 0.087s\n\nFAILED (failures=3)\n",
+      "accepted": true
+    }
+  ]
+}
