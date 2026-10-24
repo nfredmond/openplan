@@ -148,9 +148,16 @@ const nextConfig: NextConfig = {
     OPENPLAN_BUILD_MIGRATION_VERSIONS: BUILD_MIGRATION_VERSIONS,
   },
   // Reduce webpack's peak build memory on the standard 8 GB hosted builder.
-  // Keep the normal type check and the existing webpack build path.
+  // Keep the existing webpack build path.
   experimental: {
     webpackMemoryOptimizations: true,
+  },
+  // Vercel's builder skips Next's type check, which needs more than 5 GB of
+  // heap on its own and pushed the 8 GB builder out of memory on October 23,
+  // 2026. Every other build keeps it, including the CI QA gate's
+  // `npm run build`, and Vercel promotes only after those checks pass.
+  typescript: {
+    ignoreBuildErrors: process.env.VERCEL === "1",
   },
   // Published evidence lives beside the application package. Trace from the
   // repository root and retain the frozen studies and fixed disclosure metadata.
