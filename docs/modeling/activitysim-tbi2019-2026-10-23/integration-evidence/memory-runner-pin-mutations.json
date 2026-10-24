@@ -1,0 +1,23 @@
+[
+  {
+    "name": "comment",
+    "expected_observed": true,
+    "expected": "survive",
+    "active_source_unchanged": true,
+    "active_source_sha256": "022f3c35e1aa25ff7a570cf62a16aa8c0da36772469a200a25f169c927b05454"
+  },
+  {
+    "name": "version-pin",
+    "expected_observed": true,
+    "expected": "assertion failure",
+    "active_source_unchanged": true,
+    "active_source_sha256": "022f3c35e1aa25ff7a570cf62a16aa8c0da36772469a200a25f169c927b05454"
+  },
+  {
+    "name": "source-pin",
+    "expected_observed": true,
+    "expected": "assertion failure",
+    "active_source_unchanged": true,
+    "active_source_sha256": "022f3c35e1aa25ff7a570cf62a16aa8c0da36772469a200a25f169c927b05454"
+  }
+]

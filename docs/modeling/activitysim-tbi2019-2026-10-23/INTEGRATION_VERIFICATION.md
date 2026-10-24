@@ -255,3 +255,48 @@ now total 105: 12 harmless survivors and 93 intended failures. These counts
 include the unadmitted batching candidate's synthetic controls, not a passing
 native parity result for that candidate. Allocator run completion remains a
 separate native result.
+
+The runner adds three pin tests and three temporary-copy controls: one harmless
+comment survives, and removing either the installed-version or source-hash pin
+fails the intended refusal assertion. Active recipe bytes remain unchanged.
+Cumulative totals are 189 Python tests passed, four stock-path skips, and
+34 TypeScript tests passed; 108 controls comprise 13 harmless survivors and
+95 intended failures. Repeated campaigns do not increase these counts.
+
+The allocator wrapper also passes six native exact comparisons across both
+coefficient arms and high-school, university and work logsum contexts. Each
+uses six synthetic people and seven destination alternatives with the real
+retained LOS. All returned frame values and the next three per-person random
+draws match the original installed function exactly. This fixture completes
+in 51.32 seconds, exit 0, peak RSS 1,774,476 KiB. The fixture's 100 MB adaptive
+chunk target emits memory-headroom warnings; the process stays within its
+6 GiB cap. This does not establish full-population completion or accuracy.
+
+Both final full-population allocator attempts fail at high-school location
+logsums. Current runs 254.732 seconds; SEMCOG runs 257.823 seconds. Each scope
+records `Result=oom-kill`, `MemoryPeak=6442450944`, `MemoryMax=6442450944` and
+`MemorySwapMax=0`. The controller receives exit -15 after the scope kill.
+Final health receipts join those scope results to the original started receipts,
+coefficient/configuration hashes and retained stdout hashes. Completed-tour
+counts and MODELED mode shares remain null. No lower sample, higher cap,
+changed coefficients or relaxed numerical threshold substitutes for completion.
+
+## Final runtime archive custody
+
+The runtime archive retains 515 inventoried files and 2,898,724,157 bytes,
+SHA-256 `81fe67cc0ad74454dfd5a94c21d2497e6236c4958e7581e1f6babaff5d1fafd7`.
+Its inventory SHA-256 is
+`3bb259ae901f888b77a270141fe226ea95e559eff19e3a7beff00d9a3eb1416b`.
+All 516 members, including the embedded inventory, match their declared byte
+lengths and hashes. Verification completes in 21.26 seconds, exit 0, peak RSS
+24,724 KiB, under the same 6 GiB/zero-swap scope. Repeated archive controls pass
+and do not increase the cumulative mutation count. The initial archive remains
+unchanged. Both archives omit TBI outcomes and modeled travel outputs.
+
+The runtime inventory binds the source and documentation bytes present during
+assembly at repository HEAD `2d15de7dca9a76e9a6ca818ec064df14d0d976b0`.
+Final custody and verification reports are external to the archive to avoid
+a self-referential hash. All 117 frozen files and 15 implementation closure
+pins pass the final byte check. Source/authored Markdown/JSON whitespace checks
+pass; captured raw logs retain their original whitespace. CI and independent
+review remain for the parent thread. This draft is not merged.

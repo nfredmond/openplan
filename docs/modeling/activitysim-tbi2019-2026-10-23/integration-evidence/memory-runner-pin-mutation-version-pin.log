@@ -1,0 +1,16 @@
+test_pinned_call (runner_tests.PinTests.test_pinned_call) ... ok
+test_source_refusal (runner_tests.PinTests.test_source_refusal) ... ok
+test_version_refusal (runner_tests.PinTests.test_version_refusal) ... FAIL
+
+======================================================================
+FAIL: test_version_refusal (runner_tests.PinTests.test_version_refusal)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/scripts/modeling/tests/test_activitysim_memory_runner.py", line 22, in test_version_refusal
+    with self.assertRaisesRegex(RuntimeError,'Unadmitted ActivitySim'):self.execute('1.5.2',EXPECTED)
+AssertionError: RuntimeError not raised
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.044s
+
+FAILED (failures=1)

@@ -1,0 +1,9 @@
+test_pinned_call (test_activitysim_memory_runner.PinTests.test_pinned_call) ... {"allocator_reclamation": true, "rss_before": 29196288, "rss_after": 29192192, "gc_objects": 0, "malloc_trim_result": 1}
+ok
+test_source_refusal (test_activitysim_memory_runner.PinTests.test_source_refusal) ... ok
+test_version_refusal (test_activitysim_memory_runner.PinTests.test_version_refusal) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.047s
+
+OK

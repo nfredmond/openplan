@@ -1,0 +1,25 @@
+Running as unit: op-tbi2019-11910f11-runtime-archive.scope; invocation ID: deda658cd0d041598168d573f38d78b8
+{"status": "prepared_executable_not_scientifically_admitted", "archive_path": "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/data/_screening_cache/tbi2019-integration/tbi2019-inputs.runtime.tar.gz", "sha256": "81fe67cc0ad74454dfd5a94c21d2497e6236c4958e7581e1f6babaff5d1fafd7", "bytes": 2898724157, "inventory_sha256": "3bb259ae901f888b77a270141fe226ea95e559eff19e3a7beff00d9a3eb1416b", "files": 515, "created_at": "2026-10-24T01:14:54.490725+00:00", "repository_head_at_archive": "2d15de7dca9a76e9a6ca818ec064df14d0d976b0", "source_closure_note": "Exact implementation bytes are inventoried; repository may contain uncommitted preparation records at archive time.", "outcomes_included": false, "modeled_outputs_included": false, "claim": "supplied artifacts with hashes; not producer authenticated"}
+	Command being timed: "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/bin/python -u -B docs/modeling/activitysim-tbi2019-2026-10-23/integration-evidence/assemble-archive.py --runtime"
+	User time (seconds): 53.17
+	System time (seconds): 4.53
+	Percent of CPU this job got: 91%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:03.17
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 24848
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 6
+	Minor (reclaiming a frame) page faults: 19843
+	Voluntary context switches: 46860
+	Involuntary context switches: 74560
+	Swaps: 0
+	File system inputs: 29334816
+	File system outputs: 5662008
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

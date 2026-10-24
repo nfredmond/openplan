@@ -4,8 +4,10 @@ from pathlib import Path
 sys.path.insert(0,'scripts/modeling')
 import activitysim_mtc_inputs as mtc
 ROOT=Path('data/_screening_cache/tbi2019-integration');EVIDENCE=Path(__file__).resolve().parent
-p=argparse.ArgumentParser();p.add_argument('--partial',action='store_true');args=p.parse_args()
-name='tbi2019-inputs.partial.tar.gz' if args.partial else 'tbi2019-inputs.tar.gz'
+p=argparse.ArgumentParser();p.add_argument('--partial',action='store_true');p.add_argument('--runtime',action='store_true');args=p.parse_args()
+if args.partial and args.runtime:raise ValueError('Choose one archive variant')
+variant='.partial' if args.partial else '.runtime' if args.runtime else ''
+name='tbi2019-inputs'+variant+'.tar.gz'
 archive=ROOT/name
 if archive.exists():raise RuntimeError('Archive already exists; replacement refused')
 if not args.partial and not (ROOT/'bundle/manifest.json').exists():raise RuntimeError('Complete bundle absent')
@@ -69,7 +71,7 @@ for path in sorted(EVIDENCE.iterdir()):
 for path in sorted(EVIDENCE.parent.glob('INTEGRATION_*.md')):
  files.append((path,'study/'+path.name))
 inventory=[{'archive_path':name,'source_path':str(path),'bytes':path.stat().st_size,'sha256':sha(path)} for path,name in files]
-inv=EVIDENCE/('archive-inventory.partial.json' if args.partial else 'archive-inventory.json')
+inv=EVIDENCE/('archive-inventory'+variant+'.json')
 inv.write_text(json.dumps({'status':'partial_not_executable' if args.partial else 'prepared_executable_not_scientifically_admitted','files':inventory},indent=2)+'\n')
 with tarfile.open(archive,'w:gz',compresslevel=1) as tar:
  for path,name in files:tar.add(path,arcname=name,recursive=False)
@@ -80,5 +82,5 @@ record={'status':'partial_not_executable' if args.partial else 'prepared_executa
  'repository_head_at_archive':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
  'source_closure_note':'Exact implementation bytes are inventoried; repository may contain uncommitted preparation records at archive time.',
  'outcomes_included':False,'modeled_outputs_included':False,'claim':'supplied artifacts with hashes; not producer authenticated'}
-(EVIDENCE/('archive-custody.partial.json' if args.partial else 'archive-custody.json')).write_text(json.dumps(record,indent=2)+'\n')
+(EVIDENCE/('archive-custody'+variant+'.json')).write_text(json.dumps(record,indent=2)+'\n')
 print(json.dumps(record),flush=True)

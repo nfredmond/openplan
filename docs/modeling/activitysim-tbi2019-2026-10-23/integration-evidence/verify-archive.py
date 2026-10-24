@@ -1,9 +1,11 @@
 """Read every archived file and check its declared bytes without extracting it."""
-import copy,hashlib,json,tarfile
+import argparse,copy,hashlib,json,tarfile
 from pathlib import Path
 EVIDENCE=Path(__file__).resolve().parent
-custody=json.loads((EVIDENCE/'archive-custody.json').read_text())
-manifest=(EVIDENCE/'archive-inventory.json').read_bytes()
+p=argparse.ArgumentParser();p.add_argument('--runtime',action='store_true');args=p.parse_args()
+variant='.runtime' if args.runtime else ''
+custody=json.loads((EVIDENCE/('archive-custody'+variant+'.json')).read_text())
+manifest=(EVIDENCE/('archive-inventory'+variant+'.json')).read_bytes()
 expected={r['archive_path']:{'sha256':r['sha256'],'bytes':r['bytes']} for r in json.loads(manifest)['files']}
 expected['archive-inventory.json']={'sha256':hashlib.sha256(manifest).hexdigest(),'bytes':len(manifest)}
 actual={}
@@ -31,10 +33,10 @@ for label in ['missing-member','wrong-hash','wrong-length','embedded-inventory']
  except AssertionError:controls.append({'fault':label,'expected_failure':True})
  else:raise AssertionError('Fault survived: '+label)
 verify(actual,expected)
-if (EVIDENCE/'archive-inventory.json').read_bytes()!=manifest:raise AssertionError('Inventory changed during verification')
+if (EVIDENCE/('archive-inventory'+variant+'.json')).read_bytes()!=manifest:raise AssertionError('Inventory changed during verification')
 record={'archive_sha256':custody['sha256'],'inventory_sha256':hashlib.sha256(manifest).hexdigest(),
  'files_checked_including_embedded_inventory':len(actual),'all_member_bytes_match':True,
  'harmless_controls':1,'targeted_failures':controls,'source_inventory_unchanged':True,
  'control_boundary':'Wrong received member metadata after byte hashing; native controls do not authenticate producers',
  'modeled_or_survey_outputs_read':False}
-(EVIDENCE/'archive-verification.json').write_text(json.dumps(record,indent=2)+'\n');print(json.dumps(record),flush=True)
+(EVIDENCE/('archive-verification'+variant+'.json')).write_text(json.dumps(record,indent=2)+'\n');print(json.dumps(record),flush=True)

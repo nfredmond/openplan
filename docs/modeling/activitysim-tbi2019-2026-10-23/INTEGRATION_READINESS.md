@@ -35,7 +35,7 @@ source and native evidence.
 | School destinations | Qualified proxy. ACS enrollment by residence, not observed school capacities or school attendance locations. |
 | Parking, tolls, terrain and developed acreage | Unavailable or unassessed as historical inputs. Existing zero parking/toll fields, flat terrain and gross-acreage allocation remain adapter approximations, not measured zero conditions. |
 | Coefficients | Present and unchanged. Current tour coefficients `42a98dc65adb64a61de88d92e6fd9939a9a32900140a9fa8c5e3eacedb4a84b2`; SEMCOG candidate `537e54811e4b6ca9fec0662085777e9679a634bd312bb7c64df6e58ff60c7490`, 27 frozen substitutions. Both use the existing accepted auto-ownership component. |
-| Complete prepared-input archive | Present. Initial archive: 492 files, 2,898,706,216 bytes, SHA-256 `bd0c35dec94b135f8d16bf001e49a35d70e6ab0ebc7a410051e93d4a71b15935`. It preserves full 704-zone inputs and the 638-zone derivative. Runtime memory recovery uses an additional explicit overlay; final runtime archive custody remains pending. |
+| Complete prepared-input archive | Present. Initial archive: 492 files, 2,898,706,216 bytes, SHA-256 `bd0c35dec94b135f8d16bf001e49a35d70e6ab0ebc7a410051e93d4a71b15935`. It preserves full 704-zone inputs and the 638-zone derivative. The separate runtime archive adds the explicit file-backed skim overlay and pinned allocator runner. It contains 515 inventoried files and 2,898,724,157 bytes; SHA-256 `81fe67cc0ad74454dfd5a94c21d2497e6236c4958e7581e1f6babaff5d1fafd7`. `integration-evidence/archive-custody.runtime.json` retains the inventory hash. The initial archive remains unchanged. |
 
 ## Exclusions available without outcome fields
 
@@ -59,20 +59,36 @@ hash remains `d00206802218a92d31dceea4c108c74cab540dadd8c90d9d1f21e8b11b99c392`.
 
 ## Modeled-only run health
 
-Both initial arms start and are killed at the 6 GiB cap during household/person
-initialization. Neither produces completed tours or mode shares. Their original
-output directories, started receipts and OOM records remain preserved. The
-[runtime memory addendum](INTEGRATION_RUNTIME_MEMORY_ADDENDUM.md) specifies an
-identical file-backed skim overlay for both retries. The current retry passes
-initialization and accessibility; both terminal outcomes remain pending.
-No comparison between arms, against AequilibraE outputs or against TBI observations
-is authorized.
+Both arms receive three full-population attempts. The initial attempts exceed
+the 6 GiB cap during household/person initialization. File-backed skim retries
+pass initialization and university location choice, then exceed the cap during
+high-school location logsums. The final allocator retries release unused memory
+before that unchanged engine call, but also exceed the cap at the same step.
+All attempts retain their logs, configuration hashes and separate directories.
+
+| Final arm | Completion | Scope result | Elapsed | Completed tours / MODELED shares |
+|---|---|---|---|---|
+| Current coefficients | Failed | OOM kill, 6,442,450,944-byte peak, zero swap | 254.732 seconds | Unavailable, null |
+| SEMCOG walk candidate | Failed | OOM kill, 6,442,450,944-byte peak, zero swap | 257.823 seconds | Unavailable, null |
+
+Both final attempts reach 2,315,528 sampled high-school location rows. These
+are intermediate model rows, not completed tours or survey observations. The
+allocator wrapper passes six native exact fixture comparisons, including next
+random draws. A separate batching candidate fails native exact parity by one
+floating-point unit and remains unused. No comparison between coefficient arms,
+against AequilibraE outputs or against TBI observations runs. **The requested
+end-to-end completion is not achieved under the admitted 6 GiB execution path.**
 
 ## Exact remaining steps before a lead-owned opening
 
-1. Complete the population, package and both modeled-only runs, retaining every
-   failure and exact archive, implementation, configuration and output hashes.
-   Resolve the 677 nonconverged fits and 30 zones outside published margins without relaxing gates. Grade population fit and every inherited input approximation independently
+1. Admit and verify a bounded-memory engine execution path, then complete both
+   full-population modeled-only runs under the unchanged 6 GiB/zero-swap limit.
+   Retain exact input, implementation, configuration and completed-output hashes.
+   The current file-backed/allocator path still fails; the batching candidate
+   has not passed native parity and cannot be substituted. The complete source
+   population and both zone packages are already retained. Resolve the 677
+   nonconverged fits and 30 zones outside published margins without relaxing
+   gates. Grade population fit and inherited input approximations independently
    of model results. Runtime completion does not waive any admission below.
 2. Resolve or explicitly redesign and preregister the unavailable travel
    conditions. Establish complete transit fare applicability and cost-year

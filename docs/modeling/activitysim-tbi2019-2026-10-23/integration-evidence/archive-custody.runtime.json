@@ -1,0 +1,14 @@
+{
+  "status": "prepared_executable_not_scientifically_admitted",
+  "archive_path": "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/data/_screening_cache/tbi2019-integration/tbi2019-inputs.runtime.tar.gz",
+  "sha256": "81fe67cc0ad74454dfd5a94c21d2497e6236c4958e7581e1f6babaff5d1fafd7",
+  "bytes": 2898724157,
+  "inventory_sha256": "3bb259ae901f888b77a270141fe226ea95e559eff19e3a7beff00d9a3eb1416b",
+  "files": 515,
+  "created_at": "2026-10-24T01:14:54.490725+00:00",
+  "repository_head_at_archive": "2d15de7dca9a76e9a6ca818ec064df14d0d976b0",
+  "source_closure_note": "Exact implementation bytes are inventoried; repository may contain uncommitted preparation records at archive time.",
+  "outcomes_included": false,
+  "modeled_outputs_included": false,
+  "claim": "supplied artifacts with hashes; not producer authenticated"
+}

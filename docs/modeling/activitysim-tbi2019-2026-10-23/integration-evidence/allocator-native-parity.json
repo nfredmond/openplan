@@ -1,0 +1,57 @@
+{
+  "comparisons": [
+    {
+      "arm": "current",
+      "model": "school_location",
+      "allocator_reclamation": true,
+      "rows": 42,
+      "logsums_exact": true,
+      "next_rng_draws_exact": true
+    },
+    {
+      "arm": "current",
+      "model": "school_location",
+      "allocator_reclamation": true,
+      "rows": 42,
+      "logsums_exact": true,
+      "next_rng_draws_exact": true
+    },
+    {
+      "arm": "current",
+      "model": "workplace_location",
+      "allocator_reclamation": true,
+      "rows": 42,
+      "logsums_exact": true,
+      "next_rng_draws_exact": true
+    },
+    {
+      "arm": "semcog",
+      "model": "school_location",
+      "allocator_reclamation": true,
+      "rows": 42,
+      "logsums_exact": true,
+      "next_rng_draws_exact": true
+    },
+    {
+      "arm": "semcog",
+      "model": "school_location",
+      "allocator_reclamation": true,
+      "rows": 42,
+      "logsums_exact": true,
+      "next_rng_draws_exact": true
+    },
+    {
+      "arm": "semcog",
+      "model": "workplace_location",
+      "allocator_reclamation": true,
+      "rows": 42,
+      "logsums_exact": true,
+      "next_rng_draws_exact": true
+    }
+  ],
+  "fixture": "six synthetic persons, seven alternatives each; actual retained LOS and installed stock specs",
+  "outcomes_accessed": false,
+  "blind_category": "bounded contexts tested only; no whole-engine or scientific acceptance",
+  "installed_location_choice_sha256": "39a8624e73cad1a3b38acfc769fbbb330aa792b115ec16b047c04631fd9e82c5",
+  "wrapper_sha256": "ed30ab870d67f3d9d30b20aebab357b948fb59c233b23b2d612a93e8baece1fa"
+}
