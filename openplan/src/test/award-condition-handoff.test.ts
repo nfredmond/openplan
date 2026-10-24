@@ -19,7 +19,7 @@ const invoice={id:id(4),funding_award_id:id(1),award_handoff_revision_id:id(2),c
 // Source shape only. Effective default/role/column grants require the registered live suite.
 describe('award handoff relation privilege correction',()=>{
  it('revokes residual service privileges before granting only append-only tables and read-only views',()=>{
-  const sql=blankComments(readFileSync('supabase/migrations/20261019163759_award_handoff_relation_privileges.sql','utf8'));
+  const sql=blankComments(readFileSync('supabase/migrations/20261024200300_award_handoff_relation_privileges.sql','utf8'));
   const tables=['funding_award_handoff_revisions','funding_award_handoff_sources','funding_award_handoff_occurrences','funding_award_closure_receipts'];
   const views=['current_award_handoff_records','active_project_submittals','active_project_milestones','legacy_calendar_funding_awards','funding_award_handoff_fulfillment','funding_opportunity_issuance'];
   const relations=(names:string[])=>names.map(name=>`public.${name}`).join(', ');

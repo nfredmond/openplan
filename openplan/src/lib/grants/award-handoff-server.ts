@@ -6,7 +6,7 @@ import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 import { AWARD_HANDOFF_MIGRATION } from "./award-handoff";
 import { FUNDING_AWARD_OPEN_SPENDING_STATUS_OPTIONS } from "@/lib/programs/catalog";
 
-export const MANAGED_AWARD_CLOSEOUT_MIGRATION = "20261019101500_managed_award_reopen_status";
+export const MANAGED_AWARD_CLOSEOUT_MIGRATION = "20261024200200_managed_award_reopen_status";
 
 export function handoffFailure(error: { code?: string; message: string }, migration = AWARD_HANDOFF_MIGRATION) {
   const missing = looksLikePendingSchema(error.message);

@@ -49,7 +49,7 @@ import {awardTermsFixture} from './fixtures/grants/award-handoff';
    public.funding_award_handoff_occurrences,public.funding_award_closure_receipts,
    public.current_award_handoff_records,public.active_project_submittals,public.active_project_milestones,
    public.legacy_calendar_funding_awards,public.funding_award_handoff_fulfillment,public.funding_opportunity_issuance TO service_role;
-  ${readFileSync('supabase/migrations/20261019163759_award_handoff_relation_privileges.sql','utf8')}
+  ${readFileSync('supabase/migrations/20261024200300_award_handoff_relation_privileges.sql','utf8')}
   SET LOCAL ROLE service_role;
   DO $$ DECLARE
    tables text[]:=ARRAY['funding_award_handoff_revisions','funding_award_handoff_sources','funding_award_handoff_occurrences','funding_award_closure_receipts'];
