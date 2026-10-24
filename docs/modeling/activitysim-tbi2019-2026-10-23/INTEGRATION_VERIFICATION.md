@@ -136,3 +136,33 @@ The geographic derivative follows ActivitySim 1.5.1 sorted-ID zero-based recodin
 A nonmonotonic parent-order fixture proves that land-use and both matrix axes
 use the same sorted retained IDs; reverting that ordering fails the assertion.
 The real 704-zone parent already uses sorted IDs. Its 826 matrices are float64.
+
+## Retained-file hashing failure and repair
+
+The first memory-repaired retry completes the same full fit and saves the owned
+823 MiB checkpoint, SHA-256
+`ddc4ef28f3419356745069a08c636e830f2df3b733f189804558616baa8e2c13`.
+It writes household, person and diagnostic files, then exceeds 6 GiB before the
+common manifest exists. The scope records `oom-kill` and 31 minutes 22.925 seconds.
+The failed directory remains `common_population.failed-retention-1`. Neither
+model starts. The controller and both not-started receipts remain retained.
+
+The file-descriptor helper previously read each whole file. The diagnostic file
+is about 1,003 MiB. The additive repair preserves the same regular-file and
+symlink checks and computes the same SHA-256 and byte length in 1 MiB blocks.
+The retry reuses only the owned, hash-verified checkpoint; it does not refit or
+change any population value. Native completion remains separately assessed.
+
+Twenty-seven common-population and memory tests pass in the ActivitySim
+environment. Its attempted package-suite import fails because Shapely is absent.
+The retained log includes that error. All 11 package tests then pass in the
+existing AequilibraE environment. Four additional mutation controls include one
+harmless survivor and three intended failures for whole-file reading, hash
+content and length. The earlier seven memory controls pass again after this
+repair. Exact source bytes are restored before the native retry.
+
+Cumulative scoped results now total 165 Python tests passed, four stock-path
+skips, and 34 TypeScript tests passed. Six mutation campaigns contain 77 controls:
+seven harmless survivors and 70 targeted assertion failures. Import errors and
+incidental mutation errors remain outside those passing counts. The bounded
+fixture establishes descriptor semantics, not full-size runtime completion.

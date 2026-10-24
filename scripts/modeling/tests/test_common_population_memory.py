@@ -1,6 +1,7 @@
 """Exact retained-byte parity and pre-materialization refusal under streaming."""
 import copy,gzip,hashlib,json,sys,types,unittest
 from pathlib import Path
+from unittest.mock import patch
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 import common_population as common
 import test_common_population as supplied
@@ -29,6 +30,14 @@ class MemoryParity(unittest.TestCase):
         b=common.read_common_population(new_path,expected_manifest=new,zone_rows=self.f.zones)
         for field in ['households','persons','diagnostics','realized_zone_counts','basis']:
             self.assertEqual(a[field],b[field],field)
+
+    def test_descriptor_streams_same_hash_and_length_without_whole_file_read(self):
+        path = self.f.root / 'large-diagnostic.json'
+        path.write_bytes(b'abcdefg' * 500000)
+        expected = self.old.file_descriptor(path, relative_path='diagnostics.json')
+        with patch.object(Path, 'read_bytes', side_effect=AssertionError('whole-file read')):
+            actual = common.file_descriptor(path, relative_path='diagnostics.json')
+        self.assertEqual(actual, expected)
 
     def test_nonfinite_diagnostic_refuses_before_creating_directory(self):
         self.f.result['zone_fits']=[{'weights':[float('nan')]}]

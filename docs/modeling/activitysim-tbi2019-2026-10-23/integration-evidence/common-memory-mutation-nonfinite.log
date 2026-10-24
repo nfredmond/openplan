@@ -24,10 +24,11 @@ test_wrong_selected_zone_or_extra_missing_zone_refuses (test_common_population.C
 test_zone_duplicate_unsafe_and_unknown_geographies_refuse (test_common_population.CommonPopulationTests.test_zone_duplicate_unsafe_and_unknown_geographies_refuse) ... ok
 
 ----------------------------------------------------------------------
-Ran 24 tests in 0.054s
+Ran 24 tests in 0.060s
 
 OK
 
+test_descriptor_streams_same_hash_and_length_without_whole_file_read (test_common_population_memory.MemoryParity.test_descriptor_streams_same_hash_and_length_without_whole_file_read) ... ok
 test_nonfinite_diagnostic_refuses_before_creating_directory (test_common_population_memory.MemoryParity.test_nonfinite_diagnostic_refuses_before_creating_directory) ... FAIL
 test_retained_bytes_and_loaded_rows_match_original (test_common_population_memory.MemoryParity.test_retained_bytes_and_loaded_rows_match_original) ... ok
 
@@ -35,11 +36,11 @@ test_retained_bytes_and_loaded_rows_match_original (test_common_population_memor
 FAIL: test_nonfinite_diagnostic_refuses_before_creating_directory (test_common_population_memory.MemoryParity.test_nonfinite_diagnostic_refuses_before_creating_directory)
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/scripts/modeling/tests/test_common_population_memory.py", line 35, in test_nonfinite_diagnostic_refuses_before_creating_directory
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/scripts/modeling/tests/test_common_population_memory.py", line 44, in test_nonfinite_diagnostic_refuses_before_creating_directory
     with self.assertRaises(ValueError):self.f.retain()
 AssertionError: ValueError not raised
 
 ----------------------------------------------------------------------
-Ran 2 tests in 0.016s
+Ran 3 tests in 0.027s
 
 FAILED (failures=1)

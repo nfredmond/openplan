@@ -28,6 +28,7 @@ Ran 24 tests in 0.056s
 
 OK
 
+test_descriptor_streams_same_hash_and_length_without_whole_file_read (test_common_population_memory.MemoryParity.test_descriptor_streams_same_hash_and_length_without_whole_file_read) ... ok
 test_nonfinite_diagnostic_refuses_before_creating_directory (test_common_population_memory.MemoryParity.test_nonfinite_diagnostic_refuses_before_creating_directory) ... ok
 test_retained_bytes_and_loaded_rows_match_original (test_common_population_memory.MemoryParity.test_retained_bytes_and_loaded_rows_match_original) ... FAIL
 
@@ -35,7 +36,7 @@ test_retained_bytes_and_loaded_rows_match_original (test_common_population_memor
 FAIL: test_retained_bytes_and_loaded_rows_match_original (test_common_population_memory.MemoryParity.test_retained_bytes_and_loaded_rows_match_original)
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/scripts/modeling/tests/test_common_population_memory.py", line 25, in test_retained_bytes_and_loaded_rows_match_original
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/scripts/modeling/tests/test_common_population_memory.py", line 26, in test_retained_bytes_and_loaded_rows_match_original
     self.assertEqual(old,new)
 AssertionError: {'pat[36 chars]6': '6f94df5c815feeee90f0db8c288bf1a8f6cd76e09[35 chars]1859} != {'pat[36 chars]6': '5676bf85c101b7ad5322e3bde283b9b376fc336ad[35 chars]1859}
   {'bytes': 1859,
@@ -44,6 +45,6 @@ AssertionError: {'pat[36 chars]6': '6f94df5c815feeee90f0db8c288bf1a8f6cd76e09[35
 +  'sha256': '5676bf85c101b7ad5322e3bde283b9b376fc336ad2e2f7c685a0bc92ecfca282'}
 
 ----------------------------------------------------------------------
-Ran 2 tests in 0.014s
+Ran 3 tests in 0.025s
 
 FAILED (failures=1)

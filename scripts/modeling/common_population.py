@@ -133,16 +133,27 @@ def selected_zone_map(zone_rows: Sequence[Mapping[str, Any]]) -> list[dict[str, 
     return sorted(zones, key=lambda row: row["zone_id"])
 
 
-def _regular_bytes(path: Path) -> bytes:
+def _require_regular(path: Path) -> None:
     absolute = path.absolute()
     if any(part.is_symlink() for part in (absolute, *absolute.parents)) or not path.is_file():
         raise CommonPopulationError(f"Expected a regular file without symlink components: {path.name}")
+    return None
+
+
+def _regular_bytes(path: Path) -> bytes:
+    _require_regular(path)
     return path.read_bytes()
 
 
 def file_descriptor(path: Path, *, relative_path: str | None = None) -> dict[str, Any]:
-    data = _regular_bytes(path)
-    return {"path": relative_path or path.name, "sha256": hashlib.sha256(data).hexdigest(), "bytes": len(data)}
+    _require_regular(path)
+    digest = hashlib.sha256()
+    size = 0
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+            size += len(block)
+    return {"path": relative_path or path.name, "sha256": digest.hexdigest(), "bytes": size}
 
 
 def _descriptor(value: Any, path: str) -> dict[str, Any]:

@@ -7,7 +7,7 @@
       0
     ],
     "expected_observed": true,
-    "restored_sha256": "5f0e2ec0df73ca0a61c6fd9bf916aeec9323ab95a5d3e70b0ff9fea506b07328"
+    "restored_sha256": "5cfd684c88c4c3f24c72a1928639c4a08bf36e6071feb38bc78d3c1dc4ea1e52"
   },
   {
     "name": "household-count",
@@ -17,7 +17,7 @@
       0
     ],
     "expected_observed": true,
-    "restored_sha256": "5f0e2ec0df73ca0a61c6fd9bf916aeec9323ab95a5d3e70b0ff9fea506b07328"
+    "restored_sha256": "5cfd684c88c4c3f24c72a1928639c4a08bf36e6071feb38bc78d3c1dc4ea1e52"
   },
   {
     "name": "worker-count",
@@ -27,7 +27,7 @@
       0
     ],
     "expected_observed": true,
-    "restored_sha256": "5f0e2ec0df73ca0a61c6fd9bf916aeec9323ab95a5d3e70b0ff9fea506b07328"
+    "restored_sha256": "5cfd684c88c4c3f24c72a1928639c4a08bf36e6071feb38bc78d3c1dc4ea1e52"
   },
   {
     "name": "person-numbers",
@@ -37,7 +37,7 @@
       0
     ],
     "expected_observed": true,
-    "restored_sha256": "5f0e2ec0df73ca0a61c6fd9bf916aeec9323ab95a5d3e70b0ff9fea506b07328"
+    "restored_sha256": "5cfd684c88c4c3f24c72a1928639c4a08bf36e6071feb38bc78d3c1dc4ea1e52"
   },
   {
     "name": "row-width",
@@ -47,7 +47,7 @@
       0
     ],
     "expected_observed": true,
-    "restored_sha256": "5f0e2ec0df73ca0a61c6fd9bf916aeec9323ab95a5d3e70b0ff9fea506b07328"
+    "restored_sha256": "5cfd684c88c4c3f24c72a1928639c4a08bf36e6071feb38bc78d3c1dc4ea1e52"
   },
   {
     "name": "canonical-spacing",
@@ -57,7 +57,7 @@
       1
     ],
     "expected_observed": true,
-    "restored_sha256": "5f0e2ec0df73ca0a61c6fd9bf916aeec9323ab95a5d3e70b0ff9fea506b07328"
+    "restored_sha256": "5cfd684c88c4c3f24c72a1928639c4a08bf36e6071feb38bc78d3c1dc4ea1e52"
   },
   {
     "name": "nonfinite",
@@ -67,6 +67,6 @@
       1
     ],
     "expected_observed": true,
-    "restored_sha256": "5f0e2ec0df73ca0a61c6fd9bf916aeec9323ab95a5d3e70b0ff9fea506b07328"
+    "restored_sha256": "5cfd684c88c4c3f24c72a1928639c4a08bf36e6071feb38bc78d3c1dc4ea1e52"
   }
 ]

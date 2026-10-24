@@ -1,0 +1,20 @@
+test_actual_counts_replace_all_person_marginals_by_zone_identity (test_common_population_package.CommonPopulationPackageTests.test_actual_counts_replace_all_person_marginals_by_zone_identity) ... ok
+test_legacy_package_population_is_unassessed (test_common_population_package.CommonPopulationPackageTests.test_legacy_package_population_is_unassessed) ... ok
+test_original_selection_coverage_rejects_missing_or_untyped_counts (test_common_population_package.CommonPopulationPackageTests.test_original_selection_coverage_rejects_missing_or_untyped_counts) ... ok
+test_package_custody_is_consumed_and_cannot_be_changed_or_omitted (test_common_population_package.CommonPopulationPackageTests.test_package_custody_is_consumed_and_cannot_be_changed_or_omitted) ... ok
+test_package_record_and_raw_population_are_both_verified (test_common_population_package.CommonPopulationPackageTests.test_package_record_and_raw_population_are_both_verified) ... ok
+test_refuses_changed_zone_map_before_replacing_counts (test_common_population_package.CommonPopulationPackageTests.test_refuses_changed_zone_map_before_replacing_counts) ... ok
+test_reuse_preserves_exact_raw_files_and_fails_changed_assignment_demographics (test_common_population_package.CommonPopulationPackageTests.test_reuse_preserves_exact_raw_files_and_fails_changed_assignment_demographics) ... ok
+test_reuse_refuses_geography_change_without_refitting (test_common_population_package.CommonPopulationPackageTests.test_reuse_refuses_geography_change_without_refitting) ... ok
+test_reuse_skips_geography_population_and_jobs_fetch_before_od (test_common_population_package.CommonPopulationPackageTests.test_reuse_skips_geography_population_and_jobs_fetch_before_od) ... ok
+test_source_zero_population_does_not_remove_retained_selected_zone (test_common_population_package.CommonPopulationPackageTests.test_source_zero_population_does_not_remove_retained_selected_zone) ... ok
+test_supplied_coverage_keeps_absent_true_false_and_malformed_distinct (test_common_population_package.CommonPopulationPackageTests.test_supplied_coverage_keeps_absent_true_false_and_malformed_distinct) ... ok
+
+----------------------------------------------------------------------
+Ran 11 tests in 0.068s
+
+OK
+  Demographics: The launching app supplied no demographics table for this run, so the worker used its own configured data source.
+  Demographics: The launching app supplied no demographics table for this run, so the worker used its own configured data source.
+  OD: synthetic gravity distribution (LODES OD unavailable or below coverage floor).
+  Package ready: 2 zones, 8 estimated daily trips

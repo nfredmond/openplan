@@ -1,0 +1,4 @@
+Oct 23 16:56:19 natford systemd[2609]: Started op-tbi2019-11910f11-population-retry.scope - [systemd-run] /usr/bin/env OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=2 /usr/bin/time -v /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/bin/python -u -B docs/modeling/activitysim-tbi2019-2026-10-23/integration-evidence/prepare-population-memory-retry.py.
+Oct 23 17:27:41 natford systemd[2609]: op-tbi2019-11910f11-population-retry.scope: The kernel OOM killer killed some processes in this unit.
+Oct 23 17:27:42 natford systemd[2609]: op-tbi2019-11910f11-population-retry.scope: Failed with result 'oom-kill'.
+Oct 23 17:27:42 natford systemd[2609]: op-tbi2019-11910f11-population-retry.scope: Consumed 31min 16.584s CPU time over 31min 22.925s wall clock time, 6G memory peak.

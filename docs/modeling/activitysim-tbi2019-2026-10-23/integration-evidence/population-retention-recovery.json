@@ -1,0 +1,8 @@
+{
+  "timestamp": "2026-10-24T00:29:18.526926+00:00",
+  "failed_directory": "data/_screening_cache/tbi2019-integration/common_population.failed-retention-1",
+  "action": "Preserve failed retention directory and replay owned hash-bound fit checkpoint with streaming file descriptors",
+  "checkpoint_sha256": "ddc4ef28f3419356745069a08c636e830f2df3b733f189804558616baa8e2c13",
+  "implementation_sha256": "5cfd684c88c4c3f24c72a1928639c4a08bf36e6071feb38bc78d3c1dc4ea1e52",
+  "fit_changed": false
+}
