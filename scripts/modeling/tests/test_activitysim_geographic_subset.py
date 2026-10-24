@@ -52,6 +52,14 @@ class GeographicSubsetTests(unittest.TestCase):
         self.assertEqual(result['files']['persons.csv'], descriptor(self.dest / 'persons.csv'))
         self.assertEqual((self.dest / 'configs/settings.yaml').read_bytes(), (self.parent / 'configs/settings.yaml').read_bytes())
 
+    def test_nonmonotonic_parent_follows_activitysim_sorted_recode(self):
+        self.write('land_use.csv', ['zone_id', 'TOTPOP'], [[9, 1], [2, 1], [5, 2]])
+        result = self.run_subset()
+        self.assertEqual(result['retained_zone_ids'], [5, 9])
+        self.assertEqual(result['retained_matrix_positions'], [2, 0])
+        with omx.open_file(str(self.dest / 'skims/mtc_skims.omx'), 'r') as f:
+            np.testing.assert_array_equal(f['time'][:], [[8, 6], [2, 0]])
+
     def test_unknown_zone_refused(self):
         with self.assertRaisesRegex(ValueError, 'Unknown excluded'):
             self.run_subset([22])

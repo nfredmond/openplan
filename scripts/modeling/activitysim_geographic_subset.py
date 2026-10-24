@@ -15,7 +15,7 @@ def descriptor(path):
 
 
 def subset_bundle(parent, destination, excluded_zone_ids, *, reason, source):
-    """Remove whole resident households and destinations, preserving matrix order.
+    """Remove whole resident households and destinations, preserving matrix alignment.
 
     The parent is an MTC bundle with positional OMX matrices and land-use row
     order. This derivative is for the direct CLI, not a worker upload manifest.
@@ -39,7 +39,9 @@ def subset_bundle(parent, destination, excluded_zone_ids, *, reason, source):
         raise ValueError('Duplicate parent zones')
     if not excluded <= zone_set:
         raise ValueError('Unknown excluded zones')
-    positions = [i for i, zone in enumerate(zone_ids) if zone not in excluded]
+    # ActivitySim zero-based recoding sorts zone IDs, independent of CSV order.
+    positions = sorted((i for i, zone in enumerate(zone_ids) if zone not in excluded),
+                       key=lambda i: zone_ids[i])
     if not positions:
         raise ValueError('All zones excluded')
     destination.mkdir(parents=True)

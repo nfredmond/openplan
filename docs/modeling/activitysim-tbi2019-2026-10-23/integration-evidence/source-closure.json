@@ -9,5 +9,6 @@
   "scripts/modeling/synthetic_population.py": "6e8b57fcad1d8e1efbc6882e76190c0bc45659b7e8fbc140fd2cf774bd3f0877",
   "scripts/modeling/population_synthesis.py": "c6a16de8255d2158dfdd0bdf2107f21c6457dcdb7c8d2efd951889c4b4294589",
   "scripts/modeling/screening_runtime.py": "38686dca5ee4667e7cfd64cb680931d7442d8d48cfa860bc00a41b4c5b1939b6",
-  "scripts/modeling/retained_skim_expansion.py": "433820150d8ba6a8f7877447288e5e330c8cdddea8e229c7bfc27be108c6f22e"
+  "scripts/modeling/retained_skim_expansion.py": "433820150d8ba6a8f7877447288e5e330c8cdddea8e229c7bfc27be108c6f22e",
+  "scripts/modeling/activitysim_geographic_subset.py": "dc85827ad8bcf48b1de039842be2885e3dec3349b9593814a5b46ebcc440f1d0"
 }

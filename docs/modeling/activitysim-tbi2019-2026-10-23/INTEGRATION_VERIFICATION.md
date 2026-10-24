@@ -20,7 +20,7 @@ resolution. The TypeScript population registry runs 34 tests with Vitest
 file byte and loaded record against the committed pre-repair implementation,
 and preserve nonfinite-value refusal before directory creation.
 
-Before the geographic derivative, five mutation campaigns contain 56 controls: five harmless changes
+Before the geographic derivative, four mutation campaigns contain 56 controls: five harmless changes
 survive and 51 targeted wrong behaviors reach assertion failures. Each campaign
 restores the exact source hash. The ledgers and individual logs reside in
 `integration-evidence/`. These controls cover decoding, membership, uniqueness,
@@ -119,15 +119,20 @@ four-test error log remains retained. This raises the scoped Python total to
 
 ## Geographic exclusion derivative
 
-Fourteen new tests pass from both the repository root and CI test directory. They
+Fifteen new tests pass from both the repository root and CI test directory. They
 cover whole-household removal, person conservation, ordered destination and skim
 slicing, unchanged parent files, copied settings, hashed outputs and invalid-input
-refusals. Sixteen mutation controls comprise one harmless survivor and 15 intended
+refusals. Seventeen mutation controls comprise one harmless survivor and 16 intended
 assertion failures. Exact helper bytes are restored after every control. The
 blind category is historical service coverage and scientific eligibility:
 synthetic fixtures cannot establish either.
 
-The cumulative scoped count is 163 Python tests passed, four explicit stock-path
-skips, and 34 TypeScript tests passed. Six mutation campaigns contain 72 controls:
-six harmless survivors and 66 targeted assertion failures. Earlier incidental
+The cumulative scoped count is 164 Python tests passed, four explicit stock-path
+skips, and 34 TypeScript tests passed. Five mutation campaigns contain 73 controls:
+six harmless survivors and 67 targeted assertion failures. Earlier incidental
 error controls remain retained and do not enter those counts.
+
+The geographic derivative follows ActivitySim 1.5.1 sorted-ID zero-based recoding.
+A nonmonotonic parent-order fixture proves that land-use and both matrix axes
+use the same sorted retained IDs; reverting that ordering fails the assertion.
+The real 704-zone parent already uses sorted IDs. Its 826 matrices are float64.

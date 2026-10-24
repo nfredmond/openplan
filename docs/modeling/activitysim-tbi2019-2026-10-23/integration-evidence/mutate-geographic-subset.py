@@ -20,6 +20,9 @@ cases += [
  ('mapped-parent', 'if inp.list_mappings():', 'if False:', False),
  ('matrix-shape', "raise ValueError('Matrix shape differs from zone order')", 'continue', False),
 ]
+cases.append(('sorted-recode',
+ 'positions = sorted((i for i, zone in enumerate(zone_ids) if zone not in excluded),\n                       key=lambda i: zone_ids[i])',
+ 'positions = [i for i, zone in enumerate(zone_ids) if zone not in excluded]', False))
 results=[]
 try:
  for name,old,new,survive in cases:
