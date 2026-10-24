@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "check:local-guards": "node harness-env.local-guard.test.js",
+    "check:service-key-headers": "node --test supabase-service-headers.test.js",
     "check:workspace-isolation-fixture": "node workspace-url-isolation-fixture.test.js",
     "check:map-reading-geometry": "node map-reading-geometry.test.js",
     "check:pointer-reachability": "node pointer-reachability.test.js",

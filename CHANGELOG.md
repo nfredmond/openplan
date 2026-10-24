@@ -39,10 +39,10 @@ standard 8 GB builder out of memory. Builds with `VERCEL=1` now skip it. Every
 other build keeps it, including the CI QA gate's `npm run build`, which
 Vercel waits for before promoting. Self-hosted builds are unchanged.
 
-This tree contains 441 source migrations, eleven more than v0.72.0. Self-hosted
+This tree contains 442 source migrations, twelve more than v0.72.0. Self-hosted
 installations apply the seven Models and Reports migrations, the estimate,
-Safety and two land-use migrations below, in version order, before deploying
-this code. The managed database received all seven on
+Safety, BCA and two land-use migrations below, in version order, before
+deploying this code. The managed database received all seven on
 October 23, 2026, in one transaction after a fresh capture and a rollback-only
 dry run; its history now holds 438 rows, including the separate Award record.
 The catalogue after installation equals the catalogue before plus exactly the
@@ -124,6 +124,13 @@ correction. It validates future amounts as positive values of at most
 retained estimates or recover precision lost in older source values. The
 migration first carried an earlier October 19 version; it moved after the v0.72.0
 release mark because released installations would skip an earlier version.
+
+**BCA project place:** Apply
+`20261023190200_bca_project_place_snapshot.sql` before deploying the BCA update.
+The migration accepts new analysis versions with a retained project place and
+checks that place against the current project when saving. Existing saved
+analyses remain unchanged. It first carried an earlier October 19 version and
+moved after the v0.72.0 release mark.
 
 **PR332 review follow-up:** Project deliverable counts, delivery and activity
 views distinguish pending or failed inputs from an empty project. Current

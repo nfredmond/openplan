@@ -7,6 +7,25 @@ import {
   calculateBcaComponents,
 } from "./engine";
 import { getBcaProfile } from "./profiles";
+import { BCA_PLACE_LIMIT, bcaPlaceDescription, bcaPlaceReview, bcaPlaceReviewLabel, type BcaPlaceReview } from "./project-place";
+
+function exportPlaceReview(doc: BcaDocument, review?: BcaPlaceReview) {
+  return review ?? bcaPlaceReview(doc, { status: "unavailable", message: "No live project read accompanied this export." });
+}
+function placeLines(doc: BcaDocument, review?: BcaPlaceReview): string[] {
+  const value = exportPlaceReview(doc, review);
+  return [
+    `Project-place comparison: ${bcaPlaceReviewLabel(value.status)} (${value.status}).`,
+    value.retained ? `Retained place: ${bcaPlaceDescription(value.retained)}` : "Unbound legacy analysis. The original geography text is retained; no project-place binding is inferred.",
+    ...(value.retained ? [
+      `Retained project revision: ${value.retained.projectUpdatedAt}; place set at: ${value.retained.placeSetAt ?? "unset"}.`,
+      `Retained jurisdiction context (separate declaration): ${JSON.stringify(value.retained.jurisdiction)}.`,
+    ] : []),
+    value.current.status === "available" ? `Project place at export read: ${bcaPlaceDescription(value.current.snapshot)} Revision: ${value.current.snapshot.projectUpdatedAt}.`
+      : `Current project place: ${value.current.status}. ${value.current.message}`,
+    BCA_PLACE_LIMIT,
+  ];
+}
 
 const escaped = (text: unknown) =>
   String(text ?? "").replace(
@@ -34,7 +53,7 @@ function csv(rows: unknown[][]) {
   return rows.map((row) => row.map(csvCell).join(",")).join("\r\n");
 }
 
-export function bcaMemo(doc: BcaDocument) {
+export function bcaMemo(doc: BcaDocument, placeReview?: BcaPlaceReview) {
   const result = calculateBcaDocument(doc),
     sensitivity = calculateBcaSensitivity(doc),
     profile = getBcaProfile(doc.programId);
@@ -52,6 +71,8 @@ export function bcaMemo(doc: BcaDocument) {
     `Applicability: ${doc.applicability || "[VERIFY: applicability]"}`,
     "",
     `## Scope`,
+    ...placeLines(doc, placeReview),
+    "Affected area and users (analyst narrative):",
     doc.geography,
     `No Build: ${doc.noBuildDescription}`,
     `Build: ${doc.alternative}`,
@@ -113,9 +134,15 @@ export function bcaMemo(doc: BcaDocument) {
   ].join("\n");
 }
 
-export function bcaWorkbook(doc: BcaDocument) {
+export function bcaWorkbook(doc: BcaDocument, placeReview?: BcaPlaceReview) {
   const result = calculateBcaDocument(doc);
   const book = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(book, XLSX.utils.aoa_to_sheet([
+    ["Project", doc.projectId],
+    ["Affected area and users (analyst narrative)", doc.geography],
+    ...placeLines(doc, placeReview).map(line => [line]),
+    ["Full retained/current scope snapshot", JSON.stringify(exportPlaceReview(doc, placeReview))],
+  ]), "Project place");
   const summary = XLSX.utils.aoa_to_sheet([
     [doc.title],
     ["Status", result.status],
@@ -357,9 +384,9 @@ export function bcaWorkbook(doc: BcaDocument) {
 }
 
 /** Ask spreadsheet clients to recompute formulas instead of trusting cached values. */
-export async function bcaWorkbookBytes(doc: BcaDocument) {
+export async function bcaWorkbookBytes(doc: BcaDocument, placeReview?: BcaPlaceReview) {
   const archive = await JSZip.loadAsync(
-    XLSX.write(bcaWorkbook(doc), { type: "array", bookType: "xlsx" }),
+    XLSX.write(bcaWorkbook(doc, placeReview), { type: "array", bookType: "xlsx" }),
   );
   const xml = await archive.file("xl/workbook.xml")!.async("string");
   archive.file(
@@ -374,9 +401,9 @@ export async function bcaWorkbookBytes(doc: BcaDocument) {
   return archive.generateAsync({ type: "uint8array", compression: "DEFLATE" });
 }
 
-export function bcaHtml(doc: BcaDocument) {
+export function bcaHtml(doc: BcaDocument, placeReview?: BcaPlaceReview) {
   const result = calculateBcaDocument(doc);
-  const narrative = bcaMemo(doc)
+  const narrative = bcaMemo(doc, placeReview)
     .split("\n")
     .filter((line) => !line.startsWith("# "))
     .map((line) =>
@@ -393,6 +420,7 @@ export function bcaHtml(doc: BcaDocument) {
 export async function exportBcaPackage(
   input: BcaDocument,
   additionalFiles: Record<string, Uint8Array | string> = {},
+  placeReview?: BcaPlaceReview,
 ) {
   const doc = bcaDocumentSchema.parse(input),
     result = calculateBcaDocument(doc);
@@ -409,14 +437,16 @@ export async function exportBcaPackage(
         priceYear: doc.priceYear,
         currency: "USD",
         status: result.status,
+        projectPlaceStatus: exportPlaceReview(doc, placeReview).status,
       },
       null,
       2,
     ),
     "analysis.json": JSON.stringify(doc, null, 2),
+    "project-place.json": JSON.stringify(exportPlaceReview(doc, placeReview), null, 2),
     "result.json": JSON.stringify(result, null, 2),
-    "method-and-review.md": bcaMemo(doc),
-    "report.html": bcaHtml(doc),
+    "method-and-review.md": bcaMemo(doc, placeReview),
+    "report.html": bcaHtml(doc, placeReview),
     "annual-ledger.csv": csv([
       [
         "flow_id",
@@ -487,7 +517,7 @@ export async function exportBcaPackage(
         s.dueDate,
       ]),
     ]),
-    "calculation.xlsx": await bcaWorkbookBytes(doc),
+    "calculation.xlsx": await bcaWorkbookBytes(doc, placeReview),
     "README.txt":
       "Open report.html in a browser and print to PDF. calculation.xlsx is unlocked and formula-based. analysis.json restores the full OpenPlan document. CSV contains completed annual streams only; result.json and the memo list omissions. This package is not a native Cal-B/C file or a grant submission. No source attachments are embedded. Retain referenced originals separately. SHA-256 checksums cover file bytes, not professional validity.\n",
   };

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
+import { BCA_PROJECT_PROJECTION } from "./project-place";
 export async function authorizeBcaProject(projectId: string, write: boolean) {
   if (!z.string().uuid().safeParse(projectId).success)
     return {
@@ -24,7 +25,7 @@ export async function authorizeBcaProject(projectId: string, write: boolean) {
     };
   const { data: project, error } = await supabase
     .from("projects")
-    .select("id, workspace_id, name")
+    .select(BCA_PROJECT_PROJECTION)
     .eq("id", projectId)
     .maybeSingle();
   if (error)
