@@ -133,6 +133,19 @@ export const PROJECT_DELETE_RELATIONS: readonly ProjectDeleteRelation[] = [
       `${pluralize(count, "Safety generation custody receipts")} would be destroyed along with the project. These immutable receipts retain the snapshot hash and source revisions; retire the project to preserve them.`,
   },
 
+  // Migration 20261023190100 declares NO ACTION, not a cascade. Immutable
+  // comparison revisions retain the project that supplied their inputs.
+  {
+    table: "report_safety_comparison_revisions",
+    column: "project_id",
+    label: "saved Safety input comparisons",
+    severity: "blocking",
+    behavior: "restrict",
+    href: "/reports",
+    describeLoss: (count) =>
+      `Saved Safety input comparisons prevent project deletion. ${pluralize(count, "saved Safety input comparisons")} must remain linked to the project and its source inputs; retire the project to preserve them.`,
+  },
+
   // Work products destroyed outright by the cascade.
   { table: "reports", column: "project_id", label: "reports", severity: "evidence", behavior: "cascade", href: "/reports" },
   { table: "project_evidence_bundles", column: "project_id", label: "frozen evidence bundles", severity: "evidence", behavior: "cascade", href: "/projects/{projectId}?tab=documents" },
@@ -351,6 +364,8 @@ export function assessProjectDelete(
       ? "Set the project's status to complete to retire it. Its attached records and private Planner Agent history stay intact."
       : blockers.some(blocker => blocker.table === "project_bca_versions")
       ? "Set the project's status to complete to retire it. Saved benefit-cost analyses stay intact and attributable."
+      : blockers.some(blocker => blocker.table === "report_safety_comparison_revisions")
+      ? "Set the project's status to complete to retire it. Saved Safety input comparisons stay intact and attributable."
       : blockers.some(blocker => blocker.table === "report_safety_snapshot_persistence")
       ? "Set the project's status to complete to retire it. Its attached records and immutable Safety generation custody stay intact and attributable."
       : blockers.some(blocker => blocker.table === "funding_award_handoff_revisions")

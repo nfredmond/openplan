@@ -116,6 +116,20 @@ describe("project delete preconditions", () => {
     expect(assessment.alternative).not.toContain("remove the attached records");
   });
 
+  it("preserves Safety comparison revisions and names their non-cascading project reference", () => {
+    const assessment = assessProjectDelete({ report_safety_comparison_revisions: 1 }, { projectId: "p1" });
+    expect(assessment.deletable).toBe(false);
+    expect(assessment.hasCommitments).toBe(true);
+    expect(assessment.blockers[0]).toMatchObject({
+      table: "report_safety_comparison_revisions", column: "project_id", count: 1,
+      severity: "blocking", behavior: "restrict", href: "/reports",
+    });
+    expect(assessment.blockers[0].reason).toContain("prevent project deletion");
+    expect(assessment.blockers[0].reason).not.toContain("would be destroyed");
+    expect(assessment.alternative).toContain("Saved Safety input comparisons stay intact");
+    expect(assessment.alternative).not.toContain("funding and invoicing history");
+  });
+
   it("refuses a project that carries work, and says where it lives", () => {
     const assessment = assessProjectDelete({ reports: 2, model_runs: 5 }, { projectId: "p1" });
 

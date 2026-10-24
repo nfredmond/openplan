@@ -453,7 +453,7 @@ export default async function ScenarioSetDetailPage({
     ? []
     : ((comparisonSnapshotsResult.data ?? []) as ScenarioComparisonSnapshotRow[]);
   const guidedSnapshotIds = comparisonSnapshots.filter((snapshot) => snapshot.metadata_json?.kind === "guided_project_comparison").map((snapshot) => snapshot.id);
-  const guidedEvidence = await loadGuidedComparisonEvidence(supabase, reads, guidedSnapshotIds);
+  const guidedEvidence = await loadGuidedComparisonEvidence(supabase, reads, guidedSnapshotIds, scenarioSet.workspace_id);
   const guidedCandidateEntry = baselineEntry ? alternativeEntries[0] ?? null : null;
   const guidedComparisonAlreadySaved = Boolean(
     guidedProjectComparison &&

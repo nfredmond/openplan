@@ -126,6 +126,8 @@ export function buildGrantEvidenceReadinessCues(
       nextAction:
         modelingReadiness?.key === "decision-ready"
           ? "Use the packet as cited planning support only; do not convert it into award likelihood or validated forecasting language."
+          : modelingReadiness?.key === "unassessed"
+            ? "Keep monitoring and review the unassessed supporting evidence before final pursue language or grant narrative reuse."
           : modelingReadiness?.key === "stale"
             ? "Refresh the supporting packet before final pursue language or grant narrative reuse."
             : "Add or strengthen cited planning/modeling evidence before leaning on analysis language.",

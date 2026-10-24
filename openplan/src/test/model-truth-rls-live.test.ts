@@ -1,14 +1,136 @@
+import { execFileSync } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
+import { readFileSync } from "node:fs";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
+import { buildAssistantChatTools, createChatToolBudget, type BuildAssistantChatToolsParams } from "@/lib/assistant/chat-tools";
 import { sortedCompactJson } from "@/lib/models/demand-agreement-artifact";
+import { populationFixture } from "./fixtures/common-population-evidence";
 import { LIVE_RLS, getLocalSupabaseEnv, liveClient } from "./local-supabase-env";
+import { resolveLocalDbContainer } from "./helpers/live-catalog";
 
 const liveDescribe = LIVE_RLS ? describe : describe.skip;
 const digest = (value: string) => createHash("sha256").update(value, "utf8").digest("hex");
 
+// A restored database may reach the direct workspace RESTRICT constraint before
+// the cascade reaches the managed-run trigger. Both must preserve every row.
+function expectManagedWorkspaceDeletionRefusal(error: { code: string; message: string; details: string } | null, workspaceId: string) {
+  if (error?.code === "23503") {
+    expect(error).toMatchObject({
+      code: "23503",
+      message: 'update or delete on table "workspaces" violates foreign key constraint "model_attempt_instrument_custody_workspace_id_fkey" on table "model_attempt_instrument_custody"',
+      details: `Key (id)=(${workspaceId}) is still referenced from table "model_attempt_instrument_custody".`,
+    });
+  } else {
+    expect(error).toMatchObject({ code: "P0001", message: "Managed model run deletion requires an explicit retention command" });
+  }
+}
+
+if (!LIVE_RLS) describe("managed workspace deletion refusal identities", () => {
+  const workspaceId = "11111111-1111-4111-8111-111111111111";
+  const managed = { code: "P0001", message: "Managed model run deletion requires an explicit retention command", details: "" };
+  const instrument = {
+    code: "23503",
+    message: 'update or delete on table "workspaces" violates foreign key constraint "model_attempt_instrument_custody_workspace_id_fkey" on table "model_attempt_instrument_custody"',
+    details: `Key (id)=(${workspaceId}) is still referenced from table "model_attempt_instrument_custody".`,
+  };
+  it("accepts the exact managed-run retention refusal", () => {
+    expectManagedWorkspaceDeletionRefusal(managed, workspaceId);
+  });
+  it("accepts the exact instrument custody FK bound to this workspace", () => {
+    expectManagedWorkspaceDeletionRefusal(instrument, workspaceId);
+  });
+  it.each([
+    ["successful deletion", null],
+    ["unrelated SQL state", { ...managed, code: "42501" }],
+    ["different managed refusal", { ...managed, message: "Other retention failure" }],
+    ["another foreign key", { ...instrument, message: instrument.message.replace("model_attempt_instrument_custody_workspace_id_fkey", "unrelated_workspace_id_fkey") }],
+    ["another workspace", { ...instrument, details: instrument.details.replace(workspaceId, "22222222-2222-4222-8222-222222222222") }],
+    ["missing FK details", { ...instrument, details: "" }],
+  ])("rejects %s", (_name, error) => {
+    expect(() => expectManagedWorkspaceDeletionRefusal(error as typeof managed | null, workspaceId)).toThrow();
+  });
+});
+
+// Ordinary guards protect the native fixture's executable setup and mandatory
+// hook. They do not establish installed command or user-session behavior.
+if (!LIVE_RLS) describe("model truth race fixture source preconditions", () => {
+  const source = readFileSync("src/test/model-truth-rls-live.test.ts", "utf8");
+  function caseBody(name: string) {
+    const start = source.indexOf(`\n  it("${name}", async () => {`);
+    expect(start, "native case exists").toBeGreaterThan(-1);
+    const end = source.indexOf("\n  });", start);
+    expect(end).toBeGreaterThan(start);
+    return source.slice(start, end).replace(/^\s*\/\/.*$/gm, "");
+  }
+  const race = () => caseBody("refuses a real active-authority change between the user's stage projection and recheck");
+
+  it("requires a real second-stage claim after its completed predecessor", () => {
+    const body = race();
+    const completed = body.indexOf('p_status: "succeeded"');
+    const predecessor = body.indexOf('expect(predecessor.data).toEqual({ id: producer, run_id: run, status: "succeeded", attempt_managed: true, active_attempt_id: claim.data.attempt_id });');
+    const claim = body.indexOf('const secondClaim = await service.rpc("claim_model_stage_attempt", { p_request_id: randomUUID(), p_stage_id: agreement, p_worker_id: "synthetic-changing-authority-agreement" });');
+    expect(completed).toBeGreaterThan(-1); expect(predecessor).toBeGreaterThan(completed);
+    expect(claim, "real agreement claim follows the completed predecessor").toBeGreaterThan(predecessor);
+    expect(body).toContain('expect(secondClaim.error).toBeNull(); expect(secondClaim.data.outcome).toBe("claimed");');
+    expect(body).toContain('expect(secondClaim.data.attempt_id).not.toBe(claim.data.attempt_id);');
+    expect(body).not.toMatch(/\.update\(|attempt_managed:\s*false|active_attempt_id:\s*null/);
+  });
+
+  it("requires actual readable managed parent, stages and empty running-parent selection before the hook", () => {
+    const body = race();
+    const preflight = body.slice(body.indexOf('const parentBefore = await member.from("model_runs")'), body.indexOf("    let changed = false"));
+    expect(preflight).toContain('expect(parentBefore.data).toEqual({ id: run, workspace_id: ws, status: "running", attempt_managed: true });');
+    expect(preflight).toContain('const stagesBefore = await member.from("model_run_stages").select("id, run_id, stage_name, status, attempt_managed, active_attempt_id")');
+    expect(preflight).toContain('expect(stagesBefore.data).toEqual([');
+    expect(preflight).toContain('status: "succeeded", attempt_managed: true, active_attempt_id: claim.data.attempt_id');
+    expect(preflight).toContain('status: "running", attempt_managed: true, active_attempt_id: secondClaim.data.attempt_id');
+    expect(preflight).toContain('expect(initial.data.outputs).toEqual([{ kind: "kpi", ownership_state: "current_completed", record: kpi.data }]);');
+    expect(preflight).toContain('expect(prepared.rows.attempts.find(row => row.id === secondClaim.data.attempt_id)).toMatchObject({');
+    expect(preflight).toContain('stage_id: agreement, run_id: run, worker_id: "synthetic-changing-authority-agreement", revoked_at: null');
+    expect(preflight).toContain('const userBefore = await userCurrentResults(ws, run);');
+    expect(preflight).toContain('expect(userBefore.status).toBe("ok");');
+    expect(preflight).toContain('expect(userBefore.kpis).toEqual([]);');
+    expect(preflight.indexOf('const reviewed = await service.rpc("inspect_model_run_recovery"')).toBeGreaterThan(preflight.indexOf('expect(userBefore.kpis).toEqual([]);'));
+  });
+
+  it("requires the third-query real cancellation, mandatory hook and exact changed-authority refusal", () => {
+    const body = race();
+    expect(body).toContain('table === "model_run_stages" && ++stageQueries === 3 ? afterChange(query) : query');
+    expect(body).toContain('await service.rpc("abandon_model_run_execution"');
+    expect(body).toContain('p_expected_state: reviewed.data.expected_state');
+    expect(body).toContain('expect(changed).toBe(true); expect(stageQueries).toBeGreaterThanOrEqual(3);');
+    expect(body).toContain('expect(user.reason).toBe("Model execution changed while its results were read. Refresh and read it again; no current values are confirmed.");');
+    expect(body).toContain('expect(after.data.run_status).toBe("cancelled");');
+    expect(body).toContain('expect(after.data.outputs).toEqual([{ kind: "kpi", ownership_state: "retained_inactive", record: kpi.data }]);');
+  });
+
+  it("keeps mixed-stage custody refusal separate from the race case", () => {
+    const body = caseBody("refuses mixed managed and unclaimed stages before any authority recheck");
+    expect(body).toContain('status: "queued", attempt_managed: false, active_attempt_id: null');
+    expect(body).toContain('expect(user.status).toBe("refused"); expect(user.kpis).toBeUndefined();');
+    expect(body).toContain('expect(user.reason).toBe("Current model output custody could not be verified. Retained records are not current results.");');
+    expect(body).toContain('expect(persistedWorkspace(ws).bytes, "mixed-stage read refusal changes no retained row").toBe(before.bytes);');
+    expect(body).not.toContain('abandon_model_run_execution');
+  });
+
+  it("checks the managed-run trigger directly before either workspace refusal", () => {
+    const body = caseBody("preserves managed comparison artifacts, links, enrolled runs, and workspace after deletion refusal");
+    const direct = body.indexOf('const removedRun = await service.from("model_runs").delete().eq("id", runIds[0]);');
+    const directAssertion = body.indexOf('expect(removedRun.error).toMatchObject({ code: "P0001", message: "Managed model run deletion requires an explicit retention command" });');
+    const workspace = body.indexOf('const removed = await service.from("workspaces").delete().eq("id", workspaceA);');
+    expect(direct).toBeGreaterThan(-1);
+    expect(directAssertion).toBeGreaterThan(direct);
+    expect(workspace).toBeGreaterThan(directAssertion);
+    expect(body).toContain('expect(persistedWorkspace(workspaceA).bytes, "direct managed-run refusal preserves all committed evidence").toBe(before.bytes);');
+    expect(body).toContain('expectManagedWorkspaceDeletionRefusal(removed.error, workspaceA);');
+    expect(body).toContain('expect(persistedWorkspace(workspaceA).bytes, "managed deletion refusal preserves all committed evidence").toBe(before.bytes);');
+  });
+});
+
 liveDescribe("guided model truth live RLS and trigger enforcement", () => {
+  let container = "";
   let service: SupabaseClient;
   let member: SupabaseClient;
   let viewer: SupabaseClient;
@@ -27,8 +149,59 @@ liveDescribe("guided model truth live RLS and trigger enforcement", () => {
   const password = "ModelTruthLive!2026";
   let suffix = "";
 
+  // Read committed rows independently of the client that attempts the write.
+  // Full descriptor rows include byte hashes, sizes, paths and metadata. They do
+  // not establish that the synthetic local files exist or contain those bytes.
+  function persistedWorkspace(workspaceId: string) {
+    expect(workspaceId).toMatch(/^[a-f0-9-]{36}$/);
+    const bytes = execFileSync("docker", ["exec", "-i", container, "psql", "-X", "-U", "postgres", "-d", "postgres", "-qAt", "-v", "ON_ERROR_STOP=1"], {
+      input: `BEGIN READ ONLY; SET LOCAL statement_timeout='10s';
+        WITH runs AS (SELECT * FROM public.model_runs WHERE workspace_id='${workspaceId}'),
+        snapshots AS (SELECT snapshot.* FROM public.scenario_comparison_snapshots snapshot
+          JOIN public.scenario_sets scenario ON scenario.id=snapshot.scenario_set_id WHERE scenario.workspace_id='${workspaceId}')
+        SELECT jsonb_build_object(
+          'workspaces',(SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY t.id),'[]') FROM public.workspaces t WHERE t.id='${workspaceId}'),
+          'members',(SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY t.user_id),'[]') FROM public.workspace_members t WHERE t.workspace_id='${workspaceId}'),
+          'models',(SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY t.id),'[]') FROM public.models t WHERE t.workspace_id='${workspaceId}'),
+          'runs',(SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY t.id),'[]') FROM runs t),
+          'enrollment',(SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY t.run_id),'[]') FROM public.model_execution_custody_enrollment t WHERE t.run_id IN (SELECT id FROM runs)),
+          'stages',(SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY t.id),'[]') FROM public.model_run_stages t WHERE t.run_id IN (SELECT id FROM runs)),
+          'attempts',(SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY t.id),'[]') FROM public.model_stage_attempts t WHERE t.run_id IN (SELECT id FROM runs)),
+          'artifacts',(SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY t.id),'[]') FROM public.model_run_artifacts t WHERE t.run_id IN (SELECT id FROM runs)),
+          'kpis',(SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY t.id),'[]') FROM public.model_run_kpis t WHERE t.run_id IN (SELECT id FROM runs)),
+          'retry_receipts',(SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY t.request_id),'[]') FROM public.model_run_relaunch_receipts t WHERE t.request_payload->>'run_id' IN (SELECT id::text FROM runs)),
+          'snapshots',(SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY t.id),'[]') FROM snapshots t),
+          'deltas',(SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY t.id),'[]') FROM public.scenario_comparison_indicator_deltas t WHERE t.comparison_snapshot_id IN (SELECT id FROM snapshots)),
+          'links',(SELECT coalesce(jsonb_agg(to_jsonb(t) ORDER BY t.id),'[]') FROM public.scenario_comparison_model_run_links t WHERE t.comparison_snapshot_id IN (SELECT id FROM snapshots)));
+        COMMIT;`,
+      encoding: "utf8", stdio: ["pipe", "pipe", "pipe"], timeout: 15_000,
+    }).trim();
+    const rows = JSON.parse(bytes) as Record<"workspaces" | "members" | "models" | "runs" | "enrollment" | "stages" | "attempts" | "artifacts" | "kpis" | "retry_receipts" | "snapshots" | "deltas" | "links", Record<string, unknown>[]>;
+    return { bytes, rows };
+  }
+
+  function guidedPersistedState() {
+    const state = persistedWorkspace(workspaceA);
+    expect(state.rows.workspaces.map((row) => row.id)).toEqual([workspaceA]);
+    expect(state.rows.runs.map((row) => row.id).sort()).toEqual([...runIds].sort());
+    expect(state.rows.runs.every((row) => row.workspace_id === workspaceA && row.attempt_managed === true && row.status === "succeeded")).toBe(true);
+    expect(state.rows.enrollment.map((row) => row.run_id).sort()).toEqual([...runIds].sort());
+    expect(state.rows.enrollment.every((row) => row.provenance === "new_run")).toBe(true);
+    expect(state.rows.artifacts).toHaveLength(31);
+    expect(state.rows.artifacts.filter((row) => artifactIds.includes(String(row.id))).map((row) => row.id).sort()).toEqual([...artifactIds].sort());
+    expect(state.rows.links).toHaveLength(4);
+    expect(state.rows.links.map((row) => row.model_run_id).sort()).toEqual([...runIds].sort());
+    expect(state.rows.links.map((row) => row.model_run_artifact_id).sort()).toEqual([...artifactIds].sort());
+    expect(state.rows.snapshots).toHaveLength(1);
+    expect(state.rows.snapshots[0]).toMatchObject({ id: snapshotId, status: "ready", label: "Exact live comparison" });
+    expect(state.rows.deltas).toHaveLength(1);
+    expect(state.rows.deltas[0]).toMatchObject({ id: deltaId, delta_json: { percent: -8 } });
+    return state;
+  }
+
   beforeAll(async () => {
     const env = getLocalSupabaseEnv();
+    container = resolveLocalDbContainer();
     service = liveClient(env.API_URL, env.SERVICE_ROLE_KEY, "model-truth-service");
     member = liveClient(env.API_URL, env.ANON_KEY, "model-truth-member");
     viewer = liveClient(env.API_URL, env.ANON_KEY, "model-truth-viewer");
@@ -133,6 +306,29 @@ liveDescribe("guided model truth live RLS and trigger enforcement", () => {
       network_state_digest: stateHash,
     };
 
+    // Match the maintained native population fixture with synthetic descriptors.
+    // These rows establish relationships, not file availability or scientific validity.
+    const population = populationFixture();
+    const sourceStageId = randomUUID();
+    const sourceArtifactId = randomUUID();
+    let source = { ...population.source, modelRunId: "", artifactId: sourceArtifactId, stageId: sourceStageId, attemptId: "" };
+    const geometry = { type: "Polygon", coordinates: [[[0, 0], [1, 0], [1, 1], [0, 0]]] };
+    const finishStage = async (attemptId: string) => {
+      const result = await service.rpc("write_model_stage_attempt", {
+        p_request_id: randomUUID(), p_attempt_id: attemptId, p_status: "succeeded",
+        p_log_tail: "Synthetic fixture descriptors only", p_error: null,
+      });
+      if (result.error) throw new Error(result.error.message);
+    };
+    const claimStage = async (stageId: string): Promise<string> => {
+      const result = await service.rpc("claim_model_stage_attempt", {
+        p_request_id: randomUUID(), p_stage_id: stageId, p_worker_id: "model-truth-synthetic-fixture",
+      });
+      if (result.error) throw new Error(result.error.message);
+      if (result.data?.outcome !== "claimed" || !result.data.attempt_id) throw new Error("Synthetic stage was not claimed");
+      return result.data.attempt_id;
+    };
+
     for (const [index, job] of jobs.entries()) {
       const runId = randomUUID();
       const stageId = randomUUID();
@@ -148,40 +344,80 @@ liveDescribe("guided model truth live RLS and trigger enforcement", () => {
         scenario_entry_id: job.entryId,
         engine_key: job.engine,
         launch_source: "scenario_entry",
-        status: "succeeded",
+        status: "queued",
+        corridor_geojson: geometry,
+        input_snapshot_json: { zoneGeography: "tract", commonPopulation: index === 0 ? population.generate : { ...population.reuse, source } },
         run_title: `Exact ${job.method} ${job.role}`,
         assumption_snapshot_json: job.assumptions,
         created_by: memberId,
       });
       if (run.error) throw new Error(run.error.message);
-      const stage = await service.from("model_run_stages").insert({
-        id: stageId,
-        run_id: runId,
-        stage_name: job.method === "aequilibrae" ? "Artifact Extraction" : "ActivitySim Network Assignment",
-        status: "succeeded",
-        sort_order: index,
-      });
+      // Managed readiness requires exact inconclusive instrument custody.
+      // No legacy scientific decision is inserted for these managed runs.
+      const stage = await service.from("model_run_stages").insert([
+        ...(index === 0 ? [{ id: sourceStageId, run_id: runId, stage_name: "AequilibraE Setup", status: "queued", sort_order: 0 }] : []),
+        { id: stageId, run_id: runId, stage_name: job.method === "aequilibrae" ? "Artifact Extraction" : "ActivitySim Network Assignment", status: "queued", sort_order: 1 },
+      ]);
       if (stage.error) throw new Error(stage.error.message);
-      const artifact = await service.from("model_run_artifacts").insert({
-        id: artifactId,
-        run_id: runId,
-        stage_id: stageId,
-        artifact_type: job.method === "aequilibrae" ? "link_volumes" : "activitysim_link_volumes",
-        file_url: `storage://run-artifacts/${runId}.csv`,
-        file_size_bytes: 100,
-        content_hash: `${index + 1}`.repeat(64),
-        metadata_json: metadata,
+      if (index === 0) {
+        const sourceAttemptId = await claimStage(sourceStageId);
+        source = { ...source, modelRunId: runId, attemptId: sourceAttemptId };
+        const descriptors = [
+          { kind: "common_population", ...population.basis.manifest, id: sourceArtifactId },
+          { kind: "common_population_households", path: "households.csv", sha256: "d".repeat(64), bytes: 19 },
+          { kind: "common_population_persons", path: "persons.csv", sha256: "e".repeat(64), bytes: 23 },
+          { kind: "common_population_selected_zones", ...population.basis.selected_zone_map },
+          { kind: "common_population_diagnostics", path: "diagnostics.json", sha256: "f".repeat(64), bytes: 29 },
+          { kind: "common_population_source_manifest", ...population.basis.source_manifest },
+          { kind: "common_population_source_zone_attributes", path: "source_zone_attributes.csv", sha256: "0".repeat(64), bytes: 31 },
+        ];
+        for (const descriptor of descriptors) {
+          const artifact = await service.rpc("write_model_attempt_artifact", {
+            p_request_id: randomUUID(), p_attempt_id: sourceAttemptId,
+            p_payload: { id: "id" in descriptor ? descriptor.id : randomUUID(), artifact_type: descriptor.kind,
+              file_url: `local://synthetic/${runId}/${descriptor.path}`, file_size_bytes: descriptor.bytes,
+              content_hash: descriptor.sha256, metadata_json: population.sourceMetadata },
+          });
+          if (artifact.error) throw new Error(artifact.error.message);
+        }
+        await finishStage(sourceAttemptId);
+      }
+      const attemptId = await claimStage(stageId);
+      const artifact = await service.rpc("write_model_attempt_artifact", {
+        p_request_id: randomUUID(), p_attempt_id: attemptId,
+        p_payload: { id: artifactId,
+          artifact_type: job.method === "aequilibrae" ? "link_volumes" : "activitysim_link_volumes",
+          file_url: `local://synthetic/${runId}/output.csv`, file_size_bytes: 100,
+          content_hash: `${index + 1}`.repeat(64), metadata_json: { ...metadata, ...population.metadata, demand_method: job.method } },
       });
       if (artifact.error) throw new Error(artifact.error.message);
+      const instrumentPayload: Record<string, string> = {
+        demand_method: job.method, scientific_outcome: "inconclusive",
+        model_output_artifact_id: artifactId, model_output_sha256: `${index + 1}`.repeat(64),
+      };
+      for (const [prefix, kind, schema] of [
+        ["input_bundle", "validation_input_bundle_v2", "openplan.validation-input-bundle.v2"],
+        ["match_audit", "pre_volume_match_audit_v2", "openplan.pre-volume-observation-match-audit.v2"],
+        ["comparison_basis", "model_comparison_basis_v2", "openplan.model-comparison-basis.v2"],
+        ["assessment", "model_validation_assessment_v2", "openplan.model-validation-assessment.v2"],
+        ["diagnosis", "model_validation_structural_diagnosis_v2", "openplan.model-validation-structural-diagnosis.v2"],
+      ]) {
+        const reference = await service.rpc("write_model_attempt_artifact", {
+          p_request_id: randomUUID(), p_attempt_id: attemptId,
+          p_payload: { artifact_type: kind, file_url: `local://synthetic/${runId}/${prefix}.json`,
+            file_size_bytes: 1, content_hash: "f".repeat(64), metadata_json: { schema, demand_method: job.method } },
+        });
+        if (reference.error || !reference.data?.id) throw new Error(reference.error?.message ?? "Instrument artifact missing");
+        instrumentPayload[`${prefix}_artifact_id`] = reference.data.id;
+        instrumentPayload[`${prefix}_sha256`] = reference.data.content_hash;
+      }
+      const instrument = await service.rpc("record_model_attempt_instrument", {
+        p_request_id: randomUUID(), p_attempt_id: attemptId, p_payload: instrumentPayload,
+      });
+      if (instrument.error || !instrument.data?.id) throw new Error(instrument.error?.message ?? "Instrument custody missing");
+      await finishStage(attemptId);
     }
-    const decisions = await service.from("modeling_claim_decisions").insert(jobs.map((job, index) => ({
-      workspace_id: workspaceA,
-      model_run_id: runIds[index],
-      track: job.method === "aequilibrae" ? "assignment" : "behavioral_demand",
-      claim_status: index === 3 ? "prototype_only" : "screening_grade",
-      status_reason: index === 3 ? "Recorded, but evidence remains prototype-only." : "Live fixture screening decision.",
-    })));
-    if (decisions.error) throw new Error(decisions.error.message);
+
 
     const snapshot = await service.from("scenario_comparison_snapshots").insert({
       id: snapshotId,
@@ -189,6 +425,7 @@ liveDescribe("guided model truth live RLS and trigger enforcement", () => {
       baseline_entry_id: baselineId,
       candidate_entry_id: buildId,
       label: "Exact live comparison",
+      metadata_json: { commonPopulation: { ...population.snapshot, sourceRunId: source.modelRunId, source } },
       status: "draft",
       created_by: memberId,
     });
@@ -282,19 +519,27 @@ liveDescribe("guided model truth live RLS and trigger enforcement", () => {
     }
   });
 
-  it("refuses semantic, delta, and bound-artifact mutation after custody is attached", async () => {
+  it("refuses semantic, delta, and managed artifact mutation after custody is attached", async () => {
+    const before = guidedPersistedState();
     const snapshot = await member.from("scenario_comparison_snapshots").update({ label: "Rewritten meaning" }).eq("id", snapshotId);
-    expect(snapshot.error?.message ?? "").toMatch(/semantics are immutable/i);
+    expect(snapshot.error).toMatchObject({ code: "P0001", message: "evidence-bound comparison snapshot semantics are immutable" });
+    expect(persistedWorkspace(workspaceA).bytes, "snapshot refusal preserves all committed evidence").toBe(before.bytes);
     const delta = await member.from("scenario_comparison_indicator_deltas").update({ delta_json: { percent: 99 } }).eq("id", deltaId);
-    expect(delta.error?.message ?? "").toMatch(/indicator deltas are immutable/i);
+    expect(delta.error).toMatchObject({ code: "P0001", message: "evidence-bound comparison indicator deltas are immutable" });
+    expect(persistedWorkspace(workspaceA).bytes, "delta refusal preserves all committed evidence").toBe(before.bytes);
     const artifact = await member.from("model_run_artifacts").update({ content_hash: "f".repeat(64) }).eq("id", artifactIds[0]);
-    expect(artifact.error?.message ?? "").toMatch(/artifact is immutable/i);
+    expect(artifact.error).toMatchObject({ code: "P0001", message: "Attempt artifact records are immutable" });
+    expect(persistedWorkspace(workspaceA).bytes, "managed artifact refusal preserves descriptor bytes and links").toBe(before.bytes);
   });
 
-  it("preserves enrolled model runs when workspace deletion is attempted", async () => {
+  it("preserves managed comparison artifacts, links, enrolled runs, and workspace after deletion refusal", async () => {
+    const before = guidedPersistedState();
+    const removedRun = await service.from("model_runs").delete().eq("id", runIds[0]);
+    expect(removedRun.error).toMatchObject({ code: "P0001", message: "Managed model run deletion requires an explicit retention command" });
+    expect(persistedWorkspace(workspaceA).bytes, "direct managed-run refusal preserves all committed evidence").toBe(before.bytes);
     const removed = await service.from("workspaces").delete().eq("id", workspaceA);
-    expect(removed.error?.code).toBe("23503");
-    expect(removed.error?.message).toContain("model_execution_custody_enrollment_run_id_fkey");
+    expectManagedWorkspaceDeletionRefusal(removed.error, workspaceA);
+    expect(persistedWorkspace(workspaceA).bytes, "managed deletion refusal preserves all committed evidence").toBe(before.bytes);
     const retained = await service.from("model_runs").select("id,workspace_id").in("id", runIds);
     expect(retained.error).toBeNull();
     expect(retained.data?.map((row) => row.id).sort()).toEqual([...runIds].sort());
@@ -303,4 +548,266 @@ liveDescribe("guided model truth live RLS and trigger enforcement", () => {
     expect(workspace.error).toBeNull();
     expect(workspace.data?.id).toBe(workspaceA);
   });
+
+  it("preserves an automatically enrolled unclaimed run through the original enrollment FK", async () => {
+    const workspaceId = randomUUID();
+    const modelId = randomUUID();
+    const runId = randomUUID();
+    const workspace = await service.from("workspaces").insert({ id: workspaceId, name: `Model truth enrollment FK ${suffix}`, slug: `model-truth-enrollment-fk-${suffix}` });
+    expect(workspace.error).toBeNull();
+    const membership = await service.from("workspace_members").insert({ workspace_id: workspaceId, user_id: memberId, role: "owner" });
+    expect(membership.error).toBeNull();
+    const model = await service.from("models").insert({ id: modelId, workspace_id: workspaceId, title: "Unclaimed enrollment FK fixture", model_family: "travel_demand", created_by: memberId });
+    expect(model.error).toBeNull();
+    // Omit management flags and create no stages, claims, outputs or receipts.
+    // The installed AFTER INSERT trigger supplies enrollment without a bypass.
+    const run = await service.from("model_runs").insert({ id: runId, workspace_id: workspaceId, model_id: modelId, engine_key: "aequilibrae", run_title: "Unclaimed enrollment FK fixture", created_by: memberId });
+    expect(run.error).toBeNull();
+    const before = persistedWorkspace(workspaceId);
+    expect(before.rows.workspaces.map((row) => row.id)).toEqual([workspaceId]);
+    expect(before.rows.models.map((row) => row.id)).toEqual([modelId]);
+    expect(before.rows.members).toHaveLength(1);
+    expect(before.rows.runs).toHaveLength(1);
+    expect(before.rows.runs[0]).toMatchObject({ id: runId, workspace_id: workspaceId, attempt_managed: false, status: "queued" });
+    expect(before.rows.enrollment).toHaveLength(1);
+    expect(before.rows.enrollment[0]).toMatchObject({ run_id: runId, provenance: "new_run" });
+    for (const key of ["stages", "attempts", "artifacts", "snapshots", "deltas", "links"] as const) expect(before.rows[key]).toEqual([]);
+    const removed = await service.from("workspaces").delete().eq("id", workspaceId);
+    expect(removed.error).toMatchObject({
+      code: "23503",
+      message: 'update or delete on table "model_runs" violates foreign key constraint "model_execution_custody_enrollment_run_id_fkey" on table "model_execution_custody_enrollment"',
+      details: `Key (id)=(${runId}) is still referenced from table "model_execution_custody_enrollment".`,
+    });
+    expect(persistedWorkspace(workspaceId).bytes, "enrollment FK refusal retains the workspace, model, member, run and enrollment").toBe(before.bytes);
+  });
+
+  async function userCurrentResults(workspaceId: string, runId: string, client: BuildAssistantChatToolsParams["supabase"] = member as unknown as BuildAssistantChatToolsParams["supabase"]) {
+    const tools = buildAssistantChatTools({
+      supabase: client,
+      context: { kind: "workspace", workspace: { id: workspaceId, name: "Synthetic retry workspace", plan: null, role: "owner" } } as unknown as BuildAssistantChatToolsParams["context"],
+      userId: memberId, budget: createChatToolBudget(), audit: { info() {}, warn() {}, error() {} },
+    });
+    const tool = tools.get_model_run_results as { execute: (input: { modelRunId: string }, options: { toolCallId: string; messages: [] }) => Promise<Record<string, unknown>> };
+    return tool.execute({ modelRunId: runId }, { toolCallId: randomUUID(), messages: [] });
+  }
+
+  // Maintained native preparation only for the output-preserving retry increment.
+  // Synthetic descriptor bytes are not file-byte or scientific acceptance.
+  it.each(["failed", "cancelled"])("retains original same-run outputs while a %s managed execution gets a fresh attempt", async terminal => {
+    const ws = randomUUID(), model = randomUUID(), run = randomUUID(), stage = randomUUID();
+    expect((await service.from("workspaces").insert({ id: ws, name: `Managed retry ${terminal} ${suffix}`, slug: `managed-retry-${randomUUID()}` })).error).toBeNull();
+    expect((await service.from("workspace_members").insert({ workspace_id: ws, user_id: memberId, role: "owner" })).error).toBeNull();
+    expect((await service.from("models").insert({ id: model, workspace_id: ws, title: "Managed retry integrity fixture", model_family: "travel_demand", created_by: memberId })).error).toBeNull();
+    const input = { integrityFixture: "retained-inputs", scientificAcceptance: "unassessed" };
+    expect((await service.from("model_runs").insert({ id: run, model_id: model, workspace_id: ws, engine_key: "aequilibrae", run_title: "Same-run retained output fixture", input_snapshot_json: input, created_by: memberId })).error).toBeNull();
+    expect((await service.from("model_run_stages").insert({ id: stage, run_id: run, stage_name: "Artifact Extraction", sort_order: 0, status: "queued" })).error).toBeNull();
+    const claim = await service.rpc("claim_model_stage_attempt", { p_request_id: randomUUID(), p_stage_id: stage, p_worker_id: "synthetic-first" });
+    expect(claim.error).toBeNull(); expect(claim.data.outcome).toBe("claimed");
+    const first = claim.data.attempt_id as string;
+    const kpiRequest = randomUUID();
+    const kpiPayload = { kpi_name: "daily_vmt", kpi_label: "Daily VMT", kpi_category: "assignment", value: 900, unit: "vehicle-miles/day" };
+    const oldKpi = await service.rpc("write_model_attempt_kpi", { p_request_id: kpiRequest, p_attempt_id: first, p_payload: kpiPayload });
+    expect(oldKpi.error).toBeNull();
+    const artifactPayload = { artifact_type: "link_volumes", file_url: `local:///integrity-fixture/${run}/attempts/${first}/links.csv`, content_hash: "a".repeat(64), file_size_bytes: 1, metadata_json: { integrity_fixture: true } };
+    const oldArtifact = await service.rpc("write_model_attempt_artifact", { p_request_id: randomUUID(), p_attempt_id: first, p_payload: artifactPayload });
+    expect(oldArtifact.error).toBeNull();
+    if (terminal === "failed") {
+      expect((await service.rpc("write_model_stage_attempt", { p_request_id: randomUUID(), p_attempt_id: first, p_status: "failed", p_log_tail: "Synthetic failure", p_error: "Synthetic failure" })).error).toBeNull();
+    } else {
+      const inspected = await service.rpc("inspect_model_run_recovery", { p_workspace_id: ws, p_run_id: run, p_actor_id: memberId });
+      expect(inspected.error).toBeNull();
+      expect((await service.rpc("abandon_model_run_execution", { p_request_id: randomUUID(), p_workspace_id: ws, p_run_id: run, p_actor_id: memberId,
+        p_expected_state: inspected.data.expected_state, p_reason: "Synthetic cancellation", p_evidence: { process_termination: "unconfirmed" } })).error).toBeNull();
+    }
+    const before = await service.rpc("read_model_attempt_outputs", { p_workspace_id: ws, p_run_id: run });
+    expect(before.error).toBeNull(); expect(before.data.outputs.every((o: { ownership_state: string }) => o.ownership_state === "retained_inactive")).toBe(true);
+    const staleUser = await userCurrentResults(ws, run);
+    expect(staleUser.status).toBe("ok"); expect(staleUser.kpis).toEqual([]);
+    const inspected = await service.rpc("inspect_model_run_recovery", { p_workspace_id: ws, p_run_id: run, p_actor_id: memberId });
+    expect(inspected.error).toBeNull(); expect(inspected.data.expected_state.status).toBe(terminal);
+    const requestId = randomUUID();
+    const args = { p_request_id: requestId, p_workspace_id: ws, p_run_id: run, p_actor_id: memberId, p_expected_state: inspected.data.expected_state, p_reason: "Fresh same-run attempt with retained originals" };
+    expect((await service.rpc("relaunch_model_run_attempts", { ...args, p_actor_id: outsiderId })).error?.code).toBe("42501");
+    expect((await member.rpc("relaunch_model_run_attempts", args)).error).not.toBeNull();
+    const retried = await Promise.all([service.rpc("relaunch_model_run_attempts", args), service.rpc("relaunch_model_run_attempts", args)]);
+    expect(retried[0].error).toBeNull(); expect(retried[1]).toEqual(retried[0]);
+    expect(retried[0].data).toMatchObject({ run_id: run, outcome: "fresh_attempt_queued", outputs_preserved: true, scientific_claim_changed: false, model_resumed: false });
+    expect((await service.rpc("relaunch_model_run_attempts", { ...args, p_reason: "Changed payload" })).error?.code).toBe("23505");
+    const beforeStale = persistedWorkspace(ws);
+    const stale = await service.rpc("relaunch_model_run_attempts", { ...args, p_request_id: randomUUID() });
+    expect(stale.status).toBe(409);
+    expect(stale.error).toMatchObject({ code: "PT409", message: "Model recovery state changed" });
+    expect(stale.data).toBeNull();
+    expect(persistedWorkspace(ws).bytes, "stale retry refusal preserves original rows, snapshots and receipts").toBe(beforeStale.bytes);
+    const secondClaim = await service.rpc("claim_model_stage_attempt", { p_request_id: randomUUID(), p_stage_id: stage, p_worker_id: "synthetic-second" });
+    expect(secondClaim.error).toBeNull(); expect(secondClaim.data.outcome).toBe("claimed");
+    const second = secondClaim.data.attempt_id as string; expect(second).not.toBe(first);
+    const late = await service.rpc("write_model_attempt_kpi", { p_request_id: randomUUID(), p_attempt_id: first, p_payload: { ...kpiPayload, value: 999 } });
+    expect(late.error?.message).toBe("Model KPI attempt no longer owns work");
+    const currentKpi = await service.rpc("write_model_attempt_kpi", { p_request_id: randomUUID(), p_attempt_id: second, p_payload: { ...kpiPayload, value: 20 } });
+    expect(currentKpi.error).toBeNull(); expect(currentKpi.data.id).not.toBe(oldKpi.data.id);
+    expect((await service.rpc("write_model_stage_attempt", { p_request_id: randomUUID(), p_attempt_id: second, p_status: "succeeded", p_log_tail: "Synthetic completion", p_error: null })).error).toBeNull();
+    const after = await service.rpc("read_model_attempt_outputs", { p_workspace_id: ws, p_run_id: run });
+    expect(after.error).toBeNull(); expect(after.data.run_status).toBe("succeeded");
+    expect(after.data.outputs).toContainEqual({ kind: "kpi", ownership_state: "retained_inactive", record: oldKpi.data });
+    expect(after.data.outputs).toContainEqual({ kind: "artifact", ownership_state: "retained_inactive", record: oldArtifact.data });
+    expect(after.data.outputs).toContainEqual({ kind: "kpi", ownership_state: "current_completed", record: currentKpi.data });
+    const currentUser = await userCurrentResults(ws, run);
+    expect(currentUser.status).toBe("ok");
+    expect(currentUser.kpis).toEqual([expect.objectContaining({ name: "daily_vmt", value: currentKpi.data.value })]);
+    const userProjection = await member.from("model_run_kpis").select("id,run_id,attempt_id,kpi_name,value")
+      .eq("run_id", run).in("attempt_id", [second]);
+    expect(userProjection.error).toBeNull();
+    expect(userProjection.data).toEqual([{ id: currentKpi.data.id, run_id: run, attempt_id: second, kpi_name: "daily_vmt", value: currentKpi.data.value }]);
+    expect((await service.rpc("write_model_attempt_kpi", { p_request_id: kpiRequest, p_attempt_id: first, p_payload: kpiPayload })).data).toEqual(oldKpi.data);
+    expect((await service.rpc("relaunch_model_run_attempts", args)).data).toEqual(retried[0].data);
+    const preservedInput = await member.from("model_runs").select("input_snapshot_json").eq("id", run).single();
+    expect(preservedInput.error).toBeNull(); expect(preservedInput.data?.input_snapshot_json).toEqual(input);
+    // Retain this wholly synthetic workspace with its immutable records until
+    // the isolated native target is discarded. No DELETE or fixture forgery.
+  });
+
+  it.each([
+    ["total_trips", "Artifact Extraction"], ["daily_vmt", "Artifact Extraction"],
+    ["resident_vmt_per_capita", "Artifact Extraction"], ["vmt_per_capita", "Artifact Extraction"],
+    ["co2e_metric_tons_year", "Artifact Extraction"], ["co2e_kg_per_capita_day", "Artifact Extraction"],
+    ["activitysim_trips", "ActivitySim Bundle & Preflight"], ["activitysim_runtime_mode", "ActivitySim Bundle & Preflight"],
+    ["activitysim_daily_vmt", "ActivitySim Network Assignment"],
+  ].flatMap(([name, producer]) => [{ name, producer, correct: false }, { name, producer, correct: true }]))(
+    "keeps actual user/native producer parity for $name with correct=$correct", async ({ name, producer, correct }) => {
+    const ws = randomUUID(), model = randomUUID(), run = randomUUID(), stage = randomUUID();
+    expect((await service.from("workspaces").insert({ id: ws, name: "Synthetic wrong producer", slug: `wrong-producer-${randomUUID()}` })).error).toBeNull();
+    expect((await service.from("workspace_members").insert({ workspace_id: ws, user_id: memberId, role: "owner" })).error).toBeNull();
+    expect((await service.from("models").insert({ id: model, workspace_id: ws, title: "Synthetic producer boundary", model_family: "travel_demand", created_by: memberId })).error).toBeNull();
+    expect((await service.from("model_runs").insert({ id: run, model_id: model, workspace_id: ws, engine_key: "aequilibrae", run_title: "Synthetic producer boundary", created_by: memberId })).error).toBeNull();
+    expect((await service.from("model_run_stages").insert({ id: stage, run_id: run, stage_name: correct ? producer : "AequilibraE Setup", sort_order: 0, status: "queued" })).error).toBeNull();
+    const claim = await service.rpc("claim_model_stage_attempt", { p_request_id: randomUUID(), p_stage_id: stage, p_worker_id: "synthetic-wrong-producer" });
+    expect(claim.error).toBeNull(); expect(claim.data.outcome).toBe("claimed");
+    const kpi = await service.rpc("write_model_attempt_kpi", { p_request_id: randomUUID(), p_attempt_id: claim.data.attempt_id,
+      p_payload: { kpi_name: name, kpi_label: "Synthetic named producer policy", value: 900, unit: "vehicle-miles/day", kpi_category: "assignment" } });
+    expect(kpi.error).toBeNull();
+    expect((await service.rpc("write_model_stage_attempt", { p_request_id: randomUUID(), p_attempt_id: claim.data.attempt_id, p_status: "succeeded", p_log_tail: "Synthetic producer completed", p_error: null })).error).toBeNull();
+    const native = await service.rpc("read_model_attempt_outputs", { p_workspace_id: ws, p_run_id: run });
+    expect(native.error).toBeNull(); expect(native.data.outputs).toEqual([{ kind: "kpi", ownership_state: correct ? "current_completed" : "invalid_binding", record: kpi.data }]);
+    const user = await userCurrentResults(ws, run);
+    if (correct) {
+      expect(user.status).toBe("ok");
+      expect(user.kpis).toEqual([expect.objectContaining({ name, value: kpi.data.value })]);
+    } else {
+      expect(user.status).toBe("refused"); expect(user.kpis).toBeUndefined();
+      expect(user.reason).toContain("expected successful producer stage");
+    }
+  });
+
+  it("refuses mixed managed and unclaimed stages before any authority recheck", async () => {
+    const ws = randomUUID(), model = randomUUID(), run = randomUUID(), producer = randomUUID(), agreement = randomUUID();
+    expect((await service.from("workspaces").insert({ id: ws, name: "Synthetic mixed stage custody", slug: `mixed-stage-${randomUUID()}` })).error).toBeNull();
+    expect((await service.from("workspace_members").insert({ workspace_id: ws, user_id: memberId, role: "owner" })).error).toBeNull();
+    expect((await service.from("models").insert({ id: model, workspace_id: ws, title: "Synthetic mixed stage custody", model_family: "travel_demand", created_by: memberId })).error).toBeNull();
+    expect((await service.from("model_runs").insert({ id: run, model_id: model, workspace_id: ws, engine_key: "aequilibrae", run_title: "Synthetic mixed stage custody", created_by: memberId })).error).toBeNull();
+    expect((await service.from("model_run_stages").insert([
+      { id: producer, run_id: run, stage_name: "Artifact Extraction", sort_order: 0, status: "queued" },
+      { id: agreement, run_id: run, stage_name: "Demand Model Agreement", sort_order: 1, status: "queued" },
+    ])).error).toBeNull();
+    const claim = await service.rpc("claim_model_stage_attempt", { p_request_id: randomUUID(), p_stage_id: producer, p_worker_id: "synthetic-mixed-stage" });
+    expect(claim.error).toBeNull(); expect(claim.data.outcome).toBe("claimed");
+    const kpi = await service.rpc("write_model_attempt_kpi", { p_request_id: randomUUID(), p_attempt_id: claim.data.attempt_id,
+      p_payload: { kpi_name: "daily_vmt", kpi_label: "Synthetic mixed stage custody", value: 20, unit: "vehicle-miles/day", kpi_category: "assignment" } });
+    expect(kpi.error).toBeNull();
+    expect((await service.rpc("write_model_stage_attempt", { p_request_id: randomUUID(), p_attempt_id: claim.data.attempt_id, p_status: "succeeded", p_log_tail: "Synthetic producer completed", p_error: null })).error).toBeNull();
+    const stages = await member.from("model_run_stages").select("id, status, attempt_managed, active_attempt_id").eq("run_id", run).order("sort_order");
+    expect(stages.error).toBeNull();
+    expect(stages.data).toEqual([
+      { id: producer, status: "succeeded", attempt_managed: true, active_attempt_id: claim.data.attempt_id },
+      { id: agreement, status: "queued", attempt_managed: false, active_attempt_id: null },
+    ]);
+    const native = await service.rpc("read_model_attempt_outputs", { p_workspace_id: ws, p_run_id: run });
+    expect(native.error).toBeNull(); expect(native.data.run_status).toBe("running");
+    expect(native.data.outputs).toEqual([{ kind: "kpi", ownership_state: "current_completed", record: kpi.data }]);
+    const before = persistedWorkspace(ws);
+    const user = await userCurrentResults(ws, run);
+    expect(user.status).toBe("refused"); expect(user.kpis).toBeUndefined();
+    expect(user.reason).toBe("Current model output custody could not be verified. Retained records are not current results.");
+    expect(persistedWorkspace(ws).bytes, "mixed-stage read refusal changes no retained row").toBe(before.bytes);
+  });
+
+  it("refuses a real active-authority change between the user's stage projection and recheck", async () => {
+    const ws = randomUUID(), model = randomUUID(), run = randomUUID(), producer = randomUUID(), agreement = randomUUID();
+    expect((await service.from("workspaces").insert({ id: ws, name: "Synthetic active change", slug: `active-change-${randomUUID()}` })).error).toBeNull();
+    expect((await service.from("workspace_members").insert({ workspace_id: ws, user_id: memberId, role: "owner" })).error).toBeNull();
+    expect((await service.from("models").insert({ id: model, workspace_id: ws, title: "Synthetic active change", model_family: "travel_demand", created_by: memberId })).error).toBeNull();
+    expect((await service.from("model_runs").insert({ id: run, model_id: model, workspace_id: ws, engine_key: "aequilibrae", run_title: "Synthetic active change", created_by: memberId })).error).toBeNull();
+    expect((await service.from("model_run_stages").insert([
+      { id: producer, run_id: run, stage_name: "Artifact Extraction", sort_order: 0, status: "queued" },
+      { id: agreement, run_id: run, stage_name: "Demand Model Agreement", sort_order: 1, status: "queued" },
+    ])).error).toBeNull();
+    const claim = await service.rpc("claim_model_stage_attempt", { p_request_id: randomUUID(), p_stage_id: producer, p_worker_id: "synthetic-changing-authority" });
+    expect(claim.error).toBeNull(); expect(claim.data.outcome).toBe("claimed");
+    const kpi = await service.rpc("write_model_attempt_kpi", { p_request_id: randomUUID(), p_attempt_id: claim.data.attempt_id,
+      p_payload: { kpi_name: "daily_vmt", kpi_label: "Synthetic active change", value: 20, unit: "vehicle-miles/day", kpi_category: "assignment" } });
+    expect(kpi.error).toBeNull();
+    expect((await service.rpc("write_model_stage_attempt", { p_request_id: randomUUID(), p_attempt_id: claim.data.attempt_id, p_status: "succeeded", p_log_tail: "Synthetic producer completed", p_error: null })).error).toBeNull();
+    const predecessor = await member.from("model_run_stages").select("id, run_id, status, attempt_managed, active_attempt_id").eq("id", producer).single();
+    expect(predecessor.error).toBeNull();
+    expect(predecessor.data).toEqual({ id: producer, run_id: run, status: "succeeded", attempt_managed: true, active_attempt_id: claim.data.attempt_id });
+    const secondClaim = await service.rpc("claim_model_stage_attempt", { p_request_id: randomUUID(), p_stage_id: agreement, p_worker_id: "synthetic-changing-authority-agreement" });
+    expect(secondClaim.error).toBeNull(); expect(secondClaim.data.outcome).toBe("claimed");
+    expect(secondClaim.data.attempt_id).toEqual(expect.any(String));
+    expect(secondClaim.data.attempt_id).not.toBe(claim.data.attempt_id);
+    const parentBefore = await member.from("model_runs").select("id, workspace_id, status, attempt_managed").eq("id", run).eq("workspace_id", ws).single();
+    expect(parentBefore.error).toBeNull();
+    expect(parentBefore.data).toEqual({ id: run, workspace_id: ws, status: "running", attempt_managed: true });
+    const stagesBefore = await member.from("model_run_stages").select("id, run_id, stage_name, status, attempt_managed, active_attempt_id").eq("run_id", run).order("sort_order");
+    expect(stagesBefore.error).toBeNull();
+    expect(stagesBefore.data).toEqual([
+      { id: producer, run_id: run, stage_name: "Artifact Extraction", status: "succeeded", attempt_managed: true, active_attempt_id: claim.data.attempt_id },
+      { id: agreement, run_id: run, stage_name: "Demand Model Agreement", status: "running", attempt_managed: true, active_attempt_id: secondClaim.data.attempt_id },
+    ]);
+    const initial = await service.rpc("read_model_attempt_outputs", { p_workspace_id: ws, p_run_id: run });
+    expect(initial.error).toBeNull(); expect(initial.data.run_status).toBe("running");
+    expect(initial.data.outputs).toEqual([{ kind: "kpi", ownership_state: "current_completed", record: kpi.data }]);
+    const prepared = persistedWorkspace(ws);
+    expect(prepared.rows.attempts.find(row => row.id === secondClaim.data.attempt_id)).toMatchObject({
+      stage_id: agreement, run_id: run, worker_id: "synthetic-changing-authority-agreement", revoked_at: null,
+    });
+    // A running parent exposes no completed-run KPIs. This preflight proves
+    // readable custody, not current-KPI availability on an unfinished run.
+    const userBefore = await userCurrentResults(ws, run);
+    expect(userBefore.status).toBe("ok"); expect(userBefore.run).toMatchObject({ id: run, status: "running" });
+    expect(userBefore.kpis).toEqual([]);
+    const reviewed = await service.rpc("inspect_model_run_recovery", { p_workspace_id: ws, p_run_id: run, p_actor_id: memberId });
+    expect(reviewed.error).toBeNull();
+    let changed = false, stageQueries = 0;
+    const afterChange = (query: object): object => new Proxy(query, { get(target, key) {
+      const value: unknown = Reflect.get(target, key, target);
+      if (typeof value !== "function") return value;
+      if (key === "then") return (...args: unknown[]) => {
+        const pending = (async () => {
+          if (!changed) {
+            changed = true;
+            expect((await service.rpc("abandon_model_run_execution", { p_request_id: randomUUID(), p_workspace_id: ws, p_run_id: run, p_actor_id: memberId,
+              p_expected_state: reviewed.data.expected_state, p_reason: "Synthetic authority change", p_evidence: { process_termination: "unconfirmed" } })).error).toBeNull();
+          }
+          return await (target as PromiseLike<unknown>);
+        })();
+        return Reflect.apply(pending.then, pending, args);
+      };
+      return (...args: unknown[]) => afterChange(Reflect.apply(value, target, args) as object);
+    } });
+    const client = { from(table: string) {
+      const query = member.from(table);
+      // Two initial pages establish the projected stage set. The third read
+      // starts the optimistic recheck, after the KPI selection boundary.
+      return table === "model_run_stages" && ++stageQueries === 3 ? afterChange(query) : query;
+    } } as unknown as BuildAssistantChatToolsParams["supabase"];
+    const user = await userCurrentResults(ws, run, client);
+    expect(changed).toBe(true); expect(stageQueries).toBeGreaterThanOrEqual(3);
+    expect(user.status).toBe("refused"); expect(user.kpis).toBeUndefined();
+    expect(user.reason).toBe("Model execution changed while its results were read. Refresh and read it again; no current values are confirmed.");
+    const after = await service.rpc("read_model_attempt_outputs", { p_workspace_id: ws, p_run_id: run });
+    expect(after.error).toBeNull(); expect(after.data.run_status).toBe("cancelled");
+    expect(after.data.outputs).toEqual([{ kind: "kpi", ownership_state: "retained_inactive", record: kpi.data }]);
+    expect(after.data.outputs.every((output: { ownership_state: string }) => output.ownership_state === "retained_inactive")).toBe(true);
+  });
+
 });

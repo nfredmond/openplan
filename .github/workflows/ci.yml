@@ -46,6 +46,7 @@ jobs:
         run: |
           npm ci
           npm run check:first-week-discovery
+          npm run check:service-key-headers
 
       - name: QA gate
         run: npm run qa:gate

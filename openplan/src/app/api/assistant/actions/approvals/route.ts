@@ -13,11 +13,14 @@ import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { HoldReceiptError, prepareHoldExecutionContext } from "@/lib/assistant/stage-gate-hold-receipt";
 import { prepareSubmittalExecutionContext } from "@/lib/assistant/project-submittal-receipt";
 import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
+import { chatApprovalBindingSchema, issueChatIntentApproval } from "@/lib/assistant/provider-chat-intents";
+import { requireProviderBrowserOrigin, providerError } from "@/lib/assistant/provider-server";
 
 const approvalRequestSchema = z.object({
   workspaceId: z.string().uuid().nullable(),
   action: assistantApprovalActionSchema,
   requireApproval: z.boolean().default(false),
+  chatBinding: chatApprovalBindingSchema.optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -31,6 +34,12 @@ export async function POST(request: NextRequest) {
     const parsed = approvalRequestSchema.safeParse(payload);
     if (!parsed.success) {
       return NextResponse.json({ error: "Invalid assistant approval request" }, { status: 400 });
+    }
+    if (parsed.data.chatBinding) {
+      requireProviderBrowserOrigin(request);
+      if (request.headers.has("authorization") || !parsed.data.requireApproval || !parsed.data.workspaceId || parsed.data.action.kind !== "create_project_record") {
+        return NextResponse.json({ error: "Chat approval requires the human session and exact draft action." }, { status: 403 });
+      }
     }
 
     const supabase = await createClient();
@@ -95,6 +104,12 @@ export async function POST(request: NextRequest) {
           ? await prepareSubmittalExecutionContext(supabase, parsed.data.workspaceId, parsed.data.action)
           : null;
       approvalId = newAssistantApprovalId();
+      if (parsed.data.chatBinding && parsed.data.action.kind === "create_project_record" && parsed.data.workspaceId) {
+        const issued = await issueChatIntentApproval(supabase, parsed.data.chatBinding, { action: parsed.data.action, inputHash,
+          workspaceId: parsed.data.workspaceId, approvalId, expiresAt, executionContext });
+        audit.info("assistant_chat_intent_approval_prepared", { intentId: parsed.data.chatBinding.intentId, approvalId: issued.approvalId, inputHash, userId: user.id });
+        return NextResponse.json(issued, { status: 201, headers: { "Cache-Control": "no-store" } });
+      }
       const serviceSupabase = createServiceRoleClient();
       const { error: insertError } = await serviceSupabase.from("assistant_action_approvals").insert({
         id: approvalId,
@@ -136,6 +151,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
+    if (error instanceof Error && (error.name === "ZodError" || error.message.startsWith("chat_") || error.message.startsWith("provider_"))) return providerError(error);
     if (error instanceof HoldReceiptError) return NextResponse.json({ error: error.message }, { status: error.status });
     audit.error("assistant_action_approval_unhandled_error", {
       durationMs: Date.now() - startedAt,

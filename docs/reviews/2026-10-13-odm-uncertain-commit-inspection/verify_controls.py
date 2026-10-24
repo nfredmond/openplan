@@ -10,6 +10,60 @@ import subprocess
 import sys
 
 
+def readable_stream(stream):
+    if stream is None:
+        return ''
+    return stream.decode('utf-8', errors='backslashreplace') if isinstance(stream, bytes) else stream
+
+
+def stream_bytes(stream):
+    if stream is None:
+        return b''
+    return stream if isinstance(stream, bytes) else stream.encode('utf-8', errors='surrogatepass')
+
+
+# Keep each stream independently, even when another evidence write fails.
+def write_evidence(out, label, stdout, stderr, status):
+    log = out / (label + '-private.log')
+    writes = [
+        (out / (label + '-stdout-private.bin'), lambda path: path.write_bytes(stream_bytes(stdout))),
+        (out / (label + '-stderr-private.bin'), lambda path: path.write_bytes(stream_bytes(stderr))),
+        (log, lambda path: path.write_text(
+            status + '\nRaw streams: exact bytes; strings encoded as UTF-8 with surrogatepass; None is empty.\n'
+            + '--- stdout (' + type(stdout).__name__ + ') ---\n' + readable_stream(stdout)
+            + '\n--- stderr (' + type(stderr).__name__ + ') ---\n' + readable_stream(stderr),
+            encoding='utf-8', errors='backslashreplace')),
+    ]
+    failures = []
+    for path, write in writes:
+        try:
+            write(path)
+        except Exception as error:
+            failure = RuntimeError('EVIDENCE FAILURE: ' + path.name + ': ' + repr(error))
+            failure.__cause__ = error
+            failures.append(failure)
+    if failures:
+        raise ExceptionGroup('Control evidence writes failed', failures)
+
+
+# Evidence cannot replace the child timeout as the primary failure.
+def execute(module, out, label, test=None):
+    names = ['test_uncertain_commit_inspection' + ('.Checks.' + test if test else '')]
+    try:
+        result = subprocess.run([sys.executable, '-B', '-m', 'unittest', '-v', *names], cwd=module.parent,
+            capture_output=True, text=True, timeout=30, env={**os.environ, 'PYTHONDONTWRITEBYTECODE': '1'})
+    except subprocess.TimeoutExpired as timeout:
+        timeout.add_note('CONTROL TIMEOUT: ' + label + '; partial streams belong to this timed-out child.')
+        try:
+            write_evidence(out, label, timeout.stdout, timeout.stderr, 'TIMEOUT: ' + label + '; limit=30 seconds')
+        except Exception as evidence_error:
+            timeout.add_note('TIMEOUT EVIDENCE FAILURE: ' + repr(evidence_error))
+        raise
+    output = result.stdout + result.stderr
+    write_evidence(out, label, result.stdout, result.stderr, 'RETURN CODE: ' + str(result.returncode) + '; control=' + label)
+    return result.returncode, output
+
+
 def intended(code, output, test, diagnostic, kind):
     marker = 'FAIL:' if kind == 'failures' else 'ERROR:'
     other = 'ERROR:' if kind == 'failures' else 'FAIL:'
@@ -70,16 +124,9 @@ def run(repo, out):
     fault('source-timeout-bool-normalized', 'type(original_timeout) not in (int, float)', 'not isinstance(original_timeout, (int, float))', 'test_source_timeout_types_are_not_normalized_by_deadline_clamping', 'ValueError not raised', target=effects)
     census={node.name for node in ast.walk(ast.parse(tests.read_bytes())) if isinstance(node,ast.FunctionDef) and node.name.startswith('test_')}
     if {row[3] for row in cases}!=census:raise ValueError('Every processing access case requires a targeted control')
-    def execute(label, test=None):
-        names = ['test_uncertain_commit_inspection' + ('.Checks.' + test if test else '')]
-        result = subprocess.run([sys.executable, '-B', '-m', 'unittest', '-v', *names], cwd=module.parent,
-            capture_output=True, text=True, timeout=30, env={**os.environ, 'PYTHONDONTWRITEBYTECODE': '1'})
-        output = result.stdout + result.stderr
-        (out / (label + '-private.log')).write_text(output)
-        return result.returncode, output
     def positive(label, payload):
         module.write_bytes(payload)
-        code, output = execute(label)
+        code, output = execute(module, out, label)
         if code or 'Ran 21 tests' not in output or not output.rstrip().endswith('OK'):
             raise AssertionError(label + ' complete task-read cohort failed')
         rows.append({'control': label, 'outcome': 'survived', 'cases': 21})
@@ -91,7 +138,7 @@ def run(repo, out):
             try:
                 ast.parse(changed)
                 target.write_text(changed)
-                code, output = execute(label, test)
+                code, output = execute(module, out, label, test)
                 if not intended(code, output, test, diagnostic, kind):
                     raise AssertionError(label + ' did not fail at its intended assertion')
                 for name, c, o, t, d, k, wanted in [

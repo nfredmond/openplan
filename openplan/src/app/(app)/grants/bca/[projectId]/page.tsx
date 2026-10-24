@@ -8,6 +8,7 @@ import { loadGuidedComparisonEvidence } from "@/lib/models/guided-comparison-evi
 import { buildGuidedComparisonResults } from "@/lib/models/guided-comparison-results";
 import type { BcaModelEvidence } from "@/lib/bca/workbench/model-evidence";
 import { moduleMetadata } from "@/lib/ui/page-title";
+import { BCA_PROJECT_PROJECTION, readBcaProjectPlace } from "@/lib/bca/workbench/project-place";
 export const metadata = moduleMetadata("Benefit-cost analysis");
 export default async function BcaPage({
   params,
@@ -23,7 +24,7 @@ export default async function BcaPage({
   if (!user) redirect("/sign-in");
   const { data: project, error } = await supabase
     .from("projects")
-    .select("id, name, workspace_id")
+    .select(BCA_PROJECT_PROJECTION)
     .eq("id", projectId)
     .maybeSingle();
   if (error) throw new Error("Could not load the BCA project");
@@ -64,6 +65,7 @@ export default async function BcaPage({
     supabase,
     reads,
     candidates.map((s) => s.id),
+    project.workspace_id,
   );
   const models: BcaModelEvidence[] = reads.any
     ? []
@@ -85,6 +87,7 @@ export default async function BcaPage({
       modelReadFailed={reads.any}
       projectId={projectId}
       projectName={project.name}
+      projectPlace={readBcaProjectPlace(projectId, project)}
       userId={user.id}
       canSave={canAccessWorkspaceAction("programs.write", membership.data.role)}
     />

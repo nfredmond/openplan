@@ -14,6 +14,7 @@ import model_publication_values as publication
 import model_assessment_values as assessment
 import model_legacy_artifact_command as legacy_artifact
 import model_legacy_kpi_command as legacy_kpi
+from supabase_service_headers import service_key_headers
 from datetime import datetime
 
 
@@ -178,6 +179,10 @@ def validate_command(command: dict):
     _uuid(command['request_id'])
     args = command['arguments']
     operation = command['operation']
+    if operation in ('register_model_population_checkpoint', 'create_model_population_replacement'):
+        import model_population_replacement
+        model_population_replacement.validate(command)
+        return
     if operation == 'abandon_model_run_execution':
         import model_recovery_decision_command as recovery_decision
         recovery_decision.validate(command)
@@ -272,6 +277,12 @@ def _skip_receipt(command: dict, receipt: object) -> dict:
 
 
 def checked_receipt(command: dict, receipt: object) -> dict:
+    if command['operation'] in ('register_model_population_checkpoint', 'create_model_population_replacement'):
+        import model_population_replacement
+        try:
+            return model_population_replacement.check_receipt(command, receipt)
+        except (ValueError, TypeError, KeyError, AttributeError):
+            raise DeliveryUnconfirmed('Population replacement receipt differs') from None
     if command['operation'] == 'abandon_model_run_execution':
         import model_recovery_decision_command as recovery_decision
         try:
@@ -357,6 +368,8 @@ def rpc_arguments(command: dict) -> dict:
     result = {'p_request_id': command['request_id']}
     keys = {
         'abandon_model_run_execution': ('workspace_id', 'run_id', 'actor_id', 'expected_state', 'reason', 'evidence'),
+        'register_model_population_checkpoint': ('workspace_id', 'run_id', 'stage_id', 'deployment_id', 'facts'),
+        'create_model_population_replacement': ('workspace_id', 'run_id', 'actor_id', 'expected_state', 'checkpoint_id', 'checkpoint_sha256', 'reason', 'acknowledged_new_run'),
         'skip_blocked_model_stage': ('workspace_id', 'run_id', 'stage_id', 'blocker_id', 'blocker_status'),
         'claim_model_stage_attempt': ('stage_id', 'worker_id'),
         'write_model_stage_attempt': ('attempt_id', 'status', 'log_tail', 'error'),
@@ -389,7 +402,7 @@ def deliver(directory, command: dict, *, base_url: str, deployment_id: str, serv
         post = requests.post
     try:
         response = post(base_url.rstrip('/') + '/rest/v1/rpc/' + command['operation'],
-                        headers={'apikey': service_key, 'Authorization': 'Bearer ' + service_key},
+                        headers=service_key_headers(service_key),
                         json=rpc_arguments(command), timeout=(5, 30), allow_redirects=False)
     except Exception:
         raise DeliveryUnconfirmed('Model RPC transport did not confirm a receipt') from None
@@ -440,7 +453,7 @@ def inspect_ownership(claim_command: dict, claim_receipt: dict, *, workspace_id:
         get = requests.get
     try:
         response = get(base_url.rstrip('/') + '/rest/v1/model_run_stages',
-                       headers={'apikey': service_key, 'Authorization': 'Bearer ' + service_key},
+                       headers=service_key_headers(service_key),
                        params={'id': 'eq.' + args['stage_id'], 'run_id': 'eq.' + args['run_id'],
                                'model_runs.workspace_id': 'eq.' + workspace_id,
                                'select': 'id,run_id,status,attempt_managed,active_attempt_id,model_runs!inner(id,workspace_id,status,attempt_managed)'},

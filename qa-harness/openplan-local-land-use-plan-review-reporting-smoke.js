@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { serviceKeyHeaders } = require('./supabase-service-headers');
 const { chromium } = require('playwright');
 const { buildBrowserContextOptions, getOutputDir, guardLocalMutationTargets, loadEnv, repoRoot } = require('./harness-env');
 
@@ -40,7 +41,7 @@ async function main() {
 
   const createdUser = requireResult(await jsonFetch(`${supabaseUrl}/auth/v1/admin/users`, {
     method: 'POST',
-    headers: { apikey: serviceRoleKey, Authorization: `Bearer ${serviceRoleKey}`, 'Content-Type': 'application/json' },
+    headers: { ...serviceKeyHeaders(serviceRoleKey), 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password, email_confirm: true, user_metadata: { purpose: 'openplan-local-land-use-plan-review-reporting-smoke' } }),
   }), 'QA user creation', 200);
   ids.userId = createdUser.user?.id ?? createdUser.id;
@@ -265,7 +266,7 @@ async function main() {
     await page.getByText(/Frozen action-status snapshot/i).waitFor();
     await screenshot(page, 'land-use-review-09-readable-implementation-report');
 
-    const releaseAudit = await jsonFetch(`${supabaseUrl}/rest/v1/land_use_plan_review_releases?id=eq.${ids.release1Id}&select=id,status,withdrawal_reason`, { headers: { apikey: serviceRoleKey, Authorization: `Bearer ${serviceRoleKey}` } });
+    const releaseAudit = await jsonFetch(`${supabaseUrl}/rest/v1/land_use_plan_review_releases?id=eq.${ids.release1Id}&select=id,status,withdrawal_reason`, { headers: serviceKeyHeaders(serviceRoleKey) });
     if (releaseAudit.data?.[0]?.status !== 'withdrawn') throw new Error('Withdrawn review audit row was not retained');
     if (browserErrors.length) throw new Error(`Browser console errors: ${browserErrors.join(' | ')}`);
     notes.push('API journey completed creation, GIS finalization, Engagement closure, revision, second review, exact-hash adoption, publication, and readable annual reporting.');

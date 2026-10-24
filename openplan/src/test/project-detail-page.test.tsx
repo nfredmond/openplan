@@ -1,3 +1,5 @@
+import { buildProjectJurisdictionReadinessExportPayload } from "@/lib/jurisdiction-readiness/payload";
+import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
 import { projectBudgetSnapshotFixture, type BudgetAnswer } from "./helpers/project-budget-snapshot";
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { isValidElement, type ComponentPropsWithoutRef, type ReactNode } from "react";
@@ -180,7 +182,7 @@ const clientInvoicesSelectMock = vi.fn(() => ({ eq: clientInvoicesEqMock }));
 
 // RPC transport fixture preserves independently failed source lanes. SQL/RLS
 // and projections are checked separately, never inferred from these fake rows.
-const budgetRpcMock = vi.fn(async (_name: string, args: { p_project_id: string }) => {
+const budgetRpcMock = vi.fn<(_name: string, args: { p_project_id: string }) => Promise<BudgetAnswer>>(async (_name, args) => {
   const deliverables = await deliverablesLimitMock() as BudgetAnswer;
   if (Array.isArray(deliverables.data)) {
     deliverables.data = deliverables.data.map((row: Record<string, unknown>) => ({ assignee_user_id: null, ...row }));
@@ -566,7 +568,10 @@ vi.mock("@/components/workspaces/workspace-membership-required", () => ({
 }));
 
 vi.mock("@/components/projects/project-record-composer", () => ({
-  ProjectRecordComposer: () => <div data-testid="project-record-composer" />,
+  // Observe the actual page's offered types without duplicating composer buttons.
+  ProjectRecordComposer: ({ recordTypes }: { recordTypes?: readonly string[] }) => (
+    <div data-testid="project-record-composer" data-record-types={recordTypes?.join(",")} />
+  ),
 }));
 
 vi.mock("@/components/projects/project-rtp-linker", () => ({
@@ -711,6 +716,27 @@ function expectLinkByHref(name: RegExp, href: string) {
 
   expect(link).toBeDefined();
   expect(link).toHaveAttribute("href", href);
+}
+
+// Comparable inputs do not establish adopting authority or legal applicability.
+const REPORT_JURISDICTION_INPUT = {
+  id: "project-1",
+  jurisdiction_context: {
+    version: 1, state: "unresolved", entries: [],
+    recordedBy: "99999999-9999-4999-8999-999999999999",
+    recordedAt: "2026-03-28T18:00:00.000Z",
+  },
+};
+
+/** Keep absent history and invalid retained custody distinct from a current fingerprint. */
+function retainedReportJurisdiction(baseline: "current" | "missing" | "invalid") {
+  if (baseline === "missing") return {};
+  const snapshot = buildProjectJurisdictionReadinessExportPayload(
+    REPORT_JURISDICTION_INPUT, jurisdictionReadinessRegistrySha256(),
+  );
+  return { jurisdictionReadiness: baseline === "invalid"
+    ? { ...snapshot, payloadSha256: "f".repeat(64) }
+    : snapshot };
 }
 
 describe("ProjectDetailPage", () => {
@@ -1040,6 +1066,61 @@ describe("ProjectDetailPage", () => {
     });
   });
 
+
+  describe("deliverable availability across the real page composition", () => {
+    it.each([
+      ["pending snapshot", { data: null, error: { code: "PGRST202", message: "Could not find the function public.project_budget_inputs_v1(p_project_id) in the schema cache" } }, "pending"],
+      ["denied snapshot", { data: null, error: { code: "42501", message: "permission denied for function public.project_budget_inputs_v1" } }, "unreadable"],
+      ["malformed snapshot", { data: {}, error: null }, "unreadable"],
+      ["pending deliverable source", { data: projectBudgetSnapshotFixture({ project_deliverables: { data: null,
+        error: { code: "42P01", message: 'relation "public.project_deliverables" does not exist' } } }), error: null }, "pending"],
+      ["denied deliverable source", { data: projectBudgetSnapshotFixture({ project_deliverables: { data: null,
+        error: { code: "42501", message: "permission denied for table project_deliverables" } } }), error: null }, "unreadable"],
+    ] as const)("withholds false counts and empty actions for %s", async (_label, answer, state) => {
+      budgetRpcMock.mockResolvedValueOnce(answer);
+      await renderPage("overview");
+      const card = screen.getByText("Deliverables", { selector: ".module-summary-label" }).closest(".module-summary-card") as HTMLElement;
+      expect(within(card).getByText("Unavailable")).toBeInTheDocument();
+      expect(within(card).queryByText("0")).toBeNull();
+      expect(within(card).getByText(state === "pending" ? /setup is pending/ : /source could not be read/)).toBeInTheDocument();
+
+      budgetRpcMock.mockResolvedValueOnce(answer);
+      await rerenderOnTab("delivery");
+      expect(screen.getByTestId("project-record-composer")).toHaveAttribute("data-record-types", "milestone,submittal");
+      const board = document.getElementById("project-deliverables") as HTMLElement;
+      expect(within(board).queryByText(/No deliverables yet/)).toBeNull();
+      expect(within(board).queryByRole("link", { name: "Add a deliverable" })).toBeNull();
+      expect(within(board).queryByLabelText("Percent complete")).toBeNull();
+      expect(within(board).queryByLabelText("Budget (not to exceed)")).toBeNull();
+      expect(within(board).getByText(state === "pending" ? /Apply the pending project input migration/ : /Deliverables could not be read/)).toBeInTheDocument();
+
+      budgetRpcMock.mockResolvedValueOnce(answer);
+      await rerenderOnTab("record");
+      expect(screen.getByText(/This feed may be incomplete/)).toBeInTheDocument();
+      expect(screen.queryByText("No project activity yet.")).toBeNull();
+
+      budgetRpcMock.mockResolvedValueOnce(answer);
+      await rerenderOnTab("funding");
+      const budget = document.getElementById("project-budget-pace") as HTMLElement;
+      expect(within(budget).queryByText(/No deliverables recorded yet/)).toBeNull();
+      expect(within(budget).queryByRole("combobox")).toBeNull();
+      expect(within(budget).queryByText("$0")).toBeNull();
+      expect(budgetRpcMock).toHaveBeenCalledWith("project_budget_inputs_v1", { p_project_id: "project-1" });
+      expect(deliverablesSelectMock).not.toHaveBeenCalled();
+    });
+
+    it("preserves a genuinely empty deliverable count and Add workflow", async () => {
+      await renderPage("overview");
+      const card = screen.getByText("Deliverables", { selector: ".module-summary-label" }).closest(".module-summary-card") as HTMLElement;
+      expect(within(card).getByText("0")).toBeInTheDocument();
+      await rerenderOnTab("delivery");
+      expect(screen.getByTestId("project-record-composer")).toHaveAttribute("data-record-types", "milestone,submittal,deliverable");
+      const board = document.getElementById("project-deliverables") as HTMLElement;
+      expect(within(board).getByText(/No deliverables yet/)).toBeInTheDocument();
+      expect(within(board).getByRole("link", { name: "Add a deliverable" })).toHaveAttribute("href", "#deliverable-add");
+      expect(screen.queryByText(/Deliverables could not be read/)).toBeNull();
+    });
+  });
 
   it("threads the saved estimate source through the page and real documents loader", async () => {
     const sourceId = "22222222-2222-4222-8222-222222222222";
@@ -1464,10 +1545,14 @@ describe("ProjectDetailPage", () => {
     expect(within(summary as HTMLElement).getByText(supported ? "2" : "0")).toBeInTheDocument();
   });
 
-  it("prioritizes a governance-only report hold over a newer clean current packet", async () => {
+  it.each([
+    { baseline: "current", title: "prioritizes a governance-only report hold over a newer clean current packet" },
+    { baseline: "missing", title: "combines a missing jurisdiction baseline warning with the governance hold" },
+    { baseline: "invalid", title: "combines an invalid jurisdiction baseline warning with the governance hold" },
+  ] as const)("$title", async ({ baseline }) => {
     projectSingleMock.mockResolvedValueOnce({
       data: {
-        id: "project-1",
+        ...REPORT_JURISDICTION_INPUT,
         workspace_id: "workspace-1",
         name: "Downtown Mobility Plan",
         summary: "Planning effort focused on corridor safety and access.",
@@ -1512,6 +1597,7 @@ describe("ProjectDetailPage", () => {
           generated_at: "2026-03-28T21:30:00.000Z",
           metadata_json: {
             sourceContext: {
+              ...retainedReportJurisdiction(baseline),
               evidenceChainSummary: {
                 linkedRunCount: 1,
                 scenarioSetLinkCount: 1,
@@ -1533,6 +1619,7 @@ describe("ProjectDetailPage", () => {
           generated_at: "2026-03-28T20:00:00.000Z",
           metadata_json: {
             sourceContext: {
+              ...retainedReportJurisdiction(baseline),
               evidenceChainSummary: {
                 linkedRunCount: 2,
                 scenarioSetLinkCount: 1,
@@ -1557,14 +1644,47 @@ describe("ProjectDetailPage", () => {
     await renderPage();
 
     expect(screen.getByText(/Downtown Safety Packet needs attention/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Board Packet needs attention/i)).not.toBeInTheDocument();
     expect(
-      screen.getByText(/Next action: open this report and review the governance hold before release reuse\./i)
+      screen.getByText(baseline === "current"
+        ? "Next action: open this report and review the governance hold before release reuse."
+        : "Next action: open this report and review the unassessed source evidence, then review the governance hold before release reuse.")
     ).toBeInTheDocument();
+    if (baseline === "current") {
+      expect(screen.getAllByText("The latest packet is current with the saved report record and tracked source timestamps.").length).toBeGreaterThan(0);
+      expect(screen.queryByText("Source evidence unassessed")).not.toBeInTheDocument();
+    } else {
+      expect(screen.getAllByText("Source evidence unassessed").length).toBeGreaterThan(0);
+      expect(screen.queryByText("Packet current")).not.toBeInTheDocument();
+      const refreshSummary = screen.getByText("Refresh recommended").closest("div");
+      expect(within(refreshSummary as HTMLElement).getByText("0")).toBeInTheDocument();
+      expect(screen.queryByText("The latest packet is current with the saved report record and tracked source timestamps.")).not.toBeInTheDocument();
+      expect(screen.queryByText(/regenerate the packet/i)).not.toBeInTheDocument();
+      expect(screen.getAllByText(baseline === "missing"
+        ? /historical packet did not track a comparable jurisdiction baseline/i
+        : /jurisdiction assessment could not be checked against current inputs/i).length).toBeGreaterThan(0);
+    }
+    expect(projectSelectMock).toHaveBeenCalledWith(expect.stringContaining("jurisdiction_context"));
+    expect(reportArtifactsSelectMock).toHaveBeenCalledWith("report_id, generated_at, metadata_json");
     expect(screen.getAllByText(/Blocked gate: G02/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/1 need attention/i).length).toBeGreaterThan(0);
   });
 
   it("keeps artifact-backed linked reports in current-packet posture when report generated_at is null", async () => {
+    const projectResult = await projectSingleMock();
+    projectSingleMock.mockResolvedValueOnce({
+      ...projectResult, data: { ...projectResult.data, ...REPORT_JURISDICTION_INPUT },
+    });
+    const artifactResult = await reportArtifactsOrderMock();
+    reportArtifactsOrderMock.mockResolvedValueOnce({
+      ...artifactResult,
+      data: artifactResult.data.map((artifact: {
+        report_id: string; generated_at: string;
+        metadata_json: { sourceContext: Record<string, unknown> };
+      }) => ({ ...artifact, metadata_json: { ...artifact.metadata_json,
+        sourceContext: { ...artifact.metadata_json.sourceContext, ...retainedReportJurisdiction("current") },
+      } })),
+    });
     reportsLimitMock.mockResolvedValueOnce({
       data: [
         {
@@ -1601,7 +1721,13 @@ describe("ProjectDetailPage", () => {
 
     expect(boardPacketCard).not.toBeNull();
     expect(boardPacketCard).toHaveAttribute("href", "/reports/report-2#packet-release-review");
-    expect(screen.getAllByText(/Packet current/i).length).toBeGreaterThan(0);
+    expect(within(boardPacketCard as HTMLElement).getByText(
+      "The latest packet is current with the saved report record and tracked source timestamps."
+    )).toBeInTheDocument();
+    expect(within(boardPacketCard as HTMLElement).queryByText("No packet yet")).not.toBeInTheDocument();
+    expect(within(boardPacketCard as HTMLElement).queryByText("Source evidence unassessed")).not.toBeInTheDocument();
+    expect(projectSelectMock).toHaveBeenCalledWith(expect.stringContaining("jurisdiction_context"));
+    expect(reportArtifactsSelectMock).toHaveBeenCalledWith("report_id, generated_at, metadata_json");
   });
 
   it("surfaces deliverable budget chips and honest coverage copy", async () => {
@@ -2067,7 +2193,7 @@ describe("ProjectDetailPage", () => {
     await renderPage("delivery");
 
     expect(projectSelectMock, "project page must read the complete geography and jurisdiction projection").toHaveBeenCalledWith(
-      "id, workspace_id, name, summary, status, plan_type, delivery_phase, estimated_cost_amount, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, estimated_cost_recorded_at, created_at, updated_at, rtp_posture, rtp_posture_updated_at, jurisdiction_context, latitude, longitude, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_geometry_geojson, place_set_at"
+      "id, workspace_id, name, summary, status, plan_type, delivery_phase, estimated_cost_amount::text, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, estimated_cost_recorded_at, created_at, updated_at, rtp_posture, rtp_posture_updated_at, jurisdiction_context, latitude, longitude, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_geometry_geojson, place_set_at"
     );
     expect(screen.getByText("No milestones recorded yet.")).toBeInTheDocument();
     expect(screen.getByText("No submittals recorded yet.")).toBeInTheDocument();
@@ -2359,6 +2485,7 @@ describe("ProjectDetailPage", () => {
       }], error: null });
       spendEntriesLimitMock.mockResolvedValue(answer);
       await renderPage("delivery");
+      expect(screen.getByTestId("project-record-composer")).toHaveAttribute("data-record-types", "milestone,submittal,deliverable");
       const board = document.getElementById("project-deliverables") as HTMLElement;
       expect(within(board).getByText("Budgeted deliverable")).toBeInTheDocument();
       expect(within(board).getByLabelText("Budget (not to exceed)")).toHaveValue(1000);
@@ -2378,6 +2505,7 @@ describe("ProjectDetailPage", () => {
       }], error: null });
       projectBudgetMaybeSingleMock.mockResolvedValue(answer);
       await renderPage("delivery");
+      expect(screen.getByTestId("project-record-composer")).toHaveAttribute("data-record-types", "milestone,submittal,deliverable");
       const board = document.getElementById("project-deliverables") as HTMLElement;
       expect(within(board).getByText("Retained delivery work")).toBeInTheDocument();
       expect(within(board).getByLabelText("Budget (not to exceed)")).toHaveValue(1250.25);

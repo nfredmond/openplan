@@ -625,18 +625,20 @@ export function collectSupabaseSelectSites(options: CollectOptions = {}): Supaba
      */
     const literalProjection = (argument: ts.Node): string | null => {
       if (ts.isStringLiteralLike(argument)) return argument.text;
-      if (!ts.isIdentifier(argument)) return null;
+      const property = ts.isPropertyAccessExpression(argument) && ts.isIdentifier(argument.expression) ? argument : null;
+      const identifier = property ? property.expression as ts.Identifier : ts.isIdentifier(argument) ? argument : null;
+      if (!identifier) return null;
 
-      const declaration = lookup(declarations, argument.text, argument.getStart(source));
+      const declaration = lookup(declarations, identifier.text, argument.getStart(source));
       if (!declaration) {
-        if (localNames.has(argument.text)) return null;
+        if (localNames.has(identifier.text)) return null;
         // Read direct named exports without executing a module. Computed values,
         // mutable bindings, packages and re-exports remain unknown.
         for (const statement of source.statements) {
           if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) continue;
           const clause = statement.importClause;
           if (!clause || clause.isTypeOnly || !clause.namedBindings || !ts.isNamedImports(clause.namedBindings)) continue;
-          const binding = clause.namedBindings.elements.find((entry) => !entry.isTypeOnly && entry.name.text === argument.text);
+          const binding = clause.namedBindings.elements.find((entry) => !entry.isTypeOnly && entry.name.text === identifier.text);
           if (!binding) continue;
           const specifier = statement.moduleSpecifier.text;
           const base = specifier.startsWith("@/") ? path.join(SRC_DIR, specifier.slice(2))
@@ -651,13 +653,27 @@ export function collectSupabaseSelectSites(options: CollectOptions = {}): Supaba
             if (!ts.isVariableStatement(exported) || !(exported.declarationList.flags & ts.NodeFlags.Const) ||
               !exported.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword)) continue;
             const value = exported.declarationList.declarations.find((entry) => ts.isIdentifier(entry.name) && entry.name.text === exportedName)?.initializer;
-            if (value && ts.isStringLiteralLike(value)) return value.text;
+            if (!property && value && ts.isStringLiteralLike(value)) return value.text;
+            // A frozen object's own literal property is fixed too. Do not infer
+            // values through spreads, getters, mutable objects or computed keys.
+            if (property && value && ts.isCallExpression(value) && value.arguments.length === 1 &&
+              ts.isPropertyAccessExpression(value.expression) && ts.isIdentifier(value.expression.expression) &&
+              value.expression.expression.text === "Object" && value.expression.name.text === "freeze") {
+              const object = value.arguments[0];
+              if (!ts.isObjectLiteralExpression(object) || object.properties.some((entry) =>
+                !ts.isPropertyAssignment(entry) || !ts.isIdentifier(entry.name))) return null;
+              const entries = object.properties.filter((entry) => ts.isPropertyAssignment(entry) && entry.name.getText(imported) === property.name.text);
+              if (entries.length !== 1) return null;
+              const entry = entries[0];
+              return ts.isPropertyAssignment(entry) && ts.isStringLiteralLike(entry.initializer) ? entry.initializer.text : null;
+            }
           }
           return null;
         }
         return null;
       }
 
+      if (property) return null;
       const text = declaration.initializer.trim();
       const quoted = text.match(/^(["'`])([\s\S]*)\1$/);
       // A template literal with an interpolation is not a fixed projection.

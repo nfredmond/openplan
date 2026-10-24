@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { readAttemptInstruments } from "@/lib/models/attempt-instrument-read";
+import { readAttemptInstruments, readCurrentModelStageAttempts } from "@/lib/models/attempt-instrument-read";
 import { z } from "zod";
 import { tool, type Tool, type ToolSet } from "ai";
 import type { AssistantContext } from "@/lib/assistant/context";
@@ -16,6 +16,7 @@ import {
 import { getReportPacketFreshness } from "@/lib/reports/catalog";
 import {
   ACTION_METADATA,
+  canonicalizeActionPayload,
   resolveQuickLinkApproval,
   type ActionApproval,
 } from "@/lib/runtime/action-metadata";
@@ -61,6 +62,11 @@ import {
   getCachedGrantsGovResult,
   setCachedGrantsGovResult,
 } from "@/lib/grants/grants-gov-cache";
+import { randomUUID } from "node:crypto";
+import { executableProjectSubmittalAction } from "./project-submittal-receipt";
+import { hashAssistantActionPayload } from "./action-approval-server";
+import { CHAT_PROJECTION, chatToolInputs, chatDraftSchema, type AssistantChatAcceptedGrantV1, type ChatToolName } from "./provider-chat-task";
+import { prepareChatProjection, plainChatScope, type ChatSession } from "./provider-chat-projection";
 
 /**
  * Read-only chat tools for the Planner Agent streaming endpoint.
@@ -368,6 +374,13 @@ function proposalSchemaBranchForKind(kind: string): ProposalSchemaBranch | null 
   return null;
 }
 
+/** Shared proposal validation, without a budget increment or a domain write. */
+export function parseAssistantProposalAction(kind: string, input: Record<string, unknown>) {
+  const branch = proposalSchemaBranchForKind(kind);
+  if (!branch) throw new Error("assistant_proposal_kind_unsupported");
+  return branch.safeParse({ ...normalizeProposalInput(input), kind });
+}
+
 /** The model-facing input schema: the branch minus kind and post-action chaining fields. */
 function proposalInputSchema(branch: ProposalSchemaBranch): ProposalSchemaBranch {
   const mask: Record<string, true> = {};
@@ -405,7 +418,7 @@ function buildAssistantProposalTools(params: BuildAssistantChatToolsParams): Rec
             return refusal("No workspace is attached to this chat surface, so no action can be proposed.");
           }
 
-          const parsed = branch.safeParse({ ...normalizeProposalInput(input), kind });
+          const parsed = parseAssistantProposalAction(kind, input);
           if (!parsed.success) {
             return {
               status: "invalid_payload",
@@ -460,6 +473,52 @@ function buildAssistantProposalTools(params: BuildAssistantChatToolsParams): Rec
   }
 
   return tools;
+}
+
+const chatReservations = new WeakMap<object, boolean>();
+export type ChatToolReservation = Readonly<{ handle: string; callId: string; stepId: string; toolCallId: string;
+  name: ChatToolName; input: unknown; usedCalls: number }>;
+
+/** The broker constructs this only from its authenticated durable claim RPC. */
+export function retainChatToolReservation(raw: unknown): ChatToolReservation {
+  const parsed = z.object({ handle: z.string().uuid(), callId: z.string().uuid(), stepId: z.string().uuid(), toolCallId: z.string(),
+    name: z.enum(["list_projects", "get_surface_context", "propose_create_project_record"]), input: z.unknown(), usedCalls: z.number().int().min(1).max(12),
+    released: z.literal(true), cached: z.literal(false) }).strict().parse(raw);
+  const reservation = Object.freeze(parsed); chatReservations.set(reservation, true); return reservation;
+}
+
+/** Slot 12 executes when hydrated usage is 12. Admission already counted this
+ * call. This core consumes the server handle once and never charges it again. */
+export async function invokeReservedChatTool(args: { session: ChatSession; userId: string; grant: AssistantChatAcceptedGrantV1; reservation: ChatToolReservation }) {
+  const { reservation: r, grant, session } = args;
+  const available = chatReservations.get(r) === true;
+  if (available) chatReservations.set(r, false);
+  if (!available || !grant.catalog.tools.includes(r.name)) throw new Error("chat_tool_reservation_invalid");
+  const input = chatToolInputs[r.name].parse(r.input);
+  const scope = plainChatScope(grant.scope);
+  if (r.name === "list_projects") {
+    const envelopes = await prepareChatProjection(session, args.userId, scope, grant.turnId, r.stepId, "index");
+    const content = JSON.parse(envelopes[0].canonicalProjectedContent) as { returnedCount: number; possiblyTruncated: boolean };
+    return { result: { envelope: envelopes[0], returnedCount: content.returnedCount, possiblyTruncated: content.possiblyTruncated }, envelopes };
+  }
+  if (r.name === "get_surface_context") {
+    const read = chatToolInputs.get_surface_context.parse(input);
+    const envelopes = await prepareChatProjection(session, args.userId, scope, grant.turnId, r.stepId, "project", read.id);
+    return { result: { envelope: envelopes[0] }, envelopes };
+  }
+  const draft = chatDraftSchema.parse(input);
+  if (!scope.selectedProjectIds.includes(draft.projectId)) throw new Error("chat_project_not_selected");
+  const reference = await session.from("projects").select(CHAT_PROJECTION.reference).eq("id", draft.projectId).eq("workspace_id", grant.owner.workspaceId).maybeSingle();
+  if (reference.error || !reference.data || reference.data.id !== draft.projectId || reference.data.workspace_id !== grant.owner.workspaceId) throw new Error("chat_proposal_reference_unavailable");
+  const parsed = parseAssistantProposalAction("create_project_record", { projectId: draft.projectId, title: draft.title, submittalType: draft.submittalType,
+    recordType: "submittal", status: "draft", ...(draft.notes ? { notes: draft.notes } : {}) });
+  if (!parsed.success) throw new Error("chat_proposal_invalid");
+  const concrete = assistantApprovalActionSchema.safeParse(parsed.data);
+  if (!concrete.success || concrete.data.kind !== "create_project_record") throw new Error("chat_proposal_invalid");
+  const action = executableProjectSubmittalAction(concrete.data);
+  return { result: { intentId: randomUUID(), executableHash: hashAssistantActionPayload(action), status: "proposed",
+    displayConsequence: "Create one draft project submittal after separate human approval. No approval or project record exists yet." },
+    envelopes: [], executableCanonical: canonicalizeActionPayload(action) };
 }
 
 /**
@@ -719,7 +778,7 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
 
         const { data: run, error: runError } = await supabase
           .from("model_runs")
-          .select("id, run_title, status, engine_key, error_message, started_at, completed_at, updated_at")
+          .select("id, run_title, status, engine_key, error_message, started_at, completed_at, updated_at, attempt_managed")
           .eq("id", input.modelRunId)
           .eq("workspace_id", workspaceId)
           .maybeSingle();
@@ -731,17 +790,45 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
               "No model run with that id is visible in this workspace. It may not exist or may belong to a workspace this planner is not a member of.",
           };
         }
-        const runRow = run as Record<string, unknown>;
+        const runRow = { ...(run as Record<string, unknown>) };
 
-        const { data: kpiData, error: kpiError } = await supabase
-          .from("model_run_kpis")
-          .select("kpi_name, kpi_label, kpi_category, value, unit, geometry_ref, breakdown_json")
-          .eq("run_id", input.modelRunId)
-          .order("kpi_category", { ascending: true })
-          .order("kpi_name", { ascending: true })
-          .limit(ASSISTANT_CHAT_TOOL_KPI_LIMIT);
+        const stageAttempts = runRow.attempt_managed === true ? await readCurrentModelStageAttempts(supabase, input.modelRunId) : null;
+        if (stageAttempts?.readFailed) return refusal("Current model output custody could not be verified. Retained records are not current results.");
+        const currentAttemptIds = stageAttempts ? runRow.status === "succeeded"
+          ? stageAttempts.records.filter(stage => stage.status === "succeeded" && typeof stage.active_attempt_id === "string").map(stage => stage.active_attempt_id!) : [] : null;
+        let kpiQuery = supabase.from("model_run_kpis")
+          .select("id, run_id, attempt_id, kpi_name, kpi_label, kpi_category, value, unit, geometry_ref, breakdown_json")
+          .eq("run_id", input.modelRunId);
+        if (currentAttemptIds) kpiQuery = kpiQuery.in("attempt_id", currentAttemptIds);
+        const { data: kpiData, error: kpiError } = currentAttemptIds?.length === 0 ? { data: [], error: null }
+          : await kpiQuery.order("kpi_category", { ascending: true }).order("kpi_name", { ascending: true }).limit(ASSISTANT_CHAT_TOOL_KPI_LIMIT);
         if (kpiError) throw new Error(kpiError.message ?? "model_run_kpis query failed");
-        const kpiRows = (kpiData ?? []) as Array<Record<string, unknown>>;
+        const storedKpiRows = (kpiData ?? []) as Array<Record<string, unknown>>;
+        const kpiRows = currentAttemptIds ? storedKpiRows.filter(row => typeof row.attempt_id === "string" && currentAttemptIds.includes(row.attempt_id)) : storedKpiRows;
+        if (stageAttempts) {
+          const refreshed = await readCurrentModelStageAttempts(supabase, input.modelRunId);
+          const parentRead = await supabase.from("model_runs")
+            .select("id, workspace_id, status, attempt_managed, updated_at").eq("id", input.modelRunId).eq("workspace_id", workspaceId).maybeSingle();
+          const parent = parentRead.data as Record<string, unknown> | null;
+          // This is an optimistic recheck under the same user session, not an
+          // atomic native projection. Attempt identities are never reused.
+          if (refreshed.readFailed || canonicalizeActionPayload(refreshed.records) !== canonicalizeActionPayload(stageAttempts.records) ||
+            parentRead.error || !parent || parent.id !== runRow.id || parent.workspace_id !== workspaceId ||
+            parent.status !== runRow.status || parent.attempt_managed !== true || parent.updated_at !== runRow.updated_at) {
+            return refusal("Model execution changed while its results were read. Refresh and read it again; no current values are confirmed.");
+          }
+          const headlineProducer: Record<string, string> = {
+            total_trips: "Artifact Extraction", daily_vmt: "Artifact Extraction",
+            resident_vmt_per_capita: "Artifact Extraction", vmt_per_capita: "Artifact Extraction",
+            co2e_metric_tons_year: "Artifact Extraction", co2e_kg_per_capita_day: "Artifact Extraction",
+            activitysim_trips: "ActivitySim Bundle & Preflight", activitysim_runtime_mode: "ActivitySim Bundle & Preflight",
+            activitysim_daily_vmt: "ActivitySim Network Assignment",
+          };
+          if (kpiRows.some(row => typeof row.kpi_name === "string" && headlineProducer[row.kpi_name] &&
+            !stageAttempts.records.some(stage => stage.stage_name === headlineProducer[String(row.kpi_name)] && stage.active_attempt_id === row.attempt_id && stage.status === "succeeded"))) {
+            return refusal("A headline KPI does not belong to its expected successful producer stage. No current values are confirmed.");
+          }
+        }
         const kpiItems = normalizeModelRunKpiComparisonItems(kpiRows);
 
         // Zone resolution: the verdict is banded HERE from the stored share, via
@@ -885,7 +972,7 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
           truncated: kpiRows.length === ASSISTANT_CHAT_TOOL_KPI_LIMIT,
           note:
             kpiRows.length === 0
-              ? "No KPIs are recorded for this run. That is a recorded absence, not a failed read."
+              ? stageAttempts ? "No current completed KPIs are available. Original attempt records remain retained." : "No KPIs are recorded for this run. That is a recorded absence, not a failed read."
               : "Report each value with its unit and its caveats verbatim; never round a caveat away.",
           kpis: kpiItems.map((item, index) => ({
             name: item.name,
@@ -945,7 +1032,13 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
             }),
             attemptInstrumentCustody: {
               status: attemptResult.readFailed ? "read_failed" : "available",
-              records: attemptResult.records,
+              records: attemptResult.records.map(record => ({ ...record,
+                output_ownership: stageAttempts ? (() => {
+                  const stage = stageAttempts.records.find(stage => stage.id === record.stage_id && stage.active_attempt_id === record.attempt_id);
+                  return !stage || !["running", "succeeded"].includes(String(runRow.status)) ? "retained_inactive"
+                    : runRow.status === "succeeded" && stage.status === "succeeded" ? "current_completed" : "current_in_progress";
+                })() : "legacy_unassessed",
+              })),
               note: "Each method and attempt remains separate and inconclusive. Retained custody does not establish accuracy. A failed read is not an absence of evidence.",
             },
             comparableObservationCustody: comparableRows.map((row) => ({

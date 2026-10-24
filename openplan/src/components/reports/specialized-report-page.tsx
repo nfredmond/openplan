@@ -1,3 +1,4 @@
+import { SafetyCandidateComparisonEditor } from "@/components/safety/safety-candidate-comparison-editor";
 import Link from "next/link";
 import { ReportDetailControls } from "@/components/reports/report-detail-controls";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
@@ -78,7 +79,10 @@ export async function loadEngagementReviewReportPage(client: Client, report: Rep
 }
 
 // Select the report's existing owner before the generic project report reads.
-export async function loadSpecializedReportPage(client: Client, report: Report & Parameters<typeof LandUsePlanReportPage>[0]['report'], userId: string) {
+export async function loadSpecializedReportPage(client: Client, report: Report & Parameters<typeof LandUsePlanReportPage>[0]['report'] & { metadata_json?: Record<string, unknown> | null }, userId: string, query: Record<string, string | string[] | undefined> = {}) {
+  if (report.metadata_json?.safetyComparisonV2 !== undefined || query.safetyComparison === "1") {
+    return <SafetyCandidateComparisonEditor reportId={report.id} ingestId={typeof query.safetyIngestId === "string" ? query.safetyIngestId : undefined} />;
+  }
   if (report.land_use_plan_id) return <LandUsePlanReportPage report={report} />;
   return loadEngagementReviewReportPage(client, report, userId);
 }

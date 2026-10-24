@@ -26,14 +26,14 @@ their original currency, exact amounts and reviewed term revision. Incomplete
 reads leave coverage unassessed. These records do not establish legal compliance
 or replace a responsible person's review. Apply
 `20261018000003_award_condition_handoff.sql`, then
-`20261019045213_award_handoff_terms_variable.sql` and
-`20261019045328_award_handoff_command_aliases.sql` before deploying this capability.
+`20261024200000_award_handoff_terms_variable.sql` and
+`20261024200100_award_handoff_command_aliases.sql` before deploying this capability.
 The additive corrections separate PL/pgSQL variables from query aliases. Twelve
 isolated transaction and parent-DELETE contention cases pass. The visible workflow
-and hosted award rollout remain pending.
+remains pending.
 
 **Managed award reopen correction:** apply
-`20261019101500_managed_award_reopen_status.sql` after the three award migrations
+`20261024200200_managed_award_reopen_status.sql` after the three award migrations
 above, and refresh the API schema cache before deploying the new caller. It
 retains the selected not-started, active or delayed destination in the award,
 receipt and response. Existing five-argument callers keep the active default.
@@ -43,7 +43,7 @@ figures; the registry identifies partial totals. Successful incomplete funding
 reads still refuse.
 
 **Award history privileges:** apply
-`20261019163759_award_handoff_relation_privileges.sql` to remove residual
+`20261024200300_award_handoff_relation_privileges.sql` to remove residual
 service_role creation grants. It restores only SELECT/INSERT on
 `funding_award_handoff_revisions`, `funding_award_handoff_sources`,
 `funding_award_handoff_occurrences` and `funding_award_closure_receipts`, and only
@@ -53,11 +53,347 @@ SELECT on `current_award_handoff_records`, `active_project_submittals`,
 Authenticated SELECT and object definitions remain unchanged. Source review
 does not establish installed privileges.
 
-**Source-page plan proposals:** Document review can stage quoted records from a
-retained page without an AI account. Pending proposals have their own pages,
-separate from reading history. Manual chapter copies retain source authorship;
-review and saving remain explicit. Apply
-`20261019000002_rtp_manual_source_page_proposals.sql` before deploying this capability.
+**Award migration versions.** The hosted installation already holds
+`20261018000003_award_condition_handoff.sql` under that version, byte for byte
+as it appears here, so the file keeps its version. It sorts below the 0.70.0,
+0.71.0 and 0.72.0 marks. A deployment already on one of those releases, or on
+a later main, must run `supabase migration up --include-all` once. Without the
+flag the CLI refuses the whole run and names this file; with it, the CLI applies
+this file and then the four corrections. The four corrections moved from
+20261019 versions to 20261024200000 through 20261024200300, with unchanged
+bodies, so they sort after installed history. An installation that applied a
+pre-release copy of this branch under the old 20261019 versions must compare its
+migration history before running either command.
+
+**Security dependency update.** Zod moves from 4.4.3 to 4.6.7 for
+GHSA-mrhx-c7xc-m3w5, a memory-exhaustion advisory in validating oversized
+constrained collections; OpenPlan validates request bodies with Zod.
+puppeteer-core moves from 25.6.0 to 25.16.0, which brings a `chromium-bidi`
+build on fixed Zod. The development-only shadcn CLI moves from 3.8.5 to 4.22.1
+for the same reason. The development-only `body-parser`, through Express, moves
+from 2.3.0 to 2.4.0 for GHSA-27r3-jxmh-p828, a denial of service through
+trailing bytes after a compressed request body. `undici` moves to 6.29.1
+(used by the AI SDK at runtime) and 7.30.1 (development), and the
+development-only `fast-uri` to 3.1.9, for advisories published the same day,
+including GHSA-w74x-v6f9-j3xg, GHSA-xhq7-xmqj-769h and GHSA-wjr9-j795-jxcr.
+`npm audit` reports no advisories afterward.
+
+**Vercel builds skip Next's duplicate type check.** Next's type check needs
+more than 5 GB of heap on its own, and on October 23, 2026 it pushed Vercel's
+standard 8 GB builder out of memory. Builds with `VERCEL=1` now skip it. Every
+other build keeps it, including the CI QA gate's `npm run build`, which
+Vercel waits for before promoting. Self-hosted builds are unchanged.
+
+This tree contains 442 source migrations, twelve more than v0.72.0. Self-hosted
+installations apply the seven Models and Reports migrations, the estimate,
+Safety, BCA and two land-use migrations below, in version order, before
+deploying this code. The managed database received all seven on
+October 23, 2026, in one transaction after a fresh capture and a rollback-only
+dry run; its history now holds 438 rows, including the separate Award record.
+The catalogue after installation equals the catalogue before plus exactly the
+change measured in the dry run.
+
+**Managed comparison readiness source candidate:** apply
+`20261022070000_managed_comparison_readiness.sql` after the managed retry
+migration. Ready snapshots can use current attempt-bound instruments while
+retaining owner review and existing scope checks. Installation and native
+authority checks remain pending; scientific acceptance is unchanged.
+
+**Managed model recovery source candidate:** the proposed
+`20261022050000_model_output_preserving_relaunch.sql` precedes its matching
+recovery controls. It prepares an owner/admin decision to queue a fresh attempt
+on the same failed or cancelled managed run with unchanged recorded inputs.
+Original outputs, receipts and attempt-bound scientific records stay retained.
+Unbound scientific records and registered population replacements retain their
+reconciliation holds. Current-reader and worker admission joins are prepared in
+source. General prepared scientific retry remains unfinished. A queued receipt
+is not completed recovery; native installation, full worker execution and visible
+acceptance remain unproved.
+
+**Selected model comparisons in Reports.** Reports can retain an explicitly
+selected comparison with separate method values, source identities and caveats.
+Apply `20261022010002_guided_comparison_report_evidence.sql` before deploying
+this path. New selected artifacts retain their identity, rendered body, selection
+and writeback receipt. Ordinary writes cannot replace or delete that history,
+including through report, project or workspace cascades. Legacy unselected
+artifacts keep their existing behavior. These safeguards do not validate model
+accuracy or establish project benefits.
+
+**Guided comparison admission:** apply
+`20261022010003_model_common_population_admission.sql` after the two population
+migrations below and before deploying the route correction. Guided links and
+ready snapshots require current fixed-population custody even when their claim
+is missing or unchanged. Model intent and scope changes serialize with admission
+and refuse changes affecting ready or evidence-bound snapshots. Admissions also
+touch the scenario-set modification timestamp. This source correction awaits
+native migration and concurrency verification; scientific claim limits stay unchanged.
+
+**Population source profiles:** the source-only adapter correction adds
+`20261022010004_model_common_population_profiles.sql` after the admission migration.
+The catalog keeps the exact 2022 and 2023 retained profiles; new guided launches
+use the selected adapter's admitted 2023 descriptor. Missing technical capabilities
+remain unassessed. Native installation, worker images and scientific acceptance
+remain unverified by this source correction.
+
+**Common population comparisons and replacement runs:** guided comparisons retain
+the same realized population across the separate AequilibraE and ActivitySim
+tracks. An explicit replacement run can reuse a prospectively retained population
+checkpoint while preserving the original failed run. Apply
+`20261022010000_model_common_population_comparisons.sql` and
+`20261022010001_model_population_replacement.sql` before deploying these paths.
+Managed replacement and hosted snapshot transport remain unsupported. These
+changes do not establish model accuracy or nationwide validation.
+
+The model-run progress fix keeps elapsed time advancing during five-second
+status refreshes that return fresh stage records.
+
+**Safety input and applicability review:** project-status reports can retain one
+influence area, No Build and treatment alternatives, stored crash membership,
+sourced facts, missing inputs and exact historical estimate references. Save an
+immutable revision, then generate its CSV, HTML or PDF. Every numerical effect,
+forecast and priority remains unassessed. This is not a complete Safety action
+plan or grant-ready SS4A analysis. Exact-year notice mapping is still unavailable.
+Apply `20261023190100_safety_comparison_inputs.sql` after the estimate migration
+below and before deploying this feature. It first carried an earlier October 19
+version and moved after the v0.72.0 release mark.
+The [dated status](docs/reviews/2026-10-19-safety-input-comparison/STATUS.md)
+separates source, database, build and local browser evidence and their limits.
+
+**Exact project estimates:** decimal entry, reviewed imports, report output and
+exports preserve exact hundredths. Missing price years remain unknown. Project
+estimates remain separate from management budgets, funding awards and
+benefit-cost calculations. Apply
+`20261023190000_project_estimate_exact_cents.sql` before deploying this
+correction. It validates future amounts as positive values of at most
+1,000,000,000,000,000 with at most two decimal places. It does not rewrite
+retained estimates or recover precision lost in older source values. The
+migration first carried an earlier October 19 version; it moved after the v0.72.0
+release mark because released installations would skip an earlier version.
+
+**BCA project place:** Apply
+`20261023190200_bca_project_place_snapshot.sql` before deploying the BCA update.
+The migration accepts new analysis versions with a retained project place and
+checks that place against the current project when saving. Existing saved
+analyses remain unchanged. It first carried an earlier October 19 version and
+moved after the v0.72.0 release mark.
+
+**PR332 review follow-up:** Project deliverable counts, delivery and activity
+views distinguish pending or failed inputs from an empty project. Current
+land-use publication refuses competing decisions, including a later repeal,
+and checks the decision against the retained packet in one read snapshot.
+Historical report decisions remain dated history. Operators must apply additive
+`20261023190300_land_use_publication_decision_boundary.sql` after
+`20261017030608_land_use_plan_publication_transaction.sql` and before deploying
+the dependent public reader. This source patch does not establish migration,
+concurrency, RLS or browser acceptance.
+
+**Land-use review release cascades:** Apply additive
+`20261023190400_land_use_review_release_cascade_guards.sql` to correct workspace
+deletion when restored foreign keys reach review releases before their plan.
+The guard continues to refuse direct release deletion while its owning plan
+and workspace exist. Insert, frozen identity, close and withdrawal rules remain
+unchanged. Both migrations first carried October 20 and 21 versions and moved
+after the v0.72.0 release mark. The cascade fixture now fixes trigger order
+explicitly, because foreign-key trigger names embed OIDs that differ between a
+fresh migration chain and a restored archive.
+
+## 0.72.0 (2026-10-22)
+
+**Published October 23, 2026.** This entry packages the saved API workflow
+first joined at source `2ab80e0db6dcdc4928d25d6857db0d718c17b26a`. The release
+record below the security note states the main commit, hosted installation and
+hosted checks. The candidate paragraphs that follow keep their original wording.
+
+**Saved API drafts, human approval and original receipts.** A planner explicitly
+selects a saved API connection and model, previews shared context and selected
+projects, and accepts the canonical disclosure before a turn starts. Retained
+turns expose progress and paginated history. A proposal opens its full executable
+payload for separate human approval. Cancel and renewal retain the same intent
+and payload hash. Approval uses the original action registry; Delivery shows the
+original draft, and reopening recovers its original receipt without another
+provider call or business write. Drafts remain unsubmitted.
+
+**Upgrade before dependent deployment.** This tree contains exactly 430 source
+migration files. The single addition since v0.71.0 is
+`20261021215752_assistant_chat_turns.sql`. Compare installed history and apply
+that pending additive migration before deploying dependent code. Never replay
+installed history. A separately retained Award migration record on the managed
+installation is not another source migration file. The chat migration seeds no
+admission, and profile admission remains CLOSED by default. The exact temporary
+admission used for the local synthetic journey is disabled.
+
+**Bounded evidence.** The retained native record at `de1dc322` passes 35 catalogue
+criteria, 24 native cases and nine signed local HTTP cases, with zero skips in
+the two complete test files. Each filtered census/registry run separately passes
+one case with 21 selector skips. A harmless installed comment survives; three
+intended installed faults fail, and exact function state restores. Earlier
+control-setup failures retain zero credit and remain unchanged.
+
+The joined source passes 577 ordinary tests in 31 files with zero skips. One
+0.71.0 production build, `5EgS0og6ORwp178xwJWAF`, passes webpack and configured
+TypeScript at `2ab80e0d`. Its synthetic SDK-wire journey at 1440px and 390px
+covers consent, cancellation, renewal, one approval per width, two original
+drafts total, original receipts, Delivery and subject recovery through GETs.
+Desktop reconnect reads 131 retained events in pages of 100 and 31. This is
+local synthetic evidence, with no real provider, paid call or installed backend.
+
+**Observed limits and pending gates.** The journey records 208 application API
+responses with no HTTP 400-plus responses, but two reconcile responses have 200
+headers and unread bodies after the 5000ms observation deadline, followed by
+POST aborts. Their completion and abort causes remain unproved. The record
+retains 159 aborted RSC GETs, two aborted POSTs, ten report-only CSP information
+messages, two advisories and zero page errors. All 4,187 original build entries
+and static bytes remain exact; 47 normal server/route-cache entries are added,
+so whole-tree equality is false. This is not a clean-network claim.
+
+The identified 0.72.0 build `btMlKhEDdbURkhJpreR7S` at `b2964165` passes
+webpack and configured TypeScript. A final read-only view at 1440px and 390px
+reaches the saved connection, readable light/dark Planner Agent entry and both
+original Delivery drafts. Admission stays disabled and retained chat bodies
+remain withheld. All original artifact entries and static bytes remain exact;
+47 runtime cache entries are added. That pass retains 49 aborted RSC GETs and
+report-only CSP information, with zero captured page errors or API errors.
+It does not repeat or extend the synthetic approval outcome above.
+
+At this recorded checkpoint, exact-head integration, current-main and hosted
+acceptance remain pending. Intent-read audit pairing, audit-failure
+atomicity, revocation races, deliberate after-effect reply loss and independent
+restore remain unproved. All 19 contexts, general provider and installed-backend
+acceptance, full A0, complete M2c and separate nationwide AequilibraE and
+ActivitySim validation remain open. The existing Reports jurisdiction-readiness
+P2 remains PARTIAL. No capability grade or historical failure changes.
+
+**Security dependency update.** This release also carries #368, merged to main
+before it:
+
+- Next.js moves from 16.3.8 to 16.4.2, the first release outside every range in
+  advisories published on October 22, 2026:
+  - GHSA-2464-fhr4-w9xw: remote code execution through image optimization on
+    glibc Linux, by way of `sharp`.
+  - GHSA-673q-mjm6-r5xr: remote code execution in `use cache` functions that
+    return typed arrays.
+  - GHSA-p3m5-59mp-jv5r: CPU exhaustion through crafted Server Action requests.
+
+  OpenPlan defines no `use cache` functions. The lockfile already resolved
+  `sharp` to 0.35.5, the fixed version. The Server Action finding applies.
+  **Self-hosted installations should upgrade.**
+- The `ip-address` override moves from 10.7.2 to 10.7.4 for
+  GHSA-rxp7-6hxx-x8q5. That advisory is a slow parse of long IPv6 zone
+  identifiers, reached through `express-rate-limit` in the shadcn tooling
+  dependency.
+- `eslint-config-next` stays at 16.3.8. Its 16.4 line enables stricter React
+  hook lint rules, which report 219 errors in existing code. That is a separate
+  change.
+
+
+**Release record, October 23, 2026.** Before publication, the repeat path in
+`assistant_chat_private.intent` gained an original-approval guard: a repeat of
+an unapproved proposal now refuses with `42501` instead of minting a new card.
+The installed migration is that corrected file, SHA-256 `9fae4d97`. A new native
+case covers the refusal and the approved clone; CI live RLS runs all 25 chat
+native cases.
+
+The managed database received the chat migration once, after a fresh read-only
+database and Storage capture and passing reader and writer gates. History now
+holds 431 rows; all 430 earlier rows are unchanged. Readback passes 35 of 35
+catalogue criteria and the preservation check. Admission stays closed and the
+four chat tables are empty.
+
+Main `aed7d0675f86b7fb4bb3fa5b75b9d3d27f4ec95d` passes all recorded GitHub
+checks, including QA, shuffled Vitest, live RLS, the upgrade path, worker
+regressions and nightly QA. Vercel built that commit but did not promote it on
+its own; the build was promoted manually after a health check. Production health
+reports 0.72.0, that commit, 430 expected migrations and latest
+`20261021215752`.
+
+The hosted check signs in with an existing account through the ordinary form.
+It reaches Dashboard, Planner Agent Activity, Projects, Reports, Travel modeling,
+Plans and Grants at 1440px, each with HTTP 200 and its heading. It opens the
+Planner Agent panel, and reaches Dashboard and Planner Agent Activity at 390px
+without horizontal overflow. The window records zero console errors or warnings,
+zero page errors and zero HTTP 400-plus responses, plus 36 aborted requests.
+Vercel reports no runtime errors from the promotion through the check. No chat
+turn, approval or business write runs on the hosted system, so hosted chat
+behavior is not accepted by this record.
+
+The limits in the candidate paragraphs still apply. The database capture is not
+atomic, has not been restored, and is not offsite.
+
+## 0.71.0 (2026-10-22)
+
+**Signal palette and independent corners.** Appearance adds Signal beside the
+five existing palettes. Rounded and Square remain separate from palette and
+light/dark mode. Defaults remain Cartographic, Rounded and device mode.
+Preferences persist across reloads and propagate between tabs. Square applies
+to the shared application surfaces while selected status symbols stay round.
+The Planner Agent launcher uses matching theme text, icon and background colors.
+
+**No new migrations since v0.70.0.** The tree retains all 429 migration files,
+with the same high-water version `20261019000002`. An installation already at
+v0.70.0 needs no schema addition for this increment. Older installations still
+compare their applied history and follow the earlier upgrade instructions.
+The dependency graph remains unchanged from the joined appearance candidate.
+
+**Verification and limits.** A fresh identified 0.71.0 candidate build passes
+webpack and configured TypeScript. Ordinary front-door and cookie sign-in reach
+Appearance at 1440x900 and 390x844. Keyboard selection, focus return, independent
+palette/mode/corner choices, settled Square and Rounded radii, and the mobile
+More menu work. Inspected Signal launcher text/icon contrast is 17.94:1 at rest
+and hover. Forty distinct served static responses match build bytes. The run
+retains 44 aborted requests and one report-only CSP warning; observed console,
+page and body-reader errors are zero. No clean-system claim follows.
+
+Earlier identified R7 observations separately cover reload, cross-tab propagation
+and device mode, with their original controller failure and successful remaining
+mobile continuation preserved. The current bounded journey does not replay that
+whole matrix. The existing appearance record identifies both builds and their
+limits. A fresh exact-lock npm installation and the maintained dependency audit pass,
+with zero reported advisories at the recorded checkpoint. Final-main and hosted
+delivery retain their separate release gates.
+
+First paint, browser storage-disabled use, mobile keyboard, map/chart geometry,
+universal control coverage and other-palette dark contrast remain unassessed.
+The known Reports jurisdiction-readiness contradiction from v0.70 remains open
+in this appearance increment. Complete M2c, all other roadmap requirements and
+separate nationwide AequilibraE and ActivitySim validation remain open.
+
+## 0.70.0 (2026-10-21)
+
+**Manual source-page plan proposals.** Document review stages quoted records
+from a retained page without an AI account. Pending proposals have separate
+pagination from reading history. Manual chapter copies retain source authorship;
+review and saving remain explicit.
+
+**Exact crash-year selection and map focus.** High-injury network reads apply
+each requested year, intersected with any range bounds, and refuse invalid or
+disjoint inputs. Sparse-year disclosures list the selected years. Selecting a
+ranked road reveals and focuses the existing map. The bounded desktop and 390px
+map-focus checks retain their identified builds and earlier failed attempts.
+Sparse-year browser selection remains unassessed.
+
+**Dependency corrections.** The installed lockfile updates follow-redirects to
+1.16.1, Hono to 4.13.11 and Vite to 7.3.7. Vitest and its matching packages use
+4.1.12; Chai uses 6.3.0 and tinyrainbow uses 3.2.0. The maintained dependency
+audit reports zero vulnerabilities at the final local QA checkpoint.
+
+**Upgrade before dependent code.** This tree has 429 migration files. The single
+addition since v0.69.0 is
+`20261019000002_rtp_manual_source_page_proposals.sql`. Compare installed history
+and apply the pending additive migration before deploying this capability. Do
+not replay an already applied version or rewrite migration history. Keep the
+previous compatible build and follow the self-hosting and recovery guidance.
+
+**Verification and limits.** The release record identifies the tested source,
+ordinary QA/build, shuffled order, applicable isolated RLS and worker checks,
+affected local views and representative upgrade evidence. The GitHub release
+records the final commit and publication. Hosted acceptance requires its own
+identified deployment and schema record. Local synthetic source-page workflows
+do not prove complete predecessor coverage, scanned OCR, source authority,
+adoption or legal applicability. Requested crash years do not establish
+complete observations, zero crashes in unavailable years, a valid annual
+denominator, treatment effects or scientific validity. Full RTP, Safety,
+nationwide AequilibraE and ActivitySim validation, and all remaining v1
+requirements stay open.
 
 ## 0.69.0 (2026-10-19)
 

@@ -1,10 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import {
   describeHighInjuryNetworkCoverage,
   describeHighInjuryNetworkMethod,
   describeHighInjuryNetworkUnavailable,
+  describeHighInjuryNetworkYears,
   highInjuryNetworkMeasureLabel,
   type HighInjuryNetwork,
   type HighInjuryNetworkSegment,
@@ -23,6 +25,8 @@ import type {
 export type HighInjuryNetworkReportTarget = {
   id: string;
   title: string;
+  /** Only standard project-status reports support the input comparison. */
+  supportsSafetyComparison?: boolean;
   /** The plan already saved in this report, if any. */
   safetyActionPlan: ReportSafetyActionPlan | null;
 };
@@ -40,11 +44,6 @@ type Props = {
   /** Injected for tests; defaults to `fetch`. */
   saveRequest?: (reportId: string, body: unknown) => Promise<{ ok: boolean; error?: string }>;
 };
-
-function yearsText(years: readonly number[]): string {
-  if (years.length === 0) return "years not recorded";
-  return years.length === 1 ? String(years[0]) : `${years[0]}–${years[years.length - 1]}`;
-}
 
 async function patchReport(reportId: string, body: unknown): Promise<{ ok: boolean; error?: string }> {
   const response = await fetch(`/api/reports/${reportId}`, {
@@ -92,6 +91,8 @@ export function HighInjuryNetworkPanel({
 
   const segments = useMemo(() => (network?.status === "computed" ? network.segments : []), [network]);
   const attachedCount = Object.values(selections).filter((ids) => ids.length > 0).length;
+  const comparisonReport = reports.find((report) => report.id === reportId && report.supportsSafetyComparison)
+    ?? reports.find((report) => report.supportsSafetyComparison);
 
   if (network === undefined) return null;
   if (network === null) return null;
@@ -154,6 +155,9 @@ export function HighInjuryNetworkPanel({
         </label>
       </div>
       <p className="text-xs font-medium" data-testid="safety-hin-measure">{measure}</p>
+      {comparisonReport && ingestId ? <Link className="text-xs underline" href={`/reports/${comparisonReport.id}?safetyComparison=1&safetyIngestId=${encodeURIComponent(ingestId)}`}>
+        Review No Build, alternatives and applicability in this report
+      </Link> : <Link className="text-xs underline" href="/reports">Choose or create a project-status report for Safety comparison</Link>}
 
       {segments.length === 0 ? (
         <p className="text-xs text-muted-foreground" data-testid="safety-hin-empty">
@@ -229,7 +233,7 @@ export function HighInjuryNetworkPanel({
         <dt className="font-medium text-foreground">Method</dt>
         <dd>{describeHighInjuryNetworkMethod(network.method, network.parameters)}</dd>
         <dt className="font-medium text-foreground">Years</dt>
-        <dd>{yearsText(network.years)}</dd>
+        <dd>{describeHighInjuryNetworkYears(network.years)}</dd>
         <dt className="font-medium text-foreground">Source</dt>
         <dd>
           {sourceLabel ?? "Crash source not recorded"}

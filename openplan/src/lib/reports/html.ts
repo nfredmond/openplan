@@ -1,5 +1,8 @@
 import { comparableFundingDisclosure } from "@/lib/grants/award-handoff";
 import type { AttemptInstrument } from "@/lib/models/attempt-instrument-read";
+import { formatProjectEstimate } from "@/lib/projects/estimated-cost";
+import type { GuidedComparisonSelectionV1 } from "@/lib/reports/guided-comparison";
+import { guidedComparisonReportMarkup } from "@/lib/reports/guided-comparison-html";
 import { buildSourceTransparency } from "@/lib/analysis/source-transparency";
 import { getManagedRunModeDefinition } from "@/lib/models/run-modes";
 import {
@@ -251,6 +254,7 @@ export type ReportGenerationData = {
   safetyActionPlan?: SafetyActionPlanSectionDraft | { kind: "stale_acquisition" } | null;
   /** Optional so pre-typed-evidence callers keep working; absent reads as none. */
   citedModelRuns?: ReportCitedModelRun[];
+  guidedComparison?: GuidedComparisonSelectionV1 | null;
   dualDemandAgreementSnapshotsV1?: DualDemandAgreementSnapshotV1[];
   aerialOrthoPreview?: {
     snapshot: FrozenReportAerialOrthoSnapshotV1;
@@ -924,7 +928,7 @@ function estimatedProjectCostMarkup(project: ProjectRecord): string {
   const priceYear = project.estimated_cost_basis_year
     ? ` Price year ${esc(String(project.estimated_cost_basis_year))}.`
     : " Price year not entered.";
-  return `<p><strong>Planning-level estimated project cost:</strong> ${esc(formatMoney(project.estimated_cost_amount, { precision: "whole", currency: project.estimated_cost_currency, currencyDisplay: "code" }))}.${priceYear}${source} This is separate from the project-management budget, funding need, and awards.</p>`;
+  return `<p><strong>Planning-level estimated project cost:</strong> ${esc(formatProjectEstimate(project.estimated_cost_amount, project.estimated_cost_currency))}.${priceYear}${source} This is separate from the project-management budget, funding need, and awards.</p>`;
 }
 
 function projectRecordsProvenanceMarkup(data: ReportGenerationData): string {
@@ -1780,7 +1784,8 @@ function sectionMarkup(sectionKey: string, data: ReportGenerationData): string {
   }
 
   if (sectionKey === "run_summaries" || sectionKey === "analysis_summaries") {
-    const citedModelRuns = data.citedModelRuns ?? [];
+    const guidedIds = new Set(data.guidedComparison?.payload.sources.map((source) => source.runId) ?? []);
+    const citedModelRuns = (data.citedModelRuns ?? []).filter((run) => !guidedIds.has(run.id));
     const citedCountyRuns = data.citedCountyRuns ?? [];
     const runCards = [
       ...data.runs.map((run) => runMarkup(run)),
@@ -2049,6 +2054,7 @@ export function buildReportHtml(data: ReportGenerationData): string {
       )}
       ${evidenceChainMarkup(evidenceChainSummary)}
       ${jurisdictionReadinessMarkup(data.jurisdictionReadiness)}
+      ${guidedComparisonReportMarkup(data.guidedComparison)}
       ${modelingEvidenceMarkup(data.modelingEvidence)}
       ${reportEvidenceDescriptorMarkup(data)}
       ${dualDemandAgreementMarkup(data.dualDemandAgreementSnapshotsV1 ?? [])}

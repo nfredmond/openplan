@@ -2,7 +2,7 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { blankComments, migrationFiles, readMigration, splitTopLevel, unquoteLiteral } from "./read-migrations";
+import { blankComments, matchingParen, migrationFiles, readMigration, splitTopLevel, unquoteLiteral } from "./read-migrations";
 import { UnexpandableDynamicSqlError, expandDynamicPolicyStatements, expandDynamicRlsStatements, stringLiteralRanges } from "./plpgsql-expansion";
 import {
   classifyRoleAwareness,
@@ -501,12 +501,21 @@ const EXPECTED = {
   // 20261018000003 adds four immutable award custody tables, each with one
   // static member SELECT policy. No client write policy is added: +4 policies,
   // permissive policies and policy-bearing tables; expanded remains unchanged.
-  policies: 768,
-  permissive: 517,
+  // 20261021215752 adds nine forced-RLS public custody tables and no view.
+  // Seven copied SELECT policies, five explicit authorizer policies and ten
+  // custody/operator policies add 22 permissive policies, 12 write grants and
+  // ten policy-bearing tables (assistant_action_approvals gains its first). Sixteen additions are dynamic (7 + 9).
+  // R36's dated 429-to-old-430 catalogue records exactly these 22 additions.
+  // These updated equalities parse current source. They are not a new install.
+  // 20261023190100 adds four public immutable comparison tables, each with
+  // one permissive member SELECT policy. No client write policy is added.
+  // Main's 790/539/290/302/246 plus the four award custody policies above.
+  policies: 794,
+  permissive: 543,
   restrictive: 251,
-  permissiveWrites: 278,
-  expanded: 286,
-  tablesWithPolicies: 236,
+  permissiveWrites: 290,
+  expanded: 302,
+  tablesWithPolicies: 250,
   // 20261014000013 adds three generation custody tables with RLS and no client policies.
   // Installed isolated catalog confirms all three; no application view or policy is added.
   // Migration 20 adds the private public-translation mapping table, RLS and no policies.
@@ -579,10 +588,17 @@ const EXPECTED = {
   // six security-invoker views: current links, active submittals/milestones,
   // legacy award calendar, fulfillment, and distinct-award issuance. These
   // source deltas are not a fresh installed-catalog observation.
-  relations: 337,
-  tables: 317,
+  // 20261022010001 retains three private population receipt/revocation tables.
+  // Combined with the nine chat custody tables, source adds twelve RLS tables.
+  // Equalities retain both additions; installed parity remains separate.
+  // The same comparison migration adds four public RLS tables and no view.
+  // Its transaction-entry table lives in a private schema outside this scan.
+  // Main's 343 relations, 329 tables and 14 views, plus the award migration's
+  // four RLS tables and six views.
+  relations: 353,
+  tables: 333,
   views: 20,
-  rlsEnabledTables: 317,
+  rlsEnabledTables: 333,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */
@@ -734,6 +750,19 @@ describe("migration policy inventory", () => {
     expect(() => expandDynamicPolicyStatements("fixture.sql", fixture(
       "EXECUTE format('CREATE POLICY %I ON alpha FOR SELECT USING (true)', 'x; DROP TABLE alpha');"
     ))).toThrow(UnexpandableDynamicSqlError);
+    const copyBlock = blankComments(readMigration("20261021215752_assistant_chat_turns.sql")).match(/DO \$body\$[\s\S]*?END \$body\$;/)![0];
+    const sourcePolicies = [
+      { table: "projects", command: "SELECT", kind: "RESTRICTIVE", roles: ["authenticated"], body: "USING (workspace_id IN (SELECT workspace_id FROM public.workspace_members))" },
+      { table: "projects", command: "ALL", kind: "PERMISSIVE", roles: ["public"], body: "USING (id IS NOT NULL) WITH CHECK (false)" },
+      { table: "projects", command: "SELECT", kind: "PERMISSIVE", roles: ["anon"], body: "USING (true)" },
+      { table: "projects", command: "INSERT", kind: "PERMISSIVE", roles: ["authenticated"], body: "WITH CHECK (true)" },
+    ];
+    expect(expandDynamicPolicyStatements("fixture.sql", copyBlock, () => sourcePolicies).map(row => row.sql)).toEqual([
+      "CREATE POLICY assistant_chat_source_1 ON public.projects AS RESTRICTIVE FOR SELECT TO openplan_chat_authorizer USING (workspace_id IN (SELECT workspace_id FROM public.workspace_members));",
+      "CREATE POLICY assistant_chat_source_2 ON public.projects AS PERMISSIVE FOR SELECT TO openplan_chat_authorizer USING (id IS NOT NULL);",
+    ]);
+    expect(() => expandDynamicPolicyStatements("fixture.sql", copyBlock)).toThrow("without prior policy DDL");
+    expect(() => expandDynamicPolicyStatements("fixture.sql", copyBlock.replace("polcmd IN ('r','*')", "polcmd IN ('r')"), () => sourcePolicies)).toThrow("unsupported policy catalogue query");
   });
 
   it("treats a policy with no FOR clause as a write grant, because Postgres does", () => {
@@ -746,6 +775,16 @@ describe("migration policy inventory", () => {
       "aerial_evidence_packages",
       "aerial_missions",
       "aerial_project_posture",
+      "assistant_chat_access_checks",
+      "assistant_chat_admissions",
+      "assistant_chat_admissions",
+      "assistant_chat_events",
+      "assistant_chat_grants",
+      "assistant_chat_proposal_intents",
+      "assistant_chat_sources",
+      "assistant_chat_steps",
+      "assistant_chat_tool_calls",
+      "assistant_chat_turns",
       "land_use_plan_consultation_records",
       "land_use_plan_content_nodes",
       "land_use_plan_decisions",
@@ -897,6 +936,18 @@ describe("migration schema inventory", () => {
     expect(schema.hasColumn("gtfs_feed_versions", "ingest_failure_receipt")).toBe(true);
   });
   it("reads every relation the migrations declare", () => {
+    // Pin each population relation and its complete field projection, so a
+    // renamed or omitted field cannot hide behind an unchanged total.
+    const populationColumns = {
+      model_population_checkpoint_receipts: ["request_id", "workspace_id", "run_id", "stage_id", "deployment_id", "facts", "checkpoint_sha256", "context_json", "origin_run", "request_payload", "response_payload", "recorded_at"],
+      model_population_checkpoint_revocations: ["checkpoint_id", "actor_id", "reason", "recorded_at"],
+      model_population_replacement_receipts: ["request_id", "workspace_id", "source_run_id", "checkpoint_id", "actor_id", "replacement_run_id", "request_payload", "response_payload", "source_state", "recorded_at"],
+    };
+    for (const [table, fields] of Object.entries(populationColumns)) {
+      for (const field of fields) expect(schema.hasColumn(table, field), `${table}.${field}`).toBe(true);
+      expect([...(schema.columns(table) ?? [])].sort(), table).toEqual([...fields].sort());
+      expect(schema.rlsEnabled(table), table).toBe(true);
+    }
     expect(schema.relations()).toHaveLength(EXPECTED.relations);
     // Retained-page identity and exact retry custody extend the existing run.
     // A missing or renamed field must fail even when every count stays equal.
@@ -911,6 +962,32 @@ describe("migration schema inventory", () => {
       expect(schema.hasColumn("rtp_extraction_runs", field), `rtp_extraction_runs.${field}`).toBe(true);
     }
     expect(schema.columns("rtp_extraction_runs"), "complete RTP extraction run fieldset").toEqual(new Set(rtpExtractionRunColumns));
+    const chatTables = ["admissions", "grants", "turns", "sources", "steps", "tool_calls", "events", "access_checks", "proposal_intents"].map(name => `assistant_chat_${name}`);
+    expect(schema.tables().filter(table => table.startsWith("assistant_chat_"))).toEqual([...chatTables].sort());
+    for (const table of chatTables) {
+      expect(schema.createdIn(table), table).toBe("20261021215752_assistant_chat_turns.sql");
+      expect(schema.rlsEnabled(table), table).toBe(true);
+      expect(inventory.forTable(table).filter(policy => policy.policy === "custody").map(policy => [policy.command, policy.roles, policy.kind]), table)
+        .toEqual([["ALL", ["openplan_chat_authorizer"], "PERMISSIVE"]]);
+    }
+    expect(inventory.forTable("assistant_chat_admissions").find(policy => policy.policy === "operator_admission")?.roles).toEqual(["service_role"]);
+    const copies = inventory.all().filter(policy => policy.policy.startsWith("assistant_chat_source_"));
+    expect(copies).toHaveLength(7);
+    for (const copy of copies) {
+      expect(copy.command).toBe("SELECT");
+      expect(copy.roles).toEqual(["openplan_chat_authorizer"]);
+      const originals = inventory.forTable(copy.table).filter(policy => !policy.policy.startsWith("assistant_chat_") &&
+        ["SELECT", "ALL"].includes(policy.command) && policy.roles.some(role => ["public", "authenticated"].includes(role)));
+      const qualification = (policy: PolicyStatement) => {
+        const match = policy.body.match(/\bUSING\s*\(/i);
+        if (!match) return "true";
+        const open = (match.index ?? 0) + match[0].length - 1;
+        const close = matchingParen(policy.body, open);
+        expect(close, policy.policy).toBeGreaterThan(open);
+        return policy.body.slice(open + 1, close - 1);
+      };
+      expect(originals.some(policy => policy.kind === copy.kind && qualification(policy) === qualification(copy)), copy.table).toBe(true);
+    }
     expect(schema.tables()).toHaveLength(EXPECTED.tables);
     expect(schema.views()).toHaveLength(EXPECTED.views);
     expect(schema.tables().filter((t) => schema.rlsEnabled(t))).toHaveLength(EXPECTED.rlsEnabledTables);
@@ -1079,7 +1156,7 @@ describe("migration lexing", () => {
     expect(files.length).toBeGreaterThan(140);
 
     for (const file of files) {
-      expect(() => expandDynamicPolicyStatements(file, blankComments(readMigration(file)))).not.toThrow();
+      expect(() => expandDynamicPolicyStatements(file, blankComments(readMigration(file)), () => loadPolicyInventory({ beforeFile: file }).all())).not.toThrow();
     }
   });
 });

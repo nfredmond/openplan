@@ -66,6 +66,22 @@ class ReconstructionTests(unittest.TestCase):
                     with self.assertRaisesRegex(ValueError, 'Incomplete source query'):
                         reconstruction.request('/test')
 
+    def test_secret_key_goes_only_on_apikey_and_legacy_jwt_keeps_bearer(self):
+        # Synthetic values: a JWT-shaped string with a made-up signature and a
+        # string that only borrows the documented secret-key prefix.
+        legacy = 'eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIn0.c3ludGhldGljLXNpZ25hdHVyZQ'
+        secret = 'sb_secret_synthetic-unit-test-only_0000'
+        for key, bearer in ((legacy, 'Bearer ' + legacy), (secret, None)):
+            response = io.BytesIO(b'[]')
+            response.headers = {'Content-Range': '*/0'}
+            with patch.dict(os.environ, {'RESTORE_API_URL': 'http://127.0.0.1', 'RESTORE_SERVICE_KEY': key}), \
+                    patch.object(reconstruction.urllib.request, 'urlopen', return_value=response) as urlopen:
+                self.assertEqual(reconstruction.request('/test'), [])
+            sent = urlopen.call_args.args[0]
+            self.assertEqual(sent.get_header('Apikey'), key)
+            self.assertEqual(sent.get_header('Authorization'), bearer)
+            self.assertEqual(sent.get_header('Prefer'), 'count=exact')
+
     def test_optimized_python_cannot_silently_remove_verification(self):
         result = subprocess.run([sys.executable, '-O', '-c', 'import reconstruct_owp_restore as r; r.reconstruct({}, {}, {}, [])'],
                                 env={**os.environ, 'PYTHONPATH': str(OPS)}, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)

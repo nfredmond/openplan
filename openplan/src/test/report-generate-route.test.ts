@@ -1,8 +1,15 @@
 import { buildSafetySeedPreview } from "@/lib/grants/ss4a-safety-seed";
+import { guidedReportSelectionFixture } from "@/test/fixtures/guided-report-evidence";
+const verifyGuidedReportMock = vi.hoisted(() => vi.fn());
+vi.mock("@/lib/reports/guided-comparison-server", async (importOriginal) => ({
+  ...await importOriginal<typeof import("@/lib/reports/guided-comparison-server")>(),
+  verifyGuidedComparisonReport: (...args: unknown[]) => verifyGuidedReportMock(...args),
+}));
 import { SAFETY_PLAN_PERSISTENCE_VERSION, type SafetyPlanPersistence } from "@/lib/reports/safety-plan-persistence";
 import { safetySeedFixture } from "./fixtures/grants/safety-seed";
 import { readSafetyPlanSnapshot } from "@/lib/reports/safety-plan-snapshot";
 import * as safetyPlanBuilder from "@/lib/reports/safety-action-plan";
+import type { HighInjuryNetworkCrashQuery } from "@/lib/safety/high-injury-network-loader";
 import { PROJECT_PLACE_COLUMN_NAMES } from "@/lib/projects/project-place";
 import { collectSupabaseSelectSites } from "./supabase-call-sites";
 import Database from "better-sqlite3";
@@ -369,6 +376,9 @@ type ArtifactInsertPayload = {
   metadata_json?: { htmlContent?: string } & Record<string, unknown>;
 } & Record<string, unknown>;
 const artifactsInsertMock = vi.fn((_payload: ArtifactInsertPayload) => ({ select: artifactsInsertSelectMock }));
+const serviceArtifactsSingleMock = vi.fn();
+const serviceArtifactsInsertSelectMock = vi.fn(() => ({ single: serviceArtifactsSingleMock }));
+const serviceArtifactsInsertMock = vi.fn((_payload: ArtifactInsertPayload) => ({ select: serviceArtifactsInsertSelectMock }));
 
 // The signed-in member's own Storage client. Migration 20261017000013 removed
 // member INSERT on report-artifacts, so by default it refuses the way row
@@ -738,6 +748,7 @@ function reportNamesCountyRun(overrides: Record<string, unknown> = {}) {
 describe("POST /api/reports/[reportId]/generate", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    verifyGuidedReportMock.mockReset();
     safetyRoadReadMock.mockReset().mockResolvedValue({ data: [], error: null });
     safetyRoadWriteMock.mockReset().mockResolvedValue({ error: null });
     tigerRoadsMock.mockReset().mockResolvedValue({ roads: [], coverageLimit: "No source road fixture", sourceVintage: null });
@@ -1080,6 +1091,12 @@ describe("POST /api/reports/[reportId]/generate", () => {
       error: null,
     });
 
+    serviceArtifactsSingleMock.mockReset().mockResolvedValue({
+      data: { id: "artifact-1", report_id: "11111111-1111-4111-8111-111111111111",
+        artifact_kind: "html", generated_at: "2026-03-14T02:00:00.000Z", metadata_json: {} },
+      error: null,
+    });
+
     memberStorageUploadMock.mockResolvedValue({ error: { message: "new row violates row-level security policy" } });
     checkWorkspaceStorageRoomMock.mockReset();
     serviceStorageUploadMock.mockResolvedValue({ error: null });
@@ -1099,7 +1116,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
     });
     createServiceRoleClientMock.mockReturnValue({
       from: vi.fn((table: string) => {
-        if (table === "report_artifacts") return { insert: artifactsInsertMock };
+        if (table === "report_artifacts") return { insert: serviceArtifactsInsertMock };
         if (table === "safety_road_context_features") return { upsert: safetyRoadWriteMock };
         if (table === "assistant_action_executions") {
           return {
@@ -1112,11 +1129,153 @@ describe("POST /api/reports/[reportId]/generate", () => {
     });
   });
 
+  it.each(["html", "pdf"] as const)("persists the verified comparison through the service insert and member writeback (%s)", async (format) => {
+    const selection = guidedReportSelectionFixture();
+    reportNamesCountyRun({ report_type: "analysis_summary", modeling_county_run_id: null, metadata_json: { guidedComparisonSelectionV1: selection } });
+    reportRunsOrderMock.mockResolvedValueOnce({ data: [], error: null });
+    modelRunsInMock.mockResolvedValueOnce({ data: selection.payload.sources.map((source) => ({ id: source.runId, run_title: `${source.method} ${source.role}`,
+      engine_key: source.method === "aequilibrae" ? "aequilibrae" : "behavioral_demand", status: "succeeded", result_summary_json: {} })), error: null });
+    verifyGuidedReportMock.mockResolvedValue(selection);
+    const response = await postGenerate(new NextRequest("http://localhost/api/reports/1/generate", { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ format }) }), { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) });
+    expect(response.status).toBe(200);
+    expect(verifyGuidedReportMock).toHaveBeenCalledTimes(2);
+    expect(verifyGuidedReportMock).toHaveBeenCalledWith(expect.objectContaining({ saved: selection, snapshotId: selection.snapshotId,
+      workspaceId: "33333333-3333-4333-8333-333333333333", projectId: "44444444-4444-4444-8444-444444444444" }));
+    expect(serviceArtifactsInsertMock, "Verified selected insertion uses the service role").toHaveBeenCalledOnce();
+    expect(artifactsInsertMock, "Member client does not insert selected artifacts").not.toHaveBeenCalled();
+    expect(serviceArtifactsInsertSelectMock).toHaveBeenCalledWith("id, report_id, artifact_kind, generated_at, metadata_json");
+    expect(reportUpdateMock, "Report writeback remains member-scoped").toHaveBeenCalledOnce();
+    expect(artifactWritebackUpdateMock, "Receipt writeback remains member-scoped").toHaveBeenCalledOnce();
+    const inserted = serviceArtifactsInsertMock.mock.calls[0][0];
+    expect(inserted.artifact_kind).toBe(format);
+    expect(inserted.metadata_json).toMatchObject({ guidedComparisonSelectionV1: selection,
+      sourceContext: { citedModelRunCount: 4, scenarioSetLinkCount: 1, guidedComparisonSelectionV1: selection } });
+    expect(inserted.metadata_json!.htmlContent).toContain("450,909.6");
+    expect(inserted.metadata_json!.htmlContent).toContain("398,090.6");
+    expect(inserted.metadata_json!.htmlContent).not.toContain("No KPI summary");
+  });
+
+  it("refuses a failed selected service insert before member writeback", async () => {
+    const selection = guidedReportSelectionFixture();
+    reportNamesCountyRun({ report_type: "analysis_summary", modeling_county_run_id: null,
+      metadata_json: { guidedComparisonSelectionV1: selection } });
+    reportRunsOrderMock.mockResolvedValueOnce({ data: [], error: null });
+    modelRunsInMock.mockResolvedValueOnce({ data: selection.payload.sources.map((source) => ({ id: source.runId,
+      run_title: `${source.method} ${source.role}`, engine_key: source.method === "aequilibrae" ? "aequilibrae" : "behavioral_demand",
+      status: "succeeded", result_summary_json: {} })), error: null });
+    verifyGuidedReportMock.mockResolvedValue(selection);
+    serviceArtifactsSingleMock.mockResolvedValueOnce({ data: null, error: { code: "42501", message: "insert refused" } });
+    const response = await postGenerate(new NextRequest("http://localhost/api/reports/1/generate", { method: "POST",
+      headers: { "content-type": "application/json" }, body: JSON.stringify({ format: "html" }) }),
+      { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) });
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({ error: "Failed to persist report artifact" });
+    expect(serviceArtifactsInsertMock).toHaveBeenCalledOnce();
+    expect(artifactsInsertMock).not.toHaveBeenCalled();
+    expect(reportUpdateMock).not.toHaveBeenCalled();
+    expect(artifactWritebackUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it.each(["selected", "malformed", "unselected"] as const)("retains readable metadata in the oldest report projection: %s", async (kind) => {
+    const selection = guidedReportSelectionFixture();
+    reportMaybeSingleMock.mockResolvedValueOnce({ data: null, error: { message: 'column reports.modeling_county_run_id does not exist', code: "42703" } });
+    reportMaybeSingleMock.mockResolvedValueOnce({ data: null, error: { message: 'column reports.modeling_county_run_id does not exist', code: "42703" } });
+    reportNamesCountyRun({ report_type: "analysis_summary", modeling_county_run_id: null,
+      metadata_json: kind === "unselected" ? { unrelated: "retained" } : { guidedComparisonSelectionV1: kind === "malformed" ? { ...selection, version: 2 } : selection } });
+    if (kind !== "malformed") reportRunsOrderMock.mockResolvedValueOnce({ data: [], error: null });
+    if (kind === "selected") {
+      verifyGuidedReportMock.mockResolvedValue(selection);
+      modelRunsInMock.mockResolvedValueOnce({ data: selection.payload.sources.map((source) => ({ id: source.runId,
+        run_title: `${source.method} ${source.role}`, engine_key: source.method === "aequilibrae" ? "aequilibrae" : "behavioral_demand",
+        status: "succeeded", result_summary_json: {} })), error: null });
+    }
+    const response = await postGenerate(new NextRequest("http://localhost/api/reports/1/generate", { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ format: "html" }) }), { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) });
+    expect(reportSelectMock).toHaveBeenCalledTimes(3);
+    for (const [columns] of reportSelectMock.mock.calls) expect(columns.split(",").map((column) => column.trim())).toContain("metadata_json");
+    expect(reportEqMock.mock.calls).toEqual(Array.from({ length: 3 }, () => ["id", "11111111-1111-4111-8111-111111111111"]));
+    expect(response.status).toBe(kind === "malformed" ? 409 : 200);
+    if (kind === "malformed") {
+      expect(await response.json()).toMatchObject({ error: expect.stringContaining("unsupported version") });
+      expect(serviceStorageUploadMock).not.toHaveBeenCalled();
+      expect(artifactsInsertMock).not.toHaveBeenCalled();
+      expect(serviceArtifactsInsertMock).not.toHaveBeenCalled();
+      expect(verifyGuidedReportMock).not.toHaveBeenCalled();
+    } else {
+      const expectedInsert = kind === "selected" ? serviceArtifactsInsertMock : artifactsInsertMock;
+      const otherInsert = kind === "selected" ? artifactsInsertMock : serviceArtifactsInsertMock;
+      expect(expectedInsert).toHaveBeenCalledOnce();
+      expect(otherInsert).not.toHaveBeenCalled();
+      const inserted = expectedInsert.mock.calls[0][0];
+      if (kind === "selected") {
+        expect(verifyGuidedReportMock).toHaveBeenCalledTimes(2);
+        expect(verifyGuidedReportMock).toHaveBeenCalledWith(expect.objectContaining({ saved: selection, snapshotId: selection.snapshotId }));
+        expect(inserted.metadata_json).toMatchObject({ guidedComparisonSelectionV1: selection, sourceContext: { guidedComparisonSelectionV1: selection } });
+        expect(inserted.metadata_json!.htmlContent).toContain("450,909.6");
+      } else {
+        expect(verifyGuidedReportMock).not.toHaveBeenCalled();
+        expect(inserted.metadata_json).not.toHaveProperty("guidedComparisonSelectionV1");
+        expect(inserted.metadata_json!.sourceContext).toMatchObject({ guidedComparisonSelectionV1: null });
+      }
+    }
+  });
+
+  it("refuses generation when even the oldest projection cannot read metadata", async () => {
+    reportMaybeSingleMock.mockResolvedValueOnce({ data: null, error: { message: 'column reports.modeling_county_run_id does not exist', code: "42703" } });
+    reportMaybeSingleMock.mockResolvedValueOnce({ data: null, error: { message: 'column reports.modeling_county_run_id does not exist', code: "42703" } });
+    reportMaybeSingleMock.mockResolvedValueOnce({ data: null, error: { message: 'column reports.metadata_json does not exist', code: "42703" } });
+    const response = await postGenerate(new NextRequest("http://localhost/api/reports/1/generate", { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ format: "html" }) }), { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) });
+    expect(response.status).toBe(500);
+    expect(reportSelectMock).toHaveBeenCalledTimes(3);
+    expect(reportSelectMock.mock.calls[2][0].split(",").map((column) => column.trim())).toContain("metadata_json");
+    expect(verifyGuidedReportMock).not.toHaveBeenCalled();
+    expect(serviceStorageUploadMock).not.toHaveBeenCalled();
+    expect(artifactsInsertMock).not.toHaveBeenCalled();
+    expect(serviceArtifactsInsertMock).not.toHaveBeenCalled();
+  });
+
+  it.each(["unknown version", "unverifiable evidence"])("refuses %s before storing a new artifact", async (reason) => {
+    const selection = guidedReportSelectionFixture();
+    reportNamesCountyRun({ report_type: "analysis_summary", metadata_json: { guidedComparisonSelectionV1: reason === "unknown version" ? { ...selection, version: 2 } : selection } });
+    verifyGuidedReportMock.mockRejectedValue(new Error("Selected artifact hash changed"));
+    const response = await postGenerate(new NextRequest("http://localhost/api/reports/1/generate", { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ format: "html" }) }), { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) });
+    expect(response.status).toBe(409);
+    expect(serviceStorageUploadMock).not.toHaveBeenCalled();
+    expect(artifactsInsertMock).not.toHaveBeenCalled();
+    expect(serviceArtifactsInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("refuses evidence that changes after assembly and before storage", async () => {
+    const selection = guidedReportSelectionFixture();
+    reportNamesCountyRun({ report_type: "analysis_summary", modeling_county_run_id: null, metadata_json: { guidedComparisonSelectionV1: selection } });
+    reportRunsOrderMock.mockResolvedValueOnce({ data: [], error: null });
+    modelRunsInMock.mockResolvedValueOnce({ data: selection.payload.sources.map((source) => ({ id: source.runId, run_title: source.method,
+      engine_key: source.method === "aequilibrae" ? "aequilibrae" : "behavioral_demand", status: "succeeded", result_summary_json: {} })), error: null });
+    verifyGuidedReportMock.mockResolvedValueOnce(selection).mockRejectedValueOnce(new Error("retained artifact bytes differ before storage"));
+    const response = await postGenerate(new NextRequest("http://localhost/api/reports/1/generate", { method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ format: "html" }) }), { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) });
+    expect(response.status).toBe(409);
+    expect(verifyGuidedReportMock).toHaveBeenCalledTimes(2);
+    for (const [input] of verifyGuidedReportMock.mock.calls) expect(input).toMatchObject({
+      saved: selection, snapshotId: selection.snapshotId, reportType: "analysis_summary",
+      workspaceId: "33333333-3333-4333-8333-333333333333", projectId: "44444444-4444-4444-8444-444444444444",
+    });
+    expect(await response.json()).toMatchObject({ error: expect.stringContaining("retained artifact bytes differ") });
+    expect(serviceStorageUploadMock).not.toHaveBeenCalled();
+    expect(artifactsInsertMock).not.toHaveBeenCalled();
+    expect(serviceArtifactsInsertMock).not.toHaveBeenCalled();
+  });
+
   it("reads the report revision and joins completed writeback to the generated artifact", async () => {
     const response = await postGenerate(new NextRequest("http://localhost/api/reports/1/generate", {
       method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ format: "html" }),
     }), { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) });
     expect(response.status).toBe(200);
+    expect(artifactsInsertMock, "Unselected ordinary reports retain member insertion").toHaveBeenCalledOnce();
+    expect(serviceArtifactsInsertMock, "Unselected ordinary reports do not gain service insertion").not.toHaveBeenCalled();
     expect(reportSelectMock.mock.calls[0][0].split(", ")).toContain("updated_at");
     expect(reportUpdateEqMock).toHaveBeenCalledWith("updated_at", "2026-03-14T00:00:00.000Z");
     expect(reportWritebackSelectMock).toHaveBeenCalledWith("updated_at");
@@ -1354,7 +1513,11 @@ describe("POST /api/reports/[reportId]/generate", () => {
     );
   });
 
-  it("freezes the exact typed Safety builder result and composes generation's own revisions into seed preview", async () => {
+  it.each([
+    { requestedYears: [2022, 2020, 2022], selectedYears: [2020, 2022], count: 2 },
+    { requestedYears: [2024], selectedYears: [2024], count: 0 },
+    { requestedYears: [], selectedYears: null, count: null },
+  ])("freezes exact Safety membership and period labels for $requestedYears through generation and seed preview", async ({ requestedYears, selectedYears, count }) => {
     const fixture = safetySeedFixture();
     const projectId = "44444444-4444-4444-8444-444444444444";
     const reportId = "11111111-1111-4111-8111-111111111111";
@@ -1364,8 +1527,54 @@ describe("POST /api/reports/[reportId]/generate", () => {
       report_type: "project_status", status: "draft", created_at: "2026-03-14T00:00:00.000Z", generated_at: null,
       metadata_json: fixture.report.metadata_json };
     reportMaybeSingleMock.mockResolvedValueOnce({ data: report, error: null });
-    const acquisition = { ...fixture.acquisition, project_id: projectId };
+    // Deliberate out-of-period and undated fixture rows challenge the query.
+    // They do not assert that a real acquisition contains out-of-period rows.
+    const crashRows = [2019, 2020, 2021, 2022, 2023, null].map((year, index) => ({
+      id: `crash-${index}`, workspace_id: workspaceId, ingest_id: fixture.acquisition.id,
+      longitude: 0, latitude: 0, severity: "fatal", collision_year: year,
+    }));
+    const predicates: Array<{ method: string; column: string; value: unknown }> = [];
+    const crashSelect = vi.fn((_columns: string, _options?: { count: "exact" }) => {
+      const filters: Array<(row: typeof crashRows[number]) => boolean> = [];
+      let start = 0;
+      let end = 999;
+      const query: HighInjuryNetworkCrashQuery = {
+        eq: (column, value) => {
+          predicates.push({ method: "eq", column, value });
+          filters.push((row) => row[column as keyof typeof row] === value);
+          return query;
+        },
+        gte: (column, value) => {
+          predicates.push({ method: "gte", column, value });
+          filters.push((row) => row[column as keyof typeof row] !== null && Number(row[column as keyof typeof row]) >= Number(value));
+          return query;
+        },
+        lte: (column, value) => {
+          predicates.push({ method: "lte", column, value });
+          filters.push((row) => row[column as keyof typeof row] !== null && Number(row[column as keyof typeof row]) <= Number(value));
+          return query;
+        },
+        in: (column, values) => {
+          predicates.push({ method: "in", column, value: values });
+          filters.push((row) => values.includes(row[column as keyof typeof row]));
+          return query;
+        },
+        order: () => query,
+        range: (from, to) => { start = from; end = to; return query; },
+        then(resolve, reject) {
+          const matching = crashRows.filter((row) => filters.every((filter) => filter(row)));
+          return Promise.resolve({ data: matching.slice(start, end + 1).map(({ id, longitude, latitude, severity }) => ({ id, longitude, latitude, severity })), count: matching.length, error: null }).then(resolve, reject);
+        },
+      };
+      return query;
+    });
+    const member = await createClientMock();
+    createClientMock.mockResolvedValue({ ...member, from: (table: string) => table === "safety_crashes" ? { select: crashSelect } : fromMock(table) });
+    const acquisition: typeof fixture.acquisition = { ...fixture.acquisition, project_id: projectId, min_lon: -1, min_lat: -1, max_lon: 1, max_lat: 1,
+      years_requested: requestedYears, crash_count: crashRows.length, geocoded_count: crashRows.length, stored_count: crashRows.length };
     safetyIngestOrderMock.mockResolvedValueOnce({ data: [acquisition], error: null });
+    rpcMock.mockImplementation(async (name: string) => ({ data: name === "safety_crash_evidence_counts"
+      ? [{ ingest_id: acquisition.id, dimension: "severity", value: "fatal", record_count: crashRows.length }] : [], error: null }));
     const effects: string[] = [];
     const persisted: Array<{ artifact: { id: string; report_id: string; generated_at: string; metadata_json: Record<string, unknown> }; reportUpdatedAt: string; projectUpdatedAt: string; persistence: SafetyPlanPersistence }> = [];
     const service = createServiceRoleClientMock.getMockImplementation()!();
@@ -1397,6 +1606,27 @@ describe("POST /api/reports/[reportId]/generate", () => {
       const snapshot = readSafetyPlanSnapshot(result.artifact.metadata_json.safetyPlanSnapshotV1)!;
       expect(snapshot).not.toBeNull(); expect(snapshot.draft).toEqual(builder.mock.results.at(-1)!.value);
       expect(snapshot.selection).toEqual(fixture.report.metadata_json.safetyActionPlan);
+      expect(snapshot.acquisition.years_requested).toEqual(requestedYears);
+      if (selectedYears === null) {
+        expect(crashSelect).not.toHaveBeenCalled();
+        expect(snapshot.draft.network).toMatchObject({ kind: "unavailable", reason: expect.stringContaining("Requested crash years are missing") });
+      } else {
+        expect(crashSelect).toHaveBeenCalledWith("id, longitude, latitude, severity", { count: "exact" });
+        expect(predicates).toContainEqual({ method: "in", column: "collision_year", value: selectedYears });
+        expect(predicates).toContainEqual({ method: "eq", column: "workspace_id", value: workspaceId });
+        expect(predicates).toContainEqual({ method: "eq", column: "ingest_id", value: acquisition.id });
+        expect(builder.mock.calls.at(-1)![0].network).toMatchObject({ status: "computed", years: selectedYears, crashesConsidered: count });
+        const network = snapshot.draft.network;
+        if (network.kind !== "computed") throw new Error("expected generated network");
+        expect(network.years).toBe(`Requested crash years: ${selectedYears.join(", ")}`);
+        expect(network.rows.reduce((sum, row) => sum + row.crashCount, 0)).toBe(count);
+        expect(network.coverage).toContain("do not establish complete observation coverage or an annual denominator");
+        expect(result.artifact.metadata_json.htmlContent).toContain(network.years);
+        expect(result.artifact.metadata_json.htmlContent).toContain("do not establish complete observation coverage");
+        expect(network.sourceLine).not.toContain("2020–2022");
+        expect(network.measureLabel).toContain("fatal crashes only");
+        expect(network.rows.every((row) => row.seriousInjuryCrashCount === null)).toBe(true);
+      }
       expect(effects).toEqual(["artifact insert: P1", "report writeback: P2", "artifact receipt: P3"]);
       const rows = { ...fixture, opportunity: { ...fixture.opportunity, project_id: projectId, workspace_id: workspaceId },
         project: { ...fixture.project, id: projectId, workspace_id: workspaceId, updated_at: result.projectUpdatedAt },
@@ -1408,6 +1638,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
       rows.project.name = "Genuine later source edit";
       expect(() => buildSafetySeedPreview(rows)).toThrow(/custody.*stale/);
       expect(artifactsInsertMock).not.toHaveBeenCalled(); expect(artifactWritebackUpdateMock).not.toHaveBeenCalled();
+      expect(serviceArtifactsInsertMock, "Safety insertion stays inside its persistence RPC").not.toHaveBeenCalled();
       expect(safetyIngestSelectMock).toHaveBeenCalledWith(expect.stringContaining("published_through_provenance"));
     } finally { builder.mockRestore(); }
   });
@@ -4546,21 +4777,26 @@ describe("POST /api/reports/[reportId]/generate", () => {
     );
   });
   // Answer from the actual projection. An omitted column never reappears in a fallback row.
-  function pendingProjectSchema(missing: string[], style: "postgres" | "cache" = "postgres", malformed = false) {
+  function pendingProjectSchema(missing: string[], style: "postgres" | "cache" = "postgres", malformed = false, amount: number | string = 125000) {
     const row: Record<string, unknown> = { ...exportProject,
       jurisdiction_context: malformed ? { invalid: true } : exportProject.jurisdiction_context,
-      estimated_cost_amount: 125000, estimated_cost_currency: "EUR",
+      estimated_cost_amount: amount, estimated_cost_currency: "EUR",
       estimated_cost_basis_year: 2026, estimated_cost_source_document_id: null,
     };
     projectMaybeSingleMock.mockImplementation(async () => {
       const columns = projectSelectMock.mock.calls.at(-1)![0].split(",").map(column => column.trim());
-      const unavailable = missing.find(column => columns.includes(column));
+      const unavailable = missing.find(column => columns.some(selected => selected.split("::")[0] === column));
       if (unavailable) return { data: null, error: {
         message: style === "postgres" ? `column projects.${unavailable} does not exist`
           : `Could not find the '${unavailable}' column of 'projects' in the schema cache`,
         code: style === "postgres" ? "42703" : "PGRST204",
       } };
-      return { data: Object.fromEntries(columns.filter(column => column in row).map(column => [column, row[column]])), error: null };
+      return { data: Object.fromEntries(columns.map(selected => {
+        const column = selected.split("::")[0];
+        const value = row[column];
+        return [column, column === "estimated_cost_amount" && value != null
+          ? selected.endsWith("::text") ? String(value) : Number(value) : value];
+      })), error: null };
     });
   }
 
@@ -4589,12 +4825,14 @@ describe("POST /api/reports/[reportId]/generate", () => {
     const expected = [
       "id", "workspace_id", "name", "summary", "status", "plan_type", "delivery_phase", "created_at", "updated_at",
       "jurisdiction_context", ...PROJECT_PLACE_COLUMN_NAMES,
-      "estimated_cost_amount", "estimated_cost_currency", "estimated_cost_basis_year", "estimated_cost_source_document_id",
+      "estimated_cost_amount::text", "estimated_cost_currency", "estimated_cost_basis_year", "estimated_cost_source_document_id",
       "latitude", "longitude",
     ].join(", ");
     expect((await generatePendingSchemaReport()).status).toBe(200);
     expect(projectSelectMock.mock.calls[0][0], "Actual initial projection retains every group in order").toBe(expected);
-    const sites = collectSupabaseSelectSites().filter(site =>
+    const sites = collectSupabaseSelectSites({
+      files: ["src/app/api/reports/[reportId]/generate/route.ts"],
+    }).filter(site =>
       site.file === "src/app/api/reports/[reportId]/generate/route.ts" && site.table === "projects"
     );
     expect(sites.filter(site => site.projection !== null).map(site => site.projection), "Source guard resolves the actual initial projection").toEqual([expected]);
@@ -4611,8 +4849,15 @@ describe("POST /api/reports/[reportId]/generate", () => {
     const projections = projectSelectMock.mock.calls.map(call => call[0]);
     expect(projections, "Single missing group takes exactly one retry").toHaveLength(2);
     expect(projections[1], "Fallback removes the complete named group and nothing else").toBe(
-      projections[0].split(", ").filter(column => !columns.includes(column)).join(", ")
+      projections[0].split(", ").filter(column => !columns.includes(column.split("::")[0])).join(", ")
     );
+  });
+
+  it("preserves exact estimate cents through the report query and uploaded HTML", async () => {
+    pendingProjectSchema([], "postgres", false, "999999999999999.99");
+    expect((await generatePendingSchemaReport()).status).toBe(200);
+    expect(projectSelectMock.mock.calls[0][0]).toContain("estimated_cost_amount::text");
+    expect(generatedPendingSchemaOutput().html).toContain("999,999,999,999,999.99");
   });
 
   it.each(["postgres", "cache"] as const)("generates schema-pending jurisdiction with readable place and cost (%s)", async style => {
@@ -4754,13 +4999,15 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expect(html, "Actual generated report prints shared canonical hash").toContain(expected.payloadSha256);
     expect(html, "Actual generated report excludes jurisdiction actor UUID").not.toContain(jurisdictionActor);
     vi.setSystemTime(new Date("2030-01-01T00:00:00Z"));
-    const client = { from() {
-      const query = { select() { return query; }, eq() { return query; }, in() { return query; }, order() { return query; }, range() { return query; },
-        async maybeSingle() { return { data: exportProject, error: null }; },
+    const bundleProjectSelect = vi.fn();
+    const client = { from(table: string) {
+      const query = { select(columns: string) { if (table === "projects") bundleProjectSelect(columns); return query; }, eq() { return query; }, in() { return query; }, order() { return query; }, range() { return query; },
+        async maybeSingle() { return { data: { ...exportProject, estimated_cost_amount_exact: null }, error: null }; },
         then(resolve: (value: unknown) => unknown) { return Promise.resolve(resolve({ data: [], error: null })); },
       }; return query;
     } };
     const bundle = await loadProjectEvidenceGeneratedFiles(client, exportProject, new Date());
+    expect(bundleProjectSelect).toHaveBeenCalledWith("*, estimated_cost_amount_exact:estimated_cost_amount::text");
     const json = JSON.parse(bundle.files.find(file => file.path === "project/jurisdiction-readiness.json")!.bytes.toString());
     expect(json, "Actual report and bundle JSON share canonical material across clocks").toEqual(reportReadiness);
     const standalone = buildProjectGeoPackage({ project: exportProject, corridors: [], generatedAt: new Date() });

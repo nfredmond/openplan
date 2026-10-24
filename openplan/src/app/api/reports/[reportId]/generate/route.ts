@@ -35,6 +35,9 @@ import {
 } from "@/lib/safety/high-injury-network-loader";
 import { ACS_YEAR } from "@/lib/data-sources/census";
 import { NextRequest, NextResponse } from "next/server";
+import { generateSafetyComparison, safetyComparisonGenerateSchema } from "@/lib/reports/safety-comparison-server";
+import { readGuidedComparisonSelection, includeGuidedScenarioBasis, type GuidedComparisonSelectionV1 } from "@/lib/reports/guided-comparison";
+import { verifyGuidedComparisonReport } from "@/lib/reports/guided-comparison-server";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
@@ -151,7 +154,7 @@ const PACKET_PROJECT_OPTIONAL_COLUMN_GROUPS = [
 ] as const;
 // Keep the initial projection literal so the source guard checks every column.
 // Route tests pin parity with the four independently removable groups above.
-const PACKET_PROJECT_COLUMNS = "id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at, jurisdiction_context, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_geometry_geojson, place_set_at, estimated_cost_amount, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, latitude, longitude";
+const PACKET_PROJECT_COLUMNS = "id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at, jurisdiction_context, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_geometry_geojson, place_set_at, estimated_cost_amount::text, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, latitude, longitude";
 
 /**
  * A read whose ABSENCE is honest when the schema is genuinely not there: no
@@ -569,6 +572,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     const payload = bodyRead.data ?? {};
+    if (payload && typeof payload === "object" && "safetyComparison" in payload) {
+      const comparison = z.object({ safetyComparison: safetyComparisonGenerateSchema }).strict().safeParse(payload);
+      if (!comparison.success) return NextResponse.json({ error: "Use an exclusive Safety comparison generation command", outcome: "refused" }, { status: 400 });
+      return generateSafetyComparison(request, parsedParams.data.reportId, comparison.data.safetyComparison);
+    }
     const parsed = generateSchema.safeParse(payload);
 
     if (!parsed.success) {
@@ -601,9 +609,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     if (reportLookupResult.error && looksLikePendingSchema(reportLookupResult.error.message)) {
+      // Evidence selection must remain readable even on the oldest projection.
+      // A missing metadata column fails this read instead of discarding a seal.
       reportLookupResult = await supabase
         .from("reports")
-        .select("id, workspace_id, project_id, rtp_cycle_id, title, summary, report_type, status, created_at, updated_at, generated_at")
+        .select("id, workspace_id, project_id, rtp_cycle_id, title, summary, report_type, status, created_at, updated_at, generated_at, metadata_json")
         .eq("id", parsedParams.data.reportId)
         .maybeSingle();
     }
@@ -621,6 +631,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     if (!report) {
       return NextResponse.json({ error: "Report not found" }, { status: 404 });
+    }
+
+    if (report.metadata_json?.safetyComparisonV2 !== undefined) {
+      return NextResponse.json({ error: "Generate this frozen Safety comparison through its explicit revision command. Legacy generation is unavailable." }, { status: 422 });
     }
 
     const { data: membership, error: membershipError } = await supabase
@@ -688,6 +702,18 @@ export async function POST(request: NextRequest, context: RouteContext) {
         { error: error instanceof Error ? error.message : "Planner Agent approval could not be verified." },
         { status: 403 }
       );
+    }
+
+    let guidedComparison: GuidedComparisonSelectionV1 | null = null;
+    try {
+      const saved = readGuidedComparisonSelection(report.metadata_json);
+      if (saved) {
+        if (!report.project_id || report.rtp_cycle_id || report.engagement_campaign_id) throw new Error("Guided comparisons require a project analysis summary.");
+        guidedComparison = await verifyGuidedComparisonReport({ client: supabase, workspaceId: report.workspace_id,
+          projectId: report.project_id, reportType: report.report_type, snapshotId: saved.snapshotId, saved });
+      }
+    } catch (error) {
+      return NextResponse.json({ error: error instanceof Error ? error.message : "The selected guided comparison could not be verified." }, { status: 409 });
     }
 
     if (report.rtp_cycle_id) {
@@ -1605,12 +1631,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const message = projectResultForPacket.error?.message;
       const missingColumn = readPendingSchemaMissingColumn(message, "projects");
       const missing = PACKET_PROJECT_OPTIONAL_COLUMN_GROUPS.find(group => group.columns.some(column =>
-        column === missingColumn && projectColumnsForPacket.includes(column)
+        column === missingColumn && projectColumnsForPacket.some(selected => selected.split("::")[0] === column)
       ));
       if (!missing) break;
       if (missing.kind === "geography") projectGeographyReadState = "schema_pending";
       if (missing.kind === "jurisdiction") projectJurisdictionSchemaPending = true;
-      projectColumnsForPacket = projectColumnsForPacket.filter(column => !missing.columns.some(unavailable => unavailable === column));
+      projectColumnsForPacket = projectColumnsForPacket.filter(column => !missing.columns.some(unavailable => unavailable === column.split("::")[0]));
       audit.warn("report_project_columns_schema_pending", {
         reportId: report.id,
         projectId: report.project_id,
@@ -1913,9 +1939,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const runIds = reportRunLinkRows
       .map((item) => item.run_id)
       .filter((value): value is string => Boolean(value));
-    const citedModelRunIds = reportRunLinkRows
+    const manualModelRunIds = reportRunLinkRows
       .map((item) => item.model_run_id ?? null)
       .filter((value): value is string => Boolean(value));
+    const guidedRunIds = new Set(guidedComparison?.payload.sources.map((source) => source.runId) ?? []);
+    const citedModelRunIds = [...new Set([...manualModelRunIds, ...guidedRunIds])];
     const citedCountyRunIds = reportRunLinkRows
       .map((item) => item.county_run_id ?? null)
       .filter((value): value is string => Boolean(value));
@@ -1997,12 +2025,17 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // weaker one here. Best-effort: a failed claim read marks every row
     // `claimReadFailed`, so the packet says the tier COULD NOT BE READ rather
     // than that no claim decision exists.
-    const citedModelRuns = await withCitedModelRunClaimTiers(
+    const manualCitedModelRuns = await withCitedModelRunClaimTiers(
       supabase,
       reportRunLinkRows
-        .map((item) => (item.model_run_id ? citedModelRunMap.get(item.model_run_id) ?? null : null))
+        .map((item) => (item.model_run_id && !guidedRunIds.has(item.model_run_id) ? citedModelRunMap.get(item.model_run_id) ?? null : null))
         .filter((item): item is NonNullable<typeof item> => Boolean(item))
     );
+    const citedModelRuns = [...manualCitedModelRuns, ...(guidedComparison?.payload.sources ?? []).map((source) => ({
+      ...citedModelRunMap.get(source.runId)!,
+      claimStatus: source.decision.claim_status as import("@/lib/models/evidence-backbone").ModelingClaimStatus,
+      claimReadFailed: false,
+    }))];
     const citedCountyRuns = reportRunLinkRows
       .map((item) => (item.county_run_id ? citedCountyRunMap.get(item.county_run_id) ?? null : null))
       .filter((item): item is NonNullable<typeof item> => Boolean(item));
@@ -2107,7 +2140,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to load scenario provenance" }, { status: 500 });
     }
 
-    const scenarioSetLinks = scenarioSetLinksResult.data;
+    const scenarioSetLinks = includeGuidedScenarioBasis(scenarioSetLinksResult.data, guidedComparison);
     // Same refusal as the RTP branch, for the same reason: `modelingEvidence`
     // becomes a COUNT and a claim-tier list in a packet an agency hands a
     // funder, and a zero derived from a failed read is indistinguishable from a
@@ -2581,6 +2614,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       modelingEvidence,
       citedModelRuns,
       dualDemandAgreementSnapshotsV1,
+      guidedComparison,
       aerialOrthoPreview: frozenAerial?.status === "verified"
         ? { snapshot: frozenAerial.snapshot, imageSrc: "" }
         : null,
@@ -2629,6 +2663,17 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     let artifactStoragePath: string | null = null;
     let pdfEngine: ReportPdfEngine | null = null;
+    const authorizedReportForGuidedRecheck = report;
+    async function recheckGuidedBeforeStorage(): Promise<NextResponse | null> {
+      if (!guidedComparison) return null;
+      try {
+        await verifyGuidedComparisonReport({ client: supabase, workspaceId: authorizedReportForGuidedRecheck.workspace_id,
+          projectId: authorizedReportForGuidedRecheck.project_id!, reportType: authorizedReportForGuidedRecheck.report_type, snapshotId: guidedComparison.snapshotId, saved: guidedComparison });
+        return null;
+      } catch (error) {
+        return NextResponse.json({ error: error instanceof Error ? error.message : "The selected comparison changed before storage." }, { status: 409 });
+      }
+    }
     const reportTitleForPdf = typeof report.title === "string" && report.title.trim()
       ? report.title.trim()
       : "OpenPlan report";
@@ -2648,6 +2693,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
         });
       }
       const pdfBuffer = Buffer.from(rendered.bytes);
+      const guidedRefusal = await recheckGuidedBeforeStorage();
+      if (guidedRefusal) return guidedRefusal;
       const storagePath = `${report.workspace_id}/${report.id}/${artifactId}.pdf`;
       const notStored = await storeReportArtifactFile({
         serviceSupabase,
@@ -2662,6 +2709,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
       artifactStoragePath = storagePath;
     } else {
       const storagePath = `${report.workspace_id}/${report.id}/${artifactId}.html`;
+      const guidedRefusal = await recheckGuidedBeforeStorage();
+      if (guidedRefusal) return guidedRefusal;
       // Storage bucket allowlists compare the media type literally. Charset
       // belongs on the download response, not in the stored object's type.
       const notStored = await storeReportArtifactFile({
@@ -2677,6 +2726,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       artifactStoragePath = storagePath;
     }
     const artifactMetadata = {
+      ...(guidedComparison ? { guidedComparisonSelectionV1: guidedComparison } : {}),
       safetyPlanSnapshotV1,
       generationWriteback: null,
       metadata_schema_version: "2026-04",
@@ -2711,6 +2761,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
           runName: run.run_name,
           stage: run.stage,
         })),
+        guidedComparisonSelectionV1: guidedComparison,
         scenarioSetLinkCount: scenarioSetLinks.length,
         scenarioSetLinks,
         scenarioSpineSummary,
@@ -2782,11 +2833,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
       storage_path: artifactStoragePath, generated_by: user.id, generated_at: generatedAt,
       metadata_json: artifactMetadata,
     };
-    // Safety insertion waits for the atomic persistence RPC below. Other report
-    // branches retain their existing caller-scoped insertion and writeback.
+    // Selected comparison artifacts require the server-only insert guard after
+    // both verifier passes. Report writeback stays caller-scoped; Safety keeps
+    // its separate atomic persistence RPC.
+    const artifactClient = guidedComparison ? serviceSupabase : supabase;
     const { data: artifact, error: artifactError } = safetyPlanSnapshotV1
       ? { data: artifactInsert, error: null }
-      : await supabase.from("report_artifacts").insert(artifactInsert)
+      : await artifactClient.from("report_artifacts").insert(artifactInsert)
           .select("id, report_id, artifact_kind, generated_at, metadata_json").single();
 
     if (artifactError || !artifact) {

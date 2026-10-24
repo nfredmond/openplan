@@ -87,7 +87,8 @@ type ProjectPostureHeaderProps = {
   rtpPriorityCriteria: readonly ResolvedRtpPriorityCriterion[];
   /** Whether this member may change the project. */
   canWriteProjects: boolean;
-  deliverableCount: number;
+  deliverableCount: number | null;
+  deliverableReadState?: "readable" | "pending" | "unreadable";
   /**
    * Open risks / open issues, or null when the underlying read FAILED.
    *
@@ -131,6 +132,7 @@ export function ProjectPostureHeader({
   rtpPriorityCriteria,
   canWriteProjects,
   deliverableCount,
+  deliverableReadState = "readable",
   openRiskCount,
   openIssueCount,
   kbDocumentCount,
@@ -192,8 +194,12 @@ export function ProjectPostureHeader({
           <div className="module-summary-grid cols-6">
             <div className="module-summary-card">
               <p className="module-summary-label">Deliverables</p>
-              <p className="module-summary-value">{deliverableCount}</p>
-              <p className="module-summary-detail">Things this project owes someone, tracked here.</p>
+              <p className="module-summary-value">{deliverableCount ?? "Unavailable"}</p>
+              <p className="module-summary-detail">{deliverableReadState === "pending"
+                ? "Deliverable count unavailable while project input setup is pending."
+                : deliverableReadState === "unreadable"
+                  ? "Deliverable count unavailable because the source could not be read."
+                  : "Things this project owes someone, tracked here."}</p>
             </div>
             <div className="module-summary-card">
               <p className="module-summary-label">Open risks</p>

@@ -1,3 +1,4 @@
+import { readModelAttemptOutputs, currentCompletedModelOutputs, filterCompletedAttemptRows } from "@/lib/models/attempt-output-read";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { unconfirmedInsertResponse } from "@/lib/http/write-outcome";
@@ -102,6 +103,7 @@ type RouteContext = {
  * are part of the authorized-run result rather than something re-read later.
  */
 type SubjectRunRow = {
+  attempt_managed?: boolean;
   id: string;
   run_title: string | null;
   status: string | null;
@@ -155,7 +157,7 @@ async function loadAuthorizedRun(
 
   const { data: run, error: runError } = await supabase
     .from("model_runs")
-    .select("id, model_id, run_title, status, engine_key")
+    .select("id, model_id, run_title, status, engine_key, attempt_managed")
     .eq("id", modelRunId)
     .eq("model_id", access.model.id)
     .maybeSingle();
@@ -181,6 +183,7 @@ async function loadAuthorizedRun(
     modelId: access.model.id,
     run: {
       id: String(runRow.id ?? modelRunId),
+      attempt_managed: runRow.attempt_managed === true,
       run_title: typeof runRow.run_title === "string" ? runRow.run_title : null,
       status: typeof runRow.status === "string" ? runRow.status : null,
       engine_key: typeof runRow.engine_key === "string" ? runRow.engine_key : null,
@@ -233,18 +236,24 @@ async function resolveWorkspaceFramework(
 
 async function loadRunKpis(
   supabase: Awaited<ReturnType<typeof createClient>>,
-  modelRunId: string
+  modelRunId: string, workspaceId: string, managed: boolean
 ): Promise<{ kpis: CeqaVmtKpiRowLike[]; error: string | null }> {
   const { data, error } = await supabase
     .from("model_run_kpis")
-    .select("kpi_name, kpi_label, value, unit, geometry_ref")
+    .select("id, run_id, attempt_id, kpi_name, kpi_label, value, unit, geometry_ref")
     .eq("run_id", modelRunId);
 
   if (error) {
     return { kpis: [], error: error.message };
   }
 
-  const rows = (data ?? []) as Array<Record<string, unknown>>;
+  let rows = (data ?? []) as Array<Record<string, unknown>>;
+  if (managed) {
+    const custody = await readModelAttemptOutputs(workspaceId, modelRunId);
+    if (!custody.available) return { kpis: [], error: "Current VMT output custody could not be verified" };
+    rows = filterCompletedAttemptRows(custody, "kpi", rows);
+    if (rows.length !== currentCompletedModelOutputs(custody, "kpi").length) return { kpis: [], error: "Current VMT output records are incomplete" };
+  }
   return {
     kpis: rows.map((row) => ({
       kpi_name: String(row.kpi_name ?? ""),
@@ -486,7 +495,7 @@ export async function POST(req: NextRequest, context: RouteContext): Promise<Nex
     );
   }
 
-  const { kpis, error: kpiError } = await loadRunKpis(auth.supabase, parsedParams.data.modelRunId);
+  const { kpis, error: kpiError } = await loadRunKpis(auth.supabase, parsedParams.data.modelRunId, auth.workspaceId, auth.run.attempt_managed === true);
   if (kpiError) {
     audit.error("model_run_kpis_lookup_failed", { message: kpiError });
     return NextResponse.json({ error: "Failed to load the run's stored KPIs" }, { status: 500 });

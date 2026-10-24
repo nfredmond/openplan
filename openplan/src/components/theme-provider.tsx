@@ -9,6 +9,8 @@ import {
   type PaletteId,
 } from "@/lib/theme/palettes";
 
+import { CORNER_STORAGE_KEY, DEFAULT_CORNERS, normalizeCorners, type CornerStyle } from "@/lib/theme/appearance";
+
 type OpenPlanTheme = "light" | "dark";
 /**
  * What the reader chose. "system" follows the device setting and is the
@@ -16,6 +18,7 @@ type OpenPlanTheme = "light" | "dark";
  */
 type ThemeChoice = OpenPlanTheme | "system";
 type SetThemeInput = ThemeChoice | ((current: ThemeChoice) => ThemeChoice);
+type SetCornersInput = CornerStyle | ((current: CornerStyle) => CornerStyle);
 type SetPaletteInput = PaletteId | ((current: PaletteId) => PaletteId);
 
 type ThemeContextValue = {
@@ -31,6 +34,8 @@ type ThemeContextValue = {
   palette: PaletteId;
   palettes: readonly PaletteDefinition[];
   setPalette: (palette: SetPaletteInput) => void;
+  corners: CornerStyle;
+  setCorners: (corners: SetCornersInput) => void;
 };
 
 type ThemeProviderProps = {
@@ -38,6 +43,7 @@ type ThemeProviderProps = {
   defaultTheme?: ThemeChoice;
   storageKey?: string;
   paletteStorageKey?: string;
+  cornerStorageKey?: string;
 };
 
 const DEFAULT_THEME: ThemeChoice = "system";
@@ -59,6 +65,8 @@ const ThemeContext = createContext<ThemeContextValue>({
   palette: DEFAULT_PALETTE,
   palettes: PALETTES,
   setPalette: () => {},
+  corners: DEFAULT_CORNERS,
+  setCorners: () => {},
 });
 
 function normalizeTheme(value: string | null | undefined, fallback: ThemeChoice): ThemeChoice {
@@ -120,6 +128,28 @@ function persistPalette(storageKey: string, palette: PaletteId) {
   }
 }
 
+function storedCorners(storageKey: string): CornerStyle {
+  if (typeof window === "undefined") return DEFAULT_CORNERS;
+  try {
+    return normalizeCorners(window.localStorage.getItem(storageKey));
+  } catch {
+    return DEFAULT_CORNERS;
+  }
+}
+
+function applyCorners(corners: CornerStyle) {
+  if (typeof document === "undefined") return;
+  document.documentElement.setAttribute("data-corners", corners);
+}
+
+function persistCorners(storageKey: string, corners: CornerStyle) {
+  try {
+    window.localStorage.setItem(storageKey, corners);
+  } catch {
+    // The current page still responds when storage is unavailable.
+  }
+}
+
 function persistTheme(storageKey: string, theme: ThemeChoice) {
   if (typeof window === "undefined") return;
   try {
@@ -137,6 +167,7 @@ export function ThemeProvider({
   defaultTheme = DEFAULT_THEME,
   storageKey = DEFAULT_STORAGE_KEY,
   paletteStorageKey = DEFAULT_PALETTE_STORAGE_KEY,
+  cornerStorageKey = CORNER_STORAGE_KEY,
 }: ThemeProviderProps) {
   const fallbackTheme = normalizeTheme(defaultTheme, DEFAULT_THEME);
   /*
@@ -154,21 +185,26 @@ export function ThemeProvider({
   const [theme, setThemeState] = useState<ThemeChoice>(fallbackTheme);
   const [resolvedTheme, setResolvedTheme] = useState<OpenPlanTheme>("light");
   const [palette, setPaletteState] = useState<PaletteId>(DEFAULT_PALETTE);
+  const [corners, setCornersState] = useState<CornerStyle>(DEFAULT_CORNERS);
   const [adopted, setAdopted] = useState(false);
   const themeRef = useRef(theme);
   const paletteRef = useRef(palette);
+  const cornersRef = useRef(corners);
 
   useEffect(() => {
     const nextTheme = storedTheme(storageKey, fallbackTheme);
     const nextPalette = storedPalette(paletteStorageKey);
+    const nextCorners = storedCorners(cornerStorageKey);
     themeRef.current = nextTheme;
     paletteRef.current = nextPalette;
+    cornersRef.current = nextCorners;
     // One-shot adoption of the reader's stored choice after hydration.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setThemeState(nextTheme);
     setPaletteState(nextPalette);
+    setCornersState(nextCorners);
     setAdopted(true);
-  }, [fallbackTheme, paletteStorageKey, storageKey]);
+  }, [cornerStorageKey, fallbackTheme, paletteStorageKey, storageKey]);
 
   useEffect(() => {
     if (!adopted) return;
@@ -197,27 +233,39 @@ export function ThemeProvider({
   }, [adopted, palette]);
 
   useEffect(() => {
+    if (!adopted) return;
+    cornersRef.current = corners;
+    applyCorners(corners);
+  }, [adopted, corners]);
+
+  useEffect(() => {
     function handleStorage(event: StorageEvent) {
-      if (event.key === storageKey) {
+      if (event.storageArea && event.storageArea !== window.localStorage) return;
+      if (event.key === null || event.key === storageKey) {
         const nextTheme = normalizeTheme(event.newValue, "system");
         themeRef.current = nextTheme;
         setThemeState(nextTheme);
-        return;
       }
       // The palette follows the same cross-tab contract as the mode: two open
       // tabs that disagree about the colour of the product is the same defect
       // as two that disagree about light and dark.
-      if (event.key === paletteStorageKey) {
+      if (event.key === null || event.key === paletteStorageKey) {
         const nextPalette = normalizePalette(event.newValue);
         paletteRef.current = nextPalette;
         setPaletteState(nextPalette);
         applyPalette(nextPalette);
       }
+      if (event.key === null || event.key === cornerStorageKey) {
+        const nextCorners = normalizeCorners(event.newValue);
+        cornersRef.current = nextCorners;
+        setCornersState(nextCorners);
+        applyCorners(nextCorners);
+      }
     }
 
     window.addEventListener("storage", handleStorage);
     return () => window.removeEventListener("storage", handleStorage);
-  }, [fallbackTheme, paletteStorageKey, storageKey]);
+  }, [cornerStorageKey, fallbackTheme, paletteStorageKey, storageKey]);
 
   const setTheme = useCallback(
     (input: SetThemeInput) => {
@@ -245,6 +293,19 @@ export function ThemeProvider({
     [paletteStorageKey]
   );
 
+  const setCorners = useCallback(
+    (input: SetCornersInput) => {
+      const nextCorners = normalizeCorners(
+        typeof input === "function" ? input(cornersRef.current) : input
+      );
+      cornersRef.current = nextCorners;
+      setCornersState(nextCorners);
+      persistCorners(cornerStorageKey, nextCorners);
+      applyCorners(nextCorners);
+    },
+    [cornerStorageKey]
+  );
+
   const value = useMemo<ThemeContextValue>(
     () => ({
       theme,
@@ -254,8 +315,10 @@ export function ThemeProvider({
       palette,
       palettes: PALETTES,
       setPalette,
+      corners,
+      setCorners,
     }),
-    [palette, resolvedTheme, setPalette, setTheme, theme]
+    [corners, palette, resolvedTheme, setCorners, setPalette, setTheme, theme]
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

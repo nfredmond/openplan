@@ -164,7 +164,7 @@ describe("historical run keep or close", () => {
     expect(screen.getByTestId("run-recovery-operator-detail")).toHaveTextContent("kept_as_record");
     expect(screen.getByTestId("run-recovery-operator-detail")).toHaveTextContent("Synthetic review");
     expect(screen.queryByRole("button", { name: /Keep it|Close to run again|Relaunch worker run|Reset queue|Start a new run/ })).toBeNull();
-    expect(screen.getByRole("link", { name: "View / Download" })).toHaveAttribute("href", `/api/models/${model}/runs/${run}/artifacts/${artifact}/download`);
+    expect(screen.getByRole("link", { name: new RegExp(`^View / Download .*artifact ${artifact}$`) })).toHaveAttribute("href", `/api/models/${model}/runs/${run}/artifacts/${artifact}/download`);
     expect(screen.queryByRole("progressbar")).toBeNull();
   });
   it("lets a closed run seed a fresh launch without relaunching it", () => {

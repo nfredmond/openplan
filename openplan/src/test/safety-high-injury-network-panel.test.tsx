@@ -103,6 +103,31 @@ function renderPanel(overrides: Partial<Parameters<typeof HighInjuryNetworkPanel
 afterEach(() => cleanup());
 
 describe("the ranked table", () => {
+  it("opens a compatible report instead of the first unrelated report", () => {
+    renderPanel({ reports: [
+      { id: "analysis", title: "Analysis", safetyActionPlan: null, supportsSafetyComparison: false },
+      { id: "status", title: "Project status", safetyActionPlan: null, supportsSafetyComparison: true },
+    ] });
+    expect(screen.getByRole("link", { name: "Review No Build, alternatives and applicability in this report" })).toHaveAttribute("href", `/reports/status?safetyComparison=1&safetyIngestId=${INGEST_ID}`);
+  });
+
+  it("offers Reports when no comparison-compatible target is known", () => {
+    renderPanel();
+    expect(screen.queryByRole("link", { name: "Review No Build, alternatives and applicability in this report" })).toBeNull();
+    expect(screen.getByRole("link", { name: "Choose or create a project-status report for Safety comparison" })).toHaveAttribute("href", "/reports");
+  });
+
+  it("lists sparse requested years and keeps observation coverage unknown", () => {
+    const sparse = network();
+    if (sparse.status !== "computed") throw new Error("expected a network");
+    sparse.years = [2020, 2022, 2024];
+    renderPanel({ network: sparse });
+    const facts = screen.getByTestId("safety-hin-facts").textContent ?? "";
+    expect(facts).toContain("Requested crash years: 2020, 2022, 2024");
+    expect(facts).not.toContain("2020–2024");
+    expect(facts).toContain("do not establish complete observation coverage or an annual denominator");
+  });
+
   it("states method, years, source and coverage beside the numbers", () => {
     renderPanel();
     expect(screen.getByTestId("safety-hin-measure").textContent).toBe("Fatal and serious-injury crashes per mile");

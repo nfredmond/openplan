@@ -1,0 +1,20 @@
+/** AUTHORED, UNEXECUTED. Storage doubles do not establish real retention, signed access, PDF or browser behavior. */
+import { createHash } from "node:crypto";
+import { beforeEach,describe,expect,it,vi } from "vitest";
+import { NextRequest } from "next/server";
+import { comparisonFixture,comparisonId,comparisonRevision } from "./fixtures/safety/comparison";
+import { buildSafetyComparisonSnapshot } from "@/lib/reports/safety-comparison-snapshot";
+import { renderSafetyComparisonHtml } from "@/lib/reports/safety-comparison-render";
+const mocks=vi.hoisted(()=>({create:vi.fn(),service:vi.fn(),access:vi.fn(),download:vi.fn(),signed:vi.fn()}));
+vi.mock("@/lib/supabase/server",()=>({createClient:mocks.create,createServiceRoleClient:mocks.service}));
+vi.mock("@/lib/reports/api",()=>({loadReportAccess:mocks.access}));
+vi.mock("@/lib/observability/audit",()=>({createApiAuditLogger:()=>({info:vi.fn(),warn:vi.fn(),error:vi.fn()})}));
+import { GET } from "@/app/api/reports/[reportId]/artifacts/[artifactId]/download/route";
+let bytes:Uint8Array;let artifact:Record<string,unknown>;let query:{select:ReturnType<typeof vi.fn>;eq:ReturnType<typeof vi.fn>;maybeSingle:ReturnType<typeof vi.fn>};
+beforeEach(()=>{vi.clearAllMocks();const comparison=comparisonFixture();bytes=new TextEncoder().encode(renderSafetyComparisonHtml(comparison));const hash=createHash("sha256").update(bytes).digest("hex");const snapshot=buildSafetyComparisonSnapshot({comparison,artifactId:comparisonId(7),reportId:comparison.report_id,projectId:comparison.project_id,workspaceId:comparison.workspace_id,generatedAt:comparisonRevision,projectUpdatedAt:comparisonRevision,reportUpdatedAt:comparisonRevision});artifact={id:comparisonId(7),report_id:comparison.report_id,artifact_kind:"html",generated_at:comparisonRevision,storage_path:`${comparison.workspace_id}/${comparison.report_id}/${comparisonId(7)}-${hash}.html`,metadata_json:{safetyPlanSnapshotV2:snapshot,sha256:hash}};query={select:vi.fn(),eq:vi.fn(),maybeSingle:vi.fn().mockImplementation(async()=>({data:artifact,error:null}))};query.select.mockReturnValue(query);query.eq.mockReturnValue(query);mocks.create.mockResolvedValue({auth:{getUser:async()=>({data:{user:{id:comparisonId(1)}}})},from:()=>query});mocks.access.mockResolvedValue({report:{id:comparison.report_id,workspace_id:comparison.workspace_id,project_id:comparison.project_id,title:"Synthetic review"},membership:{role:"viewer"},error:null});mocks.service.mockReturnValue({storage:{from:()=>({download:mocks.download,createSignedUrl:mocks.signed})}});mocks.download.mockImplementation(async()=>({data:{arrayBuffer:async()=>Uint8Array.from(bytes).buffer},error:null}));});
+const get=()=>GET(new NextRequest("http://localhost/api/artifact/download"),{params:Promise.resolve({reportId:comparisonId(4),artifactId:comparisonId(7)})});
+describe("v2 frozen artifact download",()=>{
+ it("serves only verified bytes under the exact report prefix, with viewer read access",async()=>{const response=await get();expect(response.status).toBe(200);expect(await response.text()).toBe(new TextDecoder().decode(bytes));expect(response.headers.get("content-security-policy")).toBe("sandbox");expect(mocks.signed).not.toHaveBeenCalled();expect(query.select).toHaveBeenCalledWith("id, report_id, artifact_kind, storage_path, generated_at, metadata_json");expect(query.eq).toHaveBeenCalledWith("report_id",comparisonId(4));});
+ it("refuses a substituted storage object even when snapshot and path metadata remain valid",async()=>{bytes=Uint8Array.from(bytes);bytes[0]=bytes[0]===0?1:0;const response=await get();expect(response.status).toBe(422);expect((await response.json()).error).toContain("checksum differs");expect(mocks.signed).not.toHaveBeenCalled();});
+ it("retains an explicit unavailable state instead of substituting inline HTML",async()=>{mocks.download.mockResolvedValue({data:null,error:{message:"Missing object"}});const response=await get();expect(response.status).toBe(503);expect((await response.json()).error).toContain("bytes are unavailable");});
+});

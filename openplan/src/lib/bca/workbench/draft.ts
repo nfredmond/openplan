@@ -1,9 +1,13 @@
 import { z } from "zod";
 import { bcaDocumentSchema, type BcaDocument } from "./schema";
+import { bcaProjectPlaceSchema } from "./project-place";
 
 // Editing can temporarily violate calculation bounds. Retain the complete typed
 // structure without requiring a finished analysis, so a reload can repair it.
 function editableShape(schema: z.core.$ZodType): z.ZodType {
+  if (schema === bcaProjectPlaceSchema) return bcaProjectPlaceSchema;
+  if (schema instanceof z.ZodDiscriminatedUnion)
+    return z.union(schema.options.map(option => editableShape(option)));
   if (schema instanceof z.ZodString) return z.string();
   if (schema instanceof z.ZodNumber) return z.number().finite();
   if (schema instanceof z.ZodNullable) return editableShape(schema.unwrap()).nullable();
@@ -15,7 +19,9 @@ function editableShape(schema: z.core.$ZodType): z.ZodType {
   if (schema instanceof z.ZodEnum || schema instanceof z.ZodLiteral) return schema;
   throw new Error("Unsupported draft field schema");
 }
-export const bcaDraftSchema = editableShape(bcaDocumentSchema) as z.ZodType<BcaDocument>;
+export const bcaDraftSchema = (editableShape(bcaDocumentSchema) as z.ZodType<BcaDocument>)
+  .refine(doc => doc.schemaVersion !== 2 || doc.projectPlace.projectId === doc.projectId,
+    "The place snapshot belongs to a different project.");
 export const bcaRetainedSaveSchema = z.object({
   id: z.string().uuid(), document: bcaDocumentSchema,
 }).strict();

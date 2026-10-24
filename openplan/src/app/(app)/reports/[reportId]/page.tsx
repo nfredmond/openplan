@@ -1,5 +1,8 @@
 import { assertCompleteFundingRead } from "@/lib/grants/award-handoff";
+import { completeReportSourceReviewSummary } from "@/lib/reports/source-review-posture";
 import { reportJurisdictionState } from "@/lib/reports/jurisdiction-freshness";
+import { objectRecord, type GuidedComparisonSelectionV1 } from "@/lib/reports/guided-comparison";
+import { readScopedGuidedComparisonBinding } from "@/lib/reports/guided-comparison-binding";
 import { getReportPacketFreshness } from "@/lib/reports/catalog";
 import { artifactGenerationWritebackIsCurrent } from "@/lib/reports/report-registry-freshness";
 import { notFound, redirect } from "next/navigation";
@@ -83,6 +86,7 @@ import type {
 } from "./_components/_types";
 import { buildFundingPostureDriftItem } from "./_components/_funding-drift";
 import { buildEngagementDriftItem } from "./_components/_engagement-drift";
+import { buildStageGateDriftItem, describeStageGateReadFailure } from "./_components/_stage-gate-drift";
 import { buildArtifactSafetyReadDriftItem, buildProjectSafetyDriftItem, describeSafetyEvidenceReadFailure, loadLatestProjectSafetyIngest, type ReportSafetyFreshnessSupabaseLike } from "./_components/_safety-drift";
 import {
   checkLiveScenarioSpineReads,
@@ -122,7 +126,7 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
     notFound();
   }
 
-  const specializedReport = await loadSpecializedReportPage(supabase, report, user.id);
+  const specializedReport = await loadSpecializedReportPage(supabase, report, user.id, query);
   if (specializedReport) return specializedReport;
 
   /**
@@ -372,6 +376,19 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
   const typedRunCitations = buildTypedRunCitations(reportRunLinks, citedModelRuns, citedCountyRuns);
   const citedModelRunIdsInOrder = typedRunCitations.filter((citation) => citation.kind === "model").map((citation) => citation.runId);
   const agreementPanel = project ? await loadReportDualDemandAgreementPanel({ supabase, modelRunIds: citedModelRunIdsInOrder, workspaceId: report.workspace_id, projectId: project.id, reportMetadata: report.metadata_json }) : { evidence: [], selections: [] };
+  let guidedSelection: GuidedComparisonSelectionV1 | null = null;
+  let guidedProblem: string | null = null;
+  try {
+    guidedSelection = readScopedGuidedComparisonBinding({ reportId, report, project });
+  } catch (error) {
+    guidedProblem = error instanceof Error ? error.message : "The saved comparison binding could not be checked.";
+  }
+  const guidedPanel = project && report.report_type === "analysis_summary" ? {
+    projectId: project.id, snapshotId: guidedSelection?.snapshotId ?? null,
+    bindingSha256: guidedSelection?.bindingSha256 ?? null, problem: guidedProblem,
+    liveEvidenceStatus: guidedSelection ? "unassessed" as const : undefined,
+    includedRunIds: guidedSelection?.payload.sources.map((source) => source.runId) ?? [],
+  } : undefined;
   const aerialOrthoCatalog = project ? await loadReportAerialOrthoCatalog({ supabase, workspaceId: report.workspace_id, projectId: project.id }) : { state: "absent" as const, layers: [], notes: [] };
   const safetyIngestOptionsResult = project
     ? await loadReportSafetyIngestOptions(supabase, report.workspace_id, project.id)
@@ -810,7 +827,7 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
     liveScenarioSetIds.length > 0
       ? supabase
           .from("scenario_comparison_snapshots")
-          .select("scenario_set_id, updated_at")
+          .select("id, scenario_set_id, updated_at")
           .in("scenario_set_id", liveScenarioSetIds)
       : Promise.resolve({ data: [], error: null }),
     // The LIVE board this packet's frozen snapshot is compared against. It goes
@@ -977,12 +994,8 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
   // An unreadable live board is not the same as no gate board (`null` above). The workspace binding may be unresolved, or
   // the decision log may fail. The drift check below withholds its verdict, so
   // an outage cannot be read here as "nothing changed".
-  const stageGateLiveReadFailure =
-    stageGateSnapshot && report.project_id && stageGateBindingUnavailableReason
-      ? stageGateBindingUnavailableReason
-      : currentStageGateSummary && !currentStageGateSummary.decisionsRead.readable
-        ? currentStageGateSummary.decisionsRead.reason
-        : null;
+  const stageGateLiveReadFailure = describeStageGateReadFailure(
+    stageGateSnapshot, report.project_id, stageGateBindingUnavailableReason, currentStageGateSummary);
   const currentProjectRecordsByKey = new Map<ProjectRecordSnapshotKey, CurrentProjectRecordEntry>([
     [
       "deliverables",
@@ -1044,6 +1057,12 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
     sourceContext ? evidenceChainSummary : null
   );
   const driftItems: DriftItem[] = [];
+  const frozenGuided = objectRecord(latestArtifact?.metadata_json?.guidedComparisonSelectionV1);
+  if (guidedSelection || frozenGuided || guidedProblem) driftItems.push({ key: "guided_comparison", label: "Selected guided comparison",
+    status: guidedProblem || frozenGuided?.bindingSha256 !== guidedSelection?.bindingSha256 ? "updated" : "unchanged",
+    detail: guidedProblem ?? (frozenGuided?.bindingSha256 !== guidedSelection?.bindingSha256
+      ? "The saved report selection differs from the retained artifact. Historical downloads keep their original comparison."
+      : "The saved binding digest matches the digest recorded on the retained artifact. Live files and their source history are unassessed on this page; generation checks them again.") });
 
   const packetGeneratedAt = latestArtifact?.generated_at ?? report.generated_at;
   const artifactSafetyDriftItem = buildArtifactSafetyReadDriftItem(latestArtifact?.metadata_json);
@@ -1066,58 +1085,50 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
   if (engagementDriftItem) driftItems.push(engagementDriftItem);
 
   if (scenarioSetLinks.length > 0 && !liveScenarioReadFailure) {
-    const scenarioChanges = scenarioSetLinks
-      .map((link) => {
-        const snapshotAt = maxTimestamp(
-          link.scenarioSetUpdatedAt,
-          link.latestMatchedEntryUpdatedAt,
-          link.sharedSpine?.latestAssumptionSetUpdatedAt ?? null,
-          link.sharedSpine?.latestDataPackageUpdatedAt ?? null,
-          link.sharedSpine?.latestIndicatorSnapshotAt ?? null,
-          link.sharedSpine?.latestComparisonSnapshotUpdatedAt ?? null
-        );
-        const currentSetAt = liveScenarioSetsById.get(link.scenarioSetId) ?? null;
-        const currentSpine = liveScenarioSpineSummaryById.get(link.scenarioSetId) ?? null;
-        const currentAt = maxTimestamp(
-          currentSetAt,
-          currentSpine?.latestAssumptionSetUpdatedAt ?? null,
-          currentSpine?.latestDataPackageUpdatedAt ?? null,
-          currentSpine?.latestIndicatorSnapshotAt ?? null,
-          currentSpine?.latestComparisonSnapshotUpdatedAt ?? null
-        );
-
-        const countChanged = currentSpine
-          ? link.sharedSpine
-            ? link.sharedSpine.assumptionSetCount !== currentSpine.assumptionSetCount ||
-              link.sharedSpine.dataPackageCount !== currentSpine.dataPackageCount ||
-              link.sharedSpine.indicatorSnapshotCount !== currentSpine.indicatorSnapshotCount ||
-              link.sharedSpine.comparisonSnapshotCount !== currentSpine.comparisonSnapshotCount
-            : currentSpine.assumptionSetCount > 0 ||
-              currentSpine.dataPackageCount > 0 ||
-              currentSpine.indicatorSnapshotCount > 0 ||
-              currentSpine.comparisonSnapshotCount > 0
-          : false;
-
-        if (!countChanged && (!currentAt || !snapshotAt || currentAt === snapshotAt)) {
-          return null;
-        }
-
-        if (countChanged && currentSpine) {
-          return `${link.scenarioSetTitle}: assumptions ${link.sharedSpine?.assumptionSetCount ?? 0} -> ${currentSpine.assumptionSetCount}, packages ${link.sharedSpine?.dataPackageCount ?? 0} -> ${currentSpine.dataPackageCount}, indicators ${link.sharedSpine?.indicatorSnapshotCount ?? 0} -> ${currentSpine.indicatorSnapshotCount}, comparisons ${link.sharedSpine?.comparisonSnapshotCount ?? 0} -> ${currentSpine.comparisonSnapshotCount}.`;
-        }
-
-        return `${link.scenarioSetTitle}: ${formatCompactDateTime(snapshotAt)} -> ${formatCompactDateTime(currentAt)}.`;
-      })
-      .filter((item): item is string => Boolean(item));
-
+    const scenarioChanges: string[] = [];
+    const unassessedSets: string[] = [];
+    const pendingLiveSets: string[] = [];
+    for (const link of scenarioSetLinks) {
+      const currentSetAt = liveScenarioSetsById.get(link.scenarioSetId) ?? null;
+      // Pending reads discard the rows above; their synthetic zeros are not a live census.
+      const currentSpine = liveScenarioSpinePending ? undefined : liveScenarioSpineSummaryById.get(link.scenarioSetId);
+      const retainedSpine = link.sharedSpine?.schemaPending ? undefined : link.sharedSpine;
+      const countChanged = retainedSpine && currentSpine && (retainedSpine.assumptionSetCount !== currentSpine.assumptionSetCount ||
+        retainedSpine.dataPackageCount !== currentSpine.dataPackageCount ||
+        retainedSpine.indicatorSnapshotCount !== currentSpine.indicatorSnapshotCount ||
+        retainedSpine.comparisonSnapshotCount !== currentSpine.comparisonSnapshotCount
+      );
+      // A selected legacy snapshot is a known member, not a complete historical census.
+      if (!retainedSpine) unassessedSets.push(link.scenarioSetTitle);
+      if (!currentSpine) pendingLiveSets.push(link.scenarioSetTitle);
+      const timestampChanged = Boolean(!scenarioSetsResult.error && link.scenarioSetUpdatedAt && currentSetAt &&
+        link.scenarioSetUpdatedAt !== currentSetAt) || Boolean(retainedSpine && currentSpine && (
+        retainedSpine.latestAssumptionSetUpdatedAt !== currentSpine.latestAssumptionSetUpdatedAt ||
+        retainedSpine.latestDataPackageUpdatedAt !== currentSpine.latestDataPackageUpdatedAt ||
+        retainedSpine.latestIndicatorSnapshotAt !== currentSpine.latestIndicatorSnapshotAt ||
+        retainedSpine.latestComparisonSnapshotUpdatedAt !== currentSpine.latestComparisonSnapshotUpdatedAt
+      ));
+      const retainedSnapshots = Array.isArray(link.comparisonSnapshots) ? link.comparisonSnapshots : [];
+      const snapshotChanged = !liveScenarioSpinePending && retainedSnapshots.some((snapshot) => {
+        const current = liveScenarioComparisonRows.find((row) => row.scenario_set_id === link.scenarioSetId && row.id === snapshot.comparisonSnapshotId);
+        return !current || Boolean(snapshot.updatedAt && current.updated_at !== snapshot.updatedAt);
+      });
+      if (countChanged) {
+        scenarioChanges.push(`${link.scenarioSetTitle}: assumptions ${retainedSpine.assumptionSetCount} -> ${currentSpine.assumptionSetCount}, packages ${retainedSpine.dataPackageCount} -> ${currentSpine.dataPackageCount}, indicators ${retainedSpine.indicatorSnapshotCount} -> ${currentSpine.indicatorSnapshotCount}, comparisons ${retainedSpine.comparisonSnapshotCount} -> ${currentSpine.comparisonSnapshotCount}.`);
+      } else if (timestampChanged || snapshotChanged) {
+        scenarioChanges.push(`${link.scenarioSetTitle}: ${formatCompactDateTime(link.scenarioSetUpdatedAt)} -> ${formatCompactDateTime(currentSetAt)}. Scenario-set timing or a retained comparison snapshot changed since generation.`);
+      }
+    }
     driftItems.push({
       key: "scenario-basis",
       label: "Scenario basis",
-      status: scenarioChanges.length > 0 ? "updated" : "unchanged",
-      detail:
-        scenarioChanges.length > 0
-          ? scenarioChanges.join(" ")
-          : "Scenario-set and shared-spine timing still matches the artifact snapshot.",
+      status: scenarioChanges.length > 0 ? "updated" : unassessedSets.length > 0 || pendingLiveSets.length > 0 ? "unassessed" : "unchanged",
+      detail: [
+        ...scenarioChanges,
+        unassessedSets.length > 0 ? `Historical shared-spine totals are not recorded for ${unassessedSets.join(", ")}. Those counts remain unassessed; missing fields do not establish zero or a source change.` : null,
+        pendingLiveSets.length > 0 ? `Live shared-spine queries are pending for ${pendingLiveSets.join(", ")}. Live counts, shared-spine timing and retained snapshot presence remain unassessed; unavailable rows do not establish a source change.` : null,
+        scenarioChanges.length === 0 && unassessedSets.length === 0 && pendingLiveSets.length === 0 ? "Scenario-set and shared-spine timing still matches the artifact snapshot." : null,
+      ].filter(Boolean).join(" "),
     });
   }
 
@@ -1186,107 +1197,83 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
     driftItems.push(fundingPostureDrift);
   }
 
-  // No drift row when the live log did not load, and deliberately none: a drift
-  // row is a COMPARISON, and every status one could carry ("unchanged", "count
-  // changed") would state something about the live board that nothing here
-  // established. The counts on an unreadable board are zero because they are
-  // unknown, so comparing them would have reported an outage as gates lost
-  // since generation. The gap is named in the packet-freshness line instead.
-  if (stageGateSnapshot && currentStageGateSummary && !stageGateLiveReadFailure) {
-    const snapshotBlockedGateId = stageGateSnapshot.blockedGate?.gateId ?? null;
-    const currentBlockedGateId = currentStageGateSummary.blockedGate?.gateId ?? null;
-    const snapshotNextGateId = stageGateSnapshot.nextGate?.gateId ?? null;
-    const currentNextGateId = currentStageGateSummary.nextGate?.gateId ?? null;
-    const countsChanged =
-      stageGateSnapshot.passCount !== currentStageGateSummary.passCount ||
-      stageGateSnapshot.holdCount !== currentStageGateSummary.holdCount ||
-      stageGateSnapshot.notStartedCount !== currentStageGateSummary.notStartedCount;
-    const gatesChanged =
-      snapshotBlockedGateId !== currentBlockedGateId ||
-      snapshotNextGateId !== currentNextGateId;
+  const stageGateDrift = buildStageGateDriftItem(stageGateSnapshot, currentStageGateSummary, Boolean(stageGateLiveReadFailure));
+  if (stageGateDrift) driftItems.push(stageGateDrift);
 
-    driftItems.push({
-      key: "stage-gates",
-      label: "Stage gates",
-      status: gatesChanged
-        ? "gate changed"
-        : countsChanged
-          ? "count changed"
-          : "unchanged",
-      detail: gatesChanged
-        ? `Blocked ${snapshotBlockedGateId ?? "none"} -> ${currentBlockedGateId ?? "none"}. Next ${snapshotNextGateId ?? "complete"} -> ${currentNextGateId ?? "complete"}.`
-        : countsChanged
-          // "no decision recorded", not "not started": the third count is the
-          // gates whose verdict is unrecorded, and the gate itself may be well
-          // under way. The board says it that way and this line must match.
-          ? `Snapshot ${stageGateSnapshot.passCount} pass / ${stageGateSnapshot.holdCount} hold / ${stageGateSnapshot.notStartedCount} with no decision recorded. Live ${currentStageGateSummary.passCount} pass / ${currentStageGateSummary.holdCount} hold / ${currentStageGateSummary.notStartedCount} with no decision recorded.`
-          : "Review counts and next steps still match the saved report snapshot.",
-    });
-  }
-
-  const driftedItems = driftItems.filter((item) => item.status !== "unchanged");
-  // "Refresh recommended" is a RECOMMENDATION, not a claim that anything moved,
-  // which is why an unreadable live gate log lands here rather than on "packet
-  // current": one of the sources this check covers was never checked, so the
-  // packet cannot be called clean, and the detail says plainly that no change
-  // was observed — only that observation failed.
+  const unassessedItems = driftItems.filter((item) => item.status === "unassessed");
+  const driftedItems = driftItems.filter((item) => item.status !== "unchanged" && item.status !== "unassessed");
+  // A failed live read leaves that source unassessed. It does not establish
+  // a source change or justify calling the packet current.
+  const jurisdictionState = artifactsUnreadable ? "unavailable" : reportJurisdictionState(latestArtifact?.metadata_json, project);
+  const generationWritebackCurrent = artifactGenerationWritebackIsCurrent(latestArtifact?.metadata_json, report.updated_at);
+  const sourceReviewSummary = completeReportSourceReviewSummary({ changedCount: driftedItems.length, totalCount: driftItems.length,
+    labels: driftedItems.map((item) => item.label), unassessedLabels: unassessedItems.map((item) => item.label),
+  }, { jurisdictionState, generationWritebackCurrent, unassessedLabels: [
+    ...(stageGateLiveReadFailure ? ["Live stage gates unavailable"] : []), ...(safetyEvidenceLiveReadFailure ? ["Live crash evidence unavailable"] : []),
+    ...(artifactsUnreadable ? ["Retained artifacts unavailable"] : []), ...(projectFundingRows.unreadable ? ["Live funding evidence unavailable"] : []),
+    ...(projectRecordReadFailures.size ? ["Live project records unavailable"] : []), ...(liveEngagementReadFailure ? ["Live engagement evidence unavailable"] : []), ...(liveScenarioReadFailure ? ["Live scenario evidence unavailable"] : []),
+  ] });
+  const sourceUnassessedLabels = sourceReviewSummary.unassessedLabels ?? [];
   const jurisdictionFreshness = getReportPacketFreshness({ latestArtifactKind: report.latest_artifact_kind,
-    generatedAt: latestArtifact?.generated_at ?? report.generated_at, updatedAt: null,
-    jurisdictionState: reportJurisdictionState(latestArtifact?.metadata_json, project) });
+    generatedAt: latestArtifact?.generated_at ?? report.generated_at, updatedAt: null, jurisdictionState });
   const jurisdictionNeedsRefresh = jurisdictionFreshness.label === PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED;
-  const writebackNotCurrent = artifactGenerationWritebackIsCurrent(latestArtifact?.metadata_json, report.updated_at) === false;
-  const currentReportPacketFreshness = artifactsUnreadable
-    ? PACKET_FRESHNESS_WHEN_ARTIFACTS_UNREADABLE
+  const currentReportPacketFreshness = artifactsUnreadable ? PACKET_FRESHNESS_WHEN_ARTIFACTS_UNREADABLE
     : latestArtifact?.generated_at ?? report.generated_at
-    ? driftedItems.length > 0 || stageGateLiveReadFailure || safetyEvidenceLiveReadFailure || writebackNotCurrent || jurisdictionNeedsRefresh
+    ? driftedItems.length > 0 || (generationWritebackCurrent === false) || jurisdictionNeedsRefresh
       ? {
-          label: PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED,
-          tone: "warning" as const,
+          label: PACKET_FRESHNESS_LABELS.REFRESH_RECOMMENDED, tone: "warning" as const,
           detail: [
-            jurisdictionNeedsRefresh ? jurisdictionFreshness.detail : null,
-            writebackNotCurrent ? "The report revision differs from its completed generation writeback, or generation did not finish recording it." : null,
+            jurisdictionNeedsRefresh ? jurisdictionFreshness.detail : null, sourceUnassessedLabels.length ? `${sourceUnassessedLabels.join("; ")}. These inputs remain unassessed.` : null,
+            (generationWritebackCurrent === false) ? "The report revision differs from its completed generation writeback, or generation did not finish recording it." : null,
             driftedItems.length > 0
               ? "Live source changes are visible against the latest packet snapshot, so refresh this packet before leaning on it for grant prioritization or release review."
               : "Do not treat this packet as verified against live sources yet.",
-            stageGateLiveReadFailure
-              ? `The live stage-gate board could not be checked (${stageGateLiveReadFailure}), so this check did not cover stage gates. That is an unchecked source, not a finding that gates changed.`
-              : null,
-            safetyEvidenceLiveReadFailure
-              ? `The project's linked crash evidence could not be checked (${safetyEvidenceLiveReadFailureReason}), so this is an unchecked source rather than a finding that no newer crash acquisition exists.`
-              : null,
+            stageGateLiveReadFailure ? `The live stage-gate board could not be checked (${stageGateLiveReadFailure}), so this check did not cover stage gates. That is an unchecked source, not a finding that gates changed.` : null,
+            safetyEvidenceLiveReadFailure ? `The project's linked crash evidence could not be checked (${safetyEvidenceLiveReadFailureReason}), so this is an unchecked source rather than a finding that no newer crash acquisition exists.` : null,
           ]
             .filter((value): value is string => Boolean(value))
             .join(" "),
         }
       : {
-          label: PACKET_FRESHNESS_LABELS.CURRENT,
-          tone: "success" as const,
-          detail:
-            "No live source drift is currently visible against the latest packet snapshot.",
+          label: guidedSelection ? "Comparison evidence unassessed" : sourceUnassessedLabels.length > 0 ? "Source evidence unassessed" : PACKET_FRESHNESS_LABELS.CURRENT,
+          tone: guidedSelection || sourceUnassessedLabels.length > 0 ? "warning" as const : "success" as const,
+          detail: guidedSelection
+            ? "The saved comparison binding is intact. Live files and their source history are unassessed on this page; generation checks them again."
+            : sourceUnassessedLabels.length > 0 ? [`${sourceUnassessedLabels.join("; ")}. Missing evidence does not establish a source change or unchanged evidence.`,
+                stageGateLiveReadFailure ? `The live stage-gate board could not be checked (${stageGateLiveReadFailure}).` : null,
+                safetyEvidenceLiveReadFailure ? `The project's linked crash evidence could not be checked (${safetyEvidenceLiveReadFailureReason}).` : null].filter(Boolean).join(" ")
+            : "No live source drift is currently visible against the latest packet snapshot.",
         }
     : {
         label: PACKET_FRESHNESS_LABELS.NO_PACKET,
         tone: "warning" as const,
-        detail:
-          "Generate the first packet before treating this report as release-review evidence for grants or packet signoff.",
+        detail: "Generate the first packet before treating this report as release-review evidence for grants or packet signoff.",
       };
   const generationReadiness = buildReportGenerationReadiness({
-    hasGeneratedArtifact: Boolean(latestArtifact?.generated_at ?? report.generated_at),
-    sourceContext,
-    driftedSourceCount: driftedItems.length,
+    hasGeneratedArtifact: Boolean(latestArtifact?.generated_at ?? report.generated_at), sourceContext,
+    driftedSourceCount: sourceReviewSummary.changedCount, sourceReviewSummary, unassessedSourceCount: unassessedItems.length,
     comparisonAggregate: currentReportComparisonAggregate,
-    fundingSnapshot,
-    datasetOutputContexts,
+    guidedComparison: guidedPanel || guidedProblem ? { selected: Boolean(guidedSelection), problem: guidedProblem } : undefined,
+    fundingSnapshot, datasetOutputContexts,
     // Refresh-log rows are operator-recorded, never executed by OpenPlan; a
     // latest entry still reading "queued"/"running" is said so in readiness.
     refreshLogNote: buildReportRefreshLogNote(projectDatasetRefreshJobs),
   });
+  // The shared readiness helper describes missing history; this page also knows when live reads are pending.
+  const pendingScenarioBasis = liveScenarioSpinePending ? driftItems.find((item) => item.key === "scenario-basis") : undefined;
+  if (pendingScenarioBasis) {
+    generationReadiness.checks = generationReadiness.checks.map((check) => check.id === "source_context" && check.status === "unknown"
+      ? { ...check, statusLabel: "Live scenario evidence unassessed", detail: pendingScenarioBasis.detail,
+          nextAction: "Retry the live scenario reads and review the unassessed evidence before release use." }
+      : check);
+  }
 
   const narrativeDraftPanelProps = await loadAiNarrativeDraftPanelInputs(supabase, report, sectionList);
   return (
     <>
     <PlanningContextStripForProject requestedProjectId={query.projectId} project={project} error={projectResult.error} className="mb-4" /><ReportReadFailureDisclosure reads={reads} />
     <ReportStandardDetail
+      guidedComparison={guidedPanel}
       searchParams={query}
       unreadableByTab={buildReportUnreadableByTab({ artifactsUnreadable, sectionsUnreadable, projectRecordsUnreadable: projectRecordReadFailures.size > 0, stageGatesUnreadable: Boolean(stageGateLiveReadFailure), crashEvidenceUnreadable: Boolean(safetyEvidenceLiveReadFailure) })}
       report={report}
@@ -1295,8 +1282,7 @@ export default async function ReportDetailPage({ params, searchParams }: ReportD
       runs={runs}
       latestArtifact={latestArtifact}
       fundingSnapshot={fundingSnapshot}
-      driftItems={driftItems}
-      driftedItems={driftedItems}
+      sourceReviewSummary={sourceReviewSummary}
       evidenceSummaryDigest={evidenceSummaryDigest}
       fundingSummaryDigest={fundingSummaryDigest}
       engagementCampaign={engagementCampaign}

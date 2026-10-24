@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
+import { stripSourceComments } from "@/test/helpers/source-text";
 
 /**
  * A package.json script that names a deleted file breaks silently, because the
@@ -124,6 +125,100 @@ function scriptsOf(dir: string): Record<string, string> {
 }
 
 describe("package.json scripts: every path they name resolves", () => {
+  it("binds the five chat census entries to populated direct probes in the original approval fixtures", () => {
+    const tables = [
+      "assistant_action_approvals",
+      "assistant_chat_access_checks",
+      "assistant_chat_grants",
+      "assistant_chat_proposal_intents",
+      "assistant_chat_turns",
+    ];
+    const native = stripSourceComments(readFileSync(path.join(APP_ROOT, "src/test/provider-chat-custody-native.test.ts"), "utf8"));
+    const inventory = stripSourceComments(readFileSync(path.join(APP_ROOT, "src/test/rls-isolation.test.ts"), "utf8"));
+    const probeList = native.match(/const CHAT_DIRECT_RLS_TABLES = \[([\s\S]*?)\] as const;/)?.[1];
+    expect(probeList, "The actual direct probe loop needs its exact five-table input").toBeDefined();
+    expect([...probeList!.matchAll(/"([^"]+)"/g)].map(match => match[1])).toEqual(tables);
+    const registry = inventory.match(/const DEDICATED_LIVE_RLS_PROBES = new Set\(\[([\s\S]*?)\]\);/)?.[1];
+    const expectedRegistry = inventory.match(/expect\(\[\.\.\.DEDICATED_LIVE_RLS_PROBES\]\)\.toEqual\(\[([\s\S]*?)\]\);/)?.[1];
+    expect(registry).toBeDefined(); expect(expectedRegistry).toBeDefined();
+    for (const table of tables) {
+      expect([...registry!.matchAll(/"([^"]+)"/g)].filter(match => match[1] === table), table + " has actual dedicated coverage").toHaveLength(1);
+      expect([...expectedRegistry!.matchAll(/"([^"]+)"/g)].filter(match => match[1] === table), table + " stays in the exact registry assertion").toHaveLength(1);
+    }
+    const helper = native.match(/function directRlsBoundaries\(approvalId: string, intentId: string\) \{([\s\S]*?)\n \}/)?.[1];
+    expect(helper).toBeDefined();
+    expect(helper).toContain('const tables = CHAT_DIRECT_RLS_TABLES.map(literal).join(",");');
+    expect(helper).toContain('{ role: "authenticated", user: id.user }');
+    expect(helper).toContain('{ role: "authenticated", user: outsiderId }');
+    expect(helper).toContain('{ role: "anon", user: null }');
+    expect(helper).toContain("current_user IS DISTINCT FROM actor->>'role'");
+    expect(helper).toContain("auth.uid() IS DISTINCT FROM (actor->>'user')::uuid");
+    expect(helper).toContain("IF jsonb_array_length(snapshot)=0 THEN RAISE EXCEPTION");
+    expect(helper).toContain("IF affected<>1 THEN RAISE EXCEPTION 'Postgres copy did not insert one row");
+    expect(helper).toContain("EXCEPTION WHEN SQLSTATE 'P0052' THEN NULL; END;");
+    const loops = helper!.split("FOREACH relation_name IN ARRAY ARRAY[${tables}] LOOP");
+    expect(loops).toHaveLength(4);
+    const directLoop = loops[2].split("END LOOP;")[0];
+    for (const operation of ["SELECT count(*) FROM", "INSERT INTO", "UPDATE", "DELETE FROM"]) {
+      expect(directLoop, operation + " must reach the actual role/table loop").toContain("format('" + operation + " public.%I");
+    }
+    expect(directLoop.match(/EXCEPTION WHEN SQLSTATE '42501' THEN NULL; END;/g)).toHaveLength(4);
+    expect(directLoop.match(/probes:=probes\+1;/g)).toHaveLength(4);
+    expect(helper!.match(/EXCEPTION WHEN SQLSTATE '42501' THEN NULL; END;/g)).toHaveLength(6);
+    expect(helper).toContain("IF seen<>0 THEN RAISE EXCEPTION 'Direct SELECT exposed retained rows");
+    expect(helper).toContain("IF affected<>0 THEN RAISE EXCEPTION 'Direct UPDATE reached retained row");
+    expect(helper).toContain("IF affected<>0 THEN RAISE EXCEPTION 'Direct DELETE reached retained row");
+    expect(helper).toContain("IF snapshot IS DISTINCT FROM baseline->relation_name THEN RAISE EXCEPTION");
+    expect(helper).toContain("IF probes<>60 OR refusals<>4 THEN RAISE EXCEPTION");
+    for (const rpc of ["assistant_chat_session('read','${id.turn}'", "assistant_chat_intent('read','${intentId}'"]) {
+      expect(helper!.split(rpc)).toHaveLength(3);
+    }
+    const originalApprovalFixture = native.slice(native.indexOf('it.each([{ submittalType: "other", notes: "" }'));
+    expect(originalApprovalFixture).toContain('"retains one original approval and receipt after move/viewer downgrade %j"');
+    expect(originalApprovalFixture).toContain("${directRlsBoundaries(approvalId, broker.intentId)}");
+    expect(originalApprovalFixture).toContain('expect(output).toContain("CHAT_DIRECT_RLS_ASSERTIONS_REACHED:60:4")');
+  });
+
+  it("wires both chat native files through the maintained isolated RLS job and both opt-ins", () => {
+    const workflow = readFileSync(path.join(REPO_ROOT, ".github/workflows/rls-isolation.yml"), "utf8");
+    const lines = workflow.split(/\r?\n/).filter(line => line.trim() && !line.trimStart().startsWith("#"));
+    const jobs = lines.flatMap((line, index) => line === "  rls-isolation:" ? [index] : []);
+    expect(jobs).toHaveLength(1);
+    const following = lines.slice(jobs[0] + 1);
+    const nextJob = following.findIndex(line => /^  \S/.test(line));
+    const job = nextJob < 0 ? following : following.slice(0, nextJob);
+    expect(job.join("\n")).toContain("      run:\n        working-directory: ./openplan");
+    for (const command of ["start", "db reset", "stop"]) {
+      expect(job.filter(line => line === `        run: npm exec -- supabase ${command} --workdir "\${{ github.workspace }}/openplan"`)).toHaveLength(1);
+    }
+    const steps = job.flatMap((line, index) => line === "      - name: Run live RLS isolation proof" ? [index] : []);
+    expect(steps).toHaveLength(1);
+    const followingStep = job.slice(steps[0] + 1);
+    const nextStep = followingStep.findIndex(line => /^      - /.test(line));
+    const step = [job[steps[0]], ...(nextStep < 0 ? followingStep : followingStep.slice(0, nextStep))];
+    expect(step, "The maintained RLS test step must supply the chat opt-in and the actual absolute CLI cwd").toEqual([
+      "      - name: Run live RLS isolation proof",
+      "        env:",
+      "          OPENPLAN_CHAT_NATIVE_FIXTURE: '1'",
+      "          OPENPLAN_SUPABASE_WORKDIR: '${{ github.workspace }}/openplan'",
+      "        run: npm run test:rls-live",
+    ]);
+    const script = scriptsOf(APP_ROOT)["test:rls-live"];
+    expect(script).toMatch(/^OPENPLAN_RLS_LIVE_TEST=1 node /);
+    const paths = scriptFilePaths(script);
+    for (const file of ["src/test/provider-chat-custody-native.test.ts", "src/test/provider-chat-custody-http-native.test.ts"]) {
+      expect(paths.filter(candidate => candidate === file), file + " runs in the maintained RLS job").toHaveLength(1);
+      const source = stripSourceComments(readFileSync(path.join(APP_ROOT, file), "utf8"));
+      expect(source).toMatch(/^const live = LIVE_RLS && process\.env\.OPENPLAN_CHAT_NATIVE_FIXTURE === "1" \? describe : describe\.skip;/m);
+      expect(source).toMatch(/if \(!isAbsolute\((?:workdir|process\.env\.OPENPLAN_SUPABASE_WORKDIR \?\? "")\)\)/);
+      if (file.endsWith("-http-native.test.ts")) {
+        expect(source).toContain('const configPath = realpathSync(join(workdir, "supabase/config.toml"))');
+        expect(source).toContain('assertChatHttpTargetBinding({ workdir, configPath, configText: readFileSync(configPath, "utf8"), status: env, container,');
+        expect(source).toContain('database: inspect(container), gateway: inspect(container.replace(/^supabase_db_/, "supabase_kong_"))');
+      }
+    }
+  });
+
   it("names no file that is missing from disk", () => {
     const missing: string[] = [];
 
@@ -163,9 +258,9 @@ describe("package.json scripts: every path they name resolves", () => {
    * dangerous direction.
    *
    * The check above proves a script names nothing missing. This proves nothing
-   * missing is unnamed. A test whose live half is gated on `LIVE_RLS` runs in
-   * exactly one place — `npm run test:rls-live`, which CI also invokes — and that
-   * script names its files by hand. Write a new live test, forget the script, and
+   * missing is unnamed. A live half gated on `LIVE_RLS` needs a maintained
+   * command. Most use `test:rls-live` in CI. Reports has a separate command that
+   * requires an owned disposable lifetime. Write a live test, omit its command, and
    * the file passes `npm test` by SKIPPING its only real assertions, reports
    * green, and is never executed by anything. It is a guard that exists and
    * guards nothing: the shipped-invisible class, wearing a test's clothes.
@@ -174,6 +269,30 @@ describe("package.json scripts: every path they name resolves", () => {
    * arrived in this state on 2026-08-05 and was caught only because its author
    * went looking; nothing in the build would have said a word.
    */
+  it("binds the dedicated Reports native command to real conditions and an external target lifetime", () => {
+    const scripts = scriptsOf(path.join(REPO_ROOT, "openplan"));
+    const command = scripts["test:reports-native"] ?? "";
+    const tokens = command.trim().split(/\s+/);
+    expect(tokens.slice(0, 2)).toEqual(["OPENPLAN_RLS_LIVE_TEST=1", "node"]);
+    const runner = tokens.indexOf("node_modules/vitest/vitest.mjs");
+    expect(runner).toBeGreaterThan(1);
+    expect(tokens.slice(runner + 1, runner + 3)).toEqual([
+      "run", "src/test/guided-comparison-route-rls.test.ts",
+    ]);
+    expect(scriptFilePaths(command)).toEqual([
+      "node_modules/vitest/vitest.mjs",
+      "src/test/guided-comparison-route-rls.test.ts",
+      "vitest.reports-native.config.ts",
+    ]);
+    expect(tokens[tokens.indexOf("--config") + 1]).toBe("vitest.reports-native.config.ts");
+    for (const flag of ["--max-old-space-size=6144", "--execArgv=--max-old-space-size=6144",
+      "--maxWorkers=1", "--no-file-parallelism", "--bail=1", "--no-cache"]) {
+      expect(tokens, flag).toContain(flag);
+    }
+    // The caller must supply reviewed owned-target evidence, never a shared default.
+    expect(command).not.toMatch(/(?:OPENPLAN_SUPABASE_WORKDIR|OPENPLAN_GUIDED_NATIVE_LIFETIME)=/);
+  });
+
   it("runs every live-gated test somewhere", () => {
     const testDir = path.join(REPO_ROOT, "openplan", "src", "test");
     const liveGated = readdirSync(testDir)
@@ -192,14 +311,20 @@ describe("package.json scripts: every path they name resolves", () => {
     expect(liveGated).toContain("src/test/contract-completed-review-rls.test.ts");
     expect(liveGated).toContain("src/test/land-use-plan-creation-rls.test.ts");
 
-    const script = scriptsOf(path.join(REPO_ROOT, "openplan"))["test:rls-live"] ?? "";
+    const scripts = scriptsOf(path.join(REPO_ROOT, "openplan"));
+    const script = scripts["test:rls-live"] ?? "";
     expect(script).not.toBe("");
+    // This one suite requires a separately reviewed disposable lifetime and
+    // server export conditions. The command contract above binds its real call.
+    const reportsFiles = scriptFilePaths(scripts["test:reports-native"] ?? "")
+      .filter((file) => file.endsWith(".test.ts") || file.endsWith(".test.tsx"));
+    expect(reportsFiles).toEqual(["src/test/guided-comparison-route-rls.test.ts"]);
 
-    const unrun = liveGated.filter((file) => !script.includes(file));
+    const unrun = liveGated.filter((file) => !script.includes(file) && !reportsFiles.includes(file));
     expect(
       unrun,
-      "live-gated test files that `npm run test:rls-live` does not name — they skip under `npm test` " +
-        "and run nowhere else, so their assertions have never executed. Add them to the script."
+      "live-gated files need an executable maintained command: test:rls-live or the bound Reports native command. " +
+        "Skipping under npm test does not establish native coverage."
     ).toEqual([]);
   });
 

@@ -1,3 +1,5 @@
+import type { ReportJurisdictionState } from "./catalog";
+
 export function formatDriftLabelList(labels: string[]) {
   if (labels.length <= 1) {
     return labels[0] ?? "";
@@ -14,7 +16,27 @@ export type ReportDriftSummary = {
   changedCount: number;
   totalCount: number;
   labels: string[];
+  unassessedLabels?: string[];
+  reviewLabels?: string[];
+  jurisdictionState?: ReportJurisdictionState;
 };
+
+/** Add separately assessed sources without turning missing evidence into drift. */
+export function completeReportSourceReviewSummary(
+  summary: ReportDriftSummary,
+  input: { jurisdictionState?: ReportJurisdictionState; generationWritebackCurrent?: boolean; unassessedLabels?: string[] },
+): ReportDriftSummary {
+  const labels = [...summary.labels];
+  const unassessedLabels = [...(summary.unassessedLabels ?? []), ...(input.unassessedLabels ?? [])];
+  const reviewLabels = [...(summary.reviewLabels ?? [])];
+  if (input.jurisdictionState === "changed") labels.push("Jurisdiction inputs");
+  if (input.jurisdictionState === "unavailable") unassessedLabels.push("Jurisdiction inputs unavailable");
+  if (input.jurisdictionState === "untracked") unassessedLabels.push("Jurisdiction baseline historically untracked");
+  if (input.generationWritebackCurrent === false) reviewLabels.push("Generation writeback incomplete or report revision changed");
+  return { ...summary, changedCount: labels.length, labels, unassessedLabels, reviewLabels,
+    totalCount: summary.totalCount + labels.length - summary.labels.length + unassessedLabels.length - (summary.unassessedLabels?.length ?? 0) + reviewLabels.length - (summary.reviewLabels?.length ?? 0),
+    jurisdictionState: input.jurisdictionState };
+}
 
 export type ReportEvidenceSummary = {
   headline: string;
@@ -24,7 +46,7 @@ export type ReportEvidenceSummary = {
 } | null;
 
 export type ReportSourceReviewPosture = {
-  state: "ready" | "needs-review" | "missing";
+  state: "ready" | "needs-review" | "missing" | "unassessed";
   label: string;
   headline: string;
   detail: string;
@@ -35,10 +57,12 @@ export function describeReportSourceReviewPosture({
   hasGeneratedArtifact,
   evidenceSummary,
   driftSummary,
+  guidedComparison,
 }: {
   hasGeneratedArtifact: boolean;
   evidenceSummary?: ReportEvidenceSummary;
   driftSummary?: ReportDriftSummary;
+  guidedComparison?: { liveEvidenceStatus?: "unassessed"; problem: string | null };
 }): ReportSourceReviewPosture {
   const changedCount = driftSummary?.changedCount ?? 0;
   const changedSourceText =
@@ -79,6 +103,16 @@ export function describeReportSourceReviewPosture({
     };
   }
 
+  if (guidedComparison?.problem) {
+    return {
+      state: "needs-review",
+      label: "Saved comparison binding is invalid",
+      headline: "Selected comparison needs review",
+      detail: `${guidedComparison.problem} Review and save the exact comparison again, or clear the selection. Historical artifacts retain their original evidence limits.`,
+      changedSourceText,
+    };
+  }
+
   if (changedCount > 0) {
     return {
       state: "needs-review",
@@ -88,6 +122,32 @@ export function describeReportSourceReviewPosture({
         "The packet still has linked evidence, but live source context has changed since generation. Review the changed source areas and regenerate before relying on this packet outside supervised draft review.",
       changedSourceText,
     };
+  }
+
+  if (driftSummary?.reviewLabels?.length) {
+    return { state: "needs-review", label: "Packet completion needs review",
+      headline: "Packet freshness needs review",
+      detail: `${formatDriftLabelList(driftSummary.reviewLabels)}. Review the report revision and generation completion before using the retained packet. This does not establish that a source changed.`,
+      changedSourceText: null };
+  }
+
+  // Stored integrity does not establish current worker bytes or custody.
+  if (guidedComparison?.liveEvidenceStatus === "unassessed") {
+    return {
+      state: "unassessed",
+      label: "Comparison evidence unassessed",
+      headline: "Selected comparison live evidence is unassessed",
+      detail:
+        "The saved comparison binding is checked. Live artifact bytes and custody remain unassessed on this page. Save and generation verify them before accepting the comparison. Review the scientific caveats before release use.",
+      changedSourceText: null,
+    };
+  }
+
+  if (driftSummary?.unassessedLabels?.length) {
+    return { state: "unassessed", label: "Source evidence unassessed",
+      headline: "Source comparison is incomplete",
+      detail: `${formatDriftLabelList(driftSummary.unassessedLabels)} cannot be fully compared with the retained packet. Review the unavailable inputs or historical baselines before release use. Missing evidence does not establish zero, a change or unchanged evidence.`,
+      changedSourceText: null };
   }
 
   return {

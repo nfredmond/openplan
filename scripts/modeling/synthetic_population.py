@@ -26,6 +26,9 @@ one that appears under the same filename without saying so is worse than none.
 """
 from __future__ import annotations
 
+import math
+from collections import Counter
+from dataclasses import asdict
 from typing import Any, Callable, Mapping, Sequence
 
 import census_pums as cp
@@ -144,16 +147,30 @@ def synthesize_study_area(
     resolve_pumas: Callable[..., Any] = cp.resolve_pumas,
     fetch_pums_person_rows: Callable[..., Any] = cp.fetch_pums_person_rows,
     fetch_acs_zone_controls: Callable[..., Any] = cp.fetch_acs_zone_controls,
+    source_profile: Mapping[str, Any] | None = None,
+    include_school_enrollment: bool = False,
+    fetch_acs_school_enrollment: Callable[..., Any] = cp.fetch_acs_school_enrollment,
 ) -> dict[str, Any]:
     """Fit and expand a population for every internal zone in a study area."""
+    # Standalone callers retain their configured defaults. Retained-study
+    # callers supply both product endpoints without mutating module globals.
+    profile_args: dict[str, str] = {}
+    if source_profile is not None:
+        from common_population import validate_source_profile
+
+        checked = validate_source_profile(source_profile)
+        profile_args = {"acs5_url": checked["acs_summary_endpoint"], "pums_url": checked["pums_endpoint"]}
+    cp.census_vintage_profile(**profile_args)
     zones = internal_zones(zone_rows)
     geography = zone_geography_of(zones)
     controls, dropped_controls = cp.controls_for_geography(geography)
 
     try:
-        pumas = resolve_pumas(zones_bbox(zones))
-        person_rows, fetch_summary = fetch_pums_person_rows(pumas, census_api_key)
-        zone_controls = fetch_acs_zone_controls([z["GEOID"] for z in zones], controls, census_api_key)
+        pumas = resolve_pumas(zones_bbox(zones), **profile_args)
+        person_rows, fetch_summary = fetch_pums_person_rows(pumas, census_api_key, **profile_args)
+        zone_controls = fetch_acs_zone_controls([z["GEOID"] for z in zones], controls, census_api_key, **profile_args)
+        school_inputs = (fetch_acs_school_enrollment([z["GEOID"] for z in zones], census_api_key,
+                         include_source_rows=True, **profile_args) if include_school_enrollment else None)
     except cp.CensusPumsError as exc:
         # Deliberately not caught into a fallback. See this module's header.
         raise SyntheticPopulationError(str(exc)) from exc
@@ -170,22 +187,41 @@ def synthesize_study_area(
     households: list[dict[str, Any]] = []
     persons: list[dict[str, Any]] = []
     fits: list[ZoneFit] = []
+    realized_household_counts: dict[int, int] = {}
+    realized_control_differences: dict[int, dict[str, Any]] = {}
     next_household_id = 1
     next_person_id = 1
 
     for zone in sorted(zones, key=lambda z: z["zone_id"]):
         geoid = zone["GEOID"]
         acs_row = zone_controls[geoid]
+        targets = cp.zone_targets_from_acs(acs_row, controls)
         rows, fit = synthesize_zone(
             seed,
             controls,
-            cp.zone_targets_from_acs(acs_row, controls),
+            targets,
             zone_id=zone["zone_id"],
             first_household_id=next_household_id,
             seed_matrix=matrix,
             margins=cp.zone_margins_from_acs(acs_row, controls),
         )
         fits.append(fit)
+        realized_household_counts[zone["zone_id"]] = len(rows)
+        replicates = Counter(row["seed_household_id"] for row in rows)
+        differences: dict[str, Any] = {}
+        for control in controls:
+            differences[control.name] = {}
+            for column, category in enumerate(control.categories):
+                contributions = matrix.contributions[control.name][:, column]
+                weighted = sum(weight * float(value) for weight, value in zip(fit.weights, contributions))
+                realized = sum(replicates[household.household_id] * float(value) for household, value in zip(seed, contributions))
+                target = targets[control.name][category]
+                differences[control.name][category] = {
+                    "target": target, "weighted_fit": weighted, "realized": realized,
+                    "fit_minus_target": weighted - target, "realized_minus_fit": realized - weighted,
+                    "realized_minus_target": realized - target,
+                }
+        realized_control_differences[zone["zone_id"]] = differences
         next_household_id += len(rows)
         for row in rows:
             people = people_by_seed.get(row["seed_household_id"], [])
@@ -222,8 +258,40 @@ def synthesize_study_area(
         "fit_quality": fit_quality_summary(fits),
         "fit_grading_note": margins_summary(fits),
         "dropped_controls": dropped_controls,
-        "provenance": cp.seed_provenance(pumas, fetch_summary, len(seed), dropped_records),
+        "provenance": cp.seed_provenance(pumas, fetch_summary, len(seed), dropped_records, **profile_args),
+        # Raw source cells remain distinct from targets and realized counts.
+        # Missing/suppressed values stay visible despite inherited fitter rules.
+        "source_controls": {
+            "raw_by_geoid": zone_controls,
+            "definitions": [asdict(control) for control in controls],
+            "targets_by_geoid": {z["GEOID"]: cp.zone_targets_from_acs(zone_controls[z["GEOID"]], controls) for z in zones},
+            "margins_by_geoid": {z["GEOID"]: cp.zone_margins_from_acs(zone_controls[z["GEOID"]], controls) for z in zones},
+            "missing_or_negative_cells_by_geoid": {
+                z["GEOID"]: [cell for cell in cp.acs_variables_for(controls)
+                             if cp._cell_value(zone_controls[z["GEOID"]], cell) is None
+                             or not math.isfinite(cp._cell_value(zone_controls[z["GEOID"]], cell))
+                             or cp._cell_value(zone_controls[z["GEOID"]], cell) < 0]
+                for z in zones
+            },
+            "inherited_approximations": [
+                "Missing cells contribute zero to existing category targets; this does not establish observed zero.",
+                "Age controls scale all-person ages by the zone household-population share; household-specific ages are unassessed.",
+                "Absent universe cells use the existing share default; raw cells and absence remain retained.",
+                "Household WGTP drives fitting; fetched person PWGTP is not fitted independently.",
+                "PUMAs are selected from centroid extent plus margin, not exact selected polygon coverage.",
+            ],
+        },
+        "zone_fits": [
+            {**asdict(fit), "worst_deviation": fit.worst_deviation if math.isfinite(fit.worst_deviation) else None,
+             "worst_deviation_nonfinite": None if math.isfinite(fit.worst_deviation) else str(fit.worst_deviation),
+             "realized_households": realized_household_counts[fit.zone_id],
+             "weighted_households": sum(fit.weights),
+             "control_differences": realized_control_differences[fit.zone_id],
+             "integerization_household_difference": realized_household_counts[fit.zone_id] - sum(fit.weights)}
+            for fit in fits
+        ],
         "method": SYNTHESIS_METHOD,
+        "school_inputs": school_inputs,
     }
 
 

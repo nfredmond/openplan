@@ -92,12 +92,36 @@ def main(argv=None):
     action.add_argument('--list-computations', action='store_true')
     action.add_argument('--request-id')
     action.add_argument('--inspect-ownership', metavar='CLAIM_REQUEST_ID')
+    action.add_argument('--replacement-request', type=Path, help='Deliver an exact operator-saved replacement decision; never execute a model')
     parser.add_argument('--workspace-id')
     args = parser.parse_args(argv)
     try:
         if args.workspace_id and not args.inspect_ownership:
             raise ValueError('Workspace scope is only used by ownership inspection')
-        if args.inspect_ownership:
+        if args.replacement_request:
+            import model_population_replacement as replacement
+            actor_id = os.environ.get('OPENPLAN_RECOVERY_ACTOR_ID', '')
+            client._uuid(actor_id)
+            if args.replacement_request.stat().st_size > 2_000_000:
+                raise ValueError('Recovery copy exceeds the browser copy limit')
+            value = json.loads(args.replacement_request.read_text())
+            scope, decision = value['scope'], value['decision']
+            if (scope['userId'] != actor_id or decision.get('decision') != 'create_population_replacement'
+                    or decision['expectedState']['model_id'] != scope['modelId']
+                    or set(decision) != {'requestId', 'decision', 'expectedState', 'checkpointId', 'checkpointSha256', 'reason', 'acknowledgedNewRun'}):
+                raise ValueError('Exact saved operator replacement decision required')
+            command = {'request_id': decision['requestId'], 'destination': client.destination(args.base_url, args.deployment_id),
+                'operation': 'create_model_population_replacement', 'arguments': {
+                    'workspace_id': scope['workspaceId'], 'run_id': scope['runId'], 'actor_id': actor_id,
+                    'expected_state': decision['expectedState'], 'checkpoint_id': decision['checkpointId'],
+                    'checkpoint_sha256': decision['checkpointSha256'], 'reason': decision['reason'],
+                    'acknowledged_new_run': decision['acknowledgedNewRun']}}
+            replacement.validate(command)
+            receipt = client.deliver(args.journal, command, base_url=args.base_url, deployment_id=args.deployment_id,
+                service_key=os.environ.get('SUPABASE_SERVICE_ROLE_KEY', ''))
+            print(json.dumps({'outcome': receipt['outcome'], 'replacement_run_id': receipt['replacement_run_id'],
+                'execution': 'ordinary_worker_queue', 'old_run_changed': False, 'model_resumed': False}))
+        elif args.inspect_ownership:
             print(json.dumps(inspect_saved_ownership(
                 args.journal, args.inspect_ownership, workspace_id=args.workspace_id,
                 base_url=args.base_url, deployment_id=args.deployment_id,

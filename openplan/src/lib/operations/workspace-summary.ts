@@ -282,6 +282,7 @@ export type WorkspaceGrantModelingSummary = {
     refreshRecommended: number;
     thin: number;
     noVisibleSupport: number;
+    unassessed: number;
   };
   breakdownSummary: string | null;
   operatorDetail: string | null;
@@ -503,18 +504,20 @@ function buildGrantModelingOpportunityBreakdownSummary(counts: {
   refreshRecommended: number;
   thin: number;
   noVisibleSupport: number;
+  unassessed: number;
 }) {
   const total =
     counts.decisionReady +
     counts.refreshRecommended +
     counts.thin +
+    counts.unassessed +
     counts.noVisibleSupport;
 
   if (total === 0) {
     return null;
   }
 
-  return `${total} opportunity-linked project${total === 1 ? "" : "s"}: ${counts.decisionReady} appears decision-ready, ${counts.refreshRecommended} refresh recommended, ${counts.thin} appears thin, ${counts.noVisibleSupport} without visible support.`;
+  return `${total} opportunity-linked project${total === 1 ? "" : "s"}: ${counts.decisionReady} appears decision-ready, ${counts.refreshRecommended} refresh recommended, ${counts.thin} appears thin, ${counts.unassessed > 0 ? `${counts.unassessed} evidence unassessed, ` : ""}${counts.noVisibleSupport} without visible support.`;
 }
 
 export type StoredRtpFundingReview = {
@@ -1590,6 +1593,9 @@ export function buildWorkspaceOperationsSummary({
         case "refresh-recommended":
           counts.refreshRecommended += 1;
           break;
+        case "unassessed":
+          counts.unassessed += 1;
+          break;
         case "thin":
           counts.thin += 1;
           break;
@@ -1605,6 +1611,7 @@ export function buildWorkspaceOperationsSummary({
       refreshRecommended: 0,
       thin: 0,
       noVisibleSupport: 0,
+      unassessed: 0,
     }
   );
   const grantModelingOpportunityBreakdownSummary = buildGrantModelingOpportunityBreakdownSummary(
@@ -1819,7 +1826,7 @@ export function buildWorkspaceOperationsSummary({
     });
   const firstFundingDecisionProject = fundingDecisionProjects[0] ?? null;
   const grantModelingOperatorDetail = grantModelingOpportunityBreakdownSummary
-    ? `Within grant decision work, opportunity-linked projects with modeling support that appears decision-ready rise ahead of refresh-recommended, thin, or unsupported work. Across ${grantModelingOpportunityBreakdownSummary} ${GRANT_MODELING_PLANNING_CAVEAT}`
+    ? `Within grant decision work, opportunity-linked projects with modeling support that appears decision-ready rise ahead of refresh-recommended, thin, or unsupported work. Unassessed evidence stays in review ahead of thin support. Across ${grantModelingOpportunityBreakdownSummary} ${GRANT_MODELING_PLANNING_CAVEAT}`
     : null;
   const firstFundingDecisionProjectLeadPacketDetail =
     firstFundingDecisionProject?.modelingEvidence?.leadComparisonReport.title
@@ -2394,7 +2401,7 @@ export function buildWorkspaceOperationsSummary({
           ? [
               {
                 label: "Modeling triage",
-                value: `${grantModelingOpportunityBreakdown.decisionReady} ready · ${grantModelingOpportunityBreakdown.refreshRecommended} refresh · ${grantModelingOpportunityBreakdown.thin} thin · ${grantModelingOpportunityBreakdown.noVisibleSupport} none`,
+                value: `${grantModelingOpportunityBreakdown.decisionReady} ready · ${grantModelingOpportunityBreakdown.refreshRecommended} refresh · ${grantModelingOpportunityBreakdown.thin} thin · ${grantModelingOpportunityBreakdown.unassessed > 0 ? `${grantModelingOpportunityBreakdown.unassessed} unassessed · ` : ""}${grantModelingOpportunityBreakdown.noVisibleSupport} none`,
               },
             ]
           : []),

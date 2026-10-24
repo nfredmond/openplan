@@ -1,4 +1,5 @@
 "use client";
+import { GuidedComparisonPicker } from "@/components/reports/guided-comparison-picker";
 
 /**
  * Making a new report packet, as three questions instead of a wall of fields.
@@ -174,6 +175,7 @@ function formatValidationSummary(value: Record<string, unknown> | null) {
 }
 
 type ReportFlowValues = {
+  guidedSnapshotId: string | null;
   projectId: string;
   reportType: ReportType;
   title: string;
@@ -213,6 +215,7 @@ export function ReportCreator({
         modelingCountyRuns
       ),
       runIds: [],
+      guidedSnapshotId: null,
     }),
     [initialProject, modelingCountyRuns]
   );
@@ -236,6 +239,7 @@ export function ReportCreator({
     const workspaceId = projects.find((project) => project.id === nextProjectId)?.workspace_id ?? null;
     flow.setValues({
       projectId: nextProjectId,
+      guidedSnapshotId: null,
       runIds: flow.values.runIds.filter((runId) =>
         runs.some((run) => run.id === runId && (!workspaceId || run.workspace_id === workspaceId))
       ),
@@ -377,6 +381,7 @@ export function ReportCreator({
         hint: "Optional. You can attach analysis later, and a report with nothing attached simply makes no modelling claims.",
         fields: [
           { name: "modelingCountyRunId", label: "Modeling evidence" },
+          { name: "guidedSnapshotId", label: "Saved guided comparison" },
           { name: "runIds", label: "Linked analysis runs" },
         ],
         render: (flowState) => {
@@ -407,6 +412,11 @@ export function ReportCreator({
 
           return (
             <>
+              <GuidedComparisonPicker
+                fieldProps={flowState.fieldProps("guidedSnapshotId")}
+                projectId={project?.id ?? null} disabled={!project || flowState.values.reportType !== "analysis_summary"}
+                value={flowState.values.guidedSnapshotId}
+                onChange={(snapshotId) => flowState.setValue("guidedSnapshotId", snapshotId)} />
               <div className="space-y-2">
                 <div className="flex items-center justify-between gap-3">
                   <label
@@ -533,6 +543,8 @@ export function ReportCreator({
             (project ? defaultReportTitle(project.name, values.reportType) : values.title),
           summary: values.summary,
           reportType: values.reportType,
+          ...(values.reportType === "analysis_summary" && values.guidedSnapshotId
+            ? { guidedComparisonSelectionV1: { snapshotId: values.guidedSnapshotId } } : {}),
           runIds: values.runIds,
           ...(values.modelingCountyRunId
             ? { modelingCountyRunId: values.modelingCountyRunId }

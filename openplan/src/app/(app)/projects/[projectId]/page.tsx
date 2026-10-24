@@ -1,3 +1,4 @@
+import { currentModelResultRows } from "@/lib/models/attempt-output-read";
 import { reportJurisdictionState } from "@/lib/reports/jurisdiction-freshness";
 import { resolveReportPacketRowFreshness } from "@/lib/reports/report-registry-freshness";
 import { notFound, redirect } from "next/navigation";
@@ -9,14 +10,11 @@ import { ProjectRecordComposer } from "@/components/projects/project-record-comp
 import { ProjectEstimatedCostEditor } from "@/components/projects/project-estimated-cost-editor";
 import { buildStageGateRunOptions, type StageGateEvidenceRunRow } from "./_components/_helpers";
 import { summarizeBillingInvoiceRecords } from "@/lib/invoicing/invoice-records";
-import {
-  buildGrantDecisionModelingSupport,
-  describeProjectGrantModelingReadiness,
-} from "@/lib/grants/modeling-evidence";
+import { buildGrantDecisionModelingSupport, describeProjectGrantModelingReadiness } from "@/lib/grants/modeling-evidence";
 import { buildAerialProjectPosture, describeAerialProjectPosture } from "@/lib/aerial/public";
 import { loadAerialMissionsAndPackagesForProject, loadAerialProjectPosture } from "@/lib/aerial/queries";
 import { buildProjectBudgetSnapshot, type DeliverableBudgetSummary } from "@/lib/projects/budget";
-import { loadProjectBudgetInputs, type ProjectBudgetQuerySupabaseLike } from "@/lib/projects/budget-queries";
+import { loadProjectBudgetInputs, projectDeliverableReadState, type ProjectBudgetQuerySupabaseLike } from "@/lib/projects/budget-queries";
 import { buildProjectControlsSummary } from "@/lib/projects/controls";
 import { buildProjectFundingStackSummary } from "@/lib/projects/funding";
 import { buildProjectSpineCrosslinkSummary, geographyLaneInput } from "@/lib/projects/project-spine-crosslinks";
@@ -164,7 +162,7 @@ export default async function ProjectDetailPage({
   const projectResult = await supabase
     .from("projects")
     .select(
-      "id, workspace_id, name, summary, status, plan_type, delivery_phase, estimated_cost_amount, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, estimated_cost_recorded_at, created_at, updated_at, rtp_posture, rtp_posture_updated_at, jurisdiction_context, latitude, longitude, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_geometry_geojson, place_set_at"
+      "id, workspace_id, name, summary, status, plan_type, delivery_phase, estimated_cost_amount::text, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, estimated_cost_recorded_at, created_at, updated_at, rtp_posture, rtp_posture_updated_at, jurisdiction_context, latitude, longitude, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_geometry_geojson, place_set_at"
     )
     .eq("id", projectId)
     .single();
@@ -299,7 +297,7 @@ export default async function ProjectDetailPage({
     evidenceRunIds.length
       ? supabase
           .from("model_run_kpis")
-          .select("run_id, kpi_name, value, geometry_ref")
+          .select("id, run_id, attempt_id, kpi_name, value, geometry_ref")
           .in("run_id", evidenceRunIds)
           .in("kpi_name", [...RTP_EVIDENCE_KPI_NAMES])
       : Promise.resolve({ data: [], error: null }),
@@ -310,9 +308,11 @@ export default async function ProjectDetailPage({
   const evidenceDisclosures = await loadRtpEvidenceRunDisclosures(supabase as unknown as RtpEvidenceSupabaseLike, evidenceRunIds, { knownRuns: availableRunRows });
   const availableModelRuns = evidenceDisclosures.pickerRuns;
   const runTitleById = evidenceDisclosures.titleByRunId;
-  const evidenceKpiRows = (evidenceKpisResult.data ?? []) as RtpModelingEvidenceKpiRow[];
+  const currentKpis = evidenceKpisResult.error ? { data: [], error: evidenceKpisResult.error }
+    : await currentModelResultRows(supabase, project.workspace_id, evidenceRunIds, "kpi", evidenceKpisResult.data ?? [], false, RTP_EVIDENCE_KPI_NAMES);
+  const evidenceKpiRows = currentKpis.data as RtpModelingEvidenceKpiRow[];
   // A failed read renders as "could not be read", never "No VMT/GHG KPIs".
-  const evidenceKpiOptions = { kpiReadFailed: Boolean(evidenceKpisResult.error) };
+  const evidenceKpiOptions = { kpiReadFailed: Boolean(evidenceKpisResult.error || currentKpis.error) };
   const modelingEvidenceByRunId = new Map(
     evidenceRunIds.map((runId) => [runId, summarizeRtpModelingEvidence(runId, runTitleById.get(runId) ?? null, evidenceKpiRows, evidenceKpiOptions)])
   );
@@ -505,6 +505,7 @@ export default async function ProjectDetailPage({
   // The board and timeline keep their original six-row recency window; the
   // budget snapshot above deliberately sees the full deliverable list.
   const deliverables = budgetInputs.deliverables.slice(0, 6);
+  const deliverableReadState = projectDeliverableReadState(budgetInputs);
 
   // WHO IS ON THIS TEAM, so an assignee id on a deliverable, milestone,
   // submittal or issue becomes a person. Service role behind the loader's own
@@ -1259,8 +1260,9 @@ export default async function ProjectDetailPage({
   // decisions and meetings with no way to add one — and its declared
   // `risk-`/`issue-`/`decision-`/`meeting-` anchors, which are that composer's
   // own form-field ids, pointed at elements rendered on another tab. The two
-  // lists must partition all seven; `page-tabs-page-header-and-record-
-  // creation.test.ts` fails if they ever stop doing so.
+  // lists partition all seven when deliverables are readable. Pending or failed
+  // deliverables withhold only their creation type. The page composition and
+  // `page-tabs-page-header-and-record-creation.test.ts` protect both states.
   return (
     <section className="module-page min-w-0 grid-cols-[minmax(0,1fr)]">
       <CartographicSurfaceWide />
@@ -1304,7 +1306,8 @@ export default async function ProjectDetailPage({
             rtpSafetyEvidence,
             rtpPriorityCriteria: resolveRtpPriorityFrameworkForWorkspace(parseWorkspaceHomeGeography(workspaceData)).criteria,
             canWriteProjects: canAccessWorkspaceAction("plans.write", projectRole),
-            deliverableCount: budgetInputs.deliverables.length,
+            deliverableCount: deliverableReadState === "readable" ? budgetInputs.deliverables.length : null,
+            deliverableReadState,
             openRiskCount,
             openIssueCount,
             kbDocumentCount: documentsLane.kbCount,
@@ -1344,7 +1347,7 @@ export default async function ProjectDetailPage({
       </PageTabPanel>
 
       <PageTabPanel tabKey="delivery" active={activeTab === "delivery"}>
-          <ProjectRecordComposer projectId={project.id} workspaceId={project.workspace_id} recordTypes={["milestone", "submittal", "deliverable"]} />
+          <ProjectRecordComposer projectId={project.id} workspaceId={project.workspace_id} recordTypes={deliverableReadState === "readable" ? ["milestone", "submittal", "deliverable"] : ["milestone", "submittal"]} />
 
           <ProjectDeliveryBoard
             project={project}
@@ -1365,6 +1368,7 @@ export default async function ProjectDetailPage({
             prioritizedSubmittals={prioritizedSubmittals}
             invoicesReadFailed={projectInvoicesReadFailed}
             deliverables={deliverables}
+            deliverableReadState={deliverableReadState}
             budgetSummaryByDeliverableId={budgetSummaryByDeliverableId}
             assigneeRoster={assigneeRoster}
             deliverableAssigneeColumnPending={budgetInputs.pending.deliverableAssigneeColumn}
@@ -1473,7 +1477,7 @@ export default async function ProjectDetailPage({
             assigneeRoster={assigneeRoster}
           />
 
-          <ProjectActivityTimeline timelineItems={timelineItems} />
+          <ProjectActivityTimeline timelineItems={timelineItems} deliverableReadState={deliverableReadState} />
       </PageTabPanel>
     </section>
   );
