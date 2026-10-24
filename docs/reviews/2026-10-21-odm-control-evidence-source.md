@@ -224,3 +224,12 @@ Private raw evidence and detailed limits:
 - `/home/nathaniel/.local/state/openplan/odm-phase-actual-timing-20261021-01/RESULT.md`
 - `/home/nathaniel/.local/state/openplan/odm-one-case-cprofile-20261021-01/RESULT.md`
 - `/home/nathaniel/.local/state/openplan/odm-timeout-bool-mutant-diagnostic-20261021-01/RESULT.md`
+
+
+## Diagnostic backport on the BCA branch, October 21, 2026
+
+PR #358 at `33dcfb63169b9a03f067e2e6dadaef863715ac22` fails its ODM job at `source-timeout-bool-normalized` classification. Run `39553430067`, job `119067553520`, exposes no underlying mutant output, and the run has zero uploaded artifacts. Its actual worker cause remains unknown.
+
+The verifier, focused tests and scoped workflow upload are copied byte for byte from reviewed PR #362 commit `5b806c301a09574cf859e29fa9afe34989d18e9a`. The verifier and workflow preimages match the original source review. Seven focused evidence tests pass once on this exact BCA-based checkout. The existing harmless, fourteen targeted-fault and restoration controls retain their earlier exact-source scope; they are not rerun here.
+
+This backport changes diagnostics only. Worker code, intended classifier, 30-second child deadline, BCA application code and UI remain unchanged. The failing worker cohort is not rerun locally. The next CI run must establish whether a failure occurs and retain its scoped evidence. This note does not declare that worker failure fixed, native BCA acceptance, browser acceptance or a release.
