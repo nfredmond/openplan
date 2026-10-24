@@ -1,0 +1,8 @@
+# Raw logs remain local; byte-identical gzip copies and custody hashes are tracked.
+*.engine.log
+*.memory.jsonl
+*.controller.log
+*.profile.jsonl
+# Upstream source bytes remain local and in lossless tracked gzip snapshots.
+installed-source/**/*.py
+additional-source/**/*.py

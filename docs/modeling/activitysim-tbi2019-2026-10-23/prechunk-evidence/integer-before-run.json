@@ -1,0 +1,9 @@
+{
+  "downcast_int": true,
+  "downcast_float": false,
+  "cache_sha256": "3258b6ecd69d9a9e73e4d0b411a65a6e63308e7fe797d0f65dcc6634a29d7761",
+  "households": 2000,
+  "persons": 4971,
+  "exact_all_values": true,
+  "outcomes_accessed": false
+}

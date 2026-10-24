@@ -1,0 +1,65 @@
+[
+  {
+    "table": "final_accessibility.csv",
+    "rows": 634,
+    "columns": 11,
+    "reference_sha256": "68a89df0318674b3610ea77e4dcf681b4fcf339d6e17de89cb3b125478d56139",
+    "candidate_sha256": "68a89df0318674b3610ea77e4dcf681b4fcf339d6e17de89cb3b125478d56139",
+    "byte_identical": true,
+    "value_identical": true
+  },
+  {
+    "table": "final_households.csv",
+    "rows": 2000,
+    "columns": 35,
+    "reference_sha256": "131ac76a809b184dc697dabf8196f2fb20fe878a3eb440ea3d7cb04618a70889",
+    "candidate_sha256": "131ac76a809b184dc697dabf8196f2fb20fe878a3eb440ea3d7cb04618a70889",
+    "byte_identical": true,
+    "value_identical": true
+  },
+  {
+    "table": "final_joint_tour_participants.csv",
+    "rows": 274,
+    "columns": 5,
+    "reference_sha256": "b052168102ddedb8779ad109f9486f0a8d7874a427481b29b63aaaadb750f451",
+    "candidate_sha256": "b052168102ddedb8779ad109f9486f0a8d7874a427481b29b63aaaadb750f451",
+    "byte_identical": true,
+    "value_identical": true
+  },
+  {
+    "table": "final_land_use.csv",
+    "rows": 634,
+    "columns": 29,
+    "reference_sha256": "a74feed4d6ceeab4c953c5ed3b48cafc0805b24c80f825d196f361ac092ccb94",
+    "candidate_sha256": "a74feed4d6ceeab4c953c5ed3b48cafc0805b24c80f825d196f361ac092ccb94",
+    "byte_identical": true,
+    "value_identical": true
+  },
+  {
+    "table": "final_persons.csv",
+    "rows": 4971,
+    "columns": 64,
+    "reference_sha256": "2407a2082b1bf6f0ac999c0e852021ef9091339a1e4460cd598affcad116bdea",
+    "candidate_sha256": "2407a2082b1bf6f0ac999c0e852021ef9091339a1e4460cd598affcad116bdea",
+    "byte_identical": true,
+    "value_identical": true
+  },
+  {
+    "table": "final_tours.csv",
+    "rows": 6763,
+    "columns": 24,
+    "reference_sha256": "53945d2c8990b5e2c7a7539c0f541387b8904c5a53a2c59451c6478fa235b111",
+    "candidate_sha256": "53945d2c8990b5e2c7a7539c0f541387b8904c5a53a2c59451c6478fa235b111",
+    "byte_identical": true,
+    "value_identical": true
+  },
+  {
+    "table": "final_trips.csv",
+    "rows": 17377,
+    "columns": 15,
+    "reference_sha256": "34b027140241f78c5fa467ce4656d0bb3ce5740bc4037bd1ea013f667b396c4c",
+    "candidate_sha256": "34b027140241f78c5fa467ce4656d0bb3ce5740bc4037bd1ea013f667b396c4c",
+    "byte_identical": true,
+    "value_identical": true
+  }
+]

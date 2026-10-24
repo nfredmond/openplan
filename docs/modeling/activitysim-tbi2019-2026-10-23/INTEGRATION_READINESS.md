@@ -755,3 +755,133 @@ The frozen opening still requires these steps:
 6. Only a later authorized opening may request approved development-outcome
    fields. Evaluate each ActivitySim arm independently against its preregistered
    gates. Keep AequilibraE separate and held-out outcomes closed.
+
+## October 24, 2026 UTC: full preprocessing vectors exhaust 9 GiB; integer setting rejected
+
+**The full current arm still exceeds 9 GiB. Model execution stops.** The join
+completes; full-length preprocessing vectors exhaust the cap before inner
+chunking. The SEMCOG full arm and both full suffixes remain unrun in this round.
+No TBI outcome field is requested, read or compared. Both frozen coefficient
+arms, the full retained population and all prior failures remain unchanged.
+
+The [allocation report](prechunk-evidence/ALLOCATION.md) supplies rows, column
+counts, dtypes, bytes and installed ActivitySim 1.5.1 source lines for the
+20,000-household diagnostic and the full-population failure. The full attempt
+contains 1,060,601 households, 2,617,177 persons and all 634 destination zones.
+These are the complete retained inputs, not a memory-driven sample.
+
+| Full allocation before the failure | Rows by columns | Deep bytes, except stated payload |
+|---|---|---:|
+| Households | 1,060,601 by 24 | 156,846,332 |
+| Persons | 2,617,177 by 30 | 331,968,069 |
+| Persons merged | 2,617,177 by 92 | 1,391,924,754 |
+| Accessibility | 634 by 10, float64 | 55,792 |
+| Size-term definitions | 22 by 12 | 5,337 |
+| School / workplace destination size | 634 by 3 / 634 by 4, float64 | 36,840 / 41,912 |
+| School shadow-price matrix | Disabled, not allocated | Not applicable |
+| Sampled grade-school locations | 10,717,604 by 3 | 214,352,080 |
+| Joined logsum choosers | 10,717,604 by 12 | 835,973,112 |
+| Six batched normal draws | 10,717,604 by 6, float64 | 634,002,440 |
+| Retained preprocessing result vectors | 10,717,604 by 46 | 3,065,234,744 payload |
+
+Deep table bytes overlap through shared indexes, buffers and Python objects.
+They are not additive physical-memory measurements. `persons.py:83-118` builds
+the merged person table. `location_choice.py:558-565` filters and joins the
+sampled locations. `logsums.py:247-267` runs full preprocessing before inner
+simulation. `assign.py:310-329` draws six full-length random columns and
+`assign.py:346-450` retains expression results and temporaries.
+
+The last completed full trace is at `assign.py:349`, immediately before the
+`sov_available` target. Its stock expression at preprocessor CSV line 72 is
+`(odt_skims['SOV_TIME']>0) & (dot_skims['SOV_TIME']>0)`, evaluated at
+`assign.py:397`. Forty-six result vectors and additional temporaries are already
+live. Neither the result DataFrame constructor nor the inner logsum chunker
+has been reached. The exact native allocation instruction inside the pending
+expression is not captured. This record does not claim a malloc-level stack.
+
+### Exact reductions and rejected settings
+
+1. The complete configuration/spec scan finds `land_use.source_geoid` unused.
+   The existing `keep_columns` already discards it. Removing it from a derivative
+   raw CSV saves 7,621 file bytes and no large persistent table. Both
+   2,000-household arms pass exact equality across every field in all seven
+   tables. All seven exports also match their own reference hashes. Current
+   retains 6,763 tours and 17,377 trips; SEMCOG retains 6,764 and 17,464.
+   Both retain 274 joint participants. Original inputs remain untouched.
+2. The installed documented `downcast_int: true` setting is tested separately,
+   with `downcast_float: false`. It fails the current-arm exact gate: 2,630
+   accessibility cells differ across five columns. Their checkpoint dtype
+   becomes float32 because narrowed integers change mixed arithmetic promotion
+   with the existing float32 skims. The other six tables remain exact, which
+   does not rescue the gate. The setting is rejected before full use. The
+   SEMCOG integer probe is skipped after that failure, not reported as passing.
+3. The installed configuration exposes no automatic categorical conversion or
+   single-process setting that defers/chunks this merged-table preprocessing.
+   Inner `explicit_chunk` operates later. No engine patch, float downcast,
+   reduced destination domain or sampled full arm is introduced. Selective
+   dtype declarations and multiprocessing are untested, not ruled out.
+
+[Method and source notes](prechunk-evidence/method-notes.md),
+[input scan](prechunk-evidence/input-column-scan.json),
+[current exact proof](prechunk-evidence/columns-2000-current.comparison.json),
+[SEMCOG exact proof](prechunk-evidence/columns-2000-semcog.comparison.json), and
+[integer failure](prechunk-evidence/integer-failure-analysis.json) retain the
+measurements and boundaries. The full attempt uses only the proven column
+removal, the existing allocator settings and the 256 MiB production target.
+The intended suffix remains unchunked. Global defaults do not change.
+
+### Full-arm health and stop
+
+The instrumented current prefix lasts 1,160.959 seconds, then the kernel kills
+it under `systemd-run --user --scope -p MemoryMax=9G -p MemorySwapMax=0`.
+An outside observer retains `memory.peak: 9663676416`, `oom: 1`, `oom_kill: 1`
+and zero swap peak before cgroup removal. The journal independently reports
+`oom-kill`. The last one-second sample contains 9,576,824,832 anonymous bytes
+and 12,283,904 file-cache bytes. The missing in-scope terminal receipt stays
+missing. Instrumentation overhead prevents treating this as an uninstrumented
+runtime benchmark.
+
+Sampled stage peaks are 1,714,835,456 bytes for land-use initialization,
+5,267,734,528 for household initialization, 3,566,059,520 for accessibility,
+and 9,613,721,600 for school location. These are one-second lower bounds,
+separate from the kernel lifetime peak. The [resource stop](prechunk-evidence/full-resource-stop.json),
+[scope observer](prechunk-evidence/full-current-prefix.external.jsonl), and
+[stage health](prechunk-evidence/run-health-summary.json) retain the evidence.
+
+The stop instruction prevents a SEMCOG full attempt after this failure. No
+full final travel table exists; counts, MODELED shares, preregistered strata
+and final hashes remain unavailable. Partial checkpoints are not completed
+outputs. The tested preprocessing path needs more than 9 GiB. Its uncapped
+peak and later-stage demand remain unmeasured. No Docker stack is stopped.
+
+### Verification and remaining frozen-opening steps
+
+Source verification passes 25 Python tests with zero skips: 14 inherited
+parity tests and 11 successor custody/stop tests. Eleven unique mutation
+controls contain one harmless survivor and ten intended assertion failures.
+Controls compile isolated namespaces and leave source bytes unchanged. Earlier
+nine-control receipts remain retained and are not added again to this total.
+These checks do not establish scientific accuracy or full-population parity.
+The direction check fails at `spawnSync git ENOBUFS`: its changed-path listing
+is 1,070,317 bytes. The checker and review dates remain unchanged.
+
+All 117 original frozen records and the pinned engine files retain their
+hashes. No installed ActivitySim source, coefficient, skim value, held-out
+boundary, hosted system or database changes. No Next.js build or Vitest run
+occurs. The PR remains draft. The remaining opening steps are:
+
+1. The lead supplies more memory or separately admits another exact execution
+   design. Complete both full arms with stage resource receipts, final hashes
+   and supported modeled strata. This cap failure does not authorize a retry.
+2. Grade population and historical travel inputs independently. Preserve the
+   four source-conflict exclusions and resolve or preregister the existing fare,
+   cost-year, MVTA, drive-access, period-speed, walk/bicycle, parking and toll
+   limitations without relaxing gates.
+3. Freeze observed/model eligibility, homogeneous trip families, diary/location
+   continuity, university, joint/at-work and quality rules, domains and exclusions.
+4. Freeze the separate day-weight-per-tour and trip-weighted estimators, publisher
+   joins, clusters, strata, variance, singleton treatment and simultaneous bounds.
+5. The lead verifies the original split and complete custody, then issues a new
+   exclusive opening receipt. Historical synthetic receipts do not authorize it.
+6. Only a later authorized opening may access approved development outcomes.
+   Keep held-out outcomes closed and AequilibraE separate from ActivitySim.

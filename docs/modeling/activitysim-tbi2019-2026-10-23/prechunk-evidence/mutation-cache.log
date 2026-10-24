@@ -1,0 +1,13 @@
+F........
+======================================================================
+FAIL: test_cache (__main__.Guards.test_cache)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-fb678273/docs/modeling/activitysim-tbi2019-2026-10-23/prechunk-evidence/test-guards.py", line 109, in test_cache
+    with self.assertRaisesRegex(RuntimeError,'Exact parity/cache'):
+AssertionError: RuntimeError not raised
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.012s
+
+FAILED (failures=1)

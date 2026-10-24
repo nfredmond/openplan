@@ -1,0 +1,22 @@
+[
+  {
+    "arm": "current",
+    "status": "failed",
+    "tours": null,
+    "trips": null,
+    "mode_shares_MODELED": null,
+    "final_hashes": {},
+    "outcomes_accessed": false,
+    "output": "/home/nathaniel/.t3/worktrees/openplan/t3-fb678273/data/_screening_cache/tbi2019-prechunk/full-current",
+    "error": "Stage failed: full-current-prefix"
+  },
+  {
+    "arm": "semcog",
+    "status": "not_run",
+    "tours": null,
+    "trips": null,
+    "mode_shares_MODELED": null,
+    "final_hashes": {},
+    "outcomes_accessed": false
+  }
+]

@@ -1,0 +1,5678 @@
+[
+  {
+    "elapsed_seconds": 36.7481843290152,
+    "event": "call",
+    "source": "abm/models/location_choice.py",
+    "function": "run_location_logsums",
+    "line": 518,
+    "rss_bytes": 567574528,
+    "tables": {
+      "persons_merged_df": {
+        "rows": 9613,
+        "columns": 92,
+        "index_dtype": "int64",
+        "index_bytes": 76904,
+        "bytes_deep": 4864178,
+        "fields": {
+          "household_id": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "age": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "PNUM": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "sex": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "pemploy": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "pstudent": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "ptype": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "age_16_to_19": {
+            "dtype": "bool",
+            "bytes_deep": 9613
+          },
+          "age_16_p": {
+            "dtype": "bool",
+            "bytes_deep": 9613
+          },
+          "adult": {
+            "dtype": "bool",
+            "bytes_deep": 9613
+          },
+          "male": {
+            "dtype": "bool",
+            "bytes_deep": 9613
+          },
+          "female": {
+            "dtype": "bool",
+            "bytes_deep": 9613
+          },
+          "has_non_worker": {
+            "dtype": "bool",
+            "bytes_deep": 9613
+          },
+          "has_retiree": {
+            "dtype": "bool",
+            "bytes_deep": 9613
+          },
+          "has_preschool_kid": {
+            "dtype": "bool",
+            "bytes_deep": 9613
+          },
+          "has_driving_kid": {
+            "dtype": "bool",
+            "bytes_deep": 9613
+          },
+          "has_school_kid": {
+            "dtype": "bool",
+            "bytes_deep": 9613
+          },
+          "has_full_time": {
+            "dtype": "bool",
+            "bytes_deep": 9613
+          },
+          "has_part_time": {
+            "dtype": "bool",
+            "bytes_deep": 9613
+          },
+          "has_university": {
+            "dtype": "bool",
+            "bytes_deep": 9613
+          },
+          "student_is_employed": {
+            "dtype": "bool",
+            "bytes_deep": 9613
+          },
+          "nonstudent_to_school": {
+            "dtype": "bool",
+            "bytes_deep": 9613
+          },
+          "is_student": {
+            "dtype": "bool",
+            "bytes_deep": 9613
+          },
+          "is_gradeschool": {
+            "dtype": "bool",
+            "bytes_deep": 9613
+          },
+          "is_highschool": {
+            "dtype": "bool",
+            "bytes_deep": 9613
+          },
+          "is_university": {
+            "dtype": "bool",
+            "bytes_deep": 9613
+          },
+          "school_segment": {
+            "dtype": "int8",
+            "bytes_deep": 9613
+          },
+          "is_worker": {
+            "dtype": "bool",
+            "bytes_deep": 9613
+          },
+          "home_zone_id": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "value_of_time": {
+            "dtype": "float64",
+            "bytes_deep": 76904
+          },
+          "income": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "hhsize": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "HHT": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "auto_ownership": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "num_workers": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "sample_rate": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "income_in_thousands": {
+            "dtype": "float64",
+            "bytes_deep": 76904
+          },
+          "income_segment": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "median_value_of_time": {
+            "dtype": "float64",
+            "bytes_deep": 76904
+          },
+          "hh_value_of_time": {
+            "dtype": "float64",
+            "bytes_deep": 76904
+          },
+          "num_non_workers": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "num_drivers": {
+            "dtype": "int8",
+            "bytes_deep": 9613
+          },
+          "num_adults": {
+            "dtype": "int8",
+            "bytes_deep": 9613
+          },
+          "num_children": {
+            "dtype": "int8",
+            "bytes_deep": 9613
+          },
+          "num_young_children": {
+            "dtype": "int8",
+            "bytes_deep": 9613
+          },
+          "num_children_5_to_15": {
+            "dtype": "int8",
+            "bytes_deep": 9613
+          },
+          "num_children_16_to_17": {
+            "dtype": "int8",
+            "bytes_deep": 9613
+          },
+          "num_college_age": {
+            "dtype": "int8",
+            "bytes_deep": 9613
+          },
+          "num_young_adults": {
+            "dtype": "int8",
+            "bytes_deep": 9613
+          },
+          "non_family": {
+            "dtype": "bool",
+            "bytes_deep": 9613
+          },
+          "family": {
+            "dtype": "bool",
+            "bytes_deep": 9613
+          },
+          "home_is_urban": {
+            "dtype": "bool",
+            "bytes_deep": 9613
+          },
+          "home_is_rural": {
+            "dtype": "bool",
+            "bytes_deep": 9613
+          },
+          "DISTRICT": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "SD": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "county_id": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "TOTHH": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "TOTPOP": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "TOTACRE": {
+            "dtype": "float64",
+            "bytes_deep": 76904
+          },
+          "RESACRE": {
+            "dtype": "float64",
+            "bytes_deep": 76904
+          },
+          "CIACRE": {
+            "dtype": "float64",
+            "bytes_deep": 76904
+          },
+          "TOTEMP": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "AGE0519": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "RETEMPN": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "FPSEMPN": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "HEREMPN": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "OTHEMPN": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "AGREMPN": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "MWTEMPN": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "PRKCST": {
+            "dtype": "float64",
+            "bytes_deep": 76904
+          },
+          "OPRKCST": {
+            "dtype": "float64",
+            "bytes_deep": 76904
+          },
+          "area_type": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "HSENROLL": {
+            "dtype": "float64",
+            "bytes_deep": 76904
+          },
+          "COLLFTE": {
+            "dtype": "float64",
+            "bytes_deep": 76904
+          },
+          "COLLPTE": {
+            "dtype": "float64",
+            "bytes_deep": 76904
+          },
+          "TOPOLOGY": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "TERMINAL": {
+            "dtype": "float64",
+            "bytes_deep": 76904
+          },
+          "_original_zone_id": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "household_density": {
+            "dtype": "float64",
+            "bytes_deep": 76904
+          },
+          "employment_density": {
+            "dtype": "float64",
+            "bytes_deep": 76904
+          },
+          "density_index": {
+            "dtype": "float64",
+            "bytes_deep": 76904
+          },
+          "is_cbd": {
+            "dtype": "bool",
+            "bytes_deep": 9613
+          },
+          "auPkRetail": {
+            "dtype": "float64",
+            "bytes_deep": 76904
+          },
+          "auPkTotal": {
+            "dtype": "float64",
+            "bytes_deep": 76904
+          },
+          "auOpRetail": {
+            "dtype": "float64",
+            "bytes_deep": 76904
+          },
+          "auOpTotal": {
+            "dtype": "float64",
+            "bytes_deep": 76904
+          },
+          "trPkRetail": {
+            "dtype": "float64",
+            "bytes_deep": 76904
+          },
+          "trPkTotal": {
+            "dtype": "float64",
+            "bytes_deep": 76904
+          },
+          "trOpRetail": {
+            "dtype": "float64",
+            "bytes_deep": 76904
+          },
+          "trOpTotal": {
+            "dtype": "float64",
+            "bytes_deep": 76904
+          },
+          "nmRetail": {
+            "dtype": "float64",
+            "bytes_deep": 76904
+          },
+          "nmTotal": {
+            "dtype": "float64",
+            "bytes_deep": 76904
+          }
+        }
+      },
+      "location_sample_df": {
+        "rows": 205048,
+        "columns": 3,
+        "index_dtype": "int64",
+        "index_bytes": 1640384,
+        "bytes_deep": 4100960,
+        "fields": {
+          "alt_dest": {
+            "dtype": "int32",
+            "bytes_deep": 820192
+          },
+          "prob": {
+            "dtype": "float32",
+            "bytes_deep": 820192
+          },
+          "pick_count": {
+            "dtype": "uint32",
+            "bytes_deep": 820192
+          }
+        }
+      }
+    },
+    "pipeline": {
+      "land_use": {
+        "rows": 634,
+        "columns": 29,
+        "index_dtype": "int64",
+        "index_bytes": 21624,
+        "bytes_deep": 164274,
+        "fields": {
+          "DISTRICT": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "SD": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "county_id": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "TOTHH": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "TOTPOP": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "TOTACRE": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "RESACRE": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "CIACRE": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "TOTEMP": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "AGE0519": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "RETEMPN": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "FPSEMPN": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "HEREMPN": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "OTHEMPN": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "AGREMPN": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "MWTEMPN": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "PRKCST": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "OPRKCST": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "area_type": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "HSENROLL": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "COLLFTE": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "COLLPTE": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "TOPOLOGY": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "TERMINAL": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "_original_zone_id": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "household_density": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "employment_density": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "density_index": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "is_cbd": {
+            "dtype": "bool",
+            "bytes_deep": 634
+          }
+        }
+      },
+      "accessibility": {
+        "rows": 634,
+        "columns": 10,
+        "index_dtype": "int64",
+        "index_bytes": 5072,
+        "bytes_deep": 55792,
+        "fields": {
+          "auPkRetail": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "auPkTotal": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "auOpRetail": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "auOpTotal": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "trPkRetail": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "trPkTotal": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "trOpRetail": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "trOpTotal": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "nmRetail": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "nmTotal": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          }
+        }
+      },
+      "households": {
+        "rows": 20000,
+        "columns": 24,
+        "index_dtype": "int64",
+        "index_bytes": 688424,
+        "bytes_deep": 2848424,
+        "fields": {
+          "home_zone_id": {
+            "dtype": "int64",
+            "bytes_deep": 160000
+          },
+          "income": {
+            "dtype": "int64",
+            "bytes_deep": 160000
+          },
+          "hhsize": {
+            "dtype": "int64",
+            "bytes_deep": 160000
+          },
+          "HHT": {
+            "dtype": "int64",
+            "bytes_deep": 160000
+          },
+          "auto_ownership": {
+            "dtype": "int64",
+            "bytes_deep": 160000
+          },
+          "num_workers": {
+            "dtype": "int64",
+            "bytes_deep": 160000
+          },
+          "sample_rate": {
+            "dtype": "int64",
+            "bytes_deep": 160000
+          },
+          "income_in_thousands": {
+            "dtype": "float64",
+            "bytes_deep": 160000
+          },
+          "income_segment": {
+            "dtype": "int64",
+            "bytes_deep": 160000
+          },
+          "median_value_of_time": {
+            "dtype": "float64",
+            "bytes_deep": 160000
+          },
+          "hh_value_of_time": {
+            "dtype": "float64",
+            "bytes_deep": 160000
+          },
+          "num_non_workers": {
+            "dtype": "int64",
+            "bytes_deep": 160000
+          },
+          "num_drivers": {
+            "dtype": "int8",
+            "bytes_deep": 20000
+          },
+          "num_adults": {
+            "dtype": "int8",
+            "bytes_deep": 20000
+          },
+          "num_children": {
+            "dtype": "int8",
+            "bytes_deep": 20000
+          },
+          "num_young_children": {
+            "dtype": "int8",
+            "bytes_deep": 20000
+          },
+          "num_children_5_to_15": {
+            "dtype": "int8",
+            "bytes_deep": 20000
+          },
+          "num_children_16_to_17": {
+            "dtype": "int8",
+            "bytes_deep": 20000
+          },
+          "num_college_age": {
+            "dtype": "int8",
+            "bytes_deep": 20000
+          },
+          "num_young_adults": {
+            "dtype": "int8",
+            "bytes_deep": 20000
+          },
+          "non_family": {
+            "dtype": "bool",
+            "bytes_deep": 20000
+          },
+          "family": {
+            "dtype": "bool",
+            "bytes_deep": 20000
+          },
+          "home_is_urban": {
+            "dtype": "bool",
+            "bytes_deep": 20000
+          },
+          "home_is_rural": {
+            "dtype": "bool",
+            "bytes_deep": 20000
+          }
+        }
+      },
+      "persons": {
+        "rows": 49094,
+        "columns": 30,
+        "index_dtype": "int64",
+        "index_bytes": 1449560,
+        "bytes_deep": 6015302,
+        "fields": {
+          "household_id": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "age": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "PNUM": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "sex": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "pemploy": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "pstudent": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "ptype": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "age_16_to_19": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "age_16_p": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "adult": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "male": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "female": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "has_non_worker": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "has_retiree": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "has_preschool_kid": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "has_driving_kid": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "has_school_kid": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "has_full_time": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "has_part_time": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "has_university": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "student_is_employed": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "nonstudent_to_school": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "is_student": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "is_gradeschool": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "is_highschool": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "is_university": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "school_segment": {
+            "dtype": "int8",
+            "bytes_deep": 49094
+          },
+          "is_worker": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "home_zone_id": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "value_of_time": {
+            "dtype": "float64",
+            "bytes_deep": 392752
+          }
+        }
+      },
+      "size_terms": {
+        "rows": 22,
+        "columns": 12,
+        "index_dtype": "object",
+        "index_bytes": 1977,
+        "bytes_deep": 5337,
+        "fields": {
+          "model_selector": {
+            "dtype": "object",
+            "bytes_deep": 1424
+          },
+          "TOTHH": {
+            "dtype": "float64",
+            "bytes_deep": 176
+          },
+          "RETEMPN": {
+            "dtype": "float64",
+            "bytes_deep": 176
+          },
+          "FPSEMPN": {
+            "dtype": "float64",
+            "bytes_deep": 176
+          },
+          "HEREMPN": {
+            "dtype": "float64",
+            "bytes_deep": 176
+          },
+          "OTHEMPN": {
+            "dtype": "float64",
+            "bytes_deep": 176
+          },
+          "AGREMPN": {
+            "dtype": "float64",
+            "bytes_deep": 176
+          },
+          "MWTEMPN": {
+            "dtype": "float64",
+            "bytes_deep": 176
+          },
+          "AGE0519": {
+            "dtype": "float64",
+            "bytes_deep": 176
+          },
+          "HSENROLL": {
+            "dtype": "float64",
+            "bytes_deep": 176
+          },
+          "COLLFTE": {
+            "dtype": "float64",
+            "bytes_deep": 176
+          },
+          "COLLPTE": {
+            "dtype": "float64",
+            "bytes_deep": 176
+          }
+        }
+      },
+      "school_destination_size": {
+        "rows": 634,
+        "columns": 3,
+        "index_dtype": "int64",
+        "index_bytes": 21624,
+        "bytes_deep": 36840,
+        "fields": {
+          "university": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "gradeschool": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "highschool": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          }
+        }
+      },
+      "workplace_destination_size": {
+        "rows": 634,
+        "columns": 4,
+        "index_dtype": "int64",
+        "index_bytes": 21624,
+        "bytes_deep": 41912,
+        "fields": {
+          "work_low": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "work_med": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "work_high": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "work_veryhigh": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          }
+        }
+      },
+      "tdd_alts": {
+        "rows": 190,
+        "columns": 3,
+        "index_dtype": "int64",
+        "index_bytes": 132,
+        "bytes_deep": 702,
+        "fields": {
+          "start": {
+            "dtype": "int8",
+            "bytes_deep": 190
+          },
+          "end": {
+            "dtype": "int8",
+            "bytes_deep": 190
+          },
+          "duration": {
+            "dtype": "int8",
+            "bytes_deep": 190
+          }
+        }
+      },
+      "person_windows": {
+        "rows": 49094,
+        "columns": 21,
+        "index_dtype": "int64",
+        "index_bytes": 1449560,
+        "bytes_deep": 2480534,
+        "fields": {
+          "4": {
+            "dtype": "int8",
+            "bytes_deep": 49094
+          },
+          "5": {
+            "dtype": "int8",
+            "bytes_deep": 49094
+          },
+          "6": {
+            "dtype": "int8",
+            "bytes_deep": 49094
+          },
+          "7": {
+            "dtype": "int8",
+            "bytes_deep": 49094
+          },
+          "8": {
+            "dtype": "int8",
+            "bytes_deep": 49094
+          },
+          "9": {
+            "dtype": "int8",
+            "bytes_deep": 49094
+          },
+          "10": {
+            "dtype": "int8",
+            "bytes_deep": 49094
+          },
+          "11": {
+            "dtype": "int8",
+            "bytes_deep": 49094
+          },
+          "12": {
+            "dtype": "int8",
+            "bytes_deep": 49094
+          },
+          "13": {
+            "dtype": "int8",
+            "bytes_deep": 49094
+          },
+          "14": {
+            "dtype": "int8",
+            "bytes_deep": 49094
+          },
+          "15": {
+            "dtype": "int8",
+            "bytes_deep": 49094
+          },
+          "16": {
+            "dtype": "int8",
+            "bytes_deep": 49094
+          },
+          "17": {
+            "dtype": "int8",
+            "bytes_deep": 49094
+          },
+          "18": {
+            "dtype": "int8",
+            "bytes_deep": 49094
+          },
+          "19": {
+            "dtype": "int8",
+            "bytes_deep": 49094
+          },
+          "20": {
+            "dtype": "int8",
+            "bytes_deep": 49094
+          },
+          "21": {
+            "dtype": "int8",
+            "bytes_deep": 49094
+          },
+          "22": {
+            "dtype": "int8",
+            "bytes_deep": 49094
+          },
+          "23": {
+            "dtype": "int8",
+            "bytes_deep": 49094
+          },
+          "24": {
+            "dtype": "int8",
+            "bytes_deep": 49094
+          }
+        }
+      },
+      "persons_merged": {
+        "rows": 49094,
+        "columns": 92,
+        "index_dtype": "int64",
+        "index_bytes": 1449560,
+        "bytes_deep": 25898372,
+        "fields": {
+          "household_id": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "age": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "PNUM": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "sex": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "pemploy": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "pstudent": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "ptype": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "age_16_to_19": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "age_16_p": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "adult": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "male": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "female": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "has_non_worker": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "has_retiree": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "has_preschool_kid": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "has_driving_kid": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "has_school_kid": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "has_full_time": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "has_part_time": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "has_university": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "student_is_employed": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "nonstudent_to_school": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "is_student": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "is_gradeschool": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "is_highschool": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "is_university": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "school_segment": {
+            "dtype": "int8",
+            "bytes_deep": 49094
+          },
+          "is_worker": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "home_zone_id": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "value_of_time": {
+            "dtype": "float64",
+            "bytes_deep": 392752
+          },
+          "income": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "hhsize": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "HHT": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "auto_ownership": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "num_workers": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "sample_rate": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "income_in_thousands": {
+            "dtype": "float64",
+            "bytes_deep": 392752
+          },
+          "income_segment": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "median_value_of_time": {
+            "dtype": "float64",
+            "bytes_deep": 392752
+          },
+          "hh_value_of_time": {
+            "dtype": "float64",
+            "bytes_deep": 392752
+          },
+          "num_non_workers": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "num_drivers": {
+            "dtype": "int8",
+            "bytes_deep": 49094
+          },
+          "num_adults": {
+            "dtype": "int8",
+            "bytes_deep": 49094
+          },
+          "num_children": {
+            "dtype": "int8",
+            "bytes_deep": 49094
+          },
+          "num_young_children": {
+            "dtype": "int8",
+            "bytes_deep": 49094
+          },
+          "num_children_5_to_15": {
+            "dtype": "int8",
+            "bytes_deep": 49094
+          },
+          "num_children_16_to_17": {
+            "dtype": "int8",
+            "bytes_deep": 49094
+          },
+          "num_college_age": {
+            "dtype": "int8",
+            "bytes_deep": 49094
+          },
+          "num_young_adults": {
+            "dtype": "int8",
+            "bytes_deep": 49094
+          },
+          "non_family": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "family": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "home_is_urban": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "home_is_rural": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "DISTRICT": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "SD": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "county_id": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "TOTHH": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "TOTPOP": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "TOTACRE": {
+            "dtype": "float64",
+            "bytes_deep": 392752
+          },
+          "RESACRE": {
+            "dtype": "float64",
+            "bytes_deep": 392752
+          },
+          "CIACRE": {
+            "dtype": "float64",
+            "bytes_deep": 392752
+          },
+          "TOTEMP": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "AGE0519": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "RETEMPN": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "FPSEMPN": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "HEREMPN": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "OTHEMPN": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "AGREMPN": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "MWTEMPN": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "PRKCST": {
+            "dtype": "float64",
+            "bytes_deep": 392752
+          },
+          "OPRKCST": {
+            "dtype": "float64",
+            "bytes_deep": 392752
+          },
+          "area_type": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "HSENROLL": {
+            "dtype": "float64",
+            "bytes_deep": 392752
+          },
+          "COLLFTE": {
+            "dtype": "float64",
+            "bytes_deep": 392752
+          },
+          "COLLPTE": {
+            "dtype": "float64",
+            "bytes_deep": 392752
+          },
+          "TOPOLOGY": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "TERMINAL": {
+            "dtype": "float64",
+            "bytes_deep": 392752
+          },
+          "_original_zone_id": {
+            "dtype": "int64",
+            "bytes_deep": 392752
+          },
+          "household_density": {
+            "dtype": "float64",
+            "bytes_deep": 392752
+          },
+          "employment_density": {
+            "dtype": "float64",
+            "bytes_deep": 392752
+          },
+          "density_index": {
+            "dtype": "float64",
+            "bytes_deep": 392752
+          },
+          "is_cbd": {
+            "dtype": "bool",
+            "bytes_deep": 49094
+          },
+          "auPkRetail": {
+            "dtype": "float64",
+            "bytes_deep": 392752
+          },
+          "auPkTotal": {
+            "dtype": "float64",
+            "bytes_deep": 392752
+          },
+          "auOpRetail": {
+            "dtype": "float64",
+            "bytes_deep": 392752
+          },
+          "auOpTotal": {
+            "dtype": "float64",
+            "bytes_deep": 392752
+          },
+          "trPkRetail": {
+            "dtype": "float64",
+            "bytes_deep": 392752
+          },
+          "trPkTotal": {
+            "dtype": "float64",
+            "bytes_deep": 392752
+          },
+          "trOpRetail": {
+            "dtype": "float64",
+            "bytes_deep": 392752
+          },
+          "trOpTotal": {
+            "dtype": "float64",
+            "bytes_deep": 392752
+          },
+          "nmRetail": {
+            "dtype": "float64",
+            "bytes_deep": 392752
+          },
+          "nmTotal": {
+            "dtype": "float64",
+            "bytes_deep": 392752
+          }
+        }
+      }
+    },
+    "shadow_price_calculator": {
+      "desired_size": {
+        "rows": 634,
+        "columns": 3,
+        "index_dtype": "int64",
+        "index_bytes": 21624,
+        "bytes_deep": 36840,
+        "fields": {
+          "university": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "gradeschool": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "highschool": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          }
+        }
+      },
+      "num_fail": {
+        "rows": 3,
+        "columns": 0,
+        "index_dtype": "object",
+        "index_bytes": 310,
+        "bytes_deep": 310,
+        "fields": {}
+      },
+      "max_abs_diff": {
+        "rows": 3,
+        "columns": 0,
+        "index_dtype": "object",
+        "index_bytes": 310,
+        "bytes_deep": 310,
+        "fields": {}
+      },
+      "max_rel_diff": {
+        "rows": 3,
+        "columns": 0,
+        "index_dtype": "object",
+        "index_bytes": 310,
+        "bytes_deep": 310,
+        "fields": {}
+      },
+      "choices_by_iteration": {
+        "rows": 0,
+        "columns": 0,
+        "index_dtype": "int64",
+        "index_bytes": 132,
+        "bytes_deep": 132,
+        "fields": {}
+      },
+      "sampled_persons": {
+        "rows": 0,
+        "columns": 0,
+        "index_dtype": "int64",
+        "index_bytes": 132,
+        "bytes_deep": 132,
+        "fields": {}
+      }
+    }
+  },
+  {
+    "elapsed_seconds": 36.80671870702645,
+    "event": "call",
+    "source": "abm/models/util/logsums.py",
+    "function": "compute_location_choice_logsums",
+    "line": 54,
+    "rss_bytes": 579891200,
+    "tables": {
+      "choosers": {
+        "rows": 205048,
+        "columns": 12,
+        "index_dtype": "int64",
+        "index_bytes": 1640384,
+        "bytes_deep": 15993744,
+        "fields": {
+          "alt_dest": {
+            "dtype": "int32",
+            "bytes_deep": 820192
+          },
+          "prob": {
+            "dtype": "float32",
+            "bytes_deep": 820192
+          },
+          "pick_count": {
+            "dtype": "uint32",
+            "bytes_deep": 820192
+          },
+          "hhsize": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "density_index": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "age": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "age_16_p": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "age_16_to_19": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "auto_ownership": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "num_workers": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "value_of_time": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "home_zone_id": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          }
+        }
+      }
+    }
+  },
+  {
+    "elapsed_seconds": 36.87986411998281,
+    "event": "call",
+    "source": "core/assign.py",
+    "function": "assign_variables",
+    "line": 207,
+    "rss_bytes": 579891200,
+    "tables": {
+      "assignment_expressions": {
+        "rows": 76,
+        "columns": 3,
+        "index_dtype": "int64",
+        "index_bytes": 132,
+        "bytes_deep": 20084,
+        "fields": {
+          "description": {
+            "dtype": "object",
+            "bytes_deep": 2558
+          },
+          "target": {
+            "dtype": "object",
+            "bytes_deep": 5892
+          },
+          "expression": {
+            "dtype": "object",
+            "bytes_deep": 11502
+          }
+        }
+      },
+      "df": {
+        "rows": 205048,
+        "columns": 15,
+        "index_dtype": "int64",
+        "index_bytes": 1640384,
+        "bytes_deep": 18045158,
+        "fields": {
+          "alt_dest": {
+            "dtype": "int32",
+            "bytes_deep": 820192
+          },
+          "prob": {
+            "dtype": "float32",
+            "bytes_deep": 820192
+          },
+          "pick_count": {
+            "dtype": "uint32",
+            "bytes_deep": 820192
+          },
+          "hhsize": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "density_index": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "age": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "age_16_p": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "age_16_to_19": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "auto_ownership": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "num_workers": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "value_of_time": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "home_zone_id": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "in_period": {
+            "dtype": "category",
+            "bytes_deep": 205515
+          },
+          "out_period": {
+            "dtype": "category",
+            "bytes_deep": 205515
+          },
+          "duration": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          }
+        }
+      },
+      "trace_rows": {
+        "shape": [
+          205048
+        ],
+        "dtype": "bool",
+        "bytes": 205048
+      }
+    }
+  },
+  {
+    "elapsed_seconds": 40.60431585001061,
+    "event": "line",
+    "source": "core/assign.py",
+    "function": "assign_variables",
+    "line": 463,
+    "rss_bytes": 658747392,
+    "tables": {
+      "assignment_expressions": {
+        "rows": 76,
+        "columns": 3,
+        "index_dtype": "int64",
+        "index_bytes": 132,
+        "bytes_deep": 20120,
+        "fields": {
+          "description": {
+            "dtype": "object",
+            "bytes_deep": 2558
+          },
+          "target": {
+            "dtype": "object",
+            "bytes_deep": 5892
+          },
+          "expression": {
+            "dtype": "object",
+            "bytes_deep": 11538
+          }
+        }
+      },
+      "df": {
+        "rows": 205048,
+        "columns": 15,
+        "index_dtype": "int64",
+        "index_bytes": 10094568,
+        "bytes_deep": 26499342,
+        "fields": {
+          "alt_dest": {
+            "dtype": "int32",
+            "bytes_deep": 820192
+          },
+          "prob": {
+            "dtype": "float32",
+            "bytes_deep": 820192
+          },
+          "pick_count": {
+            "dtype": "uint32",
+            "bytes_deep": 820192
+          },
+          "hhsize": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "density_index": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "age": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "age_16_p": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "age_16_to_19": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "auto_ownership": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "num_workers": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "value_of_time": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "home_zone_id": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "in_period": {
+            "dtype": "category",
+            "bytes_deep": 205515
+          },
+          "out_period": {
+            "dtype": "category",
+            "bytes_deep": 205515
+          },
+          "duration": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          }
+        }
+      },
+      "trace_rows": {
+        "shape": [
+          205048
+        ],
+        "dtype": "bool",
+        "bytes": 205048
+      },
+      "random_draws": {
+        "rows": 205048,
+        "columns": 6,
+        "index_dtype": "int64",
+        "index_bytes": 10094568,
+        "bytes_deep": 19936872,
+        "fields": {
+          "0": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "1": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "2": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "3": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "4": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "5": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          }
+        }
+      },
+      "expr_values": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      }
+    },
+    "variables": {
+      "number_of_participants": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "is_joint": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "work_tour_is_drive": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "work_tour_is_bike": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "work_tour_is_SOV": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "is_mandatory": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "is_indiv": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "is_atwork_subtour": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "is_escort": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "ivot": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "dest_topology": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "terminal_time": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "dest_density_index": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "walk_transit_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_transit_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "origin_walk_time": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "destination_walk_time": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_density_measure": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "dest_density_measure": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_density": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "dest_density": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "origin_zone_taxi_wait_time_mean": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_zone_taxi_wait_time_sd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "dest_zone_taxi_wait_time_mean": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "dest_zone_taxi_wait_time_sd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "origTaxiWaitTime": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "destTaxiWaitTime": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_zone_singleTNC_wait_time_mean": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_zone_singleTNC_wait_time_sd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "dest_zone_singleTNC_wait_time_mean": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "dest_zone_singleTNC_wait_time_sd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "origSingleTNCWaitTime": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "destSingleTNCWaitTime": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_zone_sharedTNC_wait_time_mean": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_zone_sharedTNC_wait_time_sd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "dest_zone_sharedTNC_wait_time_mean": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "dest_zone_sharedTNC_wait_time_sd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "origSharedTNCWaitTime": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "destSharedTNCWaitTime": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "totalWaitTaxi": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "totalWaitSingleTNC": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "totalWaitSharedTNC": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "daily_parking_cost": {
+        "shape": [
+          205048
+        ],
+        "dtype": "float64",
+        "bytes": 1640384
+      },
+      "distance": {
+        "rows": 205048,
+        "dtype": "float32",
+        "bytes_deep": 820192
+      },
+      "distance_walk_od": {
+        "rows": 205048,
+        "dtype": "float32",
+        "bytes_deep": 820192
+      },
+      "distance_bike_od": {
+        "rows": 205048,
+        "dtype": "float32",
+        "bytes_deep": 820192
+      },
+      "sov_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "sovtoll_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "hov2_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "hov2toll_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "hov3_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "hov3toll_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "walk_local_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "walk_commuter_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "walk_express_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "walk_heavyrail_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "walk_lrf_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "walk_ferry_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_local_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_commuter_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_express_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_heavyrail_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_lrf_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_ferry_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "destination_in_cbd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      }
+    },
+    "temps": {},
+    "_locals_dict": {
+      "land_use": {
+        "rows": 634,
+        "columns": 29,
+        "index_dtype": "int64",
+        "index_bytes": 21624,
+        "bytes_deep": 164274,
+        "fields": {
+          "DISTRICT": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "SD": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "county_id": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "TOTHH": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "TOTPOP": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "TOTACRE": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "RESACRE": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "CIACRE": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "TOTEMP": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "AGE0519": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "RETEMPN": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "FPSEMPN": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "HEREMPN": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "OTHEMPN": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "AGREMPN": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "MWTEMPN": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "PRKCST": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "OPRKCST": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "area_type": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "HSENROLL": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "COLLFTE": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "COLLPTE": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "TOPOLOGY": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "TERMINAL": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "_original_zone_id": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "household_density": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "employment_density": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "density_index": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "is_cbd": {
+            "dtype": "bool",
+            "bytes_deep": 634
+          }
+        }
+      },
+      "choosers": {
+        "rows": 205048,
+        "columns": 15,
+        "index_dtype": "int64",
+        "index_bytes": 10094568,
+        "bytes_deep": 26499342,
+        "fields": {
+          "alt_dest": {
+            "dtype": "int32",
+            "bytes_deep": 820192
+          },
+          "prob": {
+            "dtype": "float32",
+            "bytes_deep": 820192
+          },
+          "pick_count": {
+            "dtype": "uint32",
+            "bytes_deep": 820192
+          },
+          "hhsize": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "density_index": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "age": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "age_16_p": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "age_16_to_19": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "auto_ownership": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "num_workers": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "value_of_time": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "home_zone_id": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "in_period": {
+            "dtype": "category",
+            "bytes_deep": 205515
+          },
+          "out_period": {
+            "dtype": "category",
+            "bytes_deep": 205515
+          },
+          "duration": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          }
+        }
+      },
+      "df": {
+        "rows": 205048,
+        "columns": 15,
+        "index_dtype": "int64",
+        "index_bytes": 10094568,
+        "bytes_deep": 26499342,
+        "fields": {
+          "alt_dest": {
+            "dtype": "int32",
+            "bytes_deep": 820192
+          },
+          "prob": {
+            "dtype": "float32",
+            "bytes_deep": 820192
+          },
+          "pick_count": {
+            "dtype": "uint32",
+            "bytes_deep": 820192
+          },
+          "hhsize": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "density_index": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "age": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "age_16_p": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "age_16_to_19": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "auto_ownership": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "num_workers": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "value_of_time": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "home_zone_id": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "in_period": {
+            "dtype": "category",
+            "bytes_deep": 205515
+          },
+          "out_period": {
+            "dtype": "category",
+            "bytes_deep": 205515
+          },
+          "duration": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          }
+        }
+      },
+      "random_draws": {
+        "rows": 205048,
+        "columns": 6,
+        "index_dtype": "int64",
+        "index_bytes": 10094568,
+        "bytes_deep": 19936872,
+        "fields": {
+          "0": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "1": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "2": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "3": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "4": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "5": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          }
+        }
+      },
+      "number_of_participants": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "is_joint": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "_parent_tour_mode": {
+        "rows": 205048,
+        "dtype": "object",
+        "bytes_deep": 11687736
+      },
+      "work_tour_is_drive": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "work_tour_is_bike": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "work_tour_is_SOV": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "is_mandatory": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "is_indiv": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "is_atwork_subtour": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "is_escort": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "ivot": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "dest_topology": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "terminal_time": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "dest_density_index": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "_origin_distance_to_transit": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "_destination_distance_to_transit": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "walk_transit_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_transit_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "origin_walk_time": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "destination_walk_time": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_density_measure": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "dest_density_measure": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_density": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "dest_density": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "origin_zone_taxi_wait_time_mean": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_zone_taxi_wait_time_sd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "dest_zone_taxi_wait_time_mean": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "dest_zone_taxi_wait_time_sd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "origTaxiWaitTime": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "destTaxiWaitTime": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_zone_singleTNC_wait_time_mean": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_zone_singleTNC_wait_time_sd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "dest_zone_singleTNC_wait_time_mean": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "dest_zone_singleTNC_wait_time_sd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "origSingleTNCWaitTime": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "destSingleTNCWaitTime": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_zone_sharedTNC_wait_time_mean": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_zone_sharedTNC_wait_time_sd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "dest_zone_sharedTNC_wait_time_mean": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "dest_zone_sharedTNC_wait_time_sd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "origSharedTNCWaitTime": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "destSharedTNCWaitTime": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "totalWaitTaxi": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "totalWaitSingleTNC": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "totalWaitSharedTNC": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "_free_parking_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "_dest_hourly_peak_parking_cost": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "_dest_hourly_offpeak_parking_cost": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "_hourly_peak_parking_cost": {
+        "shape": [
+          205048
+        ],
+        "dtype": "float64",
+        "bytes": 1640384
+      },
+      "_hourly_offpeak_parking_cost": {
+        "shape": [
+          205048
+        ],
+        "dtype": "float64",
+        "bytes": 1640384
+      },
+      "daily_parking_cost": {
+        "shape": [
+          205048
+        ],
+        "dtype": "float64",
+        "bytes": 1640384
+      },
+      "distance": {
+        "rows": 205048,
+        "dtype": "float32",
+        "bytes_deep": 820192
+      },
+      "distance_walk_od": {
+        "rows": 205048,
+        "dtype": "float32",
+        "bytes_deep": 820192
+      },
+      "distance_bike_od": {
+        "rows": 205048,
+        "dtype": "float32",
+        "bytes_deep": 820192
+      },
+      "sov_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "sovtoll_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "hov2_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "hov2toll_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "hov3_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "hov3toll_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "walk_local_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "walk_commuter_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "walk_express_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "walk_heavyrail_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "walk_lrf_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "walk_ferry_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_local_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_commuter_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_express_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_heavyrail_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_lrf_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_ferry_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "destination_in_cbd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      }
+    },
+    "target": "destination_in_cbd"
+  },
+  {
+    "elapsed_seconds": 40.621811267978046,
+    "event": "call",
+    "source": "core/util.py",
+    "function": "df_from_dict",
+    "line": 484,
+    "rss_bytes": 658747392,
+    "tables": {},
+    "values": {
+      "number_of_participants": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "is_joint": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "work_tour_is_drive": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "work_tour_is_bike": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "work_tour_is_SOV": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "is_mandatory": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "is_indiv": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "is_atwork_subtour": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "is_escort": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "ivot": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "dest_topology": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "terminal_time": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "dest_density_index": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "walk_transit_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_transit_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "origin_walk_time": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "destination_walk_time": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_density_measure": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "dest_density_measure": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_density": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "dest_density": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "origin_zone_taxi_wait_time_mean": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_zone_taxi_wait_time_sd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "dest_zone_taxi_wait_time_mean": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "dest_zone_taxi_wait_time_sd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "origTaxiWaitTime": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "destTaxiWaitTime": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_zone_singleTNC_wait_time_mean": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_zone_singleTNC_wait_time_sd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "dest_zone_singleTNC_wait_time_mean": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "dest_zone_singleTNC_wait_time_sd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "origSingleTNCWaitTime": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "destSingleTNCWaitTime": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_zone_sharedTNC_wait_time_mean": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_zone_sharedTNC_wait_time_sd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "dest_zone_sharedTNC_wait_time_mean": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "dest_zone_sharedTNC_wait_time_sd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "origSharedTNCWaitTime": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "destSharedTNCWaitTime": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "totalWaitTaxi": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "totalWaitSingleTNC": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "totalWaitSharedTNC": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "daily_parking_cost": {
+        "shape": [
+          205048
+        ],
+        "dtype": "float64",
+        "bytes": 1640384
+      },
+      "distance": {
+        "rows": 205048,
+        "dtype": "float32",
+        "bytes_deep": 820192
+      },
+      "distance_walk_od": {
+        "rows": 205048,
+        "dtype": "float32",
+        "bytes_deep": 820192
+      },
+      "distance_bike_od": {
+        "rows": 205048,
+        "dtype": "float32",
+        "bytes_deep": 820192
+      },
+      "sov_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "sovtoll_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "hov2_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "hov2toll_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "hov3_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "hov3toll_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "walk_local_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "walk_commuter_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "walk_express_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "walk_heavyrail_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "walk_lrf_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "walk_ferry_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_local_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_commuter_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_express_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_heavyrail_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_lrf_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_ferry_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "destination_in_cbd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      }
+    }
+  },
+  {
+    "elapsed_seconds": 40.671371520031244,
+    "event": "return",
+    "source": "core/util.py",
+    "function": "df_from_dict",
+    "line": 498,
+    "rss_bytes": 722731008,
+    "tables": {
+      "df": {
+        "rows": 205048,
+        "columns": 65,
+        "index_dtype": "int64",
+        "index_bytes": 10094568,
+        "bytes_deep": 74069544,
+        "fields": {
+          "number_of_participants": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "is_joint": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "work_tour_is_drive": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "work_tour_is_bike": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "work_tour_is_SOV": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "is_mandatory": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "is_indiv": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "is_atwork_subtour": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "is_escort": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "ivot": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "dest_topology": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "terminal_time": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "dest_density_index": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "walk_transit_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "drive_transit_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "origin_walk_time": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "destination_walk_time": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "origin_density_measure": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "dest_density_measure": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "origin_density": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "dest_density": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "origin_zone_taxi_wait_time_mean": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "origin_zone_taxi_wait_time_sd": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "dest_zone_taxi_wait_time_mean": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "dest_zone_taxi_wait_time_sd": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "origTaxiWaitTime": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "destTaxiWaitTime": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "origin_zone_singleTNC_wait_time_mean": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "origin_zone_singleTNC_wait_time_sd": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "dest_zone_singleTNC_wait_time_mean": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "dest_zone_singleTNC_wait_time_sd": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "origSingleTNCWaitTime": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "destSingleTNCWaitTime": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "origin_zone_sharedTNC_wait_time_mean": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "origin_zone_sharedTNC_wait_time_sd": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "dest_zone_sharedTNC_wait_time_mean": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "dest_zone_sharedTNC_wait_time_sd": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "origSharedTNCWaitTime": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "destSharedTNCWaitTime": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "totalWaitTaxi": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "totalWaitSingleTNC": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "totalWaitSharedTNC": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "daily_parking_cost": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "distance": {
+            "dtype": "float32",
+            "bytes_deep": 820192
+          },
+          "distance_walk_od": {
+            "dtype": "float32",
+            "bytes_deep": 820192
+          },
+          "distance_bike_od": {
+            "dtype": "float32",
+            "bytes_deep": 820192
+          },
+          "sov_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "sovtoll_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "hov2_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "hov2toll_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "hov3_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "hov3toll_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "walk_local_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "walk_commuter_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "walk_express_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "walk_heavyrail_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "walk_lrf_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "walk_ferry_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "drive_local_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "drive_commuter_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "drive_express_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "drive_heavyrail_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "drive_lrf_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "drive_ferry_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "destination_in_cbd": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          }
+        }
+      }
+    },
+    "values": {
+      "number_of_participants": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "is_joint": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "work_tour_is_drive": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "work_tour_is_bike": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "work_tour_is_SOV": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "is_mandatory": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "is_indiv": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "is_atwork_subtour": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "is_escort": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "ivot": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "dest_topology": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "terminal_time": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "dest_density_index": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "walk_transit_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_transit_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "origin_walk_time": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "destination_walk_time": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_density_measure": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "dest_density_measure": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_density": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "dest_density": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "origin_zone_taxi_wait_time_mean": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_zone_taxi_wait_time_sd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "dest_zone_taxi_wait_time_mean": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "dest_zone_taxi_wait_time_sd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "origTaxiWaitTime": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "destTaxiWaitTime": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_zone_singleTNC_wait_time_mean": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_zone_singleTNC_wait_time_sd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "dest_zone_singleTNC_wait_time_mean": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "dest_zone_singleTNC_wait_time_sd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "origSingleTNCWaitTime": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "destSingleTNCWaitTime": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_zone_sharedTNC_wait_time_mean": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_zone_sharedTNC_wait_time_sd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "dest_zone_sharedTNC_wait_time_mean": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "dest_zone_sharedTNC_wait_time_sd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "origSharedTNCWaitTime": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "destSharedTNCWaitTime": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "totalWaitTaxi": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "totalWaitSingleTNC": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "totalWaitSharedTNC": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "daily_parking_cost": {
+        "shape": [
+          205048
+        ],
+        "dtype": "float64",
+        "bytes": 1640384
+      },
+      "distance": {
+        "rows": 205048,
+        "dtype": "float32",
+        "bytes_deep": 820192
+      },
+      "distance_walk_od": {
+        "rows": 205048,
+        "dtype": "float32",
+        "bytes_deep": 820192
+      },
+      "distance_bike_od": {
+        "rows": 205048,
+        "dtype": "float32",
+        "bytes_deep": 820192
+      },
+      "sov_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "sovtoll_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "hov2_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "hov2toll_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "hov3_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "hov3toll_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "walk_local_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "walk_commuter_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "walk_express_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "walk_heavyrail_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "walk_lrf_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "walk_ferry_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_local_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_commuter_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_express_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_heavyrail_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_lrf_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_ferry_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "destination_in_cbd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      }
+    }
+  },
+  {
+    "elapsed_seconds": 40.72145732300123,
+    "event": "return",
+    "source": "core/assign.py",
+    "function": "assign_variables",
+    "line": 473,
+    "rss_bytes": 722731008,
+    "tables": {
+      "assignment_expressions": {
+        "rows": 76,
+        "columns": 3,
+        "index_dtype": "int64",
+        "index_bytes": 132,
+        "bytes_deep": 20120,
+        "fields": {
+          "description": {
+            "dtype": "object",
+            "bytes_deep": 2558
+          },
+          "target": {
+            "dtype": "object",
+            "bytes_deep": 5892
+          },
+          "expression": {
+            "dtype": "object",
+            "bytes_deep": 11538
+          }
+        }
+      },
+      "df": {
+        "rows": 205048,
+        "columns": 15,
+        "index_dtype": "int64",
+        "index_bytes": 10094568,
+        "bytes_deep": 26499342,
+        "fields": {
+          "alt_dest": {
+            "dtype": "int32",
+            "bytes_deep": 820192
+          },
+          "prob": {
+            "dtype": "float32",
+            "bytes_deep": 820192
+          },
+          "pick_count": {
+            "dtype": "uint32",
+            "bytes_deep": 820192
+          },
+          "hhsize": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "density_index": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "age": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "age_16_p": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "age_16_to_19": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "auto_ownership": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "num_workers": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "value_of_time": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "home_zone_id": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "in_period": {
+            "dtype": "category",
+            "bytes_deep": 205515
+          },
+          "out_period": {
+            "dtype": "category",
+            "bytes_deep": 205515
+          },
+          "duration": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          }
+        }
+      },
+      "trace_rows": {
+        "shape": [
+          205048
+        ],
+        "dtype": "bool",
+        "bytes": 205048
+      },
+      "variables": {
+        "rows": 205048,
+        "columns": 65,
+        "index_dtype": "int64",
+        "index_bytes": 10094568,
+        "bytes_deep": 74069544,
+        "fields": {
+          "number_of_participants": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "is_joint": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "work_tour_is_drive": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "work_tour_is_bike": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "work_tour_is_SOV": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "is_mandatory": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "is_indiv": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "is_atwork_subtour": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "is_escort": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "ivot": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "dest_topology": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "terminal_time": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "dest_density_index": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "walk_transit_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "drive_transit_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "origin_walk_time": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "destination_walk_time": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "origin_density_measure": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "dest_density_measure": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "origin_density": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "dest_density": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "origin_zone_taxi_wait_time_mean": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "origin_zone_taxi_wait_time_sd": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "dest_zone_taxi_wait_time_mean": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "dest_zone_taxi_wait_time_sd": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "origTaxiWaitTime": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "destTaxiWaitTime": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "origin_zone_singleTNC_wait_time_mean": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "origin_zone_singleTNC_wait_time_sd": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "dest_zone_singleTNC_wait_time_mean": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "dest_zone_singleTNC_wait_time_sd": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "origSingleTNCWaitTime": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "destSingleTNCWaitTime": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "origin_zone_sharedTNC_wait_time_mean": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "origin_zone_sharedTNC_wait_time_sd": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "dest_zone_sharedTNC_wait_time_mean": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "dest_zone_sharedTNC_wait_time_sd": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "origSharedTNCWaitTime": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "destSharedTNCWaitTime": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "totalWaitTaxi": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "totalWaitSingleTNC": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "totalWaitSharedTNC": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "daily_parking_cost": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "distance": {
+            "dtype": "float32",
+            "bytes_deep": 820192
+          },
+          "distance_walk_od": {
+            "dtype": "float32",
+            "bytes_deep": 820192
+          },
+          "distance_bike_od": {
+            "dtype": "float32",
+            "bytes_deep": 820192
+          },
+          "sov_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "sovtoll_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "hov2_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "hov2toll_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "hov3_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "hov3toll_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "walk_local_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "walk_commuter_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "walk_express_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "walk_heavyrail_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "walk_lrf_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "walk_ferry_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "drive_local_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "drive_commuter_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "drive_express_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "drive_heavyrail_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "drive_lrf_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "drive_ferry_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "destination_in_cbd": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          }
+        }
+      },
+      "random_draws": {
+        "rows": 205048,
+        "columns": 6,
+        "index_dtype": "int64",
+        "index_bytes": 10094568,
+        "bytes_deep": 19936872,
+        "fields": {
+          "0": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "1": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "2": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "3": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "4": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "5": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          }
+        }
+      },
+      "expr_values": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      }
+    },
+    "temps": {},
+    "_locals_dict": {
+      "land_use": {
+        "rows": 634,
+        "columns": 29,
+        "index_dtype": "int64",
+        "index_bytes": 21624,
+        "bytes_deep": 164274,
+        "fields": {
+          "DISTRICT": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "SD": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "county_id": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "TOTHH": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "TOTPOP": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "TOTACRE": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "RESACRE": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "CIACRE": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "TOTEMP": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "AGE0519": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "RETEMPN": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "FPSEMPN": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "HEREMPN": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "OTHEMPN": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "AGREMPN": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "MWTEMPN": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "PRKCST": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "OPRKCST": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "area_type": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "HSENROLL": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "COLLFTE": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "COLLPTE": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "TOPOLOGY": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "TERMINAL": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "_original_zone_id": {
+            "dtype": "int64",
+            "bytes_deep": 5072
+          },
+          "household_density": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "employment_density": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "density_index": {
+            "dtype": "float64",
+            "bytes_deep": 5072
+          },
+          "is_cbd": {
+            "dtype": "bool",
+            "bytes_deep": 634
+          }
+        }
+      },
+      "choosers": {
+        "rows": 205048,
+        "columns": 15,
+        "index_dtype": "int64",
+        "index_bytes": 10094568,
+        "bytes_deep": 26499342,
+        "fields": {
+          "alt_dest": {
+            "dtype": "int32",
+            "bytes_deep": 820192
+          },
+          "prob": {
+            "dtype": "float32",
+            "bytes_deep": 820192
+          },
+          "pick_count": {
+            "dtype": "uint32",
+            "bytes_deep": 820192
+          },
+          "hhsize": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "density_index": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "age": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "age_16_p": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "age_16_to_19": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "auto_ownership": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "num_workers": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "value_of_time": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "home_zone_id": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "in_period": {
+            "dtype": "category",
+            "bytes_deep": 205515
+          },
+          "out_period": {
+            "dtype": "category",
+            "bytes_deep": 205515
+          },
+          "duration": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          }
+        }
+      },
+      "df": {
+        "rows": 205048,
+        "columns": 15,
+        "index_dtype": "int64",
+        "index_bytes": 10094568,
+        "bytes_deep": 26499342,
+        "fields": {
+          "alt_dest": {
+            "dtype": "int32",
+            "bytes_deep": 820192
+          },
+          "prob": {
+            "dtype": "float32",
+            "bytes_deep": 820192
+          },
+          "pick_count": {
+            "dtype": "uint32",
+            "bytes_deep": 820192
+          },
+          "hhsize": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "density_index": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "age": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "age_16_p": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "age_16_to_19": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "auto_ownership": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "num_workers": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "value_of_time": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "home_zone_id": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "in_period": {
+            "dtype": "category",
+            "bytes_deep": 205515
+          },
+          "out_period": {
+            "dtype": "category",
+            "bytes_deep": 205515
+          },
+          "duration": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          }
+        }
+      },
+      "random_draws": {
+        "rows": 205048,
+        "columns": 6,
+        "index_dtype": "int64",
+        "index_bytes": 10094568,
+        "bytes_deep": 19936872,
+        "fields": {
+          "0": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "1": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "2": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "3": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "4": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "5": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          }
+        }
+      },
+      "number_of_participants": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "is_joint": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "_parent_tour_mode": {
+        "rows": 205048,
+        "dtype": "object",
+        "bytes_deep": 11687736
+      },
+      "work_tour_is_drive": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "work_tour_is_bike": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "work_tour_is_SOV": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "is_mandatory": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "is_indiv": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "is_atwork_subtour": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "is_escort": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "ivot": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "dest_topology": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "terminal_time": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "dest_density_index": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "_origin_distance_to_transit": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "_destination_distance_to_transit": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "walk_transit_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_transit_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "origin_walk_time": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "destination_walk_time": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_density_measure": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "dest_density_measure": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_density": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "dest_density": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "origin_zone_taxi_wait_time_mean": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_zone_taxi_wait_time_sd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "dest_zone_taxi_wait_time_mean": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "dest_zone_taxi_wait_time_sd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "origTaxiWaitTime": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "destTaxiWaitTime": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_zone_singleTNC_wait_time_mean": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_zone_singleTNC_wait_time_sd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "dest_zone_singleTNC_wait_time_mean": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "dest_zone_singleTNC_wait_time_sd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "origSingleTNCWaitTime": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "destSingleTNCWaitTime": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_zone_sharedTNC_wait_time_mean": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "origin_zone_sharedTNC_wait_time_sd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "dest_zone_sharedTNC_wait_time_mean": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "dest_zone_sharedTNC_wait_time_sd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      },
+      "origSharedTNCWaitTime": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "destSharedTNCWaitTime": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "totalWaitTaxi": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "totalWaitSingleTNC": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "totalWaitSharedTNC": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "_free_parking_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "_dest_hourly_peak_parking_cost": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "_dest_hourly_offpeak_parking_cost": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      },
+      "_hourly_peak_parking_cost": {
+        "shape": [
+          205048
+        ],
+        "dtype": "float64",
+        "bytes": 1640384
+      },
+      "_hourly_offpeak_parking_cost": {
+        "shape": [
+          205048
+        ],
+        "dtype": "float64",
+        "bytes": 1640384
+      },
+      "daily_parking_cost": {
+        "shape": [
+          205048
+        ],
+        "dtype": "float64",
+        "bytes": 1640384
+      },
+      "distance": {
+        "rows": 205048,
+        "dtype": "float32",
+        "bytes_deep": 820192
+      },
+      "distance_walk_od": {
+        "rows": 205048,
+        "dtype": "float32",
+        "bytes_deep": 820192
+      },
+      "distance_bike_od": {
+        "rows": 205048,
+        "dtype": "float32",
+        "bytes_deep": 820192
+      },
+      "sov_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "sovtoll_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "hov2_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "hov2toll_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "hov3_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "hov3toll_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "walk_local_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "walk_commuter_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "walk_express_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "walk_heavyrail_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "walk_lrf_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "walk_ferry_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_local_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_commuter_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_express_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_heavyrail_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_lrf_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "drive_ferry_available": {
+        "rows": 205048,
+        "dtype": "bool",
+        "bytes_deep": 205048
+      },
+      "destination_in_cbd": {
+        "rows": 205048,
+        "dtype": "int64",
+        "bytes_deep": 1640384
+      }
+    },
+    "target": "destination_in_cbd"
+  },
+  {
+    "elapsed_seconds": 67.26421448698966,
+    "event": "return",
+    "source": "abm/models/util/logsums.py",
+    "function": "compute_location_choice_logsums",
+    "line": 271,
+    "rss_bytes": 641093632,
+    "tables": {
+      "choosers": {
+        "rows": 205048,
+        "columns": 80,
+        "index_dtype": "int64",
+        "index_bytes": 10094568,
+        "bytes_deep": 90474318,
+        "fields": {
+          "alt_dest": {
+            "dtype": "int32",
+            "bytes_deep": 820192
+          },
+          "prob": {
+            "dtype": "float32",
+            "bytes_deep": 820192
+          },
+          "pick_count": {
+            "dtype": "uint32",
+            "bytes_deep": 820192
+          },
+          "hhsize": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "density_index": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "age": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "age_16_p": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "age_16_to_19": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "auto_ownership": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "num_workers": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "value_of_time": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "home_zone_id": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "in_period": {
+            "dtype": "category",
+            "bytes_deep": 205515
+          },
+          "out_period": {
+            "dtype": "category",
+            "bytes_deep": 205515
+          },
+          "duration": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "number_of_participants": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "is_joint": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "work_tour_is_drive": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "work_tour_is_bike": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "work_tour_is_SOV": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "is_mandatory": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "is_indiv": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "is_atwork_subtour": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "is_escort": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "ivot": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "dest_topology": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "terminal_time": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "dest_density_index": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "walk_transit_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "drive_transit_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "origin_walk_time": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "destination_walk_time": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "origin_density_measure": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "dest_density_measure": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "origin_density": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "dest_density": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "origin_zone_taxi_wait_time_mean": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "origin_zone_taxi_wait_time_sd": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "dest_zone_taxi_wait_time_mean": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "dest_zone_taxi_wait_time_sd": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "origTaxiWaitTime": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "destTaxiWaitTime": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "origin_zone_singleTNC_wait_time_mean": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "origin_zone_singleTNC_wait_time_sd": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "dest_zone_singleTNC_wait_time_mean": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "dest_zone_singleTNC_wait_time_sd": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "origSingleTNCWaitTime": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "destSingleTNCWaitTime": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "origin_zone_sharedTNC_wait_time_mean": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "origin_zone_sharedTNC_wait_time_sd": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "dest_zone_sharedTNC_wait_time_mean": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "dest_zone_sharedTNC_wait_time_sd": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "origSharedTNCWaitTime": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "destSharedTNCWaitTime": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "totalWaitTaxi": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "totalWaitSingleTNC": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "totalWaitSharedTNC": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "daily_parking_cost": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "distance": {
+            "dtype": "float32",
+            "bytes_deep": 820192
+          },
+          "distance_walk_od": {
+            "dtype": "float32",
+            "bytes_deep": 820192
+          },
+          "distance_bike_od": {
+            "dtype": "float32",
+            "bytes_deep": 820192
+          },
+          "sov_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "sovtoll_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "hov2_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "hov2toll_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "hov3_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "hov3toll_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "walk_local_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "walk_commuter_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "walk_express_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "walk_heavyrail_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "walk_lrf_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "walk_ferry_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "drive_local_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "drive_commuter_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "drive_express_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "drive_heavyrail_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "drive_lrf_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "drive_ferry_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "destination_in_cbd": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          }
+        }
+      },
+      "logsum_spec": {
+        "rows": 301,
+        "columns": 21,
+        "index_dtype": "object",
+        "index_bytes": 89823,
+        "bytes_deep": 115107,
+        "fields": {
+          "DRIVEALONEFREE": {
+            "dtype": "float32",
+            "bytes_deep": 1204
+          },
+          "DRIVEALONEPAY": {
+            "dtype": "float32",
+            "bytes_deep": 1204
+          },
+          "SHARED2FREE": {
+            "dtype": "float32",
+            "bytes_deep": 1204
+          },
+          "SHARED2PAY": {
+            "dtype": "float32",
+            "bytes_deep": 1204
+          },
+          "SHARED3FREE": {
+            "dtype": "float32",
+            "bytes_deep": 1204
+          },
+          "SHARED3PAY": {
+            "dtype": "float32",
+            "bytes_deep": 1204
+          },
+          "WALK": {
+            "dtype": "float32",
+            "bytes_deep": 1204
+          },
+          "BIKE": {
+            "dtype": "float32",
+            "bytes_deep": 1204
+          },
+          "WALK_LOC": {
+            "dtype": "float32",
+            "bytes_deep": 1204
+          },
+          "WALK_LRF": {
+            "dtype": "float32",
+            "bytes_deep": 1204
+          },
+          "WALK_EXP": {
+            "dtype": "float32",
+            "bytes_deep": 1204
+          },
+          "WALK_HVY": {
+            "dtype": "float32",
+            "bytes_deep": 1204
+          },
+          "WALK_COM": {
+            "dtype": "float32",
+            "bytes_deep": 1204
+          },
+          "DRIVE_LOC": {
+            "dtype": "float32",
+            "bytes_deep": 1204
+          },
+          "DRIVE_LRF": {
+            "dtype": "float32",
+            "bytes_deep": 1204
+          },
+          "DRIVE_EXP": {
+            "dtype": "float32",
+            "bytes_deep": 1204
+          },
+          "DRIVE_HVY": {
+            "dtype": "float32",
+            "bytes_deep": 1204
+          },
+          "DRIVE_COM": {
+            "dtype": "float32",
+            "bytes_deep": 1204
+          },
+          "TAXI": {
+            "dtype": "float32",
+            "bytes_deep": 1204
+          },
+          "TNC_SINGLE": {
+            "dtype": "float32",
+            "bytes_deep": 1204
+          },
+          "TNC_SHARED": {
+            "dtype": "float32",
+            "bytes_deep": 1204
+          }
+        }
+      },
+      "logsums": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      }
+    }
+  },
+  {
+    "elapsed_seconds": 67.26661034801509,
+    "event": "return",
+    "source": "abm/models/location_choice.py",
+    "function": "run_location_logsums",
+    "line": 589,
+    "rss_bytes": 642736128,
+    "tables": {
+      "persons_merged_df": {
+        "rows": 9613,
+        "columns": 9,
+        "index_dtype": "int64",
+        "index_bytes": 76904,
+        "bytes_deep": 634458,
+        "fields": {
+          "hhsize": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "density_index": {
+            "dtype": "float64",
+            "bytes_deep": 76904
+          },
+          "age": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "age_16_p": {
+            "dtype": "bool",
+            "bytes_deep": 9613
+          },
+          "age_16_to_19": {
+            "dtype": "bool",
+            "bytes_deep": 9613
+          },
+          "auto_ownership": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "num_workers": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          },
+          "value_of_time": {
+            "dtype": "float64",
+            "bytes_deep": 76904
+          },
+          "home_zone_id": {
+            "dtype": "int64",
+            "bytes_deep": 76904
+          }
+        }
+      },
+      "location_sample_df": {
+        "rows": 205048,
+        "columns": 4,
+        "index_dtype": "int64",
+        "index_bytes": 10094568,
+        "bytes_deep": 14195528,
+        "fields": {
+          "alt_dest": {
+            "dtype": "int32",
+            "bytes_deep": 820192
+          },
+          "prob": {
+            "dtype": "float32",
+            "bytes_deep": 820192
+          },
+          "pick_count": {
+            "dtype": "uint32",
+            "bytes_deep": 820192
+          },
+          "mode_choice_logsum": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          }
+        }
+      },
+      "choosers": {
+        "rows": 205048,
+        "columns": 80,
+        "index_dtype": "int64",
+        "index_bytes": 10094568,
+        "bytes_deep": 90474318,
+        "fields": {
+          "alt_dest": {
+            "dtype": "int32",
+            "bytes_deep": 820192
+          },
+          "prob": {
+            "dtype": "float32",
+            "bytes_deep": 820192
+          },
+          "pick_count": {
+            "dtype": "uint32",
+            "bytes_deep": 820192
+          },
+          "hhsize": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "density_index": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "age": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "age_16_p": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "age_16_to_19": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "auto_ownership": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "num_workers": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "value_of_time": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "home_zone_id": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "in_period": {
+            "dtype": "category",
+            "bytes_deep": 205515
+          },
+          "out_period": {
+            "dtype": "category",
+            "bytes_deep": 205515
+          },
+          "duration": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "number_of_participants": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "is_joint": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "work_tour_is_drive": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "work_tour_is_bike": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "work_tour_is_SOV": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "is_mandatory": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "is_indiv": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "is_atwork_subtour": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "is_escort": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "ivot": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "dest_topology": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "terminal_time": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "dest_density_index": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "walk_transit_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "drive_transit_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "origin_walk_time": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "destination_walk_time": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "origin_density_measure": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "dest_density_measure": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "origin_density": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "dest_density": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "origin_zone_taxi_wait_time_mean": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "origin_zone_taxi_wait_time_sd": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "dest_zone_taxi_wait_time_mean": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "dest_zone_taxi_wait_time_sd": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "origTaxiWaitTime": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "destTaxiWaitTime": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "origin_zone_singleTNC_wait_time_mean": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "origin_zone_singleTNC_wait_time_sd": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "dest_zone_singleTNC_wait_time_mean": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "dest_zone_singleTNC_wait_time_sd": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "origSingleTNCWaitTime": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "destSingleTNCWaitTime": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "origin_zone_sharedTNC_wait_time_mean": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "origin_zone_sharedTNC_wait_time_sd": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "dest_zone_sharedTNC_wait_time_mean": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "dest_zone_sharedTNC_wait_time_sd": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          },
+          "origSharedTNCWaitTime": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "destSharedTNCWaitTime": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "totalWaitTaxi": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "totalWaitSingleTNC": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "totalWaitSharedTNC": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "daily_parking_cost": {
+            "dtype": "float64",
+            "bytes_deep": 1640384
+          },
+          "distance": {
+            "dtype": "float32",
+            "bytes_deep": 820192
+          },
+          "distance_walk_od": {
+            "dtype": "float32",
+            "bytes_deep": 820192
+          },
+          "distance_bike_od": {
+            "dtype": "float32",
+            "bytes_deep": 820192
+          },
+          "sov_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "sovtoll_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "hov2_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "hov2toll_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "hov3_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "hov3toll_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "walk_local_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "walk_commuter_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "walk_express_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "walk_heavyrail_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "walk_lrf_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "walk_ferry_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "drive_local_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "drive_commuter_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "drive_express_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "drive_heavyrail_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "drive_lrf_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "drive_ferry_available": {
+            "dtype": "bool",
+            "bytes_deep": 205048
+          },
+          "destination_in_cbd": {
+            "dtype": "int64",
+            "bytes_deep": 1640384
+          }
+        }
+      },
+      "logsums": {
+        "rows": 205048,
+        "dtype": "float64",
+        "bytes_deep": 1640384
+      }
+    }
+  }
+]

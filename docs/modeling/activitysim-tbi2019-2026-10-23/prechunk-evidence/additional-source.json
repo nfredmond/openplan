@@ -1,0 +1,12 @@
+{
+  "root": "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages",
+  "files": {
+    "activitysim/abm/models/accessibility.py": "128dd04e10c3c3c4eda6240f55a0b029bfd465965f7830644c5d0b61e4c9d9f8",
+    "activitysim/abm/tables/size_terms.py": "e10a7029769006dfd1f71d1d2ef7064fed4f5df22b0032bfadaba4a766de8798",
+    "activitysim/abm/tables/accessibility.py": "9593ae2504ead621b9152c66e7c08f7c6758b5708eb670ad9a2cf3437f192aae",
+    "activitysim/examples/prototype_mtc/configs/accessibility.csv": "9ad2c432a18ad07f011791a2683b71878feba827aa389ad0679dd4d2fbd221f9",
+    "activitysim/examples/prototype_mtc/configs/settings.yaml": "0c625e1fb0a092da2267d973bd3bcb68482a5091cae284f25368ae870a9ad701",
+    "pandas/core/internals/managers.py": "79dc96a251c4a774f3b751f208b6dfaf54fdbc2b45e797b5f560fe5a3b8db0dc",
+    "activitysim/examples/prototype_mtc/configs/tour_mode_choice_annotate_choosers_preprocessor.csv": "5b241f0332274114e2046c0268054d6dc83d8841c903d39102cb97f08172c40f"
+  }
+}

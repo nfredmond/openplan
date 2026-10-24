@@ -1,0 +1,78 @@
+{
+  "controls": [
+    {
+      "name": "harmless",
+      "exit_code": 0,
+      "accepted": true,
+      "expected": "survive"
+    },
+    {
+      "name": "input",
+      "exit_code": 1,
+      "accepted": true,
+      "expected": "intended_assertion_failure"
+    },
+    {
+      "name": "reduced",
+      "exit_code": 1,
+      "accepted": true,
+      "expected": "intended_assertion_failure"
+    },
+    {
+      "name": "reference",
+      "exit_code": 1,
+      "accepted": true,
+      "expected": "intended_assertion_failure"
+    },
+    {
+      "name": "coverage",
+      "exit_code": 1,
+      "accepted": true,
+      "expected": "intended_assertion_failure"
+    },
+    {
+      "name": "status",
+      "exit_code": 1,
+      "accepted": true,
+      "expected": "intended_assertion_failure"
+    },
+    {
+      "name": "cache",
+      "exit_code": 1,
+      "accepted": true,
+      "expected": "intended_assertion_failure"
+    },
+    {
+      "name": "custody",
+      "exit_code": 1,
+      "accepted": true,
+      "expected": "intended_assertion_failure"
+    },
+    {
+      "name": "scan",
+      "exit_code": 1,
+      "accepted": true,
+      "expected": "intended_assertion_failure"
+    },
+    {
+      "name": "exact",
+      "exit_code": 1,
+      "accepted": true,
+      "expected": "intended_assertion_failure"
+    },
+    {
+      "name": "stop",
+      "exit_code": 1,
+      "accepted": true,
+      "expected": "intended_assertion_failure"
+    }
+  ],
+  "sources_unchanged": true,
+  "source_hashes": {
+    "prove.py": "002c0336978d2d0c2b9c741086e896801e288118122ffdb1db18765cc8d7bd99",
+    "full.py": "bcc2f31fe6f26be6d15768051e826e5a0f079305d31e8fef2155076fd204857e",
+    "reductions.py": "bde355d5c344f58319350c4462f79a6d3e70a5df650250ed1fff3224124c7f37",
+    "test-guards.py": "5f1be23855feede64a5b92e3b88c345b2515c8cb112e061436228dbea1789ca4"
+  },
+  "blind_category": "Synthetic custody and refusal fixtures do not establish engine parity, memory sufficiency or scientific accuracy."
+}

@@ -1,0 +1,170 @@
+[
+  {
+    "raw_path": "/home/nathaniel/.t3/worktrees/openplan/t3-fb678273/data/_screening_cache/tbi2019-prechunk/columns.controller.log",
+    "raw_bytes": 222,
+    "raw_sha256": "050024022c12c3636037ff719dfb29b08025568a33da8fb6494cb7b48cfa3007",
+    "compressed_name": "columns.controller.log.gz",
+    "compressed_sha256": "baa084a81c74244e4f7e0ba44c0edee8c5969f96a0c530ffcee497235e42f433",
+    "inflates_identically": true
+  },
+  {
+    "raw_path": "/home/nathaniel/.t3/worktrees/openplan/t3-fb678273/data/_screening_cache/tbi2019-prechunk/full.controller.log",
+    "raw_bytes": 753,
+    "raw_sha256": "28957268c8982cb58b77c816b8cff336ff5fff6df397c78f5e37b8bc4e22bf6d",
+    "compressed_name": "full.controller.log.gz",
+    "compressed_sha256": "3f9042c49e6620594d770189ca40a609f713cdaca5e0971aefd12a76b3ef0eeb",
+    "inflates_identically": true
+  },
+  {
+    "raw_path": "/home/nathaniel/.t3/worktrees/openplan/t3-fb678273/data/_screening_cache/tbi2019-prechunk/integer.controller.log",
+    "raw_bytes": 9179,
+    "raw_sha256": "314f8b5dd4095ea92bdb011b4639369ea8556d72441a18b09d7042bc74ac0a18",
+    "compressed_name": "integer.controller.log.gz",
+    "compressed_sha256": "ec0256bd8ffd18a592bbb390cf1b9c02edfb8ae35ed0aa4f2bfb8fde06a86a48",
+    "inflates_identically": true
+  },
+  {
+    "raw_path": "/home/nathaniel/.t3/worktrees/openplan/t3-fb678273/docs/modeling/activitysim-tbi2019-2026-10-23/prechunk-evidence/baseline-20000.engine.log",
+    "raw_bytes": 177187,
+    "raw_sha256": "2e40f539a9d315d745bb8f22f57789bd9958a58f3d752c89562a4c206983f035",
+    "compressed_name": "baseline-20000.engine.log.gz",
+    "compressed_sha256": "2fb646d73fa4add4f87755edfc756eb462b50a2bc280d8a9f2022680d1454031",
+    "inflates_identically": true
+  },
+  {
+    "raw_path": "/home/nathaniel/.t3/worktrees/openplan/t3-fb678273/docs/modeling/activitysim-tbi2019-2026-10-23/prechunk-evidence/baseline-20000.memory.jsonl",
+    "raw_bytes": 118999,
+    "raw_sha256": "46e863bb4d6ca811f7ba90bb66061c045bc230b7d0878dc5b7ee6ff4a40bd2f8",
+    "compressed_name": "baseline-20000.memory.jsonl.gz",
+    "compressed_sha256": "46cf1e33864e8ae12e69125a857c924d1cb16aed81b71187a369e6c6517f66a9",
+    "inflates_identically": true
+  },
+  {
+    "raw_path": "/home/nathaniel/.t3/worktrees/openplan/t3-fb678273/docs/modeling/activitysim-tbi2019-2026-10-23/prechunk-evidence/baseline-20000.profile.jsonl",
+    "raw_bytes": 2393323,
+    "raw_sha256": "7132f4dabdccc2699e6c51749448fd8901d6c535e5a95b8c59539ab608dd7f6a",
+    "compressed_name": "baseline-20000.profile.jsonl.gz",
+    "compressed_sha256": "5beb5c87542462f39996c10ba2cb605cb17cd88d975afcb021e8450447e3c90d",
+    "inflates_identically": true
+  },
+  {
+    "raw_path": "/home/nathaniel/.t3/worktrees/openplan/t3-fb678273/docs/modeling/activitysim-tbi2019-2026-10-23/prechunk-evidence/columns-2000-current-prefix.engine.log",
+    "raw_bytes": 942499,
+    "raw_sha256": "81315dc90a324f248289ab4f4569cb48e3fdcfd2a9bee9f4949df08862cbbe9f",
+    "compressed_name": "columns-2000-current-prefix.engine.log.gz",
+    "compressed_sha256": "545ab555fb073d5f44cbae1ec77c7d2f1decd40b5f7dca15d3d51b09431668a1",
+    "inflates_identically": true
+  },
+  {
+    "raw_path": "/home/nathaniel/.t3/worktrees/openplan/t3-fb678273/docs/modeling/activitysim-tbi2019-2026-10-23/prechunk-evidence/columns-2000-current-prefix.memory.jsonl",
+    "raw_bytes": 266833,
+    "raw_sha256": "2f3de9c570d35311f8e8d5566e96f00941cb7382d953efe5b2c24fb73a2ed6a4",
+    "compressed_name": "columns-2000-current-prefix.memory.jsonl.gz",
+    "compressed_sha256": "8dbeb36652f8b57eade5ad9d5272f62226ae487ab839a605563b461c45a195ab",
+    "inflates_identically": true
+  },
+  {
+    "raw_path": "/home/nathaniel/.t3/worktrees/openplan/t3-fb678273/docs/modeling/activitysim-tbi2019-2026-10-23/prechunk-evidence/columns-2000-current-suffix.engine.log",
+    "raw_bytes": 66151,
+    "raw_sha256": "4c2f31afd147fea0a00be51cd4fe432792a8ee1a7c5fa55bb9d74c5be75d61ce",
+    "compressed_name": "columns-2000-current-suffix.engine.log.gz",
+    "compressed_sha256": "4311e472915dd59b1e487eff077bbc9d665159a0df14c3e313bfc8d49bfde060",
+    "inflates_identically": true
+  },
+  {
+    "raw_path": "/home/nathaniel/.t3/worktrees/openplan/t3-fb678273/docs/modeling/activitysim-tbi2019-2026-10-23/prechunk-evidence/columns-2000-current-suffix.memory.jsonl",
+    "raw_bytes": 19663,
+    "raw_sha256": "79cec2f3775d40755a3109f0eaf06f94cd2fd0ef7f23355c0f975c920b4f9130",
+    "compressed_name": "columns-2000-current-suffix.memory.jsonl.gz",
+    "compressed_sha256": "d38e916f5ddeedf7315449c2c5560523d6b8108615cd6ea75dfc19d563a09eaa",
+    "inflates_identically": true
+  },
+  {
+    "raw_path": "/home/nathaniel/.t3/worktrees/openplan/t3-fb678273/docs/modeling/activitysim-tbi2019-2026-10-23/prechunk-evidence/columns-2000-semcog-prefix.engine.log",
+    "raw_bytes": 942500,
+    "raw_sha256": "70947ac56337b12c0c894c8350b786c3534f128819a1d8c306542df8b59bd171",
+    "compressed_name": "columns-2000-semcog-prefix.engine.log.gz",
+    "compressed_sha256": "4b17f091a6573867b854e6565c42da4d34a54c8c22ffc47fdfcf791b99919f0d",
+    "inflates_identically": true
+  },
+  {
+    "raw_path": "/home/nathaniel/.t3/worktrees/openplan/t3-fb678273/docs/modeling/activitysim-tbi2019-2026-10-23/prechunk-evidence/columns-2000-semcog-prefix.memory.jsonl",
+    "raw_bytes": 273083,
+    "raw_sha256": "a03f2e6690d57d91d665576d59b72b4660f8a00600cfdca55bdf582a6b3135b4",
+    "compressed_name": "columns-2000-semcog-prefix.memory.jsonl.gz",
+    "compressed_sha256": "79891765b3f542dc3d530a7703934e43229af3c1b3bd92333a9097b08b0e387d",
+    "inflates_identically": true
+  },
+  {
+    "raw_path": "/home/nathaniel/.t3/worktrees/openplan/t3-fb678273/docs/modeling/activitysim-tbi2019-2026-10-23/prechunk-evidence/columns-2000-semcog-suffix.engine.log",
+    "raw_bytes": 66146,
+    "raw_sha256": "899c0dfadf2a641dede4f02c2435ce027e603df1b35d90c8c6e6478307b6bb00",
+    "compressed_name": "columns-2000-semcog-suffix.engine.log.gz",
+    "compressed_sha256": "9a08b378e87e48576c4a58d3c7608ac2063c29a1d3b719ed68f2428764726339",
+    "inflates_identically": true
+  },
+  {
+    "raw_path": "/home/nathaniel/.t3/worktrees/openplan/t3-fb678273/docs/modeling/activitysim-tbi2019-2026-10-23/prechunk-evidence/columns-2000-semcog-suffix.memory.jsonl",
+    "raw_bytes": 19676,
+    "raw_sha256": "09dc8b83bd6dde0f45c8d246767d07137210e4364379ee82fb81d11247b32773",
+    "compressed_name": "columns-2000-semcog-suffix.memory.jsonl.gz",
+    "compressed_sha256": "9f02f12f28659f1b7228d9888e687c416f480602cf7f05e11368500afa68c861",
+    "inflates_identically": true
+  },
+  {
+    "raw_path": "/home/nathaniel/.t3/worktrees/openplan/t3-fb678273/docs/modeling/activitysim-tbi2019-2026-10-23/prechunk-evidence/full-current-prefix.engine.log",
+    "raw_bytes": 5509745,
+    "raw_sha256": "290cd07339a798c7dec734e4af706fd222e5ceb237a5dcf843db07d91d069369",
+    "compressed_name": "full-current-prefix.engine.log.gz",
+    "compressed_sha256": "cc9fc408ea0364a2f77728d57ef57613f62a65c001f3aa4a7a43badde0f392d5",
+    "inflates_identically": true
+  },
+  {
+    "raw_path": "/home/nathaniel/.t3/worktrees/openplan/t3-fb678273/docs/modeling/activitysim-tbi2019-2026-10-23/prechunk-evidence/full-current-prefix.memory.jsonl",
+    "raw_bytes": 2065147,
+    "raw_sha256": "f1f34f5b87c2672d234184653fd0b4d59791efd5cca75a32ce9bbdccaf6b1e1e",
+    "compressed_name": "full-current-prefix.memory.jsonl.gz",
+    "compressed_sha256": "9ac7dc97316e5601ec2b997ea564d44854ffe4707ac7dcba71669120b548bb35",
+    "inflates_identically": true
+  },
+  {
+    "raw_path": "/home/nathaniel/.t3/worktrees/openplan/t3-fb678273/docs/modeling/activitysim-tbi2019-2026-10-23/prechunk-evidence/full-current-prefix.profile.jsonl",
+    "raw_bytes": 1653536,
+    "raw_sha256": "ee72c5e0bde3a417e356f537f4470e89c8924fcdd9b677ef693c53513a2151b1",
+    "compressed_name": "full-current-prefix.profile.jsonl.gz",
+    "compressed_sha256": "9f4981b81bb0093dc5c0e30cb280e1d9e77eb27188a3a72fc18d6325bc83910a",
+    "inflates_identically": true
+  },
+  {
+    "raw_path": "/home/nathaniel/.t3/worktrees/openplan/t3-fb678273/docs/modeling/activitysim-tbi2019-2026-10-23/prechunk-evidence/integer-2000-current-prefix.engine.log",
+    "raw_bytes": 944525,
+    "raw_sha256": "badea2c60183ed55ce99db7cab0e07b85fece4f1b442f2d3d63ea443eb65c7bb",
+    "compressed_name": "integer-2000-current-prefix.engine.log.gz",
+    "compressed_sha256": "be7305f395c0cd9b8c9ab3b8eed1bd9f56174041cd1b3205797a701d0c677811",
+    "inflates_identically": true
+  },
+  {
+    "raw_path": "/home/nathaniel/.t3/worktrees/openplan/t3-fb678273/docs/modeling/activitysim-tbi2019-2026-10-23/prechunk-evidence/integer-2000-current-prefix.memory.jsonl",
+    "raw_bytes": 277290,
+    "raw_sha256": "5e2ac098b012f1744c1137c1af9d482d24221f98bbec2901ec84cc75a0cc6ce0",
+    "compressed_name": "integer-2000-current-prefix.memory.jsonl.gz",
+    "compressed_sha256": "6108d9014b3d32f3962ca7c6052fba5e9d5670fca37f86f4d291bb0604819290",
+    "inflates_identically": true
+  },
+  {
+    "raw_path": "/home/nathaniel/.t3/worktrees/openplan/t3-fb678273/docs/modeling/activitysim-tbi2019-2026-10-23/prechunk-evidence/integer-2000-current-suffix.engine.log",
+    "raw_bytes": 66150,
+    "raw_sha256": "53471040c104d7fcab15e06a1662b02f2ecbc1b60169e8a5d4717153173aa016",
+    "compressed_name": "integer-2000-current-suffix.engine.log.gz",
+    "compressed_sha256": "da54fc6b1ef29add5829d4d74f601270ba976be6b894228ff9c329388ac0c3fb",
+    "inflates_identically": true
+  },
+  {
+    "raw_path": "/home/nathaniel/.t3/worktrees/openplan/t3-fb678273/docs/modeling/activitysim-tbi2019-2026-10-23/prechunk-evidence/integer-2000-current-suffix.memory.jsonl",
+    "raw_bytes": 21359,
+    "raw_sha256": "eda6db09e444f0dcfa19463935e01db6c9cc2654270a72e392e3f346818db7a7",
+    "compressed_name": "integer-2000-current-suffix.memory.jsonl.gz",
+    "compressed_sha256": "8a2bac13cd99ed08a6ba058c06ddfd53db9d07473a7a139cec52b8a4d34e3087",
+    "inflates_identically": true
+  }
+]

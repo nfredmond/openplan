@@ -1,0 +1,68 @@
+{
+  "status": "passed_exact_parity",
+  "tables": [
+    {
+      "table": "final_accessibility.csv",
+      "rows": 634,
+      "columns": 11,
+      "reference_sha256": "68a89df0318674b3610ea77e4dcf681b4fcf339d6e17de89cb3b125478d56139",
+      "candidate_sha256": "68a89df0318674b3610ea77e4dcf681b4fcf339d6e17de89cb3b125478d56139",
+      "byte_identical": true,
+      "value_identical": true
+    },
+    {
+      "table": "final_households.csv",
+      "rows": 2000,
+      "columns": 35,
+      "reference_sha256": "0cc29c16cdf49ee3450a752c688dab0317ab80e7304fa0324df0f5296b164cdd",
+      "candidate_sha256": "0cc29c16cdf49ee3450a752c688dab0317ab80e7304fa0324df0f5296b164cdd",
+      "byte_identical": true,
+      "value_identical": true
+    },
+    {
+      "table": "final_joint_tour_participants.csv",
+      "rows": 274,
+      "columns": 5,
+      "reference_sha256": "b052168102ddedb8779ad109f9486f0a8d7874a427481b29b63aaaadb750f451",
+      "candidate_sha256": "b052168102ddedb8779ad109f9486f0a8d7874a427481b29b63aaaadb750f451",
+      "byte_identical": true,
+      "value_identical": true
+    },
+    {
+      "table": "final_land_use.csv",
+      "rows": 634,
+      "columns": 29,
+      "reference_sha256": "a74feed4d6ceeab4c953c5ed3b48cafc0805b24c80f825d196f361ac092ccb94",
+      "candidate_sha256": "a74feed4d6ceeab4c953c5ed3b48cafc0805b24c80f825d196f361ac092ccb94",
+      "byte_identical": true,
+      "value_identical": true
+    },
+    {
+      "table": "final_persons.csv",
+      "rows": 4971,
+      "columns": 64,
+      "reference_sha256": "b1ff86868766429409bdb6055658593b66d37624a6709a3b981fe2db6b029e4d",
+      "candidate_sha256": "b1ff86868766429409bdb6055658593b66d37624a6709a3b981fe2db6b029e4d",
+      "byte_identical": true,
+      "value_identical": true
+    },
+    {
+      "table": "final_tours.csv",
+      "rows": 6764,
+      "columns": 24,
+      "reference_sha256": "29d1ac31ca9093883f3de7ab911b0dcd554d887191830b03551216d038675406",
+      "candidate_sha256": "29d1ac31ca9093883f3de7ab911b0dcd554d887191830b03551216d038675406",
+      "byte_identical": true,
+      "value_identical": true
+    },
+    {
+      "table": "final_trips.csv",
+      "rows": 17464,
+      "columns": 15,
+      "reference_sha256": "89a449357fdeb269686e046c548dcb8aa83f05abc84092d842326d898dc08d84",
+      "candidate_sha256": "89a449357fdeb269686e046c548dcb8aa83f05abc84092d842326d898dc08d84",
+      "byte_identical": true,
+      "value_identical": true
+    }
+  ]
+}

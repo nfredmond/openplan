@@ -1,0 +1,38 @@
+{
+  "files": {
+    "abm/models/location_choice.py": true,
+    "abm/models/util/logsums.py": true,
+    "abm/tables/persons.py": true,
+    "abm/tables/households.py": true,
+    "abm/tables/shadow_pricing.py": true,
+    "core/assign.py": true,
+    "core/expressions.py": true,
+    "core/util.py": true,
+    "core/random.py": true,
+    "core/input.py": true,
+    "core/configuration/top.py": true,
+    "core/configuration/logit.py": true
+  },
+  "prior_ten_files": {
+    "abm/models/location_choice.py": true,
+    "abm/models/util/logsums.py": true,
+    "abm/models/trip_scheduling.py": true,
+    "abm/models/util/probabilistic_scheduling.py": true,
+    "abm/models/util/trip.py": true,
+    "core/random.py": true,
+    "core/chunk.py": true,
+    "core/skim_dict_factory.py": true,
+    "core/los.py": true,
+    "core/simulate.py": true
+  },
+  "additional_files": {
+    "activitysim/abm/models/accessibility.py": true,
+    "activitysim/abm/tables/size_terms.py": true,
+    "activitysim/abm/tables/accessibility.py": true,
+    "activitysim/examples/prototype_mtc/configs/accessibility.csv": true,
+    "activitysim/examples/prototype_mtc/configs/settings.yaml": true,
+    "pandas/core/internals/managers.py": true,
+    "activitysim/examples/prototype_mtc/configs/tour_mode_choice_annotate_choosers_preprocessor.csv": true
+  },
+  "all_unchanged": true
+}
