@@ -14,6 +14,35 @@ def sha(path):
  with path.open('rb') as f:
   for chunk in iter(lambda:f.read(1024*1024),b''):h.update(chunk)
  return h.hexdigest()
+runtime=ROOT/'runtime-configs'
+runtime.mkdir(exist_ok=True)
+settings=runtime/'settings.yaml'
+settings.write_text('inherit_settings: True\nchunk_size: 4500000000\nchunk_training_mode: adaptive\ndefault_initial_rows_per_chunk: 100\nhouseholds_sample_size: 0\nmultiprocess: False\n')
+readme=ROOT/'ARCHIVE_README.md'
+readme.write_text("# Partial input archive\n\nThis archive preserves public source and preparation records only. It is not runnable. No complete population or model bundle is asserted. See the repository readiness report and archive inventory for the missing stages.\n" if args.partial else """# Twin Cities 2019 preparation inputs
+
+This is a prepared-input archive, not scientific admission or a frozen study
+opening. No TBI outcome fields or modeled travel outputs are included. Consult
+the repository integration readiness and source reports for all unavailable
+inputs and exclusions. Raw source files include failed acquisition responses,
+which remain identified by HTTP status in their manifests.
+
+After extraction, the runnable data directory is `inputs/bundle`. Layer
+`inputs/runtime-configs`, `inputs/bundle/configs`, then `stock_configs` with
+ActivitySim 1.5.1 under CPython 3.11. For the candidate, prepend
+`inputs/verified-candidate-overlay`. Use a new output directory. Retain all
+households. Run through `systemd-run --user --scope -p MemoryMax=6G
+-p MemorySwapMax=0`. The archived run recipe documents the original command
+and configuration order. Installed dependencies are pinned in the environment
+inventories; this archive is not a hermetic interpreter installation.
+
+`inputs/common_population` retains the full realized population and diagnostics.
+The owned pickle checkpoint supports local interruption recovery only. The CSV
+and canonical JSON common-population package is the portable population record.
+The input inventory hashes every included file. The archive's external custody
+record gives its final SHA-256. No supplied-file hash authenticates a producer
+or establishes accuracy.
+""")
 files=[]
 for path in sorted(ROOT.rglob('*')):
  if not path.is_file() or path.is_symlink() or path.suffix in {'.gz'} and path.name.startswith('tbi2019-inputs'):continue

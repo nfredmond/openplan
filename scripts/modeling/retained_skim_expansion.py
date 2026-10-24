@@ -7,6 +7,8 @@ from pathlib import Path
 import activitysim_mtc_inputs as mtc
 from build_activitysim_input_bundle import sha256_for_file
 
+_ROOT = Path(__file__).resolve().parents[2]
+
 
 def expansion_inputs(*, source_omx, internal_zone_rows, centroid_map,
                      stock_configs_dir, stock_skims_omx, transit_config):
@@ -15,9 +17,9 @@ def expansion_inputs(*, source_omx, internal_zone_rows, centroid_map,
             'stock_configs_sha256': mtc.stock_configs_digest(stock_configs_dir),
             'stock_skims_sha256': sha256_for_file(stock_skims_omx),
             'transit_config': transit_config,
-            'implementations': {str(p.relative_to(Path.cwd())): sha256_for_file(p)
-                                for p in [Path.cwd() / 'scripts/modeling/activitysim_mtc_inputs.py',
-                                          Path.cwd() / 'scripts/modeling/activitysim_transit_skims.py']}}
+            'implementations': {str(p.relative_to(_ROOT)): sha256_for_file(p)
+                                for p in [_ROOT / 'scripts/modeling/activitysim_mtc_inputs.py',
+                                          _ROOT / 'scripts/modeling/activitysim_transit_skims.py']}}
 
 
 def copy_expansion(directory: Path, *, output_omx: Path, **kwargs):

@@ -1,17 +1,18 @@
 test_artifact_and_inventory_changes_refuse (test_retained_skim_expansion.RetainedExpansion.test_artifact_and_inventory_changes_refuse) ... ok
 test_exact_copy_and_accounting (test_retained_skim_expansion.RetainedExpansion.test_exact_copy_and_accounting) ... ok
 test_existing_destination_refuses_unchanged (test_retained_skim_expansion.RetainedExpansion.test_existing_destination_refuses_unchanged) ... FAIL
+test_launch_directory_does_not_change_input_identity (test_retained_skim_expansion.RetainedExpansion.test_launch_directory_does_not_change_input_identity) ... ok
 test_request_changes_refuse_before_write (test_retained_skim_expansion.RetainedExpansion.test_request_changes_refuse_before_write) ... ok
 
 ======================================================================
 FAIL: test_existing_destination_refuses_unchanged (test_retained_skim_expansion.RetainedExpansion.test_existing_destination_refuses_unchanged)
 ----------------------------------------------------------------------
 Traceback (most recent call last):
-  File "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/scripts/modeling/tests/test_retained_skim_expansion.py", line 65, in test_existing_destination_refuses_unchanged
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/scripts/modeling/tests/test_retained_skim_expansion.py", line 81, in test_existing_destination_refuses_unchanged
     with self.assertRaisesRegex(ValueError, 'must be new'):
 AssertionError: ValueError not raised
 
 ----------------------------------------------------------------------
-Ran 4 tests in 0.008s
+Ran 5 tests in 0.008s
 
 FAILED (failures=1)

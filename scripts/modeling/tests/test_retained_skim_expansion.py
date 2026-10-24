@@ -1,6 +1,7 @@
 """Supplied-byte custody checks; no claim about matrix scientific validity."""
 import copy
 import json
+import os
 import sys
 import tempfile
 import unittest
@@ -35,6 +36,21 @@ class RetainedExpansion(unittest.TestCase):
         self.assertEqual(actual, {'matrices_written': 2})
         for name in self.record['artifacts']:
             self.assertEqual((self.out.parent/name).read_bytes(), (self.cache/name).read_bytes())
+
+    def test_launch_directory_does_not_change_input_identity(self):
+        before = retained.expansion_inputs(**self.args)
+        old = Path.cwd()
+        try:
+            os.chdir(self.root)
+            try:
+                actual = retained.expansion_inputs(**self.args)
+            except FileNotFoundError as exc:
+                self.fail('Implementation identity depends on launch directory: '+str(exc))
+            self.assertEqual(actual, before)
+            self.assertEqual(retained.copy_expansion(self.cache, output_omx=self.out, **self.args),
+                             {'matrices_written': 2})
+        finally:
+            os.chdir(old)
 
     def test_request_changes_refuse_before_write(self):
         changes = {'zone_rows': [], 'centroid_map': {}, 'transit_config': {},

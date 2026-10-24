@@ -1,0 +1,11 @@
+[
+  {
+    "name": "transitland-download-policy",
+    "url": "https://www.transit.land/data/feeds/archive",
+    "http_status": 200,
+    "sha256": "51e56c48546e3c019ba08e21b93c2fd1f9ad948ff4cd7c0af88667602d93f3d8",
+    "bytes": 66312,
+    "path": "data/_screening_cache/tbi2019-integration/transitland-download-policy.response",
+    "retrieved_at": "2026-10-24T00:02:32.145935+00:00"
+  }
+]

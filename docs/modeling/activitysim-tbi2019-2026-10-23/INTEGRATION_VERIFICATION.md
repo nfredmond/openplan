@@ -8,7 +8,7 @@ The integration merges #379 and #382. The merge resolves only the competing
 
 ## Synthetic and source checks
 
-The new bulk-Census, fare/coverage, WAC and retained-skim suites run 27 tests.
+The new bulk-Census, fare/coverage, WAC and retained-skim suites run 28 tests.
 The existing transit suite runs 24; the 2019-profile and tour-fixture suites
 run 11. The MTC adapter runs 50 tests with four explicit skips, leaving 46
 passed tests. Its skipped stock checks expect an environment inside this
@@ -20,8 +20,8 @@ resolution. The TypeScript population registry runs 34 tests with Vitest
 file byte and loaded record against the committed pre-repair implementation,
 and preserve nonfinite-value refusal before directory creation.
 
-The four mutation campaigns contain 55 controls: five harmless changes
-survive and 50 targeted wrong behaviors reach assertion failures. Each campaign
+The four mutation campaigns contain 56 controls: five harmless changes
+survive and 51 targeted wrong behaviors reach assertion failures. Each campaign
 restores the exact source hash. The ledgers and individual logs reside in
 `integration-evidence/`. These controls cover decoding, membership, uniqueness,
 coverage, source binding, fare periods, missingness, employment conservation and
@@ -109,3 +109,10 @@ one harmless change passes. No fitting target, population, source, tolerance or
 scientific gate changes. The retry uses the same sources and fitter and retains
 a hash-bound owned fit checkpoint before writing the common package. Native
 completion remains a separate result.
+
+A CI-directory check exposed a launch-directory dependency in the new retained
+skim helper. Implementation paths now anchor to the module's repository root.
+Five tests pass from the CI working directory, and a targeted mutation restores
+the dependency and fails the new directory-independence assertion. The initial
+four-test error log remains retained. This raises the scoped Python total to
+149 passed tests, with four stock-path skips; TypeScript remains 34 passed.

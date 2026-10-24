@@ -24,6 +24,7 @@ source and native evidence.
 | Highway skims | Present. Travel time and distance, all 494,912 off-diagonal internal pairs reachable, no missing graph centroids. CPython 3.11.15, AequilibraE 1.6.2, NumPy 2.0.2. |
 | Observed period road conditions | Unavailable. The inherited adapter repeats free-flow road impedance across periods. OSM snapshot age does not establish measured congestion or road-opening truth. |
 | Independent walk/bicycle networks | Unavailable. Inherited nonmotorized distance derives from the auto network; transit walk access uses centroid distance without pedestrian barriers. |
+| MTC matrix package | Present. 826 matrices: 718 transit, 30 time, 33 distance and 45 inherited zero fields. The raw transit NPZ hash matches the independent standalone preparation exactly. |
 | Transit schedules | Present for the retained Metro Transit feed, October 8 service: 8,782 active trips, five configured departures. This is one departure per period, not a period average. |
 | Transit fares | Partially present. Published 2017 rates remain documented for 2019. Explicit single-boarding pricing covers 79 named express routes and three tram routes. 106 route fares, transfers, concessions, Northstar products and cost-base-year alignment remain unsupported. Unknown fares remain NaN with mode-choice usability false. |
 | MVTA | Unavailable. No freely retrievable 2019 feed acquired in the bounded search. Member-city overlap masks 66 tracts as transit endpoints. This does not establish complete MVTA-dependent trip exclusion. |

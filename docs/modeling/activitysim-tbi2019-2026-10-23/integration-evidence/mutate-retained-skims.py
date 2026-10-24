@@ -3,6 +3,7 @@ import hashlib,json,subprocess,sys
 from pathlib import Path
 p=Path('scripts/modeling/retained_skim_expansion.py');original=p.read_bytes();out=Path(__file__).resolve().parent
 cases=[('comment',None,None,True),('request',"if requested != record['inputs']:",'if False:',False),('inventory',"if set(record['artifacts']) != {'mtc_skims.omx', 'transit_skims.npz'}:",'if False:',False),('hash',"sha256_for_file(source) != expected['sha256']",'False',False),('size',"source.stat().st_size != expected['bytes']",'False',False),('destination','if destination.exists():','if False:',False)]
+cases.append(('launch-directory', "'implementations': {str(p.relative_to(_ROOT)): sha256_for_file(p)\n                                for p in [_ROOT / 'scripts/modeling/activitysim_mtc_inputs.py',\n                                          _ROOT / 'scripts/modeling/activitysim_transit_skims.py']}", "'implementations': {str(p.relative_to(Path.cwd())): sha256_for_file(p)\n                                for p in [Path.cwd() / 'scripts/modeling/activitysim_mtc_inputs.py',\n                                          Path.cwd() / 'scripts/modeling/activitysim_transit_skims.py']}", False))
 results=[]
 try:
  for name,old,new,survive in cases:

@@ -133,3 +133,21 @@ other counts into its existing categories. It does not infer a new sector
 mapping. School enrollment remains ACS enrollment by residence, not school
 seats. Parking costs, terrain, developed acreage, independent walk/bicycle
 paths and observed period road speeds remain unresolved input qualifications.
+
+## Additional archive checks
+
+The retained Transitland feed page exposes more than 100 versions; the oldest
+visible date in that bounded page is March 22, 2021. Its obsolete v1 API returns
+HTTP 404. The current [Feed Archive policy](https://www.transit.land/data/feeds/archive)
+reserves downloads for Hobbyist/Academic or Enterprise plans. The ordinary
+Explorer plan does not include them. No account application, agreement or paid
+service is authorized or attempted here. Historical access through that route
+is a Nathaniel decision, not an engineering entitlement. This does not prove
+that a 2019 feed is absent from the archive.
+
+An [indexed public Council report](https://www.lrl.mn.gov/docs/2024/mandated/241352.pdf) identifies an MVTA feed published September 3,
+2019, obtained from Transitland. That is a lead for a future authorized source
+request, not a retrieved feed or proof of October 8 service coverage. This lane
+does not open that report's travel tables. The old park-and-ride GIS metadata
+URL also returns HTTP 404. Current GIS layers do not by themselves establish
+2019 entrance geometry, road access or a stop crosswalk.
