@@ -9,6 +9,17 @@ import {awardTermsFixture} from './fixtures/grants/award-handoff';
 
 // Prepared, unrun. Isolated SQL role/transaction controls only. Synthetic
 // storage.objects rows are not uploaded PDF bytes or a Storage acceptance test.
+
+// Every function 20261018000003 composes the entry mutex into, read from its
+// source. A later migration that replaces one of these bodies drops the mutex
+// (20261023190100 did, for apply_ss4a_safety_seed), so the live check covers all.
+function composedEntryFunctions(sql:string):string[]{
+ const list=sql.match(/DO \$compose\$[\s\S]*?FOREACH name IN ARRAY ARRAY\[([\s\S]*?)\] LOOP/)?.[1];
+ if(!list)throw new Error('20261018000003 no longer carries its composed entry list');
+ return [...list.matchAll(/'([a-z_][a-z0-9_]*)'/g)].map((m)=>m[1]);
+}
+const COMPOSED_ENTRY=composedEntryFunctions(readFileSync('supabase/migrations/20261018000003_award_condition_handoff.sql','utf8'));
+
 (LIVE_RLS?describe:describe.skip)('award condition handoff transactional boundaries',()=>{
  let container:string;
  beforeAll(()=>{
@@ -133,10 +144,15 @@ import {awardTermsFixture} from './fixtures/grants/award-handoff';
    PERFORM pg_temp.assert_handoff((SELECT target_date='2027-06-01' FROM public.active_project_milestones WHERE funding_award_id='__AWARD__'),'Effective current clock not projected');
   END $$;`));
  it('composes contract transaction entry before its existing locks without adding a mutex inside read-only scope helpers',()=>exercise(`
-  DO $$ DECLARE name text; body text; BEGIN
-   FOREACH name IN ARRAY ARRAY['record_contract_import','finish_contract_calculation','apply_ss4a_safety_seed'] LOOP
-    SELECT prosrc INTO STRICT body FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public' AND p.proname=name;
-    PERFORM pg_temp.assert_handoff(body ~* 'BEGIN[[:space:]]+PERFORM pg_catalog.pg_advisory_xact_lock\\(713,1\\);','Transaction entry lacks the first mutex statement: '||name);
+  DO $$ DECLARE name text; body text; seen int; BEGIN
+   PERFORM pg_temp.assert_handoff(${COMPOSED_ENTRY.length}=27,'Composed entry list changed size');
+   FOREACH name IN ARRAY ARRAY[${COMPOSED_ENTRY.map((name)=>`'${name}'`).join(',')}] LOOP
+    seen:=0;
+    FOR body IN SELECT p.prosrc FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace JOIN pg_language l ON l.oid=p.prolang WHERE n.nspname='public' AND p.proname=name AND l.lanname='plpgsql' LOOP
+     seen:=seen+1;
+     PERFORM pg_temp.assert_handoff(body ~* 'BEGIN[[:space:]]+PERFORM pg_catalog.pg_advisory_xact_lock\\(713,1\\);','Transaction entry lacks the first mutex statement: '||name);
+    END LOOP;
+    PERFORM pg_temp.assert_handoff(seen>0,'Composed entry function missing: '||name);
    END LOOP;
    FOREACH name IN ARRAY ARRAY['assert_assistant_provider_scope','assert_map_package_writer','capture_engagement_configuration','retain_contract_agreements'] LOOP
     SELECT prosrc INTO STRICT body FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public' AND p.proname=name;

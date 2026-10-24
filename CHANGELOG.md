@@ -53,13 +53,21 @@ SELECT on `current_award_handoff_records`, `active_project_submittals`,
 Authenticated SELECT and object definitions remain unchanged. Source review
 does not establish installed privileges.
 
+**Safety seed entry order:** apply
+`20261024200400_award_handoff_safety_seed_entry_lock.sql` after the award
+corrections. `20261023190100_safety_comparison_inputs.sql` replaced
+`apply_ss4a_safety_seed` after the award migration had added its entry lock, so
+installations that applied them in version order lost that first statement.
+This migration restores it without restating the function body. Installations
+that already carry the lock are unchanged.
+
 **Award migration versions.** The hosted installation already holds
 `20261018000003_award_condition_handoff.sql` under that version, byte for byte
 as it appears here, so the file keeps its version. It sorts below the 0.70.0,
 0.71.0 and 0.72.0 marks. A deployment already on one of those releases, or on
 a later main, must run `supabase migration up --include-all` once. Without the
 flag the CLI refuses the whole run and names this file; with it, the CLI applies
-this file and then the four corrections. The four corrections moved from
+this file and then the corrections. The four corrections moved from
 20261019 versions to 20261024200000 through 20261024200300, with unchanged
 bodies, so they sort after installed history. An installation that applied a
 pre-release copy of this branch under the old 20261019 versions must compare its
