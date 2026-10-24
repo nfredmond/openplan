@@ -33,9 +33,10 @@ terms: [government entities require a paid subscription](https://docs.docker.com
 No paid provider is provisioned by these instructions. The public engagement
 map, the Safety crash map, Corridor Analysis, the engagement drawing and
 response maps, and the published land use designation map can use a configured
-MapLibre style without a Mapbox key. Other map surfaces still use Mapbox. See
-the map configuration below. This does not establish a complete no-egress
-installation.
+MapLibre style without a Mapbox key. The RTP project map has a source candidate
+for the same configuration, pending runtime and browser validation. Other map
+surfaces still use Mapbox. See the map configuration below. This does not
+establish a complete no-egress installation.
 
 OpenPlan's target remains core planning work throughout all 50 states and DC,
 with California the deepest implementation and separately validated AequilibraE
@@ -428,13 +429,24 @@ With no Mapbox key, these maps are drawn by MapLibre from a style you choose:
 - the drawing map used by comment forms, surveys and study-area pickers, and
   the map of engagement responses;
 - the published land use designation map on published plans, plan reviews and
-  land use reports.
+  land use reports;
+- the RTP cycle project map on staff cycle pages and `/plan/<shareToken>`
+  (source candidate; runtime and browser validation pending).
+
+October 19 source checks pass 44 focused RTP tests and strict scoped lint.
+The tests use map doubles. Browser behavior, emitted worker/CSS assets, WebGL
+and provider operation remain unverified.
 
 Set `NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL` and rebuild, since `NEXT_PUBLIC_*`
 values are fixed at build time. A Mapbox key, when set, takes precedence. Each
 map credits the sources its style declares, so keep the style's attribution.
 If a browser cannot start MapLibre (it needs WebGL2), the map shows a notice in
 its place and the rest of the page still works.
+
+The RTP map preserves its refusal of an unusable configured Mapbox token when
+neither token variable supplies a public `pk.` token, even if an open style is
+configured. Remove the unusable token and rebuild to choose the open style.
+A public token that fails at runtime does not trigger a provider switch.
 
 What still needs a Mapbox key:
 
@@ -444,7 +456,8 @@ What still needs a Mapbox key:
   and the map uses your one style.
 - The shell map on the Aerial index, the Aerial mission maps and flight plan
   editor, the traffic volume and model agreement maps, the participation heat
-  map, the RTP cycle project map, and the static preview in GIS layer import.
+  map, and the static preview in GIS layer import. The RTP candidate above
+  remains pending validation.
 
 On Corridor Analysis your style is used in both light and dark mode; with a key
 the map follows the page's mode. Labels for uploaded workspace layers and land
