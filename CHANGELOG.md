@@ -27,7 +27,7 @@ puppeteer-core moves from 25.6.0 to 25.16.0, which brings a `chromium-bidi`
 build on fixed Zod. The development-only shadcn CLI moves from 3.8.5 to 4.22.1
 for the same reason. `npm audit` reports no advisories afterward.
 
-This tree contains 439 source migrations, nine more than v0.72.0. Self-hosted
+This tree contains 440 source migrations, ten more than v0.72.0. Self-hosted
 installations apply the seven Models and Reports migrations, the estimate
 migration and the Safety migration below, in version order, before deploying
 this code. The managed database received all seven on
@@ -101,6 +101,13 @@ below and before deploying this feature. It first carried an earlier October 19
 version and moved after the v0.72.0 release mark.
 The [dated status](docs/reviews/2026-10-19-safety-input-comparison/STATUS.md)
 separates source, database, build and local browser evidence and their limits.
+
+**2015 to 2019 population source profile:** apply
+`20261023224145_population_profile_2019.sql` after the Safety migration. It
+admits the exact 2015 to 2019 ACS five-year summary and PUMS pair, with
+2010-based PUMAs and 2019 income dollars, for retained validation and model
+consumers only. New guided launches keep the 2023 profile. This is source
+membership, not scientific or coverage acceptance.
 
 **Exact project estimates:** decimal entry, reviewed imports, report output and
 exports preserve exact hundredths. Missing price years remain unknown. Project
