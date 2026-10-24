@@ -1,0 +1,48 @@
+
+ RUN  v4.1.11 /home/nathaniel/.t3/worktrees/openplan/t3-1038cfe9/openplan
+
+ ❯ src/test/model-common-population-profiles-migration.test.ts (7 tests | 1 failed) 18ms
+     × pins catalog/TS/SQL membership independently for all technical purposes 10ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/model-common-population-profiles-migration.test.ts > latest population profile DDL source and frozen projection > pins catalog/TS/SQL membership independently for all technical purposes
+AssertionError: expected '-- Add explicit 2015-2019 ACS/PUMS co…' to contain '$population_catalog$[{"profile":{"acs…'
+
+- Expected
++ Received
+
+- $population_catalog$[{"profile":{"acs_summary_endpoint":"https://api.census.gov/data/2022/acs/acs5","adapter":"us_census_acs5_pums","income_dollar_year":2022,"puma_fields":{"2010":"PUMA10","2020":"PUMA20"},"pums_endpoint":"https://api.census.gov/data/2022/acs/acs5/pums","sample_years":[2018,2022]},"purposes":["retained_validation","aequilibrae_production","activitysim_consumption"]},{"profile":{"acs_summary_endpoint":"https://api.census.gov/data/2023/acs/acs5","adapter":"us_census_acs5_pums","income_dollar_year":2023,"puma_fields":{"2020":"PUMA"},"pums_endpoint":"https://api.census.gov/data/2023/acs/acs5/pums","sample_years":[2019,2023]},"purposes":["new_guided_launch","retained_validation","aequilibrae_production","activitysim_consumption"]},{"profile":{"acs_summary_endpoint":"https://api.census.gov/data/2019/acs/acs5","adapter":"us_census_acs5_pums","income_dollar_year":2019,"puma_fields":{"2010":"PUMA"},"pums_endpoint":"https://api.census.gov/data/2019/acs/acs5/pums","sample_years":[2015,2019]},"purposes":["retained_validation","aequilibrae_production","activitysim_consumption"]}]$population_catalog$::pg_catalog.jsonb
++ -- Add explicit 2015-2019 ACS/PUMS compatibility; retain all prior profiles and permissions.
++ -- Technical source-profile membership only. No scientific or coverage acceptance.
++ -- Frozen catalog projection SHA-256 (compact sorted JSON, no newline): 38ad96e11dd29af6911f90bab1ff9d71a1df8f033de92b8bf5318769dd45703f
++ CREATE OR REPLACE FUNCTION public.model_common_population_profile_allowed(p_profile pg_catalog.jsonb, p_purpose pg_catalog.text)
++ RETURNS pg_catalog.bool
++ LANGUAGE sql IMMUTABLE SECURITY INVOKER SET search_path = '' AS $$
++   SELECT CASE WHEN pg_catalog.jsonb_typeof(p_profile) IS DISTINCT FROM 'object'
++     OR p_purpose IS NULL OR p_purpose NOT IN ('new_guided_launch','retained_validation','aequilibrae_production','activitysim_consumption')
++     THEN false ELSE EXISTS (
++       SELECT 1 FROM pg_catalog.jsonb_array_elements($population_catalog$[{"profile":{"acs_summary_endpoint":"https://api.census.gov/data/2022/acs/acs5","adapter":"us_census_acs5_pums","income_dollar_year":2022,"puma_fields":{"2010":"PUMA10","2020":"PUMA20"},"pums_endpoint":"https://api.census.gov/data/2022/acs/acs5/pums","sample_years":[2018,2022]},"purposes":["retained_validation","aequilibrae_production","activitysim_consumption"]},{"profile":{"acs_summary_endpoint":"https://api.census.gov/data/2023/acs/acs5","adapter":"us_census_acs5_pums","income_dollar_year":2023,"puma_fields":{"2020":"PUMA"},"pums_endpoint":"https://api.census.gov/data/2023/acs/acs5/pums","sample_years":[2019,2023]},"purposes":["new_guided_launch","retained_validation","aequilibrae_production","activitysim_consumption"]},{"profile":{"acs_summary_endpoint":"https://api.census.gov/data/2019/acs/acs5","adapter":"us_census_acs5_pums","income_dollar_year":2019,"puma_fields":{"2010":"PUMA"},"pums_endpoint":"https://api.census.gov/data/2019/acs/acs5/pums","sample_years":[2016,2019]},"purposes":["retained_validation","aequilibrae_production","activitysim_consumption"]}]$population_catalog$::pg_catalog.jsonb) AS entry(value)
++       WHERE entry.value->'purposes' ? p_purpose
++         AND public.model_truth_canonical_jsonb(p_profile) = public.model_truth_canonical_jsonb(entry.value->'profile')
++     ) END;
++ $$;
++ REVOKE ALL ON FUNCTION public.model_common_population_profile_allowed(pg_catalog.jsonb,pg_catalog.text) FROM PUBLIC, anon, authenticated, service_role;
++
+
+ ❯ src/test/model-common-population-profiles-migration.test.ts:83:25
+     81|       purposes: POPULATION_PROFILE_PURPOSES.filter((purpose) => entry.…
+     82|     const frozen = sortedCompactJson(projection);
+     83|     expect(profile2019).toContain(`$population_catalog$${frozen}$popul…
+       |                         ^
+     84|     expect(profile2019).toContain(`Frozen catalog projection SHA-256 (…
+     85|     for (const entry of catalog.profiles) for (const purpose of POPULA…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 40 passed (41)
+   Start at  15:57:33
+   Duration  696ms (transform 150ms, setup 108ms, import 191ms, tests 41ms, environment 749ms)
+

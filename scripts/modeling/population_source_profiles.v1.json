@@ -56,6 +56,33 @@
         "aequilibrae_production": "supported",
         "activitysim_consumption": "supported"
       }
+    },
+    {
+      "id": "us_census_acs5_pums_2019",
+      "descriptor": {
+        "id": "us_census_acs5",
+        "vintage": "2019",
+        "retrievalUrl": "https://api.census.gov/data/2019/acs/acs5"
+      },
+      "profile": {
+        "adapter": "us_census_acs5_pums",
+        "acs_summary_endpoint": "https://api.census.gov/data/2019/acs/acs5",
+        "pums_endpoint": "https://api.census.gov/data/2019/acs/acs5/pums",
+        "sample_years": [
+          2015,
+          2019
+        ],
+        "income_dollar_year": 2019,
+        "puma_fields": {
+          "2010": "PUMA"
+        }
+      },
+      "capabilities": {
+        "new_guided_launch": "unsupported",
+        "retained_validation": "supported",
+        "aequilibrae_production": "supported",
+        "activitysim_consumption": "supported"
+      }
     }
   ]
 }

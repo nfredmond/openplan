@@ -1,0 +1,575 @@
+{
+  "source_sha256": "63111d350424e227702ee385fb33057e55b938f1012a354b3cc51191a0407dfc",
+  "command": [
+    "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/bin/python",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "scripts/modeling/tests",
+    "-p",
+    "test_activitysim_walk_transfer.py"
+  ],
+  "restoration_exact": true,
+  "records": [
+    {
+      "mutation": "harmless comment",
+      "expected": "pass",
+      "exit_code": 0,
+      "failures": [],
+      "output_sha256": "44e37a60aac77dbf942dd89b2eac6978b63770d2951181c5046611b3201b0be7",
+      "test_summary": [
+        "Ran 16 tests in 0.452s",
+        "OK"
+      ]
+    },
+    {
+      "mutation": "default status",
+      "expected": "fail",
+      "exit_code": 1,
+      "failures": [
+        [
+          "FAIL",
+          "test_default_is_noop_and_accepted_overlay_unchanged (test_activitysim_walk_transfer.TransferTests.test_default_is_noop_and_accepted_overlay_unchanged)"
+        ]
+      ],
+      "output_sha256": "612e3025ab5a79e3e1ed421ec4c7740569036f3e91b1990be60ca4575277260f",
+      "test_summary": [
+        "Ran 16 tests in 0.449s",
+        "FAILED (failures=1)"
+      ]
+    },
+    {
+      "mutation": "skip transferred values",
+      "expected": "fail",
+      "exit_code": 1,
+      "failures": [
+        [
+          "FAIL",
+          "test_transfer_exactly_27_and_preserves_other_bytes (test_activitysim_walk_transfer.TransferTests.test_transfer_exactly_27_and_preserves_other_bytes)"
+        ]
+      ],
+      "output_sha256": "36abc164b8ae2e886fe032fdf14184324b20e5ce187f9708d52d5c996cb7e9bd",
+      "test_summary": [
+        "Ran 16 tests in 0.458s",
+        "FAILED (failures=1)"
+      ]
+    },
+    {
+      "mutation": "mean denominator",
+      "expected": "fail",
+      "exit_code": 1,
+      "failures": [
+        [
+          "FAIL",
+          "test_numeric_aggregation_uncertainty_empty_and_survivor (test_activitysim_walk_transfer.TransferTests.test_numeric_aggregation_uncertainty_empty_and_survivor)"
+        ]
+      ],
+      "output_sha256": "5532bff3b778b16b569268bc36fe501f7835d0ceb79a0d250dbe211b109192b1",
+      "test_summary": [
+        "Ran 16 tests in 0.404s",
+        "FAILED (failures=1)"
+      ]
+    },
+    {
+      "mutation": "uncertainty denominator",
+      "expected": "fail",
+      "exit_code": 1,
+      "failures": [
+        [
+          "FAIL",
+          "test_numeric_aggregation_uncertainty_empty_and_survivor (test_activitysim_walk_transfer.TransferTests.test_numeric_aggregation_uncertainty_empty_and_survivor)"
+        ]
+      ],
+      "output_sha256": "2816d221084b83418854bb507fefdca1cfe74e51ca2e2067bf5aca5bf549e2e9",
+      "test_summary": [
+        "Ran 16 tests in 0.418s",
+        "FAILED (failures=1)"
+      ]
+    },
+    {
+      "mutation": "duplicate coefficient",
+      "expected": "fail",
+      "exit_code": 1,
+      "failures": [
+        [
+          "FAIL",
+          "test_duplicate_and_nonfinite_coefficients (test_activitysim_walk_transfer.TransferTests.test_duplicate_and_nonfinite_coefficients)"
+        ]
+      ],
+      "output_sha256": "56a3782984dd2686a3a88cba752d159c099b0a1912b2180892ad13e65ec1ae51",
+      "test_summary": [
+        "Ran 16 tests in 0.462s",
+        "FAILED (failures=1)"
+      ]
+    },
+    {
+      "mutation": "nonfinite coefficient",
+      "expected": "fail",
+      "exit_code": 1,
+      "failures": [
+        [
+          "FAIL",
+          "test_duplicate_and_nonfinite_coefficients (test_activitysim_walk_transfer.TransferTests.test_duplicate_and_nonfinite_coefficients)"
+        ]
+      ],
+      "output_sha256": "0cad4dadeb1610c371bd853e2f9bcd3c6034741097d0867835af4ce1690c7596",
+      "test_summary": [
+        "Ran 16 tests in 0.446s",
+        "FAILED (failures=1)"
+      ]
+    },
+    {
+      "mutation": "incompatible WALK expression",
+      "expected": "fail",
+      "exit_code": 1,
+      "failures": [
+        [
+          "FAIL",
+          "test_expression_and_template_mismatch (test_activitysim_walk_transfer.TransferTests.test_expression_and_template_mismatch)"
+        ]
+      ],
+      "output_sha256": "d642718cdb2ce6277df1cddcf5ebd39ad1e7a5369e8453e551ef3b905b30ccf3",
+      "test_summary": [
+        "Ran 16 tests in 0.462s",
+        "FAILED (failures=1)"
+      ]
+    },
+    {
+      "mutation": "incompatible purpose template",
+      "expected": "fail",
+      "exit_code": 1,
+      "failures": [
+        [
+          "FAIL",
+          "test_expression_and_template_mismatch (test_activitysim_walk_transfer.TransferTests.test_expression_and_template_mismatch)"
+        ]
+      ],
+      "output_sha256": "8663c2188338d241e413a97ec7b45c9b95e41a6002ed37b1a7c6f86b00200fdb",
+      "test_summary": [
+        "Ran 16 tests in 0.450s",
+        "FAILED (failures=1)"
+      ]
+    },
+    {
+      "mutation": "unknown development coefficient set",
+      "expected": "fail",
+      "exit_code": 1,
+      "failures": [
+        [
+          "FAIL",
+          "test_unknown_name_refused (test_activitysim_walk_transfer.TransferTests.test_unknown_name_refused)"
+        ]
+      ],
+      "output_sha256": "e85d4c98780a99cd874efef58d797e683e581ddd179b8fa08fe2432ae9f4d174",
+      "test_summary": [
+        "Ran 16 tests in 0.462s",
+        "FAILED (failures=1)"
+      ]
+    },
+    {
+      "mutation": "donor source hash mismatch",
+      "expected": "fail",
+      "exit_code": 1,
+      "failures": [
+        [
+          "FAIL",
+          "test_source_tamper_refused (test_activitysim_walk_transfer.TransferTests.test_source_tamper_refused)"
+        ]
+      ],
+      "output_sha256": "c4cfd75f68d2e2d19429555b7e26e969619f27f1e23872a3a6b0c6eeaae1c4fb",
+      "test_summary": [
+        "Ran 16 tests in 0.502s",
+        "FAILED (failures=1)"
+      ]
+    },
+    {
+      "mutation": "stock source hash mismatch",
+      "expected": "fail",
+      "exit_code": 1,
+      "failures": [
+        [
+          "FAIL",
+          "test_stock_tamper_refused (test_activitysim_walk_transfer.TransferTests.test_stock_tamper_refused)"
+        ]
+      ],
+      "output_sha256": "2dff4bec5b26d4b8cbec5f08660a99a6cce44973778d4c4170c38f5184ee4659",
+      "test_summary": [
+        "Ran 16 tests in 0.478s",
+        "FAILED (failures=1)"
+      ]
+    },
+    {
+      "mutation": "transfer census mismatch",
+      "expected": "fail",
+      "exit_code": 1,
+      "failures": [
+        [
+          "FAIL",
+          "test_missing_coefficient_and_census (test_activitysim_walk_transfer.TransferTests.test_missing_coefficient_and_census)"
+        ]
+      ],
+      "output_sha256": "174b8866edb932376a248ad098415e2149db49ae8ae61034ff72076a014ca76b",
+      "test_summary": [
+        "Ran 16 tests in 0.474s",
+        "FAILED (failures=1)"
+      ]
+    },
+    {
+      "mutation": "chooser coverage mismatch",
+      "expected": "fail",
+      "exit_code": 1,
+      "failures": [
+        [
+          "FAIL",
+          "test_probabilities_reject_each_bad_boundary (test_activitysim_walk_transfer.TransferTests.test_probabilities_reject_each_bad_boundary) (reason='coverage')"
+        ],
+        [
+          "FAIL",
+          "test_probabilities_reject_each_bad_boundary (test_activitysim_walk_transfer.TransferTests.test_probabilities_reject_each_bad_boundary) (reason='coverage')"
+        ]
+      ],
+      "output_sha256": "73aed5074e70383ec3b35ffd1939951a043acbcceaba1766e514e0a3114f5843",
+      "test_summary": [
+        "Ran 16 tests in 0.454s",
+        "FAILED (failures=2)"
+      ]
+    },
+    {
+      "mutation": "invalid native probabilities",
+      "expected": "fail",
+      "exit_code": 1,
+      "failures": [
+        [
+          "FAIL",
+          "test_probabilities_reject_each_bad_boundary (test_activitysim_walk_transfer.TransferTests.test_probabilities_reject_each_bad_boundary) (reason='invalid')"
+        ],
+        [
+          "FAIL",
+          "test_probabilities_reject_each_bad_boundary (test_activitysim_walk_transfer.TransferTests.test_probabilities_reject_each_bad_boundary) (reason='invalid')"
+        ],
+        [
+          "FAIL",
+          "test_probabilities_reject_each_bad_boundary (test_activitysim_walk_transfer.TransferTests.test_probabilities_reject_each_bad_boundary) (reason='invalid')"
+        ]
+      ],
+      "output_sha256": "c074092b702ad0fdb9b43abfb1892dce5177a3ab3173631c5a5f54d0c25ae4ef",
+      "test_summary": [
+        "Ran 16 tests in 0.458s",
+        "FAILED (failures=3)"
+      ]
+    },
+    {
+      "mutation": "WALK probability absent",
+      "expected": "fail",
+      "exit_code": 1,
+      "failures": [
+        [
+          "FAIL",
+          "test_probabilities_reject_each_bad_boundary (test_activitysim_walk_transfer.TransferTests.test_probabilities_reject_each_bad_boundary) (reason='WALK')"
+        ]
+      ],
+      "output_sha256": "631376f07b0eea415fcebd9dbe6f138cda2db121a84927628c2c1fed74eafafc",
+      "test_summary": [
+        "Ran 16 tests in 0.467s",
+        "FAILED (failures=1)"
+      ]
+    },
+    {
+      "mutation": "baseline replay differs",
+      "expected": "fail",
+      "exit_code": 1,
+      "failures": [
+        [
+          "FAIL",
+          "test_replay_joint_and_census_guards (test_activitysim_walk_transfer.TransferTests.test_replay_joint_and_census_guards)"
+        ]
+      ],
+      "output_sha256": "59e829719eed3eafc00b86074a469e4c5c897680a885fda75cd8f4a511142a86",
+      "test_summary": [
+        "Ran 16 tests in 0.465s",
+        "FAILED (failures=1)"
+      ]
+    },
+    {
+      "mutation": "candidate has no probability effect",
+      "expected": "fail",
+      "exit_code": 1,
+      "failures": [
+        [
+          "FAIL",
+          "test_replay_joint_and_census_guards (test_activitysim_walk_transfer.TransferTests.test_replay_joint_and_census_guards)"
+        ]
+      ],
+      "output_sha256": "4f16f3cc0ad8801672ba0252dfde33218f8dbff777d3b868e0948314e291dde6",
+      "test_summary": [
+        "Ran 16 tests in 0.468s",
+        "FAILED (failures=1)"
+      ]
+    },
+    {
+      "mutation": "joint probabilities changed",
+      "expected": "fail",
+      "exit_code": 1,
+      "failures": [
+        [
+          "FAIL",
+          "test_replay_joint_and_census_guards (test_activitysim_walk_transfer.TransferTests.test_replay_joint_and_census_guards)"
+        ]
+      ],
+      "output_sha256": "f644230315825008b98ec26fd1d6718aeb4b60a1d7d5ce759fccc528c23281d7",
+      "test_summary": [
+        "Ran 16 tests in 0.493s",
+        "FAILED (failures=1)"
+      ]
+    },
+    {
+      "mutation": "strata census mismatch",
+      "expected": "fail",
+      "exit_code": 1,
+      "failures": [
+        [
+          "FAIL",
+          "test_replay_joint_and_census_guards (test_activitysim_walk_transfer.TransferTests.test_replay_joint_and_census_guards)"
+        ]
+      ],
+      "output_sha256": "201359c3156e8840ffec5d393a435e2ebb6619c15408f7f46bd69437e0881825",
+      "test_summary": [
+        "Ran 16 tests in 0.459s",
+        "FAILED (failures=1)"
+      ]
+    },
+    {
+      "mutation": "runtime environment changed",
+      "expected": "fail",
+      "exit_code": 1,
+      "failures": [
+        [
+          "FAIL",
+          "test_environment_and_stock_directory (test_activitysim_walk_transfer.TransferTests.test_environment_and_stock_directory)"
+        ]
+      ],
+      "output_sha256": "77b2d5ac552c79282ce1a80b56926b425e690f775c73db4b712548b995b53cf8",
+      "test_summary": [
+        "Ran 16 tests in 0.475s",
+        "FAILED (failures=1)"
+      ]
+    },
+    {
+      "mutation": "stock directory changed",
+      "expected": "fail",
+      "exit_code": 1,
+      "failures": [
+        [
+          "FAIL",
+          "test_environment_and_stock_directory (test_activitysim_walk_transfer.TransferTests.test_environment_and_stock_directory)"
+        ]
+      ],
+      "output_sha256": "d59dbb83fbfbb2494a1175ffd94ef914e04f0cb081bf577f83df834ab4722219",
+      "test_summary": [
+        "Ran 16 tests in 0.456s",
+        "FAILED (failures=1)"
+      ]
+    },
+    {
+      "mutation": "unexpected archive members",
+      "expected": "fail",
+      "exit_code": 1,
+      "failures": [
+        [
+          "FAIL",
+          "test_archive_member_allowlist (test_activitysim_walk_transfer.TransferTests.test_archive_member_allowlist)"
+        ]
+      ],
+      "output_sha256": "b915ffbe86c38c5c858c8985440d346b4c4e89267e955f92787b35c8ff971632",
+      "test_summary": [
+        "Ran 16 tests in 0.476s",
+        "FAILED (failures=1)"
+      ]
+    },
+    {
+      "mutation": "frozen candidate differs",
+      "expected": "fail",
+      "exit_code": 1,
+      "failures": [
+        [
+          "FAIL",
+          "test_native_boundary_checks (test_activitysim_walk_transfer.TransferTests.test_native_boundary_checks)"
+        ]
+      ],
+      "output_sha256": "988da963185f75d52ea3ce209faa1f2ec8935605d5869a926c884082a592baf4",
+      "test_summary": [
+        "Ran 16 tests in 0.473s",
+        "FAILED (failures=1)"
+      ]
+    },
+    {
+      "mutation": "held-fixed inputs changed",
+      "expected": "fail",
+      "exit_code": 1,
+      "failures": [
+        [
+          "FAIL",
+          "test_native_boundary_checks (test_activitysim_walk_transfer.TransferTests.test_native_boundary_checks)"
+        ]
+      ],
+      "output_sha256": "c83f4c126e455fd566e6e8bf28e1ea79085a63c3d96abbbafe6b9e91c3d184f4",
+      "test_summary": [
+        "Ran 16 tests in 0.487s",
+        "FAILED (failures=1)"
+      ]
+    },
+    {
+      "mutation": "unsupported advancement",
+      "expected": "fail",
+      "exit_code": 1,
+      "failures": [
+        [
+          "FAIL",
+          "test_validator_refuses_false_advancement_and_evidence (test_activitysim_walk_transfer.TransferTests.test_validator_refuses_false_advancement_and_evidence) (key='decision')"
+        ],
+        [
+          "FAIL",
+          "test_validator_refuses_false_advancement_and_evidence (test_activitysim_walk_transfer.TransferTests.test_validator_refuses_false_advancement_and_evidence) (key='development_disposition')"
+        ]
+      ],
+      "output_sha256": "6a78f817e8e0eac8d6893e19e124a69a444657f1ce863dbb08e66095383aa0d7",
+      "test_summary": [
+        "Ran 16 tests in 0.484s",
+        "FAILED (failures=2)"
+      ]
+    },
+    {
+      "mutation": "invented observation evidence",
+      "expected": "fail",
+      "exit_code": 1,
+      "failures": [
+        [
+          "FAIL",
+          "test_validator_refuses_false_advancement_and_evidence (test_activitysim_walk_transfer.TransferTests.test_validator_refuses_false_advancement_and_evidence) (key='observed_mode_log_loss')"
+        ],
+        [
+          "FAIL",
+          "test_validator_refuses_false_advancement_and_evidence (test_activitysim_walk_transfer.TransferTests.test_validator_refuses_false_advancement_and_evidence) (key='observation_uncertainty')"
+        ],
+        [
+          "FAIL",
+          "test_validator_refuses_false_advancement_and_evidence (test_activitysim_walk_transfer.TransferTests.test_validator_refuses_false_advancement_and_evidence) (key='coefficient_uncertainty')"
+        ]
+      ],
+      "output_sha256": "13d2f0857b33574c8e74d15d96ed14bd1059be4f3c2773078bba936331f0bc78",
+      "test_summary": [
+        "Ran 16 tests in 0.449s",
+        "FAILED (failures=3)"
+      ]
+    },
+    {
+      "mutation": "incomplete engineering checks",
+      "expected": "fail",
+      "exit_code": 1,
+      "failures": [
+        [
+          "FAIL",
+          "test_validator_checks_census_conservation_and_every_check (test_activitysim_walk_transfer.TransferTests.test_validator_checks_census_conservation_and_every_check)"
+        ]
+      ],
+      "output_sha256": "b1ba7c8112d15bd76fbfa81cbf421ff21790803ac3b91debc4d5a8a0815bd6bf",
+      "test_summary": [
+        "Ran 16 tests in 0.282s",
+        "FAILED (failures=1)"
+      ]
+    },
+    {
+      "mutation": "missing strata",
+      "expected": "fail",
+      "exit_code": 1,
+      "failures": [
+        [
+          "FAIL",
+          "test_validator_checks_census_conservation_and_every_check (test_activitysim_walk_transfer.TransferTests.test_validator_checks_census_conservation_and_every_check)"
+        ]
+      ],
+      "output_sha256": "7749e149faefb23c85ab3eb948796ad879e59be8ee5fb928332fc4041233db36",
+      "test_summary": [
+        "Ran 16 tests in 0.408s",
+        "FAILED (failures=1)"
+      ]
+    },
+    {
+      "mutation": "aggregate census mismatch",
+      "expected": "fail",
+      "exit_code": 1,
+      "failures": [
+        [
+          "FAIL",
+          "test_validator_checks_census_conservation_and_every_check (test_activitysim_walk_transfer.TransferTests.test_validator_checks_census_conservation_and_every_check)"
+        ]
+      ],
+      "output_sha256": "e785ed02fceca971faa6aef4f20df94ff292b9c874cdb933ba70012dbf0fe8cd",
+      "test_summary": [
+        "Ran 16 tests in 0.424s",
+        "FAILED (failures=1)"
+      ]
+    },
+    {
+      "mutation": "aggregate probability conservation",
+      "expected": "fail",
+      "exit_code": 1,
+      "failures": [
+        [
+          "FAIL",
+          "test_validator_checks_census_conservation_and_every_check (test_activitysim_walk_transfer.TransferTests.test_validator_checks_census_conservation_and_every_check)"
+        ]
+      ],
+      "output_sha256": "13ff8ce33f4b3f0192d4540dc08f2274c52e57a6cccb3462359851f8ef23e826",
+      "test_summary": [
+        "Ran 16 tests in 0.462s",
+        "FAILED (failures=1)"
+      ]
+    },
+    {
+      "mutation": "missing walk coefficient",
+      "expected": "fail",
+      "exit_code": 1,
+      "failures": [
+        [
+          "FAIL",
+          "test_missing_coefficient_and_census (test_activitysim_walk_transfer.TransferTests.test_missing_coefficient_and_census)"
+        ]
+      ],
+      "output_sha256": "1e53585c46a2269033c5043ffa3c1a94dae67d137a4206c617f85ac610bac0b3",
+      "test_summary": [
+        "Ran 16 tests in 0.465s",
+        "FAILED (failures=1)"
+      ]
+    },
+    {
+      "mutation": "native exit",
+      "expected": "fail",
+      "exit_code": 1,
+      "failures": [
+        [
+          "FAIL",
+          "test_native_boundary_checks (test_activitysim_walk_transfer.TransferTests.test_native_boundary_checks)"
+        ]
+      ],
+      "output_sha256": "52241cfaa0dde320a999073fc41fe9ad2333b8c04450757daeb6e835170bb5d5",
+      "test_summary": [
+        "Ran 16 tests in 0.464s",
+        "FAILED (failures=1)"
+      ]
+    },
+    {
+      "mutation": "restored",
+      "expected": "pass",
+      "exit_code": 0,
+      "failures": [],
+      "output_sha256": "e402aae418c6b4d23e41373a16d9b517c1529e197eee352c39dee9d728395f06",
+      "test_summary": [
+        "Ran 16 tests in 0.463s",
+        "OK"
+      ]
+    }
+  ]
+}

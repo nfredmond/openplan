@@ -1,0 +1,30 @@
+{
+  "source_path": "/tmp/openplan-tbi2019-20261023/native-synthetic-a/synthetic-inputs",
+  "role": "synthetic",
+  "files": {
+    "households.csv": {
+      "bytes": 1202,
+      "sha256": "f3e4bab36c1512b240b1ecbb12a27c449a4fd600c777b4ecf006d47bdaf771f9"
+    },
+    "persons.csv": {
+      "bytes": 4715,
+      "sha256": "ea9817690b0f0c086c90cf5e1214712a58fa2046237d5960b68378cd44af7398"
+    },
+    "land_use.csv": {
+      "bytes": 617,
+      "sha256": "ad931a33fdf167559a6928894939c1de51992b0d0072e6e250715f3696bfc9c7"
+    },
+    "skims/mtc_skims.omx": {
+      "bytes": 2823459,
+      "sha256": "26167cd579e08cb9bffa80c580808498f4663e52759dac86cf373522be25f3bc"
+    },
+    "configs/settings.yaml": {
+      "bytes": 2997,
+      "sha256": "8a19dab8f44c8efc90f61c47fb988c62b0093c8fe4490d6b763a86330d6be1db"
+    },
+    "configs/network_los.yaml": {
+      "bytes": 426,
+      "sha256": "92166e41776645d0500415040fb6d6277bf5b24c935a6f0faf4a7a19b2743971"
+    }
+  }
+}

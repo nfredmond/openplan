@@ -1,0 +1,98 @@
+{
+  "retained_directory": "/home/nathaniel/.local/state/openplan/tbi2019-preparation-20261023/sources",
+  "sources": [
+    {
+      "file": "codebook.xlsx",
+      "url": "https://metropolitan-council.github.io/TBI_Household_Synthesis_Report/appendices/combined_codebook.xlsx",
+      "bytes": 702081,
+      "sha256": "62371369fbffd1cace453802888afc1ddb1bf12307ce35898a0117a7ea4ef7f3",
+      "accessed_at": "2026-10-23T22:40:14.558482+00:00"
+    },
+    {
+      "file": "census-pums-variables.json",
+      "url": "https://api.census.gov/data/2019/acs/acs5/pums/variables.json",
+      "bytes": 387419,
+      "sha256": "61fdc741b8b745be1086f0ad98df794ba0d23ac4f58d411568aba47863e9dce2",
+      "accessed_at": "2026-10-23T22:40:16.199883+00:00"
+    },
+    {
+      "file": "census-acs-variables.json",
+      "url": "https://api.census.gov/data/2019/acs/acs5/variables.json",
+      "bytes": 10036017,
+      "sha256": "824bb0c3f1b9ab2d4e7323a5fb184b8a4d15de1b7068e08bef01c6599c8bc574",
+      "accessed_at": "2026-10-23T22:41:36.836656+00:00"
+    },
+    {
+      "file": "pums-readme.pdf",
+      "url": "https://www2.census.gov/programs-surveys/acs/tech_docs/pums/ACS2015_2019_PUMS_README.pdf",
+      "bytes": 467585,
+      "sha256": "42d7b44abe25d16f0f3a4dc5d89b25fbb2f6ca4829e51785bbb78a1cb2d7d667",
+      "accessed_at": "2026-10-23T22:41:37.772159+00:00"
+    },
+    {
+      "file": "bls-cpi.html",
+      "url": "https://www.bls.gov/regions/mid-atlantic/data/consumerpriceindexannualandsemiannual_table.htm",
+      "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "file": "tour-mode.html",
+      "url": "https://activitysim.github.io/activitysim/develop/dev-guide/components/tour_mode_choice.html",
+      "bytes": 100647,
+      "sha256": "69e218dbebd4611ec5df7411b76c657761f3c8f279749d21cf896e7f813317ba",
+      "accessed_at": "2026-10-23T22:46:22.879341+00:00"
+    },
+    {
+      "file": "atwork.html",
+      "url": "https://activitysim.github.io/activitysim/develop/dev-guide/components/atwork_subtour_frequency.html",
+      "bytes": 69947,
+      "sha256": "589fd733f71e2e0c074712d72bf77fd5b254c3a029c920774c760524a9ca9288",
+      "accessed_at": "2026-10-23T22:46:22.879225+00:00"
+    },
+    {
+      "file": "B11016.json",
+      "url": "https://api.census.gov/data/2019/acs/acs5/groups/B11016.json",
+      "bytes": 206286,
+      "sha256": "5bd2dad39bfb4717fda66509f7f6bb5542902dc89b731419716771b6a6237001",
+      "accessed_at": "2026-10-23T22:48:50.146986+00:00"
+    },
+    {
+      "file": "B19001.json",
+      "url": "https://api.census.gov/data/2019/acs/acs5/groups/B19001.json",
+      "bytes": 209020,
+      "sha256": "ced7c50ef9f88fe5eb6e1caabbec67741e7017947e8a5767b0eba3bf66d452a5",
+      "accessed_at": "2026-10-23T22:48:50.058559+00:00"
+    },
+    {
+      "file": "B25044.json",
+      "url": "https://api.census.gov/data/2019/acs/acs5/groups/B25044.json",
+      "bytes": 204820,
+      "sha256": "5a5e4068833c850879e49e65727a0ff28871c56d4510819145765388069fdfad",
+      "accessed_at": "2026-10-23T22:48:50.173532+00:00"
+    },
+    {
+      "file": "B08202.json",
+      "url": "https://api.census.gov/data/2019/acs/acs5/groups/B08202.json",
+      "bytes": 213202,
+      "sha256": "37b824bf9aa227e1ea22226ea7277552d216846f219d317cf88fe655012fa6fc",
+      "accessed_at": "2026-10-23T22:48:50.155062+00:00"
+    },
+    {
+      "file": "B01001.json",
+      "url": "https://api.census.gov/data/2019/acs/acs5/groups/B01001.json",
+      "bytes": 234276,
+      "sha256": "e72144e30bf0814d36d1e844dca4b5cff9dd9d3cf1d5e439ed146755c25eb077",
+      "accessed_at": "2026-10-23T22:48:51.366930+00:00"
+    },
+    {
+      "file": "activitysim-models.html",
+      "url": "https://activitysim.github.io/activitysim/v1.5.1/models.html",
+      "error": "HTTP 404; no source bytes retained"
+    },
+    {
+      "file": "bls-cpi.txt",
+      "url": "https://download.bls.gov/pub/time.series/cu/cu.data.1.AllItems",
+      "error": "HTTP 403; no source bytes retained"
+    }
+  ],
+  "bls_verification": "Web source reader confirms annual CPI-U 255.657 for 2019 and 172.2 for 2000 at https://www.bls.gov/cpi/tables/supplemental-files/historical-cpi-u-202002.pdf; direct download denied, no claimed local hash."
+}

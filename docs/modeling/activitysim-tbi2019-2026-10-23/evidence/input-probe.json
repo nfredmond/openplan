@@ -1,0 +1,70 @@
+{
+  "python": "3.11.15 (main, Jun 11 2026, 04:03:40) [Clang 22.1.3 ]",
+  "packages": {
+    "activitysim": "1.5.1",
+    "numpy": "1.25.2",
+    "pandas": "2.3.3",
+    "openmatrix": "0.3.5.0"
+  },
+  "census_profile_probes": [
+    {
+      "year": 2019,
+      "status": "refused",
+      "exception": "CensusPumsError",
+      "message": "ACS 2019 population inputs have no verified Census vintage profile."
+    },
+    {
+      "year": 2022,
+      "status": "supported",
+      "profile": {
+        "final_year": 2022,
+        "first_year": 2018,
+        "puma_fields": [
+          [
+            "2020",
+            "PUMA20"
+          ],
+          [
+            "2010",
+            "PUMA10"
+          ]
+        ]
+      },
+      "income_year": 2022
+    },
+    {
+      "year": 2023,
+      "status": "supported",
+      "profile": {
+        "final_year": 2023,
+        "first_year": 2019,
+        "puma_fields": [
+          [
+            "2020",
+            "PUMA"
+          ]
+        ]
+      },
+      "income_year": 2023
+    }
+  ],
+  "skim_classification": {
+    "WLK_LOC_WLK_TOTIVT__AM": "zero",
+    "DRV_LOC_WLK_TOTIVT__PM": "zero",
+    "SOV_TIME__AM": "time",
+    "SOV_TIME__PM": "time"
+  },
+  "source_sha256": {
+    "scripts/modeling/build_activitysim_input_bundle.py": "7f90c9e0df35902702b2cf7c2949b3e5e3558ea59368d57ba3860e0d973f54d8",
+    "scripts/modeling/census_pums.py": "ef8234a8db8102f015271be5d3bb211b30d7f914afd1d5e14413fdf438204cd2",
+    "scripts/modeling/population_source_profiles.v1.json": "8c6baf1b8d6747b94aa7e9863dc19b197d6ff3a39ab824bbfc3f2da1f9ebd505",
+    "scripts/modeling/synthetic_population.py": "6e8b57fcad1d8e1efbc6882e76190c0bc45659b7e8fbc140fd2cf774bd3f0877",
+    "scripts/modeling/activitysim_mtc_inputs.py": "5e9af6b973dc79efee7be1626016c501429f01e7c44dee9c38f7042f3bc37b1e",
+    "scripts/modeling/activitysim_walk_transfer.py": "63111d350424e227702ee385fb33057e55b938f1012a354b3cc51191a0407dfc",
+    "data/modeling/activitysim-accepted-components.json": "de9b83b0802a435d6646416bc336d35fd0061956aadbb6b04237ced68854b340",
+    "data/modeling/activitysim-semcog-walk-development-v1/overlay/tour_mode_choice_coefficients.csv": "537e54811e4b6ca9fec0662085777e9679a634bd312bb7c64df6e58ff60c7490"
+  },
+  "network_or_census_downloads": 0,
+  "real_model_executions": 0,
+  "survey_outcome_rows_read": 0
+}

@@ -88,7 +88,7 @@ class PopulationImagePackagingTests(unittest.TestCase):
                     + "; import population_source_registry as registry; "
                     + f"assert Path(registry.__file__).resolve() == Path({str(image / 'app/scripts/modeling/population_source_registry.py')!r}); "
                     + f"assert registry.CATALOG_PATH.resolve() == Path({str(image / 'app/scripts/modeling/population_source_profiles.v1.json')!r}); "
-                    + "assert len(registry._catalog()) == 2; "
+                    + "assert [row['id'] for row in registry._catalog()] == ['us_census_acs5_pums_2022', 'us_census_acs5_pums_2023', 'us_census_acs5_pums_2019']; "
                     + "assert registry.PRODUCTION_REGISTRY.validate(registry._catalog()[1]['profile'], 'new_guided_launch') == registry._catalog()[1]['profile']"
                 )
                 result = subprocess.run([sys.executable, "-I", "-B", "-c", code],

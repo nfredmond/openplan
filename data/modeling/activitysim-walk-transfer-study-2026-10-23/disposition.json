@@ -1,0 +1,9 @@
+{
+  "coefficient_set": "semcog2015-walk-asc-development-v1",
+  "candidate_sha256": "537e54811e4b6ca9fec0662085777e9679a634bd312bb7c64df6e58ff60c7490",
+  "scientific_status": "inconclusive",
+  "development_disposition": "retire",
+  "reason": "matched_observed_tour_modes_unavailable",
+  "default_changed": false,
+  "full_aggregate_sha256": "65513e409be1bab38b1ae8454a1699b18f5281f22b6519e4e435d65034299f31"
+}

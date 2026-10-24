@@ -1,0 +1,10 @@
+Running as unit: run-p1809750-i60410453.scope; invocation ID: 3e6230a174754ef6ae18530062b38b8e
+
+ RUN  v4.1.11 /home/nathaniel/.t3/worktrees/openplan/t3-1038cfe9/openplan
+
+
+ Test Files  2 passed (2)
+      Tests  41 passed (41)
+   Start at  15:58:18
+   Duration  664ms (transform 154ms, setup 108ms, import 195ms, tests 29ms, environment 688ms)
+
