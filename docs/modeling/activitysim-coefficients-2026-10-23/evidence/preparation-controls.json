@@ -1,0 +1,18 @@
+{
+  "records": [
+    {
+      "guard": "source archive already exists",
+      "outcome": "intended assertion failed",
+      "exit_code": 1,
+      "output_sha256": "7209ed4d5b66125862303b119fa4ddf947b4ed1da69dd18928b55b33f98af4d8"
+    },
+    {
+      "guard": "development input partition required",
+      "outcome": "intended assertion failed",
+      "exit_code": 1,
+      "output_sha256": "2d7c9b2c6f2a3e89cd352bff5d2553c798cc5eec014dc6168936336b1055a898"
+    }
+  ],
+  "restored_tests": 16,
+  "restoration_exact": true
+}

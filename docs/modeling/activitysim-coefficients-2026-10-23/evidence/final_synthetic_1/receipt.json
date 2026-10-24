@@ -1,0 +1,12 @@
+{
+  "lock_sha256": "40fa37106fc3730a23e2d2c9e1f28847bdbe0a05536540e20af5d77cd7f4c28f",
+  "required_scratch_bytes": 1082242072,
+  "schema_version": "openplan.sealed-study.receipt.v1",
+  "selected_members_uncompressed_bytes": 2833416,
+  "source_sha256": {
+    "development_input_bundle": "324b52e3be2aa8d9d9fa4cfab663939c543e747f3784979684e133f163055eb3"
+  },
+  "status": "source_consumed_before_first_selected_member_read",
+  "study_id": "walk-transfer-synthetic-20261023",
+  "written_at": "2026-10-23T21:55:42.317779+00:00"
+}

@@ -1,0 +1,30 @@
+{
+  "source_path": "/home/nathaniel/code/openplan/data/agreement-study/runs/dev/06069/activitysim_bundle",
+  "role": "development",
+  "files": {
+    "households.csv": {
+      "bytes": 456235,
+      "sha256": "1a46e0bed733a2b08417a3ff0ae5d9096c432fce540c7944d9e0243342747f39"
+    },
+    "persons.csv": {
+      "bytes": 1698777,
+      "sha256": "c70614bb308a9afc67a243f70c456a151c200d52c8130ab98a6c7e57de6d9ab0"
+    },
+    "land_use.csv": {
+      "bytes": 1660,
+      "sha256": "b4a781ea2af321d05537e88d5cfa2c571434d98ae680ac4073f3752099ad007d"
+    },
+    "skims/mtc_skims.omx": {
+      "bytes": 2893593,
+      "sha256": "dc0cfc9429fde89f55c381b389e189df58d2730ce6a1aaa7dbba4d6dab2425c9"
+    },
+    "configs/settings.yaml": {
+      "bytes": 2997,
+      "sha256": "8a19dab8f44c8efc90f61c47fb988c62b0093c8fe4490d6b763a86330d6be1db"
+    },
+    "configs/network_los.yaml": {
+      "bytes": 426,
+      "sha256": "92166e41776645d0500415040fb6d6277bf5b24c935a6f0faf4a7a19b2743971"
+    }
+  }
+}

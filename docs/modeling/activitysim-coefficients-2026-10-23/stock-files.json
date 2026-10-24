@@ -1,0 +1,647 @@
+{
+  "activitysim_version": "1.5.1",
+  "example": "prototype_mtc",
+  "stock_digest": "50b6c571f9f7378f5db12e96994d5c72a4ed3efa266d208e7d3075c820d92cb4",
+  "files": {
+    "accessibility.csv": {
+      "bytes": 3933,
+      "sha256": "9ad2c432a18ad07f011791a2683b71878feba827aa389ad0679dd4d2fbd221f9"
+    },
+    "accessibility.yaml": {
+      "bytes": 414,
+      "sha256": "600ceb419204314a77f6edd009ea67d5cf440dffd352baf271be67981326ec58"
+    },
+    "annotate_households.csv": {
+      "bytes": 2232,
+      "sha256": "f66b23a06c385295e5e995e31719f37304668d3258716ef4312381f71570c8f9"
+    },
+    "annotate_households_cdap.csv": {
+      "bytes": 1254,
+      "sha256": "528894a49e241bbfee073a7550f1a8c920cd2185246d75e243cf0383891929e2"
+    },
+    "annotate_households_workplace.csv": {
+      "bytes": 341,
+      "sha256": "1be650382a2484fae5982493a61644d98489d3ff717b4f6cb9f53965f124a874"
+    },
+    "annotate_landuse.csv": {
+      "bytes": 411,
+      "sha256": "105303d2f73ff524630b61b0abb954a0de5d42f85657db0666cdb616938ff1fd"
+    },
+    "annotate_persons.csv": {
+      "bytes": 3473,
+      "sha256": "3dfc614435fdc4f0d511bae8f56ac1b6a1a71313918e836aa294db08325d482a"
+    },
+    "annotate_persons_after_hh.csv": {
+      "bytes": 276,
+      "sha256": "a38d5b8f1669b83508837dd37c364d18d3c8b4e2ed9fcfc10e7be9c5054894e2"
+    },
+    "annotate_persons_cdap.csv": {
+      "bytes": 596,
+      "sha256": "12b52f6120edc0ed37e41e066fd6b5f1a6e776643cbe2d6b273b53502e5bc8d4"
+    },
+    "annotate_persons_jtp.csv": {
+      "bytes": 237,
+      "sha256": "66497207262b562fb32311e366a0fdbcec005f5f6a4e3bf0b9b8d55d83a96fcd"
+    },
+    "annotate_persons_mtf.csv": {
+      "bytes": 806,
+      "sha256": "7c93750ccbe6e6b10a7fb3cab454f144403f572bb80534adc33f9ffe69d2cc80"
+    },
+    "annotate_persons_nmtf.csv": {
+      "bytes": 1199,
+      "sha256": "1ab88268c4c92258b4c71f1d1408befe0cdca5c46c6fb204dcdd4505e5b4af4a"
+    },
+    "annotate_persons_school.csv": {
+      "bytes": 718,
+      "sha256": "79402c757a066c76047298cf8193ff2c3ae2980011186dd175ff841dc7053106"
+    },
+    "annotate_persons_workplace.csv": {
+      "bytes": 3737,
+      "sha256": "7de8350c216ecfbf122f721e9b9b6d76d406b9734ebad651e86d2fc90e5c23cd"
+    },
+    "atwork_subtour_destination.csv": {
+      "bytes": 1446,
+      "sha256": "6a0e0765d88f46269f6ab72dc6d33d1784113c0cf1f40111f2b5fe5549847ebe"
+    },
+    "atwork_subtour_destination.yaml": {
+      "bytes": 729,
+      "sha256": "055c88db0fdd0149235eb6302f1d377b60d972eb2c4309b29e43f0f41a85510d"
+    },
+    "atwork_subtour_destination_coefficients.csv": {
+      "bytes": 494,
+      "sha256": "1a9a74b56161256b835689d5970cb66a7402da9e03f852e6d66ab56fad2eea31"
+    },
+    "atwork_subtour_destination_sample.csv": {
+      "bytes": 1178,
+      "sha256": "ab13f127146a8c9bfb1dfe215d991ab18e3c80d3574fd3a37875b420993a608e"
+    },
+    "atwork_subtour_frequency.csv": {
+      "bytes": 9197,
+      "sha256": "c5a2644094944a1ba5c30824301790812a61ff6262bfded1a36fa4cbedc7b490"
+    },
+    "atwork_subtour_frequency.yaml": {
+      "bytes": 244,
+      "sha256": "1a168a94628d04aeffd1d1e7517160d51996c4470f1a8f5df41a616e7f1abfb6"
+    },
+    "atwork_subtour_frequency_alternatives.csv": {
+      "bytes": 213,
+      "sha256": "d7411764f793e9c08d937dbb95e9b5c385a851e79806421ab15aa4af192b983a"
+    },
+    "atwork_subtour_frequency_annotate_tours_preprocessor.csv": {
+      "bytes": 977,
+      "sha256": "a6d6084616da13faab6d0260ccc03ef360d547b1e4ece64e66cae541438b7941"
+    },
+    "atwork_subtour_frequency_coefficients.csv": {
+      "bytes": 8702,
+      "sha256": "ecaa62fec0de8bc650f41a929d5c5361625dd233e3620a304b9d1e149e689c89"
+    },
+    "auto_ownership.csv": {
+      "bytes": 5956,
+      "sha256": "9fe5094a5acb9d8ebdf9836f0868f801e60cf3c2e6c638165795747d2a804cb8"
+    },
+    "auto_ownership.yaml": {
+      "bytes": 271,
+      "sha256": "135c43af9987a81005520fcd6fd5b47ef56a5be3a1afa9bcb03c1b8107b96577"
+    },
+    "auto_ownership_coefficients.csv": {
+      "bytes": 2441,
+      "sha256": "fc03ffa09b0ef408ba27c4e0bb6d6d3950b4db24d5bd11df247d1c877f2aef15"
+    },
+    "cdap.yaml": {
+      "bytes": 569,
+      "sha256": "ab81a2f3c18aeaad4fb7d51b9c85bc918c1164b8f3e7e862a54f0f0731b370cd"
+    },
+    "cdap_coefficients.csv": {
+      "bytes": 6309,
+      "sha256": "c0f0284f8ce354eef53571ac422638da7bec71ea7d1d114a95e8f1a071a69a38"
+    },
+    "cdap_fixed_relative_proportions.csv": {
+      "bytes": 483,
+      "sha256": "ab173163a8e22e08a409538115a088308443c7fd95bd5f83e9483baa72bc8218"
+    },
+    "cdap_indiv_and_hhsize1.csv": {
+      "bytes": 8850,
+      "sha256": "c2391a31c54039523bfee1585b72911d0ce337faebbf759628d4554d6efd07cf"
+    },
+    "cdap_interaction_coefficients.csv": {
+      "bytes": 2440,
+      "sha256": "edebcc1dce3a04d78b7a6680735beb5432c5d3097a2677659581c42e67952622"
+    },
+    "constants.yaml": {
+      "bytes": 1592,
+      "sha256": "dbf4ab34aec252db46b155d2ae1ddbdfbabe6c1ce3ce938a4b566fc3ede793d6"
+    },
+    "data_dictionary.yaml": {
+      "bytes": 171,
+      "sha256": "1c994e70fbd5d377f1300a643579a64780321d266f9c0c43665efd8c8641bf26"
+    },
+    "destination_choice_size_terms.csv": {
+      "bytes": 1529,
+      "sha256": "f441f4e5ea41d541551a0580bd2fa9317cbfb928ef6ad51f5f182d222fe5dc94"
+    },
+    "free_parking.csv": {
+      "bytes": 865,
+      "sha256": "0cd026ce8bc710df45e03a20e54449d0dcdf7a39db1f9c771b7e52c4d83960b3"
+    },
+    "free_parking.yaml": {
+      "bytes": 393,
+      "sha256": "ac028b9f9eb6261b3c6b65080f5d51362c390e5cf635666ef0eb539735096016"
+    },
+    "free_parking_annotate_persons_preprocessor.csv": {
+      "bytes": 108,
+      "sha256": "aff08c93565d15af9b0915b4aa63530e9bb4d4d55e6f778ffe2ec110ea4b8867"
+    },
+    "free_parking_coefficients.csv": {
+      "bytes": 278,
+      "sha256": "7276a1085ed20ff875bc9db17dc720344322f5efd5cb6f315f5bd58a1e300210"
+    },
+    "initialize_households.yaml": {
+      "bytes": 409,
+      "sha256": "4b0ca7767b32729c7997cf09a5b0a24e0510e7551b5d4d074a2229299834f6a8"
+    },
+    "initialize_landuse.yaml": {
+      "bytes": 105,
+      "sha256": "0462669f883bf16a5cfb0c6056b4d38de62b8f0e02a754072837a785fab97b06"
+    },
+    "joint_tour_composition.csv": {
+      "bytes": 3667,
+      "sha256": "9e4561bd580c701c966810881d6174db8d4f359ac93aeb9ec7cf339ca29b4f86"
+    },
+    "joint_tour_composition.yaml": {
+      "bytes": 247,
+      "sha256": "48e1ff068fd7de45af486516299da2f47c9909a2534435618285b748115c2b76"
+    },
+    "joint_tour_composition_annotate_households_preprocessor.csv": {
+      "bytes": 1483,
+      "sha256": "a764e1621f5bf65758e7a17f2d72e3aa679303591efbc006e42977aec64c4900"
+    },
+    "joint_tour_composition_coefficients.csv": {
+      "bytes": 1499,
+      "sha256": "a515db9a8479bc9d0725e4af5cb290735f4d37ff89187889a76094764fc9f731"
+    },
+    "joint_tour_destination.yaml": {
+      "bytes": 54,
+      "sha256": "ef37cbe0ccb738d23650a0daedece96af7015736c3ccc85d64e1ab7b882a7191"
+    },
+    "joint_tour_frequency.csv": {
+      "bytes": 23121,
+      "sha256": "9f376f8881f5c18f3cbaa169de967cc8c51fc44efb1f890184cfa32299ca672c"
+    },
+    "joint_tour_frequency.yaml": {
+      "bytes": 239,
+      "sha256": "4498d2998c0a32238c46abb7874b8c9336a7fb69eab258d833df52f1e2c4d93d"
+    },
+    "joint_tour_frequency_alternatives.csv": {
+      "bytes": 413,
+      "sha256": "e875cded25c0c25afa543e5b0ee5ef11d8e3394890efe778e28a303daf54fa79"
+    },
+    "joint_tour_frequency_annotate_households_preprocessor.csv": {
+      "bytes": 2993,
+      "sha256": "5c1128704f4e8177b7a0d45331d195ee414a4689fc009e6b3f1a98b17a5790b3"
+    },
+    "joint_tour_frequency_coefficients.csv": {
+      "bytes": 3493,
+      "sha256": "5e6dd25f5dc06aff263bab77363a6088f91490e209d044c859f356b171d3c32f"
+    },
+    "joint_tour_participation.csv": {
+      "bytes": 12903,
+      "sha256": "094ecb34a8f5d6d6cbfe35c73a8d9027e4b353ea97972033cc49db309871439b"
+    },
+    "joint_tour_participation.yaml": {
+      "bytes": 404,
+      "sha256": "69335fa5186252af853b32e61165719744120233f667ede5e898433e8513fff5"
+    },
+    "joint_tour_participation_annotate_participants_preprocessor.csv": {
+      "bytes": 1484,
+      "sha256": "d9a3112efe156c62f735686abffb7e67b6f01d2117c51d151c49a87719311df0"
+    },
+    "joint_tour_participation_coefficients.csv": {
+      "bytes": 3587,
+      "sha256": "9b382527508388feb804529dfa0edf5457d5afc9f237030eec4975a2a1cec69c"
+    },
+    "joint_tour_scheduling.yaml": {
+      "bytes": 266,
+      "sha256": "52db8beda62fddc65e34d9717bfb9a6b1e4502c08e429c857908bc98a9252ee7"
+    },
+    "joint_tour_scheduling_annotate_tours_preprocessor.csv": {
+      "bytes": 812,
+      "sha256": "606545f534847a4c4cfaecb3792f7746fab41afbdddd34a40f0dd5ad88a56c7f"
+    },
+    "legacy-1.1.3/logging.yaml": {
+      "bytes": 1390,
+      "sha256": "ce685b4353009d95b356aa0cea5bc5f2e8bf3b055f69b9c0ce8903ddd7e6d380"
+    },
+    "legacy-1.1.3/network_los.yaml": {
+      "bytes": 499,
+      "sha256": "0709208cc1aa38d526655b59e3da2bec6fa837a50a3209f5b917bf357577aca0"
+    },
+    "legacy-1.1.3/settings.yaml": {
+      "bytes": 6914,
+      "sha256": "002d9e3f40b8c820b6d4ed2ae92b0e3756a48f18b4e5ba039d5ab29fb2071210"
+    },
+    "legacy-1.1.3/trip_destination_annotate_trips_preprocessor.csv": {
+      "bytes": 855,
+      "sha256": "bc824b8081d2013e7f88501029e53e76ba10f151307bd3ea325895988250fa40"
+    },
+    "logging.yaml": {
+      "bytes": 1469,
+      "sha256": "5e0e2d4aea3ed3e4a9c19fe1be0d18ce0f234d89654f3118c68c2fa7166f51af"
+    },
+    "mandatory_tour_frequency.csv": {
+      "bytes": 18138,
+      "sha256": "68a2fccab71a5a14474874c750b50690937e7df2afafd886bbcf24aff49efb4c"
+    },
+    "mandatory_tour_frequency.yaml": {
+      "bytes": 177,
+      "sha256": "122d4b1ff143a95c91e0dbaa474f0a6f4746baa7474796ce4c3da71429b2e940"
+    },
+    "mandatory_tour_frequency_alternatives.csv": {
+      "bytes": 178,
+      "sha256": "9c768824001bdd1d48387488d5d54d4d5346b5cf27d46758f4569746263b3a33"
+    },
+    "mandatory_tour_frequency_coefficients.csv": {
+      "bytes": 2086,
+      "sha256": "214cbfbf18c0eade55be4211bb61ea94059fb2d6f755047c7bcd59f9028baa39"
+    },
+    "mandatory_tour_scheduling.yaml": {
+      "bytes": 967,
+      "sha256": "8dca743e4927780d1853739d8c0056a687906640c2ff68ecccfcfafebba9f046"
+    },
+    "network_los.yaml": {
+      "bytes": 1087,
+      "sha256": "de3e617babcb6a907809e47f138a8d17a347fb8c16616e8a21f0cd55ac16cbcd"
+    },
+    "non_mandatory_tour_destination.csv": {
+      "bytes": 1730,
+      "sha256": "52469e3b156053af137d98003b1613a5a0423838d811c0035aeba753cde3db51"
+    },
+    "non_mandatory_tour_destination.yaml": {
+      "bytes": 1046,
+      "sha256": "3e92db6e9cd288e7747fa1b7e022893b922146353ca04656f3d535cb4344ae19"
+    },
+    "non_mandatory_tour_destination_coefficients.csv": {
+      "bytes": 623,
+      "sha256": "e1a50085c771167adc048e0a3fcb20148f44e2d3e139be80ca9867d48f82cba2"
+    },
+    "non_mandatory_tour_destination_sample.csv": {
+      "bytes": 1450,
+      "sha256": "5b7d15c43776849267f69aba58b7572133fa6d84f3e8fa1e31f3bbf21d3ae35e"
+    },
+    "non_mandatory_tour_frequency.csv": {
+      "bytes": 109597,
+      "sha256": "403316a4fd9e666eac9b862074558c661fc88449cd97ded832f8f47f53f1152b"
+    },
+    "non_mandatory_tour_frequency.yaml": {
+      "bytes": 1215,
+      "sha256": "d27ec2bd5bd1867916ccc8de48ac180b6f8225b5a9bc17db9098e918f11c070e"
+    },
+    "non_mandatory_tour_frequency_alternatives.csv": {
+      "bytes": 1402,
+      "sha256": "9532313d4af90219cbe2eeb63995c97f67aa310e17ba82e0c555f08203a13a5c"
+    },
+    "non_mandatory_tour_frequency_annotate_persons_preprocessor.csv": {
+      "bytes": 1539,
+      "sha256": "ed695d1607da40ea3ed05e86c15923df7918e0e4e0db08501abf13ec8ac5a252"
+    },
+    "non_mandatory_tour_frequency_coefficients_PTYPE_DRIVING.csv": {
+      "bytes": 11413,
+      "sha256": "aaa7e416f6d37052f66cb2a114726ffe271c0e1c3d505f072d903595e37ced97"
+    },
+    "non_mandatory_tour_frequency_coefficients_PTYPE_FULL.csv": {
+      "bytes": 11572,
+      "sha256": "7478739c6b679be38f2331f78be7e0b020433d4b8b8e3c13fad5eee9cda0d6f4"
+    },
+    "non_mandatory_tour_frequency_coefficients_PTYPE_NONWORK.csv": {
+      "bytes": 11660,
+      "sha256": "ce0048a68ee0f83be5f912ce667e9883dd5bf4521cbd779030ef012447ad56b2"
+    },
+    "non_mandatory_tour_frequency_coefficients_PTYPE_PART.csv": {
+      "bytes": 11495,
+      "sha256": "836b64fa38fe03aced39a5fee667bc97bc95a42f57ad0022b1ff3e04c03ec929"
+    },
+    "non_mandatory_tour_frequency_coefficients_PTYPE_PRESCHOOL.csv": {
+      "bytes": 11132,
+      "sha256": "621a618d82d71492d68014676b13f84126733252abef26bda16f2da0bc3f3edf"
+    },
+    "non_mandatory_tour_frequency_coefficients_PTYPE_RETIRED.csv": {
+      "bytes": 11425,
+      "sha256": "bd4378414402fb197a9a99a7edf29d00924d67b67405dcf8550ab6673d3491ea"
+    },
+    "non_mandatory_tour_frequency_coefficients_PTYPE_SCHOOL.csv": {
+      "bytes": 11400,
+      "sha256": "39e11e1cb660b9fbec94c5b9ed5354d4c80817e4d70b5443d280907bbb4158e7"
+    },
+    "non_mandatory_tour_frequency_coefficients_PTYPE_UNIVERSITY.csv": {
+      "bytes": 11582,
+      "sha256": "2e90e88d6f48385c75d1d85296fa2be16d521fe1e08d661b980c7f0c73ff9d50"
+    },
+    "non_mandatory_tour_frequency_extension_probs.csv": {
+      "bytes": 3987,
+      "sha256": "6b226a50573a2892961c93aba6bcaf515cf933a4f71ed7085cde68429067063d"
+    },
+    "non_mandatory_tour_scheduling.yaml": {
+      "bytes": 434,
+      "sha256": "5efa71e9f1664bf176a182e2214f1dd41fac54b34e168bf5a45597bd7f6fc7cf"
+    },
+    "non_mandatory_tour_scheduling_annotate_tours_preprocessor.csv": {
+      "bytes": 310,
+      "sha256": "f0536d9fdbb6d99c7e5e140d92a63c13633ba171445f52651a758d11af7e812a"
+    },
+    "school_location.csv": {
+      "bytes": 1355,
+      "sha256": "13a4a0465c1f6755a9540413510a34fd2311d5937cd4e670c6e3c230aea174cf"
+    },
+    "school_location.yaml": {
+      "bytes": 1722,
+      "sha256": "b733c0ba1490ec93519d86ad23a6d8a8e92dad1b07f7943be7494fa944cf990d"
+    },
+    "school_location_coefficients.csv": {
+      "bytes": 521,
+      "sha256": "eee86c7e28cdcd8c417592f1f6e3d92c1b620dbf7a7e404ee94aadb8de17b15b"
+    },
+    "school_location_sample.csv": {
+      "bytes": 1112,
+      "sha256": "f49914d277688a36a51867fde950070567feb5f34d5fd9b879c26b22f653da47"
+    },
+    "settings.yaml": {
+      "bytes": 7588,
+      "sha256": "0c625e1fb0a092da2267d973bd3bcb68482a5091cae284f25368ae870a9ad701"
+    },
+    "shadow_pricing.yaml": {
+      "bytes": 986,
+      "sha256": "557be04475c1a6d033fb3b19ffb3e35daff33808bb4d54d5a6c1ac1af66b4dbb"
+    },
+    "stop_frequency.yaml": {
+      "bytes": 1991,
+      "sha256": "9e29095ffdd55bb5fe63b33f33fdc34986e81d0149bb346cb8938e2f7b0ec995"
+    },
+    "stop_frequency_alternatives.csv": {
+      "bytes": 317,
+      "sha256": "156a785d3d5b53e8e11b9fb2e0d43f96d99e7c5dd9026fd45ade356b7a294598"
+    },
+    "stop_frequency_annotate_tours_preprocessor.csv": {
+      "bytes": 4041,
+      "sha256": "bb505408ca051a82fe8f9f80f957854065a6651184fabda51c35733eb1e0e5b1"
+    },
+    "stop_frequency_atwork.csv": {
+      "bytes": 10798,
+      "sha256": "3666ef426d20954ea2952e728a159e8532b066f8014ef5dc411aa52bb2a25ace"
+    },
+    "stop_frequency_coefficients_atwork.csv": {
+      "bytes": 1975,
+      "sha256": "4de8a5b17d416b6ed75c89d09bf8ba22c77d8adb0bccbee6fba772c612f960bb"
+    },
+    "stop_frequency_coefficients_eatout.csv": {
+      "bytes": 3970,
+      "sha256": "66ddbf5ae1e2d3ffe6c370e4b34e69e75241378bd5d45a55213c2815a2cdd510"
+    },
+    "stop_frequency_coefficients_escort.csv": {
+      "bytes": 3382,
+      "sha256": "48aa26936997834c089083428c94cd8a425940d9eb1d69b5591dd97d6cd0b3dc"
+    },
+    "stop_frequency_coefficients_othdiscr.csv": {
+      "bytes": 3735,
+      "sha256": "65e5ff8faea6ef3ecb8b0c5b5fe522e812fe70289b454348a26519ab54fc6cd2"
+    },
+    "stop_frequency_coefficients_othmaint.csv": {
+      "bytes": 4357,
+      "sha256": "a9f252843241862a2b6cc22fa3c50e9cb352208cd2751132abb1bbbf2b13907d"
+    },
+    "stop_frequency_coefficients_school.csv": {
+      "bytes": 2149,
+      "sha256": "c7a1f78286fb868505f4567e220f13a98e1fb4b60753580ed05fc3fce7a5b5c4"
+    },
+    "stop_frequency_coefficients_shopping.csv": {
+      "bytes": 3989,
+      "sha256": "e2be12137d4006703ae3406466a8fbdaaf92a351489a67e8dfa460ada8c1b98a"
+    },
+    "stop_frequency_coefficients_social.csv": {
+      "bytes": 3984,
+      "sha256": "d35763cd1134f4b5c55552cff45b5fca3a73a5b7438eee14abd9d8f9fa7c224e"
+    },
+    "stop_frequency_coefficients_univ.csv": {
+      "bytes": 2068,
+      "sha256": "222b6a4ad48dfcc073961dd7489aad818cec7e26860d6b4416b6fa42a6e2d3b0"
+    },
+    "stop_frequency_coefficients_work.csv": {
+      "bytes": 3356,
+      "sha256": "207e54afce6166f217c66b473d811a63b8a0b0979e130224a10a80b0aef69079"
+    },
+    "stop_frequency_eatout.csv": {
+      "bytes": 21457,
+      "sha256": "9c2beb54972849cf374eaee3f4489506f0b8a07a0d4ad2fb450c13e839f7c233"
+    },
+    "stop_frequency_escort.csv": {
+      "bytes": 18107,
+      "sha256": "a755c2b599336e36c2a4ca61eb18bc3068a7248b8c2b623fecb52d6df6e6644f"
+    },
+    "stop_frequency_othdiscr.csv": {
+      "bytes": 19943,
+      "sha256": "3e1f636b3b3ebbcf6d9b31668c33fb0ddbbec92d1737111b20bd1218627f93e8"
+    },
+    "stop_frequency_othmaint.csv": {
+      "bytes": 24477,
+      "sha256": "f7c96be162b88fcadd2994611669ce96f2efc39e83e62dbbe0ddd8e76d1e4db4"
+    },
+    "stop_frequency_school.csv": {
+      "bytes": 15015,
+      "sha256": "fba8907ab1d1d1dd99c7fb2e6af2fb84fe71877828cce37b687f43d52a6aff9c"
+    },
+    "stop_frequency_shopping.csv": {
+      "bytes": 21883,
+      "sha256": "cb0a5920ed1ec0b4eedc60a444dc3da9353584f962f015f702ec18b45490b936"
+    },
+    "stop_frequency_social.csv": {
+      "bytes": 21634,
+      "sha256": "883557ddf2b8634e28045837fcfe501a33febdefeeb83a6435dd9b6b543bdef0"
+    },
+    "stop_frequency_univ.csv": {
+      "bytes": 14550,
+      "sha256": "371abcb3f81927cb4522c62ed79c760f328713dc1b6c87a914147a911537b4e6"
+    },
+    "stop_frequency_work.csv": {
+      "bytes": 24898,
+      "sha256": "ea3c8fefedd76514a41320b4a72681971f319c6b2f63512442643a5dfa486d7f"
+    },
+    "summarize.csv": {
+      "bytes": 6290,
+      "sha256": "e54f86d6d36d2687fff059f52c200b3b90e59462395dde90a96aa630aa347936"
+    },
+    "summarize.yaml": {
+      "bytes": 7197,
+      "sha256": "7f96b0816d2d93ddbec3636414ca7a766c98326591a5e33722cd9c7ed57fd944"
+    },
+    "summarize_preprocessor.csv": {
+      "bytes": 12682,
+      "sha256": "35b2934cdb5ae865113032685962157c3014aec3c031b4671ee065fde012d578"
+    },
+    "tour_departure_and_duration_alternatives.csv": {
+      "bytes": 1049,
+      "sha256": "12ac28f9a0484553d9b459a04ecbd0357fdf3b80b882e5ecd1b5ef3995971ed8"
+    },
+    "tour_departure_and_duration_segments.csv": {
+      "bytes": 253,
+      "sha256": "835f69ec93c7f55d109d0eb5c86c23a46826f0e663557af6bc96e473dedd8c27"
+    },
+    "tour_mode_choice.csv": {
+      "bytes": 60493,
+      "sha256": "1aa8ce07a51a95646a4ede5f5f64d2ffcbf4acc3aa20a7a0681c5057b8b22c44"
+    },
+    "tour_mode_choice.yaml": {
+      "bytes": 4507,
+      "sha256": "70491addcfa0d25b1341794ea6bad47970d620fce522395f35f81c3275f7a92b"
+    },
+    "tour_mode_choice_annotate_choosers_preprocessor.csv": {
+      "bytes": 9621,
+      "sha256": "5b241f0332274114e2046c0268054d6dc83d8841c903d39102cb97f08172c40f"
+    },
+    "tour_mode_choice_coefficients.csv": {
+      "bytes": 14338,
+      "sha256": "42a98dc65adb64a61de88d92e6fd9939a9a32900140a9fa8c5e3eacedb4a84b2"
+    },
+    "tour_mode_choice_coefficients_template.csv": {
+      "bytes": 33886,
+      "sha256": "a5e3540c1ab3b33af9b12678bd95ec9384a77cb7598dbc8ae9cfea534fb1f100"
+    },
+    "tour_scheduling_atwork.csv": {
+      "bytes": 7059,
+      "sha256": "2aa0d09a160309c38ca65353ec5f1314eea280c38f6061ef2e7e88b3003eaee8"
+    },
+    "tour_scheduling_atwork.yaml": {
+      "bytes": 223,
+      "sha256": "e8b819dbdf3c62e0dcc07bfbdc6a7bbdc2d5905fe1968935b22b89e359e70371"
+    },
+    "tour_scheduling_atwork_coefficients.csv": {
+      "bytes": 2464,
+      "sha256": "9255d934bff1d090d462a08da37fadab93d56d6ce5b23ace3cfbe6a43dcc1366"
+    },
+    "tour_scheduling_atwork_preprocessor.csv": {
+      "bytes": 124,
+      "sha256": "7b9074a37e05add8af4a0efb1b44e972ed2fb3f0e3aafbf9e1a3a8660e59fc65"
+    },
+    "tour_scheduling_joint.csv": {
+      "bytes": 10727,
+      "sha256": "6f5434071f77e8f684fbe0946b60a8a1bf3eac94b47cf97bd024bde9849ae55e"
+    },
+    "tour_scheduling_joint_coefficients.csv": {
+      "bytes": 3176,
+      "sha256": "297afb8daccf48872b63af78408030feee62b29732445ea7bfca6176617414f0"
+    },
+    "tour_scheduling_nonmandatory.csv": {
+      "bytes": 16796,
+      "sha256": "d7a297d0b87a71a29c62b438d6a323fe5e14b3264bfb287df2f1c4d5e1bb65be"
+    },
+    "tour_scheduling_nonmandatory_coefficients.csv": {
+      "bytes": 5159,
+      "sha256": "44ad9f3ddc16bda17b19db60a020cb9497ba22215fbd32acdf696ca85a41028f"
+    },
+    "tour_scheduling_school.csv": {
+      "bytes": 8744,
+      "sha256": "1fa0ce2cece1c12709c8d1b50b0d58faee99b3ec2ff9bd3ccab66f550a9de6d3"
+    },
+    "tour_scheduling_school_coefficients.csv": {
+      "bytes": 2807,
+      "sha256": "dd1de420f89b4a2939d6c1480751aad1fd7169ba09deedcc0e2eecb6cd2cf4fd"
+    },
+    "tour_scheduling_work.csv": {
+      "bytes": 10807,
+      "sha256": "88c2589e7dde16736e59a247025890994bc3730458e91f54bfd5111ba6255ccf"
+    },
+    "tour_scheduling_work_coefficients.csv": {
+      "bytes": 3565,
+      "sha256": "242b067e9afd8186eae7c9d19049545782390dc7b5cb7c0a5a0aef6c73cab071"
+    },
+    "trip_destination.csv": {
+      "bytes": 3795,
+      "sha256": "f1822144db046e1e665a5f122c864152f06cd54d06f089549472602dd188b6ec"
+    },
+    "trip_destination.yaml": {
+      "bytes": 1273,
+      "sha256": "1a2519ff1c761bd123a7b3b38a19e1c758c57ca2c97d58e6ecfbc9597a9a7ee8"
+    },
+    "trip_destination_annotate_trips_preprocessor.csv": {
+      "bytes": 1014,
+      "sha256": "89946aedcabd55f5a1d213d4089d60e04a3e78d7154cb6df7b59da83fde997a6"
+    },
+    "trip_destination_coefficients.csv": {
+      "bytes": 691,
+      "sha256": "5885559a874ba10379a0c13e5529813d6097c90075498c7c85952f799694486a"
+    },
+    "trip_destination_sample.csv": {
+      "bytes": 2234,
+      "sha256": "deb039933ff944da624601a6afefb54bd9057f7edebc565edc66a59c7d4411f8"
+    },
+    "trip_mode_choice.csv": {
+      "bytes": 67701,
+      "sha256": "124a331c9550990f2af9669151409307142a9a8a20502693ad38f0efe3b84189"
+    },
+    "trip_mode_choice.yaml": {
+      "bytes": 4670,
+      "sha256": "3806952c10607b7014a087189b4f0c925fdf6d81f4ce778af635bf8fd413f97a"
+    },
+    "trip_mode_choice_annotate_trips_preprocessor.csv": {
+      "bytes": 7687,
+      "sha256": "832a62ba06717794cab6b1e18b18455ea303927b8ace9ced385c7f439ef33e73"
+    },
+    "trip_mode_choice_coefficients.csv": {
+      "bytes": 19262,
+      "sha256": "b2784db422c0153a821ac5621ece0ae3913802f5568d6e48dcd8b21c64d0d13c"
+    },
+    "trip_mode_choice_coefficients_template.csv": {
+      "bytes": 49146,
+      "sha256": "88e7587f29ad37bed8144c1a9fd7d4ab52cd806e2a907b24b45e28eeb02666da"
+    },
+    "trip_purpose.yaml": {
+      "bytes": 149,
+      "sha256": "a19541897f7f371b1eb2d8098fb0fb14f208e47228bd3d0d1aad2adbe2875a03"
+    },
+    "trip_purpose_and_destination.yaml": {
+      "bytes": 173,
+      "sha256": "4e43d7dcad92d62bf768fdd4561825d2b1d5dbc550b8d0f2bd07ceee03dceb97"
+    },
+    "trip_purpose_annotate_trips_preprocessor.csv": {
+      "bytes": 159,
+      "sha256": "0ed631deda2aa146dedb01a376559f0a963f9463ed611c5fcc591aef7f3ce0bc"
+    },
+    "trip_purpose_probs.csv": {
+      "bytes": 9575,
+      "sha256": "f3e78d78a772ab3410c3591832e139865738721b977cf9f02a3f1737b7414d14"
+    },
+    "trip_scheduling.yaml": {
+      "bytes": 329,
+      "sha256": "d1d119a717fd831090ca03c4e07f91465d0b387bb22ef943b5a1c98a3c712320"
+    },
+    "trip_scheduling_probs.csv": {
+      "bytes": 119158,
+      "sha256": "3a1c9c84750b717b2811f7fd80cb0376c43451bccc0a1a4cebc5db905f56eb95"
+    },
+    "workplace_location.csv": {
+      "bytes": 1322,
+      "sha256": "fb58cfc3ff31bd86178cef6a0cea6ee4fdf28451618997405363e64f443c8482"
+    },
+    "workplace_location.yaml": {
+      "bytes": 1977,
+      "sha256": "bba2a6a9798f6ebb9214b88e53118612101d3269cb7edbb82dea292f21ce3006"
+    },
+    "workplace_location_coefficients.csv": {
+      "bytes": 232,
+      "sha256": "551169a827e97761975fd27c234caa5d7cca807b00034204c6a598429074ddef"
+    },
+    "workplace_location_sample.csv": {
+      "bytes": 1124,
+      "sha256": "3f3e761ef09fbf46ae9a6979e733032c09bd9664fc46d649467eef829cd9bf1a"
+    },
+    "write_data_dictionary.yaml": {
+      "bytes": 182,
+      "sha256": "e7a86f28e98073b2325c16005299247a37811c84ba201daae97c079aa7c48e39"
+    },
+    "write_trip_matrices.yaml": {
+      "bytes": 8655,
+      "sha256": "3ee12f430af97d6a563d4572c1ed7335acfd05740ae230f432cdc20bc4eb7e34"
+    },
+    "write_trip_matrices_annotate_trips_preprocessor.csv": {
+      "bytes": 11122,
+      "sha256": "4ca4a8c40a5360a3831d7233b9f2f9f4f066fa842561a2f60507d1c54be313e7"
+    }
+  }
+}
