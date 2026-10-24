@@ -890,3 +890,126 @@ occurs. The PR remains draft. The remaining opening steps are:
    exclusive opening receipt. Historical synthetic receipts do not authorize it.
 6. Only a later authorized opening may access approved development outcomes.
    Keep held-out outcomes closed and AequilibraE separate from ActivitySim.
+
+## October 24, 2026 UTC: 16 GiB clears school preparation but fails at workplace preparation
+
+**The full current arm exceeds the admitted 16 GiB resource envelope. Execution
+stops before SEMCOG.** The uninstrumented engine completes school location and
+the `work_low` and `work_med` workplace segments. The kernel kills it during
+`workplace_location.i1.logsums.work_high`, after sampling 11,287,061 destination
+rows and before any retained inner logsum chunk for that segment. These are
+intermediate model rows, not completed tours or observed records. Without the
+previous Python allocation tracer, the exact failing expression is unmeasured.
+The earlier grade-school allocation diagnosis does not identify this new
+workplace allocation instruction.
+
+The lead explicitly authorizes this 16 GiB successor to the earlier 9 GiB
+attempt. The full retained population remains 1,060,601 households, 2,617,177
+persons and 634 zones. The run uses the proven 268,435,456-byte production target,
+minimum chunk ratio 0.05, frozen trained cache and process-local allocator
+settings. Integer and float downcasting remain false. Configurations match all
+four retained 2,000-household exact-parity execution receipts byte for byte.
+The intended suffix resumes after `trip_purpose_and_destination` with chunking
+disabled; it never starts. No population sample, coefficient change, engine
+patch, scalar fitting or default change occurs.
+
+| Full arm | Result | Outer elapsed seconds | Kernel peak bytes | Completed tours / trips / MODELED shares |
+|---|---|---:|---:|---|
+| Current coefficients | OOM kill during workplace `work_high` logsum preparation | 3,231.999 | 17,179,869,184 | Unavailable / unavailable / null |
+| SEMCOG walk candidate | Not run after the current-arm failure | Unavailable | Unavailable | Unavailable / unavailable / null |
+
+The command uses `systemd-run --user --scope -p MemoryMax=16G -p
+MemorySwapMax=0`. The external observer retains one OOM event, one OOM kill,
+7,781 memory-limit events and a zero-byte swap peak before cgroup removal.
+The systemd journal independently reports `oom-kill`, 16G peak and 3,231.886
+seconds of scope wall time. The controller reports exit code -15 and stops.
+The killed in-scope monitor writes no terminal health receipt. No terminal
+process-RSS measurement is invented. Earlier limit-pressure events during
+school and `work_med` preparation reclaim memory without an OOM kill; those
+successful stage transitions do not establish full-arm completion.
+
+| Current-prefix stage group | One-second sampled cgroup peak bytes |
+|---|---:|
+| Startup | 404,348,928 |
+| Land-use initialization | 1,881,800,704 |
+| Household initialization | 6,303,318,016 |
+| Accessibility | 3,698,024,448 |
+| School location | 17,179,832,320 |
+| Workplace location | 17,179,766,784 |
+
+These stage values are sampled lower bounds, separate from the kernel lifetime
+peak. [Run health](full16-evidence/run-health.json) retains stage sample counts,
+commands, configuration hashes, last engine lines and external terminal
+counters. No full-arm final CSV exists. Final-output hash maps remain empty;
+tour counts, trip counts, MODELED shares and preregistered strata remain
+unavailable, not zero. The modeled-health report does not run after the failure.
+Neither ActivitySim arm is compared with observations, with the other arm or
+with AequilibraE.
+
+### Private evidence and verification
+
+The [archive manifest](EVIDENCE_MANIFEST.json) replaces 551 raw-log, telemetry
+and large-evidence files totaling 35,339,551 bytes. Every archived byte length
+and SHA-256 passes verification before and after removal from the working tree.
+The archive root is
+`/home/nathaniel/.local/state/openplan/tbi2019-evidence-archive-20261024/`.
+The final manifest SHA-256 is
+`c16b4c53aeec124c211966e615cff99b87944cced92bfcfb72a683a39bb14099`.
+Historical commits and reports remain intact. This changes the branch's current
+file tree; it does not rewrite Git history or remove historical Git objects.
+
+The new private run root is
+`/home/nathaniel/.local/state/openplan/tbi2019-full16-20261024/`.
+Its [output manifest](full16-evidence/OUTPUT_MANIFEST.json) inventories 50 files
+and 1,508,528,501 bytes, including partial checkpoints, cache, logs and resource
+receipts. Every entry passes a second byte-length and SHA-256 verification.
+Manifest SHA-256:
+`5bbb54f960d15d930331f8ff1adc5c7dd06b63c808618314ff04fafcf1a3fc04`.
+These are failed-attempt artifacts, not completed travel outputs.
+
+The direction checker now allows 64 MiB for captured Git output. The command
+passes and retains existing advisory review reminders without changing dates.
+Scoped verification passes 18 tests with zero skips in the complete test runs.
+Fourteen accepted mutation controls contain three harmless survivors and 11
+intended assertion failures. Each focused Vitest mutation intentionally leaves
+seven unrelated tests unselected. The initial root-directory Vitest invocation
+fails on script resolution; the corrected application-directory run passes.
+[Verification](full16-evidence/VERIFICATION.md) records restoration, skips and
+blind categories. No Next.js build runs.
+
+Native preflight rechecks both retained exact-parity comparisons and input/cache
+hashes. All 117 original frozen records and 26 unique installed engine,
+configuration and pandas files retain their hashes after execution. The runtime
+remains CPython 3.11.15, ActivitySim 1.5.1, NumPy 1.25.2 and pandas 2.3.3. No TBI
+outcome field, held-out outcome, Docker container, hosted system, managed
+database or secret is accessed. The PR remains draft. No retry follows this
+resource failure.
+
+### Exact remaining frozen-opening steps after the 16 GiB stop
+
+1. The lead separately authorizes a successor resource or exact execution
+   design. Resolve the measured workplace preparation limit, then complete
+   both full retained-population arms and their unchunked suffixes. Preserve
+   this failure, existing parity criteria, input exclusions and final-output
+   custody. A higher uncapped peak and full-population suffix requirements
+   remain unmeasured. Retain completed modeled-only health and supported strata.
+2. Grade population and historical travel inputs independently. Preserve the
+   four source-conflict exclusions and unchanged population gates. Resolve or
+   preregister fare and cost-year applicability, MVTA service dependence,
+   drive access, period speeds, walk/bicycle assumptions, parking and toll
+   limitations. Runtime completion cannot waive these admissions.
+3. Freeze observed/model eligibility correspondence, homogeneous linked-trip
+   families, complete diary and location continuity, university evidence,
+   joint and at-work handling, quality rules, every required domain and
+   exclusion denominator. Keep unsupported domains unavailable.
+4. Freeze the derived day-weight-per-tour primary estimator separately from
+   the trip-weighted sensitivity. Fix the day universe, publisher joins,
+   household clusters, county/sample-segment strata, Taylor-linearized ratio
+   variance, singleton treatment and simultaneous bounds.
+5. The lead verifies the original split, held-out boundary and complete input,
+   implementation and output custody, then issues a new exclusive opening
+   receipt. Historical synthetic receipts and consumed locks do not authorize it.
+6. Only a later authorized opening may request approved development-outcome
+   fields for the frozen in-scope IDs. Evaluate each ActivitySim arm independently
+   against its preregistered gates. Keep held-out outcomes closed and AequilibraE
+   separate. No scientific acceptance or default change follows from this run.

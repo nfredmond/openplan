@@ -1,0 +1,13 @@
+{
+  "files": 50,
+  "bytes": 1508528501,
+  "all_lengths_and_hashes_match": true,
+  "manifest_sha256": "5bbb54f960d15d930331f8ff1adc5c7dd06b63c808618314ff04fafcf1a3fc04",
+  "executed_controller_unchanged": true,
+  "final_csvs": {
+    "current": [],
+    "semcog": []
+  },
+  "current_suffix_started": false,
+  "semcog_started": false
+}

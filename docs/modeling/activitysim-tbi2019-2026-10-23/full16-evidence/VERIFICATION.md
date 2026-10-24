@@ -36,3 +36,12 @@ also verify all 117 original frozen records, using archive paths where moved,
 and 26 unique installed engine, configuration and pandas files. These checks
 establish retained-byte custody, not full-population parity or scientific
 accuracy. No survey outcome field is read.
+
+The full current prefix then fails at the 16 GiB cap during workplace
+`work_high` logsum preparation. The controller's failure path executes natively:
+no suffix or SEMCOG start receipt exists. Both final-CSV sets are empty. The
+modeled-share report is skipped after the required stop. External cgroup counters
+and the systemd journal corroborate one OOM kill and zero swap. The scope's
+in-process terminal health receipt remains missing. All 50 private run files
+pass a second length/hash check; all original frozen and installed-source hashes
+pass after execution. This is a resource failure, not a scientific comparison.

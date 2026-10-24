@@ -1,0 +1,144 @@
+{
+  "claim": "MODELED run health only; no scientific acceptance",
+  "outcomes_accessed": false,
+  "private_root": "/home/nathaniel/.local/state/openplan/tbi2019-full16-20261024",
+  "full_population": {
+    "households": 1060601,
+    "persons": 2617177,
+    "zones": 634
+  },
+  "arms": [
+    {
+      "arm": "current",
+      "status": "failed",
+      "tours": null,
+      "trips": null,
+      "mode_shares_MODELED": null,
+      "final_hashes": {},
+      "outcomes_accessed": false,
+      "error": "Stage failed; no further execution: current-prefix"
+    },
+    {
+      "arm": "semcog",
+      "status": "not_run",
+      "tours": null,
+      "trips": null,
+      "mode_shares_MODELED": null,
+      "final_hashes": {},
+      "outcomes_accessed": false
+    }
+  ],
+  "stages": [
+    {
+      "name": "current-prefix",
+      "scope_health": null,
+      "run": {
+        "command": [
+          "systemd-run",
+          "--user",
+          "--scope",
+          "--unit=tbi16-current-prefix",
+          "-p",
+          "MemoryMax=16G",
+          "-p",
+          "MemorySwapMax=0",
+          "env",
+          "OPENBLAS_NUM_THREADS=1",
+          "OMP_NUM_THREADS=1",
+          "MALLOC_MMAP_THRESHOLD_=131072",
+          "MALLOC_TRIM_THRESHOLD_=0",
+          "MALLOC_ARENA_MAX=2",
+          "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/bin/python",
+          "-B",
+          "/home/nathaniel/.local/state/openplan/tbi2019-full16-20261024/monitor.py",
+          "/home/nathaniel/.local/state/openplan/tbi2019-full16-20261024/current-prefix",
+          "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/bin/python",
+          "-B",
+          "-m",
+          "activitysim",
+          "run",
+          "-c",
+          "/home/nathaniel/.local/state/openplan/tbi2019-full16-20261024/config-current-prefix",
+          "-c",
+          "/home/nathaniel/.t3/worktrees/openplan/t3-fe427aa8/data/_screening_cache/tbi2019-choice-parity/bundle/configs",
+          "-c",
+          "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/activitysim/examples/prototype_mtc/configs",
+          "-d",
+          "/home/nathaniel/.t3/worktrees/openplan/t3-fb678273/data/_screening_cache/tbi2019-prechunk/inputs-full",
+          "-o",
+          "/home/nathaniel/.local/state/openplan/tbi2019-full16-20261024/current"
+        ],
+        "config_hashes": {
+          "logging.yaml": "768c127f265f728df27e97db1667c42ae1723b44ae647e571d61be7a68d6aa70",
+          "network_los.yaml": "28462bf20dfe305f422e2ea586f253a0f98a9ef423fae9ee555505c9405eefd9",
+          "settings.yaml": "7440fc63a1c58bdc37bea235fb9ee915b278a8b60d3be758081c0fbae42b988f"
+        },
+        "outcomes_accessed": false,
+        "exit_code": -15,
+        "elapsed_seconds": 3231.9994081910118
+      },
+      "external_observer_terminal": {
+        "event": "cgroup_removed",
+        "elapsed_since_attachment": 3231.848091187014,
+        "last_counters": {
+          "memory.peak": "17179869184",
+          "memory.events": "low 0\nhigh 0\nmax 7781\noom 1\noom_kill 1\noom_group_kill 0\nsock_throttled 0",
+          "memory.swap.peak": "0"
+        }
+      },
+      "stage_groups_sampled": {
+        "startup": {
+          "first_sample_seconds": 0.00017923797713592649,
+          "last_sample_seconds": 2.0012653910089284,
+          "sampled_cgroup_peak_bytes": 404348928,
+          "samples": 3
+        },
+        "initialize_landuse": {
+          "first_sample_seconds": 3.0017288210219704,
+          "last_sample_seconds": 11.005782923020888,
+          "sampled_cgroup_peak_bytes": 1881800704,
+          "samples": 9
+        },
+        "initialize_households": {
+          "first_sample_seconds": 12.006313349993434,
+          "last_sample_seconds": 25.01365848298883,
+          "sampled_cgroup_peak_bytes": 6303318016,
+          "samples": 14
+        },
+        "compute_accessibility": {
+          "first_sample_seconds": 26.014156148012262,
+          "last_sample_seconds": 26.014156148012262,
+          "sampled_cgroup_peak_bytes": 3698024448,
+          "samples": 1
+        },
+        "school_location": {
+          "first_sample_seconds": 27.014687607006636,
+          "last_sample_seconds": 1408.6933968240046,
+          "sampled_cgroup_peak_bytes": 17179832320,
+          "samples": 1382
+        },
+        "workplace_location": {
+          "first_sample_seconds": 1409.6940217920346,
+          "last_sample_seconds": 3230.5846660769894,
+          "sampled_cgroup_peak_bytes": 17179766784,
+          "samples": 1821
+        }
+      },
+      "last_engine_lines": [
+        "[51:27.34] WARNING: Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -4_549_902_336 min_chunk_size: 0 base_chunk_size: 268_435_456",
+        "[51:27.34] DEBUG: ChunkLedger.close trace_label: workplace_location.i1.sample.work_high.interaction_sample.eval_interaction_utils.chunk_log",
+        "[51:27.34] DEBUG: ChunkLedger.close hwm_bytes: 0 workplace_location.i1.sample.work_high.interaction_sample.eval_interaction_utils.chunk_log.init",
+        "[51:27.34] DEBUG: ChunkLedger.close hwm_rss 4874567680 workplace_location.i1.sample.work_high.interaction_sample.eval_interaction_utils.chunk_log.init",
+        "[51:27.34] DEBUG: ChunkLedger.close hwm_uss 4818337792 workplace_location.i1.sample.work_high.interaction_sample.eval_interaction_utils.chunk_log.init",
+        "[51:27.34] WARNING: Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -4_477_026_304 min_chunk_size: 13_421_772 base_chunk_size: 268_435_456",
+        "[51:27.35] DEBUG: workplace_location.i1.sample.work_high.interaction_sample waiting for mem_monitor thread to terminate",
+        "[51:27.35] DEBUG: ChunkLedger.close trace_label: workplace_location.i1.sample.work_high.interaction_sample",
+        "[51:27.35] DEBUG: ChunkLedger.close hwm_bytes: 0 workplace_location.i1.sample.work_high.interaction_sample.init",
+        "[51:27.35] DEBUG: ChunkLedger.close hwm_rss 4801683456 workplace_location.i1.sample.work_high.interaction_sample.init",
+        "[51:27.35] DEBUG: ChunkLedger.close hwm_uss 4745461760 workplace_location.i1.sample.work_high.interaction_sample.init",
+        "[51:30.43] INFO: Running workplace_location.i1.logsums.work_high with 11287061 rows"
+      ]
+    }
+  ],
+  "resource_limits": "Stage-group memory.current peaks use one-second samples and are lower bounds. Scope health memory.peak is a kernel lifetime peak. External terminal records retain the last observed counters before cgroup removal; they may miss later events."
+}
