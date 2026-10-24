@@ -1,0 +1,4 @@
+Oct 23 17:42:04 natford systemd[2609]: Started op-tbi2019-11910f11-semcog-stream.scope - [systemd-run] /usr/bin/env OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=2 /usr/bin/time -v /home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/bin/python -u -B /home/nathaniel/.t3/worktrees/openplan/t3-11910f11/docs/modeling/activitysim-tbi2019-2026-10-23/integration-evidence/run-modeled-arm.py semcog.
+Oct 23 17:42:43 natford systemd[2609]: op-tbi2019-11910f11-semcog-stream.scope: The kernel OOM killer killed some processes in this unit.
+Oct 23 17:42:43 natford systemd[2609]: op-tbi2019-11910f11-semcog-stream.scope: Failed with result 'oom-kill'.
+Oct 23 17:42:43 natford systemd[2609]: op-tbi2019-11910f11-semcog-stream.scope: Consumed 38.960s CPU time over 39.133s wall clock time, 6G memory peak.

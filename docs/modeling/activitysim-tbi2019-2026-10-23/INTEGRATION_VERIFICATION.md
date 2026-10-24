@@ -199,3 +199,59 @@ Cumulative scoped results total 177 Python tests passed, four stock-path skips,
 and 34 TypeScript tests passed. Seven mutation campaigns contain 87 controls:
 eight harmless survivors and 79 targeted assertion failures. The parser checks
 are blind to scientific truth and historical service coverage.
+
+## Full bundle, archive and initial modeled attempts
+
+The streaming-reader bundle attempt completes under the 6 GiB, zero-swap cap.
+It preserves the full 704-zone parent and derives the 638-zone runtime package
+with 1,100,948 households and 2,814,596 persons. It removes 118,754 households and
+335,573 persons for the identified MVTA member-city overlap. The derivative
+contains all 826 matrices with the matching retained zone order.
+
+The initial input archive completes with 492 inventoried files and SHA-256
+`bd0c35dec94b135f8d16bf001e49a35d70e6ab0ebc7a410051e93d4a71b15935`.
+Both initial model arms start, then receive OOM kills at the 6 GiB cap during
+household/person initialization. Neither produces completed tours or mode shares.
+The initial output directories and logs remain preserved.
+
+The installed ActivitySim file-backed skim factory matches the default factory
+on all 336,218,344 values in the real 826-matrix, 638-zone input. Both use the
+existing float32 runtime representation. A reverse traversal survives; a
+deliberate cache-value corruption fails and exact cache hash restoration passes.
+This native check adds one harmless and one intended-failure control, bringing
+the total to 89 controls: nine harmless survivors and 80 intended failures.
+Python test counts remain 177 passed plus four stock-path skips; TypeScript
+remains 34 passed. Factory-value parity does not establish behavioral validity.
+Both modeled retries use the same explicit `MemMapSkimFactory` overlay.
+
+## Archive verification and further memory attempts
+
+All 493 initial archive members, including the embedded inventory, match their
+declared hashes and byte lengths. Reordering the inventory survives. Four
+controls change received member metadata after hashing and fail for a missing
+member, wrong hash, wrong length or changed embedded inventory. These controls
+do not corrupt physical tar bytes or authenticate producers. The inventory
+remains unchanged. This brings the accepted control count to 94, comprising
+10 harmless survivors and 84 intended failures.
+
+Both memory-mapped model attempts exceed the 6 GiB cap during high-school
+location logsums after passing initialization and university location choice.
+The failed outputs and receipts remain under `.memmap-memory` names.
+
+A proposed grouped-logsum wrapper passes six unit tests and six controls
+(one harmless survivor, five intended failures). Its native exact-parity check
+fails on one work logsum by one floating-point unit. This candidate remains
+unadmitted and unused by both modeled arms. Two earlier fixture-setup errors
+also remain retained. Passing synthetic controls do not overrule that failure.
+
+A separate allocator wrapper passes three tests and five controls, including
+one harmless survivor and four intended assertion failures. It preserves
+argument and result identity, call order, one original invocation, and original
+exceptions. The native attempt uses this wrapper to collect Python garbage and
+release unused glibc heap before calling the unchanged installed engine function.
+The cumulative source-suite count is 186 Python tests passed, four stock-path
+skips, and 34 TypeScript tests passed. Accepted source/native control campaigns
+now total 105: 12 harmless survivors and 93 intended failures. These counts
+include the unadmitted batching candidate's synthetic controls, not a passing
+native parity result for that candidate. Allocator run completion remains a
+separate native result.

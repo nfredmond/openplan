@@ -1,0 +1,25 @@
+Running as unit: op-tbi2019-11910f11-archive-check.scope; invocation ID: 9ce23f6cf96049659f6ab3d44c1a5691
+{"archive_sha256": "bd0c35dec94b135f8d16bf001e49a35d70e6ab0ebc7a410051e93d4a71b15935", "inventory_sha256": "2aa4076309abafa310f1b42ca62b519b16b108e76d2c6e0da9b056b37cab63e1", "files_checked_including_embedded_inventory": 493, "all_member_bytes_match": true, "harmless_controls": 1, "targeted_failures": [{"fault": "missing-member", "expected_failure": true}, {"fault": "wrong-hash", "expected_failure": true}, {"fault": "wrong-length", "expected_failure": true}, {"fault": "embedded-inventory", "expected_failure": true}], "source_inventory_unchanged": true, "control_boundary": "Wrong received member metadata after byte hashing; native controls do not authenticate producers", "modeled_or_survey_outputs_read": false}
+	Command being timed: "/home/nathaniel/.local/bin/python3.11 -u -B docs/modeling/activitysim-tbi2019-2026-10-23/integration-evidence/verify-archive.py"
+	User time (seconds): 16.32
+	System time (seconds): 6.20
+	Percent of CPU this job got: 97%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:23.05
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 24564
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 4
+	Minor (reclaiming a frame) page faults: 3255475
+	Voluntary context switches: 2700
+	Involuntary context switches: 25914
+	Swaps: 0
+	File system inputs: 5666992
+	File system outputs: 8
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

@@ -18,6 +18,7 @@ runtime=ROOT/'runtime-configs'
 runtime.mkdir(exist_ok=True)
 settings=runtime/'settings.yaml'
 settings.write_text('inherit_settings: True\nchunk_size: 4500000000\nchunk_training_mode: adaptive\ndefault_initial_rows_per_chunk: 100\nhouseholds_sample_size: 0\nmultiprocess: False\n')
+(runtime/'network_los.yaml').write_text('inherit_settings: True\nskim_dict_factory: MemMapSkimFactory\n')
 readme=ROOT/'ARCHIVE_README.md'
 readme.write_text("# Partial input archive\n\nThis archive preserves public source and preparation records only. It is not runnable. No complete population or model bundle is asserted. See the repository readiness report and archive inventory for the missing stages.\n" if args.partial else """# Twin Cities 2019 preparation inputs
 
@@ -32,8 +33,13 @@ After extraction, the runnable data directory is `inputs/bundle`. Layer
 ActivitySim 1.5.1 under CPython 3.11. For the candidate, prepend
 `inputs/verified-candidate-overlay`. Use a new output directory. Retain all
 retained households. Run through `systemd-run --user --scope -p MemoryMax=6G
--p MemorySwapMax=0`. The archived run recipe documents the original command
-and configuration order. Installed dependencies are pinned in the environment
+-p MemorySwapMax=0`. From the extraction directory, set `PYTHONPATH=implementation` and invoke
+`python evidence/activitysim-memory-runner.py run` with those config paths,
+`-d inputs/bundle` and a new `-o` output directory. Set
+`OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=2` identically for both arms. The runner
+checks the installed ActivitySim version and source hash before applying its
+process-local allocator hook. It preserves the original engine call. The
+archived run recipes document commands and configuration order. Installed dependencies are pinned in the environment
 inventories; this archive is not a hermetic interpreter installation.
 
 `inputs/common_population` and `inputs/bundle-all704` retain all 704 source zones.

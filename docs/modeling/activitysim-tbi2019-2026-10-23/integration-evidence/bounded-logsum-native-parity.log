@@ -1,0 +1,148 @@
+Running as unit: op-tbi2019-11910f11-logsum-parity3.scope; invocation ID: aa837aaef233417a88192fb44d654cd4
+[AnnotateTableSettings(source_file_paths=None, tablename='land_use', annotate=PreprocessorSettings(SPEC='annotate_landuse', DF='land_use', TABLES=None), column_map=None)]
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -383_135_488 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+out_of_chunk_memory: uss: 483188736 chunk_size: 100000000 school_location.native-parity.compute_logsums.log_rss
+out_of_chunk_memory: uss: 483188736 chunk_size: 100000000 school_location.native-parity.compute_logsums.eval_nl_logsums.eval_utils.add.expression_values
+out_of_chunk_memory: uss: 483287040 chunk_size: 100000000 school_location.native-parity.compute_logsums.eval_nl_logsums.eval_utils.add.expression_values
+out_of_chunk_memory: uss: 483581952 chunk_size: 100000000 school_location.native-parity.compute_logsums.eval_nl_logsums.eval_utils.add.utilities
+out_of_chunk_memory: uss: 483590144 chunk_size: 100000000 school_location.native-parity.compute_logsums.eval_nl_logsums.add.nested_exp_utilities
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -383_598_336 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+out_of_chunk_memory: uss: 483598336 chunk_size: 100000000 school_location.native-parity.compute_logsums.log_rss
+out_of_chunk_memory: uss: 483618816 chunk_size: 100000000 school_location.native-parity.compute_logsums.eval_nl_logsums.eval_utils.add.utilities
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -383_618_816 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+[AnnotateTableSettings(source_file_paths=None, tablename='land_use', annotate=PreprocessorSettings(SPEC='annotate_landuse', DF='land_use', TABLES=None), column_map=None)]
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -383_999_744 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+out_of_chunk_memory: uss: 484003840 chunk_size: 100000000 school_location.native-parity.compute_logsums.log_rss
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_003_840 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -383_999_744 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+out_of_chunk_memory: uss: 484044800 chunk_size: 100000000 school_location.native-parity.compute_logsums.log_rss
+out_of_chunk_memory: uss: 483971072 chunk_size: 100000000 school_location.native-parity.compute_logsums.eval_nl_logsums.eval_utils.add.expression_values
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -383_971_072 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -383_966_976 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+out_of_chunk_memory: uss: 483971072 chunk_size: 100000000 school_location.native-parity.compute_logsums.log_rss
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -383_971_072 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -383_966_976 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+out_of_chunk_memory: uss: 483971072 chunk_size: 100000000 school_location.native-parity.compute_logsums.log_rss
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -383_971_072 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -383_979_264 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -383_971_072 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -383_966_976 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+out_of_chunk_memory: uss: 483971072 chunk_size: 100000000 school_location.native-parity.compute_logsums.log_rss
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -383_971_072 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+[AnnotateTableSettings(source_file_paths=None, tablename='land_use', annotate=PreprocessorSettings(SPEC='annotate_landuse', DF='land_use', TABLES=None), column_map=None)]
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_155_392 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+out_of_chunk_memory: uss: 484192256 chunk_size: 100000000 school_location.native-parity.compute_logsums.log_rss
+out_of_chunk_memory: uss: 484163584 chunk_size: 100000000 school_location.native-parity.compute_logsums.eval_nl_logsums.eval_utils.add.expression_values
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_163_584 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_163_584 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_159_488 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+out_of_chunk_memory: uss: 484163584 chunk_size: 100000000 school_location.native-parity.compute_logsums.log_rss
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_163_584 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+out_of_chunk_memory: uss: 484163584 chunk_size: 100000000 school_location.native-parity.compute_logsums.eval_nl_logsums.eval_utils.add.utilities
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_163_584 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+[AnnotateTableSettings(source_file_paths=None, tablename='land_use', annotate=PreprocessorSettings(SPEC='annotate_landuse', DF='land_use', TABLES=None), column_map=None)]
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_286_464 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+out_of_chunk_memory: uss: 484290560 chunk_size: 100000000 school_location.native-parity.compute_logsums.log_rss
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_290_560 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_323_328 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+out_of_chunk_memory: uss: 484298752 chunk_size: 100000000 school_location.native-parity.compute_logsums.log_rss
+[AnnotateTableSettings(source_file_paths=None, tablename='land_use', annotate=PreprocessorSettings(SPEC='annotate_landuse', DF='land_use', TABLES=None), column_map=None)]
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_376_576 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+out_of_chunk_memory: uss: 484380672 chunk_size: 100000000 school_location.native-parity.compute_logsums.log_rss
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_380_672 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_376_576 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+out_of_chunk_memory: uss: 484380672 chunk_size: 100000000 school_location.native-parity.compute_logsums.log_rss
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_261_888 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_368_384 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+out_of_chunk_memory: uss: 484372480 chunk_size: 100000000 school_location.native-parity.compute_logsums.log_rss
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_372_480 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_368_384 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+out_of_chunk_memory: uss: 484372480 chunk_size: 100000000 school_location.native-parity.compute_logsums.log_rss
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_372_480 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_368_384 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+out_of_chunk_memory: uss: 484372480 chunk_size: 100000000 school_location.native-parity.compute_logsums.log_rss
+out_of_chunk_memory: uss: 484372480 chunk_size: 100000000 school_location.native-parity.compute_logsums.eval_nl_logsums.del.raw_utilities
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_372_480 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -359_771_904 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+out_of_chunk_memory: uss: 434532352 chunk_size: 100000000 school_location.native-parity.compute_logsums.eval_nl_logsums.add.nested_exp_utilities
+out_of_chunk_memory: uss: 435994624 chunk_size: 100000000 school_location.native-parity.compute_logsums.add.result_list
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -331_067_136 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+[AnnotateTableSettings(source_file_paths=None, tablename='land_use', annotate=PreprocessorSettings(SPEC='annotate_landuse', DF='land_use', TABLES=None), column_map=None)]
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_442_112 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+out_of_chunk_memory: uss: 484446208 chunk_size: 100000000 school_location.native-parity.compute_logsums.log_rss
+out_of_chunk_memory: uss: 484446208 chunk_size: 100000000 school_location.native-parity.compute_logsums.eval_nl_logsums.eval_utils.add.expression_values
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_446_208 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_446_208 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_442_112 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+out_of_chunk_memory: uss: 484446208 chunk_size: 100000000 school_location.native-parity.compute_logsums.log_rss
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_446_208 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+out_of_chunk_memory: uss: 484466688 chunk_size: 100000000 school_location.native-parity.compute_logsums.eval_nl_logsums.add.logsums
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_466_688 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+[AnnotateTableSettings(source_file_paths=None, tablename='land_use', annotate=PreprocessorSettings(SPEC='annotate_landuse', DF='land_use', TABLES=None), column_map=None)]
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_556_800 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+out_of_chunk_memory: uss: 484560896 chunk_size: 100000000 workplace_location.native-parity.compute_logsums.log_rss
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_560_896 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_560_896 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+[AnnotateTableSettings(source_file_paths=None, tablename='land_use', annotate=PreprocessorSettings(SPEC='annotate_landuse', DF='land_use', TABLES=None), column_map=None)]
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_642_816 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+out_of_chunk_memory: uss: 484646912 chunk_size: 100000000 workplace_location.native-parity.compute_logsums.log_rss
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_646_912 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_642_816 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+out_of_chunk_memory: uss: 484646912 chunk_size: 100000000 workplace_location.native-parity.compute_logsums.log_rss
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_646_912 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_642_816 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+out_of_chunk_memory: uss: 484659200 chunk_size: 100000000 workplace_location.native-parity.compute_logsums.log_rss
+out_of_chunk_memory: uss: 484651008 chunk_size: 100000000 workplace_location.native-parity.compute_logsums.eval_nl_logsums.eval_utils.add.expression_values
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_651_008 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_646_912 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+out_of_chunk_memory: uss: 484651008 chunk_size: 100000000 workplace_location.native-parity.compute_logsums.log_rss
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_651_008 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_646_912 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+out_of_chunk_memory: uss: 484651008 chunk_size: 100000000 workplace_location.native-parity.compute_logsums.log_rss
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_651_008 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_642_816 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+out_of_chunk_memory: uss: 484646912 chunk_size: 100000000 workplace_location.native-parity.compute_logsums.log_rss
+Not enough memory for minimum chunk_size without exceeding specified chunk_size. available_headroom: -384_646_912 min_chunk_size: 5_000_000 base_chunk_size: 100_000_000
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/docs/modeling/activitysim-tbi2019-2026-10-23/integration-evidence/check-bounded-logsum-parity.py", line 47, in <module>
+    pd.testing.assert_frame_equal(actual,baseline,check_exact=True)
+  File "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/pandas/_testing/asserters.py", line 1303, in assert_frame_equal
+    assert_series_equal(
+  File "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/pandas/_testing/asserters.py", line 1021, in assert_series_equal
+    assert_numpy_array_equal(
+  File "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/pandas/_testing/asserters.py", line 696, in assert_numpy_array_equal
+    _raise(left, right, err_msg)
+  File "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/pandas/_testing/asserters.py", line 690, in _raise
+    raise_assert_detail(obj, msg, left, right, index_values=index_values)
+  File "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/pandas/_testing/asserters.py", line 620, in raise_assert_detail
+    raise AssertionError(msg)
+AssertionError: DataFrame.iloc[:, 3] (column name="mode_choice_logsum") are different
+
+DataFrame.iloc[:, 3] (column name="mode_choice_logsum") values are different (2.38095 %)
+[index]: [11, 11, 11, 11, 11, 11, 11, 22, 22, 22, 22, 22, 22, 22, 33, 33, 33, 33, 33, 33, 33, 44, 44, 44, 44, 44, 44, 44, 55, 55, 55, 55, 55, 55, 55, 66, 66, 66, 66, 66, 66, 66]
+[left]:  [0.05305169595521323, -1.8927704703591572, -1.946929673959283, -2.2980719485547834, 0.8408767940927726, -0.9775015224377784, 1.7664446380820658, 0.38670599092248953, -0.5190335256545601, -0.5296503840675265, -0.7853665879252312, -0.8032994643943061, -0.1608124250243633, -1.129744940067933, -0.600919309868811, 0.12104153924424146, -0.24881524630651208, -0.5153757262446306, -1.1878802813752694, -0.5949770896466662, -1.561230865148334, -0.42368744121895924, -0.08695720702409661, 0.4114012887410723, -0.09985140435137205, -0.988490655302874, -0.481827344791747, -1.340009846398373, -0.8961190335069907, -0.4965316745919244, -0.194211837612182, 0.36983044072250704, -1.5774887516475147, -0.9498844077464212, -2.0091394017568764, -2.2023817912947363, -2.696984807989693, -2.7504594443085018, -3.084190960456381, -0.2700433072654497, -1.862630380670385, -1.7041639050269142]
+[right]: [0.05305169595521323, -1.8927704703591572, -1.946929673959283, -2.2980719485547834, 0.8408767940927726, -0.9775015224377784, 1.7664446380820658, 0.38670599092248953, -0.5190335256545601, -0.5296503840675265, -0.7853665879252312, -0.8032994643943061, -0.1608124250243633, -1.129744940067933, -0.600919309868811, 0.12104153924424146, -0.24881524630651208, -0.5153757262446306, -1.1878802813752694, -0.5949770896466662, -1.5612308651483342, -0.42368744121895924, -0.08695720702409661, 0.4114012887410723, -0.09985140435137205, -0.988490655302874, -0.481827344791747, -1.340009846398373, -0.8961190335069907, -0.4965316745919244, -0.194211837612182, 0.36983044072250704, -1.5774887516475147, -0.9498844077464212, -2.0091394017568764, -2.2023817912947363, -2.696984807989693, -2.7504594443085018, -3.084190960456381, -0.2700433072654497, -1.862630380670385, -1.7041639050269142]
+Command exited with non-zero status 1
+	Command being timed: "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/bin/python -u -B docs/modeling/activitysim-tbi2019-2026-10-23/integration-evidence/check-bounded-logsum-parity.py"
+	User time (seconds): 34.88
+	System time (seconds): 19.55
+	Percent of CPU this job got: 103%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:52.47
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 1774964
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 94
+	Minor (reclaiming a frame) page faults: 504670
+	Voluntary context switches: 237853
+	Involuntary context switches: 25532
+	Swaps: 0
+	File system inputs: 9128
+	File system outputs: 40
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 1

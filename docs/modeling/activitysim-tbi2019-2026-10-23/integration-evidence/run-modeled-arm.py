@@ -15,15 +15,19 @@ if a.arm=='semcog':
  frozen=json.loads((transfer.PACKAGE/'overlay/coefficient-set.json').read_text())
  transfer.check_frozen_candidate(result,frozen,overlay/'tour_mode_choice_coefficients.csv')
 else:overlay.mkdir()
-# Runtime-only memory policy, identical in both arms, full population retained.
+# Runtime-only memory policy, identical in both arms, all 638-zone households retained.
 (overlay/'settings.yaml').write_text('inherit_settings: True\nchunk_size: 4500000000\nchunk_training_mode: adaptive\ndefault_initial_rows_per_chunk: 100\nhouseholds_sample_size: 0\nmultiprocess: False\n')
+(overlay/'network_los.yaml').write_text('inherit_settings: True\nskim_dict_factory: MemMapSkimFactory\n')
 output=arm/'output';output.mkdir()
-command=[sys.executable,'-B','-m','activitysim','run','-c',str(overlay),'-c',str(bundle/'configs'),'-c',str(stock),'-d',str(bundle),'-o',str(output)]
+command=[sys.executable,'-B',str(EVIDENCE/'activitysim-memory-runner.py'),'run','-c',str(overlay),'-c',str(bundle/'configs'),'-c',str(stock),'-d',str(bundle),'-o',str(output)]
 record={'arm':a.arm,'claim':'MODELED ONLY; no TBI outcomes or scientific acceptance',
  'python':platform.python_version(),'command':command,'started_at':datetime.datetime.now(datetime.timezone.utc).isoformat(),
  'memory_policy':{'MemoryMax':'6G','MemorySwapMax':0,'chunk_size':4500000000,'chunk_training_mode':'adaptive','initial_rows':100},
  'stock_sha256':mtc.stock_configs_digest(stock),'bundle_manifest_sha256':transfer.digest(bundle/'manifest.json'),
  'runtime_settings_sha256':transfer.digest(overlay/'settings.yaml'),
+ 'network_runtime_sha256':transfer.digest(overlay/'network_los.yaml'),'skim_factory':'MemMapSkimFactory',
+ 'allocator_runner_sha256':transfer.digest(EVIDENCE/'activitysim-memory-runner.py'),
+ 'allocator_helper_sha256':transfer.digest(Path('scripts/modeling/activitysim_allocator_reclaim.py')),
  'coefficient_sha256':transfer.digest((overlay if a.arm=='semcog' else stock)/'tour_mode_choice_coefficients.csv')}
 (EVIDENCE/('modeled-'+a.arm+'.started.json')).write_text(json.dumps(record,indent=2)+'\n')
 with (arm/'stdout.log').open('x') as log:

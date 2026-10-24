@@ -1,0 +1,37 @@
+[
+  {
+    "name": "comment",
+    "expected": "survive",
+    "exit_code": 0,
+    "expected_observed": true,
+    "restored_sha256": "ed30ab870d67f3d9d30b20aebab357b948fb59c233b23b2d612a93e8baece1fa"
+  },
+  {
+    "name": "omit-hook",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "ed30ab870d67f3d9d30b20aebab357b948fb59c233b23b2d612a93e8baece1fa"
+  },
+  {
+    "name": "duplicate-call",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "ed30ab870d67f3d9d30b20aebab357b948fb59c233b23b2d612a93e8baece1fa"
+  },
+  {
+    "name": "discard-return",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "ed30ab870d67f3d9d30b20aebab357b948fb59c233b23b2d612a93e8baece1fa"
+  },
+  {
+    "name": "reorder",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "ed30ab870d67f3d9d30b20aebab357b948fb59c233b23b2d612a93e8baece1fa"
+  }
+]

@@ -1,0 +1,25 @@
+Running as unit: op-tbi2019-11910f11-memmap-parity.scope; invocation ID: 1040fe94b6284050bdb35c5e11faea62
+{"source_omx_sha256": "7246a79c19fcbc018188ddf00ed257ff7d1bbccb10322e6429fc3c8584646379", "activitysim_version": "1.5.1", "matrices": 826, "shape": [826, 638, 638], "dtype": "float32 unchanged from default factory", "values_checked_per_traversal": 336218344, "parity": "all values exactly equal", "harmless_controls": 1, "intended_failures": 1, "cache_restored_sha256": "116b92c004ab6d3c82129610937bca6f20807f5d516477a20a56f2f119ddc46f", "blind_category": "factory value parity only; no behavior, RNG or scientific validity claim", "scope": "full real input matrices; no survey outcomes"}
+	Command being timed: "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/bin/python -u -B docs/modeling/activitysim-tbi2019-2026-10-23/integration-evidence/check-memmap-parity.py"
+	User time (seconds): 25.56
+	System time (seconds): 2.48
+	Percent of CPU this job got: 98%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:28.55
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 2996320
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 803
+	Minor (reclaiming a frame) page faults: 915486
+	Voluntary context switches: 4083
+	Involuntary context switches: 15319
+	Swaps: 0
+	File system inputs: 619744
+	File system outputs: 8
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

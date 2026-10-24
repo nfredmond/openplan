@@ -1,0 +1,33 @@
+test_complete_groups_and_original_order (test_activitysim_bounded_logsums.BoundedLogsumTests.test_complete_groups_and_original_order) ... ok
+test_empty_uses_original_refusal (test_activitysim_bounded_logsums.BoundedLogsumTests.test_empty_uses_original_refusal) ... ok
+test_invalid_bounds_refused (test_activitysim_bounded_logsums.BoundedLogsumTests.test_invalid_bounds_refused) ... ok
+test_noncontiguous_groups_refused (test_activitysim_bounded_logsums.BoundedLogsumTests.test_noncontiguous_groups_refused) ... ok
+test_reordered_result_refused (test_activitysim_bounded_logsums.BoundedLogsumTests.test_reordered_result_refused) ... ok
+test_values_index_and_nonlogsum_columns_preserved (test_activitysim_bounded_logsums.BoundedLogsumTests.test_values_index_and_nonlogsum_columns_preserved) ... FAIL
+
+======================================================================
+FAIL: test_values_index_and_nonlogsum_columns_preserved (test_activitysim_bounded_logsums.BoundedLogsumTests.test_values_index_and_nonlogsum_columns_preserved)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/scripts/modeling/tests/test_activitysim_bounded_logsums.py", line 31, in test_values_index_and_nonlogsum_columns_preserved
+    np.testing.assert_array_equal(result.mode_choice_logsum,[1,2,3,4,5,6])
+  File "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/numpy/testing/_private/utils.py", line 920, in assert_array_equal
+    assert_array_compare(operator.__eq__, x, y, err_msg=err_msg,
+  File "/home/nathaniel/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/contextlib.py", line 81, in inner
+    return func(*args, **kwds)
+           ^^^^^^^^^^^^^^^^^^^
+  File "/home/nathaniel/code/openplan/workers/activitysim_worker/.venv-exec/lib/python3.11/site-packages/numpy/testing/_private/utils.py", line 797, in assert_array_compare
+    raise AssertionError(msg)
+AssertionError: 
+Arrays are not equal
+
+Mismatched elements: 6 / 6 (100%)
+Max absolute difference: 3.
+Max relative difference: 1.
+ x: array([2., 1., 6., 5., 4., 3.])
+ y: array([1, 2, 3, 4, 5, 6])
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.015s
+
+FAILED (failures=1)

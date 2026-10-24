@@ -1,0 +1,19 @@
+test_complete_groups_and_original_order (test_activitysim_bounded_logsums.BoundedLogsumTests.test_complete_groups_and_original_order) ... ok
+test_empty_uses_original_refusal (test_activitysim_bounded_logsums.BoundedLogsumTests.test_empty_uses_original_refusal) ... ok
+test_invalid_bounds_refused (test_activitysim_bounded_logsums.BoundedLogsumTests.test_invalid_bounds_refused) ... ok
+test_noncontiguous_groups_refused (test_activitysim_bounded_logsums.BoundedLogsumTests.test_noncontiguous_groups_refused) ... ok
+test_reordered_result_refused (test_activitysim_bounded_logsums.BoundedLogsumTests.test_reordered_result_refused) ... FAIL
+test_values_index_and_nonlogsum_columns_preserved (test_activitysim_bounded_logsums.BoundedLogsumTests.test_values_index_and_nonlogsum_columns_preserved) ... ok
+
+======================================================================
+FAIL: test_reordered_result_refused (test_activitysim_bounded_logsums.BoundedLogsumTests.test_reordered_result_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-11910f11/scripts/modeling/tests/test_activitysim_bounded_logsums.py", line 38, in test_reordered_result_refused
+    with self.assertRaisesRegex(ValueError,'order'):
+AssertionError: ValueError not raised
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.013s
+
+FAILED (failures=1)

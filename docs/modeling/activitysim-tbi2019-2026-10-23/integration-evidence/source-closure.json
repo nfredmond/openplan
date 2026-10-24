@@ -11,5 +11,7 @@
   "scripts/modeling/screening_runtime.py": "38686dca5ee4667e7cfd64cb680931d7442d8d48cfa860bc00a41b4c5b1939b6",
   "scripts/modeling/retained_skim_expansion.py": "433820150d8ba6a8f7877447288e5e330c8cdddea8e229c7bfc27be108c6f22e",
   "scripts/modeling/activitysim_geographic_subset.py": "dc85827ad8bcf48b1de039842be2885e3dec3349b9593814a5b46ebcc440f1d0",
-  "scripts/modeling/streamed_json_object.py": "30f71a92dbc632beba124b61c6b7c9baf0d38d5e2fb7686b1c5cdd51baa3a9c0"
+  "scripts/modeling/streamed_json_object.py": "30f71a92dbc632beba124b61c6b7c9baf0d38d5e2fb7686b1c5cdd51baa3a9c0",
+  "scripts/modeling/activitysim_allocator_reclaim.py": "ed30ab870d67f3d9d30b20aebab357b948fb59c233b23b2d612a93e8baece1fa",
+  "scripts/modeling/activitysim_bounded_logsums.py": "a93f36b924537e02666a796e8523e2acb19429d93dacd7c8bd812e0f06ebf9bf"
 }

@@ -35,7 +35,7 @@ source and native evidence.
 | School destinations | Qualified proxy. ACS enrollment by residence, not observed school capacities or school attendance locations. |
 | Parking, tolls, terrain and developed acreage | Unavailable or unassessed as historical inputs. Existing zero parking/toll fields, flat terrain and gross-acreage allocation remain adapter approximations, not measured zero conditions. |
 | Coefficients | Present and unchanged. Current tour coefficients `42a98dc65adb64a61de88d92e6fd9939a9a32900140a9fa8c5e3eacedb4a84b2`; SEMCOG candidate `537e54811e4b6ca9fec0662085777e9679a634bd312bb7c64df6e58ff60c7490`, 27 frozen substitutions. Both use the existing accepted auto-ownership component. |
-| Complete executable archive | [PENDING bundle completion and final archive custody.] |
+| Complete prepared-input archive | Present. Initial archive: 492 files, 2,898,706,216 bytes, SHA-256 `bd0c35dec94b135f8d16bf001e49a35d70e6ab0ebc7a410051e93d4a71b15935`. It preserves full 704-zone inputs and the 638-zone derivative. Runtime memory recovery uses an additional explicit overlay; final runtime archive custody remains pending. |
 
 ## Exclusions available without outcome fields
 
@@ -48,7 +48,9 @@ hash remains `d00206802218a92d31dceea4c108c74cab540dadd8c90d9d1f21e8b11b99c392`.
 |---|---|
 | Development household outside the frozen region | 978 of 6,019 development households. |
 | Missing development home county | 0 of 6,019 development households. |
-| MVTA member-city overlap | 66 of 704 zones; 638 remain outside this mask. The runtime derivative removes these zones, resident households and destinations, and slices every matrix by the retained positions. Actual synthetic counts await bundle completion. Original source IDs and the full parent remain preserved. |
+| MVTA member-city overlap | 66 of 704 zones; 638 remain outside this mask. The runtime derivative removes these zones, resident households and destinations, and slices every matrix by the retained positions. The derivative excludes 118,754 of 1,219,702 synthetic households and 335,573 of 3,150,169 persons, retaining 1,100,948 households and 2,814,596 persons. Original source IDs and the full parent remain preserved. |
+| PUMS seed group quarters | 3,520 serial groups excluded by the inherited seed rule, from 79,527 groups with retained person records. |
+| PUMS seed nonpositive or missing household weight | 5,027 of those 79,527 groups; zero additional unclassifiable groups. 70,980 seed households remain. These are PUMS source groups, not TBI or realized population counts. |
 | No centroid walk access to supplied service after the mask | 245 of 704 zones, including the 66 MVTA-mask zones and 179 other zones; 459 have walk access. This is not a household exclusion count. |
 | Missing route-fare classification | 106 of 188 feed routes. Routes and origin-destination pairs are different denominators. |
 | AM generic transit path with unknown fare | 128,881 of 129,728 reachable directed pairs. These are path records, not trips, people or choices. |
@@ -57,9 +59,14 @@ hash remains `d00206802218a92d31dceea4c108c74cab540dadd8c90d9d1f21e8b11b99c392`.
 
 ## Modeled-only run health
 
-[PENDING current-coefficient and SEMCOG-arm execution records. No tour counts or
-mode shares are asserted before those records exist. No comparison between
-arms, against AequilibraE outputs or against TBI observations is authorized.]
+Both initial arms start and are killed at the 6 GiB cap during household/person
+initialization. Neither produces completed tours or mode shares. Their original
+output directories, started receipts and OOM records remain preserved. The
+[runtime memory addendum](INTEGRATION_RUNTIME_MEMORY_ADDENDUM.md) specifies an
+identical file-backed skim overlay for both retries. The current retry passes
+initialization and accessibility; both terminal outcomes remain pending.
+No comparison between arms, against AequilibraE outputs or against TBI observations
+is authorized.
 
 ## Exact remaining steps before a lead-owned opening
 
