@@ -61,5 +61,54 @@
     "exit_code": 1,
     "expected_observed": true,
     "restored_sha256": "5f0bcc06493797f2c3fdc25bc5d2d72b8a4979086bad4f81a55e73571361ca42"
+  },
+  {
+    "name": "home-zone",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "5f0bcc06493797f2c3fdc25bc5d2d72b8a4979086bad4f81a55e73571361ca42"
+  },
+  {
+    "name": "duplicate-household",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "5f0bcc06493797f2c3fdc25bc5d2d72b8a4979086bad4f81a55e73571361ca42"
+  },
+  {
+    "name": "duplicate-person",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "5f0bcc06493797f2c3fdc25bc5d2d72b8a4979086bad4f81a55e73571361ca42"
+  },
+  {
+    "name": "existing-destination",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "5f0bcc06493797f2c3fdc25bc5d2d72b8a4979086bad4f81a55e73571361ca42"
+  },
+  {
+    "name": "no-residents",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "5f0bcc06493797f2c3fdc25bc5d2d72b8a4979086bad4f81a55e73571361ca42"
+  },
+  {
+    "name": "mapped-parent",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "5f0bcc06493797f2c3fdc25bc5d2d72b8a4979086bad4f81a55e73571361ca42"
+  },
+  {
+    "name": "matrix-shape",
+    "expected": "assertion failure",
+    "exit_code": 1,
+    "expected_observed": true,
+    "restored_sha256": "5f0bcc06493797f2c3fdc25bc5d2d72b8a4979086bad4f81a55e73571361ca42"
   }
 ]

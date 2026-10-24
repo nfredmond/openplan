@@ -60,6 +60,8 @@ for path in sorted(Path('scripts/modeling').glob('*.py')):files.append((path,'im
 for path in sorted(EVIDENCE.iterdir()):
  if path.is_file() and path.suffix in {'.json','.py'} and not path.name.startswith(('pipeline','modeled-','archive-custody','archive-inventory')):
   files.append((path,'evidence/'+path.name))
+for path in sorted(EVIDENCE.parent.glob('INTEGRATION_*.md')):
+ files.append((path,'study/'+path.name))
 inventory=[{'archive_path':name,'source_path':str(path),'bytes':path.stat().st_size,'sha256':sha(path)} for path,name in files]
 inv=EVIDENCE/('archive-inventory.partial.json' if args.partial else 'archive-inventory.json')
 inv.write_text(json.dumps({'status':'partial_not_executable' if args.partial else 'prepared_executable_not_scientifically_admitted','files':inventory},indent=2)+'\n')

@@ -100,5 +100,22 @@ class GeographicSubsetTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'Duplicate parent'):
             self.run_subset()
 
+    def test_duplicate_household_refused(self):
+        self.write('households.csv', ['household_id', 'home_zone_id', 'hhsize'], [[10, 5, 2], [10, 5, 2]])
+        with self.assertRaisesRegex(ValueError, 'Invalid household'):
+            self.run_subset()
+
+    def test_empty_retained_population_refused(self):
+        self.write('households.csv', ['household_id', 'home_zone_id', 'hhsize'], [[20, 2, 1]])
+        self.write('persons.csv', ['person_id', 'household_id'], [[2, 20]])
+        with self.assertRaisesRegex(ValueError, 'No resident households'):
+            self.run_subset()
+
+    def test_mapped_parent_refused(self):
+        with omx.open_file(str(self.parent / 'skims/mtc_skims.omx'), 'a') as f:
+            f.create_mapping('zone_id', [5, 2, 9])
+        with self.assertRaisesRegex(ValueError, 'positional parent OMX'):
+            self.run_subset()
+
 if __name__ == '__main__':
     unittest.main()

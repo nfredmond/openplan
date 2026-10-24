@@ -8,7 +8,7 @@ The integration merges #379 and #382. The merge resolves only the competing
 
 ## Synthetic and source checks
 
-The new bulk-Census, fare/coverage, WAC and retained-skim suites run 28 tests.
+The new bulk-Census, fare/coverage, WAC, retained-skim and memory-parity suites run 28 tests.
 The existing transit suite runs 24; the 2019-profile and tour-fixture suites
 run 11. The MTC adapter runs 50 tests with four explicit skips, leaving 46
 passed tests. Its skipped stock checks expect an environment inside this
@@ -20,7 +20,7 @@ resolution. The TypeScript population registry runs 34 tests with Vitest
 file byte and loaded record against the committed pre-repair implementation,
 and preserve nonfinite-value refusal before directory creation.
 
-The four mutation campaigns contain 56 controls: five harmless changes
+Before the geographic derivative, five mutation campaigns contain 56 controls: five harmless changes
 survive and 51 targeted wrong behaviors reach assertion failures. Each campaign
 restores the exact source hash. The ledgers and individual logs reside in
 `integration-evidence/`. These controls cover decoding, membership, uniqueness,
@@ -82,7 +82,7 @@ The installed packages and normal builder defaults remain unchanged.
 
 The full model recipes use identical runtime memory settings in both arms:
 adaptive chunking, a 4.5-billion-byte target, 100 initial chooser rows, one
-process and all households. These settings are explicit study runtime settings,
+process and all retained households in the 638-zone derivative. These settings are explicit study runtime settings,
 not a household sample or a coefficient change. The named candidate reproduces
 all 27 frozen substitutions and the original candidate hash. No outcome
 opening is implied by preparing those recipes. The readiness report records
@@ -119,15 +119,15 @@ four-test error log remains retained. This raises the scoped Python total to
 
 ## Geographic exclusion derivative
 
-Eleven new tests pass from both the repository root and CI test directory. They
+Fourteen new tests pass from both the repository root and CI test directory. They
 cover whole-household removal, person conservation, ordered destination and skim
 slicing, unchanged parent files, copied settings, hashed outputs and invalid-input
-refusals. Nine mutation controls comprise one harmless survivor and eight intended
+refusals. Sixteen mutation controls comprise one harmless survivor and 15 intended
 assertion failures. Exact helper bytes are restored after every control. The
 blind category is historical service coverage and scientific eligibility:
 synthetic fixtures cannot establish either.
 
-The cumulative scoped count is 160 Python tests passed, four explicit stock-path
-skips, and 34 TypeScript tests passed. Five mutation campaigns contain 65 controls:
-six harmless survivors and 59 targeted assertion failures. Earlier incidental
+The cumulative scoped count is 163 Python tests passed, four explicit stock-path
+skips, and 34 TypeScript tests passed. Six mutation campaigns contain 72 controls:
+six harmless survivors and 66 targeted assertion failures. Earlier incidental
 error controls remain retained and do not enter those counts.

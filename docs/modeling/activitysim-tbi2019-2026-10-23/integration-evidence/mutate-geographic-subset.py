@@ -11,6 +11,15 @@ cases=[('comment',None,None,True),
  ('household-exclusion','if home not in excluded:','if True:',False),
  ('person-exclusion','if hid in kept_households:','if True:',False),
  ('duplicate-zone','if len(zone_set) != len(zone_ids):','if False:',False)]
+cases += [
+ ('home-zone', 'home not in zone_set', 'False', False),
+ ('duplicate-household', 'hid in households or', 'False or', False),
+ ('duplicate-person', 'pid in seen_people or', 'False or', False),
+ ('existing-destination', "raise ValueError('Destination already exists')", 'destination.rmdir()', False),
+ ('no-residents', 'if not kept_households:', 'if False:', False),
+ ('mapped-parent', 'if inp.list_mappings():', 'if False:', False),
+ ('matrix-shape', "raise ValueError('Matrix shape differs from zone order')", 'continue', False),
+]
 results=[]
 try:
  for name,old,new,survive in cases:
