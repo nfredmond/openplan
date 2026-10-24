@@ -28,6 +28,7 @@ ROLES = {"households": "households.csv", "persons": "persons.csv", "selected_zon
 BASIS_FIELDS = frozenset({"schema", "source_profile", "universe", "exclusions", "selected_zone_map", "files", "realized_zone_counts", "published_all_person_totals", "custody", "caveats"})
 CAVEAT = "One retained household-resident realization; group quarters are excluded and unassessed. Shared inputs do not establish full population coverage, scientific accuracy or local behavioral calibration."
 SYNTHESIS_METHOD = "acs_pums_seed_iterative_proportional_updating"
+SYNTHESIS_METHODS = frozenset({SYNTHESIS_METHOD, "acs_pums_seed_entropy_balancing"})
 
 
 class CommonPopulationError(ValueError):
@@ -196,9 +197,11 @@ def _rows(data: bytes, required: frozenset[str]) -> list[dict[str, Any]]:
         raise CommonPopulationError("Retained roster must be UTF-8 CSV.") from exc
 
 
-def realized_zone_counts(households: Sequence[Mapping[str, Any]], persons: Sequence[Mapping[str, Any]], zones: Sequence[Mapping[str, Any]]) -> list[dict[str, int]]:
+def realized_zone_counts(households: Sequence[Mapping[str, Any]], persons: Sequence[Mapping[str, Any]], zones: Sequence[Mapping[str, Any]], *, synthesis_method: str = SYNTHESIS_METHOD) -> list[dict[str, int]]:
     """Check every roster join before deriving engine-compatible actual totals."""
     import census_pums as cp
+    if synthesis_method not in SYNTHESIS_METHODS:
+        raise CommonPopulationError("Unknown retained population synthesis method.")
 
     zone_index = {z["zone_id"]: z for z in zones}
     counts = {zone_id: {"zone_id": zone_id, "households": 0, "persons": 0, "workers": 0} for zone_id in zone_index}
@@ -222,7 +225,7 @@ def realized_zone_counts(households: Sequence[Mapping[str, Any]], persons: Seque
             raise CommonPopulationError("Duplicate household or impossible declared worker count.")
         if (not isinstance(row["seed_household_id"], str) or not row["seed_household_id"]
                 or any(ord(char) < 32 for char in row["seed_household_id"])
-                or row["synthesis_method"] != SYNTHESIS_METHOD):
+                or row["synthesis_method"] != synthesis_method):
             raise CommonPopulationError("Household source identity/method is missing.")
         by_household[row["household_id"]] = row
         counts[row["home_zone_id"]]["households"] += 1
@@ -300,13 +303,13 @@ def retain_population(directory: Path, zone_rows: Sequence[Mapping[str, Any]], r
     profile = validate_source_profile(source_profile)
     zones = selected_zone_map(zone_rows)
     _profile_matches_provenance(profile, result["provenance"])
-    counts = realized_zone_counts(result["households"], result["persons"], zones)
+    counts = realized_zone_counts(result["households"], result["persons"], zones, synthesis_method=result["method"])
     source_controls = result.get("source_controls")
     if not isinstance(source_controls, dict) or set(source_controls.get("raw_by_geoid", {})) != {z["GEOID"] for z in zones if z["population_role"] == UNIVERSE}:
         raise CommonPopulationError("Actual raw source controls must cover every selected internal zone.")
     diagnostics = {key: result[key] for key in ("provenance", "source_controls", "fit_quality", "fit_grading_note", "dropped_controls", "zone_fits", "method")}
     diagnostics["school_inputs"] = result.get("school_inputs")
-    if diagnostics["method"] != SYNTHESIS_METHOD:
+    if diagnostics["method"] not in SYNTHESIS_METHODS:
         raise CommonPopulationError("Unknown retained population synthesis method.")
     _reject_credentials(diagnostics)
     # Validate and spool the same canonical bytes before materialization. Full
@@ -391,7 +394,7 @@ def read_common_population(directory: Path, *, expected_manifest: Mapping[str, A
     _reject_credentials(diagnostics)
     source_manifest = _json(payloads["source_manifest"])
     _reject_credentials(source_manifest)
-    if diagnostics["method"] != SYNTHESIS_METHOD:
+    if diagnostics["method"] not in SYNTHESIS_METHODS:
         raise CommonPopulationError("Unknown retained population synthesis method.")
     _profile_matches_provenance(profile, diagnostics["provenance"])
     raw_controls = diagnostics["source_controls"]["raw_by_geoid"]
@@ -401,7 +404,7 @@ def read_common_population(directory: Path, *, expected_manifest: Mapping[str, A
         raise CommonPopulationError("Published all-person metadata differs from raw controls.")
     households = _rows(payloads.pop("households"), HOUSEHOLD_FIELDS)
     persons = _rows(payloads.pop("persons"), PERSON_FIELDS)
-    counts = realized_zone_counts(households, persons, zones)
+    counts = realized_zone_counts(households, persons, zones, synthesis_method=diagnostics["method"])
     declared_counts = basis.get("realized_zone_counts")
     if not isinstance(declared_counts, list):
         raise CommonPopulationError("Realized zone counts must be a list.")
