@@ -14,6 +14,11 @@ separates the full 704-zone source archive from the shared 638-zone model domain
 The [verification record](INTEGRATION_VERIFICATION.md) separates synthetic,
 source and native evidence.
 
+Raw logs and large diagnostics now reside in the verified private
+[evidence archive](EVIDENCE_ARCHIVE.md). Historical links to relocated files
+resolve through [EVIDENCE_MANIFEST.json](EVIDENCE_MANIFEST.json); the original
+bytes and prior findings remain preserved.
+
 ## Input inventory
 
 | Required input | Status and retained boundary |

@@ -1,0 +1,30 @@
+{
+  "controls": [
+    {
+      "name": "comment",
+      "exit_code": 0,
+      "expected_pass": true
+    },
+    {
+      "name": "cap",
+      "exit_code": 1,
+      "expected_pass": false
+    },
+    {
+      "name": "swap",
+      "exit_code": 1,
+      "expected_pass": false
+    },
+    {
+      "name": "stop",
+      "exit_code": 1,
+      "expected_pass": false
+    },
+    {
+      "name": "order",
+      "exit_code": 1,
+      "expected_pass": false
+    }
+  ],
+  "exact_restoration": true
+}

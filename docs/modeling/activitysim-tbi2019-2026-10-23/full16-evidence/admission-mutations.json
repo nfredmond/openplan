@@ -1,0 +1,34 @@
+{
+  "controls": [
+    {
+      "name": "comment",
+      "survives": true
+    },
+    {
+      "name": "reduced",
+      "expected_assertion": "RuntimeError not raised"
+    },
+    {
+      "name": "frozen",
+      "expected_assertion": "RuntimeError not raised"
+    },
+    {
+      "name": "cache",
+      "expected_assertion": "RuntimeError not raised"
+    },
+    {
+      "name": "proof-status",
+      "expected_assertion": "RuntimeError not raised"
+    },
+    {
+      "name": "receipt-status",
+      "expected_assertion": "RuntimeError not raised"
+    },
+    {
+      "name": "tables",
+      "expected_assertion": "RuntimeError not raised"
+    }
+  ],
+  "source_bytes_unchanged": true,
+  "method": "Compile isolated namespaces; do not edit the running controller"
+}

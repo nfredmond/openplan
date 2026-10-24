@@ -1,0 +1,65 @@
+inherit_settings: true
+households_sample_size: 0
+multiprocess: false
+rng_base_seed: 0
+default_initial_rows_per_chunk: 2
+output_tables:
+  h5_store: false
+  action: include
+  prefix: final_
+  tables:
+  - accessibility
+  - tablename: land_use
+    decode_columns:
+      zone_id: land_use.zone_id
+  - tablename: households
+    decode_columns:
+      home_zone_id: land_use.zone_id
+  - tablename: persons
+    decode_columns:
+      home_zone_id: land_use.zone_id
+      school_zone_id: nonnegative | land_use.zone_id
+      workplace_zone_id: nonnegative | land_use.zone_id
+  - tablename: tours
+    decode_columns:
+      origin: land_use.zone_id
+      destination: land_use.zone_id
+  - tablename: trips
+    decode_columns:
+      origin: land_use.zone_id
+      destination: land_use.zone_id
+  - joint_tour_participants
+chunk_size: 268435456
+chunk_training_mode: production
+min_available_chunk_ratio: 0.05
+checkpoints: true
+models:
+- initialize_landuse
+- initialize_households
+- compute_accessibility
+- school_location
+- workplace_location
+- auto_ownership_simulate
+- free_parking
+- cdap_simulate
+- mandatory_tour_frequency
+- mandatory_tour_scheduling
+- joint_tour_frequency
+- joint_tour_composition
+- joint_tour_participation
+- joint_tour_destination
+- joint_tour_scheduling
+- non_mandatory_tour_frequency
+- non_mandatory_tour_destination
+- non_mandatory_tour_scheduling
+- tour_mode_choice_simulate
+- atwork_subtour_frequency
+- atwork_subtour_destination
+- atwork_subtour_scheduling
+- atwork_subtour_mode_choice
+- stop_frequency
+- trip_purpose
+- trip_destination
+- trip_purpose_and_destination
+downcast_int: false
+downcast_float: false
