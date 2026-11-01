@@ -30,6 +30,7 @@ import {
   TRANSLATION_LANGUAGES,
   TRANSLATION_LANGUAGE_LABELS,
   TRANSLATION_LANGUAGE_NATIVE_LABELS,
+  TRANSLATION_LANGUAGE_SCRIPTS,
   isTranslationLanguage,
   type TranslationLanguage,
 } from "../translation-languages";
@@ -136,9 +137,12 @@ export const PORTAL_LOCALE_DIRECTION: Record<PortalLocale, PortalTextDirection> 
  * the possible failures, because it looks like a deliberate choice.
  *
  * This is language taxonomy, the same class of reviewed constant as the
- * language list itself. It is NOT a country or region assumption: region
- * subtags are discarded before this map is consulted, so `es-MX`, `es-US` and
- * `es-ES` are one language, and no entry here names a place.
+ * language list itself. It is NOT a country or region assumption: a region
+ * subtag never chooses a catalog, so `es-MX`, `es-US` and `es-ES` are one
+ * language, and no entry here names a place. An alias still has to pass the
+ * script check below: `pnb` is usually written in Shahmukhi and `yue` in
+ * Traditional characters, so neither reaches the Gurmukhi or Simplified slot
+ * unless the tag names that script.
  */
 const PORTAL_LOCALE_ALIASES: Record<string, PortalLocale> = {
   eng: "en",
@@ -181,23 +185,161 @@ const PORTAL_LOCALE_ALIASES: Record<string, PortalLocale> = {
 };
 
 /**
+ * The script a tag implies when it names none, for the carried languages that
+ * are commonly written in two scripts. From CLDR likely-subtags data: `zh-TW`,
+ * `zh-HK` and `zh-MO` are written in Traditional characters, `pa-PK` in
+ * Shahmukhi, `pnb` (Western Punjabi) in Shahmukhi and `yue` (Cantonese) in
+ * Traditional characters. Regions that imply the slot's own script (`zh-CN`,
+ * `pa-IN`) are listed too, so they count as the reader naming that script
+ * after an earlier tag was refused for another one.
+ *
+ * Language taxonomy, not a place assumption: a region subtag is read ONLY to
+ * find the script, never to choose a catalog, so there is still one Chinese
+ * slot and one Punjabi slot. A language missing from this table implies no
+ * script, and its slot's own script (`TRANSLATION_LANGUAGE_SCRIPTS`) applies.
+ */
+const IMPLIED_SCRIPTS: Record<string, { script: string; byRegion?: Record<string, string> }> = {
+  zh: { script: "Hans", byRegion: { CN: "Hans", SG: "Hans", MY: "Hans", TW: "Hant", HK: "Hant", MO: "Hant" } },
+  cmn: { script: "Hans", byRegion: { CN: "Hans", SG: "Hans", MY: "Hans", TW: "Hant", HK: "Hant", MO: "Hant" } },
+  yue: { script: "Hant", byRegion: { CN: "Hans" } },
+  pa: { script: "Guru", byRegion: { IN: "Guru", PK: "Arab" } },
+  pan: { script: "Guru", byRegion: { IN: "Guru", PK: "Arab" } },
+  pnb: { script: "Arab" },
+};
+
+/**
+ * Scripts a slot's text can also be read in. Korean is catalogued as `Kore`
+ * (Hangul with Hanja) and its text is Hangul only, so a `ko-Hang` reader is
+ * served too.
+ */
+const ALSO_READABLE_AS: Partial<Record<string, readonly string[]>> = {
+  Kore: ["Hang"],
+};
+
+/**
+ * The `lang` value for each slot. Chinese carries its script so a browser picks
+ * Simplified glyphs and a screen reader knows what it is reading. Every other
+ * code already implies the script its slot is written in.
+ */
+const PORTAL_LOCALE_BCP47: Partial<Record<PortalLocale, string>> = {
+  zh: "zh-Hans",
+};
+
+/** The BCP 47 tag for `lang` and `hrefLang` on one portal locale. */
+export function portalLocaleBcp47(locale: PortalLocale): string {
+  return PORTAL_LOCALE_BCP47[locale] ?? locale;
+}
+
+type TagMatch =
+  | { kind: "match"; locale: PortalLocale }
+  /** A carried language, asked for in a script its slot is not written in. */
+  | { kind: "wrong_script"; locale: PortalLocale; script: string }
+  | { kind: "none" };
+
+const titleCase = (value: string) => value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+
+/**
+ * Read one language tag into the portal locale it asks for, honouring script.
+ *
+ * `refusedScripts` holds scripts already refused earlier in the same request,
+ * by locale. Chrome on a Taiwanese handset sends `zh-TW,zh;q=0.9`. The bare
+ * `zh` is the browser filling in the base language, not the reader accepting
+ * Simplified characters, so a later tag with no script of its own inherits the
+ * refusal. A later tag that names Simplified (`zh-Hans`, `zh-CN`) is the reader
+ * saying so, and is honoured.
+ */
+function matchPortalLocaleTag(raw: string, refusedScripts?: ReadonlyMap<PortalLocale, string>): TagMatch {
+  const subtags = raw.trim().split(/[-_]/);
+  let language = subtags[0]?.toLowerCase() ?? "";
+  if (!/^[a-z]{2,8}$/.test(language)) return { kind: "none" };
+
+  let index = 1;
+  // An extended language subtag (`zh-yue`, `zh-cmn`) names the language itself.
+  const extlang = subtags[index]?.toLowerCase();
+  if (extlang && /^[a-z]{3}$/.test(extlang)) {
+    if (isTranslationLanguage(extlang) || extlang in PORTAL_LOCALE_ALIASES) language = extlang;
+    index += 1;
+  }
+
+  let script: string | null = null;
+  if (subtags[index] && /^[a-z]{4}$/i.test(subtags[index])) {
+    script = titleCase(subtags[index]);
+    index += 1;
+  }
+  const region = subtags[index] && /^([a-z]{2}|[0-9]{3})$/i.test(subtags[index]) ? subtags[index].toUpperCase() : null;
+
+  const locale: PortalLocale | undefined = isTranslationLanguage(language)
+    ? language
+    : PORTAL_LOCALE_ALIASES[language];
+  if (!locale) return { kind: "none" };
+
+  const implied = IMPLIED_SCRIPTS[language];
+  const fromRegion = region ? implied?.byRegion?.[region] : undefined;
+  const requested = script ?? fromRegion ?? refusedScripts?.get(locale) ?? implied?.script ?? null;
+  if (!requested) return { kind: "match", locale };
+
+  const slotScript = TRANSLATION_LANGUAGE_SCRIPTS[locale];
+  if (requested === slotScript || ALSO_READABLE_AS[slotScript]?.includes(requested)) {
+    return { kind: "match", locale };
+  }
+  return { kind: "wrong_script", locale, script: requested };
+}
+
+/**
  * Narrow any language tag to one of the languages this portal carries, or to
  * null.
  *
- * Region, script and variant subtags are dropped: OpenPlan carries one Spanish,
- * and pretending otherwise would multiply the whole list several times over —
- * one catalog per region a browser can name. Returning null rather than a guess
- * is what lets the caller fall THROUGH to the next source of truth instead of
- * showing the wrong language confidently.
+ * Region and variant subtags do not choose a catalog: OpenPlan carries one
+ * Spanish, and pretending otherwise would multiply the whole list several times
+ * over, one catalog per region a browser can name. A SCRIPT is different. A
+ * page in Simplified characters is not a regional variant to a reader of
+ * Traditional characters, and Gurmukhi is not readable to a reader of
+ * Shahmukhi. So a tag whose script, stated or implied by its region, is not the
+ * script its language's slot is written in returns null. Returning null rather
+ * than a guess is what lets the caller fall THROUGH to the next source of truth
+ * instead of showing the wrong language, or the wrong script, confidently.
  */
 export function normalizePortalLocaleTag(raw: string | null | undefined): PortalLocale | null {
   if (typeof raw !== "string") return null;
+  const match = matchPortalLocaleTag(raw);
+  return match.kind === "match" ? match.locale : null;
+}
 
-  const primary = raw.trim().toLowerCase().split(/[-_]/)[0];
-  if (!primary) return null;
-  if (isTranslationLanguage(primary)) return primary;
+/**
+ * The first supported language among tags in preference order. A script
+ * refused for one tag is carried forward to later tags of the same language.
+ */
+function firstPortalLocale(tags: readonly string[], refusedScripts: Map<PortalLocale, string>): PortalLocale | null {
+  for (const tag of tags) {
+    const match = matchPortalLocaleTag(tag, refusedScripts);
+    if (match.kind === "match") return match.locale;
+    if (match.kind === "wrong_script" && !refusedScripts.has(match.locale)) {
+      refusedScripts.set(match.locale, match.script);
+    }
+  }
+  return null;
+}
 
-  return PORTAL_LOCALE_ALIASES[primary] ?? null;
+/** An `Accept-Language` header's tags, most preferred first, without `*` or q=0. */
+function acceptLanguageTags(header: string | null | undefined): string[] {
+  if (typeof header !== "string" || !header.trim()) return [];
+
+  return (
+    header
+      .split(",")
+      .map((part, index) => {
+        const [tag, ...params] = part.split(";").map((piece) => piece.trim());
+        const qParam = params.find((piece) => piece.toLowerCase().startsWith("q="));
+        const parsed = qParam ? Number.parseFloat(qParam.slice(2)) : Number.NaN;
+        const quality = Number.isFinite(parsed) ? parsed : 1;
+        return { tag, quality, index };
+      })
+      // `*` means "anything", which is not a request for a particular language.
+      .filter((entry) => entry.tag.length > 0 && entry.tag !== "*" && entry.quality > 0)
+      // Stable: equal q values keep the order the browser stated them in.
+      .sort((a, b) => (b.quality - a.quality) || (a.index - b.index))
+      .map((entry) => entry.tag)
+  );
 }
 
 /**
@@ -207,32 +349,12 @@ export function normalizePortalLocaleTag(raw: string | null | undefined): Portal
  * told us, and making them tell us again — in English, on a page they cannot
  * read — is the whole problem restated. Quality values are respected in the
  * order the header declares them; a malformed q is treated as the RFC's
- * default of 1 rather than as a reason to ignore the entry.
+ * default of 1 rather than as a reason to ignore the entry. A script refused
+ * for one entry stays refused for later entries of the same language that name
+ * no script; see `matchPortalLocaleTag`.
  */
 export function parseAcceptLanguage(header: string | null | undefined): PortalLocale | null {
-  if (typeof header !== "string" || !header.trim()) return null;
-
-  const entries = header
-    .split(",")
-    .map((part, index) => {
-      const [tag, ...params] = part.split(";").map((piece) => piece.trim());
-      const qParam = params.find((piece) => piece.toLowerCase().startsWith("q="));
-      const parsed = qParam ? Number.parseFloat(qParam.slice(2)) : Number.NaN;
-      const quality = Number.isFinite(parsed) ? parsed : 1;
-      return { tag, quality, index };
-    })
-    .filter((entry) => entry.tag.length > 0 && entry.quality > 0)
-    // Stable: equal q values keep the order the browser stated them in.
-    .sort((a, b) => (b.quality - a.quality) || (a.index - b.index));
-
-  for (const entry of entries) {
-    // `*` means "anything", which is not a request for a particular language.
-    if (entry.tag === "*") continue;
-    const locale = normalizePortalLocaleTag(entry.tag);
-    if (locale) return locale;
-  }
-
-  return null;
+  return firstPortalLocale(acceptLanguageTags(header), new Map());
 }
 
 /**
@@ -317,7 +439,7 @@ function resolved(
   return {
     locale,
     direction: PORTAL_LOCALE_DIRECTION[locale],
-    bcp47: locale,
+    bcp47: portalLocaleBcp47(locale),
     nativeName: TRANSLATION_LANGUAGE_NATIVE_LABELS[locale],
     englishName: TRANSLATION_LANGUAGE_LABELS[locale],
     source,
@@ -343,12 +465,15 @@ export function resolvePortalLocale(input: {
   acceptLanguage?: string | null;
 }): ResolvedPortalLocale {
   const rawRequest = sanitizeRequestedTag(input.requested);
-  const requested = normalizePortalLocaleTag(rawRequest);
+  // A `?lang=zh-Hant` refused for its script also refuses a bare `zh` from the
+  // device: the link said which script, and the header did not.
+  const refusedScripts = new Map<PortalLocale, string>();
+  const requested = rawRequest ? firstPortalLocale([rawRequest], refusedScripts) : null;
   if (requested) return resolved(requested, "url", null);
 
   const unsupportedRequest = rawRequest;
 
-  const fromHeader = parseAcceptLanguage(input.acceptLanguage);
+  const fromHeader = firstPortalLocale(acceptLanguageTags(input.acceptLanguage), refusedScripts);
   if (fromHeader) return resolved(fromHeader, "accept_language", unsupportedRequest);
 
   return resolved(PORTAL_DEFAULT_LOCALE, "default", unsupportedRequest);

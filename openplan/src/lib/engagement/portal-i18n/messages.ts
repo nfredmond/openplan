@@ -34,12 +34,23 @@
  *   3. Translate `language.partialNotice` and `language.pickerLabel` FIRST.
  *      They are the two strings a resident needs in order to understand that
  *      the rest is not translated yet, and to get back out.
+ *   4. Record, for every key translated, the fingerprint of the English it was
+ *      translated from in `catalogs/translated-from.ts`. An entry is shown
+ *      only while that fingerprint matches the current English (see
+ *      `catalog-sources.ts`). The guard test prints the fingerprint to record.
+ *
+ * WHEN THE ENGLISH CHANGES, every translation of it stops being shown and the
+ * guard test fails until each one is refreshed, with a new fingerprint, or
+ * listed in `PORTAL_CATALOG_KNOWN_STALE`. A translation of an old sentence is
+ * not a translation of the new one, however close it looks.
  *
  * Nothing else changes. No route, no build step, no schema.
  */
 
 import { PORTAL_DEFAULT_LOCALE, type PortalLocale, type ResolvedPortalLocale } from "./locales";
 import type { PortalMessageBundle } from "./translator";
+import { portalSourceFingerprint } from "./catalog-sources";
+import { PORTAL_CATALOG_TRANSLATED_FROM } from "./catalogs/translated-from";
 import { AM_PORTAL_MESSAGES } from "./catalogs/am";
 import { AR_PORTAL_MESSAGES } from "./catalogs/ar";
 import { BN_PORTAL_MESSAGES } from "./catalogs/bn";
@@ -946,6 +957,25 @@ export const PORTAL_MACHINE_TRANSLATED_LOCALES: ReadonlySet<PortalLocale> = new 
 
 const ALL_KEYS = Object.keys(EN_PORTAL_MESSAGES) as PortalMessageKey[];
 
+const CURRENT_ENGLISH_FINGERPRINTS = Object.fromEntries(
+  ALL_KEYS.map((key) => [key, portalSourceFingerprint(EN_PORTAL_MESSAGES[key])])
+) as Record<PortalMessageKey, string>;
+
+/**
+ * This locale's text for one key, or null when it has none that may be shown.
+ *
+ * Shown only when it was translated from the English on the page today. An
+ * entry with no record of its source, or one made from English that has since
+ * changed, is not shown: a confident translation of a sentence the agency no
+ * longer says is worse than English labelled as English.
+ */
+function currentTranslation(locale: PortalLocale, key: PortalMessageKey): string | null {
+  const translated = PORTAL_MESSAGE_CATALOGS[locale]?.[key];
+  if (typeof translated !== "string" || translated.trim().length === 0) return null;
+  if (PORTAL_CATALOG_TRANSLATED_FROM[locale]?.[key] !== CURRENT_ENGLISH_FINGERPRINTS[key]) return null;
+  return translated;
+}
+
 /**
  * Resolve one locale into the serializable bundle a surface renders from.
  *
@@ -954,13 +984,12 @@ const ALL_KEYS = Object.keys(EN_PORTAL_MESSAGES) as PortalMessageKey[];
  * fell back — never every other locale's catalog.
  */
 export function buildPortalMessageBundle(locale: ResolvedPortalLocale): PortalMessageBundle {
-  const catalog = PORTAL_MESSAGE_CATALOGS[locale.locale] ?? {};
   const messages = {} as Record<PortalMessageKey, string>;
   const fallbackKeys: PortalMessageKey[] = [];
 
   for (const key of ALL_KEYS) {
-    const translated = catalog[key];
-    if (typeof translated === "string" && translated.trim().length > 0) {
+    const translated = currentTranslation(locale.locale, key);
+    if (translated !== null) {
       messages[key] = translated;
       continue;
     }
@@ -984,7 +1013,10 @@ export function buildPortalMessageBundle(locale: ResolvedPortalLocale): PortalMe
   };
 }
 
-/** Which of the catalog's keys a locale carries — for tests and operator tooling. */
+/**
+ * Which of the catalog's keys a locale carries, counting only translations
+ * that may be shown. For tests and operator tooling.
+ */
 export function portalMessageCoverage(locale: PortalLocale): {
   locale: PortalLocale;
   total: number;
@@ -996,11 +1028,7 @@ export function portalMessageCoverage(locale: PortalLocale): {
     return { locale, total: ALL_KEYS.length, translated: ALL_KEYS.length, missing: [], complete: true };
   }
 
-  const catalog = PORTAL_MESSAGE_CATALOGS[locale] ?? {};
-  const missing = ALL_KEYS.filter((key) => {
-    const value = catalog[key];
-    return typeof value !== "string" || value.trim().length === 0;
-  });
+  const missing = ALL_KEYS.filter((key) => currentTranslation(locale, key) === null);
 
   return {
     locale,

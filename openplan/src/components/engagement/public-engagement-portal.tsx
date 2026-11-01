@@ -19,6 +19,7 @@ import {
 import {
   PORTAL_DEFAULT_LOCALE,
   PORTAL_LOCALE_DIRECTION,
+  portalLocaleBcp47,
   type ResolvedPortalLocale,
 } from "@/lib/engagement/portal-i18n/locales";
 import {
@@ -616,7 +617,7 @@ export function PublicEngagementPortal({
                     <option
                       key={language}
                       value={language}
-                      lang={language}
+                      lang={portalLocaleBcp47(language)}
                       dir={PORTAL_LOCALE_DIRECTION[language]}
                     >
                       {TRANSLATION_LANGUAGE_NATIVE_LABELS[language]}

@@ -20,6 +20,19 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Portal translations and scripts:** a participant page shows a catalog
+translation only while it was made from the current English. Each entry records
+a fingerprint of its English source; a mismatch shows English with the existing
+partial-translation notice, and a test fails until the translation is refreshed
+or listed as stale. Two Spanish entries ("Open for comments", "Closed for
+comments") were translated from older English and now show in English, so
+Spanish pages carry the partial-translation notice until a Spanish reader
+refreshes them. Traditional Chinese (`zh-Hant`, `zh-TW`, `zh-HK`, `zh-MO`,
+Cantonese) and Shahmukhi Punjabi (`pa-Arab`, `pa-PK`, `pnb`) requests no longer
+receive the Simplified or Gurmukhi pages; they fall through to the next
+language the reader accepts, or English. The picker names Chinese as 简体中文
+and marks it `zh-Hans`. No migration.
+
 **Award-condition handoff:** the existing Grants workspace retains source-backed
 award terms, staff review and project handoff revisions. Managed invoices keep
 their original currency, exact amounts and reviewed term revision. Incomplete
