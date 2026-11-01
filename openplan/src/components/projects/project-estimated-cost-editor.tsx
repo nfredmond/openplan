@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { DocumentLibraryEntry, LinkedDocumentLibraryEntry } from "@/lib/document-library/types";
 import { formatProjectEstimate, projectEstimateDecimal } from "@/lib/projects/estimated-cost";
+import { uploadKnowledgeBaseFile } from "@/lib/knowledge-base/upload-client";
 
 type ProjectCostRecord = {
   id: string;
@@ -116,16 +117,11 @@ export function ProjectEstimatedCostEditor({
       if (preview.columns.length === 0 || preview.rows.length === 0) {
         throw new Error("This CSV has no header and project rows to review.");
       }
-      const query = new URLSearchParams({
+      const response = await uploadKnowledgeBaseFile(file, {
         workspaceId: project.workspace_id,
         projectId: project.id,
-        filename: file.name,
         docKind: "other",
-      });
-      const response = await fetch(`/api/knowledge-base/documents?${query}`, {
-        method: "POST",
-        headers: { "content-type": file.type || "text/csv" },
-        body: file,
+        contentType: file.type || "text/csv",
       });
       const body = (await response.json().catch(() => ({}))) as {
         error?: string;
