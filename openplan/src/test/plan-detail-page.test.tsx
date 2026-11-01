@@ -2,6 +2,8 @@ import { cleanup, render, screen } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { pagingFake } from "./helpers/paging-fake";
+
 /**
  * A FAILED READ MAY NOT BE RENDERED AS AN ANSWER — plan detail page.
  *
@@ -96,8 +98,13 @@ const scenarioEntriesInMock = vi.fn();
 const scenarioEntriesSelectMock = vi.fn(() => ({ in: scenarioEntriesInMock }));
 const engagementCategoriesInMock = vi.fn();
 const engagementCategoriesSelectMock = vi.fn(() => ({ in: engagementCategoriesInMock }));
+// Paged, through a fake that slices like PostgREST and holds its 1,000-row cap.
 const engagementItemsInMock = vi.fn();
-const engagementItemsSelectMock = vi.fn(() => ({ in: engagementItemsInMock }));
+const engagementItemsPaging = pagingFake(() => engagementItemsInMock(), { serverCap: 1000 });
+const engagementItemsSelectMock = vi.fn((...args: unknown[]) => {
+  engagementItemsPaging.calls.push(["select", ...args]);
+  return engagementItemsPaging.chain;
+});
 const reportRunsInMock = vi.fn();
 const reportRunsSelectMock = vi.fn(() => ({ in: reportRunsInMock }));
 const reportSectionsInMock = vi.fn();
@@ -246,6 +253,7 @@ describe("PlanDetailPage — a failed read may not be rendered as an answer", ()
     scenarioEntriesInMock.mockResolvedValue(EMPTY);
     engagementCategoriesInMock.mockResolvedValue(EMPTY);
     engagementItemsInMock.mockResolvedValue(EMPTY);
+    engagementItemsPaging.reset();
     reportRunsInMock.mockResolvedValue(EMPTY);
     reportSectionsInMock.mockResolvedValue(EMPTY);
     reportArtifactsInMock.mockResolvedValue(EMPTY);
@@ -275,6 +283,43 @@ describe("PlanDetailPage — a failed read may not be rendered as an answer", ()
 
     expect(screen.queryByText("Part of this page could not be read")).not.toBeInTheDocument();
     expect(screen.queryByText("Scenario links could not be read")).not.toBeInTheDocument();
+  });
+
+  /*
+    PostgREST stops a response at 1,000 rows with no error. The campaign's
+    comments were read in one request, so 1,234 approved comments showed as
+    1,000 and the 7 flagged ones, which sort last, as none.
+  */
+  it("counts every comment on a linked campaign past the 1,000-row cap", async () => {
+    campaignsProjectOrderMock.mockResolvedValue({
+      data: [
+        {
+          id: "campaign-1",
+          project_id: "project-1",
+          title: "Corridor survey",
+          summary: null,
+          status: "active",
+          engagement_type: "comment_collection",
+          updated_at: "2026-03-28T20:00:00.000Z",
+        },
+      ],
+      error: null,
+    });
+    engagementItemsInMock.mockResolvedValue({
+      data: [
+        ...Array.from({ length: 1234 }, () => ({ campaign_id: "campaign-1", status: "approved" })),
+        ...Array.from({ length: 7 }, () => ({ campaign_id: "campaign-1", status: "flagged" })),
+      ],
+      error: null,
+    });
+
+    await renderPage("linked");
+
+    expect(screen.getByText(/1241 items · 1234 approved · 0 pending · 7 flagged/)).toBeInTheDocument();
+    expect(engagementItemsPaging.calls[0]).toEqual(["select", "campaign_id, status"]);
+    expect(
+      engagementItemsPaging.calls.filter(([method]) => method === "order").slice(0, 2).map(([, column]) => column)
+    ).toEqual(["created_at", "id"]);
   });
 
   it("replaces the scenario empty state with a disclosure when the scenario read fails, and leaves the other sections alone", async () => {

@@ -20,6 +20,17 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Engagement counts above 1,000 comments:** the database API returns at most
+1,000 rows per request and reports no error when it stops. Several screens and
+records read a campaign's comments in one request, so a campaign above 1,000
+comments showed 1,000. These now read every comment, or ask the database to
+count: plan, program and report pages and their APIs, the RTP cycle page, the
+land use plan review closing record, the representativeness screen, the
+dashboard comment chart, nearby crashes for comments, near-duplicate pairs and a
+model run's corridor comments. A read that cannot finish shows as unreadable,
+not as a lower number. Closing a land use plan review now refuses while any
+comment is pending, including one past the first 1,000. No migration.
+
 **Award-condition handoff:** the existing Grants workspace retains source-backed
 award terms, staff review and project handoff revisions. Managed invoices keep
 their original currency, exact amounts and reviewed term revision. Incomplete

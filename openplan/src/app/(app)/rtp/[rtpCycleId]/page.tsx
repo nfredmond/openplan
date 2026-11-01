@@ -92,6 +92,7 @@ import { PAGE_TAB_QUERY_KEY, resolvePageTab } from "@/lib/ui/page-tabs";
 import { buildRtpCycleTabs } from "./_tabs";
 import { RtpCycleOverviewSummary } from "./_components/rtp-cycle-overview-summary";
 import { RecordHubHeader } from "@/components/ui/record-hub-header";
+import { CAMPAIGN_ITEM_SUMMARY_COLUMNS, readEveryCampaignItem } from "@/lib/engagement/campaign-item-reads";
 
 type RouteContext = {
   params: Promise<{ rtpCycleId: string }>;
@@ -420,12 +421,12 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
         project: Array.isArray(campaign.projects) ? (campaign.projects[0] ?? null) : campaign.projects,
       }));
   const engagementCampaignIds = engagementCampaigns.map((campaign) => campaign.id);
-  const engagementItemsResult = engagementCampaignIds.length
-    ? await supabase
-        .from("engagement_items")
-        .select("id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at")
-        .in("campaign_id", engagementCampaignIds)
-    : { data: [], error: null };
+  // Paged: a single read stops at PostgREST's 1,000-row cap with no error.
+  const engagementItemsResult = await readEveryCampaignItem<EngagementItemSummaryRow>(
+    supabase,
+    engagementCampaignIds,
+    CAMPAIGN_ITEM_SUMMARY_COLUMNS
+  );
   const engagementItemsState = classifyRead(reads, "public comments on this cycle", engagementItemsResult);
   const engagementItems = engagementItemsResult.error
     ? []

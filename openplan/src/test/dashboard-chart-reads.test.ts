@@ -29,12 +29,27 @@ type RecordedCall = {
   gte: Array<[string, string]>;
   order: Array<[string, boolean]>;
   limit: number | null;
+  range: Array<[number, number]>;
 };
 
+const POSTGREST_MAX_ROWS = 1000;
+
+function capped(
+  result: { data: unknown; error: { message: string } | null } | undefined,
+  from: number,
+  asked: number
+): { data: unknown; error: { message: string } | null } {
+  if (!result) return { data: [], error: null };
+  if (result.error || !Array.isArray(result.data)) return result;
+  return { data: result.data.slice(from, from + Math.min(asked, POSTGREST_MAX_ROWS)), error: null };
+}
+
 function fakeClient(
-  results: Record<string, { data: unknown; error: { message: string } | null }>
+  results: Record<string, { data: unknown; error: { message: string } | null }>,
+  failPage?: { table: string; page: number }
 ): { client: DashboardChartSupabaseLike; calls: RecordedCall[] } {
   const calls: RecordedCall[] = [];
+  const pagesServed: Record<string, number> = {};
 
   const client: DashboardChartSupabaseLike = {
     from(table: string) {
@@ -47,6 +62,7 @@ function fakeClient(
             gte: [],
             order: [],
             limit: null,
+            range: [],
           };
           calls.push(call);
           const chain = {
@@ -66,10 +82,18 @@ function fakeClient(
               call.limit = count;
               return chain;
             },
+            // PostgREST's `max_rows`: no response holds more than 1,000 rows,
+            // ranged or not, and the cap reports no error.
+            range(from: number, toInclusive: number) {
+              call.range.push([from, toInclusive]);
+              pagesServed[table] = (pagesServed[table] ?? 0) + 1;
+              if (failPage?.table === table && failPage.page === pagesServed[table]) {
+                return Promise.resolve({ data: null, error: { message: "connection reset" } });
+              }
+              return Promise.resolve(capped(results[table], from, toInclusive - from + 1));
+            },
             then<T>(resolve: (value: { data: unknown; error: { message: string } | null }) => T) {
-              return Promise.resolve(
-                results[table] ?? { data: [], error: null }
-              ).then(resolve);
+              return Promise.resolve(capped(results[table], 0, Number.POSITIVE_INFINITY)).then(resolve);
             },
           };
           return chain as unknown as ReturnType<
@@ -151,6 +175,49 @@ describe("the dashboard's chart reads", () => {
     const rows = await loadDashboardChartRows(client, "workspace-1", SINCE);
 
     expect(rows.comments.truncated).toBe(true);
+  });
+
+  /*
+    The comment cap (5,000) is above PostgREST's own 1,000-row cap. A single
+    `.limit(5000)` read came back with 1,000 rows, below the cap, so the figure
+    drew a short month and did not say so.
+  */
+  it("reads every comment past PostgREST's 1,000-row cap, in a total order", async () => {
+    const { client, calls } = fakeClient({
+      engagement_items: {
+        data: Array.from({ length: 1234 }, (_, i) => ({
+          created_at: new Date(SINCE.getTime() + i * 60_000).toISOString(),
+        })),
+        error: null,
+      },
+    });
+    const rows = await loadDashboardChartRows(client, "workspace-1", SINCE);
+
+    expect(rows.comments.rows).toHaveLength(1234);
+    expect(rows.comments.truncated).toBe(false);
+    expect(rows.comments.failed).toBe(false);
+    const comments = calls.find((call) => call.table === "engagement_items");
+    expect(comments?.order).toEqual([
+      ["created_at", true],
+      ["id", true],
+    ]);
+    expect(comments?.range.length).toBeGreaterThan(0);
+  });
+
+  it("hands a comment page that fails part way back as failed, never as a short total", async () => {
+    const { client } = fakeClient(
+      {
+        engagement_items: {
+          data: Array.from({ length: 1234 }, () => ({ created_at: SINCE.toISOString() })),
+          error: null,
+        },
+      },
+      { table: "engagement_items", page: 2 }
+    );
+    const rows = await loadDashboardChartRows(client, "workspace-1", SINCE);
+
+    expect(rows.comments.failed).toBe(true);
+    expect(rows.comments.rows).toEqual([]);
   });
 
   /**

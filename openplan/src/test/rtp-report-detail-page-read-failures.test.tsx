@@ -1,4 +1,5 @@
 import { exactCountResult } from "./helpers/exact-count-result";
+import { pagingFake } from "./helpers/paging-fake";
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -161,9 +162,14 @@ const rtpCampaignsEqCycleMock = vi.fn();
 const rtpCampaignsEqWorkspaceMock = vi.fn(() => ({ eq: rtpCampaignsEqCycleMock }));
 const campaignSelectMock = vi.fn(() => ({ eq: rtpCampaignsEqWorkspaceMock }));
 
-// engagement_items: .select(...).in("campaign_id", [...])
+// engagement_items: .select(...).in("campaign_id", [...]), paged. The fake
+// slices like PostgREST and holds its 1,000-row cap.
 const engagementItemsInMock = vi.fn();
-const engagementItemsSelectMock = vi.fn(() => ({ in: engagementItemsInMock }));
+const engagementItemsPaging = pagingFake(() => engagementItemsInMock(), { serverCap: 1000 });
+const engagementItemsSelectMock = vi.fn((...args: unknown[]) => {
+  engagementItemsPaging.calls.push(["select", ...args]);
+  return engagementItemsPaging.chain;
+});
 
 // The four RTP funding reads, all `.select(...).in("project_id", [...])`.
 const rtpFundingProfilesInMock = vi.fn();
@@ -241,6 +247,7 @@ async function renderPage() {
 describe("the RTP branch of the report detail page does not publish a failed read as drift", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    engagementItemsPaging.reset();
 
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
@@ -414,6 +421,41 @@ describe("the RTP branch of the report detail page does not publish a failed rea
     ).toBeGreaterThan(0);
     // And the chapter row, whose read succeeded, still reports its comparison.
     expect(screen.getAllByText(/Still 9\./).length).toBeGreaterThan(0);
+  });
+
+  /*
+    PostgREST stops a response at 1,000 rows with no error. The cycle's
+    comments were read in one request, so 1,234 pending comments showed as
+    1,000 in the drift row a planner reads to see who is still waiting.
+  */
+  it("counts every pending comment on the cycle past the 1,000-row cap", async () => {
+    engagementItemsInMock.mockResolvedValue({
+      data: Array.from({ length: 1234 }, (_unused, index) => ({
+        id: `item-${index}`,
+        campaign_id: "campaign-1",
+        category_id: null,
+        status: "pending",
+        source_type: "public",
+        latitude: null,
+        longitude: null,
+        moderation_notes: null,
+        created_at: "2026-03-28T17:20:00.000Z",
+        updated_at: "2026-03-28T18:10:00.000Z",
+      })),
+      error: null,
+    });
+
+    await renderPage();
+
+    expect(screen.getAllByText(/Generated with 31, current source is 1234/i).length).toBeGreaterThan(0);
+    expect(engagementItemsPaging.calls[0]).toEqual([
+      "select",
+      "id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at",
+    ]);
+    expect(engagementItemsPaging.calls).toContainEqual(["in", "campaign_id", ["campaign-1", "campaign-2", "campaign-3"]]);
+    expect(
+      engagementItemsPaging.calls.filter(([method]) => method === "order").slice(0, 2).map(([, column]) => column)
+    ).toEqual(["created_at", "id"]);
   });
 
   it("withholds the comment-count drift when the public comments could not be read", async () => {
