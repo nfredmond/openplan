@@ -20,6 +20,21 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Storage limit and AI metering gaps (KI-2026-10-12-014):** a transit feed
+fetched from an address is now checked against the workspace's remaining
+storage at its downloaded size before it is stored; a feed that does not fit is
+refused with the same 413 storage-limit message as uploads, and its version
+closes as failed with code `workspace_storage_limit` and no stored archive. An
+aerial preview copied into a report is checked at its own size before the copy;
+when the packet itself is then refused or not stored, the copied preview is
+removed. Planner Agent API tasks paid by the deployment key now record their
+AI usage before the provider call and make no call when that record fails.
+Corridor analysis interpretations now count against the workspace's staff AI
+allowance (`grant_narrative_draft`) before the call; a used-up allowance or an
+unavailable meter ships the deterministic summary. No migration. Operators of a
+deployment with public signup must set `OPENPLAN_MONTHLY_RUN_CAP` and
+`OPENPLAN_MODELING_QUEUE_DEPTH`; both stay unlimited when unset.
+
 **Award-condition handoff:** the existing Grants workspace retains source-backed
 award terms, staff review and project handoff revisions. Managed invoices keep
 their original currency, exact amounts and reviewed term revision. Incomplete

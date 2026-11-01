@@ -16,6 +16,10 @@ export type InterpretationFallbackReason =
   | "generation_error"
   | "empty_output"
   | "all_ungrounded"
+  /** The workspace's AI allowance for this window is used up. No call was made. */
+  | "rate_limited"
+  /** AI usage could not be metered while the deployment's key pays. No call was made. */
+  | "usage_meter_unavailable"
   | null;
 
 export interface InterpretationResult {
@@ -107,12 +111,26 @@ export function buildInterpretationFacts(metrics: Record<string, unknown>, summa
   return facts;
 }
 
+/**
+ * `reserveUsage` counts this call against the workspace's AI allowance before
+ * it is made (`reserveAiUsage` in ai-rate-limit.ts). A refusal, or a meter
+ * that throws because the deployment's shared key would pay unmetered, ships
+ * the deterministic summary and makes no call.
+ */
 export async function generateGrantInterpretation(
   metrics: Record<string, unknown>,
-  summaryText: string
+  summaryText: string,
+  options: { reserveUsage: () => Promise<{ allowed: boolean }> }
 ): Promise<InterpretationResult> {
   if (!hasAnthropicAccess()) {
     return fallback(summaryText, "missing_api_key");
+  }
+
+  try {
+    const reserved = await options.reserveUsage();
+    if (!reserved.allowed) return fallback(summaryText, "rate_limited");
+  } catch {
+    return fallback(summaryText, "usage_meter_unavailable");
   }
 
   const facts = buildInterpretationFacts(metrics, summaryText);

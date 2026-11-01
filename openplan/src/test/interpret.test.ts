@@ -43,12 +43,15 @@ describe("buildInterpretationFacts — equity claim safety", () => {
 
 const SUMMARY = "A corridor with moderate density and limited transit.";
 const METRICS = { jobs: 1000, population: 5000 };
+/** The AI usage meter (reserveAiUsage). Room by default. */
+const reserveUsage = vi.fn(async () => ({ allowed: true }));
 
 describe("generateGrantInterpretation", () => {
   const originalApiKey = process.env.ANTHROPIC_API_KEY;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    reserveUsage.mockResolvedValue({ allowed: true });
   });
 
   afterEach(() => {
@@ -62,7 +65,7 @@ describe("generateGrantInterpretation", () => {
   it("returns missing_api_key fallback when ANTHROPIC_API_KEY is unset", async () => {
     delete process.env.ANTHROPIC_API_KEY;
 
-    const result = await generateGrantInterpretation(METRICS, SUMMARY);
+    const result = await generateGrantInterpretation(METRICS, SUMMARY, { reserveUsage });
 
     expect(result).toEqual({
       text: SUMMARY,
@@ -83,7 +86,7 @@ describe("generateGrantInterpretation", () => {
     process.env.ANTHROPIC_API_KEY = "sk-test";
     generateTextMock.mockRejectedValueOnce(new Error("upstream timeout"));
 
-    const result = await generateGrantInterpretation(METRICS, SUMMARY);
+    const result = await generateGrantInterpretation(METRICS, SUMMARY, { reserveUsage });
 
     expect(result.source).toBe("summary-fallback");
     expect(result.fallbackReason).toBe("generation_error");
@@ -98,7 +101,7 @@ describe("generateGrantInterpretation", () => {
       usage: { inputTokens: 100, outputTokens: 0, totalTokens: 100 },
     });
 
-    const result = await generateGrantInterpretation(METRICS, SUMMARY);
+    const result = await generateGrantInterpretation(METRICS, SUMMARY, { reserveUsage });
 
     expect(result.source).toBe("summary-fallback");
     expect(result.fallbackReason).toBe("empty_output");
@@ -115,7 +118,7 @@ describe("generateGrantInterpretation", () => {
       usage: { inputTokens: 500, outputTokens: 200, totalTokens: 700 },
     });
 
-    const result = await generateGrantInterpretation(METRICS, SUMMARY);
+    const result = await generateGrantInterpretation(METRICS, SUMMARY, { reserveUsage });
 
     expect(result.source).toBe("summary-fallback");
     expect(result.fallbackReason).toBe("all_ungrounded");
@@ -129,7 +132,7 @@ describe("generateGrantInterpretation", () => {
       usage: { inputTokens: 500, outputTokens: 200, totalTokens: 700 },
     });
 
-    const result = await generateGrantInterpretation(METRICS, SUMMARY);
+    const result = await generateGrantInterpretation(METRICS, SUMMARY, { reserveUsage });
 
     expect(result.source).toBe("ai");
     expect(result.fallbackReason).toBeNull();
@@ -156,7 +159,7 @@ describe("generateGrantInterpretation", () => {
       usage: { inputTokens: 500, outputTokens: 200, totalTokens: 700 },
     });
 
-    const result = await generateGrantInterpretation(METRICS, SUMMARY);
+    const result = await generateGrantInterpretation(METRICS, SUMMARY, { reserveUsage });
 
     expect(result.source).toBe("ai");
     expect(result.text).toContain("1000 jobs");
@@ -177,7 +180,7 @@ describe("generateGrantInterpretation", () => {
       usage: { inputTokens: 500, outputTokens: 200, totalTokens: 700 },
     });
 
-    const result = await generateGrantInterpretation(METRICS, SUMMARY);
+    const result = await generateGrantInterpretation(METRICS, SUMMARY, { reserveUsage });
 
     expect(result.source).toBe("ai");
     expect(result.text).toBe(
@@ -194,7 +197,7 @@ describe("generateGrantInterpretation", () => {
       usage: { inputTokens: 500, outputTokens: 200, totalTokens: 700 },
     });
 
-    const result = await generateGrantInterpretation(METRICS, SUMMARY);
+    const result = await generateGrantInterpretation(METRICS, SUMMARY, { reserveUsage });
 
     expect(result.source).toBe("ai");
     expect(result.text).toBe("The corridor has 5000 residents. [fact:m_population]");
@@ -208,12 +211,54 @@ describe("generateGrantInterpretation", () => {
       usage: { inputTokens: 1234, outputTokens: 5678, totalTokens: 6912 },
     });
 
-    const result = await generateGrantInterpretation(METRICS, SUMMARY);
+    const result = await generateGrantInterpretation(METRICS, SUMMARY, { reserveUsage });
 
     // input: 1234/1_000_000 * 1.0 = 0.001234
     // output: 5678/1_000_000 * 5.0 = 0.02839
     // total: 0.029624
     expect(result.source).toBe("ai");
     expect(result.estimatedCostUsd).toBe(0.002962);
+  });
+});
+
+describe("generateGrantInterpretation and the AI usage meter", () => {
+  const originalApiKey = process.env.ANTHROPIC_API_KEY;
+  beforeEach(() => {
+    vi.clearAllMocks();
+    process.env.ANTHROPIC_API_KEY = "sk-test";
+    generateTextMock.mockResolvedValue({ text: "It supports 1000 jobs. [fact:m_jobs]", usage: { inputTokens: 1, outputTokens: 1, totalTokens: 2 } });
+  });
+  afterEach(() => {
+    if (originalApiKey === undefined) delete process.env.ANTHROPIC_API_KEY;
+    else process.env.ANTHROPIC_API_KEY = originalApiKey;
+  });
+
+  it("counts the call before making it", async () => {
+    reserveUsage.mockResolvedValue({ allowed: true });
+    const result = await generateGrantInterpretation(METRICS, SUMMARY, { reserveUsage });
+    expect(result.source).toBe("ai");
+    expect(reserveUsage).toHaveBeenCalledTimes(1);
+    expect(reserveUsage.mock.invocationCallOrder[0]).toBeLessThan(generateTextMock.mock.invocationCallOrder[0]);
+  });
+
+  it("makes no call when the workspace's AI allowance is used up", async () => {
+    reserveUsage.mockResolvedValue({ allowed: false });
+    const result = await generateGrantInterpretation(METRICS, SUMMARY, { reserveUsage });
+    expect(result).toMatchObject({ source: "summary-fallback", fallbackReason: "rate_limited", text: SUMMARY });
+    expect(generateTextMock).not.toHaveBeenCalled();
+  });
+
+  it("makes no call when usage cannot be metered", async () => {
+    reserveUsage.mockRejectedValue(new Error("AI usage could not be metered"));
+    const result = await generateGrantInterpretation(METRICS, SUMMARY, { reserveUsage });
+    expect(result).toMatchObject({ source: "summary-fallback", fallbackReason: "usage_meter_unavailable", text: SUMMARY });
+    expect(generateTextMock).not.toHaveBeenCalled();
+  });
+
+  it("does not meter a deployment with no key, which makes no call", async () => {
+    delete process.env.ANTHROPIC_API_KEY;
+    const result = await generateGrantInterpretation(METRICS, SUMMARY, { reserveUsage });
+    expect(result.fallbackReason).toBe("missing_api_key");
+    expect(reserveUsage).not.toHaveBeenCalled();
   });
 });

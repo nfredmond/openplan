@@ -54,6 +54,10 @@
  *                                   must not be read as ready.    (persist lane)
  *   abandoned                     - the parse ran out of its wall-clock budget,
  *                                   or a member stream failed part-way.
+ *   workspace_storage_limit       - a fetched archive would put the workspace
+ *                                   over its storage limit, or its storage use
+ *                                   could not be read (storage-quota.ts).
+ *                                   Nothing was stored.          (ingest lane)
  *
  * Six of these belong to lanes this module does not own (fetch, catalog,
  * persist). They live here anyway because the vocabulary must be ONE closed set
@@ -77,6 +81,7 @@ export const GTFS_FAILURE_CODES = [
   "catalog_entry_deprecated",
   "partial_write",
   "abandoned",
+  "workspace_storage_limit",
 ] as const;
 
 export type GtfsFailureCode = (typeof GTFS_FAILURE_CODES)[number];

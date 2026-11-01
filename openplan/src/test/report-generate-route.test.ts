@@ -1406,12 +1406,14 @@ describe("POST /api/reports/[reportId]/generate", () => {
     );
     const htmlUpload = serviceStorageUploadMock.mock.calls.find((call) => String(call[0]).endsWith(".html"));
     expect(String(htmlUpload?.[1])).toContain("data:image/png;base64");
-    // The frozen preview is checked as "already at the limit?" before it is
-    // copied, then the packet is checked with its own byte count.
+    // "Already at the limit?" before the preview is read, then the preview's
+    // own byte count before it is copied, then the packet's byte count.
     expect(checkWorkspaceStorageRoomMock.mock.calls.map((call) => [call[1], call[2]])).toEqual([
       ["33333333-3333-4333-8333-333333333333", 0],
+      ["33333333-3333-4333-8333-333333333333", previewBytes.byteLength],
       ["33333333-3333-4333-8333-333333333333", (htmlUpload?.[1] as Buffer).byteLength],
     ]);
+    expect(serviceStorageRemoveMock).not.toHaveBeenCalled();
     expect(memberStorageUploadMock).not.toHaveBeenCalled();
   });
 
@@ -1865,6 +1867,137 @@ describe("POST /api/reports/[reportId]/generate", () => {
         expect(response.status).toBe(200);
         expect(serviceStorageUploadMock).not.toHaveBeenCalled();
         expect(checkWorkspaceStorageRoomMock).not.toHaveBeenCalled();
+      });
+    }
+
+    // A report with one selected, intact held aerial preview of `previewBytes`.
+    const previewBytes = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 7, 7, 7, 7]);
+    const FROZEN_PATH = `${WORKSPACE_ID}/11111111-1111-4111-8111-111111111111/`;
+    function selectHeldAerialPreview() {
+      reportMaybeSingleMock.mockResolvedValueOnce({
+        data: {
+          id: "11111111-1111-4111-8111-111111111111",
+          workspace_id: WORKSPACE_ID,
+          project_id: "44444444-4444-4444-8444-444444444444",
+          rtp_cycle_id: null,
+          modeling_county_run_id: null,
+          title: "Project Status Packet",
+          summary: "Packet summary",
+          report_type: "project_status",
+          status: "draft",
+          created_at: "2026-03-14T00:00:00.000Z",
+          generated_at: null,
+          metadata_json: { aerialOrthoSelections: [{ custodyId: "55555555-5555-4555-8555-555555555555" }] },
+        },
+        error: null,
+      });
+      aerialCustodyMaybeSingleMock.mockResolvedValueOnce({
+        data: {
+          id: "55555555-5555-4555-8555-555555555555",
+          workspace_id: WORKSPACE_ID,
+          mission_id: "66666666-6666-4666-8666-666666666666",
+          kind: "ortho_preview",
+          state: "held",
+          storage_bucket: "aerial-artifacts",
+          storage_path: `${WORKSPACE_ID}/66666666-6666-4666-8666-666666666666/job/ortho-preview.png`,
+          byte_size: previewBytes.byteLength,
+          checksum_sha256: createHash("sha256").update(previewBytes).digest("hex"),
+          content_type: "image/png",
+          held_at: "2026-08-21T17:00:00.000Z",
+          bounds_west: -121.2,
+          bounds_south: 39.1,
+          bounds_east: -121.1,
+          bounds_north: 39.2,
+          crs: "EPSG:32610",
+          pixel_size_m: 0.08,
+          aerial_missions: {
+            id: "66666666-6666-4666-8666-666666666666",
+            workspace_id: WORKSPACE_ID,
+            project_id: "44444444-4444-4444-8444-444444444444",
+            title: "River crossing flight",
+            collected_at: "2026-08-20T17:00:00.000Z",
+            projects: { name: "Project" },
+          },
+        },
+        error: null,
+      });
+      serviceStorageDownloadMock.mockResolvedValueOnce({ data: new Blob([previewBytes]), error: null });
+    }
+    const roomFor = { status: "room", usedBytes: 0, quotaBytes: QUOTA };
+
+    it("refuses a selected aerial preview whose own bytes would pass the limit, and copies nothing", async () => {
+      selectHeldAerialPreview();
+      const usedBytes = QUOTA - 5;
+      checkWorkspaceStorageRoomMock
+        .mockResolvedValueOnce(roomFor)
+        .mockResolvedValueOnce({
+          status: "full",
+          usedBytes,
+          quotaBytes: QUOTA,
+          message: workspaceStorageFullMessage(usedBytes, QUOTA, previewBytes.byteLength),
+        });
+
+      const response = await generate("html");
+
+      expect(response.status).toBe(413);
+      expect(await response.json()).toEqual({
+        error: workspaceStorageFullMessage(usedBytes, QUOTA, previewBytes.byteLength),
+        usedBytes,
+        quotaBytes: QUOTA,
+      });
+      expect(checkWorkspaceStorageRoomMock.mock.calls.map((call) => [call[0], call[1], call[2]])).toEqual([
+        [serviceClient(), WORKSPACE_ID, 0],
+        [serviceClient(), WORKSPACE_ID, previewBytes.byteLength],
+      ]);
+      expect(serviceStorageDownloadMock).toHaveBeenCalledTimes(1);
+      expect(serviceStorageUploadMock).not.toHaveBeenCalled();
+      expect(artifactsInsertMock).not.toHaveBeenCalled();
+      expect(reportUpdateMock).not.toHaveBeenCalled();
+      expect(mockAudit.warn).toHaveBeenCalledWith(
+        "report_artifact_storage_refused",
+        expect.objectContaining({ stage: "aerial_preview", status: "full", usedBytes, quotaBytes: QUOTA }),
+      );
+    });
+
+    it("refuses a selected aerial preview when storage use cannot be read for its bytes", async () => {
+      selectHeldAerialPreview();
+      checkWorkspaceStorageRoomMock
+        .mockResolvedValueOnce(roomFor)
+        .mockResolvedValueOnce({ status: "unreadable", message: WORKSPACE_STORAGE_UNREADABLE_MESSAGE, detail: "rpc failed" });
+
+      const response = await generate("html");
+
+      expect(response.status).toBe(503);
+      expect(await response.json()).toEqual({ error: WORKSPACE_STORAGE_UNREADABLE_MESSAGE });
+      expect(serviceStorageUploadMock).not.toHaveBeenCalled();
+      expect(artifactsInsertMock).not.toHaveBeenCalled();
+    });
+
+    for (const format of ["pdf", "html"] as const) {
+      it(`removes the frozen aerial preview when the ${format} packet itself is refused by the limit`, async () => {
+        selectHeldAerialPreview();
+        serviceStorageUploadMock.mockResolvedValueOnce({ error: null });
+        serviceStorageRemoveMock.mockResolvedValueOnce({ data: [], error: null });
+        checkWorkspaceStorageRoomMock
+          .mockResolvedValueOnce(roomFor)
+          .mockResolvedValueOnce(roomFor)
+          .mockResolvedValueOnce({
+            status: "full",
+            usedBytes: QUOTA - 1,
+            quotaBytes: QUOTA,
+            message: workspaceStorageFullMessage(QUOTA - 1, QUOTA, 100),
+          });
+
+        const response = await generate(format);
+
+        expect(response.status).toBe(413);
+        expect(serviceStorageUploadMock).toHaveBeenCalledTimes(1);
+        const frozenPath = String(serviceStorageUploadMock.mock.calls[0][0]);
+        expect(frozenPath.startsWith(FROZEN_PATH)).toBe(true);
+        expect(frozenPath.endsWith("/aerial/55555555-5555-4555-8555-555555555555.png")).toBe(true);
+        expect(serviceStorageRemoveMock).toHaveBeenCalledTimes(1);
+        expect(serviceStorageRemoveMock).toHaveBeenCalledWith([frozenPath]);
+        expect(artifactsInsertMock).not.toHaveBeenCalled();
       });
     }
 
