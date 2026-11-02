@@ -28,6 +28,7 @@ import {
   type VmtClaimTierEvidence,
 } from "./vmt-screening-records";
 import { formatFixedPython, formatPythonFloat, pythonRound } from "./utilities";
+import { GRANT_PROGRAM_CATALOG } from "@/lib/grants/program-catalog";
 
 export type RenderPlannerPackOptions = {
   runId: string;
@@ -228,10 +229,12 @@ function formatPacketScore(value: number | null): string {
 }
 
 /**
- * The CTC's own ATP page. The packet points here instead of naming a cycle,
- * because cycles and their guidelines change and this file cannot see that.
+ * The CTC's own ATP page, read from the program registry's ATP entry. The
+ * packet points here instead of naming a cycle, because cycles and their
+ * guidelines change and this file cannot see that.
  */
-const ATP_CTC_PROGRAM_URL = "https://catc.ca.gov/programs/active-transportation-program";
+const ATP_CTC_PROGRAM_URL =
+  GRANT_PROGRAM_CATALOG.find((entry) => entry.key === "atp")?.url ?? "the CTC's Active Transportation Program page";
 
 /** The visible marker every cycle-dependent program fact in the packet carries. */
 export const ATP_VERIFY_GUIDELINES =
