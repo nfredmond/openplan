@@ -566,6 +566,22 @@ describe("Safety opens on the right study area", () => {
     }
   });
 
+  it("reads the acquisition's source so the banner words serious injury the way the corridor does (KI-2026-11-02-046)", async () => {
+    // CCRS recorded as fatal_injury_only means its injured-person join did not
+    // run. Without `source_id` in the projection the banner cannot tell that
+    // from a source that never separates serious injury.
+    mountSupabase({
+      projectPlace: { data: projectPlaceRow(), error: null },
+      ingests: [retainedAcquisition({ source_id: "ccrs-ca", coverage_state: "ccrs_ca_statewide", severity_completeness: "fatal_injury_only" })],
+    });
+    await renderSafety({ projectId: PROJECT_ID });
+    const currentQuery = ingestQueries.find((query) => query.limit === 1);
+    expect(currentQuery?.projection.split(",")).toEqual(expect.arrayContaining(["source_id", "severity_completeness"]));
+    expect(within(screen.getByLabelText("Crash data coverage")).getByTestId("safety-serious-injury-caveat")).toHaveTextContent(
+      "injured-person records, which do, were not joined for these crashes"
+    );
+  });
+
   it("keeps round-trip coordinate tolerance when restoring a retained source", async () => {
     mountSupabase({ projectPlace: { data: projectPlaceRow(), error: null }, ingests: [retainedAcquisition({ min_lon: -121.06 + 0.0000005 })] });
     await renderSafety({ projectId: PROJECT_ID });

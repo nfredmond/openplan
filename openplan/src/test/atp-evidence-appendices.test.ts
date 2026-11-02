@@ -133,7 +133,7 @@ describe("ATP evidence appendices", () => {
 
   it("does not count serious injuries a fatality census or an unsplit injury source cannot show", () => {
     const records = completeAtpRecords();
-    records.crash = { status: "ready", evidence: atpCrashEvidence({ severity_completeness: "fatal_only", crash_count: 2, geocoded_count: 2, stored_count: 2 }, [{ ingest_id: ATP_IDS.ingest, dimension: "severity", value: "fatal", record_count: 2 }]), retrievedAt: null };
+    records.crash = { status: "ready", evidence: atpCrashEvidence({ source_id: "fars-national", severity_completeness: "fatal_only", crash_count: 2, geocoded_count: 2, stored_count: 2 }, [{ ingest_id: ATP_IDS.ingest, dimension: "severity", value: "fatal", record_count: 2 }]), retrievedAt: null };
     const fatalOnly = byKey(buildAtpEvidenceAppendices(records, ALL), "crash_summary");
     expect(fact(fatalOnly, "Serious-injury crashes")).toBe("Not in source (fatal crashes only)");
     expect(fact(fatalOnly, "Property-damage-only crashes")).toBe("Not in source (fatal crashes only)");
@@ -144,7 +144,7 @@ describe("ATP evidence appendices", () => {
       { ingest_id: ATP_IDS.ingest, dimension: "severity", value: "injury", record_count: 75 },
     ]), retrievedAt: null };
     const unsplit = byKey(buildAtpEvidenceAppendices(records, ALL), "crash_summary");
-    expect(fact(unsplit, "Serious-injury crashes")).toBe("Not separated in source (injury crashes not split by severity)");
+    expect(fact(unsplit, "Serious-injury crashes")).toBe("Not separated (injured-person records not joined)");
     expect(fact(unsplit, "Injury crashes")).toBe("75");
     expect(fact(unsplit, "Fatal and serious-injury crashes")).toBe("Not derivable from this source");
   });

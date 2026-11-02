@@ -20,6 +20,7 @@
  */
 
 import { createHash } from "node:crypto";
+import { seriousInjuryAvailabilityForRecord, type SeriousInjuryAvailability } from "@/lib/safety/serious-injury-availability";
 import { BCA_NARRATIVE_CAVEAT } from "@/lib/bca/parameters";
 import { formatUsd } from "@/lib/bca/render";
 import { canonicalBcaJson } from "@/lib/bca/workbench/canonical";
@@ -77,17 +78,28 @@ export function absentEvidenceAppendix<K extends string>(
   return { ...shell, status, statusNote, source: null, facts: [], table: null, figureSvg: null, notes: [] };
 }
 
-/** Severity coverage as recorded on an acquisition. Fatal-only is named as such; unknown stays unknown. */
-export function describeSeverityCoverage(severityCompleteness: unknown): string {
-  switch (severityCompleteness) {
+/**
+ * Serious-injury availability for a frozen acquisition, from its recorded
+ * source and completeness through the same function every surface uses.
+ */
+export function acquisitionSeriousInjury(acquisition: Record<string, unknown>): SeriousInjuryAvailability {
+  return seriousInjuryAvailabilityForRecord({
+    sourceId: acquisition.source_id,
+    severityCompleteness: acquisition.severity_completeness,
+  });
+}
+
+/** Severity coverage as recorded on the acquisition. Fatal-only is named as such; unknown stays unknown. */
+export function describeSeverityCoverage(seriousInjury: SeriousInjuryAvailability): string {
+  switch (seriousInjury.effective) {
     case "fatal_only":
-      return "Fatal crashes only. The source records only crashes in which someone was killed; serious-injury, other-injury and property-damage crashes are not in it.";
+      return `Fatal crashes only. ${seriousInjury.statement}`;
     case "fatal_injury_only":
-      return "Fatal and injury crashes. The source does not separate serious injuries from other injuries.";
+      return `Fatal and injury crashes. ${seriousInjury.statement}`;
     case "kabco_full":
-      return "The source records distinct severity categories; classification completeness still requires review.";
+      return `${seriousInjury.statement} Classification completeness still requires review.`;
     default:
-      return "Severity coverage is unknown.";
+      return `Severity coverage is unknown. ${seriousInjury.statement}`;
   }
 }
 

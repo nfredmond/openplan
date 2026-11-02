@@ -45,6 +45,7 @@ import {
   latestReadyIngestByProject,
   loadSafetyCrashEvidence,
   readSafetyCrashEvidenceIngest,
+  safetyEvidenceSeriousInjury,
   totalCountedCrashes,
   type SafetyCrashEvidence,
   type SafetyCrashEvidenceSupabaseLike,
@@ -68,6 +69,8 @@ export interface RtpSafetyEvidence {
   severeInjuryCount: number | null;
   /** Fatal or suspected serious-injury crashes, or null when the source cannot separate them. */
   ksi: number | null;
+  /** Why serious injuries are not counted, from `seriousInjuryAvailability`. Null when they are. */
+  seriousInjuryAbsence: string | null;
   /** Collisions the source reported no casualty count for. Null when unreadable. */
   unclassifiedCount: number | null;
   /** Stored collisions the bands cover. Null when unreadable. */
@@ -105,6 +108,7 @@ export function summarizeRtpSafetyEvidence(evidence: SafetyCrashEvidence): RtpSa
     // raw zero the band would hold.
     severeInjuryCount: counts && evidence.ksi !== null ? counts.severe_injury : null,
     ksi: evidence.ksi,
+    seriousInjuryAbsence: safetyEvidenceSeriousInjury(evidence).absenceLabel,
     unclassifiedCount: evidence.unclassifiedCount,
     countedTotal: totalCountedCrashes(counts),
     reportedTotal: evidence.reportedTotal,
@@ -144,7 +148,7 @@ export function formatRtpSafetyEvidenceLine(evidence: RtpSafetyEvidence): string
   if (evidence.fatalCount !== null) parts.push(plural(evidence.fatalCount, "fatal crash", "fatal crashes"));
   parts.push(
     evidence.ksi === null
-      ? "serious injuries not separated by this source"
+      ? `serious injuries: ${(evidence.seriousInjuryAbsence ?? "not separated").toLowerCase()}`
       : plural(evidence.ksi, "fatal or serious-injury crash", "fatal or serious-injury crashes")
   );
   parts.push(plural(evidence.countedTotal, "collision mapped", "collisions mapped"));

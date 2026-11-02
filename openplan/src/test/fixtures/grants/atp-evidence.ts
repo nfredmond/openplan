@@ -87,7 +87,7 @@ export function atpRun(overrides: Partial<AtpPacketRun> = {}): AtpPacketRun {
 export function atpIngestRow(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   const row: Record<string, unknown> = Object.fromEntries(SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION.split(", ").map((key) => [key, null]));
   return Object.assign(row, {
-    id: ATP_IDS.ingest, project_id: ATP_IDS.project, status: "ready", source_id: "ccrs",
+    id: ATP_IDS.ingest, project_id: ATP_IDS.project, status: "ready", source_id: "ccrs-ca",
     source_label: "California Crash Reporting System (CCRS)", created_at: "2026-11-02T15:00:00+00:00",
     min_lon: -100.05, min_lat: 39.95, max_lon: -99.95, max_lat: 40.05,
     severity_completeness: "kabco_full", crash_count: 80, geocoded_count: 80, stored_count: 80, truncated: false,

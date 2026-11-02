@@ -44,7 +44,7 @@ import {
 import { GRANT_PROGRAM_CATALOG } from "@/lib/grants/program-catalog";
 import { ATP_VERIFY_GUIDELINES, formatPacketScore } from "@/lib/planner-pack/render";
 import { formatProjectEstimate } from "@/lib/projects/estimated-cost";
-import { separatesSeriousInjuries, type SafetyCrashEvidence } from "@/lib/safety/crash-evidence";
+import type { SafetyCrashEvidence } from "@/lib/safety/crash-evidence";
 import { crashAreaBasisLabel, crashBoundaryCountLabel } from "@/lib/safety/crash-study-area";
 
 export type AtpAppendix = EvidenceAppendix<AtpAppendixKey>;
@@ -190,14 +190,15 @@ function severityFacts(evidence: SafetyCrashEvidence): Array<{ label: string; va
   if (!counts) {
     return [{ label: "Crashes by severity", value: "Not available. The counts could not be read or do not reconcile with the acquisition's stored records." }];
   }
-  const fatalOnly = evidence.severityCompleteness === "fatal_only";
+  const seriousInjury = evidence.seriousInjury;
+  const fatalOnly = seriousInjury.effective === "fatal_only";
   const notInSource = "Not in source (fatal crashes only)";
-  const splitsSerious = separatesSeriousInjuries(evidence.severityCompleteness);
+  const splitsSerious = seriousInjury.separable;
   return [
     { label: "Fatal crashes", value: count(counts.fatal) },
     {
       label: "Serious-injury crashes",
-      value: fatalOnly ? notInSource : splitsSerious ? count(counts.severe_injury) : "Not separated in source (injury crashes not split by severity)",
+      value: fatalOnly ? notInSource : splitsSerious ? count(counts.severe_injury) : (seriousInjury.absenceLabel ?? "Not separated in source (injury crashes not split by severity)"),
     },
     {
       label: splitsSerious ? "Other injury crashes" : "Injury crashes",
@@ -232,7 +233,7 @@ function crashAppendix(index: number, records: AtpEvidenceRecords): AtpAppendix 
     facts: [
       { label: "Source", value: evidence.sourceLabel ?? "Not recorded" },
       { label: "Years requested", value: evidence.years.length > 0 ? evidence.years.join(", ") : "Not recorded" },
-      { label: "Severity coverage", value: describeSeverityCoverage(evidence.severityCompleteness) },
+      { label: "Severity coverage", value: describeSeverityCoverage(evidence.seriousInjury) },
       { label: "Recorded severity coverage", value: evidence.severityCompleteness || "Not recorded" },
       { label: "Crash area", value: crashAreaBasisLabel(studyArea) },
       ...(studyArea.outsideBoundaryCount !== null

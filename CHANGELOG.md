@@ -35,6 +35,19 @@ evidence. California's land-use entry now says specific plans use their own
 checklist, which has been true since October 7. The direction check fails if
 any of the 56 entries is missing.
 
+**One serious-injury statement for the same crashes (KI-2026-11-02-046):** the
+Safety page, the corridor analysis, report caveats, the SS4A appendices, the RTP
+safety line and the high-injury network now take serious-injury availability
+from one function of the source's declared severity and whether its serious-injury
+join ran. A California corridor run now joins the CCRS injured-person table like
+a Safety acquisition does, so it reports the same serious-injury count instead
+of saying serious injury is not separable; the injury total and the safety score
+do not change. When the join cannot run, every surface says the injured-person
+records were not joined, not that CCRS cannot separate serious injury. The join
+now counts as not run when data.ca.gov does not answer or a requested year has
+no injured-person table; before, an outage during an acquisition recorded zero
+serious injuries as a finding. Nothing to do on upgrade; no migration.
+
 **County search without a Census key:** county search and county boundaries
 now come from the Census TIGERweb Counties layer, the same keyless service
 cities, CDPs, towns, tribal areas and metro areas already used. An install
@@ -96,6 +109,7 @@ project must be in the opportunity's workspace, and viewers cannot change it.
 Once an application section is final, a draft, export, Safety seed, map package
 or award exists, the link no longer changes; track a new opportunity for the
 other project. The database does not yet enforce these rules on its own.
+
 **ATP application PDF carries its evidence (KI-2026-11-02-044, 045, 047):** an
 application set up from the ATP template now exports with evidence appendices
 drawn from the linked project's saved records: the ATP screening packet
@@ -118,6 +132,7 @@ internal files. It prints the project's recorded summary and planning-level
 estimate instead of "to be provided", and names the crash source, years and
 retrieval date behind the safety score. The ATP panel no longer runs past its
 border on a phone.
+
 **My Work lists stale evidence:** the "Waiting on a person" section now lists
 report packets the Reports page would ask you to refresh, and packets a newer
 model run flagged, each linked to the report's change review. It also lists SS4A
