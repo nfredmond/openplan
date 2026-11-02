@@ -34,6 +34,10 @@ import type { SafetyPlanSnapshot } from "@/lib/reports/safety-plan-snapshot";
 import type { HighInjuryNetwork } from "@/lib/safety/high-injury-network";
 import { readCrashPublicationEvidence } from "@/lib/safety/publication-evidence";
 import {
+  seriousInjuryAvailabilityForRecord,
+  type SeriousInjuryAvailability,
+} from "@/lib/safety/serious-injury-availability";
+import {
   crashAreaBasisLabel,
   crashBoundaryCountLabel,
   describeCrashStudyArea,
@@ -141,29 +145,38 @@ function stored(value: unknown): string {
   return typeof value === "number" && Number.isFinite(value) ? value.toLocaleString("en-US") : "Not recorded";
 }
 
+/**
+ * Serious-injury availability for the frozen acquisition, from its recorded
+ * source and completeness through the same function every surface uses.
+ */
+function acquisitionSeriousInjury(acquisition: Record<string, unknown>): SeriousInjuryAvailability {
+  return seriousInjuryAvailabilityForRecord({
+    sourceId: acquisition.source_id,
+    severityCompleteness: acquisition.severity_completeness,
+  });
+}
+
 /** Severity coverage as recorded on the acquisition. Fatal-only is named as such; unknown stays unknown. */
-function describeSeverityCoverage(severityCompleteness: unknown): string {
-  switch (severityCompleteness) {
+function describeSeverityCoverage(seriousInjury: SeriousInjuryAvailability): string {
+  switch (seriousInjury.effective) {
     case "fatal_only":
-      return "Fatal crashes only. The source records only crashes in which someone was killed; serious-injury, other-injury and property-damage crashes are not in it.";
+      return `Fatal crashes only. ${seriousInjury.statement}`;
     case "fatal_injury_only":
-      return "Fatal and injury crashes. The source does not separate serious injuries from other injuries.";
+      return `Fatal and injury crashes. ${seriousInjury.statement}`;
     case "kabco_full":
-      return "The source records distinct severity categories; classification completeness still requires review.";
+      return `${seriousInjury.statement} Classification completeness still requires review.`;
     default:
-      return "Severity coverage is unknown.";
+      return `Severity coverage is unknown. ${seriousInjury.statement}`;
   }
 }
 
 /**
- * Why a ranked row has no serious-injury count, from the acquisition's own
- * severity coverage. A fatality census and an injury source that does not
- * split serious injuries are different facts; both rank on fatal crashes.
+ * Why a ranked row has no serious-injury count. A fatality census, an injury
+ * source that does not split serious injuries, and a source whose join did not
+ * run are different facts; all of them rank on fatal crashes.
  */
-function seriousInjuryAbsence(severityCompleteness: unknown): string {
-  if (severityCompleteness === "fatal_only") return "Not in source (fatal crashes only)";
-  if (severityCompleteness === "fatal_injury_only") return "Not separated in source (injury crashes not split by severity)";
-  return "Not available; severity coverage not recorded";
+function seriousInjuryAbsence(seriousInjury: SeriousInjuryAvailability): string {
+  return seriousInjury.absenceLabel ?? "Not available; severity breakdown not recorded";
 }
 
 /** The publication line as the frozen caveats state it: a file update is never a cutoff. */
@@ -224,7 +237,7 @@ function hinAppendix(index: number, records: Ss4aEvidenceRecords): Ss4aAppendix 
   const safety = records.safety;
   if (safety.status !== "ready") return safetyNotReady(key, index, safety);
   const network = safety.snapshot.draft.network;
-  const severityCompleteness = safety.snapshot.acquisition.severity_completeness;
+  const seriousInjury = acquisitionSeriousInjury(safety.snapshot.acquisition);
   if (network.kind === "unavailable") return absentAppendix(key, index, "missing", network.reason);
 
   const table = network.rows.length > 0
@@ -235,7 +248,7 @@ function hinAppendix(index: number, records: Ss4aEvidenceRecords): Ss4aAppendix 
           row.label,
           row.lengthMiles === null ? "Not a road piece" : row.lengthMiles.toFixed(2),
           row.fatalCrashCount.toLocaleString("en-US"),
-          row.seriousInjuryCrashCount === null ? seriousInjuryAbsence(severityCompleteness) : row.seriousInjuryCrashCount.toLocaleString("en-US"),
+          row.seriousInjuryCrashCount === null ? seriousInjuryAbsence(seriousInjury) : row.seriousInjuryCrashCount.toLocaleString("en-US"),
           row.crashesPerMile === null ? `${row.crashCount.toLocaleString("en-US")} in square` : row.crashesPerMile.toFixed(1),
         ]),
       }
@@ -270,7 +283,7 @@ function hinAppendix(index: number, records: Ss4aEvidenceRecords): Ss4aAppendix 
     source: safetySource(safety),
     facts: [
       { label: "Measure", value: network.measureLabel },
-      { label: "Source severity coverage", value: describeSeverityCoverage(severityCompleteness) },
+      { label: "Source severity coverage", value: describeSeverityCoverage(seriousInjury) },
       { label: "Years", value: network.years },
       { label: "Method", value: network.method },
       { label: "Coverage", value: network.coverage },
@@ -308,7 +321,7 @@ function crashAppendix(index: number, records: Ss4aEvidenceRecords): Ss4aAppendi
     source: safetySource(safety),
     facts: [
       { label: "Source", value: summary.sourceLabel },
-      { label: "Severity coverage", value: describeSeverityCoverage(acquisition.severity_completeness) },
+      { label: "Severity coverage", value: describeSeverityCoverage(acquisitionSeriousInjury(acquisition)) },
       { label: "Recorded severity coverage", value: typeof acquisition.severity_completeness === "string" && acquisition.severity_completeness ? acquisition.severity_completeness : "Not recorded" },
       { label: "Years requested", value: yearsRequested },
       { label: "Crash area", value: crashAreaBasisLabel(studyArea) },

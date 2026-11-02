@@ -20,6 +20,19 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**One serious-injury statement for the same crashes (KI-2026-11-02-046):** the
+Safety page, the corridor analysis, report caveats, the SS4A appendices, the RTP
+safety line and the high-injury network now take serious-injury availability
+from one function of the source's declared severity and whether its serious-injury
+join ran. A California corridor run now joins the CCRS injured-person table like
+a Safety acquisition does, so it reports the same serious-injury count instead
+of saying serious injury is not separable; the injury total and the safety score
+do not change. When the join cannot run, every surface says the injured-person
+records were not joined, not that CCRS cannot separate serious injury. The join
+now counts as not run when data.ca.gov does not answer or a requested year has
+no injured-person table; before, an outage during an acquisition recorded zero
+serious injuries as a finding. Nothing to do on upgrade; no migration.
+
 **County search without a Census key:** county search and county boundaries
 now come from the Census TIGERweb Counties layer, the same keyless service
 cities, CDPs, towns, tribal areas and metro areas already used. An install

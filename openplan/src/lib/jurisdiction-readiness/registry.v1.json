@@ -104,7 +104,7 @@
     {
       "id": "ccrs-source-adapter",
       "path": "openplan/src/lib/safety/sources/ccrs.ts",
-      "sha256": "dc7d94f1648e33dae18c96f3d9bf98d8ca0d550ff89254ace1b948136912e3c0"
+      "sha256": "e85d3b079952c44abf3b94882d17a41f609ba2409f37e4ca50d481b05f151c62"
     },
     {
       "id": "grant-program-registry",

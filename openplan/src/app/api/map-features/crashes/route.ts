@@ -17,6 +17,7 @@ import { crashSourcesForStudyArea } from "@/lib/safety/sources/registry";
 import { crashStatesFromPlaceOfRecord } from "@/lib/safety/study-area-states";
 import { readCrashRowFacts } from "@/lib/safety/crash-properties";
 import { CRASH_QUERY_PROJECTION } from "@/lib/safety/crash-filters";
+import { separatesSeriousInjuries } from "@/lib/safety/serious-injury-availability";
 
 /**
  * Acquired collisions as a shared map layer.
@@ -361,7 +362,7 @@ export async function GET(request: NextRequest) {
       (row) => coerceInt(row.crash_count) > coerceInt(row.geocoded_count)
     );
     const anySeverityIncomplete = readyIngests.some(
-      (row) => (row.severity_completeness ?? "") !== "kabco_full"
+      (row) => !separatesSeriousInjuries(row.severity_completeness)
     );
 
     // Where the drawn crashes actually came from, compared against the stated

@@ -30,7 +30,8 @@ import { describeCrashPublicationEvidence } from "@/lib/safety/publication-evide
 // their single declarations. Writing `fatal + severe_injury` here again is how a
 // measure ends up defined in three files and changed in one.
 import { CRASH_KSI_SEVERITIES } from "@/lib/safety/vocabulary";
-import { SAFETY_KSI_COVERAGE_UNAVAILABLE, separatesSeriousInjuries } from "@/lib/safety/crash-evidence";
+import { SAFETY_KSI_COVERAGE_UNAVAILABLE } from "@/lib/safety/crash-evidence";
+import { separatesSeriousInjuries } from "@/lib/safety/serious-injury-availability";
 import type { PlaceBoundaryResponse } from "@/lib/api/place-geographies";
 import { SafetyCrashMap, safetyWorkspaceGisAnchorLayerId } from "./safety-crash-map";
 import { SafetyWorkspaceLayersPanel } from "./safety-workspace-layers-panel";
@@ -41,6 +42,7 @@ import { useAerialOrthoMapBinding } from "@/components/cartographic/use-aerial-o
 import type { FitInstruction } from "@/lib/cartographic/geometry-bbox";
 import { useTheme } from "@/components/theme-provider";
 import { CrashExportButton } from "./crash-export-button";
+import { SeriousInjuryCaveat } from "./serious-injury-caveat";
 import {
   COVERAGE_STATE_COPY,
   SEVERITY_LABELS,
@@ -56,9 +58,7 @@ import {
   describeGeocodingShortfall,
   describeUngeocodedCountyOption,
   SAFETY_CRASH_DATA_CAVEAT,
-  SAFETY_FATAL_ONLY_CAVEAT,
   SAFETY_LIVE_READ_CAVEAT,
-  SAFETY_SEVERITY_COMPLETENESS_CAVEAT,
   SAFETY_UNCLASSIFIED_SEVERITY_CAVEAT,
 } from "@/lib/safety/caveats";
 import {
@@ -672,6 +672,7 @@ export function SafetyWorkspace({
             : ({ type: "FeatureCollection", features: [] } as SafetyCrashCollection);
         const count = (value: unknown) => (Number.isFinite(Number(value)) ? Number(value) : 0);
         setLiveRead({
+          sourceId: typeof body.sourceId === "string" ? body.sourceId : null,
           sourceLabel: typeof body.sourceLabel === "string" ? body.sourceLabel : "Unnamed source",
           attribution: typeof body.attribution === "string" ? body.attribution : null,
           coverageState:
@@ -710,6 +711,7 @@ export function SafetyWorkspace({
       const count = (value: unknown) => (Number.isFinite(Number(value)) ? Number(value) : 0);
       const summary: SafetyIngestSummary = {
         id: String(body.ingestId ?? ""),
+        sourceId: typeof body.sourceId === "string" ? body.sourceId : null,
         sourceLabel: typeof body.sourceLabel === "string" ? body.sourceLabel : null,
         attribution: null,
         coverageState: typeof body.coverageState === "string" ? body.coverageState : "source_unavailable",
@@ -1413,12 +1415,7 @@ export function SafetyWorkspace({
               {describeCrashPublicationEvidence(liveRead.publishedThrough, liveRead.publishedThroughProvenance)}
               <CutoffProvenanceLink provenance={liveRead.publishedThroughProvenance} />
             </p>
-            {liveRead.severityCompleteness === "fatal_only" && (
-              <p className="text-muted-foreground">{SAFETY_FATAL_ONLY_CAVEAT}</p>
-            )}
-            {liveRead.severityCompleteness === "fatal_injury_only" && (
-              <p className="text-muted-foreground">{SAFETY_SEVERITY_COMPLETENESS_CAVEAT}</p>
-            )}
+            <SeriousInjuryCaveat sourceId={liveRead.sourceId} severityCompleteness={liveRead.severityCompleteness} />
             {/* WHICH YEARS ACTUALLY ANSWERED. The counts above are a total over
                 the years that came back, not over the years that were asked for,
                 and those are routinely different — see `splitLiveReadYears`. A
@@ -1679,12 +1676,7 @@ export function SafetyWorkspace({
                 again.
               </p>
             )}
-            {ingest.severityCompleteness === "fatal_injury_only" && (
-              <p className="text-muted-foreground">{SAFETY_SEVERITY_COMPLETENESS_CAVEAT}</p>
-            )}
-            {ingest.severityCompleteness === "fatal_only" && (
-              <p className="text-muted-foreground">{SAFETY_FATAL_ONLY_CAVEAT}</p>
-            )}
+            <SeriousInjuryCaveat sourceId={ingest.sourceId} severityCompleteness={ingest.severityCompleteness} />
             {ingest.status === "failed" && ingest.fetchError && (
               <p className="text-destructive">Last retrieval failed: {ingest.fetchError}</p>
             )}

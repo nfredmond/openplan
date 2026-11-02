@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { dedupeRecords, ingestCrashesForStudyArea, toCrashRows } from "@/lib/safety/ingest";
 import type { CrashRecord } from "@/lib/safety/sources/types";
 import { findUncoveredStudyArea } from "./helpers/crash-coverage-probe";
+import { __clearFetchJsonResponseCacheForTests } from "@/lib/data-sources/http";
 
 const CA_BBOX = { minLon: -121.3, minLat: 39.1, maxLon: -120.0, maxLat: 39.6 };
 // The study area's state, as the route derives it from the place identity.
@@ -36,6 +37,38 @@ function record(overrides: Partial<CrashRecord> = {}): CrashRecord {
     latitude: 39.2,
     longitude: -121.0,
     ...overrides,
+  };
+}
+
+/**
+ * Stub the CCRS injured-person join at the network: a manifest naming the 2025
+ * table, then either the listed serious-injury collision ids or an outage.
+ * Returns the restore function.
+ */
+function stubCcrsInjuryTable(options: { seriousIds?: string[]; fail?: boolean }): () => void {
+  __clearFetchJsonResponseCacheForTests();
+  const json = (body: unknown) =>
+    ({
+      ok: true,
+      status: 200,
+      headers: new Headers({ "content-type": "application/json" }),
+      json: async () => body,
+      text: async () => JSON.stringify(body),
+    }) as unknown as Response;
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (input: unknown) => {
+      const url = String(input);
+      if (options.fail) throw new Error("injury table unreachable");
+      if (url.includes("package_show")) {
+        return json({ result: { resources: [{ id: "ivp-2025", name: "InjuredWitnessPassengers_2025" }] } });
+      }
+      return json({ result: { records: (options.seriousIds ?? []).map((id) => ({ CollisionId: id })) } });
+    }) as unknown as typeof fetch
+  );
+  return () => {
+    vi.unstubAllGlobals();
+    __clearFetchJsonResponseCacheForTests();
   };
 }
 
@@ -264,10 +297,9 @@ describe("ingestCrashesForStudyArea", () => {
       truncated: false,
     });
 
-    const injury = await import("@/lib/safety/sources/ccrs-injury");
-    const injurySpy = vi
-      .spyOn(injury, "fetchSeriousInjuryCollisionIds")
-      .mockResolvedValue(new Set(["b"]));
+    // The join reads data.ca.gov: the package manifest, then the injured-person
+    // table. Stubbed at fetch so the join itself runs.
+    const injurySpy = stubCcrsInjuryTable({ seriousIds: ["b"] });
 
     const result = await ingestCrashesForStudyArea({
       service: service as never,
@@ -287,7 +319,7 @@ describe("ingestCrashesForStudyArea", () => {
     expect(service.updates.at(-1)).toMatchObject({ severity_completeness: "kabco_full" });
 
     fetchSpy.mockRestore();
-    injurySpy.mockRestore();
+    injurySpy();
   });
 
   it("keeps the crashes and the honest completeness when the KSI join fails", async () => {
@@ -303,10 +335,7 @@ describe("ingestCrashesForStudyArea", () => {
       truncated: false,
     });
 
-    const injury = await import("@/lib/safety/sources/ccrs-injury");
-    const injurySpy = vi
-      .spyOn(injury, "fetchSeriousInjuryCollisionIds")
-      .mockRejectedValue(new Error("injury table unreachable"));
+    const injurySpy = stubCcrsInjuryTable({ fail: true });
 
     const result = await ingestCrashesForStudyArea({
       service: service as never,
@@ -322,7 +351,7 @@ describe("ingestCrashesForStudyArea", () => {
     expect(result.seriousInjuryUpgrades).toBe(0);
 
     fetchSpy.mockRestore();
-    injurySpy.mockRestore();
+    injurySpy();
   });
 
   it("upserts on the natural key so re-ingest cannot duplicate rows", async () => {

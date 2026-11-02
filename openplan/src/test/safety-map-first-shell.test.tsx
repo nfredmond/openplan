@@ -348,8 +348,9 @@ describe("every caveat survived the move", () => {
       (await screen.findAllByText(/NHTSA Fatality Analysis Reporting System/)).length
     ).toBeGreaterThan(0);
     expect(screen.getByText(/120 reported · 96 mappable/)).toBeInTheDocument();
-    // A fatality census records nothing else.
-    expect(screen.getByText(SAFETY_FATAL_ONLY_CAVEAT)).toBeInTheDocument();
+    // A fatality census records nothing else. The sentence opens the
+    // serious-injury statement, which also says what that means for KSI.
+    expect(screen.getByText((content) => content.startsWith(SAFETY_FATAL_ONLY_CAVEAT))).toBeInTheDocument();
     // The geocoding shortfall, computed from THIS extract rather than a constant.
     expect(screen.getByText(/24 of the 120 reported crashes/)).toBeInTheDocument();
     // The record cap.

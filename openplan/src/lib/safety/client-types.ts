@@ -148,6 +148,12 @@ export type SafetyCrashQueryResponse = SafetyCrashCollection & {
 /** The latest ingest for a workspace, as rendered by the coverage banner. */
 export type SafetyIngestSummary = {
   id: string;
+  /**
+   * The adapter id. With `severityCompleteness` it gives the serious-injury
+   * statement (`seriousInjuryAvailabilityForRecord`), so the banner says what
+   * the corridor analysis and the reports say about the same crashes.
+   */
+  sourceId?: string | null;
   sourceLabel: string | null;
   attribution: string | null;
   coverageState: string;
@@ -206,6 +212,8 @@ export type SafetyIngestSummary = {
  * existing one.
  */
 export type SafetyLiveCrashRead = {
+  /** The adapter id, for the serious-injury statement. */
+  sourceId?: string | null;
   sourceLabel: string;
   attribution: string | null;
   coverageState: string;
